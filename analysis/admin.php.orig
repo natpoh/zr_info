@@ -1,0 +1,428 @@
+<?php
+error_reporting(E_ERROR );
+include ($_SERVER['DOCUMENT_ROOT'].'/wp-config.php');
+
+///if (current_user_can("administrator") )
+///echo $_SERVER['HTTP_HOST'];
+
+if (function_exists('current_user_can'))
+    {
+        $curent_user =current_user_can("administrator") ;
+    }
+
+if ($curent_user)
+{
+
+chdir($_SERVER['DOCUMENT_ROOT'].'/database/');
+
+include ($_SERVER['DOCUMENT_ROOT'].'/database/db_config.php');
+
+
+global $pdo;
+$pdo=[];
+pdoconnect_db();
+
+echo 'DB_NAME'.DB_NAME2.'<br>';
+
+
+$pdo->query( 'use imdbvisualization' );
+
+
+function set_option($id,$option)
+{
+global $pdo;
+$pdo->query( 'use imdbvisualization' );
+
+
+if ($option && $id)
+    {
+
+    $sql = "DELETE FROM `options` WHERE `options`.`id` = ".$id;
+    $q = $pdo->prepare($sql);
+   $q->execute();
+    $sql = "INSERT INTO `options`  VALUES ('".$id."',?)";
+    $q = $pdo->prepare($sql);
+    $q->execute(array($option));
+    }
+
+
+//print_r($q->errorInfo());
+
+}
+
+$datatype= $_GET['table'];
+//if (!$datatype)$datatype='movies_bechdeltest';
+
+
+///var_dump($pdo);
+
+$sql = "SELECT *
+FROM information_schema.tables
+WHERE table_type='BASE TABLE'
+AND table_schema='imdbvisualization'";
+
+$q = $pdo->prepare($sql);
+$q->execute();
+$q->setFetchMode(PDO::FETCH_ASSOC);
+//var_dump($q);
+
+while ($r = $q->fetch()) {
+///var_dump($r);
+   $link =  $r["TABLE_NAME"];
+//echo $link.'<br>';
+   if (strstr($link,'data'))
+    {
+    $link = substr($link,5);
+    $selected='';
+    if ($datatype==$link)
+    {
+    $selected = ' selected ';
+    }
+
+
+    $links.=  '<a class="'.$selected.'"  href="?table='.$link.'">'.$link.'</a>';
+}
+
+}
+    $os='';
+    if (isset($_GET['options'])) {
+
+        $os = 'selected';
+    }
+
+
+if ($links)
+{
+    echo '<div class="header_menu" style="display: flex;margin: 10px;">'.$links.'<a  href="graph.php">Graph</a><a class="'.$os.'"  href="?options">Options</a></div>';
+}
+
+
+
+
+
+
+
+//$sql = "SHOW COLUMNS FROM data_".$datatype;
+    $sql = "SELECT COLUMN_NAME  FROM `INFORMATION_SCHEMA`.`COLUMNS`  WHERE `TABLE_SCHEMA`='imdbvisualization' AND `TABLE_NAME`='data_".$datatype."'  ORDER BY `COLUMNS`.`ORDINAL_POSITION` ASC";
+///echo $sql;
+$q = $pdo->prepare($sql);
+
+//var_dump($q);
+
+$q->execute();
+$q->setFetchMode(PDO::FETCH_ASSOC);
+
+///var_dump($r);
+
+while ($r = $q->fetch())
+{
+
+
+
+    $name = $r["COLUMN_NAME"];
+
+    $colums.="      {   label : '".$name."',
+                        name: '".$name."',
+                        key: true,
+                        width: 10,
+                        editable:true
+
+                    },";
+}
+
+
+?>
+
+
+    <style type="text/css">
+
+
+<?php if ($datatype=='movie_ethnic' || $datatype=='population_country' ) { ?>
+.ui-jqgrid .ui-jqgrid-btable tbody tr.jqgrow td {
+    overflow: visible;
+    white-space: normal!important;
+    height: auto!important;
+    word-wrap: break-word!important;
+}
+<?php } ?>
+    .header_menu a{
+    padding: 5px;
+    font-size: 12px;
+}
+        a.selected,a.selected:hover {
+
+            background-color: #3b3b3b;
+            color: #fff;
+            font-weight: bold;
+            text-decoration: none;
+
+        }
+        .content{
+            padding: 50px;
+        }
+        .options_data{
+            padding-top:  10px;
+        }
+        .button{
+            padding: 10px;
+            margin: 15px;
+            display: block;
+            cursor: pointer;
+        }
+        body{
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+
+    <?php
+
+
+//
+
+
+
+if (isset($_GET['options']))
+{
+
+if (isset($_GET['add_options']))
+    {
+    if (isset($_POST))
+        {
+          $option_1  = $_POST['option_1'];
+$option_2  = $_POST['option_2'];
+$q = set_option(1,$option_1);
+$q = set_option(2,$_POST['option_2']);
+$q = set_option(3,$_POST['option_3']);
+$q = set_option(4,$_POST['option_4']);
+$q = set_option(6,$_POST['option_6']);
+        }
+    }
+
+
+$pdo->query( 'use imdbvisualization' );
+
+    $options=array();
+    $sql = "SELECT * FROM `options` ";
+
+     $q = $pdo->prepare($sql);
+    $q->execute();
+    while ($r = $q->fetch())
+    {
+        //  var_dump($r);
+       $options[ $r['id']] =  str_replace('\\','',$r['val']);
+
+
+
+
+    }
+
+
+
+
+    ?>
+    <div class="content">
+<h1>Option</h1>
+
+<div class="options_data">
+ <h2>Clear cache</h2>
+<?php
+
+if (isset($_GET['clear_imgcahe']))
+    {
+
+          $dir =  "img_result";
+
+    $path = $dir . '/*.jpg';
+
+    foreach (glob($path) as $file){
+        @unlink($file);
+    }
+
+
+    }
+
+if (isset($_GET['clear_reqcahe']))
+    {
+
+          $dir =  "cache_request";
+
+    $path = $dir . '/*.html';
+
+    foreach (glob($path) as $file){
+        @unlink($file);
+    }
+
+
+    }
+
+$dir = "img_result";
+$fi = new FilesystemIterator($dir, FilesystemIterator::SKIP_DOTS);
+$fileimgCount = iterator_count($fi);
+
+
+$dir = "cache_request";
+$fi = new FilesystemIterator($dir, FilesystemIterator::SKIP_DOTS);
+$fileCount = iterator_count($fi);
+
+?>
+<form action="admin.php?options&clear_imgcahe" method="post">
+Total images cache: <?php echo $fileimgCount; ?> <button type="submit" class="button">Clear all image cache</button>
+</form>
+
+<form action="admin.php?options&clear_reqcahe" method="post">
+Total request cache: <?php echo $fileCount; ?> <button type="submit" class="button">Clear all request cache</button>
+</form>
+
+</div>
+
+
+<form action="admin.php?options&add_options" method="post">
+    <div class="options_data">
+        <h2>Ads</h2>
+        <textarea name="option_1" style="width: 600px; height: 300px"><?php echo $options[1]; ?></textarea>
+                <h2>Ethnic array</h2>
+        <textarea name="option_3" style="width: 600px; height: 500px"><?php echo $options[3]; ?></textarea>
+         <h2>Ethnic array ignore</h2>
+
+        <textarea name="option_4" style="width: 600px; height: 200px"><?php echo $options[4]; ?></textarea>
+        <p>in order for the words in the ignore array to take effect, you need to recreate the cache</p>
+
+
+        <h2>Color array</h2>
+        <textarea name="option_6" style="width: 600px; height: 300px"><?php echo $options[6]; ?></textarea>
+        <h3>The last id from the ethnic cache in the DB</h3>
+         <p>set to 1 to recreate the cache  </p>
+        <input name="option_2" value="<?php echo $options[2]; ?>">
+    <div class="options_data"><button type="submit" class="button save_option">Save</button></div>
+
+    </div>
+</form>
+<p>Inflation</p>
+<a target="_blank" href="/database/setinflation.php">Update inflation data</a>
+    <?php
+    return;
+
+}
+else {
+
+
+    ?>
+    <table id="jqGrid"></table>
+    <div id="jqGridPager"></div>
+
+    <script type="text/ecmascript" src="https://www.guriddo.net/demo/js/jquery.min.js"></script>
+    <!-- We support more than 40 localizations -->
+    <script type="text/ecmascript" src="jqgrid/js/i18n/grid.locale-en.js"></script>
+    <!-- This is the Javascript file of jqGrid -->
+    <script type="text/ecmascript" src="jqgrid/js/jquery.jqGrid.min.js"></script>
+
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="jqgrid/css/ui.jqgrid-bootstrap4.css"/>
+    <script>
+        jQuery.jgrid.defaults.responsive = true;
+        jQuery.jgrid.defaults.styleUI = 'Bootstrap';
+    </script>
+    <!--   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>-->
+
+    <!-- <script type="text/ecmascript" src="../../../js/bootstrap-datepicker.js"></script>
+      <script type="text/ecmascript" src="../../../js/bootstrap3-typeahead.js"></script>
+      <link rel="stylesheet" type="text/css" media="screen" href="../../../css/bootstrap-datepicker.css" />
+-->
+
+    <script type="text/javascript">
+
+        jQuery(document).ready(function () {
+            jQuery("#jqGrid").jqGrid({
+                url: 'jqgrid/get.php?data=<?php echo $datatype; ?>',
+                mtype: "POST",
+                datatype: "json",
+                page: 1,
+                colModel: [
+
+                    <?php echo $colums; ?>
+
+                ],
+                editurl: 'jqgrid/get.php?data=<?php echo $datatype; ?>',
+                addurl: 'jqgrid/get.php?data=<?php echo $datatype; ?>',
+                delurl: 'jqgrid/get.php?data=<?php echo $datatype; ?>',
+                loadonce: false,
+                viewrecords: true,
+                width: (window.innerWidth - 1),
+                height: (window.innerHeight - 200),
+                rowNum: 100,
+                pager: "#jqGridPager"
+            });
+            // activate the toolbar searching
+
+            jQuery('#jqGrid').jqGrid('filterToolbar', {
+                stringResult: true,
+                searchOnEnter: false,
+                defaultSearch: 'cn',
+                ignoreCase: true
+            });
+
+            jQuery('#jqGrid').jqGrid('navGrid', "#jqGridPager", {
+                search: false, // show search button on the toolbar
+                add: true,
+                edit: true,
+                del: true,
+                refresh: true
+            }, {
+                onclickSubmit: function () {
+
+                    var id  = $('.FormGrid input[name="id"]').val();
+                   // console.log(id);
+
+                    return {parent:id};
+
+                   // setTimeout(function () {$('#edithdjqGrid .ui-jqdialog-titlebar-close').click();  }, 500);
+
+
+                },
+            },
+            {
+                onclickSubmit: function () {
+
+                    var id  = $('.FormGrid input[name="id"]').val();
+                   // console.log(id);
+
+                    return {parent:id};
+
+                   // setTimeout(function () {$('#edithdjqGrid .ui-jqdialog-titlebar-close').click();  }, 500);
+
+
+                },
+            },
+            {
+                onclickSubmit: function () {
+
+                    var id  = $('tr.success td[aria-describedby="jqGrid_id"]').html();
+                   console.log('id',id);
+
+                    return {parent:id};
+
+                   // setTimeout(function () {$('#edithdjqGrid .ui-jqdialog-titlebar-close').click();  }, 500);
+
+
+                },
+            }
+
+            );
+
+        });
+
+    </script>
+
+    <?php
+
+}
+}
+
+else {
+    echo '<a href="'.$_SERVER['REMOTE_HOST'].'/database">you need to login, return to table</a>';
+}
+
+
+?>

@@ -1,0 +1,183 @@
+<?php
+error_reporting(E_ERROR );
+
+include 'db_config.php';
+global $pdo;
+pdoconnect_db();
+
+$datatype= $_GET['table'];
+if (!$datatype)$datatype='movies_bechdeltest';
+
+
+
+
+$sql = "SELECT *
+FROM information_schema.tables
+WHERE table_type='BASE TABLE'
+AND table_schema='imdbvisualization'";
+
+$q = $pdo->prepare($sql);
+$q->execute();
+$q->setFetchMode(PDO::FETCH_ASSOC);
+
+while ($r = $q->fetch()) {
+///var_dump($r);
+    $link = $r["TABLE_NAME"];
+    if (strstr($link,'data'))
+    {
+        $link = substr($link,5);
+        $selected='';
+        if ($datatype==$link)
+        {
+            $selected = ' selected ';
+        }
+
+
+        $links.=  '<a class="'.$selected.'"  href="?table='.$link.'">'.$link.'</a>';
+    }
+}
+
+if ($links)
+{
+    echo '<div class="header_menu" style="display: flex;margin: 10px;">'.$links.'<a href="graph.php">Graph</a> </div><a style="position: absolute; right: 0px; top: 0px" href="admin.php">Admin</a>';
+}
+
+
+
+
+$sql = "SHOW COLUMNS FROM data_".$datatype;
+
+$q = $pdo->prepare($sql);
+
+///var_dump($q);
+
+$q->execute();
+$q->setFetchMode(PDO::FETCH_ASSOC);
+
+while ($r = $q->fetch())
+{
+    $name = $r["Field"];
+
+    $colums.="      {   label : '".$name."',
+                        name: '".$name."',
+                        key: true,
+                        width: 10,
+                        editable:true
+
+                    },";
+}
+
+
+
+
+
+
+
+?>
+<html>
+<head>
+    <title>Actors data</title>
+    <script type="text/ecmascript" src="https://www.guriddo.net/demo/js/jquery.min.js"></script>
+    <!-- We support more than 40 localizations -->
+    <script type="text/ecmascript" src="jqgrid/js/i18n/grid.locale-en.js"></script>
+    <!-- This is the Javascript file of jqGrid -->
+    <script type="text/ecmascript" src="jqgrid/js/jquery.jqGrid.min.js"></script>
+    <script>
+        jQuery.jgrid.defaults.responsive = true;
+        jQuery.jgrid.defaults.styleUI = 'Bootstrap';
+    </script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="jqgrid/css/ui.jqgrid-bootstrap4.css" />
+    <script type="text/javascript">
+        function getSubgrid(subgrid_id, row_id){
+            var actor_id  = jQuery("#jqGrid").jqGrid('getCell',row_id,'actor_id');
+            if (actor_id) {
+                /// console.log(actor_id);
+                $('#'+subgrid_id).html('<img src="create_image.php?id='+actor_id+'&face=1&face2=1&sur=1&eth=1&jew=1&nocache=1" />');
+            }
+        }
+        $(document).ready(function () {
+            jQuery("#jqGrid").jqGrid({
+                url: 'jqgrid/get.php?data=<?php echo $datatype; ?>',
+                mtype: "POST",
+                datatype: "json",
+                page: 1,
+                colModel: [
+                    <?php echo $colums; ?>
+                ],
+                /// editurl: 'jqgrid/get.php?data=<?php echo $datatype; ?>',
+                loadonce: false,
+                viewrecords: true,
+                width: (window.innerWidth-1),
+                height: (window.innerHeight-200),
+                rowNum: 100,
+                pager: "#jqGridPager",
+                subGrid: true,
+                subGridRowExpanded: function(subgrid_id, row_id) {
+                    getSubgrid(subgrid_id, row_id);
+                },
+                afterInsertRow: function(row_id, row_data){
+                    console.log(row_id,row_data);
+                    /*
+                        if (row_data.ImageAvail == '0') {
+
+                        $('#jqGrid').jqGrid('setCell',row_id,'ImageAvail','',{'color':'Red'});
+
+
+                        }
+                      */
+                },
+            });
+            // activate the toolbar searching
+            jQuery('#jqGrid').jqGrid('filterToolbar', {stringResult: true, searchOnEnter: false, defaultSearch: 'cn', ignoreCase: true});
+            jQuery('#jqGrid').jqGrid('navGrid',"#jqGridPager", {
+                search: true, // show search button on the toolbar
+                add: false,
+                edit: false,
+                del: false,
+                refresh: true
+            },{
+                onclickSubmit: function() {
+                    setTimeout(function () {
+                        $('#edithdjqGrid .ui-jqdialog-titlebar-close').click();
+                    },500);
+                },
+            });
+        });
+    </script>
+</head>
+<body>
+<table id="jqGrid"></table>
+<div id="jqGridPager"></div>
+    <!--   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>-->
+
+    <!-- <script type="text/ecmascript" src="../../../js/bootstrap-datepicker.js"></script>
+      <script type="text/ecmascript" src="../../../js/bootstrap3-typeahead.js"></script>
+      <link rel="stylesheet" type="text/css" media="screen" href="../../../css/bootstrap-datepicker.css" />
+-->
+<style type="text/css">
+
+
+    <?php if ($datatype=='movie_ethnic'///  || $datatype=='population_country'
+    ) { ?>
+    .ui-jqgrid .ui-jqgrid-btable tbody tr.jqgrow td {
+        overflow: visible;
+        white-space: normal!important;
+        height: auto!important;
+        word-wrap: break-word!important;
+    }
+    <?php } ?>
+
+    a.selected, a.selected:hover {
+        background-color: #3b3b3b;
+        color: #fff;
+        font-weight: bold;
+        text-decoration: none;
+    }
+    .header_menu a{
+        padding: 5px;
+        font-size: 12px;
+    }
+</style>
+</body>
+</html>

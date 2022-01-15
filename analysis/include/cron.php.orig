@@ -1,0 +1,389 @@
+<<<<<<< HEAD
+<?php
+
+if (!defined('ABSPATH'))
+    define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
+
+//DB config
+!defined('DB_HOST_AN') ? include ABSPATH . 'analysis/db_config.php' : '';
+//Abstract DB
+!class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
+
+
+$array_jobs = array(
+
+'check_tv_series_imdb'=>15,
+'add_rating'=>10,
+'add_pgrating'=>15,
+'add_providers'=>60,
+'check_last_actors'=>5,
+'check_last_post'=>30,
+'add_imdb_data_to_options'=>(60*24*7),
+'add_tv_shows_to_options'=>(60*24*30)
+);
+
+
+
+
+
+
+global $included;
+$included =1;
+include ABSPATH .'analysis/include/scrap_imdb.php';
+
+
+class Cronjob
+{
+
+    public $max_time=300; //sec run process
+    public $timestart=0;
+
+    public function __construct()
+    {
+
+        if(isset($_GET['install']))
+        {
+            if ($_GET['install']=='add_db')
+            {
+                $this->install();
+                return;
+            }
+
+        }
+        if (isset($_GET['reset']))
+        {
+            $this->reset();
+            return;
+        }
+    }
+    private function reset()
+    {
+        $this->set_option('run_cron', 1);
+    }
+
+    public function timer_start()
+    {
+          $this->timestart = microtime(1);
+    }
+
+
+    private function timer_stop( $precision = 3)
+    {
+
+        $mtime = microtime(1);
+        $timetotal = $mtime - $this->timestart;
+        $r = number_format($timetotal, $precision);
+        return $r;
+    }
+
+
+
+    private  function get_options($id)
+    {
+        $sql = "SELECT time  FROM `cron` where task = ?";
+        $r = Pdo_an::db_fetch_row($sql,array($id));
+        $time = $r->time;
+        if (!$time) $time = 0;
+        return $time;
+    }
+
+    private function set_option($id, $option)
+    {
+        if ($option && $id) {
+            $enable=$this->get_options($id);
+            if ($enable)
+            {
+                ///update
+                $sql = "UPDATE `cron` SET  `time` = ? WHERE `task` = ?" ;
+                Pdo_an::db_results($sql,array($option,$id));
+            }
+            else
+            {
+                ///insert
+                $sql = "INSERT INTO `cron`  VALUES (NULL,?,?)";
+                Pdo_an::db_results($sql,array($id,$option));
+            }
+
+        }
+    }
+
+    public   function run($array_jobs)
+    {
+
+
+
+
+        $run_cron = $this->get_options('run_cron');
+        echo 'Last run :'.date('H:i:s d.m.Y',$run_cron).'<br>' . PHP_EOL;
+
+        if ($run_cron < time()-86400) {
+
+            $this->set_option('run_cron', time());
+
+            $this->timer_start();
+
+            $i = 1;
+            $count = count($array_jobs);
+
+            foreach ($array_jobs as $jobs => $period) {
+
+
+                if ($this->timer_stop() < $this->max_time) {
+                    echo 'run ' . $i . ' from ' . $count . '<br>' . PHP_EOL;
+                    self::run_function($jobs, $period);
+                } else {
+                    echo '<br>Ended max time > ' . max_time . '<br>' . PHP_EOL;
+                    $this->set_option('run_cron', 1);
+
+                    break;
+
+                }
+
+                $i++;
+            }
+            $this->set_option('run_cron', 1);
+        }
+        else echo 'cron is runned <br>' . PHP_EOL;
+    }
+
+
+    public   function run_function($name,$period)
+    {
+
+      echo 'Function '.$name.' checked '. self::timer_stop().'<br>'.PHP_EOL;
+      $last_time =   self::get_options($name);
+      echo 'Last updated '.date('H:i:s d.m.Y',$last_time).'<br>'.PHP_EOL;
+
+      if (time()>$last_time+$period*60)
+      {
+       echo 'Started '. self::timer_stop().'<br>'.PHP_EOL;
+
+          /////run function
+
+            if (function_exists($name))
+            {
+            $name();
+            }
+
+          self::set_option($name,time());
+        echo '<br>Ended  '.$name.'  '. self::timer_stop().'<br><br>'.PHP_EOL.PHP_EOL;
+      }
+      else
+        {
+            echo 'skipped  '.date('H:i:s d.m.Y',time()).'<'.date('H:i:s d.m.Y',($last_time+$period*60)).'<br><br>'.PHP_EOL.PHP_EOL;
+        }
+
+
+    }
+    private function install() {
+
+$sql_result = "CREATE TABLE  IF NOT EXISTS `cron` (
+  `id` int(10)  NOT NULL AUTO_INCREMENT,
+  `task` varchar(100) DEFAULT NULL,
+  `time` int(20) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT COLLATE utf8_general_ci;";
+        Pdo_an::db_query($sql_result);
+    }
+}
+
+
+$cron = new Cronjob;
+
+$cron->run($array_jobs);
+
+=======
+<?php
+
+if (!defined('ABSPATH'))
+    define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
+
+//DB config
+!defined('DB_HOST_AN') ? include ABSPATH . 'analysis/db_config.php' : '';
+//Abstract DB
+!class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
+
+
+$array_jobs = array(
+
+'check_tv_series_imdb'=>15,
+'add_rating'=>10,
+'add_pgrating'=>15,
+'add_providers'=>60,
+'check_last_actors'=>5,
+'check_last_post'=>30,
+'add_imdb_data_to_options'=>(60*24*7),
+'add_tv_shows_to_options'=>(60*24*30)
+);
+
+
+
+
+
+
+global $included;
+$included =1;
+include ABSPATH .'analysis/include/scrap_imdb.php';
+
+
+class Cronjob
+{
+
+    public $max_time=300; //sec run process
+    public $timestart=0;
+
+    public function __construct()
+    {
+
+        if(isset($_GET['install']))
+        {
+            if ($_GET['install']=='add_db')
+            {
+                $this->install();
+                return;
+            }
+
+        }
+        if (isset($_GET['reset']))
+        {
+            $this->reset();
+            return;
+        }
+    }
+    private function reset()
+    {
+        $this->set_option('run_cron', 1);
+    }
+
+    public function timer_start()
+    {
+          $this->timestart = microtime(1);
+    }
+
+
+    private function timer_stop( $precision = 3)
+    {
+
+        $mtime = microtime(1);
+        $timetotal = $mtime - $this->timestart;
+        $r = number_format($timetotal, $precision);
+        return $r;
+    }
+
+
+
+    private  function get_options($id)
+    {
+        $sql = "SELECT time  FROM `cron` where task = ?";
+        $r = Pdo_an::db_fetch_row($sql,array($id));
+        $time = $r->time;
+        if (!$time) $time = 0;
+        return $time;
+    }
+
+    private function set_option($id, $option)
+    {
+        if ($option && $id) {
+            $enable=$this->get_options($id);
+            if ($enable)
+            {
+                ///update
+                $sql = "UPDATE `cron` SET  `time` = ? WHERE `task` = ?" ;
+                Pdo_an::db_results($sql,array($option,$id));
+            }
+            else
+            {
+                ///insert
+                $sql = "INSERT INTO `cron`  VALUES (NULL,?,?)";
+                Pdo_an::db_results($sql,array($id,$option));
+            }
+
+        }
+    }
+
+    public   function run($array_jobs)
+    {
+
+
+
+
+        $run_cron = $this->get_options('run_cron');
+        echo 'Last run :'.date('H:i:s d.m.Y',$run_cron).'<br>' . PHP_EOL;
+
+        if ($run_cron < time()-86400) {
+
+            $this->set_option('run_cron', time());
+
+            $this->timer_start();
+
+            $i = 1;
+            $count = count($array_jobs);
+
+            foreach ($array_jobs as $jobs => $period) {
+
+
+                if ($this->timer_stop() < $this->max_time) {
+                    echo 'run ' . $i . ' from ' . $count . '<br>' . PHP_EOL;
+                    self::run_function($jobs, $period);
+                } else {
+                    echo '<br>Ended max time > ' . max_time . '<br>' . PHP_EOL;
+                    $this->set_option('run_cron', 1);
+
+                    break;
+
+                }
+
+                $i++;
+            }
+            $this->set_option('run_cron', 1);
+        }
+        else echo 'cron is runned <br>' . PHP_EOL;
+    }
+
+
+    public   function run_function($name,$period)
+    {
+
+      echo 'Function '.$name.' checked '. self::timer_stop().'<br>'.PHP_EOL;
+      $last_time =   self::get_options($name);
+      echo 'Last updated '.date('H:i:s d.m.Y',$last_time).'<br>'.PHP_EOL;
+
+      if (time()>$last_time+$period*60)
+      {
+       echo 'Started '. self::timer_stop().'<br>'.PHP_EOL;
+
+          /////run function
+
+            if (function_exists($name))
+            {
+            $name();
+            }
+
+          self::set_option($name,time());
+        echo '<br>Ended  '.$name.'  '. self::timer_stop().'<br><br>'.PHP_EOL.PHP_EOL;
+      }
+      else
+        {
+            echo 'skipped  '.date('H:i:s d.m.Y',time()).'<'.date('H:i:s d.m.Y',($last_time+$period*60)).'<br><br>'.PHP_EOL.PHP_EOL;
+        }
+
+
+    }
+    private function install() {
+
+$sql_result = "CREATE TABLE  IF NOT EXISTS `cron` (
+  `id` int(10)  NOT NULL AUTO_INCREMENT,
+  `task` varchar(100) DEFAULT NULL,
+  `time` int(20) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT COLLATE utf8_general_ci;";
+        Pdo_an::db_query($sql_result);
+    }
+}
+
+
+$cron = new Cronjob;
+
+$cron->run($array_jobs);
+
+>>>>>>> 95e2433577e3521c820168fb3d17f14681fee1d7

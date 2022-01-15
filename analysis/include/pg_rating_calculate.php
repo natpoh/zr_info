@@ -1,0 +1,1237 @@
+<?php
+
+if (!defined('ABSPATH'))
+    define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
+//DB config
+!defined('DB_HOST_AN') ? include ABSPATH . 'analysis/db_config.php' : '';
+//Abstract DB
+!class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
+
+
+class PgRatingCalculate
+{
+
+    public static function get_imdb_rating_in_movie($id)
+    {
+        $id = intval($id);
+
+        $sql = "SELECT rating FROM `data_movie_imdb` where id ='" . $id . "' limit 1 ";
+
+        $r = Pdo_an::db_fetch_row($sql);
+
+        if ($r->rating) {
+            $rating = $r->rating;
+        }
+        if ($rating) {
+            return $rating;
+        }
+    }
+
+    public static function add_movie_rating($id)
+    {
+        ////add rating
+        $audience = self::get_audience_rating_in_movie($id, 1);
+        $staff = self::get_audience_rating_in_movie($id, 2);
+        $imdb = self::get_imdb_rating_in_movie($id);
+        $rotten_tomatoes = '';
+        $tmdb='';
+        $total_rating='';
+
+        ///!!!!!!!!!!need to complete
+
+
+        $sql = "SELECT id FROM `data_movie_rating` where `movie_id ` = ".$id;
+        $r = Pdo_an::db_fetch_row($sql);
+        if (!$r) {
+            $sql = "INSERT INTO `data_movie_rating`(`id`, `movie_id`, `rwt_audience`, `rwt_staff`, `imdb`, `rotten_tomatoes`, `tmdb`, `total_rating`, `last_update`)
+                VALUES (NULL,?,?,?,?,?,?,?,?)";
+            Pdo_an::db_results_array($sql, array($id, $audience, $staff, $imdb, $rotten_tomatoes, $tmdb, $total_rating));
+        }
+
+    }
+
+    public static function update_movie_rating($id)
+    {
+
+
+        $sql = "SELECT id FROM `data_movie_rating` where `movie_id ` = ".$id;
+        $r = Pdo_an::db_fetch_row($sql);
+        if ($r)
+        {
+            $r_id = $r->id;
+
+            $result_summ_rating = self::get_audience_rating_in_movie($id, 1);
+
+            $sql = "UPDATE `data_movie_rating` SET `rwt_audience`=?,`last_update`=? WHERE `id`=?";
+            Pdo_an::db_results_array($sql,array($result_summ_rating,time(),$r_id));
+
+        }
+        else
+        {
+            self::add_movie_rating($id);
+
+        }
+
+
+
+    }
+
+    public static function rating_to_comment($imdb,$imdbdesc,$maxrating='')
+    {
+
+
+        $imdb_rating_colors = array("None"=>'gray',  "Mild"=> 'yelow', "Moderate"=> 'orange', "Severe"=> 'red',
+            "0"=>'gray', "1"=>'green', "2"=> 'yelow', "3"=> 'orange', "4"=> 'red', "5"=> 'red');
+
+        $cms_rating_plus = array(
+        "educational"=> '1',
+                            "message"=> '1',
+                            "role_model"=> '1',
+                            "Faith"=> '1',
+                            "Integrity"=> '1'
+    );
+
+        $content = '';
+
+        if (is_array($imdbdesc))
+        {
+            $imdbdesc_array=   $imdbdesc;
+        }
+
+    else if ($imdbdesc)
+    {
+         $imdbdesc_array = json_decode($imdbdesc,1);
+
+    }
+
+        if ($imdb )
+        {
+
+            if (!is_array($imdb))
+            {
+                $imdb = json_decode($imdb,1);
+            }
+
+
+            if ($maxrating)
+            {
+                $imdb_result =  self::max_rating($imdb);
+            }
+            else
+            {
+                $imdb_result= $imdb;
+            }
+
+            if ($imdb_result)
+            {
+
+                foreach ($imdb_result as $type => $val)
+                {
+
+
+
+                    $content_comment='';
+
+                    if (is_array($imdbdesc_array[$type]))
+                    {
+                        foreach ($imdbdesc_array[$type] as $comment)
+                        {
+                            $content_comment.= '<p>'. $comment.'</p>';
+                        }
+                    }
+                    else if ($imdbdesc_array[$type])
+                    {
+
+                        $content_comment.= '<p>'. $imdbdesc_array[$type].'</p>';
+                    }
+
+                    $color = $imdb_rating_colors[$val];
+                    if (!$color)$color='';
+                    if ($cms_rating_plus[$type])
+                    {
+                        $color='';
+                    }
+
+                    $tname =ucfirst($type);
+                    $tname = str_replace('_',' ',$tname);
+                    if (is_numeric($val))
+                    {
+                        $val = $val.'/5';
+                    }
+                    if (($val==0 || $val=='None')&& !$content_comment)
+                    {
+
+                    }
+                    else
+                    {
+                        $content.= self::debug_table($tname.'<br><span class="rating_row_verdict '.$color.'">'.$val.'</span>', $content_comment );
+
+                    }
+
+
+                }
+
+            }
+        }
+        return $content;
+    }
+
+
+    public static function get_movie_desc($id)
+    {
+        $content = self::debug_table('s');
+
+        $imdb_id= self::get_imdb_id_from_id($id);
+        $array_family = self::get_family_rating_in_movie($imdb_id);
+
+        $array_rwt_rating_type = array("message" => 1,  "nudity" => 1, "violence" => 1, "language" => 1, "drugs" => 1, "other" => 1);
+
+        $croudsurce  = self::get_family_rating_croud_in_movie($imdb_id,$array_rwt_rating_type,1);
+
+        if ($array_family['certification'])
+        {
+            $content.=   self::debug_table('MPAA Certification', $array_family['certification'] );
+        }
+
+        if ($croudsurce['imdb_rating']) {
+
+            $content.=   self::debug_table('<h3>RWT Crowdsource</h3>' );
+            $content.= self::rating_to_comment($croudsurce['imdb_rating'],$croudsurce['imdb_rating_desc']);
+        }
+
+
+        if ($array_family['imdb_rating']) {
+
+            $final_value = sprintf('%07d', $imdb_id);
+            $url = "https://www.imdb.com/title/tt" . $final_value . '/parentalguide';
+
+            $content.=   self::debug_table('<h3>IMDb Rating</h3><a target="_blank" href="'.$url.'">'.$url.'</a>' );
+            $content.= self::rating_to_comment($array_family['imdb_rating'],$array_family['imdb_rating_desc'],1);
+        }
+
+        if ($array_family['cms_rating']) {
+            $content.=   self::debug_table('<h3>Commonsensemedia Rating</h3><a target="_blank" href="'.$array_family['cms_link'].'">'.$array_family['cms_link'].'</a>' );
+            $content.= self::rating_to_comment($array_family['cms_rating'],$array_family['cms_rating_desk']);
+        }
+
+        if ($array_family['dove_rating']) {
+            $content.=   self::debug_table('<h3>Dove Rating</h3><a target="_blank" href="'.$array_family['dove_link'].'">'.$array_family['dove_link'].'</a>' );
+            $content.= self::rating_to_comment($array_family['dove_rating'],$array_family['dove_rating_desc']);
+        }
+
+        $content.= self::debug_table('e');
+
+        return $content;
+    }
+    public function debug_table($a = '', $b = '', $color = '')
+    {
+        $color_td = '';
+        if ($color) {
+            $color_td = ' style="color:' . $color . '" ';
+        }
+
+        if ($a == 's') {
+            echo '<table style="table-layout: auto;">';
+            return;
+        }
+        if ($a == 'e') {
+            echo '</table>';
+            return;
+        }
+
+        if (!$b) {
+            echo '<tr ' . $color_td . '><td colspan="2">' . $a . '</td></tr>';
+        } else {
+            echo '<tr ' . $color_td . '><td style="width: 150px" >' . $a . '</td><td >';
+            print_r($b);
+            echo '</td><tr>';
+        }
+
+    }
+
+    public function check_pg_limit($pg, $v, $total, $debug = '',$name = 'PG')
+    {
+        $rating_limit = $v;
+        if ($debug) self::debug_table($name.' limit ', $pg . ' = ' . $rating_limit);
+        if (strstr($rating_limit, '-')) {
+            $array_limited = explode('-', $rating_limit);
+            if ($total > $array_limited[1]) {
+                if ($debug) self::debug_table($name.' limit calculate', $total . ' > ' . $array_limited[1] . ' ; total = ' . $array_limited[1]);
+                $total = $array_limited[1];
+            }
+            else if ($total < $array_limited[0]) {
+
+                if ($debug) self::debug_table($name.' limit calculate', $total . ' < ' . $array_limited[0] . ' ; total = ' . $array_limited[0]);
+                $total = $array_limited[0];
+            }
+            else{
+                if ($debug) self::debug_table($name.' limit calculate', $array_limited[0] .' < '. $total . ' < ' . $array_limited[1] );
+            }
+        }
+        return $total;
+    }
+
+    public function update_rating($imdb_id = '', $rating_name = '', $rating_value = '')
+    {
+        if (!$imdb_id) return;
+
+        $imdb_id = intval($imdb_id);
+
+        $sql = "UPDATE `data_pg_rating` SET `" . $rating_name . "_date` = '" . time() . "', `" . $rating_name . "_result` = '" . $rating_value . "' WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
+        Pdo_an::db_query($sql);
+
+    }
+
+    public function get_data()
+    {
+
+        global $table_prefix;
+
+        $sql = "SELECT option_value FROM {$table_prefix}options WHERE option_name = 'custom_rating_data' LIMIT 1";
+        $result = Pdo_wp::db_fetch_row($sql);
+        if ($result) {
+            $result = unserialize($result->option_value);
+            return $result;
+        } else {
+            $rating = [];
+
+            $rating['convert'] = array("None" => 0, "Mild" => 1.5, "Moderate" => 3, "Severe" => 5);
+            $rating['Imdb'] = array("nudity" => 1, "violence" => 1, "profanity" => 1, "alcohol" => 1, "frightening" => 1);
+            $rating['Commonsensemedia'] = array("educational" => 1, "message" => 1, "role_model" => 1, "sex" => 1, "violence" => 1, "language" => 1, "drugs" => 1, "consumerism" => 1);
+            $rating['Dove'] = array("Faith" => 1, "Integrity" => 1, "Sex" => 1, "Language" => 1, "Violence" => 1, "Drugs" => 1, "Nudity" => 1, "Other" => 1);
+            $rating['Positive'] = array('imdb_weight' => 1, 'cms_weight' => 1, 'dove_weight' => 1, 'audience_rating' => 1, 'staff_rating' => 3, 'total_imdb_rating' => 5, 'total_positive_rwt' => 1);
+            return $rating;
+        }
+
+    }
+
+    public function max_rating($array)
+    {
+       /// var_dump($array);
+        $array_result=[];
+
+        foreach ($array as $type =>$data)
+        {
+            $lastname='';
+            $lastcount=0;
+
+            foreach ($data as $name =>$count)
+            {
+            if ($count>$lastcount && $count >0)
+            {
+                $lastname =  $name;
+                $lastcount=$count;
+            }
+            }
+            if ($lastname && $lastcount)
+            {
+                $array_result[$type]  =$lastname;
+            }
+
+        }
+    return $array_result;
+    }
+    public  function get_imdb_id_from_id($id)
+    {
+        $id = intval($id);
+
+        $sql = "SELECT movie_id FROM `data_movie_imdb` where id ='" . $id . "' limit 1 ";
+
+        $r = Pdo_an::db_fetch_row($sql);
+
+        if ($r->movie_id) {
+            $movie_id = $r->movie_id;
+        }
+        if ($movie_id) {
+            return $movie_id;
+        }
+    }
+    public function custom_rating_lgbt($keywords,$v,$rating_array,$array_family,$debug,$total,$row_type='lgbt_warning',$comment='LGBT Warning')
+    {
+
+        $lgbt_text=[];
+        $lgbt_enable =0;
+        $total_lgbt=0;
+
+        if (strstr($v, ',')) {
+            $array_v = explode(',', $v);
+
+            if ($keywords) {
+                $intersection = array_intersect($array_v, $keywords);
+                if ($intersection) {
+                    $lgbt_enable =1;
+
+                    foreach ($intersection as $i=>$v)
+                    {
+                        if (!in_array($v,$lgbt_text))
+                        {
+                            $lgbt_text[]=$v;
+                        }
+                    }
+
+
+                    if (!$total_lgbt)
+                    {
+                        $key = array_keys($intersection);
+                        if ($debug)   self::debug_table($comment.' in keywords');
+                        $total_lgbt =   self::check_pg_limit($intersection[$key[0]], $rating_array[$row_type]['max_rating'], $total, $debug ,$comment);
+                    }
+                }
+            }
+
+            $comment_content='';
+            if ( $array_family['imdb_rating_desc'])
+            {
+                $comment_content.=$array_family['imdb_rating_desc'];
+
+            }
+            if ( $array_family['cms_rating_desk'])
+            {
+                $comment_content.=$array_family['cms_rating_desk'];
+
+            }
+            if ( $array_family['dove_rating_desc'])
+            {
+                $comment_content.=$array_family['dove_rating_desc'];
+            }
+            if ( $array_family['crowd'])
+            {
+                $comment_content.=json_encode($array_family['crowd']);
+            }
+            if ($comment_content)
+            {
+                foreach ($array_v as $word)
+                {
+                    $word = trim($word);
+
+                    if (strstr($comment_content,$word))
+                    {
+
+                        if (!in_array($word,$lgbt_text))
+                        {
+                            $lgbt_text[]=$word;
+                        }
+
+
+                        $lgbt_enable =1;
+                        if (!$total_lgbt)
+                        {
+                            if ($debug) self::debug_table($comment.' in comments');
+                            $total_lgbt =   self::check_pg_limit($word, $rating_array[$row_type]['max_rating'], $total, $debug ,$comment);
+
+                        }
+
+
+                    }
+
+                }
+
+
+            }
+
+
+
+        }
+
+        if (!$lgbt_enable)
+        {
+            $lgbt_enable='';
+        }
+        $lgbt_text_string='';
+
+        if ($lgbt_text)
+        {
+            $lgbt_text_string = implode(',',$lgbt_text);
+        }
+
+        return array($total_lgbt,$lgbt_enable,$lgbt_text_string);
+
+
+    }
+    public function CalculateRating($imdb_id = '', $id = '', $debug = '',$update=1)
+    {
+
+        if (!$id )
+        {
+            $movie_data =self::get_movie_data($imdb_id);
+            $id = $movie_data['id'];
+        }
+
+        if (!$imdb_id)
+        {
+            $imdb_id = self::get_imdb_id_from_id($id);
+        }
+
+        if (!$imdb_id)
+        {
+            return;
+        }
+
+
+        if ($debug) self::debug_table('s');
+
+        //echo 'CalculateRating '.$imdb_id;
+
+        $array_family = self::get_family_rating_in_movie($imdb_id);
+        ////"educational":"2","message":"2","role_model":"3","
+
+
+//        if ($id && !$array_family['rwt_id'])
+//        {
+//            $sql = "UPDATE `data_pg_rating` SET  `rwt_id` = '" . $id . "' WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
+//            Pdo_an::db_query($sql);
+//        }
+
+        $rating_array = self::get_data();
+
+        ///get
+        $array_cms_rating_type = array("educational" => 1, "message" => 1, "role_model" => 1, "sex" => -1, "violence" => -1, "language" => -1, "drugs" => -1, "consumerism" => -1);
+        $array_dove_rating_type = array("Faith" => 1, "Integrity" => 1, "Sex" => -1, "Language" => -1, "Violence" => -1, "Drugs" => -1, "Nudity" => -1, "Other" => -1);
+        $array_rwt_rating_type = array("message" => 1,  "nudity" => -1, "violence" => -1, "language" => -1, "drugs" => -1, "other" => -1);
+        $array_rating_convert = $rating_array['convert'];
+
+        $array_rating_weight = $rating_array['Imdb'];
+        $array_cms_rating_weight = $rating_array['Commonsensemedia'];
+        $array_dove_ratig_weight = $rating_array['Dove'];
+        $array_rwt_rating_weight = $rating_array['rwt'];
+
+        $array_Audience_Staff = $rating_array['Audience_Staff'];
+        $array_Imdb_Rwt = $rating_array['Imdb_Rwt'];
+
+        $array_positive_rating_weight = $rating_array['Positive'];
+        $imdb_rating = $array_family['imdb_rating'];
+
+        $total_count_array = [];
+        $rating_count = 0;
+
+        $family_rating_croud =  self::get_family_rating_croud_in_movie($imdb_id,$array_rwt_rating_weight,1);
+        if ($family_rating_croud['imdb_rating']) {
+
+
+            if ($debug) self::debug_table('<b>RWT Crowdsource</b>');
+            if ($debug) self::debug_table('RWT rating array', $family_rating_croud['imdb_rating'])['imdb_rating'];
+            if ($debug) self::debug_table('RWT rating weight', $array_rwt_rating_weight, 'red');
+
+
+              $rating_count++;
+              $total_rwt_croud_rating = self::site_rating($family_rating_croud['imdb_rating'], $array_rwt_rating_type, $array_rwt_rating_weight, $debug, $name = 'RWT Crowdsource', $imdb_id);
+
+            $array_family['crowd']=$family_rating_croud['imdb_rating_desc'];
+
+        }
+
+
+        if ($imdb_rating) {
+
+            $final_value = sprintf('%07d', $imdb_id);
+            $url = "https://www.imdb.com/title/tt" . $final_value . '/parentalguide';
+
+            if ($debug) self::debug_table('<b>IMDb</b> <a target="_blank" href="'.$url.'">'.$url.'</a>');
+            if ($debug) self::debug_table('IMDb rating array',  json_decode($imdb_rating,1));
+
+            $imdb_rating = json_decode($imdb_rating);
+
+
+            //  var_dump($imdb_rating);
+            foreach ($imdb_rating as $i => $data) {
+                ///var_dump($data);
+                $total_count = 0;
+                $total_count_all = 0;
+                foreach ($data as $i1 => $val) {
+                    ///   echo $i1.' '.$val.'<br>';
+                    $total_count += $val;
+                    $total_count_all += $val * $array_rating_convert[$i1];
+
+                }
+                if (!$total_count) $total_count = 1;
+                if (!$total_count_all) $total_count_all = 0;
+                $total_count_array[$i] = $total_count_all / $total_count;
+
+            }
+            // echo '<br><br>';
+
+            ///  var_dump($total_count_array);
+            ///
+            if ($debug) self::debug_table('IMDb RWT rating convert', $array_rating_convert, 'red');
+            if ($debug) self::debug_table('Multiply IMDb rating on an array of conversion and get the average data for each type from 0 to 5', '', 'gray');
+            if ($debug) self::debug_table('IMDb array rating total: ', $total_count_array);
+            if ($debug) self::debug_table('IMDb RWT rating weight', $array_rating_weight, 'red');
+
+
+            $array_rating_temp = [];
+            $total_imdb_rating = 0;
+            foreach ($total_count_array as $i => $v) {
+                $v1 = $array_rating_weight[$i] * $v;
+                $array_rating_temp[$i] = $v1;
+                /// echo $v1.' '.$array_rating_weight[$i].' '.$v.' <br>';
+                if ($v1 > $total_imdb_rating) {
+                    $total_imdb_rating = $v1;
+                }
+            }
+            if ($total_imdb_rating) {
+                $total_imdb_rating = round($total_imdb_rating, 2);
+
+                if ($total_imdb_rating >= 5) {
+                    $total_imdb_rating = 4.9;
+                }
+            }
+            if ($debug) self::debug_table('Recalling data taking into account the correctional coefficient of RWT', '', 'gray');
+            if ($debug) self::debug_table('IMDb array rating total', $array_rating_temp);
+            if ($debug) self::debug_table('A positive rating is the biggest rating of positive, negative is the greatest value from negative, if at least one of the values will be 5 then a negative rating will be 5.', '', 'gray');
+
+
+            if (!$total_imdb_rating) {
+                $total_imdb_rating = 5;
+            }
+            if ($debug) self::debug_table('total IMDb rating calculate', ' 5 - ' . $total_imdb_rating . ' = ' . (5 - $total_imdb_rating) . ' ');
+            $total_imdb_rating = 5 - $total_imdb_rating;
+            if ($debug) self::debug_table('Total IMDb rating', $total_imdb_rating, 'green');
+
+            self::update_rating($imdb_id, 'imdb', $total_imdb_rating);
+            $rating_count++;
+        }
+
+
+
+
+
+
+        $cms_rating = $array_family['cms_rating'];
+        if ($cms_rating) {
+
+            $cmsurl = $array_family['cms_link'];
+            if ($debug) self::debug_table('<b>Commonsensemedia</b><br><a target="_blank" href="'.$cmsurl.'">'.$cmsurl.'</a>');
+            if ($debug) self::debug_table('Cms rating array', json_decode($cms_rating,1));
+            if ($debug) self::debug_table('Cms rating weight', $array_cms_rating_weight, 'red');
+
+            $cms_rating = json_decode($cms_rating);
+
+            if ($cms_rating) {
+                $rating_count++;
+                $total_cms_rating = self::site_rating($cms_rating, $array_cms_rating_type, $array_cms_rating_weight, $debug, $name = 'cms', $imdb_id);
+            }
+
+
+        }
+
+        //////dove rating
+
+        $dove_rating = $array_family['dove_rating'];
+
+        if ($dove_rating) {
+            $doveurl = $array_family['dove_link'];
+            if ($debug) self::debug_table('<b>Dove<b><br><a target="_blank" href="'.$doveurl.'">'.$doveurl.'</a>');
+            if ($debug) self::debug_table('Dove rating array', json_decode($dove_rating,1));
+            if ($debug) self::debug_table('Dove rating weight', $array_dove_ratig_weight, 'red');
+
+
+            $dove_rating = json_decode($dove_rating);
+
+            if ($dove_rating) {
+                $rating_count++;
+                $total_dove_rating = self::site_rating($dove_rating, $array_dove_rating_type, $array_dove_ratig_weight, $debug, $name = 'dove', $imdb_id);
+            }
+
+        }
+
+        $audience = self::rwt_audience($id, 1);
+        $staff = self::rwt_audience($id, 2);
+
+
+        if ($debug && ($audience["rating"] || $staff["rating"])) self::debug_table('<b>Audience and Staff</b>');
+
+
+        if ($audience["rating"]) {
+            $audience_rating = $audience["rating"];
+            if ($debug) self::debug_table('Audience', $audience_rating);
+
+            $sql = "UPDATE `data_pg_rating` SET  `rwt_audience` = '" . $audience_rating . "' WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
+            Pdo_an::db_query($sql);
+        }
+        if ($staff["rating"]) {
+            $staff_rating = $staff["rating"];
+            $sql = "UPDATE `data_pg_rating` SET  `rwt_staff` = '" . $staff_rating . "' WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
+            Pdo_an::db_query($sql);
+
+            if ($debug) self::debug_table('Staff', $staff_rating);
+        }
+
+        if ($audience_rating && $staff_rating) {
+            $array_Audience_Staff = $rating_array['Audience_Staff'];
+
+            if ($debug) self::debug_table('Audience & Staff array weight', $array_Audience_Staff, 'red');
+
+            $k_a = $array_Audience_Staff['audience_rating'] / ($array_Audience_Staff['audience_rating'] + $array_Audience_Staff['staff_rating']);
+            $k_s = $array_Audience_Staff['staff_rating'] / ($array_Audience_Staff['audience_rating'] + $array_Audience_Staff['staff_rating']);
+            $total_positive_rwt = $audience_rating * $k_a + $staff_rating * $k_s;
+            if ($debug) self::debug_table('Total positive RWT calculate', ' (' . $audience_rating . '*' . $k_a . '+' . $staff_rating . '*' . $k_s . ') = ' . $total_positive_rwt);
+        } else if ($audience_rating) {
+            $total_positive_rwt = $audience_rating;
+
+        } else if ($staff_rating) {
+            $total_positive_rwt = $staff_rating;
+        }
+
+
+        if ($debug && $total_positive_rwt) self::debug_table('Total positive RWT', $total_positive_rwt, 'green');
+
+
+        if ($total_positive_rwt && $total_imdb_rating) {
+            if ($debug) self::debug_table('Array IMDb RWT weight', $array_Imdb_Rwt, 'red');
+
+            $array_Imdb_Rwt = $rating_array['Imdb_Rwt'];
+
+            $total_imdb_rating_current = $total_imdb_rating;
+
+            $k_imdb = $array_Imdb_Rwt['total_imdb_rating'] / ($array_Imdb_Rwt['total_imdb_rating'] + $array_Imdb_Rwt['total_positive_rwt']);
+            $k_imdb = round($k_imdb, 2);
+
+            $k_rwt = $array_Imdb_Rwt['total_positive_rwt'] / ($array_Imdb_Rwt['total_imdb_rating'] + $array_Imdb_Rwt['total_positive_rwt']);
+            $k_rwt = round($k_rwt, 2);
+
+
+            if ($debug && $total_positive_rwt) self::debug_table('k_imdb ', $array_Imdb_Rwt['total_imdb_rating'] . '/(' . $array_Imdb_Rwt['total_imdb_rating'] . '+' . $array_Imdb_Rwt['total_positive_rwt'] . ') = ' . $k_imdb);
+            if ($debug && $total_positive_rwt) self::debug_table('k_rwt  ', $array_Imdb_Rwt['total_positive_rwt'] . '/(' . $array_Imdb_Rwt['total_imdb_rating'] . '+' . $array_Imdb_Rwt['total_positive_rwt'] . ') = ' . $k_rwt);
+
+            $total_imdb_rating = $total_imdb_rating_current * $k_imdb + $total_positive_rwt * $k_rwt;
+
+            $total_imdb_rating = round($total_imdb_rating, 2);
+
+            if ($debug) self::debug_table('Total imdb rating', ' (' . $total_imdb_rating_current . '*' . $k_imdb . '+' . $total_positive_rwt . '*' . $k_rwt . ') = ' . $total_imdb_rating);
+        }
+
+        // echo '$total_rating2='.$total_imdb_rating.'<br>';
+
+
+        if ($rating_count) {
+
+            if ($debug) self::debug_table('Positive rating weight', $array_positive_rating_weight, 'red');
+            // $rating['Positive'] = array('imdb_weight' => 1, 'cms_weight' => 1, 'dove_weight' => 1, 'audience_rating' => 1, 'staff_rating' => 3, 'total_imdb_rating' => 5, 'total_positive_rwt' => 1);
+            //        if ($total_positive_rwt && $total_imdb_rating && $total_dove_rating && $total_cms_rating )
+
+            if ($total_imdb_rating) $imdb_weight = $array_positive_rating_weight['imdb_weight'];
+            if ($total_cms_rating) $cms_weight = $array_positive_rating_weight['cms_weight'];
+            if ($total_dove_rating) $dove_weight = $array_positive_rating_weight['dove_weight'];
+            if ($total_rwt_croud_rating) $rwt_weight= $array_positive_rating_weight['rwt_weight'];
+
+
+            $total_weight = ($imdb_weight + $cms_weight + $dove_weight+$rwt_weight) / $rating_count;
+
+            $total = round((
+                    $total_rwt_croud_rating * $rwt_weight / $total_weight+
+                $total_imdb_rating * $imdb_weight / $total_weight
+                    + $total_cms_rating * $cms_weight / $total_weight
+                    + $total_dove_rating * $dove_weight / $total_weight
+
+                ) / $rating_count, 2);
+
+            if (!$total_imdb_rating) $total_imdb_rating = 0;
+            if (!$total_dove_rating) $total_dove_rating = 0;
+            if (!$total_cms_rating) $total_cms_rating = 0;
+
+            if (!$rwt_weight)$rwt_weight='0';
+            if (!$imdb_weight)$imdb_weight='0';
+            if (!$cms_weight)$cms_weight='0';
+            if (!$dove_weight)$dove_weight='0';
+
+            if ($debug) self::debug_table('Total rating calculate', ''
+                . $total_rwt_croud_rating . '*' . $rwt_weight . '/(' . $total_weight . '*' . $rating_count . ')' .
+               '+'  . $total_imdb_rating . '*' . $imdb_weight . '/(' . $total_weight . '*' . $rating_count . ')' .
+                '+' . $total_cms_rating . '*' . $cms_weight . '/(' . $total_weight . '*' . $rating_count . ')' .
+                '+' . $total_dove_rating . '*' . $dove_weight . '/(' . $total_weight . '*' . $rating_count . ')'
+            );
+
+        }
+        if ($debug) self::debug_table('Total rating', $total, 'green');
+        $pg_cert = $array_family['certification_countries'];
+        $pg = $array_family['pg'];
+
+        $pg_rated = 0;
+        if ($pg || $pg_cert) {
+            if ($debug) self::debug_table('PG Limit');
+
+            if ($debug) self::debug_table('PG  limit array', $rating_array['PG_limit'], 'red');
+
+            foreach ($rating_array['PG_limit'] as $i => $v) {
+                if (strstr($i, ',')) {
+                    $array_rating_index = explode(',', $i);
+
+                    ///var_dump($array_rating_index);
+                    if (in_array($pg, $array_rating_index)) {
+                        $pg_rated = 1;
+                        $total = self::check_pg_limit($pg, $v, $total, $debug);
+                    }
+                }
+
+            }
+            if ($pg_cert && !$pg_rated) {
+                $pg_cert_array = json_decode($pg_cert);
+
+                foreach ($pg_cert_array as $country => $pg) {
+                    if ($pg_rated)
+                    {
+                        break;
+                    }
+                    foreach ($rating_array['PG_limit'] as $i => $v) {
+                        if (strstr($i, ',')) {
+                            $array_rating_index = explode(',', $i);
+                            if (in_array($pg[0], $array_rating_index)) {
+                                $pg_rated = 1;
+                                $total = self::check_pg_limit($country.' => '.$pg[0], $v, $total, $debug);
+                                break;
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+
+
+        ////Keywords limit
+
+
+        $f='';
+
+        $keywords = self::get_data_in_movie('keywords',$imdb_id);
+       if ($keywords)
+       {
+           $keywords =explode(',', $keywords);
+
+           $words  = $rating_array['words_limit'];
+           foreach ($words as $i=>$v)
+           {
+               if (strstr($v, ',')) {
+                   $array_v =  explode(',', $v);
+                   $intersection = array_intersect($array_v, $keywords);
+                   if ($intersection)
+                   {
+                       if ($debug && !$f) self::debug_table('Keywords limit');
+                       $key = array_keys($intersection);
+                       $f=1;
+                     //  echo $i;
+                    $total =   self::check_pg_limit($intersection[$key[0]], $i, $total, $debug ,'Keyword');
+                   }
+
+               }
+
+           }
+       }
+
+        $genre = self::get_data_in_movie('genre',$imdb_id);
+        if ($genre)
+        {
+            $genre =explode(',', $genre);
+            $words  = $rating_array['words_limit'];
+            foreach ($words as $i=>$v)
+            {
+                if (strstr($v, ',')) {
+                    $array_v =  explode(',', $v);
+                    $intersection = array_intersect($array_v, $genre);
+                    if ($intersection)
+                    {
+                    $ki=    array_keys($intersection);
+                    $total =   self::check_pg_limit($intersection[$ki[0]], $i, $total, $debug ,'Genre');
+                    }
+
+                }
+
+            }
+        }
+
+
+
+
+        /////////lgbt warning
+
+
+        $v = $rating_array['lgbt_warning']['text'];
+
+        $l_array =self::custom_rating_lgbt($keywords,$v,$rating_array,$array_family,$debug,$total,'lgbt_warning');
+
+        if ($l_array[0])
+        {
+            $total=  $l_array[0];
+        }
+
+        if ( $update)
+        {
+            $lgbt_enable=$l_array[1];
+            $lgbt_text_string=$l_array[2];
+
+            $sql = "UPDATE `data_pg_rating` SET  `lgbt_warning` = '" . $lgbt_enable . "', `lgbt_text` = ?  WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
+            Pdo_an::db_results_array($sql,array($lgbt_text_string));
+        }
+
+        ///////woke
+        $v = $rating_array['woke']['text'];
+
+        $l_array =self::custom_rating_lgbt($keywords,$v,$rating_array,$array_family,$debug,$total,'woke','Woke conclusions');
+
+        if ($l_array[0])
+        {
+            $total=  $l_array[0];
+        }
+
+        if ( $update)
+        {
+            $lgbt_enable=$l_array[1];
+            $lgbt_text_string=$l_array[2];
+
+            $sql = "UPDATE `data_pg_rating` SET  `woke` = '" . $lgbt_enable . "', `woke_text` = ?  WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
+            Pdo_an::db_results_array($sql,array($lgbt_text_string));
+        }
+
+
+
+        if ($total && $update) {
+            $sql = "UPDATE `data_pg_rating` SET  `rwt_pg_result` = '" . $total . "' WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
+            Pdo_an::db_query($sql);
+
+            ////update rwt pg cache
+
+        }
+
+
+        if ($debug) self::debug_table('Total rating', $total, 'green');
+
+        if ($debug) self::debug_table('e');///end of table
+
+        return $total;
+
+    }
+
+
+
+    public function site_rating($cms_rating, $array_cms_rating_type, $array_cms_rating_weight, $debug, $name = 'cms', $imdb_id)
+    {
+
+
+        $total_rating = 0;
+        $i = 0;
+        $total_negative_rating = 0;
+        $total_positive_rating = 0;
+        $total_rating_array=[];
+        foreach ($cms_rating as $type => $ratind) {
+
+
+            if (!$array_cms_rating_weight[$type]) {
+                $array_cms_rating_weight[$type] = 1;
+            }
+            if (!$array_cms_rating_type[$type]) {
+                $array_cms_rating_type[$type] = -1;
+            }
+            if ($array_cms_rating_type[$type] == -1) {
+                $total_rating = $array_cms_rating_weight[$type] * $ratind;
+                $total_rating_array[$type]=$total_rating;
+
+                if ($total_rating > $total_negative_rating) {
+                    $total_negative_rating = $total_rating;
+                }
+            }
+            if ($array_cms_rating_type[$type] == 1) {
+                $total_rating = $array_cms_rating_weight[$type] * $ratind;
+                $total_rating_array[$type]=$total_rating;
+                if ($total_rating > $total_positive_rating) {
+                    $total_positive_rating = $total_rating;
+                }
+            }
+
+            $i++;
+        }
+
+        if ($debug) self::debug_table( $name . ' rating array converted', $total_rating_array);
+
+        if ($total_negative_rating >= 5) {
+            $total_negative_rating = 4.9;
+        }
+        if ($total_negative_rating!=0) {
+
+            $total_negative_rating_result = 5 - $total_negative_rating;
+
+
+        }
+        if (!$total_negative_rating_result) {
+            $total_negative_rating_result = 0;
+        }
+        if ($total_positive_rating >= 5) {
+            $total_positive_rating = 5;
+        }
+
+
+        if ($debug) self::debug_table('A positive rating is the biggest rating of positive, negative is the greatest value from negative, if at least one of the values will be 5 then a negative rating will be 5.', '', 'gray');
+        if ($debug && $total_positive_rating) self::debug_table('Total positive ' . $name . ' rating', $total_positive_rating);
+        if ($debug) self::debug_table('Total negative ' . $name . ' rating', $total_negative_rating);
+        if ($debug) self::debug_table('Total ' . $name . ' negative rating result', ' 5 - ' . $total_negative_rating . ' = ' . $total_negative_rating_result . '  ');
+
+        if ($total_positive_rating && $total_negative_rating) {
+            $total_cms_rating = ($total_negative_rating_result + $total_positive_rating) / 2;
+            if ($debug) self::debug_table('Total ' . $name . ' rating calculate ', '(' . $total_negative_rating_result . '+' . $total_positive_rating . ')/2 = ' . $total_cms_rating);
+        } else if ($total_positive_rating) {
+            $total_cms_rating = $total_positive_rating;
+        } else if ($total_negative_rating_result) {
+            $total_cms_rating = $total_negative_rating_result;
+        }
+        if ($debug && $total_cms_rating) self::debug_table('Total ' . $name . ' rating ', $total_cms_rating, 'green');
+        /////update cms rating
+
+        self::update_rating($imdb_id, $name, $total_cms_rating);
+
+        return $total_cms_rating;
+    }
+
+    public function get_family_rating_in_movie($rid)
+    {
+        $rid = intval($rid);
+        $sql = "SELECT * FROM `data_pg_rating` WHERE `movie_id` = {$rid} limit 1";
+        $row = Pdo_an::db_results_array($sql);
+        return $row[0];
+    }
+
+    public function get_family_rating_croud_in_movie($rid,$array_rwt_rating_weight,$all_data='')
+    {
+        $rid = intval($rid);
+        $sql = "SELECT * FROM `data_movies_pg_crowd` WHERE `movie_id` = {$rid} and status = 1 ";
+        $row = Pdo_an::db_results_array($sql);
+
+        $rating_rwt_crd=[];
+        $rating_rwt_crd_comment=[];
+        $count = count($row);
+        if (!$count)$count=1;
+
+        foreach ($row as $family_rating_croud) {
+        ///    var_dump($family_rating_croud);
+            foreach ($family_rating_croud as $r => $v) {
+                if ($array_rwt_rating_weight[$r]) {
+                    if ($v!=0)
+                    {
+                        $rating_rwt_crd[$r]+= $v;
+                    }
+
+                }
+                if ($all_data)
+                {
+                    if (strstr($r,'_comment'))
+                    {
+                        $r1 = str_replace('_comment','',$r);
+                        if ($array_rwt_rating_weight[$r1]) {
+                            $rating_rwt_crd_comment[$r1].=$v.'<br>';
+                        }
+                    }
+                }
+            }
+        }
+
+        $rating_rwt_crd_result = [];
+        foreach ($rating_rwt_crd as $i=>$v)
+        {
+            $rating_rwt_crd_result[$i]=$v/$count;
+        }
+        if ($all_data)
+        {
+
+            return  array('imdb_rating'=>$rating_rwt_crd_result,'imdb_rating_desc'=>$rating_rwt_crd_comment);
+        }
+else
+{
+    return $rating_rwt_crd_result;
+}
+
+    }
+
+    public function get_movie_data($rid)
+    {
+        $rid = intval($rid);
+        $sql = "SELECT * FROM `data_movie_imdb` WHERE `movie_id` = {$rid} limit 1";
+        $row = Pdo_an::db_results_array($sql);
+        return $row[0];
+    }
+
+    public function get_data_in_movie($data,$rid)
+    {
+        $rid = intval($rid);
+        $sql = "SELECT {$data} FROM `data_movie_imdb` WHERE `movie_id` = {$rid} limit 1";
+        $row = Pdo_an::db_fetch_row($sql);
+        return $row->$data;
+    }
+    public function get_audience_rating_in_movie($rid, $type = 1)
+    {
+
+        $rid = intval($rid);
+        $sql = "SELECT * FROM `cache_rwt_rating` WHERE `movie_id` = {$rid} and `type`={$type} limit 1";
+        $row = Pdo_an::db_results_array($sql);
+        return $row[0];
+
+    }
+
+    public function rwt_audience($movie_id, $audience_type = 1,$update='')
+    {
+
+        if (!$update)
+        {
+        $result_summ_rating = self::get_audience_rating_in_movie($movie_id, $audience_type);
+        if ($result_summ_rating) {
+            return $result_summ_rating;
+        }
+        }
+//critic_matic_posts_meta
+        $hollywood_total = [];
+        $review_data = self::get_wpcdata($movie_id, $audience_type);
+        ///echo '<br>review_data<br>'.PHP_EOL;
+///var_dump($review_data);
+        $total_audience = [];
+
+        if (is_array($review_data)) {
+            foreach ($review_data as $rid => $val) {
+                // echo $rid.'<br>';
+                ///  var_dump($val);
+
+
+                if ($val['h'])
+                {
+                    $hollywood_total[$rid]['data']=$val['h'];
+                    $hollywood_total[$rid]['count']++;
+                }
+
+                foreach ($val as $i => $v) {
+                    if ($i == 'v') {
+                        $total_audience[$i][$v]++;
+                    } else {
+                        if ($i!='ip' && $i!='h')
+                        if ($v)
+                        {
+                            $total_audience[$i]['data']+= $v;
+                            $total_audience[$i]['count']++;
+                            if ($i!='r')
+                            {
+                                $hollywood_total[$rid]['data']+=$v;
+                                $hollywood_total[$rid]['count']++;
+                            }
+
+                        }
+
+                    }
+                }
+            }
+            // echo '<br>';  echo '<br>';
+
+            if ($audience_type == 2) {
+             //  $total_audience = self::rwt_staff($movie_id, $total_audience);
+            }
+
+            $result_summ_rating = [];
+
+            $array_convert= array('r'=>'rating','h'=>'hollywood','p'=>'patriotism','m'=>'misandry','a'=>'affirmative','l'=>'lgbtq','g'=>'god','v'=>'vote');
+
+            //echo 'total_audience<br>'.PHP_EOL;
+            //var_dump($total_audience);
+
+
+            ///echo 'total_audience end<br>'.PHP_EOL;
+            foreach ($total_audience as $i => $v) {
+
+                if ($array_convert[$i]) {
+                    if ($i == 'v') {
+                        arsort($v);
+                        $key = array_keys($v);
+                        $result_summ_rating['vote'] = $key[0];
+                    } else {
+                         $i0 = $array_convert[$i];
+
+                         if ($v['count']) {
+                             $summ = $v['data'] / $v['count'];
+                             $summ=ceil(($summ) / 0.5) * 0.5;
+                             $result_summ_rating[$i0] = $summ;
+
+                         }
+                    }
+                }
+            }
+
+            $hollywood_result=[];
+            foreach ($hollywood_total as $pid => $data)
+            {
+                $hollywood_result['data']+=$data['data'];
+                $hollywood_result['count']+=$data['count'];
+            }
+            if ($hollywood_result['count'])
+            {
+                $hollywood_result_string = $hollywood_result['data']/$hollywood_result['count'];
+                if ($hollywood_result_string)
+                {
+                    $hollywood_result_string = ceil(($hollywood_result_string) / 0.5) * 0.5;
+
+                }
+                $result_summ_rating['hollywood']=$hollywood_result_string;
+            }
+
+            //var_dump($result_summ_rating);
+
+            self::update_rating_db($movie_id, $result_summ_rating, $audience_type);
+        }
+        return $result_summ_rating;
+    }
+
+
+    public function update_rating_db($rid, $ar, $type = 1)
+    {
+
+
+        $rid = intval($rid);
+
+        if (self::get_audience_rating_in_movie($rid, $type)) {
+            $sql = "UPDATE `cache_rwt_rating` SET 
+                              `vote` = ?,   `rating` = ?,    `affirmative` = ?,   `god` = ?,
+                              `hollywood` = ?,  `lgbtq` = ?, `misandry` = ?, 
+                              `patriotism` = ?  WHERE `movie_id` = {$rid} and `type`={$type} ";
+            Pdo_an::db_results_array($sql, array($ar['vote'], $ar['rating'], $ar['affirmative'], $ar['god'], $ar['hollywood'], $ar['lgbtq'], $ar['misandry'], $ar['patriotism']));
+
+        } else {
+            $sql = "INSERT INTO `cache_rwt_rating` 
+            (`id`, `movie_id`, `type`, `vote`, `rating`, `affirmative`, `god`, `hollywood`, `lgbtq`, `misandry`, `patriotism`) 
+            VALUES (NULL, ?,        ?,     ?,    ?,             ?,           ?,     ?,          ?,          ?,          ?);";
+            Pdo_an::db_results_array($sql, array($rid, $type, $ar['vote'], $ar['rating'], $ar['affirmative'], $ar['god'], $ar['hollywood'], $ar['lgbtq'], $ar['misandry'], $ar['patriotism']));
+        }
+
+    }
+
+    public function get_wpcdata($movie_id, $audience_type)
+    {
+        if ($audience_type==1)
+        {
+            $staff_type="and a.type=2";
+        }
+        else
+        {
+            $staff_type="and a.type=0";
+        }
+
+        if (!$movie_id) return;
+
+        global $table_prefix;
+        $review_data = [];
+
+        $sql = "select r.* from {$table_prefix}critic_matic_rating as r 
+    inner join {$table_prefix}critic_matic_posts_meta as m ON m.cid = r.cid
+inner join {$table_prefix}critic_matic_posts as p ON p.id = r.cid
+inner join {$table_prefix}critic_matic_authors_meta as am ON am.cid = m.cid
+inner join {$table_prefix}critic_matic_authors as a ON a.id = am.aid
+
+
+where  m.fid='{$movie_id}' AND m.state!=0  and p.status=1 ".$staff_type;
+
+        //echo $sql;
+        $rows = Pdo_an::db_results_array($sql);
+        foreach ($rows as $r) {
+            $options = $r['options'];
+            $r_id = $r['id'];
+            if ($options)
+            {
+                $options = unserialize($options);
+                $review_data[$r_id] = $options;
+            }
+
+        }
+        return $review_data;
+    }
+}
