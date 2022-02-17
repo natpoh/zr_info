@@ -5,7 +5,7 @@ global $WP_include;
 
 if (!defined('ABSPATH'))
     define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
-$pr='http';
+$pr='https';
 if ($_SERVER['HTTPS'])
 {
     $pr='https';
@@ -90,13 +90,31 @@ foreach ($rows as $r)
 {
     $name = $r["Field"];
 
-    $colums.="      {   label : '".$name."',
+    if ($name=='id')
+    {
+        $colums.="      {   label : '".$name."',
                         name: '".$name."',
                         key: true,
-                        width: 10,
-                        editable:true
+                        editable:true,
+                        editoptions: { disabled:true  }
 
                     },";
+    }
+    else
+    {
+        $colums.="      {   label : '".$name."',
+                        name: '".$name."',
+                        key: true,
+                        width: 800,
+                        editable:true,
+                        edittype:'textarea',
+                        editoptions: { cols: 45,rows: 1  }
+
+                    },";
+
+    }
+
+
 }
 
 
@@ -265,9 +283,9 @@ foreach ($rows as $r)
             jQuery('#jqGrid').jqGrid('filterToolbar', {stringResult: true, searchOnEnter: false, defaultSearch: 'cn', ignoreCase: true});
             jQuery('#jqGrid').jqGrid('navGrid',"#jqGridPager", {
                 search: true, // show search button on the toolbar
-                add: false,
-                <?php if ($WP_include) { ?>
 
+                <?php if ($WP_include) { ?>
+                add: true,
                 edit: true,
                 del: true,
 
