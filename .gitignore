@@ -198,8 +198,6 @@ analysis/sdata/title.basics.tsv/data.tsv
 # other
 temp/
 nbproject/
-<<<<<<< HEAD
->>>>>>> 95e2433577e3521c820168fb3d17f14681fee1d7
-=======
->>>>>>> ce93e6728d97efe5fd53837fc9e283b1c93b243b
 .settings/
+.well-known/
+phpmyadmin/config.inc.php
