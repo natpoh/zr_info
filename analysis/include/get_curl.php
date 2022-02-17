@@ -5,18 +5,21 @@ if ( !defined('ABSPATH') )
 class GETCURL
 {
 
-   public static function getCurlCookie($url = '', $proxy = false, $post='', $headers='')
+   public static function getCurlCookie($url = '', $proxy = false, $post='', $headers='',$return_header=0)
     {
         $cookiePath = ABSPATH . 'wp-content/uploads/cookies.txt';
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
 
-
         if ($proxy) {
             $proxy = '127.0.0.1:8118';
 
             curl_setopt($ch, CURLOPT_PROXY, $proxy);
+        }
+        if ($return_header)
+        {
+            curl_setopt($ch, CURLOPT_HEADER, 1);
         }
 
 
@@ -35,7 +38,8 @@ class GETCURL
         }
 
         if ($post) {
-               curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
 
         }
         if ($headers) {
@@ -45,11 +49,16 @@ class GETCURL
         //  curl_setopt($ch, CURLOPT_TIMEOUT, 2000);
         curl_setopt($ch, CURLOPT_ENCODING, 'deflate');
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 1000);
         curl_setopt($ch, CURLOPT_VERBOSE, 1);
         curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.118 Safari/537.36');
 
-        $response = curl_exec($ch);        
+        $response = curl_exec($ch);
+        if(!$response)
+        {
+            return 'error ' . curl_error($ch);
+        }
+
         curl_close($ch);
         return $response;
     }

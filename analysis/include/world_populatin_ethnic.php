@@ -797,6 +797,7 @@ if (isset($_GET['6_update_result_data'] )) {
     global $pdo;
 
 
+
     global $array_compare;
     $array_compare = [];
     $sql = "SELECT * FROM `options` where id =3 limit 1";
@@ -804,6 +805,8 @@ if (isset($_GET['6_update_result_data'] )) {
     $q = $pdo->prepare($sql);
     $q->execute();
     $r = $q->fetch();
+
+
     $val = $r['val'];
     $val = str_replace('\\', '', $val);
     $array_compare_0 = explode("',", $val);
@@ -892,12 +895,15 @@ if ($jew_count>0) {
 
                 if ($array_compare[$index]) {
                     $index = $array_compare[$index];
+
+                    $array_total[$index] += $val;
+
                 } else {
                     echo $index . ' ' . $country . ' not compare<br>';
                 }
 
 
-                $array_total[$index] += $val;
+
 
             }
         }

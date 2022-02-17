@@ -173,7 +173,7 @@ class Crowdsource
 
             if ($verdict)
             {
-                $sql =" UPDATE `data_actors_meta` SET `crowdsource` = '".$verdict."' WHERE `data_actors_meta`.`actor_id` =".$actor;
+                $sql =" UPDATE `data_actors_meta` SET `crowdsource` = '".$verdict."' ,`last_update` = ".time()." WHERE `data_actors_meta`.`actor_id` =".$actor;
                 Pdo_an::db_query($sql);
             }
             ///update gender
@@ -181,7 +181,7 @@ class Crowdsource
             {
                 $array_gender = array('m'=>2,'f'=>1);
 
-                $sql =" UPDATE `data_actors_meta` SET `gender` = '".$array_gender[$gender]."' WHERE `data_actors_meta`.`actor_id` =".$actor;
+                $sql =" UPDATE `data_actors_meta` SET `gender` = '".$array_gender[$gender]."'  ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` =".$actor;
                 Pdo_an::db_query($sql);
             }
             ///delete image cache
@@ -508,7 +508,7 @@ public static function front($datatype, $array_rows, $array_user = [], $id = '',
        return $data_Res;
     }
 
-public static function get_count_status($datatype)
+public static function get_count_status($datatype,$custom_table='')
 {
 
     $array = array(0,1,2);
@@ -516,7 +516,16 @@ public static function get_count_status($datatype)
 
     foreach ($array as $status)
     {
-        $sql = "SELECT COUNT(*) c FROM `data_".$datatype."` WHERE status =".$status  ;
+        if ($custom_table)
+        {
+            $sql = "SELECT COUNT(*) c FROM `".$custom_table."` WHERE status =".$status  ;
+        }
+        else
+        {
+            $sql = "SELECT COUNT(*) c FROM `data_".$datatype."` WHERE status =".$status  ;
+        }
+
+
         $rows = Pdo_an::db_fetch_row($sql);
         $count = $rows->c;
         $array_status['All']+=$count;
@@ -547,11 +556,28 @@ public static function prepare_array($options,$addsplash='')
     }
     return $array_rs;
 }
-public static function Show_admin_table($datatype,$array_rows,$WP_include)
+public static function Show_admin_table($datatype,$array_rows,$WP_include,$custom_table='',$refresh_rating='')
 {
+    $subgrid = 1;
+    $edit =1;
+
+    if ($custom_table)
+    {
+        $sql = "SHOW COLUMNS FROM ".$custom_table;
+        $doptable='&doptable='.$custom_table;
 
 
-    $sql = "SHOW COLUMNS FROM data_".$datatype;
+        if ($custom_table=='commit'){
+            $subgrid = 0;
+            $edit =0;
+        }
+    }
+    else
+    {
+        $sql = "SHOW COLUMNS FROM data_".$datatype;
+        $doptable='';
+    }
+
     $rows = Pdo_an::db_results_array($sql);
     foreach ($rows as $r)
     {
@@ -601,10 +627,10 @@ public static function Show_admin_table($datatype,$array_rows,$WP_include)
                     },";
     }
 
-    $link = "/wp-admin/admin.php?page=crowdsource_".$datatype;
+    $link =$_SERVER['REQUEST_URI'];// "/wp-admin/admin.php?page=crowdsource_".$datatype;
     //get counts
     $table_staus ='';
-    $array_status = self::get_count_status($datatype);
+    $array_status = self::get_count_status($datatype,$custom_table);
     //array_unshift($array_status , 'all');
     $array_status_name = array('All'=>'All',0=>'Waiting to check',1=>'Approved',2=>'Rejected');
 
@@ -714,8 +740,7 @@ var first_run = 0;
                 data: ({
                     oper: 'movie_data',
                     id: movie,
-                    refresh_rating:	1,
-                    data:"{\"movie_type\":[],\"movie_genre\":[],\"animation\":\"0\",\"inflation\":\"0\",\"start\":\"1800\",\"end\":\"2100\",\"actor_type\":[\"star\",\"main\"],\"diversity_select\":\"default\",\"display_select\":\"date_range_international\",\"country_movie_select\":[],\"display_xa_axis\":\"Box+Office+Worldwide\",\"color\":\"default\",\"ethnycity\":{\"1\":{\"ethnic\":1},\"2\":{\"jew\":1},\"3\":{\"face\":1},\"4\":{\"face2\":1},\"5\":{\"surname\":1}}}"
+                    refresh_rating:	'<?php echo $refresh_rating ?>'
                 }),
                 success: function (html) {
                     jQuery('#'+subgrid_id).html(html);
@@ -771,7 +796,7 @@ var first_run = 0;
     }
     jQuery(document).ready(function () {
         jQuery("#jqGrid").jqGrid({
-            url: '<?php echo $home_url ?>analysis/jqgrid/get.php?data=<?php echo $datatype ?>',
+            url: '<?php echo $home_url ?>analysis/jqgrid/get.php?data=<?php echo $datatype.$doptable ?>',
             mtype: "POST",
             datatype: "json",
             page: 1,
@@ -781,7 +806,7 @@ var first_run = 0;
 
             <?php if ($WP_include) { ?>
 
-            editurl: '<?php echo $home_url ?>analysis/jqgrid/get.php?data=<?php echo $datatype; ?>',
+            editurl: '<?php echo $home_url ?>analysis/jqgrid/get.php?data=<?php echo $datatype.$doptable; ?>',
 
             <?php } ?>
             sortorder : "desc",
@@ -833,6 +858,10 @@ var first_run = 0;
                     let timeStampCon = convertTimestamp(rowdata.add_time);
                     $('#jqGrid').jqGrid('setCell', row_id, 'add_time', timeStampCon);
                 }
+                if (rowdata.last_update) {
+                    let timeStampCon = convertTimestamp(rowdata.last_update);
+                    $('#jqGrid').jqGrid('setCell', row_id, 'last_update', timeStampCon);
+                }
                 //if (rowdata.id) {
                   ///  $('#jqGrid').jqGrid('setCell', row_id, 'id', '<input id="check_'+rowdata.id+'" class="ocheck" type="checkbox"> '+rowdata.id);
                 //}
@@ -844,10 +873,15 @@ var first_run = 0;
                     $('#jqGrid').jqGrid('setCell', row_id, 'image', '<a target="_blank" href="'+rowdata.image+'"><img style="height: 100px;" src="'+rowdata.image+'"></a>', {'color': 'blue'});
                 }
             },
+
+
+            <?php if($subgrid) { ?>
             subGrid: true,
             subGridRowExpanded: function(subgrid_id, row_id) {
                 getSubgrid(subgrid_id, row_id);
             },
+            <?php } ?>
+
 
         });
         // activate the toolbar searching
@@ -857,7 +891,7 @@ var first_run = 0;
         jQuery('#jqGrid').jqGrid('navGrid',"#jqGridPager", {
                 search: true, // show search button on the toolbar
 
-                <?php if ($WP_include) { ?>
+                <?php if ($WP_include && $edit) { ?>
                 add: true,
                 edit: true,
                 del: true,
@@ -958,7 +992,7 @@ var first_run = 0;
             // data.status = id;
             // jQuery("#jqGrid").jqGrid("setGridParam", { "postData": data });
             // jQuery("#jqGrid").trigger("reloadGrid");
-            let href='/wp-admin/admin.php?page=crowdsource_<?php echo $datatype; ?>&status='+id;
+            let href='<?php echo ($_SERVER['REQUEST_URI']) ?>&status='+id;
             history.pushState({path: href}, '', href);
 
             return false;
@@ -1015,6 +1049,12 @@ var first_run = 0;
 
     <ul class="cm-filters subsubsub"><li>Status: </li><?php echo $table_staus; ?></ul>
 
+<?php
+
+    if (!$custom_table)
+    {
+    ?>
+
 
     <div class="bulk-actions-holder">
         <select autocomplete="off" name="bulkaction" class="bulk-actions">
@@ -1031,6 +1071,12 @@ var first_run = 0;
         </select>
         <input type="submit" id="edit-submit" data-value="<?php echo $datatype ?>" value="Submit" class="update_crowd button-primary">
     </div>
+
+    <?php
+    }
+
+    ?>
+
 <table id="jqGrid"></table>
 <div id="jqGridPager"></div>
 <style type="text/css">

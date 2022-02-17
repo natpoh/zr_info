@@ -1,0 +1,291 @@
+<?php
+/**
+ * Plugin Name: Export data
+ * Version: 1.0.0
+ * Description: Export data.
+ */
+
+class Export_data
+{
+    private $access_level = 4;
+    private $parrent_slug = 'export_data';
+
+
+    public function __construct()
+    {
+        global $table_prefix;
+        add_action('admin_menu', array($this, 'export_data_menu_pages'));
+    }
+
+    public function export_data_menu_pages()
+    {
+        add_menu_page(__('Export'), __('Export'), $this->access_level, $this->parrent_slug, array($this, 'overview'));
+        add_submenu_page($this->parrent_slug, __('Export overview'), __('Overview'), $this->access_level, $this->parrent_slug, array($this, 'overview'));
+        add_submenu_page($this->parrent_slug, __('Options'), __('Options'), $this->access_level, $this->parrent_slug. '_export_options', array($this, 'options'));
+
+
+
+    }
+    public function get_data_count_an($db = '', $where = '', $filled = '')
+    {
+
+        $query = "SELECT COUNT(*) AS count FROM "  . $db . " " . $where . $filled;
+        $result = Pdo_an::db_fetch_row($query);
+        return $result->count;
+    }
+
+
+    public function get_filled($total_actors,$total_actors_meta,$db='')
+    {
+
+        $wblock='';
+
+        if ($db)
+        {
+            $array_update =   METALOG::get_last_data($db);
+
+            $ublock='';
+
+            if ($array_update[1])$width_w=$array_update[1]/$total_actors*100;
+
+            if ($array_update[0])
+            {
+
+                $width=($array_update[0]/$total_actors*100)/$width_w*100;
+                $ublock='<span class="update_d" style="width:'.$width.'% "></span>';
+
+            }
+
+            if ($array_update[1])
+            {
+
+                $wblock='<span class="update_w" style="width:'.$width_w.'% ">'.$ublock.'</span>';
+
+            }
+        }
+
+        $not_filled = $total_actors-$total_actors_meta;
+        $percent = round($total_actors_meta/$total_actors*100,2);
+        $percent_block = '<div class="percent_container"><div class="percent_scroll" style="width: '.$percent.'%"><div class="percent_data">'.$percent.' %</div>'.$wblock.'</div></div>';
+        return '<td>'.$percent_block.'</td><td>'.$not_filled.'</td><td>'.$array_update[0].'</td><td>'.$array_update[1].'</td>';
+    }
+
+
+    public function set_option($id,$option)
+    {
+        if ($option && $id)
+        {
+
+            $sql = "DELETE FROM `options` WHERE `options`.`id` = ".$id;
+            Pdo_an::db_query($sql);
+            $sql = "INSERT INTO `options`  VALUES ('".$id."',?)";
+            Pdo_an::db_results_array($sql,array($option));
+        }
+
+    }
+    public function options()
+    {
+
+
+        if (isset($_POST['submit_option']))
+        {
+           /// var_dump($_POST);
+            unset($_POST['submit_option']);
+
+            $data  =json_encode($_POST);
+
+
+            $this->set_option(18,$data);
+
+        }
+
+
+
+
+        $sql = "SELECT `val` FROM `options` where id =18 ";
+        $rows = Pdo_an::db_fetch_row($sql);
+
+        $options_data  =$rows->val;
+        if ($options_data)
+        {
+            $options_data = json_decode($options_data,1);
+        }
+
+
+        $request  = array('get'=>'Get Request','set'=>'Send Request','update'=>'Update data','add'=>'Add data','delete'=>'Delete data','site_id'=>'Site ID');
+        $array_o = array(0=>'not set',1=>'enable',2=>'diasable');
+
+
+        $content='';
+
+        foreach ($request as $i=>$n)
+        {
+            $option='';
+
+
+
+                foreach ($array_o as $a=>$b)
+                {
+                    $selected='';
+                    if (isset($options_data[$i.'_request']))
+                    {
+
+
+                    if ($options_data[$i.'_request']==$a)
+                    {
+                        $selected ='selected';
+                    }
+                    }
+
+                    if ($i=='site_id')
+                    {
+                        $b=$a;
+                    }
+                    $option.= '<option '.$selected.' value="'.$a.'">'.$b.'</option>';
+                }
+
+
+
+            $content.='<tr><td>'.$n.'</td><td><select autocomplete="off" name="'.$i.'_request">'.$option.'</select></td></tr>';
+        }
+        $content.='<tr><td>Link to request</td><td><input autocomplete="off" name="link_request" value="'.$options_data['link_request'].'" /></td></tr>
+                    <tr><td>Remote ip</td><td><input autocomplete="off" name="remote_ip" value="'.$options_data['remote_ip'].'" /></td></tr>';
+
+
+        ?>
+        <div class="content">
+        <h1>Option</h1>
+
+        <form action="admin.php?page=export_data_export_options" method="post">
+            <div class="options_data">
+                <table>
+                <?php echo $content ?>
+                </table>
+                <div class="options_data"><button type="submit" name="submit_option" class="button button-primary save_option">Save</button></div>
+
+            </div>
+        </form>
+
+
+        <?php
+
+
+    }
+
+
+    public function overview()
+    {
+
+        !class_exists('METALOG') ? include ABSPATH . "analysis/include/meta_log.php" : '';
+
+        echo '<h1>Export data</h1>';
+
+
+        $groop = METALOG::get_groop();
+
+ echo '<table class="wp-list-table widefat fixed striped posts"><thead><tr><th>Type</th><th>Count</th><th style="width: 30%">Percent</th><th>Not sync</th><th>Add 24 hours</th><th>Add This Week</th><th>Action</th></tr></thead>
+<tbody>';
+       foreach ($groop as $i)
+       {
+           $option.= ';'.$i.':'.$i;
+           $total_add[$i]['add'] = self::get_data_count_an('commit',"WHERE `description`= '".$i."' ");
+           $total_add[$i]['update'] = self::get_data_count_an('commit',"WHERE `description`= '".$i."' and `status`= 1 ");
+           $total_add[$i]['filled'] = self::get_filled($total_add[$i]['add'],$total_add[$i]['update'],$i);
+           echo '<tr><td>'.$i.'</td><td>' . $total_add[$i]['add'] . '</td>'.$total_add[$i]['filled'].'<td></td></tr>';
+       }
+        $option = substr($option,1);
+
+
+
+
+
+ echo '</tbody></table>';
+
+/*
+ * id
+
+	2 	uniq_id
+
+	3 	description
+
+	4 	text
+
+	5 	status
+
+	6 	site_id
+
+	7 	last_update  * */
+
+        $array_rows = array(
+            'id'=>array('w'=>10),
+            'uniq_id' =>array('w'=>10, 'type' => 'textarea'),
+            'description' => array('type'=>'select','options'=>$option),
+            'text' => array('w'=>40, 'type' => 'textarea'),
+            'update_data' => array('w'=>40, 'type' => 'textarea'),
+            'status' => array('type'=>'select','options'=>'0:Waiting;1:Sinch;2:Complete;3:Error'),
+            'site_id' => array('w'=>10, 'type' => 'textarea'),
+            'last_update' => array('w'=>10, 'type' => 'textarea')
+        );
+
+        !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
+
+        Crowdsource::Show_admin_table('commit',$array_rows,1,'commit');
+
+
+
+
+echo '<style type="text/css">
+.percent_container {
+    width: 100%;
+    background-color: #ddd;
+    border: 1px solid #8e8e8e;
+    height: 20px;
+    overflow: hidden;
+}
+.percent_scroll {
+    background-color: #4de95e;
+    text-align: center;
+    color: #000;
+}
+.percent_data{
+display: inline-block;
+}
+.update_w
+{
+    width: 0.17235361791788%;
+    display: inline-block;
+    float: right;
+    background-color: #ff8400;
+    border: 1px solid #ff8400;
+    height: 20px;
+    position: relative;
+    bottom: 0;
+    box-sizing: border-box;
+}
+.update_d
+{
+    width: 0.17235361791788%;
+    display: inline-block;
+    float: right;
+    background-color: #ff0000;
+    border: 1px solid #ff0000;
+    height: 20px;
+    position: relative;
+    bottom: 0;
+    box-sizing: border-box;
+}
+
+
+</style>
+';
+
+    }
+
+
+
+
+
+
+}
+
+new Export_data;

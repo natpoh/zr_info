@@ -12,7 +12,7 @@ if (!defined('ABSPATH'))
 //Curl
 !class_exists('GETCURL') ? include ABSPATH . "analysis/include/get_curl.php" : '';
 
-!class_exists('TMDB') ? include ABSPATH . "wp-content/themes/custom_twentysixteen/template/include/tmdb.php" : '';
+!class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
 /////////add rating
 
 
@@ -226,13 +226,24 @@ function add_to_db_from_userlist()
 
 }
 
-function update_imdb_data()
+function update_imdb_data($from_archive=0)
 {
 ////update all imdb movies
 
+    //$from_archive=1;
+
     $time = time()-86400*180;
 
-    $sql = "SELECT movie_id FROM `data_movie_imdb` where `add_time` < '".$time."'  order by id desc limit 50";
+    if ($from_archive)
+    {
+        $limit = 300;
+    }
+    else
+    {
+        $limit = 50;
+    }
+
+    $sql = "SELECT movie_id FROM `data_movie_imdb` where `add_time` < '".$time."'  order by id desc limit ".$limit;
     $result =Pdo_an::db_results($sql);
 
     foreach ($result as $row) {
@@ -240,8 +251,8 @@ function update_imdb_data()
         $movie_id = $row->movie_id;
 
             if ($movie_id) {
-
-                    $array_movie =  TMDB::get_content_imdb($movie_id);
+                   // sleep(0.5);
+                    $array_movie =  TMDB::get_content_imdb($movie_id,'',1,$from_archive);
                     $add =  TMDB::addto_db_imdb($movie_id, $array_movie);
                     if ($add) {
                         echo $movie_id . ' updated<br> ' . PHP_EOL;
@@ -266,6 +277,64 @@ function get_new_tv(){
     !class_exists('GETNEWMOVIES') ? include ABSPATH . "analysis/include/get_new_movies.php" : '';
     GETNEWMOVIES::get_new_tv();
 }
+
+
+function update_all_rwt_rating($force='')
+{
+    !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
+
+    ///get option
+
+    global $table_prefix;
+
+    $sql="SELECT option_value FROM `{$table_prefix}options` WHERE `option_name` = 'movies_raiting_weight' ";
+    $r = Pdo_wp::db_fetch_row($sql);
+    if ($r)
+    {
+     $value =    $r->option_value;
+        $value= unserialize($value);
+
+        $rwt_array= $value["rwt"];
+
+      ///  var_dump($rwt_array);
+    }
+
+    if ($force)
+    {
+        $sql = "SELECT `data_movie_imdb`.id  FROM `data_movie_imdb`";
+    }
+    else
+    {
+        $last_update_min = time()-86400;
+        $last_update = time()-86400*30;
+
+        $sql = "SELECT `data_movie_imdb`.id  FROM `data_movie_imdb` LEFT JOIN data_movie_rating 
+    ON `data_movie_imdb`.id=data_movie_rating.movie_id
+        WHERE   (
+            data_movie_rating.id IS NULL 
+                OR (data_movie_rating.last_update < {$last_update} )
+                OR (`data_movie_imdb`.rating>0  AND data_movie_rating.imdb ='')
+            ) order by `data_movie_rating`.last_update desc  limit 1000";
+//echo $sql;
+    }
+
+
+    $rows = Pdo_an::db_results_array($sql);
+    $count = count($rows);
+    $i=0;
+    foreach ($rows as $r2)
+    {
+        $i++;
+        $id = $r2['id'];
+
+        PgRatingCalculate::add_movie_rating($id,$rwt_array);
+
+        echo $i.' of '.$count.' id='.$id.'<br>'.PHP_EOL;
+    }
+
+}
+
+
 
 function add_gender_rating()
 {
@@ -553,7 +622,7 @@ function check_last_actors()
         }
 
         $i++;
-        $sql1 = "UPDATE `data_actors_meta` SET `gender` = '" . $gender . "' WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
+        $sql1 = "UPDATE `data_actors_meta` SET `gender` = '" . $gender . "'  ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
 
        /// echo $sql1.'<br>';
 
@@ -581,7 +650,7 @@ function check_last_actors()
         }
 
         $i++;
-        $sql1 = "UPDATE `data_actors_meta` SET `gender` = '" . $gender . "' WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
+        $sql1 = "UPDATE `data_actors_meta` SET `gender` = '" . $gender . "'  ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
 
         /// echo $sql1.'<br>';
 
@@ -686,7 +755,7 @@ function check_last_actors()
 
         if ($meta_result) {
 
-            $sql1 = "UPDATE `data_actors_meta` SET `surname` = '" . $meta_result . "' WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
+            $sql1 = "UPDATE `data_actors_meta` SET `surname` = '" . $meta_result . "'  ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
             Pdo_an::db_query($sql1);
             update_actors_verdict($r['actor_id']);
             ACTIONLOG::update_actor_log('data_actors_surname');
@@ -712,7 +781,7 @@ function check_last_actors()
 
 
         $i++;
-        $sql1 = "UPDATE `data_actors_meta` SET `bettaface` = '" . $enable_image . "' WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
+        $sql1 = "UPDATE `data_actors_meta` SET `bettaface` = '" . $enable_image . "'  ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
         Pdo_an::db_query($sql1);
         update_actors_verdict($r['actor_id']);
         ACTIONLOG::update_actor_log('bettaface');
@@ -739,7 +808,7 @@ function check_last_actors()
         }
 
         $i++;
-        $sql1 = "UPDATE `data_actors_meta` SET `kairos` = '" . $kairos . "' WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
+        $sql1 = "UPDATE `data_actors_meta` SET `kairos` = '" . $kairos . "'  ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
         Pdo_an::db_query($sql1);
         update_actors_verdict($r['actor_id']);
         ACTIONLOG::update_actor_log('kairos');
@@ -822,7 +891,7 @@ function force_surname_update()
 
         if ($meta_result) {
 
-            $sql1 = "UPDATE `data_actors_meta` SET `surname` = '" . $meta_result . "' WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
+            $sql1 = "UPDATE `data_actors_meta` SET `surname` = '" . $meta_result . "'  ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
             Pdo_an::db_query($sql1);
             update_actors_verdict($r['actor_id']);
         }
@@ -1533,7 +1602,7 @@ function check_face()
         }
 
 
-        $sql1 = "UPDATE `data_actors_meta` SET `bettaface` = '" . $enable_image . "' WHERE `data_actors_meta`.`actor_id` = '" . $actor_id . "'";
+        $sql1 = "UPDATE `data_actors_meta` SET `bettaface` = '" . $enable_image . "'  ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $actor_id . "'";
         $q1 = $pdo->prepare($sql1);
         $q1->execute();
         update_actors_verdict($actor_id);
@@ -2256,9 +2325,14 @@ if (isset($_GET['get_imdb_movie_id'])) {
 }
 
 if (isset($_GET['show_imdb_array'])) {
+    $archive=0;
+    if ($_GET['a'])
+    {
+        $archive = 1;
+    }
     $id = intval($_GET['show_imdb_array']);
     header('Content-Type: application/json');
-        $array_movie =  TMDB::get_content_imdb($id,1);
+        $array_movie =  TMDB::get_content_imdb($id,1,1,$archive);
         echo $array_movie;
         return;
 
@@ -2314,7 +2388,7 @@ if (isset($_GET['force_surname_update'])) {
     return;
 }
 if (isset($_GET['update_imdb_data'])) {
-    update_imdb_data();
+    update_imdb_data($_GET['update_imdb_data']);
     return;
 }
 if (isset($_GET['update_all_gender_cache'])) {
@@ -2392,6 +2466,68 @@ if (isset($_GET['check_actors_meta'])) {
     return;
 }
 
+if (isset($_GET['update_all_rwt_rating'])) {
+
+    update_all_rwt_rating($_GET['update_all_rwt_rating']);
+    return;
+}
+
+if (isset($_GET['check_dublicates_tmdbid'])) {
+
+$sql="SELECT tmdb_id,type, count(tmdb_id) FROM `data_movie_imdb` GROUP by tmdb_id, type having count(tmdb_id) > 1 ";
+$rows = Pdo_an::db_results_array($sql);
+foreach ($rows as $r)
+{
+    $tmdb_id = $r['tmdb_id'];
+    if ($tmdb_id>0)
+    {
+        $q = "UPDATE `data_movie_imdb` SET `tmdb_id` = 0 WHERE `tmdb_id` =  ".$tmdb_id;
+        Pdo_an::db_query($q);
+        echo 'deleted '.$tmdb_id.'<br>';
+    }
+}
+    return;
+}
+
+if (isset($_GET['check_dublicates_postname'])) {
+
+    $sql="SELECT `post_name`,  count(`post_name`) FROM `data_movie_imdb` GROUP by `post_name`,`type` having count(`post_name`) > 1 ";
+    $rows = Pdo_an::db_results_array($sql);
+    foreach ($rows as $r)
+    {
+        $post_name = $r['post_name'];
+        if ($post_name)
+        {
+            $q = "UPDATE `data_movie_imdb` SET `post_name` = '' WHERE `post_name` = '".$post_name."'";
+            Pdo_an::db_query($q);
+            echo 'deleted '.$post_name.'<br>';
+        }
+    }
+    return;
+}
+
+if (isset($_GET['check_archvie_movie'])) {
+$id = $_GET['check_archvie_movie'];
+    if (function_exists('gzencode'))
+    {
+        $bytesCount = file_get_contents(ABSPATH.'analysis/imdb_gzdata/m'.$id  );
+        $gzdata =gzdecode($bytesCount);
+
+
+            echo $gzdata;
+
+    }
+
+}
+
+if (isset($_GET['get_twitter'])) {
+    $id = $_GET['get_twitter'];
+
+    !class_exists('GETTWITTER') ? include ABSPATH . "analysis/include/twitter.php" : '';
+
+    GETTWITTER::get_url($id);
+
+}
 
 
 echo 'ok';

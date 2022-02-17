@@ -11,7 +11,7 @@ if (!defined('ABSPATH'))
 //Curl
 !class_exists('GETCURL') ? include ABSPATH . "analysis/include/get_curl.php" : '';
 
-!class_exists('TMDB') ? include ABSPATH . "wp-content/themes/custom_twentysixteen/template/include/tmdb.php" : '';
+!class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
 
 class GETNEWMOVIES{
 

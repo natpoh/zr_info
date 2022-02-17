@@ -283,7 +283,8 @@ public static function add_actors_from_tmdb($id)
                 $sql1 = "UPDATE `data_actors_meta` SET
                               `tmdb_id` = '" . intval($tmdb_id) . "',
                               `tmdb_img` = '" . intval($image_add) . "',
-                              `gender` = '" . intval($gender) . "'
+                              `gender` = '" . intval($gender) . "',
+                               `last_update` = ".time()."
                               
                    WHERE `data_actors_meta`.`actor_id` = '" . $id . "'";
                 Pdo_an::db_query($sql1);

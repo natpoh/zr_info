@@ -74,7 +74,7 @@ class Ethinc
             {
                 //echo $verdict.'=>'.$verdict_result.' '.PHP_EOL;
 
-                $sql1 = "UPDATE `data_actors_meta` SET `ethnic` = '" . $verdict_result . "' WHERE `data_actors_meta`.`actor_id` = '" . $actor_id . "'";
+                $sql1 = "UPDATE `data_actors_meta` SET `ethnic` = '" . $verdict_result . "'  ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $actor_id . "'";
                 Pdo_an::db_query($sql1);
             }
             else
@@ -126,6 +126,12 @@ class Ethinc
        {
            $verdict='Other';
        }
+        $debug = $_GET['debug'];
+        if ($debug)
+        {
+            echo 'verdict: '.$verdict.' <br>';
+
+        }
 
        if ($verdict)
        {
@@ -244,7 +250,7 @@ class Ethinc
 
         if ($id)
         {
-            $where = " where id = {$id} ";
+            $where = " where actor_id = {$id} ";
         }
 //var_dump($array_compare);
         $array_notfound = [];
@@ -259,78 +265,14 @@ class Ethinc
             $ethnic = strtolower($ethnic);
 
 
-            $ethnic_result = $movie_data['ethnic_result'];
-
-
-
-            if ($ethnic_result) {
-                if ($debug)print_r($ethnic_result);
-                $result_array = [];
-                $ethnic_result_data = json_decode($ethnic_result, 1);
-
-                if ($ethnic_result_data['tags']) {
-
-                    $array_result_data = self::foreach_ethnic($ethnic_result_data['tags'], $array_compare, $result_array, $array_notfound);
-                    $result_array = $array_result_data[0];
-                    $array_notfound = $array_result_data[1];
-                    $result_array = self::normalise_array($result_array);
-
-
-                } else if ($ethnic_result_data['parents']) {
-
-
-                    $array_result_data = self::foreach_ethnic($ethnic_result_data['parents']['f'], $array_compare, $result_array, $array_notfound);
-                    $result_array['f'] = self::normalise_array($array_result_data[0]);
-                    $array_notfound = $array_result_data[1];
-                    $array_result_data = self::foreach_ethnic($ethnic_result_data['parents']['m'], $array_compare, [], $array_notfound);
-                    $result_array['m'] = self::normalise_array($array_result_data[0]);
-                    $array_notfound = $array_result_data[1];
-                    $result_array_temp = [];
-                    //print_r($result_array);
-                    foreach ($result_array as $type => $pdata) {
-                        foreach ($pdata as $race => $count) {
-                            $result_array_temp[$race] += $count;
-                        }
-                    }
-                    $result_array = self::normalise_array($result_array_temp);
-                    // print_r($result_array);
-
-                } else if ($ethnic_result_data['percent']) {
-
-                    $array_result_data = self::foreach_ethnic($ethnic_result_data['percent'], $array_compare, $result_array, $array_notfound, 1);
-
-                    $result_array = $array_result_data[0];
-                    $array_notfound = $array_result_data[1];
-                    $result_array = self::normalise_array($result_array);
-
-                } else {
-                    // print_r($ethnic_result_data);
-
-                    if ($debug)print_r($ethnic_result_data);
-
-                    $array_result_data = self::foreach_ethnic($ethnic_result_data, $array_compare, $result_array, $array_notfound);
-                    $result_array = $array_result_data[0];
-                    $array_notfound = $array_result_data[1];
-                    $result_array = self::normalise_array($result_array);
-
-                    if ($debug)print_r($result_array);
-                }
-
-
-                if ($result_array)
-                {
-                    $sql = "UPDATE `data_actors_ethnic` SET `ethnic_decode` = ? WHERE `data_actors_ethnic`.`id` ={$id} ";
-                    Pdo_an::db_results_array($sql, array(json_encode($result_array)));
-
-                    self::addverdict($id,$result_array);
-                }
+            if ($debug)
+            {
+                echo 'ethnic: '.$ethnic.'<br>';
             }
-
-
-            if (!$ethnic_result ||  $_GET['force_update']) {
                 if ($ethnic) {
                     $regv = '#((.+)\(father\)(.+)\(mother\))|((.+)\(mother\)(.+)\(father\))#Uis';
                     $reg_v = '#(([0-9\.]+)\% ([A-Za-z- ]+))#';
+                    $regv_3 ='#\*father(.+)\n\*mother(.+)#';
 
 //                    if (strstr($ethnic, 'jewish')) {
 //                        $array_ethnic_result[$id] = array('jewish');
@@ -341,7 +283,15 @@ class Ethinc
                         } else if ($mach[4]) {
                             $array_ethnic_result[$id]['parents'] = array('f' => self::prepare_ethnic($mach[6]), 'm' => self::prepare_ethnic($mach[5]));
                         }
-                    } else if (preg_match_all($reg_v, $ethnic, $mach)) {
+                    }
+                    else if (preg_match($regv_3, $ethnic, $mach)) {
+                        if ($mach[1]) {
+                            $array_ethnic_result[$id]['parents'] = array('f' => self::prepare_ethnic($mach[1]), 'm' => self::prepare_ethnic($mach[2]));
+                        }
+                    }
+
+
+                        else if (preg_match_all($reg_v, $ethnic, $mach)) {
                         $array_race = [];
                         foreach ($mach as $i => $mach_data) {
                             $count = $mach[2][$i];
@@ -388,10 +338,81 @@ class Ethinc
 
 
                 }
-            }
-            ///
 
-            //   echo '<br><br>';
+            if ($debug)
+            {
+                echo 'ethnic_result_data: <br>';
+                var_dump($ethnic);
+                echo '<br>';
+            }
+
+                $ethnic_result_data=$array_ethnic_result[$id] ;
+                $result_array = [];
+
+
+                if ($ethnic_result_data['tags']) {
+
+                    $array_result_data = self::foreach_ethnic($ethnic_result_data['tags'], $array_compare, $result_array, $array_notfound);
+                    $result_array = $array_result_data[0];
+                    $array_notfound = $array_result_data[1];
+                    $result_array = self::normalise_array($result_array);
+
+
+                } else if ($ethnic_result_data['parents']) {
+
+
+                    $array_result_data = self::foreach_ethnic($ethnic_result_data['parents']['f'], $array_compare, $result_array, $array_notfound);
+                    $result_array['f'] = self::normalise_array($array_result_data[0]);
+                    $array_notfound = $array_result_data[1];
+                    $array_result_data = self::foreach_ethnic($ethnic_result_data['parents']['m'], $array_compare, [], $array_notfound);
+                    $result_array['m'] = self::normalise_array($array_result_data[0]);
+                    $array_notfound = $array_result_data[1];
+                    $result_array_temp = [];
+                    //print_r($result_array);
+                    foreach ($result_array as $type => $pdata) {
+                        foreach ($pdata as $race => $count) {
+                            $result_array_temp[$race] += $count;
+                        }
+                    }
+                    $result_array = self::normalise_array($result_array_temp);
+                    // print_r($result_array);
+
+                } else if ($ethnic_result_data['percent']) {
+
+                    $array_result_data = self::foreach_ethnic($ethnic_result_data['percent'], $array_compare, $result_array, $array_notfound, 1);
+
+                    $result_array = $array_result_data[0];
+                    $array_notfound = $array_result_data[1];
+                    $result_array = self::normalise_array($result_array);
+
+                } else {
+                    // print_r($ethnic_result_data);
+
+
+
+                    $array_result_data = self::foreach_ethnic($ethnic_result_data, $array_compare, $result_array, $array_notfound);
+                    $result_array = $array_result_data[0];
+                    $array_notfound = $array_result_data[1];
+                    $result_array = self::normalise_array($result_array);
+
+
+                }
+
+            if ($debug)
+            {
+                echo 'result_array: <br>';
+                var_dump($result_array);
+                echo '<br>';
+            }
+
+
+                if ($result_array)
+                {
+                    $sql = "UPDATE `data_actors_ethnic` SET `ethnic_result` = ?, `ethnic_decode` = ? WHERE `data_actors_ethnic`.`id` ={$id} ";
+                    Pdo_an::db_results_array($sql, array(json_encode($ethnic_result_data),json_encode($result_array)));
+
+                    self::addverdict($id,$result_array);
+                }
 
 
         }
@@ -401,15 +422,10 @@ class Ethinc
         arsort($array_notfound);
         print_r($array_notfound);
 
-        if ($array_ethnic_result) {
-            foreach ($array_ethnic_result as $id => $data) {
-                $sql = "UPDATE `data_actors_ethnic` SET `ethnic_result` = ? WHERE `data_actors_ethnic`.`id` ={$id} ";
-                Pdo_an::db_results_array($sql, array(json_encode($data)));
-            }
-        }
+
         ///create verdict
 
-       /// self::update_verdict_meta();
+       self::update_verdict_meta();
     }
 
 

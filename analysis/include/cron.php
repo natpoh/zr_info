@@ -10,8 +10,9 @@ if (!defined('ABSPATH'))
 
 
 $array_jobs = array(
-'get_new_movies'=>(60*24),///add new movies from fandango
-'get_new_tv'=>(60*24),///add new tv from tmdb
+//'update_imdb_data'=>5,//update movies
+'get_new_movies'=>(60*12),///add new movies from fandango
+'get_new_tv'=>(60*12),///add new tv from tmdb
 'add_pg_rating_for_new_movies'=>(60*12),///add pg rating to new movies
 'add_gender_rating_for_new_movies'=>(60*12),///add gender rating to new movies
 'check_tv_series_imdb'=>15, ///add tvseries from list
@@ -19,7 +20,7 @@ $array_jobs = array(
 'add_pgrating'=>15,////add pg rating
 'add_gender_rating'=>15,///add new gender rating
 //'add_providers'=>10,
-
+'update_all_rwt_rating'=>60,////update all rating
 'update_actors_verdict'=>30,///update verdict actors
 
 'add_imdb_data_to_options'=>(60*24*7),
