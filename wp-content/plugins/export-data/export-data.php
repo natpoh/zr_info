@@ -5,6 +5,12 @@
  * Description: Export data.
  */
 
+
+//DB config
+!defined('DB_HOST_AN') ? include ABSPATH . 'analysis/db_config.php' : '';
+//Abstract DB
+!class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
+
 class Export_data
 {
     private $access_level = 4;
