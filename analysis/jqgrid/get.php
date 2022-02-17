@@ -65,13 +65,15 @@ AND table_schema='imdbvisualization'";
 
 
 
-
-
     $datatype = $_GET['data'];
 
 
         $table_data= $array_meta[$datatype];
 
+        if (isset($_GET['doptable']))
+        {
+            $table_data =   $_GET['doptable'];
+        }
 
 }
 
@@ -181,9 +183,11 @@ include ($_SERVER['DOCUMENT_ROOT'].'/wp-config.php');
 
 
             $sql = "UPDATE `" . $table_data . "` SET " . $qres . "  WHERE `id` = '" . $array['parent'] . "'";
-
             echo $sql;
             print_r($arrayrequest);
+
+
+
             $result =Pdo_an::db_results_array($sql,$arrayrequest);
 
             if ($table_data=='data_actors_crowd' || $table_data=='data_movies_pg_crowd')
@@ -229,6 +233,21 @@ include ($_SERVER['DOCUMENT_ROOT'].'/wp-config.php');
     $sidx = $_POST['sidx'];      //                                                                
 
     $sord = $_POST['sord'];      //                       
+
+
+
+
+
+     if (isset($_GET['db'])) {
+         if ($_GET['db'] == 'transcriptions')
+         {
+
+             $db='Pdo_tc';
+
+
+
+         }
+     }
 
 
     if(!$sidx) {$sidx =1;}
@@ -331,8 +350,20 @@ include ($_SERVER['DOCUMENT_ROOT'].'/wp-config.php');
     global $pdo;
 //                ,                             -                    
     $sql = "SELECT count(*) as count FROM  ".$table_data." where  1 = 1  ".$where1;
-     $result =Pdo_an::db_fetch_row($sql);
-    $count =  $result->count;
+
+    if($db=='Pdo_tc')
+    {
+        $result =Pdo_tc::db_fetch_row($sql);
+    }
+    else
+    {
+        $result =Pdo_an::db_fetch_row($sql);
+    }
+
+
+
+
+     $count =  $result->count;
 
    /// echo $count;
 
@@ -358,8 +389,15 @@ include ($_SERVER['DOCUMENT_ROOT'].'/wp-config.php');
 
     $sql = "SELECT * FROM ".$table_data." where  1 = 1 ".$where1."  ORDER BY ".$sidx." ".$sord." LIMIT ".$start.", ".$limit;
 
-     $result_rows =Pdo_an::db_results_array($sql);
 
+     if($db=='Pdo_tc')
+     {
+         $result_rows =Pdo_tc::db_results_array($sql);
+     }
+     else
+     {
+         $result_rows =Pdo_an::db_results_array($sql);
+     }
 
     $responce =  (object)[];
     $responce->page = $page;
