@@ -7,10 +7,7 @@ if (!defined('ABSPATH'))
 !class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
 
 
-if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
-    define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
-    require_once( CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php' );
-}
+
 
 class Crowdsource
 {
@@ -191,6 +188,12 @@ class Crowdsource
 
         }
         if ($table=='review_crowd'){
+
+            if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
+                define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php' );
+            }
+
             $sql = "select * from data_".$table." where id =".$id;
             $data =  Pdo_an::db_fetch_row($sql);
             if ($data)
