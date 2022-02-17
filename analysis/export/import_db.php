@@ -501,11 +501,13 @@ public static function commit_info_request($uid)
     {
         $options_data = self::get_import_data();
 
-        if (trim($options_data['remote_ip'])!=$_SERVER['REQUEST_URI'])
-        {
-            return array('error'=>'false remote ip '.$options_data['remote_ip'].'!='.$_SERVER['REMOTE_ADDR']);
-        }
+        $remote = $_SERVER['REMOTE_ADDR'];
+        $remote_data = $options_data['remote_ip'];
 
+        if ($remote_data!=$remote)
+        {
+            return array('error'=>'false remote ip '.$remote_data.'!='.$remote);
+        }
 
     }
 
