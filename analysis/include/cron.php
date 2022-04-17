@@ -10,27 +10,44 @@ if (!defined('ABSPATH'))
 
 
 $array_jobs = array(
-//'update_imdb_data'=>5,//update movies
+
+
+'add_tmdb_without_id'=>10,///add imdb id to tmdb database
+'check_last_actors'=>10,
+'check_kairos'=>5,///add kairos images
+'update_tmdb_actors'=>10, //update tmdb id and images
+
+'check_tmdb_data'=>15,///update country and poster from tmdb
+'add_gender_rating'=>15,///add new gender rating
+'check_tv_series_imdb'=>15, ///add tvseries from list
+'add_pgrating'=>30,////add pg rating
+
+'add_providers'=>30,
+'update_imdb_data'=>30,//update movies
+
+'download_crowd_images'=>60,///load image to server from crowdsource status 1
+'update_actors_verdict'=>30,///update verdict actors
+'set_tmdb_actors_for_movies'=>30,////update tmdb actors from japan anime
+'update_all_rwt_rating'=>60,////update all rating
+'add_to_db_from_userlist'=>60,///add new movies from user vote list
+
+
 'get_new_movies'=>(60*12),///add new movies from fandango
 'get_new_tv'=>(60*12),///add new tv from tmdb
 'add_pg_rating_for_new_movies'=>(60*12),///add pg rating to new movies
 'add_gender_rating_for_new_movies'=>(60*12),///add gender rating to new movies
-'check_tv_series_imdb'=>15, ///add tvseries from list
-'add_to_db_from_userlist'=>60,///add new movies from user vote list
-'add_pgrating'=>15,////add pg rating
-'add_gender_rating'=>15,///add new gender rating
-//'add_providers'=>10,
-'update_all_rwt_rating'=>60,////update all rating
-'update_actors_verdict'=>30,///update verdict actors
+    'update_all_audience_and_staff'=>(60*12),///recreate cache audience and staff
+    'get_coins_data'=>60*24,////get data donations
 
-'add_imdb_data_to_options'=>(60*24*7),
-'add_tv_shows_to_options'=>(60*24*30),
+    'add_imdb_data_to_options'=>(60*24*7),
+    'add_tv_shows_to_options'=>(60*24*30),
 
-'check_kairos'=>10,
 
-'update_all_audience_and_staff'=>(60*12),///recreate cache audience and staff
 
-///'check_last_actors'=>5,
+
+
+
+///
 
 ///'add_rating'=>10,  ////add new rating to movies (old version)
 
@@ -124,9 +141,10 @@ class Cronjob
 
 
         $run_cron = $this->get_options('run_cron');
+
         echo 'Last run :'.date('H:i:s d.m.Y',$run_cron).'<br>' . PHP_EOL;
 
-        if ($run_cron < time()-3600) {
+        if ($run_cron < time()-3600/2) {
 
             $this->set_option('run_cron', time());
 
@@ -151,14 +169,37 @@ class Cronjob
 
                 $i++;
             }
+
             $this->set_option('run_cron', 1);
         }
-        else echo 'cron is runned <br>' . PHP_EOL;
+        else
+        {
+            echo '<br>cron is runned <br> last task:<br>' . PHP_EOL;
+///get last task
+/// task	time
+        $sql = "SELECT * FROM `cron` order by time desc";
+        $row = Pdo_an::db_results_array($sql);
+        foreach ($row as $r)
+        {
+
+            echo  date('H:i:s d.m.Y',$r['time']).' '.$r['task'].'<br>';
+
+
+
+        }
+
+
+
+        }
+
+
+
     }
 
 
     public   function run_function($name,$period)
     {
+
 
       echo 'Function '.$name.' checked '. self::timer_stop().'<br>'.PHP_EOL;
       $last_time =   self::get_options($name);
@@ -166,6 +207,7 @@ class Cronjob
 
       if (time()>$last_time+$period*60)
       {
+       self::set_option($name." started",time());
        echo 'Started '. self::timer_stop().'<br>'.PHP_EOL;
 
           /////run function
@@ -175,11 +217,12 @@ class Cronjob
             $name();
             }
 
-          self::set_option($name,time());
+        self::set_option($name,time());
         echo '<br>Ended  '.$name.'  '. self::timer_stop().'<br><br>'.PHP_EOL.PHP_EOL;
       }
       else
         {
+           // self::set_option($name.' skipped',time());
             echo 'skipped  '.date('H:i:s d.m.Y',time()).'<'.date('H:i:s d.m.Y',($last_time+$period*60)).'<br><br>'.PHP_EOL.PHP_EOL;
         }
 

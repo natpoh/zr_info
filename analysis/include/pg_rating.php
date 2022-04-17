@@ -49,6 +49,7 @@ class PgRating
 
 
             if ($debug){echo 'try get cms '.$title.' '.$movie_id.'<br>';}
+
             $array_commonsense = self::get_content_commonsense($title, $type, $movie_id);
 
             $commonsense_link = $array_commonsense['link'];
@@ -92,7 +93,7 @@ class PgRating
         if (!$movie_id) {
             $last_update = time() - 86400*30 ; ///1 mount
 
-            $sql = "SELECT *  FROM `data_pg_rating` WHERE (imdb_date < '{$last_update}' OR imdb_date is NULL ) order by id desc  limit 100";
+            $sql = "SELECT *  FROM `data_pg_rating` WHERE (imdb_date < '{$last_update}' OR imdb_date is NULL ) and movie_id>0 order by id desc  limit 100";
                      $result = Pdo_an::db_results_array($sql);
             foreach ($result as $r) {
                 $array_id[ $r['movie_id']] = $r['movie_title'];
@@ -198,6 +199,7 @@ class PgRating
     public static function add_pgrating($imdb_id = '',$debug='')
     {
         self::check_enable_pg($imdb_id,$debug);
+
         $array_result  = self::update_pg_rating_imdb($imdb_id,$debug);
         $array_result2 = self::update_pg_rating_cms($imdb_id,$debug);
         $result = array_merge($array_result, $array_result2);

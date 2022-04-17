@@ -32,12 +32,18 @@ class Import
     public static function generate_request($array_sql)
     {
         $result =[];
-        $array_updated =[];
 
     foreach ($array_sql as $i =>$v)
     {
         $uid = $v["uniq_id"];
+        ////update request status
+
+
+        self::update_status($uid,2);////send request
+        ///get data
         $sql_data =  self::commit_info_request($uid);
+
+
 
         if ($sql_data["error"])
         {
@@ -45,8 +51,7 @@ class Import
         }
 
         $rslt = self::set_data($sql_data);
-        $result[] = self::update_commit_data($uid,$rslt);
-        $array_updated[$uid]=2;
+        $result[] = self::update_commit_data($uid,$rslt); ///update to status 4
 
     }
 
@@ -69,7 +74,7 @@ public static function commit_info_request($uid)
         'action'=>'get_commit',
         'key'=>$key,
         'limit'=>$limit,
-        'update_status'=>2
+        'update_status'=>3 ////commit get
     );
 
     $result =  GETCURL::getCurlCookie($link,'',$request);
@@ -82,7 +87,9 @@ public static function commit_info_request($uid)
     return $result;
 
 }
-    public static function push_request($array_sql=[])
+
+
+    public static function push_request($array_sql=[],$status = 0)
     {
 
         $key = self::get_key();
@@ -98,7 +105,8 @@ public static function commit_info_request($uid)
             'commit_data'=>$array_sql,
             'action'=>'sync_data',
             'key'=>$key,
-            'limit'=>$limit
+            'limit'=>$limit,
+            'status'=>$status
             );
 
         //$request =http_build_query($request);
@@ -218,6 +226,13 @@ public static function commit_info_request($uid)
         {
             return self::check_remore_ip();
         }
+/// 0 только создана
+/// 1 синхронизирован
+/// 2 запрос данных
+/// 3 данные отправил
+/// 4 данные приняты и сохранены
+///
+///
 
 
         if ($data['uid'])
@@ -336,6 +351,8 @@ public static function commit_info_request($uid)
         $rows = Pdo_an::db_results_array($sql);
         return $rows;
     }
+
+
     public static function last_commits_updated($data)
     {
         $count=10;
@@ -352,7 +369,7 @@ public static function commit_info_request($uid)
     }
 
 
-    public static function last_commits($data)
+    public static function last_commits($data,$status =0)
     {
 
         $count=10;
@@ -361,7 +378,7 @@ public static function commit_info_request($uid)
             $count =intval($data['count']);
 
         }
-        $sql ="SELECT *  FROM `commit` WHERE `status` = 0 limit ".$count;
+        $sql ="SELECT *  FROM `commit` WHERE `status` = '".$status."' limit ".$count;
         $rows = Pdo_an::db_results_array($sql);
         return $rows;
     }
@@ -437,8 +454,9 @@ public static function commit_info_request($uid)
            }
            else
            {
-               $result[$key]=2;
+               $result[$key]=10;///error
            }
+
         }
 
         return $result;
@@ -520,8 +538,10 @@ public static function commit_info_request($uid)
             return self::check_remore_ip();
         }
 
-        ////update data
+        ////add comit to db
         $data_obj = $data['commit_data'];
+        $status = $data['status'];
+
 
         if ($data_obj) {
             $object_setup_all = json_decode($data_obj, 1);
@@ -529,28 +549,55 @@ public static function commit_info_request($uid)
                 $result['error']['data_obj'] = json_last_error_msg();
             }
 
-            $result_data = self::check_and_set_data($object_setup_all);
+
+            if ($status==0)
+            {
+                ///add commit data
+                $result_data = self::check_and_set_data($object_setup_all);
+
+            }
+            else if ($status==5)
+            {
+                ///update comlete status
+                $result_data = [];
+
+                foreach ($data as $request ) {
+
+                $key = $request["uniq_id"];
+
+                self::complete_status($key);
+
+                $result_data[$key]=1;
+
+                }
+            }
+
         }
 
 //        $update_status = $data['update_status'];
 //        $update_result = self::sinc_status_commit($update_status);
 
+        /////get new commit in status 0
+       /// $last_commit =self::last_commits($data);
 
-        /////get last commit
-
-        $last_commit =self::last_commits($data);
-
-        return array('sync_result'=>$result_data,'last_commit'=>$last_commit,'update_status_result'=>$update_result);
+        return array('sync_result'=>$result_data);//,'last_commit'=>$last_commit,'update_status_result'=>$update_result);
 
     }
 
     public static function update_commit_data($key,$update_data)
     {
         $update_data = json_encode($update_data);
-        $sql = "UPDATE `commit` SET `update_data`=?, `status`= 2 , `last_update`='".time()."' WHERE `uniq_id`  = '".$key."'";
+        $sql = "UPDATE `commit` SET `update_data`=?, `status`= 4 , `last_update`='".time()."' WHERE `uniq_id`  = '".$key."'";
         Pdo_an::db_results_array($sql,array($update_data));
-        return array($key=>2);
+        return array($key=>4);
     }
+
+    public static function complete_status($key)
+    {
+        $sql = "UPDATE `commit` SET `status`=5, `complete` =1  WHERE `uniq_id`  = '".$key."'";
+        Pdo_an::db_query($sql);
+    }
+
 
     public static function update_status($key,$status)
     {
@@ -569,17 +616,21 @@ public static function commit_info_request($uid)
         ////check new data
 
         ///$array_update_status = self::last_commits_updated($data);////check status 2
-        $array_sql = self::last_commits($data);////check status 0
+        $array_sql = self::last_commits($data,0);////check status 0
 
+
+
+        /// send data with status 0 to a remote server to sync_data function
         if ($array_sql )
         {
-         $result =   self::push_request($array_sql);
+         $result =   self::push_request($array_sql,0);
 
          if ($result['error'])
          {
              return $result;
          }
 
+         ////// get an answer on request update status to 1
 
          if ($result['sync_result'])
          {
@@ -591,19 +642,21 @@ public static function commit_info_request($uid)
 
             $res_return['get_status_0']=count($array_sql);
             $res_return['sinc']=count($result['sync_result']);
-         //check commit from remote url
-
-            if ($result['last_commit'])
-            {
-                $result_data = self::check_and_set_data($result['last_commit']);
-            }
 
 
-            $res_return['last_commit']=count($result['last_commit']);
+//            //check commit from remote url
+//
+//            if ($result['last_commit'])
+//            {
+//                $result_data = self::check_and_set_data($result['last_commit']);
+//            }
+//
+//
+//            $res_return['last_commit']=count($result['last_commit']);
         }
 
 
-        ///get data from url
+        ///get data status 1 (sync)
 
         $array_sql =  self::last_sinc_commits($data);
 
@@ -611,7 +664,50 @@ public static function commit_info_request($uid)
 
         if ($array_sql)
         {
+            ////get data from remote url  and add to db set status 3
+
             $result['last_sinc_commits']  = self::generate_request($array_sql);
+
+        }
+
+
+        ////get status 4 and add status 5 Complete
+        $array_sql = self::last_commits($data,4);////check status 0
+
+
+
+        /// send data with status 0 to a remote server to sync_data function
+        if ($array_sql )
+        {
+            $result =   self::push_request($array_sql,5);
+
+            if ($result['error'])
+            {
+                return $result;
+            }
+
+            if ($result['sync_result'])
+            {
+                foreach ($result['sync_result'] as $key=>$status)
+                {
+                    self::complete_status($key);
+                }
+            }
+
+
+            $res_return['get_status_5']=count($array_sql);
+            $res_return['sinc_5']=count($result['sync_result']);
+
+
+//            //check commit from remote url
+//
+//            if ($result['last_commit'])
+//            {
+//                $result_data = self::check_and_set_data($result['last_commit']);
+//            }
+//
+//
+//            $res_return['last_commit']=count($result['last_commit']);
         }
 
 
@@ -631,10 +727,12 @@ public static function commit_info_request($uid)
         if ($action == 'get_commit') {
             $result = self::get_commit($data);
         }
+
         else if ($action == 'sync') { ////curl sinc
             $result = self::sync($data);
         }
-        else if ($action == 'sync_data') { ////get request from remote url
+
+        else if ($action == 'sync_data') { ////get request from remote url status 0
             $result = self::sync_data($data);
         }
         else
@@ -985,202 +1083,6 @@ public static function commit_info_request($uid)
         return array($link_id_multy_dist_string,$link_id_multy);
     }
 
-    public  function show_table($type)
-    {
-return;
-        $link = 'import.php';
-        $key='1R3W5T8s13t21a34f';
 
-        $sql = "SELECT * FROM " .  $type . " LIMIT 1";
-        $result = Pdo_an::db_results_array($sql);
-        $object_setup=[];
-        $object_setup_id=[];
-        $object_setup_id_set=[];
-        $object_setup_id_set_field=[];
-        $object_setup_id_set_field_result=[];
-        $object_setup_del=[];
-        $r=0;
-        $object_setup_column=[];
-
-        $object_setup_simple[$type]= [];
-
-        if (is_array($result))
-        if (isset($result[0]))
-        foreach ($result[0] as $i=>$v)
-        {
-            if ($r==0)
-            {
-                $object_setup[$type]['request'][$i]=$v;
-                $object_setup_id[$type]['request'][$i]=$v;
-                $object_setup_id_set[$type][0]['request'][$i]=$v;
-                $object_setup_id_set_field[$type][0]['request'][$i]=$v;
-                $object_setup_del[$type]['request'][$i]=$v;
-
-            }
-            $r++;
-
-           $object_setup[$type]['columns'][]=$i;
-           $object_setup_id_set[$type][0]['columns'][$i]=$v;
-
-           if ($r<3)
-           {
-               $object_setup_column[$type]['columns'][]=$i;
-               $object_setup_id_set_field[$type][0]['columns'][$i]=$v;
-
-           }
-
-        }
-
-        $sql = "SELECT * FROM " .  $type . " LIMIT 3";
-        $result = Pdo_an::db_results_array($sql);
-
-        $object_setup_id_multy=[];
-        $object_setup_id_multy_more=[];
-        foreach ($result as $index=>$value)
-        {
-            $r=0;
-            foreach ($value as $i=>$v)
-            {
-
-                if ($r==0)
-                {
-                    $object_setup_id_set_field_result[$type][$index]['return'][]=$i;
-                    $object_setup_id_multy[$type]['request'][$i][]=$v;
-                    $object_setup_del_multy[$type]['request'][$i][]=$v;
-                }
-                if ($r>0)
-                {
-                    $object_setup_id_set_field_result[$type][$index]['columns'][$i]=$v;
-                }
-                if ($r>1) break;
-                $r++;
-                $object_setup_id_multy_more[$type]['request'][$i][]=$v;
-
-            }
-        }
-
-
-        $data = self::prepare_json($object_setup);
-        $data_set = self::prepare_json($object_setup_id_set);
-        $data_del = self::prepare_json($object_setup_del);
-
-        $array_request =array('key'=>$key,'action'=>'get');
-
-
-        $link_all_dist =    self::prepare_json($array_request);
-        $link_all = $link.'?key='.$key.'&action=get';
-
-
-        $link_simple  = self::prepare_json_print($array_request,$link_all,$object_setup_simple);
-
-        $link_default  = self::prepare_json_print($array_request,$link_all,$object_setup);
-
-        $link_id  = self::prepare_json_print($array_request,$link_all,$object_setup_id);
-
-        $link_id_multy  = self::prepare_json_print($array_request,$link_all,$object_setup_id_multy);
-        $link_id_multy_more  = self::prepare_json_print($array_request,$link_all,$object_setup_id_multy_more);
-        $link_column = self::prepare_json_print($array_request,$link_all,$object_setup_column);
-
-        $link_all_set = $link.'?key='.$key.'&action=set';
-        $array_request_set =array('key'=>$key,'action'=>'set');
-        $link_default_set  = self::prepare_json_print($array_request_set,$link_all_set,$object_setup_id_set);
-        $link_fields_set  = self::prepare_json_print($array_request_set,$link_all_set,$object_setup_id_set_field);
-        $link_fields_result_set  = self::prepare_json_print($array_request_set,$link_all_set,$object_setup_id_set_field_result);
-
-
-        $link_all_del = $link.'?key='.$key.'&action=delete';
-        $array_request_del =array('key'=>$key,'action'=>'delete');
-        $link_default_del = self::prepare_json_print($array_request_del,$link_all_del,$object_setup_del);
-        $link_default_del_multy = self::prepare_json_print($array_request_del,$link_all_del,$object_setup_del_multy);
-
-$content='<div>
-<p class="togleafter"><a id="cl" class="open_ul " href="#"></a>Запросы на получение данных get '.$type.'</p>
-<div style="display: none">
-<p>Стандартные поля для запроса:</p>
-
-<p>key = '.$key.' <span class="desc">//ключ доступа</span><p>
-<p>action =get <span class="desc">//действие</span><p>
-<p>data ={"product":{"columns":{},"request":{}},"other_table":{"columns":{},"request":{}},...} <span class="desc">//json обьект с данными</span><p>
-<p>columns <span class="desc">//запрашивает поля для показа, по умолчанию отображаются все поля</span></p>
-<p>request <span class="desc">//запрос по значению, например по id может содержать стринг или массив</span></p>
-<p>пример запроса data:</p>
-'.$data.'
-<p>Пример</p>
-<a href=\''.$link_default[1].'\'" target="_blank">'.$link_default[1].'</a>
-<hr>
-
-<p>Примеры запроса со всеми данными</p>
-<p>'.$link_simple[0].'</p>
-<a href=\''.$link_simple[1].'\'" target="_blank">'.$link_simple[1].'</a>
-<hr>
-<p>Примеры запроса по параметру</p>
-<p>'.$link_id[0].'</p>
-<a href=\''.$link_id[1].'\'" target="_blank">'.$link_id[1].'</a>
-<hr>
-<p>Примеры мульти запроса по параметру</p>
-<p>'.$link_id_multy[0].'</p>
-<a href=\''.$link_id_multy[1].'\'" target="_blank">'.$link_id_multy[1].'</a>
-<hr>
-<p>Примеры мульти запроса по нескольким параметрам</p>
-<p>'.$link_id_multy_more[0].'</p>
-<a href=\''.$link_id_multy_more[1].'\'" target="_blank">'.$link_id_multy_more[1].'</a>
-<hr>
-<p>Примеры отображения column</p>
-<p>'.$link_column[0].'</p>
-<a href=\''.$link_column[1].'\'" target="_blank">'.$link_column[1].'</a>
-</div>
-
-
-<p class="togleafter"><a id="cl" class="open_ul " href="#"></a>Добавление, обновление данных set '.$type.'</p>
-<div style="display: none">
-<p>Стандартные поля для запроса:</p>
-
-<p>key = '.$key.' <span class="desc">//ключ доступа</span><p>
-<p>action =set <span class="desc">//действие</span><p>
-<p>data ={"product":{["columns":{},"request":{},"return:{}"],["columns":{},"request":{},"return:{}"],... }} <span class="desc">//json обьект с массивом данных</span><p>
-<p>columns <span class="desc">//поля которые будут обновляться</span></p>
-<p>request <span class="desc">//запрос по значению, например по id должен быть стрингом (не обязательное)</span></p>
-<p>return <span class="desc">//вернуть значение поля после добавления записи (не обязательное)</span></p>
-<p>пример запроса data:</p>
-'.$data_set.'
-<p>Пример</p>
-<a href=\''.$link_default_set[1].'\'" target="_blank">'.$link_default_set[1].'</a>
-<hr>
-
-<p>Пример добавления/обновления нескольких полей</p>
-<p>'.$link_fields_set[0].'</p>
-<a href=\''.$link_fields_set[1].'\'" target="_blank">'.$link_fields_set[1].'</a>
-<hr>
-<p>Пример добавления нескольких строк с возвратом данных</p>
-<p>'.$link_fields_result_set[0].'</p>
-<a href=\''.$link_fields_result_set[1].'\'" target="_blank">'.$link_fields_result_set[1].'</a>
-<hr>
-</div>
-
-
-
-
-<p class="togleafter"><a id="cl" class="open_ul " href="#"></a>Удаление данных   delete '.$type.'</p>
-<div style="display: none">
-<p>Стандартные поля для запроса:</p>
-
-<p>key = '.$key.' <span class="desc">//ключ доступа</span><p>
-<p>action =delete <span class="desc">//действие</span><p>
-<p>data ={"product":{request":{}}} <span class="desc">//json обьект с массивом данных</span><p>
-<p>request <span class="desc">//запрос по значению, например по id должен быть стрингом (не обязательное)</span></p>
-<p>пример запроса data:</p>
-'.$data_del.'
-<p>Пример</p>
-<a href=\''.$link_default_del[1].'\'" target="_blank">'.$link_default_del[1].'</a>
-<hr>
-<p>Пример удаления группы данных</p>
-<p>'.$link_default_del_multy[0].'</p>
-<a href=\''.$link_default_del_multy[1].'\'" target="_blank">'.$link_default_del_multy[1].'</a>
-<hr>
-</div>
-</div>';
-
-  return $content;
-    }
 
 }

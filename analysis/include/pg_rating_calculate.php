@@ -12,7 +12,7 @@ class PgRatingCalculate {
     public static function rwt_total_rating($id) {
 
 
-        $sql = "SELECT rwt_audience,	rwt_staff,	imdb,	rotten_tomatoes,	rotten_tomatoes_audience , tmdb	,total_rating	FROM `data_movie_rating` where `movie_id` = " . $id . " limit 1";
+        $sql = "SELECT rwt_audience,	rwt_staff,	imdb,	rotten_tomatoes,	rotten_tomatoes_audience , rotten_tomatoes_gap,metacritic , tmdb	,total_rating	FROM `data_movie_rating` where `movie_id` = " . $id . " limit 1";
         //echo $sql;
         $r = Pdo_an::db_results_array($sql);
         if ($r) {
@@ -1183,7 +1183,15 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
     public function get_audience_rating_in_movie($rid, $type = 1) {
 
         $rid = intval($rid);
-        $sql = "SELECT * FROM `cache_rwt_rating` WHERE `movie_id` = {$rid} and `type`={$type} limit 1";
+        if ($type==1)
+        {
+            $sql = "SELECT * FROM `cache_rwt_rating` WHERE `movie_id` = {$rid}  limit 1";
+        }
+        else if ($type==2)
+        {
+            $sql = "SELECT * FROM `cache_rwt_rating_staff` WHERE `movie_id` = {$rid}  limit 1";
+        }
+
         $row = Pdo_an::db_results_array($sql);
         if ($row) {
             return $row[0];
@@ -1212,16 +1220,18 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
                 ///  var_dump($val);
 
 
-                if ($val['h']) {
-                    $hollywood_total[$rid]['data'] = $val['h'];
+
+
+                if ($val['hollywood']) {
+                    $hollywood_total[$rid]['data'] = $val['hollywood'];
                     $hollywood_total[$rid]['count'] ++;
                 }
 
                 foreach ($val as $i => $v) {
-                    if ($i == 'v') {
+                    if ($i == 'vote') {
                         $total_audience[$i][$v] ++;
                     } else {
-                        if ($i != 'ip' && $i != 'h')
+
                             if ($v) {
                                 $total_audience[$i]['data'] += $v;
                                 $total_audience[$i]['count'] ++;
@@ -1241,20 +1251,23 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
             $result_summ_rating = [];
 
-            $array_convert = array('r' => 'rating', 'h' => 'hollywood', 'p' => 'patriotism', 'm' => 'misandry', 'a' => 'affirmative', 'l' => 'lgbtq', 'g' => 'god', 'v' => 'vote');
+
+
+
+         //   $array_convert = array('r' => 'rating', 'h' => 'hollywood', 'p' => 'patriotism', 'm' => 'misandry', 'a' => 'affirmative', 'l' => 'lgbtq', 'g' => 'god', 'v' => 'vote');
 
             //echo 'total_audience<br>'.PHP_EOL;
             //var_dump($total_audience);
             ///echo 'total_audience end<br>'.PHP_EOL;
             foreach ($total_audience as $i => $v) {
 
-                if ($array_convert[$i]) {
-                    if ($i == 'v') {
+                if ($i) {
+                    if ($i == 'vote') {
                         arsort($v);
                         $key = array_keys($v);
                         $result_summ_rating['vote'] = $key[0];
                     } else {
-                        $i0 = $array_convert[$i];
+                        $i0 = $i;
 
                         if ($v['count']) {
                             $summ = $v['data'] / $v['count'];
@@ -1287,27 +1300,44 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
     public function update_rating_db($rid, $ar, $type = 1) {
 
+        $dop='';
+        if ($type==2)
+        {
+            $dop ='_staff';
+        }
+
 
         $rid = intval($rid);
 
         if (self::get_audience_rating_in_movie($rid, $type)) {
-            $sql = "UPDATE `cache_rwt_rating` SET 
+
+
+
+            $sql = "UPDATE `cache_rwt_rating".$dop."` SET 
                               `vote` = ?,   `rating` = ?,    `affirmative` = ?,   `god` = ?,
                               `hollywood` = ?,  `lgbtq` = ?, `misandry` = ?, 
                               `patriotism` = ?  WHERE `movie_id` = {$rid} and `type`={$type} ";
             Pdo_an::db_results_array($sql, array($ar['vote'], $ar['rating'], $ar['affirmative'], $ar['god'], $ar['hollywood'], $ar['lgbtq'], $ar['misandry'], $ar['patriotism']));
-        } else {
-            $sql = "INSERT INTO `cache_rwt_rating` 
-            (`id`, `movie_id`, `type`, `vote`, `rating`, `affirmative`, `god`, `hollywood`, `lgbtq`, `misandry`, `patriotism`) 
-            VALUES (NULL, ?,        ?,     ?,    ?,             ?,           ?,     ?,          ?,          ?,          ?);";
-            Pdo_an::db_results_array($sql, array($rid, $type, $ar['vote'], $ar['rating'], $ar['affirmative'], $ar['god'], $ar['hollywood'], $ar['lgbtq'], $ar['misandry'], $ar['patriotism']));
+        }
+        else {
+            if ($ar['vote'] || $ar['rating'] || $ar['affirmative'] ||  $ar['god'] ||  $ar['hollywood'] ||  $ar['lgbtq'] || $ar['misandry'] ||  $ar['patriotism'])
+            {
+
+                $sql = "INSERT INTO cache_rwt_rating".$dop." (`id`, `movie_id`, `type`, `vote`, `rating`, `affirmative`, `god`, `hollywood`, `lgbtq`, `misandry`, `patriotism`)   
+                          VALUES (NULL, ?,        ?,     ?,    ?,             ?,           ?,     ?,          ?,          ?,          ?);";
+                Pdo_an::db_results_array($sql, array($rid, $type, $ar['vote'], $ar['rating'], $ar['affirmative'], $ar['god'], $ar['hollywood'], $ar['lgbtq'], $ar['misandry'], $ar['patriotism']));
+
+            }
+
+
         }
     }
 
     public function get_wpcdata($movie_id, $audience_type) {
         if ($audience_type == 1) {
             $staff_type = "and a.type=2";
-        } else {
+        }
+        else {
             $staff_type = "and a.type=0";
         }
 
@@ -1326,15 +1356,24 @@ inner join {$table_prefix}critic_matic_authors as a ON a.id = am.aid
 
 where  m.fid='{$movie_id}' AND m.state!=0  and p.status=1 " . $staff_type;
 
-        //echo $sql;
+       ///echo $sql.'<br>';
         $rows = Pdo_an::db_results_array($sql);
         foreach ($rows as $r) {
-            $options = $r['options'];
+
+
             $r_id = $r['id'];
-            if ($options) {
-                $options = unserialize($options);
-                $review_data[$r_id] = $options;
-            }
+
+                $review_data[$r_id] = array(
+                    'rating'=>$r['rating'],
+                    'hollywood'=>$r['hollywood'],
+                    'patriotism'=>$r['patriotism'],
+                    'misandry'=>$r['misandry'],
+                    'affirmative'=>$r['affirmative'],
+                    'lgbtq'=>$r['lgbtq'],
+                    'god'=>$r['god'],
+                    'vote'=>$r['vote']
+                    );
+
         }
         return $review_data;
     }

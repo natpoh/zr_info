@@ -137,6 +137,19 @@ class Crowdsource
     return $inner_content;
 
     }
+    public static function  intconvert($data)
+{
+    $result=0;
+
+    $array_int_convert = array('W'=>1,'EA'=>2,'H'=>3,'B'=>4,'I'=>5,'M'=>6,'MIX'=>7,'JW'=>8,'NJW'=>9,'IND'=>10);
+
+    if ($array_int_convert[$data])
+    {
+        $result = $array_int_convert[$data];
+    }
+
+return $result;
+}
 
     public static function rebuild_cache($id,$table)
     {
@@ -170,7 +183,8 @@ class Crowdsource
 
             if ($verdict)
             {
-                $sql =" UPDATE `data_actors_meta` SET `crowdsource` = '".$verdict."' ,`last_update` = ".time()." WHERE `data_actors_meta`.`actor_id` =".$actor;
+                $sql =" UPDATE `data_actors_meta` SET `crowdsource` = '".$verdict."' ,`n_crowdsource` = '".(self::intconvert($verdict))."' ,
+                `last_update` = ".time()." WHERE `data_actors_meta`.`actor_id` =".$actor;
                 Pdo_an::db_query($sql);
             }
             ///update gender
@@ -189,10 +203,7 @@ class Crowdsource
         }
         if ($table=='review_crowd'){
 
-            if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
-                define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
-                require_once( CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php' );
-            }
+
 
             $sql = "select * from data_".$table." where id =".$id;
             $data =  Pdo_an::db_fetch_row($sql);
@@ -211,6 +222,11 @@ class Crowdsource
 
 public static function get_user()
 {
+
+    if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
+        define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
+        require_once( CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php' );
+    }
 
     $cfront = new CriticFront();
 
@@ -857,14 +873,15 @@ var first_run = 0;
             },
             afterInsertRow : function( row_id, rowdata, rawdata) {
             ///console.log( row_id, rowdata, rawdata);
-                if (rowdata.add_time) {
-                    let timeStampCon = convertTimestamp(rowdata.add_time);
-                    $('#jqGrid').jqGrid('setCell', row_id, 'add_time', timeStampCon);
-                }
-                if (rowdata.last_update) {
-                    let timeStampCon = convertTimestamp(rowdata.last_update);
-                    $('#jqGrid').jqGrid('setCell', row_id, 'last_update', timeStampCon);
-                }
+            //     if (rowdata.add_time) {
+            //         let timeStampCon = convertTimestamp(rowdata.add_time);
+            //         $('#jqGrid').jqGrid('setCell', row_id, 'add_time', timeStampCon);
+            //     }
+            //     if (rowdata.last_update) {
+            //         let timeStampCon = convertTimestamp(rowdata.last_update);
+            //         $('#jqGrid').jqGrid('setCell', row_id, 'last_update', timeStampCon);
+            //     }
+
                 //if (rowdata.id) {
                   ///  $('#jqGrid').jqGrid('setCell', row_id, 'id', '<input id="check_'+rowdata.id+'" class="ocheck" type="checkbox"> '+rowdata.id);
                 //}

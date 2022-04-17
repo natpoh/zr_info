@@ -82,51 +82,48 @@ return $array_result;
 
 }
 
-    private function create_image_64($imgid,$imgsource='')
+    private function create_image_64($imgid,$imgsource='',$type = 'imdb')
     {
+        $base64='';
+
         $number = str_pad($imgid, 7, '0', STR_PAD_LEFT);
 
-        if (!$imgsource)
+        if (!$imgsource && $type == 'tmdb')
         {
-            $imgsource = $_SERVER['DOCUMENT_ROOT'] . '/analysis/img_final/' . $number . '.jpg';
-        }
-        if (!file_exists($imgsource)) {
-
             $imgsource = $_SERVER['DOCUMENT_ROOT'] . '/analysis/img_final_tmdb/' . $number . '.jpg';
         }
+        else if (!$imgsource && $type == 'crowd')
+        {
+            $imgsource = $_SERVER['DOCUMENT_ROOT'] . '/analysis/img_final_crowd/' . $number . '.jpg';
+        }
+        else if (!$imgsource && $type == 'imdb') {
+            $imgsource = $_SERVER['DOCUMENT_ROOT'] . '/analysis/img_final/' . $number . '.jpg';
+        }
 
-        if (!file_exists($imgsource)) {
-            echo ' file no exists, try get file '.PHP_EOL;
 
-            $final_value = sprintf('%07d', $number);
 
-            $url = 'https://www.imdb.com/name/nm'.$final_value.'/bio/';
-            echo $url.PHP_EOL;
-
-            $result=   static::getCurlCookieface($url);
-            //var_dump($result);
-            $array_result  = static::get_imdb_actor_image($result);
-            $image=$array_result['image'];
-                echo 'add images'.PHP_EOL;
-
-                if (!static::check_image_on_server(intval($number),$image))
-                {
-                    $sql = "UPDATE `data_actors_imdb` SET `image` = 'NA' WHERE `data_actors_imdb`.`id` = {intval($number)}";
-                    Pdo_an::db_query($sql);
-                }
-            else
-            {
-                $sql = "UPDATE `data_actors_imdb` SET `image` = 'Y' WHERE `data_actors_imdb`.`id` = {intval($number)}";
-                Pdo_an::db_query($sql);
-            }
-
-}
 
 if (file_exists($imgsource)) {
     ///echo 'try get from ' . $imgsource;
     $data = file_get_contents($imgsource);
     $base64 = base64_encode($data);
 }
+else if ($type == 'tmdb')
+{
+    ///try get file
+    //$imgid
+    ///echo 'try get file ';
+    self::load_tmd_image($imgid);
+
+    if (file_exists($imgsource)) {
+        ///echo 'try get from ' . $imgsource;
+        $data = file_get_contents($imgsource);
+        $base64 = base64_encode($data);
+    }
+
+}
+
+
 return $base64;
 }
     public function get_actor_race($base64)
@@ -188,13 +185,18 @@ return $base64;
         }
 
     }
-    public static function get_actor_id($id)
+    public static function get_actor_id($id,$result_image)
     {
-        $img_64 = static::create_image_64($id);
+        $img_64 = static::create_image_64($id,'',$result_image);
         if ($img_64) {
-
+            sleep(1);
             $array_race = static::get_actor_race($img_64);
             return $array_race;
+        }
+        else
+        {
+
+            return array('error'=>'img file not found');
         }
 
     }
@@ -205,10 +207,36 @@ return $base64;
        $dir = $_SERVER['DOCUMENT_ROOT'] . "/analysis/" . $path . "/" . $final_value . ".jpg";
 
        $result = static::getCurlCookieface($url);
-       file_put_contents($dir, $result);
-
+       if ($result!='Not Found')
+       {
+           file_put_contents($dir, $result);
+           return 1;
+       }
+       else
+       {
+           return  0;
+       }
 
    }
+
+   public static function load_tmd_image($id)
+   {
+       $sql = "SELECT `profile_path` FROM `data_actors_tmdb`  WHERE actor_id ='" . $id . "'  LIMIT 1";
+
+
+       $rows = Pdo_an::db_fetch_row($sql);
+       if ($rows->profile_path) {
+           $image = "https://www.themoviedb.org/t/p/w600_and_h900_bestv2" . ($rows->profile_path);
+          /// echo $image;
+           $image_add = KAIROS::check_image_on_server($id, $image, '_tmdb');
+          /// echo '$image_add='.$image_add;
+           ///try copy images
+       }
+
+
+       return $image_add;
+   }
+
 
     public function   check_image_on_server($actor_id, $image = '', $tmdb = '')
 {
@@ -217,7 +245,7 @@ return $base64;
     $final_value = sprintf('%07d', $actor_id);
 
     if ($tmdb) {
-        $path = 'img_final_tmdb';
+        $path = 'img_final'.$tmdb;
     } else {
     $path = 'img_final';
 
@@ -231,10 +259,10 @@ if (file_exists($dir)) {
 } else if ($image) {
     ///add image
 
-    static::curl_save($actor_id, $image, $path);
+    $RS = static::curl_save($actor_id, $image, $path);
 
-    echo ' saved to /analysis/img_final/' . $final_value . '.jpg ';
-    return 1;
+   // echo ' saved to /analysis/'.$path.'/' . $final_value . '.jpg ';
+    return $RS;
 }
 
 
@@ -245,69 +273,72 @@ return 0;
 
 public static function add_actors_from_tmdb($id)
 {
+    ////not used
+return;
 
-    ///try copy image from tmdb;
-    $final_value = sprintf('%07d',$id);
-    echo 'try copy image from tmdb<br>';
 
-    $gender = '';
-    $tmdb_id = '';
-    $image = '';
-    $image_add = '';
-
-    $url = "https://api.themoviedb.org/3/find/nm" . $final_value . "?api_key=1dd8ba78a36b846c34c76f04480b5ff0&language=en-US&external_source=imdb_id";
-    // echo $url.PHP_EOL;
-    $result = static::getCurlCookieface($url);
-    if ($result) {
-        $result = json_decode($result);
-        if ($result->person_results) {
-            $person = $result->person_results[0];
-
-            if ($person->profile_path) {
-                $image = "https://www.themoviedb.org//t/p/w600_and_h900_bestv2/" . $person->profile_path;
-                $image_add =static::check_image_on_server($id, $image, 1);
-                ///try copy images
-
-            }
-            if ($person->id) {
-                $tmdb_id = $person->id;
-            }
-            if ($person->gender) {
-                $gender = $person->gender;
-
-            }
-
-            if ($tmdb_id) {
-                echo 'UPDATE '. $tmdb_id . ' ' . $gender . ' ' . $image.'<br>';
-
-                $sql1 = "UPDATE `data_actors_meta` SET
-                              `tmdb_id` = '" . intval($tmdb_id) . "',
-                              `tmdb_img` = '" . intval($image_add) . "',
-                              `gender` = '" . intval($gender) . "',
-                               `last_update` = ".time()."
-                              
-                   WHERE `data_actors_meta`.`actor_id` = '" . $id . "'";
-                Pdo_an::db_query($sql1);
-
-                ///set logs
-                !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
-                ACTIONLOG::update_actor_log('tmdb_id');
-                ACTIONLOG::update_actor_log('tmdb_image');
-                ACTIONLOG::update_actor_log('gender');
-            }
-
-        }
-
-        if ($image_add==1)
-        {
-            $img_patch = $_SERVER['DOCUMENT_ROOT'] . "/analysis/img_final_tmdb/" . $final_value . ".jpg";
-            if (file_exists($img_patch))
-            {
-                return $img_patch;
-            }
-        }
-
-    }
+//    ///try copy image from tmdb;
+//    $final_value = sprintf('%07d',$id);
+//    echo 'try copy image from tmdb<br>';
+//
+//    $gender = '';
+//    $tmdb_id = '';
+//    $image = '';
+//    $image_add = '';
+//
+//    $url = "https://api.themoviedb.org/3/find/nm" . $final_value . "?api_key=1dd8ba78a36b846c34c76f04480b5ff0&language=en-US&external_source=imdb_id";
+//    // echo $url.PHP_EOL;
+//    $result = static::getCurlCookieface($url);
+//    if ($result) {
+//        $result = json_decode($result);
+//        if ($result->person_results) {
+//            $person = $result->person_results[0];
+//
+//            if ($person->profile_path) {
+//                $image = "https://www.themoviedb.org/t/p/w600_and_h900_bestv2" . $person->profile_path;
+//                $image_add =static::check_image_on_server($id, $image, 1);
+//                ///try copy images
+//
+//            }
+//            if ($person->id) {
+//                $tmdb_id = $person->id;
+//            }
+//            if ($person->gender) {
+//                $gender = $person->gender;
+//
+//            }
+//
+//            if ($tmdb_id) {
+//                echo 'UPDATE '. $tmdb_id . ' ' . $gender . ' ' . $image.'<br>';
+//
+//                $sql1 = "UPDATE `data_actors_meta` SET
+//                              `tmdb_id` = '" . intval($tmdb_id) . "',
+//                              `tmdb_img` = '" . intval($image_add) . "',
+//                              `gender` = '" . intval($gender) . "',
+//                               `last_update` = ".time()."
+//
+//                   WHERE `data_actors_meta`.`actor_id` = '" . $id . "'";
+//                Pdo_an::db_query($sql1);
+//
+//                ///set logs
+//                !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
+//                ACTIONLOG::update_actor_log('tmdb_id');
+//                ACTIONLOG::update_actor_log('tmdb_image');
+//                ACTIONLOG::update_actor_log('gender');
+//            }
+//
+//        }
+//
+//        if ($image_add==1)
+//        {
+//            $img_patch = $_SERVER['DOCUMENT_ROOT'] . "/analysis/img_final_tmdb/" . $final_value . ".jpg";
+//            if (file_exists($img_patch))
+//            {
+//                return $img_patch;
+//            }
+//        }
+//
+//    }
 
 }
 
@@ -320,21 +351,52 @@ public static function add_actors_from_tmdb($id)
             {
                 return $img_patch;
             }
-
-
-        static::add_actors_from_tmdb($id);
-
-
-
-            ///  var_dump($result);
-
-
-
     }
+
+
+    public static function prepare_arrays($rows,$result_image='imdb')
+    {
+
+            foreach ($rows as $row) {
+                $error_message = array();
+
+                $id = $row->id;
+
+                echo 'id='.$id.'<br>';
+
+
+                $kairos =  KAIROS::get_actor_id($id,$result_image);
+
+
+
+                ///////////update kairos data
+                if ($kairos)
+                {
+                    if (isset($kairos->Errors))
+                    {
+                        $error_message[$result_image] = json_encode($kairos->Errors);
+                        $kairos=[];
+                    }
+                    if (isset($kairos['error']))
+                    {
+                        $error_message[$result_image] = $kairos['error'];
+                        $kairos=[];
+                    }
+
+                }
+                //var_dump(array($id,$kairos,$result_image,$error_message));
+
+
+                static::save_data_to_db($id,$kairos,$result_image,$error_message);
+
+                //return;
+            }
+    }
+
 
     public  static function check_actors($id)
     {
-
+////!!!
         $kairos=[];
         $dop='';
         if ($id)
@@ -342,86 +404,65 @@ public static function add_actors_from_tmdb($id)
             $dop = " and data_actors_imdb.id='".$id."' ";
         }
 
-        $sql = "SELECT `data_actors_imdb`.id  FROM `data_actors_imdb` LEFT JOIN data_actors_race ON data_actors_race.actor_id=data_actors_imdb.id
-        WHERE data_actors_race.id IS NULL and  `data_actors_imdb`.image!='NA' ".$dop." limit 50";
+        //////requst update crowd data
+        $sql="SELECT `data_actors_imdb`.id  FROM `data_actors_imdb` 
+                LEFT JOIN data_actors_crowd_race ON data_actors_crowd_race.actor_id=data_actors_imdb.id
+                LEFT JOIN data_actors_crowd ON data_actors_crowd.actor_id=data_actors_imdb.id
+                WHERE (
+                    data_actors_crowd.image IS NOT NULL and data_actors_crowd.status =1 and data_actors_crowd.loaded =1 
+                    and data_actors_crowd_race.id IS NULL ) ".$dop." limit 10";
+        $rows = Pdo_an::db_results($sql);
+        self::prepare_arrays($rows,'crowd');
 
+
+
+        //////requst update tmdb data
+        $sql="SELECT `data_actors_imdb`.id  FROM `data_actors_imdb` 
+                LEFT JOIN data_actors_tmdb_race ON data_actors_tmdb_race.actor_id=data_actors_imdb.id
+                LEFT JOIN data_actors_tmdb ON data_actors_tmdb.actor_id=data_actors_imdb.id
+                WHERE (
+                    data_actors_tmdb.profile_path IS NOT NULL and data_actors_tmdb.status =1 
+                    and data_actors_tmdb_race.id IS NULL ) ".$dop." limit 50";
+        $rows = Pdo_an::db_results($sql);
+        self::prepare_arrays($rows,'tmdb');
+
+
+
+
+
+
+        ////default request for emtpy data
+        $sql = "SELECT `data_actors_imdb`.id  FROM `data_actors_imdb` 
+        LEFT JOIN data_actors_race ON data_actors_race.actor_id=data_actors_imdb.id
+        WHERE (data_actors_race.id IS NULL and `data_actors_imdb`.image!='N' and `data_actors_imdb`.image!='NA') ".$dop." limit 10";
         //echo $sql;
         $rows = Pdo_an::db_results($sql);
-
-      ///  var_dump($rows);
-        if (sizeof($rows)) {
-            foreach ($rows as $row) {
-                $error_message = array('imdb'=>'','tmdb'=>'');
-
-                $id = $row->id;
-                $result_image = 'imdb';
-                sleep(1);
-
-                echo 'id='.$id.'<br>';
-
-                $number = str_pad($id, 7, '0', STR_PAD_LEFT);
-                $imgsource = '/analysis/img_final/' . $number . '.jpg';
-                echo '<img style="height: 100px" src="'.$imgsource.'"><br>';
+        self::prepare_arrays($rows,'imdb');
 
 
-
-                $kairos =  KAIROS::get_actor_id($id);
-
-                if ($kairos->Errors)
-                {
-                    $result_image = 'tmdb';
-                    $error_message['imdb'] = $kairos->Errors;
-                    $kairos=[];
-                    echo 'not found face try get tmbd actor image <br>';
-
-                    ////try get tmbd actor image
-                  $image = static::check_tmdb_image($id);
-                 if ($image) {
-
-                     echo '<img style="height: 100px" src="/analysis/img_final_tmdb/' . $number . '.jpg"><br>';
-
-                     $img_64 = static::create_image_64($id,$image);
-                     if ($img_64) {
-
-                         $kairos = static::get_actor_race($img_64);
-
-                     }
-                 }
-                 else
-                 {
-                     echo  'image tmdb not found<br>';
-                     $error_message['tmdb'] = 'image tmdb not found';
-
-                 }
-
-
-                }
-                ///////////update kairos data
-
-                //var_dump($kairos);
-                if ($kairos)
-                {
-                if ($kairos->Errors)
-                {
-                    $error_message['tmdb'] = json_encode($kairos->Errors);
-                    $kairos=[];
-                }
-
-                }
-
-                static::save_data_to_db($id,$kairos,$result_image,$error_message);
-
-                //return;
-
-            }}
     }
+
+
+
 public function get_verdict($kairos)
 {
+
+   $array_face = array('white' => 'W', 'hispanic' => 'H', 'black' => 'B',  'asian' => 'EA');
+
    arsort($kairos);
    $key = array_keys($kairos);
    $verdict =$key[0];
    if (!$verdict)
-   {$verdict='N/A';
+   {$verdict='';
+   }
+   else
+   {
+       //echo '$verdict='.$verdict;
+       $verdict =strtolower($verdict);
+
+       $verdict =$array_face[$verdict];
+      // echo '$verdict2='.$verdict;
+
    }
     return $verdict;
 }
@@ -442,8 +483,9 @@ public static function save_data_to_db($id,$kairos,$result_image,$error_message)
     }
     else
     {
-        $verdict='N/A';
+        $verdict='';
     }
+
    //var_dump($kairos);
 
     $asian=0;
@@ -456,12 +498,25 @@ if ($kairos['asian']){  $asian=  $kairos['asian'];  }
     if ($kairos['white']){  $white=  $kairos['white'];  }
 
 
-    $sql ="INSERT INTO `data_actors_race` (`id`, `actor_id`, `Asian`, `Black`, `Hispanic`, `White`, `kairos_verdict`, `img_type`, `error_msg`, `last_update`) 
+    if ($result_image=='tmdb')
+    {
+        $table = 'data_actors_tmdb_race';
+    }
+    else if ($result_image=='crowd')
+    {
+        $table = 'data_actors_crowd_race';
+    }
+    else
+    {
+        $table ='data_actors_race';
+    }
+
+    $sql ="INSERT INTO `".$table."` (`id`, `actor_id`, `Asian`, `Black`, `Hispanic`, `White`, `kairos_verdict`, `img_type`, `error_msg`, `last_update`) 
 VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+//echo $sql;
 
     $array_result = array($id,$asian,$black,$hispanic,$white,$verdict,$result_image,$error_message,time());
 
-   echo '<br>';
    // var_dump($array_result);
     Pdo_an::db_results($sql,$array_result);
 }

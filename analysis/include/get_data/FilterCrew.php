@@ -8,7 +8,7 @@ if (!defined('ABSPATH'))
 !defined('DB_HOST_AN') ? include ABSPATH . 'analysis/db_config.php' : '';
 //Abstract DB
 !class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
-
+!class_exists('MOVIE_DATA') ? include ABSPATH . "analysis/movie_data.php" : '';
 
 class FilterCrew
 {
@@ -18,7 +18,9 @@ class FilterCrew
 
     public static function ethnic_sort($ethnycity)
     {
-        $array_convert_type = array('ethnic' => 'ethnic', 'jew' => 'jew', 'face' => 'kairos', 'face2' => 'bettaface', 'surname' => 'surname');
+
+                $array_convert_type = MOVIE_DATA::get_array_convert_type();
+
 
         foreach ($ethnycity as $order => $data) {
             foreach ($data as $typeb => $enable) {

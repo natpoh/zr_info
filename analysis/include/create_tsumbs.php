@@ -9,6 +9,7 @@ if (!defined('ABSPATH'))
 //Curl
 !class_exists('GETCURL') ? include ABSPATH . "analysis/include/get_curl.php" : '';
 
+!class_exists('RWTimages') ? include ABSPATH . "analysis/include/rwt_images.php" : '';
 
 class CreateTsumbs{
 
@@ -18,26 +19,35 @@ class CreateTsumbs{
 
     public static function get_poster_tsumb_fast($id, $array_request = array([220, 330], [440, 660]))
     {
-        $array_result = [];
-            foreach ($array_request as $val) {
-                $array_result[] = self::get_thumb_path_full($val[0], $val[1], $id);
-            }
-        return $array_result;
+        return self::get_poster_tsumb($id, $array_request);
     }
+
+
+
 
     public static function get_poster_tsumb($id, $array_request = array([220, 330], [440, 660]),$image='',$name='')
     {
         $array_result = [];
         if (!$image && $id) {
-            $image = self::get_movie_image($id, 'file');
+
+            $time = RWTimages::get_last_time($id);
+
+            ///$image = self::get_movie_image($id, 'file');
+
+            foreach ($array_request as $val) {
+                $array_result[] =  RWTimages::get_image_link('m_'.$id,$val[0].'x'.$val[1],'',$time);
+                /// $array_result[] = self::getThumbLocal_custom($val[0], $val[1], $image, $id,$name);
+            }
+        }
+        else if ($image)
+        {
+            foreach ($array_request as $val) {
+                $array_result[] =  RWTimages::get_image_link('',$val[0].'x'.$val[1],'','',$image);
+
+            }
 
         }
 
-        if ($image) {
-            foreach ($array_request as $val) {
-                $array_result[] = self::getThumbLocal_custom($val[0], $val[1], $image, $id,$name);
-            }
-            }
 
         if (!$array_result[0]) {
             foreach ($array_request as $i=>$v)
@@ -81,6 +91,7 @@ class CreateTsumbs{
           }
         }
     }
+
     public static function curl_save($id, $url)
     {
         $dir = ABSPATH."wp-content/uploads/thumbs/original_data";
@@ -97,7 +108,7 @@ class CreateTsumbs{
     }
     public static function get_img_from_db($id){
 
-        $sql ="select data from data_movie_imdb where  id = '".intval($id)."' limit 1";
+        $sql ="select `data` from data_movie_imdb where  id = '".intval($id)."' limit 1";
         $rows = Pdo_an::db_fetch_row($sql);
         $image_data = $rows->data;
         if ($image_data)

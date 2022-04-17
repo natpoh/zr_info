@@ -16,8 +16,56 @@
 class GETCOINS
 {
 
+
+    public static function get_coins_template($data)
+    {
+        $data_obj = json_decode($data['data'],1);
+        $summ = $data_obj['fiatAmount'];
+        $recipient = $data_obj['nameRecipient'];
+        $sender = $data_obj['nameSender'];
+        $text =$data_obj['text'];
+        $cryptoCurrency =$data_obj['cryptoCurrency'];
+
+
+        $header = '$'.$summ.' in '.$cryptoCurrency.' to <b>'.$recipient.'</b>';
+
+        if ($text)
+        {
+            $text =str_replace('\n','<br>',$text);
+
+            $text = '<div class="coins_text_content">'.$text.'</div>';
+        }
+        if ($sender)
+        {
+            $sender = '<div class="coins_sender">-<b>'.$sender.'</b></div>';
+        }
+
+
+       $template ='<div class="coins_container"><div class="coins_header">'.$header.'</div><div class="coins_content">'.$text.$sender.'</div></div>';
+
+        return $template;
+    }
+
+    public static function front()
+    {
+        $content ='';
+
+        $q = "SELECT * FROM `cache_donations` order by id limit 20";
+        $r = Pdo_an::db_results_array($q);
+        foreach ($r as $data )
+        {
+            $content.=self::get_coins_template($data);
+        }
+
+        return $content;
+
+    }
+
+
     public static function get_options($id)
     {
+
+
 
         $sql = "SELECT val FROM `options` where id = " . $id;
         $rows = Pdo_an::db_fetch_row($sql);
@@ -44,6 +92,8 @@ class GETCOINS
 
     public static function get_request()
     {
+        set_time_limit(0);
+
         $request = array(
             'count' => "2",
             'ofs' => "0",
@@ -96,9 +146,105 @@ class GETCOINS
 
 
         $result = GETCURL::getCurlCookie($url1, '', '', $headers);
-        return $result;
+
+        $result_ARRAY = explode(']]]',$result);
+
+
+        //var_dump($result);
+
+        $array_result=[];
+        foreach ($result_ARRAY as $r)
+        {
+
+            if (strstr($r,'rightwingtomato'))
+            {
+            ///   var_dump($r);
+
+
+            $reg_v='/"([a-zA-Z]+)": \{[^"]+"([a-zA-Z]+)": "([^"]+)"/Uis';
+            $reg_num ='/([0-9]+)\,\[\{/';
+
+                $num='';
+
+            if (preg_match($reg_num,$r,$mnum)){
+                $num = $mnum[1];
+            }
+                echo 'num:'.$num.PHP_EOL;
+
+            if (preg_match_all($reg_v,$r,$mach))
+            {
+                foreach ($mach[1] as $index=>$value)
+                {
+                   $array_result[$num][$value]=$mach[3][$index];
+
+                }
+            }
+            }
+        }
+        if ($array_result)
+        {
+         //  var_dump($array_result);
+
+            self::check_results($array_result);
+        }
+        else
+        {
+            echo 'not found rightwingtomato, lastnum='.$num;
+        }
+
+
+       // return $array_result;
+
+    }
+
+
+    public static function check_results($object)
+    {
+        foreach ($object as $index=>$data)
+        {
+         ///   var_dump($data);
+
+           if  (  $data["nameRecipient"]=='rightwingtomato' && $data["confirmations"]==2)
+           {
+               echo 'check '.$index.' ok ;'.PHP_EOL;
+               self::add_to_db($index,$data);
+           }
+           else
+           {
+               echo 'not enable '.$index.' '.$data["nameRecipient"].'; '.PHP_EOL;
+           }
+
+        }
+    }
+    public static function add_to_db($index,$data)
+    {
+
+
+        $uq = md5($data["document"]. $data["cryptoCurrency"].
+        $data["uidSender"].
+        $data["created"].
+        $data["cryptoAmount"].
+        $data["text"]);
+
+
+       $sql =  "SELECT * FROM `cache_donations` WHERE `uniq_id`='".$uq."' ";
+       $r = Pdo_an::db_fetch_row($sql);
+       if (!$r)
+       {
+           $sql  ="INSERT INTO `cache_donations`(`id`, `uniq_id`, `data`, `add_time`) 
+                VALUES (NULL,?,?,?)";
+
+           $array = [$uq,json_encode($data),time()];
+
+           Pdo_an::db_results_array($sql,$array);
+       }
+       else
+       {
+           echo  $uq.' already adedded<br>';
+       }
+
     }
 }
 
-$data = GETCOINS::get_request();
-echo $data;
+
+///$data = GETCOINS::get_request();

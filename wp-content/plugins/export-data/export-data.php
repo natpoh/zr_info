@@ -219,7 +219,12 @@ class Export_data
 	5 	status
 
 	6 	site_id
-
+/// 0 только создана
+/// 1 синхронизирован
+/// 2 запрос данных
+/// 3 данные отправил
+/// 4 данные приняты и сохранены
+/// 10 ошибка
 	7 	last_update  * */
 
         $array_rows = array(
@@ -228,7 +233,8 @@ class Export_data
             'description' => array('type'=>'select','options'=>$option),
             'text' => array('w'=>40, 'type' => 'textarea'),
             'update_data' => array('w'=>40, 'type' => 'textarea'),
-            'status' => array('type'=>'select','options'=>'0:Waiting;1:Sinch;2:Complete;3:Error'),
+            'status' => array('type'=>'select','options'=>'0:Waiting;1:Sinch;2:Send request to get data;3:Send data;4:Get and save data;5:Complete;10:Error'),
+            'complete' => array('type'=>'select','options'=>'0:no;1:Complete'),
             'site_id' => array('w'=>10, 'type' => 'textarea'),
             'last_update' => array('w'=>10, 'type' => 'textarea')
         );

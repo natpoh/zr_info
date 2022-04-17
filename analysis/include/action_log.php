@@ -14,7 +14,7 @@ if (!defined('ABSPATH'))
 class ACTIONLOG
 {
     public static $array = array('data_actors_meta'=>1,'data_actors_imdb'=>2,'data_actors_surname'=>3,'bettaface'=>4,'kairos'=>5,
-        'name'=>6,'image'=>7,'verdict'=>8,'new_actors'=>9,'gender'=>10,'tmdb_id'=>11,'tmdb_image'=>12);
+        'name'=>6,'image'=>7,'verdict'=>8,'new_actors'=>9,'gender'=>10,'tmdb_id'=>11,'tmdb_image'=>12,'tmdb_add_imdbid'=>13);
 
     public static function clear_history()
     {

@@ -6,419 +6,414 @@ ini_set('memory_limit', '4096M');
 if (!defined('ABSPATH'))
     define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
 
-//DB config
-!defined('DB_HOST_AN') ? include ABSPATH . 'analysis/db_config.php' : '';
-//Abstract DB
-!class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
 
+include ($_SERVER['DOCUMENT_ROOT'].'/wp-config.php');
 
-
-function getWhereClause($col, $oper, $val){
-
-
-    $ops = array(
-        'eq'=>'=', //equal
-        'ne'=>'<>',//not equal
-        'lt'=>'<', //less than
-        'le'=>'<=',//less than or equal
-        'gt'=>'>', //greater than
-        'ge'=>'>=',//greater than or equal
-        'bw'=>'LIKE', //begins with
-        'bn'=>'NOT LIKE', //doesn't begin with
-        'in'=>'LIKE', //is in
-        'ni'=>'NOT LIKE', //is not in
-        'ew'=>'LIKE', //ends with
-        'en'=>'NOT LIKE', //doesn't end with
-        'cn'=>'LIKE', // contains
-        'nc'=>'NOT LIKE'  //doesn't contain
-    );
-
-
-    if($oper == 'bw' || $oper == 'bn') $val .= '%';
-    if($oper == 'ew' || $oper == 'en' ) $val = '%'.$val;
-    if($oper == 'cn' || $oper == 'nc' || $oper == 'in' || $oper == 'ni') $val = '%'.$val.'%';
-    return "  $col {$ops[$oper]} '$val' ";
+if (function_exists('current_user_can'))
+{
+    $curent_user =current_user_can("administrator") ;
 }
 
+if ( $curent_user) {
+
+//DB config
+    !defined('DB_HOST_AN') ? include ABSPATH . 'analysis/db_config.php' : '';
+//Abstract DB
+    !class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
 
 
-if ($_GET['data'])
-{
+    function getWhereClause($col, $oper, $val)
+    {
 
-    $sql = "SELECT *
+
+        $ops = array(
+            'eq' => '=', //equal
+            'ne' => '<>',//not equal
+            'lt' => '<', //less than
+            'le' => '<=',//less than or equal
+            'gt' => '>', //greater than
+            'ge' => '>=',//greater than or equal
+            'bw' => 'LIKE', //begins with
+            'bn' => 'NOT LIKE', //doesn't begin with
+            'in' => 'LIKE', //is in
+            'ni' => 'NOT LIKE', //is not in
+            'ew' => 'LIKE', //ends with
+            'en' => 'NOT LIKE', //doesn't end with
+            'cn' => 'LIKE', // contains
+            'nc' => 'NOT LIKE'  //doesn't contain
+        );
+
+
+        if ($oper == 'bw' || $oper == 'bn') $val .= '%';
+        if ($oper == 'ew' || $oper == 'en') $val = '%' . $val;
+        if ($oper == 'cn' || $oper == 'nc' || $oper == 'in' || $oper == 'ni') $val = '%' . $val . '%';
+        return "  $col {$ops[$oper]} '$val' ";
+    }
+
+
+    if ($_GET['data']) {
+
+        $sql = "SELECT *
 FROM information_schema.tables
 WHERE table_type='BASE TABLE'
 AND table_schema='imdbvisualization'";
 
-    $rows = Pdo_an::db_results_array($sql);
+        $rows = Pdo_an::db_results_array($sql);
 
-    foreach ($rows as $r)
-    {
+        foreach ($rows as $r) {
 
-        $link = $r["TABLE_NAME"];
-        if (strstr($link,'data') || strstr($link,'meta')) {
+            $link = $r["TABLE_NAME"];
+            if (strstr($link, 'data') || strstr($link, 'meta')) {
 
-            $array_meta[substr($link, 5)] = $link;
+                $array_meta[substr($link, 5)] = $link;
 
+            }
         }
+
+
+        $datatype = $_GET['data'];
+
+
+        $table_data = $array_meta[$datatype];
+
+        if (isset($_GET['doptable'])) {
+            $table_data = $_GET['doptable'];
+        }
+
     }
 
 
-
-    $datatype = $_GET['data'];
-
-
-        $table_data= $array_meta[$datatype];
-
-        if (isset($_GET['doptable']))
-        {
-            $table_data =   $_GET['doptable'];
-        }
-
-}
+    if ($_POST['oper'] == 'del' || $_POST['oper'] == 'edit' || $_POST['oper'] == 'add') {
 
 
+        if ($_POST['oper'] == 'del') {
 
-if ($_POST['oper'] == 'del' || $_POST['oper'] == 'edit' || $_POST['oper'] == 'add') {
+            $sql = "DELETE FROM  `" . $table_data . "`   WHERE `id` = '" . intval($_POST['parent']) . "'";
+            Pdo_an::db_query($sql);
 
+        } else if (($_POST['oper'] == 'edit') || ($_POST['oper'] == 'add')) {
 
-include ($_SERVER['DOCUMENT_ROOT'].'/wp-config.php');
+            $array = $_POST;
 
-    if (function_exists('current_user_can'))
-    {
-        $curent_user =current_user_can("administrator") ;
-    }
-
-
-    if ($_SERVER['HTTP_HOST']=='just.test1.ru' || $curent_user) {
-
-
-    if ($_POST['oper'] == 'del') {
-
-        $sql = "DELETE FROM  `" . $table_data . "`   WHERE `id` = '" . intval($_POST['parent']) . "'";
-        Pdo_an::db_query($sql);
-
-    } else if (($_POST['oper'] == 'edit') || ($_POST['oper'] == 'add')) {
-
-        $array = $_POST;
-
-        unset($array['oper']);
+            unset($array['oper']);
 
 //var_dump($array);
 
-        foreach ($array as $i => $v) {
-            if (strstr($v, '\"')) {
-                $v = str_replace('\"', '"', $v);
-                $array[$i] = $v;
+            foreach ($array as $i => $v) {
+                if (strstr($v, '\"')) {
+                    $v = str_replace('\"', '"', $v);
+                    $array[$i] = $v;
+                }
             }
-        }
 
-        $countval = count($array);
+            $countval = count($array);
 
-        $sql = "SELECT *  FROM `INFORMATION_SCHEMA`.`COLUMNS`  WHERE `TABLE_SCHEMA`='imdbvisualization' AND `TABLE_NAME`='" . $table_data . "'   ORDER BY `COLUMNS`.`ORDINAL_POSITION` ASC";
-        $rows =Pdo_an::db_results_array($sql);
-        foreach ($rows as $r){
-
+            $sql = "SELECT *  FROM `INFORMATION_SCHEMA`.`COLUMNS`  WHERE `TABLE_SCHEMA`='imdbvisualization' AND `TABLE_NAME`='" . $table_data . "'   ORDER BY `COLUMNS`.`ORDINAL_POSITION` ASC";
+            $rows = Pdo_an::db_results_array($sql);
+            foreach ($rows as $r) {
 
 
-            $arrdb[$r["ORDINAL_POSITION"]] = $r["COLUMN_NAME"];
+                $arrdb[$r["ORDINAL_POSITION"]] = $r["COLUMN_NAME"];
 
 
-        }
-        //  ksort($arrdb);
+            }
+            //  ksort($arrdb);
 
-        ///   var_dump($arrdb);
+            ///   var_dump($arrdb);
 
-        $arrayrequest = [];
-        $array_index=[];
+            $arrayrequest = [];
+            $array_index = [];
 
-        foreach ($arrdb as $index => $val) {
+            foreach ($arrdb as $index => $val) {
 
 
+                if ($_POST['oper'] == 'edit') {
+
+
+                    if ($val != 'id' && $val != 'parent') {
+                        $qres .= ", `" . $val . "` = ? ";
+
+                        if ($val == 'add_time' || $val == 'last_update'  || $val == 'lastupdate'  ) {
+                            $arrayrequest[] = time();
+                        }
+
+                        else {
+
+                            $arrayrequest[] = $array[str_replace(' ', '_', $val)];
+                        }
+                    }
+
+
+                } else if ($_POST['oper'] == 'add') {
+
+                    if ($val != 'id' && $val != 'parent') {
+                        $qres .= ", ? ";
+                        ///$qres .= ",'".$array[str_replace(' ','_',$val)]."' ";
+                        //
+                        if ($val == 'add_time') {
+                            $arrayrequest[] = time();
+                        } else {
+                            $arrayrequest[] = $array[str_replace(' ', '_', $val)];
+                        }
+
+
+                        $array_index[] = '`' . $val . '`';
+                    }
+
+                }
+
+            }
+            if ($qres) {
+                $qres = substr($qres, 1);
+            }
             if ($_POST['oper'] == 'edit') {
 
 
-                if ($val != 'id' && $val != 'parent') {
-                    $qres .= ", `" . $val . "` = ? ";
+                $sql = "UPDATE `" . $table_data . "` SET " . $qres . "  WHERE `id` = '" . $array['parent'] . "'";
+               // echo $sql;
+               // print_r($arrayrequest);
 
-                    if ($val=='add_time' && $array[str_replace(' ', '_', $val)]===NULL)
-                    {
-                        $arrayrequest[] =time();
-                    }
-                    else {
 
-                        $arrayrequest[] = $array[str_replace(' ', '_', $val)];
+                $result = Pdo_an::db_results_array($sql, $arrayrequest);
+
+                if ($table_data == 'data_actors_crowd' || $table_data == 'data_movies_pg_crowd') {
+                    ///update cache
+                    $sql = "select * from " . $table_data . " where id =" . $array['parent'];
+                    $row = Pdo_an::db_fetch_row($sql);
+                    if ($row->status == 1) {
+                        !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
+                        Crowdsource::rebuild_cache($array['parent'], substr($table_data, 5));
                     }
                 }
 
 
-            }
-            else if ($_POST['oper'] == 'add') {
-
-                if ($val != 'id' && $val != 'parent') {
-                    $qres .= ", ? ";
-                    ///$qres .= ",'".$array[str_replace(' ','_',$val)]."' ";
-                    //
-                    if ($val=='add_time')
-                    {
-                        $arrayrequest[] =time();
-                    }
-                    else
-                    {
-                        $arrayrequest[] = $array[str_replace(' ', '_', $val)];
-                    }
-
-
-                    $array_index[]='`'.$val.'`';
-                }
-
-            }
-
-        }
-        if ($qres) {
-            $qres = substr($qres, 1);
-        }
-        if ($_POST['oper'] == 'edit') {
-
-
-
-            $sql = "UPDATE `" . $table_data . "` SET " . $qres . "  WHERE `id` = '" . $array['parent'] . "'";
-            echo $sql;
-            print_r($arrayrequest);
-
-
-
-            $result =Pdo_an::db_results_array($sql,$arrayrequest);
-
-            if ($table_data=='data_actors_crowd' || $table_data=='data_movies_pg_crowd')
-            {
-                ///update cache
-                $sql = "select * from ".$table_data." where id =". $array['parent'] ;
-                $row = Pdo_an::db_fetch_row($sql);
-                if ($row->status==1)
+                if ($table_data=='data_movie_imdb')
                 {
-                    !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
-                    Crowdsource::rebuild_cache($array['parent'] ,substr($table_data,5));
+                    $title =$arrayrequest[3];
+                    $movie_id =$arrayrequest[0];
+                    $comment =$title.' Updated manually';
+
+                    !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+                    TMDB::add_log('',$movie_id,'update movies',$comment,1);
                 }
+
+            } else if ($_POST['oper'] == 'add') {
+
+                $array_index = implode(',', $array_index);
+
+                print_r($arrayrequest);
+                ///$qres = implode(',',$arrayrequest);
+
+                $sql = "INSERT INTO  `" . $table_data . "` (" . $array_index . ") values ( " . $qres . " ) ";
+                echo $sql;
+                $result = Pdo_an::db_results_array($sql, $arrayrequest);
+
+
+
+
             }
 
-        } else if ($_POST['oper'] == 'add') {
-
-            $array_index = implode(',',$array_index);
-
-            print_r($arrayrequest);
-            ///$qres = implode(',',$arrayrequest);
-
-            $sql = "INSERT INTO  `" . $table_data . "` (".$array_index.") values ( " . $qres . " ) ";
-            echo $sql;
-            $result =Pdo_an::db_results_array($sql,$arrayrequest);
 
         }
+    }
 
 
-       }
-}
-}
-
-
-
-
- if (isset($_POST['_search']))//////
-{
+    if (isset($_POST['_search']))//////
+    {
 
 //ob_start();
 
-    $page = $_POST['page'];      //                             
-    $limit = $_POST['rows'];     //                                 
-    $sidx = $_POST['sidx'];      //                                                                
+        $page = $_POST['page'];      //
+        $limit = $_POST['rows'];     //
+        $sidx = $_POST['sidx'];      //
 
-    $sord = $_POST['sord'];      //                       
-
-
+        $sord = $_POST['sord'];      //
 
 
+        if (isset($_GET['db'])) {
+            if ($_GET['db'] == 'transcriptions') {
 
-     if (isset($_GET['db'])) {
-         if ($_GET['db'] == 'transcriptions')
-         {
-
-             $db='Pdo_tc';
+                $db = 'Pdo_tc';
 
 
-
-         }
-     }
-
-
-    if(!$sidx) {$sidx =1;}
-    else {
-
-        $sidx ='`'.$sidx.'`';
-}
-
-
-    $qWhere = '';
-
-    if ((isset($_POST['_search']) && $_POST['_search'] == 'true') || ($_POST['search'] == 'true') ) {
-        $allowedFields = array('surname', 'fname', 'lname');
-        $allowedOperations = array('AND', 'OR');
-
-        $searchData = ($_POST['filters']);
-
-        $searchData=trim(preg_replace("/([\\\]+)([\'\"]{1})/", "\$2",$searchData));
-        $group=substr($searchData,strpos($searchData,'"groupOp":"')+11,strpos($searchData,'","rules')-12);
-        $searchData=substr($searchData,strpos($searchData,'[')+1);
-        $searchData=substr($searchData,0,strpos($searchData,']'));
-
-
-
-        if (preg_match_all('#\{\"field\"\:\"(\w+)\"\,\"op\"\:\"(\w+)\"\,\"data\"\:\"([^\"]+)\"\}#',$searchData,$math0))
-        {
-            foreach ($math0[0] as $value)
-            {
-                if (preg_match('#\{\"field\"\:\"(\w+)\"\,\"op\"\:\"(\w+)\"\,\"data\"\:\"([^\"]+)\"\}#',$value,$math))
-                {
-                    switch ($math[2]) {
-                        case 'eq': $operation=" = '".$math[3]."'"; break;
-                        case 'ne': $operation=" <> '".$math[3]."'"; break;
-                        case 'bw': $operation=" LIKE '".$math[3]."%'"; break;
-                        case 'cn': $operation=" LIKE '%".$math[3]."%'"; break;
-                        case 'bn': $operation = " NOT LIKE '".$math[3]."%'"; break;
-                        case 'ew': $operation = " LIKE '%".$math[3]."'"; break;
-                        case 'en': $operation = " NOT LIKE '%".$math[3]."'"; break;
-                        case 'nc': $operation = " NOT LIKE '%".$math[3]."%'"; break;
-                        case 'nu': $operation = " IS NULL"; break;
-                        case 'nn': $operation = " IS NOT NULL"; break;
-                        case 'in': $operation = " IN ('".str_replace(",", "','", $math[3])."')"; break;
-                        case 'ni': $operation = " NOT IN ('".str_replace(",", "','", $math[3])."')"; break;
-                        default: $operation= " LIKE '%".$math[3]."%'"; break;
-                    }
-                    if ($math[3]!='All')
-                    {
-
-                            $where .= " " . $math[1] . " " . $operation . " " . $group . " ";
-
-                    }
-
-                }
             }
         }
 
 
-        $where=substr($where,0,strrpos($where,$group));
+        if (!$sidx) {
+            $sidx = 1;
+        } else {
 
-
-
-        $searchField = isset($_POST['searchField']) ? $_POST['searchField'] : false;
-        $searchOper = isset($_POST['searchOper']) ? $_POST['searchOper']: false;
-        $searchString = isset($_POST['searchString']) ? $_POST['searchString'] : false;
-
-        if ($searchField) {
-
-            $where = getWhereClause($searchField,$searchOper,$searchString);
-
+            $sidx = '`' . $sidx . '`';
         }
 
 
+        $qWhere = '';
+
+        if ((isset($_POST['_search']) && $_POST['_search'] == 'true') || ($_POST['search'] == 'true')) {
+            $allowedFields = array('surname', 'fname', 'lname');
+            $allowedOperations = array('AND', 'OR');
+
+            $searchData = ($_POST['filters']);
+
+            $searchData = trim(preg_replace("/([\\\]+)([\'\"]{1})/", "\$2", $searchData));
+            $group = substr($searchData, strpos($searchData, '"groupOp":"') + 11, strpos($searchData, '","rules') - 12);
+            $searchData = substr($searchData, strpos($searchData, '[') + 1);
+            $searchData = substr($searchData, 0, strpos($searchData, ']'));
 
 
+            if (preg_match_all('#\{\"field\"\:\"(\w+)\"\,\"op\"\:\"(\w+)\"\,\"data\"\:\"([^\"]+)\"\}#', $searchData, $math0)) {
+                foreach ($math0[0] as $value) {
+                    if (preg_match('#\{\"field\"\:\"(\w+)\"\,\"op\"\:\"(\w+)\"\,\"data\"\:\"([^\"]+)\"\}#', $value, $math)) {
+                        switch ($math[2]) {
+                            case 'eq':
+                                $operation = " = '" . $math[3] . "'";
+                                break;
+                            case 'ne':
+                                $operation = " <> '" . $math[3] . "'";
+                                break;
+                            case 'bw':
+                                $operation = " LIKE '" . $math[3] . "%'";
+                                break;
+                            case 'cn':
+                                $operation = " LIKE '%" . $math[3] . "%'";
+                                break;
+                            case 'bn':
+                                $operation = " NOT LIKE '" . $math[3] . "%'";
+                                break;
+                            case 'ew':
+                                $operation = " LIKE '%" . $math[3] . "'";
+                                break;
+                            case 'en':
+                                $operation = " NOT LIKE '%" . $math[3] . "'";
+                                break;
+                            case 'nc':
+                                $operation = " NOT LIKE '%" . $math[3] . "%'";
+                                break;
+                            case 'nu':
+                                $operation = " IS NULL";
+                                break;
+                            case 'nn':
+                                $operation = " IS NOT NULL";
+                                break;
+                            case 'in':
+                                $operation = " IN ('" . str_replace(",", "','", $math[3]) . "')";
+                                break;
+                            case 'ni':
+                                $operation = " NOT IN ('" . str_replace(",", "','", $math[3]) . "')";
+                                break;
+                            default:
+                                $operation = " LIKE '%" . $math[3] . "%'";
+                                break;
+                        }
+                        if ($math[3] != 'All') {
 
-        if (strlen($where)>6)
-        {
-            $where1=' AND  '.$where.'  ';
+                            $where .= " " . $math[1] . " " . $operation . " " . $group . " ";
 
+                        }
+
+                    }
+                }
+            }
+
+
+            $where = substr($where, 0, strrpos($where, $group));
+
+
+            $searchField = isset($_POST['searchField']) ? $_POST['searchField'] : false;
+            $searchOper = isset($_POST['searchOper']) ? $_POST['searchOper'] : false;
+            $searchString = isset($_POST['searchString']) ? $_POST['searchString'] : false;
+
+            if ($searchField) {
+
+                $where = getWhereClause($searchField, $searchOper, $searchString);
+
+            }
+
+
+            if (strlen($where) > 6) {
+                $where1 = ' AND  ' . $where . '  ';
+
+            }
+
+        } else {
+            if (isset($_POST['status'])) {
+                $status = strval($_POST['status']);
+                if ($status !== 'All') {
+                    $status = intval($status);
+
+                }
+                $where1 = ' AND  status =  ' . $status . '  ';
+            }
         }
 
-    }
-    else
-    {
-        if (isset($_POST['status']))
-        {
-          $status =   strval($_POST['status']);
-          if ($status!=='All')
-          {
-              $status =   intval($status);
 
-          }
-            $where1=' AND  status =  '.$status.'  ';
-        }
-    }
-
-
-
-
-    global $pdo;
+        global $pdo;
 //                ,                             -                    
-    $sql = "SELECT count(*) as count FROM  ".$table_data." where  1 = 1  ".$where1;
+        $sql = "SELECT count(*) as count FROM  " . $table_data . " where  1 = 1  " . $where1;
 
-    if($db=='Pdo_tc')
-    {
-        $result =Pdo_tc::db_fetch_row($sql);
-    }
-    else
-    {
-        $result =Pdo_an::db_fetch_row($sql);
-    }
+        if ($db == 'Pdo_tc') {
+            $result = Pdo_tc::db_fetch_row($sql);
+        } else {
+            $result = Pdo_an::db_fetch_row($sql);
+        }
 
 
+        $count = $result->count;
+
+        /// echo $count;
 
 
-     $count =  $result->count;
-
-   /// echo $count;
-
-
-
-//                                                    
-    if( $count > 0 && $limit > 0) {
-        $total_pages = ceil($count/$limit);
-    } else {
-        $total_pages = 0;
-    }
+//
+        if ($count > 0 && $limit > 0) {
+            $total_pages = ceil($count / $limit);
+        } else {
+            $total_pages = 0;
+        }
 //              -                           
-    if ($page > $total_pages) $page=$total_pages;
+        if ($page > $total_pages) $page = $total_pages;
 
 //                                     LIMIT        
-    $start = $limit*$page - $limit;
+        $start = $limit * $page - $limit;
 //                                  
-    if($start <0) $start = 0;
+        if ($start < 0) $start = 0;
 
 //id, user_name, user_company_name, user_status  FROM  `bra_users`  WHERE id = '".$row[User_Id]."
 //                      
 
 
-    $sql = "SELECT * FROM ".$table_data." where  1 = 1 ".$where1."  ORDER BY ".$sidx." ".$sord." LIMIT ".$start.", ".$limit;
+        $sql = "SELECT * FROM " . $table_data . " where  1 = 1 " . $where1 . "  ORDER BY " . $sidx . " " . $sord . " LIMIT " . $start . ", " . $limit;
 
 
-     if($db=='Pdo_tc')
-     {
-         $result_rows =Pdo_tc::db_results_array($sql);
-     }
-     else
-     {
-         $result_rows =Pdo_an::db_results_array($sql);
-     }
+        if ($db == 'Pdo_tc') {
+            $result_rows = Pdo_tc::db_results_array($sql);
+        } else {
+            $result_rows = Pdo_an::db_results_array($sql);
+        }
 
-    $responce =  (object)[];
-    $responce->page = $page;
-    $responce->total = $total_pages;
-    $responce->records = $count;
-    $i=0;
+        $responce = (object)[];
+        $responce->page = $page;
+        $responce->total = $total_pages;
+        $responce->records = $count;
+        $i = 0;
 
 
-foreach ($result_rows as $row)
+        foreach ($result_rows as $row) {
+            if ($row['last_update']){$row['last_update'] = date('H:i d:m:Y',$row['last_update']);}
+            if ($row['lastupdate']){$row['lastupdate'] = date('H:i d:m:Y',$row['lastupdate']);}
+            if ($row['add_time']){$row['add_time'] = date('H:i d:m:Y',$row['add_time']);}
 
-    {
-        $responce->rows[$i]['id']=$row[0];
-        $responce->rows[$i]['cell']=$row;
+            $responce->rows[$i]['id'] = $row[0];
+            $responce->rows[$i]['cell'] = $row;
 
-        $i++;
-    }
+            $i++;
+        }
 
 
 //ob_clean();
 
-   echo json_encode($responce);
+        echo json_encode($responce);
+
+    }
 
 }
-

@@ -14,10 +14,112 @@ if (!defined('ABSPATH'))
 
 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
 
+if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
+    define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
+}
+
 
 class TMDB
 {
     public static $api_key = '1dd8ba78a36b846c34c76f04480b5ff0';
+
+
+    public static function add_tmdb_without_id($tmdb_id_input='')
+    {
+
+        !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
+
+
+
+        if ($tmdb_id_input)
+        {
+            $sql ="SELECT * FROM `data_actors_tmdb` WHERE `tmdb_id` ='".intval($tmdb_id_input)."' and (actor_id is NULL OR actor_id = 0) limit 1";
+          ///  echo $sql.'<br>';
+        }
+        else
+        {
+            $sql ="SELECT * FROM `data_actors_tmdb` WHERE `known_for_department` ='Acting' and actor_id is NULL limit 10";
+        }
+
+
+        $row = Pdo_an::db_results_array($sql);
+
+        $count = count($row);
+
+        if (!$count && $tmdb_id_input)
+        {
+            return 'n';
+
+        }
+
+        foreach ($row as $r)
+        {
+            $tmdb_id = $r['tmdb_id'];
+
+
+            ////get imdb id from tmdb
+            $result = self::get_person_tmdb_data($tmdb_id);
+
+
+
+            ///update imdb data
+
+            if ($result["name"])
+            {
+                $actor_imdb = $result["imdb_id"];
+
+                if (!$actor_imdb)
+                {
+                    $actor_imdb=0;
+                }
+                else
+                {
+                    $actor_imdb =substr($actor_imdb,2);
+                    $actor_imdb = intval($actor_imdb);
+                }
+                echo  $tmdb_id.' => '.$actor_imdb.' '.$result["name"].'<br>';
+
+                $sql ="UPDATE `data_actors_tmdb` SET `actor_id`='{$actor_imdb}', `last_update`='".time()."' WHERE `tmdb_id`='{$tmdb_id}'";
+               /// echo $sql;
+                Pdo_an::db_query($sql);
+
+                ACTIONLOG::update_actor_log('tmdb_add_imdbid');
+            }
+
+
+        }
+        if ($tmdb_id_input)
+        {
+
+            return $actor_imdb;
+        }
+        else
+        {
+            echo 'add_tmdb_without_id updated '.$count.'<br>';
+        }
+
+    }
+
+    public static function get_person_tmdb_data($tmdb_id)
+    {
+        $result =self::get_tmdb_data_movie($tmdb_id,'person');
+        return $result;
+    }
+
+
+    public static function check_imdb_data($id)
+    {
+
+        !class_exists('TMDBIMPORT') ? include ABSPATH . "analysis/include/tmdb_import.php" : '';
+         TMDBIMPORT::check_imdb_data($id);
+
+    }
+    public static  function update_tmdb_actors($id='')
+    {
+        !class_exists('TMDBIMPORT') ? include ABSPATH . "analysis/include/tmdb_import.php" : '';
+        TMDBIMPORT::update_tmdb_actors($id);
+
+    }
 
 
     public static function get_id_from_imdbid($id)
@@ -443,8 +545,20 @@ public static function check_and_add_to_imdb_db($imdb_id)
     }
 }
 
+public static function check_tmdb_actors_in_movie($mid)
+{
+
+    $sql = "SELECT id  FROM `data_movies_tmdb_actors` WHERE `status` = 4 and `rwt_id` =".$mid;
+    $r = Pdo_an::db_fetch_row($sql);
+
+    return $r;
+
+}
+
+
 public static function addto_db_imdb($movie_id, $array_movie, $rwt_id = 0, $tmdb_id = 0)
 {
+
 
     $reg_v = '#([0-9]{4})#';
     if (preg_match($reg_v, $array_movie['datePublished'], $mach)) {
@@ -538,11 +652,19 @@ public static function addto_db_imdb($movie_id, $array_movie, $rwt_id = 0, $tmdb
         $box_world = $array_movie['box_world'];
         unset($array_movie['box_world']);
     }
+
+    if ($box_usa && $box_usa>$box_world)
+    {
+        $box_world=$box_usa;
+    }
+
+
     $title = '';
     if (isset($array_movie['title'])) {
         $title = $array_movie['title'];
         unset($array_movie['title']);
     }
+
     $Rating = '';
     if (isset($array_movie['Rating'])) {
         $Rating = $array_movie['Rating'];
@@ -648,7 +770,17 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
 
 
             $pos= $actor_pos[$id];
-            self::add_movie_actor($mid,$id,$actor_types[$type],'meta_movie_actor',$pos);
+
+
+            ////check for tmdb actors
+
+            $tmdb_actors = self::check_tmdb_actors_in_movie($mid);
+
+            if (!$tmdb_actors)
+            {
+                self::add_movie_actor($mid,$id,$actor_types[$type],'meta_movie_actor',$pos);
+            }
+
         }
     }
 
@@ -1016,6 +1148,13 @@ public static function get_imdb_parse($content,$show_data='',$id,$array_result)
             {
                 $array2detail =$array2['pageProps']['urqlState'];
             }
+        if (!$array2detail)
+        {
+            $array2detail =$array2['pageProps']['mainColumnData'];
+        }
+
+
+
 
 
             foreach ($array2detail as $i =>$v)
@@ -1033,9 +1172,19 @@ public static function get_imdb_parse($content,$show_data='',$id,$array_result)
 
 
                 }
+
             }
+      if ($array2detail['id']) {
+        $final_value = 'tt'.sprintf('%07d', $id);
+        //echo $v['data']['title']['id'].' == '.$final_value.' ';
 
 
+        if ($array2detail['id']==$final_value)
+        {
+            $array_meta = array_merge($array_meta, $array2detail);
+        }
+
+    }
 
 
         $country=[];
@@ -1076,6 +1225,12 @@ if($array_meta["countriesOfOrigin"]["countries"])
 
 
         $array_result['title'] =$data_movies["titleText"]["text"];/// $array["name"]; ///$data_movies["originalTitleText"]["text"];
+
+        if (!$array_result['title'])
+        {
+            $array_result['title'] = $array["name"];
+        }
+
 
 //        if (strstr($array_result['imdb_title'], $array_result['title']))
 //        {
@@ -1382,7 +1537,7 @@ if($array_meta["countriesOfOrigin"]["countries"])
     if ($show_data)
     {
         //self::save_array_meta($array_meta);
-        return json_encode(array($array_result,$array_meta));
+        return json_encode(array($array2,$array_result,$array_meta));
     }
         $array_result['actor_pos']=$array_pos;
         //var_dump($array_pos);

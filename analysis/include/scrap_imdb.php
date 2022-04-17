@@ -19,41 +19,44 @@ if (!defined('ABSPATH'))
 
 function check_tmdb_actors($id)
 {
-    !class_exists('KAIROS') ? include ABSPATH . "analysis/include/kairos.php" : '';
-    $where='';
-    if ($id)
-    {
-        $where = " AND id=".intval($id);
-    }
+    ////not used
+    return;
 
-    $sql = "SELECT `actor_id`, `last_update` FROM `data_actors_meta`  WHERE `tmdb_id` IS NULL ".$where." and (last_update < ".(time()-86400*30)." OR last_update  IS NULL ) order by last_update desc LIMIT 10";
-//echo $sql.'<br>';
-    $rows = Pdo_an::db_results_array($sql);
-    $count = count($rows);
-    $i=0;
-    foreach ($rows as $r2)
-    {
-        $i++;
-        $id = $r2['actor_id'];
-        $last_update = $r2['last_update'];
-
-        echo 'last_update='.$last_update.'<br>';
-
-       KAIROS::add_actors_from_tmdb($id);
-
-        $sql2 = "UPDATE `data_actors_meta` SET `last_update` = '".time()."' WHERE `data_actors_meta`.`actor_id` = ".$id;
-        Pdo_an::db_query($sql2);
-
-
-        echo $i.' of '.$count.' id='.$id.'<br>'.PHP_EOL;
-
-    }
+//
+//    !class_exists('KAIROS') ? include ABSPATH . "analysis/include/kairos.php" : '';
+//    $where='';
+//    if ($id)
+//    {
+//        $where = " AND id=".intval($id);
+//    }
+//
+//    $sql = "SELECT `actor_id`, `last_update` FROM `data_actors_meta`  WHERE `tmdb_id` IS NULL ".$where." and (last_update < ".(time()-86400*30)." OR last_update  IS NULL ) order by last_update desc LIMIT 10";
+////echo $sql.'<br>';
+//    $rows = Pdo_an::db_results_array($sql);
+//    $count = count($rows);
+//    $i=0;
+//    foreach ($rows as $r2)
+//    {
+//        $i++;
+//        $id = $r2['actor_id'];
+//        $last_update = $r2['last_update'];
+//
+//        echo 'last_update='.$last_update.'<br>';
+//
+//       KAIROS::add_actors_from_tmdb($id);
+//
+//        $sql2 = "UPDATE `data_actors_meta` SET `last_update` = '".time()."' WHERE `data_actors_meta`.`actor_id` = ".$id;
+//        Pdo_an::db_query($sql2);
+//
+//
+//        echo $i.' of '.$count.' id='.$id.'<br>'.PHP_EOL;
+//
+//    }
 }
 
 
 function check_actors_meta()
 {
-
 
     $sql = "SELECT `data_actors_meta`.id  FROM `data_actors_meta` LEFT JOIN data_actors_imdb 
     ON `data_actors_imdb`.id=data_actors_meta.actor_id
@@ -106,7 +109,7 @@ function check_actors_meta()
     }
 }
 
-function update_actors_verdict($id)
+function update_actors_verdict($id='')
 {
     !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
     set_time_limit(0);
@@ -123,7 +126,7 @@ $sql = "select * from data_actors_meta ".$where." ";
 ///echo $sql;
 
     $rows = Pdo_an::db_results_array($sql);
-    echo 'count = '.count($rows).'<br>';
+    ///echo 'count = '.count($rows).'<br>';
     $array_verdict = array('crowdsource','ethnic','jew','kairos','bettaface','placebirth','surname');
 $array_exclude = array('NJW');
     foreach ($rows as $row)
@@ -134,14 +137,11 @@ $array_exclude = array('NJW');
             $verdict = $row[$val];
 
 
-            if ($verdict && !is_numeric($verdict) && !$array_exclude[$verdict])
+            if ($verdict && !is_numeric($verdict) && !in_array($verdict,$array_exclude) )
             {
 
-
-
-
-                $sql = "update data_actors_meta set verdict =? where id = ".$row['id']." ";
-                Pdo_an::db_results_array($sql,array($row[$val]));
+                $sql = "update `data_actors_meta` set verdict =?, n_verdict =?  where id = ".$row['id']." ";
+                Pdo_an::db_results_array($sql,array($row[$val],intconvert($row[$val])));
 
                 ACTIONLOG::update_actor_log('verdict');
                 break;
@@ -230,9 +230,13 @@ function update_imdb_data($from_archive=0)
 {
 ////update all imdb movies
 
+    echo 'update_imdb_data only new movies<br>';
+
     //$from_archive=1;
 
-    $time = time()-86400*180;
+    $time_min = time()-86400*7;
+
+
 
     if ($from_archive)
     {
@@ -240,10 +244,18 @@ function update_imdb_data($from_archive=0)
     }
     else
     {
-        $limit = 50;
+        $limit = 10;
     }
 
-    $sql = "SELECT movie_id FROM `data_movie_imdb` where `add_time` < '".$time."'  order by id desc limit ".$limit;
+
+    $date_current = date('Y-m-d', time());
+    $date_main = date('Y-m-d', strtotime('-90 days', time()));
+
+
+    $sql = "SELECT movie_id FROM `data_movie_imdb` where  (`release`  >=  '" . $date_main . "'  OR `release` IS NULL )   and  `add_time` < '".$time_min."'  order by add_time asc limit ".$limit;
+
+   // echo $sql;
+
     $result =Pdo_an::db_results($sql);
 
     foreach ($result as $row) {
@@ -257,9 +269,7 @@ function update_imdb_data($from_archive=0)
                     if ($add) {
                         echo $movie_id . ' updated<br> ' . PHP_EOL;
                     }
-
             }
-
 
     }
 
@@ -278,6 +288,130 @@ function get_new_tv(){
     GETNEWMOVIES::get_new_tv();
 }
 
+
+//function check_race($id='')
+//{
+//    return;
+//
+////    $array_face = array('white' => 'W', 'hispanic' => 'H', 'black' => 'B',  'asian' => 'EA','N/A'=>'');
+////
+////    $sql ="SELECT * FROM `data_actors_race` where
+////    kairos_verdict!='W'
+////and  kairos_verdict!='H'
+////and  kairos_verdict!='B'
+////and  kairos_verdict!='EA'
+////limit 1000000";
+////$row = Pdo_an::db_results_array($sql);
+////
+////foreach ($row as $r)
+////{
+////
+////    $id = $r['id'];
+////    $verdict = $r['kairos_verdict'];
+////
+////    if ($verdict)
+////    {
+////        $newverdict = $array_face[$verdict];
+////        //update
+////
+////    }
+////    else
+////    {
+////        //	Black	Hispanic	White	kairos_verdict	img_type	error_msg	last_update
+////
+////        $kairos = array('W' => $r['White'], 'H' => $r['Hispanic'],  'B'=>$r['Black'] , 'EA'=>$r['Asian']);
+////
+////        arsort($kairos);
+////        $key = array_keys($kairos);
+////        $newverdict =$key[0];
+////    }
+////$sql = "UPDATE `data_actors_race` SET kairos_verdict=?,`last_update`=? WHERE id=?";
+////
+////    Pdo_an::db_results_array($sql,array($newverdict,time(),$id));
+////
+////
+////
+////
+////}
+//
+//
+//}
+
+
+function set_tmdb_actors_for_movies()
+{
+    !class_exists('TMDBIMPORT') ? include ABSPATH . "analysis/include/tmdb_import.php" : '';
+    TMDBIMPORT::set_tmdb_actors_for_movies();
+
+}
+
+
+function download_crowd_images()
+{
+    echo 'download_crowd_images<br>';
+
+$sql ="SELECT * FROM `data_actors_crowd` WHERE `image`!='' and `loaded` IS NULL and `status` = 1 limit 10";
+    $row = Pdo_an::db_results_array($sql);
+
+    $count = count($row);
+
+    foreach ($row as $r)
+    {
+
+        $actor_id = $r['actor_id'];
+        $image = $r['image'];
+
+
+        ///add image to folder
+        if (strstr($image,'.jpg') && check_image_on_server($actor_id, $image,'_crowd'))
+        {
+        ///update data
+           $loaded = 1;
+
+        }
+        else
+        {
+            $loaded=0;
+        }
+        echo  $r['id'].' => '.$loaded.'<br>';
+
+        $sql ="UPDATE `data_actors_crowd` SET `loaded`={$loaded} WHERE `id`=".$r['id'];
+        Pdo_an::db_query($sql);
+
+        ///update actor meta
+        $sql2 = "UPDATE `data_actors_meta` SET `last_update` = '".time()."' WHERE `data_actors_meta`.`actor_id` = '".$r['actor_id']."'";
+        Pdo_an::db_query($sql2);
+
+    }
+
+
+}
+
+
+function add_tmdb_without_id()
+{
+    TMDB::add_tmdb_without_id($_GET['add_tmdb_without_id']);
+
+}
+
+function update_tmdb_actors($id='')
+{
+    TMDB::update_tmdb_actors($id);
+}
+
+function check_tmdb_data($id='')
+{
+    TMDB::check_imdb_data($id);
+}
+
+function get_coins_data()
+{
+    !class_exists('GETCOINS') ? include ABSPATH . "analysis/include/get_coin_info.php" : '';
+
+    GETCOINS::get_request();
+
+
+}
 
 function update_all_rwt_rating($force='')
 {
@@ -433,46 +567,11 @@ function get_imdb_actor_parse($content)
     return ($array);
 
 }
-function curl_save($actor_id, $url, $path = 'img_final')
-{
-    $final_value = sprintf('%07d', $actor_id);
-    $dir = $_SERVER['DOCUMENT_ROOT'] . "/analysis/" . $path . "/" . $final_value . ".jpg";
 
-    $result = GETCURL::getCurlCookie($url);
-    file_put_contents($dir, $result);
-
-
-}
 function check_image_on_server($actor_id, $image = '', $tmdb = '')
 {
-//echo '$image='.$image;
-
-    $final_value = sprintf('%07d', $actor_id);
-
-    if ($tmdb) {
-        $path = 'img_final_tmdb';
-    } else {
-        $path = 'img_final';
-
-    }
-
-
-    $dir = $_SERVER['DOCUMENT_ROOT'] . "/analysis/" . $path . "/" . $final_value . ".jpg";
-    if (file_exists($dir)) {
-        echo ' file already exists ';
-        return 1;
-    } else if ($image) {
-        ///add image
-
-        curl_save($actor_id, $image, $path);
-
-        echo ' saved to /analysis/img_final/' . $final_value . '.jpg ';
-        return 1;
-    }
-
-
-    return 0;
-
+ !class_exists('KAIROS') ? include ABSPATH . "analysis/include/kairos.php" : '';
+ return   KAIROS::check_image_on_server($actor_id, $image, $tmdb);
 
 }
 function addto_db_actors($actor_id, $array_result, $update = 0)
@@ -594,6 +693,19 @@ function add_actors_to_db($id, $update = 0)
 
 }
 
+function intconvert($data)
+{
+    $result=0;
+
+    $array_int_convert = array('W'=>1,'EA'=>2,'H'=>3,'B'=>4,'I'=>5,'M'=>6,'MIX'=>7,'JW'=>8,'NJW'=>9,'IND'=>10);
+
+    if ($array_int_convert[$data])
+    {
+        $result = $array_int_convert[$data];
+    }
+
+   return $result;
+}
 
 function check_last_actors()
 {
@@ -663,7 +775,10 @@ function check_last_actors()
 
 
 
-    $array_min = array('Asian' => 'EA', 'White' => 'W', 'Latino' => 'H', 'Black' => 'B', 'Arab' => 'M', 'Dark Asian' => 'I', 'Jewish' => 'JW', 'Other' => 'MIX', 'Mixed / Other' => 'MIX', 'Indigenous' => 'IND', 'Not a Jew' => 'NJW', 'Sadly, not' => 'NJW','Barely a Jew'=>'JW', 'Borderline Jew'=>'JW','Jew'=>'JW','Sadly, a Jew'=>'JW','Infinitesimally a Jew'=>'JW','Sadly, not a Jew'=>'NJW');
+    $array_min = array('Asian' => 'EA', 'White' => 'W', 'Latino' => 'H', 'Black' => 'B', 'Arab' => 'M', 'Dark Asian' => 'I',
+        'Jewish' => 'JW', 'Other' => 'MIX', 'Mixed / Other' => 'MIX', 'Indigenous' => 'IND',
+        'Not a Jew' => 'NJW', 'Sadly, not' => 'NJW','Barely a Jew'=>'JW',
+        'Borderline Jew'=>'JW','Jew'=>'JW','Sadly, a Jew'=>'JW','Infinitesimally a Jew'=>'JW','Sadly, not a Jew'=>'NJW');
     global $array_compare;
     if (!$array_compare)
     {
@@ -700,6 +815,9 @@ function check_last_actors()
 //    }
 //    echo 'check actor jew (' . $i . ')' . PHP_EOL;
 //    print_r($array_total_v);
+
+
+
 
 
     //////check actors meta
@@ -755,7 +873,15 @@ function check_last_actors()
 
         if ($meta_result) {
 
-            $sql1 = "UPDATE `data_actors_meta` SET `surname` = '" . $meta_result . "'  ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
+
+
+
+            $sql1 = "UPDATE `data_actors_meta` SET 
+                              `surname` = '" . $meta_result . "',
+                              `n_surname` = '" . intconvert($meta_result) . "',
+              
+              
+              `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
             Pdo_an::db_query($sql1);
             update_actors_verdict($r['actor_id']);
             ACTIONLOG::update_actor_log('data_actors_surname');
@@ -765,60 +891,102 @@ function check_last_actors()
     echo 'check actors surname (' . $i . ')' . PHP_EOL;
 
     $i = 0;
-    ////check actor face
-    $sql = "SELECT data_actors_face.actor_id  FROM `data_actors_face` LEFT JOIN data_actors_meta ON data_actors_face.actor_id=data_actors_meta.actor_id
-        WHERE data_actors_meta.bettaface IS NULL and data_actors_meta.actor_id >0  limit 300";
-    $result= Pdo_an::db_results_array($sql);
-    foreach ($result as $r) {
-
-        $verdict = get_verdict($r['actor_id']);
-
-        if ($verdict) {
-            $enable_image = $verdict;
-        } else {
-            $enable_image = 1;
-        }
-
-
-        $i++;
-        $sql1 = "UPDATE `data_actors_meta` SET `bettaface` = '" . $enable_image . "'  ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
-        Pdo_an::db_query($sql1);
-        update_actors_verdict($r['actor_id']);
-        ACTIONLOG::update_actor_log('bettaface');
-    }
-    echo 'check actor face (' . $i . ')' . PHP_EOL;
+//    ////check actor face
+//    $sql = "SELECT data_actors_face.actor_id  FROM `data_actors_face` LEFT JOIN data_actors_meta ON data_actors_face.actor_id=data_actors_meta.actor_id
+//        WHERE data_actors_meta.bettaface IS NULL and data_actors_meta.actor_id >0  limit 300";
+//    $result= Pdo_an::db_results_array($sql);
+//    foreach ($result as $r) {
+//
+//        $verdict = get_verdict($r['actor_id']);
+//
+//        if ($verdict) {
+//            $enable_image = $verdict;
+//        } else {
+//            $enable_image = 1;
+//        }
+//
+//
+//        $i++;
+//        $sql1 = "UPDATE `data_actors_meta` SET `bettaface` = '" . $enable_image . "'  ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
+//        Pdo_an::db_query($sql1);
+//        update_actors_verdict($r['actor_id']);
+//        ACTIONLOG::update_actor_log('bettaface');
+//    }
+//    echo 'check actor face (' . $i . ')' . PHP_EOL;
 
     $i = 0;
-    ////check actor kairos
-    $sql = "SELECT data_actors_race.actor_id , data_actors_race.Asian,	data_actors_race.Black,	data_actors_race.Hispanic,	White  FROM `data_actors_race` LEFT JOIN data_actors_meta ON data_actors_race.actor_id=data_actors_meta.actor_id
-        WHERE data_actors_meta.kairos IS NULL and data_actors_meta.actor_id >0 and  data_actors_race.kairos_verdict !='N/A' limit 300";
+    ////check actor kairos tmdb
+
+    $sql = "SELECT data_actors_race.actor_id , data_actors_race.kairos_verdict  FROM `data_actors_race` LEFT JOIN data_actors_meta ON data_actors_race.actor_id=data_actors_meta.actor_id
+        WHERE data_actors_meta.kairos IS NULL and data_actors_meta.actor_id >0 and  data_actors_race.kairos_verdict !='' limit 300";
     $result= Pdo_an::db_results_array($sql);
     foreach ($result as $r) {
-
-
-        $array_race['EA'] = $r['Asian'];
-        $array_race['B'] = $r['Black'];
-        $array_race['H'] = $r['Hispanic'];
-        $array_race['W'] = $r['White'];
-        arsort($array_race);
-        $key = array_keys($array_race);
-        $kairos = $key[0];
-        if (!$kairos) {
-            $kairos = 0;
-        }
-
+        $kairos = $r['kairos_verdict'];
         $i++;
-        $sql1 = "UPDATE `data_actors_meta` SET `kairos` = '" . $kairos . "'  ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
+        $sql1 = "UPDATE `data_actors_meta` SET `kairos` = '" . $kairos . "'  ,
+        `n_kairos` = '" . intconvert($kairos) . "',
+        
+        `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
         Pdo_an::db_query($sql1);
         update_actors_verdict($r['actor_id']);
         ACTIONLOG::update_actor_log('kairos');
     }
-    echo 'check actor kairos (' . $i . ')' . PHP_EOL;
+    echo 'check actor kairos imdb (' . $i . ')' . PHP_EOL;
 
     $i = 0;
 
 
+    /////////crowd
+    $sql = "SELECT data_actors_crowd_race.actor_id, data_actors_crowd_race.kairos_verdict  FROM `data_actors_crowd_race` 
+    LEFT JOIN data_actors_meta ON data_actors_crowd_race.actor_id=data_actors_meta.actor_id
+        WHERE (data_actors_meta.kairos IS NULL) 
+          and data_actors_meta.actor_id >0 
+          and  data_actors_crowd_race.kairos_verdict !=''
+           limit 100";
 
+    $result= Pdo_an::db_results_array($sql);
+    $i =count($result);
+
+    foreach ($result as $r) {
+        $kairos = $r['kairos_verdict'];
+        $i++;
+        $sql1 = "UPDATE `data_actors_meta` SET `kairos` = '" . $kairos . "'  ,
+         `n_kairos` = '" . intconvert($kairos) . "',
+         
+        `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
+
+
+        ///echo $sql1;
+
+        Pdo_an::db_query($sql1);
+        update_actors_verdict($r['actor_id']);
+        ACTIONLOG::update_actor_log('kairos');
+    }
+    echo 'check actor kairos crowd (' . $i . ')' . PHP_EOL;
+
+
+
+    $sql = "SELECT data_actors_tmdb_race.actor_id, data_actors_tmdb_race.kairos_verdict  FROM `data_actors_tmdb_race` 
+    LEFT JOIN data_actors_meta ON data_actors_tmdb_race.actor_id=data_actors_meta.actor_id
+        WHERE (data_actors_meta.kairos IS NULL OR data_actors_meta.kairos!=data_actors_tmdb_race.kairos_verdict) 
+          and data_actors_meta.actor_id >0 
+          and  data_actors_tmdb_race.kairos_verdict !=''
+           limit 300";
+
+    $result= Pdo_an::db_results_array($sql);
+    $i =count($result);
+    foreach ($result as $r) {
+        $kairos = $r['kairos_verdict'];
+        $i++;
+        $sql1 = "UPDATE `data_actors_meta` SET `kairos` = '" . $kairos . "'  ,
+         `n_kairos` = '" . intconvert($kairos) . "',
+         
+        `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
+        Pdo_an::db_query($sql1);
+        update_actors_verdict($r['actor_id']);
+        ACTIONLOG::update_actor_log('kairos');
+    }
+    echo 'check actor kairos tmdb (' . $i . ')' . PHP_EOL;
 
 
     $i = 0;
@@ -2109,8 +2277,10 @@ function add_imdb_data_to_options()
 function check_kairos($id='')
 {
 
-    include 'kairos.php';
+    !class_exists('KAIROS') ? include ABSPATH . "analysis/include/kairos.php" : '';
+
     KAIROS::check_actors($id);
+
 }
 
 
@@ -2153,11 +2323,16 @@ if (isset($_GET['check_face'])) {
     check_face();
     return;
 }
-if (isset($_GET['check_tmdb_actors'])) {
 
-    check_tmdb_actors($_GET['check_tmdb_actors']);
+
+if (isset($_GET['update_tmdb_actors'])) {
+
+    update_tmdb_actors($_GET['update_tmdb_actors']);
     return;
+
 }
+
+
 ////////update actors stars data
 if (isset($_GET['update_actors_stars_data'])) {
     global $pdo;
@@ -2528,6 +2703,67 @@ if (isset($_GET['get_twitter'])) {
     GETTWITTER::get_url($id);
 
 }
+if (isset($_GET['get_coins_data'])) {
+
+    get_coins_data();
+    return;
+
+}
+if (isset($_GET['check_tmdb_data'])) {
+
+    check_tmdb_data($_GET['check_tmdb_data']);
+    return;
+}
+
+
+if (isset($_GET['update_meta'])) {
+    $sql ="SELECT * FROM `data_actors_meta` WHERE `verdict` is NOT NULL and `n_verdict` IS NULL limit 300000";
+    $rows = Pdo_an::db_results_array($sql);
+    foreach ($rows as $r)
+    {
+
+        $ethnic = intconvert($r['ethnic']);
+        $jew = intconvert($r['jew']);
+        $kairos = intconvert($r['kairos']);
+        $bettaface = intconvert($r['bettaface']);
+        $surname = intconvert($r['surname']);
+        $crowdsource = intconvert($r['crowdsource']);
+        $verdict = intconvert($r['verdict']);
+
+
+        $sql = "UPDATE `data_actors_meta` SET `n_ethnic`=?,`n_jew`=?,`n_kairos`=?,`n_bettaface`=?,`n_surname`=?,`n_crowdsource`=?,`n_verdict`=?
+                            WHERE `id`=?";
+        Pdo_an::db_results_array($sql,array($ethnic,$jew,$kairos,$bettaface,$surname,$crowdsource,$verdict,$r['id']));
+
+    }
+    return;
+}
+
+
+if (isset($_GET['add_tmdb_without_id'])) {
+
+
+
+
+    add_tmdb_without_id();
+
+    return;
+}
+
+
+if (isset($_GET['download_crowd_images'])) {
+
+    download_crowd_images();
+
+    return;
+}
+if (isset($_GET['set_tmdb_actors_for_movies'])) {
+
+    set_tmdb_actors_for_movies();
+
+    return;
+}
+
 
 
 echo 'ok';
