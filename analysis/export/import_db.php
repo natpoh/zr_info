@@ -114,6 +114,7 @@ public static function commit_info_request($uid)
 
        $result =  GETCURL::getCurlCookie($link,'',$request);
 
+       echo 'push_request '.$result;
 
 
        if ($result)
@@ -687,7 +688,6 @@ public static function commit_info_request($uid)
         ////get status 4 and add status 5 Complete
         $array_sql = self::last_commits($data,4);////check status 0
 
-        var_dump($array_sql);
 
         /// send data with status 0 to a remote server to sync_data function
         if ($array_sql )
