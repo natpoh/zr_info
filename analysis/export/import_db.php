@@ -21,7 +21,7 @@ class Import
 
     public static function debug()
     {
-        return 0;
+        return 1;
     }
 
     public static function get_key()
