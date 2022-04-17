@@ -114,7 +114,6 @@ public static function commit_info_request($uid)
 
        $result =  GETCURL::getCurlCookie($link,'',$request);
 
-       echo 'push_request '.$result;
 
 
        if ($result)
@@ -575,7 +574,7 @@ public static function commit_info_request($uid)
                 ///update comlete status
                 $result_data = [];
 
-                foreach ($data as $request ) {
+                foreach ($object_setup_all as $request ) {
 
                 $key = $request["uniq_id"];
 
@@ -689,13 +688,11 @@ public static function commit_info_request($uid)
         $array_sql = self::last_commits($data,4);////check status 0
 
 
+
         /// send data with status 0 to a remote server to sync_data function
         if ($array_sql )
         {
             $result =   self::push_request($array_sql,5);
-
-            echo 'result ';
-            var_dump($result);
 
             if ($result['error'])
             {
