@@ -21,7 +21,7 @@ class Import
 
     public static function debug()
     {
-        return 1;
+        return 0;
     }
 
     public static function get_key()
@@ -129,12 +129,12 @@ public static function commit_info_request($uid)
     public static function generate_id($name='')
     {
         $options_data = self::get_import_data();
-        $site_id = $options_data['site_id'];
+        $site_id = $options_data['site_id_request'];
         $prefix = array(1=>'t_',2=>'_p');
 
         if (!$site_id)
         {
-            $site_id =1;
+            $site_id =0;
         }
 
         $b=$prefix[$site_id];
@@ -168,7 +168,20 @@ public static function commit_info_request($uid)
 
         {
             $unique_id_array = self::generate_id($name);
-            if (!$site_id) $site_id = $unique_id_array[1];
+
+            if ($name)
+            {
+                if (!$site_id) $site_id = $unique_id_array[1];
+            }
+            else
+            {
+
+                if (!$site_id) $site_id = self::generate_id();
+            }
+
+
+
+
             if (!$unique_id) $unique_id=$unique_id_array[0];
         }
 
