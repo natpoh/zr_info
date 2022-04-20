@@ -676,7 +676,7 @@ class MoviesParser extends MoviesAbstractDB {
 
         if ($campaign->type == 1) {
             // Actors
-            $max_count = 10;
+            $max_count = 1000;
             $posts = $ma->get_actors($type, $max_count, $last_id);
         } else {
             // Movies
