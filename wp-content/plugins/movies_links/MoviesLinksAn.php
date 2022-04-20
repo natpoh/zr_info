@@ -115,9 +115,9 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         }
 
         //Last id
-        $and_last_id = ' a.aid>0';
+        $and_last_id = ' a.id>0';
         if ($last_id > 0) {
-            $and_last_id = sprintf(" a.aid > %d", (int) $last_id);
+            $and_last_id = sprintf(" a.id > %d", (int) $last_id);
         }
 
         $sql = sprintf("SELECT a.id, a.aid, a.firstname, a.lastname FROM {$this->db['actors_normalize']} a" . $actor_inner . " WHERE " . $and_last_id . $actor_and . " ORDER BY a.id ASC limit %d", (int) $count);
