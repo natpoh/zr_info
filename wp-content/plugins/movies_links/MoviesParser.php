@@ -1830,6 +1830,11 @@ class MoviesParser extends MoviesAbstractDB {
         return true;
     }
 
+    
+    public function delete_url($uid) {
+        $sql = sprintf("DELETE FROM {$this->db['url']} WHERE id=%d", (int) $uid);
+        $this->db_query($sql);
+    }
     /*
      * Log
      * message - string

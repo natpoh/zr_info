@@ -116,6 +116,7 @@ class MoviesParserAdmin extends ItemAdmin {
     );
     public $bulk_actions = array(
         'post_status_new' => 'Post status New',
+        'delete_url' => 'Delete URL',
         'delete_post' => 'Delete Post',
         'delete_arhive' => 'Delete Arhive and Post',
     );
@@ -690,6 +691,14 @@ class MoviesParserAdmin extends ItemAdmin {
                     // Delete arhive                   
                     foreach ($ids as $id) {
                         $this->mp->delete_arhive_by_url_id($id);
+                    }
+
+                    print "<div class=\"updated\"><p><strong>Arhives removed</strong></p></div>";
+                } else if ($b == 'delete_url') {
+                    // Delete arhive                   
+                    foreach ($ids as $id) {
+                        $this->mp->delete_arhive_by_url_id($id);
+                        $this->mp->delete_url($id);
                     }
 
                     print "<div class=\"updated\"><p><strong>Arhives removed</strong></p></div>";
