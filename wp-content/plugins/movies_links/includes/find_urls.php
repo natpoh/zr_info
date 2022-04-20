@@ -273,6 +273,11 @@ if ($cid) {
                     <span class="title"><?php print __('Page') ?></span>
                     <span class="input-text-wrap"><input type="text" name="page" placeholder="Example: https://example.com/api?query={title}" value="<?php print htmlspecialchars(base64_decode($gen_urls['page'])) ?>"></span>
                 </label>
+                <label>
+                    <span class="title"><?php print __('Regexp') ?></span>
+                    <span class="input-text-wrap"><input type="text" name="regexp" placeholder="<?php print htmlspecialchars('Example: /<a[^>]+href="([^"]+)"[^>]*>Read More<\/a>/; $1'); ?>" value="<?php print htmlspecialchars(base64_decode($gen_urls['regexp'])) ?>"></span>
+                </label>
+
                 <h3>Templates from the database</h3>
                 <?php
                 if ($campaign->type == 1) {

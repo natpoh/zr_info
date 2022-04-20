@@ -49,6 +49,7 @@ class MoviesParser extends MoviesAbstractDB {
                 'gen_urls' => array(
                     'type' => 'm',
                     'page' => '',
+                    'regexp' => '',
                     'interval' => 1440,
                     'last_update' => 0,
                     'last_id' => 0,
@@ -621,6 +622,7 @@ class MoviesParser extends MoviesAbstractDB {
 
         $gen_urls = $options['gen_urls'];
         $page = base64_decode($gen_urls['page']);
+        $regexp = base64_decode($gen_urls['regexp']);
         $type = $gen_urls['type'];
 
         //Find keys
@@ -657,6 +659,17 @@ class MoviesParser extends MoviesAbstractDB {
             $query_page = $page;
             foreach ($keys as $key => $value) {
                 $post_value = isset($post->$key) ? $post->$key : '';
+                // regexp
+                if ($regexp) {
+                    $reg_from = $regexp;
+                    $reg_to = '';
+                    if (strstr($regexp, '; ')) {
+                        $regexp_arr = explode('; ', $regexp);
+                        $reg_from = $regexp_arr[0];
+                        $reg_to = $regexp_arr[1];
+                    } 
+                    $post_value = preg_replace($reg_from, $reg_to, $post_value);
+                }
                 $post_encode = urlencode($post_value);
                 $query_page = str_replace($value, $post_encode, $query_page);
             }
