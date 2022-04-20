@@ -667,7 +667,7 @@ class MoviesParser extends MoviesAbstractDB {
                         $regexp_arr = explode('; ', $regexp);
                         $reg_from = $regexp_arr[0];
                         $reg_to = $regexp_arr[1];
-                    } 
+                    }
                     $post_value = preg_replace($reg_from, $reg_to, $post_value);
                 }
                 $post_encode = urlencode($post_value);
@@ -713,6 +713,17 @@ class MoviesParser extends MoviesAbstractDB {
                     $post_value = isset($post->$key) ? $post->$key : '';
                     if ($post_value == '') {
                         continue;
+                    }
+                    // regexp
+                    if ($regexp) {
+                        $reg_from = $regexp;
+                        $reg_to = '';
+                        if (strstr($regexp, '; ')) {
+                            $regexp_arr = explode('; ', $regexp);
+                            $reg_from = $regexp_arr[0];
+                            $reg_to = $regexp_arr[1];
+                        }
+                        $post_value = preg_replace($reg_from, $reg_to, $post_value);
                     }
                     $post_encode = urlencode($post_value);
                     $query_page = str_replace($value, $post_encode, $query_page);
