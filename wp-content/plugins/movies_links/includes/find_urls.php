@@ -278,7 +278,6 @@ if ($cid) {
                 if ($campaign->type == 1) {
                     // Actors tpl
                     $tpl_data = $this->get_actors_templates();
-                    
                 } else {
                     // Movies tpl
                     $tpl_data = $this->get_name_templates();

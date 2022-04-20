@@ -44,7 +44,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             $and_last_id = sprintf(" id > %d", (int) $last_id);
         }
 
-        $sql = "SELECT " . $select . " FROM {$this->db['movie_imdb']} WHERE " . $and_last_id . $type_query . " ORDER BY id DESC" . $and_limit;
+        $sql = "SELECT " . $select . " FROM {$this->db['movie_imdb']} WHERE " . $and_last_id . $type_query . " ORDER BY id ASC" . $and_limit;
         $result = $this->db_results($sql);
         return $result;
     }

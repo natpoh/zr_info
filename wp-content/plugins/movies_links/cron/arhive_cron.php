@@ -19,6 +19,15 @@ if ($_GET['t']) {
     $cron_type = (int) $_GET['t'];
 }
 
+$debug = false;
+if ($_GET['debug']) {
+    $debug=true;
+}
+
+$force = false;
+if ($_GET['force']) {
+    $force=true;
+}
 
 if (!class_exists('MoviesLinks')) {
 
@@ -30,6 +39,6 @@ if (!class_exists('MoviesLinks')) {
 }
 
 $mpc = new MoviesParserCron();
-$mpc->run_cron($cron_type);
+$mpc->run_cron($cron_type, $debug, $force);
 
 

@@ -616,7 +616,7 @@ class MoviesParser extends MoviesAbstractDB {
         return $ret;
     }
 
-    public function generate_urls($campaign, $options, $settings, $last_id = 0, $preview = true) {
+    public function generate_urls($campaign, $options, $settings, $last_id = 0, $preview = true, $debug = false) {
         $ret = array();
 
         $gen_urls = $options['gen_urls'];
@@ -632,6 +632,10 @@ class MoviesParser extends MoviesAbstractDB {
         }
         if (!$keys) {
             return $ret;
+        }
+        if ($debug) {
+            print_r($campaign);
+            print_r($options);
         }
 
         $ma = $this->ml->get_ma();
@@ -672,17 +676,23 @@ class MoviesParser extends MoviesAbstractDB {
 
         if ($campaign->type == 1) {
             // Actors
-            $max_count = 10000;
+            $max_count = 10;
             $posts = $ma->get_actors($type, $max_count, $last_id);
         } else {
             // Movies
             // Get all URLs
             $posts = $ma->get_posts($type, $get_keys, 0, $last_id);
         }
+
+        if ($debug) {
+            print_r(array($campaign->title, $last_id));
+            print_r($posts);
+        }
+
         if ($posts) {
             foreach ($posts as $post) {
                 $post = $this->get_post_custom_fields($post);
-                if (!$post_last_id) {
+                if ($post_last_id < $post->id) {
                     $post_last_id = $post->id;
                 }
                 $query_page = $page;
