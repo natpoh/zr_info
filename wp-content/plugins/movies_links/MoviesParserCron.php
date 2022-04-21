@@ -263,8 +263,9 @@ class MoviesParserCron extends MoviesAbstractDB {
                         foreach ($results as $aid => $data) {
                             if ($data['total']['valid'] == 1) {
                                 // Add meta
-                                $this->mp->add_post_actor_meta($aid, $pid, $cid);
+                                // $this->mp->add_post_actor_meta($aid, $pid, $cid);
                                 $find_last = $aid;
+                                break;
                             }
                         }
 

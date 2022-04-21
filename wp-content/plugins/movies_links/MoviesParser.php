@@ -2010,14 +2010,14 @@ class MoviesParser extends MoviesAbstractDB {
      */
 
     public function add_post_actor_meta($aid, $pid, $cid) {
-        $meta_exist = $this->get_post_actor_meta($aid, $pid, $cid);
+        $meta_exist = $this->get_post_actor_meta($aid, $pid, $cid, 1);
         if (!$meta_exist) {
             $sql = sprintf("INSERT INTO {$this->db['actors_meta']} (aid,pid,cid) VALUES (%d,%d,%d)", (int) $aid, (int) $pid, (int) $cid);
             $this->db_query($sql);
         }
     }
 
-    public function get_post_actor_meta($aid = 0, $pid = 0, $cid = 0) {
+    public function get_post_actor_meta($aid = 0, $pid = 0, $cid = 0, $count=0) {
         $and_aid = '';
         if ($aid > 0) {
             $and_aid = sprintf(' AND aid=%d', $aid);
@@ -2030,8 +2030,18 @@ class MoviesParser extends MoviesAbstractDB {
         if ($cid > 0) {
             $and_cid = sprintf(' AND cid=%d', $cid);
         }
-        $sql = "SELECT aid, pid FROM {$this->db['actors_meta']} WHERE id>0" . $and_cid . $and_aid . $and_pid;
-        $result = $this->db_results($sql);
+        
+        $limit = '';
+        if($count>0){
+            $limit = sprintf(' LIMIT %d',$count);
+        }
+        
+        $sql = "SELECT aid, pid, cid FROM {$this->db['actors_meta']} WHERE id>0" . $and_cid . $and_aid . $and_pid. $limit;
+        if ($count==1){
+            $result = $this->db_fetch_row($sql);
+        } else {
+            $result = $this->db_results($sql);
+        }
         return $result;
     }
 

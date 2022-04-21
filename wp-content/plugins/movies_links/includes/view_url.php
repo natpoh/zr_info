@@ -150,7 +150,7 @@ if ($uid) {
                         }
                         ?></td>
                 </tr>
-                <?php if ($campaign->type == 1) { ?>
+                <?php /*if ($campaign->type == 1) { ?>
                     <tr>
                         <td><?php print __('Actors meta') ?></td>
                         <td><?php
@@ -165,7 +165,7 @@ if ($uid) {
                             ?>
                         </td>
                     </tr>
-                <?php } ?>
+                <?php } */?>
                 <tr>
                     <td><?php print __('Rating') ?></td>
                     <td><?php print $post->rating ?></td>
