@@ -100,7 +100,7 @@ if (sizeof($posts) > 0) {
                                 /*$m = $ma->get_movie_by_id($item->ptop_movie);
                                 $title = '<b>' . $m->title . '</b>';                              
                                 print $title . '  ['.$m->year.']<br />';*/
-                                print $item->ptop_movie;
+                                print $item->ptop_movie.'<br />';
                             }    
                             if ($item->prating) {
                                 print 'Rating: ' . $item->prating . '<br />';

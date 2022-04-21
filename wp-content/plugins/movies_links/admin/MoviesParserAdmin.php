@@ -43,9 +43,9 @@ class MoviesParserAdmin extends ItemAdmin {
         'home' => 'Veiw',
         'urls' => 'URLs list',
         'find' => '1. Find URLs',
-        'arhive' => '2. Create arhive',
-        'parse' => '3. Parsing data',
-        'links' => '4. Link to movies',
+        'arhive' => '2. Arhiving',
+        'parse' => '3. Parsing',
+        'links' => '4. Linking',
         'log' => 'Log',
         'edit' => 'Edit',
         'trash' => 'Trash',
@@ -151,6 +151,9 @@ class MoviesParserAdmin extends ItemAdmin {
         'm' => 'Main',
         'e' => 'Extra',
         'd' => 'Directors',
+    );
+    public $rwt_actor_link = array(
+        'a' => 'All normalized actors',
     );
 
     public function __construct($mla = '') {
@@ -289,7 +292,7 @@ class MoviesParserAdmin extends ItemAdmin {
                 }
 
                 include(MOVIES_LINKS_PLUGIN_DIR . 'includes/find_urls.php');
-            } else if ($curr_tab == 'arhive') {               
+            } else if ($curr_tab == 'arhive') {
                 // 2. Create arhive
                 if (isset($_POST['id'])) {
                     $valid = $this->campaign_edit_validate($_POST);
@@ -945,12 +948,18 @@ class MoviesParserAdmin extends ItemAdmin {
         return $rule_exists;
     }
 
-    public function show_parser_rules($rules = array(), $edit = true, $check = array()) {
+    public function show_parser_rules($rules = array(), $edit = true, $camp_type = 0, $check = array()) {
         if ($rules || $edit) {
             if (!is_array($rules)) {
                 $rules = array();
             }
             $rules = $this->mp->sort_reg_rules_by_weight($rules);
+
+            $rules_fields = $this->mp->parser_rules_fields;
+            if ($camp_type == 1) {
+                $rules_fields = $this->mp->parser_rules_actor_fields;
+            }
+
             $disabled = '';
             if (!$edit) {
                 $disabled = ' disabled ';
@@ -972,7 +981,7 @@ class MoviesParserAdmin extends ItemAdmin {
                         <th><?php print __('Comment') ?></th>                        
                         <th><?php print __('Weight') ?></th> 
                         <th><?php print __('Active') ?></th>
-            <?php if ($edit): ?>
+                        <?php if ($edit): ?>
                             <th><?php print __('Remove') ?></th> 
                         <?php endif ?>
                         <?php if ($check): ?>
@@ -981,21 +990,21 @@ class MoviesParserAdmin extends ItemAdmin {
                     </tr>
                 </thead>
                 <tbody>
-            <?php if ($rules) { ?>
+                    <?php if ($rules) { ?>
                         <?php foreach ($rules as $rid => $rule) {
                             ?>
                             <tr>
                                 <td>
-                    <?php print $rid ?>
+                                    <?php print $rid ?>
                                     <input type="hidden" name="rule_reg_id_<?php print $rid ?>" value="<?php print $rid ?>">
                                 </td>
                                 <td>
                                     <select name="rule_reg_f_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
-                    <?php
-                    $con = $rule['f'];
-                    foreach ($this->mp->parser_rules_fields as $key => $name) {
-                        $selected = ($key == $con) ? 'selected' : '';
-                        ?>
+                                        <?php
+                                        $con = $rule['f'];
+                                        foreach ($rules_fields as $key => $name) {
+                                            $selected = ($key == $con) ? 'selected' : '';
+                                            ?>
                                             <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
                                             <?php
                                         }
@@ -1007,11 +1016,11 @@ class MoviesParserAdmin extends ItemAdmin {
                                 </td>
                                 <td>
                                     <select name="rule_reg_t_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
-                    <?php
-                    $con = $rule['t'];
-                    foreach ($this->mp->parser_rules_type as $key => $name) {
-                        $selected = ($key == $con) ? 'selected' : '';
-                        ?>
+                                        <?php
+                                        $con = $rule['t'];
+                                        foreach ($this->mp->parser_rules_type as $key => $name) {
+                                            $selected = ($key == $con) ? 'selected' : '';
+                                            ?>
                                             <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
                                             <?php
                                         }
@@ -1025,23 +1034,23 @@ class MoviesParserAdmin extends ItemAdmin {
                                     <input type="text" name="rule_reg_m_<?php print $rid ?>" class="rule_m" value="<?php print $rule['m'] ?>"<?php print $disabled ?>>
                                 </td>
                                 <td>
-                    <?php
-                    $checked = '';
-                    $active = isset($rule['n']) ? $rule['n'] : '';
-                    if ($active) {
-                        $checked = 'checked="checked"';
-                    }
-                    ?>
+                                    <?php
+                                    $checked = '';
+                                    $active = isset($rule['n']) ? $rule['n'] : '';
+                                    if ($active) {
+                                        $checked = 'checked="checked"';
+                                    }
+                                    ?>
                                     <input type="checkbox" name="rule_reg_n_<?php print $rid ?>" value="1" <?php print $checked ?> <?php print $disabled ?>>                                    
                                 </td>
                                 <td>
-                    <?php
-                    $checked = '';
-                    $active = isset($rule['s']) ? $rule['s'] : '';
-                    if ($active) {
-                        $checked = 'checked="checked"';
-                    }
-                    ?>
+                                    <?php
+                                    $checked = '';
+                                    $active = isset($rule['s']) ? $rule['s'] : '';
+                                    if ($active) {
+                                        $checked = 'checked="checked"';
+                                    }
+                                    ?>
                                     <input type="checkbox" name="rule_reg_s_<?php print $rid ?>" value="1" <?php print $checked ?> <?php print $disabled ?>>                                    
                                 </td>
                                 <td>
@@ -1051,32 +1060,32 @@ class MoviesParserAdmin extends ItemAdmin {
                                     <input type="text" name="rule_reg_w_<?php print $rid ?>" class="rule_w" value="<?php print $rule['w'] ?>"<?php print $disabled ?>>
                                 </td>
                                 <td>
-                    <?php
-                    $checked = '';
-                    $active = isset($rule['a']) ? $rule['a'] : '';
-                    if ($active) {
-                        $checked = 'checked="checked"';
-                    }
-                    ?>
+                                    <?php
+                                    $checked = '';
+                                    $active = isset($rule['a']) ? $rule['a'] : '';
+                                    if ($active) {
+                                        $checked = 'checked="checked"';
+                                    }
+                                    ?>
                                     <input type="checkbox" name="rule_reg_a_<?php print $rid ?>" value="1" <?php print $checked ?> <?php print $disabled ?>>                                    
                                 </td>
 
-                    <?php if ($edit): ?>
+                                <?php if ($edit): ?>
                                     <td>
                                         <input type="checkbox" name="remove_reg_rule[]" value="<?php print $rid ?>">
                                     </td>
-                    <?php endif ?>
+                                <?php endif ?>
                                 <?php if ($check): ?>
                                     <td>
-                                    <?php
-                                    if (isset($check[$rid])) {
-                                        print 'Match';
-                                    }
-                                    ?>
+                                        <?php
+                                        if (isset($check[$rid])) {
+                                            print 'Match';
+                                        }
+                                        ?>
                                     </td>
-                                    <?php endif ?>
+                                <?php endif ?>
                             </tr> 
-                            <?php } ?>
+                        <?php } ?>
                         <?php
                     }
                     if ($edit) {
@@ -1088,7 +1097,7 @@ class MoviesParserAdmin extends ItemAdmin {
                             <td></td>
                             <td>
                                 <select name="reg_new_rule_f" class="condition">
-                <?php foreach ($this->mp->parser_rules_fields as $key => $name) { ?>
+                                    <?php foreach ($rules_fields as $key => $name) { ?>
                                         <option value="<?php print $key ?>"><?php print $name ?></option>                                
                                         <?php
                                     }
@@ -1103,7 +1112,7 @@ class MoviesParserAdmin extends ItemAdmin {
                             </td>
                             <td>
                                 <select name="reg_new_rule_t" class="condition">
-                <?php foreach ($this->mp->parser_rules_type as $key => $name) { ?>
+                                    <?php foreach ($this->mp->parser_rules_type as $key => $name) { ?>
                                         <option value="<?php print $key ?>"><?php print $name ?></option>                                
                                         <?php
                                     }
@@ -1143,7 +1152,7 @@ class MoviesParserAdmin extends ItemAdmin {
                             </td>
                             <td></td>
                         </tr>
-            <?php } ?>
+                    <?php } ?>
                 </tbody>
             </table>    <?php
         }
@@ -1163,7 +1172,8 @@ class MoviesParserAdmin extends ItemAdmin {
 
         if ($last_posts) {
             $o = $options['links'];
-            $preivew_data = $this->mp->find_posts_links($last_posts, $o);
+            $preivew_data = $this->mp->find_posts_links($last_posts, $o, $campaign->type);
+          
         } else {
             return -1;
         }
@@ -1198,7 +1208,7 @@ class MoviesParserAdmin extends ItemAdmin {
                     <thead>
                         <tr>
                             <th></th>             
-                <?php foreach ($fields as $key => $value) { ?>
+                            <?php foreach ($fields as $key => $value) { ?>
                                 <th><?php print $key ?></th>             
                             <?php } ?>  
                             <th><?php print __('Match') ?></th>
@@ -1211,7 +1221,7 @@ class MoviesParserAdmin extends ItemAdmin {
                     <tbody>
                         <tr>
                             <td><?php print __('Input') ?></td>             
-                <?php foreach ($fields as $key => $value) { ?>
+                            <?php foreach ($fields as $key => $value) { ?>
                                 <td><?php print $value ?></td>             
                             <?php } ?> 
                             <td></td>
@@ -1219,25 +1229,25 @@ class MoviesParserAdmin extends ItemAdmin {
                             <td></td>
                             <td></td>
                         </tr> 
-                <?php foreach ($results as $mid => $data) { ?>
+                        <?php foreach ($results as $mid => $data) { ?>
                             <tr>
                                 <td><?php print $mid ?></td>             
-                    <?php foreach ($fields as $key => $value) { ?>
+                                <?php foreach ($fields as $key => $value) { ?>
                                     <td><?php
-                                    $field = $data[$key]['data'];
-                                    if (is_array($field)) {
-                                        $field = implode(', ', $field);
-                                    }
-                                    print $field;
-                                    ?>
+                                        $field = $data[$key]['data'];
+                                        if (is_array($field)) {
+                                            $field = implode(', ', $field);
+                                        }
+                                        print $field;
+                                        ?>
                                     </td>             
-                                    <?php } ?>       
+                                <?php } ?>       
                                 <td><?php print $data['total']['match'] ?></td>
                                 <td><?php print $data['total']['rating'] ?></td>
                                 <td><?php print $data['total']['valid'] ?></td>
                                 <td><?php print $data['total']['top'] ?></td>
                             </tr>
-                <?php } ?>
+                        <?php } ?>
                     </tbody>        
                 </table>
                 <br />
@@ -1249,10 +1259,13 @@ class MoviesParserAdmin extends ItemAdmin {
         }
     }
 
-    public function show_links_rules($rules = array(), $data_fields = array(), $edit = true, $check = array()) {
+    public function show_links_rules($rules = array(), $data_fields = array(), $camp_type = 0, $edit = true, $check = array()) {
         if ($rules || $edit) {
-            $rules = $this->mp->sort_link_rules_by_weight($rules);
-
+            $rules = $this->mp->sort_link_rules_by_weight($rules, $camp_type);
+            $links_rules_fields = $this->mp->links_rules_fields;
+            if ($camp_type == 1) {
+                $links_rules_fields = $this->mp->links_rules_actor_fields;
+            }
             $disabled = '';
             if (!$edit) {
                 $disabled = ' disabled ';
@@ -1275,7 +1288,7 @@ class MoviesParserAdmin extends ItemAdmin {
                         <th><?php print __('Comment') ?></th>                        
                         <th><?php print __('Weight') ?></th> 
                         <th><?php print __('Active') ?></th>
-            <?php if ($edit): ?>
+                        <?php if ($edit): ?>
                             <th><?php print __('Remove') ?></th> 
                         <?php endif ?>
                         <?php if ($check): ?>
@@ -1284,21 +1297,21 @@ class MoviesParserAdmin extends ItemAdmin {
                     </tr>
                 </thead>
                 <tbody>
-            <?php if ($rules) { ?>
+                    <?php if ($rules) { ?>
                         <?php foreach ($rules as $rid => $rule) {
                             ?>
                             <tr>
                                 <td>
-                    <?php print $rid ?>
+                                    <?php print $rid ?>
                                     <input type="hidden" name="rule_reg_id_<?php print $rid ?>" value="<?php print $rid ?>">
                                 </td>
                                 <td>
                                     <select name="rule_reg_f_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
-                    <?php
-                    $con = $rule['f'];
-                    foreach ($this->mp->links_rules_fields as $key => $name) {
-                        $selected = ($key == $con) ? 'selected' : '';
-                        ?>
+                                        <?php
+                                        $con = $rule['f'];
+                                        foreach ($links_rules_fields as $key => $name) {
+                                            $selected = ($key == $con) ? 'selected' : '';
+                                            ?>
                                             <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
                                             <?php
                                         }
@@ -1307,11 +1320,11 @@ class MoviesParserAdmin extends ItemAdmin {
                                 </td>
                                 <td>
                                     <select name="rule_reg_t_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
-                    <?php
-                    $con = $rule['t'];
-                    foreach ($this->mp->link_rules_type as $key => $name) {
-                        $selected = ($key == $con) ? 'selected' : '';
-                        ?>
+                                        <?php
+                                        $con = $rule['t'];
+                                        foreach ($this->mp->link_rules_type as $key => $name) {
+                                            $selected = ($key == $con) ? 'selected' : '';
+                                            ?>
                                             <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
                                             <?php
                                         }
@@ -1326,11 +1339,11 @@ class MoviesParserAdmin extends ItemAdmin {
                                 </td>
                                 <td>
                                     <select name="rule_reg_e_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
-                    <?php
-                    $con = $rule['e'];
-                    foreach ($this->mp->links_match_type as $key => $name) {
-                        $selected = ($key == $con) ? 'selected' : '';
-                        ?>
+                                        <?php
+                                        $con = $rule['e'];
+                                        foreach ($this->mp->links_match_type as $key => $name) {
+                                            $selected = ($key == $con) ? 'selected' : '';
+                                            ?>
                                             <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
                                             <?php
                                         }
@@ -1339,12 +1352,12 @@ class MoviesParserAdmin extends ItemAdmin {
                                 </td>
                                 <td>
                                     <select name="rule_reg_d_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
-                    <?php
-                    if ($data_fields) {
-                        $con = $rule['d'];
-                        foreach ($data_fields as $key => $name) {
-                            $selected = ($key == $con) ? 'selected' : '';
-                            ?>
+                                        <?php
+                                        if ($data_fields) {
+                                            $con = $rule['d'];
+                                            foreach ($data_fields as $key => $name) {
+                                                $selected = ($key == $con) ? 'selected' : '';
+                                                ?>
                                                 <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
                                                 <?php
                                             }
@@ -1365,32 +1378,32 @@ class MoviesParserAdmin extends ItemAdmin {
                                     <input type="text" name="rule_reg_w_<?php print $rid ?>" class="rule_w" value="<?php print $rule['w'] ?>"<?php print $disabled ?>>
                                 </td>
                                 <td>
-                    <?php
-                    $checked = '';
-                    $active = isset($rule['a']) ? $rule['a'] : '';
-                    if ($active) {
-                        $checked = 'checked="checked"';
-                    }
-                    ?>
+                                    <?php
+                                    $checked = '';
+                                    $active = isset($rule['a']) ? $rule['a'] : '';
+                                    if ($active) {
+                                        $checked = 'checked="checked"';
+                                    }
+                                    ?>
                                     <input type="checkbox" name="rule_reg_a_<?php print $rid ?>" value="1" <?php print $checked ?> <?php print $disabled ?>>                                    
                                 </td>
 
-                    <?php if ($edit): ?>
+                                <?php if ($edit): ?>
                                     <td>
                                         <input type="checkbox" name="remove_reg_rule[]" value="<?php print $rid ?>">
                                     </td>
-                    <?php endif ?>
+                                <?php endif ?>
                                 <?php if ($check): ?>
                                     <td>
-                                    <?php
-                                    if (isset($check[$rid])) {
-                                        print 'Match';
-                                    }
-                                    ?>
+                                        <?php
+                                        if (isset($check[$rid])) {
+                                            print 'Match';
+                                        }
+                                        ?>
                                     </td>
-                                    <?php endif ?>
+                                <?php endif ?>
                             </tr> 
-                            <?php } ?>
+                        <?php } ?>
                         <?php
                     }
                     if ($edit) {
@@ -1402,7 +1415,7 @@ class MoviesParserAdmin extends ItemAdmin {
                             <td></td>
                             <td>
                                 <select name="reg_new_rule_f" class="condition">
-                <?php foreach ($this->mp->links_rules_fields as $key => $name) { ?>
+                                    <?php foreach ($links_rules_fields as $key => $name) { ?>
                                         <option value="<?php print $key ?>"><?php print $name ?></option>                                
                                         <?php
                                     }
@@ -1411,7 +1424,7 @@ class MoviesParserAdmin extends ItemAdmin {
                             </td>
                             <td>
                                 <select name="reg_new_rule_t" class="condition">
-                <?php foreach ($this->mp->link_rules_type as $key => $name) { ?>
+                                    <?php foreach ($this->mp->link_rules_type as $key => $name) { ?>
                                         <option value="<?php print $key ?>"><?php print $name ?></option>                                
                                         <?php
                                     }
@@ -1429,7 +1442,7 @@ class MoviesParserAdmin extends ItemAdmin {
                             </td>
                             <td>
                                 <select name="reg_new_rule_e" class="condition">
-                <?php foreach ($this->mp->links_match_type as $key => $name) { ?>
+                                    <?php foreach ($this->mp->links_match_type as $key => $name) { ?>
                                         <option value="<?php print $key ?>"><?php print $name ?></option>                                
                                         <?php
                                     }
@@ -1438,10 +1451,10 @@ class MoviesParserAdmin extends ItemAdmin {
                             </td>
                             <td>
                                 <select name="reg_new_rule_d" class="condition">
-                <?php
-                if ($data_fields) {
-                    foreach ($data_fields as $key => $name) {
-                        ?>
+                                    <?php
+                                    if ($data_fields) {
+                                        foreach ($data_fields as $key => $name) {
+                                            ?>
                                             <option value="<?php print $key ?>"><?php print $name ?></option>                                
                                             <?php
                                         }
@@ -1466,7 +1479,7 @@ class MoviesParserAdmin extends ItemAdmin {
                             </td>
                             <td></td>
                         </tr>
-            <?php } ?>
+                    <?php } ?>
                 </tbody>
             </table> 
             <p class="desc">
@@ -1764,7 +1777,7 @@ class MoviesParserAdmin extends ItemAdmin {
     public function get_actors_templates() {
         $ma = $this->ml->get_ma();
         $actors = $ma->get_actors();
-        $actor = array_shift($actors);      
+        $actor = array_shift($actors);
         $ret = array();
         if ($actor) {
             foreach ($actor as $key => $value) {

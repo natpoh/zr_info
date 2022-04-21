@@ -166,6 +166,23 @@ function movies_links_plugin_activation() {
     Pdo_ml::db_query($sql);
     movies_links_create_index(array('status_links'), 'movies_links_posts');
 
+
+    /*
+     * Actors names meta
+     */
+
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `actors_meta`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `aid` int(11) NOT NULL DEFAULT '0',   
+                                `pid` int(11) NOT NULL DEFAULT '0',                                   
+                                `cid` int(11) NOT NULL DEFAULT '0',   
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8_general_ci;";
+
+    Pdo_ml::db_query($sql);
+    movies_links_create_index(array('aid', 'pid','cid'), 'actors_meta');
+
     /*
      * Actors names
      */
@@ -178,10 +195,9 @@ function movies_links_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8_general_ci;";
     Pdo_an::db_query($sql);
-    if (function_exists('critic_matic_create_index_an')){
+    if (function_exists('critic_matic_create_index_an')) {
         critic_matic_create_index_an(array('aid', 'firstname', 'lastname'), 'data_actors_normalize');
     }
-    
 }
 
 function movies_links_create_index($names = array(), $table_name = '') {
@@ -202,4 +218,3 @@ function movies_links_create_index($names = array(), $table_name = '') {
         }
     }
 }
-

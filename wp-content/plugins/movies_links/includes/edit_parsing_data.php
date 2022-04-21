@@ -66,7 +66,7 @@ if ($cid) {
                 <h2>Parser rules</h2>
                 <?php
                 $parser_rules = $o['rules'];
-                $this->show_parser_rules($parser_rules, true);
+                $this->show_parser_rules($parser_rules, true, $campaign->type);
                 ?> 
                 <p><b>Export</b> Rules to <a target="_blank" href="<?php print $url ?>&cid=<?php print $cid ?>&export_rules=1">JSON array</a>.</p>
                 <p><b>Import</b> Rules from JSON array:</p>

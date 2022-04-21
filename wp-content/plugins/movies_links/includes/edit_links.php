@@ -76,7 +76,13 @@ if ($cid) {
                     <span class="title"><?php print __('Link to') ?></span>
                     <select name="type" class="interval">
                         <?php
-                        foreach ($this->rwt_movie_type as $key => $value) {
+                        $rwt_select_link_type = $this->rwt_movie_type;
+                        if ($campaign->type == 1) {
+                            // Actors   
+                            $rwt_select_link_type = $this->rwt_actor_link;
+                        }
+                        // Movies
+                        foreach ($rwt_select_link_type as $key => $value) {
                             $selected = ($key == $o['type']) ? 'selected' : '';
                             ?>
                             <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $value ?></option>                                
@@ -84,14 +90,14 @@ if ($cid) {
                         }
                         ?>                          
                     </select> 
-                    <span class="inline-edit"><?php print __('Choose where to look for a match: in Movies or TVSeries.') ?></span>                    
+                    <span class="inline-edit"><?php print __('Choose where to look for a match.') ?></span>                    
                 </label>
 
                 <h2>Links rules</h2>
                 <?php
                 $rules = $o['rules'];
                 $data_fields = $this->mp->get_parser_fields($options);
-                $this->show_links_rules($rules, $data_fields);
+                $this->show_links_rules($rules, $data_fields, $campaign->type);
                 ?> 
                 <label class="inline-edit-status">                
                     <input type="checkbox" name="preview" value="1" checked="checked">

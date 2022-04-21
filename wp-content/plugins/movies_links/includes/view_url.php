@@ -129,16 +129,43 @@ if ($uid) {
                     <td><?php print $this->post_link_status[$post->status_links] ?></td>
                 </tr>               
                 <tr>
-                    <td><?php print __('Top movie') ?></td>
+                    <td><?php
+                        $top_title = 'Top movie';
+                        if ($campaign->type == 1) {
+                            $top_title = 'Top actor';
+                        }
+
+                        print $top_title
+                        ?></td>
                     <td><?php
                         if ($post->top_movie) {
-                            $ma = $this->ml->get_ma();
-                            $m = $ma->get_movie_by_id($post->top_movie);
-                            $title = '<b>' . $m->title . '</b>';
-                            print 'Id:' .$post->top_movie.'; Title: '. $title . '  [' . $m->year . ']<br />';
+                            if ($campaign->type == 1) {
+                                print $post->top_movie;
+                            } else {
+                                $ma = $this->ml->get_ma();
+                                $m = $ma->get_movie_by_id($post->top_movie);
+                                $title = '<b>' . $m->title . '</b>';
+                                print 'Id:' . $post->top_movie . '; Title: ' . $title . '  [' . $m->year . ']<br />';
+                            }
                         }
                         ?></td>
                 </tr>
+                <?php if ($campaign->type == 1) { ?>
+                    <tr>
+                        <td><?php print __('Actors meta') ?></td>
+                        <td><?php
+                            $meta = $this->mp->get_post_actor_meta(0, $post->id, $campaign->id);
+                            if ($meta){
+                                $actors=array();
+                                foreach ($meta as $item) {
+                                    $actors[]=$item->aid;
+                                }
+                                print implode(',', $actors);
+                            }
+                            ?>
+                        </td>
+                    </tr>
+                <?php } ?>
                 <tr>
                     <td><?php print __('Rating') ?></td>
                     <td><?php print $post->rating ?></td>
@@ -148,7 +175,7 @@ if ($uid) {
         <?php
         $options = $this->mp->get_options($campaign);
         $o = $options['links'];
-        $preivew_data = $this->mp->find_posts_links(array($post), $o);
+        $preivew_data = $this->mp->find_posts_links(array($post), $o, $campaign->type == 1);
         $this->preview_links_search($preivew_data);
         ?>
 

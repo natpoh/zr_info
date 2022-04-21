@@ -126,4 +126,26 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         return $results;
     }
 
+    public function get_actors_normalize_by_name($firstname = '', $lastname = '') {
+        $results = array();
+
+        if ($firstname || $lastname) {
+
+            $and_first = '';
+            if ($firstname) {
+                $and_first = sprintf(" AND a.firstname='%s'", $this->escape($firstname));
+            }
+
+            $and_last = '';
+            if ($lastname) {
+                $and_first = sprintf(" AND a.lastname='%s'", $this->escape($lastname));
+            }
+
+            $sql = sprintf("SELECT a.id, a.aid, a.firstname, a.lastname FROM {$this->db['actors_normalize']} a WHERE a.id>0" . $and_first . $and_last . " ORDER BY a.id ASC");
+
+            $results = $this->db_results($sql);
+        }
+        return $results;
+    }
+
 }

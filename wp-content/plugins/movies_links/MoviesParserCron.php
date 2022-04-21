@@ -67,7 +67,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         return $count;
     }
 
-    public function process_campaign($campaign, $options, $type_name, $debug=false) {
+    public function process_campaign($campaign, $options, $type_name, $debug = false) {
 
         if ($type_name == 'arhive') {
             $count = $this->proccess_arhive($campaign, $options);
@@ -228,7 +228,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         if ($last_posts) {
 
             $o = $options['links'];
-            $items = $this->mp->find_posts_links($last_posts, $o);
+            $items = $this->mp->find_posts_links($last_posts, $o, $campaign->type);
 
             foreach ($items as $pid => $item) {
 
@@ -237,29 +237,80 @@ class MoviesParserCron extends MoviesAbstractDB {
                 $results = $item['results'];
 
                 if ($results) {
+                    if ($campaign->type == 1) {
+                        // Actors
+                        /*
+                         *  [13336028] => Array
+                          (
+                          [lastname] => Array
+                          (
+                          [data] => Caskey
+                          [match] => 1
+                          [rating] => 10
+                          )
 
-                    $find_movie = 0;
-                    foreach ($results as $mid => $data) {
-                        if ($data['total']['top'] == 1) {
-                            $find_movie = $mid;
-                            break;
+                          [total] => Array
+                          (
+                          [match] => 1
+                          [rating] => 10
+                          [valid] => 1
+                          [top] => 1
+                          )
+
+                          )
+                         */
+                        $find_last = 0;
+                        foreach ($results as $aid => $data) {
+                            if ($data['total']['valid'] == 1) {
+                                // Add meta
+                                $this->mp->add_post_actor_meta($aid, $pid, $cid);
+                                $find_last = $aid;
+                            }
                         }
-                    }
-                    if ($find_movie) {
-                        // Add link
-                        $status = 1;
-                        $rating = $results[$find_movie]['total']['rating'];
-                        $this->mp->update_post_top_movie($post->uid, $status, $find_movie, $rating);
 
-                        $message = "Found post link: title: " . $post->title . "; mid: $find_movie; rating: $rating";
-                        $this->mp->log_info($message, $cid, $post->uid, 4);
+                        if ($find_last) {
+                            // Add link
+                            $status = 1;
+                            $rating = $results[$find_last]['total']['rating'];
+                            $this->mp->update_post_top_movie($post->uid, $status, $find_last, $rating);
 
-                        $post->top_movie = $find_movie;
-                        $mch->add_post($campaign, $post);
+                            $message = "Found author link: name: " . $post->title . "; aid: $find_last; rating: $rating";
+                            $this->mp->log_info($message, $cid, $post->uid, 4);
+
+                            $post->top_movie = $find_last;
+                            // TODO add actor hook
+                            // $mch->add_post($campaign, $post);
+                        } else {
+                            $this->mp->update_post_status($post->uid, 2);
+                            $message = 'Found posts is not valid';
+                            $this->mp->log_warn($message, $cid, $post->uid, 4);
+                        }
                     } else {
-                        $this->mp->update_post_status($post->uid, 2);
-                        $message = 'Found posts is not valid';
-                        $this->mp->log_warn($message, $cid, $post->uid, 4);
+                        // Movies
+
+                        $find_movie = 0;
+                        foreach ($results as $mid => $data) {
+                            if ($data['total']['top'] == 1) {
+                                $find_movie = $mid;
+                                break;
+                            }
+                        }
+                        if ($find_movie) {
+                            // Add link
+                            $status = 1;
+                            $rating = $results[$find_movie]['total']['rating'];
+                            $this->mp->update_post_top_movie($post->uid, $status, $find_movie, $rating);
+
+                            $message = "Found post link: title: " . $post->title . "; mid: $find_movie; rating: $rating";
+                            $this->mp->log_info($message, $cid, $post->uid, 4);
+
+                            $post->top_movie = $find_movie;
+                            $mch->add_post($campaign, $post);
+                        } else {
+                            $this->mp->update_post_status($post->uid, 2);
+                            $message = 'Found posts is not valid';
+                            $this->mp->log_warn($message, $cid, $post->uid, 4);
+                        }
                     }
                 } else {
                     // Link post not found

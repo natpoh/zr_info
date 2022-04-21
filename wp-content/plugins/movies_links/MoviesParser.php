@@ -15,6 +15,7 @@ class MoviesParser extends MoviesAbstractDB {
             'log' => 'movies_links_log',
             'posts' => 'movies_links_posts',
             'url' => 'movies_links_url',
+            'actors_meta' => 'actors_meta',
         );
 
         // Init settings
@@ -110,6 +111,10 @@ class MoviesParser extends MoviesAbstractDB {
         'y' => 'Year',
         'c' => 'Custom',
     );
+    public $parser_rules_actor_fields = array(
+        't' => 'Title',
+        'c' => 'Custom',
+    );
 
     /* Links */
     public $links_rules_fields = array(
@@ -121,6 +126,10 @@ class MoviesParser extends MoviesAbstractDB {
         'rt' => 'Runtime',
         'im' => 'IMDB',
         'tm' => 'TMDB',
+    );
+    public $links_rules_actor_fields = array(
+        'f' => 'Firstname',
+        'l' => 'Lastname',
     );
     public $links_match_type = array(
         'm' => 'Match',
@@ -1641,6 +1650,155 @@ class MoviesParser extends MoviesAbstractDB {
         return array('fields' => $search_fields, 'results' => $results);
     }
 
+    public function check_link_actor_post($o, $post) {
+        $rules = $o['rules'];
+
+        $min_match = $o['match'];
+        $min_rating = $o['rating'];
+        $movie_type = $this->movie_type[$o['type']];
+
+        $results = array();
+        $search_fields = array();
+        $pid = $post->id;
+        if ($rules && sizeof($rules)) {
+            $rules_w = $this->sort_link_rules_by_weight($rules, 1);
+
+            /*
+             * Array ( [1] => Array ( 
+             * [f] => t 
+             * [t] => m 
+             * [d] => t 
+             * [m] => 
+             * [r] => 10 
+             * [c] => 
+             * [w] => 0 
+             * [a] => 1 )
+             */
+
+            //Find active rules
+            foreach ($this->links_rules_actor_fields as $type => $title) {
+                $i = 0;
+                foreach ($rules_w as $key => $rule) {
+                    if ($type == $rule['f']) {
+
+                        if ($rule['a'] != 1) {
+                            continue;
+                        }
+
+                        $type_key = $type;
+
+                        if (!isset($active_rules[$type_key][$i])) {
+                            $active_rules[$type_key][$i] = $rule;
+                            $active_rules[$type_key][$i]['content'] = $this->use_reg_rule($rule, $this->get_post_field($rule, $post));
+                        }
+
+                        $i += 1;
+                    }
+                }
+            }
+
+            // Get first
+            $post_first_name = '';
+            $first_rule = '';
+            if ($active_rules['f']) {
+                foreach ($active_rules['f'] as $item) {
+                    if ($item['content']) {
+                        $post_first_name = $item['content'];
+                        $first_rule = $item;
+                        break;
+                    }
+                }
+                $search_fields['firstname'] = $post_first_name;
+            }
+
+            // Get lastname
+            $post_last_name = '';
+            $last_rule = '';
+            if ($active_rules['l']) {
+                foreach ($active_rules['l'] as $item) {
+                    if ($item['content']) {
+                        $post_last_name = $item['content'];
+                        $last_rule = $item;
+                        break;
+                    }
+                }
+                $search_fields['lastname'] = $post_last_name;
+            }
+
+
+            $ma = $this->ml->get_ma();
+
+            if ($post_first_name && $post_last_name) {
+                $actors = $ma->get_actors_normalize_by_name($post_first_name, $post_last_name);
+            } else if ($post_first_name) {
+                $actors = $ma->get_actors_normalize_by_name($post_first_name, '');
+            } else if ($post_last_name) {
+                $actors = $ma->get_actors_normalize_by_name('', $post_last_name);
+            }
+
+
+            if ($actors) {
+                /*
+                 * [id] => 1000 
+                 * [aid] => 13335727 
+                 * [firstname] => Victor 
+                 * [lastname] => Fehlberg                   
+                 */
+                foreach ($actors as $actor) {
+                    // Actor              
+                    if ($post_first_name) {
+                        $results[$actor->aid]['firstname']['data'] = $actor->firstname;
+                        $results[$actor->aid]['firstname']['match'] = 1;
+                        $results[$actor->aid]['firstname']['rating'] = $first_rule['ra'];
+
+                        $results[$actor->aid]['total']['match'] += 1;
+                        $results[$actor->aid]['total']['rating'] += $first_rule['ra'];
+                    }
+                    // Actor              
+                    if ($post_last_name) {
+                        $results[$actor->aid]['lastname']['data'] = $actor->lastname;
+                        $results[$actor->aid]['lastname']['match'] = 1;
+                        $results[$actor->aid]['lastname']['rating'] = $last_rule['ra'];
+
+                        $results[$actor->aid]['total']['match'] += 1;
+                        $results[$actor->aid]['total']['rating'] += $last_rule['ra'];
+                    }
+                }
+            } else {
+                return array();
+            }
+        }
+
+        $max_rating = 0;
+        $max_rating_id = 0;
+        foreach ($results as $mid => $value) {
+
+            $valid = $value['total']['match'] >= $min_match ? 1 : 0;
+            if ($valid) {
+                $valid = $value['total']['rating'] >= $min_rating ? 1 : 0;
+            }
+            if ($valid && $value['total']['rating'] > $max_rating) {
+                $max_rating = $value['total']['rating'];
+                $max_rating_id = $mid;
+            }
+
+            $results[$mid]['total']['valid'] = $valid;
+            $results[$mid]['total']['top'] = 0;
+        }
+        if ($max_rating_id) {
+            $results[$max_rating_id]['total']['top'] = 1;
+        }
+        /*
+          print '<pre>';
+          print_r($post);
+          print_r($search_fields);
+          print_r($results);
+          print '</pre>';
+         */
+
+        return array('fields' => $search_fields, 'results' => $results);
+    }
+
     public function get_post_field($field, $post) {
         if ($field['d'] == 't') {
             return $post->title;
@@ -1658,8 +1816,14 @@ class MoviesParser extends MoviesAbstractDB {
         return '';
     }
 
-    public function sort_link_rules_by_weight($rules) {
+    public function sort_link_rules_by_weight($rules, $camp_type = 0) {
         $sort_rules = $rules;
+
+        $links_rules_fields = $this->links_rules_fields;
+        if ($camp_type == 1) {
+            $links_rules_fields = $this->links_rules_actor_fields;
+        }
+
         if ($rules) {
             $rules_w = array();
             foreach ($rules as $key => $value) {
@@ -1667,7 +1831,7 @@ class MoviesParser extends MoviesAbstractDB {
             }
             asort($rules_w);
             $sort_rules = array();
-            foreach ($this->links_rules_fields as $id => $item) {
+            foreach ($links_rules_fields as $id => $item) {
                 foreach ($rules_w as $key => $value) {
                     if ($rules[$key]['f'] == $id) {
                         $sort_rules[$key] = $this->get_valid_link_rule($rules[$key]);
@@ -1692,11 +1856,17 @@ class MoviesParser extends MoviesAbstractDB {
         return $this->def_link_rule[$key];
     }
 
-    public function find_posts_links($posts = array(), $o = array()) {
+    public function find_posts_links($posts = array(), $o = array(), $camp_type = 0) {
         $ret = array();
         if (sizeof($posts)) {
             foreach ($posts as $post) {
-                $results = $this->check_link_post($o, $post);
+                if ($camp_type == 1) {
+                    // Actors   
+                    $results = $this->check_link_actor_post($o, $post);
+                } else {
+                    // Movies
+                    $results = $this->check_link_post($o, $post);
+                }
                 $results['post'] = $post;
                 $ret[$post->id] = $results;
             }
@@ -1830,11 +2000,41 @@ class MoviesParser extends MoviesAbstractDB {
         return true;
     }
 
-    
     public function delete_url($uid) {
         $sql = sprintf("DELETE FROM {$this->db['url']} WHERE id=%d", (int) $uid);
         $this->db_query($sql);
     }
+
+    /*
+     * Actors
+     */
+
+    public function add_post_actor_meta($aid, $pid, $cid) {
+        $meta_exist = $this->get_post_actor_meta($aid, $pid, $cid);
+        if (!$meta_exist) {
+            $sql = sprintf("INSERT INTO {$this->db['actors_meta']} (aid,pid,cid) VALUES (%d,%d,%d)", (int) $aid, (int) $pid, (int) $cid);
+            $this->db_query($sql);
+        }
+    }
+
+    public function get_post_actor_meta($aid = 0, $pid = 0, $cid = 0) {
+        $and_aid = '';
+        if ($aid > 0) {
+            $and_aid = sprintf(' AND aid=%d', $aid);
+        }
+        $and_pid = '';
+        if ($pid > 0) {
+            $and_pid = sprintf(' AND pid=%d', $pid);
+        }
+        $and_cid = '';
+        if ($cid > 0) {
+            $and_cid = sprintf(' AND cid=%d', $cid);
+        }
+        $sql = "SELECT aid, pid FROM {$this->db['actors_meta']} WHERE id>0" . $and_cid . $and_aid . $and_pid;
+        $result = $this->db_results($sql);
+        return $result;
+    }
+
     /*
      * Log
      * message - string
