@@ -260,12 +260,13 @@ class MoviesParserCron extends MoviesAbstractDB {
                           )
                          */
                         $find_last = 0;
+                        $valid_actors = array();
                         foreach ($results as $aid => $data) {
                             if ($data['total']['valid'] == 1) {
                                 // Add meta
                                 // $this->mp->add_post_actor_meta($aid, $pid, $cid);
                                 $find_last = $aid;
-                                break;
+                                $valid_actors[]=$aid;                               
                             }
                         }
 
@@ -277,10 +278,9 @@ class MoviesParserCron extends MoviesAbstractDB {
 
                             $message = "Found author link: name: " . $post->title . "; aid: $find_last; rating: $rating";
                             $this->mp->log_info($message, $cid, $post->uid, 4);
-
-                            $post->top_movie = $find_last;
-                            // TODO add actor hook
-                            // $mch->add_post($campaign, $post);
+                                          
+                            $mch->add_actors($campaign, $post, $valid_actors);
+                            
                         } else {
                             $this->mp->update_post_status($post->uid, 2);
                             $message = 'Found posts is not valid';
