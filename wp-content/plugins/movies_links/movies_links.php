@@ -206,12 +206,13 @@ function movies_links_plugin_activation() {
 
     $sql = "CREATE TABLE IF NOT EXISTS  `data_lastnames`(
 				`id` int(11) unsigned NOT NULL auto_increment,                                                               
-                                `lastname` varchar(255) NOT NULL default '',                                                                
+                                `lastname` varchar(255) NOT NULL default '',         
+                                `topcountry` int(11) NOT NULL DEFAULT '0',  
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8_general_ci;";
     Pdo_an::db_query($sql);
     if (function_exists('critic_matic_create_index_an')) {
-        critic_matic_create_index_an(array('lastname'), 'data_lastnames');
+        critic_matic_create_index_an(array('lastname','topcountry'), 'data_lastnames');
     }
 
     /*
@@ -231,11 +232,12 @@ function movies_links_plugin_activation() {
 				`id` int(11) unsigned NOT NULL auto_increment,                                
                                 `nid` int(11) NOT NULL DEFAULT '0',   
                                 `cid` int(11) NOT NULL DEFAULT '0',   
+                                `ccount` int(11) NOT NULL DEFAULT '0',  
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8_general_ci;";
     Pdo_an::db_query($sql);
     if (function_exists('critic_matic_create_index_an')) {
-        critic_matic_create_index_an(array('nid', 'cid'), 'meta_familysearch');
+        critic_matic_create_index_an(array('nid', 'cid', 'ccount'), 'meta_familysearch');
     }
 }
 
