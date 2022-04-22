@@ -169,6 +169,7 @@ function movies_links_plugin_activation() {
 
     /*
      * Actors names meta
+     * UNUSED
      */
 
 
@@ -181,7 +182,7 @@ function movies_links_plugin_activation() {
 				) DEFAULT COLLATE utf8_general_ci;";
 
     Pdo_ml::db_query($sql);
-    movies_links_create_index(array('aid', 'pid','cid'), 'actors_meta');
+    movies_links_create_index(array('aid', 'pid', 'cid'), 'actors_meta');
 
     /*
      * Actors names
@@ -197,6 +198,44 @@ function movies_links_plugin_activation() {
     Pdo_an::db_query($sql);
     if (function_exists('critic_matic_create_index_an')) {
         critic_matic_create_index_an(array('aid', 'firstname', 'lastname'), 'data_actors_normalize');
+    }
+
+    /*
+     * Actors lastnames unique
+     */
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_lastnames`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                                               
+                                `lastname` varchar(255) NOT NULL default '',                                                                
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8_general_ci;";
+    Pdo_an::db_query($sql);
+    if (function_exists('critic_matic_create_index_an')) {
+        critic_matic_create_index_an(array('lastname'), 'data_lastnames');
+    }
+
+    /*
+     * Familysearch
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_familysearch_country`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                
+                                `country` varchar(255) NOT NULL default '',                                
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8_general_ci;";
+    Pdo_an::db_query($sql);
+    if (function_exists('critic_matic_create_index_an')) {
+        critic_matic_create_index_an(array('country'), 'data_familysearch_country');
+    }
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `meta_familysearch`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                
+                                `nid` int(11) NOT NULL DEFAULT '0',   
+                                `cid` int(11) NOT NULL DEFAULT '0',   
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8_general_ci;";
+    Pdo_an::db_query($sql);
+    if (function_exists('critic_matic_create_index_an')) {
+        critic_matic_create_index_an(array('nid', 'cid'), 'meta_familysearch');
     }
 }
 

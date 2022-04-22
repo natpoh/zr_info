@@ -1189,7 +1189,7 @@ class MoviesParser extends MoviesAbstractDB {
         return $ret;
     }
 
-    public function get_last_posts($count = 10, $cid = 0, $status_links = -1) {
+    public function get_last_posts($count = 10, $cid = 0, $status_links = -1, $status = -1) {
 
         // Company id
         $cid_and = '';
@@ -1199,13 +1199,20 @@ class MoviesParser extends MoviesAbstractDB {
         }
 
         $status_and = '';
-        if ($status_links != -1) {
-            $status_and = sprintf(' AND p.status_links = %d', $status_links);
+        if ($status != -1) {
+            $status_and = sprintf(' AND p.status = %d', $status);
         }
+
+
+        $status_links_and = '';
+        if ($status_links != -1) {
+            $status_links_and = sprintf(' AND p.status_links = %d', $status_links);
+        }
+
 
         $query = sprintf("SELECT p.* FROM {$this->db['posts']} p"
                 . " INNER JOIN {$this->db['url']} u ON p.uid = u.id"
-                . " WHERE p.id>0" . $cid_and . $status_and
+                . " WHERE p.id>0" . $cid_and . $status_and . $status_links_and
                 . " ORDER BY p.id DESC LIMIT %d", (int) $count);
 
 
@@ -2017,7 +2024,7 @@ class MoviesParser extends MoviesAbstractDB {
         }
     }
 
-    public function get_post_actor_meta($aid = 0, $pid = 0, $cid = 0, $count=0) {
+    public function get_post_actor_meta($aid = 0, $pid = 0, $cid = 0, $count = 0) {
         $and_aid = '';
         if ($aid > 0) {
             $and_aid = sprintf(' AND aid=%d', $aid);
@@ -2030,14 +2037,14 @@ class MoviesParser extends MoviesAbstractDB {
         if ($cid > 0) {
             $and_cid = sprintf(' AND cid=%d', $cid);
         }
-        
+
         $limit = '';
-        if($count>0){
-            $limit = sprintf(' LIMIT %d',$count);
+        if ($count > 0) {
+            $limit = sprintf(' LIMIT %d', $count);
         }
-        
-        $sql = "SELECT aid, pid, cid FROM {$this->db['actors_meta']} WHERE id>0" . $and_cid . $and_aid . $and_pid. $limit;
-        if ($count==1){
+
+        $sql = "SELECT aid, pid, cid FROM {$this->db['actors_meta']} WHERE id>0" . $and_cid . $and_aid . $and_pid . $limit;
+        if ($count == 1) {
             $result = $this->db_fetch_row($sql);
         } else {
             $result = $this->db_results($sql);

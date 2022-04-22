@@ -223,7 +223,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         $count = 0;
 
         // Get last posts
-        $last_posts = $this->mp->get_last_posts($urls_count, $cid, 0);
+        $last_posts = $this->mp->get_last_posts($urls_count, $cid, 0, 1);
 
         if ($last_posts) {
 
