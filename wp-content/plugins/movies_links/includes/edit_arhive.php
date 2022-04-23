@@ -67,6 +67,16 @@ if ($cid) {
                     <span class="checkbox-title"><?php print __('Use proxy') ?></span>
                 </label>
          
+                <label class="inline-edit-status">                
+                    <?php
+                    $checked = '';
+                    if ($ao['webdrivers'] == 1) {
+                        $checked = 'checked="checked"';
+                    }
+                    ?>
+                    <input type="checkbox" name="webdrivers" value="1" <?php print $checked ?> >
+                    <span class="checkbox-title"><?php print __('Use webdrivers') ?></span>
+                </label>
                 
                 <label class="inline-edit-status">                
                     <?php

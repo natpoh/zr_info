@@ -23,6 +23,16 @@
             ?>
             <textarea name="parser_cookie_text" style="width:90%" rows="10"><?php print $cookie_text ?></textarea>
 
+            
+            <div class="label">
+                <?php print __('Web drives') ?>
+            </div>
+            <?php
+            $webdrivers_text=htmlspecialchars(base64_decode($ss['web_drivers']));
+
+            ?>
+            <textarea name="web_drivers" style="width:90%" rows="10"><?php print $webdrivers_text ?></textarea>
+            
             <?php wp_nonce_field('ml-nonce', 'ml-nonce'); ?>
             <br />
             <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save') ?>" class="button-primary">  

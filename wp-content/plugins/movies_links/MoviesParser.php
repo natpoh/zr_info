@@ -31,6 +31,7 @@ class MoviesParser extends MoviesAbstractDB {
                     'num' => 10,
                     'status' => 0,
                     'proxy' => 0,
+                    'webdrivers' => 0,
                 ),
                 'find_urls' => array(
                     'first' => '',
@@ -913,8 +914,13 @@ class MoviesParser extends MoviesAbstractDB {
 
         // Get posts (last is first)       
 
-        $use_proxy = $type_opt['proxy'];
-        $code = $this->get_proxy($url, $use_proxy, $headers, $settings);
+        $use_webdriver = $type_opt['webdrivers'];
+        if ($use_webdriver) {
+            $code = $this->get_webdriver($url, $headers, $settings);
+        } else {
+            $use_proxy = $type_opt['proxy'];
+            $code = $this->get_proxy($url, $use_proxy, $headers, $settings);
+        }
         $ret['content'] = $code;
         $ret['headers'] = $headers;
         return $ret;
@@ -2214,6 +2220,65 @@ class MoviesParser extends MoviesAbstractDB {
 
         $response = curl_exec($ch);
 
+        $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        $headerSent = curl_getinfo($ch, CURLINFO_HEADER_OUT); // request headers
+        $header_responce = substr($response, 0, $header_size);
+
+        $header = "RESPONCE:\n" . $header_responce . "\nREQUEST:\n" . $headerSent;
+        $body = substr($response, $header_size);
+
+        curl_close($ch);
+
+        return $body;
+    }
+
+    public function get_webdriver($url, &$header = '', $settings = '', $use_driver = -1) {
+
+        $webdrivers_text = base64_decode($settings['web_drivers']);
+        //http://165.227.101.220:8110/?p=ds1bfgFe_23_KJDS-F&url= http://185.135.80.156:8110/?p=ds1bfgFe_23_KJDS-F&url= http://148.251.54.53:8110/?p=ds1bfgFe_23_KJDS-F&url=
+        $web_arr = array();
+        if ($webdrivers_text) {
+            if (strstr($webdrivers_text, "\n")) {
+                $web_arr = explode("\n", $webdrivers_text);
+            } else {
+                $web_arr = array($webdrivers_text);
+            }
+        }
+        
+        if (!$web_arr){
+            return 'No webdrivers found';
+        }
+        
+        if ($use_driver!=-1){
+            if (!isset($web_arr[$use_driver])){
+                return 'Webdriver not found, '.$use_driver;
+            }
+        }
+        
+        $current_driver = trim($web_arr[array_rand($web_arr,1)]);        
+        $url = $current_driver.$url;    
+
+        $ch = curl_init();
+        $ss = $settings ? $settings : array();
+        $curl_user_agent = isset($ss['parser_user_agent']) ? $ss['parser_user_agent'] : '';
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 1);
+        curl_setopt($ch, CURLOPT_ENCODING, 'deflate');
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 60);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+        if ($curl_user_agent) {
+            curl_setopt($ch, CURLOPT_USERAGENT, $curl_user_agent);
+        }
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+
+        curl_setopt($ch, CURLINFO_HEADER_OUT, true); // enable tracking
+
+
+        $response = curl_exec($ch);
         $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
         $headerSent = curl_getinfo($ch, CURLINFO_HEADER_OUT); // request headers
         $header_responce = substr($response, 0, $header_size);

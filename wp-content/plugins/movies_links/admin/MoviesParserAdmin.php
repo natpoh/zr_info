@@ -724,6 +724,7 @@ class MoviesParserAdmin extends ItemAdmin {
                 'num' => isset($form_state['num']) ? $form_state['num'] : $opt_prev['arhive']['num'],
                 'status' => isset($form_state['status']) ? $form_state['status'] : 0,
                 'proxy' => isset($form_state['proxy']) ? $form_state['proxy'] : 0,
+                'webdrivers' => isset($form_state['webdrivers']) ? $form_state['webdrivers'] : 0,
             );
 
             $options = $opt_prev;

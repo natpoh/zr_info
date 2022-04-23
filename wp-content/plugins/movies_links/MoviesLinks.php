@@ -16,6 +16,7 @@ class MoviesLinks extends MoviesAbstractDB {
         $this->settings_def = array(
             'parser_user_agent' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36',
             'parser_cookie_path' => ABSPATH . 'wp-content/uploads/movies_links_cookies.txt',
+            'web_drivers' => '',
         );
 
         $this->db = array(
@@ -144,6 +145,9 @@ class MoviesLinks extends MoviesAbstractDB {
             }
             file_put_contents($cookie_path, $form['parser_cookie_text']);
         }
+        if (isset($form['web_drivers'])) {
+            $ss['web_drivers'] = base64_encode($new_value);
+        }        
 
         $this->settings = $ss;
         update_option('movies_links_settings', serialize($ss));
