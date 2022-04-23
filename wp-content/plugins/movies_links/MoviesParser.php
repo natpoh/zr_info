@@ -5,7 +5,8 @@ class MoviesParser extends MoviesAbstractDB {
     private $ml = '';
     private $db = '';
     private $def_options = '';
-
+    public $sort_pages = array('id', 'date', 'title', 'last_update', 'update_interval', 'name', 'pid', 'status', 'type', 'weight');
+    
     public function __construct($ml = '') {
         $this->ml = $ml ? $ml : new MoviesLinks();
 
@@ -403,7 +404,7 @@ class MoviesParser extends MoviesAbstractDB {
 
         //Sort
         $and_orderby = '';
-        if ($orderby && in_array($orderby, $this->cm->sort_pages)) {
+        if ($orderby && in_array($orderby, $this->sort_pages)) {
             $and_orderby = ' ORDER BY ' . $orderby;
             if ($order) {
                 $and_orderby .= ' ' . $order;
