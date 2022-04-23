@@ -5,7 +5,7 @@ class MoviesParserAdmin extends ItemAdmin {
     public $mla;
     public $ml;
     private $mp;
-    public $sort_pages = array('id', 'date', 'title', 'last_update', 'update_interval', 'name', 'pid', 'status', 'type', 'weight');
+    public $sort_pages = array('id', 'date', 'adate','pdate', 'title', 'last_update', 'update_interval', 'name', 'pid', 'status', 'type', 'weight');
     public $update_interval = array(
         1 => 'One min',
         5 => 'Five min',

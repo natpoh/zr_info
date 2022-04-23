@@ -5,7 +5,7 @@ class MoviesParser extends MoviesAbstractDB {
     private $ml = '';
     private $db = '';
     private $def_options = '';
-    public $sort_pages = array('id', 'date', 'title', 'last_update', 'update_interval', 'name', 'pid', 'status', 'type', 'weight');
+    public $sort_pages = array('id', 'date', 'adate', 'pdate', 'title', 'last_update', 'update_interval', 'name', 'pid', 'status', 'type', 'weight');
     
     public function __construct($ml = '') {
         $this->ml = $ml ? $ml : new MoviesLinks();

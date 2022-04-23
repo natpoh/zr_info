@@ -40,8 +40,8 @@ if (sizeof($posts) > 0) {
             <?php $this->sorted_head('id', 'id', $orderby, $order, $page_url) ?>             
             <th><?php print __('Link') ?></th>                                
             <?php $this->sorted_head('status', 'Status', $orderby, $order, $page_url) ?>                                     
-            <th><?php print __('Arhive') ?></th>
-            <th><?php print __('Post') ?></th>
+            <?php $this->sorted_head('adate', 'Arhive', $orderby, $order, $page_url) ?>            
+            <?php $this->sorted_head('pdate', 'Post', $orderby, $order, $page_url) ?>                    
             <th><?php print __('Link') ?></th>
             <th><?php print __('Campaign') ?></th> 
             <?php /*?>
