@@ -393,6 +393,10 @@ class MoviesParserCron extends MoviesAbstractDB {
         }
 
         //2. Parse Url
+        // Status - Parsing
+        $status = 5;
+        $this->mp->change_url_state($item->id, $status, true);
+
         $url = $item->link;
         $link_hash = $item->link_hash;
         $first_letter = substr($link_hash, 0, 1);

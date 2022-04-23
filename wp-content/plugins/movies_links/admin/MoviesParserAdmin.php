@@ -113,6 +113,7 @@ class MoviesParserAdmin extends ItemAdmin {
         2 => 'Trash',
         3 => 'Ignore',
         4 => 'Error',
+        5 => 'Parsing',
     );
     public $bulk_actions = array(
         'post_status_new' => 'Post status New',
