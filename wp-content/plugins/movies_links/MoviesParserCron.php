@@ -92,6 +92,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         $urls_count = $type_opt['num'];
 
         $use_proxy = $type_opt['proxy'];
+        $use_webdriver = $type_opt['webdrivers'];
 
         // Get last urls
         $status = 0;
@@ -100,7 +101,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         $count = sizeof($urls);
         if ($count) {
             foreach ($urls as $item) {
-                $this->arhive_url($item, $use_proxy);
+                $this->arhive_url($item, $use_proxy, $use_webdriver);
             }
             // Unpaused parsing            
             $this->start_paused_module($campaign, 'parsing', $options);
@@ -266,7 +267,7 @@ class MoviesParserCron extends MoviesAbstractDB {
                                 // Add meta
                                 // $this->mp->add_post_actor_meta($aid, $pid, $cid);
                                 $find_last = $aid;
-                                $valid_actors[]=$aid;                               
+                                $valid_actors[] = $aid;
                             }
                         }
 
@@ -278,9 +279,8 @@ class MoviesParserCron extends MoviesAbstractDB {
 
                             $message = "Found author link: name: " . $post->title . "; aid: $find_last; rating: $rating";
                             $this->mp->log_info($message, $cid, $post->uid, 4);
-                                          
+
                             $mch->add_actors($campaign, $post, $valid_actors);
-                            
                         } else {
                             $this->mp->update_post_status($post->uid, 2);
                             $message = 'Found posts is not valid';
@@ -375,7 +375,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         return $count;
     }
 
-    private function arhive_url($item, $use_proxy = 0, $force = false) {
+    private function arhive_url($item, $use_proxy = 0, $use_webdriver = false, $force = false) {
         /*
           [id] => 21
           [cid] => 2
@@ -398,7 +398,11 @@ class MoviesParserCron extends MoviesAbstractDB {
         $first_letter = substr($link_hash, 0, 1);
 
         $settings = $this->ml->get_settings();
-        $code = $this->mp->get_proxy($url, $use_proxy, $headers, $settings);
+        if ($use_webdriver) {
+            $code = $this->mp->get_webdriver($url, $headers, $settings);
+        } else {
+            $code = $this->mp->get_proxy($url, $use_proxy, $headers, $settings);
+        }
         $arhive_path = $this->ml->arhive_path;
         $cid_path = $arhive_path . $item->cid . '/';
         $first_letter_path = $cid_path . $first_letter . '/';
