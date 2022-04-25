@@ -45,12 +45,11 @@ class MoviesCustomHooks {
         $country = '';
         if ($to_update) {
             $country_meta = array();
-            $topcountry = '';
             if ($to_update['topcountry']) {
                 $topcountry = trim($to_update['topcountry']);
             }
 
-            if ($to_update['country']) {
+            if ($to_update['country'] && $topcountry) {
                 $country = $to_update['country'];
                 if (strstr($country, ';')) {
                     $c_arr = explode(';', $country);
@@ -58,9 +57,6 @@ class MoviesCustomHooks {
                         if (strstr($value, ':')) {
                             $val_arr = explode(':', $value);
                             $c = trim($val_arr[0]);
-                            if (!$topcountry) {
-                                $topcountry = $c;
-                            }
                             $t = (int) str_replace(',', '', trim($val_arr[1]));
                             $country_meta[] = array('c' => $c, 't' => $t);
                         }
