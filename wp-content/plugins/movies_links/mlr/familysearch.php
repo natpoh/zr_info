@@ -24,6 +24,7 @@ class Familysearch extends MoviesAbstractDBAn {
             'lastnames' => 'data_lastnames',
             'fs_country' => 'data_familysearch_country',
             'meta_fs' => 'meta_familysearch',
+            'population' => 'data_population_country',
         );
     }
 
@@ -59,11 +60,11 @@ class Familysearch extends MoviesAbstractDBAn {
         $result = $this->db_results($query);
         return $result;
     }
-    
+
     public function get_posts_count() {
-         $sql = "SELECT COUNT(id) FROM {$this->db['lastnames']}";
-         $cnt = $this->db_get_var($sql);
-         return $cnt;
+        $sql = "SELECT COUNT(id) FROM {$this->db['lastnames']}";
+        $cnt = $this->db_get_var($sql);
+        return $cnt;
     }
 
     public function get_lastname_id($name = '') {
@@ -115,9 +116,9 @@ class Familysearch extends MoviesAbstractDBAn {
                 . " WHERE nid=%d", (int) $lastname_id);
         $results = $this->db_results($sql);
         $ret = array();
-        if ($results){
+        if ($results) {
             foreach ($results as $item) {
-                $ret[$item->country]=$item->ccount;
+                $ret[$item->country] = $item->ccount;
             }
         }
         arsort($ret);
@@ -150,6 +151,35 @@ class Familysearch extends MoviesAbstractDBAn {
         //Get the id
         $id = $this->getInsertId('id', $this->db['fs_country']);
         return $id;
+    }
+
+    public function get_country_races($country, $count) {
+        $population = $this->get_population();
+        $ret = array();
+        if (isset($population[$country])){
+            foreach ($population[$country] as $race => $percent) {
+                $ret[$race]=round(($percent*$count)/100,0);
+            }
+        }
+        return $ret;
+    }
+
+    public function get_population() {
+        static $population;
+        if ($population) {
+            return $population;
+        }
+
+        $ret = array();
+        $sql = "SELECT country_name, ethnic_array_result FROM {$this->db['population']}";
+        $results = $this->db_results($sql);
+        if ($results){
+            foreach ($results as $item) {
+                $ret[$item->country_name]= json_decode($item->ethnic_array_result);
+            }
+        }
+        $population = $ret;
+        return $population;
     }
 
 }
