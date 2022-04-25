@@ -6,7 +6,7 @@ class MoviesParser extends MoviesAbstractDB {
     private $db = '';
     private $def_options = '';
     public $sort_pages = array('id', 'date', 'adate', 'pdate', 'title', 'last_update', 'update_interval', 'name', 'pid', 'status', 'type', 'weight');
-    
+
     public function __construct($ml = '') {
         $this->ml = $ml ? $ml : new MoviesLinks();
 
@@ -132,6 +132,7 @@ class MoviesParser extends MoviesAbstractDB {
     public $links_rules_actor_fields = array(
         'f' => 'Firstname',
         'l' => 'Lastname',
+        'e' => 'Exist'
     );
     public $links_match_type = array(
         'm' => 'Match',
@@ -1739,6 +1740,20 @@ class MoviesParser extends MoviesAbstractDB {
                 $search_fields['lastname'] = $post_last_name;
             }
 
+            // Get exist
+            $post_exist_name = '';
+            $exist_rule = '';
+            if ($active_rules['e']) {
+                foreach ($active_rules['e'] as $item) {
+                    if ($item['content']) {
+                        $post_exist_name = $item['content'];
+                        $exist_rule = $item;
+                        break;
+                    }
+                }
+                $search_fields['exist'] = $post_exist_name;
+            }
+
 
             $ma = $this->ml->get_ma();
 
@@ -1773,6 +1788,15 @@ class MoviesParser extends MoviesAbstractDB {
                         $results[$actor->aid]['lastname']['data'] = $actor->lastname;
                         $results[$actor->aid]['lastname']['match'] = 1;
                         $results[$actor->aid]['lastname']['rating'] = $last_rule['ra'];
+
+                        $results[$actor->aid]['total']['match'] += 1;
+                        $results[$actor->aid]['total']['rating'] += $last_rule['ra'];
+                    }
+                    // Exist              
+                    if ($post_exist_name) {
+                        $results[$actor->aid]['exist']['data'] = $post_exist_name;
+                        $results[$actor->aid]['exist']['match'] = 1;
+                        $results[$actor->aid]['exist']['rating'] = $last_rule['ra'];
 
                         $results[$actor->aid]['total']['match'] += 1;
                         $results[$actor->aid]['total']['rating'] += $last_rule['ra'];
@@ -2245,19 +2269,19 @@ class MoviesParser extends MoviesAbstractDB {
                 $web_arr = array($webdrivers_text);
             }
         }
-        
-        if (!$web_arr){
+
+        if (!$web_arr) {
             return 'No webdrivers found';
         }
-        
-        if ($use_driver!=-1){
-            if (!isset($web_arr[$use_driver])){
-                return 'Webdriver not found, '.$use_driver;
+
+        if ($use_driver != -1) {
+            if (!isset($web_arr[$use_driver])) {
+                return 'Webdriver not found, ' . $use_driver;
             }
         }
-        
-        $current_driver = trim($web_arr[array_rand($web_arr,1)]);        
-        $url = $current_driver.$url;    
+
+        $current_driver = trim($web_arr[array_rand($web_arr, 1)]);
+        $url = $current_driver . $url;
 
         $ch = curl_init();
         $ss = $settings ? $settings : array();
