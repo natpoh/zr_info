@@ -1,0 +1,2930 @@
+<?php
+/*
+ * Admin interface for Critic Matic
+ */
+
+class CriticMaticAdmin {
+
+    //Critic matic
+    private $cm;
+    //Critic search
+    private $cs;
+    //Critic feeds
+    private $cf;
+    //Critic parser
+    private $cp;
+    //Movies an
+    private $ma;
+    private $ca;
+    private $access_level = 4;
+    //Slug    
+    private $parrent_slug = 'critic_matic';
+    private $admin_page = '/wp-admin/admin.php?page=';
+    private $authors_url = '';
+    private $audience_url = '';
+    private $countries_url = '';
+    private $feeds_url = '';
+    private $genres_url = '';
+    private $movies_url = '';
+    private $providers_url = '';
+    private $parser_url = '';
+    private $settings_url = '';
+    private $sitemap_url = '';
+    private $tags_url = '';
+    private $settings_tabs = array(
+        'search' => 'Search',
+        'parser' => 'Parser',
+        'audience' => 'Audience',
+        'posts' => 'Posts view'
+    );
+    public $bulk_actions = array(
+        'publish' => 'Publish',
+        'draft' => 'Draft',
+        'trash' => 'Trash',
+        'findmovies' => 'Find movies',
+        'changeauthor' => 'Change the author',
+        'rules' => 'Apply feed rules'
+    );
+    public $bulk_actions_audience = array(
+        'publish' => 'Publish',
+        'draft' => 'Draft',
+        'trash' => 'Trash',
+        'wl' => 'IP to White list',
+        'gl' => 'IP to Gray list',
+        'bl' => 'IP to Black list',
+        'nl' => 'Remove IP from list',
+        'findmovies' => 'Find movies',
+    );
+    public $bulk_actions_audience_ip = array(
+        'wl' => 'IP to White list',
+        'gl' => 'IP to Gray list',
+        'bl' => 'IP to Black list',
+        'nl' => 'Remove IP from list',
+    );
+    public $bulk_actions_search = array(
+        'add_critics' => 'Add valid critics meta',
+        'add_critics_force' => 'Force approved critics meta',
+    );
+    public $bulk_actions_meta = array(
+        'meta_approve' => 'Approve meta',
+        'meta_unapprove' => 'Unapprove meta',
+        'meta_remove' => 'Remove meta',
+    );
+    public $per_pages = array(30, 100, 500, 1000);
+
+    public function __construct($cm, $cs, $cf, $cp) {
+        $this->cm = $cm;
+        $this->cs = $cs;
+        $this->cf = $cf;
+        $this->cp = $cp;
+
+        $this->authors_url = $this->parrent_slug . '_authors';
+        $this->audience_url = $this->parrent_slug . '_audience';
+        $this->countries_url = $this->parrent_slug . '_countries';
+        $this->feeds_url = $this->parrent_slug . '_feeds';
+        $this->genres_url = $this->parrent_slug . '_genres';
+        $this->movies_url = $this->parrent_slug . '_movies';
+        $this->parser_url = $this->parrent_slug . '_parser';
+        $this->providers_url = $this->parrent_slug . '_providers';
+        $this->settings_url = $this->parrent_slug . '_settings';
+        $this->sitemap_url = $this->parrent_slug . '_sitemap';
+        $this->tags_url = $this->parrent_slug . '_tags';
+
+        add_action('admin_menu', array($this, 'add_option_page'));
+        add_action('admin_print_styles', array($this, 'print_admin_styles'));
+
+        wp_enqueue_script('critic_matic_admin', CRITIC_MATIC_PLUGIN_URL . 'js/admin.js', false, CRITIC_MATIC_VERSION);
+        add_action("wp_ajax_cm_autocomplite", array($this, "cm_autocomplite"));
+        add_action("wp_ajax_cm_author_autocomplite", array($this, "cm_author_autocomplite"));
+        add_action("wp_ajax_cm_find_yt_channel", array($this, "cm_find_yt_channel"));
+    }
+
+    public function add_option_page() {
+
+        $count_text = '';
+        if ($this->cm->new_audience_count > 0) {
+            $count_text = ' <span class="awaiting-mod count-' . $this->cm->new_audience_count . '"><span class="pending-count">' . $this->cm->new_audience_count . '</span></span>';
+        }
+
+        add_menu_page(__('Critic Matic'), __('Critic Matic') . $count_text, $this->access_level, $this->parrent_slug, array($this, 'overview'));
+        add_submenu_page($this->parrent_slug, __('Critic Matic overview'), __('Overview'), $this->access_level, $this->parrent_slug, array($this, 'overview'));
+        add_submenu_page($this->parrent_slug, __('Movies'), __('Movies'), $this->access_level, $this->movies_url, array($this, 'movies'));
+        add_submenu_page($this->parrent_slug, __('Authors'), __('Authors'), $this->access_level, $this->authors_url, array($this, 'authors'));
+        add_submenu_page($this->parrent_slug, __('Tags'), __('Tags'), $this->access_level, $this->tags_url, array($this, 'tags'));
+        add_submenu_page($this->parrent_slug, __('Genres'), __('Genres'), $this->access_level, $this->genres_url, array($this, 'genres'));
+        add_submenu_page($this->parrent_slug, __('Countries'), __('Countries'), $this->access_level, $this->countries_url, array($this, 'countries'));
+        add_submenu_page($this->parrent_slug, __('Providers'), __('Providers'), $this->access_level, $this->providers_url, array($this, 'providers'));
+        add_submenu_page($this->parrent_slug, __('Audience'), __('Audience') . $count_text, $this->access_level, $this->audience_url, array($this, 'audience'));
+        add_submenu_page($this->parrent_slug, __('Feeds'), __('Feeds'), $this->access_level, $this->feeds_url, array($this, 'feeds'));
+        add_submenu_page($this->parrent_slug, __('Parser'), __('Parser'), $this->access_level, $this->parser_url, array($this, 'parser'));
+        add_submenu_page($this->parrent_slug, __('Settings'), __('Settings'), $this->access_level, $this->settings_url, array($this, 'settings'));
+        add_submenu_page($this->parrent_slug, __('Sitemap'), __('Sitemap'), $this->access_level, $this->sitemap_url, array($this, 'sitemap'));
+    }
+
+    public function print_admin_styles() {
+        wp_enqueue_style('critic_matic_admin', CRITIC_MATIC_PLUGIN_URL . 'css/style.css', false, CRITIC_MATIC_VERSION);
+    }
+
+    public function get_ma() {
+        // Get criti
+        if (!$this->ma) {
+            //init cma
+            if (!class_exists('MoviesAn')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'MoviesAn.php' );
+            }
+            $this->ma = new MoviesAn();
+        }
+        return $this->ma;
+    }
+
+    public function get_ca() {
+        // Get critic audience
+        if (!$this->ca) {
+            //init cma
+            if (!class_exists('CriticAudience')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticAudience.php' );
+            }
+            $this->ca = new CriticAudience($this->cm);
+        }
+        return $this->ca;
+    }
+
+    /*
+     * Get sort orderby
+     */
+
+    private function get_orderby($allow_order = array()) {
+        $orderby = sanitize_text_field(stripslashes($_GET['orderby']));
+        if (!in_array($orderby, $allow_order)) {
+            $orderby = '';
+        }
+        return $orderby;
+    }
+
+    /*
+     * Get sort order
+     */
+
+    private function get_order() {
+        $order = isset($_GET['order']) && $_GET['order'] == 'desc' ? 'desc' : 'asc';
+        return $order;
+    }
+
+    /*
+     * Get current tab
+     */
+
+    private function get_tab() {
+        $tab = !empty($_GET['tab']) ? sanitize_text_field(stripslashes($_GET['tab'])) : '';
+        return $tab;
+    }
+
+    /*
+     * Get current page
+     */
+
+    private function get_page() {
+        $page = isset($_GET['p']) ? (int) $_GET['p'] : 1;
+        return $page;
+    }
+
+    private function get_perpage() {
+        $pp = isset($_GET['perpage']) ? (int) $_GET['perpage'] : $this->cm->perpage;
+        return $pp;
+    }
+
+    public function cm_autocomplite() {
+        $keyword = isset($_GET['keyword']) ? strip_tags(stripslashes($_GET['keyword'])) : '';
+        $ret = array('type' => 'no', 'data' => array());
+        if ($keyword) {
+            $limit = 6;
+            $results = $this->cs->front_search_any_movies_by_title_an($this->cm->escape($keyword), $limit);
+
+            if (sizeof($results)) {
+                $ret['type'] = 'ok';
+                foreach ($results as $item) {
+                    $title = $item->title . ', ' . $item->year;
+                    $ret['data'][] = array('id' => $item->id, 'title' => $title);
+                }
+            }
+        }
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            print json_encode($ret);
+        } else {
+            header("Location: " . $_SERVER["HTTP_REFERER"]);
+        }
+        die();
+    }
+
+    public function cm_author_autocomplite() {
+        $keyword = isset($_GET['keyword']) ? strip_tags(stripslashes($_GET['keyword'])) : '';
+        $ret = array('type' => 'no', 'data' => array());
+        if ($keyword) {
+            $limit = 6;
+            $results = $this->cm->find_authors($this->cm->escape($keyword), $limit);
+
+            if (sizeof($results)) {
+                $ret['type'] = 'ok';
+                foreach ($results as $item) {
+                    $type = $this->cm->get_author_type($item->type);
+                    $title = $item->name . ' (' . $type . ')';
+                    $ret['data'][] = array('id' => $item->id, 'title' => $title);
+                }
+            }
+        }
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            print json_encode($ret);
+        } else {
+            header("Location: " . $_SERVER["HTTP_REFERER"]);
+        }
+        die();
+    }
+
+    public function cm_find_yt_channel() {
+        $keyword = isset($_GET['yt_query']) ? strip_tags(stripslashes($_GET['yt_query'])) : '';
+
+        $channel = '';
+        $video_id = '';
+        $title = '';
+        $total = -1;
+        $err = '';
+        $valid = 0;
+
+        if (preg_match('/\/channel\/([\w\d_-]+)/', $keyword, $match)) {
+            $channel = $match[1];
+        }
+
+        if (!$channel) {
+            //Get youtube urls
+            if ((strstr($keyword, 'youtube') || strstr($keyword, 'youtu.be'))) {
+                if (preg_match('#//www\.youtube\.com/embed/([a-zA-Z0-9\-_]+)#', $keyword, $match) ||
+                        preg_match('#//(?:www\.|)youtube\.com/(?:v/|watch\?v=|watch\?.*v=|embed/)([a-zA-Z0-9\-_]+)#', $keyword, $match) ||
+                        preg_match('#//youtu\.be/([a-zA-Z0-9\-_]+)#', $keyword, $match)) {
+                    if (count($match) > 1) {
+                        $video_id = $match[1];
+                    }
+                }
+            }
+        }
+
+        if (!$channel && $video_id) {
+            $result = $this->cp->find_youtube_data_api(array($video_id));
+            if (isset($result[$video_id])) {
+                $channel = $result[$video_id]->channelId;
+                $title = $result[$video_id]->channelTitle;
+            }
+        }
+
+        if ($channel) {
+            try {
+                $responce = $this->cp->youtube_get_videos($channel, 5);
+
+                if ($responce) {
+                    $total = $responce->pageInfo->totalResults;
+                    if ($total) {
+                        $title = $responce->items[0]->snippet->channelTitle;
+                    }
+                }
+            } catch (Exception $exc) {
+
+                //$err = $exc->getTraceAsString();
+                $err = 'Channel error';
+            }
+        }
+
+        if ($total > 0) {
+            $valid = 1;
+        } else {
+            if (!$err) {
+                $err = 'Channel invalid';
+            }
+        }
+
+        $ret = array('err' => $err, 'total' => $total, 'channel' => $channel, 'valid' => $valid, 'title' => $title);
+
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            print json_encode($ret);
+        } else {
+            header("Location: " . $_SERVER["HTTP_REFERER"]);
+        }
+        die();
+    }
+
+    /*
+     * Last critic posts
+     */
+
+    public function overview() {
+        $curr_tab = $this->get_tab();
+        $page = $this->get_page();
+        $per_page = $this->get_perpage();
+        $pid = isset($_GET['pid']) ? (int) $_GET['pid'] : '';
+
+        //Bulk actions
+        $this->bulk_submit();
+
+        //Search
+        $s = isset($_GET['s']) ? strip_tags(stripslashes($_GET['s'])) : '';
+
+        //Sort
+        $sort_pages = $this->cm->sort_pages;
+        $orderby = $this->get_orderby($sort_pages);
+        $order = $this->get_order();
+
+        $url = $this->admin_page . $this->parrent_slug;
+        $page_url = $url;
+
+        if ($s) {
+            // Search logic
+
+            $start = ($page - 1) * $per_page;
+
+            // Sort
+            $sort = array();
+            if ($orderby) {
+                $sort = array('sort' => $orderby, 'type' => $order);
+            }
+
+            // Filter by author type
+            $home_author_type = '';
+            $filters = array();
+            $facets = array();
+            /*
+              $author_type = isset($_GET['author_type']) ? (int) $_GET['author_type'] : $home_author_type;
+
+              if ($author_type != $home_author_type) {
+              $page_url = $page_url . '&author_type=' . $author_type;
+              $filters['author_type'] = $author_type;
+              }
+
+              //$facets = array('author_type');
+             */
+            $results = $this->cs->front_search_critics($s, $per_page, $start, $sort, $filters, $facets);
+
+            /*
+             * [author_type] => Array
+              (
+              [0] => stdClass Object
+              (
+              [author_type] => 1
+              [count(*)] => 291
+              )
+              )
+             */
+
+            $posts = $results['result'];
+            $total = $results['total'];
+            /*
+              $facets_result = $results['facets'];
+              $states = array();
+              if (isset($facets_result['author_type'])) {
+              $states = array(
+              '-1' => array(
+              'title' => 'All',
+              'count' => $total
+              )
+              );
+              $author_count=array();
+              foreach ($facets_result['author_type'] as $value) {
+              $val_arr = (array) $value;
+              $author_count[$val_arr['author_type']] = $val_arr['count(*)'];
+              }
+              foreach ($this->cm->author_type as $key => $value) {
+              $states[$key] = array(
+              'title' => $value,
+              'count' => isset($author_count[$key]) ? $author_count[$key] : 0
+              );
+              }
+              }
+              $filters_author_type = $this->get_filters($states, $page_url, $author_type, $front_slug = '', $name = 'author_type');
+             */
+            $page_url = $page_url . '&s=' . urlencode($s);
+
+            if ($total) {
+                $pager = $this->themePager(-1, $page, $page_url, $total, $per_page, $orderby, $order);
+            }
+
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_search.php');
+            return;
+        }
+
+        if ($pid) {
+            // Post page
+            $append = '&pid=' . $pid;
+            $tabs_arr = $this->cm->post_tabs;
+            $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab, $append);
+
+            if (!$curr_tab) {
+                $curr_tab = 'home';
+            }
+
+            if ($curr_tab == 'home') {
+                // Post view page  
+                $post = $this->cm->get_post($pid);
+                wp_enqueue_style('audience_rating', CRITIC_MATIC_PLUGIN_URL . 'css/rating.css', false, CRITIC_MATIC_VERSION);
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/view_post.php');
+            } else if ($curr_tab == 'edit') {
+                // Edit the post
+                $authors = $this->cm->get_all_authors(-1, 2);
+                if (isset($_POST['title'])) {
+                    $valid = $this->cm->post_edit_validate($_POST);
+                    if ($valid === true) {
+                        $result_id = $this->cm->post_edit_submit($_POST);
+                        $result = __('Post updated');
+                        print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                    } else {
+                        print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                    }
+                }
+                $post = $this->cm->get_post($pid);
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/edit_post.php');
+            } else if ($curr_tab == 'trash') {
+                // Trash
+                if (isset($_POST['id'])) {
+                    $valid = $this->cm->post_edit_validate($_POST);
+                    if ($valid === true) {
+                        $result_id = $this->cm->trash_post($_POST);
+                        $status = isset($_POST['status']) ? $_POST['status'] : 0;
+                        if ($status == 2) {
+                            $result = __('Post') . ' [' . $result_id . '] ' . __('moved to trash');
+                        } else {
+                            $result = __('Post') . ' [' . $result_id . '] ' . __('untrashed');
+                        }
+
+                        print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                    } else {
+                        print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                    }
+                }
+                $post = $this->cm->get_post($pid);
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/trash_post.php');
+            }
+
+            return;
+        }
+        /*
+         * Other pages
+         */
+
+        $tabs_arr = $this->cm->main_tabs;
+        $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab, $append);
+
+        // Filter by status
+        $home_status = -1;
+        $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_status;
+
+        if (!$curr_tab) {
+            $curr_tab = 'home';
+        }
+
+        if ($curr_tab == 'home') {
+
+            // Filter by post type
+            $home_type = -1;
+            $type = isset($_GET['type']) ? (int) $_GET['type'] : $home_type;
+
+            $filter_type_arr = $this->cm->get_post_types(0, $type, 0);
+            $filters_type = $this->get_filters($filter_type_arr, $page_url, $type, $front_slug = '', $name = 'type');
+            if ($type != $home_type) {
+                $page_url = $page_url . '&type=' . $type;
+                $count = isset($filter_type_arr[$type]['count']) ? $filter_type_arr[$type]['count'] : 0;
+            }
+
+            // Filter by author type
+            $home_author_type = -1;
+            $author_type = isset($_GET['author_type']) ? (int) $_GET['author_type'] : $home_author_type;
+            $filter_author_type_arr = $this->cm->get_post_author_types(0, $type, 0);
+            $filters_author_type = $this->get_filters($filter_author_type_arr, $page_url, $author_type, $front_slug = '', $name = 'author_type');
+            if ($author_type != $home_author_type) {
+                $page_url = $page_url . '&author_type=' . $author_type;
+                $count = isset($filter_author_type_arr[$author_type]['count']) ? $filter_author_type_arr[$author_type]['count'] : 0;
+            }
+
+            // Filter by post meta
+            $home_meta_type = -1;
+            $meta_type = isset($_GET['meta_type']) ? (int) $_GET['meta_type'] : $home_meta_type;
+            $filter_meta_type_arr = $this->cm->get_post_meta_types(0, $type, 0, $meta_type, $author_type);
+            $filters_meta_type = $this->get_filters($filter_meta_type_arr, $page_url, $meta_type, $front_slug = '', $name = 'meta_type');
+            if ($meta_type != $home_meta_type) {
+                $page_url = $page_url . '&meta_type=' . $meta_type;
+                $count = isset($filter_meta_type_arr[$meta_type]['count']) ? $filter_meta_type_arr[$meta_type]['count'] : 0;
+            }
+
+            $filter_arr = $this->cm->get_post_states(0, $type, 0, $meta_type, $author_type);
+            $filters = $this->get_filters($filter_arr, $page_url, $status);
+            if ($status != $home_status) {
+                $page_url = $page_url . '&status=' . $status;
+            }
+
+            $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
+
+            $per_page = $this->cm->perpage;
+            $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+            $posts = $this->cm->get_posts($status, $page, 0, 0, $type, $meta_type, $author_type, $orderby, $order);
+
+
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_overview.php');
+        } else if ($curr_tab == 'meta') {
+            // Filter by status
+
+            $page_url .= '&tab=' . $curr_tab;
+
+            $filter_arr = $this->cm->get_meta_states();
+            $filters = $this->get_filters($filter_arr, $page_url, $status);
+            if ($status != $home_status) {
+                $page_url = $page_url . '&status=' . $status;
+            }
+
+            $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
+
+            // Filter by rating
+            $home_rating = -1;
+            $meta_rating = isset($_GET['rating']) ? (int) $_GET['rating'] : $home_rating;
+            $filter_meta_rating_arr = $this->cm->get_meta_rating($status);
+            $rating_filters = $this->get_filters($filter_meta_rating_arr, $page_url, $meta_rating, $front_slug = '', $name = 'rating');
+            if ($meta_rating != $home_rating) {
+                $page_url = $page_url . '&rating=' . $meta_rating;
+                $count = isset($filter_meta_rating_arr[$meta_rating]['count']) ? $filter_meta_rating_arr[$meta_rating]['count'] : 0;
+            }
+
+
+            // Filter by meta type
+            $home_meta_type = -1;
+            $type = isset($_GET['type']) ? (int) $_GET['type'] : $home_meta_type;
+            $filter_type_arr = $this->cm->get_meta_type($status);
+            $filters_type = $this->get_filters($filter_type_arr, $page_url, $type, $front_slug = '', $name = 'type');
+            if ($type != $home_meta_type) {
+                $page_url = $page_url . '&type=' . $type;
+            }
+
+            $per_page = $this->cm->perpage;
+            $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+            $meta = $this->cm->get_meta($status, $page, $type, $meta_rating, $orderby, $order);
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_meta.php');
+        } else if ($curr_tab == 'log') {
+            $this->meta_log($tabs, $url);
+        } else if ($curr_tab == 'add') {
+            if (isset($_POST['title'])) {
+                $valid = $this->cm->post_edit_validate($_POST);
+                if ($valid === true) {
+                    $result_id = $this->cm->post_add_submit($_POST);
+                    $result = __('Post added. Go to the post: ') . '<a href="' . $url . '&pid=' . $result_id . '">' . $result_id . '</a>';
+                    print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                } else {
+                    print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                }
+            }
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/add_post.php');
+        }
+    }
+
+    /*
+     * Audience posts
+     */
+
+    public function audience() {
+        $curr_tab = $this->get_tab();
+        $page = $this->get_page();
+        $per_page = $this->get_perpage();
+        $pid = isset($_GET['pid']) ? (int) $_GET['pid'] : '';
+
+        //Bulk actions
+        $this->bulk_submit();
+
+        //Sort
+        $sort_pages = $this->cm->sort_pages;
+        $orderby = $this->get_orderby($sort_pages);
+        $order = $this->get_order();
+
+        $url = $this->admin_page . $this->audience_url;
+        $page_url = $url;
+
+        $cfront = new CriticFront($this->cm, $this->cs);
+
+        if ($pid) {
+            // Post page
+            $append = '&pid=' . $pid;
+            $tabs_arr = $this->cm->post_tabs;
+            $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab, $append);
+
+            if (!$curr_tab) {
+                $curr_tab = 'home';
+            }
+
+            if ($curr_tab == 'home') {
+                // Post view page  
+                $post = $this->cm->get_post($pid);
+                wp_enqueue_style('audience_rating', CRITIC_MATIC_PLUGIN_URL . 'css/rating.css', false, CRITIC_MATIC_VERSION);
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/view_post.php');
+            } else if ($curr_tab == 'edit') {
+                // Edit the post
+                $authors = $this->cm->get_all_authors(-1, 2);
+                if (isset($_POST['title'])) {
+                    $valid = $this->cm->post_edit_validate($_POST);
+                    if ($valid === true) {
+                        $result_id = $this->cm->post_edit_submit($_POST);
+                        $result = __('Post updated');
+                        print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                    } else {
+                        print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                    }
+                }
+                $post = $this->cm->get_post($pid);
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/edit_post.php');
+            } else if ($curr_tab == 'trash') {
+                // Trash
+                if (isset($_POST['id'])) {
+                    $valid = $this->cm->post_edit_validate($_POST);
+                    if ($valid === true) {
+                        $result_id = $this->cm->trash_post($_POST);
+                        $status = isset($_POST['status']) ? $_POST['status'] : 0;
+                        if ($status == 2) {
+                            $result = __('Post') . ' [' . $result_id . '] ' . __('moved to trash');
+                        } else {
+                            $result = __('Post') . ' [' . $result_id . '] ' . __('untrashed');
+                        }
+
+                        print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                    } else {
+                        print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                    }
+                }
+                $post = $this->cm->get_post($pid);
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/trash_post.php');
+            }
+
+            return;
+        }
+        /*
+         * Other pages
+         */
+
+        $tabs_arr = $this->cm->audience_tabs;
+        $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab, $append);
+
+        // Filter by status
+        $home_status = -1;
+        $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_status;
+
+        if (!$curr_tab) {
+            $curr_tab = 'home';
+        }
+
+        if ($curr_tab == 'home') {
+            $type = -1;
+            $meta_type = -1;
+            $author_type = 2;
+
+            $filter_arr = $this->cm->get_post_states(0, $type, 0, $meta_type, $author_type);
+            $filters = $this->get_filters($filter_arr, $page_url, $status);
+            if ($status != $home_status) {
+                $page_url = $page_url . '&status=' . $status;
+            }
+
+            $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
+
+
+            $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+            $posts = $this->cm->get_posts($status, $page, 0, 0, $type, $meta_type, $author_type, $orderby, $order);
+
+
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_audience.php');
+            wp_enqueue_style('audience_rating', CRITIC_MATIC_PLUGIN_URL . 'css/rating.css', false, CRITIC_MATIC_VERSION);
+        } else if ($curr_tab == 'iplist') {
+            // Get IP list
+            $page_url .= '&tab=' . $curr_tab;
+            $filter_arr = $this->cm->get_ip_states();
+            $filters = $this->get_filters($filter_arr, $page_url, $status);
+            if ($status != $home_status) {
+                $page_url = $page_url . '&status=' . $status;
+            }
+
+            $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
+
+            $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+            $posts = $this->cm->get_ips($status, $page, $orderby, $order);
+
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_ip_audience.php');
+        }
+    }
+
+    /*
+     * The authors page
+     */
+
+    public function authors() {
+
+        $curr_tab = $this->get_tab();
+        $page = $this->get_page();
+        $per_page = $this->get_perpage();
+        $aid = isset($_GET['aid']) ? (int) $_GET['aid'] : '';
+
+        //Sort
+        $sort_pages = $this->cm->sort_pages;
+        $orderby = $this->get_orderby($sort_pages);
+        $order = $this->get_order();
+
+        $url = $this->admin_page . $this->authors_url;
+        $page_url = $url;
+
+        if ($aid) {
+            // Author page
+            $append = '&aid=' . $aid;
+            $tabs_arr = $this->cm->author_tabs;
+            $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab, $append);
+
+            if (!$curr_tab) {
+                $curr_tab = 'home';
+            }
+
+            if ($curr_tab == 'home') {
+                // Author view page  
+                $author = $this->cm->get_author($aid);
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/view_author.php');
+            } else if ($curr_tab == 'posts') {
+                // Author posts
+                $this->feeds_posts($tabs, $url, 0, $aid);
+            } else if ($curr_tab == 'feeds') {
+                // Author feeds
+                $page_url .= '&tab=feeds';
+                $this->feeds_campaigns($tabs, $page_url, 0, $aid);
+            } else if ($curr_tab == 'parsers') {
+                // Author parsers
+                $page_url .= '&tab=parsers';
+                $this->parser_campaingns($tabs, $page_url, $aid);
+            } else if ($curr_tab == 'edit') {
+                if (isset($_POST['name'])) {
+                    $valid = $this->cm->author_edit_validate($_POST);
+                    if ($valid === true) {
+                        $result_id = $this->cm->author_edit_submit($_POST);
+                        $result = __('Author updated');
+                        print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                    } else {
+                        print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                    }
+                }
+                $author = $this->cm->get_author($aid);
+                $author_type = $this->cm->author_type;
+                $tags = $this->cm->get_tags();
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/edit_author.php');
+            } else if ($curr_tab == 'trash') {
+                //Trash
+                if (isset($_POST['id'])) {
+                    $valid = $this->cm->author_edit_validate($_POST);
+                    if ($valid === true) {
+                        $result_id = $this->cm->trash_author($_POST);
+
+                        $status = isset($_POST['status']) ? $_POST['status'] : 0;
+                        if ($status == 2) {
+                            $result = __('Author') . ' [' . $result_id . '] ' . __('moved to trash');
+                        } else {
+                            $result = __('Author') . ' [' . $result_id . '] ' . __('untrashed');
+                        }
+
+                        print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                    } else {
+                        print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                    }
+                }
+                $author = $this->cm->get_author($aid);
+
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/trash_author.php');
+            }
+
+            return;
+        }
+
+        //
+        // Other pages
+        //
+        //Tabs
+        $tabs_arr = $this->cm->authors_tabs;
+        $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab);
+
+        if (!$curr_tab) {
+            // Authors   
+            // Filter by author type
+            $home_author_type = -1;
+            $author_type = isset($_GET['author_type']) ? (int) $_GET['author_type'] : $home_author_type;
+            $filter_author_type_arr = $this->cm->get_author_types();
+            $filters_author_type = $this->get_filters($filter_author_type_arr, $page_url, $author_type, $front_slug = '', $name = 'author_type');
+            if ($author_type != $home_author_type) {
+                $page_url = $page_url . '&author_type=' . $author_type;
+                $count = isset($filters_author_type[$author_type]['count']) ? $filters_author_type[$author_type]['count'] : 0;
+            }
+
+            // Filter by status
+            $home_status = -1;
+            $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_status;
+            $filter_arr = $this->cm->get_author_states($author_type);
+            $filters = $this->get_filters($filter_arr, $page_url, $status);
+            if ($status != $home_status) {
+                $page_url = $page_url . '&status=' . $status;
+            }
+
+            $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
+
+            $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+
+            $authors = $this->cm->get_authors($status, $page, 0, $author_type, $orderby, $order);
+            $author_status = $this->cm->author_status;
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_authors.php');
+        } else if ($curr_tab == 'add') {
+            // Add
+            if (isset($_POST['name'])) {
+                $valid = $this->cm->author_edit_validate($_POST);
+                if ($valid === true) {
+                    $result_id = $this->cm->author_edit_submit($_POST);
+                    $result = __('Author added. Go to the author: ') . '<a href="' . $url . '&aid=' . $result_id . '">' . $result_id . '</a>';
+                    print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                } else {
+                    print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                }
+            }
+            $author_type = $this->cm->author_type;
+            $tags = $this->cm->get_tags();
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/add_author.php');
+        }
+    }
+
+    /*
+     * The tags page
+     */
+
+    public function tags() {
+
+        $curr_tab = $this->get_tab();
+        $page = $this->get_page();
+        $per_page = $this->get_perpage();
+
+        $tid = isset($_GET['tid']) ? (int) $_GET['tid'] : '';
+
+        //Sort
+        $sort_pages = $this->cm->sort_pages;
+        $orderby = $this->get_orderby($sort_pages);
+        $order = $this->get_order();
+
+        $url = $this->admin_page . $this->tags_url;
+        $page_url = $url;
+
+        if ($tid) {
+            // Tag page
+            $append = '&tid=' . $tid;
+            $tabs_arr = $this->cm->tag_tabs;
+            $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab, $append);
+
+            if (!$curr_tab) {
+                $curr_tab = 'home';
+            }
+
+            if ($curr_tab == 'home') {
+                // Tag view page  
+                $tag = $this->cm->get_tag($tid);
+
+                $authors = $this->cm->get_authors(-1, $page, $tag->id);
+
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/view_tag.php');
+            } else if ($curr_tab == 'edit') {
+
+                if (isset($_POST['name'])) {
+                    $valid = $this->cm->tag_edit_validate($_POST);
+                    if ($valid === true) {
+                        $result_id = $this->cm->tag_edit_submit($_POST);
+                        $result = __('Tag updated');
+                        print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                    } else {
+                        print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                    }
+                }
+
+                $tag = $this->cm->get_tag($tid);
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/edit_tag.php');
+            } else if ($curr_tab == 'trash') {
+                //Trash
+                if (isset($_POST['id'])) {
+                    $valid = $this->cm->tag_edit_validate($_POST);
+                    if ($valid === true) {
+                        $result_id = $this->cm->trash_tag($_POST);
+
+                        $status = isset($_POST['status']) ? $_POST['status'] : 0;
+                        if ($status == 2) {
+                            $result = __('Tag') . ' [' . $result_id . '] ' . __('moved to trash');
+                        } else {
+                            $result = __('Tag') . ' [' . $result_id . '] ' . __('untrashed');
+                        }
+
+                        print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                    } else {
+                        print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                    }
+                }
+                $tag = $this->cm->get_tag($tid);
+
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/trash_tag.php');
+            }
+
+            return;
+        }
+
+        //
+        // Other pages
+        //
+        //Tabs
+        $tabs_arr = $this->cm->tags_tabs;
+        $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab);
+
+        // Filter by status
+        $home_status = -1;
+        $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_status;
+        $filter_arr = $this->cm->get_tag_states();
+        $filters = $this->get_filters($filter_arr, $page_url, $status);
+        if ($status != $home_status) {
+            $page_url = $page_url . '&status=' . $status;
+        }
+
+        $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
+
+        if (!$curr_tab) {
+            // Authors          
+            $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+            $tags = $this->cm->get_tags($status, $page, $orderby, $order);
+            $tag_status = $this->cm->tag_status;
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_tags.php');
+        } else if ($curr_tab == 'add') {
+            // Add
+            if (isset($_POST['name'])) {
+                $valid = $this->cm->tag_edit_validate($_POST);
+                if ($valid === true) {
+                    $result_id = $this->cm->tag_edit_submit($_POST);
+                    $result = __('Tag added. Go to the tag: ') . '<a href="' . $url . '&tid=' . $result_id . '">' . $result_id . '</a>';
+                    print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                } else {
+                    print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                }
+            }
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/add_tag.php');
+        }
+    }
+
+    /*
+     * The genres page
+     */
+
+    public function genres() {
+
+        $curr_tab = $this->get_tab();
+        $page = $this->get_page();
+        $per_page = $this->get_perpage();
+
+        $gid = isset($_GET['gid']) ? (int) $_GET['gid'] : '';
+
+        $ma = $this->get_ma();
+
+        //Sort
+        $sort_pages = $ma->sort_pages;
+        $orderby = $this->get_orderby($sort_pages);
+        $order = $this->get_order();
+
+
+
+        $url = $this->admin_page . $this->genres_url;
+        $page_url = $url;
+
+        if ($gid) {
+            // Genres page
+            $append = '&gid=' . $gid;
+            $tabs_arr = $ma->genre_tabs;
+            $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab, $append);
+
+            if (!$curr_tab) {
+                $curr_tab = 'home';
+            }
+
+            if ($curr_tab == 'home') {
+                // Gernre view page  
+
+                $genre = $ma->get_genre($gid);
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/view_genre.php');
+            } else if ($curr_tab == 'edit') {
+
+                if (isset($_POST['name'])) {
+                    $valid = $ma->genre_edit_validate($_POST);
+                    if ($valid === true) {
+                        $result_id = $ma->genre_edit_submit($_POST);
+                        $result = __('Genre updated');
+                        print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                    } else {
+                        print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                    }
+                }
+
+                $genre = $ma->get_genre($gid);
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/edit_genre.php');
+            } else if ($curr_tab == 'trash') {
+                //Trash
+                if (isset($_POST['id'])) {
+                    $valid = $ma->genre_edit_validate($_POST);
+                    if ($valid === true) {
+                        $result_id = $ma->trash_genre($_POST);
+
+                        $status = isset($_POST['status']) ? $_POST['status'] : 0;
+                        if ($status == 2) {
+                            $result = __('Genre') . ' [' . $result_id . '] ' . __('moved to trash');
+                        } else {
+                            $result = __('Genre') . ' [' . $result_id . '] ' . __('untrashed');
+                        }
+
+                        print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                    } else {
+                        print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                    }
+                }
+                $genre = $ma->get_genre($gid);
+
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/trash_genre.php');
+            }
+
+            return;
+        }
+
+        //
+        // Other pages
+        //
+        //Tabs
+        $tabs_arr = $ma->genres_tabs;
+        $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab);
+
+        // Filter by status
+        $home_status = -1;
+        $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_status;
+        $filter_arr = $ma->get_genres_states();
+        $filters = $this->get_filters($filter_arr, $page_url, $status);
+        if ($status != $home_status) {
+            $page_url = $page_url . '&status=' . $status;
+        }
+
+        $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
+
+        if (!$curr_tab) {
+            // Get          
+
+            $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+
+            $genres = $ma->get_genres($status, $page, $orderby, $order);
+            $genre_status = $ma->genre_status;
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_genres.php');
+        } else if ($curr_tab == 'add') {
+            // Add
+            if (isset($_POST['name'])) {
+                $valid = $ma->genre_edit_validate($_POST);
+                if ($valid === true) {
+                    $result_id = $ma->genre_edit_submit($_POST);
+                    $result = __('Genre added. Go to the genre: ') . '<a href="' . $url . '&gid=' . $result_id . '">' . $result_id . '</a>';
+                    print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                } else {
+                    print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                }
+            }
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/add_genre.php');
+        }
+    }
+
+    /*
+     * The countries page
+     */
+
+    public function countries() {
+
+        $curr_tab = $this->get_tab();
+        $page = $this->get_page();
+        $per_page = $this->get_perpage();
+
+        $cid = isset($_GET['cid']) ? (int) $_GET['cid'] : '';
+
+        $ma = $this->get_ma();
+
+        //Sort
+        $sort_pages = $ma->sort_pages;
+        $orderby = $this->get_orderby($sort_pages);
+        $order = $this->get_order();
+
+
+
+        $url = $this->admin_page . $this->countries_url;
+        $page_url = $url;
+
+        if ($cid) {
+            // Genres page
+            $append = '&cid=' . $cid;
+            $tabs_arr = $ma->country_tabs;
+            $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab, $append);
+
+            if (!$curr_tab) {
+                $curr_tab = 'home';
+            }
+
+            if ($curr_tab == 'home') {
+                // Gernre view page  
+
+                $country = $ma->get_country($cid);
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/view_country.php');
+            } else if ($curr_tab == 'edit') {
+
+                if (isset($_POST['name'])) {
+                    $valid = $ma->country_edit_validate($_POST);
+                    if ($valid === true) {
+                        $result_id = $ma->country_edit_submit($_POST);
+                        $result = __('Genre updated');
+                        print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                    } else {
+                        print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                    }
+                }
+
+                $country = $ma->get_country($cid);
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/edit_country.php');
+            } else if ($curr_tab == 'trash') {
+                //Trash
+                if (isset($_POST['id'])) {
+                    $valid = $ma->country_edit_validate($_POST);
+                    if ($valid === true) {
+                        $result_id = $ma->trash_country($_POST);
+
+                        $status = isset($_POST['status']) ? $_POST['status'] : 0;
+                        if ($status == 2) {
+                            $result = __('Genre') . ' [' . $result_id . '] ' . __('moved to trash');
+                        } else {
+                            $result = __('Genre') . ' [' . $result_id . '] ' . __('untrashed');
+                        }
+
+                        print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                    } else {
+                        print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                    }
+                }
+                $country = $ma->get_country($cid);
+
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/trash_country.php');
+            }
+
+            return;
+        }
+
+        //
+        // Other pages
+        //
+        //Tabs
+        $tabs_arr = $ma->countries_tabs;
+        $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab);
+
+        // Filter by status
+        $home_status = -1;
+        $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_status;
+        $filter_arr = $ma->get_countries_states();
+        $filters = $this->get_filters($filter_arr, $page_url, $status);
+        if ($status != $home_status) {
+            $page_url = $page_url . '&status=' . $status;
+        }
+
+        $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
+
+        if (!$curr_tab) {
+            // Get          
+
+            $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+
+            $countries = $ma->get_countries($status, $page, $orderby, $order);
+            $country_status = $ma->country_status;
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_countries.php');
+        } else if ($curr_tab == 'add') {
+            // Add
+            if (isset($_POST['name'])) {
+                $valid = $ma->country_edit_validate($_POST);
+                if ($valid === true) {
+                    $result_id = $ma->country_edit_submit($_POST);
+                    $result = __('Genre added. Go to the country: ') . '<a href="' . $url . '&cid=' . $result_id . '">' . $result_id . '</a>';
+                    print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                } else {
+                    print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                }
+            }
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/add_country.php');
+        }
+    }
+
+    /*
+     * The providers page
+     */
+
+    public function providers() {
+
+        $curr_tab = $this->get_tab();
+        $page = $this->get_page();
+        $per_page = $this->get_perpage();
+
+        $pid = isset($_GET['pid']) ? (int) $_GET['pid'] : '';
+
+        $ma = $this->get_ma();
+
+        //Sort
+        $sort_pages = $ma->sort_pages;
+        $orderby = $this->get_orderby($sort_pages);
+        $order = $this->get_order();
+
+
+
+        $url = $this->admin_page . $this->providers_url;
+        $page_url = $url;
+
+        if ($pid) {
+            // Provider page
+            $append = '&pid=' . $pid;
+            $tabs_arr = $ma->provider_tabs;
+            $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab, $append);
+
+            if (!$curr_tab) {
+                $curr_tab = 'home';
+            }
+
+            if ($curr_tab == 'home') {
+                // Provider view page  
+
+                $provider = $ma->get_provider($pid);
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/view_provider.php');
+            } else if ($curr_tab == 'edit') {
+
+                if (isset($_POST['name'])) {
+                    $valid = $ma->provider_edit_validate($_POST);
+                    if ($valid === true) {
+                        $result_id = $ma->provider_edit_submit($_POST);
+                        $result = __('Genre updated');
+                        print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                    } else {
+                        print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                    }
+                }
+
+                $provider = $ma->get_provider($pid);
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/edit_provider.php');
+            } else if ($curr_tab == 'trash') {
+                //Trash
+                if (isset($_POST['id'])) {
+                    $valid = $ma->provider_edit_validate($_POST);
+                    if ($valid === true) {
+                        $result_id = $ma->trash_provider($_POST);
+
+                        $status = isset($_POST['status']) ? $_POST['status'] : 0;
+                        if ($status == 2) {
+                            $result = __('Genre') . ' [' . $result_id . '] ' . __('moved to trash');
+                        } else {
+                            $result = __('Genre') . ' [' . $result_id . '] ' . __('untrashed');
+                        }
+
+                        print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                    } else {
+                        print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                    }
+                }
+                $provider = $ma->get_provider($pid);
+
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/trash_provider.php');
+            }
+
+            return;
+        }
+
+        //
+        // Other pages
+        //
+        //Tabs
+        $tabs_arr = $ma->providers_tabs;
+        $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab);
+
+        // Filter by status
+        $home_status = -1;
+        $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_status;
+        $filter_arr = $ma->get_providers_states();
+        $filters = $this->get_filters($filter_arr, $page_url, $status);
+        if ($status != $home_status) {
+            $page_url = $page_url . '&status=' . $status;
+        }
+
+        // Filter be free
+        $home_free = -1;
+        $free = isset($_GET['free']) ? (int) $_GET['free'] : $home_free;
+        $filter_free_arr = $ma->get_providers_free_status($status);
+        $filters_free = $this->get_filters($filter_free_arr, $page_url, $free, $front_slug = '', $name = 'free');
+        if ($free != $home_free) {
+            $page_url = $page_url . '&free=' . $free;
+            $count = isset($filter_free_arr[$free]['count']) ? $filter_free_arr[$free]['count'] : 0;
+        }
+
+        $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
+
+        if (!$curr_tab) {
+            // Get          
+            $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+            $providers = $ma->get_providers($status, $page, $orderby, $order, $free);
+            $provider_status = $ma->provider_status;
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_providers.php');
+        } else if ($curr_tab == 'add') {
+            // Add
+            if (isset($_POST['name'])) {
+                $valid = $ma->provider_edit_validate($_POST);
+                if ($valid === true) {
+                    $result_id = $ma->provider_edit_submit($_POST);
+                    $result = __('Genre added. Go to the provider: ') . '<a href="' . $url . '&pid=' . $result_id . '">' . $result_id . '</a>';
+                    print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                } else {
+                    print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                }
+            }
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/add_provider.php');
+        }
+    }
+
+    /*
+     * The movies page
+     */
+
+    public function movies() {
+        $page = $this->get_page();
+        $per_page = $this->get_perpage();
+        $curr_tab = $this->get_tab();
+        $url = $this->admin_page . $this->movies_url;
+        $mid = isset($_GET['mid']) ? (int) $_GET['mid'] : '';
+        $home_status = -1;
+        $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_status;
+        $ma = $this->get_ma();
+        $page_url = $url;
+
+        //Sort
+        $sort_pages = $ma->sort_pages;
+        $orderby = $this->get_orderby($sort_pages);
+        $order = $this->get_order();
+
+        //Search
+        $s = isset($_GET['s']) ? strip_tags(stripslashes($_GET['s'])) : '';
+        if ($s) {
+            // Search logic
+
+            $start = ($page - 1) * $per_page;
+
+            // Sort
+            $sort = array();
+            if ($orderby) {
+                $sort = array('sort' => $orderby, 'type' => $order);
+            }
+
+            $filters = array();
+            $facets = array();
+
+            $results = $this->cs->front_search_movies_an($s, '', $per_page, $start, $sort, $filters, $facets);
+
+            $movies = $results['result'];
+            $count = $results['total'];
+
+            $page_url = $page_url . '&s=' . urlencode($s);
+
+            if ($count) {
+                $pager = $this->themePager(-1, $page, $page_url, $count, $per_page, $orderby, $order);
+            }
+
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_movies_search.php');
+            return;
+        }
+        /*
+         * Movie page
+         */
+        if ($mid) {
+
+            //Bulk actions
+            $this->bulk_submit();
+
+            //Tabs
+            $append = '&mid=' . $mid;
+            $tabs_arr = $this->cm->movie_tabs;
+            $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab, $append);
+
+            $movie = $ma->get_post($mid);
+
+            if (!$curr_tab) {
+                $curr_tab = 'home';
+            }
+            if ($curr_tab == 'home') {
+                $critics_search = $this->cs->search_critics($movie, true);
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/view_movie.php');
+            }
+            return;
+        }
+
+        /*
+         * List movies
+         */
+
+
+
+        // Filter by movie type
+        $home_type = 'all';
+        $type = isset($_GET['type']) ? sanitize_text_field($_GET['type']) : $home_type;
+        $filter_arr = $this->get_movie_types();
+        $filters = $this->get_filters($filter_arr, $page_url, $type, '', 'type');
+        $count = isset($filter_arr['all']['count']) ? $filter_arr['all']['count'] : 0;
+
+        if ($type != $home_type) {
+            $page_url = $page_url . '&type=' . $type;
+            $count = isset($filter_arr[$type]['count']) ? $filter_arr[$type]['count'] : 0;
+        }
+
+        $per_page = $ma->perpage;
+        $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+        $movies = $ma->get_posts($page, $type, $orderby, $order);
+        include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_movies.php');
+    }
+
+    /*
+     * The feeds page
+     */
+
+    public function feeds() {
+
+        $curr_tab = $this->get_tab();
+        $cid = isset($_GET['cid']) ? (int) $_GET['cid'] : '';
+        $page = $this->get_page();
+        $per_page = $this->get_perpage();
+
+        //Sort
+        $sort_pages = $this->cm->sort_pages;
+        $orderby = $this->get_orderby($sort_pages);
+        $order = $this->get_order();
+
+        $url = $this->admin_page . $this->feeds_url;
+        /*
+         * Campaign page
+         */
+        if ($cid) {
+            //Tabs
+            $append = '&cid=' . $cid;
+            $tabs_arr = $this->cf->campaign_tabs;
+            $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab, $append);
+            $settings = $this->cf->get_feed_settings();
+
+            if (!$curr_tab) {
+                $curr_tab = 'home';
+            }
+            if ($curr_tab == 'home') {
+                // Campaign view page  
+                $update_interval = $this->cf->update_interval;
+                $feed_state = $this->cf->feed_state;
+                $campaign = $this->cf->get_campaign($cid);
+                if ($campaign) {
+                    $author = $this->cm->get_author($campaign->author, true);
+                    include(CRITIC_MATIC_PLUGIN_DIR . 'includes/view_feed.php');
+                }
+            } else if ($curr_tab == 'posts') {
+                // Campaign post page         
+                $this->cs->get_search_ids();
+                $this->feeds_posts($tabs, $url, $cid);
+            } else if ($curr_tab == 'update') {
+                // Update
+                $count = $this->cf->process_campaign($cid);
+                $campaign = $this->cf->get_campaign($cid);
+
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/feed_update.php');
+            } else if ($curr_tab == 'log') {
+                //Log
+                $this->feeds_log($tabs, $url, $cid);
+            } else if ($curr_tab == 'edit') {
+                //Edit
+                if (isset($_POST['id'])) {
+                    $valid = $this->cf->campaign_edit_validate($_POST);
+                    if ($valid === true) {
+                        $result_id = $this->cf->campaign_edit_submit($_POST);
+                        $result = __('Campaign') . ' [' . $result_id . '] ' . __('updated');
+                        print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                    } else {
+                        print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                    }
+                }
+                $authors = $this->cm->get_all_authors();
+                $def_options = $this->cf->def_options;
+                $campaign = $this->cf->get_campaign($cid);
+                $update_interval = $this->cf->update_interval;
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/edit_feed.php');
+            } else if ($curr_tab == 'trash') {
+                // Trash
+                if (isset($_POST['id'])) {
+                    $valid = $this->cf->campaign_edit_validate($_POST);
+                    if ($valid === true) {
+                        $result_id = $this->cf->trash_campaign($_POST);
+
+                        $active = isset($_POST['status']) ? $_POST['status'] : 0;
+                        if ($active == 2) {
+                            $result = __('Campaign') . ' [' . $result_id . '] ' . __('moved to trash');
+                        } else {
+                            $result = __('Campaign') . ' [' . $result_id . '] ' . __('untrashed');
+                        }
+
+                        print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                    } else {
+                        print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                    }
+                }
+                $campaign = $this->cf->get_campaign($cid);
+
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/trash_feed.php');
+            } else if ($curr_tab == 'rules') {
+                // Campaign test rules
+                if (isset($_POST['id'])) {
+                    $valid = $this->cf->campaign_edit_validate($_POST);
+                    if ($valid === true) {
+                        $result_id = $this->cf->campaign_rules_test_submit($_POST);
+                    } else {
+                        print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                    }
+                }
+
+
+                $def_options = $this->cf->def_options;
+                $campaign = $this->cf->get_campaign($cid);
+                $options = unserialize($campaign->options);
+                $test_post = $this->cf->get_feed_test_post($options);
+
+                $use_global_rules = isset($options['use_global_rules']) ? $options['use_global_rules'] : $def_options['options']['use_global_rules'];
+
+                if ($use_global_rules) {
+                    $global_rules = isset($settings['rules']) ? $settings['rules'] : array();
+                    $global_check = $this->cf->check_post($global_rules, $test_post, true);
+                }
+                $rules = isset($options['rules']) ? $options['rules'] : array();
+                $check = $this->cf->check_post($rules, $test_post, true);
+
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/feed_rules.php');
+            } else if ($curr_tab == 'preview') {
+                // Campaign post page        
+                $campaign = $this->cf->get_campaign($cid);
+                $options = unserialize($campaign->options);
+                $preview = $this->cf->preview($campaign);
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/feed_preview.php');
+            }
+            return;
+        }
+
+        //
+        // Other pages
+        //
+        //Tabs
+        $tabs_arr = $this->cf->tabs;
+        $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab);
+
+        if (!$curr_tab) {
+            $this->feeds_campaigns($tabs, $url, 0, $cid);
+        } else if ($curr_tab == 'posts') {
+            // Posts
+            $this->feeds_posts($tabs, $url, 0, $cid);
+        } else if ($curr_tab == 'update') {
+            // Update
+            $force = false;
+            $count = $this->cf->process_all($force);
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/feed_update.php');
+        } else if ($curr_tab == 'log') {
+            // Log
+            $this->feeds_log($tabs, $url);
+        } else if ($curr_tab == 'settings') {
+            // Settings
+            if (isset($_POST['critic-feeds-nonce'])) {
+                $valid = $this->nonce_validate($_POST);
+                if ($valid === true) {
+                    $this->cf->settings_submit($_POST);
+                    $result = __('Updated');
+                    print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                } else {
+                    print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                }
+            }
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/settings_feed.php');
+        } else if ($curr_tab == 'rules') {
+            // Rules test
+
+            if (isset($_POST['critic-feeds-nonce'])) {
+                $valid = $this->nonce_validate($_POST);
+                if ($valid === true) {
+                    $result_id = $this->cf->settings_rules_test_submit($_POST);
+                } else {
+                    print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                }
+            }
+
+            $settings = $this->cf->get_feed_settings();
+            $test_post = $this->cf->get_feed_test_post($settings);
+            $rules = isset($settings['rules']) ? $settings['rules'] : array();
+            $check = $this->cf->check_post($rules, $test_post, true);
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/feed_rules_global.php');
+        } else if ($curr_tab == 'add') {
+            // Add
+            if (isset($_POST['feed'])) {
+                $valid = $this->cf->campaign_edit_validate($_POST);
+                if ($valid === true) {
+                    $result_id = $this->cf->campaign_edit_submit($_POST);
+                    $result = __('Campaign added. Go to the campaign: ') . '<a href="' . $url . '&cid=' . $result_id . '">' . $result_id . '</a>';
+                    print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                } else {
+                    print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                }
+            }
+            $authors = $this->cm->get_all_authors();
+            $def_options = $this->cf->def_options;
+            $update_interval = $this->cf->update_interval;
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/add_feed.php');
+        }
+    }
+
+    /*
+     * The feeds page
+     */
+
+    public function parser() {
+
+        $curr_tab = $this->get_tab();
+        $cid = isset($_GET['cid']) ? (int) $_GET['cid'] : '';
+        $page = $this->get_page();
+        $per_page = $this->get_perpage();
+
+        //Sort
+        $sort_pages = $this->cm->sort_pages;
+        $orderby = $this->get_orderby($sort_pages);
+        $order = $this->get_order();
+
+        $url = $this->admin_page . $this->parser_url;
+
+        /*
+         * Campaign page
+         */
+        if ($cid) {
+            //Tabs
+            $append = '&cid=' . $cid;
+            $campaign = $this->cp->get_campaign($cid);
+            $tabs_arr = $this->cp->campaign_tabs;
+            $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab, $append);
+            $settings = $this->cp->get_parser_settings();
+
+
+            if (!$curr_tab) {
+                $curr_tab = 'home';
+            }
+            if ($curr_tab == 'home') {
+                // Campaign view page  
+                $update_interval = $this->cp->update_interval;
+                $parser_state = $this->cp->camp_state;
+
+                if ($campaign) {
+                    $author = $this->cm->get_author($campaign->author, true);
+                    if ($_GET['export']) {
+                        $urls = $this->cp->get_all_urls($cid);
+                        print '<h2>Export campaign URLs</h2>';
+                        if ($urls) {
+                            $items = array();
+                            foreach ($urls as $url) {
+                                $items[] = $url->link;
+                            }
+                            print '<textarea style="width:90%; height:500px">' . implode("\n", $items) . '</textarea>';
+                        }
+                        exit;
+                    } else if ($_GET['find_urls']) {
+                        print '<h2>Find campaign URLs</h2>';
+                        $preivew_data = $this->cp->find_urls($campaign, false);
+                        if ($preivew_data['urls']) {
+                            print '<textarea style="width: 90%; height: 500px;">' . implode("\n", $preivew_data['urls']) . '</textarea>';
+                        }
+                        exit;
+                    } else if ($_GET['find_urls_yt']) {
+                        print '<h2>Find YouTuebe URLs</h2>';
+                        $preivew_data = $this->cp->find_all_urls_yt($campaign, false);
+
+                        if ($preivew_data) {
+                            print '<p>Total found:' . $preivew_data['found'] . '</p>';
+                            print '<p>Total add:' . $preivew_data['add'] . '</p>';
+                        }
+                        exit;
+                    }
+                    include(CRITIC_MATIC_PLUGIN_DIR . 'includes/view_parser.php');
+                }
+            } else if ($curr_tab == 'urls') {
+                // Campaign post page                  
+                $this->parser_urls($tabs, $url, $cid);
+            } else if ($curr_tab == 'find') {
+                // Find urls                                                 
+
+                if (isset($_POST['id'])) {
+                    $valid = $this->cp->campaign_edit_validate($_POST);
+                    if ($valid === true) {
+                        $this->cp->campaign_find_urls_submit($_POST);
+                        $result = __('Campaign') . ' [' . $_POST['id'] . '] ' . __('updated');
+                        print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                    } else {
+                        print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                    }
+                }
+                $campaign = $this->cp->get_campaign($cid);
+                $options = $this->cp->get_options($campaign);
+
+                if ($campaign->type == 1) {
+                    $yt_posts = $this->cp->yt_total_posts($options);
+                }
+
+                $yt_preivew = array();
+                if (isset($_POST['yt_preview'])) {
+                    $yt_preivew = $this->cp->find_all_urls_yt($campaign, true);
+                }
+
+                $preivew_data = array();
+                if (isset($_POST['preview'])) {
+                    $preivew_data = $this->cp->find_urls($campaign, true);
+                }
+
+                if (isset($_POST['cron_preview'])) {
+                    $cron_preivew_data = $this->cp->cron_urls($campaign, true);
+                }
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/parser_find_urls.php');
+            } else if ($curr_tab == 'update') {
+                // Update
+                $campaign = $this->cp->get_campaign($cid);
+                $options = $this->cp->get_options($campaign);
+
+                //Update URLs
+                $type_name = 'cron_urls';
+                if ($campaign->type == 1) {
+                    $type_name = 'yt_urls';
+                }
+
+                // Custom options
+                $type_opt = $options[$type_name];
+                $active = $type_opt['status'];
+     
+                if ($active == 1) {
+                    $count_urls = $this->cp->process_campaign($campaign, 'cron_urls');
+                } else {
+                    $count_urls = -1;
+                }
+
+                // Parser interval
+                $active = $campaign->parser_status;
+
+                if ($active == 1) {
+                    $count = $this->cp->process_campaign($campaign, 'parsing');
+                } else {
+                    $count = -1;
+                }
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/parser_update.php');
+            } else if ($curr_tab == 'log') {
+                //Log
+                $this->parser_log($tabs, $url, $cid);
+            } else if ($curr_tab == 'edit') {
+                //Edit
+                if (isset($_POST['id'])) {
+                    $valid = $this->cp->campaign_edit_validate($_POST);
+                    if ($valid === true) {
+                        $result_id = $this->cp->campaign_edit_submit($_POST);
+                        $result = __('Campaign') . ' [' . $result_id . '] ' . __('updated');
+                        print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                    } else {
+                        print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                    }
+                }
+                $authors = $this->cm->get_all_authors(1);
+                $def_options = $this->cp->def_options;
+                $campaign = $this->cp->get_campaign($cid);
+                $options = $this->cp->get_options($campaign);
+                $update_interval = $this->cp->update_interval;
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/edit_parser.php');
+            } else if ($curr_tab == 'trash') {
+                // Trash
+                if (isset($_POST['id'])) {
+                    $valid = $this->cp->campaign_edit_validate($_POST);
+                    if ($valid === true) {
+                        $result_id = $this->cp->trash_campaign($_POST);
+
+                        $active = isset($_POST['status']) ? $_POST['status'] : 0;
+                        if ($active == 2) {
+                            $result = __('Campaign') . ' [' . $result_id . '] ' . __('moved to trash');
+                        } else {
+                            $result = __('Campaign') . ' [' . $result_id . '] ' . __('untrashed');
+                        }
+
+                        print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                    } else {
+                        print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                    }
+                }
+                $campaign = $this->cp->get_campaign($cid);
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/trash_parser.php');
+            } else if ($curr_tab == 'preview') {
+                // Campaign preveiw post
+
+                $campaign = $this->cp->get_campaign($cid);
+                $options = $this->cp->get_options($campaign);
+
+                $urls = array();
+
+                if (isset($_GET['uid'])) {
+                    $urls[] = $this->cp->get_url((int) $_GET['uid']);
+                } else {
+                    $urls = $this->cp->get_last_urls($options['pr_num'], -1, $cid);
+                }
+
+                if ($campaign->type == 1) {
+                    $preview = $this->cp->get_urls_content_yt($campaign, $urls);
+                    include(CRITIC_MATIC_PLUGIN_DIR . 'includes/parser_preview_yt.php');
+                } else {
+                    $preview = $this->cp->preview($campaign, $urls);
+                    include(CRITIC_MATIC_PLUGIN_DIR . 'includes/parser_preview.php');
+                }
+            }
+            return;
+        }
+
+        //
+        // Other pages
+        //
+        //Tabs
+        $tabs_arr = $this->cp->tabs;
+        $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab);
+
+        $clear_logs = isset($_GET['clear_logs']) ? 1 : 0;
+        if ($clear_logs) {
+            $this->cp->clear_all_logs();
+        }
+
+        if (!$curr_tab) {
+            $this->parser_campaingns($tabs, $url);
+        } else if ($curr_tab == 'urls') {
+            // Posts
+            $this->parser_urls($tabs, $url, 0);
+        } else if ($curr_tab == 'update') {
+            // Update
+            $force = false;
+            $count = $this->cp->process_all($force);
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/parser_update.php');
+        } else if ($curr_tab == 'log') {
+            // Log
+            $this->parser_log($tabs, $url);
+        } else if ($curr_tab == 'settings') {
+            // Settings
+            if (isset($_POST['critic-feeds-nonce'])) {
+                $valid = $this->nonce_validate($_POST);
+                if ($valid === true) {
+                    $this->cp->settings_submit($_POST);
+                    $result = __('Updated');
+                    print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                } else {
+                    print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                }
+            }
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/settings_parser.php');
+        } else if ($curr_tab == 'rules') {
+            // Rules test
+            if (isset($_POST['critic-feeds-nonce'])) {
+                $valid = $this->nonce_validate($_POST);
+                if ($valid === true) {
+                    $result_id = $this->cp->settings_rules_test_submit($_POST);
+                } else {
+                    print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                }
+            }
+
+            $settings = $this->cp->get_parser_settings();
+            $test_post = $this->cp->get_parser_test_post($settings);
+            $rules = isset($settings['rules']) ? $settings['rules'] : array();
+            $check = $this->cp->check_post($rules, $test_post, true);
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/parser_rules_global.php');
+        } else if ($curr_tab == 'add') {
+            // Add
+            if (isset($_POST['site'])) {
+                $valid = $this->cp->campaign_edit_validate($_POST);
+                if ($valid === true) {
+                    $result_id = $this->cp->campaign_edit_submit($_POST);
+                    $result = __('Campaign added. Go to the campaign: ') . '<a href="' . $url . '&cid=' . $result_id . '">' . $result_id . '</a>';
+                    print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                } else {
+                    print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                }
+            }
+            $authors = $this->cm->get_all_authors(1);
+            $def_options = $this->cp->def_options;
+            $update_interval = $this->cp->update_interval;
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/add_parser.php');
+        }
+    }
+
+    /*
+     * The settings page
+     */
+
+    public function settings() {
+        $curr_tab = $this->get_tab();
+        $page = $this->get_page();
+        $per_page = $this->get_perpage();
+        $url = $this->admin_page . $this->settings_url;
+
+        //Sort
+        $sort_pages = $this->cm->sort_pages;
+        $orderby = $this->get_orderby($sort_pages);
+        $order = $this->get_order();
+
+        if (!$curr_tab) {
+            $curr_tab = 'search';
+        }
+
+        $tabs_arr = $this->settings_tabs;
+        $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab);
+
+
+
+        if ($curr_tab == 'search') {
+
+            if (isset($_POST['critic-feeds-nonce'])) {
+                $valid = $this->nonce_validate($_POST);
+                if ($valid === true) {
+                    $this->cs->update_search_settings($_POST);
+                    $result = __('Updated');
+                    print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                } else {
+                    print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                }
+            }
+            $ss = $this->cs->get_search_settings();
+
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/settings_search.php');
+        } else if ($curr_tab == 'parser') {
+
+            if (isset($_POST['critic-feeds-nonce'])) {
+                $valid = $this->nonce_validate($_POST);
+                if ($valid === true) {
+                    $this->cm->update_settings($_POST);
+                    $result = __('Updated');
+                    print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                } else {
+                    print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                }
+            }
+            $ss = $this->cm->get_settings();
+
+
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/settings_parser.php');
+        } else if ($curr_tab == 'audience') {
+
+            if (isset($_POST['critic-feeds-nonce'])) {
+                $valid = $this->nonce_validate($_POST);
+                if ($valid === true) {
+                    $this->cm->update_settings($_POST);
+                    $result = __('Updated');
+                    print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                } else {
+                    print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                }
+            }
+            $ss = $this->cm->get_settings();
+
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/settings_audience.php');
+        } else if ($curr_tab == 'posts') {
+
+            if (isset($_POST['critic-feeds-nonce'])) {
+                $valid = $this->nonce_validate($_POST);
+                if ($valid === true) {
+                    $this->cm->update_settings($_POST);
+                    $result = __('Updated');
+                    print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                } else {
+                    print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                }
+            }
+            $ss = $this->cm->get_settings();
+
+
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/settings_posts.php');
+        }
+    }
+
+    /*
+     * Feeds campaigns list
+     */
+
+    public function feeds_campaigns($tabs = '', $url = '', $cid = 0, $aid = 0) {
+        $page = $this->get_page();
+        $per_page = $this->get_perpage();
+        $page_url = $url;
+
+        //Sort
+        $sort_pages = $this->cm->sort_pages;
+        $orderby = $this->get_orderby($sort_pages);
+        $order = $this->get_order();
+
+        // Author id
+        $author = '';
+        if ($aid) {
+            $author = $this->cm->get_author($aid);
+            $page_url .= '&aid=' . $aid;
+        }
+
+        // Filter by status
+        $home_status = -1;
+        $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_status;
+        $filter_arr = $this->cf->feed_states($aid);
+        $filters = $this->get_filters($filter_arr, $page_url, $status);
+        if ($status != $home_status) {
+            $page_url = $page_url . '&status=' . $status;
+        }
+
+        //Pager
+        $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
+
+        $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+
+        $feeds = $this->cf->get_feeds($status, $page, $aid, $orderby, $order);
+        if ($aid) {
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_feeds_author.php');
+        } else {
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_feeds_critic.php');
+        }
+    }
+
+    /*
+     * Feed posts page
+     */
+
+    public function feeds_posts($tabs = '', $url = '', $cid = 0, $aid = 0) {
+        $page = $this->get_page();
+        $per_page = $this->get_perpage();
+
+        $page_url = $url;
+        $page_url .= '&tab=posts';
+
+        //Bulk actions
+        $this->bulk_submit();
+
+        //Sort
+        $sort_pages = $this->cm->sort_pages;
+        $orderby = $this->get_orderby($sort_pages);
+        $order = $this->get_order();
+
+        // Campaign id
+        $campaign = '';
+        if ($cid) {
+            $campaign = $this->cf->get_campaign($cid);
+            $page_url .= '&cid=' . $cid;
+        }
+
+        // Author id
+        $author = '';
+        if ($aid) {
+            $author = $this->cm->get_author($aid);
+            $page_url .= '&aid=' . $aid;
+        }
+
+        $home_type = -1;
+        $type = isset($_GET['type']) ? (int) $_GET['type'] : $home_type;
+        $filter_type_arr = $this->cm->get_post_types($cid, $type, $aid);
+        $filters_type = $this->get_filters($filter_type_arr, $page_url, $type, $front_slug = '', $name = 'type');
+
+        $count = isset($filter_type_arr[$home_type]['count']) ? $filter_type_arr[$home_type]['count'] : 0;
+
+        // Filter by post meta
+        $home_meta_type = -1;
+        $meta_type = isset($_GET['meta_type']) ? (int) $_GET['meta_type'] : $home_meta_type;
+
+        $filter_meta_type_arr = $this->cm->get_post_meta_types($cid, $type, $aid, $meta_type);
+        $filters_meta_type = $this->get_filters($filter_meta_type_arr, $page_url, $meta_type, $front_slug = '', $name = 'meta_type');
+        if ($meta_type != $home_meta_type) {
+            $page_url = $page_url . '&meta_type=' . $meta_type;
+            $count = isset($filter_meta_type_arr[$meta_type]['count']) ? $filter_meta_type_arr[$meta_type]['count'] : 0;
+        }
+
+        // Filter by status
+        $home_status = -1;
+        $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_status;
+        $filter_arr = $this->cm->get_post_states($cid, $type, $aid, $meta_type);
+        $filters = $this->get_filters($filter_arr, $page_url, $status);
+        if ($status != $home_status) {
+            $page_url = $page_url . '&status=' . $status;
+            $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
+        }
+
+        $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+        $posts = $this->cm->get_posts($status, $page, $cid, $aid, $type, $meta_type);
+
+        if ($aid) {
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_author.php');
+        } else {
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_feed.php');
+        }
+    }
+
+    /*
+     * Parser
+     */
+
+    public function parser_campaingns($tabs = '', $url = '', $aid = 0) {
+
+        $page = $this->get_page();
+        $per_page = $this->get_perpage();
+
+        //Sort
+        $sort_pages = $this->cm->sort_pages;
+        $orderby = $this->get_orderby($sort_pages);
+        $order = $this->get_order();
+
+
+
+        $page_url = $url;
+
+        // Author id
+        $author = '';
+        if ($aid) {
+            $author = $this->cm->get_author($aid);
+            $page_url .= '&aid=' . $aid;
+        }
+
+        // Filter by status
+        $home_status = -1;
+        $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_status;
+        $filter_arr = $this->cp->parser_states($aid);
+        $filters = $this->get_filters($filter_arr, $page_url, $status);
+        if ($status != $home_status) {
+            $page_url = $page_url . '&status=' . $status;
+        }
+
+        // Filter by parser status
+        $home_parser_status = -1;
+        $parser_status = isset($_GET['parser_status']) ? (int) $_GET['parser_status'] : $home_parser_status;
+        $filter_status_arr = $this->cp->parser_parser_states($status, $aid);
+        $parser_status_filters = $this->get_filters($filter_status_arr, $page_url, $parser_status);
+        if ($parser_status != $home_parser_status) {
+            $page_url = $page_url . '&parser_status=' . $parser_status;
+        }
+
+        //Pager
+        $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
+        $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+        $campaigns = $this->cp->get_parsers($status, $page, $aid, $parser_status, $orderby, $order);
+
+        include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_parsers_critic.php');
+    }
+
+    public function parser_urls($tabs = '', $url = '', $cid = 0, $aid = 0) {
+        $page = $this->get_page();
+        $per_page = $this->get_perpage();
+
+        $page_url = $url;
+        $page_url .= '&tab=urls';
+
+        //Bulk actions
+        $this->bulk_parser_submit();
+
+        //Sort
+        $sort_pages = $this->cm->sort_pages;
+        $orderby = $this->get_orderby($sort_pages);
+        $order = $this->get_order();
+
+        // Campaign id
+        $campaign = '';
+        if ($cid) {
+            $campaign = $this->cp->get_campaign($cid);
+            $page_url .= '&cid=' . $cid;
+        }
+
+        // Filter by status
+        $home_status = -1;
+        $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_status;
+        $filter_arr = $this->cp->get_url_status_count($cid);
+        $filters = $this->get_filters($filter_arr, $page_url, $status, '', 'status');
+        if ($status != $home_status) {
+            $page_url = $page_url . '&status=' . $status;
+        }
+        $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
+
+        // Filter by post meta
+        $home_meta_type = -1;
+        $meta_type = isset($_GET['meta_type']) ? (int) $_GET['meta_type'] : $home_meta_type;
+        $filter_meta_type_arr = $this->cp->get_post_meta_types($cid, $status);
+        $filters_meta_type = $this->get_filters($filter_meta_type_arr, $page_url, $meta_type, '', 'meta_type');
+        if ($meta_type != $home_meta_type) {
+            $page_url = $page_url . '&meta_type=' . $meta_type;
+            $count = isset($filter_meta_type_arr[$meta_type]['count']) ? $filter_meta_type_arr[$meta_type]['count'] : 0;
+        }
+
+        $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+        $posts = $this->cp->get_urls($status, $page, $cid, $meta_type, $orderby, $order);
+
+        include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_urls.php');
+    }
+
+    /*
+     * Log page
+     */
+
+    public function feeds_log($tabs = '', $url = '', $cid = 0) {
+        $page = $this->get_page();
+        $per_page = $this->get_perpage();
+
+        $page_url = $url;
+        $page_url .= '&tab=log';
+
+        //Sort
+        $sort_pages = $this->cm->sort_pages;
+        $orderby = $this->get_orderby($sort_pages);
+        $order = $this->get_order();
+
+        // Campaign id
+        $campaign = '';
+        if ($cid) {
+            $campaign = $this->cf->get_campaign($cid);
+            $page_url .= '&cid=' . $cid;
+        }
+
+        $count = $this->cf->get_log_count($cid);
+
+        $log = $this->cf->get_log($page, $cid);
+        $status = -1;
+        $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+
+        include(CRITIC_MATIC_PLUGIN_DIR . 'includes/feed_log.php');
+    }
+
+    public function sitemap() {
+        //Sitemap page
+        include(CRITIC_MATIC_PLUGIN_DIR . 'includes/sitemap.php');
+    }
+
+    /*
+     * Meta log page
+     */
+
+    public function meta_log($tabs = '', $url = '') {
+        $page = $this->get_page();
+        $per_page = $this->get_perpage();
+
+        //Sort
+        $sort_pages = $this->cm->sort_pages;
+        $orderby = $this->get_orderby($sort_pages);
+        $order = $this->get_order();
+
+        $page_url = $url;
+        $page_url .= '&tab=log';
+
+        $count = $this->cs->get_log_count();
+
+        $log = $this->cs->get_log($page);
+        $status = -1;
+        $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+        include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_log_meta.php');
+    }
+
+    public function parser_log($tabs = '', $url = '', $cid = 0) {
+        $page = $this->get_page();
+        $per_page = $this->get_perpage();
+
+        //Sort
+        $sort_pages = $this->cm->sort_pages;
+        $orderby = $this->get_orderby($sort_pages);
+        $order = $this->get_order();
+
+        $page_url = $url;
+        $page_url .= '&tab=log';
+
+        // Filter by status
+        $home_log_status = -1;
+        $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_log_status;
+        $filter_log_status_arr = $this->cp->get_post_log_status($cid);
+        $filters_log_status = $this->get_filters($filter_log_status_arr, $page_url, $status, '', 'status');
+
+        $page_url = $page_url . '&log_status=' . $status;
+        $count = isset($filter_log_status_arr[$status]['count']) ? $filter_log_status_arr[$status]['count'] : 0;
+
+        // Log type
+        $home_type = -1;
+        $type = isset($_GET['type']) ? (int) $_GET['type'] : $home_type;
+        $filter_type_arr = $this->cp->get_post_log_types($cid, $status);
+        $filters_type = $this->get_filters($filter_type_arr, $page_url, $type, '', 'type');
+        if ($type != $home_type) {
+            $page_url = $page_url . '&type=' . $type;
+            $count = isset($filter_type_arr[$type]['count']) ? $filter_type_arr[$type]['count'] : 0;
+        }
+
+        $log = $this->cp->get_log($page, $cid, 0, $status, $type, $per_page);
+        $pager = $this->themePager(-1, $page, $page_url, $count, $per_page, $orderby, $order);
+        include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_log_parser.php');
+    }
+
+    public function themePager($status = -1, $page = 1, $url = '/', $count = 1, $per_page = 100, $orderby = '', $order = '', $pg = 'p', $active_class = 'disabled') {
+        $ret = '';
+        $pager = $this->getPager($status, $page, $url, $count, $per_page, $orderby, $order);
+        if ($pager) {
+            $ret = '<div class="tablenav cmnav"><div class="tablenav-pages" style="float:none;"><div class="pagination-links">' . $pager . '</div></div></div>';
+        }
+        return $ret;
+    }
+
+    public function getPager($status = -1, $page = 1, $url = '/', $count = 1, $per_page = 100, $orderby = '', $order = '', $pg = 'p', $active_class = 'disabled') {
+        $paged = $page;
+        $max_page = 1;
+        if ($per_page > 0) {
+            $max_page = ceil($count / $per_page);
+        }
+        $pages_to_show = 10;
+        $pages_to_show_minus_1 = $pages_to_show - 1;
+        $half_page_start = floor($pages_to_show_minus_1 / 2);
+        $half_page_end = ceil($pages_to_show_minus_1 / 2);
+        $start_page = $paged - $half_page_start;
+        if ($start_page <= 0) {
+            $start_page = 1;
+        }
+        $end_page = $paged + $half_page_end;
+        if (($end_page - $start_page) != $pages_to_show_minus_1) {
+            $end_page = $start_page + $pages_to_show_minus_1;
+        }
+        if ($end_page > $max_page) {
+            $start_page = $max_page - $pages_to_show_minus_1;
+            $end_page = $max_page;
+        }
+        if ($start_page <= 0) {
+            $start_page = 1;
+        }
+
+        $ret = '';
+
+        $first_page_text = '«';
+        $last_page_text = '»';
+
+        //Sort
+        $orderby_link = '';
+        $order_link = '';
+        if ($orderby) {
+            $orderby_link = '&orderby=' . $orderby;
+            $order_link = '&order=' . $order;
+        }
+
+        $per_page_link = '&perpage=' . $per_page;
+
+        if ($max_page > 1) {
+
+            if ($start_page >= 2 && $pages_to_show < $max_page) {
+                $ret .= '<a class="tab button" href="' . $url . '&' . $pg . '=1' . $orderby_link . $order_link . $per_page_link . '" title="' . $first_page_text . '"><span>' . $first_page_text . '</span></a>';
+            }
+
+            for ($i = $start_page; $i <= $end_page; $i++) {
+                $active = '';
+                if ($i == $paged) {
+                    $active = $active_class;
+                }
+                $page_text = $i;
+                $ret .= '<a class="tab button ' . $active . '" href="' . $url . '&' . $pg . '=' . $i . $orderby_link . $order_link . $per_page_link . '" title="' . $page_text . '"><span>' . $page_text . '</span></a>';
+            }
+            //next_posts_link($pagenavi_options['next_text'], $max_page);
+            if ($end_page < $max_page) {
+
+                $ret .= '<a class="tab button" href="' . $url . '&' . $pg . '=' . $max_page . $orderby_link . $order_link . $per_page_link . '" title="' . $last_page_text . '"><span>' . $last_page_text . '</span></a>';
+            }
+        }
+
+        //Per page
+        if ($count > $this->per_pages[0]) {
+            $ret .= ' Per page: ';
+            foreach ($this->per_pages as $pp) {
+
+                $pp_active = '';
+                if ($pp == $per_page) {
+                    $pp_active = $active_class;
+                }
+
+                $ret .= '<a class="tab button ' . $pp_active . '" href="' . $url . '&perpage=' . $pp . $orderby_link . $order_link . '"><span>' . $pp . '</span></a>';
+
+                if ($count < $pp) {
+                    break;
+                }
+            }
+        }
+        return $ret;
+    }
+
+    /*
+     * Page tabs
+     */
+
+    public function get_tabs($url = '', $tabs = array(), $curr_tab = '', $append = '') {
+        $ret = '';
+        if (sizeof($tabs)) {
+            $ret = '<h3 class="nav-tab-wrapper cm-nav">';
+            foreach ($tabs as $slug => $title) {
+                $tab_active = false;
+                if ($slug == 'home') {
+                    $slug = '';
+                    if ($curr_tab == '') {
+                        $tab_active = true;
+                    }
+                } else {
+                    if ($slug == $curr_tab) {
+                        $tab_active = true;
+                    }
+                    $slug = '&tab=' . $slug;
+                }
+                $tab_class = 'nav-tab';
+                if ($tab_active) {
+                    $tab_class .= ' nav-tab-active';
+                }
+
+                $ret .= '<a href="' . $url . $slug . $append . '" class="' . $tab_class . '">' . $title . '</a>';
+            }
+            $ret .= '</h3>';
+        }
+        return $ret;
+    }
+
+    public function sorted_head($slug = '', $title = '', $orderby = '', $order = 'asc', $page_url = '') {
+        $ret = '';
+        if ($slug) {
+            $sortable = 'sortable';
+            $orderby_link = '';
+            $order_link = '';
+            if ($slug == $orderby) {
+                $sortable = 'sorted';
+                $orderby_link = '&orderby=' . $slug;
+                $next_order = $order == 'desc' ? 'asc' : 'desc';
+                $order_link = '&order=' . $next_order;
+            } else {
+                $orderby_link = '&orderby=' . $slug;
+                $order_link = '&order=' . $order;
+            }
+            ?>
+            <th scope="col" id="<?php print $slug ?>" class="manage-column column-<?php print $slug ?> <?php print $sortable ?> <?php print $order ?>">
+                <a href="<?php print $page_url . $orderby_link . $order_link ?>">
+                    <span><?php print $title ?></span><span class="sorting-indicator"></span>
+                </a>
+            </th>
+        <?php } else { ?>
+            <th><?php print $title ?></th>
+            <?php
+        }
+    }
+
+    /*
+     * Page filters
+     */
+
+    public function get_filters($filter_arr = array(), $url = '', $curr_tab = -1, $front_slug = '', $name = 'status', $class = '', $show_name = true) {
+        $ret = array();
+        if (sizeof($filter_arr)) {
+            foreach ($filter_arr as $slug => $value) {
+                $title = $value['title'];
+                $count = isset($value['count']) ? $value['count'] : false;
+                $tab_active = false;
+
+                if ($slug === $front_slug) {
+                    $slug = '';
+                    if ($curr_tab == '') {
+                        $tab_active = true;
+                    }
+                } else {
+                    if ($slug == $curr_tab) {
+                        $tab_active = true;
+                    }
+                    $slug = '&' . $name . '=' . $slug;
+                }
+                $tab_class = '';
+                if ($tab_active) {
+                    $tab_class .= 'current';
+                }
+
+                $str = '<li><a href="' . $url . $slug . '" class="' . $tab_class . '">';
+                $str .= $title;
+
+                if ($count !== false) {
+                    $str .= ' <span class="count">(' . $count . ')</span>';
+                }
+                $str .= '</a></li>';
+
+                $ret[] = $str;
+            }
+        }
+        if ($class) {
+            $class = ' ' . $class;
+        }
+        $first = '';
+        if ($show_name) {
+            $first = '<li>' . ucfirst(str_replace('_', ' ', $name)) . ': </li>';
+        }
+        return '<ul class="cm-filters subsubsub' . $class . '">' . $first . implode(' | ', $ret) . '</ul>';
+    }
+
+    /*
+     * Get movies list from a critic post
+     */
+
+    public function get_movies($cid) {
+        $data = $this->cm->get_movies_data($cid);
+        $movies = array();
+        if (sizeof($data)) {
+            /*
+             *  Object ( [fid] => 31979 [type] => 1 [state] => 1 )
+             */
+            foreach ($data as $movie) {
+                //$post = get_post($movie->fid);
+                $movies[$movie->fid]['title'] = $movie->fid;
+                $movies[$movie->fid]['link'] = $this->theme_movie_link($movie->fid, $this->get_movie_name_by_id($movie->fid));
+                $movies[$movie->fid]['state'] = $this->cm->get_movie_state_name($movie->state);
+                $movies[$movie->fid]['type'] = $this->cm->get_post_category_name($movie->type);
+                $movies[$movie->fid]['rating'] = $movie->rating;
+            }
+        }
+        return $movies;
+    }
+
+    /*
+     * Get movies list from a critic post
+     */
+
+    public function get_critics($pid) {
+        $data = $this->cm->get_critics_meta_and_posts_by_movie($pid);
+        $critics = array();
+        if (sizeof($data)) {
+            /*
+              [cid] => 26761
+              [type] => 1
+              [state] => 1
+              [title] => My Last Film, 2015
+              [link] =>
+             */
+            foreach ($data as $critic) {
+                $critics[$critic->cid]['title'] = $critic->title;
+                $critics[$critic->cid]['name'] = $critic->name;
+                $critics[$critic->cid]['link'] = $critic->link;
+                $critics[$critic->cid]['state'] = $this->cm->get_movie_state_name($critic->state);
+                $critics[$critic->cid]['type'] = $this->cm->get_post_category_name($critic->type);
+            }
+        }
+        return $critics;
+    }
+
+    public function get_movie_types() {
+        $ma = $this->get_ma();
+        $count = $ma->get_post_count();
+        $states = array(
+            'all' => array(
+                'title' => 'All',
+                'count' => $count
+            )
+        );
+        foreach ($ma->movie_type as $key => $value) {
+            $states[$key] = array(
+                'title' => $value,
+                'count' => $ma->get_post_count($key)
+            );
+        }
+        return $states;
+    }
+
+    public function theme_critic_search($critics_search) {
+        // Deprecated unused
+        $timer = 0;
+        $invalid_str = '';
+        $valid_str = '';
+        foreach ($critics_search as $cid => $critic) {
+
+            //Get post data
+            $title = '';
+            $name = '';
+            $link = '';
+
+            $post = $this->cm->get_post_and_author($cid);
+            if ($post) {
+                // Post data                        
+                $title = $post->title;
+                $name = $post->name;
+                $link = $post->link;
+            }
+
+            $type = $this->cm->get_post_category_name($critic['type']);
+
+            $valid = true;
+            $str = '';
+            $str .= '<p>';
+
+            $critic_link = $this->theme_post_link($cid, $title);
+            if ($critic['valid']) {
+                $str .= '<b class="green">' . $critic_link . '</b><br />'; // . $critic['t'] . '<br />';
+            } else {
+                $valid = false;
+                $str .= '<b class="red">' . $critic_link . '</b><br />'; // . $critic['t'] . '<br />';
+            }
+
+            //print '<i>'.$critic['c'] . '</i><br />';
+            $str .= $name . ': <a href="' . $link . '">' . substr($link, 0, 50) . '</a><br />';
+            $str .= 'Post type: ' . $type . '. <br />';
+            $str .= 'Total score: ' . $critic['total'] . '<br />';
+            foreach ($critic['score'] as $key => $value) {
+                $str .= " - $key => $value<br />";
+            }
+            $local_timer = $critic['timer'];
+            $timer += $local_timer;
+            $str .= 'Timer: ' . $local_timer . '<br />';
+            $str .= '</p>';
+            if ($valid) {
+                $valid_str .= $str;
+            } else {
+                $invalid_str .= $str;
+            }
+        }
+        print $valid_str;
+        print $invalid_str;
+        if ($timer > $local_timer) {
+            print '<p>Time total: ' . $timer . '</p>';
+        }
+    }
+
+    public function bulk_submit() {
+        if (isset($_POST['bulkaction'])) {
+
+            //[bulkaction] => draft [bulk-35660] => on [bulk-35659] => on
+            $b = $_POST['bulkaction'];
+            $ids = array();
+
+            foreach ($_POST as $key => $value) {
+                if (strstr($key, 'bulk-')) {
+                    $ids[] = (int) str_replace('bulk-', '', $key);
+                }
+            }
+
+            if ($b && sizeof($ids)) {
+                if ($b == 'rules') {
+                    // Apply feed rules
+                    $changelog = array();
+                    foreach ($ids as $id) {
+                        $changed = $this->cf->apply_feed_rules($id);
+                        if ($changed) {
+                            $changelog[] = $changed;
+                        }
+                        //array('from' => $post->status, 'to' => $action, 'rule' => $key, 'cid' => $cid);
+                    }
+                    if ($changelog) {
+                        print "<div class=\"updated\"><p><strong>Posts updated</strong></p>";
+                        foreach ($changelog as $item) {
+                            print "id: " . $item['id'] . "; " . $this->cm->post_status[$item['from']] . " => " . $this->cm->post_status[$item['to']] . "; rule: " . $item['rule'] . "; campaign: " . $item['cid'] . ".<br />";
+                        }
+                        print "</div>";
+                    } else {
+                        print "<div class=\"updated\"><p><strong>No changes</strong></p></div>";
+                    }
+                } else if ($b == 'findmovies') {
+                    // Find movies
+                    $changed = $this->cf->find_movies_queue($ids);
+                    if ($changed) {
+                        print "<div class=\"updated\"><p><strong>Posts updated</strong></p></div>";
+                    } else {
+                        print "<div class=\"updated\"><p><strong>No changes</strong></p></div>";
+                    }
+                } else if ($b == 'wl' || $b == 'gl' || $b == 'bl' || $b == 'nl') {
+                    // Move IP to list
+
+                    if (isset($_POST['isips'])) {
+                        // Ip list
+                        $changed = $this->cm->bulk_change_ip_list_type_by_ips($ids, $b);
+                    } else {
+                        // Post list
+                        $changed = $this->cm->bulk_change_ip_list_type($ids, $b);
+                    }
+                    if ($changed) {
+                        print "<div class=\"updated\"><p><strong>Posts updated</strong></p></div>";
+                    } else {
+                        print "<div class=\"updated\"><p><strong>No changes</strong></p></div>";
+                    }
+                } else if ($b == 'add_critics' || $b == 'add_critics_force') {
+                    // Add movies critics
+                    $mid = isset($_GET['mid']) ? (int) $_GET['mid'] : '';
+                    $force = false;
+                    if ($b == 'add_critics_force') {
+                        $force = true;
+                    }
+                    $changed = $this->cs->bulk_add_critics_meta($mid, $ids, $force);
+                } else if ($b == 'meta_approve' || $b == 'meta_unapprove' || $b == 'meta_remove') {
+                    // Critics meta actions
+                    $mid = isset($_GET['mid']) ? (int) $_GET['mid'] : '';
+
+                    if ($b == 'meta_remove') {
+                        $changed = $this->cm->bulk_meta_remove($ids, $mid);
+                    } else {
+                        $meta_state = ($b == 'meta_approve') ? 1 : 0;
+                        $changed = $this->cm->bulk_meta_update($ids, $meta_state, $mid);
+                    }
+
+                    //author_id
+                } else if ($b == 'changeauthor') {
+                    $author_id = isset($_POST['author_id']) ? (int) $_POST['author_id'] : '';
+
+                    if ($author_id) {
+                        $changed = $this->cm->bulk_change_author($ids, $author_id);
+                    }
+                } else {
+                    // Change status
+                    $updated = false;
+                    $status = 1;
+                    if ($b == 'draft') {
+                        $status = 0;
+                    } else if ($b == 'trash') {
+                        $status = 2;
+                    }
+
+                    foreach ($ids as $id) {
+                        if ($this->cm->change_post_state($id, $status)) {
+                            $updated = true;
+                        }
+                    }
+                    if ($updated) {
+                        print "<div class=\"updated\"><p><strong>Posts updated</strong></p></div>";
+                    }
+                }
+            }
+        }
+    }
+
+    public function bulk_parser_submit() {
+        if (isset($_POST['bulkaction'])) {
+
+            //[bulkaction] => draft [bulk-35660] => on [bulk-35659] => on
+            $b = $_POST['bulkaction'];
+            $ids = array();
+
+            foreach ($_POST as $key => $value) {
+                if (strstr($key, 'bulk-')) {
+                    $ids[] = (int) str_replace('bulk-', '', $key);
+                }
+            }
+
+            if ($b && sizeof($ids)) {
+                if ($b == 'parsenew' || $b == 'parseforce') {
+                    // Apply feed rules
+                    $changelog = array();
+                    foreach ($ids as $id) {
+                        $force = false;
+                        if ($b == 'parseforce') {
+                            $force = true;
+                        }
+                        $item = $this->cp->get_url($id);
+                        $campaign = $this->cp->get_campaign($item->cid, true);
+
+                        if ($campaign->type == 1) {
+                            //YouTube campaign
+                            $options = $this->cp->get_options($campaign);
+                            $urls = array($item->id => $item);
+                            $this->cp->parse_urls_yt($urls, $campaign, $force);
+                        } else {
+
+                            $changed = $this->cp->parse_url($id, $force);
+                        }
+
+
+                        if ($changed) {
+                            $changelog[] = $changed;
+                        }
+                        //array('from' => $post->status, 'to' => $action, 'rule' => $key, 'cid' => $cid);
+                    }
+                    if ($changelog) {
+                        print "<div class=\"updated\"><p><strong>URLs updated</strong></p></div>";
+                    } else {
+                        print "<div class=\"updated\"><p><strong>No changes</strong></p></div>";
+                    }
+                } else if ($b == 'urlfilter') {
+                    // URL filter
+                    $changelog = array();
+                    foreach ($ids as $id) {
+                        $changed = $this->cp->url_filter($id);
+                        if ($changed) {
+                            $changelog[] = $changed;
+                        }
+                    }
+                    if ($changelog) {
+                        print "<div class=\"updated\"><p><strong>URLs updated</strong></p></div>";
+                    } else {
+                        print "<div class=\"updated\"><p><strong>No changes</strong></p></div>";
+                    }
+                } else if ($b == 'findmovies') {
+                    // Find movies queue
+                    $changed = $this->cp->find_movies_queue($ids);
+                    if ($changed) {
+                        print "<div class=\"updated\"><p><strong>URLs updated</strong></p></div>";
+                    } else {
+                        print "<div class=\"updated\"><p><strong>No changes</strong></p></div>";
+                    }
+                } else if ($b == 'statusnew') {
+                    // Change status
+                    $updated = false;
+                    $status = 0;
+                    foreach ($ids as $id) {
+                        if ($this->cp->change_url_state($id, $status)) {
+                            $updated = true;
+                        }
+                    }
+                    if ($updated) {
+                        print "<div class=\"updated\"><p><strong>URLs updated</strong></p></div>";
+                    }
+                } else if ($b == 'trash') {
+                    // Change status
+                    $updated = false;
+                    $status = 2;
+                    foreach ($ids as $id) {
+                        if ($this->cp->change_url_state($id, $status)) {
+                            $updated = true;
+                        }
+                    }
+                    if ($updated) {
+                        print "<div class=\"updated\"><p><strong>URLs updated</strong></p></div>";
+                    }
+                } else if ($b == 'delete') {
+                    // Delete url                   
+                    foreach ($ids as $id) {
+                        if ($this->cp->delete_url($id)) {
+                            
+                        }
+                    }
+
+                    print "<div class=\"updated\"><p><strong>URLs removed</strong></p></div>";
+                }
+            }
+        }
+    }
+
+    public function nonce_validate($form_state) {
+
+        $nonce = wp_verify_nonce($form_state['critic-feeds-nonce'], 'critic-feeds-options');
+        if (!$nonce) {
+            return __('Error validate nonce');
+        }
+
+        return true;
+    }
+
+    public function theme_author_tags($tags) {
+        $tag_arr = array();
+        if (sizeof($tags)) {
+            foreach ($tags as $tag) {
+                $tag_url = $this->admin_page . $this->tags_url . '&tid=' . $tag->id;
+                $tag_arr[] = '<a href="' . $tag_url . '">' . $tag->name . '</a>';
+            }
+        }
+        return $tag_arr;
+    }
+
+    public function theme_author_link($id, $name) {
+        $author_url = $this->admin_page . $this->authors_url . '&aid=' . $id;
+        $link = '<a href="' . $author_url . '">' . $name . '</a>';
+        return $link;
+    }
+
+    public function theme_feed_link($id, $name) {
+        $link = $id;
+        if ($id > 0) {
+            $url = $this->admin_page . $this->feeds_url . '&cid=' . $id;
+            $link = '<a href="' . $url . '">' . $name . '</a>';
+        }
+        return $link;
+    }
+
+    public function theme_movie_link($id, $name) {
+        $link = $id;
+        if ($id > 0) {
+            $url = $this->admin_page . $this->movies_url . '&mid=' . $id;
+            $link = '<a href="' . $url . '">' . $name . '</a>';
+        }
+        return $link;
+    }
+
+    public function theme_post_link($id, $name) {
+        $link = $id;
+        if ($id > 0) {
+            $url = $this->admin_page . $this->parrent_slug . '&pid=' . $id;
+            $link = '<a href="' . $url . '">' . $name . '</a>';
+        }
+        return $link;
+    }
+
+    public function get_movie_name_by_id($id, $cache = true) {
+        //Get from cache
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$id])) {
+                return $dict[$id];
+            }
+        }
+
+        $ma = $this->get_ma();
+        $result = $ma->get_movie_name_by_id($id);
+
+        if ($cache) {
+            $dict[$id] = $result;
+        }
+        return $result;
+    }
+
+}

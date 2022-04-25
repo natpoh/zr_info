@@ -1,0 +1,48 @@
+<h2><a href="<?php print $url ?>"><?php print __('Critic feeds') ?></a>. <?php print __('Add a new provider') ?></h2>
+<?php print $tabs; ?>
+
+<form accept-charset="UTF-8" method="post" id="campaign">
+    <div class="cm-edit inline-edit-row">
+        <fieldset>
+            <label>
+                <span class="title"><?php print __('Name') ?></span>
+                <span class="input-text-wrap"><input type="text" name="name" class="name" value=""></span>
+            </label>
+
+            <label>
+                <span class="title"><?php print __('Slug') ?></span>
+                <span class="input-text-wrap"><input type="text" name="slug" class="slug" value=""></span>
+            </label>
+            <label>
+                <span class="title"><?php print __('Pid') ?></span>
+                <span class="input-text-wrap"><input type="text" name="pid" class="pid" value=""></span>
+            </label>
+            <label>
+                <span class="title"><?php print __('Weight') ?></span>
+                <span class="input-text-wrap"><input type="text" name="weight" class="slug" value="0"></span>
+            </label>
+
+            <label>
+                <span class="title"><?php print __('Image') ?></span>
+                <span class="input-text-wrap"><input type="text" name="image" class="slug" value=""></span>
+            </label>
+
+            <label class="inline-edit-active">                
+                <?php
+                $checked = 'checked="checked"';
+                ?>
+                <input type="checkbox" name="status" value="1" <?php print $checked ?> >
+                <span class="checkbox-title"><?php print __('Publish') ?></span>
+            </label>
+
+            <label class="inline-edit-free">                
+                <input type="checkbox" name="free" value="1" >
+                <span class="checkbox-title"><?php print __('Free') ?></span>
+            </label>
+
+            <?php wp_nonce_field('critic-feeds-options', 'critic-feeds-nonce'); ?>
+            <br />
+            <input type="submit" name="options" id="edit-submit" value="<?php echo __('Submit') ?>" class="button-primary">  
+        </fieldset>
+    </div>
+</form>
