@@ -114,7 +114,6 @@ public static function commit_info_request($uid)
 
        $result =  GETCURL::getCurlCookie($link,'',$request);
 
-       echo 'push_request '.$result;
 
 
        if ($result)
@@ -131,7 +130,7 @@ public static function commit_info_request($uid)
     {
         $options_data = self::get_import_data();
         $site_id = $options_data['site_id_request'];
-        $prefix = array(1=>'t_',2=>'_p');
+        $prefix = array(1=>'t_',2=>'p_');
 
         if (!$site_id)
         {
@@ -397,6 +396,22 @@ public static function commit_info_request($uid)
         return $rows;
     }
 
+    public static function get_table_access($table_name)
+    {
+
+        $sql = "SELECT * FROM `commit_tables_rules` where `table_name` ='{$table_name}' ";
+        $rows = Pdo_an::db_fetch_row($sql);
+        if ($rows)
+        {
+            $array['export']=$rows->export;
+            $array['import']=$rows->import;
+            $array['del']=$rows->del;
+
+        }
+
+        return $array;
+
+    }
 
 
     public static function get_import_data()
@@ -575,7 +590,7 @@ public static function commit_info_request($uid)
                 ///update comlete status
                 $result_data = [];
 
-                foreach ($data as $request ) {
+                foreach ($object_setup_all as $request ) {
 
                 $key = $request["uniq_id"];
 
@@ -689,13 +704,11 @@ public static function commit_info_request($uid)
         $array_sql = self::last_commits($data,4);////check status 0
 
 
+
         /// send data with status 0 to a remote server to sync_data function
         if ($array_sql )
         {
             $result =   self::push_request($array_sql,5);
-
-            echo 'result ';
-            var_dump($result);
 
             if ($result['error'])
             {
@@ -1017,8 +1030,10 @@ public static function commit_info_request($uid)
         }
 
         $options_data = self::get_import_data();
+        $table_access = self::get_table_access($table_name);
 
-        if (($oper=='update' && $options_data['update_request']==1) || ($oper=='insert' && $options_data['add_request']==1))
+        if ((($oper=='update' && ($options_data['update_request']==1 || $table_access['import']==1 || $table_access['import']==2))
+            || ($oper=='insert' && ($options_data['add_request']==1 ||  $table_access['import']==1))) && $table_access['import']!=3 )
         {
             Pdo_an::db_results_array($inser_sql, $data_array);
         }

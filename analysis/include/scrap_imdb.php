@@ -16,6 +16,62 @@ if (!defined('ABSPATH'))
 /////////add rating
 
 
+function get_array($id='')
+{
+
+    $type = 'imdb';
+    $id = intval($id);
+
+    if (isset($_GET['type']))
+    {
+        $type=  $_GET['type'];
+    }
+
+
+    if ($type=='tmdbmovie')
+    {
+
+        header('Content-Type: application/json');
+          $r =  TMDB::get_tmdb_data_movie($id, 'movie');
+        echo json_encode($r);
+        return;
+
+    }
+
+    else if ($type=='tmdbtv')
+    {
+        header('Content-Type: application/json');
+
+        $r = TMDB::get_tmdb_data_movie($id, 'tv');
+        echo json_encode($r);
+        return;
+
+    }
+    else if ($type=='get_tmdb_from_imdb')
+        {
+
+          $r =  TMDB::get_tmdbid_from_imdbid($id);
+          echo $r;
+          return;
+
+        }
+
+    else if ($type=='imdb')
+    {
+        $archive=0;
+        if (isset($_GET['a']))
+        {
+            $archive = 1;
+        }
+
+        header('Content-Type: application/json');
+        $array_movie =  TMDB::get_content_imdb($id,1,1,$archive);
+        echo $array_movie;
+        return;
+    }
+
+}
+
 
 function check_tmdb_actors($id)
 {
@@ -2499,19 +2555,7 @@ if (isset($_GET['get_imdb_movie_id'])) {
     return;
 }
 
-if (isset($_GET['show_imdb_array'])) {
-    $archive=0;
-    if ($_GET['a'])
-    {
-        $archive = 1;
-    }
-    $id = intval($_GET['show_imdb_array']);
-    header('Content-Type: application/json');
-        $array_movie =  TMDB::get_content_imdb($id,1,1,$archive);
-        echo $array_movie;
-        return;
 
-}
 /////////add providers
 if (isset($_GET['add_providers'])) {
     add_providers();
@@ -2763,7 +2807,12 @@ if (isset($_GET['set_tmdb_actors_for_movies'])) {
 
     return;
 }
+if (isset($_GET['get_array'])) {
 
+    get_array($_GET['get_array']);
+
+    return;
+}
 
 
 echo 'ok';

@@ -575,7 +575,7 @@ public static function prepare_array($options,$addsplash='')
     }
     return $array_rs;
 }
-public static function Show_admin_table($datatype,$array_rows,$WP_include,$custom_table='',$refresh_rating='')
+public static function Show_admin_table($datatype,$array_rows,$WP_include,$custom_table='',$refresh_rating='',$no_status='',$no_subgrid='')
 {
     $subgrid = 1;
     $edit =1;
@@ -677,6 +677,7 @@ public static function Show_admin_table($datatype,$array_rows,$WP_include,$custo
     {
         $table_staus = substr($table_staus,2);
     }
+
 
 
 
@@ -895,7 +896,7 @@ var first_run = 0;
             },
 
 
-            <?php if($subgrid) { ?>
+            <?php if($subgrid && !$no_subgrid) { ?>
             subGrid: true,
             subGridRowExpanded: function(subgrid_id, row_id) {
                 getSubgrid(subgrid_id, row_id);
@@ -1067,9 +1068,11 @@ var first_run = 0;
 
 </script>
 
+    <?php if (!$no_status) { ?>
     <ul class="cm-filters subsubsub"><li>Status: </li><?php echo $table_staus; ?></ul>
 
 <?php
+}
 
     if (!$custom_table)
     {
