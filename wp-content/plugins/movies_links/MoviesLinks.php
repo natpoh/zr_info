@@ -7,8 +7,10 @@ class MoviesLinks extends MoviesAbstractDB {
     private $ma;
     private $ms;
     private $mch;
+    private $mlr = array();
     private $settings;
     private $settings_def;
+    private $campaings_mlr = array('familysearch.org' => 'familysearch');
     public $arhive_path = ABSPATH . 'wp-content/uploads/movies_links/arhive/';
 
     public function __construct() {
@@ -74,6 +76,37 @@ class MoviesLinks extends MoviesAbstractDB {
             $this->mch = new MoviesCustomHooks($this);
         }
         return $this->mch;
+    }
+
+    public function get_campaign_mlr_name($campaign) {
+        $title = $campaign->title;
+        if (isset($this->campaings_mlr[$title])) {
+            return $this->campaings_mlr[$title];
+        }
+        return '';
+    }
+
+    public function get_campaing_mlr($campaign) {
+        $cm_key = $this->get_campaign_mlr_name($campaign);
+
+
+        if ($cm_key) {
+            if (isset($this->mlr[$cm_key])) {
+                return $this->mlr[$cm_key];
+            } else {
+                if (!class_exists('MoviesAbstractDBAn')) {
+                    require_once( MOVIES_LINKS_PLUGIN_DIR . '/db/MoviesAbstractDBAn.php' );
+                }
+                if (!class_exists($cm_key)) {
+                    require_once( MOVIES_LINKS_PLUGIN_DIR . '/mlr/' . $cm_key . '.php' );
+                }
+
+                $cmc = new $cm_key($this);
+                $this->mlr[$cm_key] = $cmc;
+                return $cmc;
+            }
+        }
+        return array();
     }
 
     public function get_posts_by_movie_id($id) {
@@ -147,7 +180,7 @@ class MoviesLinks extends MoviesAbstractDB {
         }
         if (isset($form['web_drivers'])) {
             $ss['web_drivers'] = base64_encode($new_value);
-        }        
+        }
 
         $this->settings = $ss;
         update_option('movies_links_settings', serialize($ss));

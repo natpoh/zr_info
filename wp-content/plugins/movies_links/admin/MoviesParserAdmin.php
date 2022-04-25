@@ -5,7 +5,7 @@ class MoviesParserAdmin extends ItemAdmin {
     public $mla;
     public $ml;
     private $mp;
-    public $sort_pages = array('id', 'date', 'adate','pdate', 'title', 'last_update', 'update_interval', 'name', 'pid', 'status', 'type', 'weight');
+    public $sort_pages = array('id', 'date', 'adate', 'pdate', 'title', 'last_update', 'update_interval', 'name', 'pid', 'status', 'type', 'weight');
     public $update_interval = array(
         1 => 'One min',
         5 => 'Five min',
@@ -193,8 +193,15 @@ class MoviesParserAdmin extends ItemAdmin {
             //Tabs
             $append = '&cid=' . $cid;
             $tabs_arr = $this->parser_campaign_tabs;
-            $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab, $append);
 
+            $campaign = $this->mp->get_campaign($cid);
+
+            $mlr_name = $this->ml->get_campaign_mlr_name($campaign);
+            if ($mlr_name) {
+                $tabs_arr['mlr'] = 'Results';
+            }
+
+            $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab, $append);
 
             if (!$curr_tab) {
                 $curr_tab = 'home';
@@ -213,9 +220,7 @@ class MoviesParserAdmin extends ItemAdmin {
             if ($curr_tab == 'home') {
                 // Campaign view page
                 $update_interval = $this->update_interval;
-                $campaign = $this->mp->get_campaign($cid);
                 if ($campaign) {
-
                     if ($_GET['export']) {
                         $urls = $this->mp->get_all_urls($cid);
                         print '<h2>Export campaign URLs</h2>';
@@ -400,6 +405,45 @@ class MoviesParserAdmin extends ItemAdmin {
                 }
                 $campaign = $this->mp->get_campaign($cid);
                 include(MOVIES_LINKS_PLUGIN_DIR . 'includes/edit_parser.php');
+            } else if ($curr_tab == 'mlr') {
+                // Movies links custom results
+
+                $mlr = $this->ml->get_campaing_mlr($campaign);
+                if (!$mlr) {
+                    return '';
+                }
+
+                //Sort
+                $orderby = $this->get_orderby($mlr->sort_pages);
+                $order = $this->get_order();
+
+                $page_url = $url;
+                $page_url .= '&cid=' . $cid;
+                $page_url .= '&tab=mlr';
+
+                
+                //Bulk actions
+                // $this->bulk_parser_submit();
+
+                /*
+                  // Filter by status
+                  $home_status = -1;
+                  $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_status;
+                  $filter_arr = $this->get_url_status_count($cid);
+                  $filters = $this->get_filters($filter_arr, $page_url, $status, '', 'status');
+                  if ($status != $home_status) {
+                  $page_url = $page_url . '&status=' . $status;
+                  }
+                  $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
+
+                 */
+                $count = $mlr->get_posts_count();
+                $status=-1;
+                $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+
+                $posts = $mlr->get_posts($page, $orderby, $order, $per_page);
+
+                include(MOVIES_LINKS_PLUGIN_DIR . 'includes/mlr/' . $mlr_name . '_results.php');
             }
             return;
         }
@@ -1169,13 +1213,12 @@ class MoviesParserAdmin extends ItemAdmin {
         $o = $options['links'];
         $count = $o['pr_num'];
         $cid = $campaign->id;
-        $last_posts = $this->mp->get_last_posts($count, $cid,-1,1);
+        $last_posts = $this->mp->get_last_posts($count, $cid, -1, 1);
         $preivew_data = array();
 
         if ($last_posts) {
             $o = $options['links'];
             $preivew_data = $this->mp->find_posts_links($last_posts, $o, $campaign->type);
-          
         } else {
             return -1;
         }

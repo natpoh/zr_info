@@ -1,4 +1,4 @@
-<h2><a href="<?php print $url ?>"><?php print __('Movies List Parsers') ?></a>. <?php print __('URLs') ?></h2>
+<h2><a href="<?php print $url ?>"><?php print __('Movies Links') ?></a>. <?php print __('URLs') ?></h2>
 
 <?php if ($cid) { ?>
     <h3><?php print __('Campaign') ?>: [<?php print $cid ?>] <?php print $campaign->title ?></h3>

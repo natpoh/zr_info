@@ -24,10 +24,10 @@ class MoviesCustomHooks {
         $options = unserialize($post->options);
 
         // Familysearch logic
-        $this->update_familysearch($post, $options, $valid_actors);
+        $this->update_familysearch($campaign, $post, $options, $valid_actors);
     }
 
-    private function update_familysearch($post, $options, $valid_actors=array()) {
+    private function update_familysearch($campaign, $post, $options, $valid_actors = array()) {
 
         $score_opt = array(
             'topcountry' => 'topcountry',
@@ -90,26 +90,29 @@ class MoviesCustomHooks {
 
               )
              */
-            $ma = $this->ml->get_ma();
 
-            $lastname_id = $ma->get_lastname_id($lastname);
-            
-            if (!$lastname_id) {
-                // Add name to db
-                $top_country_id = $ma->get_or_create_country($topcountry);
-                $last_name_id = $ma->create_lastname($lastname, $top_country_id);
-            
-                // Add meta
-                if ($country_meta){
-                    foreach ($country_meta as $item) {
-                        $c = $item['c'];
-                        $t = $item['t'];
-                        $c_id = $ma->get_or_create_country($c);
-                        $ma->add_country_meta($last_name_id,$c_id,$t);
+            $fs = $this->ml->get_campaing_mlr($campaign);
+            if ($fs) {
+
+                $lastname_id = $fs->get_lastname_id($lastname);
+
+                if (!$lastname_id) {
+                    // Add name to db
+                    $top_country_id = $fs->get_or_create_country($topcountry);
+                    $last_name_id = $fs->create_lastname($lastname, $top_country_id);
+
+                    // Add meta
+                    if ($country_meta) {
+                        foreach ($country_meta as $item) {
+                            $c = $item['c'];
+                            $t = $item['t'];
+                            $c_id = $fs->get_or_create_country($c);
+                            $fs->add_country_meta($last_name_id, $c_id, $t);
+                        }
                     }
+                } else {
+                    // Name already exist, no actions
                 }
-            } else {
-                // Name already exist, no actions
             }
         }
     }
