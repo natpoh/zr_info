@@ -41,7 +41,8 @@ class MoviesCustomHooks {
                 $to_update[$db_key] = $field_value;
             }
         }
-
+        $topcountry = '';
+        $country = '';
         if ($to_update) {
             $country_meta = array();
             $topcountry = '';
