@@ -89,6 +89,33 @@ class Export_data
         }
 
     }
+
+    public function check_new_tables()
+    {
+        /////add new tables
+        $sql = "SELECT *
+FROM information_schema.tables
+WHERE table_type='BASE TABLE'
+AND table_schema='imdbvisualization'";
+        $rows = Pdo_an::db_results_array($sql);
+
+        foreach ($rows as $r) {
+            $link = $r["TABLE_NAME"];
+
+            $sql = "SELECT id FROM `commit_tables_rules` WHERE `table_name` ='{$link}'";
+            $r = Pdo_an::db_fetch_row($sql);
+            if (!$r)
+            {
+                $sql="INSERT INTO `commit_tables_rules`(`id`, `table_name`, `export`, `import`, `del`, `last_update`) 
+                    VALUES (NULL,'{$link}',0,0,0,".time().")";
+                Pdo_an::db_query($sql);
+            }
+
+
+        }
+
+    }
+
     public function options()
     {
 
@@ -175,6 +202,34 @@ class Export_data
 
         <?php
 
+        $this->check_new_tables();
+
+
+
+        !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
+
+        if (Crowdsource::checkpost())
+        {
+            return;
+        }
+
+
+
+
+
+/// `commit_tables_rules`(`id`, `table_name`, `export`, `import`, `del`, `last_update`)
+        $array_rows = array(
+            'id'=>array('w'=>5),
+            'table_name'=>array('w'=>30),
+            'export'=>array('type'=>'select','options'=>'0:Not set;1:Enable;2:Disable'),
+            'import'=>array('type'=>'select','options'=>'0:Not set;1:Enable;2:Only update;3:Disable'),
+            'del'=>array('type'=>'select','options'=>'0:Not set;1:Enable;2:Disable'),
+            'last_update'=>array('w'=>10)
+
+        );
+
+
+        Crowdsource::Show_admin_table('commit_tables_rules',$array_rows,1,'commit_tables_rules','',1,1);
 
     }
 
@@ -195,7 +250,7 @@ class Export_data
        {
            $option.= ';'.$i.':'.$i;
            $total_add[$i]['add'] = self::get_data_count_an('commit',"WHERE `description`= '".$i."' ");
-           $total_add[$i]['update'] = self::get_data_count_an('commit',"WHERE `description`= '".$i."' and `status`= 1 ");
+           $total_add[$i]['update'] = self::get_data_count_an('commit',"WHERE `description`= '".$i."' and `complete`= 1 ");
            $total_add[$i]['filled'] = self::get_filled($total_add[$i]['add'],$total_add[$i]['update'],$i);
            echo '<tr><td>'.$i.'</td><td>' . $total_add[$i]['add'] . '</td>'.$total_add[$i]['filled'].'<td></td></tr>';
        }
@@ -207,20 +262,6 @@ class Export_data
 
  echo '</tbody></table>';
 
-/*
- * id
-
-	2 	uniq_id
-
-	3 	description
-
-	4 	text
-
-	5 	status
-
-	6 	site_id
-
-	7 	last_update  * */
 
         $array_rows = array(
             'id'=>array('w'=>10),
@@ -229,14 +270,14 @@ class Export_data
             'text' => array('w'=>40, 'type' => 'textarea'),
             'update_data' => array('w'=>40, 'type' => 'textarea'),
             'status' => array('type'=>'select','options'=>'0:Waiting;1:Sinch;2:Send request to get data;3:Send data;4:Get and save data;5:Complete;10:Error'),
-            'complete' => array('type'=>'select','options'=>'0:no;1:Complete'),
+            'complete' => array('type'=>'select','options'=>':no;1:Complete'),
             'site_id' => array('w'=>10, 'type' => 'textarea'),
             'last_update' => array('w'=>10, 'type' => 'textarea')
         );
 
         !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
 
-        Crowdsource::Show_admin_table('commit',$array_rows,1,'commit');
+        Crowdsource::Show_admin_table('commit',$array_rows,1,'commit','',1,1);
 
 
 
