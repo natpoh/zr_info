@@ -546,7 +546,6 @@ class TMDBIMPORT
                // echo $data["imdb_id"] . ' ' . $data["name"] . ' enabled <br>' . PHP_EOL;
             }
             //else  echo $data["name"] . ' false <br>' . PHP_EOL;
-
             ////update tmdb table
             self::update_tmdb_actors_table($data);
 
@@ -563,16 +562,48 @@ class TMDBIMPORT
 
         /////get request data ////type = 1///country
 
-        $sql = "SELECT `data_movie_imdb`.`id` FROM  `data_movie_imdb`  left join `cache_tmdb_sinc` ON cache_tmdb_sinc.rwt_id = data_movie_imdb.id 
-    WHERE (cache_tmdb_sinc.id IS NULL ) order by cache_tmdb_sinc.id limit 1000";
+
+        if ($id)
+        {
+
+            $sql = "SELECT `data_movie_imdb`.`id` FROM  `data_movie_imdb`  left join `cache_tmdb_sinc` ON cache_tmdb_sinc.rwt_id = data_movie_imdb.id 
+        WHERE data_movie_imdb.id = ".$id." order by cache_tmdb_sinc.id limit 1";
+
+            echo $sql;
+
+        }
+        else
+        {
+
+            $sql = "SELECT `data_movie_imdb`.`id` FROM  `data_movie_imdb`  left join `cache_tmdb_sinc` ON cache_tmdb_sinc.rwt_id = data_movie_imdb.id 
+        WHERE (cache_tmdb_sinc.id IS NULL ) order by cache_tmdb_sinc.id limit 1000";
+
+        }
+        if (isset($_GET['update_all']))
+        {
+            $sql = "SELECT `data_movie_imdb`.`id` FROM  `data_movie_imdb`  left join `cache_tmdb_sinc` ON cache_tmdb_sinc.rwt_id = data_movie_imdb.id 
+        WHERE (cache_tmdb_sinc.id IS NOT NULL ) order by cache_tmdb_sinc.id";
+
+
+        }
+
+
 
         //OR (`cache_tmdb_sinc`.`type` = 1 and `cache_tmdb_sinc`.`status` = 0 )
 
         $r = Pdo_an::db_results_array($sql);
+        $count =count($r);
+        $i=0;
         if ($r)
         {
             foreach ($r as $row)
             {
+
+                $i++;
+
+                echo $i.'/'.$count.'<br>'.PHP_EOL;
+
+
                 $id = $row['id'];
                 $result='';
                 $update_countries='';

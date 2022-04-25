@@ -188,7 +188,6 @@ class TMDB
             if (!$data) $data = $result->tv_season_results[0];
             if ($data) $tmdb_id = $data->id;
 
-
         }
         return $tmdb_id;
     }
