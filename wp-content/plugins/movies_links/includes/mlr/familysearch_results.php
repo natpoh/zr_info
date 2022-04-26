@@ -28,50 +28,21 @@ if (sizeof($posts) > 0) {
             <tbody>
                 <?php
                 foreach ($posts as $item) {
-                    $country_names = '';
-                    $countryes = $mlr->get_countries_by_lasnameid($item->id);
 
-                    $race_total = array();
-                    $rows_total = array();
-                    $rows_race = array();
-                    $total = 0;
+                    $verdict_arr = $mlr->calculate_fs_verdict($item->id);
+                   
 
-                    if ($countryes) {
-                        foreach ($countryes as $country => $country_count) {
-                            $rows_total[] = $country . ': ' . $country_count;
-                            $total += $country_count;
-                            $races_arr = $mlr->get_country_races($country, $country_count);
-                            if ($races_arr) {
-                                $race_str = array();
-                                foreach ($races_arr['races'] as $race => $count) {
-                                    $race_str[] = $race . ": " . $count;
-                                    $race_total[$race] += $count;
-                                }
-                                $rows_race[] = $races_arr['country'] . ': ' . implode(', ', $race_str);
-                            }
-                        }
-                        arsort($race_total);
-
-                        $verdict = array_keys($race_total)[0];
-                        $total_str = array();
-                        foreach ($race_total as $race => $cnt) {
-                            $total_str[] = $race . ': ' . $cnt;
-                        }
-                        $rows_total[] = 'Total: ' . $total;
-                        $rows_race[] = 'Total: ' . implode(', ', $total_str);
-                    }
-
-
-                    $country_names = implode('<br />', $rows_total);
-                    $race_names = implode('<br />', $rows_race);
+                    $country_names = implode('<br />', $verdict_arr['rows_total']);
+                    $race_names = implode('<br />', $verdict_arr['rows_race']);
+                    $verdict = $verdict_arr['verdict'];
                     ?>
                     <tr> 
                         <td><?php print $item->id ?></td>                             
                         <td><?php print $item->lastname ?></td>
                         <td><?php print $item->topcountryname ?></td>
-                        <td><?php print $country_names; ?></td>    
-                        <td><?php print $race_names; ?></td>  
-                        <td><?php print $verdict; ?></td>  
+                        <td><?php print $country_names ?></td>    
+                        <td><?php print $race_names ?></td>  
+                        <td><?php print $verdict;  ?></td>  
                     </tr> 
                 <?php } ?>
             </tbody>

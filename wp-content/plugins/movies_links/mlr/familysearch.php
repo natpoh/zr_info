@@ -39,6 +39,18 @@ class Familysearch extends MoviesAbstractDBAn {
         'World' => '',
     );
 
+    public $race_small = array(
+        'White' => 1,
+        'Asian' => 2,
+        'Latino' => 3,
+        'Black' => 4,
+        'Indian' => 5,
+        'Arab' => 6,
+        'Mixed / Other' => 7,
+        'Jewish' => 8,
+        'Indigenous' => 9,
+    );
+
     //put your code here
     public function __construct($ml) {
         $this->ml = $ml ? $ml : new MoviesLinks();
@@ -54,6 +66,7 @@ class Familysearch extends MoviesAbstractDBAn {
             'fs_country' => 'data_familysearch_country',
             'meta_fs' => 'meta_familysearch',
             'population' => 'data_population_country',
+            'verdict' => 'data_familysearch_verdict',
         );
     }
 
@@ -229,6 +242,99 @@ class Familysearch extends MoviesAbstractDBAn {
         }
         $population = $ret;
         return $population;
+    }
+
+    public function calculate_fs_verdict($name_id = 0) {
+
+        $countryes = $this->get_countries_by_lasnameid($name_id);
+
+        $race_total = array();
+        $rows_total = array();
+        $rows_race = array();
+        $rows_total_arr = array();
+        $rows_race_arr = array();
+        $total = 0;
+        $verdict = 0;
+
+        if ($countryes) {
+            foreach ($countryes as $country => $country_count) {
+                $rows_total[] = $country . ': ' . $country_count;
+                $rows_total_arr[addslashes($country)] = $country_count;
+                $total += $country_count;
+                $races_arr = $this->get_country_races($country, $country_count);
+                if ($races_arr) {
+                    $race_str = array();
+                    $race_str_arr = array();
+                    foreach ($races_arr['races'] as $race => $count) {
+                        if ($count > 0) {
+                            $race_str[] = $race . ": " . $count;
+                            $race_small = $this->race_small[$race];
+                            $race_str_arr[$race_small] = $count;
+                            $race_total[$race] += $count;
+                        }
+                    }
+                    $rows_race[] = $races_arr['country'] . ': ' . implode(', ', $race_str);
+                    $rows_race_arr[$races_arr['cca2']] = $race_str_arr;
+                }
+            }
+            arsort($race_total);
+
+            $verdict = array_keys($race_total)[0];
+            $total_str = array();
+            foreach ($race_total as $race => $cnt) {
+                $total_str[] = $race . ': ' . $cnt;
+            }
+            $rows_total[] = 'Total: ' . $total;
+            $rows_race[] = 'Total: ' . implode(', ', $total_str);
+        }
+
+
+        return array(
+            'rows_total' => $rows_total,
+            'rows_race' => $rows_race,
+            'rows_race_arr' => $rows_race_arr,
+            'rows_total_arr' => $rows_total_arr,
+            'verdict' => $verdict,
+        );
+    }
+
+    /*
+     * Cron actor vedrict
+     */
+
+    public function cron_actor_verdict($count = 100, $debug = false) {
+
+        // 1. Get lastnames
+        $sql = sprintf("SELECT l.id, l.lastname, c.country as topcountryname"
+                . " FROM {$this->db['lastnames']} l"
+                . " INNER JOIN {$this->db['fs_country']} c ON c.id=l.topcountry"
+                . " LEFT JOIN {$this->db['verdict']} v ON v.lastname=l.lastname"
+                . " WHERE v.id is NULL ORDER BY l.id DESC LIMIT %d", (int) $count);
+        $result = $this->db_results($sql);
+
+        if ($debug) {
+            print_r($result);
+        }
+
+        if (!$result) {
+            return;
+        }
+        foreach ($result as $item) {
+            // 2. Calculate vedrict
+            $verdict_arr = $this->calculate_fs_verdict($item->id);
+            if ($debug) {
+                print_r($verdict_arr);
+            }
+            // 3. Add verdict to db
+            $verdict_int = $this->race_small[$verdict_arr['verdict']]?$this->race_small[$verdict_arr['verdict']]:0;
+            $last_upd = time();
+            $lastname = $this->escape($item->lastname);
+            $desc_arr = array('total'=>$verdict_arr['rows_total_arr'],'race'=>$verdict_arr['rows_race_arr']);
+            $desc = json_encode($desc_arr);
+            $sql = sprintf("INSERT INTO {$this->db['verdict']} (last_upd,verdict,lastname,description) VALUES (%d,%d,'%s','%s')",$last_upd,$verdict_int,$lastname,$desc);
+
+            $this->db_query($sql);
+        }
     }
 
 }

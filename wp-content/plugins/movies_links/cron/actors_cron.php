@@ -1,5 +1,4 @@
 <?php
-
 require_once($_SERVER['DOCUMENT_ROOT'] . '/wp-config.php');
 nocache_headers();
 
@@ -33,5 +32,3 @@ if (!class_exists('MoviesLinks')) {
 
 $ac = new ActorsCron();
 $ac->run_cron($count,$debug);
-
-
