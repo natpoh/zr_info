@@ -9,6 +9,35 @@ class Familysearch extends MoviesAbstractDBAn {
 
     private $ml = '';
     public $sort_pages = array('id', 'lastname', 'topcountryname');
+    public $country_names = array(
+        'Africa' => 'Central African Republic',
+        'Asia' => 'Kazakhstan',
+        'At Sea' => 'Greenland',
+        'Austral Islands' => 'Australia',
+        'Bailiwick of Guernsey' => 'Guernsey',
+        'Bailiwick of Jersey' => 'Jersey',
+        'Bosnia-Herzegovina' => 'Bosnia and Herzegovina',
+        'Caribbean' => 'Caribbean Netherlands',
+        'Channel Islands' => 'Jersey',
+        'Curaçao and Dependencies' => 'Curaçao',
+        'Côte d\'Ivoire' => 'Cote d Ivoire',
+        'Danzig' => 'Poland',
+        'Democratic Republic of the Congo' => 'DR Congo',
+        'England' => 'United Kingdom',
+        'Europe' => 'Germany',
+        'Macedonia' => 'North Macedonia',
+        'Mainland China' => 'China',
+        'Marquesas Islands' => 'French Polynesia',
+        'North Sea' => 'Greenland',
+        'Pacific Ocean' => 'Papua New Guinea',
+        'Saint Helena' => 'Saint Helena',
+        'Scotland' => 'United Kingdom',
+        'Swaziland' => 'South Africa',
+        'Virgin Islands' => 'British Virgin Islands',
+        'Wales' => 'United Kingdom',
+        'West Indies' => 'Cuba',
+        'World' => '',
+    );
 
     //put your code here
     public function __construct($ml) {
@@ -111,18 +140,18 @@ class Familysearch extends MoviesAbstractDBAn {
     }
 
     public function get_all_countries() {
-         $sql = "SELECT country FROM {$this->db['fs_country']}";
-         $result = $this->db_results($sql);
-         $ret = array();
-         if ($result){
-             foreach ($result as $value) {
-                 $ret[]=$value->country;
-             }
-         }
-         asort($ret);
-         return $ret;
+        $sql = "SELECT country FROM {$this->db['fs_country']}";
+        $result = $this->db_results($sql);
+        $ret = array();
+        if ($result) {
+            foreach ($result as $value) {
+                $ret[] = $value->country;
+            }
+        }
+        asort($ret);
+        return $ret;
     }
-    
+
     public function get_countries_by_lasnameid($lastname_id) {
         $sql = sprintf("SELECT m.ccount, c.country FROM {$this->db['meta_fs']} m"
                 . " INNER JOIN {$this->db['fs_country']} c ON c.id=m.cid"
@@ -169,12 +198,19 @@ class Familysearch extends MoviesAbstractDBAn {
     public function get_country_races($country, $count) {
         $population = $this->get_population();
         $ret = array();
-        if (isset($population[$country])){
-            foreach ($population[$country] as $race => $percent) {
-                $ret[$race]=round(($percent*$count)/100,0);
+        $country_name = $country;
+        if (isset($this->country_names[$country])) {
+            $country_name = $this->country_names[$country];
+        }
+        if ($country_name) {
+            if (isset($population[$country_name]['ethnic'])) {
+                foreach ($population[$country_name]['ethnic'] as $race => $percent) {
+                    $ret[$race] = round(($percent * $count) / 100, 0);
+                }
+                return array('country' => $country_name, 'cca2' => $population[$country_name]['cca2'], 'races' => $ret);
             }
         }
-        return $ret;
+        return array();
     }
 
     public function get_population() {
@@ -184,11 +220,11 @@ class Familysearch extends MoviesAbstractDBAn {
         }
 
         $ret = array();
-        $sql = "SELECT country_name, ethnic_array_result FROM {$this->db['population']}";
+        $sql = "SELECT country_name, cca2, ethnic_array_result FROM {$this->db['population']}";
         $results = $this->db_results($sql);
-        if ($results){
+        if ($results) {
             foreach ($results as $item) {
-                $ret[$item->country_name]= json_decode($item->ethnic_array_result);
+                $ret[$item->country_name] = array('cca2' => $item->cca2, 'ethnic' => json_decode($item->ethnic_array_result));
             }
         }
         $population = $ret;

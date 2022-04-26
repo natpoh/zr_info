@@ -13,7 +13,6 @@ print $tabs;
 
 
 if (sizeof($posts) > 0) {
-   
     ?>
     <?php print $pager ?>  
     <form accept-charset="UTF-8" method="post" >
@@ -38,16 +37,18 @@ if (sizeof($posts) > 0) {
                     $total = 0;
 
                     if ($countryes) {
-                        foreach ($countryes as $country => $value) {
-                            $rows_total[] = $country . ': ' . $value;
-                            $total += $value;
-                            $races = $mlr->get_country_races($country, $value);
-                            $race_str = array();
-                            foreach ($races as $race => $count) {
-                                $race_str[] = $race . ": " . $count;
-                                $race_total[$race] += $count;
+                        foreach ($countryes as $country => $country_count) {
+                            $rows_total[] = $country . ': ' . $country_count;
+                            $total += $country_count;
+                            $races_arr = $mlr->get_country_races($country, $country_count);
+                            if ($races_arr) {
+                                $race_str = array();
+                                foreach ($races_arr['races'] as $race => $count) {
+                                    $race_str[] = $race . ": " . $count;
+                                    $race_total[$race] += $count;
+                                }
+                                $rows_race[] = $races_arr['country'] . ': ' . implode(', ', $race_str);
                             }
-                            $rows_race[] = $country . ': ' . implode(', ', $race_str);
                         }
                         arsort($race_total);
 
@@ -81,19 +82,20 @@ if (sizeof($posts) > 0) {
     // Show invalid countries
     $all_countries = $mlr->get_all_countries();
     $population = $mlr->get_population();
-    if ($all_countries){
+    if ($all_countries) {
         $not_found = array();
         foreach ($all_countries as $name) {
-            if (!isset($population[$name])){
-                $not_found[]= $name;
+            if (!isset($population[$name])) {
+                if (!isset($mlr->country_names[$name])) {
+                    $not_found[] = $name;
+                }
             }
         }
-        if ($not_found){
+        if ($not_found) {
             print '<h3>Not found countries</h3>';
             print implode('<br />', $not_found);
         }
     }
-    
 } else {
     ?>
     <p><?php print __('The urls not found') ?></p>
