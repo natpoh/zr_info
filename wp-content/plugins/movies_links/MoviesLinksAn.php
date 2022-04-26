@@ -145,7 +145,6 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             }
 
             $sql = sprintf("SELECT a.id, a.aid, a.firstname, a.lastname FROM {$this->db['actors_normalize']} a WHERE a.id>0" . $and_first . $and_last . " ORDER BY a.id ASC");
-
             $results = $this->db_results($sql);
         }
         return $results;

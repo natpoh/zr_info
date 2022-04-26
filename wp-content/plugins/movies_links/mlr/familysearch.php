@@ -110,6 +110,19 @@ class Familysearch extends MoviesAbstractDBAn {
         return $id;
     }
 
+    public function get_all_countries() {
+         $sql = "SELECT country FROM {$this->db['fs_country']}";
+         $result = $this->db_results($sql);
+         $ret = array();
+         if ($result){
+             foreach ($result as $value) {
+                 $ret[]=$value->country;
+             }
+         }
+         asort($ret);
+         return $ret;
+    }
+    
     public function get_countries_by_lasnameid($lastname_id) {
         $sql = sprintf("SELECT m.ccount, c.country FROM {$this->db['meta_fs']} m"
                 . " INNER JOIN {$this->db['fs_country']} c ON c.id=m.cid"

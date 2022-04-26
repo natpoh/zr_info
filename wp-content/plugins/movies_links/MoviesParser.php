@@ -1740,6 +1740,7 @@ class MoviesParser extends MoviesAbstractDB {
                 $search_fields['lastname'] = $post_last_name;
             }
 
+
             // Get exist
             $post_exist_name = '';
             $exist_rule = '';
@@ -1764,6 +1765,7 @@ class MoviesParser extends MoviesAbstractDB {
             } else if ($post_last_name) {
                 $actors = $ma->get_actors_normalize_by_name('', $post_last_name);
             }
+            
 
 
             if ($actors) {

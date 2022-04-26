@@ -13,6 +13,7 @@ print $tabs;
 
 
 if (sizeof($posts) > 0) {
+   
     ?>
     <?php print $pager ?>  
     <form accept-charset="UTF-8" method="post" >
@@ -49,7 +50,7 @@ if (sizeof($posts) > 0) {
                             $rows_race[] = $country . ': ' . implode(', ', $race_str);
                         }
                         arsort($race_total);
-                        
+
                         $verdict = array_keys($race_total)[0];
                         $total_str = array();
                         foreach ($race_total as $race => $cnt) {
@@ -77,6 +78,22 @@ if (sizeof($posts) > 0) {
     </form>
     <?php print $pager ?>
     <?php
+    // Show invalid countries
+    $all_countries = $mlr->get_all_countries();
+    $population = $mlr->get_population();
+    if ($all_countries){
+        $not_found = array();
+        foreach ($all_countries as $name) {
+            if (!isset($population[$name])){
+                $not_found[]= $name;
+            }
+        }
+        if ($not_found){
+            print '<h3>Not found countries</h3>';
+            print implode('<br />', $not_found);
+        }
+    }
+    
 } else {
     ?>
     <p><?php print __('The urls not found') ?></p>
