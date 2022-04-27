@@ -242,19 +242,14 @@ function critic_matic_plugin_activation() {
                                 `update_interval` int(11) NOT NULL DEFAULT '60',
                                 `author` int(11) NOT NULL DEFAULT '0',                                                                		
                                 `parser_status` int(11) NOT NULL DEFAULT '0',
+                                `type` int(11) NOT NULL DEFAULT '0',
                                 `title` varchar(255) NOT NULL default '',                                                                
                                 `site` text default NULL,                                
                                 `options` text default NULL,
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8_general_ci;";
     dbDelta($sql);
-    critic_matic_create_index(array('date', 'status', 'last_update', 'update_interval', 'author', 'parser_status'), $table_prefix . "critic_search_log");
-
-
-    $sql = "ALTER TABLE `" . $table_prefix . "critic_parser_campaign` ADD `type` int(11) NOT NULL DEFAULT '0'";
-    dbDelta($sql);
-    //ALTER TABLE `wp_bcw98b_critic_parser_campaign` ADD `type` int(11) NOT NULL DEFAULT '0'
-    critic_matic_create_index(array('type'), $table_prefix . "critic_parser_campaign");
+    critic_matic_create_index(array('date', 'status','type', 'last_update', 'update_interval', 'author', 'parser_status'), $table_prefix . "critic_search_log");
 
     /*
      * Indexes: 
