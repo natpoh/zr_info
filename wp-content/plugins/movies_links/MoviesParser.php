@@ -33,6 +33,7 @@ class MoviesParser extends MoviesAbstractDB {
                     'status' => 0,
                     'proxy' => 0,
                     'webdrivers' => 0,
+                    'progress' => 0,
                 ),
                 'find_urls' => array(
                     'first' => '',
@@ -1765,7 +1766,7 @@ class MoviesParser extends MoviesAbstractDB {
             } else if ($post_last_name) {
                 $actors = $ma->get_actors_normalize_by_name('', $post_last_name);
             }
-            
+
 
 
             if ($actors) {
@@ -2316,6 +2317,20 @@ class MoviesParser extends MoviesAbstractDB {
         curl_close($ch);
 
         return $body;
+    }
+
+    public function send_curl_no_responce($url) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_ENCODING, 'deflate');
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        $response = curl_exec($ch);
+        curl_close($ch);
     }
 
     public function absoluteUrlFilter($domain, $content) {

@@ -88,11 +88,27 @@ class MoviesParserCron extends MoviesAbstractDB {
         $type_name = 'arhive';
         $type_opt = $options[$type_name];
 
+        // Already progress
+        $progress = isset($type_opt['progress']) ? $type_opt['progress'] : 0;
+        $currtime = $this->curr_time();
+        if ($progress) {
+            // Ignore old last update            
+            $wait = 180; // 3 min
+            if ($currtime < $progress + $wait) {
+                $message = 'Archiving is in progress already.';
+                $this->mp->log_warn($message, $campaign->id, 0, 2);
+                return 0;
+            }
+        }
+
+        // Update progress
+        $type_opt['progress'] = $currtime;
+        $options[$type_name] = $type_opt;
+        $this->mp->update_campaign_options($campaign->id, $options);
+
+
         // Get posts (last is first)        
         $urls_count = $type_opt['num'];
-
-        $use_proxy = $type_opt['proxy'];
-        $use_webdriver = $type_opt['webdrivers'];
 
         // Get last urls
         $status = 0;
@@ -100,11 +116,9 @@ class MoviesParserCron extends MoviesAbstractDB {
 
         $count = sizeof($urls);
         if ($count) {
-            foreach ($urls as $item) {
-                $this->arhive_url($item, $use_proxy, $use_webdriver);
-            }
-            // Unpaused parsing            
-            $this->start_paused_module($campaign, 'parsing', $options);
+
+            $this->get_async_cron($campaign, $type_name);
+            // $this->arhive_urls($campaign, $options, $urls);
         } else {
             // Campaign done
             // Status auto-stop
@@ -123,6 +137,33 @@ class MoviesParserCron extends MoviesAbstractDB {
             $this->mp->log_info($message, $campaign->id, 0, 2);
         }
         return $count;
+    }
+
+    public function get_async_cron($campaign, $type_name = '') {
+        $site_url = get_site_url();
+        $url = $site_url . '/wp-content/plugins/movies_links/cron/async_cron.php?p=8ggD_23_2D0DSF-F&type=' . $type_name . '&cid=' . $campaign->id;
+        
+        $this->mp->send_curl_no_responce($url);
+    }
+
+    private function arhive_urls($campaign, $options, $urls = array()) {
+        $type_name = 'arhive';
+        $type_opt = $options[$type_name];
+
+        $use_proxy = $type_opt['proxy'];
+        $use_webdriver = $type_opt['webdrivers'];
+
+        foreach ($urls as $item) {
+            $this->arhive_url($item, $use_proxy, $use_webdriver);
+        }
+
+        // Unpaused parsing            
+        $this->start_paused_module($campaign, 'parsing', $options);
+
+        // Remove proggess flag
+        $type_opt['progress'] = 0;
+        $options[$type_name] = $type_opt;
+        $this->mp->update_campaign_options($campaign->id, $options);
     }
 
     private function proccess_parsing($campaign, $options, $force = false) {
@@ -477,6 +518,33 @@ class MoviesParserCron extends MoviesAbstractDB {
             }
         }
         return $ret;
+    }
+
+    /*
+     * Cron async
+     */
+
+    public function run_cron_async($cid = 0, $type_name = '') {
+        
+        if (!$cid){
+            return;
+        }
+       
+        if ($type_name == 'arhive') {
+            $campaign = $this->mp->get_campaign($cid);
+            $options = $this->mp->get_options($campaign);
+            $type_opt = $options[$type_name];
+            $urls_count = $type_opt['num'];
+            
+            // Get last urls
+            $status = 0;
+            $urls = $this->mp->get_last_urls($urls_count, $status, $campaign->id);
+
+            $count = sizeof($urls);
+            if ($count) {
+                $this->arhive_urls($campaign, $options, $urls);
+            }
+        }
     }
 
 }
