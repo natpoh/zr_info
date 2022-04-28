@@ -38,7 +38,6 @@ class Familysearch extends MoviesAbstractDBAn {
         'West Indies' => 'Cuba',
         'World' => '',
     );
-
     public $race_small = array(
         'White' => 1,
         'Asian' => 2,
@@ -319,7 +318,7 @@ class Familysearch extends MoviesAbstractDBAn {
         if (!$result) {
             return;
         }
-        $commit_id='';
+        $commit_id = '';
 
         foreach ($result as $item) {
             // 2. Calculate vedrict
@@ -328,32 +327,25 @@ class Familysearch extends MoviesAbstractDBAn {
                 print_r($verdict_arr);
             }
             // 3. Add verdict to db
-            $verdict_int = $this->race_small[$verdict_arr['verdict']]?$this->race_small[$verdict_arr['verdict']]:0;
+            $verdict_int = $this->race_small[$verdict_arr['verdict']] ? $this->race_small[$verdict_arr['verdict']] : 0;
             $last_upd = time();
             $lastname = $this->escape($item->lastname);
-            $desc_arr = array('total'=>$verdict_arr['rows_total_arr'],'race'=>$verdict_arr['rows_race_arr']);
+            $desc_arr = array('total' => $verdict_arr['rows_total_arr'], 'race' => $verdict_arr['rows_race_arr']);
             $desc = json_encode($desc_arr);
-            $sql = sprintf("INSERT INTO {$this->db['verdict']} (last_upd,verdict,lastname,description) VALUES (%d,%d,'%s','%s')",$last_upd,$verdict_int,$lastname,$desc);
+            $sql = sprintf("INSERT INTO {$this->db['verdict']} (last_upd,verdict,lastname,description) VALUES (%d,%d,'%s','%s')", $last_upd, $verdict_int, $lastname, $desc);
 
             $this->db_query($sql);
-            //add commit
 
+            // Get id
+            $id = $this->getInsertId('id', $this->db['verdict']);
 
-
-
-                $q ="select id  from {$this->db['verdict']} where last_upd = ? and verdict = ?  limit 1 ";
-                $r = Pdo_an::db_results_array($q,[$last_upd,$verdict_int]);
-                $id = $r[0]['id'];
-
-                if ($id)
-                {
-                    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                    $commit_id = Import::create_commit($commit_id,'update',$this->db['verdict'],array('id'=>$id),'familysearch');
-
-                }
-
-
+            // Add commit
+            if ($id) {
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                $commit_id = Import::create_commit($commit_id, 'update', $this->db['verdict'], array('id' => $id), 'familysearch');
+            }
         }
     }
 
 }
+
