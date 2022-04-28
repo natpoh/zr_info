@@ -269,6 +269,25 @@ AND table_schema='imdbvisualization'";
  echo '</tbody></table>';
 
 
+ ///get status
+       $array_status = array(0=>'Waiting',1=>'Sinch',2=>'Send request to get data',3=>'Send data',4=>'Get and save data',5=>'Complete',10=>'Error');
+
+        echo '<br><br><table class="wp-list-table widefat fixed striped posts"><thead><tr><th>Status</th><th>Total</th><th>Add 10 minutes</th><th>Add 1 hour</th><th>Add 24 hours</th></tr></thead>
+<tbody>';
+       foreach ($array_status as $i=>$status)
+       {
+           $tabledata = self::get_data_count_an('commit',"WHERE `status`= '".$i."' ");
+           $tabledata_10 = self::get_data_count_an('commit',"WHERE `status`= '".$i."' and last_update > '".(time()-300)."' ");
+           $tabledata_h = self::get_data_count_an('commit',"WHERE `status`= '".$i."' and last_update > '".(time()-3600)."' ");
+           $tabledata_24 = self::get_data_count_an('commit',"WHERE `status`= '".$i."' and last_update > '".(time()-86400)."' ");
+
+           echo '<tr><td>' .$status . '</td><td>'.$tabledata.'</td><td>'.$tabledata_10.'</td><td>'.$tabledata_h.'</td><td>'.$tabledata_24.'</td></tr>';
+
+       }
+        echo '</tbody></table><br><br>';
+
+
+
         $array_rows = array(
             'id'=>array('w'=>10),
             'uniq_id' =>array('w'=>10, 'type' => 'textarea'),
