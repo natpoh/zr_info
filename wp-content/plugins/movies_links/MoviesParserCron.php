@@ -158,7 +158,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         }
 
         // Unpaused parsing            
-        $this->start_paused_module($campaign, 'parsing', $options);
+        $options = $this->start_paused_module($campaign, 'parsing', $options);
 
         // Remove proggess flag
         $type_opt['progress'] = 0;
@@ -405,6 +405,7 @@ class MoviesParserCron extends MoviesAbstractDB {
             $mtype = $this->mp->log_modules[$module] ? $this->mp->log_modules[$module] : 0;
             $this->mp->log_info($message, $campaign->id, 0, $mtype);
         }
+        return $options;
     }
 
     private function proccess_gen_urls($campaign = '', $options, $debug) {
