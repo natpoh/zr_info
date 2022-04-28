@@ -175,7 +175,6 @@ public static function commit_info_request($uid)
             }
             else
             {
-
                 if (!$site_id) $site_id = self::generate_id();
             }
 

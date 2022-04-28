@@ -341,8 +341,8 @@ class Familysearch extends MoviesAbstractDBAn {
 
 
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                $q ="select id  from {$this->db['verdict']} where last_upd = ? and lastname = ? and verdict =? limit 1 ";
-                $r = Pdo_an::db_results_array($q,[$last_upd,$lastname,$verdict_int]);
+                $q ="select id  from {$this->db['verdict']} where last_upd = ? and lastname = ?  limit 1 ";
+                $r = Pdo_an::db_results_array($q,[$last_upd,$lastname]);
                 $id = $r[0]['id'];
 
                 $commit_id = Import::create_commit($commit_id,'update',$this->db['verdict'],array('id'=>$id),'familysearch');

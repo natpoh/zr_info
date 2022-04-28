@@ -127,26 +127,32 @@ AND table_schema='imdbvisualization'";
 
             $data  =json_encode($_POST);
 
+            $data =file_put_contents(ABSPATH.'wp-content/uploads/export',$data);
 
-            $this->set_option(18,$data);
+           // $this->set_option(18,$data);
 
         }
 
-
-
-
-        $sql = "SELECT `val` FROM `options` where id =18 ";
-        $rows = Pdo_an::db_fetch_row($sql);
-
-        $options_data  =$rows->val;
-        if ($options_data)
+        $data =file_get_contents(ABSPATH.'wp-content/uploads/export');
+        if ($data)
         {
-            $options_data = json_decode($options_data,1);
+            $options_data = json_decode($data,1);
         }
+
+
+
+//        $sql = "SELECT `val` FROM `options` where id =18 ";
+//        $rows = Pdo_an::db_fetch_row($sql);
+//
+//        $options_data  =$rows->val;
+//        if ($options_data)
+//        {
+//            $options_data = json_decode($options_data,1);
+//        }
 
 
         $request  = array('get'=>'Get Request','set'=>'Send Request','update'=>'Update data','add'=>'Add data','delete'=>'Delete data','site_id'=>'Site ID');
-        $array_o = array(0=>'not set',1=>'enable',2=>'diasable');
+        $array_o = array(0=>'not set',1=>'enable',2=>'disable');
 
 
         $content='';
