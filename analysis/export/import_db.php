@@ -175,7 +175,6 @@ public static function commit_info_request($uid)
             }
             else
             {
-
                 if (!$site_id) $site_id = self::generate_id();
             }
 
@@ -416,14 +415,22 @@ public static function commit_info_request($uid)
 
     public static function get_import_data()
     {
-        $sql = "SELECT `val` FROM `options` where id =18 ";
-        $rows = Pdo_an::db_fetch_row($sql);
+//        $sql = "SELECT `val` FROM `options` where id =18 ";
+//        $rows = Pdo_an::db_fetch_row($sql);
+//
+//        $options_data  =$rows->val;
+//        if ($options_data)
+//        {
+//            $options_data = json_decode($options_data,1);
+//        }
 
-        $options_data  =$rows->val;
-        if ($options_data)
+        $data =file_get_contents(ABSPATH.'wp-content/uploads/export');
+        if ($data)
         {
-            $options_data = json_decode($options_data,1);
+            $options_data = json_decode($data,1);
         }
+
+
         return $options_data;
     }
 

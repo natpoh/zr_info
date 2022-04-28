@@ -748,128 +748,124 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
 
     $actor_pos = $array_movie['actor_pos'];
 
-    if ($actors_data)
-    {
-        ///self::clear_actors_meta($mid);
-    }
+    $tmdb_actors = self::check_tmdb_actors_in_movie($mid);
+
+
+    $commit_id='';
+
+
+
+        if ($actors_data && !$tmdb_actors) {
+            $commit_id= self::clear_actors_meta($mid,$commit_id);
+        }
+
+        if ($director || $writer || $cast_director || $producers) {
+            self::clear_directors_meta($mid, $commit_id);
+        }
 
 //var_dump($actors_data);
+        if (!$tmdb_actors) {
 
-    foreach ($actors_data as $type => $data) {
-        foreach ($data as $id => $name) {
+        foreach ($actors_data as $type => $data) {
+            foreach ($data as $id => $name) {
 
-            if (!self::check_enable_actors($id)) {
+                self::add_todb_actor($id);
 
-                $sql = "INSERT INTO `data_actors_imdb`  VALUES (?, ?, '', '', '', '', '', '0')";
-                Pdo_an::db_results_array($sql,array($id,$name));
+                //add actor meta
+                $pos = $actor_pos[$id];
+                ////check for tmdb actors
+                self::add_movie_actor($mid, $id, $actor_types[$type], 'meta_movie_actor', $pos);
 
-                Import::create_commit($commit_id,'update','data_actors_imdb',array('id'=>$id));
             }
-            //add actor meta
-
-
-            $pos= $actor_pos[$id];
-
-
-            ////check for tmdb actors
-
-            $tmdb_actors = self::check_tmdb_actors_in_movie($mid);
-
-            if (!$tmdb_actors)
-            {
-                self::add_movie_actor($mid,$id,$actor_types[$type],'meta_movie_actor',$pos);
-            }
-
         }
     }
 
-    if ($director)
-    {
-        if(strstr($director,','))
-        {
-            $director_array =explode(',',$director);
-        }
-        else
-        {
-            $director_array[]=$director;
-        }
-        foreach ($director_array as $i=>$id ) {
-            if (!self::check_enable_actors($id)) {
-                $sql = "INSERT INTO `data_actors_imdb`  VALUES (?, '', '', '', '', '', '', '0')";
+    if ($director || $writer || $cast_director || $producers) {
 
-                Import::create_commit($commit_id,'update','data_actors_imdb',array('id'=>$id));
-                Pdo_an::db_results_array($sql,array($id));
+        if ($director) {
+            if (strstr($director, ',')) {
+                $director_array = explode(',', $director);
+            } else {
+                $director_array[] = $director;
             }
+            foreach ($director_array as $i => $id) {
+                self::add_todb_actor($id);
 
-            self::add_movie_actor($mid,$id,$director_types['director'],'meta_movie_director');
-    }
-    }
-    if ($writer)
-    {
-        if(strstr($writer,','))
-        {
-            $writer_array =explode(',',$writer);
-        }
-        else
-        {
-            $writer_array[]=$writer;
-        }
-        foreach ($writer_array as $i=>$id ) {
-            if (!self::check_enable_actors($id)) {
-                $sql = "INSERT INTO `data_actors_imdb`  VALUES (?, '', '', '', '', '', '', '0')";
-                Import::create_commit($commit_id,'update','data_actors_imdb',array('id'=>$id));
-                Pdo_an::db_results_array($sql,array($id));
+                self::add_movie_actor($mid, $id, $director_types['director'], 'meta_movie_director');
             }
-            self::add_movie_actor($mid,$id,$director_types['writer'],'meta_movie_director');
         }
-    }
-
-    if ($cast_director)
-    {
-        if(strstr($cast_director,','))
-        {
-            $cast_director_array =explode(',',$cast_director);
-        }
-        else
-        {
-            $cast_director_array[]=$cast_director;
-        }
-        foreach ($cast_director_array as $i=>$id ) {
-
-            if (!self::check_enable_actors($id)) {
-                $sql = "INSERT INTO `data_actors_imdb`  VALUES (?, '', '', '', '', '', '', '0')";
-                Import::create_commit($commit_id,'update','data_actors_imdb',array('id'=>$id));
-                Pdo_an::db_results_array($sql,array($id));
+        if ($writer) {
+            if (strstr($writer, ',')) {
+                $writer_array = explode(',', $writer);
+            } else {
+                $writer_array[] = $writer;
             }
-            self::add_movie_actor($mid,$id,$director_types['cast_director'],'meta_movie_director');
-        }
-    }
-
-
-    if ($producers)
-    {
-        $producers_array = json_decode($producers,1);
-
-        ///print_r($producers_array);
-        foreach ($producers_array as $id => $name) {
-            if (!self::check_enable_actors($id)) {
-                $sql = "INSERT INTO `data_actors_imdb`  VALUES (?, '', '', '', '', '', '', '0')";
-                Import::create_commit($commit_id,'update','data_actors_imdb',array('id'=>$id));
-                Pdo_an::db_results_array($sql,array($id));
+            foreach ($writer_array as $i => $id) {
+                self::add_todb_actor($id);
+                self::add_movie_actor($mid, $id, $director_types['writer'], 'meta_movie_director');
             }
-            self::add_movie_actor($mid,$id,$director_types['producer'],'meta_movie_director');
+        }
+        if ($cast_director) {
+            if (strstr($cast_director, ',')) {
+                $cast_director_array = explode(',', $cast_director);
+            } else {
+                $cast_director_array[] = $cast_director;
+            }
+            foreach ($cast_director_array as $i => $id) {
+
+                self::add_todb_actor($id);
+                self::add_movie_actor($mid, $id, $director_types['cast_director'], 'meta_movie_director');
+            }
+        }
+        if ($producers) {
+            $producers_array = json_decode($producers, 1);
+
+            ///print_r($producers_array);
+            foreach ($producers_array as $id => $name) {
+                self::add_todb_actor($id);
+                self::add_movie_actor($mid, $id, $director_types['producer'], 'meta_movie_director');
+            }
         }
     }
 
 return 1;
 }
 
-public static function clear_actors_meta($id)
+public static function add_todb_actor($id,$name='')
+{
+    if (!self::check_enable_actors($id)) {
+
+        if ($name)
+        {
+            $sql = "INSERT INTO `data_actors_imdb`  VALUES (?, ?, '', '', '', '', '', '0')";
+            Pdo_an::db_results_array($sql, array($id, $name));
+        }
+        else
+        {
+            $sql = "INSERT INTO `data_actors_imdb`  VALUES (?, '', '', '', '', '', '', '0')";
+            Pdo_an::db_results_array($sql, array($id));
+        }
+
+        Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $id),'add_actor');
+    }
+}
+
+
+public static function clear_actors_meta($id,$commit_id)
 {
     $sql="DELETE FROM `meta_movie_actor` WHERE mid = {$id}";
     Pdo_an::db_query($sql);
-}
 
+    $commit_id =Import::create_commit($commit_id, 'delete', 'meta_movie_actor', array('mid' => $id),'clear_actor_meta');
+return $commit_id;
+}
+    public static function clear_directors_meta($id,$commit_id)
+    {
+        $sql="DELETE FROM `meta_movie_director` WHERE mid = {$id}";
+        Pdo_an::db_query($sql);
+
+        Import::create_commit($commit_id, 'delete', 'meta_movie_director', array('mid' => $id),'clear_actor_meta');
+    }
 
     public static function add_movie_actor($mid = 0, $id = 0, $type = 0,$table='meta_movie_actor',$pos=0) {
         // Validate values
@@ -934,9 +930,9 @@ public static function clear_actors_meta($id)
                 }
 
                 $meta_exist = Pdo_an::db_fetch_row($sql);
-                Import::create_commit('','update',$table,array('id'=>$meta_exist->id),'actor_meta');
-            }
 
+            }
+            Import::create_commit('','update',$table,array('id'=>$meta_exist->id),$table);
 
 
             return true;
