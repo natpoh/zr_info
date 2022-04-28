@@ -1320,6 +1320,16 @@ class SearchFacets extends AbstractDB {
             }
         }
 
+        $sort_keys = array('pay', 'free', 'skip');
+        $dates_sort = array();
+        foreach ($sort_keys as $key) {
+            if ($dates[$key]) {
+                $dates_sort[$key] = $dates[$key];
+            }
+        }
+
+        $dates = $dates_sort;
+
         $filter = 'auvote';
         if ($dates) {
             $this->theme_facet_multi($filter, $dates, $title, 0, 'all', false, '', $icon);
@@ -1391,7 +1401,7 @@ class SearchFacets extends AbstractDB {
             $filter = $active_filter;
         }
 
-// Race
+        // Race
         $type_title = isset($this->cs->facets_race_cast[$filter]) ? $this->cs->facets_race_cast[$filter]['title'] : ucfirst($filter);
         $name_pre = isset($this->cs->facets_race_cast[$filter]) ? $this->cs->facets_race_cast[$filter]['name_pre'] : '';
         foreach ($data as $value) {
@@ -1405,9 +1415,9 @@ class SearchFacets extends AbstractDB {
                 }
             }
         }
+        sort($dates);
 
-// Gender
-
+        // Gender
         $gender_data = array();
         $gender_filter = $this->cs->race_gender[$active_filter];
         if (isset($facets['gender_cast'])) {
