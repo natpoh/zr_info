@@ -208,7 +208,7 @@ else if (isset($_POST['_search']))//////
 
     $min_time = time()-$period*3600;
 
-    $step =60;// ($period)/60;
+    $step =60*$period;// ($period)/60;
 
 
     //$sql ="SELECT * FROM `commit` WHERE add_time > {$min_time}  ".$where1;
