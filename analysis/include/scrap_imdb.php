@@ -717,6 +717,12 @@ WHERE `data_actors_imdb`.`id` = " . $actor_id;
         echo 'adedded ' . $actor_id . '<br>' . PHP_EOL;
 
     }
+
+    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+
+    Import::create_commit('', 'update', 'data_actors_imdb', array('actor_id' => $actor_id), 'add_actor',5);
+
+
     return 1;
 }
 
@@ -735,8 +741,6 @@ function add_actors_to_db($id, $update = 0)
     $array_result = get_imdb_actor_parse_inner($result);
 
     if ($array_result) {
-
-
 
         return addto_db_actors($id, $array_result, $update);
 
@@ -772,6 +776,7 @@ function check_last_actors()
 
     set_time_limit(600);
 
+    $commit_actors = [];
 
     //check actor gender
     $sql = "SELECT data_actors_gender.actor_id,  data_actors_gender.Gender 	  FROM `data_actors_gender`
@@ -791,6 +796,8 @@ function check_last_actors()
 
         $i++;
         $sql1 = "UPDATE `data_actors_meta` SET `gender` = '" . $gender . "'  ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
+
+        $commit_actors[$r['actor_id']]=1;
 
        /// echo $sql1.'<br>';
 
@@ -824,6 +831,8 @@ function check_last_actors()
 
         Pdo_an::db_query($sql1);
         ACTIONLOG::update_actor_log('gender');
+
+        $commit_actors[$r['actor_id']]=1;
     }
     echo 'check actor gender auto (' . $i . ')' . PHP_EOL;
 
@@ -889,7 +898,7 @@ function check_last_actors()
         Pdo_an::db_query($sql1);
 
         ACTIONLOG::update_actor_log('data_actors_meta');
-
+        $commit_actors[$r['id']]=1;
     }
     echo 'check actors meta (' . $i . ')' . PHP_EOL;
 
@@ -941,6 +950,8 @@ function check_last_actors()
             Pdo_an::db_query($sql1);
             update_actors_verdict($r['actor_id']);
             ACTIONLOG::update_actor_log('data_actors_surname');
+
+            $commit_actors[$r['actor_id']]=1;
         }
 
     }
@@ -986,6 +997,8 @@ function check_last_actors()
         Pdo_an::db_query($sql1);
         update_actors_verdict($r['actor_id']);
         ACTIONLOG::update_actor_log('kairos');
+
+        $commit_actors[$r['actor_id']]=1;
     }
     echo 'check actor kairos imdb (' . $i . ')' . PHP_EOL;
 
@@ -1017,6 +1030,8 @@ function check_last_actors()
         Pdo_an::db_query($sql1);
         update_actors_verdict($r['actor_id']);
         ACTIONLOG::update_actor_log('kairos');
+
+        $commit_actors[$r['actor_id']]=1;
     }
     echo 'check actor kairos crowd (' . $i . ')' . PHP_EOL;
 
@@ -1041,6 +1056,8 @@ function check_last_actors()
         Pdo_an::db_query($sql1);
         update_actors_verdict($r['actor_id']);
         ACTIONLOG::update_actor_log('kairos');
+
+        $commit_actors[$r['actor_id']]=1;
     }
     echo 'check actor kairos tmdb (' . $i . ')' . PHP_EOL;
 
@@ -1096,6 +1113,19 @@ function check_last_actors()
         ///  set_option(8, $r['id']);
     }
     echo 'check_last_actors status 2 (' . $i . ') ' . PHP_EOL;
+
+
+
+    if ( $commit_actors)
+    {
+        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+
+        foreach ($commit_actors as $actor_id=>$enable)
+        {
+         Import::create_commit('', 'update', 'data_actors_meta', array('actor_id' => $actor_id), 'actor_meta',6);
+
+        }
+    }
 }
 
 
@@ -2813,6 +2843,35 @@ if (isset($_GET['get_array'])) {
 
     return;
 }
+
+if (isset($_GET['fix_kairos'])) {
+
+    $sql ="SELECT * FROM `data_actors_race` WHERE `White` = 0 AND `kairos_verdict` = 'W' limit 100000";
+    $row = Pdo_an::db_results_array($sql);
+    if ($row)
+    {
+        foreach ($row as $r)
+        {
+            $sql = "SELECT id FROM `data_actors_meta` WHERE `kairos`= 'W' and `actor_id` = '{$r['actor_id']}'";
+
+            echo 'id = '.$r['actor_id'].'<br>';
+
+            $sql1 = "UPDATE `data_actors_meta` SET `kairos` = NULL  ,
+        `n_kairos` = NULL ,
+        
+        `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
+            Pdo_an::db_query($sql1);
+            update_actors_verdict($r['actor_id']);
+
+
+            $sql2 = "UPDATE `data_actors_race` SET `kairos_verdict` = NULL WHERE `data_actors_race`.`id` = ".$r['id'];
+            Pdo_an::db_query($sql2);
+        }
+    }
+
+    return;
+}
+
 
 
 echo 'ok';

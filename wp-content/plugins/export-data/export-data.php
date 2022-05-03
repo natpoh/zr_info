@@ -270,7 +270,7 @@ AND table_schema='imdbvisualization'";
 
 
  ///get status
-       $array_status = array(0=>'Waiting',1=>'Sinch',2=>'Send request to get data',3=>'Send data',4=>'Get and save data',5=>'Complete',10=>'Error');
+       $array_status = array(0=>'Waiting',1=>'Sync',2=>'Send request to get data',3=>'Send data',4=>'Get and save data',5=>'Complete',10=>'Error');
 
         echo '<br><br><table class="wp-list-table widefat fixed striped posts"><thead><tr><th>Status</th><th>Total</th><th>Add 10 minutes</th><th>Add 1 hour</th><th>Add 24 hours</th></tr></thead>
 <tbody>';
@@ -294,14 +294,14 @@ AND table_schema='imdbvisualization'";
             'description' => array('type'=>'select','options'=>$option),
             'text' => array('w'=>40, 'type' => 'textarea'),
             'update_data' => array('w'=>40, 'type' => 'textarea'),
-            'status' => array('type'=>'select','options'=>'0:Waiting;1:Sinch;2:Send request to get data;3:Send data;4:Get and save data;5:Complete;10:Error'),
+            'status' => array('type'=>'select','options'=>'0:Waiting;1:Sync;2:Send request to get data;3:Send data;4:Get and save data;5:Complete;10:Error'),
             'complete' => array('type'=>'select','options'=>':no;1:Complete'),
             'site_id' => array('w'=>10, 'type' => 'textarea'),
             'last_update' => array('w'=>10, 'type' => 'textarea')
         );
 
         !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
-
+        $this->graph();
         Crowdsource::Show_admin_table('commit',$array_rows,1,'commit','',1,1);
 
 
@@ -354,7 +354,122 @@ display: inline-block;
 
     }
 
+public function graph()
+{
 
+    ?>
+    <p>Period <select autocomplete="off" class="graph_period">
+    <option value="1">1 hour</option>
+    <option value="6">6 hour</option>
+    <option selected="selected" value="24">24 hour</option>
+    <option  value="168">7 days</option>
+    <option  value="720">30 days</option>
+    </select></p>
+    <div id="container_commit_graph" class="commit_graph"></div>
+    <script type="text/javascript" src="https://code.highcharts.com/highcharts.js"></script>
+    <script type="text/javascript">
+
+function create_Highcharts(data, block)
+{
+
+     console.log(data);
+
+    if (typeof Highcharts !== 'undefined') {
+
+        if (data)
+        {
+            data = JSON.parse(data);
+            var data_series = data['series'];
+
+            console.log(data_series);
+
+           // var data_series_cast = data['cast'];
+        }
+        if (data)
+        {
+            Highcharts.chart('container_' + block, {
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false,
+                    type: 'spline'
+                },
+                title: {
+                    text:  data['title']
+                },
+
+                plotOptions: {
+                    series: {
+                        grouping: false,
+                        borderWidth: 0
+                    }
+                },
+                legend: {
+                    enabled: false
+                },
+                // tooltip: {
+                //     shared: true,
+                //     headerFormat: '<span style="font-size: 16px">{point.point.name}</span><br/>',
+                //     pointFormat: '<span style="color:{point.color}">\u25CF</span> {series.name}: <b>{point.y} %</b><br/>'
+                // },
+                xAxis: {
+                     type: 'datetime',
+                    },
+                yAxis: [{
+                        title: {
+                            text: 'Total'
+                        },
+                        showFirstLabel: false
+                    }],
+                series:  data_series
+            });
+        }
+    }
+}
+
+  function check_request()
+{
+
+   var data = jQuery("#jqGrid").jqGrid("getGridParam", "postData");
+    data.period = jQuery('.graph_period').val();
+
+    ///get graph data
+                jQuery.ajax({
+                type: "POST",
+                url: "<?php echo site_url() ?>/analysis/export/import.php",
+
+                data: data,
+                success: function (html) {
+                   // console.log(html);
+                    ///jQuery('.commit_graph').html(html);
+                    create_Highcharts(html, 'commit_graph')
+                }
+            });
+
+
+
+}
+
+  jQuery(document).ready(function () {
+
+
+
+
+jQuery('body').on('change','.graph_period',function ()
+{
+check_request();
+
+});
+
+
+  });
+
+</script>
+
+
+    <?php
+
+}
 
 
 

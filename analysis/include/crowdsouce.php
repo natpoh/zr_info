@@ -814,6 +814,12 @@ var first_run = 0;
 
         }
     }
+    //
+    // function check_request(data)
+    // {
+    //     console.log(data);
+    // }
+
     jQuery(document).ready(function () {
         jQuery("#jqGrid").jqGrid({
             url: '<?php echo $home_url ?>analysis/jqgrid/get.php?data=<?php echo $datatype.$doptable ?>',
@@ -844,6 +850,14 @@ var first_run = 0;
             gridview : false,
             multiselect: true,
             beforeRequest:function(){
+
+                console.log(typeof check_request);
+
+                if (typeof check_request=='function')
+                {
+
+                    check_request();
+                }
 
                 var status='All'
                 if (first_run==0) {

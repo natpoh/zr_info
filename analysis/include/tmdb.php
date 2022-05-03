@@ -740,7 +740,7 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
     $mid = self::get_id_from_imdbid($movie_id);
 
 
-    $commit_id = Import::create_commit('','update','data_movie_imdb',array('id'=>$mid),'add_movies');
+    $commit_id = Import::create_commit('','update','data_movie_imdb',array('id'=>$mid),'add_movies',5);
 
 
     $actor_types = array('s' => 1, 'm' => 2, 'e' => 3);
@@ -846,7 +846,7 @@ public static function add_todb_actor($id,$name='')
             Pdo_an::db_results_array($sql, array($id));
         }
 
-        Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $id),'add_actor');
+        Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $id),'add_actor',5);
     }
 }
 
@@ -856,7 +856,7 @@ public static function clear_actors_meta($id,$commit_id)
     $sql="DELETE FROM `meta_movie_actor` WHERE mid = {$id}";
     Pdo_an::db_query($sql);
 
-    $commit_id =Import::create_commit($commit_id, 'delete', 'meta_movie_actor', array('mid' => $id),'clear_actor_meta');
+    $commit_id =Import::create_commit($commit_id, 'delete', 'meta_movie_actor', array('mid' => $id),'clear_actor_meta',5);
 return $commit_id;
 }
     public static function clear_directors_meta($id,$commit_id)
@@ -864,7 +864,7 @@ return $commit_id;
         $sql="DELETE FROM `meta_movie_director` WHERE mid = {$id}";
         Pdo_an::db_query($sql);
 
-        Import::create_commit($commit_id, 'delete', 'meta_movie_director', array('mid' => $id),'clear_actor_meta');
+        Import::create_commit($commit_id, 'delete', 'meta_movie_director', array('mid' => $id),'clear_actor_meta',5);
     }
 
     public static function add_movie_actor($mid = 0, $id = 0, $type = 0,$table='meta_movie_actor',$pos=0) {
@@ -932,7 +932,7 @@ return $commit_id;
                 $meta_exist = Pdo_an::db_fetch_row($sql);
 
             }
-            Import::create_commit('','update',$table,array('id'=>$meta_exist->id),$table);
+            Import::create_commit('','update',$table,array('id'=>$meta_exist->id),$table,5);
 
 
             return true;

@@ -267,6 +267,16 @@ $ublock='';
        $total_actors_image = self::get_data_count_an('data_actors_imdb',"WHERE `image`= 'Y' ");
        $total_actors_image_filled = self::get_filled($total_actors,$total_actors_image,'image');
 
+
+
+       $total_actors_tmdb = self::get_data_count_an('data_actors_tmdb');
+       $total_actors_tmdb_f = self::get_data_count_an('data_actors_tmdb',"WHERE `actor_id` IS NOT NULL ");
+       $total_actors_tmdb_filled = self::get_filled($total_actors_tmdb,$total_actors_tmdb_f,'tmdb_add_imdbid');
+
+
+
+
+
        $total_actors_tmdb_id = self::get_data_count_an('data_actors_meta',"WHERE `tmdb_id`> 0 ");
        $total_actors_tmdb_id_filled = self::get_filled($total_actors,$total_actors_tmdb_id,'tmdb_id');
 
@@ -304,7 +314,16 @@ $ublock='';
 <tr><td>Actor kairos</td><td>' . $total_actors_meta_kairos . '</td>'.$total_actors_meta_kairos_filled.'<td></td></tr>
 <tr><td>Actor bettaface</td><td>' . $total_actors_meta_bettaface . '</td>'.$total_actors_meta_bettaface_filled.'<td></td></tr>
 
+
+
+
+<tr><td>Actor TMDB DB</td><td>' . $total_actors_tmdb . '</td>'.$total_actors_tmdb_filled.'<td></td></tr>
+
 <tr><td>Actor TMDB_ID</td><td>' . $total_actors_tmdb_id . '</td>'.$total_actors_tmdb_id_filled.'<td></td></tr>
+
+
+
+
 <tr><td>Actor TMDB image</td><td>' . $total_actors_tmdb_image . '</td>'.$total_actors_tmdb_image_filled.'<td></td></tr>
 
 <tr><td>Actor_meta</td><td>' . $total_actors_meta . '</td>'.$total_actors_meta_filled.'<td></td></tr>
@@ -425,6 +444,21 @@ display: inline-block;
 
         }
         }
+
+        ?>
+
+        <style type="text/css">
+
+.note_show_content, #container_main_movie_graph{
+display: none;
+
+}
+
+</style>
+
+        <?php
+
+
     }
     public function add_movies()
     {
@@ -442,7 +476,7 @@ display: inline-block;
         ?>
 <p></p>
         <form action="admin.php?page=light_movies_add_movies" method="post">
-        <input type="text" name="keyword"  value="<?php if (isset($_POST['keyword']))echo $_POST['keyword']; ?>"/><select name="type"><?php echo $option_type; ?></select><button type="submit" class="button button-primary">Search</button>
+        <input type="text" name="keyword" placeholder="Movie title"  value="<?php if (isset($_POST['keyword']))echo $_POST['keyword']; ?>"/><select name="type"><?php echo $option_type; ?></select><button type="submit" class="button button-primary">Search</button>
         </form>
 <?php
         if (isset($_POST['keyword']))

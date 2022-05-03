@@ -110,6 +110,9 @@ class ActorsCron extends MoviesAbstractDBAn {
                 if ($debug) {
                     print_r(array($aid, $firstname, $lastname));
                 }
+                
+                $insert_id = $this->getInsertId('id', $this->db['actors_normalize']);
+                
             }
         }
     }

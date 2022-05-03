@@ -342,10 +342,9 @@ class Familysearch extends MoviesAbstractDBAn {
             // Add commit
             if ($id) {
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                $commit_id = Import::create_commit($commit_id, 'update', $this->db['verdict'], array('id' => $id), 'familysearch');
+                $commit_id = Import::create_commit($commit_id, 'update', $this->db['verdict'], array('id' => $id), 'familysearch',10);
             }
         }
     }
 
 }
-

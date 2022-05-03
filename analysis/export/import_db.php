@@ -19,6 +19,21 @@ class Import
 {
 
 
+    public static function timer_start_data()
+    { // if called liketimer_stop_data(1), will echo $timetotal
+        global $timestart;
+        $timestart = microtime(1);
+    }
+
+
+    public static function timer_stop_data()
+    { // if called liketimer_stop_data(1), will echo $timetotal
+        global $timestart, $timeend;
+        $mtime = microtime(1);
+        $timetotal = $mtime - $timestart;
+        return $timetotal;
+    }
+
     public static function debug()
     {
         return 0;
@@ -38,8 +53,8 @@ class Import
         $uid = $v["uniq_id"];
         ////update request status
 
-
-        self::update_status($uid,2);////send request
+        $time_current = self::timer_stop_data();
+        self::update_status($uid,2,$time_current);////send request
         ///get data
         $sql_data =  self::commit_info_request($uid);
 
@@ -50,8 +65,9 @@ class Import
             return $sql_data;
         }
 
+        $time_current = self::timer_stop_data();
         $rslt = self::set_data($sql_data);
-        $result[] = self::update_commit_data($uid,$rslt); ///update to status 4
+        $result[] = self::update_commit_data($uid,$rslt,$time_current); ///update to status 4
 
     }
 
@@ -153,15 +169,15 @@ public static function commit_info_request($uid)
 
 
 
-    public static function create_commit($commit_id='',$type,$db,$request,$name = '')
+    public static function create_commit($commit_id='',$type,$db,$request,$name = '',$priority=1)
     {
 
         $ajax_data = array("type"=>$type,"request"=>$request,"db"=>$db);
-        return self::set_commit($name,$ajax_data,$commit_id);
+        return self::set_commit($name,$ajax_data,$commit_id,'',0,$priority);
 
     }
 
-    public static function set_commit($name='',$data='',$unique_id='',$site_id='',$status=0)
+    public static function set_commit($name='',$data='',$unique_id='',$site_id='',$status=0,$priority=1)
     {
 
         if (!$unique_id || !$site_id)
@@ -216,10 +232,10 @@ public static function commit_info_request($uid)
                 $data_string = json_encode(array(0=>$data));
             }
 
-            $q = "INSERT INTO `commit`(`id`, `uniq_id`, `description`, `text`,`update_data`, `status`,`site_id`, `last_update`)
-            VALUES (NULL,?,?,?,?,?,?,?)";
+            $q = "INSERT INTO `commit`(`id`, `uniq_id`, `description`, `text`,`update_data`, `status`,`site_id`,`priority`,`add_time`)
+            VALUES (NULL,?,?,?,?,?,?,?,?)";
 
-            Pdo_an::db_results_array($q, array($unique_id,$name,$data_string,'',$status,$site_id,time()));
+            Pdo_an::db_results_array($q, array($unique_id,$name,$data_string,'',$status,$site_id,$priority,time()));
 
             METALOG::update_log($name,$site_id);
             METALOG::clear_history();
@@ -359,7 +375,7 @@ public static function commit_info_request($uid)
             $count =intval($data['count']);
 
         }
-        $sql ="SELECT *  FROM `commit` WHERE `status` = 1 and site_id!='".$site_id."' limit ".$count;
+        $sql ="SELECT *  FROM `commit` WHERE `status` = 1 and site_id!='".$site_id."' ORDER BY `commit`.`priority` ASC  limit ".$count;
         $rows = Pdo_an::db_results_array($sql);
         return $rows;
     }
@@ -390,7 +406,7 @@ public static function commit_info_request($uid)
             $count =intval($data['count']);
 
         }
-        $sql ="SELECT *  FROM `commit` WHERE `status` = '".$status."' limit ".$count;
+        $sql ="SELECT *  FROM `commit` WHERE `status` = '".$status."' ORDER BY `commit`.`priority` ASC  limit ".$count;
         $rows = Pdo_an::db_results_array($sql);
         return $rows;
     }
@@ -429,8 +445,6 @@ public static function commit_info_request($uid)
         {
             $options_data = json_decode($data,1);
         }
-
-
         return $options_data;
     }
 
@@ -543,6 +557,23 @@ public static function commit_info_request($uid)
                           $result[$type][$table][] = self::update_table($table, $array_req['data'], $array_req['where']);
                         }
                     }
+                    else if ($type == 'delete') {
+
+                        foreach ($object_setup_data as $table => $object_setup) {
+
+                            if (!$object_setup['request'])
+                            {
+                                $object_setup['request'] = self::check_request($object_setup['columns'],$table);
+                            }
+
+
+                            $array_req = self::set_array_colmuns($object_setup['columns'], $object_setup['request'], $object_setup['return']);
+
+                            $result[$type][$table][] = self::delete_table($table, $array_req['where']);
+                        }
+                    }
+
+
                 }
             }
         }
@@ -567,6 +598,7 @@ public static function commit_info_request($uid)
 
     public static function sync_data($data)
     {
+
 
 
         if (self::check_remore_ip())
@@ -620,29 +652,66 @@ public static function commit_info_request($uid)
 
     }
 
-    public static function update_commit_data($key,$update_data)
+    public static function update_commit_data($key,$update_data,$time_current='')
     {
+        $dop='';
+        if ($time_current)
+        {
+                  $dop=",run_time = IF(run_time IS NULL, {$time_current},run_time + {$time_current})";
+        }
+
         $update_data = json_encode($update_data);
-        $sql = "UPDATE `commit` SET `update_data`=?, `status`= 4 , `last_update`='".time()."' WHERE `uniq_id`  = '".$key."'";
+        $sql = "UPDATE `commit` SET `update_data`=?, `status`= 4 , `last_update`='".time()."' ".$dop." WHERE `uniq_id`  = '".$key."'";
         Pdo_an::db_results_array($sql,array($update_data));
         return array($key=>4);
     }
 
-    public static function complete_status($key)
+    public static function complete_status($key,$time_current='')
     {
-        $sql = "UPDATE `commit` SET `status`=5, `complete` =1  WHERE `uniq_id`  = '".$key."'";
+        $dop='';
+        if ($time_current)
+        {
+               $dop=",run_time = IF(run_time IS NULL, {$time_current},run_time + {$time_current})";
+        }
+
+        $sql = "UPDATE `commit` SET `status`=5, `complete` =1 , `last_update` = ".time()." ".$dop."  WHERE `uniq_id`  = '".$key."'";
         Pdo_an::db_query($sql);
     }
 
 
-    public static function update_status($key,$status)
+    public static function update_status($key,$status,$time_current='')
     {
-        $sql = "UPDATE `commit` SET `status`='".$status."' WHERE `uniq_id`  = '".$key."'";
+        $dop='';
+        if ($time_current)
+        {
+            //$sql="UPDATE `commit` SET  run_time = IF(run_time IS NULL, {$time_current},run_time + {$time_current})  WHERE `uniq_id`  = '".$key."' ";
+           $dop=",run_time = IF(run_time IS NULL, {$time_current},run_time + {$time_current})";
+        }
+
+
+        $sql = "UPDATE `commit` SET `status`='".$status."', `last_update` = ".time()." ".$dop." WHERE `uniq_id`  = '".$key."'";
         Pdo_an::db_query($sql);
+
+
+
     }
 
     public static function sync($data)
     {
+
+        ////delete old comlete request
+
+        $sql = "DELETE FROM `commit` WHERE `complete` =1 and `add_time` < ".(time()-86400*60);
+        Pdo_an::db_query($sql);
+
+        ///move to status 0
+
+        $sql = "UPDATE `commit` SET `status` 0 where `status` = 2 and `last_update` < ".(time()-86400);
+        Pdo_an::db_query($sql);
+
+
+
+        self::timer_start_data();
 
         $res_return =[];
 
@@ -672,7 +741,9 @@ public static function commit_info_request($uid)
          {
              foreach ($result['sync_result'] as $key=>$status)
              {
-                 self::update_status($key,1);
+                 $time_current = self::timer_stop_data();
+
+                 self::update_status($key,1,$time_current);
              }
          }
 
@@ -694,6 +765,8 @@ public static function commit_info_request($uid)
 
         ///get data status 1 (sync)
 
+        self::timer_start_data();
+
         $array_sql =  self::last_sinc_commits($data);
 
         $res_return['last_sinc_commits']=count($array_sql);
@@ -706,7 +779,7 @@ public static function commit_info_request($uid)
 
         }
 
-
+        self::timer_start_data();
         ////get status 4 and add status 5 Complete
         $array_sql = self::last_commits($data,4);////check status 0
 
@@ -726,7 +799,8 @@ public static function commit_info_request($uid)
             {
                 foreach ($result['sync_result'] as $key=>$status)
                 {
-                    self::complete_status($key);
+                    $time_current = self::timer_stop_data();
+                    self::complete_status($key,  $time_current );
                 }
             }
 
@@ -760,17 +834,18 @@ public static function commit_info_request($uid)
 //            $result = self::last_commits($data);
 //        }
 
-        if ($action == 'get_commit') {
-            $result = self::get_commit($data);
-        }
-
-        else if ($action == 'sync') { ////curl sinc
-            $result = self::sync($data);
+        if ($action == 'sync') { ////curl sinc
+        $result = self::sync($data);
         }
 
         else if ($action == 'sync_data') { ////get request from remote url status 0
             $result = self::sync_data($data);
         }
+
+        else if ($action == 'get_commit') {
+            $result = self::get_commit($data);
+        }
+
         else
         {
             $result=array('not request'=>$data);
@@ -1069,26 +1144,49 @@ public static function commit_info_request($uid)
 
     public static function delete_table($table_name, $where='')
     {
+
+        $oper='delete';
+
+
         if ($where)
         {
             $sql = "DELETE  FROM " .  $table_name . $where;
-           // $query = Pdo_an::db_results_array($sql);
+
+
             if (self::debug()) {
-                return array( 'request' => $sql);
+                $result['request']['delete_query']= $sql;
             }
+
+            $options_data = self::get_import_data();
+            $table_access = self::get_table_access($table_name);
+
+            if  ($options_data['delete_request']==1 || $table_access['del']==1 )
+            {
+                $query = Pdo_an::db_results_array($sql);
+            }
+            else
+            {
+                $oper='no_permission_to_'.$oper;
+            }
+
+
+            $result[$oper] = $query;
+
+
+
         }
         else
         {
             if (self::debug()) {
-                return array('request' => 'no data');
+                $result[$oper] = 'no data';
             }
 
         }
 
-
-
-
+        return $result;
     }
+
+
     public static function get_table($table_name, $oper_get_colums='',$where='')
     {
         if (!$oper_get_colums)

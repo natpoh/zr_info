@@ -452,6 +452,8 @@ public function get_verdict($kairos)
    arsort($kairos);
    $key = array_keys($kairos);
    $verdict =$key[0];
+   if ($kairos[$verdict]!=0)
+   {
    if (!$verdict)
    {$verdict='';
    }
@@ -464,6 +466,14 @@ public function get_verdict($kairos)
       // echo '$verdict2='.$verdict;
 
    }
+   }
+   else
+   {
+       $verdict='';
+   }
+
+
+
     return $verdict;
 }
 public static function save_data_to_db($id,$kairos,$result_image,$error_message)
@@ -509,6 +519,14 @@ if ($kairos['asian']){  $asian=  $kairos['asian'];  }
     else
     {
         $table ='data_actors_race';
+    }
+
+    if ($result_image =='imdb' && !$verdict)
+    {
+
+        $sql="UPDATE `data_actors_imdb` SET `image` = 'NA' WHERE `data_actors_imdb`.`id` = ".$id;
+        Pdo_an::db_results($sql);
+        return;
     }
 
     $sql ="INSERT INTO `".$table."` (`id`, `actor_id`, `Asian`, `Black`, `Hispanic`, `White`, `kairos_verdict`, `img_type`, `error_msg`, `last_update`) 
