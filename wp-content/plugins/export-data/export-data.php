@@ -364,6 +364,9 @@ public function graph()
     <option selected="selected" value="24">24 hour</option>
     <option  value="168">7 days</option>
     <option  value="720">30 days</option>
+    </select> Datatype <select autocomplete="off" class="graph_type">
+    <option value="count">count</option>
+    <option value="time">time</option>
     </select></p>
     <div id="container_commit_graph" class="commit_graph"></div>
     <script type="text/javascript" src="https://code.highcharts.com/highcharts.js"></script>
@@ -405,13 +408,9 @@ function create_Highcharts(data, block)
                     }
                 },
                 legend: {
-                    enabled: false
+                    enabled: true
                 },
-                // tooltip: {
-                //     shared: true,
-                //     headerFormat: '<span style="font-size: 16px">{point.point.name}</span><br/>',
-                //     pointFormat: '<span style="color:{point.color}">\u25CF</span> {series.name}: <b>{point.y} %</b><br/>'
-                // },
+
                 xAxis: {
                      type: 'datetime',
                     },
@@ -432,6 +431,8 @@ function create_Highcharts(data, block)
 
    var data = jQuery("#jqGrid").jqGrid("getGridParam", "postData");
     data.period = jQuery('.graph_period').val();
+    data.type = jQuery('.graph_type').val();
+
 
     ///get graph data
                 jQuery.ajax({
@@ -455,7 +456,7 @@ function create_Highcharts(data, block)
 
 
 
-jQuery('body').on('change','.graph_period',function ()
+jQuery('body').on('change','.graph_period, .graph_type',function ()
 {
 check_request();
 

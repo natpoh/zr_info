@@ -14,7 +14,7 @@ if (!defined('ABSPATH'))
 
 
 
-require_once('import_db.php');
+require_once(ABSPATH . 'analysis/export/import_db.php');
 // Database
 
 ///get commit
@@ -203,6 +203,9 @@ else if (isset($_POST['_search']))//////
     ///get data for graph
 
     $period =$_POST['period'];
+    $data_type =$_POST['type'];
+
+
     if ($period)$period = intval($period);
     if (!$period)$period=24*86400;
 
@@ -211,8 +214,8 @@ else if (isset($_POST['_search']))//////
     $step =60*$period;// ($period)/60;
 
 
-    //$sql ="SELECT * FROM `commit` WHERE add_time > {$min_time}  ".$where1;
-    $sql ="SELECT * FROM `commit` WHERE last_update > {$min_time}  ".$where1;
+    //$sql ="SELECT * FROM `commit` WHERE last_update > {$min_time}  ".$where1;
+    $sql ="SELECT * FROM `commit` WHERE last_update > {$min_time}  ".$where1." order by last_update ASC";
     $row = Pdo_an::db_results_array($sql);
     $result = [];
     foreach ($row as $r)
@@ -220,8 +223,8 @@ else if (isset($_POST['_search']))//////
 
         $description = $r['description'];
 
-        $add_time = $r['add_time'];
-        if (!$add_time)
+        //$add_time = $r['add_time'];
+       // if (!$add_time)
         {
             $add_time = $r['last_update'];
 
@@ -231,7 +234,18 @@ else if (isset($_POST['_search']))//////
             $add_time = round( $add_time/$step,0)*$step*1000;
             //$add_time=$add_time*1000;
 
-            $result[$description][$add_time]+=1;
+            if ($data_type=='time')
+            {
+              $count = $r['run_time'];
+              if (!$count)$count=1;
+
+            }
+            else
+            {
+                $count=1;
+            }
+            $result[$description][$add_time]+=$count;
+            $result['All'][$add_time]+=$count;
         }
     }
     $array_series=[];
@@ -243,10 +257,32 @@ else if (isset($_POST['_search']))//////
             $data_r[]=['x'=>$i,'y'=>$v];
         }
 
-        $array_series['series'][]=['name'=>$index,'data'=>$data_r];
+        if ($index=='All')
+        {
+            $array_series['series'][]=['name'=>$index,'data'=>$data_r,'visible'=>false,'turboThreshold'=>0];
+        }
+        else
+        {
+            $array_series['series'][]=['name'=>$index,'data'=>$data_r];
+        }
+
 
     }
-    $array_series['title']= 'Commits count';
+    if ($data_type=='time')
+    {
+
+        $array_series['title']= 'Commits time';
+    }
+    else
+    {
+        $array_series['title']= 'Commits count';
+
+    }
+
+
+
+
+
     $array_series['period']=$period;
     $array_series['step']=$step;
 //    $array_series['sql']=$sql;
@@ -259,6 +295,9 @@ else if (isset($_POST['_search']))//////
 
 
 
+}
+else {
+    echo 'ok';
 }
 
 

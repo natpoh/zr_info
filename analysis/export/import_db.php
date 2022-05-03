@@ -497,9 +497,12 @@ public static function commit_info_request($uid)
            $name= $request["description"];
            $data= $request["text"];
 
+           $priority= $request["priority"];
+
+
            $row =  self::check_status_commit($key);
            if (!$row) {
-               self::set_commit($name,$data,$key,$site_id,1);
+               self::set_commit($name,$data,$key,$site_id,1,$priority);
                $result[$key]=1;
            }
            else
@@ -701,12 +704,14 @@ public static function commit_info_request($uid)
 
         ////delete old comlete request
 
-        $sql = "DELETE FROM `commit` WHERE `complete` =1 and `add_time` < ".(time()-86400*60);
+        $sql = "DELETE FROM `commit` WHERE `complete` = 1 and `last_update` < ".(time()-86400*60);
+
         Pdo_an::db_query($sql);
 
         ///move to status 0
 
-        $sql = "UPDATE `commit` SET `status` 0 where `status` = 2 and `last_update` < ".(time()-86400);
+        $sql = "UPDATE `commit` SET `status` = 0,  `complete` = 0  where `status` = 1 and `last_update` < ".(time()-86400);
+
         Pdo_an::db_query($sql);
 
 
