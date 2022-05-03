@@ -372,7 +372,7 @@ public function graph()
 function create_Highcharts(data, block)
 {
 
-     console.log(data);
+  ///   console.log(data);
 
     if (typeof Highcharts !== 'undefined') {
 
@@ -381,7 +381,7 @@ function create_Highcharts(data, block)
             data = JSON.parse(data);
             var data_series = data['series'];
 
-            console.log(data_series);
+          //  console.log(data_series);
 
            // var data_series_cast = data['cast'];
         }

@@ -206,9 +206,9 @@ else if (isset($_POST['_search']))//////
     if ($period)$period = intval($period);
     if (!$period)$period=24*86400;
 
-    $min_time = time()-$period*86400;
+    $min_time = time()-$period*3600;
 
-    $step = ($period/60)*86400;
+    $step =60;// ($period)/60;
 
 
     //$sql ="SELECT * FROM `commit` WHERE add_time > {$min_time}  ".$where1;
@@ -229,6 +229,8 @@ else if (isset($_POST['_search']))//////
         if ($add_time)
         {
             $add_time = round( $add_time/$step,0)*$step*1000;
+            //$add_time=$add_time*1000;
+
             $result[$description][$add_time]+=1;
         }
     }
@@ -245,7 +247,11 @@ else if (isset($_POST['_search']))//////
 
     }
     $array_series['title']= 'Commits count';
-
+    $array_series['period']=$period;
+    $array_series['step']=$step;
+//    $array_series['sql']=$sql;
+    $array_series['time']=date('H:i d-m-Y',time());
+    $array_series['min_time']=date('H:i d-m-Y',$min_time);
     echo json_encode($array_series);
 
 
