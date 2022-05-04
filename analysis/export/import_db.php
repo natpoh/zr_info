@@ -177,10 +177,20 @@ public static function commit_info_request($uid)
 
 
 
-    public static function create_commit($commit_id='',$type,$db,$request,$name = '',$priority=1)
+    public static function create_commit($commit_id='',$type,$db,$request,$name = '',$priority=1,$array_update='')
     {
 
-        $ajax_data = array("type"=>$type,"request"=>$request,"db"=>$db);
+        if ($array_update)
+        {
+            $ajax_data = array("type"=>$type,"request"=>$request,"db"=>$db,"u"=>$array_update);
+        }
+        else
+        {
+            $ajax_data = array("type"=>$type,"request"=>$request,"db"=>$db);
+        }
+
+
+
         return self::set_commit($name,$ajax_data,$commit_id,'',0,$priority);
 
     }
@@ -326,10 +336,12 @@ public static function commit_info_request($uid)
 
     public static function create_request($val)
     {
+        $db=$val['db'];
+        $wo = $val['request'];
+
         if ($val['type']=="update")
         {
-            $db=$val['db'];
-            $wo = $val['request'];
+
             if ($wo) {
                 foreach ($wo as $i => $v) {
                     $where .= "and `" . $i . "` = '" . $v . "' ";
@@ -356,10 +368,16 @@ public static function commit_info_request($uid)
         }
         else if ($val['type']=="delete")
         {
-            $db=$val['db'];
-            $wo = $val['request'];
-            $object_setup[$db]['request'] = $wo;
+            //$object_setup[$db]['request'] = $wo;
         }
+
+        if ($val['u'])
+        {
+            //$object_setup[$db]['u'] = $val['u'];
+
+            self::custom_function($val['u']);
+        }
+
         return array($val['type']=>$object_setup);
 
     }
@@ -508,12 +526,13 @@ public static function commit_info_request($uid)
                $status =  self::check_status_commit($key,'status');
                if ($status>1) {
                    ///update commit to 1
-               //    self::update_status($key, 1);
+                // self::update_status($key, 1);
+
                }
-                   $result[$key]=10;///error
-
-
+                 $result[$key]=10;///error
+              // $result[$key]=1;
            }
+
 
         }
 
@@ -540,11 +559,25 @@ public static function commit_info_request($uid)
 
 
 }
+public static function custom_function($array)
+{
+
+//    $array_update = array('k'=>'um','id'=>$mid);
+//    $commit_id = Import::create_commit('','update','data_movie_imdb',array('id'=>$mid),'add_movies',5,$array_update);
+
+    if ($array['k']=='um')///update movies
+    {
+        $movie_id =$array['id'];
+
+        $sql ="UPDATE `data_movie_imdb` SET `add_time` = '".time()."' where `id` = ".intval($movie_id);
+        Pdo_an::db_results_array($sql);
+    }
+
+}
 
     public static function set_data($data)
     {
         $result=[];
-
 
         foreach ($data as $key =>$array_data) {
             foreach ($array_data["data"] as $index => $object_setup_type) {
@@ -563,6 +596,11 @@ public static function commit_info_request($uid)
                             $array_req = self::set_array_colmuns($object_setup['columns'], $object_setup['request'], $object_setup['return']);
 
                           $result[$type][$table][] = self::update_table($table, $array_req['data'], $array_req['where']);
+
+                            if ($object_setup['u'])
+                            {
+                               // self::custom_function($object_setup['u']);
+                            }
                         }
                     }
                     else if ($type == 'delete') {
@@ -578,6 +616,11 @@ public static function commit_info_request($uid)
                             $array_req = self::set_array_colmuns($object_setup['columns'], $object_setup['request'], $object_setup['return']);
 
                             $result[$type][$table][] = self::delete_table($table, $array_req['where']);
+
+                            if ($object_setup['u'])
+                            {
+                               // self::custom_function($object_setup['u']);
+                            }
                         }
                     }
 
@@ -731,9 +774,9 @@ public static function commit_info_request($uid)
 
         ///move to status 0
 
-        $sql = "UPDATE `commit` SET `status` = 0,  `complete` = 0  where `status` = 1 and `last_update` < ".(time()-3600*24);
+//        $sql = "UPDATE `commit` SET `status` = 0,  `complete` = 0  where `status` = 1 and `last_update` < ".(time()-3600*24);
+//        Pdo_an::db_query($sql);
 
-        Pdo_an::db_query($sql);
     }
 
     public static function sync($data)
@@ -762,15 +805,12 @@ public static function commit_info_request($uid)
              return $result;
          }
 
-         ////// get an answer on request update status to 1
-
-         if ($result['sync_result'])
+         else if ($result['sync_result'])         ////// get an answer on request update status to 1
          {
-             foreach ($result['sync_result'] as $key=>$status)
-             {
+             foreach ($result['sync_result'] as $key => $status) {
                  $time_current = self::timer_stop_data();
 
-                 self::update_status($key,$status,$time_current);
+                 self::update_status($key, $status, $time_current);
              }
          }
 
@@ -869,13 +909,10 @@ public static function commit_info_request($uid)
 
             self::service();///delete and change staus for old commit
 
-            ///sync - send data to remote server and change status to 1
-            $result['sync'] = self::sync($data);
 
-            ///sync_last_commit - get commit in status 1 and add from remote site update status to 4
-            $result['sync_last_commit'] = self::sync_last_commit($data);
+            $result['sync'] = self::sync($data);             ///sync - send data to remote server and change status to 1
 
-
+            $result['sync_last_commit'] = self::sync_last_commit($data);    ///sync_last_commit - get commit in status 1 and add from remote site update status to 4
 
             $result['sync_complete'] = self::sync_complete($data);
 

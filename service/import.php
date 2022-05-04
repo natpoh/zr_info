@@ -2,8 +2,21 @@
 set_time_limit(0);
 ini_set('display_errors', 'On');
 error_reporting(E_ERROR);
+
+
+if (strstr( $_SERVER['DOCUMENT_ROOT'],'service'))
+{
+    $root = str_replace('/service','', $_SERVER['DOCUMENT_ROOT']);
+}
+else
+{
+    $root =$_SERVER['DOCUMENT_ROOT'];
+}
+
+
+
 if (!defined('ABSPATH'))
-    define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
+    define('ABSPATH',$root . '/');
 
 //DB config
 !defined('DB_HOST_AN') ? include ABSPATH . 'analysis/db_config.php' : '';
@@ -18,8 +31,8 @@ require_once(ABSPATH . 'analysis/export/import_db.php');
 // Database
 
 ///get commit
-//////analysis/export/import.php?key=1R3W5T8s13t21a34f&action=last_commit&count=10
-//////analysis/export/import.php?key=1R3W5T8s13t21a34f&action=get_commit&uid=t_add_movies1643729961,t_actor_meta1643729962
+//////service/import.php?key=1R3W5T8s13t21a34f&action=last_commit&count=10
+//////service/import.php?key=1R3W5T8s13t21a34f&action=get_commit&uid=t_add_movies1643729961,t_actor_meta1643729962
 
 
 
@@ -215,7 +228,7 @@ else if (isset($_POST['_search']))//////
 
 
     //$sql ="SELECT * FROM `commit` WHERE last_update > {$min_time}  ".$where1;
-    $sql ="SELECT * FROM `commit` WHERE last_update > {$min_time}  ".$where1." order by last_update ASC";
+    $sql ="SELECT * FROM `commit` WHERE add_time > {$min_time}  ".$where1." order by add_time ASC";
     $row = Pdo_an::db_results_array($sql);
     $result = [];
     foreach ($row as $r)
@@ -223,12 +236,10 @@ else if (isset($_POST['_search']))//////
 
         $description = $r['description'];
 
-        //$add_time = $r['add_time'];
-       // if (!$add_time)
-        {
-            $add_time = $r['last_update'];
 
-        }
+            $add_time = $r['add_time'];
+
+
         if ($add_time)
         {
             $add_time = round( $add_time/$step,0)*$step*1000;
