@@ -437,7 +437,7 @@ function create_Highcharts(data, block)
     ///get graph data
                 jQuery.ajax({
                 type: "POST",
-                url: "<?php echo site_url() ?>/analysis/export/import.php",
+                url: "<?php echo site_url() ?>/service/import.php",
 
                 data: data,
                 success: function (html) {
