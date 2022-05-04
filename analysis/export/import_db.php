@@ -364,7 +364,7 @@ public static function commit_info_request($uid)
             $count =intval($data['count']);
 
         }
-        $sql ="SELECT *  FROM `commit` WHERE `status` = 1 and site_id!='".$site_id."' ORDER BY `commit`.`priority` ASC  limit ".$count;
+        $sql ="SELECT *  FROM `commit` WHERE `status` = 1 and site_id!='".$site_id."' ORDER BY `commit`.`priority` ASC, `id` ASC  limit ".$count;
         $rows = Pdo_an::db_results_array($sql);
         return $rows;
     }
@@ -395,7 +395,7 @@ public static function commit_info_request($uid)
             $count =intval($data['count']);
 
         }
-        $sql ="SELECT *  FROM `commit` WHERE `status` = '".$status."' ORDER BY `commit`.`priority` ASC  limit ".$count;
+        $sql ="SELECT *  FROM `commit` WHERE `status` = '".$status."' ORDER BY `commit`.`priority` ASC, `id` ASC  limit ".$count;
         $rows = Pdo_an::db_results_array($sql);
         return $rows;
     }
