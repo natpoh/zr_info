@@ -720,7 +720,7 @@ WHERE `data_actors_imdb`.`id` = " . $actor_id;
 
     !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
 
-    Import::create_commit('', 'update', 'data_actors_imdb', array('actor_id' => $actor_id), 'add_actor',5);
+    Import::create_commit('', 'update', 'data_actors_imdb', array('actor_id' => $actor_id), 'actor_update',5);
 
 
     return 1;
@@ -747,7 +747,7 @@ function add_actors_to_db($id, $update = 0)
 
     } else {
 
-        $sql = "UPDATE `data_actors_imdb` SET `lastupdate` = '2' WHERE `data_actors_imdb`.`id` = {$id}";
+        $sql = "UPDATE `data_actors_imdb` SET `lastupdate` = '".time()."' WHERE `data_actors_imdb`.`id` = {$id}";
         Pdo_an::db_query($sql);
     }
 
@@ -1102,7 +1102,9 @@ function check_last_actors()
 
 
 
-    $sql = "SELECT id FROM `data_actors_imdb` where lastupdate = '2' order by id asc limit 10";
+    $sql = "SELECT id FROM `data_actors_imdb` where `name` = '' and lastupdate != '0' and lastupdate < ".(time()-86400)." order by lastupdate 	 desc limit 10";
+    ///echo $sql.'<br>';
+
     $result= Pdo_an::db_results_array($sql);
     $i = 0;
     foreach ($result as $r) {
@@ -1111,6 +1113,8 @@ function check_last_actors()
         echo 'try add actor ' . $id . PHP_EOL;
         $result = add_actors_to_db($id, 1);
         ///  set_option(8, $r['id']);
+        $sql = "UPDATE `data_actors_imdb` SET `lastupdate` = '".time()."' WHERE `data_actors_imdb`.`id` =  ".$id;
+        Pdo_an::db_results_array($sql);
     }
     echo 'check_last_actors status 2 (' . $i . ') ' . PHP_EOL;
 
@@ -1122,7 +1126,7 @@ function check_last_actors()
 
         foreach ($commit_actors as $actor_id=>$enable)
         {
-         Import::create_commit('', 'update', 'data_actors_meta', array('actor_id' => $actor_id), 'actor_meta',6);
+         Import::create_commit('', 'update', 'data_actors_meta', array('actor_id' => $actor_id), 'actor_meta_update',6);
 
         }
     }

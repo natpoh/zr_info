@@ -563,7 +563,7 @@ public static function custom_function($array)
 {
 
 //    $array_update = array('k'=>'um','id'=>$mid);
-//    $commit_id = Import::create_commit('','update','data_movie_imdb',array('id'=>$mid),'add_movies',5,$array_update);
+//    $commit_id = Import::create_commit('','update','data_movie_imdb',array('id'=>$mid),'movies_add',5,$array_update);
 
     if ($array['k']=='um')///update movies
     {

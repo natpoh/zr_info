@@ -83,6 +83,11 @@ class TMDB
                /// echo $sql;
                 Pdo_an::db_query($sql);
 
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                Import::create_commit('', 'update', 'data_actors_tmdb', array('actor_id' => $actor_imdb), 'actor_tmdb',6);
+
+
+
                 ACTIONLOG::update_actor_log('tmdb_add_imdbid');
             }
 
@@ -739,8 +744,9 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
 
     $mid = self::get_id_from_imdbid($movie_id);
 
+    $array_update = array('k'=>'um','id'=>$mid);
 
-    $commit_id = Import::create_commit('','update','data_movie_imdb',array('id'=>$mid),'add_movies',5);
+    $commit_id = Import::create_commit('','update','data_movie_imdb',array('id'=>$mid),'movie_add',5,$array_update);
 
 
     $actor_types = array('s' => 1, 'm' => 2, 'e' => 3);
@@ -846,7 +852,7 @@ public static function add_todb_actor($id,$name='')
             Pdo_an::db_results_array($sql, array($id));
         }
 
-        Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $id),'add_actor',5);
+        Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $id),'actor_update',5);
     }
 }
 
@@ -856,7 +862,7 @@ public static function clear_actors_meta($id,$commit_id)
     $sql="DELETE FROM `meta_movie_actor` WHERE mid = {$id}";
     Pdo_an::db_query($sql);
 
-    $commit_id =Import::create_commit($commit_id, 'delete', 'meta_movie_actor', array('mid' => $id),'clear_actor_meta',5);
+    $commit_id =Import::create_commit($commit_id, 'delete', 'meta_movie_actor', array('mid' => $id),'movie_meta_actor',5);
 return $commit_id;
 }
     public static function clear_directors_meta($id,$commit_id)
@@ -864,7 +870,7 @@ return $commit_id;
         $sql="DELETE FROM `meta_movie_director` WHERE mid = {$id}";
         Pdo_an::db_query($sql);
 
-        Import::create_commit($commit_id, 'delete', 'meta_movie_director', array('mid' => $id),'clear_actor_meta',5);
+        Import::create_commit($commit_id, 'delete', 'meta_movie_director', array('mid' => $id),'movie_meta_actor',5);
     }
 
     public static function add_movie_actor($mid = 0, $id = 0, $type = 0,$table='meta_movie_actor',$pos=0) {
@@ -932,7 +938,7 @@ return $commit_id;
                 $meta_exist = Pdo_an::db_fetch_row($sql);
 
             }
-            Import::create_commit('','update',$table,array('id'=>$meta_exist->id),$table,5);
+            Import::create_commit('','update',$table,array('id'=>$meta_exist->id),'movie_meta_actor',5);
 
 
             return true;

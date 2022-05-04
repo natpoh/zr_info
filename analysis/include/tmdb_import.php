@@ -522,6 +522,10 @@ class TMDBIMPORT
             ACTIONLOG::update_actor_log('tmdb_id');
             if ($image_add)ACTIONLOG::update_actor_log('tmdb_image');
         if ($gender) ACTIONLOG::update_actor_log('gender');
+
+        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+        Import::create_commit('', 'update', 'data_actors_meta', array('id' => $id), 'movie_meta_actor',6);
+
     }
 
 
@@ -810,6 +814,9 @@ class TMDBIMPORT
         $sql="UPDATE `data_movie_imdb` SET `add_time`=".time()." WHERE id =".$id;
         Pdo_an::db_query($sql);
 
+        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+        Import::create_commit('', 'update', 'data_movie_imdb', array('id' => $id), 'movie_update',6);
+
     }
     public static function get_tmdb_countries($mid,$array,$update =0)
     {
@@ -868,6 +875,12 @@ class TMDBIMPORT
             Pdo_an::db_results_array($sql,array($id,$type,$data,$status,time()));
             return $type.' added; ';
         }
+
+
+//        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+//        Import::create_commit('', 'update', 'cache_tmdb_sinc', array('rwt_id' => $id,'type'=>$type), 'cache_tmdb',6);
+
+
     }
 
     public static function get_default_crew($id)
@@ -918,6 +931,10 @@ class TMDBIMPORT
 
         $sql ="DELETE FROM `meta_movie_tmdb_actor` WHERE `mid` = ".$id;
         Pdo_an::db_query($sql);
+
+        //!class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+        //Import::create_commit('', 'delete', 'meta_movie_tmdb_actor', array('mid' => $id), 'tmdb_actors_meta',6);
+
         foreach ($data as $val)
         {
             $type=1;
@@ -936,7 +953,9 @@ class TMDBIMPORT
                 VALUES (NULL,{$id},{$val['id']},{$pos},{$type})";
             Pdo_an::db_query($sql);
 
+
         }
+        //Import::create_commit('', 'update', 'meta_movie_tmdb_actor', array('mid' => $id), 'tmdb_actors_meta',6);
 
     }
 
@@ -945,6 +964,10 @@ class TMDBIMPORT
         $director_types = array('Director' => 1, 'Writer' => 2, 'Casting' => 3,'Producer'=>4,'Executive Producer'=>4,'Co-Producer'=>4,'Associate Producer'=>4);
 
         $sql ="DELETE FROM `meta_movie_tmdb_director` WHERE `mid` = ".$id;
+
+        //!class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+        //Import::create_commit('', 'delete', 'meta_movie_tmdb_director', array('mid' => $id), 'tmdb_actors_meta',6);
+
         Pdo_an::db_query($sql);
 
         foreach ($data as $val)
@@ -962,7 +985,7 @@ class TMDBIMPORT
             Pdo_an::db_results_array($sql,array($val["department"],$val["job"]));
 
         }
-
+        //Import::create_commit('', 'update', 'meta_movie_tmdb_director', array('mid' => $id), 'tmdb_actors_meta',6);
     }
 
 
@@ -1000,6 +1023,8 @@ class TMDBIMPORT
                         $sql = "UPDATE `data_actors_tmdb` SET `actor_id`={$data["imdb_id"]},`status`=1,`last_update`=".time()." WHERE id=".$r->id;
                         Pdo_an::db_query($sql);
                     }
+
+
                 }
                 else
                 {
@@ -1018,7 +1043,13 @@ class TMDBIMPORT
                 $sql="INSERT INTO `data_actors_tmdb`(`id`, `actor_id`, `tmdb_id`, `gender`, `known_for_department`, `name`, `original_name`, `profile_path`, `popularity`, `status`, `last_update`) 
                         VALUES (NULL,?,?,?,?,?,?,?,?,?,?)";
                 Pdo_an::db_results_array($sql,array($data["imdb_id"],$data["id"],$data["gender"],$data["known_for_department"],$data["name"],$data["original_name"],$data["profile_path"],$data["popularity"],$status,time()));
+
+
             }
+
+            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+            Import::create_commit('', 'update', 'data_actors_tmdb', array('tmdb_id' => $data["id"]), 'actor_tmdb',6);
+
         }
     }
 

@@ -899,7 +899,7 @@ else if ($display_select == 'performance_country') {
 
     }
     echo '<br>$race_array<br>';
-var_dump($race_array);
+//var_dump($race_array);
     $array_all_country = [];
 
 

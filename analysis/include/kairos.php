@@ -526,6 +526,9 @@ if ($kairos['asian']){  $asian=  $kairos['asian'];  }
 
         $sql="UPDATE `data_actors_imdb` SET `image` = 'NA' WHERE `data_actors_imdb`.`id` = ".$id;
         Pdo_an::db_results($sql);
+
+        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+        Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $id), 'kairos_race',9);
         return;
     }
 
@@ -537,6 +540,12 @@ VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
    // var_dump($array_result);
     Pdo_an::db_results($sql,$array_result);
+
+    ///commit
+
+    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+    Import::create_commit('', 'update', $table, array('actor_id' => $id), 'kairos_race',9);
+
 }
 
 
