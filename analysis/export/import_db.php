@@ -56,7 +56,7 @@ class Import
         $time_current = self::timer_stop_data();
         self::update_status($uid,2,$time_current);////send request
         ///get data
-        $sql_data =  self::commit_info_request($uid);
+        $sql_data =  self::commit_info_request($uid);  ///get remote sql from commit
 
 
 
@@ -66,7 +66,7 @@ class Import
         }
 
         $time_current = self::timer_stop_data();
-        $rslt = self::set_data($sql_data);
+        $rslt = self::set_data($sql_data); ///update site data from sql
         $result[] = self::update_commit_data($uid,$rslt,$time_current); ///update to status 4
 
     }
@@ -90,7 +90,6 @@ public static function commit_info_request($uid)
         'action'=>'get_commit',
         'key'=>$key,
         'limit'=>$limit,
-        'update_status'=>3 ////commit get
     );
 
     $result =  GETCURL::getCurlCookie($link,'',$request);
@@ -254,40 +253,25 @@ public static function commit_info_request($uid)
         {
             return self::check_remore_ip();
         }
-/// 0 только создана
-/// 1 синхронизирован
-/// 2 запрос данных
-/// 3 данные отправил
-/// 4 данные приняты и сохранены
-///
-///
-
 
         if ($data['uid'])
         {
             $uid =$data['uid'];
-
-            if ($data['update_status'])
-            {
-                $update_status =   intval($data['update_status']);
-                self::update_status($uid,$update_status);
-
-            }
-
-
                 if (strstr($uid,','))
                 {
                     $uid =explode(',',$uid);
-
                 }
 
                 if (is_array($uid)) {
                     foreach ($uid as $i ) {
+                        self::update_status($uid,3);
+
                         $where .= "OR `uniq_id` = '" . $i . "' ";
                     }
                 }
                 else
                 {
+                    self::update_status($uid,3);
                     $where = "  `uniq_id` = '" . $uid . "' ";
                 }
                 if ($where) {
@@ -297,35 +281,34 @@ public static function commit_info_request($uid)
 
         }
 
-        $sql ="SELECT *  FROM `commit` ".$where." ";
-
-        $rows = Pdo_an::db_results_array($sql);
-        foreach ($rows as $r)
+        if ($where)
         {
-            $status = $r['status'];
-            if ($status==0)
-            {
-                $key = $r['uniq_id'];
-                self::update_status($key,1);
-            }
+            $sql ="SELECT *  FROM `commit` ".$where." ";
 
-
-            $array_s = $r['text'];
-            if ($array_s)
+            $rows = Pdo_an::db_results_array($sql);
+            foreach ($rows as $r)
             {
-                $array = json_decode($array_s,1);
-                foreach ($array as $time=>$val)
+
+                $array_s = $r['text'];
+                if ($array_s)
                 {
-                    $request = self::create_request($val);
+                    $array = json_decode($array_s,1);
+                    foreach ($array as $time=>$val)
+                    {
+                        $request = self::create_request($val);
 
-                    $array_sql[$r['uniq_id']]['data'][$time] = $request;
+                        $array_sql[$r['uniq_id']]['data'][$time] = $request;
 
 
+                    }
                 }
+
+
             }
 
 
         }
+
 
 
         return $array_sql;
@@ -361,6 +344,12 @@ public static function commit_info_request($uid)
                      $object_setup[$db]['columns'][$i] = $v;
                     }
 
+        }
+        else if ($val['type']=="delete")
+        {
+            $db=$val['db'];
+            $wo = $val['request'];
+            $object_setup[$db]['request'] = $wo;
         }
         return array($val['type']=>$object_setup);
 
@@ -694,21 +683,19 @@ public static function commit_info_request($uid)
         $dop='';
         if ($time_current)
         {
-            //$sql="UPDATE `commit` SET  run_time = IF(run_time IS NULL, {$time_current},run_time + {$time_current})  WHERE `uniq_id`  = '".$key."' ";
-           $dop=",run_time = IF(run_time IS NULL, {$time_current},run_time + {$time_current})";
+            $dop=",run_time = IF(run_time IS NULL, {$time_current},run_time + {$time_current})";
         }
 
 
-        $sql = "UPDATE `commit` SET `status`='".$status."', `last_update` = ".time()." ".$dop." WHERE `uniq_id`  = '".$key."'";
+        $sql = "UPDATE `commit` SET `status`='".$status."', `last_update` = '".time()."' ".$dop." WHERE `uniq_id`  = '".$key."'";
         Pdo_an::db_query($sql);
 
 
 
     }
 
-    public static function sync($data)
+    public static function service()
     {
-
         ////delete old comlete request
 
         $sql = "DELETE FROM `commit` WHERE `complete` = 1 and `last_update` < ".(time()-86400*60);
@@ -717,11 +704,13 @@ public static function commit_info_request($uid)
 
         ///move to status 0
 
-        $sql = "UPDATE `commit` SET `status` = 0,  `complete` = 0  where `status` = 1 and `last_update` < ".(time()-3600*3);
+        $sql = "UPDATE `commit` SET `status` = 0,  `complete` = 0  where `status` = 1 and `last_update` < ".(time()-3600*24);
 
         Pdo_an::db_query($sql);
+    }
 
-
+    public static function sync($data)
+    {
 
         self::timer_start_data();
 
@@ -734,7 +723,6 @@ public static function commit_info_request($uid)
 
         ///$array_update_status = self::last_commits_updated($data);////check status 2
         $array_sql = self::last_commits($data,0);////check status 0
-
 
 
         /// send data with status 0 to a remote server to sync_data function
@@ -762,19 +750,15 @@ public static function commit_info_request($uid)
             $res_return['get_status_0']=count($array_sql);
             $res_return['sinc']=count($result['sync_result']);
 
-
-//            //check commit from remote url
-//
-//            if ($result['last_commit'])
-//            {
-//                $result_data = self::check_and_set_data($result['last_commit']);
-//            }
-//
-//
-//            $res_return['last_commit']=count($result['last_commit']);
         }
 
+        $res_return['result']=$result;
 
+        return $res_return;
+
+    }
+    public  static function sync_last_commit($data)
+    {
         ///get data status 1 (sync)
 
         self::timer_start_data();
@@ -791,6 +775,12 @@ public static function commit_info_request($uid)
 
         }
 
+        $res_return['result']=$result;
+
+        return $res_return;
+    }
+    public  static function sync_complete($data)
+    {
         self::timer_start_data();
         ////get status 4 and add status 5 Complete
         $array_sql = self::last_commits($data,4);////check status 0
@@ -832,14 +822,21 @@ public static function commit_info_request($uid)
 //            $res_return['last_commit']=count($result['last_commit']);
         }
 
+        $res_return['result']=$result;
 
-
-        return array($res_return,$result);
-
+        return $res_return;
     }
+
 
     public static function prepare_data($data)
     {
+
+        ///sync - send data to remote server and change status to 1
+        ///
+        ///sync_last_commit - get commit in status 1 and add from remote site
+        ///
+
+
 
         $action = $data['action'];
 //        if ($action == 'last_commit') {
@@ -847,7 +844,12 @@ public static function commit_info_request($uid)
 //        }
 
         if ($action == 'sync') { ////curl sinc
-        $result = self::sync($data);
+
+            self::service();///delete and change staus for old commit
+            $result['sync'] = self::sync($data);
+            $result['sync_last_commit'] = self::sync_last_commit($data);
+            $result['sync_complete'] = self::sync_complete($data);
+
         }
 
         else if ($action == 'sync_data') { ////get request from remote url status 0
