@@ -22,7 +22,7 @@ class TMDB
 {
     public static $api_key = '1dd8ba78a36b846c34c76f04480b5ff0';
 
-    public static $poxy =  "http://148.251.54.53:8110/?p=ds1bfgFe_23_KJDS-F&url=";
+    public static $poxy =  "http://165.227.101.220:8110/?p=ds1bfgFe_23_KJDS-F&url=";
 
     public static function add_tmdb_without_id($tmdb_id_input='')
     {
@@ -891,7 +891,7 @@ public static function add_todb_actor($id,$name='')
             $sql = "INSERT INTO `data_actors_imdb`  VALUES (?, '', '', '', '', '', '', '0')";
             Pdo_an::db_results_array($sql, array($id));
         }
-        
+
         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
         Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $id),'actor_update',5);
     }
