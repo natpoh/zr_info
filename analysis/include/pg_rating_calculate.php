@@ -236,6 +236,10 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
     `last_update`=" . time() . " WHERE `movie_id`={$id}";
                 Pdo_an::db_results_array($sql, array($array_db["total_rwt_audience"], $array_db["total_rwt_staff"]));
             }
+
+            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+            Import::create_commit('', 'update', 'data_movie_rating', array('movie_id' => $id), 'movie_rating',11);
+
         }
 
         return $total_rating;
@@ -1309,23 +1313,54 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
         $rid = intval($rid);
 
-        if (self::get_audience_rating_in_movie($rid, $type)) {
+        $r = self::get_audience_rating_in_movie($rid, $type);
 
+        if ($r) {
 
+            ///check before update
 
-            $sql = "UPDATE `cache_rwt_rating".$dop."` SET 
+            if (
+                $r['vote']==$ar['vote'] &&
+                $r['rating']==$ar['rating'] &&
+                $r['affirmative']==$ar['affirmative'] &&
+                $r['god']==$ar['god'] &&
+                $r['hollywood']==$ar['hollywood'] &&
+                $r['lgbtq']==$ar['lgbtq'] &&
+                $r['misandry']==$ar['misandry'] &&
+                $r['patriotism']==$ar['patriotism']
+            )
+            {
+                //skip
+            }
+            else
+            {
+
+                $sql = "UPDATE `cache_rwt_rating".$dop."` SET 
                               `vote` = ?,   `rating` = ?,    `affirmative` = ?,   `god` = ?,
                               `hollywood` = ?,  `lgbtq` = ?, `misandry` = ?, 
                               `patriotism` = ?  WHERE `movie_id` = {$rid} and `type`={$type} ";
-            Pdo_an::db_results_array($sql, array($ar['vote'], $ar['rating'], $ar['affirmative'], $ar['god'], $ar['hollywood'], $ar['lgbtq'], $ar['misandry'], $ar['patriotism']));
+                Pdo_an::db_results_array($sql, array($ar['vote'], $ar['rating'], $ar['affirmative'], $ar['god'], $ar['hollywood'], $ar['lgbtq'], $ar['misandry'], $ar['patriotism']));
+
+
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                Import::create_commit('', 'update', 'cache_rwt_rating', array('movie_id' => $rid), 'cache_rwt_rating',20);
+
+
+            }
+
+
         }
         else {
+
             if ($ar['vote'] || $ar['rating'] || $ar['affirmative'] ||  $ar['god'] ||  $ar['hollywood'] ||  $ar['lgbtq'] || $ar['misandry'] ||  $ar['patriotism'])
             {
 
                 $sql = "INSERT INTO cache_rwt_rating".$dop." (`id`, `movie_id`, `type`, `vote`, `rating`, `affirmative`, `god`, `hollywood`, `lgbtq`, `misandry`, `patriotism`)   
                           VALUES (NULL, ?,        ?,     ?,    ?,             ?,           ?,     ?,          ?,          ?,          ?);";
                 Pdo_an::db_results_array($sql, array($rid, $type, $ar['vote'], $ar['rating'], $ar['affirmative'], $ar['god'], $ar['hollywood'], $ar['lgbtq'], $ar['misandry'], $ar['patriotism']));
+
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                Import::create_commit('', 'update', 'cache_rwt_rating', array('movie_id' => $rid), 'cache_rwt_rating',20);
 
             }
 

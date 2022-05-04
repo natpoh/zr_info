@@ -237,6 +237,10 @@ class GETCOINS
            $array = [$uq,json_encode($data),time()];
 
            Pdo_an::db_results_array($sql,$array);
+
+           !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+           Import::create_commit('', 'update', 'cache_donations', array('uniq_id' => $uq), 'donations',15);
+
        }
        else
        {

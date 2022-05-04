@@ -199,6 +199,9 @@ $array_exclude = array('NJW');
                 $sql = "update `data_actors_meta` set verdict =?, n_verdict =?  where id = ".$row['id']." ";
                 Pdo_an::db_results_array($sql,array($row[$val],intconvert($row[$val])));
 
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                Import::create_commit('', 'update', 'data_actors_meta', array('id' => $row['id']), 'actor_meta',9);
+
                 ACTIONLOG::update_actor_log('verdict');
                 break;
             }
@@ -437,6 +440,9 @@ $sql ="SELECT * FROM `data_actors_crowd` WHERE `image`!='' and `loaded` IS NULL 
         ///update actor meta
         $sql2 = "UPDATE `data_actors_meta` SET `last_update` = '".time()."' WHERE `data_actors_meta`.`actor_id` = '".$r['actor_id']."'";
         Pdo_an::db_query($sql2);
+
+        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+        Import::create_commit('', 'update', 'data_actors_meta', array('actor_id' => $r['actor_id']), 'actor_meta',9);
 
     }
 
@@ -1126,7 +1132,7 @@ function check_last_actors()
 
         foreach ($commit_actors as $actor_id=>$enable)
         {
-         Import::create_commit('', 'update', 'data_actors_meta', array('actor_id' => $actor_id), 'actor_meta_update',6);
+         Import::create_commit('', 'update', 'data_actors_meta', array('actor_id' => $actor_id), 'actor_meta',6);
 
         }
     }

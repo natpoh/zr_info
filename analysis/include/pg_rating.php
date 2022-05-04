@@ -75,6 +75,10 @@ class PgRating
 
                 $array_result_data[]=$movie_id;
                 if ($debug)echo 'update cms '.$movie_id.'<br>'.PHP_EOL;
+
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                Import::create_commit('', 'update', 'data_pg_rating', array('movie_id' => $movie_id), 'pg_rating',9);
+
             } else {
                 $sql = "UPDATE `data_pg_rating` SET `cms_date` = '" . time() . "'  WHERE `data_pg_rating`.`movie_id` = " . $movie_id;
                 Pdo_an::db_query($sql);
@@ -153,6 +157,10 @@ class PgRating
                 if ($debug)echo 'updated imdbid '.$movie_id.'<br>'.PHP_EOL;
 
                 $array_result_data[]=$movie_id;
+
+
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                Import::create_commit('', 'update', 'data_pg_rating', array('id' => $id), 'pg_rating',9);
             }
         }
         return $array_result_data;

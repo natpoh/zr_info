@@ -172,6 +172,9 @@ class TMDB
         $sql = "UPDATE `data_movie_imdb` SET `tmdb_id` = '" . $tmdb_id . "'  WHERE `data_movie_imdb`.`movie_id`=" . $imdb_id;
         Pdo_an::db_query($sql);
 
+        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+        Import::create_commit('', 'update', 'data_movie_imdb', array('movie_id' => $imdb_id), 'movie_update',6);
+
     }
 
     public static function get_tmdbid_from_imdbid($id)

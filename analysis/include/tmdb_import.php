@@ -360,14 +360,16 @@ class TMDBIMPORT
                 $sql="DELETE FROM `meta_movie_actor` WHERE mid = {$id}";
                 Pdo_an::db_query($sql);
 
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                $commit_id = Import::create_commit($commit_id, 'delete', 'meta_movie_actor', array('mid' => $id),'movie_meta_actor',5);
+
+
+
                 $array_temp=[];
                 $array_type = [];
 
                 foreach ($rm as $data)
                 {
-
-
-
 
                     $aid =$data['aid'];
 
@@ -405,17 +407,16 @@ class TMDBIMPORT
                                     VALUES (NULL,?,?,?,?)";
                         Pdo_an::db_results_array($sql,$data);
 
+                        Import::create_commit($commit_id,'update','meta_movie_actor',array('mid'=>$data[0],'aid'=>$data[1]),'movie_meta_actor',5);
+
                     }
 
 
 //                ///update status
                 $sql= "UPDATE `data_movies_tmdb_actors` SET  `status`=4 WHERE `data_movies_tmdb_actors`.`rwt_id` = ? ";
                 Pdo_an::db_results_array($sql,[$id]);
-
             }
-
         }
-
     }
 
 
