@@ -62,6 +62,7 @@ class Import
 
         if ($sql_data["error"])
         {
+            self::update_status($uid,1,$time_current);////update to 1
             return $sql_data;
         }
 
@@ -823,7 +824,7 @@ public static function commit_info_request($uid)
                 return $result;
             }
 
-            if ($result['sync_result'])
+            else if ($result['sync_result'])
             {
                 foreach ($result['sync_result'] as $key=>$status)
                 {
