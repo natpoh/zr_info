@@ -66,8 +66,16 @@ class Import
         }
 
         $time_current = self::timer_stop_data();
-        $rslt = self::set_data($sql_data); ///update site data from sql
-        $result[] = self::update_commit_data($uid,$rslt,$time_current); ///update to status 4
+        if ($sql_data) {
+            $update_data = self::set_data($sql_data); ///update site data from sql
+            if ($update_data) {
+                $result[] = self::update_commit_data($uid, $update_data, $time_current); ///update to status 4
+            }
+        }
+        else
+        {
+            self::update_status($uid,1,$time_current);////update to 1
+        }
 
     }
 
@@ -635,9 +643,9 @@ public static function commit_info_request($uid)
                 $run_time   = $request["run_time"];
 
 
-                self::complete_status($key,$run_time,$update_data);
+                self::complete_status($key,$run_time,$update_data,$status);
 
-                $result_data[$key]=1;
+                $result_data[$key]=$status;
 
                 }
             }
@@ -668,7 +676,7 @@ public static function commit_info_request($uid)
         return array($key=>4);
     }
 
-    public static function complete_status($key,$time_current='',$update_data='')
+    public static function complete_status($key,$time_current='',$update_data='',$status=5)
     {
 
         $dop='';
@@ -679,7 +687,7 @@ public static function commit_info_request($uid)
 
         if ($update_data)
         {
-            $sql = "UPDATE `commit` SET `status`=5, `complete` =1 , update_data = ?, `last_update` = ".time()." ".$dop."  WHERE `uniq_id`  = '".$key."'";
+            $sql = "UPDATE `commit` SET `status`={$status}, `complete` =1 , update_data = ?, `last_update` = ".time()." ".$dop."  WHERE `uniq_id`  = '".$key."'";
             Pdo_an::db_results_array($sql,[$update_data]);
 
         }
@@ -687,7 +695,7 @@ public static function commit_info_request($uid)
         {
 
 
-            $sql = "UPDATE `commit` SET `status`=5, `complete` =1 , `last_update` = ".time()." ".$dop."  WHERE `uniq_id`  = '".$key."'";
+            $sql = "UPDATE `commit` SET `status`={$status}, `complete` =1 , `last_update` = ".time()." ".$dop."  WHERE `uniq_id`  = '".$key."'";
             Pdo_an::db_query($sql);
 
         }
@@ -801,7 +809,7 @@ public static function commit_info_request($uid)
     {
         self::timer_start_data();
         ////get status 4 and add status 5 Complete
-        $array_sql = self::last_commits($data,4);////check status 0
+        $array_sql = self::last_commits($data,4);////check status 4
 
 
 
@@ -820,7 +828,7 @@ public static function commit_info_request($uid)
                 foreach ($result['sync_result'] as $key=>$status)
                 {
                     $time_current = self::timer_stop_data();
-                    self::complete_status($key,  $time_current );
+                    self::complete_status($key,  $time_current ,'',$status );
                 }
             }
 
@@ -849,9 +857,9 @@ public static function commit_info_request($uid)
     public static function prepare_data($data)
     {
 
-        ///sync - send data to remote server and change status to 1
+
         ///
-        ///sync_last_commit - get commit in status 1 and add from remote site
+
         ///
 
 
@@ -864,8 +872,15 @@ public static function commit_info_request($uid)
         if ($action == 'sync') { ////curl sinc
 
             self::service();///delete and change staus for old commit
+
+            ///sync - send data to remote server and change status to 1
             $result['sync'] = self::sync($data);
+
+            ///sync_last_commit - get commit in status 1 and add from remote site update status to 4
             $result['sync_last_commit'] = self::sync_last_commit($data);
+
+
+
             $result['sync_complete'] = self::sync_complete($data);
 
         }
