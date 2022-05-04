@@ -631,8 +631,11 @@ public static function commit_info_request($uid)
                 foreach ($object_setup_all as $request ) {
 
                 $key = $request["uniq_id"];
+                $update_data  = $request["update_data"];
+                $run_time   = $request["run_time"];
 
-                self::complete_status($key);
+
+                self::complete_status($key,$run_time,$update_data);
 
                 $result_data[$key]=1;
 
@@ -665,16 +668,31 @@ public static function commit_info_request($uid)
         return array($key=>4);
     }
 
-    public static function complete_status($key,$time_current='')
+    public static function complete_status($key,$time_current='',$update_data='')
     {
+
         $dop='';
         if ($time_current)
         {
-               $dop=",run_time = IF(run_time IS NULL, {$time_current},run_time + {$time_current})";
+            $dop=",run_time = IF(run_time IS NULL, {$time_current},run_time + {$time_current})";
         }
 
-        $sql = "UPDATE `commit` SET `status`=5, `complete` =1 , `last_update` = ".time()." ".$dop."  WHERE `uniq_id`  = '".$key."'";
-        Pdo_an::db_query($sql);
+        if ($update_data)
+        {
+            $sql = "UPDATE `commit` SET `status`=5, `complete` =1 , update_data = ?, `last_update` = ".time()." ".$dop."  WHERE `uniq_id`  = '".$key."'";
+            Pdo_an::db_results_array($sql,[$update_data]);
+
+        }
+        else
+        {
+
+
+            $sql = "UPDATE `commit` SET `status`=5, `complete` =1 , `last_update` = ".time()." ".$dop."  WHERE `uniq_id`  = '".$key."'";
+            Pdo_an::db_query($sql);
+
+        }
+
+
     }
 
 
@@ -857,7 +875,7 @@ public static function commit_info_request($uid)
         }
 
         else if ($action == 'get_commit') {
-            $result = self::get_commit($data);
+            $result = self::get_commit($data); ///set sql data from status 2
         }
 
         else
