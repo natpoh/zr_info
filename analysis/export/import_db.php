@@ -507,7 +507,14 @@ public static function commit_info_request($uid)
            }
            else
            {
-               $result[$key]=10;///error
+               $status =  self::check_status_commit($key,'status');
+               if ($status>1) {
+                   ///update commit to 1
+               //    self::update_status($key, 1);
+               }
+                   $result[$key]=10;///error
+
+
            }
 
         }
@@ -710,7 +717,7 @@ public static function commit_info_request($uid)
 
         ///move to status 0
 
-        $sql = "UPDATE `commit` SET `status` = 0,  `complete` = 0  where `status` = 1 and `last_update` < ".(time()-86400);
+        $sql = "UPDATE `commit` SET `status` = 0,  `complete` = 0  where `status` = 1 and `last_update` < ".(time()-3600*3);
 
         Pdo_an::db_query($sql);
 
@@ -748,7 +755,7 @@ public static function commit_info_request($uid)
              {
                  $time_current = self::timer_stop_data();
 
-                 self::update_status($key,1,$time_current);
+                 self::update_status($key,$status,$time_current);
              }
          }
 
