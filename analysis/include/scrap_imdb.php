@@ -2587,7 +2587,10 @@ if (isset($_GET['update_actors_stars_data'])) {
 }
 if (isset($_GET['get_imdb_movie_id'])) {
         $id = intval($_GET['get_imdb_movie_id']);
+
         $array_movie =  TMDB::get_content_imdb($id);
+
+
 
         $add =  TMDB::addto_db_imdb($id, $array_movie);
 

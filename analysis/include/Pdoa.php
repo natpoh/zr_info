@@ -41,6 +41,9 @@ class Pdoa {
         static::connect();
         static::$pdo->query($sql);
     }
+    public static function last_id() {
+        return static::$pdo->lastInsertId();
+    }
 
     public static function db_results($sql, $array = []) {
         static::connect();

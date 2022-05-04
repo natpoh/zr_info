@@ -12,7 +12,6 @@ if (!defined('ABSPATH'))
 //Abstract DB
 !class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
 
-!class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
 
 if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
     define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
@@ -23,6 +22,7 @@ class TMDB
 {
     public static $api_key = '1dd8ba78a36b846c34c76f04480b5ff0';
 
+    public static $poxy =  "http://148.251.54.53:8110/?p=ds1bfgFe_23_KJDS-F&url=";
 
     public static function add_tmdb_without_id($tmdb_id_input='')
     {
@@ -711,14 +711,51 @@ public static function addto_db_imdb($movie_id, $array_movie, $rwt_id = 0, $tmdb
 
     $result_imdb = self::check_imdb_id($movie_id);
 
-    if (!$result_imdb) {
-        $sql = "INSERT INTO `data_movie_imdb`
-VALUES (NULL, ?, ?, ?, ?, ?, ?,? ,?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)";
-        $result = Pdo_an::db_results_array($sql,$array_request);
 
+
+    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+
+
+    $table_access = Import::get_table_access('data_movie_imdb');
+
+
+
+
+   if (!$result_imdb)
+    {
+        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+        $table_access = Import::get_table_access('data_movie_imdb');
+
+        if ( $table_access['export']==2 )
+        {
+            ///get remote id
+
+            $array = array('table'=>'data_movie_imdb','column'=>'id','request'=>array('movie_id'=>$movie_id));
+
+            $id_array = Import::get_remote_id($array);
+            $mid = $id_array['id'];
+
+            if ($mid)
+            {
+
+                $sql = "INSERT INTO `data_movie_imdb`
+            VALUES ('".$mid."', ?, ?, ?, ?, ?, ?,? ,?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)";
+                 Pdo_an::db_results_array($sql,$array_request);
+
+            }
+
+        }
+        else
+        {
+    $sql = "INSERT INTO `data_movie_imdb`
+VALUES (NULL, ?, ?, ?, ?, ?, ?,? ,?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)";
+            Pdo_an::db_results_array($sql,$array_request);
+            $mid = Pdo_an::last_id();
+        }
 
         $comment =$title.' ('.$type.') added';
         self::add_log('',$movie_id,'add movies',$comment,1);
+
     }
 
 
@@ -736,19 +773,19 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
 
         Pdo_an::db_results_array($sql,$array_request);
 
-
         $comment =$title.' ('.$type.') updated';
         self::add_log('',$movie_id,'update movies',$comment,1);
+        $mid = self::get_id_from_imdbid($movie_id);
     }
 
     ////add empty actors
 
     //$movie_id
 
-    $mid = self::get_id_from_imdbid($movie_id);
+
 
     $array_update = array('k'=>'um','id'=>$mid);
-
+    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
     $commit_id = Import::create_commit('','update','data_movie_imdb',array('id'=>$mid),'movie_add',5,$array_update);
 
 
@@ -854,7 +891,8 @@ public static function add_todb_actor($id,$name='')
             $sql = "INSERT INTO `data_actors_imdb`  VALUES (?, '', '', '', '', '', '', '0')";
             Pdo_an::db_results_array($sql, array($id));
         }
-
+        
+        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
         Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $id),'actor_update',5);
     }
 }
@@ -864,7 +902,7 @@ public static function clear_actors_meta($id,$commit_id)
 {
     $sql="DELETE FROM `meta_movie_actor` WHERE mid = {$id}";
     Pdo_an::db_query($sql);
-
+    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
     $commit_id =Import::create_commit($commit_id, 'delete', 'meta_movie_actor', array('mid' => $id),'movie_meta_actor',5);
 return $commit_id;
 }
@@ -872,7 +910,7 @@ return $commit_id;
     {
         $sql="DELETE FROM `meta_movie_director` WHERE mid = {$id}";
         Pdo_an::db_query($sql);
-
+        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
         Import::create_commit($commit_id, 'delete', 'meta_movie_director', array('mid' => $id),'movie_meta_actor',5);
     }
 
@@ -941,6 +979,7 @@ return $commit_id;
                 $meta_exist = Pdo_an::db_fetch_row($sql);
 
             }
+            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
             Import::create_commit('','update',$table,array('id'=>$meta_exist->id),'movie_meta_actor',5);
 
 
@@ -1574,6 +1613,9 @@ public static function get_content_imdb($id,$showdata='',$enable_actors=1,$from_
 
             $url = "https://www.imdb.com/title/tt" . $final_value . '/fullcredits';
             //echo $url;
+
+            $url =static::$poxy.$url;
+
             $result = GETCURL::getCurlCookie($url);
 
             if (function_exists('gzencode')) {
@@ -1595,6 +1637,9 @@ public static function get_content_imdb($id,$showdata='',$enable_actors=1,$from_
     if (($from_archive && !$result1) || !$from_archive)
     {
         $url = "https://www.imdb.com/title/tt" . $final_value . '/';
+
+        $url =static::$poxy.$url;
+
         $result1 = GETCURL::getCurlCookie($url);
 
         if ($result1)

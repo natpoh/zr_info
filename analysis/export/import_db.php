@@ -111,7 +111,85 @@ public static function commit_info_request($uid)
     return $result;
 
 }
+    public static function get_remote_table($arrayinput)
+    {
 
+        $array =$arrayinput['data'];
+        $array = json_decode($array,1);
+
+      $result['array_input'] =$array;
+
+      $table = $array['table'];
+      $request =  $array['request'];
+      $column = $array['column'];
+      if (!$column)$column = 'id';
+
+      if ($request)
+      {
+          $where='';
+
+          foreach ($request as $c=>$d)
+          {
+              $where.= "and `".$c."` = '".$d."' ";
+          }
+          if ($where)
+          {
+              $where = substr($where,4);
+              $sql ="SELECT `".$column."` from `".$table."` where ".$where." limit 1";
+
+              $result['sql']=$sql;
+
+              $row = Pdo_an::db_results_array($sql);
+              if ($row)
+              {
+                  $id = $row[0][$column];
+                 $result['id']=$id;
+              }
+          }
+
+      }
+      if (!$result['id'])
+      {
+          ///create id
+          ///
+
+          $sql = "INSERT INTO `".$table."` (`".$column."`) VALUES (NULL)";
+          $result['sql']=$sql;
+          Pdo_an::db_query($sql);
+          $result['id']= Pdo_an::last_id();
+
+
+      }
+
+
+      return $result;
+    }
+
+    public static function get_remote_id($array)
+    {
+
+        $key = self::get_key();
+        $options_data = self::get_import_data();
+
+        $link  = $options_data['link_request'];
+        if ($array){$array_sql = json_encode($array);}
+
+
+        ////$array = array('table'=>'data_movie_imdb','request'=>array('movie_id'=>$movie_id));
+
+
+        $request = array(
+            'data'=>$array_sql,
+            'action'=>'get_remote_id',
+            'key'=>$key,
+        );
+        $result =  GETCURL::getCurlCookie($link,'',$request);
+        if ($result)
+        {
+            $result = json_decode($result,1);
+        }
+        return $result;
+    }
 
     public static function push_request($array_sql=[],$status = 0)
     {
@@ -925,6 +1003,11 @@ public static function custom_function($array)
         else if ($action == 'get_commit') {
             $result = self::get_commit($data); ///set sql data from status 2
         }
+
+
+        else if ($action == 'get_remote_id') {
+        $result = self::get_remote_table($data); ///create id from table
+         }
 
         else
         {

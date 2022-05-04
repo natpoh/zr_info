@@ -227,7 +227,7 @@ AND table_schema='imdbvisualization'";
         $array_rows = array(
             'id'=>array('w'=>5),
             'table_name'=>array('w'=>30),
-            'export'=>array('type'=>'select','options'=>'0:Not set;1:Enable;2:Disable'),
+            'export'=>array('type'=>'select','options'=>'0:Not set;1:Enable;2:Only remote id;3:Disable'),
             'import'=>array('type'=>'select','options'=>'0:Not set;1:Enable;2:Only update;3:Disable'),
             'del'=>array('type'=>'select','options'=>'0:Not set;1:Enable;2:Disable'),
             'last_update'=>array('w'=>10)
