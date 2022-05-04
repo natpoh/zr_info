@@ -858,11 +858,6 @@ public static function commit_info_request($uid)
     {
 
 
-        ///
-
-        ///
-
-
 
         $action = $data['action'];
 //        if ($action == 'last_commit') {
