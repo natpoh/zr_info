@@ -48,6 +48,7 @@ class Import
     {
         $result =[];
 
+
     foreach ($array_sql as $i =>$v)
     {
         $uid = $v["uniq_id"];
@@ -68,8 +69,11 @@ class Import
 
         $time_current = self::timer_stop_data();
         if ($sql_data) {
+            $result[$uid]['sql_data']=$sql_data;
+
             $update_data = self::set_data($sql_data); ///update site data from sql
             if ($update_data) {
+                $result[$uid]['update_data'] = $update_data;
                 $result[] = self::update_commit_data($uid, $update_data, $time_current); ///update to status 4
             }
         }
@@ -361,14 +365,14 @@ public static function commit_info_request($uid)
 
                 if (is_array($uid)) {
                     foreach ($uid as $i ) {
-                        self::update_status($uid,3);
+                       self::update_status($uid,3);
 
                         $where .= "OR `uniq_id` = '" . $i . "' ";
                     }
                 }
                 else
                 {
-                    self::update_status($uid,3);
+                   self::update_status($uid,3);
                     $where = "  `uniq_id` = '" . $uid . "' ";
                 }
                 if ($where) {
@@ -432,21 +436,26 @@ public static function commit_info_request($uid)
                 $object_setup[$db]['request'] = $wo;
 
                 $sql = "SELECT * FROM " . $db . " where ".$where;
+                //$object_setup[$db]['sql']=$sql;
+
                 $result = Pdo_an::db_results_array($sql);
                 $object_setup = [];
 
 
             }
             if (is_array($result))
-                if (isset($result[0]))
-                    foreach ($result[0] as $i=>$v) {
-                     $object_setup[$db]['columns'][$i] = $v;
+                foreach ($result as $num=> $r)
+                {
+                    foreach ($r as $i=>$v) {
+                        $object_setup[$db][$num]['columns'][$i] = $v;
                     }
 
+                }
         }
+
         else if ($val['type']=="delete")
         {
-            //$object_setup[$db]['request'] = $wo;
+            $object_setup[$db]['request'] = $wo;
         }
 
         if ($val['u'])
@@ -604,7 +613,7 @@ public static function commit_info_request($uid)
                $status =  self::check_status_commit($key,'status');
                if ($status>1) {
                    ///update commit to 1
-                // self::update_status($key, 1);
+               // self::update_status($key, 1);
 
                }
                  $result[$key]=10;///error
@@ -663,8 +672,9 @@ public static function custom_function($array)
 
                     if ($type == 'update') {
 
-                        foreach ($object_setup_data as $table => $object_setup) {
+                        foreach ($object_setup_data as $table => $object_setup_all) {
 
+                            foreach ($object_setup_all as $index => $object_setup){
                             if (!$object_setup['request'])
                             {
                                 $object_setup['request'] = self::check_request($object_setup['columns'],$table);
@@ -678,6 +688,7 @@ public static function custom_function($array)
                             if ($object_setup['u'])
                             {
                                // self::custom_function($object_setup['u']);
+                            }
                             }
                         }
                     }
@@ -774,13 +785,9 @@ public static function custom_function($array)
 
         }
 
-//        $update_status = $data['update_status'];
-//        $update_result = self::sinc_status_commit($update_status);
 
-        /////get new commit in status 0
-       /// $last_commit =self::last_commits($data);
 
-        return array('sync_result'=>$result_data);//,'last_commit'=>$last_commit,'update_status_result'=>$update_result);
+        return array('sync_result'=>$result_data);
 
     }
 
@@ -1119,17 +1126,18 @@ public static function custom_function($array)
                 $oper_update .= ",`" . $row . "`=?";
 
             }
-            if (is_array($request))
+
+        }
+        if (is_array($request))
+        {
+            foreach ($request as $i=>$v)
             {
-                foreach ($request as $i=>$v)
-                {
-                    $where .= "OR `" . $i . "` = " . $v . " ";
-                }
+                $where .= "OR `" . $i . "` = '" . $v . "' ";
             }
-            if ($where) {
-                $where = substr($where, 2);
-                $where = " WHERE (" . $where . ") ";
-            }
+        }
+        if ($where) {
+            $where = substr($where, 2);
+            $where = " WHERE (" . $where . ") ";
         }
 
         if (is_array($return)) {
@@ -1333,7 +1341,7 @@ public static function custom_function($array)
             }
 
 
-            $result[$oper] = $query;
+            $result[$oper] = 'success';
 
 
 
