@@ -296,7 +296,7 @@ AND table_schema='imdbvisualization'";
             'update_data' => array('w'=>40, 'type' => 'textarea'),
             'status' => array('type'=>'select','options'=>'0:0 Waiting;1:1 Sync;2:2 Send request to get data;3:3 Send data;4:4 Get and save data;5:Complete;10:Error'),
             'complete' => array('type'=>'select','options'=>':no;1:Complete'),
-            'site_id' => array('w'=>10, 'type' => 'textarea'),
+            'site_id' => array('w'=>10,'type'=>'select','options'=>'1:1 hezner;2:2 rwt'),
             'last_update' => array('w'=>10, 'type' => 'textarea')
         );
 

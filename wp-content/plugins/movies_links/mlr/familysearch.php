@@ -320,6 +320,8 @@ class Familysearch extends MoviesAbstractDBAn {
         }
         $commit_id = '';
 
+        $array_update_family =[];
+
         foreach ($result as $item) {
             // 2. Calculate vedrict
             $verdict_arr = $this->calculate_fs_verdict($item->id);
@@ -339,10 +341,20 @@ class Familysearch extends MoviesAbstractDBAn {
             // Get id
             $id = $this->getInsertId('id', $this->db['verdict']);
 
-            // Add commit
-            if ($id) {
-                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                $commit_id = Import::create_commit($commit_id, 'update', $this->db['verdict'], array('id' => $id), 'familysearch',10);
+            $array_update_family[$id]=1;
+
+
+        }
+        if (is_array($array_update_family))
+        {
+            foreach ($array_update_family as $id =>$enable)
+            {
+                // Add commit
+                if ($id) {
+                    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                    $commit_id = Import::create_commit($commit_id, 'update', $this->db['verdict'], array('id' => $id), 'familysearch',10);
+                }
+
             }
         }
     }
