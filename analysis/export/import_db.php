@@ -18,6 +18,11 @@ if (!defined('ABSPATH'))
 class Import
 {
 
+    public static function debug()
+    {
+        return 0;
+    }
+
 
     public static function timer_start_data()
     { // if called liketimer_stop_data(1), will echo $timetotal
@@ -34,10 +39,7 @@ class Import
         return $timetotal;
     }
 
-    public static function debug()
-    {
-        return 0;
-    }
+
 
     public static function get_key()
     {
@@ -59,7 +61,7 @@ class Import
         ///get data
         $sql_data =  self::commit_info_request($uid);  ///get remote sql from commit
 
-
+        //if(self::debug()){$result['sql_data']=$sql_data;}
 
         if ($sql_data["error"])
         {
@@ -439,7 +441,7 @@ public static function commit_info_request($uid)
                 //$object_setup[$db]['sql']=$sql;
 
                 $result = Pdo_an::db_results_array($sql);
-                $object_setup = [];
+                //$object_setup = [];
 
 
             }
@@ -447,7 +449,7 @@ public static function commit_info_request($uid)
                 foreach ($result as $num=> $r)
                 {
                     foreach ($r as $i=>$v) {
-                        $object_setup[$db][$num]['columns'][$i] = $v;
+                        $object_setup[$db]['columns'][$num][$i] = $v;
                     }
 
                 }
@@ -674,14 +676,18 @@ public static function custom_function($array)
 
                         foreach ($object_setup_data as $table => $object_setup_all) {
 
-                            foreach ($object_setup_all as $index => $object_setup){
-                            if (!$object_setup['request'])
+                            $count_rows = count($object_setup_all['columns']);////if multy request get default values
+
+
+                            foreach ($object_setup_all['columns'] as $index => $object_setup){
+
+                            if (!$object_setup_all['request'] || $count_rows>1)
                             {
-                                $object_setup['request'] = self::check_request($object_setup['columns'],$table);
+                                $object_setup_all['request'] = self::check_request($object_setup,$table);
                             }
 
 
-                            $array_req = self::set_array_colmuns($object_setup['columns'], $object_setup['request'], $object_setup['return']);
+                            $array_req = self::set_array_colmuns($object_setup, $object_setup_all['request'], $object_setup_all['return']);
 
                           $result[$type][$table][] = self::update_table($table, $array_req['data'], $array_req['where']);
 

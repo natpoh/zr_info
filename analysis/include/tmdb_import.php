@@ -1049,8 +1049,8 @@ class TMDBIMPORT
 
             }
 
-            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-            Import::create_commit('', 'update', 'data_actors_tmdb', array('tmdb_id' => $data["id"]), 'actor_tmdb',6);
+            //!class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+            //Import::create_commit('', 'update', 'data_actors_tmdb', array('tmdb_id' => $data["id"]), 'actor_tmdb',6);
 
         }
     }

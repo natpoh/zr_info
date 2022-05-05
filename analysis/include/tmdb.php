@@ -83,8 +83,8 @@ class TMDB
                /// echo $sql;
                 Pdo_an::db_query($sql);
 
-                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', 'data_actors_tmdb', array('actor_id' => $actor_imdb), 'actor_tmdb',6);
+                //!class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                //Import::create_commit('', 'update', 'data_actors_tmdb', array('actor_id' => $actor_imdb), 'actor_tmdb',6);
 
 
 
