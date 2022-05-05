@@ -22,7 +22,7 @@ class TMDB
 {
     public static $api_key = '1dd8ba78a36b846c34c76f04480b5ff0';
 
-    public static $poxy =  "http://165.227.101.220:8110/?p=ds1bfgFe_23_KJDS-F&url=";
+    public static $poxy =  "165.227.101.220:23128";
 
     public static function add_tmdb_without_id($tmdb_id_input='')
     {
@@ -784,9 +784,9 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
 
 
 
-    $array_update = array('k'=>'um','id'=>$mid);
+    //$array_update = array('k'=>'um','id'=>$mid);
     !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-    $commit_id = Import::create_commit('','update','data_movie_imdb',array('id'=>$mid),'movie_add',5,$array_update);
+    $commit_id = Import::create_commit('','update','data_movie_imdb',array('id'=>$mid),'movie_add',5);
 
 
     $actor_types = array('s' => 1, 'm' => 2, 'e' => 3);
@@ -825,6 +825,9 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
             }
         }
     }
+
+    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+    Import::create_commit($commit_id,'update','meta_movie_actor', array('mid'=>$mid),'movie_meta_actor',5);
 
     if ($director || $writer || $cast_director || $producers) {
 
@@ -873,6 +876,9 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
             }
         }
     }
+
+    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+    Import::create_commit($commit_id,'update','meta_movie_director', array('mid'=>$mid),'movie_meta_actor',5);
 
 return 1;
 }
@@ -979,8 +985,8 @@ return $commit_id;
                 $meta_exist = Pdo_an::db_fetch_row($sql);
 
             }
-            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-            Import::create_commit('','update',$table,array('id'=>$meta_exist->id),'movie_meta_actor',5);
+//            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+//            Import::create_commit('','update',$table,array('id'=>$meta_exist->id),'movie_meta_actor',5);
 
 
             return true;
@@ -1614,9 +1620,15 @@ public static function get_content_imdb($id,$showdata='',$enable_actors=1,$from_
             $url = "https://www.imdb.com/title/tt" . $final_value . '/fullcredits';
             //echo $url;
 
-            $url =static::$poxy.$url;
+            if (strstr($_SERVER['HTTP_HOST'],'info.antiwoketomatoes.com'))
+            {
+                $result = GETCURL::getCurlCookie($url,self::$poxy);
+            }
+            else
+            {
+                $result = GETCURL::getCurlCookie($url);
+            }
 
-            $result = GETCURL::getCurlCookie($url);
 
             if (function_exists('gzencode')) {
                 $gzdata = gzencode($result, 9);
@@ -1638,9 +1650,15 @@ public static function get_content_imdb($id,$showdata='',$enable_actors=1,$from_
     {
         $url = "https://www.imdb.com/title/tt" . $final_value . '/';
 
-        $url =static::$poxy.$url;
+        if (strstr($_SERVER['HTTP_HOST'],'info.antiwoketomatoes.com'))
+        {
+            $result1 = GETCURL::getCurlCookie($url,self::$poxy);
+        }
+        else
+        {
+            $result1 = GETCURL::getCurlCookie($url);
+        }
 
-        $result1 = GETCURL::getCurlCookie($url);
 
         if ($result1)
         {

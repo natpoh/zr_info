@@ -12,11 +12,18 @@ class GETCURL
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
 
-        if ($proxy) {
+        if ($proxy==1) {
+
             $proxy = '127.0.0.1:8118';
 
             curl_setopt($ch, CURLOPT_PROXY, $proxy);
         }
+        else if ($proxy) {
+
+        curl_setopt($ch, CURLOPT_PROXY, $proxy);
+        }
+
+
         if ($return_header)
         {
             curl_setopt($ch, CURLOPT_HEADER, 1);
