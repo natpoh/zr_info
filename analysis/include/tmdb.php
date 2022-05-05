@@ -22,7 +22,7 @@ class TMDB
 {
     public static $api_key = '1dd8ba78a36b846c34c76f04480b5ff0';
 
-    public static $poxy =  "165.227.101.220:23128";
+
 
     public static function add_tmdb_without_id($tmdb_id_input='')
     {
@@ -1620,14 +1620,10 @@ public static function get_content_imdb($id,$showdata='',$enable_actors=1,$from_
             $url = "https://www.imdb.com/title/tt" . $final_value . '/fullcredits';
             //echo $url;
 
-            if (strstr($_SERVER['HTTP_HOST'],'info.antiwoketomatoes.com'))
-            {
-                $result = GETCURL::getCurlCookie($url,self::$poxy);
-            }
-            else
-            {
-                $result = GETCURL::getCurlCookie($url);
-            }
+
+                global $RWT_PROXY;
+                if ($RWT_PROXY)
+                $result = GETCURL::getCurlCookie($url,$RWT_PROXY);
 
 
             if (function_exists('gzencode')) {
@@ -1650,14 +1646,9 @@ public static function get_content_imdb($id,$showdata='',$enable_actors=1,$from_
     {
         $url = "https://www.imdb.com/title/tt" . $final_value . '/';
 
-        if (strstr($_SERVER['HTTP_HOST'],'info.antiwoketomatoes.com'))
-        {
-            $result1 = GETCURL::getCurlCookie($url,self::$poxy);
-        }
-        else
-        {
-            $result1 = GETCURL::getCurlCookie($url);
-        }
+
+            global $RWT_PROXY;
+            $result1 = GETCURL::getCurlCookie($url,$RWT_PROXY);
 
 
         if ($result1)

@@ -106,13 +106,20 @@ class PgRating
             $array_id[$movie_id] = 1;
         }
 
+        $array_pg_commit =[];
+
         foreach ($array_id as $movie_id=>$movie_title) {
 
             if ($debug)echo 'try add imdbid '.$movie_id.' ' .$movie_title.'<br>'.PHP_EOL;
 
             $final_value = sprintf('%07d', $movie_id);
             $url = "https://www.imdb.com/title/tt" . $final_value . '/parentalguide';
-            $result1 = GETCURL::getCurlCookie($url);
+
+
+                global $RWT_PROXY;
+                $result1 = GETCURL::getCurlCookie($url,$RWT_PROXY);
+
+
             $array_result = self::get_imdb_parse_pg($result1, []);
             /////add to db
             $mpaa = $array_result['mpaa'];
@@ -142,27 +149,50 @@ class PgRating
             $id = self::check_enable_pg($movie_id);
             if ($id) {
                 ///////update
-                $array_insert = array($contentrating, $mpaa, time(), $cert_contries, $imdb_data, $imdb_comment);
+                $array_insert = array($contentrating, $mpaa, time(), $cert_contries, $imdb_data, $imdb_comment,time());
 
-                ////update data
-                $sql = "UPDATE `data_pg_rating` set 
+                ////check before update
+                ///
+                $sql = "SELECT id FROM data_pg_rating where 
+                            `pg`=? AND
+                            `certification`=? AND
+                            `certification_countries`=? AND
+                            `imdb_rating`=? AND id = {$id}";
+                $rslt = Pdo_an::db_results_array($sql,array($contentrating, $mpaa, $cert_contries, $imdb_data));
+                if ($rslt)
+                {
+                    ///skip
+                }
+                else
+                {
+                    ////update data
+                    $sql = "UPDATE `data_pg_rating` set 
                             `pg`=?,
                             `certification`=?,
                             `imdb_date`=?, 
                             `certification_countries`=?, 
                             `imdb_rating`=?,
-                            `imdb_rating_desc`=?
+                            `imdb_rating_desc`=?,
+                            `last_update`=?
                             where id = {$id}";
-                Pdo_an::db_results_array($sql, $array_insert);
-                if ($debug)echo 'updated imdbid '.$movie_id.'<br>'.PHP_EOL;
+                    Pdo_an::db_results_array($sql, $array_insert);
+                    if ($debug)echo 'updated imdbid '.$movie_id.'<br>'.PHP_EOL;
 
-                $array_result_data[]=$movie_id;
+                    $array_pg_commit[$movie_id]=1;
+                }
 
+                 $array_result_data[]=$movie_id;
 
-                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', 'data_pg_rating', array('id' => $id), 'pg_rating',9);
-            }
+                 }
         }
+        foreach ($array_pg_commit as $mid=>$enable)
+        {
+            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+            Import::create_commit('', 'update', 'data_pg_rating', array('movie_id' => $mid), 'pg_rating',9);
+
+        }
+
+
         return $array_result_data;
     }
 
