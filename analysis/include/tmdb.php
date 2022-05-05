@@ -1620,9 +1620,7 @@ public static function get_content_imdb($id,$showdata='',$enable_actors=1,$from_
             $url = "https://www.imdb.com/title/tt" . $final_value . '/fullcredits';
             //echo $url;
 
-
                 global $RWT_PROXY;
-                if ($RWT_PROXY)
                 $result = GETCURL::getCurlCookie($url,$RWT_PROXY);
 
 
