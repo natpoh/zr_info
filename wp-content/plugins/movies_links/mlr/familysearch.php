@@ -339,9 +339,12 @@ class Familysearch extends MoviesAbstractDBAn {
             $this->db_query($sql);
 
             // Get id
-            $id = $this->getInsertId('id', $this->db['verdict']);
+            $id = Pdo_an::last_id();
 
-            $array_update_family[$id]=1;
+            if ($id)
+            {
+                $array_update_family[$id]=1;
+            }
 
 
         }
