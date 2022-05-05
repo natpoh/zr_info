@@ -801,16 +801,16 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
 
 
 
-        if ($actors_data && !$tmdb_actors) {
-            $commit_id= self::clear_actors_meta($mid,$commit_id);
-        }
 
-        if ($director || $writer || $cast_director || $producers) {
-            self::clear_directors_meta($mid, $commit_id);
-        }
 
 //var_dump($actors_data);
         if (!$tmdb_actors) {
+
+            ////get actors meta current
+          $array_actors =  self::get_current_meta('meta_movie_actor',$mid);
+
+         // var_dump($array_actors);
+
 
         foreach ($actors_data as $type => $data) {
             foreach ($data as $id => $name) {
@@ -822,15 +822,20 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
                 ////check for tmdb actors
                 self::add_movie_actor($mid, $id, $actor_types[$type], 'meta_movie_actor', $pos);
 
+                if ($array_actors[$id])
+                {
+                    unset($array_actors[$id]);
+                }
             }
         }
-    }
 
-    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-    Import::create_commit($commit_id,'update','meta_movie_actor', array('mid'=>$mid),'movie_meta_actor',5);
+        self::remove_actors($array_actors,'meta_movie_actor');
+
+    }
 
     if ($director || $writer || $cast_director || $producers) {
 
+        $array_directors =  self::get_current_meta('meta_movie_director',$mid);
         if ($director) {
             if (strstr($director, ',')) {
                 $director_array = explode(',', $director);
@@ -841,6 +846,12 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
                 self::add_todb_actor($id);
 
                 self::add_movie_actor($mid, $id, $director_types['director'], 'meta_movie_director');
+
+                if ($array_directors[$id])
+                {
+                    unset($array_directors[$id]);
+                }
+
             }
         }
         if ($writer) {
@@ -852,6 +863,11 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
             foreach ($writer_array as $i => $id) {
                 self::add_todb_actor($id);
                 self::add_movie_actor($mid, $id, $director_types['writer'], 'meta_movie_director');
+                if ($array_directors[$id])
+                {
+                    unset($array_directors[$id]);
+                }
+
             }
         }
         if ($cast_director) {
@@ -864,6 +880,11 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
 
                 self::add_todb_actor($id);
                 self::add_movie_actor($mid, $id, $director_types['cast_director'], 'meta_movie_director');
+                if ($array_directors[$id])
+                {
+                    unset($array_directors[$id]);
+                }
+
             }
         }
         if ($producers) {
@@ -873,15 +894,59 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
             foreach ($producers_array as $id => $name) {
                 self::add_todb_actor($id);
                 self::add_movie_actor($mid, $id, $director_types['producer'], 'meta_movie_director');
+
+                if ($array_directors[$id])
+                {
+                    unset($array_directors[$id]);
+                }
             }
         }
+
+
+        self::remove_actors($array_directors,'meta_movie_director');
     }
 
-    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-    Import::create_commit($commit_id,'update','meta_movie_director', array('mid'=>$mid),'movie_meta_actor',5);
+//    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+//    Import::create_commit($commit_id,'update','meta_movie_director', array('mid'=>$mid),'movie_meta_actor',5);
+
+
 
 return 1;
 }
+
+
+    public static function  remove_actors($array_actors,$table)
+    {
+        foreach ($array_actors as $id =>$data)
+        {
+
+            if ($data["id"])
+            {
+                $sql ="DELETE FROM `{$table}` WHERE `id` = ".$data["id"];
+                Pdo_an::db_query($sql);
+
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                Import::create_commit('','delete',$table,array('id'=>$data["id"]),'movie_meta_actor',5);
+            }
+
+        }
+    }
+
+public static function get_current_meta($table,$id,$aid='aid')
+{
+    $array_result = [];
+    $sql = "SELECT * FROM `{$table}` WHERE mid =".$id;
+    $rows = Pdo_an::db_results_array($sql);
+    foreach ($rows as $r)
+    {
+
+        $array_result[$r[$aid]]=$r;
+    }
+
+    return $array_result;
+
+}
+
 
 public static function add_todb_actor($id,$name='')
 {
@@ -904,23 +969,10 @@ public static function add_todb_actor($id,$name='')
 }
 
 
-public static function clear_actors_meta($id,$commit_id)
-{
-    $sql="DELETE FROM `meta_movie_actor` WHERE mid = {$id}";
-    Pdo_an::db_query($sql);
-    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-    $commit_id =Import::create_commit($commit_id, 'delete', 'meta_movie_actor', array('mid' => $id),'movie_meta_actor',5);
-return $commit_id;
-}
-    public static function clear_directors_meta($id,$commit_id)
-    {
-        $sql="DELETE FROM `meta_movie_director` WHERE mid = {$id}";
-        Pdo_an::db_query($sql);
-        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-        Import::create_commit($commit_id, 'delete', 'meta_movie_director', array('mid' => $id),'movie_meta_actor',5);
-    }
+
 
     public static function add_movie_actor($mid = 0, $id = 0, $type = 0,$table='meta_movie_actor',$pos=0) {
+
         // Validate values
         if ($mid > 0 && $id > 0) {
             //Get meta
@@ -933,7 +985,6 @@ return $commit_id;
             }
             else
             {
-
                 $sql = sprintf("SELECT * FROM {$table} WHERE mid=%d AND aid=%d AND type=%d", (int) $mid, (int) $id , (int) $type);
             }
 
@@ -971,23 +1022,12 @@ return $commit_id;
 
                ///echo $sql.PHP_EOL;
                 Pdo_an::db_query($sql);
+                $aid = Pdo_an::last_id();
 
-                if ($table=='meta_movie_actor')
-                {
-                    $sql = sprintf("SELECT * FROM {$table} WHERE mid=%d AND aid=%d", (int) $mid, (int) $id);
-                }
-                else
-                {
-
-                    $sql = sprintf("SELECT * FROM {$table} WHERE mid=%d AND aid=%d AND type=%d", (int) $mid, (int) $id , (int) $type);
-                }
-
-                $meta_exist = Pdo_an::db_fetch_row($sql);
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                Import::create_commit('','update',$table,array('id'=>$aid),'movie_meta_actor',5);
 
             }
-//            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-//            Import::create_commit('','update',$table,array('id'=>$meta_exist->id),'movie_meta_actor',5);
-
 
             return true;
         }
