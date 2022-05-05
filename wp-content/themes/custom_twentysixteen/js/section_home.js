@@ -1,0 +1,3117 @@
+var disqus_config = function () {
+};
+var lastload = '';
+var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
+
+function attachScroller(distance, scroller, hasScrolled, scrollLeft) {
+    if (jQuery(scroller).hasClass('should_fade')) {
+        if ((scrollLeft < distance)) {
+            jQuery(scroller).removeClass('is_hidden').addClass('is_fading');
+        }
+
+        if ((scrollLeft > distance) && (jQuery(scroller).hasClass('is_fading'))) {
+            jQuery(scroller).removeClass('is_fading').addClass('is_hidden');
+        }
+    }
+}
+
+function discuss_config(data_object) {
+    var page_url = data_object['page_url'];
+    var page_identifier = data_object['page_identifier'];
+    var title = data_object['title'];
+
+    disqus_config = function () {
+        this.page.url = page_url;
+        this.page.identifier = page_identifier;
+        this.page.title = title;
+    };
+
+    /// popup-container
+
+    /// console.log(typeof DISQUS);
+
+    if (typeof DISQUS == 'object') {
+        DISQUS.reset({
+            reload: true,
+            config: function () {
+                this.page.url = page_url;
+                this.page.identifier = page_identifier;
+                this.page.title = title;
+            }
+        });
+        //  console.log('next');
+    } else {
+        //   console.log('first');
+        (function () { // DON'T EDIT BELOW THIS LINE
+            var d = document, s = d.createElement('script');
+            s.src = 'https://hollywoodstfu.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+
+    }
+    //console.log(data_object['data_comments']);
+    // if (data_object['data_comments'])
+    // {
+    //     if (!jQuery('div[id="disqus_recommendations"]').html())
+    //     {
+    //         // console.log('https://'+data_object['data_comments']+'.disqus.com/recommendations.js');
+    //
+    //         jQuery('div[data_comments="' + data_object['data_comments'] + '"]').after('<div id="disqus_recommendations"></div>');
+    //         (function () { // REQUIRED CONFIGURATION VARIABLE: EDIT THE SHORTNAME BELOW
+    //             var d = document, s = d.createElement('script'); // IMPORTANT: Replace EXAMPLE with your forum shortname!
+    //             s.src = 'https://' + data_object['data_comments'] + '.disqus.com/recommendations.js';
+    //             s.setAttribute('data-timestamp', +new Date());
+    //             (d.head || d.body).appendChild(s);
+    //         })();
+    //     }
+    //
+    // }
+
+}
+
+function initializeScroller(mobile, scroller) {
+
+    var hasScrolled = false;
+    var scrollLeft = 0;
+    var itemWidth = 0;
+    var parentWidth = jQuery(scroller).parent().outerWidth();
+    var childScroller = jQuery(scroller).find('.scroller');
+
+    childScroller.children().each(function () {
+        itemWidth += jQuery(this).outerWidth();
+    });
+
+    var distance;
+    if (mobile) {
+        distance = 30;
+    } else {
+        distance = 50;
+    }
+
+    if (itemWidth < (parentWidth + distance)) {
+        jQuery(scroller).removeClass('should_fade');
+    }
+
+    var targetScroll;
+    childScroller.scroll(function (e) {
+        hasScrolled = true;
+        if (targetScroll == null) {
+            targetScroll = jQuery(e.target);
+        }
+        scrollLeft = targetScroll.scrollLeft();
+    });
+
+    setInterval(function () {
+        if (hasScrolled) {
+            attachScroller(distance, scroller, hasScrolled, scrollLeft);
+            hasScrolled = false;
+        }
+    }, 250);
+}
+
+
+function add_rating_block(type, data, desc, usescroll, new_api = false)
+{
+    if (new_api) {
+        $api = `<div class="note nte ${type}"><div class="btn">${data}</div>
+                 <div class="nte_show"><div class="nte_in"><div class="nte_cnt"><div class="note_show_content_${usescroll}" >${desc}</div></div></div></div>
+                 </div>`;
+    } else {
+        $api = `<div class="note ${type}">${data}<div class="note_togle"></div>
+            <div class="note_show" style="display: none;"><div class="note_show_content_${usescroll}" >${desc}</div></div>
+            </div>`;
+    }
+
+    return $api;
+
+}
+function popup_cusomize(type, a, b)
+{
+
+    if (type == 'row_main' || type == 'row_inner')
+    {
+        return '<span class="pp_row ' + type + '"><span class="pp_rl">' + a + '</span><span class="pp_rr">' + b + '</span></span>';
+    }
+
+
+    return '<p class="' + type + '">' + a + '</p>';
+
+
+}
+
+function family_rating(family_data)
+{
+
+    var family_data_result = '';
+
+    if (family_data) {
+        jQuery.each(family_data, function (a, b) {
+            if (a && b) {
+                /// console.log(b,typeof b );
+                if (a == "mpaa") {
+                    family_data_result += popup_cusomize('row_main', a.toUpperCase(), b);
+                } else if (a == "mpaa_rus") {
+                    a = "mpaa rus";
+                    family_data_result += popup_cusomize('row_main', a.toUpperCase(), b);
+                } else if (a == "imdb" || a == "cms_rating" || a == "dove_rating") {
+                    if (a == "imdb") {
+                        a = 'IMDB';
+                    }
+                    if (a == "cms_rating") {
+                        a = 'Commonsensemedia';
+                        b = JSON.parse(b);
+                    } else if (a == "dove_rating") {
+                        a = 'Dove';
+                        b = JSON.parse(b);
+                    }
+
+
+                    var d_content = '';
+                    var imdb_rating_colors = {"Mild": 'yelow', "Moderate": 'orange', "Severe": 'red'};
+                    var cms_rating_colors = {"1": 'green', "2": 'yelow', "3": 'orange', "4": 'red', "5": 'red'};
+                    var cms_rating_plus = {
+                        "educational": '1',
+                        "message": '1',
+                        "role_model": '1',
+                        "Faith": '1',
+                        "Integrity": '1'
+                    };
+
+                    jQuery.each(b, function (c, d) {
+                        if (a == 'IMDB' || a == 'IMDb') {
+                            a = 'IMDb';
+
+                            if (d != 'None') {
+
+
+                                c = c[0].toUpperCase() + c.slice(1);
+                                var data_class = imdb_rating_colors[d];
+                                d = '<span  class="color_rating ' + data_class + '">' + d + '</span>';
+                                d_content += popup_cusomize('row_inner', c.toUpperCase(), d);
+
+                            } else
+                            {
+
+                            }
+                        } else if (Number(d) > 0) {
+                            var data_class = cms_rating_colors[d];
+                            if (cms_rating_plus[c]) {
+                                data_class = 'green';
+                            }
+
+                            if (c == 'role_model') {
+                                c = 'role model';
+                            }
+
+
+                            c = c[0].toUpperCase() + c.slice(1);
+
+                            d = '<span  class="color_rating ' + data_class + '">' + d + '/5</span><br>';
+                            d_content += popup_cusomize('row_inner', c, d);
+                        }
+                    });
+                    ;
+
+                    if (d_content) {
+                        family_data_result += popup_cusomize('row_head', a, '') + d_content;
+                    }
+
+                }
+
+            }
+
+        });
+    }
+
+    return family_data_result;
+}
+
+function create_total_rating(obj, only_tomatoes)
+{
+    let content_rating = '';
+
+    let rt_class = '';
+
+
+    if (!only_tomatoes) {
+        if (obj.rwt_audience > 0)
+            content_rating += '<div><span>Audience Rating:</span>' + create_rating_star(obj.rwt_audience, '') + '</div>';
+        if (obj.rwt_staff > 0)
+            content_rating += '<div><span>Staff Rating:</span>' + create_rating_star(obj.rwt_staff, '') + '</div>';
+        if (obj.imdb)
+            content_rating += '<div><span>IMDb:</span>' + create_rating_star(obj.imdb, 'imdb') + '</div>';
+    }
+
+
+    if (Number(obj.rotten_tomatoes) > 0 || Number(obj.rotten_tomatoes_audience) > 0)
+    {
+
+        if (only_tomatoes != 0) {
+            var ttcomment = '';
+            if (only_tomatoes > 10) {
+                ttcomment = "The Rotten Tomatoes audience rated this " + only_tomatoes + "% higher than the critics."
+            } else if (only_tomatoes < -10) {
+                ttcomment = "The Rotten Tomatoes audience rated this " + only_tomatoes + "% lower than the critics."
+            } else if (only_tomatoes > 0) {
+                ttcomment = "The Rotten Tomatoes audience rated this " + only_tomatoes + "% higher than the critics."
+            } else if (only_tomatoes < 0) {
+                ttcomment = "The Rotten Tomatoes audience rated this " + only_tomatoes + "% lower than the critics."
+            }
+            content_rating += popup_cusomize('popup_header', ttcomment);
+
+            content_rating += '<div><div class="rotten_tomatoes_score">';
+        } else
+        {
+            content_rating += '<div><span>Rotten Tomatoes:</span><div class="rotten_tomatoes_score">';
+
+        }
+
+
+        if (Number(obj.rotten_tomatoes) > 0)
+        {
+            if (Number(obj.rotten_tomatoes) >= 60)
+            {
+                rt_class = '_max_tomatoes';
+            }
+
+            content_rating += create_rating_star(obj.rotten_tomatoes, 'rotten_tomatoes' + rt_class);
+
+        }
+
+
+        if (Number(obj.rotten_tomatoes_audience) > 0)
+        {
+            if (Number(obj.rotten_tomatoes_audience) >= 60)
+            {
+                rt_class = '_max_tomatoes';
+            }
+            content_rating += create_rating_star(obj.rotten_tomatoes_audience, 'rotten_tomatoes_audience' + rt_class);
+
+        }
+        content_rating += '</div></div>';
+    }
+
+    if (!only_tomatoes) {
+        if (Number(obj.tmdb) > 0) {
+            content_rating += '<div><span>TMDb Ratig:</span>' + create_rating_star(obj.tmdb, 'tmdb') + '</div>';
+        }
+    }
+
+
+    return content_rating;
+}
+
+
+function create_context_rating(obj, hollywood)
+{
+    let content_rating = '';
+
+    //if (hollywood)
+    //  content_rating += '<div><span>RWT BS Score:</span>' + create_rating_star(hollywood, 'hollywood') + '</div>';
+    if (obj.vote)
+        content_rating += '<div><span>Boycott Suggestion:</span>' + create_rating_star(obj.vote, 'vote') + '</div>';
+    if (obj.patriotism)
+        content_rating += '<div><span>Neo-Marxism:</span>' + create_rating_star(obj.patriotism, 'patriotism') + '</div>';
+    if (obj.misandry)
+        content_rating += '<div><span>Misandry:</span>' + create_rating_star(obj.misandry, 'misandry') + '</div>';
+    if (obj.affirmative)
+        content_rating += '<div><span>Affirmative Action:</span>' + create_rating_star(obj.affirmative, 'affirmative') + '</div>';
+    if (obj.lgbtq)
+        content_rating += '<div><span>LGBTQ rstuvwxyz:</span>' + create_rating_star(obj.lgbtq, 'lgbtq') + '</div>';
+    if (obj.god)
+        content_rating += '<div><span>Anti-God Themes:</span>' + create_rating_star(obj.god, 'god') + '</div>';
+
+    return content_rating;
+}
+
+
+function create_gender_desc(value)
+{
+
+    let fcontent = '<div class="gray_comment">We love women at RWT!<br>' +
+            'We just grow tired of feminist quotas. The \"<a href="https://en.wikipedia.org/wiki/F-rating" target="_blank"><u>F rated</u></a>\" label is a good proxy for that, and the <a href="https://en.wikipedia.org/wiki/Bechdel_test" target="_blank"><u>Bechdel Test</u></a> sometimes can be. But both are scarcely applied. Thus, a scan of the cast\'s gender is more ubiquitous.</div>';
+    let hcontent = popup_cusomize('popup_header', value + '% of the Stars & Main Cast are Female.');
+
+    return hcontent + fcontent;
+}
+function create_diversity(diversity_data, value)
+{
+
+    diversity_data_content = popup_cusomize('popup_header', `${value}% of the Stars & Main Cast are "diverse."`);
+
+    if (diversity_data) {
+
+        const ordered = [];
+        Object.keys(diversity_data).forEach(function (key) {
+            ordered.push({'r': key, 'c': diversity_data[key]});
+        });
+        ordered.sort((a, b) => a.c < b.c ? 1 : -1);
+
+
+        jQuery.each(ordered, function (a, b) {
+
+            diversity_data_content += popup_cusomize('row_inner', b.r, b.c + '%');
+
+        });
+        diversity_data_content += '<p class="gray_comment">We love all demographics at RWT!<br>We just grow tired of forced diversity. Like Blackwashing superheroes and writing Europeans out of their own history. Unfortunately, we can\'t automatically scan for "forced diversity," only analyze the entire cast. On the bright side, you can use these percentages to help support diverse media as well!</p>';
+
+    }
+
+    return diversity_data_content;
+}
+
+function create_rating_content(object, m_id)
+{
+    let content = '';
+
+
+
+    if (object['type'])
+    {
+        var movie_type = object['type'];
+    }
+    // console.log(movie_type);
+
+    if (object['female'] || object['male'])
+    {
+        block_class = 'gender';
+        let value = Number(object['female']);
+        value = value.toFixed(0);
+
+        hcontent = create_gender_desc(value);
+        content += add_rating_block(block_class, value + '%', hcontent, 2, true);
+
+    }
+
+
+
+
+    if (object['family'])
+    {
+        block_class = 'family_friendly';
+        let value = '';
+
+        ///LGBT content included  console.log(object);
+
+        let lgbt_class = '';
+        let woke_class = '';
+        let lgbt_warning_text = '';
+        let woke_warning_text = '';
+
+
+        if (object['family']) {
+
+            value = Number(object['family']);
+
+            value = value.toFixed(2);
+
+
+            let rating_color = 'green';
+            if (value < 3) {
+                rating_color = 'orange';
+            }
+            if (value < 2) {
+                rating_color = 'red';
+            }
+            let family_data_result = '';
+            if (object['family_data']) {
+
+                var family_data = object['family_data'];
+
+                family_data = JSON.parse(family_data);
+                family_data_result = family_rating(family_data);
+            }
+            lgbt_warning_text = '';
+
+            if (object['lgbt_warning'] == 1) {
+                let ltext = '';
+                if (object['lgbt_text'])
+                {
+                    ltext = '<span class="bg_rainbow">' + object['lgbt_text'] + '</span>';
+                }
+
+                lgbt_class = ' lgbt ';
+
+                lgbt_warning_text = popup_cusomize('row_text_head', 'LGBT content included') + popup_cusomize('row_text', ltext);
+            }
+            woke_warning_text = '';
+
+            if (object['woke'] == 1) {
+                let woketext = '';
+                if (object['woke_text'])
+                {
+                    woketext = '<span class="bg_woke">' + object['woke_text'] + '</span>';
+                }
+                woke_class = ' woke ';
+                woke_warning_text = popup_cusomize('row_text_head', 'Possibly woke elements') + popup_cusomize('row_text', woketext);
+            }
+
+
+            /// console.log(movie_type);
+
+            let array_title = {'movie': 'film', 'tvseries': 'show', 'videogame': 'game'};
+            let name = 'film';
+            if (array_title[movie_type])
+            {
+                name = array_title[movie_type];
+            }
+
+
+            let scorecontent = popup_cusomize('popup_header', `This ${name} gets a ${value}/5 family friendly score `);
+
+            if (value != 0) {
+
+                let rating_link = popup_cusomize('row_link', '<a href="#" class="read_more_rating">CONTENT BREAKDOWN</a>');
+                rating_link += popup_cusomize('row_link', '<a href="#" class="how_calculate_rating">Methodology</a>')
+
+                content += add_rating_block(block_class + ' ' + lgbt_class + woke_class + rating_color, value, scorecontent + lgbt_warning_text + woke_warning_text + family_data_result + rating_link, 1, true);
+            }
+        }
+    }
+
+    if (object['diversity'] && object['diversity_data'])
+    {
+        block_class = 'diversity';
+        let value = Number(object['diversity']);
+        value = value.toFixed(0);
+
+        if (value > 0) {
+            var diversity_data = object['diversity_data'];
+
+            let  diversity_data_content = create_diversity(diversity_data, value);
+
+
+            content += add_rating_block(block_class, value + '%', diversity_data_content, 3, true);
+
+        }
+
+    }
+
+    if (object['total_rating'])
+    {
+        var total_gap = object.total_rating.rotten_tomatoes_gap;
+        total_gap = Number(total_gap);
+
+        if (total_gap > 0 || total_gap < 0) {
+
+
+            let rating_color = '';
+
+            if ((total_gap) > 10) {
+                rating_color = 'green_rt';
+            }
+            if ((total_gap) < -10) {
+                rating_color = 'red_rt';
+            }
+
+
+            let total_tomatoes_content = create_total_rating(object.total_rating, total_gap);
+
+            content += add_rating_block('rt_gap ' + rating_color, total_gap + '%', total_tomatoes_content, 4, true);
+        }
+        if (object.total_rating.total_rating > 0) {
+            let total_rating_star = create_rating_star(object.total_rating.total_rating, '');
+
+
+            let rating_link_t = popup_cusomize('row_link', '<a href="#" class="how_calculate_rwt_rating">Methodology</a>');
+
+            var content_rating_adata = create_total_rating(object.total_rating, '') + rating_link_t;
+
+            var rdata = '<div class="rwt_stars" title="RWT Rating">' + total_rating_star + '</div>';
+            content += add_rating_block('rwt_stars', rdata, content_rating_adata, 'rwt_rt', true);
+
+        }
+    }
+
+    content += '<div id="' + m_id + '"  class="note edit"><div class="note_togle">' +
+            '<div  class="edit_area  note_show">' +
+            '<div class="edit_comment"><div class="desc">Add Comment</div></div>' +
+            '<div   class="edit_review"><div class="desc">Add Review</div></div>' +
+            '<div class="edit_family_rating"><span class="f_name"></span><div class="desc">Edit Family Friendly Rating</div></div>' +
+            '</div></div>';
+
+
+
+    if (content)
+    {
+        content = `<div id="${m_id}"  class="rating_block">${content}</div>`;
+    }
+
+    return content;
+}
+
+function set_video_scroll(data, block_id) {
+//console.log(block_id);
+    if (data) {
+        data = JSON.parse(data);
+//console.log(data['count'] ,block_id);
+
+        if (data['count'] > 0 && data['tmpl']) {
+            jQuery('div[id="' + block_id + '"]').parents('section').addClass('loaded');
+            var content = '';
+            var tmpl = data['tmpl'];
+            var tmpl_type = data['type'];
+            if (tmpl_type == 'actors_data')
+            {
+
+                if (data['result'])
+                {
+                    jQuery.each(data['result'], function (a, b) {
+
+                        if (b)
+                        {
+                            if (b['content_data'])
+                            {
+                                content += b['content_data'];
+                            }
+
+                        }
+
+                    });
+                    let ths = jQuery('div[id="' + block_id + '"]');
+
+                    ths.html('<div class="column_content flex scroller">' + content + '</div>');
+                    // let prnt =ths.parents('div.column');
+                    // let head = prnt.find('div.column_header');
+                    // let title = head.html();
+                    // head.html('<div class="i_head">'+title+data['html']+'</div>')
+                }
+
+
+
+
+
+            } else {
+                for (var i = 1; i <= Number(data['count']); i++) {
+                    content += tmpl.replace('{id}', i);
+                }
+
+
+
+                ///console.log(block_id);
+
+                jQuery('div[id="' + block_id + '"]').html('<div class="column_content flex scroller">' + content + '</div>');
+                if (data['rating'] && typeof (data['rating']) == 'string')
+                {
+                    data['rating'] = JSON.parse(data['rating']);
+                }
+
+                if (data['result']) {
+                    var i = 1;
+                    jQuery.each(data['result'], function (a, b) {
+
+
+
+                        var block = jQuery('div[id="' + block_id + '"] .column_content .loading[id="' + i + '"]');
+
+
+                        if (b.genre == 'load_more') {
+
+                            block.html('<a class="load_more" href="' + b.link + '/">' + b.title + '</a>');
+                            block.removeClass('loading');
+                        } else {
+
+                            let array_title = {'movies': 'Movie', 'tvseries': 'TV Show', 'videogame': 'Game'};
+                            let mtitle = 'Movie';
+                            if (array_title[b.type])
+                            {
+                                mtitle = array_title[b.type];
+                            }
+
+
+
+                            var image = '<a class="image" href="' + b.link + '/" title="' + b.title + '">' +
+                                    '<span class="card_movie_type ctype_' + b.type + '" title="' + mtitle + '"></span>\n' +
+                                    '<img loading="lazy" class="poster"  srcset="' + b.poster_link_small + ' 1x, ' + b.poster_link_big + ' 2x" alt="">\n' +
+                                    '</a>';
+
+                            block.find('.wrapper').html(image);
+                            block.find('.content h2').html('<a href="' + b.link + '/" title="' + b.title + '">' + b.title + '</a>');
+                            block.find('.content p').html(b.genre);
+
+
+                            block.removeClass('loading');
+
+                            if (b.content_pro) {
+                                block.find('.mbp_f').html(b.content_pro);
+                                let ecount = 0;
+                                let user_class = '';
+
+                                let pid = b.pid;
+
+                                if (data['reaction']) {
+                                    if (data['reaction']['total']) {
+                                        if (data['reaction']['total'][pid]) {
+                                            ecount = data['reaction']['total'][pid];
+                                        }
+                                    }
+                                    if (data['reaction']['user']) {
+                                        if (data['reaction']['user'][pid]) {
+                                            user_class = ' emotions_custom ' + data['reaction']['user'][pid];
+                                        }
+                                    }
+
+                                }
+
+                                let ccount = b.c_count;
+                                if (!ccount)
+                                    ccount = ' ';
+                                let ptitle = b.pid_title;
+                                if (!ptitle)
+                                    ptitle = '';
+                                if (!ecount)
+                                    ecount = '';
+
+                                block.find('.review_comment_data').html('<a  href="#" data_title="' + ptitle + '" class="disquss_coment"><span  class="disquss_coment_count">' + ccount + '</span></a><a href="#"   class="emotions  ' + user_class + '  "><span class="emotions_count">' + ecount + '</span></a>').attr('id', b.pid);
+
+
+                            }
+
+
+                            if (data['rating'])
+                            {
+                                if (b.content_pro) {
+                                    if (b['m_id'])
+                                    {
+                                        a = b['m_id'];
+                                    }
+                                }
+
+                                if (data['rating'][a]) {
+
+                                    let block_img = block.find('div.image');
+
+                                    if (block_img) {
+                                        if (block_img.html()) {
+                                            let rating_content = create_rating_content(data['rating'][a], a);
+                                            if (rating_content) {
+                                                block_img.append(rating_content);
+                                            }
+                                        }
+                                    }
+                                }
+
+                            }
+
+                        }
+
+                        i++;
+                    });
+
+                    init_spoilers();
+
+                }
+
+            }
+
+
+        } else {
+
+            let prnt = jQuery('div[id="' + block_id + '"]').parents('section.inner_content');
+            prnt.remove();
+            var tmpl_type = data['type'];
+
+            if (tmpl_type == 'actors_data')
+            {
+                //  jQuery('.actor_details>div').html('  Sorry. No actor data available yet. Stay tuned.').addClass('dmg_content');
+
+            }
+
+        }
+    } else
+    {
+        let prnt = jQuery('div[id="' + block_id + '"]').parents('section.inner_content');
+        prnt.remove();
+    }
+
+}
+
+function  add_rating_row(title, content, id, content_text)
+{
+    let id_ins = '';
+    let open_rating = '';
+    let open_rating_container = '';
+
+    if (id)
+    {
+        id_ins = `id="${id}"`;
+        open_rating = `<a id="op"  class="open_rating open_ul" href="#"></a>`;
+
+        if (content_text)
+        {
+            open_rating_container = `<div style="display: none" class="open_rating_container note_show"><div class="note_show_content_1">${content_text}</div></div>`;
+        }
+    }
+
+
+    let row = `<div class="rating_row" ${id_ins}><span class="rating_row_title">${title}</span><span class="rating_row_content">${content}${open_rating}</span>${open_rating_container}</div>`;
+    return row;
+}
+function create_rating_star(rating, type)
+{
+    if (type == 'imdb') {
+        rating = Number(rating);
+        return '<span class="imdb_rating"><strong>' + rating + '</strong>/10</span>';
+
+    } else if (type.indexOf('rotten_tomatoes') != -1) {
+        rating = Number(rating);
+        if (rating > 0)
+        {
+            return '<span class="' + type + '_rating"><strong>' + rating + '%</strong></span>';
+        } else
+            return '';
+
+    } else if (type == 'vote')
+    {
+        let array = {1: ['pay_to_watch', 'Pay To Watch'], 2: ['skip_it', 'Skip It'], 3: ['watch_if_free', 'Watch If Free']};
+
+        return  '<span title="' + array[rating][1] + '" style="background-size: 30%" class="rating_result ' + array[rating][0] + '"><span class="verdict_text">' + array[rating][1] + '</span></span>';
+    } else
+    {
+        rating = Number(rating);
+        let bg = 20;
+        let str_widt = rating * 20;
+        if (rating)
+        {
+            bg = 100 / rating;
+        }
+
+        str_widt = str_widt.toFixed(0);
+        return '<span class="rating_result btn ' + type + '"><span style="width: ' + str_widt + '%;background-size: ' + bg + '%;" class="rating_result_total btn" title="' + rating + '/5"></span></span>';
+
+    }
+
+
+
+}
+
+function add_movie_rating(block_id, data)
+{
+
+    var content = '';
+
+    if (data) {
+        let obj = JSON.parse(data);
+
+        ///  console.log(obj);
+        ///  var content =  create_rating_content(obj);
+
+        if (obj.gender) {
+            if (obj.gender.diversity) {
+                title = 'Diversity Ratio:';
+
+                let diversity = Number(obj.gender.diversity);
+                diversity = diversity.toFixed(0);
+
+
+
+                let text = diversity + '% Diverse';
+
+                var diversity_data = obj.gender.diversity_data;
+                let diversity_data_content = '';
+                if (diversity_data) {
+                    diversity_data = JSON.parse(diversity_data);
+
+                    diversity_data_content = create_diversity(diversity_data, diversity)
+
+                }
+
+                content += add_rating_row(title, text, 'gender', diversity_data_content)
+            }
+
+            if (obj.gender.female || obj.gender.male) {
+                let title = 'Gender Ratio:';
+
+                if (!obj.gender.female)
+                    obj.gender.female = 0;
+
+                let value = Number(obj.gender.female);
+                value = value.toFixed(0);
+
+                let content_text = create_gender_desc(value)
+
+                content += add_rating_row(title, value + '% Female', 'female', content_text)
+            }
+
+
+        }
+        if (obj.family) {
+
+
+            if (obj.family.pgrating) {
+                title = 'Family Friendly Score:';
+                let rating = Number(obj.family.pgrating);
+                let rating_color = 'green';
+                if (rating < 3) {
+                    rating_color = 'orange';
+                }
+                if (rating < 2) {
+                    rating_color = 'red';
+                }
+                let family_data_resul = '';
+                let family_data = '';
+
+                if (obj.family.pg_data)
+                {
+                    family_data = obj.family.pg_data;
+                }
+                let rating_text = '';
+                let rating_link = '';
+                let rating_text_result = '';
+                let lgbt_text = '';
+                let woke_warning_text = '';
+
+                if (obj.family.lgbt_warning == 1)
+                {
+                    let ltext = '';
+                    if (obj.family.lgbt_text)
+                    {
+                        ltext = '<span class="bg_rainbow">' + obj.family.lgbt_text + '</span>';
+                    }
+                    lgbt_text = popup_cusomize('row_text_head', 'LGBT content included') + popup_cusomize('row_text', ltext);
+
+                }
+                if (obj.family.woke == 1) {
+                    let woketext = '';
+                    if (obj.family.woke_text)
+                    {
+                        woketext = '<span class="bg_woke">' + obj.family.woke_text + '</span>';
+                    }
+                    woke_warning_text = popup_cusomize('row_text_head', 'Possibly woke elements') + popup_cusomize('row_text', woketext);
+
+                }
+
+                if (rating == 0)
+                {
+
+                    rating_text = 'Coming soon...';
+                    rating_link = '';
+                    rating_text_result = '';
+
+                } else if (rating > 0)
+                {
+                    ///get type
+                    ///!!!
+
+                    rating_link = popup_cusomize('row_link', '<a href="#" class="read_more_rating">CONTENT BREAKDOWN</a>');
+                    rating_link += popup_cusomize('row_link', '<a href="#" class="how_calculate_rating">Methodology</a>');
+
+                    rating_text = '<span class="' + rating_color + '">' + rating + '</span>/5';
+                    rating_text_result = popup_cusomize('popup_header', `This film gets a ${rating}/5 family friendly score`);
+
+
+
+
+                }
+                if (family_data)
+                {
+                    family_data = JSON.parse(family_data);
+                    family_data_result = family_rating(family_data);
+
+                    rating_link += popup_cusomize('row_link', '<a target="_blank" href="https://rightwingtomatoes.com/family-friendly-movie-review-sites/">Family Friendly review sites</a>');
+                    family_data_result += rating_link;
+                }
+
+                rating_text += '<span title="Edit Family Friendly Rating" class="add_pg_rating_button button_edit"></span>';
+
+                content += add_rating_row(title, rating_text, 'family_friendly', `${rating_text_result + lgbt_text + woke_warning_text + family_data_result}`)
+            }
+        }
+        var hollywood = '';
+
+        if (obj.audience) {
+            if (obj.audience.rating) {
+                title = 'Audience Rating:';
+                let audience_star = create_rating_star(obj.audience.rating, '');
+                if (obj.audience.hollywood) {
+
+                    hollywood = obj.audience.hollywood;
+
+
+
+                }
+                var content_audience_adata = create_context_rating(obj.audience, hollywood);
+
+
+
+                if (content_audience_adata)
+                {
+                    var content_audience = add_rating_row(title, audience_star, 'audience', content_audience_adata)
+                } else
+                {
+                    content_audience = add_rating_row(title, audience_star, '', '')
+                }
+
+            }
+        }
+
+        if (obj.total_rating) {
+            if (obj.total_rating.total_rating > 0) {
+                title = 'RWT Rating:';
+                let total_rating_star = create_rating_star(obj.total_rating.total_rating, '');
+
+                var content_rating_adata = create_total_rating((obj.total_rating), '') + '<br><a href="#" class="how_calculate_rwt_rating">Methodology</a>';
+                var content_total_rating = add_rating_row(title, total_rating_star, 'rwt_rating', content_rating_adata);
+
+            }
+        }
+
+        //console.log(obj);
+
+        if (obj.stuff) {
+            if (obj.stuff.hollywood) {
+
+                var hollywood_s = obj.stuff.hollywood;
+
+            }
+
+            if (obj.stuff.rating) {
+                title = 'Staff Rating:';
+
+                let stuff_star = create_rating_star(obj.stuff.rating, '');
+
+
+
+
+                var content_staff_adata = create_context_rating(obj.stuff, hollywood_s);
+
+
+                if (content_staff_adata) {
+                    var content_staff = add_rating_row(title, stuff_star, 'staff', content_staff_adata)
+                } else {
+                    var content_staff = add_rating_row(title, stuff_star, '', '')
+                }
+            }
+
+        }
+
+        if (hollywood > 0 && hollywood_s > 0) {
+            hollywood = (Number(hollywood) + Number(hollywood_s)) / 2;
+            hollywood = hollywood.toFixed(0);
+
+        } else if (hollywood_s > 0) {
+            hollywood = hollywood_s;
+
+        }
+        // console.log(obj.stuff);
+        // console.log(obj.audience);
+        obj_overal = new Object();
+
+        for (var attrname in obj.stuff) {
+
+            if (attrname == 'id' || attrname == 'movie_id' || attrname == 'type')
+            {
+                continue;
+            }
+
+            let a = obj.audience[attrname];
+            let s = obj.stuff[attrname];
+            let n = 1;
+            if (a !== null && s !== null)
+            {
+                n = 2;
+            }
+            ///console.log(a,s,n);
+            if (attrname == 'vote')
+            {
+                let r = s;
+                if (!r) {
+                    r = a
+                }
+                ;
+                obj_overal[attrname] = r;
+            } else if (a || s)
+            {
+                obj_overal[attrname] = (Number(a) + Number(s)) / n;
+            }
+
+        }
+        // console.log(obj_overal);
+        // console.log(hollywood);
+//         if (hollywood) {
+//             title = 'RWT BS Score:';
+//             hollywood = create_rating_star(hollywood, 'hollywood');
+//
+//             content_rating = '';
+//
+//             content_rating = create_context_rating(obj_overal, '');
+//
+//             if (content_rating)
+//             {
+//                 content += add_rating_row(title, hollywood, 'bs', content_rating);
+//             } else
+//             {
+//                 content += add_rating_row(title, hollywood, '', '');
+//             }
+// // obj.stuff.vote: "1"
+//         }
+
+
+
+        if (content_total_rating) {
+            content += content_total_rating;
+        }
+
+        if (content_audience) {
+            content += content_audience;
+        }
+        if (content_staff) {
+            content += content_staff;
+        }
+
+
+        jQuery('div.movie_total_rating[id="' + block_id + '"]').html(content);
+    } else
+    {
+        jQuery('div.movie_total_rating[id="' + block_id + '"]').remove();
+    }
+
+
+}
+function load_actor_representation(movie_id) {
+    var data = new Object();
+    var ethnycity = new Object();
+    var i = 1;
+    jQuery('div[id="Ethnycity_container"] .ethnycity_select').each(function () {
+
+        if (!ethnycity[i])
+            ethnycity[i] = new Object();
+        if (jQuery(this).hasClass('select_disabled')) {
+            ethnycity[i][jQuery(this).attr('id')] = 0;
+        } else {
+            ethnycity[i][jQuery(this).attr('id')] = 1;
+        }
+        i++;
+    });
+    var a_type = new Array();
+    jQuery('.r_row input').each(function () {
+        if (jQuery(this).is(":checked"))
+        {
+            a_type.push(jQuery(this).attr('id'));
+        }
+
+    });
+
+
+    data['ethnycity'] = ethnycity;
+    data['actor_type'] = a_type;
+
+    var url = window.location.protocol + template_path + "actor_representation.php";
+
+    jQuery.ajax({
+        type: "post",
+        url: url,
+        data: {ethnic: JSON.stringify(data),
+            id: movie_id
+        },
+
+        success: function (data) {
+
+            jQuery('.r_content').html(data);
+            jQuery('.main_ethnic_graph').click();
+
+        }});
+
+
+}
+
+function load_ajax_block(block_id) {
+
+    lastload = block_id;
+
+    if (jQuery('div[id="' + block_id + '"]').attr('data-value')) {
+        var request_block = '';
+        var parent_id = jQuery('div[id="' + block_id + '"]').attr('data-value');
+        var request = "?id=" + parent_id;
+
+    } else {
+        request = "";
+    }
+
+    if (request == '?id=none')
+    {
+        return;
+    }
+
+    if (block_id.indexOf('?') > 0)
+    {
+        let pos = block_id.indexOf('?');
+        request_block = block_id.substr(pos + 1);
+        var block_id_sub = block_id.substr(0, pos);
+        //  console.log(pos,request_block,block_id);
+    }
+
+    // Get local data
+    var local_sroll = false;
+    var scroll_data = '';
+    if (block_id == 'video_scroll') {
+        if (typeof video_scroll_data !== 'undefined') {
+            scroll_data = video_scroll_data;
+            local_sroll = true;
+        }
+    } else if (block_id == 'tv_scroll') {
+        if (typeof tv_scroll_data !== 'undefined') {
+            scroll_data = tv_scroll_data;
+            local_sroll = true;
+        }
+    } else if (block_id == 'review_scroll') {
+        if (typeof review_scroll_data !== 'undefined') {
+            scroll_data = review_scroll_data;
+            local_sroll = true;
+        }
+    } else if (block_id == 'stuff_scroll') {
+        if (typeof stuff_scroll_data !== 'undefined') {
+            scroll_data = stuff_scroll_data;
+            local_sroll = true;
+
+        }
+    } else if (block_id == 'audience_scroll') {
+        if (typeof audience_scroll_data !== 'undefined') {
+            scroll_data = audience_scroll_data;
+            local_sroll = true;
+        }
+    }
+    if (local_sroll) {
+        set_video_scroll(scroll_data, block_id);
+        initializeScroller(0, 'div[id="' + block_id + '"]');
+        init_nte();
+        return true;
+    }
+
+
+    // Ajax load
+    var url = window.location.protocol + template_path + block_id + ".php" + request;
+
+    if (request_block)
+    {
+        url = window.location.protocol + template_path + block_id_sub + ".php" + request + '&' + request_block;
+    }
+
+    jQuery.ajax({
+        type: "GET",
+        url: url,
+        success: function (data) {
+
+
+            if (block_id == 'twitter_scroll') {
+                if (data) {
+                    jQuery('div.column_header_main').prepend(data);
+
+                    if (typeof ctf_init != 'undefined')
+                    {
+                        ctf_init();
+                    }
+                }
+            } else if (block_id == 'chan_scroll') {
+                if (data) {
+                    try {
+                        var Object_data = JSON.parse(data);
+                    } catch (err) {
+                        console.log(err);
+                        Object_data = null;
+                    }
+
+                    let link = Object_data['4chanlink'];
+                    if (link)
+                    {
+                        ///console.log(link);
+
+                        let content = '<iframe src=\'' + link + '\'></iframe>';
+                        jQuery('div[id="' + block_id + '"]').html(content);
+                    }
+
+                }
+
+            } else if (block_id == 'movie_rating') {
+                add_movie_rating(block_id, data);
+            } else if (block_id == 'last_donations') {
+                jQuery('div[id="' + block_id + '"]').html(data);
+            } else if (block_id == 'mailpoet_form') {
+                jQuery('div[id="' + block_id + '"]').html(data);
+            } else if (block_id == 'disqus_last_comments') {
+                jQuery('div[id="' + block_id + '"]').html(data);
+            } else if (block_id == 'actor_representation') {
+                jQuery('div[id="' + block_id + '"]').html(data);
+                load_actor_representation(parent_id);
+
+                var srcs = window.location.protocol + '/wp-content/themes/custom_twentysixteen/js/jquery-ui-sortable.min.js';
+
+                jQuery.getScript(srcs).done(function (script, textStatus) {
+                    jQuery('div[id="Ethnycity_container"]').sortable({
+                        placeholder: 'emptySpace',
+                        update: function (event, ui) {
+                            load_actor_representation(parent_id);
+                        }
+
+                    });
+
+                });
+                jQuery('body').on('change', '.r_row_item  input', function () {
+                    load_actor_representation(parent_id);
+                });
+                jQuery('body').on('click', '.r_row  .ethnycity_select', function () {
+                    load_actor_representation(parent_id);
+                });
+            } else if (block_id == 'audience_form') {
+                jQuery('div[id="' + block_id + '"]').html(data);
+                //check load script
+
+                if (typeof wpcr3a == 'object') {
+                    //console.log('second');
+                    jQuery('body').removeClass('jstiny');
+                    tinymce = null;
+                    wpcr3a.init();
+
+                } else {
+                    ///console.log('first');
+                    var head = document.getElementsByTagName('head')[0];
+                    var link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.type = 'text/css';
+                    link.href = window.location.protocol + '//' + window.location.host + '/wp-content/plugins/critic_matic/css/reviews.css';
+                    link.media = 'all';
+                    head.appendChild(link);
+
+
+                    var d = document, s = d.createElement('script');
+                    s.src = window.location.protocol + '//' + window.location.host + '/wp-content/plugins/critic_matic/js/reviews.js';
+                    (d.head || d.body).appendChild(s);
+                    s.onload = function () {
+                        wpcr3a.init();
+
+                    };
+                }
+
+
+            } else if (block_id == 'search_ajax') {
+                if (data) {
+                    try {
+                        var Object_data = JSON.parse(data);
+                    } catch (err) {
+                        console.log(err);
+                        Object_data = null;
+                    }
+
+                    jQuery('div[id="' + block_id + '"]').html(Object_data['content']);
+
+                    if (Object_data['rating'] && typeof (Object_data['rating']) == 'string')
+                    {
+
+                        Object_data['rating'] = JSON.parse(Object_data['rating']);
+
+                        jQuery.each(Object_data['rating'], function (a, b) {
+                            ///console.log(a,b);
+                            let rating_content = create_rating_content(b, a);
+                            if (rating_content) {
+                                jQuery('div.movie_container[id="' + a + '"]').append(rating_content);
+                            }
+                        });
+
+                    }
+
+
+
+
+                }
+            } else {
+                set_video_scroll(data, block_id);
+                initializeScroller(0, 'div[id="' + block_id + '"]');
+            }            
+            init_nte();
+        }
+    });
+}
+
+function get_Top(block) {
+    if (jQuery(block).attr('id')) {
+        return jQuery(block).offset().top;
+    }
+}
+
+function load_next_block(block_id) {
+
+
+    if (!block_id)
+    {
+        var block_id = jQuery('.not_load:visible').attr('id');
+    }
+
+
+    if (lastload != block_id) {
+
+        if (block_id == 'rwt_footer') { ///footer block
+
+            let content = '<div class="support_us" style="height: 60px;"><a href="https://oc.rightwingtomatoes.com/help/" target="_blank" rel="noopener"><img loading="lazy" style="height: 60px" src="https://oc.rightwingtomatoes.com/wp-content/uploads/2018/11/support_us_fair_use-300x89.png" alt="" width="100%" height="60px"></a></div><iframe style="width: 100%;height: calc(100vh - 60px);margin: 0;" src="https://cointr.ee/rightwingtomato"></iframe>';
+            jQuery('div[id="' + block_id + '"]').removeClass('not_load').addClass('loaded').html(content);
+            return;
+        }
+
+        if (block_id == 'disquss_container') {
+
+
+            var open_popup = jQuery('.popup-container input[id="action-popup"]').attr('checked');
+///console.log(open_popup);
+            var block = jQuery('div[id="disquss_container"]');
+            if (open_popup == 'checked') {
+
+                block.removeClass('loaded').addClass('not_load');
+                return;
+            }
+            jQuery('.popup-content').html('');
+
+            var data_object = new Object();
+
+
+            block.html('<div id="disqus_thread"></div>');
+
+            data_object['page_url'] = block.attr('data_link');
+            data_object['page_identifier'] = block.attr('data_idn');
+            data_object['title'] = block.attr('data_title');
+            data_object['data_comments'] = block.attr('data_comments');
+
+
+
+            ///console.log(data_object);
+            discuss_config(data_object);
+            jQuery('div[id="' + block_id + '"]').removeClass('not_load').addClass('loaded');
+            return;
+        }
+        // else if (block_id == 'disqus_last_comments') {
+        //
+        //     var block = jQuery('div[id="disqus_last_comments"]');
+        //
+        //     block.removeClass('not_load').addClass('loaded');
+        //
+        //     block.html('<div id="RecentComments" class="dsq-widget"></div>');
+        //
+        //     var script = document.createElement('script');
+        //     script.src = 'https:///hollywoodstfu.disqus.com/recent_comments_widget.js?num_items=5&hide_mods=0&hide_avatars=0&avatar_size=32&excerpt_length=50';
+        //     document.querySelector('div[id="RecentComments"]').appendChild(script);
+        //     script.onload = function () {
+        //       console.log('ok');
+        //         DISQUSWIDGETS.getCount({reset: true});
+        //     };
+        //
+        //     return;
+        // }
+
+        jQuery('div[id="' + block_id + '"]').removeClass('not_load').addClass('loaded');
+        load_ajax_block(block_id);
+        check_load_block();
+    }
+
+}
+
+////load content
+function check_load_block() {
+    var topcur = jQuery(window).scrollTop() + jQuery(window).height() + 200;
+    var last_bloc = get_Top('.not_load:visible');
+    ///  console.log('last_bloc '+last_bloc+' topcur '+topcur);
+    if (last_bloc) {
+        if (topcur >= last_bloc) {
+            load_next_block('');
+        }
+    }
+}
+
+var run = 1;
+jQuery(window).scroll(function () {
+
+    if (!run) {
+        return false;
+    }
+    run = 0;
+
+    check_load_block();
+
+
+    setTimeout(function () {
+        run = 1;
+    }, 500);
+});
+
+function add_popup() {
+    if (!jQuery('.popup-container').html()) {
+        var popup = '<div class="popup-container">\n' +
+                '\t<input type="checkbox" id="action-popup">\n' +
+                '\t<div class="popup">\n' +
+                '\t\t<label for="action-popup" class="transparent-label"></label>\n' +
+                '\t\t<label for="action-popup" class="popup-close"></label><div class="popup-inner">\n' +
+                '\t\t\t<div class="popup-content">\n' +
+                '\t\t\t</div>\n' +
+                '\t\t</div>\n' +
+                '\t</div>\n' +
+                '</div>';
+        jQuery('body').append(popup);
+    }
+
+
+}
+
+function generate_watch_content(data, title, year, type) {
+
+    let content = '<h2  style="font-size: 25px;text-align: center;color: #686e75;"> Watch Now</h2>';
+    let content_array = {};
+    let array_type = [];
+    let array_priority = {'4k': 1, 'hd': 2, 'sd': 3};
+    let providers_priority = [];
+    var Object_data = new Object();
+
+    if (data) {
+        try {
+            Object_data = JSON.parse(data);
+        } catch (err) {
+            console.log(err);
+            Object_data = null;
+        }
+        if (!Object_data) {
+            // console.log(data);
+            //return;
+        }
+    }
+
+    if (!Object_data['data']) {
+        Object_data['data'] = new Array();
+    }
+    if (!Object_data['providers']) {
+        Object_data['providers'] = new Array();
+    }
+    ///console.log(Object_data);
+
+    if (type == 'Movie')
+    {
+
+        Object_data['data'].push({
+            'monetization_type': "irl",
+            'provider_id': 'showtimes',
+            'presentation_type': '',
+            urls: {'standard_web': 'https://www.showtimes.com/Search?query=' + title}
+        });
+    }
+
+
+    Object_data['data'].push({
+        'monetization_type': '"free"',
+        'provider_id': 'putlocker',
+        'currency': 'USD',
+        'retail_price': '0.00',
+
+        'presentation_type': '',
+        urls: {'standard_web': 'https://putlocker.fan/?s=' + title + ' ' + year}
+    });
+    Object_data['data'].push({
+        'monetization_type': '"free"',
+        'provider_id': 'flixtor',
+        'currency': 'USD',
+        'retail_price': '0.00',
+
+        'presentation_type': '',
+        urls: {'standard_web': 'https://flixtor.uk/?s=' + title + ' ' + year}
+    });
+    Object_data['data'].push({
+        'monetization_type': '"free"',
+        'provider_id': 'soap2day',
+        'currency': 'USD',
+        'retail_price': '0.00',
+
+        'presentation_type': '',
+        urls: {'standard_web': 'https://soap2day.ma/?s=' + title + ' ' + year}
+    });
+    if (type == 'Movie') {
+        Object_data['providers']['showtimes'] = {
+            's': 'fullsize fullsizebig',
+            'n': 'Showtimes',
+            'i': window.location.protocol + "/wp-content/themes/custom_twentysixteen/images/showtimes-logo.png"
+        };
+    }
+
+    Object_data['providers']['putlocker'] = {'s': 'fullsize', 'n': 'Putlocker', 'i': window.location.protocol + "/wp-content/themes/custom_twentysixteen/images/putlocker-logo.png"};
+    Object_data['providers']['flixtor'] = {'s': 'fullsize', 'n': 'Flixtor', 'i': window.location.protocol + "/wp-content/themes/custom_twentysixteen/images/flixtor-logo.png"};
+    Object_data['providers']['soap2day'] = {'s': 'fullsize', 'n': 'Soap2day', 'i': window.location.protocol + "/wp-content/themes/custom_twentysixteen/images/soap2day-logo.png"};
+
+
+    //console.log(Object_data['data']);
+
+    Object.keys(Object_data['data']).forEach((key) => {
+
+        let current_data = Object_data['data'][key];
+        ///console.log(current_data);
+
+        let summ = array_priority[current_data.presentation_type];
+        if (!summ) {
+            summ = 4;
+        }
+        let price = current_data.retail_price;
+        if (!price) {
+            price = 1;
+        }
+        let total = Number(summ) * Number(price);
+
+
+        if (!providers_priority[current_data.monetization_type]) {
+            providers_priority[current_data.monetization_type] = {};
+        }
+        if (!providers_priority[current_data.monetization_type][current_data.provider_id]) {
+            providers_priority[current_data.monetization_type][current_data.provider_id] = {};
+        }
+
+        let current = providers_priority[current_data.monetization_type][current_data.provider_id]['summ'];
+        if ((current && current > total) || !current) {
+            providers_priority[current_data.monetization_type][current_data.provider_id]['summ'] = total;
+            providers_priority[current_data.monetization_type][current_data.provider_id]['id'] = key;
+        }
+
+
+    });
+    ////console.log(providers_priority);
+
+    Object.keys(Object_data['data']).forEach((key) => {
+        //console.log('key:', key)
+        /// console.log('value:', Object_data['data'][key])
+
+
+        let current_data = Object_data['data'][key];
+
+        //console.log(current_data);
+        let priorityclass = '';
+
+        if (providers_priority[current_data.monetization_type][current_data.provider_id]['id'] == key) {
+            /// console.log('ok');
+
+            priorityclass = ' type_priority ';
+        }
+
+
+        let provider = Object_data['providers'][current_data.provider_id];
+        if (typeof provider === 'object' && provider != null) {
+
+            // console.log(provider);
+            let url = current_data.urls.standard_web;
+
+            /// console.log(url);
+            let provider_currency = '';
+            if (current_data.currency == 'USD') {
+                provider_currency = '$';
+            }
+
+            if (current_data.retail_price) {
+                provider_currency = provider_currency + current_data.retail_price;
+            } else {
+                provider_currency = '';
+            }
+
+            array_type[current_data.presentation_type] = 1;
+
+            if (current_data.presentation_type == 'canvas') {
+                current_data.presentation_type = '';
+            }
+            let cls = '';
+            if (provider.s)
+            {
+                cls = '  ' + provider.s;
+            }
+            let result_data = `<a target="_blank" class="provider_container type_${current_data.presentation_type + priorityclass + cls}"  href="${url}" title="${provider.n}">
+<img src="${provider.i}" alt="${provider.n}" /><div class="povider_price">${provider_currency}<span class="provider_type">${current_data.presentation_type}</span></div></a>`;
+
+
+            if (current_data.monetization_type == 'flatrate') {
+                current_data.monetization_type = 'stream'
+            }
+
+            if (current_data.monetization_type == 'ads')
+            {
+                current_data.monetization_type = 'free';
+            }
+            if (!content_array[current_data.monetization_type]) {
+                content_array[current_data.monetization_type] = result_data;
+            } else {
+                content_array[current_data.monetization_type] += result_data;
+            }
+
+            ///console.log(content_array);
+
+
+//             currency: "USD"
+// monetization_type: "rent"
+// presentation_type: "sd"
+// provider_id: 2
+// retail_price: 19.99
+        }
+    });
+
+    content += `<div class="filters_type"><span class="filter_heading"><svg style="width: 10px" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="filter" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="svg-inline--fa fa-filter fa-w-16"><path data-v-0634e7f3="" fill="currentColor" d="M487.976 0H24.028C2.71 0-8.047 25.866 7.058 40.971L192 225.941V432c0 7.831 3.821 15.17 10.237 19.662l80 55.98C298.02 518.69 320 507.493 320 487.98V225.941l184.947-184.97C520.021 25.896 509.338 0 487.976 0z" class=""></path></svg><span class="hidden-xs"> Filters</span></span>`;
+
+    content += `<a href="#" class="show_type active" id="priority">Best Price</a>`;
+
+
+    Object.keys(array_type).forEach((key) => {
+
+        if (key != 'canvas') {
+            content += `<a href="#" class="show_type" id="${key}">${key}</a>`;
+        }
+
+    });
+    content += `<span class="close_filters"></span></div>`;
+    Object.keys(content_array).forEach((key) => {
+        content += `<div class="providers_colum"><div class='providers_desc providers_${key}'>${key}</div><div class="providers_colum_data">${content_array[key]}</div></div>`;
+
+    });
+
+
+    //console.log(content);
+    return content;
+
+
+}
+
+function create_Highcharts_columns(data, block)
+{
+
+
+    if (typeof Highcharts !== 'undefined') {
+
+
+
+        if (data)
+        {
+            data = JSON.parse(data);
+            var data_series = data['series'];
+            var data_series_cast = data['cast'];
+        }
+        if (data)
+        {
+            Highcharts.chart('container_' + block, {
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false,
+                    type: 'column'
+                },
+                title: {
+                    text: data['name'] + ' Representation'
+                },
+
+                plotOptions: {
+                    series: {
+                        grouping: false,
+                        borderWidth: 0
+                    }
+                },
+                legend: {
+                    enabled: false
+                },
+                tooltip: {
+                    shared: true,
+                    headerFormat: '<span style="font-size: 16px">{point.point.name}</span><br/>',
+                    pointFormat: '<span style="color:{point.color}">\u25CF</span> {series.name}: <b>{point.y} %</b><br/>'
+                },
+                xAxis: {
+                    type: 'category',
+                    // max: 4,
+                    labels: {
+                        animate: true,
+                    }
+                },
+                yAxis: [{
+                        title: {
+                            text: 'Percentage'
+                        },
+                        showFirstLabel: false
+                    }],
+                series: [{
+                        color: 'rgb(44,47,66)',
+                        pointPlacement: -0.2,
+                        linkedTo: 'main',
+                        name: data['name'],
+                        data: data_series,
+
+                    }, {
+                        name: 'Cast Percentages',
+                        id: 'main',
+                        dataSorting: {
+                            enabled: true,
+                            matchByName: true
+                        },
+                        dataLabels: [{
+                                enabled: true,
+                                inside: true,
+                                style: {
+                                    fontSize: '14px'
+                                }
+                            }],
+                        data: data_series_cast
+                    }
+                ]
+            });
+        }
+    }
+}
+function set_point_format(series, point, block, prefix)
+{
+    if (block == 'main_movie_graph')
+    {
+        var data = '<span style="color:{point.color}">\u25CF</span> {series.name}: <b>{point.percentage:.1f}%</b>'
+
+    } else
+    {
+        if (!prefix)
+        {
+            prefix = '';
+        }
+
+        data = '<span style="color:{point.color}">\u25CF</span> {series.name}: <b>{point.percentage:.1f}%</b><br>  Total: ' + prefix + ' {point.y}'
+
+
+    }
+
+    return data;
+
+}
+function create_Highcharts(data, block)
+{
+
+
+
+    if (typeof Highcharts !== 'undefined')
+    {
+
+
+        if (data)
+        {
+            data = JSON.parse(data);
+            var data_series = data['series'];
+            var prefix = data['prefix'];
+
+        }
+
+        if (data)
+        {
+            Highcharts.chart('container_' + block, {
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false,
+                    type: 'pie'
+                },
+                title: {
+                    text: data['name']
+                },
+                // tooltip: {
+                //     pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                // },
+                tooltip: {
+                    shared: true,
+                    headerFormat: '<span style="font-size: 16px">{point.point.name}</span><br/>',
+
+                    pointFormat: set_point_format('{series}', '{point}', block, prefix)
+
+
+                },
+
+                accessibility: {
+                    point: {
+                        valueSuffix: '%'
+                    }
+                },
+                plotOptions: {
+
+                    pie: {
+                        size: 120,
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            distance: 20,
+                            format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+
+                            style: {
+                                fontWeight: 'bold',
+                                color: 'white',
+                                fontSize: '12px'
+                            }
+                        },
+
+                        format: '<b>{point.name}</b>: {point.percentage:.1f} %'
+                    }
+
+                },
+                series: [{
+                        name: data['name'],
+                        colorByPoint: true,
+                        data: data_series
+                    }]
+            });
+        } else
+        {
+            console.log('data error');
+            console.log(data);
+        }
+    } else
+    {
+        console.log('cant load Highcharts');
+    }
+}
+
+jQuery(document).ready(function () {
+    jQuery('.not_load:visible').each(function () {
+        check_load_block();
+    });
+
+
+
+    init_spoilers();
+
+    init_gallery();
+
+    jQuery("body").on('click', 'details.actor_details summary', function () {
+
+        //  console.log('start');
+        var prnt = jQuery(this).parents('details');
+
+        let id = prnt.find('.not_load').attr('id');
+
+        if (id)
+        {
+            load_next_block(id);
+        }
+
+    });
+
+    jQuery("body").on('click', '.filters_type a', function () {
+        let id = jQuery(this).attr('id');
+        let prnt = jQuery(this).parents('.movie_watch');
+
+        prnt.find('a.show_type').removeClass('active');
+        jQuery(this).addClass('active')
+
+        prnt.find('a.provider_container').hide();
+        prnt.find('a.provider_container.type_' + id).show();
+
+        return false;
+    });
+
+    jQuery("body").on('click', '.close_filters', function () {
+
+
+        var prnt = jQuery(this).parents('.movie_container');
+        prnt.find('.movie_watch').html('').hide();
+        prnt.find('.watch_buttom').show();
+
+    });
+
+    jQuery("body").on('click', '.watch_buttom', function () {
+
+
+        jQuery('.movie_watch .close_filters').click();
+
+        let id = jQuery(this).attr('id');
+        let title = jQuery(this).attr('data-title');
+        let year = jQuery(this).attr('data-year');
+        let type = jQuery(this).attr('data-type');
+
+
+        var prnt = jQuery(this).parents('.movie_container');
+        jQuery(this).hide();
+        jQuery.ajax({
+            type: 'post',
+            data: {id: id},
+            url: window.location.protocol + template_path + "get_wach.php",
+            success: function (html) {
+
+                var content = generate_watch_content(html, title, year, type);
+                prnt.find('.movie_watch').html(content).show();
+
+
+            }
+        });
+        return false;
+    });
+    jQuery('body').on('change', '.popup-container > input:not(:checked)', function () {
+
+        if (jQuery('.popup-content').html())
+        {
+            jQuery('.popup-content').html('');
+        }
+
+
+        // console.log('ok');
+
+    });
+
+    jQuery("body").on("click", ".button_play_trailer", function () {
+
+        var id = jQuery(this).attr('id');
+
+        add_popup();
+        let content = `<iframe style="  width: 100%;    height: 90vh;max-width: 800px; max-height: 440px" src="https://www.youtube.com/embed/${id}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+        jQuery('.popup-content').html(content);
+
+        jQuery('.popup-content').append('<label for="action-popup" class="popup-close-btn">Close</label>');
+
+        jQuery('input[id="action-popup"]').click();
+        return false;
+    });
+
+
+    jQuery('body').on('click', 'a.icntn:not(.direct_link)', function (e) {
+
+
+        if (e.target.closest('.spoiler_default')) {
+            return false;
+        }
+        var $this = jQuery(this)
+        var link = $this.attr('href');
+        var wp_core = '';
+        if ($this.hasClass('wp_core')) {
+            wp_core = '&wp_core=1';
+        }
+
+        jQuery.ajax({
+            type: "GET",
+            url: window.location.protocol + template_path + "get_review.php?id=" + link + wp_core,
+            success: function (data) {
+                if (data) {
+                    jQuery('div[id="disqus_thread"]').remove();
+
+
+                    ////$result = array('page_url'=>$link,'page_identifier'=>$pg_idnt,'title'=>$title,'content'=>$content);
+
+                    var data_object = JSON.parse(data);
+                    var content = data_object['content'];
+                    var emotions = data_object['emotions'];
+
+                    add_popup();
+                    jQuery('.popup-content').html(content);
+
+                    jQuery('.full_review').append(emotions);
+
+
+                    ///spoiler
+                    init_spoilers();
+
+                    jQuery('.popup-content .full_review').append('<label for="action-popup" class="popup-close-btn">Close</label>');
+
+                    jQuery('input[id="action-popup"]').click();
+
+
+
+                    init_gallery();
+
+
+                    discuss_config(data_object);
+                    init_nte();
+
+
+                    jQuery('div[id="disquss_container"]').removeClass('loaded').addClass('not_load');
+                }
+
+
+            }
+        });
+
+
+        return false;
+    });
+
+    jQuery(document).on("click", function (e) {
+        var div = jQuery(".user-reaction");
+
+        if ((!div.is(e.target) && div.has(e.target).length === 0))
+        {
+            jQuery('.card .user-reactions').remove();
+
+        }
+    });
+
+
+
+    jQuery(document).on('click', '.user-reactions-box>span.user-reaction', function (e) {
+
+        e.preventDefault();
+
+        var t = jQuery(this), $class = t.attr('class'), main = t.parent().parent().parent(), text = t.find('strong').text();
+
+        var big_prnt = jQuery(this).parents('.amsg_aut');
+
+        var vote_type = 'vote';
+
+        let voted_before_container = main.find('.voted');
+        var voted_before = voted_before_container.html();
+        let voted_before_count = voted_before_container.find('.count').html();
+
+
+        var voted = jQuery(this).hasClass('voted');
+        if (voted)
+        {
+            vote_type = 'unvote';
+            jQuery(this).removeClass('voted');
+
+            let cnt = Number(jQuery(this).find('.count').html());
+            cnt--;
+            if (cnt < 0)
+                cnt = 0;
+            jQuery(this).find('.count').html(cnt);
+
+        } else
+        {
+            if (voted_before)
+            {
+                voted_before_count = Number(voted_before_count);
+                voted_before_count--;
+                if (voted_before_count <= 0)
+                {
+                    voted_before_count = '';
+                }
+                voted_before_container.find('.count').html(voted_before_count);
+            }
+
+            let cnt = Number(jQuery(this).find('.count').html());
+            cnt++;
+
+            jQuery(this).find('.count').html(cnt);
+
+            main.find('.user-reaction').removeClass('voted');
+            jQuery(this).addClass('voted');
+        }
+
+        res = $class.split(' ');
+        type = res[1].split('-');
+
+        jQuery('.card  .user-reactions-button.reaction-show').addClass('linked');
+
+        var pid = main.data('post');
+        //  console.log(pid);
+
+        $.ajax({
+
+            url: window.location.protocol + template_path + "get_emotions.php",
+            type: 'POST',
+            data: {
+
+                nonce: main.data('nonce'),
+                type: type[2],
+                post: main.data('post'),
+                vote_type: vote_type,
+                request: 'set_emtns'
+            },
+            success: function ($data) {
+                window.setTimeout(function () {
+
+                    jQuery('.card .user-reactions').remove();
+                    var emotions = jQuery('.review_comment_data[id="' + pid + '"]>a.emotions');
+                    emotions.attr('class', 'emotions');
+
+                    if (typeof $data !== "undefined") {
+                        //Top results api
+                        var data = JSON.parse($data);
+
+                        var key = data.key;
+                        var count = data.count;
+                        if (count > 0) {
+                            emotions.addClass('emotions_custom');
+                            emotions.addClass('user-reaction-' + key);
+                            emotions.find('.emotions_count').html(count);
+                        } else {
+                            emotions.find('.emotions_count').html('');
+                        }
+
+                    } else {
+
+                        var count = Number(emotions.find('.emotions_count').html());
+
+                        emotions.attr('class', 'emotions');
+                        // console.log(vote_type,voted_before);
+                        if (vote_type == 'vote')
+                        {
+                            emotions.addClass('emotions_custom');
+                            emotions.addClass('user-reaction-' + type[2]);
+
+                            if (!voted_before)
+                            {
+                                count++;
+                                emotions.find('.emotions_count').html(count);
+                            }
+
+                        } else
+                        {
+                            count--;
+                            if (count == 0)
+                                count = '';
+
+                            emotions.find('.emotions_count').html(count);
+
+                        }
+                        ///  console.log(count);
+                    }
+                }, 700);
+
+            }
+        });
+        return false;
+    });
+
+    jQuery('body').on('click', 'a.emotions', function (e) {
+
+
+
+        e.preventDefault();
+        var ts = jQuery(this);
+        let prnt = ts.parents('.review_comment_data');
+        let big_prnt = ts.parents('.amsg_aut');
+
+        if (big_prnt.find('.user-reactions').html()) {
+            big_prnt.find('.user-reactions').remove();
+        } else {
+
+            jQuery('.card .user-reactions').remove();
+
+            var id = prnt.attr('id');
+            jQuery.ajax({
+                type: 'post',
+                data: {id: id, request: 'get_emtns'},
+                url: window.location.protocol + template_path + "get_emotions.php",
+                success: function (data) {
+                    if (data) {
+
+                        big_prnt.prepend(data);
+
+                    }
+                }
+            });
+
+        }
+        return false;
+    });
+
+
+    jQuery('body').on('click', 'a.disquss_coment', function (e) {
+        e.preventDefault();
+
+
+        let prnt = jQuery(this).parents('.review_comment_data');
+        var id = prnt.attr('id');
+        var pid_title = jQuery(this).attr('data_title');
+        let big_prnt = jQuery(this).parents('.a_msg');
+        let link = big_prnt.find('a.icntn').attr('href');
+
+        add_popup();
+
+        let data_object = new Object();
+        data_object['page_url'] = link;
+        data_object['page_identifier'] = id + ' ' + link;
+        data_object['title'] = pid_title;
+
+        let contenttext = big_prnt.find('.vote_content').html();
+        if (!contenttext)
+        {
+            contenttext = big_prnt.find('a.icntn').html();
+        }
+        if (!contenttext)
+        {
+            contenttext = ' ';
+        }
+
+
+        // console.log(data_object);
+        jQuery('div[id="disqus_thread"]').remove();
+
+        let content = '<div class="sub_content" ><div class="sub_content_text" >' + contenttext + '</div><div id="disqus_thread" ></div></div><label style="margin-top: -45px;margin-right: 15px;" for="action-popup" class="popup-close-btn">Close</label>';
+        jQuery('.popup-content').html(content);
+
+        jQuery('input[id="action-popup"]').click();
+        discuss_config(data_object);
+        jQuery('div[id="disquss_container"]').removeClass('loaded').addClass('not_load');
+
+
+        return false;
+
+    });
+
+    jQuery('body').on('click', 'a.actor_info, a.actors_link', function () {
+        var actor_id = jQuery(this).attr('data-id');
+
+        add_popup();
+        var whait_html = '<div class="cssload-circle">\n' +
+                '\t\t<div class="cssload-up">\n' +
+                '\t\t\t\t<div class="cssload-innera"></div>\n' +
+                '\t\t</div>\n' +
+                '\t\t<div class="cssload-down">\n' +
+                '\t\t\t\t<div class="cssload-innerb"></div>\n' +
+                '\t\t</div>\n' +
+                '</div>';
+        jQuery('.popup-content').html(whait_html);
+        jQuery('input[id="action-popup"]').click();
+
+        var data = '';
+
+        if (typeof get_data == 'function')
+        {
+            data = get_data();
+            data = JSON.stringify(data);
+        }
+
+        $.ajax({
+            type: "POST",
+            url: window.location.protocol + "/analysis/get_data.php",
+            data: ({
+                oper: 'get_actordata',
+                id: actor_id,
+                'data': data
+
+            }),
+            success: function (html) {
+                jQuery('.popup-content').html('<div class="actor_popup default_popup">' + html + '</div>');
+                jQuery('.actor_popup').append('<label for="action-popup" class="popup-close-btn">Close</label>');
+            }
+        });
+
+
+
+        return false;
+    });
+
+    jQuery("body").on("keyup", '.crowd_movie_autoinput', function (e)
+    {
+
+        if (e.which == 13) {
+            jQuery(".customsearch_button_advanced").click();
+            return false;
+        }
+
+        jQuery(".crowd_movie_autoinput").addClass('loading');
+
+        var keyword = jQuery(this).val();
+
+        if (keyword.length >= 2) {
+            jQuery.ajax({
+                type: 'POST',
+                ///context: this,
+                url: window.location.protocol + template_path + "ajax_data.php",
+                data: {"action": "ajax_search", "keyword": keyword, "type": "movie", 'nolinks': 1},
+                success: function (data) {
+                    // console.log(data);
+
+                    jQuery('.crowd_items .advanced_search_first').html(data).show();
+                    jQuery('.advanced_search_menu.crowd_items').show().removeClass("advanced_search_hidden");
+
+                }
+            });
+        }
+    });
+
+    jQuery('body').on('change', '.review_crowd .big_checkbox>input', function (e) {
+
+
+        let min_prnt = jQuery(this).parents('.big_checkbox');
+        let sconainer = min_prnt.find('.check_container');
+
+        if (jQuery(this).is(":checked"))
+        {
+            sconainer.show();
+        } else
+        {
+            sconainer.hide();
+        }
+
+
+
+        let th = jQuery(this).parents('.review_crowd');
+
+
+        if (th.hasClass('active'))
+        {
+            return;
+        } else
+        {
+            th.addClass('active');
+            setTimeout(function () {
+                th.removeClass('active');
+            }, 2980);
+
+        }
+
+    }
+    );
+
+    jQuery('body').on('click', '.a_info', function () {
+
+        var id = jQuery(this).attr('data-value');
+        var movie = jQuery(this).attr('data-movie');
+        if (jQuery(this).hasClass('a_state'))
+        {
+            var enable_robot = 1;
+        }
+        var popup_enable = '';
+        var popup = jQuery(this).parents('.popup-content');
+        if (popup.html())
+        {
+            popup_enable = 1;
+        }
+
+        jQuery.ajax({
+            type: 'post',
+            data: {'oper': 'review_crowd',
+                'id': id,
+                'movie': movie,
+                'robot': enable_robot
+            },
+            url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/template/ajax/crowdsource.php",
+            success: function (html) {
+
+                if (!popup_enable)
+                {
+                    add_popup();
+                }
+
+                jQuery('.popup-content').html('<div id="' + id + '" class="default_popup review_crowd">' + html + '</div>');
+                if (!popup_enable) {
+                    jQuery('input[id="action-popup"]').click();
+                }
+
+                if (enable_robot)
+                {
+                    jQuery.ajax({
+                        type: 'get',
+                        dataType: 'html',
+                        url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/images/roboto_a.svg",
+                        success: function (html) {
+                            jQuery('.review_crowd').append(html);
+
+
+                        }
+                    });
+
+                }
+
+            }
+
+        });
+
+        return false;
+
+    });
+
+
+
+    jQuery('body').on('click', '.movie_touch', function () {
+        var id = jQuery(this).attr('id');
+        var r_id = jQuery('.review_crowd').attr('id');
+
+        jQuery('.advanced_search_first').html('').hide();
+
+        jQuery.ajax({
+            type: 'post',
+            data: {'oper': 'get_search_movie',
+                'id': id,
+                'r_id': r_id
+            },
+            url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/template/ajax/crowdsource.php",
+            success: function (html) {
+
+                if (!jQuery('.check_inner_container[id="' + id + '"]').html())
+                {
+                    jQuery('.check_container_main').append(html);
+                }
+
+
+            }}
+        );
+
+
+        return false;
+
+
+    });
+
+    jQuery('body').on('click', '.note_big .note, .rating_block .note,  .r_content .note', function () {
+
+        if (jQuery(this).hasClass('.nte'))
+        {
+            return;
+        }
+
+
+        if (jQuery(this).hasClass('togle_show'))
+        {
+            jQuery('.note_big .note, .rating_block .note, .r_content .note').removeClass('togle_show');
+            jQuery('.note_show').hide();
+
+        } else
+        {
+
+            jQuery('.note_big .note, .rating_block .note').removeClass('togle_show');
+            jQuery('.note_show').hide();
+
+            jQuery(this).addClass('togle_show');
+            jQuery(this).find('.note_show').show();
+        }
+    });
+
+    jQuery('body').on('click', '.flex_movies_block .movie_container .movie_poster>a', function () {
+
+        if (jQuery('body').width() <= 550)
+        {
+            var parent = jQuery(this).parents('.movie_container');
+            parent.toggleClass('opened');
+
+
+            return false;
+        }
+    });
+
+
+    jQuery('body').on('click', '.add_movie_todb', function () {
+        var button = jQuery(this);
+        button.attr('disabled', true);
+
+        var movie = button.attr('id');
+        jQuery.ajax({
+            type: 'post',
+            data: ({'add_movie': movie}),
+            url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/template/ajax/search_ajax.php",
+            success: function (html) {
+                if (html == 1)
+                {
+                    button.after('Successfully added to the queue. Check back soon!');
+                }
+                button.remove();
+            }
+        });
+    });
+
+
+    jQuery('body').on('click', '.submit_data .submit_user_data', function (e) {
+
+        var closep = 0;
+        let prnt = jQuery(this).parents('.crowd_data');
+        if (!prnt.hasClass('crowd_data'))
+        {
+            prnt = jQuery(this).parents('.default_popup');
+            closep = 1;
+
+        }
+        var result = new Object();
+        prnt.find('input, select, textarea').each(function () {
+
+            let cls = jQuery(this).attr('class');
+            let data = jQuery(this).val();
+
+            if (jQuery(this).attr('type') == 'checkbox')
+            {
+                if (jQuery(this).is(":checked"))
+                {
+                    data = '1';
+                } else
+                {
+                    data = '0';
+                }
+            }
+
+            result[cls] = data;
+
+        });
+
+        if (closep)
+        {
+            var type = jQuery(this).attr('id');
+            var id = prnt.attr('id');
+        } else
+        {
+            var link = prnt.prev('a.actor_crowdsource');
+            var id = link.attr('data-value');
+            var type = link.attr('class');
+
+        }
+
+
+
+
+        jQuery.ajax({
+            type: 'post',
+            data: {'oper': 'crowd_submit',
+                'id': id,
+                'type': type,
+                'data': JSON.stringify(result),
+            },
+            url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/template/ajax/crowdsource.php",
+            success: function (html) {
+                if (html)
+                {
+                    var error_obj = JSON.parse(html);
+                    console.log(error_obj);
+                }
+                let msg = '<p class="user_message_info">Thank you for your help, we\'ll check it soon</p>';
+                if (closep)
+                {
+                    prnt.html(msg + '<div class="submit_data"><button class="button close" >Close</button></div>');
+                } else
+                {
+                    prnt.html('<div class="open_rating_container note_show">' + msg + '<div class="submit_data"><button class="button close" >Close</button></div></div>');
+                }
+
+
+            }
+        });
+
+
+        return false;
+    });
+
+
+    jQuery('body').on('click', '.submit_data .close', function (e) {
+
+
+        let prnt = jQuery(this).parents('.crowd_data');
+        //  console.log(prnt);
+        if (!prnt.hasClass('crowd_data'))
+        {
+            prnt = jQuery(this).parents('.popup-content');
+            prnt.html('');
+            jQuery('.popup-close').click();
+
+            return false;
+        }
+        prnt.prev('a.actor_crowdsource').attr('id', 'op');
+        prnt.html('');
+        return false;
+    });
+
+
+
+    jQuery('body').on('click', '.edit_comment, .edit_review', function (e) {
+
+        var prnt = jQuery(this).parents('.note.edit');
+        var id = prnt.attr('id');
+
+        e.preventDefault();
+
+
+        let prntbig = jQuery(this).parents('div.card');
+
+        if (prntbig.hasClass('card')) {
+            let big_prnt = prntbig.find('.content a');
+            var pid_title = big_prnt.html();
+            var image = prntbig.find('a.image').html();
+            var link = big_prnt.attr('href');
+            var block_summary = '';
+        } else
+        {
+            let prntbig = jQuery(this).parents('.movie_container');
+
+
+            var link = prntbig.find('.movie_poster a').attr('href');
+            var image = prntbig.find('.image div.wrapper').html();
+            var pid_title = prntbig.find('.movie_description .header_title a').html();
+            var block_summary = prntbig.find('.movie_description .block_summary').html();
+        }
+
+
+
+
+        if (link.indexOf(window.location.host) == -1)
+        {
+            link = window.location.protocol + '//' + window.location.host + link;
+        }
+
+
+        add_popup();
+
+        let contenttext = '<div class="full_review_movie">' + image + '<div class="movie_link_desc"><span class="itm_hdr">' + pid_title + '</span><span>' + block_summary + '</span></div></div>';
+
+
+        if (jQuery(this).hasClass('edit_comment')) {
+            let data_object = new Object();
+            data_object['page_url'] = link;
+            data_object['page_identifier'] = id + ' ' + link;
+            data_object['title'] = pid_title;
+            jQuery('div[id="disqus_thread"]').remove();
+            let content = '<div class="sub_content" ><div class="sub_content_text" >' + contenttext + '</div><div id="disqus_thread" ></div></div><label style="margin-top: -45px;margin-right: 15px;" for="action-popup" class="popup-close-btn">Close</label>';
+            jQuery('.popup-content').html(content);
+            jQuery('input[id="action-popup"]').click();
+            discuss_config(data_object);
+            jQuery('div[id="disquss_container"]').removeClass('loaded').addClass('not_load');
+        } else if (jQuery(this).hasClass('edit_review'))
+        {
+
+            let content = '<div class="sub_content" ><div class="sub_content_text" >' + contenttext + '</div>' +
+                    '<div id="audience_form" class="wpcr3_respond_1" data-value="' + id + '" data-postid="' + id + '"></div>' +
+                    '</div><label style="margin-top: -85px;margin-right: 15px;" for="action-popup" class="popup-close-btn">Close</label>';
+
+            jQuery('.popup-content').html(content);
+            jQuery('input[id="action-popup"]').click();
+            load_ajax_block('audience_form');
+        }
+
+        return false;
+
+    });
+
+
+    jQuery('body').on('click', '.add_pg_rating_button, .edit_family_rating', function (e) {
+
+        if (jQuery(this).hasClass('edit_family_rating'))
+        {
+            var prnt = jQuery(this).parents('.note.edit');
+            var id = prnt.attr('id');
+        } else
+        {
+            var prnt = jQuery(this).parents('.movie_total_rating');
+            var id = prnt.attr('data-value');
+        }
+
+
+
+        jQuery.ajax({
+            type: 'post',
+            data: {
+                'oper': 'pg_rating',
+                'id': id
+            },
+            url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/template/ajax/crowdsource.php",
+            success: function (html) {
+
+                add_popup();
+                jQuery('.popup-content').html('<div id="' + id + '" class="default_popup"><h2>Edit Family Friendly Rating</h2><p>Please help improve RWT, add a Family Friendly Rating and leave your comment(s).</p>' + html + '</div>');
+                jQuery('input[id="action-popup"]').click();
+
+            }
+        });
+
+
+        return false;
+    });
+    jQuery('body').on('change', '.row.rating  select, .check_inner_container  select.movie_link', function (e) {
+
+        let val = jQuery(this).val();
+        jQuery(this).attr('id', val);
+
+        if (jQuery(this).hasClass('movie_link'))
+        {
+            if (val == 'remove')
+            {
+                let prnt = jQuery(this).parents('.check_inner_container:not(.main)');
+                if (prnt.html())
+                {
+                    prnt.remove();
+                }
+            }
+        }
+
+
+    });
+
+    jQuery('body').on('click', '.actor_crowdsource', function (e) {
+
+        var prnt = jQuery(this).parents('.actor_crowdsource_container');
+
+        var op = jQuery(this).attr('id');
+        var id = jQuery(this).attr('data-value');
+        var cont = '';
+        if (jQuery(this).hasClass('button_edit'))
+        {
+            cont = 'popup';
+            var prnt = jQuery(this).parents('.card');
+
+        }
+
+        if (op == 'cl') {
+
+            if (!cont)
+            {
+
+                prnt.find('.crowd_data').hide();
+                jQuery(this).attr('id', 'op');
+            }
+
+
+
+        } else {
+            if (!cont) {
+                jQuery('.open_rating').attr('id', 'op');
+                jQuery(this).attr('id', 'cl');
+                jQuery('.open_rating_container').hide();
+            }
+
+
+            jQuery.ajax({
+                type: 'post',
+                data: {'oper': 'actor_crowd',
+                    'id': id
+                },
+                url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/template/ajax/crowdsource.php",
+                success: function (html) {
+
+                    if (cont)
+                    {
+
+
+
+                        var aname = prnt.find('.a_data_n').html();
+
+                        add_popup();
+                        if (html.indexOf('user_message_info') > 0)
+                        {
+                            jQuery('.popup-content').html('<div id="' + id + '" class="default_popup">' + html + '</div>');
+                        } else
+                        {
+                            jQuery('.popup-content').html('<div id="' + id + '" class="default_popup"><h2>Edit Actor Data</h2><p class="center">Please help improve RWT by correcting & adding data.</p><h1>' + aname + '</h1>' + html + '</div>');
+                        }
+
+
+                        jQuery('input[id="action-popup"]').click();
+                    } else
+
+                    {
+
+                        prnt.find('.crowd_data').show().html('<div class="open_rating_container note_show">' + html + '</div>');
+                    }
+
+
+
+                }
+            });
+        }
+
+        return false;
+    });
+
+
+
+
+    jQuery('body').on('click', '.open_rating', function (e) {
+
+        var prnt = jQuery(this).parents('div.rating_row');
+
+        var op = jQuery(this).attr('id');
+
+
+
+        if (op == 'cl') {
+            prnt.find('.open_rating_container').hide();
+            jQuery(this).attr('id', 'op');
+
+        } else {
+            jQuery('.open_rating_container').hide();
+            jQuery('.open_rating').attr('id', 'op');
+
+            jQuery(this).attr('id', 'cl');
+            prnt.find('.open_rating_container').show();
+
+            // var cntnr_big = prnt.next('.open_rating_container');
+            // var id = prnt.attr('id');
+            // var movie_id = jQuery(this).parents('.movie_total_rating' ).attr('data-value');
+        }
+
+        return false;
+    });
+
+
+
+
+    jQuery('body').on('click', '.how_calculate_rating, .read_more_rating, .how_calculate_rwt_rating', function () {
+
+        let movie_id = jQuery(this).parents('.movie_total_rating').attr('data-value');
+
+        var rwt_id = jQuery(this).parents('.rating_block').attr('id');
+
+        var post = {};
+        if (jQuery(this).hasClass('how_calculate_rwt_rating'))
+        {
+
+
+
+            post = {'refresh_rwt_rating': 1,
+                'rwt_id': rwt_id,
+                'movie_id': movie_id
+            }
+        }
+
+
+        if (jQuery(this).hasClass('how_calculate_rating'))
+        {
+            post = {'refresh_rating': 1,
+                'movie_id': movie_id,
+                'rwt_id': rwt_id
+            }
+        } else if (jQuery(this).hasClass('read_more_rating'))
+        {
+            post = {'read_more_rating': 1,
+                'movie_id': movie_id,
+                'rwt_id': rwt_id
+            }
+        }
+
+        jQuery.ajax({
+            type: 'post',
+            data: (post),
+            url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/template/ajax/search_ajax.php",
+            success: function (html) {
+
+                add_popup();
+
+                jQuery('.popup-content').html('<div class="white_popup">' + html + '<label style="margin-top: -22px;margin-right: 15px;" for="action-popup" class="popup-close-btn">Close</label></div>');
+                jQuery('input[id="action-popup"]').click();
+            }
+        });
+
+
+
+        return false;
+    });
+
+
+
+    jQuery('body').on('click', '.s_container_load', function () {
+        let prnt = jQuery(this).parents('.column_inner_content');
+
+        jQuery('.column_inner_content').removeClass('max_with');
+        jQuery('.column_inner_content .s_container').addClass('smoched');
+        prnt.addClass('max_with');
+        prnt.find('.s_container').removeClass('smoched');
+
+    });
+
+
+    jQuery('body').on('click', '.s_container_smoth', function () {
+        jQuery('.column_inner_content').removeClass('max_with');
+        jQuery('.column_inner_content .s_container').addClass('smoched');
+        let prnt = jQuery(this).parents('.s_container');
+        let src = prnt.find('iframe').attr('src');
+        add_popup();
+
+        jQuery('.popup-content').html('<div class="white_popup maxcontent"><iframe src="' + src + '"></iframe></div>');
+        jQuery('input[id="action-popup"]').click();
+
+    });
+    jQuery('body').on('click', '.ethnycity_select', function () {
+
+        jQuery(this).toggleClass('select_disabled');
+
+        //loaddata();
+    });
+
+    function load_main_graph()
+    {
+
+        var data = jQuery('.ethnic_graph.main_ethnic_graph').next('.ethnic_graph_data').html();
+        create_Highcharts(data, 'main_movie_graph');
+
+    }
+
+    jQuery('body').on('click', '.ethnic_graph', function () {
+
+        jQuery(this).toggleClass('activated');
+
+
+        var data = jQuery(this).next('.ethnic_graph_data').html();
+
+        if (jQuery(this).hasClass('main_ethnic_graph'))
+        {
+
+            var big_parent = jQuery('div.section_chart[id="container_main_movie_graph"]');
+
+            if (!big_parent.html())
+            {
+                if (typeof Highcharts == 'undefined')
+                {
+                    var third_scripts = {
+                        hrts: 'https://code.highcharts.com/highcharts.js'
+                    };
+                    use_ext_js(load_main_graph, third_scripts);
+
+                } else {
+                    load_main_graph();
+
+                }
+
+            } else
+            {
+                if (jQuery(this).hasClass('activated'))
+                {
+                    big_parent.slideDown();
+                } else
+                {
+                    big_parent.slideUp();
+                }
+
+            }
+
+
+
+
+
+
+
+
+        } else
+        {
+            var big_parent = jQuery(this).parents('tr.actor_data');
+
+            var count_col = big_parent.find('td').length;
+
+            var graph_block = big_parent.next('tr.graph_block').html();
+            if (!graph_block)
+            {
+                var id = Math.random().toString(36).substring(7);
+
+
+
+                if (jQuery(this).hasClass('ethnic_graph_column'))
+                {
+                    big_parent.after('<tr class="graph_block"><td colspan="' + count_col + '"><div class="section_chart_big section_chart section_ethnic" id="container_' + id + '"></div></td></tr>');
+
+                    create_Highcharts_columns(data, id);
+                } else
+                {
+                    big_parent.after('<tr class="graph_block"><td colspan="' + count_col + '"><div class="section_chart section_ethnic" id="container_' + id + '"></div></td></tr>');
+
+
+                    create_Highcharts(data, id);
+                }
+
+
+
+
+
+            } else
+            {
+                if (jQuery(this).hasClass('activated'))
+                {
+                    big_parent.next('tr.graph_block').find('div.section_chart').slideDown();
+                } else
+                {
+                    big_parent.next('tr.graph_block').find('div.section_chart').slideUp();
+                }
+
+            }
+        }
+
+        //loaddata();
+    });
+    jQuery('body').on('click', '.open_demographic', function (e) {
+
+
+        var op = jQuery(this).attr('id');
+
+
+        if (op == 'cl') {
+            jQuery('.row_demograpic').hide();
+            jQuery(this).attr('id', 'op');
+
+        } else {
+            jQuery('.row_demograpic').show();
+            jQuery(this).attr('id', 'cl');
+        }
+
+        return false;
+    });
+
+
+    // if (jQuery('body').width()<=450)
+    // {
+    //  jQuery('#rwt_footer').addClass('not_load');
+    //
+    // }
+
+
+
+});
+
+function init_spoilers() {
+    jQuery('.spoiler_default:not(.init)').each(function () {
+        var $this = jQuery(this);
+
+
+
+        if (typeof $this.spoilerAlert !== "undefined") {
+
+            $this.addClass('init');
+            $this.spoilerAlert({max: 4, partial: 2});
+        }
+        else {
+            console.log('spoilerAlert not load');
+            ////try to load
+            var third_scripts = {
+                spoilerAlert: '/wp-content/themes/custom_twentysixteen/js/spoiler.min.js'
+            };
+            use_ext_js(init_spoilers, third_scripts);
+        }
+    });
+}
+
+function init_gallery() {
+    jQuery('.su-custom-gallery:not(.ginit)').each(function () {
+        jQuery(this).addClass('ginit');
+
+        if (typeof init_gallereies_shortcodes !== "undefined") {
+            init_gallereies_shortcodes();
+        } else {
+            //Load css and js 
+            var plugin = '/wp-content/plugins/shortcodes-ultimate/assets';
+            var css_list = {
+                magnific_popup_css: plugin + '/css/magnific-popup.css',
+                galleries_shortcodes_css: plugin + '/css/galleries-shortcodes.css'
+            }
+            add_css_list(css_list);
+
+            var success = function () {
+                jQuery('body').addClass('init_gallery');
+                init_gallereies_shortcodes();
+            }
+
+            var third_scripts = {
+                magnific_ajax: plugin + '/js/magnific-ajax.js',
+                magnific_popup_js: plugin + '/js/magnific-popup.js',
+                swiper_js: plugin + '/js/swiper.js',
+                galleries_js: plugin + '/js/galleries-shortcodes-live.js',
+            };
+            use_ext_js(success, third_scripts);
+
+        }
+    });
+
+
+}
+
+
+function loadScript($url, success = '') {
+    jQuery.ajax({
+        url: $url,
+        dataType: 'script',
+        cache: true,
+        success: function () {
+            if (success !== '') {
+                success();
+            }
+        }
+    });
+}
+
+function use_ext_js(f, third_scripts) {
+    for (var n in third_scripts) {
+        if (jQuery('body').hasClass(n)) {
+            continue;
+        } else {
+            jQuery('body').addClass(n);
+            var success = function () {
+                use_ext_js(f, third_scripts);
+            }
+            loadScript(third_scripts[n], success);
+            return;
+        }
+    }
+    f();
+}
+
+function add_css_list(css_list) {
+    for (var n in css_list) {
+        if (jQuery('body').hasClass(n)) {
+            continue;
+        } else {
+            jQuery('body').addClass(n);
+            jQuery("head").append("<link rel='stylesheet' id='dashicons-css'  href='" + css_list[n] + "' type='text/css' media='all' />");
+        }
+    }
+
+}

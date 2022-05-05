@@ -1,0 +1,57 @@
+<?php
+
+require('video_item_template.php');
+require('section_home_template.php');
+
+wp_enqueue_style('colums_template', get_template_directory_uri() . '/css/colums_template.css', array(), LASTVERSION);
+wp_enqueue_script('spoiler-min', get_template_directory_uri() . '/js/spoiler.min.js', array('jquery'));
+wp_enqueue_script('section_home', get_template_directory_uri() . '/js/section_home.js', array('jquery'), LASTVERSION);
+
+global $cfront;
+
+$array_list = array(
+    'Video' => array('title' => 'Movies in Theaters Now:', 'id' => 'video_scroll', 'class' => ''),
+    'TV' => array('title' => 'Popular Shows Streaming:', 'id' => 'tv_scroll', 'class' => ''),
+    'Pro' => array('title' => 'Latest Critic Reviews:', 'id' => 'review_scroll', 'class' => 'pro_review widthed secton_gray'),
+    'Staff' => array('title' => 'Latest Staff Reviews:', 'id' => 'stuff_scroll', 'class' => 'stuff_review widthed', 'title_desc' => '<a class="title_desc" href="https://rightwingtomatoes.com/writers-wanted/" target="_blank">Writers Wanted</a>'),
+    'Audience' => array('title' => 'Latest Audience Reviews:', 'id' => 'audience_scroll', 'class' => 'audience_review widthed secton_gray'),
+);
+// add scripts
+$scrpts = array();
+gmi('scroll before');
+$scrpts[] = '<script  type="text/javascript" >';
+foreach ($array_list as $value) {
+    $scoll_id = $value['id'];
+    $data = $cfront->get_scroll($scoll_id);
+    if($data){
+        $data = '"'.addslashes($data).'"';
+    } else {
+        $data='null';
+    }
+    $scrpts[] = 'var ' . $scoll_id . '_data = ' . $data . '; ';
+}
+gmi('scroll after');
+$scrpts[] = '</script>';
+print (implode("\n", $scrpts));
+
+$video_items = '';
+
+for ($i = 1; $i <= 5; $i++) {
+    $video_items .= str_replace('{id}', $i, $video_template);
+}
+
+$content = '';
+foreach ($array_list as $value) {
+    $content_inner = $section;
+    foreach ($value as $id => $name) {
+        $content_inner = str_replace('{' . $id . '}', $name, $content_inner);
+    }
+    $content_inner = str_replace('{content}', $video_items, $content_inner);
+    $content_inner = str_replace('{post_id}', '', $content_inner);
+    $content_inner = preg_replace('/\{[a-z_]+\}/', '', $content_inner);
+    $content .= $content_inner;
+}
+
+echo $content;
+?>
+

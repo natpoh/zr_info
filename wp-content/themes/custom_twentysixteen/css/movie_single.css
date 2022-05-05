@@ -1,0 +1,1079 @@
+.movie_container{
+    background-color: #040708;
+    color: #fff;
+    font-family: 'Courier Prime', Courier;
+    font-size: 16px;
+    line-height: 1.75;
+}
+
+.movie_description {
+    background-color: #fff;
+    color: #000;
+    padding: 0 15px 30px 15px;
+    box-shadow: -2px 0px 3px rgb(0 0 0 / 41%);
+    flex: min-content;
+    flex-basis: calc(100% - 260px);
+    flex-grow: 1;
+}
+.movie_poster {
+    box-shadow: 2px 0px 2px rgba(255, 255, 255, 0.3);
+}
+.single_post .movie_description{
+    background-color: #040708;
+    color: #fff;
+    padding: 0;
+
+    box-shadow: none;
+}
+.single_post  .movie_poster {
+    box-shadow: none;
+}
+.movie_container {
+    display: flex;
+    flex-wrap: wrap;
+}
+.filters_type {
+    background-color: #1f1f26;
+    padding: 8px 8px;
+    color: #8f9397;
+}
+
+.filters_type a {
+
+    margin-left: 6px;
+    text-transform: uppercase;
+    color: #92a0ac;
+    padding: 8px;
+    font-size: 16px;
+
+}
+.filters_type a.active {
+    background-color: #474851;
+    color: #fff;
+    border-radius: 4px;
+}
+.movie_poster .image {
+    background-color: #3a3a3a;
+    width: 220px;
+    border-radius: 6px;
+    overflow: hidden;
+}
+.movie_poster {
+    padding: 15px;
+}
+.single_post .movie_credits_bloc ,.single_post  .movie_summary {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 12px;
+}
+
+.movie_load_grid{
+    background-color: rgb(0, 0, 0);
+    padding: 5px;
+}
+
+.single_post .movie_summary {
+
+    color: gray;
+}
+.single_post  .mcb_content {
+    color: #868686;
+}
+.mcb_title {
+    font-size: 1.2em;
+}
+.single_post .movie_summary .block span {
+    color: #fff;
+}
+.block_summary{
+    margin-bottom: 10px;
+}
+.single_post .movie_description a {
+    color: #8c8c8c;
+    text-decoration: underline;
+}
+.watch_buttom {
+    font-size: 18px;
+    width: 100%;
+    z-index: 1;
+    position: relative;
+    margin-top: -5px;
+    border-radius: 0 0 7px 7px;
+    background-color: #04253f;
+    transition: all 0.2s;
+    outline: none !important;
+    max-width: 220px;
+    margin-left: auto;
+    display: block;
+    margin-right: auto;
+    color: #fff;
+    text-transform: uppercase;
+    border: none;
+    letter-spacing: 0.1em;
+    padding: 10px;
+    z-index: 110;
+}
+.watch_buttom:hover{
+    background-color: #083764;
+}
+.movie_watch{
+    width: calc(100% - 270px);
+}
+.providers_colum {
+    display: flex;
+    background-color: #000;
+    position: relative;
+    border-bottom: 1px solid #262626;
+}
+.providers_colum_data {
+    display: flex;
+    flex-wrap: inherit;
+    padding: 0 0 0 30px;
+    position: relative;
+    overflow-x: auto;
+}
+.providers_desc {
+    position: absolute;
+    transform: rotate(-90deg);
+    transform-origin: 0 0;
+    -webkit-transform: rotate(-90deg);
+    -webkit-transform-origin: 0 0;
+    top: 89px;
+    left: 0px;
+    width: 89px;
+    text-align: center;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    font-size: 14px;
+    height: 24px;
+    z-index: 1;
+}
+.providers_desc{
+    background-color: #121212;
+}
+.providers_ads{
+    background-color: #121212;
+}
+.providers_rent {
+    background-color: #5d5d5d;
+}
+.providers_buy {
+    background-color: #282828;
+    color: #cecece;
+}
+.providers_stream
+{
+    background-color: #b0b0b0;
+    color: #0d0d0d;
+}
+.providers_free {
+    background-color: #7e7e7e;
+    color: #fff;
+}
+.providers_irl {
+    background-color: #252525;
+    color: #fff;
+}
+.providers_colum a {
+    width: auto;
+    height: 70px;
+    display: flex;
+    flex-wrap: wrap;
+    margin: 9px 5px;
+    max-width: 60px;
+    justify-content: center;
+    transition: all 0.2s;
+}
+.providers_colum a:not(.type_priority) {
+    display: none;
+}
+.providers_colum a img {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+}
+
+.providers_colum a.fullsize {
+    width: auto;
+    height: 70px;
+    display: flex;
+    flex-wrap: wrap;
+    margin: 9px 5px;
+    max-width: 120px;
+    justify-content: center;
+    transition: all 0.2s;
+    align-content: center;
+}
+.providers_colum a.fullsize.fullsizebig {
+    max-width: 200px;
+}
+
+.providers_colum a.fullsize img {
+    width: auto;
+    height: auto;
+    border-radius: 0px;
+}
+
+.providers_colum a .povider_price {
+    font-size: 14px;
+    font-family: 'Encode Sans Condensed',Lato;
+    color: #fff;
+    width: 100%;
+    position: relative;
+    text-align: center;
+}
+.providers_colum a .provider_type {
+    color: #ffb300;
+    text-transform: uppercase;
+    font-size: 12px;
+    margin-left: 2px;
+}
+.close_filters, .clear_table {
+    position: relative;
+    width: 35px;
+    height: 35px;
+    cursor: pointer;
+    background: url('../images/close_black.svg');
+    display: block;
+    float: right;
+    margin: -4px;
+    filter: invert(1);
+    opacity: 0.5;
+}
+.close_filters:hover {
+
+    opacity: 0.9;
+}
+body .ready_to_load .button_play_trailer {
+    position: relative;
+    padding-left: 50px;
+    display: flex;
+    color: #fff;
+    text-decoration: none;
+    font-size: 24px;
+    outline: none !important;
+    text-shadow: 0px 0px 2px #0167a4,0px 0px 4px #0167a4,0px 0px 8px #0167a4,0px 0px 10px #0167a4;
+    transition: all 0.4s;
+    height: 36px;
+    box-sizing: border-box;
+    align-items: center;
+}
+body .ready_to_load .button_play_trailer::before {
+    content: "▲";
+    width: 34px;
+    height: 36px;
+    display: block;
+    position: absolute;
+    left: 23px;
+    top: 4px;
+    fill: #fff;
+    font-size: 35px;
+    transform: rotate(90deg);
+}
+body .ready_to_load .button_play_trailer:hover {
+    text-shadow: 0px 0px 2px #29afff,0px 0px 4px #29afff,0px 0px 8px #29afff,0px 0px 10px #29afff;
+}
+.chart_content{
+    display: flex;
+}
+
+.chart_content{
+    display: flex;
+}
+
+body .section_ethnic .highcharts-grid-line{
+    stroke: #212121;
+}
+
+body .section_ethnic .highcharts-credits {
+    fill: transparent !important;
+}
+body .section_ethnic .highcharts-contextbutton {
+    opacity: 0;
+    display: none;
+}
+
+body .section_ethnic .highcharts-background {
+    fill: transparent;
+}
+
+body .section_ethnic .highcharts-title {
+    fill: #E0E0E3 !important;
+}
+.section_chart {
+    height: 260px;
+    margin: 0 auto;
+
+}
+.section_chart_big {
+    height: 400px;
+    margin: 0 auto;
+    max-width: 760px;
+}
+tr.graph_block td{
+    padding: 0px;
+}
+body  a.open_demographic {
+    position: relative;
+    margin: 0 auto;
+    display: block;
+
+}
+.r_content .note {
+    position: relative;
+    width: 46px;
+    margin: 0 auto;
+}
+#container_main_movie_graph {
+    width: auto;
+    max-width: 100%;
+    min-width: 360px;
+}
+
+.r_content .note .note_show
+{
+    left: unset;
+    right: 3px;
+    bottom: 34px;
+}
+.r_content  .note_show_content {
+    overflow-y: auto;
+    max-height: 300px;
+    font-size: 12px;
+    line-height: 14px;
+}
+.r_content .note .note_show::after
+{
+    content: " ";
+    display: block;
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    background-color: #fff;
+    left: unset;
+    transform: skewX(0deg) rotate(135deg) skewY(0deg);
+    z-index: -1;
+    bottom: -14.2px;
+    border-right: 2px solid #b0b0b0;
+    border-top: 2px solid #b0b0b0;
+    right: 7px;
+}
+.row_demograpic{
+    display: none;
+}
+section.inner_content.section_actors  div.column_content.flex.scroller {
+
+    min-height: 300px;
+
+}
+.wrapper img.poster{
+    width: 100%;
+}
+
+.header_title {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.movie_total_rating {
+    min-height: 250px;
+    background-color: #040708;
+    color: #c7c7c7;
+    font-family: 'HOLLYWOODSTARFIRE', "Helvetica Neue", Courier;
+    font-size: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: space-around;
+    justify-content: space-evenly;
+}
+.rating_row {
+    margin-bottom: 10px;
+    margin-top: 10px;
+    min-width: 320px;
+    position: relative;
+}
+.rating_row .rating_row_title {
+    display: block;
+    margin-left: 15px;
+}
+.rating_row .rating_row_content {
+    display: block;
+    margin-left: 15px;
+    color: #fff;
+    font-size: 25px;
+}
+.flex_movies_block .page-header{
+    width: 100%;
+    padding-top: 0;
+}
+.flex_movies_block  .movie_poster {
+    box-shadow: none;
+}
+.flex_movies_block {
+    background-color: #393838;
+    color: #d0d0d0;
+}
+.flex_movies_block .movie_container {
+    position: relative;
+}
+
+.flex_movies_block .entry-title {
+    font-size: 16px;
+    padding: 10px;
+}
+.flex_movies_block .movie_poster {
+    z-index: 10;
+}
+
+.flex_movies_block .movie_description {
+
+    padding: 10px 10px 50px 10px;
+    position: absolute;
+    font-size: 12px;
+    width: calc(100% - 14px);
+    height: calc(100% - 14px);
+    overflow: hidden;
+    z-index: 0;
+
+    box-shadow: none;
+    box-sizing: border-box;
+    margin: 7px;
+    border-radius: 5px;
+    background-color: #000000;
+    color: #ffffff;
+}
+.flex_movies_block  .entry-title a {
+    color: #fff;
+    font-weight: normal;
+}
+.flex_movies_block .mcb_title {
+    font-size: 1em;
+
+    display: none;
+}
+
+.flex_movies_block .movie_watch {
+    position: fixed;
+    z-index: 280;
+    top: 50%;
+    width: 100vw;
+    background-color: #000;
+    transform: translate(-50%, -50%);
+    left: 50%;
+    max-width: 800px;
+    max-height: 100vh;
+    height: auto;
+    box-shadow: 0px 0px 20px #000;
+    padding: 10px;
+    box-sizing: border-box;
+    display: none;
+}
+.flex_movies_block .movie_summary .block_summary {
+    margin-bottom: 10px;
+    max-height: 185px;
+    overflow: hidden;
+}
+.flex_movies_block .movie_credits_bloc{
+    display: none;
+}
+.flex_movies_block .movie_summary .block_summary span{
+    display: none;
+}
+
+.flex_movies_block   .movie_container:hover .movie_poster .image{
+    opacity: 0.1;
+}
+
+.flex_movies_block   .movie_poster {
+    padding: 7px;
+    position: relative;
+}
+.flex_movies_block{
+    display: flex;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.show_more_movie{
+    display: none;
+}
+a.open_ul {
+    background: url("../images/arrows2.png") no-repeat scroll left -41px top -40px transparent;
+    display: inline-block;
+    height: 40px;
+    margin-right: 0;
+    margin-top: 0;
+    position: absolute;
+    width: 40px;
+    margin-left: 8px;
+}
+.open_rating_container.note_show {
+    right: 0;
+    top: 110px;
+    max-height: 300px;
+    min-height: 100px;
+    height: auto;
+    bottom: unset;
+    left: unset;
+}
+.movie_total_rating .open_rating_container.note_show {
+
+    font-family: 'Courier Prime', Courier;
+    cursor: initial;
+}
+
+.open_rating_container.note_show::after {
+    content: " ";
+    display: block;
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background-color: #fff;
+    right: 125px;
+    transform: skewX(0deg) rotate(-45deg) skewY(0deg);
+    z-index: -1;
+    top: -21.2px;
+    border-right: 2px solid #b0b0b0;
+    border-top: 2px solid #b0b0b0;
+    left: unset;
+    bottom: unset;
+}
+.open_rating_container.note_show .note_show_content_1 {
+    overflow-y: auto;
+    display: block;
+    max-height: 250px;
+    box-sizing: border-box;
+    width: 280px;
+
+}
+a#cl.open_ul:hover {
+    background: url("../images/arrows2.png") no-repeat scroll left 0 top -40px transparent;
+}
+a#op.open_ul {
+    background: url("../images/arrows2.png") no-repeat scroll left -40px top 0 transparent;
+}
+a#op.open_ul:hover {
+    background: url("../images/arrows2.png") no-repeat scroll left 0 top 0 transparent;
+}
+
+.rating_row .rating_result {
+    display: inline-block;
+    left: 0;
+    width: 250px;
+    float: none;
+    position: relative;
+}
+.imdb_rating {
+    font-size: 30px;
+    display: flex;
+    align-items: center;
+    color: #0b0b0b;
+
+}
+.imdb_rating::before {
+    content: "";
+    background: url("../images/imdb_star.svg") no-repeat left 0 top 0 transparent;
+    background-size: auto;
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    background-size: contain;
+}
+
+.rotten_tomatoes_score {
+    font-size: 30px;
+    display: flex;
+    align-items: center;
+    color: #0b0b0b;
+    height: 50px;
+}
+.rotten_tomatoes_score>span {
+    display: flex;
+    align-items: center;
+    margin-right: 15px;
+}
+.rotten_tomatoes_score>span::before{
+    margin: 0 6px;
+    content: "";
+    background-size: auto;
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    background-size: contain;
+
+}
+.rotten_tomatoes_score>span.rotten_tomatoes_max_tomatoes_rating::before{
+    background: url("../images/tomato_fresh.svg") no-repeat left 0 top 0 transparent;
+    background-size: contain;
+}
+.rotten_tomatoes_score>span.rotten_tomatoes_rating::before{
+    background: url("../images/tomato_rotten.svg") no-repeat left 0 top 0 transparent;
+    background-size: contain;
+}
+.rotten_tomatoes_score>span.rotten_tomatoes_audience_max_tomatoes_rating::before{
+    background: url("../images/tomato_popcorn_red.svg") no-repeat left 0 top 0 transparent;
+    background-size: contain;
+}
+.rotten_tomatoes_score>span.rotten_tomatoes_audience_rating::before{
+    background: url("../images/tomato_popcorn_green.svg") no-repeat left 0 top 0 transparent;
+    background-size: contain;
+}
+
+
+
+.note_show a {
+    text-decoration: underline;
+}
+
+.note_show a:hover {
+    text-decoration: none;
+}
+
+.s_container {
+    position: relative;
+    overflow: hidden;
+    margin: 0 auto;
+    height: 450px;
+}
+.s_container.smoched {
+    filter: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'><filter id='blur'><feGaussianBlur stdDeviation='4' /></filter></svg>#blur");
+}
+.ctf_lightbox {
+    display: none;
+}
+
+.s_container_smoth {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-wrap: wrap;
+    align-content: center;
+    color: #fff;
+    font-size: 24px;
+    background-color: rgba(99, 169, 116, 0.6);
+    text-shadow: 0px 0px 6px #3c6e5d;
+}
+
+
+.s_container_load{
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    z-index: 1000;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-wrap: wrap;
+    align-content: center;
+    background-color: rgba(209, 137, 137, 0.36);
+}
+.s_container_load{
+
+    background-color: rgba(209, 137, 137, 0.36);
+}
+.s_container_load.blue_check{
+
+    background-color: rgba(81, 134, 229, 0.36);
+}
+
+.movie_poster .wrapper{
+    position: relative;
+}
+
+.column_header_main{
+    display: flex;
+}
+.column_inner_content {
+    flex: 1;
+    max-height: 500px;
+    overflow: hidden;
+    transition: all 0.4s;
+}
+.column_inner_content_data{
+    position: relative;
+}
+.column_inner_content.max_with{
+    flex: 3;
+
+}
+
+
+.column_inner_content.max_with .s_container{
+
+    overflow: auto;
+}
+
+.column_inner_content.max_with .s_container_load{
+display: none;
+
+}
+.maxcontent {
+    width: 100%;
+    height: 100vh;
+}
+.maxcontent iframe{
+    width: 100%;
+    height: 100%;
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+
+.button_edit{
+    background: url("../images/edit_modify.svg") no-repeat scroll left 0 top 0 transparent;
+    display: inline-block;
+    width: 48px;
+    height: 48px;
+    cursor: pointer;
+}
+
+.add_pg_rating_button.button_edit {
+    background: url("../images/edit_modify.svg") no-repeat scroll left 0 top 0px transparent;
+
+    display: inline-block;
+    width: 40px;
+    height: 28px;
+    cursor: pointer;
+    background-size: 37px;
+    opacity: 0.38;
+
+}
+.actor_crowdsource_container .actor_crowdsource::before {
+    content: "";
+    display: inline-block;
+    background: url("../images/edit_modify_b.svg") no-repeat scroll left 0 top 0 transparent;
+    width: 48px;
+    height: 48px;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+}
+
+.actor_edit.actor_crowdsource_container .actor_crowdsource::before {
+    background: none;
+}
+.actor_edit {
+    position: absolute;
+    right: 5px;
+    bottom: -8px;
+}
+.actor_edit .button_edit
+{
+    background: url("../images/edit_modify_w.svg") no-repeat scroll left 0 top 0px transparent;
+    opacity: 0.68;
+}
+.actor_edit .button_edit:hover{
+    opacity: 1;
+}
+
+
+.add_pg_rating_button.button_edit:hover {
+    opacity: 1;
+}
+
+.note_big .note {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    background-color: #ccc;
+    color: #000;
+    width: 22px;
+    height: 22px;
+    text-align: center;
+    border-radius: 11px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 17px;
+    font-family: Tahoma;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+/*ethnic*/
+.r_header {
+    display: flex;
+    flex-wrap: wrap;
+}
+.r_header .r_row{
+    display: flex;
+    min-width: 280px;
+}
+.r_row .r_row_item {
+    margin: 0 10px;
+}
+
+
+#Ethnycity_container {
+    position: absolute;
+    left: 75px;
+}
+
+div.ethnycity_select {
+    background-color: #ddd;
+}
+div.sortable {
+    width: 214px;
+    background-color: #dfdfdf;
+    font-size: 16px;
+    margin: 3px;
+    text-align: center;
+    border: medium solid #4b4b4b;
+    color: #000;
+    font-family: 'Encode Sans Condensed',Tahoma;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+}
+.emptySpace {border: medium dotted #4b4b4b; height: 36px; margin: 4px; }
+.note_big {
+    position: relative;
+    min-width: 255px;
+}
+#Ethnycity_container {
+    position: absolute;
+    left: 40px;
+    top: -12px;
+    width: calc(100% - 60px);
+    max-width: 300px;
+    min-width: 220px;
+}
+.etnic_desc {
+    font-size: 19px;
+    line-height: 22px;
+    padding-left: 0px;
+}
+
+.etnic_desc p {
+    height: 43px;
+    font-family: 'Encode Sans Condensed',Lato;
+    margin: 0;
+}
+.main_Ethnycity_container{
+    position: relative;
+}
+.ethnycity_select{
+    cursor: pointer;
+}
+.ethnycity_select.select_disabled
+{
+    background-color: #646262;
+}
+.control_panel{
+    padding-left: 10px;
+}
+.select_type_block.active{
+    background-color: #333232;
+}
+#actor_representation{
+    min-height: 200px;
+}
+
+
+.sug_buttons_wrapper{
+
+    font-size: 14px;
+    font-family: 'Encode Sans Condensed',Lato;
+}
+
+
+.sug_buttons_wrapper .s1::before {
+
+    content: "Pay to watch! ";
+    left: calc(50% - 38px);
+    top: -1.2em;
+    position: absolute;
+    color: green;
+    font-size: 14px;
+    white-space: pre;
+    font-weight: bold;
+
+}
+
+.sug_buttons_wrapper .s2::before {
+
+    content: "Skip it! ";
+    left: calc(50% - 21px);
+    top: -1.2em;
+    position: absolute;
+    color: red;
+    font-size: 14px;
+    white-space: pre;
+    font-weight: bold;
+
+}
+.sug_buttons_wrapper .s3::before {
+    content: "Watch if free. ";
+    top: -1.2em;
+    left: calc(50% - 38px);
+    position: absolute;
+    color: orange;
+    font-size: 14px;
+    white-space: pre;
+    font-weight: bold;
+}
+.content_warning {
+    font-size: 1.4375rem;
+    margin-bottom: 2.438rem;
+}
+.content_red_warning {
+    color: #c20000;
+}
+
+
+@media screen and (max-width: 768px) {
+
+    .column_inner_content {
+    max-height: unset;
+
+    }
+    .twitter_content  h3.column_header{
+        margin-top: 50px;
+    }
+    .column_inner_content {
+        flex: unset;
+        width: 100%;
+        padding: 0 20px;
+    }
+    .column_inner_content.max_with {
+        flex: unset;
+        padding: 0 20px;
+    }
+    .column_header_main {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+}
+@media screen and (max-width: 550px) {
+
+
+    .flex_movies_block .show_more_movie{
+        width: 100%;
+        min-width: 100px;
+        display: block;
+    }
+    .flex_movies_block .movie_button_action{
+        display: flex;
+        margin-top: 10px;
+        gap: 8px;
+        width: 288px;
+    }
+
+    .flex_movies_block .show_more_movie a {
+        background-color: #561b1b;
+        color: #fff;
+        display: flex;
+        padding: 11px;
+        text-transform: uppercase;
+        border-radius: 5px;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+        max-height: 54px;
+        font-size: 16px;
+    }
+
+    .flex_movies_block .watch_buttom {
+        font-size: 16px;
+        width: 100%;
+        position: relative;
+         border-radius: 5px;
+        background-color: #04253f;
+        transition: all 0.2s;
+        outline: none !important;
+        max-width: 220px;
+        margin: 0;
+        display: block;
+        color: #fff;
+        text-transform: uppercase;
+        border: none;
+        letter-spacing: 0.1em;
+        padding: 10px;
+        z-index: 110;
+        min-width: 100px;
+        max-height: 54px;
+    }
+
+    .hidden-xs{
+        display: none;
+    }
+
+    .flex_movies_block .movie_description {
+        display: none;
+    }
+
+    .flex_movies_block .movie_container.opened .movie_description {
+     display: block;
+        top: 0px;
+
+    }
+
+    .flex_movies_block   .movie_container:hover .movie_poster .image{
+        opacity: 1;
+    }
+    .flex_movies_block .movie_container.opened .movie_poster .image{
+        opacity: 0.1;
+    }
+    .close_filters {
+        margin: -4px 5px;
+    }
+    .movie_container {
+        display: block;
+        margin-bottom: 0px;
+
+    }
+
+   .movie_poster .image{
+        margin: 20px auto 0 auto;
+    }
+
+    .movie_description h1 {
+        font-size: 23px;
+        text-align: center;
+    }
+    .movie_watch {
+        width: 100%;
+    }
+    .actor_image {
+        max-width:100%!important;
+    }
+    .rating .col_title {
+        font-size: 19px;
+    }
+    .r_row .r_row_item {
+        margin: 0 4px;
+    }
+    .r_row .big_checkbox label {
+        font-size: 18px;
+    }
+    .r_row .big_checkbox input[type="checkbox"] {
+        width: 24px;
+        height: 24px;
+    }
+
+    .r_header .r_row {
+        justify-content: space-between;
+        width: 100%;
+    }
+    details.dark {
+        width: 100%;
+    }
+    div.sortable {
+        width: 100%;
+    }
+}
