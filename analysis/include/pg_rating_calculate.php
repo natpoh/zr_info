@@ -238,7 +238,7 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
             }
 
             !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-            Import::create_commit('', 'update', 'data_movie_rating', array('movie_id' => $id), 'movie_rating',11);
+            Import::create_commit('', 'update', 'data_movie_rating', array('movie_id' => $id), 'movie_rating',11,['skip'=>['id']]);
 
         }
 
@@ -1343,7 +1343,7 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
 
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', 'cache_rwt_rating', array('movie_id' => $rid), 'cache_rwt_rating',20);
+                Import::create_commit('', 'update', 'cache_rwt_rating', array('movie_id' => $rid), 'cache_rwt_rating',20,['skip'=>['id']]);
 
 
             }
@@ -1360,7 +1360,7 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
                 Pdo_an::db_results_array($sql, array($rid, $type, $ar['vote'], $ar['rating'], $ar['affirmative'], $ar['god'], $ar['hollywood'], $ar['lgbtq'], $ar['misandry'], $ar['patriotism']));
 
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', 'cache_rwt_rating', array('movie_id' => $rid), 'cache_rwt_rating',20);
+                Import::create_commit('', 'update', 'cache_rwt_rating', array('movie_id' => $rid), 'cache_rwt_rating',20,['skip'=>['id']]);
 
             }
 

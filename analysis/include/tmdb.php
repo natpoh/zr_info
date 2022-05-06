@@ -173,7 +173,9 @@ class TMDB
         Pdo_an::db_query($sql);
 
         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-        Import::create_commit('', 'update', 'data_movie_imdb', array('movie_id' => $imdb_id), 'movie_update',6);
+
+        $mid = self::get_id_from_imdbid($imdb_id);
+        Import::create_commit('', 'update', 'data_movie_imdb', array('id' => $mid), 'movie_update',6);
 
     }
 

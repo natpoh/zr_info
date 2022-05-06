@@ -9,6 +9,10 @@ if (!defined('ABSPATH'))
 
 !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
 
+if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
+    define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
+    require_once( CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php' );
+}
 
 if (isset($_POST['oper'])) {
 
@@ -113,11 +117,14 @@ if (isset($_POST['oper'])) {
                 $data_obj['rwt_id'] = $id;
                 $reqest_field = 'rwt_id';
             }
+            
+            $cm = new CriticMatic();
+            $remote_ip = $cm->get_remote_ip();
 
             $data_obj['user'] = $user_id;
             $data_obj['status'] = 0;
             $data_obj['add_time'] = time();
-            $data_obj['ip'] = $_SERVER['REMOTE_ADDR'];
+            $data_obj['ip'] = $remote_ip;
 
             // Check ip
 
@@ -131,7 +138,7 @@ if (isset($_POST['oper'])) {
             }
             $cfront = new CriticFront();
 
-            $ip = trim($_SERVER['REMOTE_ADDR']);
+            $ip = $remote_ip;
             $ip_item = $cfront->cm->get_ip($ip);
 
             $status = 0;

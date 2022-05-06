@@ -77,7 +77,7 @@ class PgRating
                 if ($debug)echo 'update cms '.$movie_id.'<br>'.PHP_EOL;
 
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', 'data_pg_rating', array('movie_id' => $movie_id), 'pg_rating',9);
+                Import::create_commit('', 'update', 'data_pg_rating', array('movie_id' => $movie_id), 'pg_rating',9,['skip'=>['id']]);
 
             } else {
                 $sql = "UPDATE `data_pg_rating` SET `cms_date` = '" . time() . "'  WHERE `data_pg_rating`.`movie_id` = " . $movie_id;
@@ -188,7 +188,7 @@ class PgRating
         foreach ($array_pg_commit as $mid=>$enable)
         {
             !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-            Import::create_commit('', 'update', 'data_pg_rating', array('movie_id' => $mid), 'pg_rating',9);
+            Import::create_commit('', 'update', 'data_pg_rating', array('movie_id' => $mid), 'pg_rating',9,['skip'=>['id']]);
 
         }
 
