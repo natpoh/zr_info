@@ -435,6 +435,10 @@ display: inline-block;
                 $movie_list_str = json_encode($movie_list);
 
                 $this->set_option(16,$movie_list_str);
+
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                 Import::create_commit('', 'update', 'options', array('id' => 16), 'options',7);
+
             }
 
         if ($result_data)
