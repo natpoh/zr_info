@@ -926,7 +926,7 @@ return 1;
                 Pdo_an::db_query($sql);
 
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('','delete',$table,array('id'=>$data["id"]),'movie_meta_actor',5);
+                Import::create_commit('','delete',$table,array('mid'=>$data["mid"],'aid'=>$data["aid"],'type'=>$data["type"]),'movie_meta_actor',5);
             }
 
         }
@@ -1025,7 +1025,9 @@ public static function add_todb_actor($id,$name='')
                 $aid = Pdo_an::last_id();
 
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('','update',$table,array('id'=>$aid),'movie_meta_actor',5);
+
+                $array_custom =array('skip'=>['id']);
+                Import::create_commit('','update',$table,array('mid'=>$mid,'aid'=>$id,'type'=>$type),'movie_meta_actor',5,$array_custom);
 
             }
 

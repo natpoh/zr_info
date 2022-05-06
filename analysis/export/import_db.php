@@ -20,7 +20,7 @@ class Import
 
     public static function debug()
     {
-        return 1;
+        return 0;
     }
 
 
@@ -261,19 +261,19 @@ public static function commit_info_request($uid)
 
 
 
-    public static function create_commit($commit_id='',$type,$db,$request,$name = '',$priority=1,$array_update='')
+    public static function create_commit($commit_id='',$type,$db,$request,$name = '',$priority=1,$array_custom='',$array_return='')
     {
 
-        if ($array_update)
-        {
-            $ajax_data = array("type"=>$type,"request"=>$request,"db"=>$db,"u"=>$array_update);
-        }
-        else
-        {
-            $ajax_data = array("type"=>$type,"request"=>$request,"db"=>$db);
-        }
+        $ajax_data = array("type"=>$type,"request"=>$request,"db"=>$db);
 
-
+        if ($array_return)
+        {
+            $ajax_data["u"]=$array_return;
+        }
+        if ($array_custom)
+        {
+            $ajax_data["custom"]=$array_custom;
+        }
 
         return self::set_commit($name,$ajax_data,$commit_id,'',0,$priority);
 
@@ -422,13 +422,18 @@ public static function commit_info_request($uid)
     {
         $db=$val['db'];
         $wo = $val['request'];
+        $custom = $val['custom'];
+
+
 
         if ($val['type']=="update")
         {
 
             if ($wo) {
                 foreach ($wo as $i => $v) {
-                    $where .= "and `" . $i . "` = '" . $v . "' ";
+
+                        $where .= "AND `" . $i . "` = '" . $v . "' ";
+
                 }
                 if ($where) {
                     $where = substr($where, 3);
@@ -438,18 +443,29 @@ public static function commit_info_request($uid)
                 $object_setup[$db]['request'] = $wo;
 
                 $sql = "SELECT * FROM " . $db . " where ".$where;
-                //$object_setup[$db]['sql']=$sql;
+
+                if (self::debug())$object_setup[$db]['sql']=$sql;
 
                 $result = Pdo_an::db_results_array($sql);
                 //$object_setup = [];
-
-
             }
+
+
             if (is_array($result))
                 foreach ($result as $num=> $r)
                 {
                     foreach ($r as $i=>$v) {
-                        $object_setup[$db]['columns'][$num][$i] = $v;
+
+                        if (in_array($i,$custom['skip']))
+                        {
+                          ///skip
+                        }
+                        else
+                        {
+                            $object_setup[$db]['columns'][$num][$i] = $v;
+                        }
+
+
                     }
 
                 }
@@ -681,7 +697,7 @@ public static function custom_function($array)
 
                             foreach ($object_setup_all['columns'] as $index => $object_setup){
 
-                            if (!$object_setup_all['request'] || $count_rows>1)
+                            if (!$object_setup_all['request'] )
                             {
                                 $object_setup_all['request'] = self::check_request($object_setup,$table);
                             }
@@ -1042,46 +1058,46 @@ public static function custom_function($array)
         return $result;
     }
 
-    public static function delete_data($data)
-    {
-        $data_obj = $data['data'];
-        $result = array();
-
-        if ($data_obj) {
-
-            $object_setup = json_decode($data_obj, 1);
-            if (!$object_setup) {
-                $result['error']['data_obj'] = json_last_error_msg();
-            }
-
-
-        }
-        else
-        {
-            $object_setup=[];
-
-        }
-        $options_data = self::get_import_data();
-        if ($options_data['delete_request']==1) {
-
-
-            foreach ($object_setup as $type => $object_data) {
-
-                $array_req = self::get_array_colmuns('', $object_data['request']);
-
-                $result[$type] = self::delete_table($type, $array_req['where']);
-
-            }
-        }
-        else
-        {
-            $result['request']   = 'no_permission_to_delete';
-        }
-        return $result;
-
-
-
-    }
+//    public static function delete_data($data)
+//    {
+//        $data_obj = $data['data'];
+//        $result = array();
+//
+//        if ($data_obj) {
+//
+//            $object_setup = json_decode($data_obj, 1);
+//            if (!$object_setup) {
+//                $result['error']['data_obj'] = json_last_error_msg();
+//            }
+//
+//
+//        }
+//        else
+//        {
+//            $object_setup=[];
+//
+//        }
+//        $options_data = self::get_import_data();
+//        if ($options_data['delete_request']==1) {
+//
+//
+//            foreach ($object_setup as $type => $object_data) {
+//
+//                $array_req = self::get_array_colmuns('', $object_data['request']);
+//
+//                $result[$type] = self::delete_table($type, $array_req['where']);
+//
+//            }
+//        }
+//        else
+//        {
+//            $result['request']   = 'no_permission_to_delete';
+//        }
+//        return $result;
+//
+//
+//
+//    }
 
     public static function get_data($data)
     {
@@ -1125,7 +1141,10 @@ public static function custom_function($array)
         $oper_get_colums='';
 
         if ($array_columns) {
+
             foreach ($array_columns as $row => $value) {
+
+
                 $oper_insert_colums .= ",`" . $row . "`";
                 $oper_insert_data .= ",?";
                 $data_array[] = $value;
@@ -1134,15 +1153,16 @@ public static function custom_function($array)
             }
 
         }
+
         if (is_array($request))
         {
             foreach ($request as $i=>$v)
             {
-                $where .= "OR `" . $i . "` = '" . $v . "' ";
+                $where .= "AND `" . $i . "` = '" . $v . "' ";
             }
         }
         if ($where) {
-            $where = substr($where, 2);
+            $where = substr($where, 3);
             $where = " WHERE (" . $where . ") ";
         }
 
