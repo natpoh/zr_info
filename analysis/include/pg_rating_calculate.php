@@ -1017,6 +1017,15 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
             ////update rwt pg cache
         }
 
+        if ($update)
+        {
+
+            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+            Import::create_commit('', 'update', 'data_pg_rating', array('movie_id' => $imdb_id), 'pg_rating',9,['skip'=>['id']]);
+
+
+        }
+
 
         if ($debug)
             self::debug_table('Total rating', $total, 'green');

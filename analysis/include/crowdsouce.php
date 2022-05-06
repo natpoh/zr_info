@@ -65,10 +65,17 @@ class Crowdsource
             if ($request =='trash')
             {
                 $sql ="DELETE FROM `data_".$table."` WHERE `data_".$table."`.`id` = ".$id;
+
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                Import::create_commit('', 'delete', "data_" . $table, array('id' => $id), 'crowsource',5);
+
             }
             else
             {
                 $sql ="update data_".$table." set status =".intval($request)." where id=".$id;
+
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                Import::create_commit('', 'update', "data_" . $table, array('id' => $id), 'crowsource',5);
 
             }
 
@@ -186,6 +193,8 @@ return $result;
                 $sql =" UPDATE `data_actors_meta` SET `crowdsource` = '".$verdict."' ,`n_crowdsource` = '".(self::intconvert($verdict))."' ,
                 `last_update` = ".time()." WHERE `data_actors_meta`.`actor_id` =".$actor;
                 Pdo_an::db_query($sql);
+
+
             }
             ///update gender
             if ($gender)
@@ -194,16 +203,22 @@ return $result;
 
                 $sql =" UPDATE `data_actors_meta` SET `gender` = '".$array_gender[$gender]."'  ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` =".$actor;
                 Pdo_an::db_query($sql);
-            }
-            ///delete image cache
 
-                 $filename_ex  = $_SERVER['DOCUMENT_ROOT'].'/analysis/img_result/'.$id.'_*.jpg';
-                 array_map("unlink", glob($filename_ex));
+
+            }
+            if ($verdict || $gender)
+            {
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                Import::create_commit('', 'update', 'data_actors_meta', array('actor_id' => $actor), 'actor_meta',9,['skip'=>['id']]);
+            }
+
+//            ///delete image cache
+//
+//                 $filename_ex  = $_SERVER['DOCUMENT_ROOT'].'/analysis/img_result/'.$id.'_*.jpg';
+//                 array_map("unlink", glob($filename_ex));
 
         }
         if ($table=='review_crowd'){
-
-
 
             $sql = "select * from data_".$table." where id =".$id;
             $data =  Pdo_an::db_fetch_row($sql);
