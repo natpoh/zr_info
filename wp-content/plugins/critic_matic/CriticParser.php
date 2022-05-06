@@ -201,6 +201,7 @@ class CriticParser extends AbstractDBWp {
                 'yt_parse_num' => 50,
                 'yt_pr_num' => 50,
                 'yt_pr_status' => 0,
+                'new_urls_weight' => 0,
                 'find_urls' => array(
                     'first' => '',
                     'page' => '',
@@ -963,6 +964,11 @@ class CriticParser extends AbstractDBWp {
         $this->db_query($sql);
     }
 
+    public function update_url_campaing($id, $cid) {
+        $sql = sprintf("UPDATE {$this->db['url']} SET cid=%d WHERE id = %d", (int) $cid, (int) $id);
+        $this->db_query($sql);
+    }
+
     private function get_dom($rule, $match_str, $code) {
         $content = '';
         if ($rule && $code) {
@@ -1228,6 +1234,29 @@ class CriticParser extends AbstractDBWp {
         return $result;
     }
 
+    public function get_campaign_weight($id, $cache = true) {
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$id])) {
+                return $dict[$id];
+            }
+        }
+
+        $campaign = $this->get_campaign($id, $cache);
+        $options = $this->get_options($campaign);
+        $weight = $options['new_urls_weight'];
+
+
+        if ($cache) {
+            $dict[$id] = $weight;
+        }
+        return $weight;
+    }
+
     public function campaign_edit_validate($form_state) {
 
         if (isset($form_state['trash']) || isset($form_state['add_urls']) || isset($form_state['yt_urls'])) {
@@ -1279,6 +1308,7 @@ class CriticParser extends AbstractDBWp {
             'yt_parse_num' => isset($form_state['yt_parse_num']) ? $form_state['yt_parse_num'] : $def_opt['yt_parse_num'],
             'yt_pr_num' => isset($form_state['yt_pr_num']) ? $form_state['yt_pr_num'] : $def_opt['yt_pr_num'],
             'yt_pr_status' => isset($form_state['yt_pr_status']) ? $form_state['yt_pr_status'] : $def_opt['yt_pr_status'],
+            'new_urls_weight' => isset($form_state['new_urls_weight']) ? $form_state['new_urls_weight'] : $def_opt['new_urls_weight'],
         );
         $status = isset($form_state['status']) ? $form_state['status'] : 0;
 
@@ -1441,7 +1471,7 @@ class CriticParser extends AbstractDBWp {
 
                 $this->update_campaign_options($id, $options);
             } else if ($form_state['add_urls']) {
-                $this->add_urls($id, $form_state['add_urls']);
+                $this->add_urls($id, $form_state['add_urls'], $opt_prev);
             }
         }
     }
@@ -1477,7 +1507,7 @@ class CriticParser extends AbstractDBWp {
         $wait = isset($find_urls['wait']) ? (int) $find_urls['wait'] : 1;
 
         $cid = $campaign->id;
-        $ret = $this->parse_urls($cid, $reg, $urls, $wait, $preview);
+        $ret = $this->parse_urls($cid, $reg, $urls, $options, $wait, $preview);
 
         return $ret;
     }
@@ -1498,7 +1528,7 @@ class CriticParser extends AbstractDBWp {
 
             $reg = isset($cron_urls['match']) ? base64_decode($cron_urls['match']) : '';
             $wait = 0;
-            $ret = $this->parse_urls($cid, $reg, $urls, $wait, $preview);
+            $ret = $this->parse_urls($cid, $reg, $urls, $options, $wait, $preview);
         }
         return $ret;
     }
@@ -1557,6 +1587,8 @@ class CriticParser extends AbstractDBWp {
         $cnt = $options['yt_urls']['per_page'];
         $client_id = base64_decode($options['yt_page']);
 
+        $new_urls_weight = $options['new_urls_weight'];
+
         $ret = array();
         $ret['urls'] = array();
 
@@ -1575,7 +1607,7 @@ class CriticParser extends AbstractDBWp {
                         if ($preview) {
                             continue;
                         }
-                        if ($this->add_url($cid, $url)) {
+                        if ($this->add_url($cid, $url, $new_urls_weight)) {
                             $ret['add_urls'][] = $url;
                         }
                     }
@@ -1586,9 +1618,10 @@ class CriticParser extends AbstractDBWp {
         return $ret;
     }
 
-    private function parse_urls($cid, $reg, $urls, $wait, $preview) {
+    private function parse_urls($cid, $reg, $urls, $options, $wait, $preview) {
 
         $ret = array();
+        $new_urls_weight = $options['new_urls_weight'];
 
         if ($reg && $urls) {
             foreach ($urls as $url) {
@@ -1603,7 +1636,7 @@ class CriticParser extends AbstractDBWp {
                         }
 
                         if (!$preview) {
-                            $add = $this->add_url($cid, $u);
+                            $add = $this->add_url($cid, $u, $new_urls_weight);
                             if ($add) {
                                 $ret['add_urls'][] = $u;
                             }
@@ -1644,18 +1677,20 @@ class CriticParser extends AbstractDBWp {
      * URLs
      */
 
-    private function add_urls($id, $add_urls) {
+    private function add_urls($id, $add_urls, $options) {
         if (strstr($add_urls, "\n")) {
             $list = explode("\n", $add_urls);
         } else {
             $list = array($add_urls);
         }
+        
+        $new_urls_weight = $options['new_urls_weight'];
 
         $count = 0;
         foreach ($list as $url) {
             $url = trim($url);
             if ($url) {
-                $add = $this->add_url($id, $url);
+                $add = $this->add_url($id, $url, $new_urls_weight);
                 if ($add) {
                     $count += 1;
                 }
@@ -1667,9 +1702,20 @@ class CriticParser extends AbstractDBWp {
         }
     }
 
-    public function add_url($cid, $link) {
+    public function add_url($cid, $link, $weight = 0) {
         $link_hash = $this->link_hash($link);
-        if ($this->get_url_by_hash($link_hash)) {
+        $url_exist = $this->get_url_by_hash($link_hash);
+        if ($url_exist) {
+            // URL already exist in another campaign            
+            if ($weight > 0 && $cid != $url_exist->cid) {
+                // Check old campaign weight
+                $old_weight = $this->get_campaign_weight($url_exist->cid);
+                if ($weight > $old_weight) {
+                    $this->update_url_campaing($url_exist->id, $cid);
+                    $message = 'Update URL campaign from ' . $url_exist->cid . ' to ' . $cid;
+                    $this->log_info($message, $cid, $url_exist->id, 1);
+                }
+            }
             return 0;
         }
         /*
@@ -1710,7 +1756,7 @@ class CriticParser extends AbstractDBWp {
     }
 
     public function get_url_by_hash($link_hash) {
-        $sql = sprintf("SELECT * FROM {$this->db['url']} WHERE link_hash = '%s'", $link_hash);
+        $sql = sprintf("SELECT id, cid FROM {$this->db['url']} WHERE link_hash = '%s'", $link_hash);
         $result = $this->db_fetch_row($sql);
         return $result;
     }
@@ -2907,7 +2953,7 @@ class CriticParser extends AbstractDBWp {
         }
         return gzencode(json_encode($response));
     }
-    
+
     /*
      * Other functions
      */
@@ -2949,6 +2995,79 @@ class CriticParser extends AbstractDBWp {
         curl_close($ch);
 
         return $body;
+    }
+    
+        public function get_webdriver($url, &$header = '', $settings = '', $use_driver = -1) {
+
+        $webdrivers_text = base64_decode($settings['web_drivers']);
+        //http://165.227.101.220:8110/?p=ds1bfgFe_23_KJDS-F&url= http://185.135.80.156:8110/?p=ds1bfgFe_23_KJDS-F&url= http://148.251.54.53:8110/?p=ds1bfgFe_23_KJDS-F&url=
+        $web_arr = array();
+        if ($webdrivers_text) {
+            if (strstr($webdrivers_text, "\n")) {
+                $web_arr = explode("\n", $webdrivers_text);
+            } else {
+                $web_arr = array($webdrivers_text);
+            }
+        }
+
+        if (!$web_arr) {
+            return 'No webdrivers found';
+        }
+
+        if ($use_driver != -1) {
+            if (!isset($web_arr[$use_driver])) {
+                return 'Webdriver not found, ' . $use_driver;
+            }
+        }
+
+        $current_driver = trim($web_arr[array_rand($web_arr, 1)]);
+        $url = $current_driver . $url;
+
+        $ch = curl_init();
+        $ss = $settings ? $settings : array();
+        $curl_user_agent = isset($ss['parser_user_agent']) ? $ss['parser_user_agent'] : '';
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 1);
+        curl_setopt($ch, CURLOPT_ENCODING, 'deflate');
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 60);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+        if ($curl_user_agent) {
+            curl_setopt($ch, CURLOPT_USERAGENT, $curl_user_agent);
+        }
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+
+        curl_setopt($ch, CURLINFO_HEADER_OUT, true); // enable tracking
+
+
+        $response = curl_exec($ch);
+        $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        $headerSent = curl_getinfo($ch, CURLINFO_HEADER_OUT); // request headers
+        $header_responce = substr($response, 0, $header_size);
+
+        $header = "RESPONCE:\n" . $header_responce . "\nREQUEST:\n" . $headerSent;
+        $body = substr($response, $header_size);
+
+        curl_close($ch);
+
+        return $body;
+    }
+
+    public function send_curl_no_responce($url) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_ENCODING, 'deflate');
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        $response = curl_exec($ch);
+        curl_close($ch);
     }
 
     public function absoluteUrlFilter($domain, $content) {

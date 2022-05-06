@@ -1,5 +1,7 @@
 <?php
-
+/*
+ * UNUSED
+ */
 require_once($_SERVER['DOCUMENT_ROOT'] . '/wp-config.php');
 nocache_headers();
 
@@ -330,3 +332,4 @@ jQuery.noConflict();
  */
 //jQuery(jQuery.find('h3.entry-heading > a')).each(function(){console.log(jQuery(this).attr('href'))})
 //jQuery(jQuery.find('.podcast__episodes-item-title a')).each(function(){console.log(jQuery(this).attr('href'))})
+//jQuery(jQuery.find('.post-list-article__title a')).each(function(){console.log(jQuery(this).attr('href'))})

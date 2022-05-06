@@ -10,9 +10,11 @@ class CriticEmotions extends AbstractDB {
         5 => 'sad',
         6 => 'angry'
     );
+    private $cm;
     public $top_results = true;
 
-    public function __construct() {
+    public function __construct($cm) {
+        $this->cm = $cm;
         $table_prefix = DB_PREFIX_WP_AN;
         $this->db = array(
             // CE
@@ -115,8 +117,8 @@ class CriticEmotions extends AbstractDB {
         if ($this->top_results) {
             foreach ($post_ids as $post_id) {
                 $reaction = $this->get_top_reaction($post_id);
-                if ($reaction['count']>0){                
-                    $array_like[$post_id] = $reaction['count'];                    
+                if ($reaction['count'] > 0) {
+                    $array_like[$post_id] = $reaction['count'];
                     $user_like[$post_id] = 'user-reaction-' . $reaction['key'];
                 } else {
                     $array_like[$post_id] = '';
@@ -340,7 +342,8 @@ class CriticEmotions extends AbstractDB {
     }
 
     public function unic_id() {
-        $unic_id = md5($_SERVER["HTTP_USER_AGENT"] . $_SERVER['REMOTE_ADDR']);
+        $ip = $this->cm->get_remote_ip();
+        $unic_id = md5($_SERVER["HTTP_USER_AGENT"] . $ip);
         return $unic_id;
     }
 

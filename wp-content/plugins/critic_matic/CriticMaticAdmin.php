@@ -690,6 +690,29 @@ class CriticMaticAdmin {
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_audience.php');
             wp_enqueue_style('audience_rating', CRITIC_MATIC_PLUGIN_URL . 'css/rating.css', false, CRITIC_MATIC_VERSION);
+            
+        } else if ($curr_tab == 'queue') {
+
+            $ca = $this->get_ca();
+            
+            $home_status = 0;
+            if ($status==-1){
+                $status=0;
+            }
+            $page_url = $page_url . '&tab=' . $curr_tab;
+            $filter_arr = $ca->get_queue_states();
+            $filters = $this->get_filters($filter_arr, $page_url, $status);
+            if ($status != $home_status) {
+                $page_url = $page_url . '&status=' . $status;
+            }
+
+            $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
+            $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+            $posts = $ca->get_queue($status, $page, $per_page, $orderby, $order);
+
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_queue_audience.php');
+            wp_enqueue_style('audience_rating', CRITIC_MATIC_PLUGIN_URL . 'css/rating.css', false, CRITIC_MATIC_VERSION);
+            
         } else if ($curr_tab == 'iplist') {
             // Get IP list
             $page_url .= '&tab=' . $curr_tab;
@@ -1760,7 +1783,7 @@ class CriticMaticAdmin {
                 // Custom options
                 $type_opt = $options[$type_name];
                 $active = $type_opt['status'];
-     
+
                 if ($active == 1) {
                     $count_urls = $this->cp->process_campaign($campaign, 'cron_urls');
                 } else {
@@ -2085,6 +2108,9 @@ class CriticMaticAdmin {
         $type = isset($_GET['type']) ? (int) $_GET['type'] : $home_type;
         $filter_type_arr = $this->cm->get_post_types($cid, $type, $aid);
         $filters_type = $this->get_filters($filter_type_arr, $page_url, $type, $front_slug = '', $name = 'type');
+        if ($type != -1) {
+            $page_url .= '&type=' . $type;
+        }
 
         $count = isset($filter_type_arr[$home_type]['count']) ? $filter_type_arr[$home_type]['count'] : 0;
 

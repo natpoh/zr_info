@@ -3,89 +3,6 @@
 /*
  * Critic matic class. 
  * Used for manage critic posts
- * 
- * TODO
- * 
- * // Reviews
- * 1. Unique autors in preview
- * 2. Weight range for revew type: proper > contains. 
- * 3. Add a weight handicap for specific critics
- * 4. Custom regexp words change weight
- * 5. Add audience rating for movies
- * 
- * 
- * 
- * // New api
- * +transit audience posts
- * +transit staff posts
- * 
- * //Search
- * +new search for movies and critics posts
- * +add search sort by: date, title, relevance
- * 
- * +format paragraphs for all posts
- * +secret key for authors
- * +transit audience by secret key
- * +ajax view for posts
- * +redirect 301 from old critcs to new
- * +change critics link in main menu - Go to admin panel and change menu links
- * +get top movie by url, -validate meta
- * +show critic tags pages
- * +-autoblur critic spoilers
- * +cache for critic items
- * +show relevant critics for any movie pages
- * transit staff ratings to new format from content body
- * +critic emotions ratings
- * +audience avatars
- * +remove comas for empty cast list
- * cache movie teasers
- * +remove auto meta: DELETE FROM critic_matic_posts_meta WHERE state=2
- * +remove movie meta dates: DELETE FROM search_movies_meta
- * 
- * // Edit posts
- * +add posts meta, autocomplite movie title
- * +fix coma title bug
- * 
- * 
- * //Search
- * +Add sphinx host to server an_config
- * +Add new counter add_counter=1
- * +Change critic config
- * +Not found search page
- * 
- * /search/genre-drama_action/Provider-Youtube_Google-video/type-tv
- * 
- * +Get movies from an db
- * +set post_name in an db (get or create post name)
- * +add the movie poster api: poster/type/w/h/id
- * +relink critics to new posts (find, update, show)
- * +open new posts from old movie urls
- * +search in an db posts
- * 
- * //Audience
- * +Add admin tab
- * +Add form in front
- * +Add ajax backend
- * +Add js logic in front
- * Add bulk edit
- * Add already voted list
- * +Add wp editor
- * 
- * 
- * //Parser
- * remove protocol from link hash
- * 
- * 
- * // Admin
- * edit ratings
- * +view movee meta in single post page
- * +edit movie meta
- * add buttom "Force update search meta"
- * remove meta button
- * 
- * // Old api
- * disable old api
- * remove old posts
  */
 
 class CriticMatic extends AbstractDB {
@@ -94,6 +11,7 @@ class CriticMatic extends AbstractDB {
     private $db = array();
     public $user_can;
     public $new_audience_count = 0;
+    private $cp;
 
     /*
      * Posts
@@ -200,6 +118,7 @@ class CriticMatic extends AbstractDB {
     /* Audience */
     public $audience_tabs = array(
         'home' => 'Posts',
+        'queue' => 'Queue',
         'iplist' => 'IP list'
     );
     public $ip_status = array(
@@ -278,6 +197,17 @@ class CriticMatic extends AbstractDB {
                 'god' => "<strong>「&quot;Anti-God Themes&quot;」</strong>&nbsp;rates&nbsp;the&nbsp;amount&nbsp;of slander towards God and/or <a title=&quot;Hollywood Reporter article about Pat Boone explaining why he boycotts SNL, and thinks they're cowards for not criticizing Islam as they do with 'God's Not Dead 2.'&quot; class=&quot;window_open&quot; href=&quot;#http://www.hollywoodreporter.com/news/pat-boone-accuses-snl-anti-885253&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>Christian</a> ethics. As with all these ratings, whether this is positive or negative is up to the reviewer. If you're a Pagan Alt Righter or Atheist Anarcho Capitalist, this may be good in your eyes."
             )
         );
+    }
+
+    public function get_cp() {
+        // Get CriticParser
+        if (!$this->cp) {
+            if (!class_exists('CriticParser')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticParser.php' );
+            }
+            $this->cp = new CriticParser($this->cp);
+        }
+        return $this->cp;
     }
 
     function admin_bar_render($wp_admin_bar) {
@@ -2070,6 +2000,21 @@ class CriticMatic extends AbstractDB {
         return $result;
     }
 
+    public function get_critics_meta_weights($fid = 0) {
+        $sql = sprintf("SELECT cid, rating "
+                . "FROM {$this->db['meta']} "
+                . "WHERE fid=%d", $fid);
+        $results = $this->db_results($sql);
+        $ret = array();
+        if ($results) {
+            foreach ($results as $item) {
+                $ret[$item->cid] = $item->rating;
+            }
+            arsort($ret);
+        }
+        return $ret;
+    }
+
     public function get_top_critics_meta($cid) {
         // 1. Get meta where state = Approved
         $sql = sprintf("SELECT fid "
@@ -2204,6 +2149,11 @@ class CriticMatic extends AbstractDB {
     public function get_post_rating($cid) {
         $sql = sprintf("SELECT * FROM {$this->db['rating']} WHERE cid = %d", (int) $cid);
         $result = $this->db_fetch_row($sql);
+        $ret = $this->get_rating_array($result);
+        return $ret;
+    }
+
+    public function get_rating_array($result) {
         $ret = array();
         if ($result) {
             $rating = array();
@@ -3025,6 +2975,52 @@ class CriticMatic extends AbstractDB {
         }
 
         return array('code' => $country_code, 'name' => $country_name, 'path' => $country_path);
+    }
+
+    /**
+     * функция определяет ip адрес по глобальному массиву $_SERVER
+     * ip адреса проверяются начиная с приоритетного, для определения возможного использования прокси
+     * @return ip-адрес
+     */
+    function get_remote_ip() {
+        $ip = false;
+        if (isset($_SERVER['HTTP_CF_CONNECTING_IP']))
+            $ipa[] = trim($_SERVER['HTTP_CF_CONNECTING_IP']);
+
+        if (isset($_SERVER['HTTP_X_FORWARDED_FOR']))
+            $ipa[] = trim(strtok($_SERVER['HTTP_X_FORWARDED_FOR'], ','));
+
+        if (isset($_SERVER['HTTP_CLIENT_IP']))
+            $ipa[] = $_SERVER['HTTP_CLIENT_IP'];
+
+        if (isset($_SERVER['REMOTE_ADDR']))
+            $ipa[] = $_SERVER['REMOTE_ADDR'];
+
+        if (isset($_SERVER['HTTP_X_REAL_IP']))
+            $ipa[] = $_SERVER['HTTP_X_REAL_IP'];
+
+        // проверяем ip-адреса на валидность начиная с приоритетного.
+        foreach ($ipa as $ips) {
+            //  если ip валидный обрываем цикл, назначаем ip адрес и возвращаем его
+            if ($this->is_valid_ip($ips)) {
+                $ip = $ips;
+                break;
+            }
+        }
+
+        return $ip;
+    }
+
+    /**
+     * функция для проверки валидности ip адреса
+     * @param ip адрес в формате 1.2.3.4
+     * @return bolean : true - если ip валидный, иначе false
+     */
+    private function is_valid_ip($ip = null) {
+        if (preg_match("#^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$#", $ip))
+            return true; // если ip-адрес попадает под регулярное выражение, возвращаем true
+
+        return false; // иначе возвращаем false
     }
 
     public function getGeoData($ip = '') {

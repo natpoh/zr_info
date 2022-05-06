@@ -35,15 +35,15 @@ $force = false;
 if ($_GET['force']) {
     $force = true;
 }
-if ($_GET['directors']) {
-
-    $cm = new CriticMatic();
-    require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticTransit.php' );
-
-    $cr = new CriticTransit($cm);
-    $cr->transit_directors($count, $debug);
-    return;
-}
+//if ($_GET['directors']) {
+//
+//    $cm = new CriticMatic();
+//    require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticTransit.php' );
+//
+//    $cr = new CriticTransit($cm);
+//    $cr->transit_directors($count, $debug);
+//    return;
+//}
 
 
 $cm = new CriticMatic();
@@ -52,17 +52,16 @@ $cm = new CriticMatic();
 require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticTransit.php' );
 $cr = new CriticTransit($cm);
 
-// Create actors slug
-$cr->actor_slug($acount, $debug);
+//// Create actors slug
+//$cr->actor_slug($acount, $debug);
 
 //One time transit data
 $cr->transit_genres($count, $debug);
 
-
-$cr->transit_actors($count, $debug);
-
 //One time transit data
 $cr->transit_countries($count, $debug);
+
+//$cr->transit_actors($count, $debug);
 
 // One time task. Complite
 //$cr->transit_providers();
