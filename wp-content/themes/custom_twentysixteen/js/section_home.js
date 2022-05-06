@@ -1405,7 +1405,7 @@ function load_next_block(block_id) {
 
 ////load content
 function check_load_block() {
-    var topcur = jQuery(window).scrollTop() + jQuery(window).height() + 200;
+    var topcur = jQuery(window).scrollTop() + jQuery(window).height() + 800;
     var last_bloc = get_Top('.not_load:visible');
     ///  console.log('last_bloc '+last_bloc+' topcur '+topcur);
     if (last_bloc) {

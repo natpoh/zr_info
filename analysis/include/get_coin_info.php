@@ -239,7 +239,7 @@ class GETCOINS
            Pdo_an::db_results_array($sql,$array);
 
            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-           Import::create_commit('', 'update', 'cache_donations', array('uniq_id' => $uq), 'donations',15);
+           Import::create_commit('', 'update', 'cache_donations', array('uniq_id' => $uq), 'donations',15,['skip'=>['id']]);
 
        }
        else

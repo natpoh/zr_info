@@ -544,7 +544,7 @@ VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
     ///commit
 
     !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-    Import::create_commit('', 'update', $table, array('actor_id' => $id), 'kairos_race',9);
+    Import::create_commit('', 'update', $table, array('actor_id' => $id), 'kairos_race',9,['skip'=>['id']]);
 
 }
 

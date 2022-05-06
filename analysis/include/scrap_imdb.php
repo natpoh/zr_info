@@ -442,7 +442,7 @@ $sql ="SELECT * FROM `data_actors_crowd` WHERE `image`!='' and `loaded` IS NULL 
         Pdo_an::db_query($sql2);
 
         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-        Import::create_commit('', 'update', 'data_actors_meta', array('actor_id' => $r['actor_id']), 'actor_meta',9);
+        Import::create_commit('', 'update', 'data_actors_meta', array('actor_id' => $r['actor_id']), 'actor_meta',9,['skip'=>['id']]);
 
     }
 
@@ -726,7 +726,7 @@ WHERE `data_actors_imdb`.`id` = " . $actor_id;
 
     !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
 
-    Import::create_commit('', 'update', 'data_actors_imdb', array('actor_id' => $actor_id), 'actor_update',5);
+    Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $actor_id), 'actor_update',5);
 
 
     return 1;
@@ -944,9 +944,6 @@ function check_last_actors()
 
         if ($meta_result) {
 
-
-
-
             $sql1 = "UPDATE `data_actors_meta` SET 
                               `surname` = '" . $meta_result . "',
                               `n_surname` = '" . intconvert($meta_result) . "',
@@ -956,6 +953,11 @@ function check_last_actors()
             Pdo_an::db_query($sql1);
             update_actors_verdict($r['actor_id']);
             ACTIONLOG::update_actor_log('data_actors_surname');
+
+
+            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+            Import::create_commit('', 'update', 'data_actors_surname', array('actor_id' =>  $r['actor_id']), 'actors_surname',10,['skip'=>['id']]);
+
 
             $commit_actors[$r['actor_id']]=1;
         }
@@ -1132,7 +1134,7 @@ function check_last_actors()
 
         foreach ($commit_actors as $actor_id=>$enable)
         {
-         Import::create_commit('', 'update', 'data_actors_meta', array('actor_id' => $actor_id), 'actor_meta',6);
+         Import::create_commit('', 'update', 'data_actors_meta', array('actor_id' => $actor_id), 'actor_meta',6,['skip'=>['id']]);
 
         }
     }

@@ -37,15 +37,13 @@ class RWT_RATING
         }
 
     }
-
-   private function get_movie_type($rwt_id)
+    private function get_movie_type($rwt_id)
    {
        $sql = "SELECT `type` FROM `data_movie_imdb` WHERE `id` = {$rwt_id} limit 1";
        $row = Pdo_an::db_fetch_row($sql);
        $type = $row->type;
        return strtolower($type);
    }
-
     private function get_rating_movie($rwt_id)
     {
        /// $gender = $this->get_gender_rating_in_movie($rwt_id);
@@ -65,8 +63,6 @@ class RWT_RATING
             'lgbt_warning'=>$family['lgbt_warning'],'lgbt_text'=>$family['lgbt_text'],'woke'=>$family['woke'],'woke_text'=>$family['woke_text'],'total_rating'=>$total_rwt);
         return $array_result;
     }
-
-
     public function show_rating_script($array, $wait = '')
     {
         $content_result = $this->get_rating_data($array);
@@ -87,7 +83,6 @@ class RWT_RATING
         <?php
 
     }
-
     public function get_gender_rating_in_movie($rid)
     {
         $rid = intval($rid);
@@ -118,7 +113,7 @@ class RWT_RATING
                 Pdo_an::db_results_array($sql, array($diversity, $diversity_data, $male, $female));
 
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', 'cache_rating', array('movie_id' => $movie_id), 'cache_rating',9);
+                Import::create_commit('', 'update', 'cache_rating', array('movie_id' => $movie_id), 'cache_rating',9,['skip'=>['id']]);
 
             }
         }
@@ -128,7 +123,7 @@ class RWT_RATING
             Pdo_an::db_results_array($sql, array($movie_id, $movie_imdb, $diversity, $diversity_data, $male, $female));
 
             !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-            Import::create_commit('', 'update', 'cache_rating', array('movie_id' => $movie_id), 'cache_rating',9);
+            Import::create_commit('', 'update', 'cache_rating', array('movie_id' => $movie_id), 'cache_rating',9,['skip'=>['id']]);
 
         }
 
@@ -185,7 +180,6 @@ class RWT_RATING
         return array("diversity" => $diversity, "diversity_data" => $diversity_data, "male" => $male, "female" => $female);
 
     }
-
     public  function ajax_pg_rating($movie_id)
     {
         $sql = "SELECT `movie_id` FROM `data_movie_imdb` WHERE `id` = {$movie_id} limit 1";
@@ -243,8 +237,6 @@ class RWT_RATING
         );
 
     }
-
-
     public function get_family_rating_in_movie($rid)
     {
         $rid = intval($rid);
@@ -252,7 +244,6 @@ class RWT_RATING
         $row = Pdo_an::db_results_array($sql);
         return $row[0];
     }
-
     public function rwt_audience($id, $type = 1, $update = '')
     {
         return PgRatingCalculate::rwt_audience($id, $type, $update);

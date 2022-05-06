@@ -234,7 +234,8 @@ If what you\'re looking for isn\'t on RWT yet, try finding it below.</h5>
             }
 
                 self::set_option(16,json_encode($movie_list));
-
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                Import::create_commit('', 'update', 'options', array('id' => 16), 'options',7);
         }
 
     }
@@ -261,6 +262,9 @@ If what you\'re looking for isn\'t on RWT yet, try finding it below.</h5>
         if ($movie_list)
         {
             self::set_option(16,json_encode($movie_list));
+
+            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+            Import::create_commit('', 'update', 'options', array('id' => 16), 'options',7);
         }
 
     }

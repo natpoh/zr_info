@@ -388,7 +388,7 @@ function get_just_wach($movie_id='',$force='')
 
                 }
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', 'just_wach', array('rwt_id' => $movie_id), 'just_wach',10);
+                Import::create_commit('', 'update', 'just_wach', array('rwt_id' => $movie_id), 'just_wach',10,['skip'=>['id']]);
 
 
                 check_watch($movie_id, $tmdb_id, $data);
