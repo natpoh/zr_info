@@ -35,7 +35,8 @@ class CriticMaticAdmin {
         'search' => 'Search',
         'parser' => 'Parser',
         'audience' => 'Audience',
-        'posts' => 'Posts view'
+        'posts' => 'Posts view',
+        'sync' => 'Sync'
     );
     public $bulk_actions = array(
         'publish' => 'Publish',
@@ -115,8 +116,10 @@ class CriticMaticAdmin {
         add_submenu_page($this->parrent_slug, __('Countries'), __('Countries'), $this->access_level, $this->countries_url, array($this, 'countries'));
         add_submenu_page($this->parrent_slug, __('Providers'), __('Providers'), $this->access_level, $this->providers_url, array($this, 'providers'));
         add_submenu_page($this->parrent_slug, __('Audience'), __('Audience') . $count_text, $this->access_level, $this->audience_url, array($this, 'audience'));
-        add_submenu_page($this->parrent_slug, __('Feeds'), __('Feeds'), $this->access_level, $this->feeds_url, array($this, 'feeds'));
-        add_submenu_page($this->parrent_slug, __('Parser'), __('Parser'), $this->access_level, $this->parser_url, array($this, 'parser'));
+        if ($this->cm->sync_server) {
+            add_submenu_page($this->parrent_slug, __('Feeds'), __('Feeds'), $this->access_level, $this->feeds_url, array($this, 'feeds'));
+            add_submenu_page($this->parrent_slug, __('Parser'), __('Parser'), $this->access_level, $this->parser_url, array($this, 'parser'));
+        }
         add_submenu_page($this->parrent_slug, __('Settings'), __('Settings'), $this->access_level, $this->settings_url, array($this, 'settings'));
         add_submenu_page($this->parrent_slug, __('Sitemap'), __('Sitemap'), $this->access_level, $this->sitemap_url, array($this, 'sitemap'));
     }
@@ -689,6 +692,27 @@ class CriticMaticAdmin {
 
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_audience.php');
+            wp_enqueue_style('audience_rating', CRITIC_MATIC_PLUGIN_URL . 'css/rating.css', false, CRITIC_MATIC_VERSION);
+        } else if ($curr_tab == 'queue') {
+
+            $ca = $this->get_ca();
+
+            $home_status = 0;
+            if ($status == -1) {
+                $status = 0;
+            }
+            $page_url = $page_url . '&tab=' . $curr_tab;
+            $filter_arr = $ca->get_queue_states();
+            $filters = $this->get_filters($filter_arr, $page_url, $status);
+            if ($status != $home_status) {
+                $page_url = $page_url . '&status=' . $status;
+            }
+
+            $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
+            $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+            $posts = $ca->get_queue($status, $page, $per_page, $orderby, $order);
+
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_queue_audience.php');
             wp_enqueue_style('audience_rating', CRITIC_MATIC_PLUGIN_URL . 'css/rating.css', false, CRITIC_MATIC_VERSION);
         } else if ($curr_tab == 'iplist') {
             // Get IP list
@@ -1760,7 +1784,7 @@ class CriticMaticAdmin {
                 // Custom options
                 $type_opt = $options[$type_name];
                 $active = $type_opt['status'];
-     
+
                 if ($active == 1) {
                     $count_urls = $this->cp->process_campaign($campaign, 'cron_urls');
                 } else {
@@ -1938,8 +1962,6 @@ class CriticMaticAdmin {
         $tabs_arr = $this->settings_tabs;
         $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab);
 
-
-
         if ($curr_tab == 'search') {
 
             if (isset($_POST['critic-feeds-nonce'])) {
@@ -2000,8 +2022,22 @@ class CriticMaticAdmin {
             }
             $ss = $this->cm->get_settings();
 
-
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/settings_posts.php');
+        } else if ($curr_tab == 'sync') {
+
+            if (isset($_POST['critic-feeds-nonce'])) {
+                $valid = $this->nonce_validate($_POST);
+                if ($valid === true) {
+                    $this->cm->update_settings($_POST);
+                    $result = __('Updated');
+                    print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                } else {
+                    print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                }
+            }
+            $ss = $this->cm->get_settings();
+
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/settings_sync.php');
         }
     }
 
@@ -2085,6 +2121,9 @@ class CriticMaticAdmin {
         $type = isset($_GET['type']) ? (int) $_GET['type'] : $home_type;
         $filter_type_arr = $this->cm->get_post_types($cid, $type, $aid);
         $filters_type = $this->get_filters($filter_type_arr, $page_url, $type, $front_slug = '', $name = 'type');
+        if ($type != -1) {
+            $page_url .= '&type=' . $type;
+        }
 
         $count = isset($filter_type_arr[$home_type]['count']) ? $filter_type_arr[$home_type]['count'] : 0;
 

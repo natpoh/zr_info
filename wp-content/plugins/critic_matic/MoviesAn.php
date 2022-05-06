@@ -515,6 +515,9 @@ class MoviesAn extends AbstractDBAn {
             $this->db_query($sql);
             //Get the id
             $id = $this->getInsertId('id', $this->db['data_genre']);
+
+            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+            Import::create_commit('', 'update', $this->db['data_genre'], array('id' => $id), 'genre',7);
         }
         return $id;
     }
@@ -545,6 +548,9 @@ class MoviesAn extends AbstractDBAn {
                 //Meta not exist
                 $sql = sprintf("INSERT INTO {$this->db['meta_genre']} (mid,gid) VALUES (%d,%d)", (int) $mid, (int) $gid);
                 $this->db_query($sql);
+
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                Import::create_commit('', 'update', $this->db['meta_genre'], array('mid' => $mid,'gid'=>$gid), 'movie_meta_genre',7,['skip'=>['id']]);
             }
             return true;
         }
@@ -817,6 +823,10 @@ class MoviesAn extends AbstractDBAn {
             $this->db_query($sql);
             //Get the id
             $id = $this->getInsertId('id', $this->db['data_country']);
+
+
+            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+            Import::create_commit('', 'update', $this->db['data_country'], array('id' => $id), 'country',7);
         }
         return $id;
     }
@@ -847,6 +857,9 @@ class MoviesAn extends AbstractDBAn {
                 //Meta not exist
                 $sql = sprintf("INSERT INTO {$this->db['meta_country']} (mid,cid) VALUES (%d,%d)", (int) $mid, (int) $cid);
                 $this->db_query($sql);
+
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                Import::create_commit('', 'update', $this->db['meta_country'], array('mid' => $mid,'cid'=>$cid), 'movie_meta_country',7,['skip'=>['id']]);
             }
             return true;
         }

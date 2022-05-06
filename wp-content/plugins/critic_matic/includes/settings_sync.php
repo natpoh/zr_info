@@ -5,13 +5,13 @@
     <div class="cm-edit inline-edit-row">
         <fieldset>    
             <label class="inline-edit-author">
-                <span class="title"><?php print __('Post status') ?></span>
-                <select name="audience_post_status" class="authors">
+                <span class="title"><?php print __('Sync status') ?></span>
+                <select name="sync_status" class="">
                     <?php
-                    foreach ($this->cm->post_status as $key => $status) {
-                        $selected = ($key == $ss['audience_post_status']) ? 'selected' : '';
-                        ?>
 
+                    foreach ($this->cm->sync_status as $key => $status) {
+                        $selected = ($key == $ss['sync_status']) ? 'selected' : '';
+                        ?>
                         <option value="<?php print $key ?>" <?php print $selected ?> >
                             <?php print $status ?>
                         </option>                                
@@ -20,14 +20,6 @@
                     ?>                       
                 </select>
             </label>
-            <div class="desc">Status for all new audience posts.</div>
-            <input type="hidden" name="audience_descriptions" value="1">
-
-            <h3>Audience ratings description</h3>
-            <?php foreach ($ss['audience_desc'] as $key => $value) { ?>
-                <h4><?php print ucfirst($key) ?></h4>
-                <textarea name="au_<?php print $key ?>" style="width: 90%;" rows="5"><?php print stripslashes($value) ?></textarea>
-            <?php } ?>
             <?php wp_nonce_field('critic-feeds-options', 'critic-feeds-nonce'); ?>
             <br />
             <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save') ?>" class="button-primary">  

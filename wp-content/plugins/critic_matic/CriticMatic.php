@@ -3,89 +3,6 @@
 /*
  * Critic matic class. 
  * Used for manage critic posts
- * 
- * TODO
- * 
- * // Reviews
- * 1. Unique autors in preview
- * 2. Weight range for revew type: proper > contains. 
- * 3. Add a weight handicap for specific critics
- * 4. Custom regexp words change weight
- * 5. Add audience rating for movies
- * 
- * 
- * 
- * // New api
- * +transit audience posts
- * +transit staff posts
- * 
- * //Search
- * +new search for movies and critics posts
- * +add search sort by: date, title, relevance
- * 
- * +format paragraphs for all posts
- * +secret key for authors
- * +transit audience by secret key
- * +ajax view for posts
- * +redirect 301 from old critcs to new
- * +change critics link in main menu - Go to admin panel and change menu links
- * +get top movie by url, -validate meta
- * +show critic tags pages
- * +-autoblur critic spoilers
- * +cache for critic items
- * +show relevant critics for any movie pages
- * transit staff ratings to new format from content body
- * +critic emotions ratings
- * +audience avatars
- * +remove comas for empty cast list
- * cache movie teasers
- * +remove auto meta: DELETE FROM critic_matic_posts_meta WHERE state=2
- * +remove movie meta dates: DELETE FROM search_movies_meta
- * 
- * // Edit posts
- * +add posts meta, autocomplite movie title
- * +fix coma title bug
- * 
- * 
- * //Search
- * +Add sphinx host to server an_config
- * +Add new counter add_counter=1
- * +Change critic config
- * +Not found search page
- * 
- * /search/genre-drama_action/Provider-Youtube_Google-video/type-tv
- * 
- * +Get movies from an db
- * +set post_name in an db (get or create post name)
- * +add the movie poster api: poster/type/w/h/id
- * +relink critics to new posts (find, update, show)
- * +open new posts from old movie urls
- * +search in an db posts
- * 
- * //Audience
- * +Add admin tab
- * +Add form in front
- * +Add ajax backend
- * +Add js logic in front
- * Add bulk edit
- * Add already voted list
- * +Add wp editor
- * 
- * 
- * //Parser
- * remove protocol from link hash
- * 
- * 
- * // Admin
- * edit ratings
- * +view movee meta in single post page
- * +edit movie meta
- * add buttom "Force update search meta"
- * remove meta button
- * 
- * // Old api
- * disable old api
- * remove old posts
  */
 
 class CriticMatic extends AbstractDB {
@@ -94,6 +11,7 @@ class CriticMatic extends AbstractDB {
     private $db = array();
     public $user_can;
     public $new_audience_count = 0;
+    private $cp;
 
     /*
      * Posts
@@ -132,7 +50,10 @@ class CriticMatic extends AbstractDB {
         'trash' => 'Trash',
     );
     public $sort_pages = array('author_name', 'free', 'id', 'ip', 'date', 'title', 'last_update', 'update_interval', 'name', 'pid', 'slug', 'status', 'type', 'weight');
-
+    public $sync_status = array(
+        1 => 'Server',
+        2 => 'Client',
+    );
     /*
      * Authors
      */
@@ -200,6 +121,7 @@ class CriticMatic extends AbstractDB {
     /* Audience */
     public $audience_tabs = array(
         'home' => 'Posts',
+        'queue' => 'Queue',
         'iplist' => 'IP list'
     );
     public $ip_status = array(
@@ -225,6 +147,7 @@ class CriticMatic extends AbstractDB {
     private $reader;
     private $reader_city;
     private $geoip;
+    public $sync_server = true;
 
     public function __construct() {
         $table_prefix = DB_PREFIX_WP_AN;
@@ -276,8 +199,23 @@ class CriticMatic extends AbstractDB {
                 'affirmative' => "<strong>「&quot;Affirmative Action&quot;」</strong>&nbsp;rates&nbsp;how much &quot;<a title=&quot;Steven Crowder article about how even the African American cast of 'Blackish' are getting sick and tired of the redundant questions about diversity they get all the time.&quot; class=&quot;window_open&quot; href=&quot;#http://www.louderwithcrowder.com/black-ish-creator-im-tired-of-talking-about-diversity/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>diversity</a>&quot; is being pushed. ( Not true diversity, but the <a class=&quot;window_open&quot; href=&quot;#https://archive.li/DPrE1&quot; target=&quot;_blank&quot; title=&quot;Hella diverse cast of black panther.&quot; >anti-White</a> checklist kind.)",
                 'lgbtq' => "<strong>「&quot;LGBTQrstuvwxyz&quot;」</strong>&nbsp;rates&nbsp;the&nbsp;amount&nbsp;of <a title=&quot;Buzzfeed article celebrating the transgender character thrown into the 'Mr. Robot' script to complete their diversity bingo chart.&quot; class=&quot;window_open&quot; href=&quot;#http://www.buzzfeed.com/arianelange/mr-robot-diversity&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>non-tradional&nbsp;sexuality</a>&nbsp;depicted. Whether this is positive or negative is up to the user. For example, <a class=&quot;window_open&quot; href=&quot;#https://rightwingtomatoes.com/critics/1671/&quot; target=&quot;_blank&quot; title=&quot;Link to reviews by Armond, in our database.&quot;>Armond White</a> is an openly gay conservative critic filled throughout our database.",
                 'god' => "<strong>「&quot;Anti-God Themes&quot;」</strong>&nbsp;rates&nbsp;the&nbsp;amount&nbsp;of slander towards God and/or <a title=&quot;Hollywood Reporter article about Pat Boone explaining why he boycotts SNL, and thinks they're cowards for not criticizing Islam as they do with 'God's Not Dead 2.'&quot; class=&quot;window_open&quot; href=&quot;#http://www.hollywoodreporter.com/news/pat-boone-accuses-snl-anti-885253&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>Christian</a> ethics. As with all these ratings, whether this is positive or negative is up to the reviewer. If you're a Pagan Alt Righter or Atheist Anarcho Capitalist, this may be good in your eyes."
-            )
+            ),
+            'sync_status' => 1,
         );
+
+        $settings = $this->get_settings();
+        $this->sync_server  = $settings['sync_status']==1 ? true : false;
+    }
+
+    public function get_cp() {
+        // Get CriticParser
+        if (!$this->cp) {
+            if (!class_exists('CriticParser')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticParser.php' );
+            }
+            $this->cp = new CriticParser($this->cp);
+        }
+        return $this->cp;
     }
 
     function admin_bar_render($wp_admin_bar) {
@@ -2070,6 +2008,21 @@ class CriticMatic extends AbstractDB {
         return $result;
     }
 
+    public function get_critics_meta_weights($fid = 0) {
+        $sql = sprintf("SELECT cid, rating "
+                . "FROM {$this->db['meta']} "
+                . "WHERE fid=%d", $fid);
+        $results = $this->db_results($sql);
+        $ret = array();
+        if ($results) {
+            foreach ($results as $item) {
+                $ret[$item->cid] = $item->rating;
+            }
+            arsort($ret);
+        }
+        return $ret;
+    }
+
     public function get_top_critics_meta($cid) {
         // 1. Get meta where state = Approved
         $sql = sprintf("SELECT fid "
@@ -2204,6 +2157,11 @@ class CriticMatic extends AbstractDB {
     public function get_post_rating($cid) {
         $sql = sprintf("SELECT * FROM {$this->db['rating']} WHERE cid = %d", (int) $cid);
         $result = $this->db_fetch_row($sql);
+        $ret = $this->get_rating_array($result);
+        return $ret;
+    }
+
+    public function get_rating_array($result) {
         $ret = array();
         if ($result) {
             $rating = array();
@@ -2860,12 +2818,13 @@ class CriticMatic extends AbstractDB {
      * Settings
      */
 
-    public function get_settings() {
-        if ($this->settings) {
+    public function get_settings($cache = true) {
+        if ($cache && $this->settings) {
             return $this->settings;
         }
         // Get settings from options
-        $settings = unserialize($this->get_option('critic_matic_settings'));
+        $settings = unserialize(get_option('critic_matic_settings'));
+
         if ($settings && sizeof($settings)) {
             foreach ($this->settings_def as $key => $value) {
                 if (!isset($settings[$key])) {
@@ -2873,13 +2832,11 @@ class CriticMatic extends AbstractDB {
                     $settings[$key] = $value;
                 } else {
                     if ($key == 'audience_desc') {
-
                         $audience_desc = $settings[$key];
                         $au_decode = array();
                         foreach ($audience_desc as $k => $v) {
                             $au_decode[$k] = base64_decode($v);
                         }
-
                         $settings[$key] = $au_decode;
                     }
                 }
@@ -2893,11 +2850,12 @@ class CriticMatic extends AbstractDB {
 
     public function update_settings($form) {
 
-        $ss = $this->get_settings();
-        foreach ($ss as $key => $value) {
-            if (isset($form[$key])) {
-                $new_value = $form[$key];
-                $ss[$key] = $new_value;
+        $settings_prev = unserialize($this->get_option('critic_matic_settings'));
+
+        $ss = $settings_prev;
+        foreach ($form as $key => $value) {
+            if (isset($this->settings_def[$key])) {
+                $ss[$key] = $value;
             }
         }
 
@@ -2907,16 +2865,13 @@ class CriticMatic extends AbstractDB {
             $ss['posts_type_3'] = $form['posts_type_3'] ? 1 : 0;
         }
 
-        $audience_desc = array();
         $audience_desc_encode = array();
         if (isset($form['audience_descriptions'])) {
             foreach ($this->settings_def['audience_desc'] as $key => $value) {
-                $audience_desc[$key] = trim($form['au_' . $key]);
                 $audience_desc_encode[$key] = base64_encode(trim($form['au_' . $key]));
             }
-            $ss['audience_desc'] = $audience_desc;
+            $ss['audience_desc'] = $audience_desc_encode;
         }
-
 
         // Upadate cookie content
         if (isset($form['parser_cookie_text'])) {
@@ -2927,15 +2882,11 @@ class CriticMatic extends AbstractDB {
             file_put_contents($cookie_path, $form['parser_cookie_text']);
         }
 
-        // Update settings
-        $this->settings = $ss;
+        // Update options        
+        update_option('critic_matic_settings', serialize($ss));
 
-        // Update options
-        $ss_to_upd = $ss;
-        if ($audience_desc_encode) {
-            $ss_to_upd['audience_desc'] = $audience_desc_encode;
-        }
-        update_option('critic_matic_settings', serialize($ss_to_upd));
+        // Update settings
+        $this->settings = $this->get_settings();
     }
 
     /*
@@ -3027,6 +2978,52 @@ class CriticMatic extends AbstractDB {
         return array('code' => $country_code, 'name' => $country_name, 'path' => $country_path);
     }
 
+    /**
+     * функция определяет ip адрес по глобальному массиву $_SERVER
+     * ip адреса проверяются начиная с приоритетного, для определения возможного использования прокси
+     * @return ip-адрес
+     */
+    function get_remote_ip() {
+        $ip = false;
+        if (isset($_SERVER['HTTP_CF_CONNECTING_IP']))
+            $ipa[] = trim($_SERVER['HTTP_CF_CONNECTING_IP']);
+
+        if (isset($_SERVER['HTTP_X_FORWARDED_FOR']))
+            $ipa[] = trim(strtok($_SERVER['HTTP_X_FORWARDED_FOR'], ','));
+
+        if (isset($_SERVER['HTTP_CLIENT_IP']))
+            $ipa[] = $_SERVER['HTTP_CLIENT_IP'];
+
+        if (isset($_SERVER['REMOTE_ADDR']))
+            $ipa[] = $_SERVER['REMOTE_ADDR'];
+
+        if (isset($_SERVER['HTTP_X_REAL_IP']))
+            $ipa[] = $_SERVER['HTTP_X_REAL_IP'];
+
+        // проверяем ip-адреса на валидность начиная с приоритетного.
+        foreach ($ipa as $ips) {
+            //  если ip валидный обрываем цикл, назначаем ip адрес и возвращаем его
+            if ($this->is_valid_ip($ips)) {
+                $ip = $ips;
+                break;
+            }
+        }
+
+        return $ip;
+    }
+
+    /**
+     * функция для проверки валидности ip адреса
+     * @param ip адрес в формате 1.2.3.4
+     * @return bolean : true - если ip валидный, иначе false
+     */
+    private function is_valid_ip($ip = null) {
+        if (preg_match("#^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$#", $ip))
+            return true; // если ip-адрес попадает под регулярное выражение, возвращаем true
+
+        return false; // иначе возвращаем false
+    }
+
     public function getGeoData($ip = '') {
 
         if ($ip == '127.0.0.1') {
@@ -3095,6 +3092,28 @@ class CriticMatic extends AbstractDB {
         if (function_exists('geoip_close')) {
             geoip_close($this->geoip);
         }
+    }
+
+    // Sync
+    public function get_remote_id($db_name = '') {
+        $rid = 0;
+        if (isset($this->db[$db_name])) {
+            $db = $this->db[$db_name];
+
+            if (!class_exists('Import')) {
+                include ABSPATH . "analysis/export/import_db.php";
+            }
+
+            $table_access = Import::get_table_access($db);
+
+            if ($table_access['export'] == 2) {
+                $array = array('table' => $db, 'column' => 'id');
+                $id_array = Import::get_remote_id($array);
+                $rid = $id_array['id'];
+            }
+        }
+
+        return $rid;
     }
 
     // Geoip 2

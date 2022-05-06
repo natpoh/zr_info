@@ -60,7 +60,13 @@ if ($cid) {
                     <span class="inline-edit"><?php print __('Type of the Campaign') ?></span>                    
                 </label>
 
-
+                <label>
+                    <span class="title"><?php print __('URLs weight') ?></span>
+                    <span class="input-text-wrap"><input type="text" name="new_urls_weight" class="title" value="<?php print $options['new_urls_weight'];?>"></span>
+                </label>
+                <div class="desc"><?php print __('If the weight is higher than other campaigns, when adding new urls added by campaigns before, they will be assigned to this campaign.') ?></div>
+                <br />
+                
                 <label class="inline-edit-status">                
                     <?php
                     $checked = '';

@@ -1,6 +1,12 @@
 <h2><a href="<?php print $url ?>"><?php print __('Critic matic') ?></a>. <?php print __('Add post') ?></h2>
-<?php
+    <?php
 print $tabs;
+?>
+    <?php 
+if (!$this->cm->sync_server) {
+    print 'This action allow in server mode only.';
+    return;
+}
 ?>
 <form accept-charset="UTF-8" method="post" id="author">
 

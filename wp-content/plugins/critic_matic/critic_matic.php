@@ -34,7 +34,7 @@ if (!function_exists('add_action')) {
 define('CRITIC_MATIC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CRITIC_MATIC_PLUGIN_URL', plugin_dir_url(__FILE__));
 
-$version = '1.0.74';
+$version = '1.0.75';
 if (defined('LASTVERSION')) {
     define('CRITIC_MATIC_VERSION', $version . LASTVERSION);
 } else {
@@ -249,7 +249,7 @@ function critic_matic_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8_general_ci;";
     dbDelta($sql);
-    critic_matic_create_index(array('date', 'status','type', 'last_update', 'update_interval', 'author', 'parser_status'), $table_prefix . "critic_search_log");
+    critic_matic_create_index(array('date', 'status', 'type', 'last_update', 'update_interval', 'author', 'parser_status'), $table_prefix . "critic_search_log");
 
     /*
      * Indexes: 
@@ -457,6 +457,34 @@ function critic_matic_plugin_activation() {
 
 
     /*
+     * Critics audience temp      
+     */
+
+    $table_prefix = DB_PREFIX_WP_AN;
+    $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_matic_audience`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `date` int(11) NOT NULL DEFAULT '0',                                    
+                                `status` int(11) NOT NULL DEFAULT '0',      		                                
+                                `top_movie` int(11) NOT NULL DEFAULT '0',                                
+                                `rating` int(11) NOT NULL DEFAULT '0', 
+                                `hollywood` int(11) NOT NULL DEFAULT '0', 
+                                `patriotism` int(11) NOT NULL DEFAULT '0', 
+                                `misandry` int(11) NOT NULL DEFAULT '0', 
+                                `affirmative` int(11) NOT NULL DEFAULT '0', 
+                                `lgbtq` int(11) NOT NULL DEFAULT '0', 
+                                `god` int(11) NOT NULL DEFAULT '0', 
+                                `vote` int(11) NOT NULL DEFAULT '0', 
+                                `ip` varchar(255) NOT NULL default '',
+                                `critic_name` varchar(255) NOT NULL default '',
+                                `unic_id` varchar(255) NOT NULL default '', 
+                                `title` text default NULL,
+                                `content` text default NULL,    
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8_general_ci;";
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('date', 'status', 'critic_name', 'unic_id'), $table_prefix . "critic_matic_audience");
+
+    /*
       //Add columns UNUSED
 
       // Add date add
@@ -497,8 +525,17 @@ function critic_matic_plugin_activation() {
     // Critic rating
     $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_matic_rating`(
 				`id` int(11) unsigned NOT NULL auto_increment,
-                                `cid` int(11) NOT NULL DEFAULT '0',                                   
+                                `cid` int(11) NOT NULL DEFAULT '0',                                             
                                 `options` text default NULL,
+                                `rating` int(11) NOT NULL DEFAULT '0', 
+                                `hollywood` int(11) NOT NULL DEFAULT '0', 
+                                `patriotism` int(11) NOT NULL DEFAULT '0', 
+                                `misandry` int(11) NOT NULL DEFAULT '0', 
+                                `affirmative` int(11) NOT NULL DEFAULT '0', 
+                                `lgbtq` int(11) NOT NULL DEFAULT '0', 
+                                `god` int(11) NOT NULL DEFAULT '0', 
+                                `vote` int(11) NOT NULL DEFAULT '0', 
+                                `ip` varchar(255) NOT NULL default '', 
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8_general_ci;";
     Pdo_an::db_query($sql);

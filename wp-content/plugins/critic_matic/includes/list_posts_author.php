@@ -35,6 +35,7 @@ if (sizeof($posts) > 0) {
             <th ><?php print __('Content') ?></th> 
             <th><?php print __('Status') ?></th>
             <th><?php print __('Type') ?></th>
+            <th><?php print __('In parser') ?></th>
             <?php if ($author->type == 2) { ?>
                 <th><?php print __('Rating') ?></th>
             <?php } ?>
@@ -59,6 +60,12 @@ if (sizeof($posts) > 0) {
                         <td><?php print $this->cm->crop_text(strip_tags($item->content), 100) ?></td>
                         <td><?php print $this->cm->get_post_status($item->status) ?></td>
                         <td><?php print $this->cm->get_post_type($item->type) ?></td>
+                        <td><?php
+                            $url_exist = $this->cp->get_url_by_hash($item->link_hash);
+                            if ($url_exist) {
+                                print $url_exist->cid;
+                            }
+                            ?></td>
                         <?php if ($author->type == 2) { ?>
                             <td><?php print_r($this->cm->get_post_rating($item->id)); ?></td>
                         <?php } ?>

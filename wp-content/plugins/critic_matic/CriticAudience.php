@@ -11,7 +11,7 @@
  * Validate already vote in get form
  * +Validata req fields in server
  * +Save data
- * Add tyni editor
+ * + Add tyni editor
  * +Filter allow tags
  * +Test secret field staff post
  * +Test audience post
@@ -30,7 +30,7 @@ class CriticAudience extends AbstractDb {
     );
     public $vote_data = array(
         'vote' => array(
-            'title' => 'Boycott Suggestion',            
+            'title' => 'Boycott Suggestion',
             'options' => array(
                 1 => array('title' => 'Pay To Watch', 'img' => "slider_green_pay_drk.png", 'verdict' => 'pay_to_watch'),
                 2 => array('title' => 'Skip It', 'img' => 'slider_red_skip_drk.png', 'verdict' => 'skip_it'),
@@ -64,7 +64,7 @@ class CriticAudience extends AbstractDb {
         'god' => array(
             'img' => '07_cliche_not_brave',
             'class' => 'GOD',
-            'title' => 'Anti-God Themes')            
+            'title' => 'Anti-God Themes')
     );
     public $rating_form = array(
         'r' => 'rating',
@@ -76,15 +76,27 @@ class CriticAudience extends AbstractDb {
         'g' => 'god',
         'v' => 'vote',
     );
+    public $queue_status = array(
+        0 => 'Waiting',
+        1 => 'Done',
+    );
+    public $sort_pages = array('id', 'date', 'critic_name');
 
     public function __construct($cm = '') {
         $this->cm = $cm ? $cm : new CriticMatic();
-        $table_prefix=DB_PREFIX_WP_AN;
+        $table_prefix = DB_PREFIX_WP_AN;
         $this->db = array(
+            //CM
+            'posts' => $table_prefix . 'critic_matic_posts',
             'meta' => $table_prefix . 'critic_matic_posts_meta',
+            'rating' => $table_prefix . 'critic_matic_rating',
+            'authors' => $table_prefix . 'critic_matic_authors',
             'authors_meta' => $table_prefix . 'critic_matic_authors_meta',
+            'movies_meta' => $table_prefix . 'critic_movies_meta',
+            'ip' => $table_prefix . 'critic_matic_ip',
             //CA
             'author_key' => $table_prefix . 'meta_critic_author_key',
+            'audience' => $table_prefix . 'critic_matic_audience',
         );
     }
 
@@ -138,9 +150,9 @@ class CriticAudience extends AbstractDb {
           [checkid] => 39111
           [ajaxAct] => form
           )
-
          */
-
+        $ip = $this->cm->get_remote_ip();
+        
 
         $rtn = new stdClass();
         $rtn->err = array();
@@ -165,25 +177,9 @@ class CriticAudience extends AbstractDb {
                 $rtn->err[] = 'Critic Name is required.';
             }
 
-
             if (!$posted->ftext) {
                 $rtn->err[] = 'Review Text is required.';
             }
-
-
-
-            // Check already review
-
-            /* if ($reviewLog->post_count > 0) {
-              $rtn->err[] = "You already left a review.";
-              } */
-
-            // Check block ip
-            // $_SERVER['REMOTE_ADDR']
-            /*
-              if (count($block_ips)) {
-              $rtn->err[] = "Sorry, You can't leave reviews";
-              } */
 
             //Comment to disable spambot check
             if (count($rtn->err)) {
@@ -191,103 +187,21 @@ class CriticAudience extends AbstractDb {
                 die(json_encode($rtn));
             }
 
-            //TODO if aprove ip, no moderations. Post type = 1 - publish.
-            // passed all spambot checks, continue
-
-
-            $allowed_tags = array(
-                'br' => array(),
-                'i' => array(),
-                'em' => array(),
-                'strong' => array(),
-                'b' => array(),
-                'ul' => array(),
-                'ol' => array(),
-                'li' => array(),
-                'p' => array(),
-                'blockquote' => array(),
-                'del' => array(),
-                'div' => array(),
-            );
-
-            /////check critics secret name
-            $author_name = trim($posted->fname);
-            $aid = 0;
-
-            // Default status publish
-            $ss = $this->cm->get_settings();
-            $status = $ss['audience_post_status'];
-
-            // Check ip
-            $ip = trim($_SERVER['REMOTE_ADDR']);
-            $user_agent = trim($_SERVER['HTTP_USER_AGENT']);
-
-            $ip_item = $this->cm->get_ip($ip);
-            if ($ip_item) {
-                $ip_type = $ip_item->type;
-                if ($ip_type == 3) {
-                    //Black list -> Trash
-                    $status = 2;
-                } else if ($ip_type == 2) {
-                    //Gray list -> Draft
-                    $status = 0;
-                } else if ($ip_type == 1) {
-                    //White list -> Publish
-                    $status = 1;
-                }
-            }
-
-            // Staff
-            $author_type = 0;
-            $is_staff = false;
-            if ($author_name) {
-                // Staff content
-                $aid = $this->cm->get_author_id_by_secret_key($author_name, $author_type);
-                if ($aid) {
-                    $status = 1;
-                    $is_staff = true;
-                } else {
-                    // Audience
-                    $aid = $this->get_or_create_audience_author_by_name($author_name, $ip, $user_agent);
-                }
-            }
-            if ($aid) {
-                $this->add_author_key($aid);
-            }
-
             // insert a new staff post
             $date = $this->cm->curr_time();
-            // Type - manual
-            $type = 2;
-
-            $link = '';
-            $title = $posted->ftitle;
-            if ($is_staff) {
-                $content = html_entity_decode($posted->ftext);
-            } else {
-                $content = $this->wp_kses(html_entity_decode($posted->ftext), $allowed_tags);
+            $author_name = trim($posted->fname);
+            if (strlen($author_name) > 250) {
+                $author_name = substr($author_name, 0, 250);
             }
-            //$content = strip_tags($posted->ftext);
-            //$content = str_replace("\n", " <br />", $content);
-
+            $content = html_entity_decode($posted->ftext);
+            $title = $posted->ftitle;
+            $top_movie = $posted->postid;
             if (!$title) {
                 $title = $this->cm->crop_text(strip_tags($content), 100);
             }
 
-            $top_movie = $posted->postid;
+            $unic_id = $this->unic_id();
 
-            $pid = $this->cm->add_post($date, $type, $link, $title, $content, $top_movie, $status);
-            if ($pid) {
-                //Add post author
-                $this->cm->add_post_author($pid, $aid);
-                // Add meta
-                // Proper review
-                $movie_cat = 1;
-                //Approve
-                $state = 1;
-                //Add post movie meta
-                $this->cm->add_post_meta($top_movie, $movie_cat, $state, $pid);
-            }
 
             // Calculate rating
 
@@ -321,46 +235,27 @@ class CriticAudience extends AbstractDb {
                 $posted->frating_hollywood = ceil(($posted->frating_hollywood) / 0.5) * 0.5;
             }
 
-            $rating_meta = array();
+            $add_arr = array(
+                'date' => $date,
+                'status' => 0,
+                'top_movie' => $top_movie,
+                'rating' => $posted->frating_rating,
+                'hollywood' => $posted->frating_hollywood,
+                'patriotism' => $posted->frating_patriotism,
+                'misandry' => $posted->frating_misandry,
+                'affirmative' => $posted->frating_affirmative,
+                'lgbtq' => $posted->frating_lgbtq,
+                'god' => $posted->frating_god,
+                'vote' => $posted->review_form_rating_field_vote,
+                'ip' => $ip,
+                'critic_name' => $author_name,
+                'unic_id' => $unic_id,
+                'title' => $title,
+                'content' => $content,
+            );
 
-
-            if (isset($posted->frating_rating)) {
-                $rating_meta['wpcr3_review_rating'] = $posted->frating_rating;
-            }
-            if (isset($posted->frating_hollywood)) {
-                $rating_meta['wpcr3_review_rating_hollywood'] = $posted->frating_hollywood;
-            }
-            if (isset($posted->frating_patriotism)) {
-                $rating_meta['wpcr3_review_rating_patriotism'] = $posted->frating_patriotism;
-            }
-            if (isset($posted->frating_misandry)) {
-                $rating_meta['wpcr3_review_rating_misandry'] = $posted->frating_misandry;
-            }
-            if (isset($posted->frating_affirmative)) {
-                $rating_meta['wpcr3_review_rating_affirmative'] = $posted->frating_affirmative;
-            }
-            if (isset($posted->frating_lgbtq)) {
-                $rating_meta['wpcr3_review_rating_lgbtq'] = $posted->frating_lgbtq;
-            }
-            if (isset($posted->frating_god)) {
-                $rating_meta['wpcr3_review_rating_god'] = $posted->frating_god;
-            }
-
-            if (isset($posted->review_form_rating_field_vote)) {
-                $rating_meta['wpcr3_rating_vote'] = $posted->review_form_rating_field_vote;
-            }
-
-            $rating_meta['wpcr3_review_ip'] = array($_SERVER['REMOTE_ADDR']);
-
-
-            if ($pid) {
-                // Add rating
-                $options = $this->cm->get_rating_from_postmeta($rating_meta);
-                $this->cm->add_rating($pid, $options);
-
-                // Update post rating
-                $this->cm->hook_update_post($pid);
-            }
+            $this->add_audience($add_arr);
+            $this->run_cron_hook();
         } else if ($posted->ajaxAct === 'editor') {
             ob_start();
             $quicktags_settings = array('buttons' => 'strong,em,link,block,del,ins,img,ul,ol,li,code,close');
@@ -371,6 +266,198 @@ class CriticAudience extends AbstractDb {
 
         $rtn->success = true;
         die(json_encode($rtn));
+    }
+
+    public function add_audience($arr = array()) {
+
+        $sql = sprintf("INSERT INTO {$this->db['audience']} "
+                . "(date,status,top_movie,rating,hollywood,patriotism,misandry,affirmative,lgbtq,god,vote,ip,critic_name,unic_id,title,content) "
+                . "VALUES ('%d','%d','%d','%d','%d','%d','%d','%d','%d','%d','%d','%s','%s','%s','%s','%s')", $arr['date'], $arr['status'], $arr['top_movie'], $arr['rating'], $arr['hollywood'], $arr['patriotism'], $arr['misandry'], $arr['affirmative'], $arr['lgbtq'], $arr['god'], $arr['vote'], $this->escape($arr['ip']), $this->escape($arr['critic_name']), $this->escape($arr['unic_id']), $this->escape($arr['title']), $this->escape($arr['content'])
+        );
+
+        // print_r($sql);
+        //print $sql;
+        $this->db_query($sql);
+
+        //Return id
+        $id = $this->getInsertId('id', $this->db['audience']);
+        return $id;
+    }
+
+    public function run_cron_hook() {
+        // Run cron webhook
+        $cp = $this->cm->get_cp();
+        $site_url = get_site_url();
+        $curr_time = time();
+        $url = $site_url . '/wp-content/plugins/critic_matic/cron/audience_cron.php?p=2338g_D0dDSF-Fs';
+        $cp->send_curl_no_responce($url);
+    }
+
+    public function run_cron($count = 100, $debug = false) {
+        $cron_option = 'audience_cron_last_run';
+        $last_run = get_option($cron_option, 0);
+        $currtime = $this->curr_time();
+        $max_wait = $last_run + 5 * 60; // 5 min
+
+        if ($currtime > $max_wait) {
+            // Set curr time to option
+            update_option($cron_option, $currtime);
+
+            // Add queue posts to critics
+            // 1. Get posts
+            $status = 0;
+            $queue = $this->get_queue($status, 0, $count);
+            if ($debug) {
+                print_r($queue);
+            }
+            if ($queue) {
+                foreach ($queue as $item) {
+                    // 2. Pubish posts
+                    $this->publish_audience($item);
+                }
+            }
+            // Remove last run time
+            update_option($cron_option, 0);
+        } else {
+            if ($debug) {
+                print "Cron already run: $currtime < $max_wait";
+            }
+        }
+        
+    }
+
+    public function publish_audience($item) {
+        /*
+          [0] => stdClass Object
+          (
+          [id] => 2
+          [date] => 1651751484
+          [status] => 0
+          [top_movie] => 66498
+          [rating] => 3
+          [hollywood] => 1
+          [patriotism] => 0
+          [misandry] => 4
+          [affirmative] => 0
+          [lgbtq] => 3
+          [god] => 0
+          [vote] => 3
+          [ip] => 127.0.0.1
+          [critic_name] => Как и исторические предшественники, украинские нацисты собираются вести войну на уничтожение. Но как только такие деятели попадают в пл
+          [unic_id] => a8d66a5289df9c243d24a6ec6a3aded0
+          [title] => sdf
+          [content] => Как и исторические предшественники, украинские нацисты собираются вести войну на уничтожение. Но как только такие деятели попадают в плен, они сразу начинают рассказывать о том, что они повара, водители, воевать не хотели, хотели просто подзаработать денег и т.д.
+          )
+         */
+
+        $author_name = $item->critic_name;
+        $ip = $item->ip;
+        $unic_id = $item->unic_id;
+        $content = $item->content;
+        $date = $item->date;
+        $title = $item->title;
+        $top_movie = $item->top_movie;
+
+        // Default status publish
+        $ss = $this->cm->get_settings();
+        $status = $ss['audience_post_status'];
+
+        // Check ip
+        $ip_item = $this->cm->get_ip($ip);
+        if ($ip_item) {
+            $ip_type = $ip_item->type;
+            if ($ip_type == 3) {
+                //Black list -> Trash
+                $status = 2;
+            } else if ($ip_type == 2) {
+                //Gray list -> Draft
+                $status = 0;
+            } else if ($ip_type == 1) {
+                //White list -> Publish
+                $status = 1;
+            }
+        }
+
+        // Staff        
+        $aid = 0;
+        $author_type = 0;
+        $is_staff = false;
+        if ($author_name) {
+            // Staff content
+            $aid = $this->cm->get_author_id_by_secret_key($author_name, $author_type);
+            if ($aid) {
+                $status = 1;
+                $is_staff = true;
+            } else {
+                // Audience
+                $aid = $this->get_author_audience($author_name, $unic_id);
+
+                if (!$aid) {
+                    // TODO sync aid
+                    $status = 1;
+                    $author_type = 2;
+                    $options = array('audience' => $unic_id);
+                    $aid = $this->cm->create_author_by_name($author_name, $author_type, $status, $options);
+                }
+            }
+        }
+        if ($aid) {
+            // TODO sync key
+            $this->add_author_key($aid);
+        }
+
+        $allowed_tags = array(
+            'br' => array(),
+            'i' => array(),
+            'em' => array(),
+            'strong' => array(),
+            'b' => array(),
+            'ul' => array(),
+            'ol' => array(),
+            'li' => array(),
+            'p' => array(),
+            'blockquote' => array(),
+            'del' => array(),
+            'div' => array(),
+        );
+
+        if (!$is_staff) {
+            $content = $this->wp_kses($content, $allowed_tags);
+        }
+
+        // Type - manual
+        $type = 2;
+        $link = '';
+
+        // TODO sync post
+        $pid = $this->cm->add_post($date, $type, $link, $title, $content, $top_movie, $status);
+        if ($pid) {
+            // Add post author
+            // TODO sync author meta
+            $this->cm->add_post_author($pid, $aid);
+            // Add meta
+            // Proper review
+            $movie_cat = 1;
+            // Approve
+            $state = 1;
+            // Add post movie meta
+            // TODO sync post meta
+            $this->cm->add_post_meta($top_movie, $movie_cat, $state, $pid);
+        }
+
+        if ($pid) {
+            // Add rating
+            $options = $this->cm->get_rating_array($item);
+
+            // TODO sync rating
+            $this->cm->add_rating($pid, $options);
+
+            // Change queue status
+            $this->update_queue_status($item->id, 1);
+
+            // Update post rating
+            $this->cm->hook_update_post($pid);
+        }
     }
 
     public function rating_images($type, $rating, $subrating = 0) {
@@ -427,12 +514,90 @@ class CriticAudience extends AbstractDb {
 
     public function already_voted($post_id) {
         $unic_id = $this->unic_id();
+        $ret = false;
         //Author is voted?
         if ($this->get_author_post_count_movie($unic_id, $post_id)) {
-            return true;
+            $ret = true;
         }
 
-        return false;
+        if (!$ret) {
+            // Queue vote
+            if ($this->get_author_post_queue($unic_id, $post_id)) {
+                $ret = true;
+            }
+        }
+
+        return $ret;
+    }
+
+    public function get_queue($status = -1, $page = 1, $per_page = 20, $orderby = '', $order = 'ASC') {
+        $page -= 1;
+        $start = $page * $this->perpage;
+
+
+        // Custom status
+        $status_query = "";
+        if ($status != -1) {
+            $status_query = " AND status = " . (int) $status;
+        }
+
+
+        //Sort
+        $and_orderby = '';
+        if ($orderby && in_array($orderby, $this->sort_pages)) {
+            $and_orderby = ' ORDER BY ' . $orderby;
+            if ($order) {
+                $and_orderby .= ' ' . $order;
+            }
+        } else {
+            $and_orderby = " ORDER BY id DESC";
+        }
+
+        $limit = '';
+        if ($per_page > 0) {
+            $limit = " LIMIT $start, " . $per_page;
+        }
+
+
+        $sql = "SELECT * FROM {$this->db['audience']} WHERE id>0 " . $status_query . $and_orderby . $limit;
+
+        $result = $this->db_results($sql);
+
+        return $result;
+    }
+
+    public function update_queue_status($id = 0, $status = 1) {
+        $sql = sprintf("UPDATE {$this->db['audience']} SET status='%d' WHERE id=%d", $status, $id);
+        $this->db_query($sql);
+    }
+
+    public function get_queue_status($status) {
+        return isset($this->queue_status[$status]) ? $this->queue_status[$status] : 'None';
+    }
+
+    public function get_queue_states() {
+
+        $count = $this->get_queue_count();
+        $states = array();
+        foreach ($this->queue_status as $key => $value) {
+            $states[$key] = array(
+                'title' => $value,
+                'count' => $this->get_queue_count($key));
+        }
+        return $states;
+    }
+
+    public function get_queue_count($status = -1) {
+
+        $status_query = '';
+        if ($status != -1) {
+            $status_query = " AND status = " . (int) $status;
+        }
+
+        $query = "SELECT COUNT(id) FROM {$this->db['audience']} WHERE id>0 " . $status_query;
+
+        $result = $this->db_get_var($query);
+        return $result;
     }
 
     public function get_author_post_count_movie($unic_id, $fid) {
@@ -440,6 +605,12 @@ class CriticAudience extends AbstractDb {
                 . "INNER JOIN {$this->db['authors_meta']} am ON am.aid=k.aid "
                 . "INNER JOIN {$this->db['meta']} m ON m.cid=am.cid "
                 . "WHERE m.fid=%d AND k.name = '%s'", (int) $fid, $this->escape($unic_id));
+        $result = $this->db_get_var($query);
+        return $result;
+    }
+
+    public function get_author_post_queue($unic_id, $fid) {
+        $query = sprintf("SELECT COUNT(id) FROM {$this->db['audience']} WHERE top_movie=%d AND unic_id = '%s'", (int) $fid, $this->escape($unic_id));
         $result = $this->db_get_var($query);
         return $result;
     }
@@ -461,7 +632,8 @@ class CriticAudience extends AbstractDb {
     }
 
     public function unic_id() {
-        $unic_id = md5($_SERVER["HTTP_USER_AGENT"] . $_SERVER['REMOTE_ADDR']);
+        $ip = $this->cm->get_remote_ip();
+        $unic_id = md5($_SERVER["HTTP_USER_AGENT"] . $ip);
         return $unic_id;
     }
 
@@ -509,13 +681,13 @@ class CriticAudience extends AbstractDb {
 
                         foreach ($rating_order as $key) {
 
-                            $vote_data = isset($audience_desc[$key])?$audience_desc[$key]:'';
-                            $desc = $cfront->get_nte('i','<div class="nte_cnt_toltip">'.stripslashes($vote_data).'</div>');
+                            $vote_data = isset($audience_desc[$key]) ? $audience_desc[$key] : '';
+                            $desc = $cfront->get_nte('i', '<div class="nte_cnt_toltip">' . stripslashes($vote_data) . '</div>');
 
                             if ($key == 'vote') {
                                 $this->audience_revew_form_boycott($desc);
                             } else {
-                                $this->audience_revew_form_item($key,$desc);
+                                $this->audience_revew_form_item($key, $desc);
                             }
                         }
                         ?>                         
@@ -562,7 +734,7 @@ class CriticAudience extends AbstractDb {
         ?>
         <tr>
             <td id="suggestion" class="wpcr3_review_form_rating_field">
-                <label><?php print $title.': '.$desc ?></label>
+                <label><?php print $title . ': ' . $desc ?></label>
             </td>
             <td >
                 <div class="sug_buttons_wrapper">
@@ -583,22 +755,19 @@ class CriticAudience extends AbstractDb {
         <?php
     }
 
-    public function audience_revew_form_item($key,$desc) {
+    public function audience_revew_form_item($key, $desc) {
         $vote_data = $this->vote_data[$key];
-
-
-
         ?>
         <tr class="wpcr3_review_form_rating_field">
             <td>
-                <label for="id_wpcr3_frating" class="comment-field"><?php print $vote_data['title'].': '.$desc ?> </label>
+                <label for="id_wpcr3_frating" class="comment-field"><?php print $vote_data['title'] . ': ' . $desc ?> </label>
             </td>
             <td class="<?php print $vote_data['class'] ?> rating_input">
 
                 <div class="rating_container"><span class="rating_result <?php echo $key ?>">
-                    <span style="width: 0;" class="rating_result_total" ></span>
-                </span><span class="rating_number rating_num<?php echo $key ?>"><span class="rating_number_rate">0</span>/5</span>
-                <input style="display:none;" type="hidden" class="wpcr3_frating" id="id_wpcr3_f<?php print $key ?>" name="wpcr3_frating_<?php print $key ?>" />
+                        <span style="width: 0;" class="rating_result_total" ></span>
+                    </span><span class="rating_number rating_num<?php echo $key ?>"><span class="rating_number_rate">0</span>/5</span>
+                    <input style="display:none;" type="hidden" class="wpcr3_frating" id="id_wpcr3_f<?php print $key ?>" name="wpcr3_frating_<?php print $key ?>" />
                 </div></td>
         </tr>
         <?php
@@ -614,26 +783,26 @@ class CriticAudience extends AbstractDb {
                 </tr>
             </thead>
             <tbody><?php
-                foreach ($rating_full as $key => $value) {
-                    if (!isset($this->rating_form[$key])) {
-                        continue;
-                    }
-                    $name = $this->rating_form[$key];
+        foreach ($rating_full as $key => $value) {
+            if (!isset($this->rating_form[$key])) {
+                continue;
+            }
+            $name = $this->rating_form[$key];
 
-                    if (!isset($this->vote_data[$name])) {
-                        continue;
-                    }
-                    $title = $this->vote_data[$name]['title'];
-                    $keys = array(0 => 'None', 1 => '1 star', 2 => '2 stars', 3 => '3 stars', 4 => '4 stars', 5 => '5 stars');
-                    $colspan = 1;
-                    if ($name == 'vote') {
-                        $colspan = 2;
-                        $keys = array();
-                        foreach ($this->vote_data[$name]['options'] as $k => $v) {
-                            $keys[$k] = $v['title'];
-                        }
-                    }
-                    ?>
+            if (!isset($this->vote_data[$name])) {
+                continue;
+            }
+            $title = $this->vote_data[$name]['title'];
+            $keys = array(0 => 'None', 1 => '1 star', 2 => '2 stars', 3 => '3 stars', 4 => '4 stars', 5 => '5 stars');
+            $colspan = 1;
+            if ($name == 'vote') {
+                $colspan = 2;
+                $keys = array();
+                foreach ($this->vote_data[$name]['options'] as $k => $v) {
+                    $keys[$k] = $v['title'];
+                }
+            }
+            ?>
                     <tr>
                         <td><?php print $title ?></td>
                         <?php foreach ($keys as $item => $title) { ?>
@@ -654,28 +823,19 @@ class CriticAudience extends AbstractDb {
         <?php
     }
 
-    public function get_or_create_audience_author_by_name($author_name, $ip, $user_agent) {
+    public function get_author_audience($author_name, $unic_id) {
         $author_type = 2;
-        $audience_key = md5($ip . $user_agent);
         $authors = $this->cm->get_author_by_name($author_name, true, $author_type, true);
         $aid = 0;
         if (sizeof($authors)) {
             foreach ($authors as $author) {
                 $options = unserialize($author->options);
-                if (isset($options['audience']) && $options['audience'] == $audience_key) {
+                if (isset($options['audience']) && $options['audience'] == $unic_id) {
                     $aid = $author->id;
                     break;
                 }
             }
         }
-        if ($aid) {
-            return $aid;
-        }
-
-        $status = 1;
-        $options = array('audience' => $audience_key);
-
-        $aid = $this->cm->create_author_by_name($author_name, $author_type, $status, $options);
 
         return $aid;
     }

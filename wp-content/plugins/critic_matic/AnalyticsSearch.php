@@ -20,7 +20,6 @@ class AnalyticsSearch extends CriticSearch {
     public $analytics_filters = array(
         'current' => array('key' => 'year_int', 'name_pre' => 'Current ', 'filter_pre' => 'Current select'),
         'showcast' => array('key' => 'showcast', 'name_pre' => 'Show cast ', 'filter_pre' => 'Show cast'),
-        'movie' => array('key' => 'id', 'name_pre' => 'Movie ', 'filter_pre' => 'Movie'),
     );
     public $facets_extend = array(
         'movies' => array('budget', 'movie'),
@@ -375,12 +374,12 @@ class AnalyticsSearch extends CriticSearch {
         $select_and = array();
         $filters_need = array();
         // X-axis
-        $xdata = $this->get_select_and($xaxis,$filters);
+        $xdata = $this->get_select_and($xaxis, $filters);
         $select_and[$xdata['select']] = 1;
         $filters_need[$xdata['filters']] = 1;
 
         // X-axis
-        $ydata = $this->get_select_and($yaxis,$filters);
+        $ydata = $this->get_select_and($yaxis, $filters);
         $select_and[$ydata['select']] = 1;
         $filters_need[$ydata['filters']] = 1;
 
@@ -428,7 +427,7 @@ class AnalyticsSearch extends CriticSearch {
         return $ret;
     }
 
-    public function get_select_and($axis = '',$filters_enabled=array()) {
+    public function get_select_and($axis = '', $filters_enabled = array()) {
         $select = '';
         $filters = '';
 
@@ -478,13 +477,13 @@ class AnalyticsSearch extends CriticSearch {
             // Cast filter
             $prod = false;
 
-            if ($filters_enabled['showcast']){
-                if (is_array($filters_enabled['showcast'])){
-                    if (in_array(4, $filters_enabled['showcast'])){
+            if ($filters_enabled['showcast']) {
+                if (is_array($filters_enabled['showcast'])) {
+                    if (in_array(4, $filters_enabled['showcast'])) {
                         $prod = true;
                     }
                 } else {
-                    if ($filters_enabled['showcast']==4){
+                    if ($filters_enabled['showcast'] == 4) {
                         $prod = true;
                     }
                 }
@@ -619,18 +618,6 @@ class AnalyticsSearch extends CriticSearch {
         }
         $karay[] = $max_key;
         return $karay;
-    }
-
-    public function get_movie_names($ids) {
-        $sql = sprintf("SELECT id, title, year_int as year FROM movie_an WHERE id IN (%s) LIMIT 1000", implode(',', $ids));
-        $result = $this->sdb_results($sql);
-        $ret = array();
-        if ($result) {
-            foreach ($result as $m) {
-                $ret[$m->id] = $m->title . ' (' . $m->year . ')';
-            }
-        }
-        return $ret;
     }
 
 }

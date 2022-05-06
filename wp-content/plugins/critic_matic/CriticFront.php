@@ -24,7 +24,7 @@ class CriticFront extends SearchFacets {
     public function __construct($cm = '', $cs = '', $ce = '') {
         $this->cm = $cm ? $cm : new CriticMatic();
         $this->cs = $cs ? $cs : new CriticSearch($this->cm);
-        $this->ce = $ce ? $ce : new CriticEmotions();
+        $this->ce = $ce ? $ce : new CriticEmotions($this->cm);
         $table_prefix = DB_PREFIX_WP_AN;
         $this->db = array(
             //CM
@@ -404,7 +404,7 @@ class CriticFront extends SearchFacets {
                     $content = $this->staff_content_filter($content, $critic->id, $fullsize);
                 } else {
                     // Pro content                     
-                    $content = $this->pro_content_filter($content, $critic);
+                    $content = $this->pro_content_filter($content, $critic, $permalink, $fullsize);
                 }
             }
             // Other filters
@@ -446,8 +446,7 @@ class CriticFront extends SearchFacets {
         $tags = $this->cm->get_author_tags($author->id);
         if (sizeof($tags)) {
             foreach ($tags as $tag) {
-                $catdata .= '<a href="/critics/category_' . $tag->slug . '/"
-               title="' . $tag->name . '">' . $tag->name . '</a>';
+                $catdata .= $this->get_tag_link($tag->slug, $tag->name);
             }
         }
 
@@ -544,6 +543,15 @@ class CriticFront extends SearchFacets {
                     . '</div>' . $reaction_data . '</div></div>';
         }
         return $actorsresult;
+    }
+
+    public function get_tag_link($slug, $name) {
+        // Old api
+        // $tag = '<a href="/critics/category_' . $slug . '/" title="' . $name . '">' . $name . '</a>';
+        // Search api
+        $tag = '<a href="/search/tab_critics/tags_' . $slug . '" title="' . $name . '">' . $name . '</a>';
+
+        return $tag;
     }
 
     public function find_transcriptions($top_movie = 0, $cid = 0, $content = '') {
@@ -681,8 +689,7 @@ class CriticFront extends SearchFacets {
         $tags = $this->cm->get_author_tags($author->id);
         if (sizeof($tags)) {
             foreach ($tags as $tag) {
-                $catdata .= '<a href="/critics/category_' . $tag->slug . '/"
-               title="' . $tag->name . '">' . $tag->name . '</a>';
+                $catdata .= $this->get_tag_link($tag->slug, $tag->name);
             }
         }
 
@@ -707,12 +714,12 @@ class CriticFront extends SearchFacets {
         $country_data = $this->cm->get_geo_flag_by_ip($ip);
         if ($country_data['path']) {
             $country_name = $country_data['name'];
-            $country_img = '<div class="nte cflag" title="'.$country_name.'">
+            $country_img = '<div class="nte cflag" title="' . $country_name . '">
                                                     <div class="btn"><img src="' . $country_data['path'] . '" /></div> 
                                                     <div class="nte_show">
                                                         <div class="nte_in">
                                                             <div class="nte_cnt">
-                                                                This review was posted from '.$country_name.' or from a VPN in '.$country_name.'.                                                                
+                                                                This review was posted from ' . $country_name . ' or from a VPN in ' . $country_name . '.                                                                
                                                             </div>
                                                         </div>
                                                     </div>
@@ -780,7 +787,7 @@ class CriticFront extends SearchFacets {
         // $link = $link . '?a=' . $c_pid;
 
 
-        $review_bottom = '<div class="review_bottom"><div class="r_type"></div><div class="r_right"><div class="r_date">' . $critic_addtime . '</div>'.$country_img.'</div></div>';
+        $review_bottom = '<div class="review_bottom"><div class="r_type"></div><div class="r_right"><div class="r_date">' . $critic_addtime . '</div>' . $country_img . '</div></div>';
 
 
         if ($fullsize) {
@@ -1372,7 +1379,7 @@ class CriticFront extends SearchFacets {
         return $content;
     }
 
-    private function pro_content_filter($content = '', $critic = '') {
+    private function pro_content_filter($content = '', $critic = '', $permalink = '', $fullsize = '') {
         $video = '';
 
         $regex_pattern = "/(youtube.com|youtu.be)\/(watch)?(\?v=)?(\S+)?/";
@@ -1815,17 +1822,23 @@ class CriticFront extends SearchFacets {
             // Link more
             if ($count > $limit) {
 
-                $link = '/critics/group_pro';
+                // Old api
+                // $link = '/critics/group_pro';
+                // New api
+                $link = '/search/tab_critics/author_pro';
 
                 if ($movie_id) {
-                    $ma = $this->get_ma();
-                    $ma_id = $movie_id; //$ma->get_post_id_by_rwt_id($movie_id);                    
-                    $movie = $ma->get_post($ma_id);
-                    if ($movie) {
-                        $slug = $this->get_or_create_ma_post_name($ma_id, $movie->rwt_id, $movie->title, $movie->type);
-                        $type_slug = $ma->get_post_slug($movie->type);
-                        $link = $site_url . 'critics/group_pro/' . $type_slug . '/' . $slug;
-                    }
+                    // Old api
+                    /* $ma = $this->get_ma();
+                      $ma_id = $movie_id; //$ma->get_post_id_by_rwt_id($movie_id);
+                      $movie = $ma->get_post($ma_id);
+                      if ($movie) {
+                      $slug = $this->get_or_create_ma_post_name($ma_id, $movie->rwt_id, $movie->title, $movie->type);
+                      $type_slug = $ma->get_post_slug($movie->type);
+                      $link = $site_url . 'critics/group_pro/' . $type_slug . '/' . $slug;
+                      } */
+                    // New api
+                    $link = '/search/tab_critics/author_pro/movie_' . $movie_id;
                 }
 
                 $title = 'Load more<br>Pro Reviews';
@@ -1884,18 +1897,23 @@ class CriticFront extends SearchFacets {
             // Link more
             if ($count > $limit) {
 
-                $link = '/critics/group_staff';
-
+                // Old api
+                // $link = '/critics/group_staff';
+                // New api
+                $link = '/search/tab_critics/author_staff';
 
                 if ($movie_id) {
-                    $ma = $this->get_ma();
-                    $ma_id = $movie_id; //$ma->get_post_id_by_rwt_id($movie_id);
-                    $movie = $ma->get_post($ma_id);
-                    if ($movie) {
-                        $slug = $this->get_or_create_ma_post_name($ma_id, $movie->rwt_id, $movie->title, $movie->type);
-                        $type_slug = $ma->get_post_slug($movie->type);
-                        $link = $site_url . 'critics/group_staff/' . $type_slug . '/' . $slug;
-                    }
+                    // Old api
+                    /* $ma = $this->get_ma();
+                      $ma_id = $movie_id; //$ma->get_post_id_by_rwt_id($movie_id);
+                      $movie = $ma->get_post($ma_id);
+                      if ($movie) {
+                      $slug = $this->get_or_create_ma_post_name($ma_id, $movie->rwt_id, $movie->title, $movie->type);
+                      $type_slug = $ma->get_post_slug($movie->type);
+                      $link = $site_url . 'critics/group_staff/' . $type_slug . '/' . $slug;
+                      } */
+                    // New api
+                    $link = '/search/tab_critics/author_staff/movie_' . $movie_id;
                 }
 
                 $title = 'Load more<br>Staff Reviews';
@@ -1958,17 +1976,25 @@ class CriticFront extends SearchFacets {
             // Link more
             if ($count > $limit) {
 
-                $link = '/critics/group_audience';
+
+                // Old api
+                // $link = '/critics/group_audience';
+                // New api
+                $link = '/search/tab_critics/author_audience';
 
                 if ($movie_id) {
-                    $ma = $this->get_ma();
-                    $ma_id = $movie_id; //$ma->get_post_id_by_rwt_id($movie_id);
-                    $movie = $ma->get_post($ma_id);
-                    if ($movie) {
-                        $slug = $this->get_or_create_ma_post_name($ma_id, $movie->rwt_id, $movie->title, $movie->type);
-                        $type_slug = $ma->get_post_slug($movie->type);
-                        $link = $site_url . 'critics/group_audience/' . $type_slug . '/' . $slug;
-                    }
+                    // Old api
+                    /*
+                      $ma = $this->get_ma();
+                      $ma_id = $movie_id; //$ma->get_post_id_by_rwt_id($movie_id);
+                      $movie = $ma->get_post($ma_id);
+                      if ($movie) {
+                      $slug = $this->get_or_create_ma_post_name($ma_id, $movie->rwt_id, $movie->title, $movie->type);
+                      $type_slug = $ma->get_post_slug($movie->type);
+                      $link = $site_url . 'critics/group_audience/' . $type_slug . '/' . $slug;
+                      } */
+                    // New api
+                    $link = '/search/tab_critics/author_audience/movie_' . $movie_id;
                 }
 
                 $title = 'Load more<br>Audience Reviews';
