@@ -19,11 +19,11 @@ $i = 0;
 $i++;
 $cfg['Servers'][$i]['verbose'] = 'home';
 $cfg['Servers'][$i]['host'] = '172.17.0.1';
-$cfg['Servers'][$i]['port'] = 3306;
+$cfg['Servers'][$i]['port'] = 3307;
 $cfg['Servers'][$i]['socket'] = '';
 $cfg['Servers'][$i]['auth_type'] = 'cookie';
-$cfg['Servers'][$i]['user'] = DB_USER_TC;
-$cfg['Servers'][$i]['password'] = DB_PASSWORD_TC;
+$cfg['Servers'][$i]['user'] = DB_USER_AN;
+$cfg['Servers'][$i]['password'] = DB_PASSWORD_AN;
 
 
 
