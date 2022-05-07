@@ -1368,7 +1368,7 @@ class CriticParser extends AbstractDBWp {
             $this->db_query($sql);
             $result = $id;
         } else {
-//ADD
+            // ADD
             $this->db_query(sprintf("INSERT INTO {$this->db['campaign']} (
                 date, 
                 last_update, 
