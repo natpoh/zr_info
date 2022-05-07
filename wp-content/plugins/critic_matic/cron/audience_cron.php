@@ -23,6 +23,11 @@ if ($_GET['debug']) {
     $debug = true;
 }
 
+$force= false;
+if ($_GET['force']) {
+    $force= true;
+}
+
 if (!class_exists('CriticParser')) {
     //Critic feeds    
     require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticParser.php' );
@@ -35,4 +40,4 @@ if (!class_exists('CriticAudience')) {
 $ca = new CriticAudience($cm);
 
 
-$ca->run_cron($count, $debug);
+$ca->run_cron($count, $debug, $force);
