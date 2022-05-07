@@ -148,6 +148,7 @@ class CriticMatic extends AbstractDB {
     private $reader_city;
     private $geoip;
     public $sync_client = true;
+    public $sync_server = false;
     public $sync_data = true;
 
     public function __construct() {
@@ -206,6 +207,7 @@ class CriticMatic extends AbstractDB {
 
         $settings = $this->get_settings();
         $this->sync_client = $settings['sync_status'] == 2 ? true : false;
+        $this->sync_server = $settings['sync_status'] == 1 ? true : false;
     }
 
     public function get_cp() {
