@@ -42,4 +42,13 @@ class AbstractDBWp extends AbstractFunctions {
         global $wpdb;
         return $wpdb->_escape($text);
     }
+
+    public function db_update($data, $table, $id) {
+        return Pdo_an::db_update($data, $table, $id);
+    }
+
+    public function db_insert($data, $table) {
+        return Pdo_an::db_insert($data, $table);
+    }
+
 }

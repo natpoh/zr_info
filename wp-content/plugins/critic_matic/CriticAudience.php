@@ -152,7 +152,7 @@ class CriticAudience extends AbstractDb {
           )
          */
         $ip = $this->cm->get_remote_ip();
-        
+
 
         $rtn = new stdClass();
         $rtn->err = array();
@@ -293,13 +293,13 @@ class CriticAudience extends AbstractDb {
         $cp->send_curl_no_responce($url);
     }
 
-    public function run_cron($count = 100, $debug = false) {
+    public function run_cron($count = 100, $debug = false, $force = false) {
         $cron_option = 'audience_cron_last_run';
         $last_run = get_option($cron_option, 0);
         $currtime = $this->curr_time();
         $max_wait = $last_run + 5 * 60; // 5 min
 
-        if ($currtime > $max_wait) {
+        if ($currtime > $max_wait || $force) {
             // Set curr time to option
             update_option($cron_option, $currtime);
 
@@ -313,7 +313,7 @@ class CriticAudience extends AbstractDb {
             if ($queue) {
                 foreach ($queue as $item) {
                     // 2. Pubish posts
-                    $this->publish_audience($item);
+                    $this->publish_audience($item, $debug);
                 }
             }
             // Remove last run time
@@ -323,10 +323,9 @@ class CriticAudience extends AbstractDb {
                 print "Cron already run: $currtime < $max_wait";
             }
         }
-        
     }
 
-    public function publish_audience($item) {
+    public function publish_audience($item, $debug = false) {
         /*
           [0] => stdClass Object
           (
@@ -349,7 +348,7 @@ class CriticAudience extends AbstractDb {
           [content] => Как и исторические предшественники, украинские нацисты собираются вести войну на уничтожение. Но как только такие деятели попадают в плен, они сразу начинают рассказывать о том, что они повара, водители, воевать не хотели, хотели просто подзаработать денег и т.д.
           )
          */
-
+        // return;
         $author_name = $item->critic_name;
         $ip = $item->ip;
         $unic_id = $item->unic_id;
@@ -382,6 +381,7 @@ class CriticAudience extends AbstractDb {
         $aid = 0;
         $author_type = 0;
         $is_staff = false;
+        $new_author = false;
         if ($author_name) {
             // Staff content
             $aid = $this->cm->get_author_id_by_secret_key($author_name, $author_type);
@@ -393,7 +393,8 @@ class CriticAudience extends AbstractDb {
                 $aid = $this->get_author_audience($author_name, $unic_id);
 
                 if (!$aid) {
-                    // TODO sync aid
+                    // Get remote aid for a new author
+                    $new_author = true;
                     $status = 1;
                     $author_type = 2;
                     $options = array('audience' => $unic_id);
@@ -401,8 +402,9 @@ class CriticAudience extends AbstractDb {
                 }
             }
         }
+
         if ($aid) {
-            // TODO sync key
+            // Loacal, not sync
             $this->add_author_key($aid);
         }
 
@@ -429,11 +431,10 @@ class CriticAudience extends AbstractDb {
         $type = 2;
         $link = '';
 
-        // TODO sync post
-        $pid = $this->cm->add_post($date, $type, $link, $title, $content, $top_movie, $status);
+        $pid = $this->cm->add_post($date, $type, $link, $title, $content, $top_movie, $status, 0, true);
+
         if ($pid) {
             // Add post author
-            // TODO sync author meta
             $this->cm->add_post_author($pid, $aid);
             // Add meta
             // Proper review
@@ -441,15 +442,14 @@ class CriticAudience extends AbstractDb {
             // Approve
             $state = 1;
             // Add post movie meta
-            // TODO sync post meta
-            $this->cm->add_post_meta($top_movie, $movie_cat, $state, $pid);
+            $update_top_movie = false;
+            $this->cm->add_post_meta($top_movie, $movie_cat, $state, $pid, 0, $update_top_movie);
         }
 
         if ($pid) {
             // Add rating
             $options = $this->cm->get_rating_array($item);
 
-            // TODO sync rating
             $this->cm->add_rating($pid, $options);
 
             // Change queue status
@@ -783,26 +783,26 @@ class CriticAudience extends AbstractDb {
                 </tr>
             </thead>
             <tbody><?php
-        foreach ($rating_full as $key => $value) {
-            if (!isset($this->rating_form[$key])) {
-                continue;
-            }
-            $name = $this->rating_form[$key];
+                foreach ($rating_full as $key => $value) {
+                    if (!isset($this->rating_form[$key])) {
+                        continue;
+                    }
+                    $name = $this->rating_form[$key];
 
-            if (!isset($this->vote_data[$name])) {
-                continue;
-            }
-            $title = $this->vote_data[$name]['title'];
-            $keys = array(0 => 'None', 1 => '1 star', 2 => '2 stars', 3 => '3 stars', 4 => '4 stars', 5 => '5 stars');
-            $colspan = 1;
-            if ($name == 'vote') {
-                $colspan = 2;
-                $keys = array();
-                foreach ($this->vote_data[$name]['options'] as $k => $v) {
-                    $keys[$k] = $v['title'];
-                }
-            }
-            ?>
+                    if (!isset($this->vote_data[$name])) {
+                        continue;
+                    }
+                    $title = $this->vote_data[$name]['title'];
+                    $keys = array(0 => 'None', 1 => '1 star', 2 => '2 stars', 3 => '3 stars', 4 => '4 stars', 5 => '5 stars');
+                    $colspan = 1;
+                    if ($name == 'vote') {
+                        $colspan = 2;
+                        $keys = array();
+                        foreach ($this->vote_data[$name]['options'] as $k => $v) {
+                            $keys[$k] = $v['title'];
+                        }
+                    }
+                    ?>
                     <tr>
                         <td><?php print $title ?></td>
                         <?php foreach ($keys as $item => $title) { ?>

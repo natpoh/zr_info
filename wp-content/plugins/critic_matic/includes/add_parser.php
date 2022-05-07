@@ -1,5 +1,11 @@
 <h2><a href="<?php print $url ?>"><?php print __('Critic parsers') ?></a>. <?php print __('Add a new campaign') ?></h2>
-<?php print $tabs; ?>
+    <?php print $tabs; ?>
+    <?php 
+if (!$this->cm->sync_server) {
+    print 'This action allow in server mode only.';
+    return;
+}
+?>
 
 <form accept-charset="UTF-8" method="post" id="campaign" class="cm-type--1">
     <div class="cm-edit inline-edit-row">

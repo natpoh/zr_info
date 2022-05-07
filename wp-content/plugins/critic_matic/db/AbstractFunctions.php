@@ -12,7 +12,7 @@
 class AbstractFunctions {
 
     public function link_hash($link) {
-        $link = preg_replace('/^http(?:s|)\:\/\//', '', $link);        
+        $link = preg_replace('/^http(?:s|)\:\/\//', '', $link);
         return sha1($link);
     }
 
@@ -22,6 +22,102 @@ class AbstractFunctions {
         return $ret;
     }
 
+    public function fieldExist($field, $id, $from) {
+        $sql = "SELECT $field FROM $from WHERE $field=$id limit 1";
+        $ret = $this->db_get_var($sql);
+        return $ret;
+    }
+
+    public function sync_insert_data($data, $db, $sync_client = true, $sync_data = true, $priority = 5) {
+        $update = false;
+
+        if ($sync_client) {
+            // Client mode
+            // Get id
+            $id = $this->get_remote_id($db);
+            if (!$id) {
+                $ex_msg = 'Can not get id from the Server. Table:' . $db;
+                throw new Exception($ex_msg);
+                exit;
+            }
+            // Field exist
+            if ($this->fieldExist('id', $id, $db)) {
+                $update = true;
+                $this->db_update($data, $db, $id);
+            }
+            $data['id'] = (int) $id;
+        }
+
+        if (!$update) {
+            $this->db_insert($data, $db);
+        }
+
+        if (!$id) {
+            $id = $this->getInsertId('id', $db);
+        }
+
+        if ($sync_data) {
+            $this->create_commit_update($id, $db, $priority);
+        }
+
+        return $id;
+    }
+
+    public function sync_update_data($data, $id, $db, $sync_data = true, $priority = 5) {
+
+        $this->db_update($data, $db, $id);
+
+        if ($sync_data) {
+            $this->create_commit_update($id, $db, $priority);
+        }
+
+        return $id;
+    }
+
+    public function sync_delete_data($id, $db, $sync_data = true, $priority = 5) {
+
+        $sql = sprintf("DELETE FROM {$db} WHERE id = %d", (int) $id);
+        $this->db_query($sql);
+
+        if ($sync_data) {
+            $this->create_commit_update($id, $db, $priority);
+        }
+
+        return $id;
+    }
+
+    // Sync
+    public function get_remote_id($db = '') {
+
+        if (!class_exists('Import')) {
+            include ABSPATH . "analysis/export/import_db.php";
+        }
+
+        $array = array('table' => $db, 'column' => 'id');
+        $id_array = Import::get_remote_id($array);
+        $rid = $id_array['id'];
+
+        return $rid;
+    }
+
+    public function create_commit_update($id = 0, $db = '', $priority = 6) {
+        if (!class_exists('Import')) {
+            include ABSPATH . "analysis/export/import_db.php";
+        }
+        $request = array('id' => $id);
+        $commit_id = Import::create_commit($commit_id, 'update', $db, $request, $db, $priority);
+        return $commit_id;
+    }
+
+    public function create_commit_delete($id = 0, $db = '', $priority = 6) {
+        if (!class_exists('Import')) {
+            include ABSPATH . "analysis/export/import_db.php";
+        }
+        $request = array('id' => $id);
+        $commit_id = Import::create_commit($commit_id, 'delete', $db, $request, $db, $priority);
+        return $commit_id;
+    }
+    
     function get_option($option, $cache = true) {
         if ($cache) {
             static $dict;

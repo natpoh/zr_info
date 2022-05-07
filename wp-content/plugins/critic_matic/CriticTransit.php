@@ -1235,7 +1235,7 @@ class CriticTransit extends AbstractDB {
 
             $p = 'ds1bfgFe_23_KJDS-F';
             //$domain = 'http://rightwingtomatoes.com:8008/';
-            $domain = 'http://info.antiwoketomatoes.com:8008/';
+            $domain = 'http://148.251.54.53:8008/';
             $url = $domain . '?p=' . $p . '&names=' . $qnames;
             if ($debug) {
                 print_r($url . "\n");

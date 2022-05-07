@@ -50,7 +50,10 @@ class CriticMatic extends AbstractDB {
         'trash' => 'Trash',
     );
     public $sort_pages = array('author_name', 'free', 'id', 'ip', 'date', 'title', 'last_update', 'update_interval', 'name', 'pid', 'slug', 'status', 'type', 'weight');
-
+    public $sync_status = array(
+        1 => 'Server',
+        2 => 'Client',
+    );
     /*
      * Authors
      */
@@ -144,6 +147,8 @@ class CriticMatic extends AbstractDB {
     private $reader;
     private $reader_city;
     private $geoip;
+    public $sync_client = true;
+    public $sync_data = true;
 
     public function __construct() {
         $table_prefix = DB_PREFIX_WP_AN;
@@ -195,8 +200,12 @@ class CriticMatic extends AbstractDB {
                 'affirmative' => "<strong>「&quot;Affirmative Action&quot;」</strong>&nbsp;rates&nbsp;how much &quot;<a title=&quot;Steven Crowder article about how even the African American cast of 'Blackish' are getting sick and tired of the redundant questions about diversity they get all the time.&quot; class=&quot;window_open&quot; href=&quot;#http://www.louderwithcrowder.com/black-ish-creator-im-tired-of-talking-about-diversity/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>diversity</a>&quot; is being pushed. ( Not true diversity, but the <a class=&quot;window_open&quot; href=&quot;#https://archive.li/DPrE1&quot; target=&quot;_blank&quot; title=&quot;Hella diverse cast of black panther.&quot; >anti-White</a> checklist kind.)",
                 'lgbtq' => "<strong>「&quot;LGBTQrstuvwxyz&quot;」</strong>&nbsp;rates&nbsp;the&nbsp;amount&nbsp;of <a title=&quot;Buzzfeed article celebrating the transgender character thrown into the 'Mr. Robot' script to complete their diversity bingo chart.&quot; class=&quot;window_open&quot; href=&quot;#http://www.buzzfeed.com/arianelange/mr-robot-diversity&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>non-tradional&nbsp;sexuality</a>&nbsp;depicted. Whether this is positive or negative is up to the user. For example, <a class=&quot;window_open&quot; href=&quot;#https://rightwingtomatoes.com/critics/1671/&quot; target=&quot;_blank&quot; title=&quot;Link to reviews by Armond, in our database.&quot;>Armond White</a> is an openly gay conservative critic filled throughout our database.",
                 'god' => "<strong>「&quot;Anti-God Themes&quot;」</strong>&nbsp;rates&nbsp;the&nbsp;amount&nbsp;of slander towards God and/or <a title=&quot;Hollywood Reporter article about Pat Boone explaining why he boycotts SNL, and thinks they're cowards for not criticizing Islam as they do with 'God's Not Dead 2.'&quot; class=&quot;window_open&quot; href=&quot;#http://www.hollywoodreporter.com/news/pat-boone-accuses-snl-anti-885253&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>Christian</a> ethics. As with all these ratings, whether this is positive or negative is up to the reviewer. If you're a Pagan Alt Righter or Atheist Anarcho Capitalist, this may be good in your eyes."
-            )
+            ),
+            'sync_status' => 1,
         );
+
+        $settings = $this->get_settings();
+        $this->sync_client = $settings['sync_status'] == 2 ? true : false;
     }
 
     public function get_cp() {
@@ -614,7 +623,7 @@ class CriticMatic extends AbstractDB {
       2 => 'Manual'
      */
 
-    public function add_post($date = 0, $type = 0, $link = '', $title = '', $content = '', $top_movie = 0, $status = 1, $blur = 0) {
+    public function add_post($date = 0, $type = 0, $link = '', $title = '', $content = '', $top_movie = 0, $status = 1, $blur = 0, $sync = true) {
         $link_hash = '';
         if ($link) {
             $link_hash = $this->link_hash($link);
@@ -626,31 +635,41 @@ class CriticMatic extends AbstractDB {
 
         $date_add = $this->curr_time();
 
-        $sql = sprintf("INSERT INTO {$this->db['posts']} (date,date_add,status,type,blur,link_hash,link,title,content,top_movie) "
-                . "VALUES ('%d','%d','%d','%d','%d','%s','%s','%s','%s',%d)", (int) $date, (int) $date_add, (int) $status, (int) $type, (int) $blur, $link_hash, $this->escape($link), $this->escape($title), $this->escape($content), (int) $top_movie);
+        $data = array(
+            'date' => (int) $date,
+            'date_add' => (int) $date_add,
+            'status' => (int) $status,
+            'type' => (int) $type,
+            'blur' => (int) $blur,
+            'link_hash' => $link_hash,
+            'link' => $link,
+            'title' => $title,
+            'content' => $content,
+            'top_movie' => (int) $top_movie
+        );
 
-        //print $sql;
-        $this->db_query($sql);
+        $id = $this->sync_insert_data($data, $this->db['posts'], $this->sync_client, $sync);
 
-        //Return id
-        $id = $this->getInsertId('id', $this->db['posts']);
         return $id;
     }
 
-    public function add_post_meta($fid = 0, $type = 0, $state = 0, $cid = 0, $rating = 0) {
+    public function add_post_meta($fid = 0, $type = 0, $state = 0, $cid = 0, $rating = 0, $update_top_movie = true) {
         // Validate values        
         if ($fid > 0 && $cid > 0) {
             //Get post meta
-            $sql = sprintf("SELECT fid FROM {$this->db['meta']} WHERE cid=%d AND fid=%d", (int) $cid, (int) $fid);
-            $meta_exist = $this->db_get_var($sql);
-            if (!$meta_exist) {
-                //Meta not exist
-                $sql = sprintf("INSERT INTO {$this->db['meta']} (fid,type,state,cid,rating) "
-                        . "VALUES (%d,%d,%d,%d,%d)", (int) $fid, (int) $type, (int) $state, (int) $cid, (int) $rating);
-                $this->db_query($sql);
+            $data = array(
+                'fid' => (int) $fid,
+                'type' => (int) $type,
+                'state' => (int) $state,
+                'cid' => (int) $cid,
+                'rating' => (int) $rating,
+            );
+
+            $id = $this->sync_insert_data($data, $this->db['meta'], $this->sync_client, $this->sync_status);
+            if ($update_top_movie) {
                 $this->update_critic_top_movie($cid);
             }
-            return true;
+            return $id;
         }
         return false;
     }
@@ -663,13 +682,17 @@ class CriticMatic extends AbstractDB {
             $meta_exist = $this->db_get_var($sql);
             if ($meta_exist) {
                 //Validate old post author
-                $sql = sprintf("UPDATE {$this->db['meta']} SET 
-                type=%d,
-                state=%d,
-                rating=%d                  
-                WHERE cid=%d AND fid=%d", $type, $state, $rating, $cid, $fid
-                );
-                $this->db_query($sql);
+
+                $db_meta = $this->get_critic_meta($cid, $fid);
+                if ($db_meta) {
+                    $data = array(
+                        'type' => (int) $type,
+                        'state' => (int) $state,
+                        'rating' => (int) $rating
+                    );
+                    $this->sync_update_data($data, $db_meta->id, $this->db['meta'], $this->sync_data);
+                }
+
                 $this->update_critic_top_movie($cid);
             } else {
                 $this->add_post_meta($fid, $type, $state, $cid, $rating);
@@ -718,39 +741,48 @@ class CriticMatic extends AbstractDB {
         // Update critic top link
         if ($top_meta_movie != $post_movie) {
             $date_add = $this->curr_time();
-            $sql = sprintf("UPDATE {$this->db['posts']} SET top_movie=%d, date_add=%d WHERE id=%d", (int) $top_meta_movie, (int) $date_add, (int) $cid);
-            $this->db_query($sql);
+            $data = array(
+                'top_movie' => (int) $top_meta_movie,
+                'date_add' => (int) $date_add
+            );
+            $this->sync_update_data($data, $cid, $this->db['posts'], $this->sync_data);
         }
     }
 
     public function update_post($id, $date, $status, $link, $title, $content, $type, $blur = 0) {
         $date_add = $this->curr_time();
         $link_hash = $this->link_hash($link);
-        $sql = sprintf("UPDATE {$this->db['posts']} SET 
-                date=%d,
-                date_add=%d,
-                status=%d,
-                type=%d,
-                blur=%d,
-                link='%s', 
-                link_hash='%s', 
-                title='%s',               
-                content='%s'                 
-                WHERE id = %d", (int) $date, (int) $date_add, (int) $status, (int) $type, (int) $blur, $this->escape($link), $link_hash, $this->escape($title), $this->escape($content), (int) $id
+        $top_movie = 0;
+        $data = array(
+            'date' => (int) $date,
+            'date_add' => (int) $date_add,
+            'status' => (int) $status,
+            'type' => (int) $type,
+            'blur' => (int) $blur,
+            'link_hash' => $link_hash,
+            'link' => $link,
+            'title' => $title,
+            'content' => $content,
+            'top_movie' => (int) $top_movie
         );
-        $this->db_query($sql);
+        $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
+
         $this->hook_update_post($id);
     }
 
     public function update_post_date_add($id) {
         $date = $this->curr_time();
-        $sql = sprintf("UPDATE {$this->db['posts']} SET date_add=%d WHERE id = %d", $date, (int) $id);
-        $this->db_query($sql);
+        $data = array(
+            'date_add' => (int) $date,
+        );
+        $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
     }
 
     public function update_post_content($id, $content) {
-        $sql = sprintf("UPDATE {$this->db['posts']} SET content='%s' WHERE id = %d", $this->escape($content), (int) $id);
-        $this->db_query($sql);
+        $data = array(
+            'content' => $content,
+        );
+        $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
         $this->hook_update_post($id);
     }
 
@@ -766,30 +798,29 @@ class CriticMatic extends AbstractDB {
         $date_add = $this->curr_time();
         $author = isset($form_state['author']) ? $form_state['author'] : 0;
         $blur = isset($form_state['blur']) ? $form_state['blur'] : 0;
-        $title = $this->escape(stripslashes($form_state['title']));
-        $link = $this->escape($form_state['link']);
+        $title = stripslashes($form_state['title']);
+        $link = $form_state['link'];
         $link_hash = $this->link_hash($link);
-        $content = $this->escape(stripslashes($form_state['content']));
+        $content = stripslashes($form_state['content']);
 
         if ($form_state['id']) {
             //EDIT
             $id = $form_state['id'];
 
             //Validate old post author
-            $sql = sprintf("UPDATE {$this->db['posts']} SET 
-                date=%d,
-                date_add=%d,
-                status=%d,
-                blur=%d,
-                link='%s', 
-                link_hash='%s', 
-                title='%s',               
-                content='%s' 
-                WHERE id = %d", $date, $date_add, $status, $blur, $link, $link_hash, $title, $content, $id
+            $data = array(
+                'date' => (int) $date,
+                'date_add' => (int) $date_add,
+                'status' => (int) $status,
+                'blur' => (int) $blur,
+                'link_hash' => $link_hash,
+                'link' => $link,
+                'title' => $title,
+                'content' => $content,
             );
 
+            $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
 
-            $this->db_query($sql);
             $result_id = $id;
 
             //Udate author
@@ -828,8 +859,16 @@ class CriticMatic extends AbstractDB {
                     $type = (int) $value['type'];
                     $state = (int) $value['state'];
                     $rating = (int) $value['rating'];
-                    $sql = sprintf("UPDATE {$this->db['meta']} SET type=%d, state=%d, rating=%d WHERE cid=%d AND fid=%d", $type, $state, $rating, $id, $fid);
-                    $this->db_query($sql);
+
+                    $db_meta = $this->get_critic_meta($id, $fid);
+                    if ($db_meta) {
+                        $data = array(
+                            'type' => (int) $type,
+                            'state' => (int) $state,
+                            'rating' => (int) $rating
+                        );
+                        $this->sync_update_data($data, $db_meta->id, $this->db['meta'], $this->sync_data);
+                    }
                 }
                 $this->update_critic_top_movie($id);
             }
@@ -848,21 +887,21 @@ class CriticMatic extends AbstractDB {
              */
 
             $type = 2;
-            $this->db_query(sprintf("INSERT INTO {$this->db['posts']} (
-                date, 
-                date_add,
-                status,    
-                type,
-                blur,
-                link_hash,
-                link,
-                title,                
-                content                
-                ) VALUES (%d, %d, %d, %d, %d, '%s', '%s', '%s', '%s')", $date, $date_add, $status, $type, $blur, $link_hash, $link, $title, $content
-            ));
+            $top_movie = 0;
+            $data = array(
+                'date' => (int) $date,
+                'date_add' => (int) $date_add,
+                'status' => (int) $status,
+                'type' => (int) $type,
+                'blur' => (int) $blur,
+                'link_hash' => $link_hash,
+                'link' => $link,
+                'title' => $title,
+                'content' => $content,
+                'top_movie' => (int) $top_movie
+            );
 
-            //Return id
-            $id = $this->getInsertId('id', $this->db['posts']);
+            $id = $this->sync_insert_data($data, $this->db['posts'], $this->sync_client, $this->sync_data);
 
             //Add author meta
             if ($author) {
@@ -924,8 +963,9 @@ class CriticMatic extends AbstractDB {
         if ($form_state['id']) {
             // To trash
             $id = $form_state['id'];
-            $sql = sprintf("UPDATE {$this->db['posts']} SET status=%d WHERE id = %d", $status, $id);
-            $this->db_query($sql);
+
+            $data = array('status' => $status);
+            $this->db_update($data, $this->db['posts'], $id);
 
             $this->hook_update_post($id);
 
@@ -936,8 +976,10 @@ class CriticMatic extends AbstractDB {
 
     public function trash_post_by_id($id) {
         // To trash
-        $sql = sprintf("UPDATE {$this->db['posts']} SET status=2 WHERE id = %d", (int) $id);
-        $this->db_query($sql);
+        $data = array(
+            'status' => 2,
+        );
+        $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
         $this->hook_update_post($id);
         return true;
     }
@@ -947,8 +989,10 @@ class CriticMatic extends AbstractDB {
         $sql = sprintf("SELECT status FROM {$this->db['posts']} WHERE id=%d", $id);
         $old_status = $this->db_get_var($sql);
         if ($old_status != $status) {
-            $sql = sprintf("UPDATE {$this->db['posts']} SET status=%d WHERE id=%d", $status, $id);
-            $this->db_query($sql);
+            $data = array(
+                'status' => $status,
+            );
+            $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
             $this->hook_update_post($id);
             return true;
         }
@@ -1013,6 +1057,12 @@ class CriticMatic extends AbstractDB {
 
         $result = $this->db_results($sql);
 
+        return $result;
+    }
+
+    public function get_critic_meta($cid = 0, $fid = 0) {
+        $sql = sprintf("SELECT id, fid, type, state, cid, rating FROM {$this->db['meta']} WHERE cid=%d AND fid=%d LIMIT 1", $cid, $fid);
+        $result = $this->db_fetch_row($sql);
         return $result;
     }
 
@@ -1109,8 +1159,13 @@ class CriticMatic extends AbstractDB {
             return false;
         }
 
-        $sql = sprintf("UPDATE {$this->db['meta']} SET state=%d WHERE id IN(" . implode(',', $ids) . ")", $meta_state);
-        $this->db_query($sql);
+        $data = array(
+            'status' => $meta_state,
+        );
+
+        foreach ($ids as $id) {
+            $this->sync_update_data($data, $id, $this->db['meta'], $this->sync_data);
+        }
 
         $this->update_critic_top_movie($mid);
         return true;
@@ -1218,8 +1273,14 @@ class CriticMatic extends AbstractDB {
             return false;
         }
 
-        $sql = sprintf("UPDATE {$this->db['authors_meta']} SET aid=%d WHERE cid IN(" . implode(',', $ids) . ")", $author_id);
-        $this->db_query($sql);
+        $data = array(
+            'aid' => $author_id,
+        );
+
+        foreach ($ids as $id) {
+            $this->sync_update_data($data, $id, $this->db['authors_meta'], $this->sync_data);
+        }
+
         return true;
     }
 
@@ -1435,10 +1496,15 @@ class CriticMatic extends AbstractDB {
     public function create_author_by_name($name, $author_type = 0, $status = 1, $options = array()) {
         $opt_str = serialize($options);
         // Create the author
-        $sql = sprintf("INSERT INTO {$this->db['authors']} (status, type, name, options) VALUES (%d, %d, '%s', '%s')", (int) $status, (int) $author_type, $this->escape($name), $opt_str);
-        $this->db_query($sql);
-        //Get the id
-        $id = $this->getInsertId('id', $this->db['authors']);
+        $data = array(
+            'status' => (int) $status,
+            'type' => (int) $author_type,
+            'name' => $name,
+            'options' => $opt_str,
+        );
+
+        $id = $this->sync_insert_data($data, $this->db['authors'], $this->sync_client, $this->sync_data);
+
         return $id;
     }
 
@@ -1446,14 +1512,15 @@ class CriticMatic extends AbstractDB {
         // Validate values
         if ($pid > 0 && $author_id > 0) {
             //Get author meta
-            $sql = sprintf("SELECT aid FROM {$this->db['authors_meta']} WHERE cid='%d'", $pid);
-            $meta_exist = $this->db_get_var($sql);
-            if (!$meta_exist) {
-                //Meta not exist
-                $sql = sprintf("INSERT INTO {$this->db['authors_meta']} (aid,cid) VALUES (%d,%d)", (int) $author_id, (int) $pid);
-                $this->db_query($sql);
-            }
-            return true;
+
+            $data = array(
+                'aid' => (int) $author_id,
+                'cid' => (int) $pid,
+            );
+
+            $id = $this->sync_insert_data($data, $this->db['authors_meta'], $this->sync_client, $this->sync_data);
+
+            return $id;
         }
         return false;
     }
@@ -1478,7 +1545,7 @@ class CriticMatic extends AbstractDB {
         $opt_str = serialize($options);
 
         if ($form_state['id']) {
-            //EDIT
+            // UPDATE
             $id = $form_state['id'];
             $author = $this->get_author($id);
             $opt_prev = unserialize($author->options);
@@ -1487,15 +1554,15 @@ class CriticMatic extends AbstractDB {
             }
             $opt_str = serialize($opt_prev);
 
-            $sql = sprintf("UPDATE {$this->db['authors']} SET 
-                status=%d,
-                type=%d,
-                name='%s',               
-                options='%s' 
-                WHERE id = %d", $status, $from, $name, $opt_str, $id
+            $data = array(
+                'status' => $status,
+                'type' => $from,
+                'name' => $name,
+                'options' => $opt_str
             );
 
-            $this->db_query($sql);
+            $this->sync_update_data($data, $id, $this->db['authors'], $this->sync_data);
+
             $result_id = $id;
 
             //Tags. Remove old meta and add new
@@ -1509,17 +1576,15 @@ class CriticMatic extends AbstractDB {
               `name` varchar(255) NOT NULL default '',
               `options` text default NULL,
              */
-            $this->db_query(sprintf("INSERT INTO {$this->db['authors']} (
-                status, 
-                type, 
-                name,
-                options                
-                ) VALUES (%d,%d,'%s','%s')", $status, $from, $name, $opt_str
-            ));
+            $data = array(
+                'status' => $status,
+                'type' => $from,
+                'name' => $name,
+                'options' => $opt_str
+            );
 
             //Return id
-            $id = $this->getInsertId('id', $this->db['authors']);
-
+            $id = $this->sync_insert_data($data, $this->db['authors'], $this->sync_client, $this->sync_data);
 
             $result_id = $id;
         }
@@ -1543,14 +1608,14 @@ class CriticMatic extends AbstractDB {
         }
         $opt_str = serialize($opt_prev);
 
-        $sql = sprintf("UPDATE {$this->db['authors']} SET 
-                status=%d,
-                type=%d,
-                name='%s',               
-                options='%s' 
-                WHERE id = %d", $author->status, $author->type, $author->name, $opt_str, $author->id
+        $data = array(
+            'status' => $author->status,
+            'type' => $author->type,
+            'name' => $author->name,
+            'options' => $opt_str
         );
-        $this->db_query($sql);
+
+        $this->sync_update_data($data, $author->id, $this->db['authors'], $this->sync_data);
     }
 
     public function trash_author($form_state) {
@@ -1560,8 +1625,10 @@ class CriticMatic extends AbstractDB {
         if ($form_state['id']) {
             // To trash
             $id = $form_state['id'];
-            $sql = sprintf("UPDATE {$this->db['authors']} SET status=%d WHERE id = %d", $status, $id);
-            $this->db_query($sql);
+            $data = array(
+                'status' => $status
+            );
+            $this->sync_update_data($data, $id, $this->db['authors'], $this->sync_data);
             $result = $id;
         }
         return $result;
@@ -1585,8 +1652,12 @@ class CriticMatic extends AbstractDB {
                         print $item->post_title . " - " . $img . "<br />";
                         $options['image'] = $img;
                         $opt_str = serialize($options);
-                        $sql = sprintf("UPDATE {$this->db['authors']} SET options='%s' WHERE id = %d", $opt_str, $author->id);
-                        $this->db_query($sql);
+
+                        $data = array(
+                            'options' => $opt_str,
+                        );
+
+                        $this->sync_update_data($data, $author->id, $this->db['authors'], $this->sync_data);
                     }
                 }
             }
@@ -1782,8 +1853,12 @@ class CriticMatic extends AbstractDB {
 
             if (!$meta_exist) {
                 //Meta not exist
-                $sql = sprintf("INSERT INTO {$this->db['tag_meta']} (tid,cid) VALUES (%d,%d)", (int) $tag_id, (int) $aid);
-                $this->db_query($sql);
+                $data = array(
+                    'tid' => $tag_id,
+                    'cid' => $aid
+                );
+
+                $this->sync_insert_data($data, $this->db['tag_meta'], $this->sync_client, $this->sync_data);
             }
 
             $dict[$name] = 1;
@@ -1794,8 +1869,12 @@ class CriticMatic extends AbstractDB {
     }
 
     public function remove_author_tags($aid) {
-        $sql = sprintf("DELETE FROM {$this->db['tag_meta']} WHERE cid = %d", (int) $aid);
-        $this->db_query($sql);
+        $tags = $this->get_author_tags($aid);
+        if ($tags) {
+            foreach ($tags as $tag) {
+                $this->sync_delete_data($tag->id, $this->db['tag_meta'], $sync_data = $this->sync_data);
+            }
+        }
     }
 
     public function get_or_create_tag_id($name = '', $slug = '') {
@@ -1814,11 +1893,12 @@ class CriticMatic extends AbstractDB {
         $id = $this->db_get_var($sql);
 
         if (!$id) {
-            // Create the author
-            $sql = sprintf("INSERT INTO {$this->db['tags']} (name, slug) VALUES ('%s','%s')", $this->escape($name), $this->escape($slug));
-            $this->db_query($sql);
-            //Get the id
-            $id = $this->getInsertId('id', $this->db['tags']);
+            $data = array(
+                'name' => $name,
+                'slug' => $slug
+            );
+
+            $id = $this->sync_insert_data($data, $this->db['tags'], $this->sync_client, $this->sync_data);
         }
         // Add to cache
         $dict[$name] = $id;
@@ -1834,27 +1914,28 @@ class CriticMatic extends AbstractDB {
 
         if ($form_state['id']) {
             $id = (int) $form_state['id'];
-            //EDIT           
-            $sql = sprintf("UPDATE {$this->db['tags']} SET 
-                status=%d,                
-                name='%s',               
-                slug='%s' 
-                WHERE id = %d", $status, $name, $slug, $id
+            //EDIT         
+
+            $data = array(
+                'status' => $status,
+                'name' => $name,
+                'slug' => $slug
             );
 
-            $this->db_query($sql);
+            $this->sync_update_data($data, $id, $this->db['tags'], $this->sync_data);
+
             $result_id = $id;
         } else {
             //ADD
-            $this->db_query(sprintf("INSERT INTO {$this->db['tags']} (
-                status, 
-                name,
-                slug                
-                ) VALUES (%d,'%s','%s')", $status, $name, $slug
-            ));
+            $data = array(
+                'status' => $status,
+                'name' => $name,
+                'slug' => $slug
+            );
 
-            //Return id
-            $id = $this->getInsertId('id', $this->db['tags']);
+            $id = $this->sync_insert_data($data, $this->db['tags'], $this->sync_client, $this->sync_data);
+
+            //Return id            
             $result_id = $id;
         }
 
@@ -1868,8 +1949,11 @@ class CriticMatic extends AbstractDB {
         if ($form_state['id']) {
             // To trash
             $id = $form_state['id'];
-            $sql = sprintf("UPDATE {$this->db['tags']} SET status=%d WHERE id = %d", $status, $id);
-            $this->db_query($sql);
+
+            $data = array(
+                'status' => $status
+            );
+            $this->sync_update_data($data, $id, $this->db['tags'], $this->sync_data);
             $result = $id;
         }
         return $result;
@@ -2254,12 +2338,22 @@ class CriticMatic extends AbstractDB {
 
         $options = '';
 
-        $sql = sprintf("INSERT INTO {$this->db['rating']} (cid,rating,hollywood,patriotism,misandry,affirmative,lgbtq,god,vote,ip,options) 
-            VALUES (%d,%d,%d,%d,%d,%d,%d,%d,%d,'%s','%s')", $cid, $ret['r'], $ret['h'], $ret['p'], $ret['m'], $ret['a'], $ret['l'], $ret['g'], $ret['v'], $ret['ip'], $options);
-        $this->db_query($sql);
+        $data = array(
+            'cid' => (int) $cid,
+            'rating' => (int) $ret['r'],
+            'hollywood' => (int) $ret['h'],
+            'patriotism' => (int) $ret['p'],
+            'misandry' => (int) $ret['m'],
+            'affirmative' => (int) $ret['a'],
+            'lgbtq' => (int) $ret['l'],
+            'god' => (int) $ret['g'],
+            'vote' => (int) $ret['v'],
+            'ip' => $ret['ip'],
+            'options' => $options
+        );
 
-        //Return id
-        $id = $this->getInsertId('id', $this->db['rating']);
+        $id = $this->sync_insert_data($data, $this->db['rating'], $this->sync_client, $this->sync_status);
+
         return $id;
     }
 
@@ -2271,19 +2365,22 @@ class CriticMatic extends AbstractDB {
                 $ret[$key] = isset($rating[$key]) ? $rating[$key] : $value;
             }
 
-            $sql = sprintf("UPDATE {$this->db['rating']} SET 
-                        rating='%d',
-                        hollywood='%d',
-                        patriotism='%d',
-                        misandry='%d',
-                        affirmative='%d',
-                        lgbtq='%d',
-                        god='%d',
-                        vote='%d',
-                        ip='%s',
-                        options='%s' 
-                        WHERE cid=%d", $ret['r'], $ret['h'], $ret['p'], $ret['m'], $ret['a'], $ret['l'], $ret['g'], $ret['v'], $ret['ip'], '', $cid);
-            $this->db_query($sql);
+            $options = '';
+
+            $data = array(
+                'rating' => (int) $ret['r'],
+                'hollywood' => (int) $ret['h'],
+                'patriotism' => (int) $ret['p'],
+                'misandry' => (int) $ret['m'],
+                'affirmative' => (int) $ret['a'],
+                'lgbtq' => (int) $ret['l'],
+                'god' => (int) $ret['g'],
+                'vote' => (int) $ret['v'],
+                'ip' => $ret['ip'],
+                'options' => $options
+            );
+
+            $this->sync_update_data($data, $cid, $this->db['rating'], $this->sync_data);
 
             return true;
         }
@@ -2427,8 +2524,13 @@ class CriticMatic extends AbstractDB {
     public function update_link_hash($id, $link) {
         if ($link) {
             $link_hash = $this->link_hash($link);
-            $sql = sprintf("UPDATE {$this->db['posts']} SET link_hash='%s' WHERE id=%d", $link_hash, (int) $id);
-            $this->db_query($sql);
+
+            $data = array(
+                'link_hash' => $link_hash,
+            );
+
+            $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
+
             return $link_hash;
         }
         return '';
@@ -2459,19 +2561,21 @@ class CriticMatic extends AbstractDB {
                             $ret[$key] = isset($rating[$key]) ? $rating[$key] : $value;
                         }
 
-                        $sql = sprintf("UPDATE {$this->db['rating']} SET 
-                        rating='%d',
-                        hollywood='%d',
-                        patriotism='%d',
-                        misandry='%d',
-                        affirmative='%d',
-                        lgbtq='%d',
-                        god='%d',
-                        vote='%d',
-                        ip='%s',
-                        options='%s' 
-                        WHERE cid=%d", $ret['r'], $ret['h'], $ret['p'], $ret['m'], $ret['a'], $ret['l'], $ret['g'], $ret['v'], $ret['ip'], '', $result->cid);
-                        $this->db_query($sql);
+                        $options = '';
+                        $data = array(
+                            'rating' => (int) $ret['r'],
+                            'hollywood' => (int) $ret['h'],
+                            'patriotism' => (int) $ret['p'],
+                            'misandry' => (int) $ret['m'],
+                            'affirmative' => (int) $ret['a'],
+                            'lgbtq' => (int) $ret['l'],
+                            'god' => (int) $ret['g'],
+                            'vote' => (int) $ret['v'],
+                            'ip' => $ret['ip'],
+                            'options' => $options
+                        );
+                        $cid = $result->cid;
+                        $this->sync_update_data($data, $cid, $this->db['rating'], $this->sync_data);
                     }
                 }
             }
@@ -2611,7 +2715,7 @@ class CriticMatic extends AbstractDB {
         $this->db_query($sql);
     }
 
-    public function update_ip_type_by_id($id, $type = 0) {
+    public function update_ip_type_by_id($id, $type = 0) {        
         $sql = sprintf("UPDATE {$this->db['ip']} SET type=%d WHERE id=%d", (int) $type, (int) $id);
         $this->db_query($sql);
     }
@@ -2810,12 +2914,13 @@ class CriticMatic extends AbstractDB {
      * Settings
      */
 
-    public function get_settings() {
-        if ($this->settings) {
+    public function get_settings($cache = true) {
+        if ($cache && $this->settings) {
             return $this->settings;
         }
         // Get settings from options
-        $settings = unserialize($this->get_option('critic_matic_settings'));
+        $settings = unserialize($this->get_option('critic_matic_settings', false));
+
         if ($settings && sizeof($settings)) {
             foreach ($this->settings_def as $key => $value) {
                 if (!isset($settings[$key])) {
@@ -2823,13 +2928,11 @@ class CriticMatic extends AbstractDB {
                     $settings[$key] = $value;
                 } else {
                     if ($key == 'audience_desc') {
-
                         $audience_desc = $settings[$key];
                         $au_decode = array();
                         foreach ($audience_desc as $k => $v) {
                             $au_decode[$k] = base64_decode($v);
                         }
-
                         $settings[$key] = $au_decode;
                     }
                 }
@@ -2843,11 +2946,12 @@ class CriticMatic extends AbstractDB {
 
     public function update_settings($form) {
 
-        $ss = $this->get_settings();
-        foreach ($ss as $key => $value) {
-            if (isset($form[$key])) {
-                $new_value = $form[$key];
-                $ss[$key] = $new_value;
+        $settings_prev = unserialize($this->get_option('critic_matic_settings', false));
+
+        $ss = $settings_prev;
+        foreach ($form as $key => $value) {
+            if (isset($this->settings_def[$key])) {
+                $ss[$key] = $value;
             }
         }
 
@@ -2857,16 +2961,13 @@ class CriticMatic extends AbstractDB {
             $ss['posts_type_3'] = $form['posts_type_3'] ? 1 : 0;
         }
 
-        $audience_desc = array();
         $audience_desc_encode = array();
         if (isset($form['audience_descriptions'])) {
             foreach ($this->settings_def['audience_desc'] as $key => $value) {
-                $audience_desc[$key] = trim($form['au_' . $key]);
                 $audience_desc_encode[$key] = base64_encode(trim($form['au_' . $key]));
             }
-            $ss['audience_desc'] = $audience_desc;
+            $ss['audience_desc'] = $audience_desc_encode;
         }
-
 
         // Upadate cookie content
         if (isset($form['parser_cookie_text'])) {
@@ -2877,15 +2978,11 @@ class CriticMatic extends AbstractDB {
             file_put_contents($cookie_path, $form['parser_cookie_text']);
         }
 
-        // Update settings
-        $this->settings = $ss;
+        // Update options        
+        update_option('critic_matic_settings', serialize($ss));
 
-        // Update options
-        $ss_to_upd = $ss;
-        if ($audience_desc_encode) {
-            $ss_to_upd['audience_desc'] = $audience_desc_encode;
-        }
-        update_option('critic_matic_settings', serialize($ss_to_upd));
+        // Update settings
+        $this->settings = $this->get_settings();
     }
 
     /*
