@@ -116,7 +116,7 @@ class CriticMaticAdmin {
         add_submenu_page($this->parrent_slug, __('Countries'), __('Countries'), $this->access_level, $this->countries_url, array($this, 'countries'));
         add_submenu_page($this->parrent_slug, __('Providers'), __('Providers'), $this->access_level, $this->providers_url, array($this, 'providers'));
         add_submenu_page($this->parrent_slug, __('Audience'), __('Audience') . $count_text, $this->access_level, $this->audience_url, array($this, 'audience'));
-        if ($this->cm->sync_server) {
+        if (!$this->cm->sync_client) {
             add_submenu_page($this->parrent_slug, __('Feeds'), __('Feeds'), $this->access_level, $this->feeds_url, array($this, 'feeds'));
             add_submenu_page($this->parrent_slug, __('Parser'), __('Parser'), $this->access_level, $this->parser_url, array($this, 'parser'));
         }
