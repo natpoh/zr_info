@@ -167,8 +167,8 @@ class CriticMatic extends AbstractDB {
             //CF
             'feed_meta' => $table_prefix . 'critic_feed_meta',
             // WP
-            'wp_posts' => $table_prefix . 'posts',
-            'wp_postmeta' => $table_prefix . 'postmeta',
+            'wp_posts' => DB_PREFIX_WP . 'posts',
+            'wp_postmeta' => DB_PREFIX_WP . 'postmeta',
         );
         $this->timer_start();
 
