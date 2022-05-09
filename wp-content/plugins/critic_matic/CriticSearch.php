@@ -467,13 +467,22 @@ class CriticSearch extends AbstractDB {
                 $ids[] = $item->id;
                 $meta_search[$item->id] = 1;
                 $ret[$item->id]['title'] = $item->title;
+                if (strstr($item->t, '<b>')) {
+                    if (preg_match_all('/<b>([^<]+)<\/b>/', $item->t, $title_match)) {
+                        $ret[$item->id]['found']['title'] = $title_match[1];
+                    }
+                }
+
                 $ret[$item->id]['w'] = $item->w;
                 if ($debug) {
                     if (strstr($item->t, '<b>')) {
                         $ret[$item->id]['debug']['title'] = $item->t;
                     }
                     if (strstr($item->c, '<b>')) {
-                        $ret[$item->id]['debug']['content'] = $item->c;
+                        $content = htmlspecialchars($item->c);
+                        $content = str_replace('&lt;b&gt;', '<b>', $content);
+                        $content = str_replace('&lt;/b&gt', '</b>', $content);
+                        $ret[$item->id]['debug']['content'] = $content;
                     }
                 }
             }
@@ -638,7 +647,6 @@ class CriticSearch extends AbstractDB {
             $title_w = (int) $value['w'];
             $post_title = $value['title'];
             if ($title_w >= 10) {
-
                 // Validate title
 
                 $title_to_validate = $title;
@@ -677,15 +685,23 @@ class CriticSearch extends AbstractDB {
                         $valid_title = false;
                         if ($year && strstr($post_title, $year)) {
                             $valid_title = true;
+                            $ret[$id]['debug']['title valid']='Found date in title';
+                        }
+
+                        // Equals
+                        if ($post_title == $names_valid[$pid]) {
+                            $valid_title = true;
+                            $ret[$id]['debug']['title valid']='Titles is equals';
                         }
 
                         if (!$valid_title) {
                             // Regexp
                             $reg_tags = $this->get_reg_tags();
                             if (preg_match_all($reg_tags, $post_title, $match)) {
-                                foreach ($match[1] as $value) {
-                                    $find_title = strip_tags($value);
+                                foreach ($match[1] as $v) {
+                                    $find_title = strip_tags($v);
                                     if ($find_title == $title) {
+                                        $ret[$id]['debug']['title valid']='Found title in tags';
                                         $valid_title = true;
                                         break;
                                     }
@@ -696,9 +712,24 @@ class CriticSearch extends AbstractDB {
                         if (!$valid_title) {
                             $reg_quotes = $this->get_reg_quotes();
                             if (preg_match_all($reg_quotes, $this->validate_title_chars(strip_tags($post_title)), $match)) {
-                                foreach ($match[1] as $value) {
-                                    $find_title = $value;
+                                foreach ($match[1] as $v) {
+                                    $find_title = $v;
                                     if ($find_title == $title) {
+                                        $ret[$id]['debug']['title valid']='Found title in quotes';
+                                        $valid_title = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (!$valid_title) {
+                            $reg_quotes = $this->get_reg_quotes();
+                            if (isset($value['found']['title'])) {
+                                foreach ($value['found']['title'] as $v) {
+                                    $find_title = $v;
+                                    if ($find_title == $title) {
+                                        $ret[$id]['debug']['title valid']='Found title in search bolds';
                                         $valid_title = true;
                                         break;
                                     }
@@ -1200,14 +1231,14 @@ class CriticSearch extends AbstractDB {
 
         //Sort logic
         $order = $this->get_order_query_critics($sort);
-        
+
         // Movie weight logic        
-        
-        if (isset($sort['sort']) && $sort['sort']=='mw'){
-            $start=0;
-            $limit=10000;
+
+        if (isset($sort['sort']) && $sort['sort'] == 'mw') {
+            $start = 0;
+            $limit = 10000;
         }
-        
+
         //Keywords logic
         $match = '';
         if ($keyword) {

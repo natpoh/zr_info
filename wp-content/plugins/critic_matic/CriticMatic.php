@@ -50,10 +50,7 @@ class CriticMatic extends AbstractDB {
         'trash' => 'Trash',
     );
     public $sort_pages = array('author_name', 'free', 'id', 'ip', 'date', 'title', 'last_update', 'update_interval', 'name', 'pid', 'slug', 'status', 'type', 'weight');
-    public $sync_status = array(
-        1 => 'Server',
-        2 => 'Client',
-    );
+
     /*
      * Authors
      */
@@ -73,12 +70,12 @@ class CriticMatic extends AbstractDB {
         'add' => 'Add a new author',
     );
     public $author_tabs = array(
-        'home' => 'View',
-        'posts' => 'Posts',
-        'feeds' => 'Feeds',
-        'parsers' => 'Parsers',
-        'edit' => 'Edit',
-        'trash' => 'Trash',
+        'home' => array('title' => 'View', 'sync_view' => 0),
+        'posts' => array('title' => 'Posts', 'sync_view' => 0),
+        'feeds' => array('title' => 'Feeds', 'sync_view' => 1),
+        'parsers' => array('title' => 'Parsers', 'sync_view' => 1),
+        'edit' => array('title' => 'Edit', 'sync_view' => 0),
+        'trash' => array('title' => 'Trash', 'sync_view' => 0),
     );
     /*
      * Tags
@@ -147,9 +144,15 @@ class CriticMatic extends AbstractDB {
     private $reader;
     private $reader_city;
     private $geoip;
+    /* Sync */
+    public $sync_status = 0;
     public $sync_client = true;
     public $sync_server = false;
     public $sync_data = true;
+    public $sync_status_types = array(
+        1 => 'Server',
+        2 => 'Client',
+    );
 
     public function __construct() {
         $table_prefix = DB_PREFIX_WP_AN;
@@ -206,6 +209,7 @@ class CriticMatic extends AbstractDB {
         );
 
         $settings = $this->get_settings();
+        $this->sync_status = $settings['sync_status'];
         $this->sync_client = $settings['sync_status'] == 2 ? true : false;
         $this->sync_server = $settings['sync_status'] == 1 ? true : false;
     }
@@ -667,7 +671,7 @@ class CriticMatic extends AbstractDB {
                 'rating' => (int) $rating,
             );
 
-            $id = $this->sync_insert_data($data, $this->db['meta'], $this->sync_client, $this->sync_status);
+            $id = $this->sync_insert_data($data, $this->db['meta'], $this->sync_client, $this->sync_data);
             if ($update_top_movie) {
                 $this->update_critic_top_movie($cid);
             }
@@ -1304,7 +1308,8 @@ class CriticMatic extends AbstractDB {
     }
 
     public function authors_actions($exclude = array()) {
-        foreach ($this->author_tabs as $key => $value) {
+        $author_tabs = $this->get_sync_tabs($this->author_tabs);
+        foreach ($author_tabs as $key => $value) {
             if (in_array($key, $exclude)) {
                 continue;
             }
@@ -2355,7 +2360,7 @@ class CriticMatic extends AbstractDB {
             'options' => $options
         );
 
-        $id = $this->sync_insert_data($data, $this->db['rating'], $this->sync_client, $this->sync_status);
+        $id = $this->sync_insert_data($data, $this->db['rating'], $this->sync_client, $this->sync_data);
 
         return $id;
     }
@@ -3030,6 +3035,20 @@ class CriticMatic extends AbstractDB {
     private function get_perpage() {
         $this->perpage = isset($_GET['perpage']) ? (int) $_GET['perpage'] : $this->perpage;
         return $this->perpage;
+    }
+
+    public function get_sync_tabs($tabs) {
+        $ret = array();
+        foreach ($tabs as $key => $item) {
+            $title = $item['title'];
+            $view = $item['sync_view'];
+
+            if ($view > 0 && $this->sync_status != $view) {
+                continue;
+            }
+            $ret[$key] = $title;
+        }
+        return $ret;
     }
 
     /*
