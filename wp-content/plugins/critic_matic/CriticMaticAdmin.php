@@ -754,7 +754,7 @@ class CriticMaticAdmin {
         if ($aid) {
             // Author page
             $append = '&aid=' . $aid;
-            $tabs_arr = $this->cm->author_tabs;
+            $tabs_arr = $this->cm->get_sync_tabs($this->cm->author_tabs);
             $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab, $append);
 
             if (!$curr_tab) {

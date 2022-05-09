@@ -9,7 +9,7 @@
                 <select name="sync_status" class="">
                     <?php
 
-                    foreach ($this->cm->sync_status as $key => $status) {
+                    foreach ($this->cm->sync_status_types as $key => $status) {
                         $selected = ($key == $ss['sync_status']) ? 'selected' : '';
                         ?>
                         <option value="<?php print $key ?>" <?php print $selected ?> >
