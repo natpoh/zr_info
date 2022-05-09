@@ -448,7 +448,7 @@ class TMDB
     }
 
 
-    public static function check_tmbd_movies_years($movie_name, $year = '')
+public static function check_tmbd_movies_years($movie_name, $year = '')
     {
 
         if (!$year) return;
@@ -500,7 +500,8 @@ class TMDB
         //   var_dump($result);
 
     }
-    public static function replace_movie_text($m,$allYears = '')
+
+public static function replace_movie_text($m,$allYears = '')
     {
 
         if ($allYears)
@@ -536,6 +537,7 @@ class TMDB
 
         return $m;
     }
+
 public static function check_and_add_to_imdb_db($imdb_id)
 {
     if (!self::check_imdb_id($imdb_id))
@@ -563,7 +565,6 @@ public static function check_tmdb_actors_in_movie($mid)
     return $r;
 
 }
-
 
 public static function addto_db_imdb($movie_id, $array_movie, $rwt_id = 0, $tmdb_id = 0)
 {
@@ -916,8 +917,7 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
 return 1;
 }
 
-
-    public static function  remove_actors($array_actors,$table)
+public static function  remove_actors($array_actors,$table)
     {
         foreach ($array_actors as $id =>$data)
         {
@@ -949,7 +949,6 @@ public static function get_current_meta($table,$id,$aid='aid')
 
 }
 
-
 public static function add_todb_actor($id,$name='')
 {
     if (!self::check_enable_actors($id)) {
@@ -970,10 +969,7 @@ public static function add_todb_actor($id,$name='')
     }
 }
 
-
-
-
-    public static function add_movie_actor($mid = 0, $id = 0, $type = 0,$table='meta_movie_actor',$pos=0) {
+public static function add_movie_actor($mid = 0, $id = 0, $type = 0,$table='meta_movie_actor',$pos=0) {
 
         // Validate values
         if ($mid > 0 && $id > 0) {
@@ -1038,7 +1034,7 @@ public static function add_todb_actor($id,$name='')
         return false;
     }
 
-    public static  function check_imdb_id($movie_id, $movie_tmdb_id = '', $rwt_id = '')
+public static  function check_imdb_id($movie_id, $movie_tmdb_id = '', $rwt_id = '')
     {
 
         $sql = "SELECT *  FROM `data_movie_imdb`  WHERE `movie_id` = '" . $movie_id . "'";
@@ -1061,6 +1057,7 @@ public static function add_todb_actor($id,$name='')
 
         return 0;
     }
+
 public static  function check_enable_actors($id)
     {
 
@@ -1140,7 +1137,6 @@ public  static function get_country_name($id)
 
 return $result->country_name;
 }
-
 public static function add_log($id='',$imdb_id='',$name='',$comment='',$log_status=0)
 {
     if (!$id && $imdb_id)
@@ -1159,8 +1155,6 @@ VALUES (NULL,?,?,?,?,?,?)";
 
 
 }
-
-
 
 public static function get_imdb_parse($content,$show_data='',$id,$array_result)
     {
@@ -1820,7 +1814,7 @@ if (strpos($content, $pos)) {
 return $array_result;
 }
 
-    public static  function get_data($key,$type)
+public static  function get_data($key,$type)
     {
         $key = urlencode($key);
         $url ='https://www.imdb.com/find?q='.$key.'&s=tt&ttype='.$type;
@@ -1842,7 +1836,7 @@ return $array_result;
             return $result_data;
     }
 
-    public static function get_array_compare()
+public static function get_array_compare()
     {
         $sql = "SELECT * FROM `options` where id =3 limit 1";
         $row = Pdo_an::db_fetch_row($sql);
@@ -1871,4 +1865,5 @@ return $array_result;
       return $array_compare;
 
     }
+
 }

@@ -11,7 +11,6 @@ if (!defined('ABSPATH'))
 
 $array_jobs = array(
 
-
 'add_tmdb_without_id'=>10,///add imdb id to tmdb database
 'check_last_actors'=>10,
 'check_kairos'=>5,///add kairos images
@@ -25,32 +24,29 @@ $array_jobs = array(
 'add_providers'=>30,
 'update_imdb_data'=>30,//update movies
 
+'get_family'=>10, //family to actors meta
+
 'download_crowd_images'=>60,///load image to server from crowdsource status 1
 'update_actors_verdict'=>30,///update verdict actors
 'set_tmdb_actors_for_movies'=>30,////update tmdb actors from japan anime
-'update_all_rwt_rating'=>60,////update all rating
-'add_to_db_from_userlist'=>60,///add new movies from user vote list
 
+'update_all_rwt_rating'=>60,////update all rating
+'add_to_db_from_userlist'=>60,///add new movies from user vote list //// !not sync
 
 'get_new_movies'=>(60*12),///add new movies from fandango
 'get_new_tv'=>(60*12),///add new tv from tmdb
+
 'add_pg_rating_for_new_movies'=>(60*12),///add pg rating to new movies
 'add_gender_rating_for_new_movies'=>(60*12),///add gender rating to new movies
-    'update_all_audience_and_staff'=>(60*12),///recreate cache audience and staff
-    'get_coins_data'=>60*24,////get data donations
 
-    'add_imdb_data_to_options'=>(60*24*7),
-    'add_tv_shows_to_options'=>(60*24*30),
+'update_all_audience_and_staff'=>(60*12),///recreate cache audience and staff
+'get_coins_data'=>60*24,////get data donations
 
+'add_imdb_data_to_options'=>(60*24*7),
+'add_tv_shows_to_options'=>(60*24*30),
 
-
-
-
-
-///
 
 ///'add_rating'=>10,  ////add new rating to movies (old version)
-
 //'check_tvexport'=>10
 );
 
