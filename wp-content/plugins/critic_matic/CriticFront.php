@@ -38,9 +38,9 @@ class CriticFront extends SearchFacets {
             //CF
             'feed_meta' => $table_prefix . 'critic_feed_meta',
             // WP
-            'wp_posts' => $table_prefix . 'posts',
-            'wp_options' => $table_prefix . 'options',
-            'wp_postmeta' => $table_prefix . 'postmeta',
+            'wp_posts' => DB_PREFIX_WP . 'posts',
+            'wp_options' => DB_PREFIX_WP . 'options',
+            'wp_postmeta' => DB_PREFIX_WP . 'postmeta',
         );
         $this->init_search();
     }
@@ -52,7 +52,7 @@ class CriticFront extends SearchFacets {
             if (!class_exists('MoviesAn')) {
                 require_once( CRITIC_MATIC_PLUGIN_DIR . 'MoviesAn.php' );
             }
-            $this->ma = new MoviesAn();
+            $this->ma = new MoviesAn($this->cm);
         }
         return $this->ma;
     }

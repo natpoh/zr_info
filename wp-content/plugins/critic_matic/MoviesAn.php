@@ -8,6 +8,8 @@
 class MoviesAn extends AbstractDBAn {
 
     private $db;
+    // Critic matic
+    private $cm;
     /*
      * Movies
      */
@@ -93,7 +95,8 @@ class MoviesAn extends AbstractDBAn {
         'trash' => 'Trash',
     );
 
-    public function __construct() {
+    public function __construct($cm = '') {
+        $this->cm = $cm;
         $this->db = array(
             'movie_imdb' => 'data_movie_imdb',
             'actors_all' => 'data_actors_all',
@@ -190,15 +193,21 @@ class MoviesAn extends AbstractDBAn {
             //Get post meta
             $sql = sprintf("SELECT id FROM {$this->db['movies_meta']} WHERE mid=%d", (int) $mid);
             $meta_exist = $this->db_get_var($sql);
+
+
             if ($meta_exist) {
                 // Update
-                $sql = sprintf("UPDATE {$this->db['movies_meta']} SET date=%d WHERE mid = %d", $date, $mid);
-                $this->db_query($sql);
+                $data = array(
+                    'date' => (int) $date
+                );
+                $this->cm->sync_update_data($data, $meta_exist, $this->db['movies_meta'], $this->cm->sync_data);
             } else {
                 // Insert
-                $sql = sprintf("INSERT INTO {$this->db['movies_meta']} (mid, date) "
-                        . "VALUES (%d, %d)", (int) $mid, (int) $date);
-                $this->db_query($sql);
+                $data = array(
+                    'mid' => (int) $mid,
+                    'date' => (int) $date
+                );
+                $this->cm->sync_insert_data($data, $this->db['movies_meta'], $this->cm->sync_client, $this->cm->sync_data);
             }
             return true;
         }
@@ -228,8 +237,10 @@ class MoviesAn extends AbstractDBAn {
         $name_exist = $this->get_post_name($id);
         // Add post name
         if (!$name_exist) {
-            $sql = sprintf("UPDATE {$this->db['movie_imdb']} SET post_name='%s' WHERE id=%d", $this->escape($post_name), (int) $id);
-            $this->db_query($sql);
+            $data = array(
+                'post_name' => (int) $post_name
+            );
+            $this->cm->sync_update_data($data, $id, $this->db['movie_imdb'], $this->cm->sync_data);
         }
     }
 
@@ -373,32 +384,21 @@ class MoviesAn extends AbstractDBAn {
         $slug = $this->escape($form_state['slug']);
         $weight = (int) ($form_state['weight']);
 
+        $data = array(
+            'status' => (int) $status,
+            'weight' => (int) $weight,
+            'name' => $name,
+            'slug' => $slug,
+        );
+
         if ($form_state['id']) {
             $id = (int) $form_state['id'];
             //EDIT           
-            $sql = sprintf("UPDATE {$this->db['data_genre']} SET 
-                status=%d,                
-                weight=%d, 
-                name='%s',               
-                slug='%s' 
-                WHERE id = %d", $status, $weight, $name, $slug, $id
-            );
-
-            $this->db_query($sql);
+            $this->cm->sync_update_data($data, $id, $this->db['data_genre'], $this->cm->sync_data);
             $result_id = $id;
         } else {
             //ADD
-            $this->db_query(sprintf("INSERT INTO {$this->db['data_genre']} (
-                status, 
-                weight,
-                name,
-                slug                
-                ) VALUES (%d,%d,'%s','%s')", $status, $weight, $name, $slug
-            ));
-
-            //Return id
-            $id = $this->getInsertId('id', $this->db['data_genre']);
-            $result_id = $id;
+            $result_id = $this->cm->sync_insert_data($data, $this->db['data_genre'], $this->cm->sync_client, $this->cm->sync_data);
         }
 
         return $result_id;
@@ -411,8 +411,10 @@ class MoviesAn extends AbstractDBAn {
         if ($form_state['id']) {
             // To trash
             $id = $form_state['id'];
-            $sql = sprintf("UPDATE {$this->db['data_genre']} SET status=%d WHERE id = %d", $status, $id);
-            $this->db_query($sql);
+            $data = array(
+                'status' => (int) $status,
+            );
+            $this->cm->sync_update_data($data, $id, $this->db['data_genre'], $this->cm->sync_data);
             $result = $id;
         }
         return $result;
@@ -511,13 +513,11 @@ class MoviesAn extends AbstractDBAn {
             // Create slug
             $slug = $this->create_slug($name);
             // Create the genre
-            $sql = sprintf("INSERT INTO {$this->db['data_genre']} (name,slug) VALUES ('%s','%s')", $this->escape($name), $this->escape($slug));
-            $this->db_query($sql);
-            //Get the id
-            $id = $this->getInsertId('id', $this->db['data_genre']);
-
-            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-            Import::create_commit('', 'update', $this->db['data_genre'], array('id' => $id), 'genre',7);
+            $data = array(
+                'name' => $name,
+                'slug' => $slug,
+            );
+            $id = $this->cm->sync_insert_data($data, $this->db['data_genre'], $this->cm->sync_client, $this->cm->sync_data);
         }
         return $id;
     }
@@ -525,8 +525,10 @@ class MoviesAn extends AbstractDBAn {
     public function update_genre_slug($id, $slug) {
         $genre = $this->get_genre_by_id($id);
         if ($genre) {
-            $sql = sprintf("UPDATE {$this->db['data_genre']} SET slug='%s' WHERE id=%d", $slug, $id);
-            $this->db_query($sql);
+            $data = array(
+                'slug' => (int) $slug,
+            );
+            $this->cm->sync_update_data($data, $id, $this->db['data_genre'], $this->cm->sync_data);
         }
     }
 
@@ -546,11 +548,11 @@ class MoviesAn extends AbstractDBAn {
             $meta_exist = $this->db_get_var($sql);
             if (!$meta_exist) {
                 //Meta not exist
-                $sql = sprintf("INSERT INTO {$this->db['meta_genre']} (mid,gid) VALUES (%d,%d)", (int) $mid, (int) $gid);
-                $this->db_query($sql);
-
-                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', $this->db['meta_genre'], array('mid' => $mid,'gid'=>$gid), 'movie_meta_genre',7,['skip'=>['id']]);
+                $data = array(
+                    'mid' => $mid,
+                    'gid' => $gid,
+                );
+                $id = $this->cm->sync_insert_data($data, $this->db['meta_genre'], $this->cm->sync_client, $this->cm->sync_data);
             }
             return true;
         }
@@ -680,33 +682,20 @@ class MoviesAn extends AbstractDBAn {
         $name = $this->escape($form_state['name']);
         $slug = $this->escape($form_state['slug']);
         $weight = (int) ($form_state['weight']);
-
+        $data = array(
+            'status' => $status,
+            'weight' => $weight,
+            'name' => $name,
+            'slug' => $slug,
+        );
         if ($form_state['id']) {
             $id = (int) $form_state['id'];
-            //EDIT           
-            $sql = sprintf("UPDATE {$this->db['data_country']} SET 
-                status=%d,                
-                weight=%d, 
-                name='%s',               
-                slug='%s' 
-                WHERE id = %d", $status, $weight, $name, $slug, $id
-            );
-
-            $this->db_query($sql);
+            //EDIT
+            $this->cm->sync_update_data($data, $id, $this->db['data_country'], $this->cm->sync_data);
             $result_id = $id;
         } else {
             //ADD
-            $this->db_query(sprintf("INSERT INTO {$this->db['data_country']} (
-                status, 
-                weight,
-                name,
-                slug                
-                ) VALUES (%d,%d,'%s','%s')", $status, $weight, $name, $slug
-            ));
-
-            //Return id
-            $id = $this->getInsertId('id', $this->db['data_country']);
-            $result_id = $id;
+            $result_id = $this->cm->sync_insert_data($data, $this->db['data_country'], $this->cm->sync_client, $this->cm->sync_data);
         }
 
         return $result_id;
@@ -719,8 +708,10 @@ class MoviesAn extends AbstractDBAn {
         if ($form_state['id']) {
             // To trash
             $id = $form_state['id'];
-            $sql = sprintf("UPDATE {$this->db['data_country']} SET status=%d WHERE id = %d", $status, $id);
-            $this->db_query($sql);
+            $data = array(
+                'status' => $status
+            );
+            $this->cm->sync_update_data($data, $id, $this->db['data_country'], $this->cm->sync_data);
             $result = $id;
         }
         return $result;
@@ -819,14 +810,11 @@ class MoviesAn extends AbstractDBAn {
             // Create slug
             $slug = $this->create_slug($name);
             // Create the country
-            $sql = sprintf("INSERT INTO {$this->db['data_country']} (name,slug) VALUES ('%s','%s')", $this->escape($name), $this->escape($slug));
-            $this->db_query($sql);
-            //Get the id
-            $id = $this->getInsertId('id', $this->db['data_country']);
-
-
-            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-            Import::create_commit('', 'update', $this->db['data_country'], array('id' => $id), 'country',7);
+            $data = array(
+                'name' => $name,
+                'slug' => $slug,
+            );
+            $id = $this->cm->sync_insert_data($data, $this->db['data_country'], $this->cm->sync_client, $this->cm->sync_data);
         }
         return $id;
     }
@@ -834,8 +822,10 @@ class MoviesAn extends AbstractDBAn {
     public function update_country_slug($id, $slug) {
         $country = $this->get_country_by_id($id);
         if ($country) {
-            $sql = sprintf("UPDATE {$this->db['data_country']} SET slug='%s' WHERE id=%d", $slug, $id);
-            $this->db_query($sql);
+            $data = array(
+                'slug' => $slug
+            );
+            $this->cm->sync_update_data($data, $id, $this->db['data_country'], $this->cm->sync_data);
         }
     }
 
@@ -855,11 +845,11 @@ class MoviesAn extends AbstractDBAn {
             $meta_exist = $this->db_get_var($sql);
             if (!$meta_exist) {
                 //Meta not exist
-                $sql = sprintf("INSERT INTO {$this->db['meta_country']} (mid,cid) VALUES (%d,%d)", (int) $mid, (int) $cid);
-                $this->db_query($sql);
-
-                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', $this->db['meta_country'], array('mid' => $mid,'cid'=>$cid), 'movie_meta_country',7,['skip'=>['id']]);
+                $data = array(
+                    'mid' => $mid,
+                    'cid' => $cid,
+                );
+                $id = $this->cm->sync_insert_data($data, $this->db['meta_country'], $this->cm->sync_client, $this->cm->sync_data);
             }
             return true;
         }
@@ -913,8 +903,12 @@ class MoviesAn extends AbstractDBAn {
             $meta_exist = $this->db_get_var($sql);
             if (!$meta_exist) {
                 //Meta not exist
-                $sql = sprintf("INSERT INTO {$this->db['meta_actor']} (mid,aid,type) VALUES (%d,%d,%d)", (int) $mid, (int) $id, (int) $type);
-                $this->db_query($sql);
+                $data = array(
+                    'mid' => $mid,
+                    'aid' => $id,
+                    'type' => $type,
+                );
+                $this->cm->sync_insert_data($data, $this->db['meta_actor'], $this->cm->sync_client, $this->cm->sync_data);
             }
             return true;
         }
@@ -935,9 +929,21 @@ class MoviesAn extends AbstractDBAn {
         return $result;
     }
 
-    public function update_actor_slug($id, $slug) {
-        $sql = sprintf("UPDATE {$this->db['actors']} SET slug='%s' WHERE actor_id = %d", $slug, $id);
-        $this->db_query($sql);
+    public function get_actor_by_actor_id($actor_id) {
+        $sql = sprintf("SELECT id, actor_id, primaryName as name FROM {$this->db['actors']}"
+                . " WHERE actor_id=%d", $actor_id);
+        $result = $this->db_fetch_row($sql);
+        return $result;
+    }
+
+    public function update_actor_slug($actor_id, $slug) {
+        $id = $this->get_actor_by_actor_id($actor_id);
+        if ($id) {
+            $data = array(
+                'slug' => $slug
+            );
+            $this->cm->sync_update_data($data, $id, $this->db['actors'], $this->cm->sync_data);
+        }
     }
 
     /*
@@ -958,8 +964,12 @@ class MoviesAn extends AbstractDBAn {
             $meta_exist = $this->db_get_var($sql);
             if (!$meta_exist) {
                 //Meta not exist
-                $sql = sprintf("INSERT INTO {$this->db['meta_director']} (mid,aid,type) VALUES (%d,%d,%d)", (int) $mid, (int) $id, (int) $type);
-                $this->db_query($sql);
+                $data = array(
+                    'mid' => $mid,
+                    'aid' => $id,
+                    'type' => $type,
+                );
+                $this->cm->sync_insert_data($data, $this->db['meta_director'], $this->cm->sync_client, $this->cm->sync_data);
             }
             return true;
         }
@@ -1150,38 +1160,24 @@ class MoviesAn extends AbstractDBAn {
         $image = $this->escape($form_state['image']);
         $weight = (int) ($form_state['weight']);
 
+        $data = array(
+            'pid' => $pid,
+            'status' => $status,
+            'weight' => $weight,
+            'name' => $name,
+            'slug' => $slug,
+            'free' => $free,
+            'image' => $image,
+        );
+
         if ($form_state['id']) {
             $id = (int) $form_state['id'];
             //EDIT           
-            $sql = sprintf("UPDATE {$this->db['data_provider']} SET 
-                pid=%d,
-                status=%d,                
-                weight=%d, 
-                name='%s',               
-                slug='%s', 
-                free='%d',
-                image='%s' 
-                WHERE id = %d", $pid, $status, $weight, $name, $slug, $free, $image, $id
-            );
-
-            $this->db_query($sql);
+            $this->cm->sync_update_data($data, $id, $this->db['data_provider'], $this->cm->sync_data);
             $result_id = $id;
         } else {
             //ADD
-            $this->db_query(sprintf("INSERT INTO {$this->db['data_provider']} (
-                pid,
-                status, 
-                weight,
-                name,
-                slug, 
-                free,
-                image 
-                ) VALUES (%d,%d,'%s','%s','%s')", $pid, $status, $weight, $name, $slug, $free, $image
-            ));
-
-            //Return id
-            $id = $this->getInsertId('id', $this->db['data_provider']);
-            $result_id = $id;
+            $result_id = $this->cm->sync_insert_data($data, $this->db['data_provider'], $this->cm->sync_client, $this->cm->sync_data);
         }
 
         return $result_id;
@@ -1194,8 +1190,10 @@ class MoviesAn extends AbstractDBAn {
         if ($form_state['id']) {
             // To trash
             $id = $form_state['id'];
-            $sql = sprintf("UPDATE {$this->db['data_provider']} SET status=%d WHERE id = %d", $status, $id);
-            $this->db_query($sql);
+            $data = array(
+                'status' => $status,
+            );
+            $this->cm->sync_update_data($data, $id, $this->db['data_provider'], $this->cm->sync_data);           
             $result = $id;
         }
         return $result;
@@ -1261,10 +1259,13 @@ class MoviesAn extends AbstractDBAn {
             }
             // TODO slug is unique?
             // Create the genre
-            $sql = sprintf("INSERT INTO {$this->db['data_provider']} (pid,name,slug,image) VALUES (%d,'%s','%s','%s')", (int) $pid, $this->escape($name), $this->escape($slug), $this->escape($img));
-            $this->db_query($sql);
-            //Get the id
-            $id = $this->getInsertId('pid', $this->db['data_provider']);
+            $data = array(
+                'pid' => $pid,
+                'name' => $name,
+                'slug' => $slug,
+                'image' => $img,
+            );
+            $id = $this->cm->sync_insert_data($data, $this->db['data_provider'], $this->cm->sync_client, $this->cm->sync_data);
         }
         return $id;
     }
@@ -1425,12 +1426,12 @@ class MoviesAn extends AbstractDBAn {
         // Add cpi
         if (!$exist) {
             // ADD
-            $this->db_query(sprintf("INSERT INTO {$this->db['cpi']} (
-                type, 
-                year,
-                cpi                
-                ) VALUES (%d, %d,'%s')", $type, $year, $cpi
-            ));
+            $data = array(
+                'type' => $type,
+                'year' => $year,
+                'cpi' => $cpi,
+            );
+            $id = $this->cm->sync_insert_data($data, $this->db['cpi'], $this->cm->sync_client, $this->cm->sync_data);
         }
     }
 

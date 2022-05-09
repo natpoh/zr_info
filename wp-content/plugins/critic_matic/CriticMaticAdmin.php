@@ -135,7 +135,7 @@ class CriticMaticAdmin {
             if (!class_exists('MoviesAn')) {
                 require_once( CRITIC_MATIC_PLUGIN_DIR . 'MoviesAn.php' );
             }
-            $this->ma = new MoviesAn();
+            $this->ma = new MoviesAn($this->cm);
         }
         return $this->ma;
     }

@@ -152,14 +152,13 @@ class CriticSearch extends AbstractDB {
     );
 
     public function __construct($cm) {
-        $table_prefix = DB_PREFIX_WP_AN;
         $this->cm = $cm;
         $this->db = array(
             //CM
-            'posts' => $table_prefix . 'critic_matic_posts',
-            'meta' => $table_prefix . 'critic_matic_posts_meta',
+            'posts' => DB_PREFIX_WP_AN . 'critic_matic_posts',
+            'meta' => DB_PREFIX_WP_AN . 'critic_matic_posts_meta',
             //CS
-            'log' => $table_prefix . 'critic_search_log',
+            'log' => DB_PREFIX_WP . 'critic_search_log',
         );
         $this->get_perpage();
 
@@ -192,7 +191,7 @@ class CriticSearch extends AbstractDB {
             if (!class_exists('MoviesAn')) {
                 require_once( CRITIC_MATIC_PLUGIN_DIR . 'MoviesAn.php' );
             }
-            $this->ma = new MoviesAn();
+            $this->ma = new MoviesAn($this->cm);
         }
         return $this->ma;
     }

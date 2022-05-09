@@ -41,6 +41,7 @@ class Pdoa {
         static::connect();
         static::$pdo->query($sql);
     }
+
     public static function last_id() {
         return static::$pdo->lastInsertId();
     }
@@ -66,6 +67,35 @@ class Pdoa {
             return array_unshift($arr);
         }
         return null;
+    }
+
+    public static function db_insert($data, $table) {
+        $values = array();
+        $val_str = array();
+        $keys = array();
+        foreach ($data as $key => $value) {
+            $keys[] = $key;
+            $values[] = $value;
+            $val_str[] = "?";
+        }
+        $sql = "INSERT INTO {$table} (" . implode(",", $keys) . ") VALUES (" . implode(",", $val_str) . ")";
+        static::connect();
+        $sth = static::$pdo->prepare($sql);
+        $sth->execute($values);
+    }
+
+    public static function db_update($data, $table, $id) {
+        $update = array();
+        $values = array();
+        foreach ($data as $key => $value) {
+            $update[] = $key . "=?";
+            $values[] = $value;
+        }
+        $sql = "UPDATE {$table} SET " . implode(',', $update) . " WHERE id = " . $id;
+
+        static::connect();
+        $sth = static::$pdo->prepare($sql);
+        $sth->execute($values);
     }
 
     public static function db_fetch_row($sql, $array = [], $type = 'object') {

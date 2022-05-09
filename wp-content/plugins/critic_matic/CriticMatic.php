@@ -148,6 +148,7 @@ class CriticMatic extends AbstractDB {
     private $reader_city;
     private $geoip;
     public $sync_client = true;
+    public $sync_server = false;
     public $sync_data = true;
 
     public function __construct() {
@@ -166,8 +167,8 @@ class CriticMatic extends AbstractDB {
             //CF
             'feed_meta' => $table_prefix . 'critic_feed_meta',
             // WP
-            'wp_posts' => $table_prefix . 'posts',
-            'wp_postmeta' => $table_prefix . 'postmeta',
+            'wp_posts' => DB_PREFIX_WP . 'posts',
+            'wp_postmeta' => DB_PREFIX_WP . 'postmeta',
         );
         $this->timer_start();
 
@@ -206,6 +207,7 @@ class CriticMatic extends AbstractDB {
 
         $settings = $this->get_settings();
         $this->sync_client = $settings['sync_status'] == 2 ? true : false;
+        $this->sync_server = $settings['sync_status'] == 1 ? true : false;
     }
 
     public function get_cp() {
@@ -1277,11 +1279,20 @@ class CriticMatic extends AbstractDB {
             'aid' => $author_id,
         );
 
-        foreach ($ids as $id) {
-            $this->sync_update_data($data, $id, $this->db['authors_meta'], $this->sync_data);
+        foreach ($ids as $cid) {
+            $item = $this->get_post_author_meta($cid);
+            if ($item) {
+                $this->sync_update_data($data, $item->id, $this->db['authors_meta'], $this->sync_data);
+            }
         }
 
         return true;
+    }
+
+    public function get_post_author_meta($cid) {
+        $sql = sprintf("SELECT * FROM {$this->db['authors_meta']} WHERE cid=%d LIMIT 1", $cid);
+        $result = $this->db_fetch_row($sql);
+        return $result;
     }
 
     public function get_author_type($type) {
@@ -1912,29 +1923,21 @@ class CriticMatic extends AbstractDB {
         $name = $this->escape($form_state['name']);
         $slug = $this->escape($form_state['slug']);
 
+        $data = array(
+            'status' => $status,
+            'name' => $name,
+            'slug' => $slug
+        );
+
         if ($form_state['id']) {
             $id = (int) $form_state['id'];
-            //EDIT         
-
-            $data = array(
-                'status' => $status,
-                'name' => $name,
-                'slug' => $slug
-            );
-
+            //EDIT  
             $this->sync_update_data($data, $id, $this->db['tags'], $this->sync_data);
 
             $result_id = $id;
         } else {
             //ADD
-            $data = array(
-                'status' => $status,
-                'name' => $name,
-                'slug' => $slug
-            );
-
             $id = $this->sync_insert_data($data, $this->db['tags'], $this->sync_client, $this->sync_data);
-
             //Return id            
             $result_id = $id;
         }
@@ -2715,7 +2718,7 @@ class CriticMatic extends AbstractDB {
         $this->db_query($sql);
     }
 
-    public function update_ip_type_by_id($id, $type = 0) {        
+    public function update_ip_type_by_id($id, $type = 0) {
         $sql = sprintf("UPDATE {$this->db['ip']} SET type=%d WHERE id=%d", (int) $type, (int) $id);
         $this->db_query($sql);
     }
