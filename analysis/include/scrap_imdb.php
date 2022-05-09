@@ -428,7 +428,7 @@ function get_family($data)
 
         if (!$last_id) $last_id = 0;
 
-        $sql = "SELECT * FROM `data_familysearch_verdict` WHERE `id` > {$last_id} limit 1000";
+        $sql = "SELECT * FROM `data_familysearch_verdict` WHERE `id` > {$last_id} limit 100";
         $rows = Pdo_an::db_results_array($sql);
 
     }
