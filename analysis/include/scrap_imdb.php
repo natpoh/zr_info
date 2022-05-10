@@ -183,8 +183,8 @@ $sql = "select * from data_actors_meta ".$where." ";
 
     $rows = Pdo_an::db_results_array($sql);
     ///echo 'count = '.count($rows).'<br>';
-    $array_verdict = array('crowdsource','ethnic','jew','kairos','bettaface','placebirth','surname');
-$array_exclude = array('NJW');
+    $array_verdict = array('crowdsource','ethnic','jew','kairos','bettaface','placebirth','surname','familysearch');
+    $array_exclude = array('NJW');
     foreach ($rows as $row)
     {
       // print_r($row);
@@ -205,6 +205,7 @@ $array_exclude = array('NJW');
                 ACTIONLOG::update_actor_log('verdict');
                 break;
             }
+
         }
 
     }
@@ -395,6 +396,85 @@ function get_new_tv(){
 //
 //
 //}
+
+function get_family($data)
+{
+
+
+    $race_small = array(
+     1 =>'W',
+     2 => 'EA',
+     3 =>'H',
+     4 =>'B',
+     5 => 'I',
+     6 => 'M' ,
+     7 => 'MIX',
+     8 =>'JW' ,
+     9 => 'IND',
+);
+
+
+    if ($data)
+    {
+
+        $data = intval($data);
+        $sql =  "SELECT * FROM `data_familysearch_verdict` WHERE `id` = {$data} ";
+        $rows = Pdo_an::db_results_array($sql);
+
+    }
+    else {
+
+        $last_id = get_last_options(19);
+
+        if (!$last_id) $last_id = 0;
+
+        $sql = "SELECT * FROM `data_familysearch_verdict` WHERE `id` > {$last_id} limit 100";
+        $rows = Pdo_an::db_results_array($sql);
+
+    }
+
+
+        foreach ($rows as $r)
+        {
+
+          $family_id = $r['id'];
+          $lastname =  $r['lastname'];
+          $verdict  =  $r['verdict'];
+
+          echo $family_id.' lastname='.$lastname.'<br>';
+
+
+          if ($lastname) {
+
+              /////get all actors
+              $sql = "SELECT aid FROM `data_actors_normalize` WHERE  `lastname` = '" . $lastname . "' order by id ASC";
+              $result = Pdo_an::db_results_array($sql);
+              foreach ($result as $val) {
+                  $i = $val['aid'];
+
+
+                  ///update data
+                  $fm = $race_small[$verdict];
+
+                  $sql1 = "UPDATE `data_actors_meta` SET `familysearch` = '" . $fm . "'  , `n_familysearch` = '" . intconvert($fm) . "',
+                 `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $i. "'";
+
+                  //echo $sql1.'<br>';
+
+                  Pdo_an::db_query($sql1);
+
+                  update_actors_verdict($i);
+                  ACTIONLOG::update_actor_log('kairos');
+
+              }
+          }
+
+          set_option(19, $family_id);
+        }
+
+
+
+}
 
 
 function set_tmdb_actors_for_movies()
@@ -1359,482 +1439,7 @@ function add_pgrating($imdb_id='')
     return;
 }
 
-function import_from_rwt($id='')
-{
-    return;
-    if ($_GET['delete']==1) {
 
-        $sql = "SELECT * FROM `data_rwt_movie_export` order by  movie_title asc";
-        $last_data = [];
-        $rows = Pdo_an::db_results_array($sql);
-        foreach ($rows as $r) {
-            $id = $r['id'];
-            $movie_title = $r['movie_title'];
-
-
-            if ($movie_title == $movie_id_last && $r['rwt_tmdb'] == $last_data['rwt_tmdb']) {
-                echo '<br>Origin id=' . $last_data['id'] . ' tmdb_id ' . $last_data['rwt_tmdb'] . ' ' . $last_data['movie_title'] . '  <br>' . PHP_EOL;
-                echo 'found id= ' . $id . ' tmdb_id ' . $r['rwt_tmdb'] . ' ' . $r['movie_title'] . '  deleted  <br>' . PHP_EOL;
-
-                if ($_GET['delete'] == 1) {
-                    $sql = "DELETE FROM `data_rwt_movie_export` WHERE `id` = " . $id;
-                    Pdo_an::db_query($sql);
-                }
-
-            } else {
-                $last_data = $r;
-                $movie_id_last = $movie_title;
-            }
-
-
-        }
-return;
-    }
-
-
-
-    $debug = 0;
-
-  ///  !class_exists('GETNEWMOVIES') ? include ABSPATH . "analysis/include/get_new_movies.php" : '';
-    global $table_prefix;
-    $where = '';
-    if ($id) {
-        $where = " and ID= " . $id . " ";
-    }
-    $sql = "select * from {$table_prefix}posts where post_type ='movie' and post_status='publish' " . $where . " limit 50000";
-    $array = Pdo_wp::db_results_array($sql);
-    foreach ($array as $r) {
-        $id = $r['ID'];
-        $post_title = $r['post_title'];
-        $post_name = $r['post_name'];
-        if ($debug) echo $id . ' ' . $post_title . ' <br>';
-        $sql = "select * from {$table_prefix}postmeta  where post_id = {$id}";
-        $rows = Pdo_wp::db_results_array($sql);
-
-        $tmdb_id = '';
-        $imdb_id = '';
-        $title = '';
-
-        foreach ($rows as $meatadata) {
-            $key = $meatadata["meta_key"];
-            $val = $meatadata["meta_value"];
-            // echo $key.' => '.$val.'<br>';
-            if ($key == '_wpmoly_movie_trailers') {
-                continue;
-            }
-            if (strstr($key, '_wpmoly_movie_')) {
-                $key = substr($key, 14);
-                $array_metavalue[$key] = $val;
-            }
-            if (strstr($key, '_thumbnail_id')) {
-                $array_metavalue[$key] = $val;
-            }
-
-        }
-
-        ////check imdb_id
-
-        $tmdb_id = $array_metavalue['tmdb_id'];
-        $imdb_id = $array_metavalue['imdb_id'];
-
-
-        if ($imdb_id) {
-            if (strstr($imdb_id, 'tt')) {
-                $imdb_id = substr($imdb_id, 2);
-            }
-            $imdb_id = intval($imdb_id);
-        }
-
-        // $title = $array_metavalue['title'];
-//        if (!$title)
-//        { $title = $post_title; }
-        $title = $post_title;
-
-        $movie_data = json_encode($array_metavalue);
-        //add_to_db
-
-        $sql = "SELECT id FROM `data_rwt_movie_export` where rwt_id ='" . $id . "'  limit 1 ";
-        /// echo $sql;
-        $rdb = Pdo_an::db_fetch_row($sql);
-        if ($rdb) {
-
-            $temp_id = $rdb->id;
-        } else {
-            $sql = "INSERT INTO `data_rwt_movie_export`
-    (`id`, `movie_title`, `imdb_title`, `rwt_id`, `rwt_tmdb`, `rwt_imdb`, `enable`, `compare_data`, `movie_data`, `last_update`)
-         VALUES (NULL, ?, NULL , '{$id}', '{$tmdb_id}', '{$imdb_id}', NULL, NULL, ?, ?);";
-            ///  echo $sql;
-            $result = Pdo_an::db_results_array($sql, array($title, $movie_data, time()));
-            continue;
-        }
-
-    }
-
-
-
-    return;
-}
-function import_from_rwt_3()
-{
-    $debug='';
-
-    $sql="select * from data_rwt_movie_export where enable = 5 or enable = 4 OR  enable = 3  OR  enable = 2   limit 1000";
-    $array_movie = Pdo_an::db_results_array($sql);
-
-    foreach ($array_movie as $movie_data) {
-        $row_id = $movie_data['id'];
-        $tmdb_id = $movie_data['rwt_tmdb'];
-        $imdb_id = $movie_data['rwt_imdb'];
-        $id = $movie_data['rwt_id'];
-        $title = $movie_data['movie_title'];
-        $title2 = $movie_data['imdb_title'];
-        $movie_array = json_decode($movie_data['movie_data'], 1);
-        $release_date = $movie_array['release_date'];
-
-        /////////try find on imdb
-
-        $result_data_array =TMDB::get_data($title,'all');
-
-      if (is_array($result_data_array))
-      {
-
-          if ($result_data_array[$imdb_id])
-          {
-
-                  echo 'found '.$imdb_id.'<br>';
-                  $add =    TMDB::check_and_add_to_imdb_db($imdb_id);
-                  if ($add==1)
-                  {
-                      echo 'adedded '.$imdb_id.'<br>';
-                  }
-
-                  $sql ="UPDATE `data_rwt_movie_export` SET `enable` = '1'  WHERE `data_rwt_movie_export`.`id` = {$row_id}; ";
-                  Pdo_an::db_results_array($sql);
-
-                  $sql = "UPDATE `data_movie_imdb` SET `rwt_id` = '" . $id . "' WHERE `data_movie_imdb`.`movie_id`=" . $imdb_id;
-                  Pdo_an::db_query($sql);
-         }
-      }
-    }
-}
-function import_from_rwt_2($id='')
-    {
-        $debug='';
-
-        $sql="select * from data_rwt_movie_export where enable =3 OR  enable = 4 limit 100";
-        $array_movie = Pdo_an::db_results_array($sql);
-
-        foreach ($array_movie as $movie_data) {
-            $row_id = $movie_data['id'];
-            $tmdb_id = $movie_data['rwt_tmdb'];
-            $imdb_id = $movie_data['rwt_imdb'];
-            $id = $movie_data['rwt_id'];
-            $title = $movie_data['movie_title'];
-            $title2 = $movie_data['imdb_title'];
-            $movie_array = json_decode($movie_data['movie_data'], 1);
-            $release_date = $movie_array['release_date'];
-
-            $title_conv = TMDB::replace_movie_text($title,1);
-            $title2_conv = TMDB::replace_movie_text($title2,1);
-
-            if ($title2_conv==$title_conv || strstr($title_conv,$title2_conv) || strstr($title2_conv,$title_conv)) {
-
-                echo $title . '==' . $title2 . '<br>';
-                $sql ="UPDATE `data_rwt_movie_export` SET `enable` = '1'  WHERE `data_rwt_movie_export`.`id` = {$row_id}; ";
-                Pdo_an::db_results_array($sql);
-
-                $sql = "UPDATE `data_movie_imdb` SET `rwt_id` = '" . $id . "' WHERE `data_movie_imdb`.`movie_id`=" . $imdb_id;
-                Pdo_an::db_query($sql);
-
-            }
-            else
-            {
-
-                if ($tmdb_id)
-                {
-                    $imdb_id = TMDB::get_imdbid_from_tmdb($tmdb_id);
-                    if ($imdb_id)
-                    {
-                        $array_movie =  TMDB::get_content_imdb($imdb_id);
-                        $title2=$array_movie['title'];
-
-                        $sql ="UPDATE `data_rwt_movie_export` SET `enable` = '5', `imdb_title` = ?, rwt_imdb = {$imdb_id} WHERE `data_rwt_movie_export`.`id` = {$row_id}; ";///new imdb id
-                        Pdo_an::db_results_array($sql,array($title2));
-
-
-                        $title_conv = TMDB::replace_movie_text($title,1);
-                        $title2_conv = TMDB::replace_movie_text($title2,1);
-
-                        if ($title2_conv==$title_conv || strstr($title_conv,$title2_conv) || strstr($title2_conv,$title_conv)) {
-
-                            echo $title . '==' . $title2 . '<br>';
-                            $sql ="UPDATE `data_rwt_movie_export` SET `enable` = '1'  WHERE `data_rwt_movie_export`.`id` = {$row_id}; ";
-                            Pdo_an::db_results_array($sql);
-
-                            $sql = "UPDATE `data_movie_imdb` SET `rwt_id` = '" . $id . "' WHERE `data_movie_imdb`.`movie_id`=" . $imdb_id;
-                            Pdo_an::db_query($sql);
-
-                        }
-
-                    }
-
-                }
-
-
-
-             //  echo TMDB::replace_movie_text($title,1) . '!=' . TMDB::replace_movie_text($title2,1) . '!!!!!!!!!!<br>';
-            }
-
-
-        }
-
-return;
-
-        $sql="select * from data_rwt_movie_export where enable =2";
-        $array_movie = Pdo_an::db_results_array($sql);
-
-        foreach ($array_movie as $movie_data) {
-            $row_id = $movie_data['id'];
-            $tmdb_id = $movie_data['rwt_tmdb'];
-            $imdb_id = $movie_data['rwt_imdb'];
-            $id = $movie_data['rwt_id'];
-            $title = $movie_data['movie_title'];
-            $movie_array = json_decode($movie_data['movie_data'], 1);
-            $release_date = $movie_array['release_date'];
-
-
-            if ($tmdb_id) {
-
-                $sql = "SELECT * FROM `data_movie_imdb` where `tmdb_id` ='" . $tmdb_id . "' ";
-
-                $rtmdb = Pdo_an::db_results_array($sql);
-                if ($rtmdb)
-                {
-                foreach ($rtmdb as $tdata)
-                {
-                    $title2 =$tdata['title'];
-                    $imdb_id=$tdata['movie_id'];
-
-                    if ($title) {
-
-                        if (TMDB::replace_movie_text($title) == TMDB::replace_movie_text($title2)) {
-                            echo $title . '==' . $title2 . '<br>';
-
-                            $sql ="UPDATE `data_rwt_movie_export` SET `enable` = '1', `imdb_title` = ?, rwt_imdb = {$imdb_id} WHERE `data_rwt_movie_export`.`id` = {$row_id}; ";
-                            Pdo_an::db_results_array($sql,array($title2));
-
-                            $sql = "UPDATE `data_movie_imdb` SET `rwt_id` = '" . $id . "' WHERE `data_movie_imdb`.`movie_id`=" . $imdb_id;
-                            Pdo_an::db_query($sql);
-                        }
-                        else
-                        {
-                            $sql ="UPDATE `data_rwt_movie_export` SET `enable` = '3'   WHERE `data_rwt_movie_export`.`id` = {$row_id}; ";///not compare
-                            Pdo_an::db_results_array($sql);
-                        }
-                    }
-                }
-            }
-                else
-                    {
-                        $sql ="UPDATE `data_rwt_movie_export` SET `enable` = '4'  WHERE `data_rwt_movie_export`.`id` = {$row_id}; ";////not found on imdb table
-                        Pdo_an::db_results_array($sql);
-
-                    }
-
-
-            }
-
-
-        }
-
-
-
-            return;
-
-        $sql="select * from data_rwt_movie_export where enable is NULL";
-        $array_movie = Pdo_an::db_results_array($sql);
-
-    foreach ($array_movie as $movie_data)
-    {
-        $row_id = $movie_data['id'];
-        $tmdb_id = $movie_data['rwt_tmdb'];
-        $imdb_id =  $movie_data['rwt_imdb'];
-        $id =  $movie_data['rwt_id'];
-        $title = $movie_data['movie_title'];
-        $movie_array = json_decode($movie_data['movie_data'],1);
-        $release_date =$movie_array['release_date'];
-
-
-         if ($imdb_id) {
-
-             $enable_in_db = TMDB::check_imdb_id($imdb_id);
-             if ($enable_in_db) {
-                 ///check title
-
-                 if ($title) {
-                     $title2 = TMDB::get_column_from_imdb_id($imdb_id, 'title');
-                     if (TMDB::replace_movie_text($title) == TMDB::replace_movie_text($title2)) {
-                         echo $title . '==' . $title2 . '<br>';
-
-                         $sql ="UPDATE `data_rwt_movie_export` SET `enable` = '1', `imdb_title` = ? WHERE `data_rwt_movie_export`.`id` = {$row_id}; ";
-                         Pdo_an::db_results_array($sql,array($title2));
-
-                         $sql = "UPDATE `data_movie_imdb` SET `rwt_id` = '" . $id . "' WHERE `data_movie_imdb`.`movie_id`=" . $imdb_id;
-                         Pdo_an::db_query($sql);
-                     }
-                     else
-                     {
-                         $sql ="UPDATE `data_rwt_movie_export` SET `enable` = '2' , `imdb_title` = ?  WHERE `data_rwt_movie_export`.`id` = {$row_id}; ";
-                         Pdo_an::db_results_array($sql,array($title2));
-
-                     }
-                 }
-
-
-             }
-
-         }
-         else
-         {
-             continue;
-         }
-        continue;
-
-/*
-        if ($imdb_id)
-        {
-             if ($debug)echo 'try find on imdb_id '.$imdb_id.'<br>';
-            // $imdb_id = intval(substr($imdb_id,2));
-
-             $add =    TMDB::check_and_add_to_imdb_db($imdb_id,$tmdb_id,$id,$title);
-             if ($add && $add<3)
-             {
-
-
-                 if ($add==2) {
-                     if ($debug)echo $imdb_id . ' enabled<br> ' . PHP_EOL;
-                 }
-                 else {echo $imdb_id . ' adedded<br> ' . PHP_EOL;}
-                 continue;
-             }
-             if ($add==3) {
-
-                 echo $id.' '.$post_title.' <br>';
-
-                 $sql = "delete from {$table_prefix}postmeta where meta_key ='_wpmoly_movie_imdb_id' and post_id ='{$id}' ";
-                 Pdo_wp::db_results_array($sql);
-             echo $imdb_id . ' deleted from postmeta<br> ' . PHP_EOL;
-             }
-         }
-         ///try find on tmdb
-
-         if ($tmdb_id)
-         {
-             echo 'try find on tmdb_id '.$tmdb_id.'<br>';
-             $an_id = TMDB::get_id_from_tmdbid($tmdb_id);
-             if ($an_id)
-             {
-                 $imdb_id=   TMDB::get_imdb_id_from_id($an_id);
-             }
-
-             if (!$imdb_id) {
-                 $imdb_id = TMDB::get_imdbid_from_tmdb($tmdb_id);
-             }
-
-             if ($imdb_id)
-             {
-
-
-              $add =  TMDB::check_and_add_to_imdb_db($imdb_id,$tmdb_id,$id,$title);
-              if ($add < 3)
-              {
-                  if (!$array_metavalue['imdb_id']) {
-                      $sql = "INSERT INTO {$table_prefix}postmeta  (`meta_id`, `post_id`, `meta_key`, `meta_value`) VALUES (NULL,?,?,?)";
-                      Pdo_wp::db_results_array($sql, array($id, '_wpmoly_movie_imdb_id', 'tt' . $imdb_id));
-                  }
-                  if ($add==2) {echo $imdb_id . ' enabled<br> ' . PHP_EOL;}
-                  else {echo $imdb_id . ' adedded<br> ' . PHP_EOL;}
-                  continue;
-              }
-             }
-         }
-         ////try find on title
-
-        $movie_date='';
-
-        //echo '$release_date='.$release_date;
-
-        if ($release_date) {
-            $movie_date =date('Y',strtotime($release_date));
-        }
-         echo 'try find on movie name '.$title.' '.$movie_date.'<br>';
-        $result_data_array =TMDB::get_data($title,'ft') ;
-
-
-        //print_r($result_data_array);
-
-        if (is_array($result_data_array))
-        {
-            $movie_name=$title;
-
-
-            $imdb_id = GETNEWMOVIES::check_movie_coincidence($result_data_array,$movie_name,$movie_date);
-            if ($imdb_id)
-            {
-                echo 'try add on movie name '.$title.' ' .$movie_date.'<br>';
-                $add =    TMDB::check_and_add_to_imdb_db($imdb_id,$tmdb_id,$id,$title);
-                if ($add < 3)
-                {
-                    if (!$array_metavalue['imdb_id'])
-                    {
-                        //add to post_meta
-                        $sql = "INSERT INTO {$table_prefix}postmeta  (`meta_id`, `post_id`, `meta_key`, `meta_value`) VALUES (NULL,?,?,?)";
-                        Pdo_wp::db_results_array($sql,array($id,'_wpmoly_movie_imdb_id','tt'.$imdb_id));
-                    }
-
-                    if ($add==2) {echo $imdb_id . ' enabled<br> ' . PHP_EOL;}
-                    else {echo $imdb_id . ' adedded<br> ' . PHP_EOL;}
-                    continue;
-                }
-
-            }
-        }
-        echo 'add to db without imdb<br>';
-        ///print_r($array_metavalue);
-
-    }
-
-
-        $sql="select * from data_rwt_movie_export where enable =3 OR  enable = 4";
-        $array_movie = Pdo_an::db_results_array($sql);
-
-        foreach ($array_movie as $movie_data) {
-            $row_id = $movie_data['id'];
-            $tmdb_id = $movie_data['rwt_tmdb'];
-            $imdb_id = $movie_data['rwt_imdb'];
-            $id = $movie_data['rwt_id'];
-            $title = $movie_data['movie_title'];
-            $movie_array = json_decode($movie_data['movie_data'], 1);
-            $release_date = $movie_array['release_date'];
-            $sql = "SELECT * FROM `data_movie_imdb` where `tmdb_id` ='" . $tmdb_id . "'  limit 1";
-
-            $rtmdb = Pdo_an::db_results_array($sql);
-            if ($rtmdb)
-            {
-                foreach ($rtmdb as $tdata)
-                {
-                    $title2 =$tdata['title'];
-                    $imdb_id=$tdata['movie_id'];
-                    $sql ="UPDATE `data_rwt_movie_export` SET  `imdb_title` = ?, rwt_imdb = {$imdb_id} WHERE `data_rwt_movie_export`.`id` = {$row_id}; ";
-                    Pdo_an::db_results_array($sql,array($title2));
-
-                }
-            }
-
-*/
-        }
-
-    }
 
 function check_face()
 {
@@ -2697,24 +2302,7 @@ if (isset($_GET['update_audience_rating'])) {
     update_audience_rating($_GET['update_audience_rating'],$_GET['type']);
     return;
 }
-if (isset($_GET['import_from_rwt'])) {
 
-    $stage = $_GET['import_from_rwt'];
-    if ($stage==1)
-    {
-        import_from_rwt();
-    }
-    else if ($stage==1)
-    {
-        import_from_rwt_2();
-    }
-    else if ($stage==2)
-    {
-        import_from_rwt_3();
-    }
-
-    return;
-}
 
 if (isset($_GET['set_actors_ethnic'])) {
     set_actors_ethnic($_GET['set_actors_ethnic']);
@@ -2887,6 +2475,13 @@ if (isset($_GET['fix_kairos'])) {
     return;
 }
 
+
+if (isset($_GET['get_family'])) {
+
+    get_family($_GET['get_family']);
+
+    return;
+}
 
 
 echo 'ok';
