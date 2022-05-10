@@ -962,12 +962,12 @@ class CriticParser extends AbstractDBWp {
                 link_hash='%s'              
                 WHERE id = %d", (int) $item->cid, (int) $item->pid, (int) $item->status, $this->escape($item->link), $item->link_hash, (int) $item->id
         );
-        $this->db_query($sql);
+        $this->cm->db_query($sql);
     }
 
     public function update_url_campaing($id, $cid) {
         $sql = sprintf("UPDATE {$this->db['url']} SET cid=%d WHERE id = %d", (int) $cid, (int) $id);
-        $this->db_query($sql);
+        $this->cm->db_query($sql);
     }
 
     private function get_dom($rule, $match_str, $code) {
@@ -1767,10 +1767,10 @@ class CriticParser extends AbstractDBWp {
         $sql = sprintf("INSERT INTO {$this->db['url']} (cid,pid,status,link_hash,link) "
                 . "VALUES ('%d','%d','%d','%s','%s')", (int) $cid, (int) $pid, (int) $status, $link_hash, $this->escape($link));
 
-        $this->db_query($sql);
+        $this->cm->db_query($sql);
 
         // Return id
-        $id = $this->getInsertId('id', $this->db['url']);
+        $id = $this->cm->getInsertId('id', $this->db['url']);
 
 
         return $id;
@@ -1778,13 +1778,13 @@ class CriticParser extends AbstractDBWp {
 
     public function get_url($id) {
         $sql = sprintf("SELECT * FROM {$this->db['url']} WHERE id = %d", (int) $id);
-        $result = $this->db_fetch_row($sql);
+        $result = $this->cm->db_fetch_row($sql);
         return $result;
     }
 
     public function get_url_by_hash($link_hash) {
         $sql = sprintf("SELECT id, cid FROM {$this->db['url']} WHERE link_hash = '%s'", $link_hash);
-        $result = $this->db_fetch_row($sql);
+        $result = $this->cm->db_fetch_row($sql);
         return $result;
     }
 
@@ -1870,13 +1870,13 @@ class CriticParser extends AbstractDBWp {
         }
 
         $query = "SELECT * FROM {$this->db['url']} " . $status_query . $cid_and . $meta_type_and . $and_orderby . $limit;
-        $result = $this->db_results($query);
+        $result = $this->cm->db_results($query);
         return $result;
     }
 
     public function get_all_urls($cid) {
         $query = sprintf("SELECT * FROM {$this->db['url']} WHERE cid=%d AND status!=2", $cid);
-        $result = $this->db_results($query);
+        $result = $this->cm->db_results($query);
         return $result;
     }
 
@@ -1894,7 +1894,7 @@ class CriticParser extends AbstractDBWp {
         }
 
         $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " ORDER BY id DESC LIMIT %d", $count);
-        $result = $this->db_results($query);
+        $result = $this->cm->db_results($query);
         return $result;
     }
 
@@ -1932,7 +1932,7 @@ class CriticParser extends AbstractDBWp {
 
         $query = "SELECT COUNT(*) FROM {$this->db['url']} u" . $linked_inner . $status_query . $meta_type_and . $linked_and . $cid_and;
 
-        $result = $this->db_get_var($query);
+        $result = $this->cm->db_get_var($query);
         return $result;
     }
 
@@ -1949,10 +1949,10 @@ class CriticParser extends AbstractDBWp {
 
     public function change_url_state($id, $status = 0) {
         $sql = sprintf("SELECT status FROM {$this->db['url']} WHERE id=%d", $id);
-        $old_status = $this->db_get_var($sql);
+        $old_status = $this->cm->db_get_var($sql);
         if ($old_status != $status) {
             $sql = sprintf("UPDATE {$this->db['url']} SET status=%d WHERE id=%d", $status, $id);
-            $this->db_query($sql);
+            $this->cm->db_query($sql);
             return true;
         }
         return false;
@@ -1960,7 +1960,7 @@ class CriticParser extends AbstractDBWp {
 
     public function delete_url($id) {
         $sql = sprintf("DELETE FROM {$this->db['url']} WHERE id=%d", (int) $id);
-        $this->db_query($sql);
+        $this->cm->db_query($sql);
     }
 
     /*
@@ -2670,7 +2670,7 @@ class CriticParser extends AbstractDBWp {
         if ($link) {
             $link_hash = $this->link_hash($link);
             $sql = sprintf("UPDATE {$this->db['url']} SET link_hash='%s' WHERE id=%d", $link_hash, (int) $id);
-            $this->db_query($sql);
+            $this->cm->db_query($sql);
             return $link_hash;
         }
         return '';
