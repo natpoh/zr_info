@@ -685,13 +685,13 @@ class CriticSearch extends AbstractDB {
                         $valid_title = false;
                         if ($year && strstr($post_title, $year)) {
                             $valid_title = true;
-                            $ret[$id]['debug']['title valid']='Found date in title';
+                            $ret[$id]['debug']['title valid'] = 'Found date in title';
                         }
 
                         // Equals
                         if ($post_title == $names_valid[$pid]) {
                             $valid_title = true;
-                            $ret[$id]['debug']['title valid']='Titles is equals';
+                            $ret[$id]['debug']['title valid'] = 'Titles is equals';
                         }
 
                         if (!$valid_title) {
@@ -701,7 +701,7 @@ class CriticSearch extends AbstractDB {
                                 foreach ($match[1] as $v) {
                                     $find_title = strip_tags($v);
                                     if ($find_title == $title) {
-                                        $ret[$id]['debug']['title valid']='Found title in tags';
+                                        $ret[$id]['debug']['title valid'] = 'Found title in tags';
                                         $valid_title = true;
                                         break;
                                     }
@@ -715,7 +715,7 @@ class CriticSearch extends AbstractDB {
                                 foreach ($match[1] as $v) {
                                     $find_title = $v;
                                     if ($find_title == $title) {
-                                        $ret[$id]['debug']['title valid']='Found title in quotes';
+                                        $ret[$id]['debug']['title valid'] = 'Found title in quotes';
                                         $valid_title = true;
                                         break;
                                     }
@@ -723,13 +723,12 @@ class CriticSearch extends AbstractDB {
                             }
                         }
 
-                        if (!$valid_title) {
-                            $reg_quotes = $this->get_reg_quotes();
+                        if (!$valid_title && $num > 1) {
                             if (isset($value['found']['title'])) {
                                 foreach ($value['found']['title'] as $v) {
                                     $find_title = $v;
                                     if ($find_title == $title) {
-                                        $ret[$id]['debug']['title valid']='Found title in search bolds';
+                                        $ret[$id]['debug']['title valid'] = 'Found title in search bolds';
                                         $valid_title = true;
                                         break;
                                     }
