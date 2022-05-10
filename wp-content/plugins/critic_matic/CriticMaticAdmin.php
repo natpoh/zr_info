@@ -2195,10 +2195,19 @@ class CriticMaticAdmin {
             $page_url .= '&aid=' . $aid;
         }
 
+        // Filter by campaign type
+        $home_type = -1;
+        $type = isset($_GET['type']) ? (int) $_GET['type'] : $home_type;
+        $filter_status_arr = $this->cp->parser_types($aid);
+        $type_filters = $this->get_filters($filter_status_arr, $page_url, $type, '', 'type');
+        if ($type != $home_type) {
+            $page_url = $page_url . '&type=' . $type;
+        }
+
         // Filter by status
         $home_status = -1;
         $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_status;
-        $filter_arr = $this->cp->parser_states($aid);
+        $filter_arr = $this->cp->parser_states($aid, $type);
         $filters = $this->get_filters($filter_arr, $page_url, $status);
         if ($status != $home_status) {
             $page_url = $page_url . '&status=' . $status;
@@ -2207,8 +2216,9 @@ class CriticMaticAdmin {
         // Filter by parser status
         $home_parser_status = -1;
         $parser_status = isset($_GET['parser_status']) ? (int) $_GET['parser_status'] : $home_parser_status;
-        $filter_status_arr = $this->cp->parser_parser_states($status, $aid);
-        $parser_status_filters = $this->get_filters($filter_status_arr, $page_url, $parser_status);
+        $filter_status_arr = $this->cp->parser_parser_states($aid, $type, $status);
+        //$filter_arr = array(), $url = '', $curr_tab = -1, $front_slug = '', $name = 'status', $class = '', $show_name = true
+        $parser_status_filters = $this->get_filters($filter_status_arr, $page_url, $parser_status, '', 'parser_status');
         if ($parser_status != $home_parser_status) {
             $page_url = $page_url . '&parser_status=' . $parser_status;
         }
@@ -2216,7 +2226,7 @@ class CriticMaticAdmin {
         //Pager
         $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
         $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
-        $campaigns = $this->cp->get_parsers($status, $page, $aid, $parser_status, $orderby, $order);
+        $campaigns = $this->cp->get_parsers($type, $status, $page, $aid, $parser_status, $orderby, $order);
 
         include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_parsers_critic.php');
     }

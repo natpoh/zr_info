@@ -1,5 +1,7 @@
 <h2><a href="<?php print $url ?>"><?php print __('Critic parsers') ?></a>. <?php print __('Campaigns') ?></h2>
 <?php print $tabs; ?>
+
+<?php print $type_filters ?>
 <?php print $filters ?>
 <?php print $parser_status_filters ?>
 <br />
@@ -42,17 +44,17 @@ if (sizeof($campaigns) > 0) {
             if ($parser->type == 1) {
                 $optkey = 'yt_urls';
             }
-            $parser_status_int = $parser->status ==1 ? 1 : 0;            
-            
+            $parser_status_int = $parser->status == 1 ? 1 : 0;
+
             $parser_parser_status_int = $parser->parser_status;
-            
-                
-            if ($parser_parser_status_int==3){
-                $parser_parser_status_int=2;
-            } else if ($parser_parser_status_int==2){
-                $parser_parser_status_int=3;
+
+
+            if ($parser_parser_status_int == 3) {
+                $parser_parser_status_int = 2;
+            } else if ($parser_parser_status_int == 2) {
+                $parser_parser_status_int = 3;
             }
-            
+
             $find_state = $options[$optkey]['status'] ? 'Active' : 'Inactive';
             $find_state_int = $options[$optkey]['status'] ? 1 : 0;
             $find_interval = $options[$optkey]['interval'];

@@ -46,7 +46,7 @@ class CriticParser extends AbstractDBWp {
         2 => 'Trash',
     );
     public $parser_type = array(
-        0 => 'All',
+        0 => 'Default',
         1 => 'YouTube',
     );
     public $parser_state = array(
@@ -1063,7 +1063,7 @@ class CriticParser extends AbstractDBWp {
         update_option('critic_parser_settings', serialize($ss));
     }
 
-    public function get_parsers($status = -1, $page = 1, $aid = 0, $parser_status = -1, $orderby = '', $order = 'ASC') {
+    public function get_parsers($type, $status = -1, $page = 1, $aid = 0, $parser_status = -1, $orderby = '', $order = 'ASC') {
         $page -= 1;
         $start = $page * $this->perpage;
 
@@ -1086,6 +1086,11 @@ class CriticParser extends AbstractDBWp {
             $parser_query = " AND c.parser_status = " . (int) $parser_status;
         }
 
+        $type_query = "";
+        if ($type != -1) {
+            $type_query = " AND type = " . (int) $type;
+        }
+
         // Author filter        
         $aid_and = '';
         if ($aid > 0) {
@@ -1105,19 +1110,19 @@ class CriticParser extends AbstractDBWp {
 
         $sql = sprintf("SELECT c.id, c.date, c.type, c.status, c.parser_status, c.last_update, c.update_interval, c.title, c.author, c.site, c.options "
                 . "FROM {$this->db['campaign']} c WHERE c.id>0"
-                . $status_query . $aid_and . $and_orderby . $limit);
+                . $type_query . $status_query . $parser_query . $aid_and . $and_orderby . $limit);
 
         $result = $this->db_results($sql);
 
         return $result;
     }
 
-    public function get_parser_count($type = -1, $aid = 0, $parser_status = -1) {
+    public function get_parser_count($aid = 0, $type = -1, $status = -1, $parser_status = -1) {
         // Custom type
-        $type_trash = 2;
-        $type_query = " AND status != " . $type_trash;
-        if ($type != -1) {
-            $type_query = " AND status = " . (int) $type;
+        $status_trash = 2;
+        $status_query = " AND status != " . $status_trash;
+        if ($status != -1) {
+            $status_query = " AND status = " . (int) $status;
         }
 
         // Author filter        
@@ -1131,13 +1136,34 @@ class CriticParser extends AbstractDBWp {
             $parser_query = " AND parser_status = " . (int) $parser_status;
         }
 
-        $query = "SELECT COUNT(*) FROM {$this->db['campaign']} WHERE id>0" . $type_query . $parser_query . $aid_and;
+        $type_query = "";
+        if ($type != -1) {
+            $type_query = " AND type = " . (int) $type;
+        }
+
+        $query = "SELECT COUNT(*) FROM {$this->db['campaign']} WHERE id>0" . $type_query . $status_query . $parser_query . $aid_and;
         $result = $this->db_get_var($query);
         return $result;
     }
 
-    public function parser_states($aid = 0) {
-        $count = $this->get_parser_count(-1, $aid);
+    public function parser_types($aid = 0) {
+        $count = $this->get_parser_count($aid);
+        $parser_states = array(
+            '-1' => array(
+                'title' => 'All',
+                'count' => $count
+            )
+        );
+        foreach ($this->parser_type as $key => $value) {
+            $parser_states[$key] = array(
+                'title' => $value,
+                'count' => $this->get_parser_count($aid, $key));
+        }
+        return $parser_states;
+    }
+
+    public function parser_states($aid = 0, $type = -1) {
+        $count = $this->get_parser_count($aid, $type);
         $parser_states = array(
             '-1' => array(
                 'title' => 'All',
@@ -1147,13 +1173,13 @@ class CriticParser extends AbstractDBWp {
         foreach ($this->camp_state as $key => $value) {
             $parser_states[$key] = array(
                 'title' => $value,
-                'count' => $this->get_parser_count($key, $aid));
+                'count' => $this->get_parser_count($aid, $type, $key));
         }
         return $parser_states;
     }
 
-    public function parser_parser_states($status = 0, $aid = 0) {
-        $count = $this->get_parser_count($status, $aid);
+    public function parser_parser_states($aid = 0, $type = -1, $status = 0) {
+        $count = $this->get_parser_count($aid, $type, $status);
         $parser_states = array(
             '-1' => array(
                 'title' => 'All',
@@ -1163,7 +1189,7 @@ class CriticParser extends AbstractDBWp {
         foreach ($this->parser_state as $key => $value) {
             $parser_states[$key] = array(
                 'title' => $value,
-                'count' => $this->get_parser_count($status, $aid, $key));
+                'count' => $this->get_parser_count($aid, $type, $status, $key));
         }
         return $parser_states;
     }
@@ -1683,7 +1709,7 @@ class CriticParser extends AbstractDBWp {
         } else {
             $list = array($add_urls);
         }
-        
+
         $new_urls_weight = $options['new_urls_weight'];
 
         $count = 0;
@@ -2996,8 +3022,8 @@ class CriticParser extends AbstractDBWp {
 
         return $body;
     }
-    
-        public function get_webdriver($url, &$header = '', $settings = '', $use_driver = -1) {
+
+    public function get_webdriver($url, &$header = '', $settings = '', $use_driver = -1) {
 
         $webdrivers_text = base64_decode($settings['web_drivers']);
         //http://165.227.101.220:8110/?p=ds1bfgFe_23_KJDS-F&url= http://185.135.80.156:8110/?p=ds1bfgFe_23_KJDS-F&url= http://148.251.54.53:8110/?p=ds1bfgFe_23_KJDS-F&url=
