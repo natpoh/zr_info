@@ -29,6 +29,14 @@
                 <textarea name="au_<?php print $key ?>" style="width: 90%;" rows="5"><?php print stripslashes($value) ?></textarea>
             <?php } ?>
             <?php wp_nonce_field('critic-feeds-options', 'critic-feeds-nonce'); ?>
+
+            <br />
+            <br />
+            <div class="label">
+                <?php print __('Audience cron path') ?>
+            </div>
+            <input type="text" name="audience_cron_path" class="title" value="<?php print $ss['audience_cron_path'] ?>" style="width:90%">
+            <br />
             <br />
             <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save') ?>" class="button-primary">  
 

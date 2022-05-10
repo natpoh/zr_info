@@ -286,11 +286,11 @@ class CriticAudience extends AbstractDb {
 
     public function run_cron_hook() {
         // Run cron webhook
-        $cp = $this->cm->get_cp();
-        $site_url = get_site_url();
-        $curr_time = time();
-        $url = $site_url . '/wp-content/plugins/critic_matic/cron/audience_cron.php?p=2338g_D0dDSF-Fs';
-        $cp->send_curl_no_responce($url);
+        $ss = $this->cm->get_settings();
+        if ($ss['audience_cron_path']) {
+            $cp = $this->cm->get_cp();
+            $cp->send_curl_no_responce($ss['audience_cron_path']);
+        }
     }
 
     public function run_cron($count = 100, $debug = false, $force = false) {

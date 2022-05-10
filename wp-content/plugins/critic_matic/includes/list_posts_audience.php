@@ -31,6 +31,7 @@ if (sizeof($posts) > 0) {
                     <th><?php print __('Movie') ?></th>
                     <th><?php print __('Rating') ?></th>
                     <th><?php print __('Author') ?></th>  
+                    <th><?php print __('Flag') ?></th>
                     <th><?php print __('IP') ?></th>
                     <th><?php print __('IP list') ?></th>
                     <th><?php print __('In index') ?></th>
@@ -56,7 +57,13 @@ if (sizeof($posts) > 0) {
                     $rating_data = $this->cm->get_post_rating($item->id);
                     //$email = isset($rating_data['em']) ? $rating_data['em'] : '';
                     $ip = isset($rating_data['ip']) ? $rating_data['ip'] : '';
+                    $ip_img = '';
                     if ($ip) {
+                        $country_data = $this->cm->get_geo_flag_by_ip($ip);
+                        if ($country_data['path']) {
+                            $country_name = $country_data['name'];
+                            $ip_img = '<span title="' . $country_name . '"><img src="' . $country_data['path'] . '" /></span>';                           
+                        }
                         $ip_item = $this->cm->get_ip($ip);
                         $ip_type = 0;
                         if ($ip_item) {
@@ -94,6 +101,7 @@ if (sizeof($posts) > 0) {
                             ?></td> 
                         <td><?php print $cfront->theme_rating($rating_data); ?></td>
                         <td><?php print $author_link ?></td>    
+                        <td><?php print $ip_img ?></td> 
                         <td><?php print $ip ?></td> 
                         <td><?php print $ip_type_name ?></td>
                         <td><?php print $this->cs->critic_in_index($item->id) ? 'Index' : 'Not'; ?></td>
