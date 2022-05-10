@@ -16,6 +16,7 @@ class CriticMaticAdmin {
     //Movies an
     private $ma;
     private $ca;
+    public $cfront;
     private $access_level = 4;
     //Slug    
     private $parrent_slug = 'critic_matic';
@@ -150,6 +151,17 @@ class CriticMaticAdmin {
             $this->ca = new CriticAudience($this->cm);
         }
         return $this->ca;
+    }
+
+    public function get_cfront() {
+        if (!$this->cfront) {
+            //init cma
+            if (!class_exists('CriticFront')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticFront.php' );
+            }
+            $this->cfront = new CriticFront($this->cm, $this->cs);
+        }
+        return $this->cfront;
     }
 
     /*
@@ -602,7 +614,7 @@ class CriticMaticAdmin {
         $url = $this->admin_page . $this->audience_url;
         $page_url = $url;
 
-        $cfront = new CriticFront($this->cm, $this->cs);
+        $cfront = $this->get_cfront();
 
         if ($pid) {
             // Post page

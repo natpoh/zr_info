@@ -14,10 +14,13 @@
 print $tabs;
 
 if ($mid) {
+    
+    $cfront = $this->get_cfront();
+    $img = $cfront->get_thumb_path_full(220, 330, $mid);
+    if ($img){
+        print '<img src="'.$img.'" /><br />';
+    }
     ?>
-    <img src="/wp-content/uploads/thumbs/poster/220x330/<?php print $mid ?>.jpg" />
-    <br />
-
     <h3><?php print __('Meta') ?></h3>
     <table class="wp-list-table widefat striped table-view-list">
         <thead>
