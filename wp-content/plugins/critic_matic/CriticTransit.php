@@ -1404,4 +1404,36 @@ class CriticTransit extends AbstractDB {
         print ' done';
     }
 
+    public function import_auhtor_images() {
+        // UNUSED
+        // import images from critcs pluggin
+        global $wpdb;
+        $sql = "SELECT p.post_title, p.ID, m.meta_value FROM {$this->db['wp_posts']} p, {$this->db['wp_postmeta']} m "
+                . "WHERE p.post_type = 'wprss_feed' AND p.ID = m.post_id AND m.meta_key = 'wprss_html_before' ";
+        $result = $this->db_results($sql);
+        //print_r($result);
+        if (sizeof($result)) {
+            foreach ($result as $item) {
+                if (preg_match("#\<img.+title=\".+src=\"([^\"]+)\"#U", $item->meta_value, $match)) {
+                    $img = $match[1];
+                    $name = trim($item->post_title);
+                    $author = $this->get_author_by_name($name);
+                    $options = unserialize($author->options);
+                    if (!isset($options['image'])) {
+                        print $item->post_title . " - " . $img . "<br />";
+                        $options['image'] = $img;
+                        $opt_str = serialize($options);
+
+                        $data = array(
+                            'options' => $opt_str,
+                        );
+
+                        $this->sync_update_data($data, $author->id, $this->db['authors'], $this->sync_data);
+                    }
+                }
+            }
+        }
+        //$regv = "#\<img.+title=\".+src=\"([^\"]+)\"#";
+    }
+
 }

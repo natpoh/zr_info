@@ -169,9 +169,6 @@ class CriticMatic extends AbstractDB {
             'ip' => $table_prefix . 'critic_matic_ip',
             //CF
             'feed_meta' => $table_prefix . 'critic_feed_meta',
-            // WP
-            'wp_posts' => DB_PREFIX_WP . 'posts',
-            'wp_postmeta' => DB_PREFIX_WP . 'postmeta',
         );
         $this->timer_start();
 
@@ -1651,36 +1648,7 @@ class CriticMatic extends AbstractDB {
         return $result;
     }
 
-    public function import_auhtor_images() {
-        // import images from critcs pluggin
-        global $wpdb;
-        $sql = "SELECT p.post_title, p.ID, m.meta_value FROM {$this->db['wp_posts']} p, {$this->db['wp_postmeta']} m "
-                . "WHERE p.post_type = 'wprss_feed' AND p.ID = m.post_id AND m.meta_key = 'wprss_html_before' ";
-        $result = $this->db_results($sql);
-        //print_r($result);
-        if (sizeof($result)) {
-            foreach ($result as $item) {
-                if (preg_match("#\<img.+title=\".+src=\"([^\"]+)\"#U", $item->meta_value, $match)) {
-                    $img = $match[1];
-                    $name = trim($item->post_title);
-                    $author = $this->get_author_by_name($name);
-                    $options = unserialize($author->options);
-                    if (!isset($options['image'])) {
-                        print $item->post_title . " - " . $img . "<br />";
-                        $options['image'] = $img;
-                        $opt_str = serialize($options);
 
-                        $data = array(
-                            'options' => $opt_str,
-                        );
-
-                        $this->sync_update_data($data, $author->id, $this->db['authors'], $this->sync_data);
-                    }
-                }
-            }
-        }
-        //$regv = "#\<img.+title=\".+src=\"([^\"]+)\"#";
-    }
 
     /*
      * Tags get
@@ -1972,37 +1940,6 @@ class CriticMatic extends AbstractDB {
      * Movies get
      */
 
-    public function get_movie_name_by_id($id, $cache = true) {
-        //Deprecated Unused
-        //Get from cache
-        if ($cache) {
-            static $dict;
-            if (is_null($dict)) {
-                $dict = array();
-            }
-
-            if (isset($dict[$id])) {
-                return $dict[$id];
-            }
-        }
-
-        $sql = sprintf("SELECT post_title FROM {$this->db['wp_posts']} WHERE ID=%d", (int) $id);
-        $result = $this->db_get_var($sql);
-
-        if ($cache) {
-            $dict[$id] = $result;
-        }
-        return $result;
-    }
-
-    public function get_movie($id) {
-
-        $sql = sprintf("SELECT post_date, post_title, post_content, post_name, post_modified, post_type FROM {$this->db['wp_posts']} WHERE ID=%d", (int) $id);
-        $result = $this->db_fetch_row($sql);
-
-        return $result;
-    }
-
     public function get_movies_data($cid = 0, $fid = 0) {
         $fid_and = '';
         if ($fid > 0) {
@@ -2018,34 +1955,6 @@ class CriticMatic extends AbstractDB {
         return $name;
     }
 
-    public function get_movies($page = 1, $post_type = '') {
-        // Deprecated Unused
-        $page -= 1;
-        $start = $page * $this->perpage;
-
-        $limit = '';
-        if ($this->perpage > 0) {
-            $limit = " LIMIT $start, " . $this->perpage;
-        }
-
-        $post_and = " AND p.post_type IN('movie','tvseries')";
-        if ($post_type == 'movie') {
-            $post_and = " AND p.post_type='movie'";
-        } if ($post_type == 'tvseries') {
-            $post_and = " AND p.post_type='tvseries'";
-        }
-
-        $order = ' ORDER BY p.ID DESC';
-
-        // Movies cron
-        $left_meta = "LEFT JOIN {$this->db['movies_meta']} m ON p.ID = m.mid";
-
-        $sql = "SELECT p.ID, p.post_date, p.post_title, p.post_type, m.date FROM {$this->db['wp_posts']} p " . $left_meta . " WHERE p.post_status='publish'" . $post_and . $order . $limit;
-
-        $result = $this->db_results($sql);
-
-        return $result;
-    }
 
     public function get_all_movie_meta($pid) {
         // Deprecated unused
@@ -2149,36 +2058,6 @@ class CriticMatic extends AbstractDB {
                 . "WHERE fid=%d", (int) $pid);
         $result = $this->db_results($sql);
         return $result;
-    }
-
-    public function get_movies_count($post_type = '') {
-        // DEPRECATED UNUSED
-        $post_and = " AND post_type IN('movie','tvseries')";
-        if ($post_type == 'movie') {
-            $post_and = " AND post_type='movie'";
-        } if ($post_type == 'tvseries') {
-            $post_and = " AND post_type='tvseries'";
-        }
-        $query = "SELECT COUNT(*) FROM {$this->db['wp_posts']} WHERE post_status='publish'" . $post_and;
-        $result = $this->db_get_var($query);
-        return $result;
-    }
-
-    public function get_movie_types() {
-        $count = $this->get_movies_count();
-        $states = array(
-            'all' => array(
-                'title' => 'All',
-                'count' => $count
-            )
-        );
-        foreach ($this->movie_type as $key => $value) {
-            $states[$key] = array(
-                'title' => $value,
-                'count' => $this->get_movies_count($key)
-            );
-        }
-        return $states;
     }
 
     public function find_top_rating_no_meta($limit, $debug) {

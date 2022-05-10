@@ -154,9 +154,6 @@ class CriticSearch extends AbstractDB {
     public function __construct($cm) {
         $this->cm = $cm;
         $this->db = array(
-            //CM
-            'posts' => DB_PREFIX_WP_AN . 'critic_matic_posts',
-            'meta' => DB_PREFIX_WP_AN . 'critic_matic_posts_meta',
             //CS
             'log' => DB_PREFIX_WP . 'critic_search_log',
         );

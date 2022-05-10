@@ -37,10 +37,6 @@ class CriticFront extends SearchFacets {
             'movies_meta' => $table_prefix . 'critic_movies_meta',
             //CF
             'feed_meta' => $table_prefix . 'critic_feed_meta',
-            // WP
-            'wp_posts' => DB_PREFIX_WP . 'posts',
-            'wp_options' => DB_PREFIX_WP . 'options',
-            'wp_postmeta' => DB_PREFIX_WP . 'postmeta',
         );
         $this->init_search();
     }
@@ -947,11 +943,7 @@ class CriticFront extends SearchFacets {
         return $link;
     }
 
-    public function get_wprss_feed_item_by_slug($slug) {
-        $sql = sprintf("SELECT ID FROM {$this->db['wp_posts']} WHERE post_type='wprss_feed_item' AND post_name='%s'", $this->escape($slug));
-        $result = $this->db_get_var($sql);
-        return $result;
-    }
+
 
     public function get_avatars() {
         $avatars = [];
@@ -973,46 +965,6 @@ class CriticFront extends SearchFacets {
     /*
      * Movies
      */
-
-    public function get_movie($id, $cache = true) {
-        // Get from cache
-        if ($cache) {
-            static $dict;
-            if (is_null($dict)) {
-                $dict = array();
-            }
-
-            if (isset($dict[$id])) {
-                return $dict[$id];
-            }
-        }
-
-        $sql = sprintf("SELECT ID, post_name, post_title FROM {$this->db['wp_posts']} WHERE ID=%d", (int) $id);
-        $result = $this->db_fetch_row($sql);
-
-        if ($cache) {
-            $dict[$id] = $result;
-        }
-        return $result;
-    }
-
-    public function get_movie_by_slug($slug) {
-        $sql = sprintf("SELECT ID, post_title FROM {$this->db['wp_posts']} WHERE post_type='movie' AND post_name='%s'", $this->escape($slug));
-        $result = $this->db_fetch_row($sql);
-        return $result;
-    }
-
-    public function get_tvseries_by_slug($slug) {
-        $sql = sprintf("SELECT ID, post_title FROM {$this->db['wp_posts']} WHERE post_type='tvseries' AND post_name='%s'", $this->escape($slug));
-        $result = $this->db_fetch_row($sql);
-        return $result;
-    }
-
-    public function get_wp_post_name($id) {
-        $sql = sprintf("SELECT post_name FROM {$this->db['wp_posts']} WHERE ID=%d", (int) $id);
-        $result = $this->db_get_var($sql);
-        return $result;
-    }
 
     public function get_small_movie_templ($movie, $external_link = '') {
         if (!$movie) {
@@ -1066,90 +1018,6 @@ class CriticFront extends SearchFacets {
         return $content;
     }
 
-    public function template_single_movie_small($item) {
-        // DEPRECATED UNUSED
-
-        $id = $item->id;
-        $title = $item->movie;
-        $type = $item->post_type;
-
-        $slug = 'movies';
-        if ($type == 'tvseries') {
-            $slug = 'tvseries';
-        }
-
-        $url = '/' . $slug . '/' . $item->post_name;
-
-        $date = $item->release_date;
-        $cast = $item->cast;
-
-        if ($cast) {
-            $cast = $this->cm->crop_text($cast, 50);
-        }
-
-        if ($date) {
-            $date = strtotime($date);
-            $date = date('Y', $date);
-            if (strstr($title, $date)) {
-                $date = '';
-            } else {
-                $date = ' (' . $date . ')';
-            }
-        }
-
-        $imgcache = $this->get_poster_tsumb($id, $array_request = array([90, 120]));
-
-        if ($imgcache) {
-            $imgsrc = $imgcache[0];
-            $img = '<img src="' . $imgsrc . '">';
-        }
-
-
-        $content = '<div class="full_review_movie"><a href="' . $url . '/" class="movie_link" >' . $img . '<div class="movie_link_desc"><span  class="itm_hdr">' . $title . $date . '</span><span>' . $cast . '</span></div></a></div>';
-
-        return $content;
-    }
-
-    public function get_movie_front_meta($pid) {
-        $fields = array(
-            'Release' => '_wpmoly_movie_release_date',
-            'Cast' => '_wpmoly_movie_cast',
-            'Genre' => '_wpmoly_movie_genres'
-        );
-
-        $movie_meta = $this->get_post_meta($pid);
-
-        $ret = array();
-        foreach ($fields as $name => $value) {
-            if (isset($movie_meta[$value][0])) {
-                $ret[$name] = $movie_meta[$value][0];
-            } else {
-                $ret[$name] = '';
-            }
-        }
-        return $ret;
-    }
-
-    public function get_post_meta($pid = 0, $type = '', $single = false) {
-        $type_query = '';
-        if ($type) {
-            $type_query = sprintf(" AND meta_key = '%s'", $type);
-        }
-        $sql = sprintf("SELECT meta_key, meta_value FROM {$this->db['wp_postmeta']} WHERE post_id = %d" . $type_query, (int) $pid);
-        $meta = $this->db_results($sql);
-        $ret = array();
-        if (sizeof($meta)) {
-            foreach ($meta as $item) {
-                if ($single) {
-                    $ret = $item->meta_value;
-                    break;
-                }
-                $ret[$item->meta_key][] = $item->meta_value;
-            }
-        }
-
-        return $ret;
-    }
 
     /*
      * Movies db an
@@ -1168,14 +1036,6 @@ class CriticFront extends SearchFacets {
                 $type = $type ? $type : $post->type;
             }
 
-            // Get in rwt base
-            if ($rwt_id) {
-                $post_name = $this->get_wp_post_name($rwt_id);
-                if ($post_name) {
-                    // append rwt post name
-                    $ma->add_post_name($id, $post_name);
-                }
-            }
             // Create it
             if (!$post_name) {
                 // Type: Movie, TVseries
@@ -1183,57 +1043,6 @@ class CriticFront extends SearchFacets {
             }
         }
         return $post_name;
-    }
-
-    public function template_single_movie_small_an($item, $no_links = '') {
-        $ma = $this->get_ma();
-        $id = $item->id;
-        $rwt_id = $item->rwt_id;
-        $title = $item->title;
-        $type = $item->type;
-
-
-        $slug = 'movies';
-        if (strtolower($type) == 'tvseries') {
-            $slug = 'tvseries';
-        }
-
-        $array_type = array('tvseries' => 'TV series');
-        $item_type = $array_type[$slug];
-        if (!$item_type)
-            $item_type = ucfirst($slug);
-
-        $post_name = $item->post_name;
-        if (!$post_name) {
-            $post_name = $this->get_or_create_ma_post_name($id, $rwt_id, $title, $type);
-        }
-
-        // todo get post name
-        $url = '/' . $slug . '/' . $post_name;
-
-        $date = $item->year;
-
-        // Cast
-        $cast_obj = json_decode($ma->get_cast($id));
-        $cast = $this->get_cast_string($cast_obj, 50);
-
-        if ($date) {
-            if (strstr($title, $date)) {
-                $date = '';
-            } else {
-                $date = ' (' . $date . ')';
-            }
-        }
-
-        $img = '<img src="' . $this->get_thumb_path_full(90, 120, $id) . '">';
-
-        if ($no_links) {
-            $content = '<div class="full_review_movie movie_touch" id="' . $id . '">' . $img . '<div class="movie_link_desc"><span  class="itm_hdr">' . $title . $date . '</span><span class="item_type">' . $item_type . '</span><span>' . $cast . '</span></div></div>';
-        } else {
-            $content = '<div class="full_review_movie"><a href="' . $url . '/" class="movie_link" >' . $img . '<div class="movie_link_desc"><span  class="itm_hdr">' . $title . $date . '</span><span class="item_type">' . $item_type . '</span><span>' . $cast . '</span></div></a></div>';
-        }
-
-        return $content;
     }
 
     public function get_cast_string($cast_data, $len = 50) {
@@ -1586,27 +1395,6 @@ class CriticFront extends SearchFacets {
         return $new_content;
     }
 
-    public function get_critic_url_by_old_slug($slug) {
-        $pid = $this->get_wprss_feed_item_by_slug($slug);
-        $cm_id = 0;
-
-        if ($pid) {
-            // Get post meta            
-            $wprss_item_permalink = trim(get_post_meta($pid, 'wprss_item_permalink', true));
-            // Post exist
-            $link_hash = '';
-            $link = $wprss_item_permalink;
-            if ($link) {
-                $link_hash = $this->cm->link_hash($link);
-                // Check the post already in db
-                $post_exist = $this->cm->get_post_by_link_hash($link_hash);
-                if ($post_exist) {
-                    $cm_id = $post_exist->id;
-                }
-            }
-        }
-        return $cm_id;
-    }
 
     /*
      * Dinamic poster logic
@@ -2044,50 +1832,6 @@ class CriticFront extends SearchFacets {
             }
             $this->thumb_class = new GETTSUMB();
         }
-    }
-
-    public function get_poster_tsumb($id, $array_request = array([220, 330], [440, 660]), $image = '', $name = '') {
-        // DEPRECATED
-        $this->init_thumb_service();
-
-        //        if (!$image && $id) {
-        //            $image = CreateTsumbs::get_movie_image($id, 'file');
-        //        }
-
-        $array_result = [];
-
-
-        // Get local custom poster
-        $poster = $this->get_post_meta($id, '_thumbnail_id', true);
-        $poster_link = $this->get_post_meta($poster, '_wp_attached_file', true);
-
-        if ($poster_link) {
-            $abs_poster_link = ABSPATH . 'wp-content/uploads/' . $poster_link;
-            foreach ($array_request as $val) {
-                $array_result[] = $this->get_local_thumb($val[0], $val[1], $abs_poster_link);
-            }
-        }
-        if ($array_result) {
-            return $array_result;
-        }
-
-        // Get external poster
-        $poster = $this->get_post_meta($id, '_wpmoly_movie_poster', true);
-        if ($poster) {
-            $ext_poster_link = 'https://www.themoviedb.org/t/p/w1280' . $poster;
-            foreach ($array_request as $val) {
-                $array_result[] = $this->get_local_thumb($val[0], $val[1], $ext_poster_link);
-            }
-        }
-        if ($array_result) {
-            return $array_result;
-        }
-        // Empty image
-        $empty_img = '/wp-content/themes/custom_twentysixteen/images/empty_image.svg';
-        foreach ($array_request as $value) {
-            $array_result[] = $empty_img;
-        }
-        return $array_result;
     }
 
     public function get_local_thumb($w = 0, $h = 0, $path = '', $name = '') {

@@ -84,10 +84,6 @@ function critic_matic_init() {
             $cm->add_sphinx_counter();
         }
 
-        if (isset($_GET['cm_import_images']) && $_GET['cm_import_images'] == 1) {
-            $cm->import_auhtor_images();
-        }
-
         if (isset($_GET['cm_update_post_rating_options']) && $_GET['cm_update_post_rating_options'] == 1) {
             $cm->update_post_rating_options();
         }
