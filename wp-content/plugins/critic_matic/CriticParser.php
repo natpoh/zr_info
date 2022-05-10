@@ -161,10 +161,10 @@ class CriticParser extends AbstractDBWp {
         $this->cm = $cm;
         $table_prefix = DB_PREFIX_WP;
         $this->db = array(
-            'posts' => $table_prefix . 'critic_matic_posts',
+            'posts' => DB_PREFIX_WP_AN . 'critic_matic_posts',
+            'url' => DB_PREFIX_WP_AN . 'critic_parser_url',
             // Critic Parser
-            'campaign' => $table_prefix . 'critic_parser_campaign',
-            'url' => $table_prefix . 'critic_parser_url',
+            'campaign' => $table_prefix . 'critic_parser_campaign',            
             'log' => $table_prefix . 'critic_parser_log',
         );
 

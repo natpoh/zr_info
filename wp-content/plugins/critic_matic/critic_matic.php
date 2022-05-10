@@ -274,35 +274,7 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8_general_ci;";
     dbDelta($sql);
     critic_matic_create_index(array('date', 'cid', 'uid', 'type', 'status'), $table_prefix . "critic_parser_log");
-    /*
-     * Indexes: 
-     * 
-      ALTER TABLE `wp_bcw98b_critic_parser_log` ADD INDEX(`date`);
-      ALTER TABLE `wp_bcw98b_critic_parser_log` ADD INDEX(`cid`);
-      ALTER TABLE `wp_bcw98b_critic_parser_log` ADD INDEX(`uid`);
-      ALTER TABLE `wp_bcw98b_critic_parser_log` ADD INDEX(`type`);
-      ALTER TABLE `wp_bcw98b_critic_parser_log` ADD INDEX(`status`);
-     */
 
-    // Add options
-    //$sql = "ALTER TABLE `" . $table_prefix . "critic_parser_log` ADD `uid` int(11) NOT NULL DEFAULT '0'";
-    //dbDelta($sql);
-
-    /*
-     * cid - campaign id
-     * pid - post id
-     */
-    $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_parser_url`(
-				`id` int(11) unsigned NOT NULL auto_increment,
-                                `cid` int(11) NOT NULL DEFAULT '0',   
-                                `pid` int(11) NOT NULL DEFAULT '0',
-                                `status` int(11) NOT NULL DEFAULT '0',
-                                `link_hash` varchar(255) NOT NULL default '',                                
-                                `link` text default NULL,               
-				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
-    dbDelta($sql);
-    critic_matic_create_index(array('cid', 'pid', 'status', 'link_hash'), $table_prefix . "critic_parser_url");
     /*
      * Indexes: 
      * 
@@ -365,6 +337,36 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'date_add', 'status', 'type', 'link_hash', 'top_movie'), $table_prefix . "critic_matic_posts");
 
+        /*
+     * Indexes: 
+     * 
+      ALTER TABLE `wp_bcw98b_critic_parser_log` ADD INDEX(`date`);
+      ALTER TABLE `wp_bcw98b_critic_parser_log` ADD INDEX(`cid`);
+      ALTER TABLE `wp_bcw98b_critic_parser_log` ADD INDEX(`uid`);
+      ALTER TABLE `wp_bcw98b_critic_parser_log` ADD INDEX(`type`);
+      ALTER TABLE `wp_bcw98b_critic_parser_log` ADD INDEX(`status`);
+     */
+
+    // Add options
+    //$sql = "ALTER TABLE `" . $table_prefix . "critic_parser_log` ADD `uid` int(11) NOT NULL DEFAULT '0'";
+    //dbDelta($sql);
+
+    /*
+     * cid - campaign id
+     * pid - post id
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_parser_url`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `cid` int(11) NOT NULL DEFAULT '0',   
+                                `pid` int(11) NOT NULL DEFAULT '0',
+                                `status` int(11) NOT NULL DEFAULT '0',
+                                `link_hash` varchar(255) NOT NULL default '',                                
+                                `link` text default NULL,               
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8_general_ci;";
+    Pdo_an::db_query($sql);
+    critic_matic_create_index(array('cid', 'pid', 'status', 'link_hash'), $table_prefix . "critic_parser_url");
+    
     //$sql = "ALTER TABLE `" . $table_prefix . "critic_matic_posts` ADD `blur` int(11) NOT NULL DEFAULT '0'";
     //Pdo_an::db_query($sql);
 
