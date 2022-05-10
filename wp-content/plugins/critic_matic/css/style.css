@@ -146,6 +146,10 @@ td.nowrap {
     white-space: nowrap;
 }
 
+td.wrap {    
+    word-break: break-word;    
+}
+
 i.sticn {
     width: 10px;
     height: 10px;

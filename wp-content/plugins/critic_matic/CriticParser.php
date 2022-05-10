@@ -161,6 +161,7 @@ class CriticParser extends AbstractDBWp {
         $this->cm = $cm;
         $table_prefix = DB_PREFIX_WP;
         $this->db = array(
+            'posts' => $table_prefix . 'critic_matic_posts',
             // Critic Parser
             'campaign' => $table_prefix . 'critic_parser_campaign',
             'url' => $table_prefix . 'critic_parser_url',
@@ -1897,32 +1898,39 @@ class CriticParser extends AbstractDBWp {
         return $result;
     }
 
-    public function get_urls_count($status = -1, $cid = 0, $meta_type = -1) {
+    public function get_urls_count($status = -1, $cid = 0, $meta_type = -1, $linked = false) {
 
         // Custom status
         $status_trash = 2;
-        $status_query = " WHERE status != " . $status_trash;
+        $status_query = " WHERE u.status != " . $status_trash;
         if ($status != -1) {
-            $status_query = " WHERE status = " . (int) $status;
+            $status_query = " WHERE u.status = " . (int) $status;
         }
 
         // Company id
         $cid_and = '';
         if ($cid > 0) {
-            $cid_and = sprintf(" AND cid=%d", (int) $cid);
+            $cid_and = sprintf(" AND u.cid=%d", (int) $cid);
         }
 
         // Post type filter
         $meta_type_and = '';
         if ($meta_type != -1) {
             if ($meta_type == 1) {
-                $meta_type_and = " AND pid!=0";
+                $meta_type_and = " AND u.pid!=0";
             } else {
-                $meta_type_and = " AND pid=0";
+                $meta_type_and = " AND u.pid=0";
             }
         }
+        // Linked
+        $linked_and = '';
+        $linked_inner = '';
+        if ($linked) {
+            $linked_inner = " INNER JOIN {$this->db['posts']} p ON p.id=u.pid";
+            $linked_and = ' AND p.top_movie>0';
+        }
 
-        $query = "SELECT COUNT(*) FROM {$this->db['url']} " . $status_query . $meta_type_and . $cid_and;
+        $query = "SELECT COUNT(*) FROM {$this->db['url']} u" . $linked_inner . $status_query . $meta_type_and . $linked_and . $cid_and;
 
         $result = $this->db_get_var($query);
         return $result;

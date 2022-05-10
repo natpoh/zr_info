@@ -40,6 +40,7 @@ if (sizeof($posts) > 0) {
             <th><?php print __('Link') ?></th>                                
             <?php $this->sorted_head('status', 'Status', $orderby, $order, $page_url) ?>                                     
             <th><?php print __('Post') ?></th>                 
+            <th><?php print __('Link') ?></th> 
             <th><?php print __('Post author') ?></th>  
             <th><?php print __('Post type') ?></th>
             <th><?php print __('Post status') ?></th>
@@ -71,8 +72,8 @@ if (sizeof($posts) > 0) {
                     <tr>           
                         <th  class="check-column" ><input type="checkbox" name="bulk-<?php print $item->id ?>"></th>
                         <td><?php print $item->id ?></td>                             
-                        <td>                            
-                            <a href="<?php print $item->link ?>" target="_blank" title="<?php print $item->link ?>"><?php print substr($item->link, 0, 70) ?></a>                    
+                        <td class="wrap">                            
+                            <a href="<?php print $item->link ?>" target="_blank" title="<?php print $item->link ?>"><?php print $item->link ?></a>                    
                             <?php /*
                               if ($item->link):
                               //validate hash
@@ -84,9 +85,17 @@ if (sizeof($posts) > 0) {
                               <?php endif */ ?>
                         </td>
                         <td><?php print $this->cp->get_url_status($item->status) ?></td>
-                        <td><?php if ($post_url) { ?>
+                        <td class="wrap"><?php if ($post_url) { ?>
                                 <a href="<?php print $post_url ?>" ><?php print $post->title ?></a>                    
                             <?php } ?></td>                             
+                        <td><?php
+                            if ($post && $post->top_movie) {
+                                $top_movie = $post->top_movie;
+                                print $this->theme_movie_link($top_movie, $this->get_movie_name_by_id($top_movie));
+                            } else {
+                                print __('None');
+                            }
+                            ?></td>
                         <td><?php print $author_link; ?></td>
                         <td><?php print $post ? $this->cm->get_post_type($post->type) : ""; ?></td>                       
                         <td><?php print $post ? $this->cm->get_post_status($post->status) : ""  ?></td>

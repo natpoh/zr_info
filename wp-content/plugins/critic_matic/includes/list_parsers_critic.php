@@ -26,6 +26,7 @@ if (sizeof($campaigns) > 0) {
         <th><?php print __('Urls count') ?></th> 
         <th><?php print __('Post count') ?></th>         
         <th><?php print __('Parsed') ?></th>  
+        <th><?php print __('Linked') ?></th>
         <th><?php print __('Last log') ?></th> 
 
     </thead>
@@ -97,10 +98,11 @@ if (sizeof($campaigns) > 0) {
                         <br /><?php print $this->cp->get_next_update($parser->last_update, $parser->update_interval) ?> - Next
                     <?php } ?>
                 </td>
-                <td><a href="<?php print $parser->site ?>"><?php print $parser->site ?></a></td>                                
+                <td class="wrap"><a href="<?php print $parser->site ?>"><?php print $parser->site ?></a></td>                                
                 <td><?php print $this->cp->get_urls_count(-1, $parser->id) ?></td>
                 <td><?php print $this->cp->get_urls_count(-1, $parser->id, 1) ?></td>
                 <td><?php print $this->cp->get_urls_count(5, $parser->id, 1) ?></td>
+                <td><?php print $this->cp->get_urls_count(-1, $parser->id, 1, true) ?></td>
                 <td><?php print $this->cp->get_last_log(0, $parser->id) ?></td>
 
 
