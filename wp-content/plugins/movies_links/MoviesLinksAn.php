@@ -84,6 +84,14 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         if ($update) {
             $sql = "UPDATE {$this->db['movie_rating']} SET " . implode(', ', $update) . " WHERE movie_id = " . $mid;
             $this->db_query($sql);
+
+            ////commit
+            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+            Import::create_commit('', 'update', 'data_movie_rating', array('movie_id' => $mid), 'movie_rating',11,['skip'=>['id']]);
+
+
+
+
         }
     }
 
