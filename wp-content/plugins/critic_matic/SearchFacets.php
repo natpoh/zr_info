@@ -1510,7 +1510,8 @@ class SearchFacets extends AbstractDB {
                 }
             }
         }
-        sort($dates);
+
+        asort($dates);
 
         // Gender
         $gender_data = array();
