@@ -69,7 +69,7 @@ analysis/img_final_tmdb
 analysis/cache_request
 analysis/img_result
 analysis/sdata
-
+/analysis/python/env
 #files
 wp-config.php
 wp-content/advanced-cache.php
