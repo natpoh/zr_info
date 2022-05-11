@@ -1950,11 +1950,11 @@ class CriticSearch extends AbstractDB {
                     // Filter not
                     if ($multi) {
                         foreach ($provider_valid_arr as $filter) {
-                            $filters_and .= sprintf(" AND $and_not(%s)!=%s", $key, $filter);
+                            $filters_and .= sprintf(" AND $and_not(%s)!=%s AND ANY(%s)>0", $key, $filter, $key);
                         }
                     } else {
                         foreach ($provider_valid_arr as $filter) {
-                            $filters_and .= sprintf(" AND %s!=%s", $key, $filter);
+                            $filters_and .= sprintf(" AND %s!=%s AND ANY(%s)>0", $key, $filter, $key);
                         }
                     }
                 }
@@ -1971,9 +1971,9 @@ class CriticSearch extends AbstractDB {
                 } else {
                     // Filter not
                     if ($multi) {
-                        $filters_and .= sprintf(" AND ALL(%s)!=%s", $key, $filter);
+                        $filters_and .= sprintf(" AND ALL(%s)!=%s AND ANY(%s)>0", $key, $filter, $key);
                     } else {
-                        $filters_and .= sprintf(" AND %s!=%s", $key, $filter);
+                        $filters_and .= sprintf(" AND %s!=%s AND ANY(%s)>0", $key, $filter, $key);
                     }
                 }
             }
