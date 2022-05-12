@@ -37,6 +37,8 @@ class CriticFront extends SearchFacets {
             'movies_meta' => $table_prefix . 'critic_movies_meta',
             //CF
             'feed_meta' => $table_prefix . 'critic_feed_meta',
+            // WP
+            'wp_postmeta' => DB_PREFIX_WP . 'postmeta',
         );
         $this->init_search();
     }
@@ -1043,6 +1045,57 @@ class CriticFront extends SearchFacets {
             }
         }
         return $post_name;
+    }
+
+    public function template_single_movie_small_an($item, $no_links = '') {
+        $ma = $this->get_ma();
+        $id = $item->id;
+        $rwt_id = $item->rwt_id;
+        $title = $item->title;
+        $type = $item->type;
+
+
+        $slug = 'movies';
+        if (strtolower($type) == 'tvseries') {
+            $slug = 'tvseries';
+        }
+
+        $array_type = array('tvseries' => 'TV series');
+        $item_type = $array_type[$slug];
+        if (!$item_type)
+            $item_type = ucfirst($slug);
+
+        $post_name = $item->post_name;
+        if (!$post_name) {
+            $post_name = $this->get_or_create_ma_post_name($id, $rwt_id, $title, $type);
+        }
+
+        // todo get post name
+        $url = '/' . $slug . '/' . $post_name;
+
+        $date = $item->year;
+
+        // Cast
+        $cast_obj = json_decode($ma->get_cast($id));
+        $cast = $this->get_cast_string($cast_obj, 50);
+
+        if ($date) {
+            if (strstr($title, $date)) {
+                $date = '';
+            } else {
+                $date = ' (' . $date . ')';
+            }
+        }
+
+        $img = '<img src="' . $this->get_thumb_path_full(90, 120, $id) . '">';
+
+        if ($no_links) {
+            $content = '<div class="full_review_movie movie_touch" id="' . $id . '">' . $img . '<div class="movie_link_desc"><span  class="itm_hdr">' . $title . $date . '</span><span class="item_type">' . $item_type . '</span><span>' . $cast . '</span></div></div>';
+        } else {
+            $content = '<div class="full_review_movie"><a href="' . $url . '/" class="movie_link" >' . $img . '<div class="movie_link_desc"><span  class="itm_hdr">' . $title . $date . '</span><span class="item_type">' . $item_type . '</span><span>' . $cast . '</span></div></a></div>';
+        }
+
+        return $content;
     }
 
     public function get_cast_string($cast_data, $len = 50) {
