@@ -977,7 +977,10 @@ class MoviesAn extends AbstractDBAn {
     }
 
     public function create_slug($string, $glue = '-') {
-
+        $string = str_replace('&', ' and ', $string);
+        $string = preg_replace("/('|`)/", "", $string);
+        
+        
         $table = array(
             'Š' => 'S', 'š' => 's', 'Đ' => 'Dj', 'đ' => 'dj', 'Ž' => 'Z', 'ž' => 'z', 'Č' => 'C', 'č' => 'c', 'Ć' => 'C', 'ć' => 'c',
             'À' => 'A', 'Á' => 'A', 'Â' => 'A', 'Ã' => 'A', 'Ä' => 'A', 'Å' => 'A', 'Æ' => 'A', 'Ç' => 'C', 'È' => 'E', 'É' => 'E',
@@ -995,6 +998,9 @@ class MoviesAn extends AbstractDBAn {
         // -- Returns the slug
         $slug = strtolower(strtr($stripped, $table));
         $slug = preg_replace('~[^\pL\d]+~u', $glue, $slug);
+        
+        $slug = preg_replace('/^-/', '', $slug);
+        $slug = preg_replace('/-$/', '', $slug);
 
         return $slug;
     }

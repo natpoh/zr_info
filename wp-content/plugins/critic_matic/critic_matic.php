@@ -845,6 +845,19 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('aid', 'date_upd'), "data_actors_ethnicolr");
+
+    /*
+     * Movie slugs
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_movie_title_slugs`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `mid` int(11) NOT NULL DEFAULT '0',                                 
+                                `oldslug` varchar(255) NOT NULL default '',                                                                      
+                                `newslug` varchar(255) NOT NULL default '',                                                                      
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8_general_ci;";
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('mid', 'oldslug', 'newslug'), "data_movie_title_slugs");
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {
