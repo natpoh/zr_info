@@ -238,7 +238,7 @@ class MoviesAn extends AbstractDBAn {
         // Add post name
         if (!$name_exist) {
             $data = array(
-                'post_name' => (int) $post_name
+                'post_name' => $post_name
             );
             $this->cm->sync_update_data($data, $id, $this->db['movie_imdb'], $this->cm->sync_data);
         }
