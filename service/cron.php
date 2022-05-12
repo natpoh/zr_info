@@ -23,7 +23,7 @@ $array_jobs = array(
 
 'add_providers'=>30,
 'update_imdb_data'=>30,//update movies
-
+'disqus_comments'=>30, ///disquss count comments
 'get_family'=>10, //family to actors meta
 
 'download_crowd_images'=>60,///load image to server from crowdsource status 1

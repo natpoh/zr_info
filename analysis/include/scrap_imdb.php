@@ -72,6 +72,14 @@ function get_array($id='')
 
 }
 
+function disqus_comments($data)
+{
+    !class_exists('DISQUS') ? include ABSPATH . "analysis/include/disqus.php" : '';
+
+    DISQUS::disqus_comments($data);
+
+
+}
 
 function check_tmdb_actors($id)
 {
@@ -2479,6 +2487,14 @@ if (isset($_GET['fix_kairos'])) {
 if (isset($_GET['get_family'])) {
 
     get_family($_GET['get_family']);
+
+    return;
+}
+
+
+if (isset($_GET['disqus_comments'])) {
+
+    disqus_comments($_GET['disqus_comments']);
 
     return;
 }
