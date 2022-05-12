@@ -244,25 +244,26 @@ class MoviesAn extends AbstractDBAn {
         }
     }
 
-    public function create_post_name($id, $title, $type) {
-        $post_name = $this->create_slug($title);
-        //Post name is unique?
-        $post_id = $this->get_post_id_by_name($post_name, $type);
-        if ($post_id) {
-            if ($post_id == $id) {
-                //post_name already in db
-                return $post_name;
-            } else {
-                // Add unique id to post name
-                // TODO new post name
-                $post_name = $post_name . '-' . $id;
+    public function create_post_name($id, $title, $type, $year) {
+        $title_decode = htmlspecialchars_decode($title);
+        $new_post_name = $this->create_slug($title_decode);
+        if (!$new_post_name) {
+            $new_post_name = $id;
+        }
+        // Post name exist?
+        $exist = $this->get_post_by_slug($new_post_name, $type);
+        if ($exist && $exist->id != $id) {
+            $new_post_name = $new_post_name . '-' . $year;
+            $exist2 = $this->get_post_by_slug($new_post_name, $type);
+            if ($exist2 && $exist2->id != $id) {
+                $new_post_name = $new_post_name . '-' . $id;
             }
         }
 
         //Add postname to db
-        $this->add_post_name($id, $post_name);
+        $this->add_post_name($id, $new_post_name);
 
-        return $post_name;
+        return $new_post_name;
     }
 
     /*
@@ -979,8 +980,8 @@ class MoviesAn extends AbstractDBAn {
     public function create_slug($string, $glue = '-') {
         $string = str_replace('&', ' and ', $string);
         $string = preg_replace("/('|`)/", "", $string);
-        
-        
+
+
         $table = array(
             'Š' => 'S', 'š' => 's', 'Đ' => 'Dj', 'đ' => 'dj', 'Ž' => 'Z', 'ž' => 'z', 'Č' => 'C', 'č' => 'c', 'Ć' => 'C', 'ć' => 'c',
             'À' => 'A', 'Á' => 'A', 'Â' => 'A', 'Ã' => 'A', 'Ä' => 'A', 'Å' => 'A', 'Æ' => 'A', 'Ç' => 'C', 'È' => 'E', 'É' => 'E',
@@ -998,7 +999,7 @@ class MoviesAn extends AbstractDBAn {
         // -- Returns the slug
         $slug = strtolower(strtr($stripped, $table));
         $slug = preg_replace('~[^\pL\d]+~u', $glue, $slug);
-        
+
         $slug = preg_replace('/^-/', '', $slug);
         $slug = preg_replace('/-$/', '', $slug);
 
@@ -1199,7 +1200,7 @@ class MoviesAn extends AbstractDBAn {
             $data = array(
                 'status' => $status,
             );
-            $this->cm->sync_update_data($data, $id, $this->db['data_provider'], $this->cm->sync_data);           
+            $this->cm->sync_update_data($data, $id, $this->db['data_provider'], $this->cm->sync_data);
             $result = $id;
         }
         return $result;

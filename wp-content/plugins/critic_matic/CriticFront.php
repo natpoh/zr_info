@@ -1041,7 +1041,8 @@ class CriticFront extends SearchFacets {
             // Create it
             if (!$post_name) {
                 // Type: Movie, TVseries
-                $post_name = $ma->create_post_name($id, $title, $type);
+                $year = $post->year;
+                $post_name = $ma->create_post_name($id, $title, $type, $year);
             }
         }
         return $post_name;

@@ -108,7 +108,7 @@ class CriticTransit extends AbstractDB {
                     $new_post_name = $new_post_name . '-' . $item->year;
                     $exist2 = $ma->get_post_by_slug($new_post_name, $item->type);
                     if ($exist2 && $exist2->id != $id) {
-                        $new_post_name = $new_post_name . '-' . $item->year . '-' . $id;
+                        $new_post_name = $new_post_name . '-' . $id;
                     }
                 }
 
