@@ -101,6 +101,35 @@ if ($cid) {
                 </label>
                 <br />
 
+                <h3>Garbage collector</h3>
+                <label class="inline-edit-status">                
+                    <?php
+                    $checked = '';
+                    if ($ao['del_pea'] == 1) {
+                        $checked = 'checked="checked"';
+                    }
+                    ?>
+                    <input type="checkbox" name="del_pea" value="1" <?php print $checked ?> >
+                    <span class="checkbox-title"><?php print __('Delete archives with parsing errors') ?></span>
+                </label>
+                <br />
+                <label class="inline-edit-interval">
+                   
+                    <select name="del_pea_int" class="interval">
+                        <?php
+                        $inetrval = $ao['del_pea_int'];
+                        foreach ($this->remove_interval as $key => $name) {
+                            $selected = ($key == $inetrval) ? 'selected' : '';
+                            ?>
+                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                            <?php
+                        }
+                        ?>                          
+                    </select> 
+                    <span class="inline-edit"><?php print __('Delete archives after timeout') ?></span>                    
+                </label>
+                <br />
+
                 <?php wp_nonce_field('ml-nonce', 'ml-nonce'); ?>
                 <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save') ?>" class="button-primary">                  
             </fieldset>

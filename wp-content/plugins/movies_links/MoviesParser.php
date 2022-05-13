@@ -35,6 +35,8 @@ class MoviesParser extends MoviesAbstractDB {
                     'webdrivers' => 0,
                     'random' => 1,
                     'progress' => 0,
+                    'del_pea' => 0,
+                    'del_pea_int' => 1440,
                 ),
                 'find_urls' => array(
                     'first' => '',
@@ -383,7 +385,7 @@ class MoviesParser extends MoviesAbstractDB {
         return $result;
     }
 
-    public function get_urls($status = -1, $page = 1, $cid = 0, $arhive_type = -1, $parser_type = -1, $links_type = -1, $orderby = '', $order = 'ASC', $perpage = 30) {
+    public function get_urls($status = -1, $page = 1, $cid = 0, $arhive_type = -1, $parser_type = -1, $links_type = -1, $orderby = '', $order = 'ASC', $perpage = 30, $date = '') {
         $status_trash = 2;
         $status_query = " WHERE u.status != " . $status_trash;
         if ($status != -1) {
@@ -444,6 +446,12 @@ class MoviesParser extends MoviesAbstractDB {
             $links_type_and = sprintf(" AND p.status_links=%d", $links_type);
         }
 
+        // Date filter
+        $and_date = '';
+        if ($date) {
+            $and_date = sprintf(' AND p.date < %d', $date);
+        }
+
         $query = "SELECT u.id, u.cid, u.pid, u.status, u.link_hash, u.link,"
                 . " a.date as adate,"
                 . " p.date as pdate, p.status as pstatus, p.title as ptitle, p.year as pyear,"
@@ -451,9 +459,9 @@ class MoviesParser extends MoviesAbstractDB {
                 . " FROM {$this->db['url']} u"
                 . " LEFT JOIN {$this->db['arhive']} a ON u.id = a.uid"
                 . " LEFT JOIN {$this->db['posts']} p ON u.id = p.uid"
-                . $status_query . $cid_and . $arhive_type_and . $parser_type_and . $links_type_and . $and_orderby . $limit;
+                . $status_query . $cid_and . $arhive_type_and . $parser_type_and . $links_type_and . $and_date . $and_orderby . $limit;
 
-
+                
         $result = $this->db_results($query);
         return $result;
     }
@@ -929,7 +937,7 @@ class MoviesParser extends MoviesAbstractDB {
         $first_letter = substr($link_hash, 0, 1);
         $cid_path = $arhive_path . $cid . '/';
         $first_letter_path = $cid_path . $first_letter . '/';
-        $full_path = $first_letter_path . $link_hash;       
+        $full_path = $first_letter_path . $link_hash;
         $remove = true;
         if (file_exists($full_path)) {
             $remove = unlink($full_path);
@@ -2052,16 +2060,15 @@ class MoviesParser extends MoviesAbstractDB {
 
     public function delete_arhive_by_url_id($uid) {
 
-        //Delete post
+        // Delete post
         $this->delete_post_by_url_id($uid);
 
-        //Delete arhive
+        // Delete arhive
         $this->delete_arhive($uid);
 
-        //Delete log
-        $this->delete_log($uid);
-
-        //URL Status new
+        // Delete log
+        // $this->delete_log($uid);
+        // URL Status new
         $status = 0;
         $sql = sprintf("UPDATE {$this->db['url']} SET status=%d WHERE id=%d", $status, $uid);
         $this->db_query($sql);

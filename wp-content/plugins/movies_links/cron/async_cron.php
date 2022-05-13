@@ -21,6 +21,10 @@ if (!$cid){
 
 $type = $_GET['type'] ?  $_GET['type'] : '';
 
+$debug = false;
+if ($_GET['debug']) {
+    $debug=true;
+}
 
 if (!class_exists('MoviesLinks')) {
 
@@ -32,4 +36,4 @@ if (!class_exists('MoviesLinks')) {
 }
 
 $mpc = new MoviesParserCron();
-$mpc->run_cron_async($cid, $type);
+$mpc->run_cron_async($cid, $type, $debug);

@@ -25,6 +25,12 @@ class MoviesParserAdmin extends ItemAdmin {
         1440 => 'Daily',
         10080 => 'Weekly'
     );
+    public $remove_interval = array(
+        1440 => 'Day',
+        10080 => 'Week',
+        20160 => 'Two weeks',
+        43200 => 'Mounth',
+    );
     public $parse_number = array(1 => 1, 5 => 5, 10 => 10, 20 => 20, 50 => 50, 100 => 100, 200 => 200, 500 => 500);
     public $camp_state = array(
         1 => array('title' => 'Active'),
@@ -767,6 +773,8 @@ class MoviesParserAdmin extends ItemAdmin {
                 'proxy' => isset($form_state['proxy']) ? $form_state['proxy'] : 0,
                 'webdrivers' => isset($form_state['webdrivers']) ? $form_state['webdrivers'] : 0,
                 'random' => isset($form_state['random']) ? $form_state['random'] : 0,
+                'del_pea' => isset($form_state['del_pea']) ? $form_state['del_pea'] : 0,                
+                'del_pea_int' => isset($form_state['del_pea_int']) ? $form_state['del_pea_int'] : $opt_prev['arhive']['del_pea_int'],
             );
 
             $options = $opt_prev;
