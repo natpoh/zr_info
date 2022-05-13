@@ -452,6 +452,16 @@ class MoviesParserCron extends MoviesAbstractDB {
         } else {
             $code = $this->mp->get_proxy($url, $use_proxy, $headers, $settings);
         }
+        
+        if (strstr($headers, 'HTTP/1.1  403')){
+            // Status - 403 error
+            $status = 4;
+            $this->mp->change_url_state($item->id, $status, true);
+            $message = 'Error 403 Forbidden';
+            $this->mp->log_error($message, $item->cid, $item->id, 2);
+            return;
+        }        
+        
         $arhive_path = $this->ml->arhive_path;
         $cid_path = $arhive_path . $item->cid . '/';
         $first_letter_path = $cid_path . $first_letter . '/';
@@ -542,7 +552,10 @@ class MoviesParserCron extends MoviesAbstractDB {
             
             // Get last urls
             $status = 0;
-            $urls = $this->mp->get_last_urls($urls_count, $status, $campaign->id);
+            
+            // Random urls
+            $random_urls = $type_opt['random'];
+            $urls = $this->mp->get_last_urls($urls_count, $status, $campaign->id, $random_urls);
 
             $count = sizeof($urls);
             if ($count) {
