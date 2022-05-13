@@ -895,7 +895,7 @@ class MoviesParser extends MoviesAbstractDB {
             $url = $this->get_url($uid);
             if ($url) {
                 //Delete file
-                $this->delete_arhive_file($url->cid, $arhive->link_hash);
+                $this->delete_arhive_file($url->cid, $arhive->arhive_hash);
 
                 //Delete arhive
                 $sql = sprintf("DELETE FROM {$this->db['arhive']} WHERE uid = %d", (int) $uid);
@@ -929,7 +929,7 @@ class MoviesParser extends MoviesAbstractDB {
         $first_letter = substr($link_hash, 0, 1);
         $cid_path = $arhive_path . $cid . '/';
         $first_letter_path = $cid_path . $first_letter . '/';
-        $full_path = $first_letter_path . $link_hash;
+        $full_path = $first_letter_path . $link_hash;       
         $remove = true;
         if (file_exists($full_path)) {
             $remove = unlink($full_path);
