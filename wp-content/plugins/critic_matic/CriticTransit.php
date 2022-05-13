@@ -109,8 +109,8 @@ class CriticTransit extends AbstractDB {
                     $exist2 = $ma->get_post_by_slug($new_post_name, $item->type);
                     if ($exist2 && $exist2->id != $id) {
                         $new_post_name = $new_post_name . '-' . $id;
-                    }
-                }
+                    } 
+                } 
 
                 if ($last_post_name != $new_post_name) {
                     // 3. Compare slugs
@@ -118,7 +118,7 @@ class CriticTransit extends AbstractDB {
                         print_r(array($id, $title_decode, $last_post_name, $new_post_name));
                     }
                     // 4. Insert data to db
-                    $sql = sprintf("SELECT id FROM {$this->db['title_slugs']} WHERE id=%d limit 1", $id);
+                    $sql = sprintf("SELECT id FROM {$this->db['title_slugs']} WHERE mid=%d limit 1", $id);
                     $in_db = $this->db_get_var($sql);
                     if (!$in_db) {
                         $data = array(
