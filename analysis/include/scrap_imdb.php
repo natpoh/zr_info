@@ -199,8 +199,6 @@ $sql = "select * from data_actors_meta ".$where." ";
         foreach ($array_verdict as $val)
         {
             $verdict = $row[$val];
-
-
             if ($verdict && !is_numeric($verdict) && !in_array($verdict,$array_exclude) )
             {
 
@@ -210,7 +208,7 @@ $sql = "select * from data_actors_meta ".$where." ";
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
                 Import::create_commit('', 'update', 'data_actors_meta', array('id' => $row['id']), 'actor_meta',9);
 
-                ACTIONLOG::update_actor_log('verdict');
+               /// ACTIONLOG::update_actor_log('verdict');
                 break;
             }
 
@@ -860,6 +858,45 @@ function intconvert($data)
 
    return $result;
 }
+function check_verdict_surname()
+{
+    $i = 0;
+
+    $sql="SELECT * FROM `data_actors_ethnicolr` WHERE verdict =''  LIMIT 500";
+    $result= Pdo_an::db_results_array($sql);
+    foreach ($result as $r) {
+
+        $meta_result = get_actor_result_new($r['wiki']);
+        //echo $meta_result;
+        $i++;
+
+        $commit='';
+
+        if ($meta_result) {
+
+
+            $sql="UPDATE `data_actors_ethnicolr` SET `verdict` = '{$meta_result}' WHERE `data_actors_ethnicolr`.`id` = ".$r['id'];
+            Pdo_an::db_query($sql);
+
+
+            $sql1 = "UPDATE `data_actors_meta` SET
+                              `surname` = '" . $meta_result . "',
+                              `n_surname` = '" . intconvert($meta_result) . "',
+              `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['aid'] . "'";
+            Pdo_an::db_query($sql1);
+
+
+            update_actors_verdict($r['aid']);
+
+            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+            $commit =Import::create_commit($commit, 'update', 'data_actors_ethnicolr', array('id' =>  $r['id']), 'ethnicolr',10);
+
+        }
+
+    }
+    echo 'check actors surname (' . $i . ')' . PHP_EOL;
+
+}
 
 function check_last_actors()
 {
@@ -1020,38 +1057,44 @@ function check_last_actors()
 
 
     //////check actors surname
-    $i = 0;
-    $sql = "SELECT data_actors_surname.wiki_data, `data_actors_surname`.actor_id FROM `data_actors_meta` ,data_actors_surname 
-        WHERE `data_actors_meta`.actor_id=`data_actors_surname`.actor_id
-        AND `data_actors_meta`.surname  = 1 LIMIT 10000";
-    $result= Pdo_an::db_results_array($sql);
-    foreach ($result as $r) {
-
-        $meta_result = get_actor_result($r['wiki_data']);
-        $i++;
-
-        if ($meta_result) {
-
-            $sql1 = "UPDATE `data_actors_meta` SET 
-                              `surname` = '" . $meta_result . "',
-                              `n_surname` = '" . intconvert($meta_result) . "',
-              
-              
-              `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
-            Pdo_an::db_query($sql1);
-            update_actors_verdict($r['actor_id']);
-            ACTIONLOG::update_actor_log('data_actors_surname');
 
 
-            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-            Import::create_commit('', 'update', 'data_actors_surname', array('actor_id' =>  $r['actor_id']), 'actors_surname',10,['skip'=>['id']]);
+    check_verdict_surname();
 
 
-            $commit_actors[$r['actor_id']]=1;
-        }
 
-    }
-    echo 'check actors surname (' . $i . ')' . PHP_EOL;
+//    $sql = "SELECT data_actors_surname.wiki_data, `data_actors_surname`.actor_id FROM `data_actors_meta` ,data_actors_surname
+//        WHERE `data_actors_meta`.actor_id=`data_actors_surname`.actor_id
+//        AND `data_actors_meta`.surname  = 1 LIMIT 10000";
+//    $result= Pdo_an::db_results_array($sql);
+//    foreach ($result as $r) {
+//
+//        $meta_result = get_actor_result($r['wiki_data']);
+//        $i++;
+//
+//        if ($meta_result) {
+//
+//            $sql1 = "UPDATE `data_actors_meta` SET
+//                              `surname` = '" . $meta_result . "',
+//                              `n_surname` = '" . intconvert($meta_result) . "',
+//
+//
+//              `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
+//            Pdo_an::db_query($sql1);
+//            update_actors_verdict($r['actor_id']);
+//            ACTIONLOG::update_actor_log('data_actors_surname');
+//
+//
+//            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+//            Import::create_commit('', 'update', 'data_actors_surname', array('actor_id' =>  $r['actor_id']), 'actors_surname',10,['skip'=>['id']]);
+//
+//
+//            $commit_actors[$r['actor_id']]=1;
+//        }
+//
+//    }
+//    echo 'check actors surname (' . $i . ')' . PHP_EOL;
+
 
     $i = 0;
 //    ////check actor face
@@ -1255,6 +1298,128 @@ function force_surname_update()
 
 }
 
+
+
+
+function get_actor_result_new($data)
+{
+
+    //[["name", "last",  "id", "__name","rowindex", "Asian,GreaterEastAsian,EastAsian_mean", "Asian,GreaterEastAsian,EastAsian_std", "Asian,GreaterEastAsian,EastAsian_lb", "Asian,GreaterEastAsian,EastAsian_ub", "Asian,GreaterEastAsian,Japanese_mean", "Asian,GreaterEastAsian,Japanese_std", "Asian,GreaterEastAsian,Japanese_lb", "Asian,GreaterEastAsian,Japanese_ub", "Asian,IndianSubContinent_mean", "Asian,IndianSubContinent_std", "Asian,IndianSubContinent_lb", "Asian,IndianSubContinent_ub", "GreaterAfrican,Africans_mean", "GreaterAfrican,Africans_std", "GreaterAfrican,Africans_lb", "GreaterAfrican,Africans_ub", "GreaterAfrican,Muslim_mean", "GreaterAfrican,Muslim_std", "GreaterAfrican,Muslim_lb", "GreaterAfrican,Muslim_ub", "GreaterEuropean,British_mean", "GreaterEuropean,British_std", "GreaterEuropean,British_lb", "GreaterEuropean,British_ub", "GreaterEuropean,EastEuropean_mean", "GreaterEuropean,EastEuropean_std", "GreaterEuropean,EastEuropean_lb", "GreaterEuropean,EastEuropean_ub", "GreaterEuropean,Jewish_mean", "GreaterEuropean,Jewish_std", "GreaterEuropean,Jewish_lb", "GreaterEuropean,Jewish_ub", "GreaterEuropean,WestEuropean,French_mean", "GreaterEuropean,WestEuropean,French_std", "GreaterEuropean,WestEuropean,French_lb", "GreaterEuropean,WestEuropean,French_ub", "GreaterEuropean,WestEuropean,Germanic_mean", "GreaterEuropean,WestEuropean,Germanic_std", "GreaterEuropean,WestEuropean,Germanic_lb", "GreaterEuropean,WestEuropean,Germanic_ub", "GreaterEuropean,WestEuropean,Hispanic_mean", "GreaterEuropean,WestEuropean,Hispanic_std", "GreaterEuropean,WestEuropean,Hispanic_lb", "GreaterEuropean,WestEuropean,Hispanic_ub", "GreaterEuropean,WestEuropean,Italian_mean", "GreaterEuropean,WestEuropean,Italian_std", "GreaterEuropean,WestEuropean,Italian_lb", "GreaterEuropean,WestEuropean,Italian_ub", "GreaterEuropean,WestEuropean,Nordic_mean", "GreaterEuropean,WestEuropean,Nordic_std", "GreaterEuropean,WestEuropean,Nordic_lb", "GreaterEuropean,WestEuropean,Nordic_ub", "race"]]
+    //["Tulia", "Virgin", 11667204, "Virgin Tulia", 49,
+    // 0.011389325857162475,
+    // 0.010472159861481778,
+    // 0.0006224170792847872,
+    // 0.0010987643618136644, 0.0032547590136528014, 0.0020483294718464944, 0.00046023691538721323, 0.000548442592844367, 0.0044488230347633365, 0.004204079526108209, 0.00011748091492336243, 0.0001409576361766085, 0.009014605283737183, 0.00684514954666181, 0.0010546577395871282, 0.0011152317747473717, 0.06543373107910157, 0.06837851900000398, 0.0061302026733756065, 0.0076684788800776005, 0.3424713134765625, 0.1350352153469736, 0.06270340830087662, 0.07970203459262848, 0.15654437065124513, 0.1154234764313792, 0.012365087866783142, 0.019241709262132645, 0.11423819541931152, 0.08214548885646157, 0.018700571730732918, 0.025969358161091805, 0.13782186508178712, 0.0736318753453318, 0.032585062086582184, 0.03421637788414955, 0.0071594822406768795, 0.0039413855782467885, 0.0016408725641667843, 0.0016677659004926682, 0.05381762981414795, 0.030375072028892718, 0.008716919459402561, 0.01087616290897131, 0.0773210334777832, 0.050100027890374564, 0.01579379476606846, 0.016442598775029182, 0.017084892988204956, 0.017698000887109155, 0.0012373499339446425, 0.0015180566115304828, "GreaterEuropean,British"]
+
+
+    $actor_data = [];
+    if ($data) {
+        $data = json_decode($data,1);
+
+        //0 "name",
+        //1 "last",
+        //2 "id",
+        //3 "__name",
+        //4 "rowindex",
+
+        $actor_data['EA'] += (float)$data[5] * 100;
+        //5 "Asian,GreaterEastAsian,EastAsian_mean", EA
+        //6 "Asian,GreaterEastAsian,EastAsian_std", EA
+        //7 "Asian,GreaterEastAsian,EastAsian_lb",  EA
+        //8 "Asian,GreaterEastAsian,EastAsian_ub",  EA
+
+
+        $actor_data['EA'] += (float)$data[9] * 100;
+        //9 "Asian,GreaterEastAsian,Japanese_mean", EA
+        //10 "Asian,GreaterEastAsian,Japanese_std", EA
+        //11 "Asian,GreaterEastAsian,Japanese_lb",  EA
+        //12 "Asian,GreaterEastAsian,Japanese_ub",  EA
+
+        $actor_data['I'] += (float)$data[13] * 100;
+        //13 "Asian,IndianSubContinent_mean",   I
+        //14 "Asian,IndianSubContinent_std",   I
+        //15 "Asian,IndianSubContinent_lb",   I
+        //16 "Asian,IndianSubContinent_ub",   I
+
+        $actor_data['B'] += (float)$data[17] * 100;
+        //17 "GreaterAfrican,Africans_mean",    B
+        //18 "GreaterAfrican,Africans_std",    B
+        //19 "GreaterAfrican,Africans_lb",    B
+        //20 "GreaterAfrican,Africans_ub",    B
+
+        $actor_data['M'] += (float)$data[21] * 100;
+        //21 "GreaterAfrican,Muslim_mean",  M
+        //22 "GreaterAfrican,Muslim_std",  M
+        //23 "GreaterAfrican,Muslim_lb",  M
+        //24 "GreaterAfrican,Muslim_ub",  M
+
+        $actor_data['W'] += (float)$data[25] * 100;
+        //25 "GreaterEuropean,British_mean",    W
+        //26 "GreaterEuropean,British_std",    W
+        //27 "GreaterEuropean,British_lb",    W
+        //28 "GreaterEuropean,British_ub",    W
+
+        $actor_data['W'] += (float)$data[29] * 100;
+        //29 "GreaterEuropean,EastEuropean_mean",    W
+        //30 "GreaterEuropean,EastEuropean_std",    W
+        //31 "GreaterEuropean,EastEuropean_lb",    W
+        //32 "GreaterEuropean,EastEuropean_ub",    W
+
+        $actor_data['JW'] += (float)$data[33] * 100;
+        //33 "GreaterEuropean,Jewish_mean",     JW
+        //34 "GreaterEuropean,Jewish_std",     JW
+        //35 "GreaterEuropean,Jewish_lb",     JW
+        //36 "GreaterEuropean,Jewish_ub",     JW
+
+        $actor_data['W'] += (float)$data[37] * 100;
+        //37 "GreaterEuropean,WestEuropean,French_mean",    W
+        //38 "GreaterEuropean,WestEuropean,French_std",    W
+        //39 "GreaterEuropean,WestEuropean,French_lb",    W
+        //40 "GreaterEuropean,WestEuropean,French_ub",    W
+
+        $actor_data['W'] += (float)$data[41] * 100;
+        //41 "GreaterEuropean,WestEuropean,Germanic_mean",    W
+        //42 "GreaterEuropean,WestEuropean,Germanic_std",    W
+        //43 "GreaterEuropean,WestEuropean,Germanic_lb",    W
+        //44 "GreaterEuropean,WestEuropean,Germanic_ub",    W
+
+        $actor_data['H'] += (float)$data[45] * 100;
+        //45 "GreaterEuropean,WestEuropean,Hispanic_mean",  H
+        //46 "GreaterEuropean,WestEuropean,Hispanic_std",  H
+        //47 "GreaterEuropean,WestEuropean,Hispanic_lb",  H
+        //48 "GreaterEuropean,WestEuropean,Hispanic_ub",  H
+
+        $actor_data['W'] += (float)$data[49] * 100;
+        //49 "GreaterEuropean,WestEuropean,Italian_mean",   W
+        //50 "GreaterEuropean,WestEuropean,Italian_std",   W
+        //51 "GreaterEuropean,WestEuropean,Italian_lb",   W
+        //52 "GreaterEuropean,WestEuropean,Italian_ub",   W
+
+        $actor_data['W'] += (float)$data[53] * 100;
+        //53 "GreaterEuropean,WestEuropean,Nordic_mean",   W
+        //54 "GreaterEuropean,WestEuropean,Nordic_std",   W
+        //55 "GreaterEuropean,WestEuropean,Nordic_lb",   W
+        //56 "GreaterEuropean,WestEuropean,Nordic_ub",   W
+
+        //57 "race"
+
+
+    }
+
+    arsort($actor_data);
+    $key = array_keys($actor_data);
+    $surname = $key[0];
+
+    if (!$actor_data[$surname])
+    {
+        $surname='NA';
+    }
+
+    if ($surname) {
+        return $surname;
+    }
+
+}
 
 function get_actor_result($data)
 {
@@ -2498,6 +2663,14 @@ if (isset($_GET['disqus_comments'])) {
 
     return;
 }
+
+if (isset($_GET['check_verdict_surname'])) {
+
+    check_verdict_surname();
+
+    return;
+}
+
 
 
 echo 'ok';
