@@ -910,4 +910,11 @@ WHERE
     m.id < s.id AND 
     m.fid = s.fid AND 
     m.cid = s.cid;
+ * 
+ * SELECT mid, count(*) FROM `data_movie_title_slugs` GROUP by mid having count(*) > 1;
+ * DELETE m FROM `data_movie_title_slugs` m
+INNER JOIN `data_movie_title_slugs` s
+WHERE 
+    m.id < s.id AND 
+    m.mid = s.mid;
  */

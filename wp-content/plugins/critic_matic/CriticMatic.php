@@ -640,16 +640,16 @@ class CriticMatic extends AbstractDB {
         $date_add = $this->curr_time();
 
         $data = array(
-            'date' => (int) $date,
-            'date_add' => (int) $date_add,
-            'status' => (int) $status,
-            'type' => (int) $type,
-            'blur' => (int) $blur,
+            'date' =>  $date,
+            'date_add' =>  $date_add,
+            'status' =>  $status,
+            'type' =>  $type,
+            'blur' =>  $blur,
             'link_hash' => $link_hash,
             'link' => $link,
             'title' => $title,
             'content' => $content,
-            'top_movie' => (int) $top_movie
+            'top_movie' =>  $top_movie
         );
 
         $id = $this->sync_insert_data($data, $this->db['posts'], $this->sync_client, $sync);
@@ -662,11 +662,11 @@ class CriticMatic extends AbstractDB {
         if ($fid > 0 && $cid > 0) {
             //Get post meta
             $data = array(
-                'fid' => (int) $fid,
-                'type' => (int) $type,
-                'state' => (int) $state,
-                'cid' => (int) $cid,
-                'rating' => (int) $rating,
+                'fid' =>  $fid,
+                'type' =>  $type,
+                'state' =>  $state,
+                'cid' =>  $cid,
+                'rating' =>  $rating,
             );
 
             $id = $this->sync_insert_data($data, $this->db['meta'], $this->sync_client, $this->sync_data);
@@ -690,9 +690,9 @@ class CriticMatic extends AbstractDB {
                 $db_meta = $this->get_critic_meta($cid, $fid);
                 if ($db_meta) {
                     $data = array(
-                        'type' => (int) $type,
-                        'state' => (int) $state,
-                        'rating' => (int) $rating
+                        'type' =>  $type,
+                        'state' =>  $state,
+                        'rating' =>  $rating
                     );
                     $this->sync_update_data($data, $db_meta->id, $this->db['meta'], $this->sync_data);
                 }
@@ -746,8 +746,8 @@ class CriticMatic extends AbstractDB {
         if ($top_meta_movie != $post_movie) {
             $date_add = $this->curr_time();
             $data = array(
-                'top_movie' => (int) $top_meta_movie,
-                'date_add' => (int) $date_add
+                'top_movie' =>  $top_meta_movie,
+                'date_add' =>  $date_add
             );
             $this->sync_update_data($data, $cid, $this->db['posts'], $this->sync_data);
         }
@@ -758,16 +758,16 @@ class CriticMatic extends AbstractDB {
         $link_hash = $this->link_hash($link);
         $top_movie = 0;
         $data = array(
-            'date' => (int) $date,
-            'date_add' => (int) $date_add,
-            'status' => (int) $status,
-            'type' => (int) $type,
-            'blur' => (int) $blur,
+            'date' =>  $date,
+            'date_add' =>  $date_add,
+            'status' =>  $status,
+            'type' =>  $type,
+            'blur' =>  $blur,
             'link_hash' => $link_hash,
             'link' => $link,
             'title' => $title,
             'content' => $content,
-            'top_movie' => (int) $top_movie
+            'top_movie' =>  $top_movie
         );
         $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
 
@@ -777,7 +777,7 @@ class CriticMatic extends AbstractDB {
     public function update_post_date_add($id) {
         $date = $this->curr_time();
         $data = array(
-            'date_add' => (int) $date,
+            'date_add' =>  $date,
         );
         $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
     }
@@ -813,10 +813,10 @@ class CriticMatic extends AbstractDB {
 
             //Validate old post author
             $data = array(
-                'date' => (int) $date,
-                'date_add' => (int) $date_add,
-                'status' => (int) $status,
-                'blur' => (int) $blur,
+                'date' =>  $date,
+                'date_add' =>  $date_add,
+                'status' =>  $status,
+                'blur' =>  $blur,
                 'link_hash' => $link_hash,
                 'link' => $link,
                 'title' => $title,
@@ -867,9 +867,9 @@ class CriticMatic extends AbstractDB {
                     $db_meta = $this->get_critic_meta($id, $fid);
                     if ($db_meta) {
                         $data = array(
-                            'type' => (int) $type,
-                            'state' => (int) $state,
-                            'rating' => (int) $rating
+                            'type' =>  $type,
+                            'state' =>  $state,
+                            'rating' =>  $rating
                         );
                         $this->sync_update_data($data, $db_meta->id, $this->db['meta'], $this->sync_data);
                     }
@@ -893,16 +893,16 @@ class CriticMatic extends AbstractDB {
             $type = 2;
             $top_movie = 0;
             $data = array(
-                'date' => (int) $date,
-                'date_add' => (int) $date_add,
-                'status' => (int) $status,
-                'type' => (int) $type,
-                'blur' => (int) $blur,
+                'date' =>  $date,
+                'date_add' =>  $date_add,
+                'status' =>  $status,
+                'type' =>  $type,
+                'blur' =>  $blur,
                 'link_hash' => $link_hash,
                 'link' => $link,
                 'title' => $title,
                 'content' => $content,
-                'top_movie' => (int) $top_movie
+                'top_movie' =>  $top_movie
             );
 
             $id = $this->sync_insert_data($data, $this->db['posts'], $this->sync_client, $this->sync_data);
@@ -1511,8 +1511,8 @@ class CriticMatic extends AbstractDB {
         $opt_str = serialize($options);
         // Create the author
         $data = array(
-            'status' => (int) $status,
-            'type' => (int) $author_type,
+            'status' =>  $status,
+            'type' =>  $author_type,
             'name' => $name,
             'options' => $opt_str,
         );
@@ -1528,8 +1528,8 @@ class CriticMatic extends AbstractDB {
             //Get author meta
 
             $data = array(
-                'aid' => (int) $author_id,
-                'cid' => (int) $pid,
+                'aid' =>  $author_id,
+                'cid' =>  $pid,
             );
 
             $id = $this->sync_insert_data($data, $this->db['authors_meta'], $this->sync_client, $this->sync_data);
@@ -2227,15 +2227,15 @@ class CriticMatic extends AbstractDB {
         $options = '';
 
         $data = array(
-            'cid' => (int) $cid,
-            'rating' => (int) $ret['r'],
-            'hollywood' => (int) $ret['h'],
-            'patriotism' => (int) $ret['p'],
-            'misandry' => (int) $ret['m'],
-            'affirmative' => (int) $ret['a'],
-            'lgbtq' => (int) $ret['l'],
-            'god' => (int) $ret['g'],
-            'vote' => (int) $ret['v'],
+            'cid' => $cid,
+            'rating' => $ret['r'],
+            'hollywood' => $ret['h'],
+            'patriotism' => $ret['p'],
+            'misandry' => $ret['m'],
+            'affirmative' => $ret['a'],
+            'lgbtq' => $ret['l'],
+            'god' => $ret['g'],
+            'vote' => $ret['v'],
             'ip' => $ret['ip'],
             'options' => $options
         );
@@ -2256,14 +2256,14 @@ class CriticMatic extends AbstractDB {
             $options = '';
 
             $data = array(
-                'rating' => (int) $ret['r'],
-                'hollywood' => (int) $ret['h'],
-                'patriotism' => (int) $ret['p'],
-                'misandry' => (int) $ret['m'],
-                'affirmative' => (int) $ret['a'],
-                'lgbtq' => (int) $ret['l'],
-                'god' => (int) $ret['g'],
-                'vote' => (int) $ret['v'],
+                'rating' =>  $ret['r'],
+                'hollywood' =>  $ret['h'],
+                'patriotism' =>  $ret['p'],
+                'misandry' =>  $ret['m'],
+                'affirmative' =>  $ret['a'],
+                'lgbtq' =>  $ret['l'],
+                'god' =>  $ret['g'],
+                'vote' =>  $ret['v'],
                 'ip' => $ret['ip'],
                 'options' => $options
             );
@@ -2451,14 +2451,14 @@ class CriticMatic extends AbstractDB {
 
                         $options = '';
                         $data = array(
-                            'rating' => (int) $ret['r'],
-                            'hollywood' => (int) $ret['h'],
-                            'patriotism' => (int) $ret['p'],
-                            'misandry' => (int) $ret['m'],
-                            'affirmative' => (int) $ret['a'],
-                            'lgbtq' => (int) $ret['l'],
-                            'god' => (int) $ret['g'],
-                            'vote' => (int) $ret['v'],
+                            'rating' =>  $ret['r'],
+                            'hollywood' =>  $ret['h'],
+                            'patriotism' =>  $ret['p'],
+                            'misandry' =>  $ret['m'],
+                            'affirmative' =>  $ret['a'],
+                            'lgbtq' =>  $ret['l'],
+                            'god' =>  $ret['g'],
+                            'vote' =>  $ret['v'],
                             'ip' => $ret['ip'],
                             'options' => $options
                         );
