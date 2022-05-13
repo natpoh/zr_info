@@ -24,17 +24,24 @@ if (sizeof($posts) > 0) {
             <th><?php print __('Countries') ?></th>             
             <th><?php print __('Races') ?></th>             
             <th><?php print __('Verdict') ?></th>
+            <th><?php print __('Meta') ?></th>
             </thead>
             <tbody>
                 <?php
                 foreach ($posts as $item) {
 
                     $verdict_arr = $mlr->calculate_fs_verdict($item->id);
-                   
+
 
                     $country_names = implode('<br />', $verdict_arr['rows_total']);
                     $race_names = implode('<br />', $verdict_arr['rows_race']);
                     $verdict = $verdict_arr['verdict'];
+
+                    $verdict_meta_item = $mlr->get_verdict_by_lastname($item->lastname);
+                    $verdict_meta = '';
+                    if ($verdict_meta_item) {
+                        $verdict_meta = $mlr->get_verdict_name($verdict_meta_item->verdict);
+                    }
                     ?>
                     <tr> 
                         <td><?php print $item->id ?></td>                             
@@ -42,7 +49,8 @@ if (sizeof($posts) > 0) {
                         <td><?php print $item->topcountryname ?></td>
                         <td><?php print $country_names ?></td>    
                         <td><?php print $race_names ?></td>  
-                        <td><?php print $verdict;  ?></td>  
+                        <td><?php print $verdict; ?></td>  
+                        <td><?php print $verdict_meta; ?></td>
                     </tr> 
                 <?php } ?>
             </tbody>

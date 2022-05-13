@@ -64,9 +64,9 @@ if ($cid) {
                     }
                     ?>
                     <input type="checkbox" name="proxy" value="1" <?php print $checked ?> >
-                    <span class="checkbox-title"><?php print __('Use proxy') ?></span>
+                    <span class="checkbox-title"><?php print __('Use TOR') ?></span>
                 </label>
-         
+
                 <label class="inline-edit-status">                
                     <?php
                     $checked = '';
@@ -77,7 +77,18 @@ if ($cid) {
                     <input type="checkbox" name="webdrivers" value="1" <?php print $checked ?> >
                     <span class="checkbox-title"><?php print __('Use webdrivers') ?></span>
                 </label>
-                
+
+                <label class="inline-edit-status">                
+                    <?php
+                    $checked = '';
+                    if ($ao['random'] == 1) {
+                        $checked = 'checked="checked"';
+                    }
+                    ?>
+                    <input type="checkbox" name="random" value="1" <?php print $checked ?> >
+                    <span class="checkbox-title"><?php print __('Random URLs parsing') ?></span>
+                </label>
+
                 <label class="inline-edit-status">                
                     <?php
                     $checked = '';

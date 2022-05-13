@@ -190,16 +190,12 @@ class MoviesParserAdmin extends ItemAdmin {
          * Campaign page
          */
         if ($cid) {
+            $campaign = $this->mp->get_campaign($cid);
+            $mlr_name = $this->ml->get_campaign_mlr_name($campaign);
+
             //Tabs
             $append = '&cid=' . $cid;
-            $tabs_arr = $this->parser_campaign_tabs;
-
-            $campaign = $this->mp->get_campaign($cid);
-
-            $mlr_name = $this->ml->get_campaign_mlr_name($campaign);
-            if ($mlr_name) {
-                $tabs_arr['mlr'] = 'Results';
-            }
+            $tabs_arr = $this->get_campaign_tabs($mlr_name);
 
             $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab, $append);
 
@@ -421,7 +417,7 @@ class MoviesParserAdmin extends ItemAdmin {
                 $page_url .= '&cid=' . $cid;
                 $page_url .= '&tab=mlr';
 
-                
+
                 //Bulk actions
                 // $this->bulk_parser_submit();
 
@@ -438,7 +434,7 @@ class MoviesParserAdmin extends ItemAdmin {
 
                  */
                 $count = $mlr->get_posts_count();
-                $status=-1;
+                $status = -1;
                 $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
 
                 $posts = $mlr->get_posts($page, $orderby, $order, $per_page);
@@ -770,6 +766,7 @@ class MoviesParserAdmin extends ItemAdmin {
                 'status' => isset($form_state['status']) ? $form_state['status'] : 0,
                 'proxy' => isset($form_state['proxy']) ? $form_state['proxy'] : 0,
                 'webdrivers' => isset($form_state['webdrivers']) ? $form_state['webdrivers'] : 0,
+                'random' => isset($form_state['random']) ? $form_state['random'] : 0,
             );
 
             $options = $opt_prev;
@@ -869,8 +866,18 @@ class MoviesParserAdmin extends ItemAdmin {
         return $result;
     }
 
-    public function parser_actions() {
-        foreach ($this->parser_campaign_tabs as $key => $value) {
+    public function get_campaign_tabs($mlr_name = '') {
+        $tabs_arr = $this->parser_campaign_tabs;
+        if ($mlr_name) {
+            $tabs_arr['mlr'] = 'Results';
+        }
+        return $tabs_arr;
+    }
+
+    public function parser_actions($campaign) {
+        $mlr_name = $this->ml->get_campaign_mlr_name($campaign);
+        $tabs = $this->get_campaign_tabs($mlr_name);
+        foreach ($tabs as $key => $value) {
             $parser_actions[$key] = array('title' => $value);
         }
         return $parser_actions;

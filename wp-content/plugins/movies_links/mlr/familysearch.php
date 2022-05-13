@@ -320,7 +320,7 @@ class Familysearch extends MoviesAbstractDBAn {
         }
         $commit_id = '';
 
-        $array_update_family =[];
+        $array_update_family = [];
 
         foreach ($result as $item) {
             // 2. Calculate vedrict
@@ -341,26 +341,20 @@ class Familysearch extends MoviesAbstractDBAn {
             // Get id
             $id = Pdo_an::last_id();
 
-            if ($id)
-            {
-                $array_update_family[$id]=1;
+            if ($id) {
+                $array_update_family[$id] = 1;
             }
-
-
         }
-//        if (is_array($array_update_family))
-//        {
-//            foreach ($array_update_family as $id =>$enable)
-//            {
-//                // Add commit
-//                if ($id) {
-//                    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-//                    $commit_id = Import::create_commit($commit_id, 'update', $this->db['verdict'], array('id' => $id), 'familysearch',10);
-//                }
-//
-//            }
-//        }
 
     }
 
+    public function get_verdict_by_lastname($lastname) {
+        $sql = sprintf("SELECT last_upd, verdict, lastname, description FROM {$this->db['verdict']} WHERE lastname='%s' LIMIT 1", $this->escape($lastname));
+        $result = $this->db_fetch_row($sql);
+        return $result;
+    }
+
+    public function get_verdict_name($int){
+       return array_search($int, $this->race_small);
+    }
 }

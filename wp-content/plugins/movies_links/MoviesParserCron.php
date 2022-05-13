@@ -110,9 +110,12 @@ class MoviesParserCron extends MoviesAbstractDB {
         // Get posts (last is first)        
         $urls_count = $type_opt['num'];
 
+        // Random urls
+        $random_urls = $type_opt['random'];
+        
         // Get last urls
         $status = 0;
-        $urls = $this->mp->get_last_urls($urls_count, $status, $campaign->id);
+        $urls = $this->mp->get_last_urls($urls_count, $status, $campaign->id, $random_urls);        
 
         $count = sizeof($urls);
         if ($count) {

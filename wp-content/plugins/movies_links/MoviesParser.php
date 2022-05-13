@@ -33,6 +33,7 @@ class MoviesParser extends MoviesAbstractDB {
                     'status' => 0,
                     'proxy' => 0,
                     'webdrivers' => 0,
+                    'random' => 1,
                     'progress' => 0,
                 ),
                 'find_urls' => array(
@@ -521,7 +522,7 @@ class MoviesParser extends MoviesAbstractDB {
         return $result;
     }
 
-    public function get_last_urls($count = 10, $status = -1, $cid = 0) {
+    public function get_last_urls($count = 10, $status = -1, $cid = 0, $random = 0) {
         $status_trash = 2;
         $status_query = " WHERE status != " . $status_trash;
         if ($status != -1) {
@@ -533,9 +534,36 @@ class MoviesParser extends MoviesAbstractDB {
         if ($cid > 0) {
             $cid_and = sprintf(" AND cid=%d", (int) $cid);
         }
+        $result = '';
+        if ($random == 0) {
+            $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " ORDER BY id DESC LIMIT %d", $count);
+            $result = $this->db_results($query);
+        } else {
+            // Get all urls
+            $query = "SELECT id FROM {$this->db['url']}" . $status_query . $cid_and;
+            $items = $this->db_results($query);
+            if ($items) {
+                $ids = array();
+                foreach ($items as $item) {
+                    $ids[] = $item->id;
+                }
+                shuffle($ids);
+                $i = 0;
+                $random_ids = array();
+                foreach ($ids as $id) {
+                    $random_ids[] = $id;
+                    if ($i > $count) {
+                        break;
+                    }
+                    $i += 1;
+                }
+                // Get random urls
+                $query = "SELECT * FROM {$this->db['url']} WHERE id IN(" . implode(",", $random_ids) . ")";
+                $result = $this->db_results($query);
+            }
+        }
 
-        $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " ORDER BY id DESC LIMIT %d", $count);
-        $result = $this->db_results($query);
+
         return $result;
     }
 
