@@ -109,10 +109,33 @@ class CriticEmotions extends AbstractDB {
         return $content;
     }
 
+    public  function get_comments_count($post_ids)
+    {
+        $result=[];
+
+        foreach ($post_ids as $post_id) {
+            ///get comment count
+            $sql = "SELECT `count` FROM `cache_disqus_treheads` WHERE `type`='critics' and `post_id` ='" . $post_id . "' limit 1";
+            $r1 = Pdo_an::db_fetch_row($sql);
+            if ($r1) {
+                $count = $r1->count;
+
+                if ($count)
+                {
+                    $result[$post_id]=$count;
+                }
+
+            }
+        }
+        return $result;
+
+    }
+
     public function get_emotions_counts_all($post_ids = array()) {
         $array_like = array();
         $user_like = array();
         $result = array();
+
 
         if ($this->top_results) {
             foreach ($post_ids as $post_id) {
@@ -143,10 +166,24 @@ class CriticEmotions extends AbstractDB {
                 }
             }
         }
+
+        $comments =  $this->get_comments_count($post_ids);
+        if ($comments)
+        {
+            $result['comments']=   $comments;
+        }
+
+
         $result['total'] = $array_like;
         if ($user_like) {
             $result['user'] = $user_like;
         }
+
+
+
+
+
+
 
         return $result;
     }

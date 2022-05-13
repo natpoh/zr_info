@@ -47,6 +47,8 @@ class CriticTransit extends AbstractDB {
         $this->cm = $cm;
         $table_prefix = DB_PREFIX_WP_AN;
         $this->db = array(
+            'movie_imdb' => 'data_movie_imdb',
+            'title_slugs' => 'data_movie_title_slugs',
             'rwt_meta' => $table_prefix . 'critic_matic_meta',
             'meta' => $table_prefix . 'critic_matic_posts_meta',
             'cm_wpposts_meta' => $table_prefix . 'critic_matic_wpposts_meta',
@@ -75,6 +77,61 @@ class CriticTransit extends AbstractDB {
             $this->ma = new MoviesAn($this->cm);
         }
         return $this->ma;
+    }
+
+    public function movie_title_slugs($count = 100, $debug = false, $force = false) {
+        // 1. Get movies
+        $option_name = 'movie_title_slugs_unique_id';
+        $last_id = get_option($option_name, 0);
+        
+        $sql = sprintf("SELECT id, title, post_name, type, year FROM {$this->db['movie_imdb']} WHERE id>%d ORDER BY id ASC limit %d", (int) $last_id, (int) $count);
+        $results = $this->db_results($sql);
+        $last = end($results);
+        if ($debug) {
+            print 'last id: ' . $last->id . "\n";
+        }
+        update_option($option_name, $last->id);
+        // 2. Create slug
+        $ma = $this->get_ma();
+        if ($results) {
+            foreach ($results as $item) {
+                $id = $item->id;
+                $last_post_name = $item->post_name;
+                $title_decode = htmlspecialchars_decode($item->title);
+                $new_post_name = $ma->create_slug($title_decode);
+                if (!$new_post_name) {
+                    $new_post_name = $id;
+                }
+                // Post name exist?
+                $exist = $ma->get_post_by_slug($new_post_name, $item->type);
+                if ($exist && $exist->id != $id) {
+                    $new_post_name = $new_post_name . '-' . $item->year;
+                    $exist2 = $ma->get_post_by_slug($new_post_name, $item->type);
+                    if ($exist2 && $exist2->id != $id) {
+                        $new_post_name = $new_post_name . '-' . $id;
+                    } 
+                } 
+
+                if ($last_post_name != $new_post_name) {
+                    // 3. Compare slugs
+                    if ($debug) {
+                        print_r(array($id, $title_decode, $last_post_name, $new_post_name));
+                    }
+                    // 4. Insert data to db
+                    $sql = sprintf("SELECT id FROM {$this->db['title_slugs']} WHERE mid=%d limit 1", $id);
+                    $in_db = $this->db_get_var($sql);
+                    if (!$in_db) {
+                        $data = array(
+                            'mid' => $id,
+                            'oldslug' => $last_post_name,
+                            'newslug' => $new_post_name,
+                        );
+                        $priority=10;
+                        $this->cm->sync_insert_data($data, $this->db['title_slugs'], $this->cm->sync_client, $this->cm->sync_data,$priority);
+                    }
+                }
+            }
+        }
     }
 
     public function transit_video_cron($count = 100, $debug = false, $force = false) {

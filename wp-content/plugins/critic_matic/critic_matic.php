@@ -333,7 +333,7 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'date_add', 'status', 'type', 'link_hash', 'top_movie'), $table_prefix . "critic_matic_posts");
 
-        /*
+    /*
      * Indexes: 
      * 
       ALTER TABLE `wp_bcw98b_critic_parser_log` ADD INDEX(`date`);
@@ -362,7 +362,7 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index(array('cid', 'pid', 'status', 'link_hash'), $table_prefix . "critic_parser_url");
-    
+
     //$sql = "ALTER TABLE `" . $table_prefix . "critic_matic_posts` ADD `blur` int(11) NOT NULL DEFAULT '0'";
     //Pdo_an::db_query($sql);
 
@@ -828,6 +828,36 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('type', 'year'), "data_cpi");
+
+    /*
+     * Ethnicolr
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_actors_ethnicolr`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `aid` int(11) NOT NULL DEFAULT '0', 
+                                `date_upd` int(11) NOT NULL DEFAULT '0',                                                                        
+                                `firstname` varchar(255) NOT NULL default '',  
+                                `lastname` varchar(255) NOT NULL default '',  
+                                `verdict` varchar(10) NOT NULL default '',    
+                                `wiki` text default NULL,   
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('aid', 'date_upd'), "data_actors_ethnicolr");
+
+    /*
+     * Movie slugs
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_movie_title_slugs`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `mid` int(11) NOT NULL DEFAULT '0',                                 
+                                `oldslug` varchar(255) NOT NULL default '',                                                                      
+                                `newslug` varchar(255) NOT NULL default '',                                                                      
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8_general_ci;";
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('mid', 'oldslug', 'newslug'), "data_movie_title_slugs");
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {
@@ -880,4 +910,11 @@ WHERE
     m.id < s.id AND 
     m.fid = s.fid AND 
     m.cid = s.cid;
+ * 
+ * SELECT mid, count(*) FROM `data_movie_title_slugs` GROUP by mid having count(*) > 1;
+ * DELETE m FROM `data_movie_title_slugs` m
+INNER JOIN `data_movie_title_slugs` s
+WHERE 
+    m.id < s.id AND 
+    m.mid = s.mid;
  */

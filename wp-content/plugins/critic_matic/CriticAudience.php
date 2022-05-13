@@ -567,8 +567,11 @@ class CriticAudience extends AbstractDb {
     }
 
     public function update_queue_status($id = 0, $status = 1) {
-        $sql = sprintf("UPDATE {$this->db['audience']} SET status='%d' WHERE id=%d", $status, $id);
-        $this->db_query($sql);
+        $data = array(
+            'status' => $status
+        );
+
+        $this->cm->sync_update_data($data, $id, $this->db['audience'], $this->cm->sync_data);
     }
 
     public function get_queue_status($status) {
@@ -620,8 +623,12 @@ class CriticAudience extends AbstractDb {
         $aid_db = $this->get_author_by_key($unic_id);
         if ($aid != $aid_db) {
             //new key
-            $sql = sprintf("INSERT INTO {$this->db['author_key']} (aid, name) VALUES (%d, '%s')", (int) $aid, $this->escape($unic_id));
-            $this->db_query($sql);
+            $data = array(
+                'aid' => $aid,
+                'name' => $unic_id
+            );
+
+            $id = $this->cm->sync_insert_data($data, $this->db['author_key'], $this->cm->sync_client, $this->cm->sync_data);
         }
     }
 
