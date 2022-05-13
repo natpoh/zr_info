@@ -837,6 +837,7 @@ class MoviesParserAdmin extends ItemAdmin {
                 'match' => isset($form_state['match']) ? $form_state['match'] : 0,
                 'type' => isset($form_state['type']) ? $form_state['type'] : $opt_prev['links']['type'],
                 'rating' => isset($form_state['rating']) ? $form_state['rating'] : 0,
+                'last_id' => isset($form_state['last_id']) ? $form_state['last_id'] : 0,
                 'rules' => $this->links_rules_form($form_state),
             );
 
