@@ -22,11 +22,6 @@ if ($_GET['debug']) {
     $debug=true;
 }
 
-$simpson = false;
-if ($_GET['simpson']) {
-    $simpson=true;
-}
-
 if (!class_exists('MoviesLinks')) {
     require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractFunctions.php' );
     require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractDBAn.php' );
@@ -41,4 +36,5 @@ $campaign->title = 'familysearch.org';
 
 $fs = $ml->get_campaing_mlr($campaign);
 
+$simpson = true;
 $fs->cron_actor_verdict($count,$simpson,$debug);

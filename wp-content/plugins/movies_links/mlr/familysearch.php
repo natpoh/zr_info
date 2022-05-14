@@ -349,7 +349,7 @@ class Familysearch extends MoviesAbstractDBAn {
      * Cron actor vedrict
      */
 
-    public function cron_actor_verdict($count = 100, $simpson=false, $debug = false) {
+    public function cron_actor_verdict($count = 100, $simpson=true, $debug = false) {
 
         // 1. Get lastnames
         $sql = sprintf("SELECT l.id, l.lastname, c.country as topcountryname"
