@@ -297,6 +297,47 @@ class Familysearch extends MoviesAbstractDBAn {
         );
     }
 
+    public function calculate_simpson($population = array()) {
+        /*
+          [cca2] => AI
+          [ethnic] => stdClass Object
+          (
+          [Black] => 85.21
+          [Latino] => 4.9
+          [Mixed / Other] => 3.8
+          [White] => 3.2
+          [Indigenous] => 1.9
+          [Indian] => 1
+          )
+         */
+        $countries = array();
+        foreach ($population as $country => $data) {
+            $cca2 = isset($data['cca2']) ? $data['cca2'] : '';
+            $ethnic = isset($data['ethnic']) ? $data['ethnic'] : array();
+            $freq_total = 0;
+            $index_total = 0;
+            $simpson = 0.5;
+            if ($ethnic) {
+                foreach ($ethnic as $race => $cnt) {
+                    $freq = $cnt * 100;
+                    $index = $freq * ($freq - 1);
+                    $freq_total += $freq;
+                    $index_total += $index;
+                }
+                $simpson = round($index_total / ($freq_total * ($freq_total - 1)), 4);
+            }
+            // Insert simpson to db
+            $this->insert_simpson($cca2, $simpson);
+            $countries[$country] = array($cca2, $simpson, $ethnic);
+        }
+        return $countries;
+    }
+
+    public function insert_simpson($cca2, $simpson) {
+        $sql = sprintf("UPDATE {$this->db['population']} SET simpson='%s' WHERE cca2 = '%s'", $simpson, $cca2);
+        $this->db_query($sql);
+    }
+
     /*
      * Cron actor vedrict
      */
@@ -345,7 +386,6 @@ class Familysearch extends MoviesAbstractDBAn {
                 $array_update_family[$id] = 1;
             }
         }
-
     }
 
     public function get_verdict_by_lastname($lastname) {
@@ -354,7 +394,8 @@ class Familysearch extends MoviesAbstractDBAn {
         return $result;
     }
 
-    public function get_verdict_name($int){
-       return array_search($int, $this->race_small);
+    public function get_verdict_name($int) {
+        return array_search($int, $this->race_small);
     }
+
 }

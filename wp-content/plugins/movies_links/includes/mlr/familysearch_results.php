@@ -74,6 +74,11 @@ if (sizeof($posts) > 0) {
             print '<h3>Not found countries</h3>';
             print implode('<br />', $not_found);
         }
+        // Calculate Simpson
+        if ($_GET['update_simpson']) {
+            $simpson = $mlr->calculate_simpson($population);
+            print_r($simpson);
+        }
     }
 } else {
     ?>
