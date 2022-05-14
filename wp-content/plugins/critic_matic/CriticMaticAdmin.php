@@ -72,6 +72,11 @@ class CriticMaticAdmin {
         'meta_unapprove' => 'Unapprove meta',
         'meta_remove' => 'Remove meta',
     );
+    public $bulk_actions_feeds = array(
+        'start_feed' => 'Start campaigns',
+        'stop_feed' => 'Stop campaigns',
+        'trash_feed' => 'Trash campaigns'
+    );
     public $per_pages = array(30, 100, 500, 1000);
 
     public function __construct($cm, $cs, $cf, $cp) {
@@ -2062,6 +2067,9 @@ class CriticMaticAdmin {
         $per_page = $this->get_perpage();
         $page_url = $url;
 
+        // Bulk actions
+        $this->bulk_submit();
+
         //Sort
         $sort_pages = $this->cm->sort_pages;
         $orderby = $this->get_orderby($sort_pages);
@@ -2783,6 +2791,8 @@ class CriticMaticAdmin {
                     if ($author_id) {
                         $changed = $this->cm->bulk_change_author($ids, $author_id);
                     }
+                } else if ($b == 'start_feed' || $b == 'stop_feed'|| $b == 'trash_feed') {                
+                    $changed = $this->cf->bulk_change_campaign_status($ids, $b);                    
                 } else {
                     // Change status
                     $updated = false;

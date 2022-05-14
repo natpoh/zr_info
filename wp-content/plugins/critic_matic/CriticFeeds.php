@@ -121,7 +121,7 @@ class CriticFeeds extends AbstractDBWp {
                 'rt' => ''
             ),
             'critic_feeds_max_feed_error' => $this->feed_settings['critic_feeds_max_feed_error'],
-        );        
+        );
         $this->get_perpage();
     }
 
@@ -1388,6 +1388,20 @@ class CriticFeeds extends AbstractDBWp {
         return $ret;
     }
 
+    public function bulk_change_campaign_status($ids = array(), $b) {
+        foreach ($ids as $id) {
+            if ($b == 'start_feed') {
+                $status = 1;
+            } else if ($b == 'stop_feed') {
+                $status = 0;
+            } else if ($b == 'trash_feed') {
+                $status = 2;
+            }
+            
+            $this->update_campaign_status($id, $status);
+        }
+    }
+
     /*
      * Other
      */
@@ -1398,7 +1412,7 @@ class CriticFeeds extends AbstractDBWp {
         if (!$authors_count) {
             return;
         }
-        $table_prefix =DB_PREFIX_WP;
+        $table_prefix = DB_PREFIX_WP;
         // get rss feeds
         $wp_posts = $table_prefix . 'posts';
         $sql = "SELECT * FROM {$wp_posts} WHERE post_type = 'wprss_feed'";
