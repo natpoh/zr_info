@@ -456,15 +456,29 @@ class MoviesParserCron extends MoviesAbstractDB {
             $code = $this->mp->get_proxy($url, $use_proxy, $headers, $settings);
         }
 
-        if (strstr($headers, 'HTTP/1.1  403')) {
+        if (preg_match('/HTTP\/1\.1[^\d]+403/', $headers)) {
             // Status - 403 error
             $status = 4;
             $this->mp->change_url_state($item->id, $status, true);
             $message = 'Error 403 Forbidden';
             $this->mp->log_error($message, $item->cid, $item->id, 2);
             return;
-        }
-
+        } else if (preg_match('/HTTP\/1\.1[^\d]+500/', $headers)) {
+            // Status - 500 error
+            $status = 4;
+            $this->mp->change_url_state($item->id, $status, true);
+            $message = 'Error 500 Internal Server Error';
+            $this->mp->log_error($message, $item->cid, $item->id, 2);
+            return;
+        } else if (preg_match('/HTTP\/1\.1[^\d]+404/', $headers)) {
+            // Status - 500 error
+            $status = 4;
+            $this->mp->change_url_state($item->id, $status, true);
+            $message = 'Error 404 Not found';
+            $this->mp->log_error($message, $item->cid, $item->id, 2);
+            return;
+        }      
+        
         $arhive_path = $this->ml->arhive_path;
         $cid_path = $arhive_path . $item->cid . '/';
         $first_letter_path = $cid_path . $first_letter . '/';
