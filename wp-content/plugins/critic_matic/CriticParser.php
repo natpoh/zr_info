@@ -164,7 +164,7 @@ class CriticParser extends AbstractDBWp {
             'posts' => DB_PREFIX_WP_AN . 'critic_matic_posts',
             'url' => DB_PREFIX_WP_AN . 'critic_parser_url',
             // Critic Parser
-            'campaign' => $table_prefix . 'critic_parser_campaign',            
+            'campaign' => $table_prefix . 'critic_parser_campaign',
             'log' => $table_prefix . 'critic_parser_log',
         );
 
@@ -2968,6 +2968,8 @@ class CriticParser extends AbstractDBWp {
         try {
             $response = $service->search->listSearch('snippet', $queryParams);
         } catch (Exception $exc) {
+            $message = $exc->getMessage();
+            $this->log_error($message, $arg['cid'], 0, 3);
             $response = array();
         }
         return gzencode(json_encode($response));
@@ -2983,6 +2985,8 @@ class CriticParser extends AbstractDBWp {
         try {
             $response = $service->videos->listVideos('snippet', $queryParams);
         } catch (Exception $exc) {
+            $message = $exc->getMessage();
+            $this->log_error($message, $arg['cid'], 0, 3);
             $response = array();
         }
         return gzencode(json_encode($response));
