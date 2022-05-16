@@ -87,9 +87,14 @@
 
                     <label class="inline-edit-active">                               
                         <input type="checkbox" name="status" value="1">
-                        <span class="checkbox-title"><?php print __('Active') ?></span>
+                        <span class="checkbox-title"><?php print __('Campaign is active') ?></span>
                     </label>            
 
+                    <label class="inline-edit-active">                               
+                        <input type="checkbox" name="parser_status" value="1">
+                        <span class="checkbox-title"><?php print __('Parser is active') ?></span>
+                    </label>            
+                    
                     <?php wp_nonce_field('critic-feeds-options', 'critic-feeds-nonce'); ?>
                     <br />
                     <input type="submit" name="options" id="edit-submit" value="<?php echo __('Submit') ?>" class="button-primary"> 
