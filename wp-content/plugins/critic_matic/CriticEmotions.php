@@ -27,7 +27,10 @@ class CriticEmotions extends AbstractDB {
 
     public function get_user_reactions($post_id) {
         $user_class = '';
-        $disquss_count = '';
+
+        $disquss_count_array =$this->get_comments_count([$post_id]);
+
+        $disquss_count = $disquss_count_array[$post_id];
         $disquss_title = '';
 
         if ($this->top_results) {
@@ -56,7 +59,14 @@ class CriticEmotions extends AbstractDB {
             $reaction_count = '';
         }
 
-        $reaction_data = '<div class="review_comment_data" id="' . $post_id . '"><a  href="#" data_title="' . $disquss_title . '" class="disquss_coment"><span  class="disquss_coment_count">' . $disquss_count . '</span></a>
+        $disquss_count_text=' ';
+
+        if ($disquss_count)
+        {
+            $disquss_count_text='<span  class="disquss_coment_count">' . $disquss_count . '</span>';
+        }
+
+        $reaction_data = '<div class="review_comment_data" id="' . $post_id . '"><a  href="#" data_title="' . $disquss_title . '" class="disquss_coment">'.$disquss_count_text.'</a>
                 <a href="#"   class="emotions  ' . $user_class . '  "><span class="emotions_count">' . $reaction_count . '</span></a></div>';
 
         return $reaction_data;
