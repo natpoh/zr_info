@@ -66,8 +66,8 @@ if (sizeof($posts) > 0) {
                     <tr>           
                         <th  class="check-column" ><input type="checkbox" name="bulk-<?php print $item->id ?>"></th>
                         <td><?php print $item->id ?></td>                             
-                        <td>                            
-                            <a href="<?php print $item->link ?>" target="_blank" title="<?php print $item->link ?>"><?php print substr($item->link, 0, 50) ?></a>                                               
+                        <td class="wrap">                            
+                            <a href="<?php print $item->link ?>" target="_blank" title="<?php print $item->link ?>"><?php print $item->link ?></a>                                               
                         </td>
                         <td><?php print $this->get_url_status($item->status) ?></td>
                         <td>

@@ -1769,9 +1769,6 @@ class CriticMaticAdmin {
                 $campaign = $this->cp->get_campaign($cid);
                 $options = $this->cp->get_options($campaign);
 
-                if ($campaign->type == 1) {
-                    $yt_posts = $this->cp->yt_total_posts($options);
-                }
 
                 $yt_preivew = array();
                 if (isset($_POST['yt_preview'])) {

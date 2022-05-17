@@ -106,6 +106,35 @@ if ($cid) {
                             <span class="input-text-wrap"><input type="text" name="yt_page" placeholder="Leave blank to search for Channel ID by Campaign URL address" class="title" value="<?php print htmlspecialchars(base64_decode($options['yt_page'])) ?>"></span>
                         </label>
 
+
+                        <?php
+                        $playlists = $this->cp->yt_playlists_select($options);
+                        if ($playlists) {
+                            ?><h3>Playlists</h3><?php
+                            $playlists_checked = $options['yt_playlists'] ? $options['yt_playlists'] : array();
+
+                            foreach ($playlists as $p_id => $p_title) {
+                                $checked = '';
+                                if (in_array($p_id, $playlists_checked)) {
+                                    $checked = 'checked="checked"';
+                                }
+                                ?>
+                                <label class="inline-edit-status">  
+                                    <input type="checkbox" name="yt_playlists[]" value="<?php print $p_id ?>" <?php print $checked ?> >
+                                    <span class="checkbox-title"><?php print $p_title ?></span>
+                                </label>
+                                <?php
+                            }
+                            ?>
+                            <br />
+                            <div class="desc">
+                                <?php print __('Leave blank to parse all playlists.') ?>
+                            </div>
+                            <br />
+                            <?php
+                        }
+                        ?>
+
                         <label class="inline-edit-status">                
                             <input type="checkbox" name="yt_preview" value="1" checked="checked">
                             <span class="checkbox-title"><?php print __('Preview') ?></span>
@@ -116,7 +145,12 @@ if ($cid) {
                         <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save settings') ?>" class="button-primary">  
 
 
-                        <?php if ($yt_posts != -1) { ?>
+                        <?php
+                        
+                        $yt_posts = $this->cp->yt_total_posts($options);
+
+                        if ($yt_posts != -1) {
+                            ?>
                             <p>Total URLs found: <?php print $yt_posts ?></p>
                             <p><a target="_blank" href="<?php print $url ?>&cid=<?php print $cid ?>&find_urls_yt=1" class="button-secondary">Get YouTube URLs</a></p>     
                         <?php } ?>   
@@ -130,12 +164,12 @@ if ($cid) {
             <h2>Find YouTube URLs</h2>
             <div class="content-preview">
                 <textarea style="width: 90%; height: 300px;"><?php
-                    if ($yt_preivew['urls']) {
-                        foreach ($yt_preivew['urls'] as $value) {
-                            print $value . "\n";
-                        }
-                    }
-                    ?></textarea>                                
+            if ($yt_preivew['urls']) {
+                foreach ($yt_preivew['urls'] as $value) {
+                    print $value . "\n";
+                }
+            }
+            ?></textarea>                                
             </div>      
             <h2>Responce</h2>
             <?php if ($yt_preivew['total']) { ?>
@@ -219,12 +253,12 @@ if ($cid) {
             <h2>Find URLs</h2>
             <div class="content-preview">
                 <textarea style="width: 90%; height: 300px;"><?php
-                    if ($preivew_data['urls']) {
-                        foreach ($preivew_data['urls'] as $value) {
-                            print $value . "\n";
-                        }
-                    }
-                    ?></textarea>                                
+            if ($preivew_data['urls']) {
+                foreach ($preivew_data['urls'] as $value) {
+                    print $value . "\n";
+                }
+            }
+            ?></textarea>                                
             </div>
             <h2>Headers</h2>
             <textarea style="width: 90%; height: 300px;"><?php print $preivew_data['headers'] ?></textarea>        
@@ -303,12 +337,12 @@ if ($cid) {
             <h2>Fetch URLs</h2>
             <div class="content-preview">
                 <textarea style="width: 90%; height: 300px;"><?php
-                    if ($cron_preivew_data['urls']) {
-                        foreach ($cron_preivew_data['urls'] as $value) {
-                            print $value . "\n";
-                        }
-                    }
-                    ?></textarea>                                
+            if ($cron_preivew_data['urls']) {
+                foreach ($cron_preivew_data['urls'] as $value) {
+                    print $value . "\n";
+                }
+            }
+            ?></textarea>                                
             </div>
             <h2>Headers</h2>
             <textarea style="width: 90%; height: 300px;"><?php print $cron_preivew_data['headers'] ?></textarea>        
