@@ -431,7 +431,7 @@ class CriticAudience extends AbstractDb {
         $type = 2;
         $link = '';
 
-        $pid = $this->cm->add_post($date, $type, $link, $title, $content, $top_movie, $status, 0, true);
+        $pid = $this->cm->add_post($date, $type, $link, $title, $content, $top_movie, $status,0, 0, true);
 
         if ($pid) {
             // Add post author

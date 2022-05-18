@@ -661,7 +661,9 @@ class CriticParser extends AbstractDBWp {
                         } else {
                             // Add post 
                             $log_message = 'Add post';
-                            $pid = $this->cm->add_post($date, $post_type, $item->link, $title, $content, $top_movie, $post_status);
+                            // View type is Youtube
+                            $view_type = 1;
+                            $pid = $this->cm->add_post($date, $post_type, $item->link, $title, $content, $top_movie, $post_status, $view_type);
 
                             // Add author      
                             $aid = $campaign->author;

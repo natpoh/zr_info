@@ -40,6 +40,10 @@ class CriticMatic extends AbstractDB {
         0 => 'Draft',
         2 => 'Trash'
     );
+    public $post_view_type = array(
+        0 => 'Default',
+        1 => 'Youtube',
+    );
     public $post_meta_status = array(
         1 => 'With meta',
         0 => 'No meta',
@@ -627,7 +631,7 @@ class CriticMatic extends AbstractDB {
       2 => 'Manual'
      */
 
-    public function add_post($date = 0, $type = 0, $link = '', $title = '', $content = '', $top_movie = 0, $status = 1, $blur = 0, $sync = true) {
+    public function add_post($date = 0, $type = 0, $link = '', $title = '', $content = '', $top_movie = 0, $status = 1, $view_type = 0, $blur = 0, $sync = true) {
         $link_hash = '';
         if ($link) {
             $link_hash = $this->link_hash($link);
@@ -649,7 +653,8 @@ class CriticMatic extends AbstractDB {
             'link' => $link,
             'title' => $title,
             'content' => $content,
-            'top_movie' => $top_movie
+            'top_movie' => $top_movie,
+            'veiw_type' => $view_type,
         );
 
         $id = $this->sync_insert_data($data, $this->db['posts'], $this->sync_client, $sync);
