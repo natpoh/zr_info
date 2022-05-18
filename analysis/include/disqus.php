@@ -10,27 +10,259 @@ if (!defined('ABSPATH'))
 //Abstract DB
 !class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
 
-class DISQUS{
+class DISQUS_DATA
+{
 
     public static $key = 'Zt8xSiTUeoQuBLJ060aEdofTRBzQRTq6uMkn5Xwm5GsNZzTyatx37i9valgksE5B'; // TODO replace with your Disqus secret key from http://disqus.com/api/applications/
     public static $forum = 'hollywoodstfu'; // Disqus shortname
 
-
-    public static function add_to_db($id,$thread,$data)
+    public static function get_trehead($id)
     {
-        $data =json_encode($data);
+        $sql = "SELECT * FROM `cache_disqus_treheads` WHERE `trehead_id`='" . $id . "' limit 1";
 
-        $sql="SELECT * FROM `cache_disqus_comments` WHERE `disqus_id`='".$id."' limit 1";
+        $r = Pdo_an::db_results_array($sql);
+        return $r[0];
+
+    }
+
+    public static function format_interval($interval, $granularity = 2) {
+        $units = array('1 year|@count years' => 31536000, '1 week|@count weeks' => 604800, '1 day|@count days' => 86400, '1 hour|@count hours' => 3600, '1 min|@count min' => 60, '1 sec|@count sec' => 1);
+        $output = '';
+        foreach ($units as $key => $value) {
+            $key = explode('|', $key);
+            if ($interval >= $value) {
+                $floor = floor($interval / $value);
+                $output .= ($output ? ' ' : '') . ($floor == 1 ? $key[0] : str_replace('@count', $floor, $key[1]));
+                $interval %= $value;
+                $granularity--;
+            }
+
+            if ($granularity == 0) {
+                break;
+            }
+        }
+
+        return $output ? $output : '0 sec';
+    }
+
+    public static function add_template($data)
+    {
+        $inner_content = '';
+
+        $trehead = $data['thread'];
+        $trehead_data = self::get_trehead($trehead);
+
+        $tr_data = $data["data"];
+        $add_time = $data["add_time"];
+
+        if ($tr_data) {
+            $comment = json_decode($tr_data);
+
+        }
+
+
+        $link = $trehead_data["link"];
+
+        $media = $comment->media;
+        $message = $comment->message;
+        $reg_v = '#<a.+title="([^"]+)"[^\<]+\<\/a\>#Uis';
+
+        $array_replace = [];
+
+        if (preg_match_all($reg_v, $message, $mach)) {
+            ///var_dump($mach);
+            foreach ($mach[0] as $i => $v) {
+                $array_replace[$mach[1][$i]] = $v;
+            }
+        }
+
+
+        if ($media) {
+            foreach ($media as $mdata) {
+
+                if ($mdata->html && $mdata->mediaType == 3) {
+                    //  $content.=  $mdata->html;
+                }
+                if ($mdata->url && ($mdata->mediaType == 1 || $mdata->mediaType == 2)) {
+
+                    if ($array_replace[$mdata->url]) {
+                        $content_data = '<img  alt="' . $mdata->title . '" src="' . $mdata->url . '"/>';
+                        $message = str_replace($array_replace[$mdata->url], $content_data, $message);
+                    }
+                }
+            }
+        }
+        if (!function_exists('pccf_filter')) {
+            include(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/include/pccf_filter.php');
+        }
+
+        if (function_exists('pccf_filter')) {
+            $message = pccf_filter($message);
+        }
+
+        $content = '<p>' . $message . '</p>';
+
+
+        $actorstitle = $comment->author->name;
+        $addtime = $comment->createdAt;
+        $ptime = strtotime($addtime);
+
+
+        if (function_exists('pccf_filter')) {
+            $actorstitle = pccf_filter($actorstitle);
+        }
+
+
+        $addtime_title = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+        $addtime = self::format_interval(time() - $ptime, 1) . ' ago';
+
+
+        $img = $comment->author->avatar->cache;
+
+
+        $finalResults = '<div class="disqus_main_block">
+    <div class="disqus_block">
+        <div class="disqus_autor" ><a target="_blank" href="' . $comment->author->profileUrl . '"><img class="disqus_autor_image" src="' . $img . '" /></a></div>
+         <div class="disqus_message">
+            <div class="disqus_autor_name">
+            <a target="_blank" href="' . $comment->author->profileUrl . '">' . $actorstitle . '</a>
+            <a  class="disqus_addtime" href="' . $link . '" title="' . $addtime_title . '">' . $addtime . '</a>
+            </div>
+            ' . $content . '
+            <div class="disqus_content_bottom"><a  href="' . $link . '#reply-' . $comment->id . '" class="disqus_reply">Reply</a><a  href="' . $link . '" class="disqus_view">View</a></div>
+        </div>
+         
+    </div>
+        ' . $inner_content . '</div>';
+
+/// $code = base_convert($id, 10, 36);
+//   $finalResults = '<div class="a_msg_container"><iframe src="https://embed.disqus.com/p/' . $code . '" style="width: 100%; min-height: 250px"  seamless="seamless" scrolling="no" frameborder="0" allowtransparency="true"></iframe>' . $inner_content . '</div>';
+
+
+        $result = self::to_container($finalResults, $trehead_data);
+
+
+        return $result;
+    }
+
+    public static function to_container($inner_data, $trehead_data)
+    {
+        $link_id = $trehead_data["post_id"];
+        $comment_type = $trehead_data["type"];
+        $link = $trehead_data["link"];
+
+        if (!function_exists('template_single_movie_small')) {
+            ///try find movies
+            include(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/movie_single_template.php');
+        }
+
+
+        if ($comment_type == 'movie') {
+            ////movie
+
+            $movie_block = template_single_movie_small($link_id, '', $link, 1);
+
+        }
+        else if ($comment_type == 'post') {
+            $new_link = $link;
+            if (preg_match('#\:\/\/[^\/]+\/(.+)#',$link,$mach))
+            {
+                $new_link = $mach[1];
+            }
+
+            $movie_block = '<div class="review_block"><span class="review_block_title">Page: </span></span><a href="' . $link . '">' . $new_link . '</a></div>';
+        }
+        else if ($comment_type == 'critics') {
+
+            //get critic data
+
+            if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
+                define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
+            }
+
+            if (!class_exists('CriticFront')) {
+                require_once(CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php');
+            }
+
+
+            global $cfront;
+            $cfront = new CriticFront();
+
+
+            $critic_data = $cfront->cm->get_post($link_id);
+            $movie_id = $critic_data->top_movie;
+            $critic_type = $critic_data->type;
+            /*
+              Author type
+              0 => 'Staff',
+              1 => 'Pro',
+              2 => 'Audience'
+             */
+            $array_type = array(0 => 'Staff',
+                1 => 'Pro',
+                2 => 'Audience'
+            );
+
+
+            $movie_block = '';
+            if ($link_id) {
+                $movie_block = template_single_movie_small($movie_id, '', $link, 1);
+            }
+
+            $movie_block = '<div class="review_block review_' . $array_type[$critic_type] . '"><div class="review_block_title">' . $array_type[$critic_type] . ' review of </div>' . $movie_block . '</div>';
+        }
+
+
+        $finalResults_big = '<div class="big_block_comment">' . $movie_block . '<div>' . $inner_data . '</div></div>';
+
+
+
+        return $finalResults_big;
+    }
+
+    public static function get_comment_from_db($count = 10,$pos=0)
+    {
+
+        $result = '';
+
+
+        $sql = "SELECT * FROM `cache_disqus_comments` ORDER BY `add_time` desc limit ".$pos.', ' . $count;
+
+
+        $r1 = Pdo_an::db_results_array($sql);
+        if ($r1) {
+            foreach ($r1 as $i => $data) {
+
+
+                $result .= self::add_template($data);
+
+
+            }
+        }
+        $result.='<div style="display: none" class="next_cursor">' .( $pos+$count ) . '</div>';
+        return $result;
+
+    }
+
+
+    public static function add_to_db($id, $thread, $data)
+    {
+
+        $add_time = $data['createdAt'];
+        $add_time = strtotime($add_time);
+
+        $data = json_encode($data);
+
+        $sql = "SELECT * FROM `cache_disqus_comments` WHERE `disqus_id`='" . $id . "' limit 1";
         $r = Pdo_an::db_fetch_row($sql);
-        if (!$r)
-        {
-            $sql ="INSERT INTO `cache_disqus_comments`(`id`, `disqus_id`, `thread`, `data`, `last_update`) 
-            VALUES (NULL,".intval($id).",".intval($thread).",?,".time().")";
-            Pdo_an::db_results_array($sql,[$data]);
+        if (!$r) {
+            $sql = "INSERT INTO `cache_disqus_comments`(`id`, `disqus_id`, `thread`, `data`, `add_time`,`last_update`) 
+            VALUES (NULL," . intval($id) . "," . intval($thread) . ",?,?," . time() . ")";
+            Pdo_an::db_results_array($sql, [$data, $add_time]);
 
 
             !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-            Import::create_commit('', 'update', 'cache_disqus_comments', array('disqus_id' => $id), 'disqus',4,['skip'=>['id']]);
+            Import::create_commit('', 'update', 'cache_disqus_comments', array('disqus_id' => $id), 'disqus', 4, ['skip' => ['id']]);
 
         }
     }
@@ -176,9 +408,6 @@ WHERE cache_disqus_treheads.id is NULL";
     }
 
     public static function disqus_comments($limit=50,$cursor='') {
-
-        ///"25971 https://rightwingtomatoes.com/critics/25971-Pro-Soiled_Sinema-Medea_1988/?meta=32055"
-        ///"25971 https://rightwingtomatoes.com/critics/25971-Pro-Soiled_Sinema-Medea_1988/?meta=32055"
 
 
        //$limit = '10'; // The number of comments you want to show

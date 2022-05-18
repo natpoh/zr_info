@@ -74,9 +74,9 @@ function get_array($id='')
 
 function disqus_comments($data)
 {
-    !class_exists('DISQUS') ? include ABSPATH . "analysis/include/disqus.php" : '';
+    !class_exists('DISQUS_DATA') ? include ABSPATH . "analysis/include/disqus.php" : '';
 
-    DISQUS::disqus_comments($data);
+    DISQUS_DATA::disqus_comments($data);
 
 
 }
