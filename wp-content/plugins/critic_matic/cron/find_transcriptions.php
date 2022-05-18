@@ -13,7 +13,7 @@ if ($_GET['p'] != $p) {
     return;
 }
 
-$count = 10;
+$count = 1;
 if ($_GET['c']) {
     $count = (int) $_GET['c'];
 }
