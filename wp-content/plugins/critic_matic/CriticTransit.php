@@ -47,6 +47,8 @@ class CriticTransit extends AbstractDB {
         $this->cm = $cm;
         $table_prefix = DB_PREFIX_WP_AN;
         $this->db = array(
+            'posts' => $table_prefix . 'critic_matic_posts',
+            
             'movie_imdb' => 'data_movie_imdb',
             'title_slugs' => 'data_movie_title_slugs',
             'rwt_meta' => $table_prefix . 'critic_matic_meta',
@@ -79,11 +81,22 @@ class CriticTransit extends AbstractDB {
         return $this->ma;
     }
 
+    public function critic_view_type($count=100, $debug=false, $force=false) {
+        
+        /* Set view type to youtube critics */
+        //SELECT * FROM `wp_bcw98b_critic_matic_posts` WHERE `link` LIKE '%www.youtube.com%' ORDER BY `id` DESC
+        $sql = "UPDATE {$this->db['posts']} SET view_type=1 WHERE view_type=0 AND `link` LIKE '%www.youtube.com%' ORDER BY `id` DESC LIMIT ". (int) $count;        
+        if ($debug){
+            print $sql;
+        }
+        $this->cm->db_query($sql);
+    }
+
     public function movie_title_slugs($count = 100, $debug = false, $force = false) {
         // 1. Get movies
         $option_name = 'movie_title_slugs_unique_id';
         $last_id = get_option($option_name, 0);
-        
+
         $sql = sprintf("SELECT id, title, post_name, type, year FROM {$this->db['movie_imdb']} WHERE id>%d ORDER BY id ASC limit %d", (int) $last_id, (int) $count);
         $results = $this->db_results($sql);
         $last = end($results);
@@ -109,8 +122,8 @@ class CriticTransit extends AbstractDB {
                     $exist2 = $ma->get_post_by_slug($new_post_name, $item->type);
                     if ($exist2 && $exist2->id != $id) {
                         $new_post_name = $new_post_name . '-' . $id;
-                    } 
-                } 
+                    }
+                }
 
                 if ($last_post_name != $new_post_name) {
                     // 3. Compare slugs
@@ -126,8 +139,8 @@ class CriticTransit extends AbstractDB {
                             'oldslug' => $last_post_name,
                             'newslug' => $new_post_name,
                         );
-                        $priority=10;
-                        $this->cm->sync_insert_data($data, $this->db['title_slugs'], $this->cm->sync_client, $this->cm->sync_data,$priority);
+                        $priority = 10;
+                        $this->cm->sync_insert_data($data, $this->db['title_slugs'], $this->cm->sync_client, $this->cm->sync_data, $priority);
                     }
                 }
             }
