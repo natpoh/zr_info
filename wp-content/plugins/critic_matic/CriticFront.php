@@ -370,7 +370,7 @@ class CriticFront extends SearchFacets {
         if (!$content) {
             $content = $title;
         }
-
+        
         // Find transcriptions
         $time_codes = '';
         if ($critic->type == 4) {
@@ -1244,9 +1244,8 @@ class CriticFront extends SearchFacets {
 
     private function pro_content_filter($content = '', $critic = '', $permalink = '', $fullsize = '') {
         $video = '';
-
+/*
         $regex_pattern = "/(youtube.com|youtu.be)\/(watch)?(\?v=)?(\S+)?/";
-        $video_count = 0;
         if (preg_match($regex_pattern, $permalink, $mach)) {
             if ($fullsize) {
                 $video = '<div class="embed-responsive embed-responsive-16by9"><iframe style="width:100%; height:100%;" src="https://www.youtube.com/embed/' . $mach[4] . '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>';
@@ -1255,7 +1254,6 @@ class CriticFront extends SearchFacets {
             }
         } else if (strstr($permalink, 'bitchute.com/')) {
             if ($fullsize) {
-
                 $permalink = str_replace('/video/', '/embed/', $permalink);
 
                 $video = '<div class="embed-responsive embed-responsive-16by9"><iframe style="width:100%; height:100%;" src="' . $permalink . '" ></iframe></div>';
@@ -1266,7 +1264,7 @@ class CriticFront extends SearchFacets {
             $permalink = str_replace('/embed/', '/video/', $permalink);
             $content = '';
         }
-
+*/
         $image = '';
 
         $crop_len = 200;
@@ -1302,7 +1300,7 @@ class CriticFront extends SearchFacets {
             $content = '[spoiler]' . $content . '[/spoiler]';
         }
 
-        $content = $video . $content;
+        
         return $content;
     }
 

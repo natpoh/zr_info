@@ -33,7 +33,10 @@ class MoviesParser extends MoviesAbstractDB {
                     'status' => 0,
                     'proxy' => 0,
                     'webdrivers' => 0,
+                    'random' => 1,
                     'progress' => 0,
+                    'del_pea' => 0,
+                    'del_pea_int' => 1440,
                 ),
                 'find_urls' => array(
                     'first' => '',
@@ -382,7 +385,7 @@ class MoviesParser extends MoviesAbstractDB {
         return $result;
     }
 
-    public function get_urls($status = -1, $page = 1, $cid = 0, $arhive_type = -1, $parser_type = -1, $links_type = -1, $orderby = '', $order = 'ASC', $perpage = 30) {
+    public function get_urls($status = -1, $page = 1, $cid = 0, $arhive_type = -1, $parser_type = -1, $links_type = -1, $orderby = '', $order = 'ASC', $perpage = 30, $date = '') {
         $status_trash = 2;
         $status_query = " WHERE u.status != " . $status_trash;
         if ($status != -1) {
@@ -443,6 +446,12 @@ class MoviesParser extends MoviesAbstractDB {
             $links_type_and = sprintf(" AND p.status_links=%d", $links_type);
         }
 
+        // Date filter
+        $and_date = '';
+        if ($date) {
+            $and_date = sprintf(' AND p.date < %d', $date);
+        }
+
         $query = "SELECT u.id, u.cid, u.pid, u.status, u.link_hash, u.link,"
                 . " a.date as adate,"
                 . " p.date as pdate, p.status as pstatus, p.title as ptitle, p.year as pyear,"
@@ -450,9 +459,9 @@ class MoviesParser extends MoviesAbstractDB {
                 . " FROM {$this->db['url']} u"
                 . " LEFT JOIN {$this->db['arhive']} a ON u.id = a.uid"
                 . " LEFT JOIN {$this->db['posts']} p ON u.id = p.uid"
-                . $status_query . $cid_and . $arhive_type_and . $parser_type_and . $links_type_and . $and_orderby . $limit;
+                . $status_query . $cid_and . $arhive_type_and . $parser_type_and . $links_type_and . $and_date . $and_orderby . $limit;
 
-
+                
         $result = $this->db_results($query);
         return $result;
     }
@@ -521,7 +530,7 @@ class MoviesParser extends MoviesAbstractDB {
         return $result;
     }
 
-    public function get_last_urls($count = 10, $status = -1, $cid = 0) {
+    public function get_last_urls($count = 10, $status = -1, $cid = 0, $random = 0) {
         $status_trash = 2;
         $status_query = " WHERE status != " . $status_trash;
         if ($status != -1) {
@@ -533,9 +542,36 @@ class MoviesParser extends MoviesAbstractDB {
         if ($cid > 0) {
             $cid_and = sprintf(" AND cid=%d", (int) $cid);
         }
+        $result = '';
+        if ($random == 0) {
+            $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " ORDER BY id DESC LIMIT %d", $count);
+            $result = $this->db_results($query);
+        } else {
+            // Get all urls
+            $query = "SELECT id FROM {$this->db['url']}" . $status_query . $cid_and;
+            $items = $this->db_results($query);
+            if ($items) {
+                $ids = array();
+                foreach ($items as $item) {
+                    $ids[] = $item->id;
+                }
+                shuffle($ids);
+                $i = 0;
+                $random_ids = array();
+                foreach ($ids as $id) {
+                    $random_ids[] = $id;
+                    if ($i > $count) {
+                        break;
+                    }
+                    $i += 1;
+                }
+                // Get random urls
+                $query = "SELECT * FROM {$this->db['url']} WHERE id IN(" . implode(",", $random_ids) . ")";
+                $result = $this->db_results($query);
+            }
+        }
 
-        $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " ORDER BY id DESC LIMIT %d", $count);
-        $result = $this->db_results($query);
+
         return $result;
     }
 
@@ -867,7 +903,7 @@ class MoviesParser extends MoviesAbstractDB {
             $url = $this->get_url($uid);
             if ($url) {
                 //Delete file
-                $this->delete_arhive_file($url->cid, $arhive->link_hash);
+                $this->delete_arhive_file($url->cid, $arhive->arhive_hash);
 
                 //Delete arhive
                 $sql = sprintf("DELETE FROM {$this->db['arhive']} WHERE uid = %d", (int) $uid);
@@ -2024,16 +2060,15 @@ class MoviesParser extends MoviesAbstractDB {
 
     public function delete_arhive_by_url_id($uid) {
 
-        //Delete post
+        // Delete post
         $this->delete_post_by_url_id($uid);
 
-        //Delete arhive
+        // Delete arhive
         $this->delete_arhive($uid);
 
-        //Delete log
-        $this->delete_log($uid);
-
-        //URL Status new
+        // Delete log
+        // $this->delete_log($uid);
+        // URL Status new
         $status = 0;
         $sql = sprintf("UPDATE {$this->db['url']} SET status=%d WHERE id=%d", $status, $uid);
         $this->db_query($sql);

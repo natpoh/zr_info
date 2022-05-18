@@ -79,7 +79,11 @@ class MoviesParserCron extends MoviesAbstractDB {
             $count = $this->proccess_cron_urls($campaign, $options);
         } else if ($type_name == 'gen_urls') {
             $count = $this->proccess_gen_urls($campaign, $options, $debug);
+        } else if ($type_name == 'delete_garbage') {
+            //$count = $this->proccess_gen_urls($campaign, $options, $debug);
         }
+
+
 
         return $count;
     }
@@ -110,13 +114,15 @@ class MoviesParserCron extends MoviesAbstractDB {
         // Get posts (last is first)        
         $urls_count = $type_opt['num'];
 
+        // Random urls
+        $random_urls = $type_opt['random'];
+
         // Get last urls
         $status = 0;
-        $urls = $this->mp->get_last_urls($urls_count, $status, $campaign->id);
+        $urls = $this->mp->get_last_urls($urls_count, $status, $campaign->id, $random_urls);
 
         $count = sizeof($urls);
         if ($count) {
-
             $this->get_async_cron($campaign, $type_name);
             // $this->arhive_urls($campaign, $options, $urls);
         } else {
@@ -142,7 +148,7 @@ class MoviesParserCron extends MoviesAbstractDB {
     public function get_async_cron($campaign, $type_name = '') {
         $site_url = get_site_url();
         $url = $site_url . '/wp-content/plugins/movies_links/cron/async_cron.php?p=8ggD_23_2D0DSF-F&type=' . $type_name . '&cid=' . $campaign->id;
-        
+
         $this->mp->send_curl_no_responce($url);
     }
 
@@ -449,6 +455,30 @@ class MoviesParserCron extends MoviesAbstractDB {
         } else {
             $code = $this->mp->get_proxy($url, $use_proxy, $headers, $settings);
         }
+
+        if (preg_match('/HTTP\/1\.1[^\d]+403/', $headers)) {
+            // Status - 403 error
+            $status = 4;
+            $this->mp->change_url_state($item->id, $status, true);
+            $message = 'Error 403 Forbidden';
+            $this->mp->log_error($message, $item->cid, $item->id, 2);
+            return;
+        } else if (preg_match('/HTTP\/1\.1[^\d]+500/', $headers)) {
+            // Status - 500 error
+            $status = 4;
+            $this->mp->change_url_state($item->id, $status, true);
+            $message = 'Error 500 Internal Server Error';
+            $this->mp->log_error($message, $item->cid, $item->id, 2);
+            return;
+        } else if (preg_match('/HTTP\/1\.1[^\d]+404/', $headers)) {
+            // Status - 500 error
+            $status = 4;
+            $this->mp->change_url_state($item->id, $status, true);
+            $message = 'Error 404 Not found';
+            $this->mp->log_error($message, $item->cid, $item->id, 2);
+            return;
+        }      
+        
         $arhive_path = $this->ml->arhive_path;
         $cid_path = $arhive_path . $item->cid . '/';
         $first_letter_path = $cid_path . $first_letter . '/';
@@ -525,25 +555,51 @@ class MoviesParserCron extends MoviesAbstractDB {
      * Cron async
      */
 
-    public function run_cron_async($cid = 0, $type_name = '') {
-        
-        if (!$cid){
+    public function run_cron_async($cid = 0, $type_name = '', $debug = false) {
+
+        if (!$cid) {
             return;
         }
-       
+
         if ($type_name == 'arhive') {
             $campaign = $this->mp->get_campaign($cid);
             $options = $this->mp->get_options($campaign);
             $type_opt = $options[$type_name];
             $urls_count = $type_opt['num'];
-            
+
             // Get last urls
             $status = 0;
-            $urls = $this->mp->get_last_urls($urls_count, $status, $campaign->id);
+
+            // Random urls
+            $random_urls = $type_opt['random'];
+            $urls = $this->mp->get_last_urls($urls_count, $status, $campaign->id, $random_urls);
 
             $count = sizeof($urls);
+            if ($debug) {
+                print_r(array('Arhive count', $count));
+            }
             if ($count) {
                 $this->arhive_urls($campaign, $options, $urls);
+            }
+
+            // Delete garbage
+            $del_pea = $type_opt['del_pea'];
+            if ($del_pea == 1) {
+                // Delete arhives witch error posts
+                $del_pea_int = $type_opt['del_pea_int'];
+                $parser_type = 2;
+                $count = 10;
+                $curr_time = $this->curr_time();
+                $expire = $curr_time - $del_pea_int * 60;
+                $urls = $this->mp->get_urls(-1, 1, $cid, -1, $parser_type, -1, '', 'ASC', $count, $expire);
+                if ($debug) {
+                    print_r(array('Delete arhives', $urls));
+                }
+                if ($urls) {
+                    foreach ($urls as $url) {
+                        $this->mp->delete_arhive_by_url_id($url->id);
+                    }
+                }
             }
         }
     }

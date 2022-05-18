@@ -207,7 +207,7 @@ class Familysearch extends MoviesAbstractDBAn {
         return $id;
     }
 
-    public function get_country_races($country, $count) {
+    public function get_country_races($country, $count, $use_simpson = false) {
         $population = $this->get_population();
         $ret = array();
         $country_name = $country;
@@ -215,11 +215,16 @@ class Familysearch extends MoviesAbstractDBAn {
             $country_name = $this->country_names[$country];
         }
         if ($country_name) {
+            $simpson = 1;
+            if ($use_simpson) {
+                $simpson = $population[$country_name]['simpson'];
+            }
+
             if (isset($population[$country_name]['ethnic'])) {
                 foreach ($population[$country_name]['ethnic'] as $race => $percent) {
-                    $ret[$race] = round(($percent * $count) / 100, 0);
+                    $ret[$race] = round(($percent * $count * $simpson) / 100, 2);
                 }
-                return array('country' => $country_name, 'cca2' => $population[$country_name]['cca2'], 'races' => $ret);
+                return array('country' => $country_name, 'cca2' => $population[$country_name]['cca2'], 'races' => $ret, 'simpson' => $simpson);
             }
         }
         return array();
@@ -232,18 +237,18 @@ class Familysearch extends MoviesAbstractDBAn {
         }
 
         $ret = array();
-        $sql = "SELECT country_name, cca2, ethnic_array_result FROM {$this->db['population']}";
+        $sql = "SELECT country_name, cca2, ethnic_array_result, simpson FROM {$this->db['population']}";
         $results = $this->db_results($sql);
         if ($results) {
             foreach ($results as $item) {
-                $ret[$item->country_name] = array('cca2' => $item->cca2, 'ethnic' => json_decode($item->ethnic_array_result));
+                $ret[$item->country_name] = array('cca2' => $item->cca2, 'ethnic' => json_decode($item->ethnic_array_result), 'simpson' => $item->simpson);
             }
         }
         $population = $ret;
         return $population;
     }
 
-    public function calculate_fs_verdict($name_id = 0) {
+    public function calculate_fs_verdict($name_id = 0, $simpson = false) {
 
         $countryes = $this->get_countries_by_lasnameid($name_id);
 
@@ -257,13 +262,12 @@ class Familysearch extends MoviesAbstractDBAn {
 
         if ($countryes) {
             foreach ($countryes as $country => $country_count) {
-                $rows_total[] = $country . ': ' . $country_count;
-                $rows_total_arr[addslashes($country)] = $country_count;
-                $total += $country_count;
-                $races_arr = $this->get_country_races($country, $country_count);
+
+                $races_arr = $this->get_country_races($country, $country_count, $simpson);
                 if ($races_arr) {
                     $race_str = array();
                     $race_str_arr = array();
+                    $cca2 = $races_arr['cca2'];
                     foreach ($races_arr['races'] as $race => $count) {
                         if ($count > 0) {
                             $race_str[] = $race . ": " . $count;
@@ -273,7 +277,12 @@ class Familysearch extends MoviesAbstractDBAn {
                         }
                     }
                     $rows_race[] = $races_arr['country'] . ': ' . implode(', ', $race_str);
-                    $rows_race_arr[$races_arr['cca2']] = $race_str_arr;
+                    $rows_race_arr[$cca2] = $race_str_arr;
+
+                    $rows_total_arr[$cca2] = $country_count;
+                    $total += $country_count;
+
+                    $rows_total[] = $country . ': ' . $country_count . '<br /> - simpson: ' . $races_arr['simpson'];
                 }
             }
             arsort($race_total);
@@ -297,11 +306,52 @@ class Familysearch extends MoviesAbstractDBAn {
         );
     }
 
+    public function calculate_simpson($population = array()) {
+        /*
+          [cca2] => AI
+          [ethnic] => stdClass Object
+          (
+          [Black] => 85.21
+          [Latino] => 4.9
+          [Mixed / Other] => 3.8
+          [White] => 3.2
+          [Indigenous] => 1.9
+          [Indian] => 1
+          )
+         */
+        $countries = array();
+        foreach ($population as $country => $data) {
+            $cca2 = isset($data['cca2']) ? $data['cca2'] : '';
+            $ethnic = isset($data['ethnic']) ? $data['ethnic'] : array();
+            $freq_total = 0;
+            $index_total = 0;
+            $simpson = 0.5;
+            if ($ethnic) {
+                foreach ($ethnic as $race => $cnt) {
+                    $freq = $cnt * 100;
+                    $index = $freq * ($freq - 1);
+                    $freq_total += $freq;
+                    $index_total += $index;
+                }
+                $simpson = round($index_total / ($freq_total * ($freq_total - 1)), 4);
+            }
+            // Insert simpson to db
+            $this->insert_simpson($cca2, $simpson);
+            $countries[$country] = array($cca2, $simpson, $ethnic);
+        }
+        return $countries;
+    }
+
+    public function insert_simpson($cca2, $simpson) {
+        $sql = sprintf("UPDATE {$this->db['population']} SET simpson='%s' WHERE cca2 = '%s'", $simpson, $cca2);
+        $this->db_query($sql);
+    }
+
     /*
      * Cron actor vedrict
      */
 
-    public function cron_actor_verdict($count = 100, $debug = false) {
+    public function cron_actor_verdict($count = 100, $simpson = true, $debug = false) {
 
         // 1. Get lastnames
         $sql = sprintf("SELECT l.id, l.lastname, c.country as topcountryname"
@@ -320,11 +370,11 @@ class Familysearch extends MoviesAbstractDBAn {
         }
         $commit_id = '';
 
-        $array_update_family =[];
+        $array_update_family = [];
 
         foreach ($result as $item) {
             // 2. Calculate vedrict
-            $verdict_arr = $this->calculate_fs_verdict($item->id);
+            $verdict_arr = $this->calculate_fs_verdict($item->id, $simpson);
             if ($debug) {
                 print_r($verdict_arr);
             }
@@ -332,35 +382,32 @@ class Familysearch extends MoviesAbstractDBAn {
             $verdict_int = $this->race_small[$verdict_arr['verdict']] ? $this->race_small[$verdict_arr['verdict']] : 0;
             $last_upd = time();
             $lastname = $this->escape($item->lastname);
+            print_r($verdict_arr['rows_total_arr']);
             $desc_arr = array('total' => $verdict_arr['rows_total_arr'], 'race' => $verdict_arr['rows_race_arr']);
             $desc = json_encode($desc_arr);
             $sql = sprintf("INSERT INTO {$this->db['verdict']} (last_upd,verdict,lastname,description) VALUES (%d,%d,'%s','%s')", $last_upd, $verdict_int, $lastname, $desc);
-
+            if ($debug) {
+                print_r($sql);
+            }
             $this->db_query($sql);
 
             // Get id
             $id = Pdo_an::last_id();
 
-            if ($id)
-            {
-                $array_update_family[$id]=1;
+            if ($id) {
+                $array_update_family[$id] = 1;
             }
-
-
         }
-//        if (is_array($array_update_family))
-//        {
-//            foreach ($array_update_family as $id =>$enable)
-//            {
-//                // Add commit
-//                if ($id) {
-//                    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-//                    $commit_id = Import::create_commit($commit_id, 'update', $this->db['verdict'], array('id' => $id), 'familysearch',10);
-//                }
-//
-//            }
-//        }
+    }
 
+    public function get_verdict_by_lastname($lastname) {
+        $sql = sprintf("SELECT last_upd, verdict, lastname, description FROM {$this->db['verdict']} WHERE lastname='%s' LIMIT 1", $this->escape($lastname));
+        $result = $this->db_fetch_row($sql);
+        return $result;
+    }
+
+    public function get_verdict_name($int) {
+        return array_search($int, $this->race_small);
     }
 
 }

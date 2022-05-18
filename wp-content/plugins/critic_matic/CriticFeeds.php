@@ -121,7 +121,7 @@ class CriticFeeds extends AbstractDBWp {
                 'rt' => ''
             ),
             'critic_feeds_max_feed_error' => $this->feed_settings['critic_feeds_max_feed_error'],
-        );        
+        );
         $this->get_perpage();
     }
 
@@ -399,13 +399,72 @@ class CriticFeeds extends AbstractDBWp {
         return $count;
     }
 
-    public function fetch_feed($url) {
-        //apply_filters( 'https_ssl_verify', $options['verify'], $url );
+    /**
+     * Build SimplePie object based on RSS or Atom feed from URL.
+     *
+     * @since 2.8.0
+     *
+     * @param string|string[] $url URL of feed to retrieve. If an array of URLs, the feeds are merged
+     *                             using SimplePie's multifeed feature.
+     *                             See also {@link http://simplepie.org/wiki/faq/typical_multifeed_gotchas}
+     * @return SimplePie|WP_Error SimplePie object on success or WP_Error object on failure.
+     */
+    function fetch_feed($url) {
+
         add_filter('https_ssl_verify', function () {
             return false;
         });
 
-        return fetch_feed($url);
+        if (!class_exists('SimplePie', false)) {
+            require_once ABSPATH . WPINC . '/class-simplepie.php';
+        }
+
+        require_once ABSPATH . WPINC . '/class-wp-feed-cache-transient.php';
+        require_once ABSPATH . WPINC . '/class-wp-simplepie-file.php';
+        require_once ABSPATH . WPINC . '/class-wp-simplepie-sanitize-kses.php';
+
+        $feed = new SimplePie();
+
+        $feed->set_sanitize_class('WP_SimplePie_Sanitize_KSES');
+        // We must manually overwrite $feed->sanitize because SimplePie's
+        // constructor sets it before we have a chance to set the sanitization class.
+        $feed->sanitize = new WP_SimplePie_Sanitize_KSES();
+
+        // Register the cache handler using the recommended method for SimplePie 1.3 or later.
+        if (method_exists('SimplePie_Cache', 'register')) {
+            SimplePie_Cache::register('wp_transient', 'WP_Feed_Cache_Transient');
+            $feed->set_cache_location('wp_transient');
+        } else {
+            // Back-compat for SimplePie 1.2.x.
+            require_once ABSPATH . WPINC . '/class-wp-feed-cache.php';
+            $feed->set_cache_class('WP_Feed_Cache');
+        }
+
+        $feed->set_file_class('WP_SimplePie_File');
+
+        $feed->set_feed_url($url);
+        /** This filter is documented in wp-includes/class-wp-feed-cache-transient.php */
+        $feed->set_cache_duration(apply_filters('wp_feed_cache_transient_lifetime', 12 * HOUR_IN_SECONDS, $url));
+
+        $feed->set_timeout($timeout = 60);
+        /**
+         * Fires just before processing the SimplePie feed object.
+         *
+         * @since 3.0.0
+         *
+         * @param SimplePie       $feed SimplePie feed object (passed by reference).
+         * @param string|string[] $url  URL of feed or array of URLs of feeds to retrieve.
+         */
+        do_action_ref_array('wp_feed_options', array(&$feed, $url));
+
+        $feed->init();
+        $feed->set_output_encoding(get_option('blog_charset'));
+
+        if ($feed->error()) {
+            return new WP_Error('simplepie-error', $feed->error());
+        }
+
+        return $feed;
     }
 
     public function preview($campaign) {
@@ -1327,185 +1386,200 @@ class CriticFeeds extends AbstractDBWp {
                     <?php } ?>
                 </tbody>
             </table>    <?php
-        }
-    }
-
-    public function get_feed_settings() {
-        if ($this->feed_settings) {
-            return $this->feed_settings;
-        }
-        // Get search settings from options
-        $settings = unserialize($this->get_option('critic_feed_settings'));
-        if ($settings && sizeof($settings)) {
-            foreach ($this->feed_settings_def as $key => $value) {
-                if (!isset($settings[$key])) {
-                    //replace empty settings to default
-                    $settings[$key] = $value;
                 }
             }
-        } else {
-            $settings = $this->feed_settings_def;
-        }
-        $this->feed_settings = $settings;
-        return $settings;
-    }
 
-    public function update_feed_settings($form) {
-        $ss = $this->get_feed_settings();
-        foreach ($ss as $key => $value) {
-            $new_value = $form[$key];
-            if (isset($new_value)) {
-                $ss[$key] = $new_value;
-            }
-        }
-        $this->feed_settings = $ss;
-        update_option('critic_feed_settings', serialize($ss));
-    }
-
-    public function find_movies_queue($ids) {
-        $ret = false;
-        if ($ids) {
-            //get options
-            $opt_key = 'feed_matic_search_ids';
-            $ids_str = $this->get_option($opt_key, '');
-            $opt_ids = array();
-            if ($ids_str) {
-                $opt_ids = unserialize($ids_str);
-            }
-
-            foreach ($ids as $id) {
-                if (!in_array($id, $opt_ids)) {
-                    $opt_ids[] = $id;
-                    $ret = true;
+            public function get_feed_settings() {
+                if ($this->feed_settings) {
+                    return $this->feed_settings;
                 }
+                // Get search settings from options
+                $settings = unserialize($this->get_option('critic_feed_settings'));
+                if ($settings && sizeof($settings)) {
+                    foreach ($this->feed_settings_def as $key => $value) {
+                        if (!isset($settings[$key])) {
+                            //replace empty settings to default
+                            $settings[$key] = $value;
+                        }
+                    }
+                } else {
+                    $settings = $this->feed_settings_def;
+                }
+                $this->feed_settings = $settings;
+                return $settings;
             }
-            if ($ret) {
-                $ids_str = serialize($opt_ids);
-                update_option($opt_key, $ids_str);
+
+            public function update_feed_settings($form) {
+                $ss = $this->get_feed_settings();
+                foreach ($ss as $key => $value) {
+                    $new_value = $form[$key];
+                    if (isset($new_value)) {
+                        $ss[$key] = $new_value;
+                    }
+                }
+                $this->feed_settings = $ss;
+                update_option('critic_feed_settings', serialize($ss));
             }
-        }
 
-        return $ret;
-    }
+            public function find_movies_queue($ids) {
+                $ret = false;
+                if ($ids) {
+                    //get options
+                    $opt_key = 'feed_matic_search_ids';
+                    $ids_str = $this->get_option($opt_key, '');
+                    $opt_ids = array();
+                    if ($ids_str) {
+                        $opt_ids = unserialize($ids_str);
+                    }
 
-    /*
-     * Other
-     */
-
-    public function import_feeds() {
-        // UNUSED
-        $authors_count = $this->cm->get_authors_count();
-        if (!$authors_count) {
-            return;
-        }
-        $table_prefix =DB_PREFIX_WP;
-        // get rss feeds
-        $wp_posts = $table_prefix . 'posts';
-        $sql = "SELECT * FROM {$wp_posts} WHERE post_type = 'wprss_feed'";
-        $result = $this->db_results($sql);
-        if (sizeof($result)) {
-            foreach ($result as $item) {
-
-                //Get meta
-                $meta = get_post_meta($item->ID);
-
-                //Author
-                $author = 0;
-                $author_name = trim($item->post_title);
-                if ($author_name) {
-                    $status = isset($meta['wprss_is_public'][0]) ? 1 : 0;
-                    $author_type = $meta['wprss_feed_from'][0] == 0 ? 0 : 1;
-                    $author = $this->cm->get_or_create_author_by_name($author_name, $author_type, $status);
+                    foreach ($ids as $id) {
+                        if (!in_array($id, $opt_ids)) {
+                            $opt_ids[] = $id;
+                            $ret = true;
+                        }
+                    }
+                    if ($ret) {
+                        $ids_str = serialize($opt_ids);
+                        update_option($opt_key, $ids_str);
+                    }
                 }
 
-                $post_date = $date = strtotime($item->post_date);
+                return $ret;
+            }
 
-                //Post meta
-                $wprss_site_url = $meta['wprss_site_url'][0];
-                $wprss_url = $meta['wprss_url'][0];
-                $site_arr = explode(',', $wprss_site_url);
-                $rss_arr = explode(',', $wprss_url);
-                $rss_to_add = array();
-                if (sizeof($rss_arr)) {
-                    for ($i = 0; $i < sizeof($rss_arr); $i += 1) {
-                        $rss_url = trim($rss_arr[$i]);
-                        if (!$rss_url) {
+            public function bulk_change_campaign_status($ids = array(), $b) {
+                foreach ($ids as $id) {
+                    if ($b == 'start_feed') {
+                        $status = 1;
+                    } else if ($b == 'stop_feed') {
+                        $status = 0;
+                    } else if ($b == 'trash_feed') {
+                        $status = 2;
+                    }
+
+                    $this->update_campaign_status($id, $status);
+                }
+            }
+
+            /*
+             * Other
+             */
+
+            public function import_feeds() {
+                // UNUSED
+                $authors_count = $this->cm->get_authors_count();
+                if (!$authors_count) {
+                    return;
+                }
+                $table_prefix = DB_PREFIX_WP;
+                // get rss feeds
+                $wp_posts = $table_prefix . 'posts';
+                $sql = "SELECT * FROM {$wp_posts} WHERE post_type = 'wprss_feed'";
+                $result = $this->db_results($sql);
+                if (sizeof($result)) {
+                    foreach ($result as $item) {
+
+                        //Get meta
+                        $meta = get_post_meta($item->ID);
+
+                        //Author
+                        $author = 0;
+                        $author_name = trim($item->post_title);
+                        if ($author_name) {
+                            $status = isset($meta['wprss_is_public'][0]) ? 1 : 0;
+                            $author_type = $meta['wprss_feed_from'][0] == 0 ? 0 : 1;
+                            $author = $this->cm->get_or_create_author_by_name($author_name, $author_type, $status);
+                        }
+
+                        $post_date = $date = strtotime($item->post_date);
+
+                        //Post meta
+                        $wprss_site_url = $meta['wprss_site_url'][0];
+                        $wprss_url = $meta['wprss_url'][0];
+                        $site_arr = explode(',', $wprss_site_url);
+                        $rss_arr = explode(',', $wprss_url);
+                        $rss_to_add = array();
+                        if (sizeof($rss_arr)) {
+                            for ($i = 0; $i < sizeof($rss_arr); $i += 1) {
+                                $rss_url = trim($rss_arr[$i]);
+                                if (!$rss_url) {
+                                    continue;
+                                }
+                                $rss_to_add[$i]['rss'] = $rss_url;
+                                if (isset($site_arr[$i])) {
+                                    $rss_to_add[$i]['site'] = trim($site_arr[$i]);
+                                }
+                            }
+                        }
+
+                        // Upadate interval
+                        $update_interval = array(
+                            15 => 'fifteen_min',
+                            30 => 'thirty_min',
+                            60 => 'hourly',
+                            120 => 'two_hours',
+                            720 => 'twicedaily',
+                            1440 => 'daily'
+                        );
+                        $upd_interval = $this->def_options['update_interval'];
+                        if (isset($meta['wprss_update_interval'][0])) {
+                            $interval = array_search($meta['wprss_update_interval'][0], $update_interval);
+                            if ($interval) {
+                                $upd_interval = $interval;
+                            }
+                        }
+
+                        $state = ($meta['wprss_state'][0] == 'active') ? 1 : 0;
+
+
+                        if (!sizeof($rss_to_add)) {
                             continue;
                         }
-                        $rss_to_add[$i]['rss'] = $rss_url;
-                        if (isset($site_arr[$i])) {
-                            $rss_to_add[$i]['site'] = trim($site_arr[$i]);
+
+                        $options = array();
+
+                        foreach ($rss_to_add as $value) {
+                            $rss_url = $value['rss'];
+                            $site_url = isset($value['site']) ? $value['site'] : '';
+
+                            // Campaign title
+                            if ($site_url) {
+                                $title = $this->clean_url($site_url);
+                            } else {
+                                $title = $this->clean_url($rss_url);
+                            }
+
+                            //Add a new campaign
+                            $this->add_campaign($author, $title, $post_date, $rss_url, $site_url, $upd_interval, $state, $options);
                         }
+
+                        //print_r($item);
+                        //print_r($meta);
                     }
                 }
-
-                // Upadate interval
-                $update_interval = array(
-                    15 => 'fifteen_min',
-                    30 => 'thirty_min',
-                    60 => 'hourly',
-                    120 => 'two_hours',
-                    720 => 'twicedaily',
-                    1440 => 'daily'
-                );
-                $upd_interval = $this->def_options['update_interval'];
-                if (isset($meta['wprss_update_interval'][0])) {
-                    $interval = array_search($meta['wprss_update_interval'][0], $update_interval);
-                    if ($interval) {
-                        $upd_interval = $interval;
-                    }
-                }
-
-                $state = ($meta['wprss_state'][0] == 'active') ? 1 : 0;
-
-
-                if (!sizeof($rss_to_add)) {
-                    continue;
-                }
-
-                $options = array();
-
-                foreach ($rss_to_add as $value) {
-                    $rss_url = $value['rss'];
-                    $site_url = isset($value['site']) ? $value['site'] : '';
-
-                    // Campaign title
-                    if ($site_url) {
-                        $title = $this->clean_url($site_url);
-                    } else {
-                        $title = $this->clean_url($rss_url);
-                    }
-
-                    //Add a new campaign
-                    $this->add_campaign($author, $title, $post_date, $rss_url, $site_url, $upd_interval, $state, $options);
-                }
-
-                //print_r($item);
-                //print_r($meta);
             }
+
+            /*
+             * Other
+             */
+
+            public function escape_title($title) {
+                $title = strip_tags($title);
+                $title_decode = html_entity_decode($title, ENT_QUOTES, 'UTF-8');
+                if ($title_decode) {
+                    $title = $title_decode;
+                }
+                return $title;
+            }
+
+            public function clean_url($url) {
+                $clean_url = '';
+                if (preg_match('|//([^/\?#]+)|', $url, $match)) {
+                    $clean_url = $match[1];
+                    $clean_url = preg_replace('/^www\./i', '', $clean_url);
+                }
+                return $clean_url;
+            }
+
         }
-    }
-
-    /*
-     * Other
-     */
-
-    public function escape_title($title) {
-        $title = strip_tags($title);
-        $title_decode = html_entity_decode($title, ENT_QUOTES, 'UTF-8');
-        if ($title_decode) {
-            $title = $title_decode;
-        }
-        return $title;
-    }
-
-    public function clean_url($url) {
-        $clean_url = '';
-        if (preg_match('|//([^/\?#]+)|', $url, $match)) {
-            $clean_url = $match[1];
-            $clean_url = preg_replace('/^www\./i', '', $clean_url);
-        }
-        return $clean_url;
-    }
-
-}
+        

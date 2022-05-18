@@ -164,7 +164,7 @@ class CriticParser extends AbstractDBWp {
             'posts' => DB_PREFIX_WP_AN . 'critic_matic_posts',
             'url' => DB_PREFIX_WP_AN . 'critic_parser_url',
             // Critic Parser
-            'campaign' => $table_prefix . 'critic_parser_campaign',            
+            'campaign' => $table_prefix . 'critic_parser_campaign',
             'log' => $table_prefix . 'critic_parser_log',
         );
 
@@ -224,7 +224,8 @@ class CriticParser extends AbstractDBWp {
                     'interval' => 1440,
                     'last_update' => 0,
                     'status' => 1,
-                )
+                ),
+                'yt_playlists' => array(),
             ),
             'max_error' => $this->parser_settings['max_error'],
         );
@@ -660,7 +661,9 @@ class CriticParser extends AbstractDBWp {
                         } else {
                             // Add post 
                             $log_message = 'Add post';
-                            $pid = $this->cm->add_post($date, $post_type, $item->link, $title, $content, $top_movie, $post_status);
+                            // View type is Youtube
+                            $view_type = 1;
+                            $pid = $this->cm->add_post($date, $post_type, $item->link, $title, $content, $top_movie, $post_status, $view_type);
 
                             // Add author      
                             $aid = $campaign->author;
@@ -1496,6 +1499,15 @@ class CriticParser extends AbstractDBWp {
                 }
                 $options[$key] = base64_encode(stripslashes($form_state[$key]));
 
+                // Youtube playlists
+                $yt_pl = array();
+                if ($form_state['yt_playlists']) {
+                    foreach ($form_state['yt_playlists'] as $pl) {
+                        $yt_pl[] = $pl;
+                    }
+                }
+                $options['yt_playlists'] = $yt_pl;
+
                 $this->update_campaign_options($id, $options);
             } else if ($form_state['add_urls']) {
                 $this->add_urls($id, $form_state['add_urls'], $opt_prev);
@@ -1544,7 +1556,20 @@ class CriticParser extends AbstractDBWp {
         $cid = $campaign->id;
 
         if ($campaign->type == 1) {
-            $ret = $this->find_urls_yt($cid, $options, '', $preview);
+            // Playlists
+            $playlists = $options['yt_playlists'] ? $options['yt_playlists'] : array();
+
+            if ($playlists) {
+                $ret = array('add_urls' => array());
+                foreach ($playlists as $pid) {
+                    $item = $this->find_urls_playlist_yt($cid, $pid, $options, '', $preview);
+                    if ($item['add_urls']) {
+                        $ret['add_urls'] = array_merge($ret['add_urls'], $item['add_urls']);
+                    }
+                }
+            } else {
+                $ret = $this->find_urls_yt($cid, $options, '', $preview);
+            }
         } else {
             $cron_urls = $options['cron_urls'];
 
@@ -1557,6 +1582,7 @@ class CriticParser extends AbstractDBWp {
             $wait = 0;
             $ret = $this->parse_urls($cid, $reg, $urls, $options, $wait, $preview);
         }
+
         return $ret;
     }
 
@@ -1577,23 +1603,53 @@ class CriticParser extends AbstractDBWp {
         $cnt = $options['yt_urls']['per_page'];
         $cid = $campaign->id;
 
-        // Get data from first page
-        $first_page = $this->find_urls_yt($cid, $options, '', $preview);
-        if ($preview) {
-            return $first_page;
+        // Playlists
+        $playlists = $options['yt_playlists'] ? $options['yt_playlists'] : array();
+        $first_page = array();
+
+        if ($playlists) {
+            $result = array('found' => 0, 'add' => 0);
+            foreach ($playlists as $pid) {
+                $first_page = $this->find_urls_playlist_yt($cid, $pid, $options, '', $preview);
+                if ($preview) {
+                    break;
+                }
+                $result_pl = $this->yt_parse_pager($first_page, $cnt, $cid, $pid, $options, $preview);
+                $result['found'] += $result_pl['found'];
+                $result['add'] += $result_pl['add'];
+            }
+            if ($preview) {
+                return $first_page;
+            }
+        } else {
+            $first_page = $this->find_urls_yt($cid, $options, '', $preview);
+            if ($preview) {
+                // Get data from first page
+                return $first_page;
+            }
+            $result = $this->yt_parse_pager($first_page, $cnt, $cid, 0, $options, $preview);
         }
+        return $result;
+    }
 
+    private function yt_parse_pager($first_page = array(), $cnt = 0, $cid = 0, $pid = 0, $options = array(), $preview = false) {
         $total_add = 0;
-
 
         $next = $first_page['next'];
         $total_found = (int) $first_page['total'];
 
         $total_parsed = $total_found;
         if ($next && $total_found) {
-            for ($i = 0; $i < $total_found; $i += $cnt) {
-                $result = $this->find_urls_yt($cid, $options, $next);
 
+            for ($i = 0; $i < $total_found; $i += $cnt) {
+
+                if ($pid) {
+                    // Find in a playlist
+                    $result = $this->find_urls_playlist_yt($cid, $pid, $options, $next);
+                } else {
+                    // Find in a channel
+                    $result = $this->find_urls_yt($cid, $options, $next);
+                }
                 if ($result['urls']) {
                     $total_parsed += sizeof($result['urls']);
                 }
@@ -1635,6 +1691,74 @@ class CriticParser extends AbstractDBWp {
                             continue;
                         }
                         if ($this->add_url($cid, $url, $new_urls_weight)) {
+                            $ret['add_urls'][] = $url;
+                        }
+                    }
+                }
+            }
+            $ret['responce'] = $responce;
+        }
+        return $ret;
+    }
+
+    private function find_urls_playlist_yt($cid, $pid, $options, $next = '', $preview = false) {
+        $cnt = $options['yt_urls']['per_page'];
+
+        $new_urls_weight = $options['new_urls_weight'];
+
+        $ret = array();
+        $ret['urls'] = array();
+
+        if ($pid) {
+            $responce = $this->youtube_get_playlist_videos($pid, $cnt, $next);
+            if ($responce) {
+                $total_found = $responce->pageInfo->totalResults;
+                $ret['total'] = $total_found;
+                $ret['next'] = $responce->nextPageToken;
+                /*
+                 * [items] => Array
+                  (
+                  [0] => stdClass Object
+                  (
+                  [etag] => lYhCT5oErk1Pm51hvuNUgmYU6fY
+                  [id] => UExLVFQ4NlVJUUtxM096bEZOaE9sUnc5NEZYbWtncEIxNi41NkI0NEY2RDEwNTU3Q0M2
+                  [kind] => youtube#playlistItem
+                  [snippet] => stdClass Object
+                  (
+                  [channelId] => UC0uWCUBVPIhgsjai2RN1buQ
+                  [channelTitle] => Argent
+                  [description] => Discord Server Link, Also the Best Place to Contact Me
+                  https://discord.gg/7KeA749XWT
+
+                  If you enjoy my content you can super chat or pledge to my Patreon here
+                  https://www.patreon.com/argenttemplar
+                  [playlistId] => PLKTT86UIQKq3OzlFNhOlRw94FXmkgpB16
+                  [position] => 0
+                  [publishedAt] => 2019-07-08T01:19:15Z
+                  [title] => Castlevania Season 2 Reactionary Review: A Cartoonishly (Pun Intended) Anti Christian Polemic
+                  [videoOwnerChannelId] => UC0uWCUBVPIhgsjai2RN1buQ
+                  [videoOwnerChannelTitle] => Argent
+
+                  [resourceId] => stdClass Object
+                  (
+                  [channelId] =>
+                  [kind] => youtube#video
+                  [playlistId] =>
+                  [videoId] => CHQOIp3TUc8
+                  )
+                  )
+                  )
+                 */
+                if ($responce->items) {
+                    foreach ($responce->items as $item) {
+                        $id = $item->snippet->resourceId->videoId;
+                        $url = $this->youtube_url . $id;
+                        $ret['urls'][] = $url;
+                        if ($preview) {
+                            continue;
+                        }
+                        if ($this->add_url($cid, $url, $new_urls_weight)) {
+
                             $ret['add_urls'][] = $url;
                         }
                     }
@@ -2891,19 +3015,59 @@ class CriticParser extends AbstractDBWp {
         $cid = base64_decode($options['yt_page']);
         $cnt = 5;
 
+        $playlists_checked = $options['yt_playlists'] ? $options['yt_playlists'] : array();
+
         if ($cid) {
             try {
-                $responce = $this->youtube_get_videos($cid, $cnt);
+                if (!$playlists_checked) {
+                    // All posts
+                    $responce = $this->youtube_get_videos($cid, $cnt);
+                    if ($responce) {
+                        $total = $responce->pageInfo->totalResults;
+                    }
+                } else {
+                    $total_arr = array();
+                    foreach ($playlists_checked as $play_list_id) {
+                        $item = $this->youtube_get_playlist_videos($play_list_id, $cnt);
 
-                if ($responce) {
-                    $total = $responce->pageInfo->totalResults;
+                        if ($item) {
+                            $total_arr[] = $item->pageInfo->totalResults;
+                        }
+                    }
+                    $total = implode(', ', $total_arr);
                 }
             } catch (Exception $exc) {
-
                 print $exc->getTraceAsString();
             }
         }
         return $total;
+    }
+
+    public function yt_playlists_select($options) {
+        $ret = array();
+        $playlists = $this->yt_get_playlists($options);
+        if ($playlists->items) {
+            foreach ($playlists->items as $item) {
+                $ret[$item->id] = $item->snippet->title;
+            }
+        }
+        return $ret;
+    }
+
+    public function yt_get_playlists($options) {
+
+        $playlists = array();
+        $cid = base64_decode($options['yt_page']);
+        $cnt = 50;
+
+        if ($cid) {
+            try {
+                $playlists = $this->youtube_get_playlists($cid, $cnt);
+            } catch (Exception $exc) {
+                print $exc->getTraceAsString();
+            }
+        }
+        return $playlists;
     }
 
     public function youtube_get_videos($cid = 0, $count = 50, $pageToken = '') {
@@ -2919,6 +3083,39 @@ class CriticParser extends AbstractDBWp {
 
         $filename = "ls-$cid-$count-$pageToken";
         $str = ThemeCache::cache('yt_listSearch', false, $filename, 'def', $this, $arg);
+        $responce = json_decode(gzdecode($str));
+
+        return $responce;
+    }
+
+    public function youtube_get_playlist_videos($play_list_id = 0, $count = 50, $pageToken = '') {
+        if (!$play_list_id) {
+            return;
+        }
+        $arg = array();
+        $arg['pid'] = $play_list_id;
+        $arg['count'] = $count;
+        if ($pageToken) {
+            $arg['pageToken'] = $pageToken;
+        }
+
+        $filename = "lps-$play_list_id-$count-$pageToken";
+        $str = ThemeCache::cache('yt_playlistItems', false, $filename, 'def', $this, $arg);
+        $responce = json_decode(gzdecode($str));
+
+        return $responce;
+    }
+
+    public function youtube_get_playlists($cid = 0, $count = 50) {
+        if (!$cid) {
+            return;
+        }
+        $arg = array();
+        $arg['cid'] = $cid;
+        $arg['count'] = $count;
+
+        $filename = "lp-$cid-$count";
+        $str = ThemeCache::cache('yt_playlists', false, $filename, 'def', $this, $arg);
         $responce = json_decode(gzdecode($str));
 
         return $responce;
@@ -2968,6 +3165,30 @@ class CriticParser extends AbstractDBWp {
         try {
             $response = $service->search->listSearch('snippet', $queryParams);
         } catch (Exception $exc) {
+            $message = $exc->getMessage();
+            $this->log_error($message, $arg['cid'], 0, 3);
+            $response = array();
+        }
+        return gzencode(json_encode($response));
+    }
+
+    public function yt_playlistItems($arg = array()) {
+        $service = $this->init_gs();
+
+        $queryParams = array(
+            'playlistId' => $arg['pid'],
+            'maxResults' => $arg['count'],
+        );
+
+        if ($arg['pageToken']) {
+            $queryParams['pageToken'] = $arg['pageToken'];
+        }
+
+        try {
+            $response = $service->playlistItems->listPlaylistItems('snippet', $queryParams);
+        } catch (Exception $exc) {
+            $message = $exc->getMessage();
+            $this->log_error($message, $arg['cid'], 0, 3);
             $response = array();
         }
         return gzencode(json_encode($response));
@@ -2983,11 +3204,31 @@ class CriticParser extends AbstractDBWp {
         try {
             $response = $service->videos->listVideos('snippet', $queryParams);
         } catch (Exception $exc) {
+            $message = $exc->getMessage();
+            $this->log_error($message, $arg['cid'], 0, 3);
             $response = array();
         }
         return gzencode(json_encode($response));
     }
 
+    public function yt_playlists($arg = array()) {
+        $service = $this->init_gs();
+
+        $queryParams = [
+            'channelId' => $arg['cid'],
+            'maxResults' => $arg['count']
+        ];
+
+        try {
+            $response = $service->playlists->listPlaylists('snippet', $queryParams);
+        } catch (Exception $exc) {
+            $message = $exc->getMessage();
+            $this->log_error($message, $arg['cid'], 0, 3);
+            $response = array();
+        }
+        return gzencode(json_encode($response));
+    }
+    
     /*
      * Other functions
      */

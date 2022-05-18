@@ -25,6 +25,12 @@ class MoviesParserAdmin extends ItemAdmin {
         1440 => 'Daily',
         10080 => 'Weekly'
     );
+    public $remove_interval = array(
+        1440 => 'Day',
+        10080 => 'Week',
+        20160 => 'Two weeks',
+        43200 => 'Mounth',
+    );
     public $parse_number = array(1 => 1, 5 => 5, 10 => 10, 20 => 20, 50 => 50, 100 => 100, 200 => 200, 500 => 500);
     public $camp_state = array(
         1 => array('title' => 'Active'),
@@ -190,16 +196,12 @@ class MoviesParserAdmin extends ItemAdmin {
          * Campaign page
          */
         if ($cid) {
+            $campaign = $this->mp->get_campaign($cid);
+            $mlr_name = $this->ml->get_campaign_mlr_name($campaign);
+
             //Tabs
             $append = '&cid=' . $cid;
-            $tabs_arr = $this->parser_campaign_tabs;
-
-            $campaign = $this->mp->get_campaign($cid);
-
-            $mlr_name = $this->ml->get_campaign_mlr_name($campaign);
-            if ($mlr_name) {
-                $tabs_arr['mlr'] = 'Results';
-            }
+            $tabs_arr = $this->get_campaign_tabs($mlr_name);
 
             $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab, $append);
 
@@ -421,7 +423,7 @@ class MoviesParserAdmin extends ItemAdmin {
                 $page_url .= '&cid=' . $cid;
                 $page_url .= '&tab=mlr';
 
-                
+
                 //Bulk actions
                 // $this->bulk_parser_submit();
 
@@ -438,7 +440,7 @@ class MoviesParserAdmin extends ItemAdmin {
 
                  */
                 $count = $mlr->get_posts_count();
-                $status=-1;
+                $status = -1;
                 $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
 
                 $posts = $mlr->get_posts($page, $orderby, $order, $per_page);
@@ -770,6 +772,9 @@ class MoviesParserAdmin extends ItemAdmin {
                 'status' => isset($form_state['status']) ? $form_state['status'] : 0,
                 'proxy' => isset($form_state['proxy']) ? $form_state['proxy'] : 0,
                 'webdrivers' => isset($form_state['webdrivers']) ? $form_state['webdrivers'] : 0,
+                'random' => isset($form_state['random']) ? $form_state['random'] : 0,
+                'del_pea' => isset($form_state['del_pea']) ? $form_state['del_pea'] : 0,                
+                'del_pea_int' => isset($form_state['del_pea_int']) ? $form_state['del_pea_int'] : $opt_prev['arhive']['del_pea_int'],
             );
 
             $options = $opt_prev;
@@ -832,6 +837,7 @@ class MoviesParserAdmin extends ItemAdmin {
                 'match' => isset($form_state['match']) ? $form_state['match'] : 0,
                 'type' => isset($form_state['type']) ? $form_state['type'] : $opt_prev['links']['type'],
                 'rating' => isset($form_state['rating']) ? $form_state['rating'] : 0,
+                'last_id' => isset($form_state['last_id']) ? $form_state['last_id'] : 0,
                 'rules' => $this->links_rules_form($form_state),
             );
 
@@ -869,8 +875,18 @@ class MoviesParserAdmin extends ItemAdmin {
         return $result;
     }
 
-    public function parser_actions() {
-        foreach ($this->parser_campaign_tabs as $key => $value) {
+    public function get_campaign_tabs($mlr_name = '') {
+        $tabs_arr = $this->parser_campaign_tabs;
+        if ($mlr_name) {
+            $tabs_arr['mlr'] = 'Results';
+        }
+        return $tabs_arr;
+    }
+
+    public function parser_actions($campaign) {
+        $mlr_name = $this->ml->get_campaign_mlr_name($campaign);
+        $tabs = $this->get_campaign_tabs($mlr_name);
+        foreach ($tabs as $key => $value) {
             $parser_actions[$key] = array('title' => $value);
         }
         return $parser_actions;

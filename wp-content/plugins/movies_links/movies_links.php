@@ -253,6 +253,11 @@ function movies_links_plugin_activation() {
     if (function_exists('critic_matic_create_index_an')) {
         critic_matic_create_index_an(array('last_upd', 'verdict', 'lastname'), 'data_familysearch_verdict');
     }
+
+
+    $sql = "ALTER TABLE `data_population_country` ADD `simpson` varchar(255) NOT NULL DEFAULT ''";
+    Pdo_an::db_query($sql);
+    
 }
 
 function movies_links_create_index($names = array(), $table_name = '') {

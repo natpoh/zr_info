@@ -36,4 +36,5 @@ $campaign->title = 'familysearch.org';
 
 $fs = $ml->get_campaing_mlr($campaign);
 
-$fs->cron_actor_verdict($count,$debug);
+$simpson = true;
+$fs->cron_actor_verdict($count,$simpson,$debug);

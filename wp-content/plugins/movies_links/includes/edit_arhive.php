@@ -64,9 +64,9 @@ if ($cid) {
                     }
                     ?>
                     <input type="checkbox" name="proxy" value="1" <?php print $checked ?> >
-                    <span class="checkbox-title"><?php print __('Use proxy') ?></span>
+                    <span class="checkbox-title"><?php print __('Use TOR') ?></span>
                 </label>
-         
+
                 <label class="inline-edit-status">                
                     <?php
                     $checked = '';
@@ -77,7 +77,18 @@ if ($cid) {
                     <input type="checkbox" name="webdrivers" value="1" <?php print $checked ?> >
                     <span class="checkbox-title"><?php print __('Use webdrivers') ?></span>
                 </label>
-                
+
+                <label class="inline-edit-status">                
+                    <?php
+                    $checked = '';
+                    if ($ao['random'] == 1) {
+                        $checked = 'checked="checked"';
+                    }
+                    ?>
+                    <input type="checkbox" name="random" value="1" <?php print $checked ?> >
+                    <span class="checkbox-title"><?php print __('Random URLs parsing') ?></span>
+                </label>
+
                 <label class="inline-edit-status">                
                     <?php
                     $checked = '';
@@ -87,6 +98,35 @@ if ($cid) {
                     ?>
                     <input type="checkbox" name="status" value="1" <?php print $checked ?> >
                     <span class="checkbox-title"><?php print __('Arhive parser is active') ?></span>
+                </label>
+                <br />
+
+                <h3>Garbage collector</h3>
+                <label class="inline-edit-status">                
+                    <?php
+                    $checked = '';
+                    if ($ao['del_pea'] == 1) {
+                        $checked = 'checked="checked"';
+                    }
+                    ?>
+                    <input type="checkbox" name="del_pea" value="1" <?php print $checked ?> >
+                    <span class="checkbox-title"><?php print __('Delete archives with parsing errors') ?></span>
+                </label>
+                <br />
+                <label class="inline-edit-interval">
+                   
+                    <select name="del_pea_int" class="interval">
+                        <?php
+                        $inetrval = $ao['del_pea_int'];
+                        foreach ($this->remove_interval as $key => $name) {
+                            $selected = ($key == $inetrval) ? 'selected' : '';
+                            ?>
+                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                            <?php
+                        }
+                        ?>                          
+                    </select> 
+                    <span class="inline-edit"><?php print __('Delete archives after timeout') ?></span>                    
                 </label>
                 <br />
 

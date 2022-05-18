@@ -431,7 +431,7 @@ class CriticAudience extends AbstractDb {
         $type = 2;
         $link = '';
 
-        $pid = $this->cm->add_post($date, $type, $link, $title, $content, $top_movie, $status, 0, true);
+        $pid = $this->cm->add_post($date, $type, $link, $title, $content, $top_movie, $status,0, 0, true);
 
         if ($pid) {
             // Add post author
@@ -567,11 +567,8 @@ class CriticAudience extends AbstractDb {
     }
 
     public function update_queue_status($id = 0, $status = 1) {
-        $data = array(
-            'status' => $status
-        );
-
-        $this->cm->sync_update_data($data, $id, $this->db['audience'], $this->cm->sync_data);
+        $sql = sprintf("UPDATE {$this->db['audience']} SET status='%d' WHERE id=%d", $status, $id);
+        $this->db_query($sql);
     }
 
     public function get_queue_status($status) {
