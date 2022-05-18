@@ -30,7 +30,6 @@ class Import
         $timestart = microtime(1);
     }
 
-
     public static function timer_stop_data()
     { // if called liketimer_stop_data(1), will echo $timetotal
         global $timestart, $timeend;
@@ -38,8 +37,6 @@ class Import
         $timetotal = $mtime - $timestart;
         return $timetotal;
     }
-
-
 
     public static function get_key()
     {
@@ -89,8 +86,7 @@ class Import
     return $result;
     }
 
-
-public static function commit_info_request($uid)
+    public static function commit_info_request($uid)
 {
 
     $key = self::get_key();
@@ -251,15 +247,12 @@ public static function commit_info_request($uid)
 
     }
 
-
     public static function get_commit_id($name)
     {
         $id = self::set_commit($name);
 
         return $id;
     }
-
-
 
     public static function create_commit($commit_id='',$type,$db,$request,$name = '',$priority=1,$array_custom='',$array_return='')
     {
@@ -346,7 +339,6 @@ public static function commit_info_request($uid)
 
         return $unique_id;
     }
-
 
     public static function get_commit($data)
     {
@@ -501,7 +493,6 @@ public static function commit_info_request($uid)
         return $rows;
     }
 
-
     public static function last_commits_updated($data)
     {
         $count=10;
@@ -517,11 +508,10 @@ public static function commit_info_request($uid)
         return $rows;
     }
 
-
     public static function last_commits($data,$status =0)
     {
 
-        $count=10;
+        $count=500;
         if ($data['count'])
         {
             $count =intval($data['count']);
@@ -548,7 +538,6 @@ public static function commit_info_request($uid)
         return $array;
 
     }
-
 
     public static function get_import_data()
     {
@@ -603,7 +592,6 @@ public static function commit_info_request($uid)
         return $result;
 
     }
-
 
     public static function check_and_set_data($data)
     {
@@ -664,7 +652,8 @@ public static function commit_info_request($uid)
 
 
 }
-public static function custom_function($array)
+
+    public static function custom_function($array)
 {
 
 //    $array_update = array('k'=>'um','id'=>$mid);
@@ -854,7 +843,6 @@ public static function custom_function($array)
 
     }
 
-
     public static function update_status($key,$status,$time_current='')
     {
         $dop='';
@@ -893,8 +881,9 @@ public static function custom_function($array)
 
         $res_return =[];
 
-        $limit = $data['limit'];
-        if (!$limit)$limit=10;
+//        $limit = $data['limit'];
+//        if (!$limit)
+ //           $limit=500;
 
         ////check new data
 
@@ -1000,7 +989,6 @@ public static function custom_function($array)
 
         return $res_return;
     }
-
 
     public static function prepare_data($data)
     {
@@ -1382,7 +1370,6 @@ public static function custom_function($array)
 
         return $result;
     }
-
 
     public static function get_table($table_name, $oper_get_colums='',$where='')
     {
