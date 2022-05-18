@@ -482,15 +482,33 @@ class Import
     public static function last_sinc_commits($data)
     {
         $site_id = self::generate_id();
-        $count=10;
+        $count=1000;
         if ($data['count'])
         {
             $count =intval($data['count']);
 
         }
+        $count_array=0;
+        $result =[];
+
         $sql ="SELECT *  FROM `commit` WHERE `status` = 1 and site_id!='".$site_id."' ORDER BY `commit`.`priority` ASC, `id` ASC  limit ".$count;
         $rows = Pdo_an::db_results_array($sql);
-        return $rows;
+        foreach ($rows as $i=> $r)
+        {
+            $data = $r['text'];
+            if ($data)
+            {
+                $array = json_decode($data,1);
+                $count_array+= count($array);
+            }
+            $result[$i]=$r;
+            if ($count_array>1000)
+            {
+                break;
+            }
+        }
+
+        return $result;
     }
 
     public static function last_commits_updated($data)
