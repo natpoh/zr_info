@@ -44,7 +44,7 @@ class CriticMaticTrans extends AbstractDB {
         }
     }
 
-    private function insert_transcription($link = '', $id=0, $debug = false) {
+    private function insert_transcription($link = '', $id = 0, $debug = false) {
         $cp = $this->get_cp();
         // Service
         // http://172.17.0.1:8009/?p=43dfsfgFe_dJD4S-fdds&proxy=107.152.153.239:9942&url=
@@ -70,7 +70,7 @@ class CriticMaticTrans extends AbstractDB {
         $data = $cp->get_proxy($service, '', $headers);
         $code = $this->get_code($headers);
         if ($debug) {
-            print_r(array($id, $link, $service, $code, $headers, $data));
+            print_r(array($id, $link, $service, $code, $headers));
         }
         $content = '';
         $status = 0;
@@ -87,10 +87,14 @@ class CriticMaticTrans extends AbstractDB {
             'pid' => $id,
             'date_add' => $date_add,
             'status' => $status,
-            'content' => $content,            
+            'content' => $content,
         );
 
-        $this->cm->sync_insert_data($data, $this->db['transcriptions'], $this->cm->sync_client, $this->cm->sync_data);
+        if ($debug) {
+            print_r($data);
+        }
+
+        $this->cm->sync_insert_data($data, $this->db['transcriptions'], $this->cm->sync_client, $this->cm->sync_data, 10);
     }
 
     private function get_no_ts_posts($count = 10) {

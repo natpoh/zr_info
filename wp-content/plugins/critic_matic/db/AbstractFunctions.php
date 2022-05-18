@@ -117,7 +117,7 @@ class AbstractFunctions {
         $commit_id = Import::create_commit($commit_id, 'delete', $db, $request, $db, $priority);
         return $commit_id;
     }
-    
+
     function get_option($option, $cache = true) {
         if ($cache) {
             static $dict;
