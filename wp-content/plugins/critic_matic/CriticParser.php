@@ -3228,7 +3228,7 @@ class CriticParser extends AbstractDBWp {
         }
         return gzencode(json_encode($response));
     }
-
+    
     /*
      * Other functions
      */

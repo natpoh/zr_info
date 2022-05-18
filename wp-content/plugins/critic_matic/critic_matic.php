@@ -357,6 +357,11 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('pid', 'date_add'), $table_prefix . "critic_transcritpions");
 
+    // Add status
+    $sql = "ALTER TABLE `" . $table_prefix . "critic_transcritpions` ADD `status` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('status'), $table_prefix . "critic_transcritpions");
+    
     /*
      * cid - campaign id
      * pid - post id
