@@ -159,8 +159,10 @@ class MoviesParserCron extends MoviesAbstractDB {
         $use_proxy = $type_opt['proxy'];
         $use_webdriver = $type_opt['webdrivers'];
 
-        foreach ($urls as $item) {
-            $this->arhive_url($item, $use_proxy, $use_webdriver);
+        if ($urls) {
+            foreach ($urls as $item) {
+                $this->arhive_url($item, $use_proxy, $use_webdriver);
+            }
         }
 
         // Unpaused parsing            
@@ -477,8 +479,8 @@ class MoviesParserCron extends MoviesAbstractDB {
             $message = 'Error 404 Not found';
             $this->mp->log_error($message, $item->cid, $item->id, 2);
             return;
-        }      
-        
+        }
+
         $arhive_path = $this->ml->arhive_path;
         $cid_path = $arhive_path . $item->cid . '/';
         $first_letter_path = $cid_path . $first_letter . '/';

@@ -70,7 +70,7 @@ class CriticMaticTrans extends AbstractDB {
         $data = $cp->get_proxy($service, '', $headers);
         $code = $this->get_code($headers);
         if ($debug) {
-            print_r(array($link, $service, $code, $headers, $data));
+            print_r(array($id, $link, $service, $code, $headers, $data));
         }
         $content = '';
         $status = 0;
@@ -90,7 +90,7 @@ class CriticMaticTrans extends AbstractDB {
             'content' => $content,            
         );
 
-        $id = $this->cm->sync_insert_data($data, $this->db['transcriptions'], $this->cm->sync_client, $this->cm->sync_data);
+        $this->cm->sync_insert_data($data, $this->db['transcriptions'], $this->cm->sync_client, $this->cm->sync_data);
     }
 
     private function get_no_ts_posts($count = 10) {
