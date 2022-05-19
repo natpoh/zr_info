@@ -48,7 +48,6 @@ class CriticTransit extends AbstractDB {
         $table_prefix = DB_PREFIX_WP_AN;
         $this->db = array(
             'posts' => $table_prefix . 'critic_matic_posts',
-            
             'movie_imdb' => 'data_movie_imdb',
             'title_slugs' => 'data_movie_title_slugs',
             'rwt_meta' => $table_prefix . 'critic_matic_meta',
@@ -81,12 +80,19 @@ class CriticTransit extends AbstractDB {
         return $this->ma;
     }
 
-    public function critic_view_type($count=100, $debug=false, $force=false) {
-        
+    public function critic_view_type($count = 100, $debug = false, $force = false) {
         /* Set view type to youtube critics */
         //SELECT * FROM `wp_bcw98b_critic_matic_posts` WHERE `link` LIKE '%www.youtube.com%' ORDER BY `id` DESC
-        $sql = "UPDATE {$this->db['posts']} SET view_type=1 WHERE view_type=0 AND `link` LIKE '%www.youtube.com%' ORDER BY `id` DESC LIMIT ". (int) $count;        
-        if ($debug){
+        $sql = "UPDATE {$this->db['posts']} SET view_type=1 WHERE type!=4 AND view_type=0 AND `link` LIKE '%www.youtube.com%' ORDER BY `id` DESC LIMIT " . (int) $count;
+        if ($debug) {
+            print $sql;
+        }
+        $this->cm->db_query($sql);
+    }
+
+    public function critic_view_type_ts($count = 100, $debug = false, $force = false) {
+        $sql = "UPDATE {$this->db['posts']} SET view_type=1 WHERE type=4 AND view_type=0 AND `link` LIKE '%youtube.com%' ORDER BY `id` DESC LIMIT " . (int) $count;
+        if ($debug) {
             print $sql;
         }
         $this->cm->db_query($sql);

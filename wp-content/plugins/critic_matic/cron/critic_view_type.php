@@ -29,10 +29,19 @@ if ($_GET['force']) {
     $force = true;
 }
 
+$ts = false;
+if ($_GET['ts']) {
+    $ts = true;
+}
+
 $cm = new CriticMatic();
 
 //One time transit data
 require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticTransit.php' );
 $cr = new CriticTransit($cm);
 
-$cr->critic_view_type($count, $debug, $force);
+if (!$ts){
+    $cr->critic_view_type($count, $debug, $force);
+} else {
+    $cr->critic_view_type_ts($count, $debug, $force);
+}
