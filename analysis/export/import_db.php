@@ -502,7 +502,7 @@ class Import
                 $count_array+= count($array);
             }
             $result[$i]=$r;
-            if ($count_array>1000)
+            if ($count_array>100)
             {
                 break;
             }
