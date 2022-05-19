@@ -351,7 +351,7 @@ function critic_matic_plugin_activation() {
 				`id` int(11) unsigned NOT NULL auto_increment,                                
                                 `pid` int(11) NOT NULL DEFAULT '0',
                                 `date_add` int(11) NOT NULL DEFAULT '0',                                
-                                `content` text default NULL,               
+                                `content` longtext default NULL,               
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8_general_ci;";
     Pdo_an::db_query($sql);
