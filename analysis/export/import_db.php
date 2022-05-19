@@ -638,10 +638,14 @@ class Import
                if ($status>1) {
                    ///update commit to 1
                // self::update_status($key, 1);
+               $result[$key]=10;///error
 
                }
-                 $result[$key]=10;///error
-              // $result[$key]=1;
+               else if ($status==1) {
+
+               $result[$key] = 1;
+
+                }
            }
 
 
@@ -768,8 +772,6 @@ class Import
     public static function sync_data($data)
     {
 
-
-
         if (self::check_remore_ip())
         {
             return self::check_remore_ip();
@@ -885,11 +887,22 @@ class Import
 
         Pdo_an::db_query($sql);
 
-        ///move to status 0
+        ///move to status 0 each 10 minutes
 
-//        $sql = "UPDATE `commit` SET `status` = 0,  `complete` = 0  where `status` = 1 and `last_update` < ".(time()-3600*24);
-//        Pdo_an::db_query($sql);
+        $sql = "UPDATE `commit` SET `status` = 0,  `complete` = 0  where `status` = 6 and `last_update` < ".(time()-600);
+        Pdo_an::db_query($sql);
 
+    }
+
+    public static function check_status($status)
+    {
+
+        $sql ="SELECT *  FROM `commit` WHERE `status` = '".$status."'";
+        $rows = Pdo_an::db_results_array($sql);
+        if ($rows)
+        {
+            return 1;
+        }
     }
 
     public static function sync($data)
@@ -906,12 +919,28 @@ class Import
         ////check new data
 
         ///$array_update_status = self::last_commits_updated($data);////check status 2
-        $array_sql = self::last_commits($data,0);////check status 0
 
+        ///check status 6
+
+
+        $send_request  = self::check_status(6);
+        if ($send_request)
+        {
+            ///wait
+            return ;
+        }
+
+        $array_sql = self::last_commits($data,0);////check status 0
 
         /// send data with status 0 to a remote server to sync_data function
         if ($array_sql )
         {
+
+            foreach ($array_sql as $v)
+            {
+               self::update_status( $v['uniq_id'], 6);
+            }
+
          $result =   self::push_request($array_sql,0);
 
          if ($result['error'])

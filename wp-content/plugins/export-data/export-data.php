@@ -270,7 +270,7 @@ AND table_schema='imdbvisualization'";
 
 
  ///get status
-       $array_status = array(0=>'0 Waiting',1=>'1 Sync',2=>'2 Send request to get data',3=>'3 Send data',4=>'4 Get and save data',5=>'5 Complete',10=>'Error');
+       $array_status = array(0=>'0 Waiting',6=>'1 Remote sync',1=>'1 Sync', 2=>'2 Send request to get data',3=>'3 Send data',4=>'4 Get and save data',5=>'5 Complete',10=>'Error');
 
         echo '<br><br><table class="wp-list-table widefat fixed striped posts"><thead><tr><th>Status</th><th>Total</th><th>Add 10 minutes</th><th>Add 1 hour</th><th>Add 24 hours</th></tr></thead>
 <tbody>';
@@ -294,7 +294,7 @@ AND table_schema='imdbvisualization'";
             'description' => array('type'=>'select','options'=>$option),
             'text' => array('w'=>40, 'type' => 'textarea'),
             'update_data' => array('w'=>40, 'type' => 'textarea'),
-            'status' => array('type'=>'select','options'=>'0:0 Waiting;1:1 Sync;2:2 Send request to get data;3:3 Send data;4:4 Get and save data;5:Complete;10:Error'),
+            'status' => array('type'=>'select','options'=>'0:0 Waiting;6:1 Remote sync;1:1 Sync;2:2 Send request to get data;3:3 Send data;4:4 Get and save data;5:Complete;10:Error'),
             'complete' => array('type'=>'select','options'=>':no;1:Complete'),
             'site_id' => array('w'=>10,'type'=>'select','options'=>'1:1 hezner;2:2 rwt'),
             'last_update' => array('w'=>10, 'type' => 'textarea')
