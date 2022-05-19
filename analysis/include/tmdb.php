@@ -789,7 +789,7 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
 
     //$array_update = array('k'=>'um','id'=>$mid);
     !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-    $commit_id = Import::create_commit('','update','data_movie_imdb',array('id'=>$mid),'movie_add',5);
+    $commit_id = Import::create_commit('','update','data_movie_imdb',array('id'=>$mid),'movie_add',4);
 
 
     $actor_types = array('s' => 1, 'm' => 2, 'e' => 3);
@@ -928,7 +928,7 @@ public static function  remove_actors($array_actors,$table)
                 Pdo_an::db_query($sql);
 
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('','delete',$table,array('mid'=>$data["mid"],'aid'=>$data["aid"],'type'=>$data["type"]),'movie_meta_actor',5);
+                Import::create_commit('','delete',$table,array('mid'=>$data["mid"],'aid'=>$data["aid"],'type'=>$data["type"]),'movie_meta_actor',4);
             }
 
         }
@@ -965,7 +965,7 @@ public static function add_todb_actor($id,$name='')
         }
 
         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-        Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $id),'actor_update',5);
+        Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $id),'actor_update',4);
     }
 }
 

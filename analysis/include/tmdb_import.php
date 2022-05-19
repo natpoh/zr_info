@@ -361,7 +361,7 @@ class TMDBIMPORT
                 Pdo_an::db_query($sql);
 
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                $commit_id = Import::create_commit($commit_id, 'delete', 'meta_movie_actor', array('mid' => $id),'movie_meta_actor',5);
+                $commit_id = Import::create_commit($commit_id, 'delete', 'meta_movie_actor', array('mid' => $id),'movie_meta_actor',3);
 
 
 
@@ -412,7 +412,7 @@ class TMDBIMPORT
 
                         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
                         $array_custom =array('skip'=>['id']);
-                        Import::create_commit($commit_id,'update','meta_movie_actor',array('mid'=>$data[0],'aid'=>$data[1],'type'=>$data[3]),'movie_meta_actor',5,$array_custom);
+                        Import::create_commit($commit_id,'update','meta_movie_actor',array('mid'=>$data[0],'aid'=>$data[1],'type'=>$data[3]),'movie_meta_actor',4,$array_custom);
                     }
 
 
@@ -820,7 +820,7 @@ class TMDBIMPORT
         Pdo_an::db_query($sql);
 
         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-        Import::create_commit('', 'update', 'data_movie_imdb', array('id' => $id), 'movie_update',6);
+        Import::create_commit('', 'update', 'data_movie_imdb', array('id' => $id), 'movie_update',5);
 
     }
     public static function get_tmdb_countries($mid,$array,$update =0)
