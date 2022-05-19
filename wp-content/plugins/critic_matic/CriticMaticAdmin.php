@@ -536,6 +536,29 @@ class CriticMaticAdmin {
 
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_overview.php');
+        } else if ($curr_tab == 'details') {
+
+            $filters = array(
+                'type' => $this->cm->post_type,
+                'view_type' => $this->cm->post_view_type,
+                'author_type' => $this->cm->author_type,
+                'meta_type' => $this->cm->post_meta_status,
+                'status' => $this->cm->post_status
+            );
+
+
+            $filters_tabs = $this->get_filters_tabs($filters, $page_url);
+            $query_adb = $filters_tabs['query_adb'];
+            $query = $query_adb->get_query();
+            $page_url = $filters_tabs['p'];
+            $count = $filters_tabs['c'];
+
+            $per_page = $this->cm->perpage;
+            $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+            $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order);
+
+
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_details.php');
         } else if ($curr_tab == 'meta') {
             // Filter by status
 

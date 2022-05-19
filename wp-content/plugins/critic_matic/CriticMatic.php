@@ -17,7 +17,8 @@ class CriticMatic extends AbstractDB {
      * Posts
      */
     public $main_tabs = array(
-        'home' => 'Posts',
+        'home' => 'Posts overview',
+        'details' => 'Posts Details',
         'meta' => 'Meta',
         'log' => 'Log',
         'add' => 'Add post',
