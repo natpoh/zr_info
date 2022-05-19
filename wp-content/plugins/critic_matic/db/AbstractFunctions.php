@@ -267,3 +267,25 @@ class AbstractFunctions {
     }
 
 }
+
+class QueryADB {
+
+    private $query = array();
+    
+    public function __construct() {
+        $this->clear();
+    }
+
+    public function add_query($key, $value) {
+        $this->query[$key]=$value;
+    }
+    
+    public function get_query() {
+        return $this->query;
+    }
+    
+    public function clear() {
+        $this->query=array();
+    }
+
+}

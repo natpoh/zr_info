@@ -8,12 +8,13 @@
     <input type="hidden" name="page" value="critic_matic">
 </form>
 <?php
+
 print $tabs;
-print $filters_type;
-print $filters_view_type;
-print $filters_author_type;
-print $filters_meta_type;
-print $filters;
+
+if (isset($filters_tabs['filters'])){
+    print implode("\n", array_values($filters_tabs['filters']));
+}
+
 
 $queue_ids = $this->cs->get_search_ids();
 if (sizeof($posts) > 0) {

@@ -515,62 +515,24 @@ class CriticMaticAdmin {
 
         if ($curr_tab == 'home') {
 
-            // Filter by post type
-            $home_type = -1;
-            $type = isset($_GET['type']) ? (int) $_GET['type'] : $home_type;
-
-            // Type            
-            $filter_type_arr = $this->cm->get_post_types(0, $type, 0);
-            $filters_type = $this->get_filters($filter_type_arr, $page_url, $type, $front_slug = '', $name = 'type');
-            if ($type != $home_type) {
-                $page_url = $page_url . '&type=' . $type;
-                $count = isset($filter_type_arr[$type]['count']) ? $filter_type_arr[$type]['count'] : 0;
-            }
-
-            // View_type            
-            $home_view_type = -1;
-            $view_type = isset($_GET['view_type']) ? (int) $_GET['view_type'] : $home_view_type;
-            // $cid = 0, $type = -1, $aid = 0, $meta_type = -1, $author_type = -1, $view_type = -1
-            $filter_view_type_arr = $this->cm->get_post_view_types(0, $type, 0);
-            $filters_view_type = $this->get_filters($filter_view_type_arr, $page_url, $view_type, $front_slug = '', $name = 'view_type');
-            if ($view_type != $home_view_type) {
-                $page_url = $page_url . '&view_type=' . $view_type;
-                $count = isset($filter_view_type_arr[$view_type]['count']) ? $filter_view_type_arr[$view_type]['count'] : 0;
-            }
-
-            // Filter by author type
-            $home_author_type = -1;
-            $author_type = isset($_GET['author_type']) ? (int) $_GET['author_type'] : $home_author_type;
-            $filter_author_type_arr = $this->cm->get_post_author_types(0, $type, 0,-1,-1,$view_type);
-            $filters_author_type = $this->get_filters($filter_author_type_arr, $page_url, $author_type, $front_slug = '', $name = 'author_type');
-            if ($author_type != $home_author_type) {
-                $page_url = $page_url . '&author_type=' . $author_type;
-                $count = isset($filter_author_type_arr[$author_type]['count']) ? $filter_author_type_arr[$author_type]['count'] : 0;
-            }
-
-            // Filter by post meta
-            $home_meta_type = -1;
-            $meta_type = isset($_GET['meta_type']) ? (int) $_GET['meta_type'] : $home_meta_type;
-            $filter_meta_type_arr = $this->cm->get_post_meta_types(0, $type, 0, $meta_type, $author_type, $view_type);
-            $filters_meta_type = $this->get_filters($filter_meta_type_arr, $page_url, $meta_type, $front_slug = '', $name = 'meta_type');
-            if ($meta_type != $home_meta_type) {
-                $page_url = $page_url . '&meta_type=' . $meta_type;
-                $count = isset($filter_meta_type_arr[$meta_type]['count']) ? $filter_meta_type_arr[$meta_type]['count'] : 0;
-            }
-
-            // Status
-            $filter_arr = $this->cm->get_post_states(0, $type, 0, $meta_type, $author_type, $view_type);
-            $filters = $this->get_filters($filter_arr, $page_url, $status);
-            if ($status != $home_status) {
-                $page_url = $page_url . '&status=' . $status;
-            }
-            $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
+            $filters = array(
+                'type' => $this->cm->post_type,
+                'view_type' => $this->cm->post_view_type,
+                'author_type' => $this->cm->author_type,
+                'meta_type' => $this->cm->post_meta_status,
+                'status' => $this->cm->post_status
+            );
 
 
+            $filters_tabs = $this->get_filters_tabs($filters, $page_url);
+            $query_adb = $filters_tabs['query_adb'];
+            $query = $query_adb->get_query();
+            $page_url = $filters_tabs['p'];
+            $count = $filters_tabs['c'];
 
             $per_page = $this->cm->perpage;
             $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
-            $posts = $this->cm->get_posts($status, $page, 0, 0, $type, $meta_type, $author_type, $view_type, $orderby, $order);
+            $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order);
 
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_overview.php');
@@ -721,21 +683,26 @@ class CriticMaticAdmin {
         }
 
         if ($curr_tab == 'home') {
-            $type = -1;
-            $meta_type = -1;
+            // Audience authors
+
             $author_type = 2;
-
-            $filter_arr = $this->cm->get_post_states(0, $type, 0, $meta_type, $author_type);
-            $filters = $this->get_filters($filter_arr, $page_url, $status);
-            if ($status != $home_status) {
-                $page_url = $page_url . '&status=' . $status;
-            }
-
-            $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
+            $query_adb = new QueryADB();
+            $query_adb->add_query('author_type', $author_type);
 
 
+            $filters = array(
+                'status' => $this->cm->post_status
+            );
+
+            $filters_tabs = $this->get_filters_tabs($filters, $page_url, $query_adb);
+            $query_adb = $filters_tabs['query_adb'];
+            $query = $query_adb->get_query();
+            $page_url = $filters_tabs['p'];
+            $count = $filters_tabs['c'];
+
+            $per_page = $this->cm->perpage;
             $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
-            $posts = $this->cm->get_posts($status, $page, 0, 0, $type, $meta_type, $author_type, -1, $orderby, $order);
+            $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order);
 
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_audience.php');
@@ -1434,21 +1401,26 @@ class CriticMaticAdmin {
         $url = $this->admin_page . $this->transcriptions_url;
         $page_url = $url;
 
+        $query_adb = new QueryADB();
+        $query_adb->add_query('view_type', 1);
 
-        // Filter by status
-        $home_status = -1;
-        $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_status;
-        $filter_arr = $ts->get_post_states();
-        $filters = $this->get_filters($filter_arr, $page_url, $status);
-        if ($status != $home_status) {
-            $page_url = $page_url . '&status=' . $status;
-        }
+        $filters = array(
+            'ts' => $ts->ts,
+            'type' => $this->cm->post_type,
+            'meta_type' => $this->cm->post_meta_status,
+            'status' => $this->cm->post_status
+        );
 
-        $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
 
-        $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+        $filters_tabs = $this->get_filters_tabs($filters, $page_url, $query_adb);
+        $query_adb = $filters_tabs['query_adb'];
+        $query = $query_adb->get_query();
+        $page_url = $filters_tabs['p'];
+        $count = $filters_tabs['c'];
 
-        $posts = $ts->get_posts($status, $page, $per_page);
+        $per_page = $this->cm->perpage;
+        $pager = $this->themePager(-1, $page, $page_url, $count, $per_page, $orderby, $order);
+        $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order);
 
         include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_transcriptions.php');
     }
@@ -2189,10 +2161,14 @@ class CriticMaticAdmin {
         $orderby = $this->get_orderby($sort_pages);
         $order = $this->get_order();
 
+        $query_adb = new QueryADB();
+        
+
         // Campaign id
         $campaign = '';
         if ($cid) {
             $campaign = $this->cf->get_campaign($cid);
+            $query_adb->add_query('cid', $cid);
             $page_url .= '&cid=' . $cid;
         }
 
@@ -2200,42 +2176,29 @@ class CriticMaticAdmin {
         $author = '';
         if ($aid) {
             $author = $this->cm->get_author($aid);
+            $query_adb->add_query('aid', $aid);
             $page_url .= '&aid=' . $aid;
         }
 
-        $home_type = -1;
-        $type = isset($_GET['type']) ? (int) $_GET['type'] : $home_type;
-        $filter_type_arr = $this->cm->get_post_types($cid, $type, $aid);
-        $filters_type = $this->get_filters($filter_type_arr, $page_url, $type, $front_slug = '', $name = 'type');
-        if ($type != -1) {
-            $page_url .= '&type=' . $type;
-        }
+        $filters = array(
+            'type' => $this->cm->post_type,
+            'view_type' => $this->cm->post_view_type,
+            'author_type' => $this->cm->author_type,
+            'meta_type' => $this->cm->post_meta_status,
+            'status' => $this->cm->post_status
+        );
 
-        $count = isset($filter_type_arr[$home_type]['count']) ? $filter_type_arr[$home_type]['count'] : 0;
 
-        // Filter by post meta
-        $home_meta_type = -1;
-        $meta_type = isset($_GET['meta_type']) ? (int) $_GET['meta_type'] : $home_meta_type;
+        $filters_tabs = $this->get_filters_tabs($filters, $page_url, $query_adb);
+        $query_adb = $filters_tabs['query_adb'];
+        $query = $query_adb->get_query();
+        $page_url = $filters_tabs['p'];
+        $count = $filters_tabs['c'];
 
-        $filter_meta_type_arr = $this->cm->get_post_meta_types($cid, $type, $aid, $meta_type);
-        $filters_meta_type = $this->get_filters($filter_meta_type_arr, $page_url, $meta_type, $front_slug = '', $name = 'meta_type');
-        if ($meta_type != $home_meta_type) {
-            $page_url = $page_url . '&meta_type=' . $meta_type;
-            $count = isset($filter_meta_type_arr[$meta_type]['count']) ? $filter_meta_type_arr[$meta_type]['count'] : 0;
-        }
+        $per_page = $this->cm->perpage;
+        $pager = $this->themePager(-1, $page, $page_url, $count, $per_page, $orderby, $order);
+        $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order);
 
-        // Filter by status
-        $home_status = -1;
-        $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_status;
-        $filter_arr = $this->cm->get_post_states($cid, $type, $aid, $meta_type);
-        $filters = $this->get_filters($filter_arr, $page_url, $status);
-        if ($status != $home_status) {
-            $page_url = $page_url . '&status=' . $status;
-            $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
-        }
-
-        $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
-        $posts = $this->cm->get_posts($status, $page, $cid, $aid, $type, $meta_type);
 
         if ($aid) {
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_author.php');
@@ -2648,6 +2611,36 @@ class CriticMaticAdmin {
             $first = '<li>' . ucfirst(str_replace('_', ' ', $name)) . ': </li>';
         }
         return '<ul class="cm-filters subsubsub' . $class . '">' . $first . implode(' | ', $ret) . '</ul>';
+    }
+
+    public function get_filters_tabs($filters = array(), $p = '', $query_adb = '') {
+        if (!$query_adb) {
+            $query_adb = new QueryADB();
+        }
+        $count = 0;
+        $filters_tabs = array();
+
+        if ($filters) {
+            foreach ($filters as $key => $type_list) {
+                $home_type = -1;
+                $type = isset($_GET[$key]) ? (int) $_GET[$key] : $home_type;
+                $filter_type_arr = $this->cm->get_post_type_count($query_adb->get_query(), $type_list, $key);
+                $filters_type = $this->get_filters($filter_type_arr, $p, $type, '', $key);
+                if ($type != $home_type) {
+                    $p = $p . '&' . $key . '=' . $type;
+                }
+                $query_adb->add_query($key, $type);
+                $filters_tabs['filters'][$key] = $filters_type;
+            }
+
+            $count = isset($filter_type_arr[$type]['count']) ? $filter_type_arr[$type]['count'] : 0;
+        }
+
+        $filters_tabs['query_adb'] = $query_adb;
+        $filters_tabs['p'] = $p;
+        $filters_tabs['c'] = $count;
+
+        return $filters_tabs;
     }
 
     /*

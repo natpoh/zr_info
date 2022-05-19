@@ -2,7 +2,10 @@
 
 <?php
 print $tabs;
-print $filters;
+
+if (isset($filters_tabs['filters'])){
+    print implode("\n", array_values($filters_tabs['filters']));
+}
 
 
 if (sizeof($posts) > 0) {
