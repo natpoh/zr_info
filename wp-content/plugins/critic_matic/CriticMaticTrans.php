@@ -33,14 +33,26 @@ class CriticMaticTrans extends AbstractDB {
     }
 
     public function find_transcriptions_youtube($count = 10, $debug = false, $force = false) {
-        // 1. Get no ts posts
-        $no_ts = $this->get_no_ts_posts($count);
-        if ($no_ts) {
-            foreach ($no_ts as $item) {
-                $id = $item->id;
-                $link = $item->link;
-                $this->insert_transcription($link, $id, $debug);
+        $cron_option = 'find_transcriptions_last_run';
+        $last_run = get_option($cron_option, 0);
+        $currtime = $this->curr_time();
+        $max_wait = $last_run + 10 * 60; // 10 min
+
+        if ($currtime > $max_wait || $force) {
+            // Set curr time to option
+            update_option($cron_option, $currtime);
+
+            // 1. Get no ts posts
+            $no_ts = $this->get_no_ts_posts($count);
+            if ($no_ts) {
+                foreach ($no_ts as $item) {
+                    $id = $item->id;
+                    $link = $item->link;
+                    $this->insert_transcription($link, $id, $debug);
+                }
             }
+            // Remove last run time
+            update_option($cron_option, 0);
         }
     }
 
