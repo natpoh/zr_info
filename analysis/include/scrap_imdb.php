@@ -812,7 +812,7 @@ WHERE `data_actors_imdb`.`id` = " . $actor_id;
 
     !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
 
-    Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $actor_id), 'actor_update',5);
+    Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $actor_id), 'actor_update',4);
 
 
     return 1;
@@ -1265,7 +1265,7 @@ function check_last_actors()
 
         foreach ($commit_actors as $actor_id=>$enable)
         {
-         Import::create_commit('', 'update', 'data_actors_meta', array('actor_id' => $actor_id), 'actor_meta',6,['skip'=>['id']]);
+         Import::create_commit('', 'update', 'data_actors_meta', array('actor_id' => $actor_id), 'actor_meta',3,['skip'=>['id']]);
 
         }
     }
