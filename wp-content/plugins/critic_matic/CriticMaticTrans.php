@@ -9,13 +9,17 @@ class CriticMaticTrans extends AbstractDB {
     private $cm;
     private $cp;
     private $db;
+    public $sort_pages = array('add_time', 'id', 'status');
 
     public function __construct($cm = '') {
         $this->cm = $cm;
         $table_prefix = DB_PREFIX_WP_AN;
         $this->db = array(
-            //CM
+            // CM
             'posts' => $table_prefix . 'critic_matic_posts',
+            'authors' => $table_prefix . 'critic_matic_authors',
+            'authors_meta' => $table_prefix . 'critic_matic_authors_meta',
+            // TS
             'transcriptions' => $table_prefix . 'critic_transcritpions',
         );
     }
@@ -41,9 +45,12 @@ class CriticMaticTrans extends AbstractDB {
         if ($currtime > $max_wait || $force) {
             // Set curr time to option
             update_option($cron_option, $currtime);
+            
+            // Find transcripts from posts from three days ago. We need a lot of time to create transcripts for new YouTube videos.
+            $min_date = $currtime-86400*3; // 3 days
 
             // 1. Get no ts posts
-            $no_ts = $this->get_no_ts_posts($count);
+            $no_ts = $this->get_no_ts_posts($count, $min_date);
             if ($no_ts) {
                 foreach ($no_ts as $item) {
                     $id = $item->id;
@@ -109,9 +116,12 @@ class CriticMaticTrans extends AbstractDB {
         $this->cm->sync_insert_data($data, $this->db['transcriptions'], $this->cm->sync_client, $this->cm->sync_data, 10);
     }
 
-    private function get_no_ts_posts($count = 10) {
+    private function get_no_ts_posts($count = 10, $min_date=0) {
+        if ($min_date==0){
+            $min_date = $this->curr_time();
+        }
         $sql = sprintf("SELECT p.id, p.link FROM {$this->db['posts']} p LEFT JOIN {$this->db['transcriptions']} t ON p.id = t.pid"
-                . " WHERE p.view_type=1 AND t.pid IS NULL ORDER BY id ASC limit %d", (int) $count);
+                . " WHERE p.view_type=1 AND t.pid IS NULL AND p.date<%d AND p.type!=4 ORDER BY id ASC limit %d", (int) $count,  (int) $min_date);
         $results = $this->db_results($sql);
         return $results;
     }
@@ -136,6 +146,152 @@ class CriticMaticTrans extends AbstractDB {
             $code = 200;
         }
         return $code;
+    }
+
+    /*
+     * Admin menu
+     */
+
+    public function get_posts($status = 0, $page = 1, $per_page = 20, $aid = 0, $type = -1, $meta_type = -1, $author_type = -1, $view_type = -1, $orderby = '', $order = 'ASC') {
+        $page -= 1;
+        $start = $page * $this->perpage;
+
+        // Custom status
+        $status_trash = 2;
+        $status_query = " WHERE p.status != " . $status_trash;
+        if ($status != -1) {
+            $status_query = " WHERE p.status = " . (int) $status;
+        }
+
+
+        // Author filter
+        $aid_and = '';
+        if ($aid > 0) {
+            $aid_and = sprintf(" AND am.aid = %d", $aid);
+        }
+
+        //Post type filter
+        $type_and = '';
+        if ($type != -1) {
+            $type_and = sprintf(" AND p.type =%d", (int) $type);
+        }
+
+        // View type filter
+        $view_type_and = '';
+        if ($view_type != -1) {
+            $view_type_and = sprintf(" AND p.view_type =%d", (int) $view_type);
+        }
+
+        // Author type
+        $atype_inner = '';
+        $atype_and = '';
+        if ($author_type != -1) {
+            $atype_inner = " INNER JOIN {$this->db['authors']} a ON a.id = am.aid";
+            $atype_and = sprintf(" AND a.type = %d", $author_type);
+        }
+
+        // Meta type filter
+        $meta_type_and = '';
+        if ($meta_type != -1) {
+            if ($meta_type == 1) {
+                $meta_type_and = " AND p.top_movie != 0";
+            } else {
+                $meta_type_and = " AND p.top_movie = 0";
+            }
+        }
+
+
+        //Sort
+        $and_orderby = '';
+        $and_order = '';
+        if ($orderby && in_array($orderby, $this->sort_pages)) {
+            $and_orderby = ' ORDER BY ' . $orderby;
+            if ($order) {
+                $and_orderby .= ' ' . $order;
+            }
+        } else {
+            $and_orderby = " ORDER BY id DESC";
+        }
+
+        $limit = '';
+        if ($per_page > 0) {
+            $limit = " LIMIT $start, " . $per_page;
+        }
+
+
+        $sql = "SELECT p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, am.aid "
+                . "FROM {$this->db['posts']} p "
+                . "INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id "
+                . "LEFT JOIN {$this->db['transcriptions']} t ON t.pid = p.id "
+                . $atype_inner . $status_query . $aid_and . $type_and . $view_type_and . $meta_type_and . $atype_and . $and_orderby . $limit;
+
+
+        $result = $this->db_results($sql);
+
+        return $result;
+    }
+
+    public function get_post_count($status = -1, $type = -1, $aid = 0, $meta_type = -1, $author_type = -1) {
+        // Custom status
+        $status_trash = 2;
+        $status_query = " WHERE p.status != " . $status_trash;
+        if ($status != -1) {
+            $status_query = " WHERE p.status = " . (int) $status;
+        }
+
+        //Post type filter
+        $type_and = '';
+        if ($type != -1) {
+            $type_and = sprintf(" AND p.type =%d", (int) $type);
+        }
+
+        // Author filter
+        $aid_inner = '';
+        $aid_and = '';
+        if ($aid > 0) {
+            $aid_inner = " INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id";
+            $aid_and = sprintf(" AND am.aid = %d", $aid);
+        }
+
+        // Author type
+        $atype_inner = '';
+        $atype_and = '';
+        if ($author_type != -1) {
+            $atype_inner = " INNER JOIN {$this->db['authors_meta']} am2 ON am2.cid = p.id INNER JOIN {$this->db['authors']} a ON a.id = am2.aid";
+            $atype_and = sprintf(" AND a.type = %d", $author_type);
+        }
+
+        // Meta type filter
+        $meta_type_and = '';
+        if ($meta_type != -1) {
+            if ($meta_type == 1) {
+                $meta_type_and = " AND p.top_movie != 0";
+            } else {
+                $meta_type_and = " AND p.top_movie = 0";
+            }
+        }
+
+        $query = "SELECT COUNT(*) FROM {$this->db['posts']} p" . $aid_inner . " LEFT JOIN {$this->db['transcriptions']} t ON t.pid = p.id" . $atype_inner . $status_query . $aid_and . $type_and . $meta_type_and . $atype_and;
+
+        $result = $this->db_get_var($query);
+        return $result;
+    }
+
+    public function get_post_states($type = -1, $aid = 0, $meta_type = -1, $author_type = -1) {
+        $status = -1;
+        $count = $this->get_post_count($status, $type, $aid, $meta_type, $author_type);
+        $states = array(
+            '-1' => array(
+                'title' => 'All',
+                'count' => $count
+            )
+        );
+        foreach ($this->cm->post_status as $key => $value) {
+            $states[$key] = array(
+                'title' => $value,
+                'count' => $this->get_post_count($key, $type, $aid, $meta_type, $author_type));
+        }
+        return $states;
     }
 
 }

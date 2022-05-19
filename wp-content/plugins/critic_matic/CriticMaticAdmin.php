@@ -17,6 +17,7 @@ class CriticMaticAdmin {
     private $ma;
     private $ca;
     public $cfront;
+    private $ts;
     private $access_level = 4;
     //Slug    
     private $parrent_slug = 'critic_matic';
@@ -32,6 +33,7 @@ class CriticMaticAdmin {
     private $settings_url = '';
     private $sitemap_url = '';
     private $tags_url = '';
+    private $transcriptions_url = '';
     private $settings_tabs = array(
         'search' => 'Search',
         'parser' => 'Parser',
@@ -96,6 +98,8 @@ class CriticMaticAdmin {
         $this->settings_url = $this->parrent_slug . '_settings';
         $this->sitemap_url = $this->parrent_slug . '_sitemap';
         $this->tags_url = $this->parrent_slug . '_tags';
+        $this->transcriptions_url = $this->parrent_slug . '_transcriptions';
+
 
         add_action('admin_menu', array($this, 'add_option_page'));
         add_action('admin_print_styles', array($this, 'print_admin_styles'));
@@ -122,6 +126,7 @@ class CriticMaticAdmin {
         add_submenu_page($this->parrent_slug, __('Countries'), __('Countries'), $this->access_level, $this->countries_url, array($this, 'countries'));
         add_submenu_page($this->parrent_slug, __('Providers'), __('Providers'), $this->access_level, $this->providers_url, array($this, 'providers'));
         add_submenu_page($this->parrent_slug, __('Audience'), __('Audience') . $count_text, $this->access_level, $this->audience_url, array($this, 'audience'));
+        add_submenu_page($this->parrent_slug, __('Transcriptions'), __('Transcriptions'), $this->access_level, $this->transcriptions_url, array($this, 'transcriptions'));
         if (!$this->cm->sync_client) {
             add_submenu_page($this->parrent_slug, __('Feeds'), __('Feeds'), $this->access_level, $this->feeds_url, array($this, 'feeds'));
             add_submenu_page($this->parrent_slug, __('Parser'), __('Parser'), $this->access_level, $this->parser_url, array($this, 'parser'));
@@ -167,6 +172,17 @@ class CriticMaticAdmin {
             $this->cfront = new CriticFront($this->cm, $this->cs);
         }
         return $this->cfront;
+    }
+
+    public function get_ts() {
+        if (!$this->ts) {
+            //init 
+            if (!class_exists('CriticMaticTrans')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticMaticTrans.php' );
+            }
+            $this->ts = new CriticMaticTrans($this->cm);
+        }
+        return $this->ts;
     }
 
     /*
@@ -503,6 +519,7 @@ class CriticMaticAdmin {
             $home_type = -1;
             $type = isset($_GET['type']) ? (int) $_GET['type'] : $home_type;
 
+            // Type            
             $filter_type_arr = $this->cm->get_post_types(0, $type, 0);
             $filters_type = $this->get_filters($filter_type_arr, $page_url, $type, $front_slug = '', $name = 'type');
             if ($type != $home_type) {
@@ -510,10 +527,21 @@ class CriticMaticAdmin {
                 $count = isset($filter_type_arr[$type]['count']) ? $filter_type_arr[$type]['count'] : 0;
             }
 
+            // View_type            
+            $home_view_type = -1;
+            $view_type = isset($_GET['view_type']) ? (int) $_GET['view_type'] : $home_view_type;
+            // $cid = 0, $type = -1, $aid = 0, $meta_type = -1, $author_type = -1, $view_type = -1
+            $filter_view_type_arr = $this->cm->get_post_view_types(0, $type, 0);
+            $filters_view_type = $this->get_filters($filter_view_type_arr, $page_url, $view_type, $front_slug = '', $name = 'view_type');
+            if ($view_type != $home_view_type) {
+                $page_url = $page_url . '&view_type=' . $view_type;
+                $count = isset($filter_view_type_arr[$view_type]['count']) ? $filter_view_type_arr[$view_type]['count'] : 0;
+            }
+
             // Filter by author type
             $home_author_type = -1;
             $author_type = isset($_GET['author_type']) ? (int) $_GET['author_type'] : $home_author_type;
-            $filter_author_type_arr = $this->cm->get_post_author_types(0, $type, 0);
+            $filter_author_type_arr = $this->cm->get_post_author_types(0, $type, 0,-1,-1,$view_type);
             $filters_author_type = $this->get_filters($filter_author_type_arr, $page_url, $author_type, $front_slug = '', $name = 'author_type');
             if ($author_type != $home_author_type) {
                 $page_url = $page_url . '&author_type=' . $author_type;
@@ -523,24 +551,26 @@ class CriticMaticAdmin {
             // Filter by post meta
             $home_meta_type = -1;
             $meta_type = isset($_GET['meta_type']) ? (int) $_GET['meta_type'] : $home_meta_type;
-            $filter_meta_type_arr = $this->cm->get_post_meta_types(0, $type, 0, $meta_type, $author_type);
+            $filter_meta_type_arr = $this->cm->get_post_meta_types(0, $type, 0, $meta_type, $author_type, $view_type);
             $filters_meta_type = $this->get_filters($filter_meta_type_arr, $page_url, $meta_type, $front_slug = '', $name = 'meta_type');
             if ($meta_type != $home_meta_type) {
                 $page_url = $page_url . '&meta_type=' . $meta_type;
                 $count = isset($filter_meta_type_arr[$meta_type]['count']) ? $filter_meta_type_arr[$meta_type]['count'] : 0;
             }
 
-            $filter_arr = $this->cm->get_post_states(0, $type, 0, $meta_type, $author_type);
+            // Status
+            $filter_arr = $this->cm->get_post_states(0, $type, 0, $meta_type, $author_type, $view_type);
             $filters = $this->get_filters($filter_arr, $page_url, $status);
             if ($status != $home_status) {
                 $page_url = $page_url . '&status=' . $status;
             }
-
             $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
+
+
 
             $per_page = $this->cm->perpage;
             $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
-            $posts = $this->cm->get_posts($status, $page, 0, 0, $type, $meta_type, $author_type, $orderby, $order);
+            $posts = $this->cm->get_posts($status, $page, 0, 0, $type, $meta_type, $author_type, $view_type, $orderby, $order);
 
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_overview.php');
@@ -705,7 +735,7 @@ class CriticMaticAdmin {
 
 
             $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
-            $posts = $this->cm->get_posts($status, $page, 0, 0, $type, $meta_type, $author_type, $orderby, $order);
+            $posts = $this->cm->get_posts($status, $page, 0, 0, $type, $meta_type, $author_type, -1, $orderby, $order);
 
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_audience.php');
@@ -1382,6 +1412,45 @@ class CriticMaticAdmin {
             }
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/add_provider.php');
         }
+    }
+
+    /*
+     * The countries page
+     */
+
+    public function transcriptions() {
+
+        $curr_tab = $this->get_tab();
+        $page = $this->get_page();
+        $per_page = $this->get_perpage();
+
+        $ts = $this->get_ts();
+
+        //Sort
+        $sort_pages = $ts->sort_pages;
+        $orderby = $this->get_orderby($sort_pages);
+        $order = $this->get_order();
+
+        $url = $this->admin_page . $this->transcriptions_url;
+        $page_url = $url;
+
+
+        // Filter by status
+        $home_status = -1;
+        $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_status;
+        $filter_arr = $ts->get_post_states();
+        $filters = $this->get_filters($filter_arr, $page_url, $status);
+        if ($status != $home_status) {
+            $page_url = $page_url . '&status=' . $status;
+        }
+
+        $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
+
+        $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+
+        $posts = $ts->get_posts($status, $page, $per_page);
+
+        include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_transcriptions.php');
     }
 
     /*
@@ -2788,8 +2857,8 @@ class CriticMaticAdmin {
                     if ($author_id) {
                         $changed = $this->cm->bulk_change_author($ids, $author_id);
                     }
-                } else if ($b == 'start_feed' || $b == 'stop_feed'|| $b == 'trash_feed') {                
-                    $changed = $this->cf->bulk_change_campaign_status($ids, $b);                    
+                } else if ($b == 'start_feed' || $b == 'stop_feed' || $b == 'trash_feed') {
+                    $changed = $this->cf->bulk_change_campaign_status($ids, $b);
                 } else {
                     // Change status
                     $updated = false;

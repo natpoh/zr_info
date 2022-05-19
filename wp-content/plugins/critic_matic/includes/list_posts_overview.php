@@ -10,6 +10,7 @@
 <?php
 print $tabs;
 print $filters_type;
+print $filters_view_type;
 print $filters_author_type;
 print $filters_meta_type;
 print $filters;

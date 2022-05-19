@@ -359,7 +359,7 @@ class CriticMatic extends AbstractDB {
         return $name;
     }
 
-    public function get_posts($status = 0, $page = 1, $cid = 0, $aid = 0, $type = -1, $meta_type = -1, $author_type = -1, $orderby = '', $order = 'ASC') {
+    public function get_posts($status = 0, $page = 1, $cid = 0, $aid = 0, $type = -1, $meta_type = -1, $author_type = -1, $view_type = -1, $orderby = '', $order = 'ASC') {
         $page -= 1;
         $start = $page * $this->perpage;
 
@@ -389,6 +389,12 @@ class CriticMatic extends AbstractDB {
         $type_and = '';
         if ($type != -1) {
             $type_and = sprintf(" AND p.type =%d", (int) $type);
+        }
+
+        // View type filter
+        $view_type_and = '';
+        if ($view_type != -1) {
+            $view_type_and = sprintf(" AND p.view_type =%d", (int) $view_type);
         }
 
         // Author type
@@ -428,10 +434,10 @@ class CriticMatic extends AbstractDB {
         }
 
 
-        $sql = "SELECT p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, am.aid, fm.cid AS fmcid "
+        $sql = "SELECT p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, p.view_type, am.aid, fm.cid AS fmcid "
                 . "FROM {$this->db['posts']} p "
                 . "INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id "
-                . $atype_inner . $cid_inner . $status_query . $cid_and . $aid_and . $type_and . $meta_type_and . $atype_and . $and_orderby . $limit;
+                . $atype_inner . $cid_inner . $status_query . $cid_and . $aid_and . $type_and . $view_type_and. $meta_type_and . $atype_and . $and_orderby . $limit;
 
         $result = $this->db_results($sql);
 
@@ -462,7 +468,7 @@ class CriticMatic extends AbstractDB {
         return $feed_actions;
     }
 
-    public function get_post_count($status = -1, $cid = 0, $type = -1, $aid = 0, $meta_type = -1, $author_type = -1) {
+    public function get_post_count($status = -1, $cid = 0, $type = -1, $aid = 0, $meta_type = -1, $author_type = -1, $view_type = -1) {
         // Custom status
         $status_trash = 2;
         $status_query = " WHERE p.status != " . $status_trash;
@@ -477,10 +483,16 @@ class CriticMatic extends AbstractDB {
             $cid_and = sprintf(" AND fm.cid=%d", (int) $cid);
         }
 
-        //Post type filter
+        // Post type filter
         $type_and = '';
         if ($type != -1) {
             $type_and = sprintf(" AND p.type =%d", (int) $type);
+        }
+
+        // View type filter
+        $view_type_and = '';
+        if ($view_type != -1) {
+            $view_type_and = sprintf(" AND p.view_type =%d", (int) $view_type);
         }
 
         // Author filter
@@ -509,15 +521,15 @@ class CriticMatic extends AbstractDB {
             }
         }
 
-        $query = "SELECT COUNT(*) FROM {$this->db['posts']} p" . $cid_inner . $aid_inner . $atype_inner . $status_query . $cid_and . $aid_and . $type_and . $meta_type_and . $atype_and;
+        $query = "SELECT COUNT(*) FROM {$this->db['posts']} p" . $cid_inner . $aid_inner . $atype_inner . $status_query . $cid_and . $view_type_and . $aid_and . $type_and . $meta_type_and . $atype_and;
 
         $result = $this->db_get_var($query);
         return $result;
     }
 
-    public function get_post_states($cid = 0, $type = -1, $aid = 0, $meta_type = -1, $author_type = -1) {
+    public function get_post_states($cid = 0, $type = -1, $aid = 0, $meta_type = -1, $author_type = -1, $view_type = -1) {
         $status = -1;
-        $count = $this->get_post_count($status, $cid, $type, $aid, $meta_type, $author_type);
+        $count = $this->get_post_count($status, $cid, $type, $aid, $meta_type, $author_type, $view_type);
         $states = array(
             '-1' => array(
                 'title' => 'All',
@@ -527,14 +539,14 @@ class CriticMatic extends AbstractDB {
         foreach ($this->post_status as $key => $value) {
             $states[$key] = array(
                 'title' => $value,
-                'count' => $this->get_post_count($key, $cid, $type, $aid, $meta_type, $author_type));
+                'count' => $this->get_post_count($key, $cid, $type, $aid, $meta_type, $author_type, $view_type));
         }
         return $states;
     }
 
-    public function get_post_meta_types($cid = 0, $type = -1, $aid = 0, $meta_type = -1, $author_type = -1) {
+    public function get_post_meta_types($cid = 0, $type = -1, $aid = 0, $meta_type = -1, $author_type = -1, $view_type = -1) {
         $status = -1;
-        $count = $this->get_post_count($status, $cid, $type, $aid, $meta_type, $author_type);
+        $count = $this->get_post_count($status, $cid, $type, $aid, $meta_type, $author_type, $view_type);
         $states = array(
             '-1' => array(
                 'title' => 'All',
@@ -544,14 +556,14 @@ class CriticMatic extends AbstractDB {
         foreach ($this->post_meta_status as $key => $value) {
             $states[$key] = array(
                 'title' => $value,
-                'count' => $this->get_post_count($status, $cid, $type, $aid, $key, $author_type));
+                'count' => $this->get_post_count($status, $cid, $type, $aid, $key, $author_type, $view_type));
         }
         return $states;
     }
 
-    public function get_post_types($cid = 0, $type = -1, $aid = 0, $meta_type = -1, $author_type = -1) {
+    public function get_post_types($cid = 0, $type = -1, $aid = 0, $meta_type = -1, $author_type = -1, $view_type = -1) {
         $status = -1;
-        $count = $this->get_post_count($status, $cid, -1, $aid, $meta_type, $author_type);
+        $count = $this->get_post_count($status, $cid, -1, $aid, $meta_type, $author_type, $view_type);
         $states = array(
             '-1' => array(
                 'title' => 'All',
@@ -561,14 +573,31 @@ class CriticMatic extends AbstractDB {
         foreach ($this->post_type as $key => $value) {
             $states[$key] = array(
                 'title' => $value,
-                'count' => $this->get_post_count($status, $cid, $key, $aid, $meta_type, $author_type));
+                'count' => $this->get_post_count($status, $cid, $key, $aid, $meta_type, $author_type, $view_type));
         }
         return $states;
     }
 
-    public function get_post_author_types($cid = 0, $type = -1, $aid = 0, $meta_type = -1, $author_type = -1) {
+    public function get_post_view_types($cid = 0, $type = -1, $aid = 0, $meta_type = -1, $author_type = -1, $view_type = -1) {
         $status = -1;
-        $count = $this->get_post_count($status, $cid, $type, $aid, $meta_type);
+        $count = $this->get_post_count($status, $cid, $type, $aid, $meta_type, $author_type, $view_type);
+        $states = array(
+            '-1' => array(
+                'title' => 'All',
+                'count' => $count
+            )
+        );
+        foreach ($this->post_view_type as $key => $value) {
+            $states[$key] = array(
+                'title' => $value,
+                'count' => $this->get_post_count($status, $cid, $type, $aid, $meta_type, $author_type, $key));
+        }
+        return $states;
+    }
+
+    public function get_post_author_types($cid = 0, $type = -1, $aid = 0, $meta_type = -1, $author_type = -1, $view_type = -1) {
+        $status = -1;
+        $count = $this->get_post_count($status, $cid, $type, $aid, $meta_type, -1, $view_type);
         $states = array(
             '-1' => array(
                 'title' => 'All',
@@ -578,7 +607,7 @@ class CriticMatic extends AbstractDB {
         foreach ($this->author_type as $key => $value) {
             $states[$key] = array(
                 'title' => $value,
-                'count' => $this->get_post_count($status, $cid, $type, $aid, $meta_type, $key));
+                'count' => $this->get_post_count($status, $cid, $type, $aid, $meta_type, $key, $view_type));
         }
         return $states;
     }
