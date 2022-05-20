@@ -156,6 +156,8 @@ class CriticParser extends AbstractDBWp {
     );
     public $previews_number = array(1 => 1, 5 => 5, 10 => 10, 20 => 20);
     private $youtube_url = 'https://www.youtube.com/watch?v=';
+    public $yt_in_quota = true;
+    public $yt_error_msg = '';
 
     public function __construct($cm = '') {
         $this->cm = $cm;
@@ -536,6 +538,10 @@ class CriticParser extends AbstractDBWp {
         }
         $snippets = $this->find_youtube_data_api($ids, $debug);
 
+        if (!$this->yt_in_quota) {
+            return array();
+        }
+
         foreach ($urls as $item) {
             $ret[$item->id]['url'] = $item;
             $link = $item->link;
@@ -582,7 +588,7 @@ class CriticParser extends AbstractDBWp {
         $force_update = $options['yt_force_update'];
 
         $content = $this->get_urls_content_yt($campaign, $urls);
-        if ($content && sizeof($content)) {
+        if ($this->yt_in_quota && $content && sizeof($content)) {
             foreach ($content as $id => $data) {
                 //Get url object
                 $item = $data['url'];
@@ -691,9 +697,9 @@ class CriticParser extends AbstractDBWp {
                                     print_r(array('Add author for new post', $aid));
                                 }
                             } else {
-                                $log_message = "Error add post url: ".$item->link.", campaign:" . $campaign->id;
+                                $log_message = "Error add post url: " . $item->link . ", campaign:" . $campaign->id;
                                 $status = 4;
-                                $this->change_url_state($id, $status);                                
+                                $this->change_url_state($id, $status);
                                 $this->log_error($message, $campaign->id, $item->id, 3);
                                 if ($debug) {
                                     print_r(array('error', $message));
@@ -862,16 +868,28 @@ class CriticParser extends AbstractDBWp {
                             $log_message = 'Add post';
                             $pid = $this->cm->add_post($date, $post_type, $item->link, $title, $content, $top_movie, $post_status);
 
-                            // Add author
-                            if ($author) {
-                                $author_type = 1;
-                                $author_status = 0;
-                                $aid = $this->cm->get_or_create_author_by_name($author, $author_type, $author_status);
-                            } else {
-                                $aid = $campaign->author;
-                            }
+                            if ($pid) {
+                                // Add author
+                                if ($author) {
+                                    $author_type = 1;
+                                    $author_status = 0;
+                                    $aid = $this->cm->get_or_create_author_by_name($author, $author_type, $author_status);
+                                } else {
+                                    $aid = $campaign->author;
+                                }
 
-                            $this->cm->add_post_author($pid, $aid);
+                                $this->cm->add_post_author($pid, $aid);
+                            } else {
+                                $changed = true;
+                                $log_message = "Error add post url: " . $item->link . ", campaign:" . $campaign->id;
+                                $status = 4;
+                                $this->change_url_state($id, $status);
+                                $this->log_error($message, $campaign->id, $item->id, 3);
+                                if ($debug) {
+                                    print_r(array('error', $message));
+                                }
+                                return $changed;
+                            }
                         }
 
                         // Update url         
@@ -1752,7 +1770,7 @@ class CriticParser extends AbstractDBWp {
 
         if ($client_id) {
             $responce = $this->youtube_get_videos($client_id, $cnt, $next);
-            if ($responce) {
+            if ($this->yt_in_quota && $responce) {
                 $total_found = $responce->pageInfo->totalResults;
                 $ret['total'] = $total_found;
                 $ret['next'] = $responce->nextPageToken;
@@ -1786,7 +1804,7 @@ class CriticParser extends AbstractDBWp {
 
         if ($pid) {
             $responce = $this->youtube_get_playlist_videos($pid, $cnt, $next);
-            if ($responce) {
+            if ($this->yt_in_quota && $responce) {
                 $total_found = $responce->pageInfo->totalResults;
                 $ret['total'] = $total_found;
                 $ret['next'] = $responce->nextPageToken;
@@ -3097,7 +3115,7 @@ class CriticParser extends AbstractDBWp {
                 if (!$playlists_checked) {
                     // All posts
                     $responce = $this->youtube_get_videos($cid, $cnt);
-                    if ($responce) {
+                    if ($this->yt_in_quota && $responce) {
                         $total = $responce->pageInfo->totalResults;
                     }
                 } else {
@@ -3105,7 +3123,7 @@ class CriticParser extends AbstractDBWp {
                     foreach ($playlists_checked as $play_list_id) {
                         $item = $this->youtube_get_playlist_videos($play_list_id, $cnt);
 
-                        if ($item) {
+                        if ($this->yt_in_quota && $item) {
                             $total_arr[] = $item->pageInfo->totalResults;
                         }
                     }
@@ -3121,7 +3139,7 @@ class CriticParser extends AbstractDBWp {
     public function yt_playlists_select($options) {
         $ret = array();
         $playlists = $this->yt_get_playlists($options);
-        if ($playlists->items) {
+        if ($this->yt_in_quota && $playlists->items) {
             foreach ($playlists->items as $item) {
                 $ret[$item->id] = $item->snippet->title;
             }
@@ -3243,6 +3261,8 @@ class CriticParser extends AbstractDBWp {
             $message = $exc->getMessage();
             $this->log_error($message, $arg['cid'], 0, 3);
             $response = array();
+            $this->yt_in_quota = false;
+            $this->yt_error_msg = $message;
         }
         return gzencode(json_encode($response));
     }
@@ -3265,6 +3285,8 @@ class CriticParser extends AbstractDBWp {
             $message = $exc->getMessage();
             $this->log_error($message, $arg['cid'], 0, 3);
             $response = array();
+            $this->yt_in_quota = false;
+            $this->yt_error_msg = $message;
         }
         return gzencode(json_encode($response));
     }
@@ -3282,6 +3304,8 @@ class CriticParser extends AbstractDBWp {
             $message = $exc->getMessage();
             $this->log_error($message, $arg['cid'], 0, 3);
             $response = array();
+            $this->yt_in_quota = false;
+            $this->yt_error_msg = $message;
         }
         return gzencode(json_encode($response));
     }
@@ -3300,6 +3324,8 @@ class CriticParser extends AbstractDBWp {
             $message = $exc->getMessage();
             $this->log_error($message, $arg['cid'], 0, 3);
             $response = array();
+            $this->yt_in_quota = false;
+            $this->yt_error_msg = $message;
         }
         return gzencode(json_encode($response));
     }
