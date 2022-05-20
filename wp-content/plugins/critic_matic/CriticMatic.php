@@ -622,8 +622,9 @@ class CriticMatic extends AbstractDB {
             'title' => $title,
             'content' => $content,
             'top_movie' => $top_movie,
-            'veiw_type' => $view_type,
+            'view_type' => $view_type,
         );
+
 
         $id = $this->sync_insert_data($data, $this->db['posts'], $this->sync_client, $sync);
 

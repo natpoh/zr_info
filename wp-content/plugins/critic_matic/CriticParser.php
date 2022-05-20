@@ -341,16 +341,16 @@ class CriticParser extends AbstractDBWp {
             $currtime = $this->curr_time();
 
             if ($currtime > $next_update || $force) {
-                $count = $this->process_campaign($campaign, $type_name, $debug);
+                $count = $this->process_campaign($campaign, $type_name, $force, $debug);
                 // Update timer
                 if ($type_name == 'parsing') {
                     $this->update_campaign_last_update($campaign->id, $currtime);
                 } else {
                     $options[$type_name]['last_update'] = $currtime;
                     if ($campaign->type == 1) {
-                        if (!$options[$type_name]['last_update_all']){
+                        if (!$options[$type_name]['last_update_all']) {
                             $options[$type_name]['last_update_all'] = $currtime;
-                        } 
+                        }
                     }
                     $this->update_campaign_options($campaign->id, $options);
                 }
@@ -359,17 +359,17 @@ class CriticParser extends AbstractDBWp {
         return $count;
     }
 
-    public function process_campaign($campaign, $type_name, $debug = false) {
+    public function process_campaign($campaign, $type_name, $force = false, $debug = false) {
 
         if ($type_name == 'parsing') {
-            $count = $this->process_parser($campaign, $debug);
+            $count = $this->process_parser($campaign, $force, $debug);
         } else if ($type_name == 'cron_urls' || $type_name == 'yt_urls') {
-            $count = $this->proccess_cron_urls($campaign, $debug);
+            $count = $this->proccess_cron_urls($campaign, $force, $debug);
         }
         return $count;
     }
 
-    public function process_parser($campaign = '', $debug = false) {
+    public function process_parser($campaign = '', $force = false, $debug = false) {
         $options = $this->get_options($campaign);
 
         // Get posts (last is first)        
@@ -378,15 +378,17 @@ class CriticParser extends AbstractDBWp {
         // Get last urls
         $status = 0;
         $urls = $this->get_last_urls($urls_count, $status, $campaign->id);
-
+        if ($debug) {
+            print_r($urls);
+        }
         $count = sizeof($urls);
         if ($count) {
             if ($campaign->type == 1) {
                 //YouTube campaign
-                $this->parse_urls_yt($urls, $campaign);
+                $this->parse_urls_yt($urls, $campaign, false, $debug);
             } else {
                 foreach ($urls as $item) {
-                    $this->parse_url($item->id, false);
+                    $this->parse_url($item->id, false, $debug);
                 }
             }
         } else {
@@ -400,7 +402,7 @@ class CriticParser extends AbstractDBWp {
         return $count;
     }
 
-    public function proccess_cron_urls($campaign = '', $debug = false) {
+    public function proccess_cron_urls($campaign = '', $force = false, $debug = false) {
         $options = $this->get_options($campaign);
 
         $result = $this->cron_urls($campaign, false, $debug);
@@ -516,7 +518,7 @@ class CriticParser extends AbstractDBWp {
         return $ret;
     }
 
-    public function get_urls_content_yt($campaign, $urls = array()) {
+    public function get_urls_content_yt($campaign, $urls = array(), $debug=false) {
         if (!$urls) {
             return array();
         }
@@ -532,8 +534,8 @@ class CriticParser extends AbstractDBWp {
             $ids[] = $id;
             $urls_id[$link] = $id;
         }
-        $snippets = $this->find_youtube_data_api($ids, false);
-
+        $snippets = $this->find_youtube_data_api($ids, $debug);
+        
         foreach ($urls as $item) {
             $ret[$item->id]['url'] = $item;
             $link = $item->link;
@@ -575,7 +577,7 @@ class CriticParser extends AbstractDBWp {
         return $ret;
     }
 
-    public function parse_urls_yt($urls, $campaign, $force = false) {
+    public function parse_urls_yt($urls, $campaign, $force = false, $debug = false) {
         $options = $this->get_options($campaign);
         $force_update = $options['yt_force_update'];
 
@@ -594,6 +596,9 @@ class CriticParser extends AbstractDBWp {
                     $item->status = 5;
 
                     if ($post_exist) {
+                        if ($debug) {
+                            print_r(array('Post exist', $link_hash, $post_exist));
+                        }
                         //Check post type
                         /*
                           public $post_type = array(
@@ -647,6 +652,10 @@ class CriticParser extends AbstractDBWp {
                         }
                     }
 
+                    if ($debug) {
+                        print_r(array('Data', $data));
+                    }
+
                     //Check content
                     $content = $data['desc'];
                     $title = $data['title'];
@@ -660,13 +669,15 @@ class CriticParser extends AbstractDBWp {
                         }
 
                         if ($post_exist) {
-                            // Update post
-                            $log_message = 'Update post';
+                            // Update post                            
                             $pid = $post_exist->id;
                             $this->cm->update_post($pid, $date, $post_status, $item->link, $title, $content, $post_type);
+                            
+                            $log_message = "Update post:$pid, campaign:".$campaign->id;
+                            
                         } else {
                             // Add post 
-                            $log_message = 'Add post';
+                            
                             // View type is Youtube
                             $view_type = 1;
                             $pid = $this->cm->add_post($date, $post_type, $item->link, $title, $content, $top_movie, $post_status, $view_type);
@@ -674,6 +685,12 @@ class CriticParser extends AbstractDBWp {
                             // Add author      
                             $aid = $campaign->author;
                             $this->cm->add_post_author($pid, $aid);
+                            
+                            $log_message = "Add post: $pid, author:$aid, campaign:".$campaign->id;
+                            
+                            if ($debug) {
+                                print_r(array('Add author for new post', $aid));
+                            }
                         }
 
                         // Update url         
@@ -684,9 +701,15 @@ class CriticParser extends AbstractDBWp {
                         // Add log
                         if ($item->status != 3) {
                             $this->log_info($log_message, $campaign->id, $item->id, 3);
+                            if ($debug) {
+                                print_r(array('info',$log_message));
+                            }
                         } else {
                             $message = 'Check URL:' . $new_status . '. ' . $this->show_check($check);
                             $this->log_warn($message, $campaign->id, $item->id, 3);
+                            if ($debug) {
+                                print_r(array('warn',$log_message));
+                            }
                         }
                         $this->append_id($pid);
                     } else {
@@ -694,13 +717,16 @@ class CriticParser extends AbstractDBWp {
                         $this->change_url_state($id, $status);
                         $message = 'Error URL filters';
                         $this->log_error($message, $campaign->id, $item->id, 3);
+                        if ($debug) {
+                            print_r(array('error',$message));
+                        }
                     }
                 }
             }
         }
     }
 
-    public function parse_url($id, $force = false) {
+    public function parse_url($id, $force = false, $debug = false) {
         $changed = false;
         $item = $this->get_url($id);
         if ($item) {
@@ -1598,7 +1624,7 @@ class CriticParser extends AbstractDBWp {
         return $ret;
     }
 
-    public function find_all_urls_yt($campaign, $preview = false) {
+    public function find_all_urls_yt($campaign, $preview = false, $debug=false) {
         /*
           'yt_force_update' => 1,
           'yt_page' => '',
@@ -1618,7 +1644,7 @@ class CriticParser extends AbstractDBWp {
         // Playlists
         $playlists = $options['yt_playlists'] ? $options['yt_playlists'] : array();
         $first_page = array();
-
+                
         if ($playlists) {
             $result = array('found' => 0, 'add' => 0);
             foreach ($playlists as $pid) {
@@ -1633,7 +1659,7 @@ class CriticParser extends AbstractDBWp {
             if ($preview) {
                 return $first_page;
             }
-        } else {
+        } else {            
             $first_page = $this->find_urls_yt($cid, $options, '', $preview);
             if ($preview) {
                 // Get data from first page
@@ -3211,8 +3237,8 @@ class CriticParser extends AbstractDBWp {
             'id' => implode(',', $arg['ids'])
         ];
 
-        try {
-            $response = $service->videos->listVideos('snippet', $queryParams);
+        try {            
+            $response = $service->videos->listVideos('snippet', $queryParams);            
         } catch (Exception $exc) {
             $message = $exc->getMessage();
             $this->log_error($message, $arg['cid'], 0, 3);

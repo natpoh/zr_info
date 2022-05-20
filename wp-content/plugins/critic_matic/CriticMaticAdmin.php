@@ -1935,7 +1935,7 @@ class CriticMaticAdmin {
                 }
 
                 if ($campaign->type == 1) {
-                    $preview = $this->cp->get_urls_content_yt($campaign, $urls);
+                    $preview = $this->cp->get_urls_content_yt($campaign, $urls, false);
                     include(CRITIC_MATIC_PLUGIN_DIR . 'includes/parser_preview_yt.php');
                 } else {
                     $preview = $this->cp->preview($campaign, $urls);
