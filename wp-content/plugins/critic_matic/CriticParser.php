@@ -222,6 +222,7 @@ class CriticParser extends AbstractDBWp {
                     'per_page' => 50,
                     'cron_page' => 50,
                     'interval' => 1440,
+                    'last_update_all' => 0,
                     'last_update' => 0,
                     'status' => 1,
                 ),
@@ -285,16 +286,16 @@ class CriticParser extends AbstractDBWp {
      * Core
      */
 
-    public function run_cron($cron_type = 1, $force = false) {
-        $count = $this->process_all($cron_type, $force);
+    public function run_cron($cron_type = 1, $force = false, $debug = false) {
+        $count = $this->process_all($cron_type, $force, $debug);
         return $count;
     }
 
-    public function process_all($cron_type = 1, $force = false) {
+    public function process_all($cron_type = 1, $force = false, $debug = false) {
         $campaigns = $this->get_campaigns();
         $count = 0;
         foreach ($campaigns as $campaign) {
-            $count += $this->check_time_campaign($campaign, $cron_type, $force);
+            $count += $this->check_time_campaign($campaign, $cron_type, $force, $debug);
             $time = (int) $this->timer_stop(0);
             if ($time > $this->max_cron_time) {
                 break;
@@ -309,7 +310,7 @@ class CriticParser extends AbstractDBWp {
         return $result;
     }
 
-    public function check_time_campaign($campaign, $cron_type = 1, $force = false) {
+    public function check_time_campaign($campaign, $cron_type = 1, $force = false, $debug = false) {
 
         $count = 0;
         $options = $this->get_options($campaign);
@@ -340,12 +341,17 @@ class CriticParser extends AbstractDBWp {
             $currtime = $this->curr_time();
 
             if ($currtime > $next_update || $force) {
-                $count = $this->process_campaign($campaign, $type_name);
+                $count = $this->process_campaign($campaign, $type_name, $debug);
                 // Update timer
                 if ($type_name == 'parsing') {
                     $this->update_campaign_last_update($campaign->id, $currtime);
                 } else {
                     $options[$type_name]['last_update'] = $currtime;
+                    if ($campaign->type == 1) {
+                        if (!$options[$type_name]['last_update_all']){
+                            $options[$type_name]['last_update_all'] = $currtime;
+                        } 
+                    }
                     $this->update_campaign_options($campaign->id, $options);
                 }
             }
@@ -353,17 +359,17 @@ class CriticParser extends AbstractDBWp {
         return $count;
     }
 
-    public function process_campaign($campaign, $type_name) {
+    public function process_campaign($campaign, $type_name, $debug = false) {
 
         if ($type_name == 'parsing') {
-            $count = $this->process_parser($campaign);
+            $count = $this->process_parser($campaign, $debug);
         } else if ($type_name == 'cron_urls' || $type_name == 'yt_urls') {
-            $count = $this->proccess_cron_urls($campaign);
+            $count = $this->proccess_cron_urls($campaign, $debug);
         }
         return $count;
     }
 
-    public function process_parser($campaign = '') {
+    public function process_parser($campaign = '', $debug = false) {
         $options = $this->get_options($campaign);
 
         // Get posts (last is first)        
@@ -394,10 +400,10 @@ class CriticParser extends AbstractDBWp {
         return $count;
     }
 
-    public function proccess_cron_urls($campaign = '') {
+    public function proccess_cron_urls($campaign = '', $debug = false) {
         $options = $this->get_options($campaign);
 
-        $result = $this->cron_urls($campaign, false);
+        $result = $this->cron_urls($campaign, false, $debug);
         if (isset($result['add_urls'])) {
             $count = sizeof($result['add_urls']);
             $message = 'Add new URLs: ' . $count;
@@ -1326,22 +1332,17 @@ class CriticParser extends AbstractDBWp {
             $opt_prev = unserialize($campaign->options);
         }
 
-        $options = array(
-            'post_status' => isset($form_state['post_status']) ? $form_state['post_status'] : $def_opt['post_status'],
-            'pr_num' => isset($form_state['pr_num']) ? $form_state['pr_num'] : $def_opt['pr_num'],
-            'parse_num' => isset($form_state['parse_num']) ? $form_state['parse_num'] : $def_opt['parse_num'],
-            'url_status' => isset($form_state['url_status']) ? $form_state['url_status'] : $def_opt['url_status'],
-            'use_rules' => isset($form_state['use_rules']) ? $form_state['use_rules'] : $def_opt['use_rules'],
-            'use_dom' => isset($form_state['use_dom']) ? $form_state['use_dom'] : $def_opt['use_dom'],
-            'use_reg' => isset($form_state['use_reg']) ? $form_state['use_reg'] : $def_opt['use_reg'],
-            'yt_force_update' => isset($form_state['yt_force_update']) ? $form_state['yt_force_update'] : $def_opt['yt_force_update'],
-            'yt_parse_num' => isset($form_state['yt_parse_num']) ? $form_state['yt_parse_num'] : $def_opt['yt_parse_num'],
-            'yt_pr_num' => isset($form_state['yt_pr_num']) ? $form_state['yt_pr_num'] : $def_opt['yt_pr_num'],
-            'yt_pr_status' => isset($form_state['yt_pr_status']) ? $form_state['yt_pr_status'] : $def_opt['yt_pr_status'],
-            'new_urls_weight' => isset($form_state['new_urls_weight']) ? $form_state['new_urls_weight'] : $def_opt['new_urls_weight'],
-        );
-        $status = isset($form_state['status']) ? $form_state['status'] : 0;
+        $options = $opt_prev;
 
+        $form_fields = array('post_status', 'pr_num', 'parse_num', 'url_status', 'use_rules', 'use_dom', 'use_reg', 'yt_force_update', 'yt_parse_num', 'yt_pr_num', 'yt_pr_status', 'new_urls_weight');
+
+        foreach ($form_fields as $field) {
+            if (isset($form_state[$field])) {
+                $options[$field] = $form_state[$field];
+            }
+        }
+
+        $status = isset($form_state['status']) ? $form_state['status'] : 0;
         $options['rules'] = $this->rules_form($form_state);
         $options['parser_rules'] = $this->parser_rules_form($form_state);
 
@@ -1551,7 +1552,7 @@ class CriticParser extends AbstractDBWp {
         return $ret;
     }
 
-    public function cron_urls($campaign, $preview = true) {
+    public function cron_urls($campaign, $preview = true, $debug = false) {
         $options = $this->get_options($campaign);
         $cid = $campaign->id;
 
@@ -1568,7 +1569,18 @@ class CriticParser extends AbstractDBWp {
                     }
                 }
             } else {
-                $ret = $this->find_urls_yt($cid, $options, '', $preview);
+                $last_update_all = isset($options['yt_urls']['last_update_all']) ? $options['yt_urls']['last_update_all'] : 0;
+                if ($last_update_all > 0) {
+                    $ret = $this->find_urls_yt($cid, $options, '', $preview);
+                    if ($debug) {
+                        print "[$cid] Update last page. Last update all: $last_update_all\n";
+                    }
+                } else {
+                    $ret = $this->find_all_urls_yt($campaign, false);
+                    if ($debug) {
+                        print "[$cid] Update all. Last update all: $last_update_all\n";
+                    }
+                }
             }
         } else {
             $cron_urls = $options['cron_urls'];
@@ -1639,10 +1651,8 @@ class CriticParser extends AbstractDBWp {
         $total_found = (int) $first_page['total'];
 
         $total_parsed = $total_found;
-        if ($next && $total_found) {
-
-            for ($i = 0; $i < $total_found; $i += $cnt) {
-
+        if ($next) {
+            while ($next) {
                 if ($pid) {
                     // Find in a playlist
                     $result = $this->find_urls_playlist_yt($cid, $pid, $options, $next);
@@ -3228,7 +3238,7 @@ class CriticParser extends AbstractDBWp {
         }
         return gzencode(json_encode($response));
     }
-    
+
     /*
      * Other functions
      */
