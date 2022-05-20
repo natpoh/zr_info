@@ -488,12 +488,14 @@ class CriticMatic extends AbstractDB {
             $select = " COUNT(*)";
         }
 
-        $sql = "SELECT" . $select
+        $sql = "SELECT DISTINCT" . $select
                 . " FROM {$this->db['posts']} p"
-                . " INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id "
+                . " INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
                 . $atype_inner . $cid_inner . $ts_inner . $status_query . $cid_and . $aid_and . $type_and . $view_type_and . $ts_and . $meta_type_and . $atype_and . $and_orderby . $limit;
-
+             
+                
         if (!$count) {
+          //  print $sql;
             $result = $this->db_results($sql);
         } else {
             $result = $this->db_get_var($sql);

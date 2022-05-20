@@ -10,7 +10,7 @@ class CriticMaticTrans extends AbstractDB {
     private $cp;
     private $db;
     public $sort_pages = array('add_time', 'id', 'status');
-    public $ts = array(0=>'Empty', 1=>'Exist', 2=>'Waiting');
+    public $ts = array(0 => 'Empty', 1 => 'Exist', 2 => 'Waiting');
 
     public function __construct($cm = '') {
         $this->cm = $cm;
@@ -36,6 +36,19 @@ class CriticMaticTrans extends AbstractDB {
         }
         return $this->cp;
     }
+    
+    
+
+    private function youtube_content_filter($content) {
+        $ret = '';
+        if (preg_match_all('/([0-9]+\:[0-9]+\:[0-9\, ]+)-->[^\n]+\n([^\n]+)/s', $content, $match)) {
+            for ($i = 0; $i < sizeof($match[1]); $i++) {
+                $ret .= '<span data-time="' . $match[1][$i] . '">' . $match[2][$i] . '</span> ';
+            }
+            $ret = '<div class="transcriptions">' . $ret . '</div>';
+        }
+        return $ret;
+    }
 
     public function find_transcriptions_youtube($count = 10, $debug = false, $force = false) {
         $cron_option = 'find_transcriptions_last_run';
@@ -46,10 +59,9 @@ class CriticMaticTrans extends AbstractDB {
         if ($currtime > $max_wait || $force) {
             // Set curr time to option
             update_option($cron_option, $currtime);
-            
-            // Find transcripts from posts from three days ago. We need a lot of time to create transcripts for new YouTube videos.
-            $min_date = $currtime-86400*3; // 3 days
 
+            // Find transcripts from posts from three days ago. We need a lot of time to create transcripts for new YouTube videos.
+            $min_date = $currtime - 86400 * 3; // 3 days
             // 1. Get no ts posts
             $no_ts = $this->get_no_ts_posts($count, $min_date);
             if ($no_ts) {
@@ -117,12 +129,12 @@ class CriticMaticTrans extends AbstractDB {
         $this->cm->sync_insert_data($data, $this->db['transcriptions'], $this->cm->sync_client, $this->cm->sync_data, 10);
     }
 
-    private function get_no_ts_posts($count = 10, $min_date=0) {
-        if ($min_date==0){
+    private function get_no_ts_posts($count = 10, $min_date = 0) {
+        if ($min_date == 0) {
             $min_date = $this->curr_time();
         }
         $sql = sprintf("SELECT p.id, p.link FROM {$this->db['posts']} p LEFT JOIN {$this->db['transcriptions']} t ON p.id = t.pid"
-                . " WHERE p.view_type=1 AND t.pid IS NULL AND p.date<%d AND p.type!=4 ORDER BY id ASC limit %d", (int) $count,  (int) $min_date);
+                . " WHERE p.view_type=1 AND t.pid IS NULL AND p.date<%d AND p.type!=4 ORDER BY id ASC limit %d", (int) $count, (int) $min_date);
         $results = $this->db_results($sql);
         return $results;
     }
