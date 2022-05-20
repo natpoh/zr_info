@@ -30,6 +30,7 @@ class AbstractFunctions {
 
     public function sync_insert_data($data, $db, $sync_client = true, $sync_data = true, $priority = 5) {
         $update = false;
+        $id = 0;
 
         if ($sync_client) {
             // Client mode
@@ -49,14 +50,16 @@ class AbstractFunctions {
         }
 
         if (!$update) {
+            $last_id = $this->getInsertId('id', $db);
             $this->db_insert($data, $db);
-        }
-
-        if (!$id) {
             $id = $this->getInsertId('id', $db);
+            if ($id==$last_id){
+                // Insert error
+                $id = 0;
+            }
         }
 
-        if ($sync_data) {
+        if ($id && $sync_data) {
             $this->create_commit_update($id, $db, $priority);
         }
 
@@ -271,21 +274,21 @@ class AbstractFunctions {
 class QueryADB {
 
     private $query = array();
-    
+
     public function __construct() {
         $this->clear();
     }
 
     public function add_query($key, $value) {
-        $this->query[$key]=$value;
+        $this->query[$key] = $value;
     }
-    
+
     public function get_query() {
         return $this->query;
     }
-    
+
     public function clear() {
-        $this->query=array();
+        $this->query = array();
     }
 
 }
