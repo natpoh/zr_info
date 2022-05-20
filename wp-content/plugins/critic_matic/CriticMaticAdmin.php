@@ -456,7 +456,7 @@ class CriticMaticAdmin {
 
             if ($curr_tab == 'home') {
                 // Post view page  
-                $post = $this->cm->get_post($pid);
+                $post = $this->cm->get_post($pid, true, true);
                 wp_enqueue_style('audience_rating', CRITIC_MATIC_PLUGIN_URL . 'css/rating.css', false, CRITIC_MATIC_VERSION);
                 include(CRITIC_MATIC_PLUGIN_DIR . 'includes/view_post.php');
             } else if ($curr_tab == 'edit') {
@@ -1428,10 +1428,10 @@ class CriticMaticAdmin {
         $query_adb->add_query('view_type', 1);
 
         $filters = array(
-            'ts' => $ts->ts,
             'type' => $this->cm->post_type,
             'meta_type' => $this->cm->post_meta_status,
-            'status' => $this->cm->post_status
+            'status' => $this->cm->post_status,
+            'ts' => $ts->ts,
         );
 
 

@@ -130,13 +130,8 @@ if (sizeof($posts) > 0) {
                         <td><?php print $this->cm->get_post_status($item->status) ?></td>
                         <td><?php
                             $item_type = $this->cm->get_post_type($item->type);
-                            if ($item->fmcid) {
-                                ?>
-                                <a href="/wp-admin/admin.php?page=critic_matic_feeds&cid=<?php print $item->fmcid ?>"><?php print $item_type ?></a>
-                                <?php
-                            } else {
-                                print $item_type;
-                            }
+                            print $item_type;
+                         
                             ?></td>
                         <td><?php
                             print $this->cs->critic_in_index($item->id) ? 'Index' : 'Not';

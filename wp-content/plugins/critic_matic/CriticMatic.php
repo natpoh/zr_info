@@ -274,16 +274,28 @@ class CriticMatic extends AbstractDB {
      * Posts get
      */
 
-    public function get_post($id) {
+    public function get_post($id, $fm = false, $ts = false) {
 
-        $cid_inner = " LEFT JOIN {$this->db['feed_meta']} fm ON fm.pid = p.id";
+        $cid_get = '';
+        $cid_inner = '';
+        if ($fm) {
+            $cid_get = ", fm.cid AS fmcid";
+            $cid_inner = " LEFT JOIN {$this->db['feed_meta']} fm ON fm.pid = p.id";
+        }
+
+        $ts_get = '';
+        $ts_inner = '';
+        if ($ts) {
+            $ts_get = ", t.status as tstatus, t.content as tcontent";
+            $ts_inner = " LEFT JOIN {$this->db['transcriptions']} t ON t.pid = p.id";
+        }
 
         $where = sprintf(" WHERE p.id=%d", (int) $id);
 
-        $sql = "SELECT p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, am.aid, fm.cid AS fmcid "
-                . "FROM {$this->db['posts']} p "
-                . "LEFT JOIN {$this->db['authors_meta']} am ON am.cid = p.id "
-                . $cid_inner . $where;
+        $sql = "SELECT p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, am.aid" . $cid_get . $ts_get
+                . " FROM {$this->db['posts']} p"
+                . " LEFT JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
+                . $cid_inner . $ts_inner . $where;
 
 
         $result = $this->db_fetch_row($sql);
@@ -423,7 +435,11 @@ class CriticMatic extends AbstractDB {
         $ts_and = '';
         if ($q['ts'] != -1) {
             $ts_inner = " LEFT JOIN {$this->db['transcriptions']} t ON t.pid = p.id";
-            $ts_and = sprintf(" AND t.status =%d", (int) $q['ts']);
+            if ($q['ts'] == 2) {
+                $ts_and = " AND t.id IS NULL";
+            } else {
+                $ts_and = sprintf(" AND t.status =%d", (int) $q['ts']);
+            }
             $ts_get = ", t.status AS tstatus, t.content AS tcontent";
         }
 

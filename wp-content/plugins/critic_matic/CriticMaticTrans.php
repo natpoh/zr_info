@@ -10,7 +10,7 @@ class CriticMaticTrans extends AbstractDB {
     private $cp;
     private $db;
     public $sort_pages = array('add_time', 'id', 'status');
-    public $ts = array(0=>'Empty', 1=>'Exist');
+    public $ts = array(0=>'Empty', 1=>'Exist', 2=>'Waiting');
 
     public function __construct($cm = '') {
         $this->cm = $cm;
