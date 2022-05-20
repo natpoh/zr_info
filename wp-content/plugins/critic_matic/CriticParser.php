@@ -518,7 +518,7 @@ class CriticParser extends AbstractDBWp {
         return $ret;
     }
 
-    public function get_urls_content_yt($campaign, $urls = array(), $debug=false) {
+    public function get_urls_content_yt($campaign, $urls = array(), $debug = false) {
         if (!$urls) {
             return array();
         }
@@ -535,7 +535,7 @@ class CriticParser extends AbstractDBWp {
             $urls_id[$link] = $id;
         }
         $snippets = $this->find_youtube_data_api($ids, $debug);
-        
+
         foreach ($urls as $item) {
             $ret[$item->id]['url'] = $item;
             $link = $item->link;
@@ -672,12 +672,10 @@ class CriticParser extends AbstractDBWp {
                             // Update post                            
                             $pid = $post_exist->id;
                             $this->cm->update_post($pid, $date, $post_status, $item->link, $title, $content, $post_type);
-                            
-                            $log_message = "Update post:$pid, campaign:".$campaign->id;
-                            
+
+                            $log_message = "Update post:$pid, campaign:" . $campaign->id;
                         } else {
                             // Add post 
-                            
                             // View type is Youtube
                             $view_type = 1;
                             $pid = $this->cm->add_post($date, $post_type, $item->link, $title, $content, $top_movie, $post_status, $view_type);
@@ -685,9 +683,9 @@ class CriticParser extends AbstractDBWp {
                             // Add author      
                             $aid = $campaign->author;
                             $this->cm->add_post_author($pid, $aid);
-                            
-                            $log_message = "Add post: $pid, author:$aid, campaign:".$campaign->id;
-                            
+
+                            $log_message = "Add post: $pid, author:$aid, campaign:" . $campaign->id;
+
                             if ($debug) {
                                 print_r(array('Add author for new post', $aid));
                             }
@@ -702,13 +700,13 @@ class CriticParser extends AbstractDBWp {
                         if ($item->status != 3) {
                             $this->log_info($log_message, $campaign->id, $item->id, 3);
                             if ($debug) {
-                                print_r(array('info',$log_message));
+                                print_r(array('info', $log_message));
                             }
                         } else {
                             $message = 'Check URL:' . $new_status . '. ' . $this->show_check($check);
                             $this->log_warn($message, $campaign->id, $item->id, 3);
                             if ($debug) {
-                                print_r(array('warn',$log_message));
+                                print_r(array('warn', $log_message));
                             }
                         }
                         $this->append_id($pid);
@@ -718,7 +716,7 @@ class CriticParser extends AbstractDBWp {
                         $message = 'Error URL filters';
                         $this->log_error($message, $campaign->id, $item->id, 3);
                         if ($debug) {
-                            print_r(array('error',$message));
+                            print_r(array('error', $message));
                         }
                     }
                 }
@@ -1450,6 +1448,41 @@ class CriticParser extends AbstractDBWp {
         return $result;
     }
 
+    public function bulk_change_campaign_status($ids = array(), $b) {
+        /*
+          'start_campaign' => 'Start campaigns',
+          'stop_campaign' => 'Stop campaigns',
+          'trash_campaign' => 'Trash campaigns',
+          'active_parser' => 'Active parser',
+          'inactive_parser' => 'Inactive parser',
+          'active_find' => 'Active find urls',
+          'inactive_find' => 'Inactive find urls'
+         */
+        foreach ($ids as $id) {
+            if ($b == 'start_campaign') {
+                $status = 1;
+                $this->update_campaign_status($id, $status);
+            } else if ($b == 'stop_campaign') {
+                $status = 0;
+                $this->update_campaign_status($id, $status);
+            } else if ($b == 'trash_campaign') {
+                $status = 2;
+                $this->update_campaign_status($id, $status);
+            }else if ($b == 'active_parser') {
+                $status = 1;
+                $this->update_campaign_parser_status($id, $status);
+            } else if ($b == 'inactive_parser') {
+                $status = 0;
+                $this->update_campaign_parser_status($id, $status);
+            }
+
+            
+            
+             
+            
+        }
+    }
+
     private function find_channel_id($site) {
         if (preg_match('/\/channel\/([\w\d_-]+)/', $site, $match)) {
             return $match[1];
@@ -1624,7 +1657,7 @@ class CriticParser extends AbstractDBWp {
         return $ret;
     }
 
-    public function find_all_urls_yt($campaign, $preview = false, $debug=false) {
+    public function find_all_urls_yt($campaign, $preview = false, $debug = false) {
         /*
           'yt_force_update' => 1,
           'yt_page' => '',
@@ -1644,7 +1677,7 @@ class CriticParser extends AbstractDBWp {
         // Playlists
         $playlists = $options['yt_playlists'] ? $options['yt_playlists'] : array();
         $first_page = array();
-                
+
         if ($playlists) {
             $result = array('found' => 0, 'add' => 0);
             foreach ($playlists as $pid) {
@@ -1659,7 +1692,7 @@ class CriticParser extends AbstractDBWp {
             if ($preview) {
                 return $first_page;
             }
-        } else {            
+        } else {
             $first_page = $this->find_urls_yt($cid, $options, '', $preview);
             if ($preview) {
                 // Get data from first page
@@ -2145,7 +2178,7 @@ class CriticParser extends AbstractDBWp {
                         <th><?php print __('Field') ?></th>
                         <th><?php print __('Action') ?></th>                 
                         <th><?php print __('Weight') ?></th>  
-                        <?php if ($edit): ?>
+            <?php if ($edit): ?>
                             <th><?php print __('Remove') ?></th> 
                         <?php endif ?>
                         <?php if ($check): ?>
@@ -2154,15 +2187,15 @@ class CriticParser extends AbstractDBWp {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php
-                    if ($rules) {
-                        $rules = $this->sort_rules_by_weight($rules);
-                        ?>
+            <?php
+            if ($rules) {
+                $rules = $this->sort_rules_by_weight($rules);
+                ?>
                         <?php foreach ($rules as $rid => $rule) {
                             ?>
                             <tr>
                                 <td>
-                                    <?php print $rid ?>
+                    <?php print $rid ?>
                                     <input type="hidden" name="rule_id_<?php print $rid ?>" value="<?php print $rid ?>">
                                 </td>
                                 <td>
@@ -2170,11 +2203,11 @@ class CriticParser extends AbstractDBWp {
                                 </td>
                                 <td>
                                     <select name="rule_c_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
-                                        <?php
-                                        $con = $rule['c'];
-                                        foreach ($this->rules_condition as $key => $name) {
-                                            $selected = ($key == $con) ? 'selected' : '';
-                                            ?>
+                    <?php
+                    $con = $rule['c'];
+                    foreach ($this->rules_condition as $key => $name) {
+                        $selected = ($key == $con) ? 'selected' : '';
+                        ?>
                                             <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
                                             <?php
                                         }
@@ -2183,33 +2216,33 @@ class CriticParser extends AbstractDBWp {
                                 </td>
                                 <td>
                                     <div class="flex-row">
-                                        <?php
-                                        foreach ($this->rules_fields as $key => $value) {
-                                            if ($ctype == 1 && $key == 'a') {
-                                                continue;
+                    <?php
+                    foreach ($this->rules_fields as $key => $value) {
+                        if ($ctype == 1 && $key == 'a') {
+                            continue;
+                        }
+                        ?>
+                                            <label class="inline-edit-field flex-column">                
+                                            <?php
+                                            $checked = '';
+                                            $fields = isset($rule['f']) ? $rule['f'] : array();
+                                            if (in_array($key, $fields)) {
+                                                $checked = 'checked="checked"';
                                             }
                                             ?>
-                                            <label class="inline-edit-field flex-column">                
-                                                <?php
-                                                $checked = '';
-                                                $fields = isset($rule['f']) ? $rule['f'] : array();
-                                                if (in_array($key, $fields)) {
-                                                    $checked = 'checked="checked"';
-                                                }
-                                                ?>
                                                 <input type="checkbox" name="rule_f_<?php print $rid ?>[]" value="<?php print $key ?>" <?php print $checked ?> <?php print $disabled ?>>
                                                 <span class="checkbox-title"><?php print $value ?></span>
                                             </label>  
-                                        <?php } ?>
+                    <?php } ?>
                                     </div>
                                 </td>
                                 <td>
                                     <select name="rule_a_<?php print $rid ?>" class="interval"<?php print $disabled ?>>
-                                        <?php
-                                        $action = $rule['a'];
-                                        foreach ($this->rules_actions as $key => $name) {
-                                            $selected = ($key == $action) ? 'selected' : '';
-                                            ?>
+                    <?php
+                    $action = $rule['a'];
+                    foreach ($this->rules_actions as $key => $name) {
+                        $selected = ($key == $action) ? 'selected' : '';
+                        ?>
                                             <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
                                             <?php
                                         }
@@ -2219,22 +2252,22 @@ class CriticParser extends AbstractDBWp {
                                 <td>
                                     <input type="text" name="rule_w_<?php print $rid ?>" class="rule_w" value="<?php print $rule['w'] ?>"<?php print $disabled ?>>
                                 </td>
-                                <?php if ($edit): ?>
+                    <?php if ($edit): ?>
                                     <td>
                                         <input type="checkbox" name="remove_rule[]" value="<?php print $rid ?>">
                                     </td>
-                                <?php endif ?>
+                    <?php endif ?>
                                 <?php if ($check): ?>
                                     <td>
-                                        <?php
-                                        if (isset($check[$rid])) {
-                                            print 'Match';
-                                        }
-                                        ?>
+                                    <?php
+                                    if (isset($check[$rid])) {
+                                        print 'Match';
+                                    }
+                                    ?>
                                     </td>
-                                <?php endif ?>
+                                    <?php endif ?>
                             </tr> 
-                        <?php } ?>
+                            <?php } ?>
                         <?php
                     }
                     if ($edit) {
@@ -2250,7 +2283,7 @@ class CriticParser extends AbstractDBWp {
                             </td>
                             <td>
                                 <select name="new_rule_c" class="condition">
-                                    <?php foreach ($this->rules_condition as $key => $name) { ?>
+                <?php foreach ($this->rules_condition as $key => $name) { ?>
                                         <option value="<?php print $key ?>"><?php print $name ?></option>                                
                                         <?php
                                     }
@@ -2259,22 +2292,22 @@ class CriticParser extends AbstractDBWp {
                             </td>
                             <td>
                                 <div class="flex-row">
-                                    <?php
-                                    foreach ($this->rules_fields as $key => $value) {
-                                        if ($ctype == 1 && $key == 'a') {
-                                            continue;
-                                        }
-                                        ?>
+                <?php
+                foreach ($this->rules_fields as $key => $value) {
+                    if ($ctype == 1 && $key == 'a') {
+                        continue;
+                    }
+                    ?>
                                         <label class="inline-edit-field flex-column"> 
                                             <input type="checkbox" name="new_rule_f[]" value="<?php print $key ?>">
                                             <span class="checkbox-title"><?php print $value ?></span>
                                         </label> 
-                                    <?php } ?>
+                <?php } ?>
                                 </div>
                             </td>
                             <td>
                                 <select name="new_rule_a" class="interval">
-                                    <?php foreach ($this->rules_actions as $key => $name) { ?>
+                <?php foreach ($this->rules_actions as $key => $name) { ?>
                                         <option value="<?php print $key ?>"><?php print $name ?></option>                                
                                         <?php
                                     }
@@ -2287,7 +2320,7 @@ class CriticParser extends AbstractDBWp {
                             <td>
                             </td>
                         </tr>
-                    <?php } ?>
+            <?php } ?>
                 </tbody>
             </table>    <?php
         }
@@ -2616,7 +2649,7 @@ class CriticParser extends AbstractDBWp {
                         <th><?php print __('Comment') ?></th>                        
                         <th><?php print __('Weight') ?></th> 
                         <th><?php print __('Active') ?></th>
-                        <?php if ($edit): ?>
+            <?php if ($edit): ?>
                             <th><?php print __('Remove') ?></th> 
                         <?php endif ?>
                         <?php if ($check): ?>
@@ -2625,21 +2658,21 @@ class CriticParser extends AbstractDBWp {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if ($rules) { ?>
+            <?php if ($rules) { ?>
                         <?php foreach ($rules as $rid => $rule) {
                             ?>
                             <tr>
                                 <td>
-                                    <?php print $rid ?>
+                    <?php print $rid ?>
                                     <input type="hidden" name="rule_reg_id_<?php print $rid ?>" value="<?php print $rid ?>">
                                 </td>
                                 <td>
                                     <select name="rule_reg_f_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
-                                        <?php
-                                        $con = $rule['f'];
-                                        foreach ($parser_rules_fields as $key => $name) {
-                                            $selected = ($key == $con) ? 'selected' : '';
-                                            ?>
+                    <?php
+                    $con = $rule['f'];
+                    foreach ($parser_rules_fields as $key => $name) {
+                        $selected = ($key == $con) ? 'selected' : '';
+                        ?>
                                             <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
                                             <?php
                                         }
@@ -2648,11 +2681,11 @@ class CriticParser extends AbstractDBWp {
                                 </td>
                                 <td>
                                     <select name="rule_reg_t_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
-                                        <?php
-                                        $con = $rule['t'];
-                                        foreach ($this->parser_rules_type as $key => $name) {
-                                            $selected = ($key == $con) ? 'selected' : '';
-                                            ?>
+                    <?php
+                    $con = $rule['t'];
+                    foreach ($this->parser_rules_type as $key => $name) {
+                        $selected = ($key == $con) ? 'selected' : '';
+                        ?>
                                             <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
                                             <?php
                                         }
@@ -2666,13 +2699,13 @@ class CriticParser extends AbstractDBWp {
                                     <input type="text" name="rule_reg_m_<?php print $rid ?>" class="rule_m" value="<?php print $rule['m'] ?>"<?php print $disabled ?>>
                                 </td>
                                 <td>
-                                    <?php
-                                    $checked = '';
-                                    $active = isset($rule['n']) ? $rule['n'] : '';
-                                    if ($active) {
-                                        $checked = 'checked="checked"';
-                                    }
-                                    ?>
+                    <?php
+                    $checked = '';
+                    $active = isset($rule['n']) ? $rule['n'] : '';
+                    if ($active) {
+                        $checked = 'checked="checked"';
+                    }
+                    ?>
                                     <input type="checkbox" name="rule_reg_n_<?php print $rid ?>" value="1" <?php print $checked ?> <?php print $disabled ?>>                                    
                                 </td>
                                 <td>
@@ -2682,32 +2715,32 @@ class CriticParser extends AbstractDBWp {
                                     <input type="text" name="rule_reg_w_<?php print $rid ?>" class="rule_w" value="<?php print $rule['w'] ?>"<?php print $disabled ?>>
                                 </td>
                                 <td>
-                                    <?php
-                                    $checked = '';
-                                    $active = isset($rule['a']) ? $rule['a'] : '';
-                                    if ($active) {
-                                        $checked = 'checked="checked"';
-                                    }
-                                    ?>
+                    <?php
+                    $checked = '';
+                    $active = isset($rule['a']) ? $rule['a'] : '';
+                    if ($active) {
+                        $checked = 'checked="checked"';
+                    }
+                    ?>
                                     <input type="checkbox" name="rule_reg_a_<?php print $rid ?>" value="1" <?php print $checked ?> <?php print $disabled ?>>                                    
                                 </td>
 
-                                <?php if ($edit): ?>
+                    <?php if ($edit): ?>
                                     <td>
                                         <input type="checkbox" name="remove_reg_rule[]" value="<?php print $rid ?>">
                                     </td>
-                                <?php endif ?>
+                    <?php endif ?>
                                 <?php if ($check): ?>
                                     <td>
-                                        <?php
-                                        if (isset($check[$rid])) {
-                                            print 'Match';
-                                        }
-                                        ?>
+                                    <?php
+                                    if (isset($check[$rid])) {
+                                        print 'Match';
+                                    }
+                                    ?>
                                     </td>
-                                <?php endif ?>
+                                    <?php endif ?>
                             </tr> 
-                        <?php } ?>
+                            <?php } ?>
                         <?php
                     }
                     if ($edit) {
@@ -2719,7 +2752,7 @@ class CriticParser extends AbstractDBWp {
                             <td></td>
                             <td>
                                 <select name="reg_new_rule_f" class="condition">
-                                    <?php foreach ($parser_rules_fields as $key => $name) { ?>
+                <?php foreach ($parser_rules_fields as $key => $name) { ?>
                                         <option value="<?php print $key ?>"><?php print $name ?></option>                                
                                         <?php
                                     }
@@ -2728,7 +2761,7 @@ class CriticParser extends AbstractDBWp {
                             </td>
                             <td>
                                 <select name="reg_new_rule_t" class="condition">
-                                    <?php foreach ($this->parser_rules_type as $key => $name) { ?>
+                <?php foreach ($this->parser_rules_type as $key => $name) { ?>
                                         <option value="<?php print $key ?>"><?php print $name ?></option>                                
                                         <?php
                                     }
@@ -2765,7 +2798,7 @@ class CriticParser extends AbstractDBWp {
                             </td>
                             <td></td>
                         </tr>
-                    <?php } ?>
+            <?php } ?>
                 </tbody>
             </table>    <?php
         }
@@ -3237,8 +3270,8 @@ class CriticParser extends AbstractDBWp {
             'id' => implode(',', $arg['ids'])
         ];
 
-        try {            
-            $response = $service->videos->listVideos('snippet', $queryParams);            
+        try {
+            $response = $service->videos->listVideos('snippet', $queryParams);
         } catch (Exception $exc) {
             $message = $exc->getMessage();
             $this->log_error($message, $arg['cid'], 0, 3);

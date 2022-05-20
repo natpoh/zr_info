@@ -937,4 +937,19 @@ INNER JOIN `data_movie_title_slugs` s
 WHERE 
     m.id < s.id AND 
     m.mid = s.mid;
+ * 
+ * 
+ * //Author meta
+ * 
+ *  SELECT cid, count(*) FROM `wp_bcw98b_critic_matic_authors_meta` GROUP by cid having count(*) > 1;
+ * 
+ * DELETE m FROM `wp_bcw98b_critic_matic_authors_meta` m
+INNER JOIN `wp_bcw98b_critic_matic_authors_meta` s
+WHERE 
+    m.id > s.id AND 
+    m.cid = s.cid;
+ * 
+ * 109838
+ * 
+ * 115820
  */

@@ -79,6 +79,15 @@ class CriticMaticAdmin {
         'stop_feed' => 'Stop campaigns',
         'trash_feed' => 'Trash campaigns'
     );
+    public $bulk_actions_parser = array(
+        'start_campaign' => 'Start campaigns',
+        'stop_campaign' => 'Stop campaigns',
+        'trash_campaign' => 'Trash campaigns',
+        'active_parser' => 'Active parser',
+        'inactive_parser' => 'Inactive parser',
+        /*'active_find' => 'Active find urls',
+        'inactive_find' => 'Inactive find urls'*/
+    );
     public $per_pages = array(30, 100, 500, 1000);
 
     public function __construct($cm, $cs, $cf, $cp) {
@@ -1755,6 +1764,9 @@ class CriticMaticAdmin {
         $page = $this->get_page();
         $per_page = $this->get_perpage();
 
+        //Bulk actions
+        $this->bulk_submit();
+
         //Sort
         $sort_pages = $this->cm->sort_pages;
         $orderby = $this->get_orderby($sort_pages);
@@ -2185,7 +2197,7 @@ class CriticMaticAdmin {
         $order = $this->get_order();
 
         $query_adb = new QueryADB();
-        
+
 
         // Campaign id
         $campaign = '';
@@ -2875,7 +2887,9 @@ class CriticMaticAdmin {
                     }
                 } else if ($b == 'start_feed' || $b == 'stop_feed' || $b == 'trash_feed') {
                     $changed = $this->cf->bulk_change_campaign_status($ids, $b);
-                } else {
+                } else if (in_array($b, array_keys($this->bulk_actions_parser))) {                    
+                    $changed = $this->cp->bulk_change_campaign_status($ids, $b);
+                }  else {
                     // Change status
                     $updated = false;
                     $status = 1;
