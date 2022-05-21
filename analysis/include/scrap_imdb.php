@@ -72,7 +72,7 @@ function get_array($id='')
 
 }
 
-function disqus_comments($data)
+function disqus_comments($data='')
 {
     !class_exists('DISQUS_DATA') ? include ABSPATH . "analysis/include/disqus.php" : '';
 
@@ -290,6 +290,9 @@ function add_to_db_from_userlist()
     $sql = "INSERT INTO `options`  VALUES ('16',?)";
     Pdo_an::db_results_array($sql,array(json_encode($movie_list)));
 
+    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+    Import::create_commit('', 'update', 'options', array('id' => 16), 'options',7);
+
 }
 
 function update_imdb_data($from_archive=0)
@@ -403,7 +406,7 @@ function get_new_tv(){
 //
 //}
 
-function get_family($data)
+function get_family($data='')
 {
 
 
@@ -1839,6 +1842,7 @@ function check_tv_series_imdb($last_id = 0)
             $i++;
 
                 $result_imdb = TMDB::check_imdb_id($movie_id);
+
                 if (!$result_imdb) {
                     $array_movie =  TMDB::get_content_imdb($movie_id);
                     $add =  TMDB::addto_db_imdb($movie_id, $array_movie);
@@ -1847,7 +1851,8 @@ function check_tv_series_imdb($last_id = 0)
                         echo $movie_id . ' not addeded ' . PHP_EOL;
                     }
 
-                } else {
+                }
+                else {
                     echo $movie_id . ' already adedded' . PHP_EOL;
                 }
 
@@ -1859,6 +1864,9 @@ function check_tv_series_imdb($last_id = 0)
         }
 
 }
+
+
+
 function check_actor_image($actor_id)
 {
     check_image_on_server($actor_id);
@@ -1906,8 +1914,8 @@ function add_tv_shows_to_options()
     set_option(11, $array_year);
     set_option(12, 0);
     return;
-
 }
+
 function add_rating()
 {
     ///pg rating
