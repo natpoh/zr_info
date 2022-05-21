@@ -1842,6 +1842,7 @@ function check_tv_series_imdb($last_id = 0)
             $i++;
 
                 $result_imdb = TMDB::check_imdb_id($movie_id);
+
                 if (!$result_imdb) {
                     $array_movie =  TMDB::get_content_imdb($movie_id);
                     $add =  TMDB::addto_db_imdb($movie_id, $array_movie);
@@ -1850,7 +1851,8 @@ function check_tv_series_imdb($last_id = 0)
                         echo $movie_id . ' not addeded ' . PHP_EOL;
                     }
 
-                } else {
+                }
+                else {
                     echo $movie_id . ' already adedded' . PHP_EOL;
                 }
 
@@ -1862,6 +1864,9 @@ function check_tv_series_imdb($last_id = 0)
         }
 
 }
+
+
+
 function check_actor_image($actor_id)
 {
     check_image_on_server($actor_id);
@@ -1909,8 +1914,8 @@ function add_tv_shows_to_options()
     set_option(11, $array_year);
     set_option(12, 0);
     return;
-
 }
+
 function add_rating()
 {
     ///pg rating
