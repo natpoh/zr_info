@@ -72,7 +72,7 @@ function get_array($id='')
 
 }
 
-function disqus_comments($data)
+function disqus_comments($data='')
 {
     !class_exists('DISQUS_DATA') ? include ABSPATH . "analysis/include/disqus.php" : '';
 
