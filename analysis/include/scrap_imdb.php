@@ -290,6 +290,9 @@ function add_to_db_from_userlist()
     $sql = "INSERT INTO `options`  VALUES ('16',?)";
     Pdo_an::db_results_array($sql,array(json_encode($movie_list)));
 
+    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+    Import::create_commit('', 'update', 'options', array('id' => 16), 'options',7);
+
 }
 
 function update_imdb_data($from_archive=0)

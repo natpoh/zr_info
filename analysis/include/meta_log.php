@@ -27,7 +27,7 @@ class METALOG
 
     public static function clear_history()
     {
-    $sql = "DELETE FROM `meta_commit_log` WHERE `time` < '".(time()-86400*30)."'";
+    $sql = "DELETE FROM `meta_commit_log` WHERE `time` < '".(time()-86400*7)."'";
      Pdo_an::db_query($sql);
     }
 
