@@ -511,20 +511,20 @@ class Import
         return $result;
     }
 
-    public static function last_commits_updated($data)
-    {
-        $count=10;
-        if ($data['count'])
-        {
-            $count =intval($data['count']);
-
-        }
-
-        $site_id = self::generate_id();
-        $sql ="SELECT `uniq_id` , `status`   FROM `commit` WHERE `status` = 2 and site_id!='".$site_id."' limit ".$count;
-        $rows = Pdo_an::db_results_array($sql);
-        return $rows;
-    }
+//    public static function last_commits_updated($data)
+//    {
+//        $count=10;
+//        if ($data['count'])
+//        {
+//            $count =intval($data['count']);
+//
+//        }
+//
+//        $site_id = self::generate_id();
+//        $sql ="SELECT `uniq_id` , `status`   FROM `commit` WHERE `status` = 2 and site_id!='".$site_id."' limit ".$count;
+//        $rows = Pdo_an::db_results_array($sql);
+//        return $rows;
+//    }
 
     public static function last_commits($data,$status =0)
     {
@@ -637,15 +637,16 @@ class Import
                $status =  self::check_status_commit($key,'status');
                if ($status>1) {
                    ///update commit to 1
-               // self::update_status($key, 1);
-               $result[$key]=10;///error
-
+                self::update_status($key, 1);
+              // $result[$key]=10;///error
+               $result[$key] = 1;
                }
                else if ($status==1) {
 
                $result[$key] = 1;
 
                 }
+
            }
 
 
@@ -844,20 +845,15 @@ class Import
         {
             $dop=",run_time = IF(run_time IS NULL, {$time_current},run_time + {$time_current})";
         }
-
         if ($update_data)
         {
             $sql = "UPDATE `commit` SET `status`={$status}, `complete` =1 , update_data = ?, `last_update` = ".time()." ".$dop."  WHERE `uniq_id`  = '".$key."'";
             Pdo_an::db_results_array($sql,[$update_data]);
-
         }
         else
         {
-
-
             $sql = "UPDATE `commit` SET `status`={$status}, `complete` =1 , `last_update` = ".time()." ".$dop."  WHERE `uniq_id`  = '".$key."'";
             Pdo_an::db_query($sql);
-
         }
 
 
@@ -1020,16 +1016,6 @@ class Import
             $res_return['get_status_5']=count($array_sql);
             $res_return['sinc_5']=count($result['sync_result']);
 
-
-//            //check commit from remote url
-//
-//            if ($result['last_commit'])
-//            {
-//                $result_data = self::check_and_set_data($result['last_commit']);
-//            }
-//
-//
-//            $res_return['last_commit']=count($result['last_commit']);
         }
 
         $res_return['result']=$result;
