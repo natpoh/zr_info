@@ -1198,7 +1198,8 @@ class CriticSearch extends AbstractDB {
     }
 
     public function front_search_any_movies_by_title_an($title = '', $limit = 20, $start = 0, $show_meta = false) {
-        $title = str_replace("'", "\'", $title);
+        $title = stripslashes($title);
+        $title = addslashes($title);
         $match_query = $this->wildcards_maybe_query($title);
 
         $allow_types = array("'Movie'", "'TVseries'");
