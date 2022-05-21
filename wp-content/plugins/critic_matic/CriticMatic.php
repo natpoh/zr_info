@@ -2095,6 +2095,12 @@ class CriticMatic extends AbstractDB {
         $ret = $this->get_rating_array($result);
         return $ret;
     }
+    
+    public function get_post_rating_id($cid) {
+        $sql = sprintf("SELECT id FROM {$this->db['rating']} WHERE cid = %d", (int) $cid);
+        $result = $this->db_get_var($sql);        
+        return $result;
+    }
 
     public function get_rating_array($result) {
         $ret = array();
@@ -2238,8 +2244,9 @@ class CriticMatic extends AbstractDB {
                 'ip' => $ret['ip'],
                 'options' => $options
             );
-
-            $this->sync_update_data($data, $cid, $this->db['rating'], $this->sync_data);
+            
+            $rid = $this->get_post_rating_id($cid);
+            $this->sync_update_data($data, $rid, $this->db['rating'], $this->sync_data);
 
             return true;
         }
@@ -2433,8 +2440,8 @@ class CriticMatic extends AbstractDB {
                             'ip' => $ret['ip'],
                             'options' => $options
                         );
-                        $cid = $result->cid;
-                        $this->sync_update_data($data, $cid, $this->db['rating'], $this->sync_data);
+                        $id = $result->id;
+                        $this->sync_update_data($data, $id, $this->db['rating'], $this->sync_data);
                     }
                 }
             }
