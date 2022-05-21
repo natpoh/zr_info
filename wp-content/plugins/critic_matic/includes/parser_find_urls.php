@@ -83,6 +83,16 @@ if ($cid) {
                             <span class="inline-edit"><?php print __('Get last URLs by cron') ?></span>                    
                         </label>
 
+                        <label>
+                            <span class="title"><?php print __('Last upd.') ?></span>
+                            <span class="input-text-wrap"><input type="text" disabled="disabled" name="last_update" value="<?php print $yt_urls['last_update'] ?>"></span>
+                        </label>
+
+                        <label>
+                            <span class="title"><?php print __('Last upd. all') ?></span>
+                            <span class="input-text-wrap"><input type="text" disabled="disabled" name="last_update_all" value="<?php print $yt_urls['last_update_all'] ?>"></span>
+                        </label>
+                        
                         <h2><?php print __('Find URLs settings') ?></h2>
 
                         <label class="inline-edit-interval">                            
@@ -146,7 +156,6 @@ if ($cid) {
 
 
                         <?php
-                        
                         $yt_posts = $this->cp->yt_total_posts($options);
 
                         if ($yt_posts != -1) {

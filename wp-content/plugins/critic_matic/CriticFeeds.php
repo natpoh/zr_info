@@ -1009,7 +1009,7 @@ class CriticFeeds extends AbstractDBWp {
     }
 
     public function apply_feed_rules($id) {
-        $post = $this->cm->get_post($id);
+        $post = $this->cm->get_post($id, true);
 
         $changed = array();
         // Feed type

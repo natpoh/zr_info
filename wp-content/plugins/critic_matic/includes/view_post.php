@@ -61,7 +61,7 @@ if ($pid) {
             </tr>
             <tr>
                 <td><?php print __('Blur') ?></td>
-                <td><?php print $post->blur ? 'Blur the content' : 'No' ?></td>
+                <td><?php print $post->blur ? 'Blur the content' : 'No'  ?></td>
             </tr>
             <?php
             // For all, except Audience
@@ -302,4 +302,13 @@ if ($pid) {
 
         </tbody>        
     </table>
+
+    <?php
+    // Transcriptions
+    if ($post->tstatus == 1) {?>
+     <h2><?php print __('Transcriptions') ?></h2>
+         <textarea style="width: 90%; height: 300px;"><?php print $post->tcontent ?></textarea>    
+    <?php }
+    ?>
+
 <?php } ?>

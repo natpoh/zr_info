@@ -325,7 +325,7 @@ function critic_matic_plugin_activation() {
                                 `link_hash` varchar(255) NOT NULL default '',                                
                                 `link` text default NULL,                                
                                 `title` text default NULL,
-                                `content` text default NULL,           		                                
+                                `content` longtext default NULL,           		                                
                                 `top_movie` int(11) NOT NULL DEFAULT '0', 
                                 `blur` int(11) NOT NULL DEFAULT '0', 
 				PRIMARY KEY  (`id`)				
@@ -361,6 +361,11 @@ function critic_matic_plugin_activation() {
     $sql = "ALTER TABLE `" . $table_prefix . "critic_transcritpions` ADD `status` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('status'), $table_prefix . "critic_transcritpions");
+    
+    // Add type
+    $sql = "ALTER TABLE `" . $table_prefix . "critic_transcritpions` ADD `type` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('type'), $table_prefix . "critic_transcritpions");
     
     /*
      * cid - campaign id
@@ -932,4 +937,28 @@ INNER JOIN `data_movie_title_slugs` s
 WHERE 
     m.id < s.id AND 
     m.mid = s.mid;
+ * 
+ * 
+ * //Author meta
+ * 
+ *  SELECT cid, count(*) FROM `wp_bcw98b_critic_matic_authors_meta` GROUP by cid having count(*) > 1;
+ * 
+ * DELETE m FROM `wp_bcw98b_critic_matic_authors_meta` m
+INNER JOIN `wp_bcw98b_critic_matic_authors_meta` s
+WHERE 
+    m.id > s.id AND 
+    m.cid = s.cid;
+ * 
+ * SELECT pid, count(*) FROM `wp_bcw98b_critic_parser_url` WHERE pid>0 GROUP by pid having count(*) > 1;
+ * 
+ * UPDATE `wp_bcw98b_critic_parser_url` m SET m.`status`=0, m.`pid`=0 WHERE m.`pid` =109970;
+ 
+    UPDATE `wp_bcw98b_critic_parser_url` m
+    INNER JOIN `wp_bcw98b_critic_parser_url` s 
+    SET m.status=0, 
+        m.pid=0  
+    WHERE m.pid > 0 AND 
+          m.pid = s.pid AND 
+          m.id > s.id
+ * 
  */

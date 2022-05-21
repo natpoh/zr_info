@@ -18,6 +18,16 @@ if ($_GET['t']) {
     $cron_type = (int) $_GET['t'];
 }
 
+$debug = false;
+if ($_GET['debug']) {
+    $debug = true;
+}
+
+$force = false;
+if ($_GET['force']) {
+    $force = true;
+}
+
 if (!class_exists('CriticParser')) {
     //Critic feeds    
     require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticParser.php' );
@@ -27,4 +37,4 @@ $cm = new CriticMatic();
 $cp = new CriticParser($cm);
 
 
-$cp->run_cron($cron_type);
+$cp->run_cron($cron_type, $force, $debug);

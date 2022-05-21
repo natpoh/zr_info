@@ -17,7 +17,8 @@ class CriticMatic extends AbstractDB {
      * Posts
      */
     public $main_tabs = array(
-        'home' => 'Posts',
+        'home' => 'Posts overview',
+        'details' => 'Posts Details',
         'meta' => 'Meta',
         'log' => 'Log',
         'add' => 'Add post',
@@ -161,7 +162,7 @@ class CriticMatic extends AbstractDB {
     public function __construct() {
         $table_prefix = DB_PREFIX_WP_AN;
         $this->db = array(
-            //CM
+            // CM
             'posts' => $table_prefix . 'critic_matic_posts',
             'meta' => $table_prefix . 'critic_matic_posts_meta',
             'rating' => $table_prefix . 'critic_matic_rating',
@@ -171,15 +172,21 @@ class CriticMatic extends AbstractDB {
             'authors_meta' => $table_prefix . 'critic_matic_authors_meta',
             'movies_meta' => $table_prefix . 'critic_movies_meta',
             'ip' => $table_prefix . 'critic_matic_ip',
-            //CF
+            // CF
             'feed_meta' => $table_prefix . 'critic_feed_meta',
+            // TS
+            'transcriptions' => $table_prefix . 'critic_transcritpions',
         );
         $this->timer_start();
 
         if (function_exists('user_can')) {
             $this->user_can = $this->user_can();
             if ($this->user_can) {
-                $this->new_audience_count = $this->get_post_count(0, 0, -1, 0, -1, 2);
+                $q_audience = array(
+                    'status' => 0,
+                    'author_type' => 2
+                );
+                $this->new_audience_count = $this->get_post_count($q_audience);
             }
             add_action('admin_bar_menu', array($this, 'admin_bar_render'), 99);
         }
@@ -267,16 +274,28 @@ class CriticMatic extends AbstractDB {
      * Posts get
      */
 
-    public function get_post($id) {
+    public function get_post($id, $fm = false, $ts = false) {
 
-        $cid_inner = " LEFT JOIN {$this->db['feed_meta']} fm ON fm.pid = p.id";
+        $cid_get = '';
+        $cid_inner = '';
+        if ($fm) {
+            $cid_get = ", fm.cid AS fmcid";
+            $cid_inner = " LEFT JOIN {$this->db['feed_meta']} fm ON fm.pid = p.id";
+        }
+
+        $ts_get = '';
+        $ts_inner = '';
+        if ($ts) {
+            $ts_get = ", t.status as tstatus, t.content as tcontent";
+            $ts_inner = " LEFT JOIN {$this->db['transcriptions']} t ON t.pid = p.id";
+        }
 
         $where = sprintf(" WHERE p.id=%d", (int) $id);
 
-        $sql = "SELECT p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, am.aid, fm.cid AS fmcid "
-                . "FROM {$this->db['posts']} p "
-                . "LEFT JOIN {$this->db['authors_meta']} am ON am.cid = p.id "
-                . $cid_inner . $where;
+        $sql = "SELECT p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, am.aid" . $cid_get . $ts_get
+                . " FROM {$this->db['posts']} p"
+                . " LEFT JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
+                . $cid_inner . $ts_inner . $where;
 
 
         $result = $this->db_fetch_row($sql);
@@ -359,56 +378,83 @@ class CriticMatic extends AbstractDB {
         return $name;
     }
 
-    public function get_posts($status = 0, $page = 1, $cid = 0, $aid = 0, $type = -1, $meta_type = -1, $author_type = -1, $view_type = -1, $orderby = '', $order = 'ASC') {
-        $page -= 1;
-        $start = $page * $this->perpage;
+    public function get_posts($q_req = array(), $page = 1, $perpage = 20, $orderby = '', $order = 'ASC', $count = false) {
+        $q_def = array(
+            'status' => -1,
+            'cid' => 0,
+            'type' => -1,
+            'aid' => 0,
+            'meta_type' => -1,
+            'author_type' => -1,
+            'view_type' => -1,
+            'ts' => -1
+        );
+
+        $q = array();
+        foreach ($q_def as $key => $value) {
+            $q[$key] = isset($q_req[$key]) ? $q_req[$key] : $value;
+        }
 
         // Custom status
         $status_trash = 2;
         $status_query = " WHERE p.status != " . $status_trash;
-        if ($status != -1) {
-            $status_query = " WHERE p.status = " . (int) $status;
+        if ($q['status'] != -1) {
+            $status_query = " WHERE p.status = " . (int) $q['status'];
         }
 
         // Feed company id
         $cid_inner = $cid_and = '';
-        if ($cid > 0) {
+        if ($q['cid'] > 0) {
             $cid_inner = " INNER JOIN {$this->db['feed_meta']} fm ON fm.pid = p.id";
-            $cid_and = sprintf(" AND fm.cid=%d", (int) $cid);
+            $cid_and = sprintf(" AND fm.cid=%d", (int) $q['cid']);
         } else {
             $cid_inner = " LEFT JOIN {$this->db['feed_meta']} fm ON fm.pid = p.id";
         }
 
         // Author filter
         $aid_and = '';
-        if ($aid > 0) {
-            $aid_and = sprintf(" AND am.aid = %d", $aid);
+        if ($q['aid'] > 0) {
+            $aid_and = sprintf(" AND am.aid = %d", (int) $q['aid']);
         }
 
         //Post type filter
         $type_and = '';
-        if ($type != -1) {
-            $type_and = sprintf(" AND p.type =%d", (int) $type);
+        if ($q['type'] != -1) {
+            $type_and = sprintf(" AND p.type =%d", (int) $q['type']);
         }
 
         // View type filter
         $view_type_and = '';
-        if ($view_type != -1) {
-            $view_type_and = sprintf(" AND p.view_type =%d", (int) $view_type);
+        if ($q['view_type'] != -1) {
+            $view_type_and = sprintf(" AND p.view_type =%d", (int) $q['view_type']);
+        }
+
+        // Transcriptions
+        $ts_get = '';
+        $ts_inner = '';
+        $ts_and = '';
+        if ($q['ts'] != -1) {
+            $ts_inner = " LEFT JOIN {$this->db['transcriptions']} t ON t.pid = p.id";
+            if ($q['ts'] == 2) {
+                $ts_and = " AND t.id IS NULL";
+            } else {
+                $ts_and = sprintf(" AND t.status =%d", (int) $q['ts']);
+            }
+            $ts_get = ", t.status AS tstatus, t.content AS tcontent";
         }
 
         // Author type
         $atype_inner = '';
         $atype_and = '';
-        if ($author_type != -1) {
+        if ($q['author_type'] != -1) {
             $atype_inner = " INNER JOIN {$this->db['authors']} a ON a.id = am.aid";
-            $atype_and = sprintf(" AND a.type = %d", $author_type);
+            $atype_and = sprintf(" AND a.type = %d", $q['author_type']);
         }
 
         // Meta type filter
         $meta_type_and = '';
-        if ($meta_type != -1) {
-            if ($meta_type == 1) {
+        if ($q['meta_type'] != -1) {
+            if ($q['meta_type'] == 1) {
                 $meta_type_and = " AND p.top_movie != 0";
             } else {
                 $meta_type_and = " AND p.top_movie = 0";
@@ -418,29 +464,42 @@ class CriticMatic extends AbstractDB {
 
         //Sort
         $and_orderby = '';
-        $and_order = '';
-        if ($orderby && in_array($orderby, $this->sort_pages)) {
-            $and_orderby = ' ORDER BY ' . $orderby;
-            if ($order) {
-                $and_orderby .= ' ' . $order;
-            }
-        } else {
-            $and_orderby = " ORDER BY id DESC";
-        }
-
         $limit = '';
-        if ($this->perpage > 0) {
-            $limit = " LIMIT $start, " . $this->perpage;
+        if (!$count) {
+
+            if ($orderby && in_array($orderby, $this->sort_pages)) {
+                $and_orderby = ' ORDER BY ' . $orderby;
+                if ($order) {
+                    $and_orderby .= ' ' . $order;
+                }
+            } else {
+                $and_orderby = " ORDER BY id DESC";
+            }
+
+            $page -= 1;
+            $start = $page * $perpage;
+
+            if ($perpage > 0) {
+                $limit = " LIMIT $start, " . $perpage;
+            }
+
+            $select = " p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, p.view_type, am.aid, fm.cid AS fmcid" . $ts_get;
+        } else {
+            $select = " COUNT(*)";
         }
 
-
-        $sql = "SELECT p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, p.view_type, am.aid, fm.cid AS fmcid "
-                . "FROM {$this->db['posts']} p "
-                . "INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id "
-                . $atype_inner . $cid_inner . $status_query . $cid_and . $aid_and . $type_and . $view_type_and. $meta_type_and . $atype_and . $and_orderby . $limit;
-
-        $result = $this->db_results($sql);
-
+        $sql = "SELECT DISTINCT" . $select
+                . " FROM {$this->db['posts']} p"
+                . " INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
+                . $atype_inner . $cid_inner . $ts_inner . $status_query . $cid_and . $aid_and . $type_and . $view_type_and . $ts_and . $meta_type_and . $atype_and . $and_orderby . $limit;
+             
+                
+        if (!$count) {
+          //  print $sql;
+            $result = $this->db_results($sql);
+        } else {
+            $result = $this->db_get_var($sql);
+        }
         return $result;
     }
 
@@ -468,146 +527,26 @@ class CriticMatic extends AbstractDB {
         return $feed_actions;
     }
 
-    public function get_post_count($status = -1, $cid = 0, $type = -1, $aid = 0, $meta_type = -1, $author_type = -1, $view_type = -1) {
-        // Custom status
-        $status_trash = 2;
-        $status_query = " WHERE p.status != " . $status_trash;
-        if ($status != -1) {
-            $status_query = " WHERE p.status = " . (int) $status;
-        }
-
-        // Company id
-        $cid_inner = $cid_and = '';
-        if ($cid > 0) {
-            $cid_inner = " INNER JOIN {$this->db['feed_meta']} fm ON fm.pid = p.id";
-            $cid_and = sprintf(" AND fm.cid=%d", (int) $cid);
-        }
-
-        // Post type filter
-        $type_and = '';
-        if ($type != -1) {
-            $type_and = sprintf(" AND p.type =%d", (int) $type);
-        }
-
-        // View type filter
-        $view_type_and = '';
-        if ($view_type != -1) {
-            $view_type_and = sprintf(" AND p.view_type =%d", (int) $view_type);
-        }
-
-        // Author filter
-        $aid_inner = '';
-        $aid_and = '';
-        if ($aid > 0) {
-            $aid_inner = " INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id";
-            $aid_and = sprintf(" AND am.aid = %d", $aid);
-        }
-
-        // Author type
-        $atype_inner = '';
-        $atype_and = '';
-        if ($author_type != -1) {
-            $atype_inner = " INNER JOIN {$this->db['authors_meta']} am2 ON am2.cid = p.id INNER JOIN {$this->db['authors']} a ON a.id = am2.aid";
-            $atype_and = sprintf(" AND a.type = %d", $author_type);
-        }
-
-        // Meta type filter
-        $meta_type_and = '';
-        if ($meta_type != -1) {
-            if ($meta_type == 1) {
-                $meta_type_and = " AND p.top_movie != 0";
-            } else {
-                $meta_type_and = " AND p.top_movie = 0";
-            }
-        }
-
-        $query = "SELECT COUNT(*) FROM {$this->db['posts']} p" . $cid_inner . $aid_inner . $atype_inner . $status_query . $cid_and . $view_type_and . $aid_and . $type_and . $meta_type_and . $atype_and;
-
-        $result = $this->db_get_var($query);
-        return $result;
+    public function get_post_count($q_req = array()) {
+        return $this->get_posts($q_req, $page = 1, 1, '', '', true);
     }
 
-    public function get_post_states($cid = 0, $type = -1, $aid = 0, $meta_type = -1, $author_type = -1, $view_type = -1) {
+    public function get_post_type_count($q_req = array(), $types = array(), $custom_type = '') {
         $status = -1;
-        $count = $this->get_post_count($status, $cid, $type, $aid, $meta_type, $author_type, $view_type);
+        $count = $this->get_post_count($q_req);
         $states = array(
             '-1' => array(
                 'title' => 'All',
                 'count' => $count
             )
         );
-        foreach ($this->post_status as $key => $value) {
-            $states[$key] = array(
-                'title' => $value,
-                'count' => $this->get_post_count($key, $cid, $type, $aid, $meta_type, $author_type, $view_type));
-        }
-        return $states;
-    }
+        $q_req_custom = $q_req;
 
-    public function get_post_meta_types($cid = 0, $type = -1, $aid = 0, $meta_type = -1, $author_type = -1, $view_type = -1) {
-        $status = -1;
-        $count = $this->get_post_count($status, $cid, $type, $aid, $meta_type, $author_type, $view_type);
-        $states = array(
-            '-1' => array(
-                'title' => 'All',
-                'count' => $count
-            )
-        );
-        foreach ($this->post_meta_status as $key => $value) {
+        foreach ($types as $key => $value) {
+            $q_req_custom[$custom_type] = $key;
             $states[$key] = array(
                 'title' => $value,
-                'count' => $this->get_post_count($status, $cid, $type, $aid, $key, $author_type, $view_type));
-        }
-        return $states;
-    }
-
-    public function get_post_types($cid = 0, $type = -1, $aid = 0, $meta_type = -1, $author_type = -1, $view_type = -1) {
-        $status = -1;
-        $count = $this->get_post_count($status, $cid, -1, $aid, $meta_type, $author_type, $view_type);
-        $states = array(
-            '-1' => array(
-                'title' => 'All',
-                'count' => $count
-            )
-        );
-        foreach ($this->post_type as $key => $value) {
-            $states[$key] = array(
-                'title' => $value,
-                'count' => $this->get_post_count($status, $cid, $key, $aid, $meta_type, $author_type, $view_type));
-        }
-        return $states;
-    }
-
-    public function get_post_view_types($cid = 0, $type = -1, $aid = 0, $meta_type = -1, $author_type = -1, $view_type = -1) {
-        $status = -1;
-        $count = $this->get_post_count($status, $cid, $type, $aid, $meta_type, $author_type, $view_type);
-        $states = array(
-            '-1' => array(
-                'title' => 'All',
-                'count' => $count
-            )
-        );
-        foreach ($this->post_view_type as $key => $value) {
-            $states[$key] = array(
-                'title' => $value,
-                'count' => $this->get_post_count($status, $cid, $type, $aid, $meta_type, $author_type, $key));
-        }
-        return $states;
-    }
-
-    public function get_post_author_types($cid = 0, $type = -1, $aid = 0, $meta_type = -1, $author_type = -1, $view_type = -1) {
-        $status = -1;
-        $count = $this->get_post_count($status, $cid, $type, $aid, $meta_type, -1, $view_type);
-        $states = array(
-            '-1' => array(
-                'title' => 'All',
-                'count' => $count
-            )
-        );
-        foreach ($this->author_type as $key => $value) {
-            $states[$key] = array(
-                'title' => $value,
-                'count' => $this->get_post_count($status, $cid, $type, $aid, $meta_type, $key, $view_type));
+                'count' => $this->get_post_count($q_req_custom));
         }
         return $states;
     }
@@ -683,8 +622,9 @@ class CriticMatic extends AbstractDB {
             'title' => $title,
             'content' => $content,
             'top_movie' => $top_movie,
-            'veiw_type' => $view_type,
+            'view_type' => $view_type,
         );
+
 
         $id = $this->sync_insert_data($data, $this->db['posts'], $this->sync_client, $sync);
 
@@ -826,7 +766,7 @@ class CriticMatic extends AbstractDB {
 
     public function post_edit_submit($form_state) {
         $result_id = 0;
-        $status = $form_state['status'];
+        $status = $form_state['status'] ? $form_state['status'] : 0;
         $date_str = $form_state['date'];
         if (preg_match('|^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$|', $date_str)) {
             $date = strtotime($date_str);
