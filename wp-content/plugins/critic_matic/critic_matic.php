@@ -178,7 +178,7 @@ function critic_matic_plugin_activation() {
                                 `pid` int(11) NOT NULL DEFAULT '0', 
                                 `cid` int(11) NOT NULL DEFAULT '0',        
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     dbDelta($sql);
     critic_matic_create_index(array('pid', 'cid'), $table_prefix . "critic_matic_wpposts_meta");
 
@@ -198,7 +198,7 @@ function critic_matic_plugin_activation() {
                                 `last_hash` varchar(255) NOT NULL default '',           
                                 `options` text default NULL,
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     dbDelta($sql);
     critic_matic_create_index(array('date', 'status', 'last_update', 'update_interval', 'author', 'title', 'feed_hash', 'last_hash'), $table_prefix . "critic_feed_campaign");
 
@@ -211,7 +211,7 @@ function critic_matic_plugin_activation() {
                                 `status` int(11) NOT NULL DEFAULT '0',
 				`message` varchar(255) NOT NULL default '',				
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     dbDelta($sql);
     critic_matic_create_index(array('date', 'cid', 'type', 'status'), $table_prefix . "critic_feed_log");
 
@@ -225,7 +225,7 @@ function critic_matic_plugin_activation() {
                                 `status` int(11) NOT NULL DEFAULT '0',
 				`message` varchar(255) NOT NULL default '',				
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     dbDelta($sql);
     critic_matic_create_index(array('date', 'cid', 'mid', 'type', 'status'), $table_prefix . "critic_search_log");
 
@@ -243,7 +243,7 @@ function critic_matic_plugin_activation() {
                                 `site` text default NULL,                                
                                 `options` text default NULL,
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     dbDelta($sql);
     critic_matic_create_index(array('date', 'status', 'type', 'last_update', 'update_interval', 'author', 'parser_status'), $table_prefix . "critic_search_log");
 
@@ -267,7 +267,7 @@ function critic_matic_plugin_activation() {
                                 `status` int(11) NOT NULL DEFAULT '0',
 				`message` varchar(255) NOT NULL default '',				
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     dbDelta($sql);
     critic_matic_create_index(array('date', 'cid', 'uid', 'type', 'status'), $table_prefix . "critic_parser_log");
 
@@ -303,7 +303,7 @@ function critic_matic_plugin_activation() {
                                 `cid` int(11) NOT NULL DEFAULT '0',     
                                 `rating` int(11) NOT NULL DEFAULT '0', 
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     //dbDelta($sql);
 
     /*
@@ -329,7 +329,7 @@ function critic_matic_plugin_activation() {
                                 `top_movie` int(11) NOT NULL DEFAULT '0', 
                                 `blur` int(11) NOT NULL DEFAULT '0', 
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'date_add', 'status', 'type', 'link_hash', 'top_movie'), $table_prefix . "critic_matic_posts");
 
@@ -353,7 +353,7 @@ function critic_matic_plugin_activation() {
                                 `date_add` int(11) NOT NULL DEFAULT '0',                                
                                 `content` longtext default NULL,               
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('pid', 'date_add'), $table_prefix . "critic_transcritpions");
 
@@ -379,7 +379,7 @@ function critic_matic_plugin_activation() {
                                 `link_hash` varchar(255) NOT NULL default '',                                
                                 `link` text default NULL,               
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('cid', 'pid', 'status', 'link_hash'), $table_prefix . "critic_parser_url");
 
@@ -411,7 +411,7 @@ function critic_matic_plugin_activation() {
                                 `cid` int(11) NOT NULL DEFAULT '0',     
                                 `rating` int(11) NOT NULL DEFAULT '0', 
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('fid', 'type', 'state', 'cid', 'rating'), $table_prefix . "critic_matic_posts_meta");
 
@@ -422,7 +422,7 @@ function critic_matic_plugin_activation() {
                                 `name` varchar(255) NOT NULL default '',    
                                 `slug` varchar(255) NOT NULL default '',  
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('status', 'name', 'slug'), $table_prefix . "critic_matic_tags");
 
@@ -435,7 +435,7 @@ function critic_matic_plugin_activation() {
                                 `tid` int(11) NOT NULL DEFAULT '0', 
                                 `cid` int(11) NOT NULL DEFAULT '0',        
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('tid', 'cid'), $table_prefix . "critic_matic_tag_meta");
 
@@ -459,7 +459,7 @@ function critic_matic_plugin_activation() {
                                 `name` varchar(255) NOT NULL default '',                                
                                 `options` text default NULL,
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('status', 'type', 'name'), $table_prefix . "critic_matic_authors");
 
@@ -469,7 +469,7 @@ function critic_matic_plugin_activation() {
                                 `aid` int(11) NOT NULL DEFAULT '0', 
                                 `cid` int(11) NOT NULL DEFAULT '0',        
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('aid', 'cid'), $table_prefix . "critic_matic_authors_meta");
 
@@ -498,7 +498,7 @@ function critic_matic_plugin_activation() {
                                 `title` text default NULL,
                                 `content` text default NULL,    
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'status', 'critic_name', 'unic_id'), $table_prefix . "critic_matic_audience");
 
@@ -520,7 +520,7 @@ function critic_matic_plugin_activation() {
                                 `cid` int(11) NOT NULL DEFAULT '0', 
                                 `pid` int(11) NOT NULL DEFAULT '0',                                        
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('cid', 'pid'), $table_prefix . "critic_feed_meta");
 
@@ -530,7 +530,7 @@ function critic_matic_plugin_activation() {
                                 `mid` int(11) NOT NULL DEFAULT '0', 
                                 `date` int(11) NOT NULL DEFAULT '0',                                        
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     //dbDelta($sql);
     //Sphinx search. UNUSED
     $sql = "CREATE TABLE IF NOT EXISTS  `sph_counter`(
@@ -538,7 +538,7 @@ function critic_matic_plugin_activation() {
                                 `maxdocid` int(11) NOT NULL DEFAULT '0',  
                                 `name` varchar(255) NOT NULL default '',	
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     //dbDelta($sql);
     // Critic rating
     $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_matic_rating`(
@@ -555,7 +555,7 @@ function critic_matic_plugin_activation() {
                                 `vote` int(11) NOT NULL DEFAULT '0', 
                                 `ip` varchar(255) NOT NULL default '', 
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('cid'), $table_prefix . "critic_matic_rating");
 
@@ -587,7 +587,7 @@ function critic_matic_plugin_activation() {
       `type` int(11) NOT NULL DEFAULT '0',
       `ip` varchar(255) NOT NULL default '',
       PRIMARY KEY  (`id`)
-      ) DEFAULT COLLATE utf8_general_ci;";
+      ) DEFAULT COLLATE utf8mb4_general_ci;";
       Pdo_an::db_query($sql);
       critic_matic_create_index_an(array('type', 'ip'), $table_prefix . "critic_matic_ip");
      */
@@ -608,7 +608,7 @@ function critic_matic_plugin_activation() {
                                 `aid` int(11) NOT NULL DEFAULT '0',
                                 `vote` int(11) NOT NULL DEFAULT '0',                                
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'pid', 'aid', 'vote'), $table_prefix . "critic_emotions");
 
@@ -616,7 +616,7 @@ function critic_matic_plugin_activation() {
 				`id` int(11) unsigned NOT NULL auto_increment, 
                                 `name` varchar(255) NOT NULL default '',	
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('name'), $table_prefix . "critic_emotions_authors");
 
@@ -630,7 +630,7 @@ function critic_matic_plugin_activation() {
                                 `aid` int(11) NOT NULL DEFAULT '0',
                                 `name` varchar(255) NOT NULL default '',                              
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('aid', 'name'), $table_prefix . "meta_critic_author_key");
 
@@ -647,7 +647,7 @@ function critic_matic_plugin_activation() {
                                 `maxdocid` int(11) NOT NULL DEFAULT '0',  
                                 `name` varchar(255) NOT NULL default '',	
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
 
     // Movies meta
@@ -656,7 +656,7 @@ function critic_matic_plugin_activation() {
                                 `mid` int(11) NOT NULL DEFAULT '0', 
                                 `date` int(11) NOT NULL DEFAULT '0',                                        
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
 
@@ -680,7 +680,7 @@ function critic_matic_plugin_activation() {
                                 `name` varchar(255) NOT NULL default '',     
                                 `slug` varchar(255) NOT NULL default '',                                
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('status', 'weight', 'name', 'slug'), "data_movie_genre");
@@ -691,7 +691,7 @@ function critic_matic_plugin_activation() {
                                 `mid` int(11) NOT NULL DEFAULT '0', 
                                 `gid` int(11) NOT NULL DEFAULT '0',                                        
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('mid', 'gid'), "meta_movie_genre");
@@ -707,7 +707,7 @@ function critic_matic_plugin_activation() {
                                 `slug` varchar(255) NOT NULL default '',
                                 `image` varchar(255) NOT NULL default '',     
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('pid', 'status', 'free', 'weight', 'name', 'slug'), "data_movie_provider");
@@ -749,7 +749,7 @@ function critic_matic_plugin_activation() {
                                 `pos` int(11) NOT NULL DEFAULT '0', 
                                 `type` int(11) NOT NULL DEFAULT '0', 
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('mid', 'aid', 'pos', 'type'), "meta_movie_actor");
@@ -764,7 +764,7 @@ function critic_matic_plugin_activation() {
                                 `pos` int(11) NOT NULL DEFAULT '0', 
                                 `type` int(11) NOT NULL DEFAULT '0',                                                                         
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('mid', 'aid', 'pos', 'type'), "meta_movie_director");
 
@@ -777,7 +777,7 @@ function critic_matic_plugin_activation() {
                                 `name` varchar(255) NOT NULL default '',     
                                 `slug` varchar(255) NOT NULL default '',                                
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('status', 'weight', 'name', 'slug'), "data_movie_country");
@@ -788,7 +788,7 @@ function critic_matic_plugin_activation() {
                                 `mid` int(11) NOT NULL DEFAULT '0', 
                                 `cid` int(11) NOT NULL DEFAULT '0',                                        
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('mid', 'cid'), "meta_movie_country");
@@ -802,7 +802,7 @@ function critic_matic_plugin_activation() {
       `name` varchar(100) NOT NULL default '',
       `gender` int(11) NOT NULL DEFAULT '0',
       PRIMARY KEY  (`id`)
-      ) DEFAULT COLLATE utf8_general_ci;";
+      ) DEFAULT COLLATE utf8mb4_general_ci;";
 
       Pdo_an::db_query($sql);
      */
@@ -817,7 +817,7 @@ function critic_matic_plugin_activation() {
                                 `gender` int(11) NOT NULL DEFAULT '0',                                                                        
                                 `k` int(11) NOT NULL DEFAULT '0', 
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('actor_id', 'gender', 'k'), "data_actor_gender_auto");
@@ -844,7 +844,7 @@ function critic_matic_plugin_activation() {
                                 `year` int(11) NOT NULL DEFAULT '0',                                                                        
                                 `cpi` float(24) NOT NULL DEFAULT '0', 
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('type', 'year'), "data_cpi");
@@ -861,7 +861,7 @@ function critic_matic_plugin_activation() {
                                 `verdict` varchar(10) NOT NULL default '',    
                                 `wiki` text default NULL,   
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('aid', 'date_upd'), "data_actors_ethnicolr");
@@ -875,7 +875,7 @@ function critic_matic_plugin_activation() {
                                 `oldslug` varchar(255) NOT NULL default '',                                                                      
                                 `newslug` varchar(255) NOT NULL default '',                                                                      
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('mid', 'oldslug', 'newslug'), "data_movie_title_slugs");
 }

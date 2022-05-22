@@ -85,7 +85,7 @@ function movies_links_plugin_activation() {
                                 `site` text default NULL,                                
                                 `options` text default NULL,
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
 
     $sql = "ALTER TABLE `movies_links_campaign` ADD `type` int(11) NOT NULL DEFAULT '0'";
@@ -103,7 +103,7 @@ function movies_links_plugin_activation() {
                                 `status` int(11) NOT NULL DEFAULT '0',
 				`message` varchar(255) NOT NULL default '',				
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
 
     /*
@@ -119,7 +119,7 @@ function movies_links_plugin_activation() {
                                 `link_hash` varchar(255) NOT NULL default '',                                
                                 `link` text default NULL,               
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
     movies_links_create_index(array('cid', 'pid', 'status', 'link_hash'), 'movies_links_url');
 
@@ -133,7 +133,7 @@ function movies_links_plugin_activation() {
                                 `uid` int(11) NOT NULL DEFAULT '0',                                  
                                 `arhive_hash` varchar(255) NOT NULL default '',                                                                
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
     movies_links_create_index(array('date', 'uid', 'arhive_hash'), 'movies_links_arhive');
 
@@ -158,7 +158,7 @@ function movies_links_plugin_activation() {
                                 `year` int(11) NOT NULL DEFAULT '0',                                                                  
                                 `options` text default NULL,           		                                                                
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
     movies_links_create_index(array('date', 'last_upd', 'uid', 'status', 'top_movie', 'rating', 'title', 'rel', 'year'), 'movies_links_posts');
 
@@ -179,7 +179,7 @@ function movies_links_plugin_activation() {
                                 `pid` int(11) NOT NULL DEFAULT '0',                                   
                                 `cid` int(11) NOT NULL DEFAULT '0',   
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_ml::db_query($sql);
     movies_links_create_index(array('aid', 'pid', 'cid'), 'actors_meta');
@@ -194,7 +194,7 @@ function movies_links_plugin_activation() {
                                 `firstname` varchar(255) NOT NULL default '',
                                 `lastname` varchar(255) NOT NULL default '',                                
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     if (function_exists('critic_matic_create_index_an')) {
         critic_matic_create_index_an(array('aid', 'firstname', 'lastname'), 'data_actors_normalize');
@@ -209,7 +209,7 @@ function movies_links_plugin_activation() {
                                 `lastname` varchar(255) NOT NULL default '',         
                                 `topcountry` int(11) NOT NULL DEFAULT '0',  
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     if (function_exists('critic_matic_create_index_an')) {
         critic_matic_create_index_an(array('lastname', 'topcountry'), 'data_lastnames');
@@ -222,7 +222,7 @@ function movies_links_plugin_activation() {
 				`id` int(11) unsigned NOT NULL auto_increment,                                
                                 `country` varchar(255) NOT NULL default '',                                
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     if (function_exists('critic_matic_create_index_an')) {
         critic_matic_create_index_an(array('country'), 'data_familysearch_country');
@@ -234,7 +234,7 @@ function movies_links_plugin_activation() {
                                 `cid` int(11) NOT NULL DEFAULT '0',   
                                 `ccount` int(11) NOT NULL DEFAULT '0',  
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     if (function_exists('critic_matic_create_index_an')) {
         critic_matic_create_index_an(array('nid', 'cid', 'ccount'), 'meta_familysearch');
@@ -248,7 +248,7 @@ function movies_links_plugin_activation() {
                                 `lastname` varchar(255) NOT NULL default '',                                         
                                 `description` text default NULL,
 				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8_general_ci;";
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     if (function_exists('critic_matic_create_index_an')) {
         critic_matic_create_index_an(array('last_upd', 'verdict', 'lastname'), 'data_familysearch_verdict');
