@@ -370,18 +370,17 @@ class CriticFront extends SearchFacets {
         if (!$content) {
             $content = $title;
         }
-        
+
         // Find transcriptions
         $time_codes = '';
-        if ($critic->type == 4) {
-            if (strstr($content, '<div class="transcriptions">')) {
-                if ($fullsize) {
-                    $time_codes = $this->find_transcriptions($top_movie, $critic->id, $content);
-                }
-                $content = preg_replace('/<div class="transcriptions">.*<\/div>/Us', '', $content);
+        // if ($critic->type == 4) {
+        if (strstr($content, '<div class="transcriptions">')) {
+            if ($fullsize) {
+                $time_codes = $this->find_transcriptions($top_movie, $critic->id, $content);                
             }
+            $content = preg_replace('/<div class="transcriptions">.*<\/div>/Us', '', $content);
         }
-
+        // }
         // Get meta state
         $meta_state = $this->cm->get_critic_meta_state($critic->id, $top_movie);
         $critic->meta_state = isset($meta_state->state) ? $meta_state->state : 0;
@@ -945,8 +944,6 @@ class CriticFront extends SearchFacets {
         return $link;
     }
 
-
-
     public function get_avatars() {
         $avatars = [];
         $dir = $_SERVER['DOCUMENT_ROOT'] . '/wp-content/uploads/avatars/custom/';
@@ -1019,7 +1016,6 @@ class CriticFront extends SearchFacets {
 
         return $content;
     }
-
 
     /*
      * Movies db an
@@ -1244,27 +1240,27 @@ class CriticFront extends SearchFacets {
 
     private function pro_content_filter($content = '', $critic = '', $permalink = '', $fullsize = '') {
         $video = '';
-/*
-        $regex_pattern = "/(youtube.com|youtu.be)\/(watch)?(\?v=)?(\S+)?/";
-        if (preg_match($regex_pattern, $permalink, $mach)) {
-            if ($fullsize) {
-                $video = '<div class="embed-responsive embed-responsive-16by9"><iframe style="width:100%; height:100%;" src="https://www.youtube.com/embed/' . $mach[4] . '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>';
-            } else {
-                $video = '[Video included in the review]<br>';
-            }
-        } else if (strstr($permalink, 'bitchute.com/')) {
-            if ($fullsize) {
-                $permalink = str_replace('/video/', '/embed/', $permalink);
+        /*
+          $regex_pattern = "/(youtube.com|youtu.be)\/(watch)?(\?v=)?(\S+)?/";
+          if (preg_match($regex_pattern, $permalink, $mach)) {
+          if ($fullsize) {
+          $video = '<div class="embed-responsive embed-responsive-16by9"><iframe style="width:100%; height:100%;" src="https://www.youtube.com/embed/' . $mach[4] . '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>';
+          } else {
+          $video = '[Video included in the review]<br>';
+          }
+          } else if (strstr($permalink, 'bitchute.com/')) {
+          if ($fullsize) {
+          $permalink = str_replace('/video/', '/embed/', $permalink);
 
-                $video = '<div class="embed-responsive embed-responsive-16by9"><iframe style="width:100%; height:100%;" src="' . $permalink . '" ></iframe></div>';
-            } else {
-                $video = '[Video included in the review]<br>';
-            }
+          $video = '<div class="embed-responsive embed-responsive-16by9"><iframe style="width:100%; height:100%;" src="' . $permalink . '" ></iframe></div>';
+          } else {
+          $video = '[Video included in the review]<br>';
+          }
 
-            $permalink = str_replace('/embed/', '/video/', $permalink);
-            $content = '';
-        }
-*/
+          $permalink = str_replace('/embed/', '/video/', $permalink);
+          $content = '';
+          }
+         */
         $image = '';
 
         $crop_len = 200;
@@ -1300,7 +1296,7 @@ class CriticFront extends SearchFacets {
             $content = '[spoiler]' . $content . '[/spoiler]';
         }
 
-        
+
         return $content;
     }
 
@@ -1446,7 +1442,6 @@ class CriticFront extends SearchFacets {
         $new_content = '<spoiler class="spoiler_default" id="spoiler-' . $rand . '">' . $content . '</spoiler>';
         return $new_content;
     }
-
 
     /*
      * Dinamic poster logic

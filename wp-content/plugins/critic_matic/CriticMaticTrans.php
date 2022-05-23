@@ -10,7 +10,7 @@ class CriticMaticTrans extends AbstractDB {
     private $cp;
     private $db;
     public $sort_pages = array('add_time', 'id', 'status');
-    public $ts = array(0 => 'Empty', 1 => 'Exist', 2 => 'Waiting');
+    public $ts = array(0 => 'Empty', 1 => 'Parsed', 2 => 'In post', 10=>'Waiting');
 
     public function __construct($cm = '') {
         $this->cm = $cm;
@@ -36,23 +36,48 @@ class CriticMaticTrans extends AbstractDB {
         }
         return $this->cp;
     }
-    
+
     /*
      * Update transcription
      */
-    
+
     public function update_posts_transcription($count = 10, $debug = false, $force = false) {
         // 1. Get posts with ts status 1
         $ts = $this->get_ts($count);
+        if ($debug) {
+            print_r($ts);
+        }
         // 2. Update posts
-        if ($ts){
+        if ($ts) {
             foreach ($ts as $item) {
-                $content = $item->content;
-                print_r($content);
+                $ts_raw = $item->content;
+                $transcription = $this->youtube_content_filter($ts_raw);
+
+                // Get post
+                $post = $this->cm->get_post($item->pid);
+                if ($debug) {
+                    print_r($post);
+                }
+                $post_content = $post->content;
+                // Ts not exist:
+                if (!strstr($post_content, '<div class="transcriptions">')) {
+                    $post_content = str_replace("\n", '<br />', $post_content);
+                    $description = '<div class="description">' . $post_content . '</div>';
+
+                    $full_content = $description . $transcription;
+
+                    if ($debug) {
+                        print_r($full_content);
+                    }
+
+                    // Update post
+                    $this->cm->update_post_content($post->id, $full_content);
+                }
+                // 3. Update ts status
+                $new_status = 2;
+                $this->update_ts_status($item->id, $new_status);
             }
         }
-        
-        // 3. Update ts status
     }
 
     private function youtube_content_filter($content) {
@@ -65,7 +90,7 @@ class CriticMaticTrans extends AbstractDB {
         }
         return $ret;
     }
-    
+
     /*
      * Find transcription
      */
@@ -84,7 +109,7 @@ class CriticMaticTrans extends AbstractDB {
             $min_date = $currtime - 86400 * 3; // 3 days
             // 1. Get no ts posts
             $no_ts = $this->get_no_ts_posts($count, $min_date);
-            if ($debug){
+            if ($debug) {
                 print_r($no_ts);
             }
             if ($no_ts) {
@@ -151,8 +176,8 @@ class CriticMaticTrans extends AbstractDB {
 
         $this->cm->sync_insert_data($data, $this->db['transcriptions'], $this->cm->sync_client, $this->cm->sync_data, 10);
     }
-    
-    private function get_ts($count = 10, $status = 1) {        
+
+    private function get_ts($count = 10, $status = 1) {
         $sql = sprintf("SELECT id, pid, date_add, content, status, type FROM {$this->db['transcriptions']} WHERE status=%d ORDER BY id ASC limit %d", (int) $status, (int) $count);
         $results = $this->db_results($sql);
         return $results;
@@ -163,7 +188,7 @@ class CriticMaticTrans extends AbstractDB {
             $min_date = $this->curr_time();
         }
         $sql = sprintf("SELECT p.id, p.link FROM {$this->db['posts']} p LEFT JOIN {$this->db['transcriptions']} t ON p.id = t.pid"
-                . " WHERE p.view_type=1 AND t.pid IS NULL AND p.date<%d AND p.type!=4 ORDER BY id ASC limit %d" , (int) $min_date, (int) $count);
+                . " WHERE p.view_type=1 AND t.pid IS NULL AND p.date<%d AND p.type!=4 ORDER BY id ASC limit %d", (int) $min_date, (int) $count);
         $results = $this->db_results($sql);
 
         return $results;
@@ -171,6 +196,13 @@ class CriticMaticTrans extends AbstractDB {
 
     private function get_old_ts_error_posts($count = 10) {
         // TODO old error td
+    }
+
+    private function update_ts_status($id = 0, $status = 1) {
+        $data = array(
+            'status' => $status,
+        );
+        $this->cm->sync_update_data($data, $id, $this->db['transcriptions'], $this->cm->sync_data);
     }
 
     public function get_code($headers) {
