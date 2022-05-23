@@ -37,7 +37,23 @@ class CriticMaticTrans extends AbstractDB {
         return $this->cp;
     }
     
+    /*
+     * Update transcription
+     */
     
+    public function update_posts_transcription($count = 10, $debug = false, $force = false) {
+        // 1. Get posts with ts status 1
+        $ts = $this->get_ts($count);
+        // 2. Update posts
+        if ($ts){
+            foreach ($ts as $item) {
+                $content = $item->content;
+                print_r($content);
+            }
+        }
+        
+        // 3. Update ts status
+    }
 
     private function youtube_content_filter($content) {
         $ret = '';
@@ -49,6 +65,10 @@ class CriticMaticTrans extends AbstractDB {
         }
         return $ret;
     }
+    
+    /*
+     * Find transcription
+     */
 
     public function find_transcriptions_youtube($count = 10, $debug = false, $force = false) {
         $cron_option = 'find_transcriptions_last_run';
@@ -64,6 +84,9 @@ class CriticMaticTrans extends AbstractDB {
             $min_date = $currtime - 86400 * 3; // 3 days
             // 1. Get no ts posts
             $no_ts = $this->get_no_ts_posts($count, $min_date);
+            if ($debug){
+                print_r($no_ts);
+            }
             if ($no_ts) {
                 foreach ($no_ts as $item) {
                     $id = $item->id;
@@ -128,14 +151,21 @@ class CriticMaticTrans extends AbstractDB {
 
         $this->cm->sync_insert_data($data, $this->db['transcriptions'], $this->cm->sync_client, $this->cm->sync_data, 10);
     }
+    
+    private function get_ts($count = 10, $status = 1) {        
+        $sql = sprintf("SELECT id, pid, date_add, content, status, type FROM {$this->db['transcriptions']} WHERE status=%d ORDER BY id ASC limit %d", (int) $status, (int) $count);
+        $results = $this->db_results($sql);
+        return $results;
+    }
 
     private function get_no_ts_posts($count = 10, $min_date = 0) {
         if ($min_date == 0) {
             $min_date = $this->curr_time();
         }
         $sql = sprintf("SELECT p.id, p.link FROM {$this->db['posts']} p LEFT JOIN {$this->db['transcriptions']} t ON p.id = t.pid"
-                . " WHERE p.view_type=1 AND t.pid IS NULL AND p.date<%d AND p.type!=4 ORDER BY id ASC limit %d", (int) $count, (int) $min_date);
+                . " WHERE p.view_type=1 AND t.pid IS NULL AND p.date<%d AND p.type!=4 ORDER BY id ASC limit %d" , (int) $min_date, (int) $count);
         $results = $this->db_results($sql);
+
         return $results;
     }
 
