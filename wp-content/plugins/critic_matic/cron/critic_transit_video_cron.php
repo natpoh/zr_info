@@ -68,4 +68,5 @@ if ($_GET['install']) {
 
 //$ct->transit_youtube($count, $debug, $force);
 //$ct->transit_bitchute($count, $debug, $force);
-$ct->transit_therightstuff($count, $debug, $force);
+//$ct->transit_therightstuff($count, $debug, $force);
+

@@ -28,6 +28,11 @@ if ($_GET['force']) {
     $force = true;
 }
 
+$t = 1;
+if ($_GET['t']) {
+    $t = (int) $_GET['t'];
+}
+
 if (!class_exists('CriticMaticTrans')) {
     //Critic feeds    
     require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticMaticTrans.php' );
@@ -36,5 +41,10 @@ if (!class_exists('CriticMaticTrans')) {
 $cm = new CriticMatic();
 $cmt = new CriticMaticTrans($cm);
 
+if ($t == 1) {
+    $cmt->update_posts_transcription($count, $debug, $force);
+} else if ($t == 2) {
+    $cmt->update_youtube_urls($count, $debug, $force);
+}
 
-$cmt->update_posts_transcription($count, $debug, $force);
+

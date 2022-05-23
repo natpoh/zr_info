@@ -10,7 +10,7 @@ class CriticMaticTrans extends AbstractDB {
     private $cp;
     private $db;
     public $sort_pages = array('add_time', 'id', 'status');
-    public $ts = array(0 => 'Empty', 1 => 'Parsed', 2 => 'In post', 10=>'Waiting');
+    public $ts = array(0 => 'Empty', 1 => 'Parsed', 2 => 'In post', 10 => 'Waiting');
 
     public function __construct($cm = '') {
         $this->cm = $cm;
@@ -89,6 +89,57 @@ class CriticMaticTrans extends AbstractDB {
             $ret = '<div class="transcriptions">' . $ret . '</div>';
         }
         return $ret;
+    }
+
+    public function update_youtube_urls($count = 10, $debug = false, $force = false) {
+        // 1. Get posts        
+        $sql = "SELECT id, link, link_hash, top_movie, status FROM {$this->db['posts']}"
+                . " WHERE type=4"
+                . " AND view_type=1"
+                . " AND `link` LIKE '%//youtube.com%'"
+                . " ORDER BY `id` DESC LIMIT " . (int) $count;
+        $results = $this->db_results($sql);
+        if ($results) {
+            if ($debug) {
+                print_r($results);
+            }
+            foreach ($results as $post) {
+                $link = $post->link;
+                $new_link = str_replace('//youtube.com', '//www.youtube.com', $link);
+                $new_hash = $this->link_hash($new_link);
+                // 2. Find exists hash
+                $old_post = $this->cm->get_post_by_link_hash($new_hash);
+                $post_status = $post->status;
+                if ($old_post) {
+                    if ($debug) {
+                        print_r(array($old_post));
+                    }
+                    if ($post->top_movie > 0) {
+                        // Need merge
+                        if ($old_post->top_movie > 0) {
+                            // Trash post
+                            $post_status = 2;
+                        } else {
+                            // Trash old post
+                            $this->cm->trash_post_by_id($old_post->id);
+                        }
+                    } else {
+                        // Trash post
+                        $post_status = 2;
+                    }
+                }
+                // Update post
+                $data = array(
+                    'status' => $post_status,
+                    'link_hash' => $new_hash,
+                    'link' => $new_link,
+                );
+                if ($debug) {
+                    print_r(array($post->id, $data));
+                }
+                $this->cm->update_post_fields($post->id, $data);
+            }
+        }
     }
 
     /*

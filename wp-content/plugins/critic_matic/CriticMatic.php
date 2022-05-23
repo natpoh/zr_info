@@ -748,6 +748,14 @@ class CriticMatic extends AbstractDB {
         $this->hook_update_post($id);
     }
 
+    public function update_post_fields($id, $data) {
+        $date_add = $this->curr_time();
+        $data['date_add'] = $date_add;
+        $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
+
+        $this->hook_update_post($id);
+    }
+
     public function update_post_date_add($id) {
         $date = $this->curr_time();
         $data = array(
