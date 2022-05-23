@@ -61,7 +61,7 @@ class CriticMatic extends AbstractDB {
      */
     public $author_type = array(
         0 => 'Staff',
-        1 => 'Pro',
+        1 => 'Critic',
         2 => 'Audience'
     );
     public $author_status = array(

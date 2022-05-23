@@ -228,7 +228,7 @@ class CriticFront extends SearchFacets {
         /*
           Author type
           0 => 'Staff',
-          1 => 'Pro',
+          1 => 'Critic',
           2 => 'Audience'
          */
         if ($critic->author_type != 0) {
@@ -1783,7 +1783,7 @@ class CriticFront extends SearchFacets {
 
         /* Author type
           0 => 'Staff',
-          1 => 'Pro',
+          1 => 'Critic',
           2 => 'Audience'
          */
 

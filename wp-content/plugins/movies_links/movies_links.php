@@ -83,7 +83,7 @@ function movies_links_plugin_activation() {
                                 `status` int(11) NOT NULL DEFAULT '1',                                                   		
                                 `title` varchar(255) NOT NULL default '',                                                                
                                 `site` text default NULL,                                
-                                `options` text default NULL,
+                                `options` longtext default NULL,
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);

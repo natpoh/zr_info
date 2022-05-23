@@ -116,7 +116,7 @@ class CriticSearch extends AbstractDB {
         ),
         'author_type' => array(
             'staff' => array('key' => 0, 'title' => 'Staff'),
-            'pro' => array('key' => 1, 'title' => 'Pro'),
+            'critic' => array('key' => 1, 'title' => 'Critic'),
             'audience' => array('key' => 2, 'title' => 'Audience'),
         ),
         'state' => array(

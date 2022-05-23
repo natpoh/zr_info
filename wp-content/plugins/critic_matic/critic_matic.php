@@ -443,7 +443,7 @@ function critic_matic_plugin_activation() {
     /*
       $author_type = array(
       0 => 'Staff',
-      1 => 'Pro',
+      1 => 'Critic',
       2 => 'Audience'
       );
       $author_status = array(
@@ -961,4 +961,20 @@ WHERE
           m.pid = s.pid AND 
           m.id > s.id
  * 
+ * 
+ * https://dba.stackexchange.com/questions/8239/how-to-easily-convert-utf8-tables-to-utf8mb4-in-mysql-5-5
+ * For column
+  ALTER TABLE
+    wp_bcw98b_critic_matic_posts
+    CHANGE content content
+    longtext
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_general_ci;
+ * 
+ * 
+ * For table
+  ALTER TABLE
+    wp_bcw98b_critic_matic_posts
+    CONVERT TO CHARACTER SET utf8mb4
+    COLLATE utf8mb4_general_ci;
  */
