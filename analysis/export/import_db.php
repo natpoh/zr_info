@@ -63,7 +63,9 @@ class Import
         if ($sql_data["error"])
         {
             self::update_status($uid,1,$time_current);////update to 1
-            return $sql_data;
+             $result[$uid]['return']=$sql_data;
+
+            return $result;
         }
 
         $time_current = self::timer_stop_data();
@@ -73,7 +75,7 @@ class Import
             $update_data = self::set_data($sql_data); ///update site data from sql
             if ($update_data) {
                 $result[$uid]['update_data'] = $update_data;
-                $result[] = self::update_commit_data($uid, $update_data, $time_current); ///update to status 4
+                 self::update_commit_data($uid, $update_data, $time_current); ///update to status 4
             }
             else
             {
@@ -398,7 +400,6 @@ class Import
                         $request = self::create_request($val);
 
                         $array_sql[$r['uniq_id']]['data'][$time] = $request;
-
 
                     }
                 }
