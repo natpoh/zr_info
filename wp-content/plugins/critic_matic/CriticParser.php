@@ -700,9 +700,9 @@ class CriticParser extends AbstractDBWp {
                                 $log_message = "Error add post url: " . $item->link . ", campaign:" . $campaign->id;
                                 $status = 4;
                                 $this->change_url_state($id, $status);
-                                $this->log_error($message, $campaign->id, $item->id, 3);
+                                $this->log_error($log_message, $campaign->id, $item->id, 3);
                                 if ($debug) {
-                                    print_r(array('error', $message));
+                                    print_r(array('error', $log_message));
                                 }
                                 continue;
                             }
@@ -731,6 +731,12 @@ class CriticParser extends AbstractDBWp {
                         $status = 4;
                         $this->change_url_state($id, $status);
                         $message = 'Error URL filters';
+                        if (!$title) {
+                            $message .= '. No Title';
+                        }
+                        if (!$content) {
+                            $message .= '. No Content';
+                        }
                         $this->log_error($message, $campaign->id, $item->id, 3);
                         if ($debug) {
                             print_r(array('error', $message));
@@ -907,6 +913,12 @@ class CriticParser extends AbstractDBWp {
                         $status = 4;
                         $this->change_url_state($id, $status);
                         $message = 'Error URL filters';
+                        if (!$title) {
+                            $message .= '. No Title';
+                        }
+                        if (!$content) {
+                            $message .= '. No Content';
+                        }
                         $this->log_error($message, $campaign->id, $item->id, 3);
                         return $changed;
                     }

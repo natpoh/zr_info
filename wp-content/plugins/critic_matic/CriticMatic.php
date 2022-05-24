@@ -61,7 +61,7 @@ class CriticMatic extends AbstractDB {
      */
     public $author_type = array(
         0 => 'Staff',
-        1 => 'Pro',
+        1 => 'Critic',
         2 => 'Audience'
     );
     public $author_status = array(
@@ -292,7 +292,7 @@ class CriticMatic extends AbstractDB {
 
         $where = sprintf(" WHERE p.id=%d", (int) $id);
 
-        $sql = "SELECT p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, am.aid" . $cid_get . $ts_get
+        $sql = "SELECT p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, p.view_type, am.aid" . $cid_get . $ts_get
                 . " FROM {$this->db['posts']} p"
                 . " LEFT JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
                 . $cid_inner . $ts_inner . $where;
@@ -435,7 +435,7 @@ class CriticMatic extends AbstractDB {
         $ts_and = '';
         if ($q['ts'] != -1) {
             $ts_inner = " LEFT JOIN {$this->db['transcriptions']} t ON t.pid = p.id";
-            if ($q['ts'] == 2) {
+            if ($q['ts'] == 10) {
                 $ts_and = " AND t.id IS NULL";
             } else {
                 $ts_and = sprintf(" AND t.status =%d", (int) $q['ts']);
@@ -492,10 +492,10 @@ class CriticMatic extends AbstractDB {
                 . " FROM {$this->db['posts']} p"
                 . " INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
                 . $atype_inner . $cid_inner . $ts_inner . $status_query . $cid_and . $aid_and . $type_and . $view_type_and . $ts_and . $meta_type_and . $atype_and . $and_orderby . $limit;
-             
-                
+
+
         if (!$count) {
-          //  print $sql;
+            //  print $sql;
             $result = $this->db_results($sql);
         } else {
             $result = $this->db_get_var($sql);
@@ -748,6 +748,14 @@ class CriticMatic extends AbstractDB {
         $this->hook_update_post($id);
     }
 
+    public function update_post_fields($id, $data) {
+        $date_add = $this->curr_time();
+        $data['date_add'] = $date_add;
+        $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
+
+        $this->hook_update_post($id);
+    }
+
     public function update_post_date_add($id) {
         $date = $this->curr_time();
         $data = array(
@@ -757,7 +765,9 @@ class CriticMatic extends AbstractDB {
     }
 
     public function update_post_content($id, $content) {
+        $date = $this->curr_time();
         $data = array(
+            'date_add' => $date,
             'content' => $content,
         );
         $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
@@ -2096,6 +2106,12 @@ class CriticMatic extends AbstractDB {
         return $ret;
     }
 
+    public function get_post_rating_id($cid) {
+        $sql = sprintf("SELECT id FROM {$this->db['rating']} WHERE cid = %d", (int) $cid);
+        $result = $this->db_get_var($sql);
+        return $result;
+    }
+
     public function get_rating_array($result) {
         $ret = array();
         if ($result) {
@@ -2239,7 +2255,8 @@ class CriticMatic extends AbstractDB {
                 'options' => $options
             );
 
-            $this->sync_update_data($data, $cid, $this->db['rating'], $this->sync_data);
+            $rid = $this->get_post_rating_id($cid);
+            $this->sync_update_data($data, $rid, $this->db['rating'], $this->sync_data);
 
             return true;
         }
@@ -2433,8 +2450,8 @@ class CriticMatic extends AbstractDB {
                             'ip' => $ret['ip'],
                             'options' => $options
                         );
-                        $cid = $result->cid;
-                        $this->sync_update_data($data, $cid, $this->db['rating'], $this->sync_data);
+                        $id = $result->id;
+                        $this->sync_update_data($data, $id, $this->db['rating'], $this->sync_data);
                     }
                 }
             }

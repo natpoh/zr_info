@@ -425,7 +425,7 @@ class CriticTranscriptions extends AbstractDBTC {
         //Get URL
         //Date
     }
-
+   
     private function append_id($id) {
         // Append a new id to search queue
         $opt_key = 'feed_matic_search_ids';
