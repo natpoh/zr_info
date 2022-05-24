@@ -200,14 +200,17 @@ class MoviesAn extends AbstractDBAn {
                 $data = array(
                     'date' => (int) $date
                 );
-                $this->cm->sync_update_data($data, $meta_exist, $this->db['movies_meta'], false);
+                // $this->cm->sync_update_data($data, $meta_exist, $this->db['movies_meta'], false);
+                $this->db_update($data, $meta_exist, $this->db['movies_meta']);
             } else {
                 // Insert
                 $data = array(
                     'mid' => (int) $mid,
                     'date' => (int) $date
                 );
-                $this->cm->sync_insert_data($data, $this->db['movies_meta'], false);
+                
+                //$this->cm->sync_insert_data($data, $this->db['movies_meta'], false);
+                $this->db_insert($data, $this->db['movies_meta']);
             }
             return true;
         }
