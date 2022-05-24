@@ -77,7 +77,7 @@ class Import
             }
             else
             {
-                self::update_status($uid,7,'',1);////update to 7 no data return
+                self::update_status($uid,7);////update to 7 no data return
                 $result[$uid]['return']='empty';
             }
         }
@@ -801,7 +801,7 @@ class Import
                 $result_data = self::check_and_set_data($object_setup_all);
 
             }
-            else if ($status==5)
+            else if ($status==5 || $status==7)
             {
                 ///update comlete status
                 $result_data = [];
@@ -1017,18 +1017,18 @@ class Import
 
         return $res_return;
     }
-    public  static function sync_complete($data)
+    public  static function sync_complete($data,$input_status=4,$output_status=5)
     {
         self::timer_start_data();
         ////get status 4 and add status 5 Complete
-        $array_sql = self::last_commits($data,4);////check status 4
+        $array_sql = self::last_commits($data,$input_status);////check status 4
 
 
 
         /// send data with status 0 to a remote server to sync_data function
         if ($array_sql )
         {
-            $result =   self::push_request($array_sql,5);
+            $result =   self::push_request($array_sql,$output_status);
 
             if ($result['error'])
             {
@@ -1045,8 +1045,8 @@ class Import
             }
 
 
-            $res_return['get_status_5']=count($array_sql);
-            $res_return['sinc_5']=count($result['sync_result']);
+            $res_return['complete']=count($array_sql);
+            $res_return['sinc']=count($result['sync_result']);
 
         }
 
@@ -1075,6 +1075,7 @@ class Import
             $result['sync_last_commit'] = self::sync_last_commit($data);    ///sync_last_commit - get commit in status 1 and add from remote site update status to 4
 
             $result['sync_complete'] = self::sync_complete($data);
+            $result['sync_empty'] = self::sync_complete($data,7,7);
 
         }
 
