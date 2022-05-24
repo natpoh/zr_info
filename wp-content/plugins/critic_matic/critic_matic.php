@@ -977,4 +977,7 @@ WHERE
     wp_bcw98b_critic_matic_posts
     CONVERT TO CHARACTER SET utf8mb4
     COLLATE utf8mb4_general_ci;
+ * 
+ * 
+ * SELECT cid, count(*) FROM `wp_bcw98b_critic_matic_rating` WHERE cid>0 GROUP by cid having count(*) > 1;
  */
