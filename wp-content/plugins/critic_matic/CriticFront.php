@@ -1660,7 +1660,7 @@ class CriticFront extends SearchFacets {
                 // Old api
                 // $link = '/critics/group_pro';
                 // New api
-                $link = '/search/tab_critics/author_pro';
+                $link = '/search/tab_critics/author_critic';
 
                 if ($movie_id) {
                     // Old api
@@ -1673,7 +1673,7 @@ class CriticFront extends SearchFacets {
                       $link = $site_url . 'critics/group_pro/' . $type_slug . '/' . $slug;
                       } */
                     // New api
-                    $link = '/search/tab_critics/author_pro/movie_' . $movie_id;
+                    $link = '/search/tab_critics/author_critic/movie_' . $movie_id;
                 }
 
                 $title = 'Load more<br>Pro Reviews';
