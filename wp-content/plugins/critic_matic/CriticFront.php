@@ -1656,27 +1656,13 @@ class CriticFront extends SearchFacets {
 
             // Link more
             if ($count > $limit) {
-
-                // Old api
-                // $link = '/critics/group_pro';
-                // New api
                 $link = '/search/tab_critics/author_critic';
 
                 if ($movie_id) {
-                    // Old api
-                    /* $ma = $this->get_ma();
-                      $ma_id = $movie_id; //$ma->get_post_id_by_rwt_id($movie_id);
-                      $movie = $ma->get_post($ma_id);
-                      if ($movie) {
-                      $slug = $this->get_or_create_ma_post_name($ma_id, $movie->rwt_id, $movie->title, $movie->type);
-                      $type_slug = $ma->get_post_slug($movie->type);
-                      $link = $site_url . 'critics/group_pro/' . $type_slug . '/' . $slug;
-                      } */
-                    // New api
                     $link = '/search/tab_critics/author_critic/movie_' . $movie_id;
                 }
 
-                $title = 'Load more<br>Pro Reviews';
+                $title = 'Load more<br>Critic Reviews';
                 $content['result']['0_0'] = array('link' => $link, 'title' => $title, 'genre' => 'load_more', 'poster_link_small' => '', 'poster_link_big' => '', 'content_pro' => '');
             }
 
