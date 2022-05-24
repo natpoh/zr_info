@@ -541,7 +541,7 @@ class Import
             $count =intval($data['count']);
 
         }
-        $sql ="SELECT *  FROM `commit` WHERE `status` = '".$status."' and `complete` IN NULL ORDER BY `commit`.`priority` ASC, `id` ASC  limit ".$count;
+        $sql ="SELECT *  FROM `commit` WHERE `status` = '".$status."' and `complete` IS NULL ORDER BY `commit`.`priority` ASC, `id` ASC  limit ".$count;
         $rows = Pdo_an::db_results_array($sql);
         return $rows;
     }
