@@ -540,7 +540,7 @@ class Import
             $count =intval($data['count']);
 
         }
-        $sql ="SELECT *  FROM `commit` WHERE `status` = '".$status."' ORDER BY `commit`.`priority` ASC, `id` ASC  limit ".$count;
+        $sql ="SELECT *  FROM `commit` WHERE `status` = '".$status."' and `complete` IN NULL ORDER BY `commit`.`priority` ASC, `id` ASC  limit ".$count;
         $rows = Pdo_an::db_results_array($sql);
         return $rows;
     }
@@ -888,7 +888,7 @@ class Import
     {
         ////delete old comlete request
 
-        $sql = "DELETE FROM `commit` WHERE `complete` = 1 and `last_update` < ".(time()-86400*60);
+        $sql = "DELETE FROM `commit` WHERE `complete` = 1 and `last_update` < ".(time()-86400*30);
 
         Pdo_an::db_query($sql);
 
