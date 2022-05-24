@@ -54,7 +54,7 @@ class Import
         ////update request status
 
         $time_current = self::timer_stop_data();
-        self::update_status($uid,2,$time_current);////send request
+        ///self::update_status($uid,2,$time_current);////send request
         ///get data
         $sql_data =  self::commit_info_request($uid);  ///get remote sql from commit
 
@@ -74,6 +74,11 @@ class Import
             if ($update_data) {
                 $result[$uid]['update_data'] = $update_data;
                 $result[] = self::update_commit_data($uid, $update_data, $time_current); ///update to status 4
+            }
+            else
+            {
+                self::update_status($uid,7,'',1);////update to 7 no data return
+                $result[$uid]['return']='empty';
             }
         }
         else
@@ -859,16 +864,20 @@ class Import
 
     }
 
-    public static function update_status($key,$status,$time_current='')
+    public static function update_status($key,$status,$time_current='',$complete='')
     {
         $dop='';
         if ($time_current)
         {
             $dop=",run_time = IF(run_time IS NULL, {$time_current},run_time + {$time_current})";
         }
+        if ($complete)
+        {
+            $complete =" ,`complete` = 1 ";
+        }
 
 
-        $sql = "UPDATE `commit` SET `status`='".$status."', `last_update` = '".time()."' ".$dop." WHERE `uniq_id`  = '".$key."'";
+        $sql = "UPDATE `commit` SET `status`='".$status."' ".$complete.", `last_update` = '".time()."' ".$dop." WHERE `uniq_id`  = '".$key."'";
         Pdo_an::db_query($sql);
 
 
@@ -883,6 +892,13 @@ class Import
 
         Pdo_an::db_query($sql);
 
+
+        ////delete old sync status
+
+        $sql = "UPDATE `commit` SET `status` = 1  where `status` = 2 and `last_update` < ".(time()-1800);
+
+        Pdo_an::db_query($sql);
+
         ///move to status 0 each 10 minutes
 
         $sql = "UPDATE `commit` SET `status` = 0,  `complete` = 0  where `status` = 6 and `last_update` < ".(time()-600);
@@ -893,11 +909,11 @@ class Import
     public static function check_status($status)
     {
 
-        $sql ="SELECT *  FROM `commit` WHERE `status` = '".$status."'";
-        $rows = Pdo_an::db_results_array($sql);
+        $sql ="SELECT COUNT(*) as cnt  FROM `commit` WHERE `status` = '".$status."'";
+        $rows = Pdo_an::db_fetch_row($sql);
         if ($rows)
         {
-            return 1;
+            return $rows->cnt;
         }
     }
 
@@ -920,10 +936,10 @@ class Import
 
 
         $send_request  = self::check_status(6);
-        if ($send_request)
+        if ($send_request>1000)
         {
             ///wait
-            return ;
+            return 'A request is already executed';
         }
 
         $array_sql = self::last_commits($data,0);////check status 0
@@ -973,9 +989,25 @@ class Import
 
         $res_return['last_sinc_commits']=count($array_sql);
 
+        $send_request  = self::check_status(2);
+        if ($send_request>300)
+        {
+            ///wait
+           return 'A request is already executed';
+        }
+
+
+
         if ($array_sql)
         {
-            ////get data from remote url  and add to db set status 3
+            foreach ($array_sql as $i =>$v) {
+                $uid = $v["uniq_id"];
+                ////update request status
+                self::update_status($uid, 2);////send request
+            }
+
+
+            ////get data from remote url  and add to db set status 4
 
             $result['last_sinc_commits']  = self::generate_request($array_sql);
 
