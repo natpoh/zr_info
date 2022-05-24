@@ -247,8 +247,8 @@ AND table_schema='imdbvisualization'";
 
         echo '<h1>Export data</h1>';
 
+ $groop = METALOG::get_groop();
 
-        $groop = METALOG::get_groop();
 
  echo '<table class="wp-list-table widefat fixed striped posts"><thead><tr><th>Type</th><th>Count</th><th style="width: 30%">Percent</th><th>Not sync</th><th>Add 24 hours</th><th>Add This Week</th><th>Action</th></tr></thead>
 <tbody>';
@@ -257,7 +257,7 @@ AND table_schema='imdbvisualization'";
            $option.= ';'.$i.':'.$i;
            $total_add[$i]['add'] = self::get_data_count_an('commit',"WHERE `description`= '".$i."' ");
            $total_add[$i]['update'] = self::get_data_count_an('commit',"WHERE `description`= '".$i."' and `complete`= 1 ");
-           $total_add[$i]['filled'] = self::get_filled($total_add[$i]['add'],$total_add[$i]['update'],$i);
+          $total_add[$i]['filled'] = self::get_filled($total_add[$i]['add'],$total_add[$i]['update'],$i);
            echo '<tr><td>'.$i.'</td><td>' . $total_add[$i]['add'] . '</td>'.$total_add[$i]['filled'].'<td></td></tr>';
        }
         $option = substr($option,1);
@@ -270,7 +270,7 @@ AND table_schema='imdbvisualization'";
 
 
  ///get status
-       $array_status = array(0=>'0 Waiting',6=>'1 Remote sync',1=>'1 Sync', 2=>'2 Send request to get data',3=>'3 Send data',4=>'4 Get and save data',5=>'5 Complete',10=>'Error');
+       $array_status = array(0=>'0 Waiting',6=>'1 Remote sync',1=>'1 Sync', 2=>'2 Send request to get data',3=>'3 Send data',4=>'4 Get and save data',5=>'5 Complete',7=>'Empty',10=>'Error');
 
         echo '<br><br><table class="wp-list-table widefat fixed striped posts"><thead><tr><th>Status</th><th>Total</th><th>Add 10 minutes</th><th>Add 1 hour</th><th>Add 24 hours</th></tr></thead>
 <tbody>';
@@ -294,7 +294,7 @@ AND table_schema='imdbvisualization'";
             'description' => array('type'=>'select','options'=>$option),
             'text' => array('w'=>40, 'type' => 'textarea'),
             'update_data' => array('w'=>40, 'type' => 'textarea'),
-            'status' => array('type'=>'select','options'=>'0:0 Waiting;6:1 Remote sync;1:1 Sync;2:2 Send request to get data;3:3 Send data;4:4 Get and save data;5:Complete;10:Error'),
+            'status' => array('type'=>'select','options'=>'0:0 Waiting;6:1 Remote sync;1:1 Sync;2:2 Send request to get data;3:3 Send data;4:4 Get and save data;7:Empty;5:Complete;10:Error'),
             'complete' => array('type'=>'select','options'=>':no;1:Complete'),
             'site_id' => array('w'=>10,'type'=>'select','options'=>'1:1 hezner;2:2 rwt'),
             'last_update' => array('w'=>10, 'type' => 'textarea')
