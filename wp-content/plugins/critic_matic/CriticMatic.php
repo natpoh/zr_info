@@ -2916,6 +2916,13 @@ class CriticMatic extends AbstractDB {
         return $ret;
     }
 
+    public function critic_delta_cron() {
+        $ts_dir = ABSPATH . "wp-content/uploads/docker_sphinx.txt";
+        if (file_exists($ts_dir)) {
+            unlink($ts_dir);
+        }
+    }
+
     /*
      * Geo data   
      */

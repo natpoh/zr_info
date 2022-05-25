@@ -457,6 +457,9 @@ class CriticAudience extends AbstractDb {
 
             // Update post rating
             $this->cm->hook_update_post($pid);
+            
+            // Reset cron
+            $this->cm->critic_delta_cron();
         }
     }
 
