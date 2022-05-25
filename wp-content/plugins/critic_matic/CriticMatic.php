@@ -1163,15 +1163,12 @@ class CriticMatic extends AbstractDB {
      * Authors get
      */
 
-    public function get_last_authors_name($type = 3) {
+    public function get_last_authors_name() {
         //Custom type
-        $type_and = '';
-        if ($type != -1) {
-            $type_and = sprintf(" AND type = %d", (int) $type);
-        }
 
-        $sql = "SELECT `id`, `name`, `type`, `options` FROM {$this->db['authors']} WHERE id>0" . $type_and . " ORDER BY name DESC LIMIT 1";
-        // echo $sql;
+
+        $sql = "SELECT `id`, `name`, `type`, `options` FROM {$this->db['authors']} WHERE id>0 ORDER BY id DESC LIMIT 1";
+
         $result = $this->db_results($sql);
         return $result;
     }

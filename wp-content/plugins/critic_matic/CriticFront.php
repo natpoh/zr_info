@@ -1269,14 +1269,14 @@ class CriticFront extends SearchFacets {
             // try to find img
             $regi = '/<img[^>]+src="([^"]+)"/Ui';
 
-            if (preg_match($regi, $content, $mach)) {
-
-                $image = $this->get_local_thumb(640, 0, $mach[1]);
-
-                if ($image) {
-                    $image = '<div style="text-align: center;margin: 10px 0;"><img src="' . $image . '"></div>';
-                }
-            }
+//            if (preg_match($regi, $content, $mach)) {
+//
+//                $image = $this->get_local_thumb(640, 0, $mach[1]);
+//
+//                if ($image) {
+//                    $image = '<div style="text-align: center;margin: 10px 0;"><img src="' . $image . '"></div>';
+//                }
+//            }
         }
 
         $content = $this->format_content($content, $crop_len);

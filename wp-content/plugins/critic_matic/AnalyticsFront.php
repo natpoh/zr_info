@@ -182,14 +182,15 @@ class AnalyticsFront extends SearchFacets {
         'Mixed / Other' => 'mix',
         'Arab' => 'm',
     );
-    public $race_data_priority = array('c', 'e', 'j', 'k', 'b', 's');
+    public $race_data_priority = array('c', 'e', 'j', 'k', 'b', 's', 'f');
     public $race_data_setup = array(
         'c' => array('title' => 'Crowdsource', 'titlehover' => 'Crowdsource'),
         'e' => array('title' => 'Ethnicelebs', 'titlehover' => 'Ethnicelebs'),
         'j' => array('title' => 'JewOrNotJew', 'titlehover' => 'JewOrNotJew'),
         'k' => array('title' => 'Kairos', 'titlehover' => 'Facial Recognition by Kairos'),
         'b' => array('title' => 'Betaface', 'titlehover' => 'Facial Recognition by Betaface'),
-        's' => array('title' => 'Surname', 'titlehover' => 'Surname Analysis')
+        's' => array('title' => 'Surname', 'titlehover' => 'Surname Analysis'),
+        'f' => array('title' => 'FamilySearch', 'titlehover' => 'FamilySearch Surname Analysis')
     );
     public $max_actors = 200;
     public $max_budget = 200000000;
@@ -4254,6 +4255,7 @@ class AnalyticsFront extends SearchFacets {
 
     public function get_race_by_key($race = 0, $key = 0) {
         $race_code = 0;
+        //print $race."\n";
         if ($key == 'c') {
             $race_code = (int) substr($race, 3, 1);
         } else if ($key == 's') {
@@ -4266,6 +4268,8 @@ class AnalyticsFront extends SearchFacets {
             $race_code = (int) substr($race, 7, 1);
         } else if ($key == 'e') {
             $race_code = (int) substr($race, 8, 1);
+        } else if ($key == 'f') {
+            $race_code = (int) substr($race, 9, 1);
         }
 
         return $race_code;
