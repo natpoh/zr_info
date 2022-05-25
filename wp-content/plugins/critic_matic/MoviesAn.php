@@ -191,23 +191,30 @@ class MoviesAn extends AbstractDBAn {
         // Validate values
         if ($mid > 0) {
             //Get post meta
-            $sql = sprintf("SELECT id FROM {$this->db['movies_meta']} WHERE mid=%d", (int) $mid);
-            $meta_exist = $this->db_get_var($sql);
+            $sql = sprintf("SELECT id, date FROM {$this->db['movies_meta']} WHERE mid=%d", (int) $mid);
+            $meta_exist = $this->db_fetch_row($sql);
 
 
             if ($meta_exist) {
-                // Update
-                $data = array(
-                    'date' => (int) $date
-                );
-                $this->cm->sync_update_data($data, $meta_exist, $this->db['movies_meta'], $this->cm->sync_data);
+                if ($date == 0 && $meta_exist->date == 0) {
+                    // continue reset meta
+                } else {
+                    // Update
+                    $data = array(
+                        'date' => (int) $date
+                    );
+                    // $this->cm->sync_update_data($data, $meta_exist, $this->db['movies_meta'], false);
+                    $this->db_update($data, $meta_exist, $this->db['movies_meta']);
+                }
             } else {
                 // Insert
                 $data = array(
                     'mid' => (int) $mid,
                     'date' => (int) $date
                 );
-                $this->cm->sync_insert_data($data, $this->db['movies_meta'], $this->cm->sync_client, $this->cm->sync_data);
+
+                //$this->cm->sync_insert_data($data, $this->db['movies_meta'], false);
+                $this->db_insert($data, $this->db['movies_meta']);
             }
             return true;
         }
