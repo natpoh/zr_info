@@ -248,7 +248,9 @@ public static function get_user()
 
     $ca = $cfront->get_ca();
     $unic_id = $ca->unic_id();
+
     $aid_db = $ca->get_author_by_key($unic_id);
+
 
     $actor_pefix = 'Crowd_';
     if (!$aid_db)
@@ -257,7 +259,7 @@ public static function get_user()
         ///get last crowd name
 
         $author_type = 3;
-        $last_name = $cfront->cm->get_last_authors_name($author_type);
+        $last_name = $cfront->cm->get_last_authors_name();
         if (!$last_name)
         {
             $last_num = 1;
