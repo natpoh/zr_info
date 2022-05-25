@@ -915,7 +915,7 @@ function check_last_actors()
     //check actor gender
     $sql = "SELECT data_actors_gender.actor_id,  data_actors_gender.Gender 	  FROM `data_actors_gender`
     LEFT JOIN data_actors_meta ON data_actors_gender.actor_id=data_actors_meta.actor_id
-        WHERE data_actors_meta.gender IS NULL and data_actors_meta.actor_id >0  limit 10000";
+        WHERE data_actors_meta.gender = 0 and data_actors_meta.actor_id >0  limit 10000";
     $result= Pdo_an::db_results_array($sql);
     foreach ($result as $r) {
         $gender = '';
@@ -944,7 +944,7 @@ function check_last_actors()
     //check actor gender auto
     $sql = "SELECT data_actor_gender_auto.actor_id,  data_actor_gender_auto.gender 	  FROM `data_actor_gender_auto`
     LEFT JOIN data_actors_meta ON data_actor_gender_auto.actor_id=data_actors_meta.actor_id
-        WHERE (data_actors_meta.gender IS NULL OR data_actors_meta.gender =0 ) and data_actors_meta.actor_id >0  and data_actor_gender_auto.gender>0 limit 10000";
+        WHERE ( data_actors_meta.gender =0 ) and data_actors_meta.actor_id >0  and data_actor_gender_auto.gender>0 limit 10000";
     $result= Pdo_an::db_results_array($sql);
     foreach ($result as $r) {
         $gender = '';
