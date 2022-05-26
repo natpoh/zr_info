@@ -473,7 +473,7 @@ class CriticMatic extends AbstractDB {
                     $and_orderby .= ' ' . $order;
                 }
             } else {
-                $and_orderby = " ORDER BY id DESC";
+                $and_orderby = " ORDER BY p.id DESC";
             }
 
             $page -= 1;
@@ -490,7 +490,7 @@ class CriticMatic extends AbstractDB {
 
         $sql = "SELECT" . $select
                 . " FROM {$this->db['posts']} p"
-                . " INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
+                . " LEFT JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
                 . $atype_inner . $cid_inner . $ts_inner . $status_query . $cid_and . $aid_and . $type_and . $view_type_and . $ts_and . $meta_type_and . $atype_and . $and_orderby . $limit;
 
 
