@@ -20,11 +20,14 @@ class CriticTranscriptions extends AbstractDBTC {
     private $dev_project = 'rwt yotube';
 
     public function __construct($cm) {
+        $table_prefix = DB_PREFIX_WP_AN;
         $this->cm = $cm;
         $this->db = array(
             'youtube' => 'youtube',
             'therightstuff' => 'therightstuff',
             'bitchute' => 'bitchute',
+            // TS
+            'transcriptions' => $table_prefix . 'critic_transcritpions',
         );
     }
 
@@ -152,7 +155,7 @@ class CriticTranscriptions extends AbstractDBTC {
                 $type = 4;
                 //Author
                 //$author_name = trim($video->author);
-                $author_name = 'The Right Stuff';                
+                $author_name = 'The Right Stuff';
 
                 if ($old_post) {
 
@@ -425,7 +428,79 @@ class CriticTranscriptions extends AbstractDBTC {
         //Get URL
         //Date
     }
-   
+
+    public function transit_youtube_ts($count = 10, $debug = false, $force = false) {
+        $last_id = $this->get_option('last_transit_youtube_id', 0);
+        if ($force) {
+            $last_id = 0;
+        }
+
+        $sql = sprintf("SELECT * FROM {$this->db['youtube']} WHERE id>%d ORDER BY id ASC limit %d", (int) $last_id, (int) $count);
+        $results = $this->db_results($sql);
+
+
+        /*
+         * 
+         * UPDATE youtube SET pid = 0
+         * 
+          [id] => 1
+          [critic_name] => Daily Wire
+          [channel_url] => https://www.youtube.com/channel/UCaeO5vkdj5xOQHp4UmIN6dw
+          [title] => PragerU's Will Witt in the Hot Seat
+          [video_url] => https://youtube.com/watch?v=5OK2IuPLpCY
+          [transcriptions] => 1
+          00:00:00,000 --> 00:00:03,280
+          what's up guys what's up guys what's up
+          [pid] => 0
+         */
+        if ($results) {
+            $last = end($results);
+            $last_id = $last->id;
+            foreach ($results as $video) {
+                $pid = $video->pid;
+                $transcriptions = $video->transcriptions;
+                if ($debug) {
+                    print_r(array($pid, $transcriptions));
+                }
+
+                if ($pid && $transcriptions) {
+
+                    $ts_exist = $this->get_ts_by_pid($pid);
+                    if (!$ts_exist) {
+                        // Insert transcription
+                        $date_add = $this->curr_time();
+                        // Ts in post
+                        $status = 2;
+                        $data = array(
+                            'pid' => $pid,
+                            'date_add' => $date_add,
+                            'status' => $status,
+                            'content' => $transcriptions,
+                        );
+
+                        if ($debug) {
+                            print_r($data);
+                        }
+                        
+                        $this->cm->db_insert($data, $this->db['transcriptions']);                        
+                    } else {
+                        if ($debug){
+                            print "ts for post $pid exists\n";
+                        }
+                    }
+                }
+            }
+
+            update_option('last_transit_youtube_id', $last_id);
+        }
+    }
+
+    private function get_ts_by_pid($pid) {
+        $sql = sprintf("SELECT * FROM {$this->db['transcriptions']} WHERE pid=%d", (int) $pid);
+        $results = $this->cm->db_fetch_row($sql);
+        return $results;
+    }
+
     private function append_id($id) {
         // Append a new id to search queue
         $opt_key = 'feed_matic_search_ids';
