@@ -44,6 +44,24 @@ class DISQUS_DATA
 
         return $output ? $output : '0 sec';
     }
+    public static function get_parents_name($id)
+    {
+        $sql="SELECT * FROM `cache_disqus_comments` WHERE `disqus_id` =".$id." limit 1";
+        $r= Pdo_an::db_fetch_row($sql);
+       if ($r)
+       {
+           $data =$r->data;
+           if ($data)
+           {
+               $data = json_decode($data);
+               return $data->author->name;
+           }
+       }
+
+
+
+
+    }
 
     public static function add_template($data)
     {
@@ -60,6 +78,13 @@ class DISQUS_DATA
 
         }
 
+        $parent = $comment->parent;
+
+        if ($parent)
+        {
+            //get parent data
+            $parent_name=self::get_parents_name($parent);
+        }
 
         $link = $trehead_data["link"];
 
@@ -127,9 +152,8 @@ class DISQUS_DATA
             <div class="disqus_autor_name">
             <a target="_blank" href="' . $comment->author->profileUrl . '">' . $actorstitle . '</a>
             <a  class="disqus_addtime" href="' . $link . '" title="' . $addtime_title . '">' . $addtime . '</a>
-            </div>
-            ' . $content . '
-            <div class="disqus_content_bottom"><a  href="' . $link . '#reply-' . $comment->id . '" class="disqus_reply">Reply</a><a  href="' . $link . '" class="disqus_view">View</a></div>
+            </div><div class="disqus_content">' . $content . '<div class="disqus_see_more"><div class="disqus_see_more_text">see more</div></div></div>
+            <div class="disqus_content_bottom"><a  href="' . $link . '#reply-' . $comment->id . '" class="disqus_reply">Reply</a><a  href="' . $link . '#disquss_container" class="disqus_view">View</a></div>
         </div>
          
     </div>
@@ -139,13 +163,13 @@ class DISQUS_DATA
 //   $finalResults = '<div class="a_msg_container"><iframe src="https://embed.disqus.com/p/' . $code . '" style="width: 100%; min-height: 250px"  seamless="seamless" scrolling="no" frameborder="0" allowtransparency="true"></iframe>' . $inner_content . '</div>';
 
 
-        $result = self::to_container($finalResults, $trehead_data);
+        $result = self::to_container($finalResults, $trehead_data,$parent_name);
 
 
         return $result;
     }
 
-    public static function to_container($inner_data, $trehead_data)
+    public static function to_container($inner_data, $trehead_data,$parent_name='')
     {
         $link_id = $trehead_data["post_id"];
         $comment_type = $trehead_data["type"];
@@ -157,10 +181,15 @@ class DISQUS_DATA
         }
 
 
+        if ($parent_name)
+        {
+            $movie_parents= '@ '.$parent_name.'\'s ';
+        }
+
         if ($comment_type == 'movie') {
             ////movie
 
-            $movie_block = template_single_movie_small($link_id, '', $link, 1);
+            $movie_block = $movie_parents.template_single_movie_small($link_id, '', $link, 2);
 
         }
         else if ($comment_type == 'post') {
@@ -170,7 +199,9 @@ class DISQUS_DATA
                 $new_link = $mach[1];
             }
 
-            $movie_block = '<div class="review_block"><span class="review_block_title">Page: </span></span><a href="' . $link . '">' . $new_link . '</a></div>';
+
+
+            $movie_block = '<div class="review_block">'.$movie_parents.'<a href="' . $link . '">/' . $new_link . '</a></div>';
         }
         else if ($comment_type == 'critics') {
 
@@ -192,6 +223,15 @@ class DISQUS_DATA
             $critic_data = $cfront->cm->get_post($link_id);
             $movie_id = $critic_data->top_movie;
             $critic_type = $critic_data->type;
+
+            $critic_id = $critic_data->aid;
+            $author = $cfront->cm->get_author($critic_id);
+            $a_name = $author->name;
+
+            if (function_exists('pccf_filter')) {
+                $a_name = pccf_filter($a_name);
+            }
+
             /*
               Author type
               0 => 'Staff',
@@ -199,18 +239,27 @@ class DISQUS_DATA
               2 => 'Audience'
              */
             $array_type = array(0 => 'Staff',
-                1 => 'Pro',
+                1 => 'Critic',
                 2 => 'Audience'
             );
 
 
             $movie_block = '';
             if ($link_id) {
-                $movie_block = template_single_movie_small($movie_id, '', $link, 1);
+                $movie_block = template_single_movie_small($movie_id, '', $link, 2);
+                $movie_block = trim($movie_block);
             }
 
-            $movie_block = '<div class="review_block review_' . $array_type[$critic_type] . '"><div class="review_block_title">' . $array_type[$critic_type] . ' review of </div>' . $movie_block . '</div>';
+            if (!$movie_parents)
+            {
+                $movie_parents=  '@ '.$a_name.'\'s ';
+            }
+
+
+            $movie_block = '<div class="review_block review_' . $array_type[$critic_type] . '">' . $movie_parents. '"' . $movie_block . '" '.$array_type[$critic_type].' Review</div>';
         }
+
+
 
 
         $finalResults_big = '<div class="big_block_comment">' . $movie_block . '<div>' . $inner_data . '</div></div>';
