@@ -2680,7 +2680,7 @@ if (isset($_GET['check_verdict_surname'])) {
 }
 if (isset($_GET['check_curl'])) {
 
-    $Result = GETCURL::getCurlCookie($_GET['check_curl'],1);
+    $Result = GETCURL::getCurlCookie($_GET['check_curl'],'172.17.0.1:8118');
     echo $Result;
 
     return;
