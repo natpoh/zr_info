@@ -547,6 +547,8 @@ class CriticMaticAdmin {
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_overview.php');
         } else if ($curr_tab == 'details') {
 
+            $page_url .= '&tab=' . $curr_tab;
+            
             $filters = array(
                 'type' => $this->cm->post_type,
                 'view_type' => $this->cm->post_view_type,
