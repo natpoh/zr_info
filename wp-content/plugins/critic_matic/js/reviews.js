@@ -103,7 +103,7 @@ function listen_click(box, e) {
 
 
     }
-    console.log(rz);
+    //console.log(rz);
 
     let inner_blok = box.querySelector(".rating_result_total");
     let inner_input = prnt.querySelector('input.wpcr3_frating');
@@ -115,10 +115,15 @@ function listen_click(box, e) {
         number_block.textContent =0;
         inner_blok.style.width = '0px';
         inner_blok.style.backgroundSize = '0%';
+        number_block.classList.remove("number_rate_0", "number_rate_1","number_rate_2","number_rate_3","number_rate_4","number_rate_5");
+        number_block.classList.add('number_rate_0');
         box.classList.remove("selected");
         return false;
     }
     number_block.textContent =rz;
+    number_block.classList.remove("number_rate_0", "number_rate_1","number_rate_2","number_rate_3","number_rate_4","number_rate_5");
+    number_block.classList.add('number_rate_'+rz);
+
     inner_input.value = rz;
     box.classList.add("selected");
     let count = rz * 100 / 5;

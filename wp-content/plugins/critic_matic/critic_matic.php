@@ -980,4 +980,17 @@ WHERE
  * 
  * 
  * SELECT cid, count(*) FROM `wp_bcw98b_critic_matic_rating` WHERE cid>0 GROUP by cid having count(*) > 1;
+ * 
+ * 
+ UPDATE `data_actors_meta` SET n_ethnic=0 WHERE n_ethnic IS NULL;
+ UPDATE `data_actors_meta` SET n_jew=0 WHERE n_jew IS NULL;
+ UPDATE `data_actors_meta` SET n_kairos=0 WHERE n_kairos IS NULL;
+ UPDATE `data_actors_meta` SET n_bettaface=0 WHERE n_bettaface IS NULL;
+ UPDATE `data_actors_meta` SET n_surname=0 WHERE n_surname IS NULL;
+ UPDATE `data_actors_meta` SET n_familysearch=0 WHERE n_familysearch IS NULL;
+ UPDATE `data_actors_meta` SET n_forebears=0 WHERE n_forebears IS NULL;
+ UPDATE `data_actors_meta` SET n_crowdsource=0 WHERE n_crowdsource IS NULL;
+ UPDATE `data_actors_meta` SET n_verdict=0 WHERE n_verdict IS NULL;
+ UPDATE `data_actors_meta` SET gender=0 WHERE gender IS NULL;
+ 
  */

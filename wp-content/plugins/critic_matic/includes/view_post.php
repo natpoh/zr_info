@@ -305,7 +305,7 @@ if ($pid) {
 
     <?php
     // Transcriptions
-    if ($post->tstatus == 1) {?>
+    if ($post->tstatus == 1||$post->tstatus == 2) {?>
      <h2><?php print __('Transcriptions') ?></h2>
          <textarea style="width: 90%; height: 300px;"><?php print $post->tcontent ?></textarea>    
     <?php }

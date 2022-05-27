@@ -473,7 +473,7 @@ class CriticMatic extends AbstractDB {
                     $and_orderby .= ' ' . $order;
                 }
             } else {
-                $and_orderby = " ORDER BY id DESC";
+                $and_orderby = " ORDER BY p.id DESC";
             }
 
             $page -= 1;
@@ -490,7 +490,7 @@ class CriticMatic extends AbstractDB {
 
         $sql = "SELECT" . $select
                 . " FROM {$this->db['posts']} p"
-                . " INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
+                . " LEFT JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
                 . $atype_inner . $cid_inner . $ts_inner . $status_query . $cid_and . $aid_and . $type_and . $view_type_and . $ts_and . $meta_type_and . $atype_and . $and_orderby . $limit;
 
 
@@ -1163,15 +1163,12 @@ class CriticMatic extends AbstractDB {
      * Authors get
      */
 
-    public function get_last_authors_name($type = 3) {
+    public function get_last_authors_name() {
         //Custom type
-        $type_and = '';
-        if ($type != -1) {
-            $type_and = sprintf(" AND type = %d", (int) $type);
-        }
 
-        $sql = "SELECT `id`, `name`, `type`, `options` FROM {$this->db['authors']} WHERE id>0" . $type_and . " ORDER BY name DESC LIMIT 1";
-        // echo $sql;
+
+        $sql = "SELECT `id`, `name`, `type`, `options` FROM {$this->db['authors']} WHERE id>0 ORDER BY id DESC LIMIT 1";
+
         $result = $this->db_results($sql);
         return $result;
     }
@@ -2917,6 +2914,13 @@ class CriticMatic extends AbstractDB {
             $ret[$key] = $title;
         }
         return $ret;
+    }
+
+    public function critic_delta_cron() {
+        $ts_dir = ABSPATH . "wp-content/uploads/docker_sphinx.txt";
+        if (file_exists($ts_dir)) {
+            unlink($ts_dir);
+        }
     }
 
     /*

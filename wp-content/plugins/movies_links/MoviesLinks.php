@@ -10,7 +10,10 @@ class MoviesLinks extends MoviesAbstractDB {
     private $mlr = array();
     private $settings;
     private $settings_def;
-    private $campaings_mlr = array('familysearch.org' => 'familysearch');
+    private $campaings_mlr = array(
+        'familysearch.org' => 'familysearch',
+        'forebears.io' => 'forebears'
+        );
     public $arhive_path = ABSPATH . 'wp-content/uploads/movies_links/arhive/';
 
     public function __construct() {

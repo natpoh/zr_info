@@ -20,6 +20,8 @@ class CriticFront extends SearchFacets {
     private $ma = '';
     public $thumb_class;
     private $db = array();
+    // Show hollywood bs rating
+    private $show_hollywood=false;
 
     public function __construct($cm = '', $cs = '', $ce = '') {
         $this->cm = $cm ? $cm : new CriticMatic();
@@ -890,8 +892,9 @@ class CriticFront extends SearchFacets {
 
         $stars = $this->rating_images('rating', $stars);
 
-
-        if ($hollywood) {
+        
+        
+        if ($this->show_hollywood && $hollywood) {
             $hollywood = $this->rating_images('hollywood', $hollywood);
         } else {
             $hollywood = '';
@@ -1269,14 +1272,14 @@ class CriticFront extends SearchFacets {
             // try to find img
             $regi = '/<img[^>]+src="([^"]+)"/Ui';
 
-            if (preg_match($regi, $content, $mach)) {
-
-                $image = $this->get_local_thumb(640, 0, $mach[1]);
-
-                if ($image) {
-                    $image = '<div style="text-align: center;margin: 10px 0;"><img src="' . $image . '"></div>';
-                }
-            }
+//            if (preg_match($regi, $content, $mach)) {
+//
+//                $image = $this->get_local_thumb(640, 0, $mach[1]);
+//
+//                if ($image) {
+//                    $image = '<div style="text-align: center;margin: 10px 0;"><img src="' . $image . '"></div>';
+//                }
+//            }
         }
 
         $content = $this->format_content($content, $crop_len);
