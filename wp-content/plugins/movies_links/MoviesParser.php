@@ -79,7 +79,8 @@ class MoviesParser extends MoviesAbstractDB {
                     'type' => 'm',
                     'match' => 2,
                     'rating' => 20,
-                    'rules' => ''
+                    'rules' => '',
+                    'custom_last_run_id' => 0,
                 ),
             ),
         );
@@ -461,7 +462,7 @@ class MoviesParser extends MoviesAbstractDB {
                 . " LEFT JOIN {$this->db['posts']} p ON u.id = p.uid"
                 . $status_query . $cid_and . $arhive_type_and . $parser_type_and . $links_type_and . $and_date . $and_orderby . $limit;
 
-                
+
         $result = $this->db_results($query);
         return $result;
     }
@@ -1234,7 +1235,7 @@ class MoviesParser extends MoviesAbstractDB {
         return $ret;
     }
 
-    public function get_last_posts($count = 10, $cid = 0, $status_links = -1, $status = -1) {
+    public function get_last_posts($count = 10, $cid = 0, $status_links = -1, $status = -1, $min_pid=0, $order="DESC") {
 
         // Company id
         $cid_and = '';
@@ -1253,12 +1254,16 @@ class MoviesParser extends MoviesAbstractDB {
         if ($status_links != -1) {
             $status_links_and = sprintf(' AND p.status_links = %d', $status_links);
         }
-
+        
+        $and_order = "DESC";
+        if ($order=="ASC"){
+            $and_order = $order;
+        }
 
         $query = sprintf("SELECT p.* FROM {$this->db['posts']} p"
                 . " INNER JOIN {$this->db['url']} u ON p.uid = u.id"
-                . " WHERE p.id>0" . $cid_and . $status_and . $status_links_and
-                . " ORDER BY p.id DESC LIMIT %d", (int) $count);
+                . " WHERE p.id>%d" . $cid_and . $status_and . $status_links_and
+                . " ORDER BY p.id $and_order LIMIT %d",  (int) $min_pid, (int) $count);
 
 
         $result = $this->db_results($query);

@@ -69,6 +69,90 @@ class Familysearch extends MoviesAbstractDBAn {
         );
     }
 
+    public function hook_update_post($campaign=array(), $post=array(), $options=array(), $debug=false) {
+
+        $score_opt = array(
+            'topcountry' => 'topcountry',
+            'country' => 'country'
+        );
+
+        $to_update = array();
+        foreach ($score_opt as $post_key => $db_key) {
+            if (isset($options[$post_key])) {
+                $field_value = base64_decode($options[$post_key]);
+                $to_update[$db_key] = $field_value;
+            }
+        }
+        $topcountry = '';
+        $country = '';
+        if ($to_update) {
+            $country_meta = array();
+            if ($to_update['topcountry']) {
+                $topcountry = trim($to_update['topcountry']);
+            }
+
+            if ($to_update['country'] && $topcountry) {
+                $country = $to_update['country'];
+                if (strstr($country, ';')) {
+                    $c_arr = explode(';', $country);
+                    foreach ($c_arr as $value) {
+                        if (strstr($value, ':')) {
+                            $val_arr = explode(':', $value);
+                            $c = trim($val_arr[0]);
+                            $t = (int) str_replace(',', '', trim($val_arr[1]));
+                            $country_meta[] = array('c' => $c, 't' => $t);
+                        }
+                    }
+                }
+            }
+        }
+
+        $lastname = trim($post->title);
+
+        if ($lastname && $topcountry) {
+            /*
+             * $lastname: Markovic
+             * $topcountry: Croatia
+             * $country_meta: Array
+              (
+              [0] => Array
+              (
+              [c] => Croatia
+              [t] => 128
+              )
+
+              [1] => Array
+              (
+              [c] => Austria
+              [t] => 81
+              )
+
+              )
+             */
+
+
+            $lastname_id = $this->get_lastname_id($lastname);
+
+            if (!$lastname_id) {
+                // Add name to db
+                $top_country_id = $this->get_or_create_country($topcountry);
+                $last_name_id = $this->create_lastname($lastname, $top_country_id);
+
+                // Add meta
+                if ($country_meta) {
+                    foreach ($country_meta as $item) {
+                        $c = $item['c'];
+                        $t = $item['t'];
+                        $c_id = $this->get_or_create_country($c);
+                        $this->add_country_meta($last_name_id, $c_id, $t);
+                    }
+                }
+            } else {
+                // Name already exist, no actions
+            }
+        }
+    }
+
     public function get_posts($page = 1, $orderby = '', $order = 'ASC', $perpage = 30) {
         // Get lastnames
         $page -= 1;

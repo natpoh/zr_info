@@ -61,12 +61,86 @@ class Forebears extends MoviesAbstractDBAn {
             'meta_director' => 'meta_movie_director',
             'actors_normalize' => 'data_actors_normalize',
             'actors_imdb' => 'data_actors_imdb',
-            'lastnames' => 'data_forebeas_lastnames',
-            'fs_country' => 'data_forebeas_country',
-            'meta_fs' => 'meta_forebeas',
+            'lastnames' => 'data_forebears_lastnames',
+            'country' => 'data_forebears_country',
+            'meta_fs' => 'meta_forebears',
             'population' => 'data_population_country',
-            'verdict' => 'data_forebeas_verdict',
+            'verdict' => 'data_forebears_verdict',
         );
+    }
+
+    public function hook_update_post($campaign = array(), $post = array(), $options = array(), $debug = false) {
+        $score_opt = array(
+            'topcountry' => 'topcountry',
+            'country' => 'country'
+        );
+
+        $to_update = array();
+        foreach ($score_opt as $post_key => $db_key) {
+            if (isset($options[$post_key])) {
+                $field_value = base64_decode($options[$post_key]);
+                $to_update[$db_key] = $field_value;
+            }
+        }
+        $topcountry = '';
+        $country = '';
+        if ($to_update) {
+            $country_meta = array();
+            if ($to_update['topcountry']) {
+                $topcountry = trim($to_update['topcountry']);
+            }
+
+            if ($to_update['country'] && $topcountry) {
+                $country = $to_update['country'];
+                if (strstr($country, ';')) {
+                    $c_arr = explode(';', $country);
+                    foreach ($c_arr as $value) {
+                        if (strstr($value, ', ')) {
+                            $val_arr = explode(', ', $value);
+                            $c = trim($val_arr[0]);
+                            $t = (int) trim(str_replace(',', '', $val_arr[1]));
+                            $country_meta[] = array('c' => $c, 't' => $t);
+                        }
+                    }
+                }
+            }
+        }
+
+        $lastname = trim($post->title);
+
+        if ($debug) {
+            print_r(array($lastname, $topcountry, $country_meta));
+        }
+      
+        if ($lastname && $topcountry) {
+
+            $lastname_id = $this->get_lastname_id($lastname);
+
+            if (!$lastname_id) {
+                
+                if ($debug) {
+                    print "Add lastname $lastname\n";
+                }
+                
+                // Add name to db
+                $top_country_id = $this->get_or_create_country($topcountry);
+                $last_name_id = $this->create_lastname($lastname, $top_country_id);
+
+                // Add meta
+                if ($country_meta) {
+                    foreach ($country_meta as $item) {
+                        $c = $item['c'];
+                        $t = $item['t'];
+                        $c_id = $this->get_or_create_country($c);
+                        $this->add_country_meta($last_name_id, $c_id, $t);
+                    }
+                }
+            } else {                
+                if ($debug) {
+                    print "Name already exist, no actions\n";
+                }
+            }
+        }
     }
 
     public function get_posts($page = 1, $orderby = '', $order = 'ASC', $perpage = 30) {
@@ -94,7 +168,7 @@ class Forebears extends MoviesAbstractDBAn {
 
         $query = "SELECT l.id, l.lastname, c.country as topcountryname"
                 . " FROM {$this->db['lastnames']} l"
-                . " INNER JOIN {$this->db['fs_country']} c ON c.id=l.topcountry"
+                . " INNER JOIN {$this->db['country']} c ON c.id=l.topcountry"
                 . $and_orderby . $limit;
 
 
@@ -139,7 +213,7 @@ class Forebears extends MoviesAbstractDBAn {
         }
 
         //Get author id
-        $sql = sprintf("SELECT id FROM {$this->db['fs_country']} WHERE country='%s'", $this->escape($name));
+        $sql = sprintf("SELECT id FROM {$this->db['country']} WHERE country='%s'", $this->escape($name));
         $id = $this->db_get_var($sql);
 
         if (!$id) {
@@ -152,7 +226,7 @@ class Forebears extends MoviesAbstractDBAn {
     }
 
     public function get_all_countries() {
-        $sql = "SELECT country FROM {$this->db['fs_country']}";
+        $sql = "SELECT country FROM {$this->db['country']}";
         $result = $this->db_results($sql);
         $ret = array();
         if ($result) {
@@ -166,7 +240,7 @@ class Forebears extends MoviesAbstractDBAn {
 
     public function get_countries_by_lasnameid($lastname_id) {
         $sql = sprintf("SELECT m.ccount, c.country FROM {$this->db['meta_fs']} m"
-                . " INNER JOIN {$this->db['fs_country']} c ON c.id=m.cid"
+                . " INNER JOIN {$this->db['country']} c ON c.id=m.cid"
                 . " WHERE nid=%d", (int) $lastname_id);
         $results = $this->db_results($sql);
         $ret = array();
@@ -190,7 +264,7 @@ class Forebears extends MoviesAbstractDBAn {
         }
 
         //Get author id
-        $sql = sprintf("SELECT country FROM {$this->db['fs_country']} WHERE id=%d", (int) $id);
+        $sql = sprintf("SELECT country FROM {$this->db['country']} WHERE id=%d", (int) $id);
         $country = $this->db_get_var($sql);
 
         // Add to cache
@@ -200,10 +274,10 @@ class Forebears extends MoviesAbstractDBAn {
     }
 
     public function create_country_by_name($name) {
-        $sql = sprintf("INSERT INTO {$this->db['fs_country']} (country) VALUES ('%s')", $this->escape($name));
+        $sql = sprintf("INSERT INTO {$this->db['country']} (country) VALUES ('%s')", $this->escape($name));
         $this->db_query($sql);
         //Get the id
-        $id = $this->getInsertId('id', $this->db['fs_country']);
+        $id = $this->getInsertId('id', $this->db['country']);
         return $id;
     }
 
@@ -356,7 +430,7 @@ class Forebears extends MoviesAbstractDBAn {
         // 1. Get lastnames
         $sql = sprintf("SELECT l.id, l.lastname, c.country as topcountryname"
                 . " FROM {$this->db['lastnames']} l"
-                . " INNER JOIN {$this->db['fs_country']} c ON c.id=l.topcountry"
+                . " INNER JOIN {$this->db['country']} c ON c.id=l.topcountry"
                 . " LEFT JOIN {$this->db['verdict']} v ON v.lastname=l.lastname"
                 . " WHERE v.id is NULL ORDER BY l.id DESC LIMIT %d", (int) $count);
         $result = $this->db_results($sql);
