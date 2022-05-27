@@ -61,11 +61,11 @@ class Forebears extends MoviesAbstractDBAn {
             'meta_director' => 'meta_movie_director',
             'actors_normalize' => 'data_actors_normalize',
             'actors_imdb' => 'data_actors_imdb',
-            'lastnames' => 'data_lastnames',
-            'fs_country' => 'data_familysearch_country',
-            'meta_fs' => 'meta_familysearch',
+            'lastnames' => 'data_forebeas_lastnames',
+            'fs_country' => 'data_forebeas_country',
+            'meta_fs' => 'meta_forebeas',
             'population' => 'data_population_country',
-            'verdict' => 'data_familysearch_verdict',
+            'verdict' => 'data_forebeas_verdict',
         );
     }
 

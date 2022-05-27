@@ -376,7 +376,7 @@ div.select ul.options li {
 	font-size: 29px;
 	color: #ababab;
 	padding-left: 5px;
-	width: 47px;
+	width: 50px;
 	display: flex;
 	align-items: center;
 }
@@ -385,6 +385,55 @@ div.select ul.options li {
 
 
 }
+
+.number_rate_5{
+	color: #f44;
+}
+.number_rate_4{
+	color: #f44;
+}
+.number_rate_3{
+	color: #f9b026;
+}
+.number_rate_2{
+	color: #f9b026;
+}
+.number_rate_1{
+	color: #56ff34;
+}
+.number_rate_0{
+	color: #56ff34;;
+}
+
+
+
+.WORTHWHILE .number_rate_0{
+	color: #ababab;
+	display: none;
+}
+.WORTHWHILE .number_rate_1{
+	color: #f44;
+}
+.WORTHWHILE .number_rate_2{
+	color: #f9b026;;
+}
+.WORTHWHILE .number_rate_3{
+	color: #f9b026;
+}
+.WORTHWHILE .number_rate_4{
+	color: #56ff34;
+}
+.WORTHWHILE .number_rate_5{
+	color: #56ff34;;
+}
+
+.rating_number_rate::after {
+	content: "/5";
+	display: inline-block;
+	color: #ababab;
+}
+
+
 @media screen and (max-width: 710px) {
 
 	.wpcr3_respond_2 .wpcr3_div_2 {

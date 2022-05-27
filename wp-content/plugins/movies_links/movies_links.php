@@ -201,6 +201,7 @@ function movies_links_plugin_activation() {
     }
 
     /*
+     * Familysearch.
      * Actors lastnames unique
      */
 
@@ -215,9 +216,6 @@ function movies_links_plugin_activation() {
         critic_matic_create_index_an(array('lastname', 'topcountry'), 'data_lastnames');
     }
 
-    /*
-     * Familysearch
-     */
     $sql = "CREATE TABLE IF NOT EXISTS  `data_familysearch_country`(
 				`id` int(11) unsigned NOT NULL auto_increment,                                
                                 `country` varchar(255) NOT NULL default '',                                
@@ -257,7 +255,60 @@ function movies_links_plugin_activation() {
 
     $sql = "ALTER TABLE `data_population_country` ADD `simpson` varchar(255) NOT NULL DEFAULT ''";
     Pdo_an::db_query($sql);
-    
+
+
+    /*
+     * Forebears
+     * Actors lastnames unique
+     */
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_forebears_lastnames`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                                               
+                                `lastname` varchar(255) NOT NULL default '',         
+                                `topcountry` int(11) NOT NULL DEFAULT '0',  
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_an::db_query($sql);
+    if (function_exists('critic_matic_create_index_an')) {
+        critic_matic_create_index_an(array('lastname', 'topcountry'), 'data_forebears_lastnames');
+    }
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_forebears_country`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                
+                                `country` varchar(255) NOT NULL default '',                                
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_an::db_query($sql);
+    if (function_exists('critic_matic_create_index_an')) {
+        critic_matic_create_index_an(array('country'), 'data_forebears_country');
+    }
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `meta_forebears`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                
+                                `nid` int(11) NOT NULL DEFAULT '0',   
+                                `cid` int(11) NOT NULL DEFAULT '0',   
+                                `ccount` int(11) NOT NULL DEFAULT '0',  
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_an::db_query($sql);
+    if (function_exists('critic_matic_create_index_an')) {
+        critic_matic_create_index_an(array('nid', 'cid', 'ccount'), 'meta_forebears');
+    }
+
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_forebears_verdict`(
+				`id` int(11) unsigned NOT NULL auto_increment,    
+                                `last_upd` int(11) NOT NULL DEFAULT '0',     
+                                `verdict` int(11) NOT NULL DEFAULT '0',  
+                                `lastname` varchar(255) NOT NULL default '',                                         
+                                `description` text default NULL,
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_an::db_query($sql);
+    if (function_exists('critic_matic_create_index_an')) {
+        critic_matic_create_index_an(array('last_upd', 'verdict', 'lastname'), 'data_forebears_verdict');
+    }
+
 }
 
 function movies_links_create_index($names = array(), $table_name = '') {

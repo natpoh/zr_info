@@ -773,7 +773,7 @@ class CriticAudience extends AbstractDb {
 
                 <div class="rating_container"><span class="rating_result <?php echo $key ?>">
                         <span style="width: 0;" class="rating_result_total" ></span>
-                    </span><span class="rating_number rating_num<?php echo $key ?>"><span class="rating_number_rate">0</span>/5</span>
+                    </span><span class="rating_number rating_num<?php echo $key ?>"><span class="rating_number_rate number_rate_0">0</span></span>
                     <input style="display:none;" type="hidden" class="wpcr3_frating" id="id_wpcr3_f<?php print $key ?>" name="wpcr3_frating_<?php print $key ?>" />
                 </div></td>
         </tr>
