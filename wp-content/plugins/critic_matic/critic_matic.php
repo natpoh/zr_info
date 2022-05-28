@@ -971,6 +971,21 @@ WHERE
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_general_ci;
  * 
+   ALTER TABLE
+    wp_bcw98b_critic_matic_posts
+    CHANGE link link
+    text
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_general_ci;
+ 
+    ALTER TABLE
+    wp_bcw98b_critic_matic_posts
+    CHANGE link_hash link_hash 
+    varchar(255)
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_general_ci;
+ * 
+ * * 
  * 
  * For table
   ALTER TABLE

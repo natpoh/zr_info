@@ -611,6 +611,10 @@ class CriticMatic extends AbstractDB {
 
         $date_add = $this->curr_time();
 
+        //Clear UTF8
+        $content = $this->clear_utf8($content);
+
+        
         $data = array(
             'date' => $date,
             'date_add' => $date_add,
@@ -624,13 +628,17 @@ class CriticMatic extends AbstractDB {
             'top_movie' => $top_movie,
             'view_type' => $view_type,
         );
-
+        
 
         $id = $this->sync_insert_data($data, $this->db['posts'], $this->sync_client, $sync);
 
         return $id;
     }
-
+    
+    public function clear_utf8($text) {
+      return preg_replace('/[\x{10000}-\x{10FFFF}]/u', "", $text);
+    }
+    
     public function add_post_meta($fid = 0, $type = 0, $state = 0, $cid = 0, $rating = 0, $update_top_movie = true) {
         // Validate values        
         if ($fid > 0 && $cid > 0) {
@@ -731,6 +739,10 @@ class CriticMatic extends AbstractDB {
         $date_add = $this->curr_time();
         $link_hash = $this->link_hash($link);
         $top_movie = 0;
+        
+        //Clear UTF8
+        $content = $this->clear_utf8($content);
+        
         $data = array(
             'date' => $date,
             'date_add' => $date_add,

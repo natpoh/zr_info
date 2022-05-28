@@ -185,6 +185,70 @@ function movies_links_plugin_activation() {
     movies_links_create_index(array('aid', 'pid', 'cid'), 'actors_meta');
 
     /*
+     * Tor
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `tor_drivers`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                                                                               
+                                `last_upd` int(11) NOT NULL DEFAULT '0',
+                                `last_reboot` int(11) NOT NULL DEFAULT '0',
+                                `status` int(11) NOT NULL DEFAULT '0',
+                                `ip` int(11) NOT NULL DEFAULT '0',
+                                `agent` int(11) NOT NULL DEFAULT '0',
+                                `name` varchar(255) NOT NULL default '',
+                                `url` varchar(255) NOT NULL default '',                                
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_ml::db_query($sql);
+    movies_links_create_index(array('last_upd', 'status', 'ip', 'agent'), 'tor_drivers');
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `tor_ip`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                                               
+                                `ip` varchar(255) NOT NULL default '',
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_ml::db_query($sql);
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `tor_dst_url`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                                               
+                                `url` varchar(255) NOT NULL default '',
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_ml::db_query($sql);
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `tor_user_agents`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                                               
+                                `user_agent` text default NULL,
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_ml::db_query($sql);
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `tor_url_meta`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                                               
+                                `driver` int(11) NOT NULL DEFAULT '0',
+                                `url` int(11) NOT NULL DEFAULT '0',
+                                `status` int(11) NOT NULL DEFAULT '0',
+                                `date` int(11) NOT NULL DEFAULT '0',
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_ml::db_query($sql);
+    movies_links_create_index(array('driver', 'url', 'status'), 'tor_url_meta');
+
+    // Tor log
+    $sql = "CREATE TABLE IF NOT EXISTS  `tor_log`(
+				`id` int(11) unsigned NOT NULL auto_increment,				
+                                `date` int(11) NOT NULL DEFAULT '0',
+                                `driver` int(11) NOT NULL DEFAULT '0',
+                                `url` int(11) NOT NULL DEFAULT '0',
+                                `type` int(11) NOT NULL DEFAULT '0',
+                                `status` int(11) NOT NULL DEFAULT '0',
+                                `link` varchar(255) NOT NULL default '',
+				`message` varchar(255) NOT NULL default '',				
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_ml::db_query($sql);
+    movies_links_create_index(array('date', 'driver', 'url', 'type', 'status'), 'tor_log');
+
+    /*
      * Actors names
      */
 
@@ -308,7 +372,6 @@ function movies_links_plugin_activation() {
     if (function_exists('critic_matic_create_index_an')) {
         critic_matic_create_index_an(array('last_upd', 'verdict', 'lastname'), 'data_forebears_verdict');
     }
-
 }
 
 function movies_links_create_index($names = array(), $table_name = '') {
