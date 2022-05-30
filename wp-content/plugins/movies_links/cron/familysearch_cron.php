@@ -32,7 +32,7 @@ if (!class_exists('MoviesLinks')) {
 $ml = new MoviesLinks();
 
 $campaign = new stdClass();
-$campaign->title = 'forebears.io';
+$campaign->title = 'familysearch.org';
 
 $fs = $ml->get_campaing_mlr($campaign);
 
