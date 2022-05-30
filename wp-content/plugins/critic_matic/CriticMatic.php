@@ -54,7 +54,12 @@ class CriticMatic extends AbstractDB {
         'edit' => 'Edit',
         'trash' => 'Trash',
     );
-    public $sort_pages = array('author_name', 'free', 'id', 'ip', 'date', 'title', 'last_update', 'update_interval', 'name', 'pid', 'slug', 'status', 'type', 'weight');
+    public $post_date_add = array(
+        1 => 'Today',
+        7 => 'Last week',
+        30 => 'Last Mounth',
+    );
+    public $sort_pages = array('author_name', 'free', 'id', 'ip', 'date', 'date_add', 'title', 'last_update', 'update_interval', 'name', 'pid', 'slug', 'status', 'type', 'weight');
 
     /*
      * Authors
@@ -387,7 +392,8 @@ class CriticMatic extends AbstractDB {
             'meta_type' => -1,
             'author_type' => -1,
             'view_type' => -1,
-            'ts' => -1
+            'ts' => -1,
+            'post_date_add' => -1,
         );
 
         $q = array();
@@ -400,6 +406,13 @@ class CriticMatic extends AbstractDB {
         $status_query = " WHERE p.status != " . $status_trash;
         if ($q['status'] != -1) {
             $status_query = " WHERE p.status = " . (int) $q['status'];
+        }
+
+        // Custom date add
+        $and_date_add = '';
+        if ($q['post_date_add'] != -1) {
+            $date_add = $this->curr_time()-(((int)$q['post_date_add'])*86400);
+            $and_date_add = sprintf(" AND p.date_add>%d", $date_add);
         }
 
         // Feed company id
@@ -491,7 +504,7 @@ class CriticMatic extends AbstractDB {
         $sql = "SELECT" . $select
                 . " FROM {$this->db['posts']} p"
                 . " LEFT JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
-                . $atype_inner . $cid_inner . $ts_inner . $status_query . $cid_and . $aid_and . $type_and . $view_type_and . $ts_and . $meta_type_and . $atype_and . $and_orderby . $limit;
+                . $atype_inner . $cid_inner . $ts_inner . $status_query . $cid_and . $and_date_add. $aid_and . $type_and . $view_type_and . $ts_and . $meta_type_and . $atype_and . $and_orderby . $limit;
 
 
         if (!$count) {
@@ -614,7 +627,7 @@ class CriticMatic extends AbstractDB {
         //Clear UTF8
         $content = $this->clear_utf8($content);
 
-        
+
         $data = array(
             'date' => $date,
             'date_add' => $date_add,
@@ -628,17 +641,17 @@ class CriticMatic extends AbstractDB {
             'top_movie' => $top_movie,
             'view_type' => $view_type,
         );
-        
+
 
         $id = $this->sync_insert_data($data, $this->db['posts'], $this->sync_client, $sync);
 
         return $id;
     }
-    
+
     public function clear_utf8($text) {
-      return preg_replace('/[\x{10000}-\x{10FFFF}]/u', "", $text);
+        return preg_replace('/[\x{10000}-\x{10FFFF}]/u', "", $text);
     }
-    
+
     public function add_post_meta($fid = 0, $type = 0, $state = 0, $cid = 0, $rating = 0, $update_top_movie = true) {
         // Validate values        
         if ($fid > 0 && $cid > 0) {
@@ -739,10 +752,10 @@ class CriticMatic extends AbstractDB {
         $date_add = $this->curr_time();
         $link_hash = $this->link_hash($link);
         $top_movie = 0;
-        
+
         //Clear UTF8
         $content = $this->clear_utf8($content);
-        
+
         $data = array(
             'date' => $date,
             'date_add' => $date_add,
@@ -1541,7 +1554,7 @@ class CriticMatic extends AbstractDB {
         $result_id = 0;
         $status = $form_state['status'];
         $from = $form_state['type'];
-        $name = $this->escape($form_state['name']);
+        $name = $form_state['name'];
         $tags = isset($form_state['post_category']) ? $form_state['post_category'] : array();
 
         $options = array();

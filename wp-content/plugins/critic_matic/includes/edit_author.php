@@ -1,7 +1,7 @@
 <h2><a href="<?php print $url ?>"><?php print __('Critic matic') ?></a>. <?php print __('Edit author') ?></h2>
 
 <?php if ($aid) { ?>
-    <h3><?php print __('Author') ?>: [<?php print $aid ?>] <?php print $author->name ?></h3>
+    <h3><?php print __('Author') ?>: [<?php print $aid ?>] <?php print stripslashes($author->name) ?></h3>
     <?php
 }
 
@@ -26,7 +26,7 @@ if ($aid) {
 
                 <label>
                     <span class="title"><?php print __('Name') ?></span>
-                    <span class="input-text-wrap"><input type="text" name="name" value="<?php print $author->name ?>"></span>
+                    <span class="input-text-wrap"><input type="text" name="name" value="<?php print stripslashes($author->name) ?>"></span>
                 </label>
 
 

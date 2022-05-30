@@ -1425,8 +1425,8 @@ class CriticParser extends AbstractDBWp {
         $author = $form_state['author'];
         $type = $form_state['type'];
 
-        $title = $this->escape($form_state['title']);
-        $site = $this->escape($form_state['site']);
+        $title = $form_state['title'];
+        $site = $form_state['site'];
 
         // Yt settings
         if ($type == 1) {
@@ -1440,6 +1440,17 @@ class CriticParser extends AbstractDBWp {
         }
 
         $opt_str = serialize($options);
+        $data = array(
+            'last_update' => $last_update,
+            'update_interval' => $update_interval,
+            'author' => $author,
+            'status' => $status,
+            'type' => $type,
+            'parser_status' => $parser_status,
+            'title' => $title,
+            'site' => $site,
+            'options' => $opt_str,
+        );
 
         if ($id) {
             // EDIT
@@ -1448,43 +1459,13 @@ class CriticParser extends AbstractDBWp {
             }
             $opt_str = serialize($opt_prev);
 
-            $sql = sprintf("UPDATE {$this->db['campaign']} SET 
-                last_update=%d,
-                update_interval=%d,
-                author=%d, 
-                status=%d, 
-                type=%d,
-                parser_status=%d,
-                title='%s', 
-                site='%s',                 
-                options='%s' 
-                WHERE id = %d", $last_update, $update_interval, $author, $status, $type, $parser_status, $title, $site, $opt_str, $id
-            );
+            $data['options'] = $opt_str;
 
-            $this->db_query($sql);
+            $this->db_update($data, $this->db['campaign'], $id);
             $result = $id;
         } else {
             // ADD
-            $this->db_query(sprintf("INSERT INTO {$this->db['campaign']} (
-                date, 
-                last_update, 
-                update_interval,
-                author,
-                status, 
-                type,
-                parser_status,
-                title,
-                site,                
-                options                
-                ) VALUES (
-                %d,%d,%d,%d,%d,%d,%d,'%s','%s','%s')"
-                            . "", $date, $last_update, $update_interval, $author, $status, $type, $parser_status, $title, $site, $opt_str
-            ));
-
-            // Return id
-            $id = $this->getInsertId('id', $this->db['campaign']);
-
-            $result = $id;
+            $result = $this->db_insert($data, $this->db['campaign']);
         }
         return $result;
     }

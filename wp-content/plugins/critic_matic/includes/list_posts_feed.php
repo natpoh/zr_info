@@ -1,7 +1,7 @@
 <h2><a href="<?php print $url ?>"><?php print __('Critic feeds') ?></a>. <?php print __('Posts') ?></h2>
 
 <?php if ($cid) { ?>
-    <h3><?php print __('Campaign') ?>: [<?php print $cid ?>] <?php print $campaign->title ?></h3>
+    <h3><?php print __('Campaign') ?>: [<?php print $cid ?>] <?php print stripslashes($campaign->title) ?></h3>
     <?php
 }
 
@@ -60,7 +60,7 @@ if (sizeof($posts) > 0) {
                         <td><?php print $item->id ?></td>     
                         <td><?php print $this->cm->curr_date($item->date) ?></td>                                           
                         <td>
-                            <?php print $item->title ?>
+                            <?php print stripslashes($item->title) ?>
                             <?php 
                             if ($item->link):
                                 //validate hash

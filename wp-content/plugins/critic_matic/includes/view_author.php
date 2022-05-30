@@ -2,7 +2,7 @@
 
 
 <?php if ($author) { ?>
-    <h3><?php print __('Author') ?>: [<?php print $aid ?>] <?php print $author->name ?></h3>
+    <h3><?php print __('Author') ?>: [<?php print $aid ?>] <?php print stripslashes($author->name) ?></h3>
     <?php
 } else {
     ?>
@@ -55,7 +55,7 @@ if ($aid) {
         <tbody>
             <tr>
                 <td><?php print __('Name') ?></td>
-                <td><?php print $author->name ?></td>
+                <td><?php print stripslashes($author->name) ?></td>
             </tr>
             <tr>
                 <td><?php print __('From') ?></td>

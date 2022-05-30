@@ -62,7 +62,7 @@ if (sizeof($feeds) > 0) {
                         <td><?php print $feed->id ?></td>
                         <td><?php print $this->cf->curr_date($feed->date) ?></td>
                         <td>
-                            <?php print $feed->title ?><br />                    
+                            <?php print stripslashes($feed->title) ?><br />                    
                             <?php
                             $feed_actions = $this->cf->feed_actions();
                             $feed_url = $url . '&cid=' . $feed->id;

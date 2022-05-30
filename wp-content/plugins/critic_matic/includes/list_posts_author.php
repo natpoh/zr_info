@@ -1,7 +1,7 @@
 <h2><a href="<?php print $url ?>"><?php print __('Critic matic') ?></a>. <?php print __('Author posts') ?></h2>
 
 <?php if ($aid) { ?>
-    <h3><?php print __('Author') ?>: [<?php print $aid ?>] <?php print $author->name ?></h3>
+    <h3><?php print __('Author') ?>: [<?php print $aid ?>] <?php print stripslashes($author->name) ?></h3>
     <?php
 }
 
@@ -55,7 +55,7 @@ if (sizeof($posts) > 0) {
                         <td ><?php print $item->id ?></td>     
                         <td ><?php print $this->cm->curr_date($item->date) ?></td>                                           
                         <td>
-                            <?php print $item->title ?><br />
+                            <?php print stripslashes($item->title) ?><br />
                             <a href="<?php print $item->link ?>" target="_blank" title="<?php print $item->link ?>"><?php print substr($item->link, 0, 70) ?></a>
                         </td>
                         <td><?php print $this->cm->crop_text(strip_tags($item->content), 100) ?></td>

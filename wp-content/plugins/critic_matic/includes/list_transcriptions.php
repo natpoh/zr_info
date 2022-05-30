@@ -39,7 +39,7 @@ if (sizeof($posts) > 0) {
                 <td><?php print $item->id ?></td>     
                 <td><?php print $this->cm->curr_date($item->date) ?></td>                                           
                 <td>
-                    <?php print $item->title ?>
+                    <?php print stripslashes($item->title) ?>
                     <?php
                     if ($item->link):
                         //validate hash

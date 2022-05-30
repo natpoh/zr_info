@@ -525,6 +525,7 @@ class CriticMaticAdmin {
         if ($curr_tab == 'home') {
 
             $filters = array(
+                'post_date_add' =>$this->cm->post_date_add,
                 'type' => $this->cm->post_type,
                 'view_type' => $this->cm->post_view_type,
                 'author_type' => $this->cm->author_type,

@@ -1,7 +1,7 @@
 <h2><a href="<?php print $url ?>"><?php print __('Critic parsers') ?></a>. <?php print __('View') ?></h2>
 
 <?php if ($campaign) { ?>
-    <h3><?php print __('Campaign') ?>: [<?php print $cid ?>] <?php print $campaign->title ?></h3>
+    <h3><?php print __('Campaign') ?>: [<?php print $cid ?>] <?php print stripslashes($campaign->title) ?></h3>
     <?php
 } else {
     ?>
@@ -26,7 +26,7 @@ if ($cid) {
         <tbody>
             <tr>
                 <td><?php print __('Title') ?></td>
-                <td><?php print $campaign->title ?></td>
+                <td><?php print stripslashes($campaign->title) ?></td>
             </tr>
             <tr>
                 <td><?php print __('Site') ?></td>
@@ -34,7 +34,7 @@ if ($cid) {
             </tr>
             <tr>
                 <td><?php print __('Author') ?></td>
-                <td><?php print $author->name ?></td>
+                <td><?php print stripslashes($author->name) ?></td>
             </tr>
             <tr>
                 <td><?php print __('Status') ?></td>

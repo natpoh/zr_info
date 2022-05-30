@@ -80,7 +80,7 @@ if (sizeof($posts) > 0) {
                         <td class="mob-hide"><?php print $item->id ?></td>     
                         <td class="mob-hide"><?php print $this->cm->curr_date($item->date) ?></td>                                           
                         <td>
-                            <b><?php print $item->title ?></b><br />        
+                            <b><?php print stripslashes($item->title) ?></b><br />        
                             <?php print $item->content ?>
                             <a href="<?php print $item->link ?>" target="_blank" title="<?php print $item->link ?>"><?php print substr($item->link, 0, 70) ?></a><br />
                             <?php print $post_links ?>

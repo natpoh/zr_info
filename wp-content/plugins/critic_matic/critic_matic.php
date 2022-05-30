@@ -1008,4 +1008,13 @@ WHERE
  UPDATE `data_actors_meta` SET n_verdict=0 WHERE n_verdict IS NULL;
  UPDATE `data_actors_meta` SET gender=0 WHERE gender IS NULL;
  
+ * 
+ * Clear post scripts
+UPDATE wp_bcw98b_critic_matic_posts SET content = REPLACE(content, '<!--Taboola:V2-->  window', '<!--Taboola:V2--><script>window')
+UPDATE wp_bcw98b_critic_matic_posts SET content = REPLACE(content, '(\'tbl_ic\');}</div>', '(\'tbl_ic\');}</script></div>')
+
+
+ * 
+ * 
+ *  *  * 
  */
