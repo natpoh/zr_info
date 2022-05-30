@@ -37,6 +37,19 @@ class Forebears extends MoviesAbstractDBAn {
         'Wales' => 'United Kingdom',
         'West Indies' => 'Cuba',
         'World' => '',
+        'Abkhazia' => 'Russia',
+        'Akrotiri and Dhekelia' => 'United Kingdom',
+        'Congo' => 'Republic of the Congo',
+        'CuraÃ§ao' => 'Netherlands',
+        'East Timor' => 'Timor-Leste',
+        'Ivory Coast' => 'Central African Republic',
+        'North Korea' => 'Korea',
+        'Northern Cyprus' => 'Cyprus',
+        'Northern Ireland' => 'Ireland',
+        'Saint Barthelemy' => 'Saint Barthélemy',
+        'Somaliland' => 'Somalia',
+        'South Ossetia' => 'Georgia',
+        'Transnistria' => 'Moldova',
     );
     public $race_small = array(
         'White' => 1,
@@ -111,17 +124,17 @@ class Forebears extends MoviesAbstractDBAn {
         if ($debug) {
             print_r(array($lastname, $topcountry, $country_meta));
         }
-      
+
         if ($lastname && $topcountry) {
 
             $lastname_id = $this->get_lastname_id($lastname);
 
             if (!$lastname_id) {
-                
+
                 if ($debug) {
                     print "Add lastname $lastname\n";
                 }
-                
+
                 // Add name to db
                 $top_country_id = $this->get_or_create_country($topcountry);
                 $last_name_id = $this->create_lastname($lastname, $top_country_id);
@@ -135,7 +148,7 @@ class Forebears extends MoviesAbstractDBAn {
                         $this->add_country_meta($last_name_id, $c_id, $t);
                     }
                 }
-            } else {                
+            } else {
                 if ($debug) {
                     print "Name already exist, no actions\n";
                 }
