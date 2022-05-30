@@ -33,7 +33,8 @@ if (sizeof($posts) > 0) {
             <thead>
             <td class="manage-column column-cb check-column" ><input type="checkbox" id="cb-select-all-1"></td>
             <?php $this->sorted_head('id', 'id', $orderby, $order, $page_url) ?>                
-            <?php $this->sorted_head('date', 'Date', $orderby, $order, $page_url) ?>                                         
+            <?php $this->sorted_head('date', 'Date', $orderby, $order, $page_url) ?>    
+            <?php $this->sorted_head('date_add', 'Last update', $orderby, $order, $page_url) ?>  
             <?php $this->sorted_head('title', 'Title / Link', $orderby, $order, $page_url) ?>              
             <th><?php print __('Content') ?></th>                 
             <th><?php print __('Author') ?></th> 
@@ -58,7 +59,8 @@ if (sizeof($posts) > 0) {
                     <tr>           
                         <th  class="check-column" ><input type="checkbox" name="bulk-<?php print $item->id ?>"></th>
                         <td><?php print $item->id ?></td>     
-                        <td><?php print $this->cm->curr_date($item->date) ?></td>                                           
+                        <td><?php print $this->cm->curr_date($item->date) ?></td> 
+                        <td><?php print $this->cm->curr_date($item->date_add) ?></td> 
                         <td>
                             <?php print stripslashes($item->title) ?>
                             <?php 
