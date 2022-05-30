@@ -54,7 +54,7 @@ class CriticMatic extends AbstractDB {
         'edit' => 'Edit',
         'trash' => 'Trash',
     );
-    public $post_date_add = array(
+    public $post_update = array(
         1 => 'Today',
         7 => 'Last week',
         30 => 'Last Mounth',
@@ -393,7 +393,8 @@ class CriticMatic extends AbstractDB {
             'author_type' => -1,
             'view_type' => -1,
             'ts' => -1,
-            'post_date_add' => -1,
+            'post_update' => -1,
+            'post_date' => -1,
         );
 
         $q = array();
@@ -408,11 +409,18 @@ class CriticMatic extends AbstractDB {
             $status_query = " WHERE p.status = " . (int) $q['status'];
         }
 
-        // Custom date add
+        // Custom date update
         $and_date_add = '';
-        if ($q['post_date_add'] != -1) {
-            $date_add = $this->curr_time()-(((int)$q['post_date_add'])*86400);
-            $and_date_add = sprintf(" AND p.date_add>%d", $date_add);
+        if ($q['post_update'] != -1) {
+            $date_update = $this->curr_time() - (((int) $q['post_update']) * 86400);
+            $and_date_add = sprintf(" AND p.date_add>%d", $date_update);
+        }
+
+        // Custom date 
+        $and_date = '';
+        if ($q['post_date'] != -1) {
+            $date_add = $this->curr_time() - (((int) $q['post_date']) * 86400);
+            $and_date = sprintf(" AND p.date>%d", $date_add);
         }
 
         // Feed company id
@@ -504,7 +512,7 @@ class CriticMatic extends AbstractDB {
         $sql = "SELECT" . $select
                 . " FROM {$this->db['posts']} p"
                 . " LEFT JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
-                . $atype_inner . $cid_inner . $ts_inner . $status_query . $cid_and . $and_date_add. $aid_and . $type_and . $view_type_and . $ts_and . $meta_type_and . $atype_and . $and_orderby . $limit;
+                . $atype_inner . $cid_inner . $ts_inner . $status_query . $cid_and . $and_date_add .$and_date. $aid_and . $type_and . $view_type_and . $ts_and . $meta_type_and . $atype_and . $and_orderby . $limit;
 
 
         if (!$count) {

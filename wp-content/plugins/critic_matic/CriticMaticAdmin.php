@@ -525,7 +525,8 @@ class CriticMaticAdmin {
         if ($curr_tab == 'home') {
 
             $filters = array(
-                'post_date_add' => $this->cm->post_date_add,
+                'post_update' => $this->cm->post_update,
+                'post_date' => $this->cm->post_update,
                 'type' => $this->cm->post_type,
                 'view_type' => $this->cm->post_view_type,
                 'author_type' => $this->cm->author_type,
@@ -551,7 +552,8 @@ class CriticMaticAdmin {
             $page_url .= '&tab=' . $curr_tab;
 
             $filters = array(
-                'post_date_add' => $this->cm->post_date_add,
+                'post_update' => $this->cm->post_update,
+                'post_date' => $this->cm->post_update,
                 'type' => $this->cm->post_type,
                 'view_type' => $this->cm->post_view_type,
                 'author_type' => $this->cm->author_type,
@@ -2220,7 +2222,8 @@ class CriticMaticAdmin {
         }
 
         $filters = array(
-            'post_date_add' => $this->cm->post_date_add,
+            'post_update' => $this->cm->post_update,
+            'post_date' => $this->cm->post_update,
             'type' => $this->cm->post_type,
             'view_type' => $this->cm->post_view_type,
             'author_type' => $this->cm->author_type,
