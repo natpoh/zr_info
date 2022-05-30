@@ -44,11 +44,11 @@ class AbstractDBWp extends AbstractFunctions {
     }
 
     public function db_update($data, $table, $id) {
-        return Pdo_an::db_update($data, $table, $id);
+        return Pdo_wp::db_update($data, $table, $id);
     }
 
     public function db_insert($data, $table) {
-        return Pdo_an::db_insert($data, $table);
+        return Pdo_wp::db_insert($data, $table);
     }
 
 }

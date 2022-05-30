@@ -1421,7 +1421,7 @@ class CriticParser extends AbstractDBWp {
 
         $last_update = $date = $this->curr_time();
         $update_interval = isset($form_state['interval']) ? $form_state['interval'] : $def_opt['interval'];
-        $parser_status = $form_state['parser_status'];
+        $parser_status = $form_state['parser_status']?$form_state['parser_status']:0;
         $author = $form_state['author'];
         $type = $form_state['type'];
 
@@ -1465,6 +1465,7 @@ class CriticParser extends AbstractDBWp {
             $result = $id;
         } else {
             // ADD
+            $data['date'] = $date;            
             $result = $this->db_insert($data, $this->db['campaign']);
         }
         return $result;
