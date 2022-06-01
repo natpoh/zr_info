@@ -25,7 +25,6 @@ $array_tables = array('data_familysearch_verdict', 'data_forebears_verdict');
 
 foreach ($array_tables as $table)
 {
-
     Import::sync_db($table);
 }
 
