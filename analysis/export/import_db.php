@@ -95,10 +95,10 @@ class Import
 
     public static function get_data_from_db($db,$start=0,$limit=100,$row = 'id')
     {
+        if (!$start)$start=0;
 
         $q ="SELECT {$row} FROM {$db} order by {$row} asc LIMIT {$start}, {$limit}";
 
-        echo $q;
         $r = Pdo_an::db_results_array($q);
         return $r;
 
