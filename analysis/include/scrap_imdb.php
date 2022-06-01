@@ -191,7 +191,7 @@ $sql = "select * from data_actors_meta ".$where." ";
 
     $rows = Pdo_an::db_results_array($sql);
     ///echo 'count = '.count($rows).'<br>';
-    $array_verdict = array('crowdsource','ethnic','jew','kairos','bettaface','placebirth','surname','familysearch');
+    $array_verdict = array('crowdsource','ethnic','jew','kairos','bettaface','placebirth','surname','familysearch','forebears');
     $array_exclude = array('NJW');
     foreach ($rows as $row)
     {
@@ -473,8 +473,6 @@ function get_family($data='')
                   Pdo_an::db_query($sql1);
 
                   update_actors_verdict($i);
-                  ACTIONLOG::update_actor_log('kairos');
-
               }
           }
 
@@ -484,7 +482,82 @@ function get_family($data='')
 
 
 }
+function get_forebears($data='')
+{
 
+
+    $race_small = array(
+        1 =>'W',
+        2 => 'EA',
+        3 =>'H',
+        4 =>'B',
+        5 => 'I',
+        6 => 'M' ,
+        7 => 'MIX',
+        8 =>'JW' ,
+        9 => 'IND',
+    );
+
+
+    if ($data)
+    {
+
+        $data = intval($data);
+        $sql =  "SELECT * FROM `data_forebears_verdict` WHERE `id` = {$data} ";
+        $rows = Pdo_an::db_results_array($sql);
+
+    }
+    else {
+
+        $last_id = get_last_options(19);
+
+        if (!$last_id) $last_id = 0;
+
+        $sql = "SELECT * FROM `data_forebears_verdict` WHERE `id` > {$last_id} limit 200";
+        $rows = Pdo_an::db_results_array($sql);
+
+    }
+
+
+    foreach ($rows as $r)
+    {
+
+        $family_id = $r['id'];
+        $lastname =  $r['lastname'];
+        $verdict  =  $r['verdict'];
+
+        echo $family_id.' lastname='.$lastname.'<br>';
+
+
+        if ($lastname) {
+
+            /////get all actors
+            $sql = "SELECT aid FROM `data_actors_normalize` WHERE  `lastname` = '" . $lastname . "' order by id ASC";
+            $result = Pdo_an::db_results_array($sql);
+            foreach ($result as $val) {
+                $i = $val['aid'];
+
+
+                ///update data
+                $fm = $race_small[$verdict];
+
+                $sql1 = "UPDATE `data_actors_meta` SET `forebears` = '" . $fm . "'  , `n_forebears` = '" . intconvert($fm) . "',
+                 `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $i. "'";
+
+                //echo $sql1.'<br>';
+
+                Pdo_an::db_query($sql1);
+
+                update_actors_verdict($i);
+            }
+        }
+
+        set_option(19, $family_id);
+    }
+
+
+
+}
 
 function set_tmdb_actors_for_movies()
 {
@@ -2663,6 +2736,14 @@ if (isset($_GET['get_family'])) {
 
     return;
 }
+if (isset($_GET['get_forebears'])) {
+
+    get_forebears($_GET['get_forebears']);
+
+    return;
+}
+
+
 
 
 if (isset($_GET['disqus_comments'])) {

@@ -18,20 +18,20 @@ $array_jobs = array(
 
 'check_tmdb_data'=>15,///update country and poster from tmdb
 'add_gender_rating'=>15,///add new gender rating
-'check_tv_series_imdb'=>15, ///add tvseries from list
-'add_pgrating'=>30,////add pg rating
 
+'add_pgrating'=>30,////add pg rating
+'add_to_db_from_userlist'=>60,///add new movies from user vote list //// !not sync
 'add_providers'=>30,
 'update_imdb_data'=>30,//update movies
 'disqus_comments'=>30, ///disquss count comments
 'get_family'=>10, //family to actors meta
-
+'get_forebears'=>10, //forebears to actors meta
 'download_crowd_images'=>60,///load image to server from crowdsource status 1
 'update_actors_verdict'=>30,///update verdict actors
 'set_tmdb_actors_for_movies'=>30,////update tmdb actors from japan anime
 
 'update_all_rwt_rating'=>60,////update all rating
-'add_to_db_from_userlist'=>60,///add new movies from user vote list //// !not sync
+'check_tv_series_imdb'=>120, ///add tvseries from list
 
 'get_new_movies'=>(60*12),///add new movies from fandango
 'get_new_tv'=>(60*12),///add new tv from tmdb
