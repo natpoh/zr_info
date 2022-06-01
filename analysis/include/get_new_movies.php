@@ -112,6 +112,10 @@ class GETNEWMOVIES{
 
             $sql = "INSERT INTO `options`  VALUES (14,?)";
             Pdo_an::db_results_array($sql,array($result));
+
+            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+            Import::create_commit('', 'update', 'options', array('id' => 14), 'options',7);
+
             echo 'updated';
         }
 
@@ -273,6 +277,12 @@ class GETNEWMOVIES{
 
             $sql = "INSERT INTO `options`  VALUES (13,?)";
             Pdo_an::db_results_array($sql,array($result));
+
+
+            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+            Import::create_commit('', 'update', 'options', array('id' => 13), 'options',7);
+
+
             echo 'updated';
         }
 

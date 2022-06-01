@@ -79,9 +79,13 @@ class Pdoa {
             $val_str[] = "?";
         }
         $sql = "INSERT INTO {$table} (" . implode(",", $keys) . ") VALUES (" . implode(",", $val_str) . ")";
+        //print_r($data);
+        //print_r($sql);
         static::connect();
         $sth = static::$pdo->prepare($sql);
         $sth->execute($values);
+        // $arr = $sth->errorInfo();
+        // print_r($arr);
     }
 
     public static function db_update($data, $table, $id) {
