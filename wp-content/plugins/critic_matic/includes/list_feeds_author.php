@@ -1,7 +1,7 @@
 <h2><a href="<?php print $url ?>"><?php print __('Critic matic') ?></a>. <?php print __('Author feeds') ?></h2>
 
 <?php if ($aid) { ?>
-    <h3><?php print __('Author') ?>: [<?php print $aid ?>] <?php print $author->name ?></h3>
+    <h3><?php print __('Author') ?>: [<?php print $aid ?>] <?php print stripslashes($author->name) ?></h3>
     <?php
 }
 
@@ -46,7 +46,7 @@ if (sizeof($feeds) > 0) {
                 <td><?php print $feed->id ?></td>
                 <td><?php print $this->cf->curr_date($feed->date) ?></td>
                 <td>
-                    <?php print $feed->title ?><br />                    
+                    <?php print stripslashes($feed->title) ?><br />                    
                     <?php
                     $feed_actions = $this->cf->feed_actions();
                     $feed_url = $this->admin_page . $this->feeds_url . '&cid=' . $feed->id;

@@ -85,8 +85,8 @@ class CriticMaticAdmin {
         'trash_campaign' => 'Trash campaigns',
         'active_parser' => 'Active parser',
         'inactive_parser' => 'Inactive parser',
-        /*'active_find' => 'Active find urls',
-        'inactive_find' => 'Inactive find urls'*/
+            /* 'active_find' => 'Active find urls',
+              'inactive_find' => 'Inactive find urls' */
     );
     public $per_pages = array(30, 100, 500, 1000);
 
@@ -525,6 +525,8 @@ class CriticMaticAdmin {
         if ($curr_tab == 'home') {
 
             $filters = array(
+                'post_update' => $this->cm->post_update,
+                'post_date' => $this->cm->post_update,
                 'type' => $this->cm->post_type,
                 'view_type' => $this->cm->post_view_type,
                 'author_type' => $this->cm->author_type,
@@ -548,8 +550,10 @@ class CriticMaticAdmin {
         } else if ($curr_tab == 'details') {
 
             $page_url .= '&tab=' . $curr_tab;
-            
+
             $filters = array(
+                'post_update' => $this->cm->post_update,
+                'post_date' => $this->cm->post_update,
                 'type' => $this->cm->post_type,
                 'view_type' => $this->cm->post_view_type,
                 'author_type' => $this->cm->author_type,
@@ -2218,6 +2222,8 @@ class CriticMaticAdmin {
         }
 
         $filters = array(
+            'post_update' => $this->cm->post_update,
+            'post_date' => $this->cm->post_update,
             'type' => $this->cm->post_type,
             'view_type' => $this->cm->post_view_type,
             'author_type' => $this->cm->author_type,
@@ -2889,9 +2895,9 @@ class CriticMaticAdmin {
                     }
                 } else if ($b == 'start_feed' || $b == 'stop_feed' || $b == 'trash_feed') {
                     $changed = $this->cf->bulk_change_campaign_status($ids, $b);
-                } else if (in_array($b, array_keys($this->bulk_actions_parser))) {                    
+                } else if (in_array($b, array_keys($this->bulk_actions_parser))) {
                     $changed = $this->cp->bulk_change_campaign_status($ids, $b);
-                }  else {
+                } else {
                     // Change status
                     $updated = false;
                     $status = 1;

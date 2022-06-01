@@ -50,7 +50,7 @@ class AbstractFunctions {
         }
 
         if (!$update) {
-            $last_id = $this->getInsertId('id', $db);
+            $last_id = $this->getInsertId('id', $db);           
             $this->db_insert($data, $db);
             $id = $this->getInsertId('id', $db);
             if ($id==$last_id){

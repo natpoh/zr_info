@@ -1,7 +1,7 @@
 <h2><a href="<?php print $url ?>"><?php print __('Critic feeds') ?></a>. <?php print __('Log') ?> <small>(<?php print $count ?>)</small></h2>
 
 <?php if ($cid){?>
-<h3><?php print __('Campaign') ?>: [<?php print $cid ?>] <?php print $campaign->title ?></h3>
+<h3><?php print __('Campaign') ?>: [<?php print $cid ?>] <?php print stripslashes($campaign->title) ?></h3>
 <?php }
 
 print $tabs;

@@ -78,7 +78,7 @@ if (sizeof($campaigns) > 0) {
                         <td><?php print $parser->id ?></td>
                         <td><?php print $this->cp->curr_date($parser->date) ?></td>
                         <td>
-                            <?php print $parser->title ?><br />                    
+                            <?php print stripslashes($parser->title) ?><br />                    
                             <?php
                             $parser_actions = $this->cp->parser_actions();
                             $parser_url = $url . '&cid=' . $parser->id;

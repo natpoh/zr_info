@@ -1,5 +1,4 @@
 <?php
-
 require_once($_SERVER['DOCUMENT_ROOT'] . '/wp-config.php');
 nocache_headers();
 
@@ -13,28 +12,14 @@ if ($_GET['p'] != $p) {
     return;
 }
 
-$count = 10;
+$count = 100;
 if ($_GET['c']) {
     $count = (int) $_GET['c'];
 }
 
-$cid = 0;
-if ($_GET['cid']) {
-    $cid = (int) $_GET['cid'];
-}
-
-if (!$cid) {
-    return;
-}
-
 $debug = false;
 if ($_GET['debug']) {
-    $debug = true;
-}
-
-$force = false;
-if ($_GET['force']) {
-    $force = true;
+    $debug=true;
 }
 
 if (!class_exists('MoviesLinks')) {
@@ -42,12 +27,14 @@ if (!class_exists('MoviesLinks')) {
     require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractDBAn.php' );
     require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractDB.php' );
     require_once( MOVIES_LINKS_PLUGIN_DIR . 'MoviesLinks.php' );
-    require_once( MOVIES_LINKS_PLUGIN_DIR . 'MoviesCustomHooksCron.php' );
 }
 
-/*
- * Run custom hooks from campaigns
- */
+$ml = new MoviesLinks();
 
-$ac = new MoviesCustomHooksCron();
-$ac->run_cron($count, $cid, $debug, $force);
+$campaign = new stdClass();
+$campaign->title = 'forebears.io';
+
+$fs = $ml->get_campaing_mlr($campaign);
+
+$simpson = true;
+$fs->cron_actor_verdict($count,$simpson,$debug);

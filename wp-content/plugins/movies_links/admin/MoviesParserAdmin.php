@@ -773,7 +773,7 @@ class MoviesParserAdmin extends ItemAdmin {
                 'proxy' => isset($form_state['proxy']) ? $form_state['proxy'] : 0,
                 'webdrivers' => isset($form_state['webdrivers']) ? $form_state['webdrivers'] : 0,
                 'random' => isset($form_state['random']) ? $form_state['random'] : 0,
-                'del_pea' => isset($form_state['del_pea']) ? $form_state['del_pea'] : 0,                
+                'del_pea' => isset($form_state['del_pea']) ? $form_state['del_pea'] : 0,
                 'del_pea_int' => isset($form_state['del_pea_int']) ? $form_state['del_pea_int'] : $opt_prev['arhive']['del_pea_int'],
             );
 
@@ -827,22 +827,19 @@ class MoviesParserAdmin extends ItemAdmin {
 
             $id = $form_state['id'];
             $campaign = $this->mp->get_campaign($id);
-            $opt_prev = unserialize($campaign->options);
-
-            $parsing = array(
-                'interval' => isset($form_state['interval']) ? $form_state['interval'] : $opt_prev['links']['interval'],
-                'num' => isset($form_state['num']) ? $form_state['num'] : $opt_prev['links']['num'],
-                'pr_num' => isset($form_state['pr_num']) ? $form_state['pr_num'] : 5,
-                'status' => isset($form_state['status']) ? $form_state['status'] : 0,
-                'match' => isset($form_state['match']) ? $form_state['match'] : 0,
-                'type' => isset($form_state['type']) ? $form_state['type'] : $opt_prev['links']['type'],
-                'rating' => isset($form_state['rating']) ? $form_state['rating'] : 0,
-                'last_id' => isset($form_state['last_id']) ? $form_state['last_id'] : 0,
-                'rules' => $this->links_rules_form($form_state),
-            );
+            $opt_prev = $this->mp->get_options($campaign);
 
             $options = $opt_prev;
 
+            // Update option logic 27.05.2022
+            $parsing = $options['links'];            
+            $form_fields = array_keys($opt_prev['links']);
+            foreach ($form_fields as $field) {
+                if (isset($form_state[$field])) {
+                    $parsing[$field] = $form_state[$field];
+                }
+            }
+            $parsing['rules'] = $this->links_rules_form($form_state);
             $options['links'] = $parsing;
 
             $this->mp->update_campaign_options($id, $options);

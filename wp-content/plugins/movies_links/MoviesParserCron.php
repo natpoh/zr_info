@@ -329,7 +329,7 @@ class MoviesParserCron extends MoviesAbstractDB {
                             $message = "Found author link: name: " . $post->title . "; aid: $find_last; rating: $rating";
                             $this->mp->log_info($message, $cid, $post->uid, 4);
 
-                            $mch->add_actors($campaign, $post, $valid_actors);
+                            $mch->add_actors($campaign, $post);
                         } else {
                             $this->mp->update_post_status($post->uid, 2);
                             $message = 'Found posts is not valid';

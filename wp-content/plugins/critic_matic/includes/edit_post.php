@@ -44,7 +44,7 @@ if ($pid) {
                                     ?>
 
                                     <option value="<?php print $author->id ?>" <?php print $selected ?> >
-                                        <?php print $author->name ?> (<?php print $this->cm->get_author_type($author->type) ?>)
+                                        <?php print stripslashes($author->name) ?> (<?php print $this->cm->get_author_type($author->type) ?>)
                                     </option>                                
                                     <?php
                                 }

@@ -9,7 +9,6 @@
 </form>
 <?php
 //print $filters_author_type;
-
 ?>
 <?php
 if (sizeof($posts) > 0) {
@@ -19,7 +18,8 @@ if (sizeof($posts) > 0) {
         <thead>
             <tr>
                 <?php $this->sorted_head('id', 'id', $orderby, $order, $page_url) ?>                
-                <?php $this->sorted_head('date', 'Date', $orderby, $order, $page_url) ?>                                         
+                <?php $this->sorted_head('date', 'Date', $orderby, $order, $page_url) ?> 
+                <?php $this->sorted_head('date_add', 'Last update', $orderby, $order, $page_url) ?>  
                 <?php $this->sorted_head('title', 'Title / Link', $orderby, $order, $page_url) ?>                
                 <th><?php print __('Content') ?></th>                 
                 <th><?php print __('Author') ?></th>                                       
@@ -72,7 +72,8 @@ if (sizeof($posts) > 0) {
                 ?>
                 <tr>
                     <td class="mob-hide"><?php print $item->id ?></td>     
-                    <td class="mob-hide"><?php print $this->cm->curr_date($item->date) ?></td>                                           
+                    <td class="mob-hide"><?php print $this->cm->curr_date($item->date) ?></td>   
+                    <td><?php print $this->cm->curr_date($item->date_add) ?></td> 
                     <td>
                         <?php print $search_item->t ?><br />
                         <a href="<?php print $item->link ?>" target="_blank" title="<?php print $item->link ?>"><?php print substr($item->link, 0, 70) ?></a><br />
@@ -92,15 +93,14 @@ if (sizeof($posts) > 0) {
                         }
                         ?></td> 
                     <td><?php
-                        print sizeof($movies);
+                print sizeof($movies);
                         ?>
                     </td> 
                     <td><?php print $this->cm->get_post_status($item->status) ?></td>
                     <td><?php
-                        $item_type = $this->cm->get_post_type($item->type);
+                $item_type = $this->cm->get_post_type($item->type);
 
-                        print $item_type;
-                   
+                print $item_type;
                         ?></td>
                     <td><?php print $this->cs->critic_in_index($item->id) ? 'Index' : 'Not'; ?></td>
                 </tr> 

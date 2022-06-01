@@ -1,7 +1,7 @@
 <h2><a href="<?php print $url ?>"><?php print __('Critic parsers') ?></a>. <?php print __('Edit') ?></h2>
 
 <?php if ($cid) { ?>
-    <h3><?php print __('Campaign') ?>: [<?php print $cid ?>] <?php print $campaign->title ?></h3>
+    <h3><?php print __('Campaign') ?>: [<?php print $cid ?>] <?php print stripslashes($campaign->title) ?></h3>
     <?php
 }
 
@@ -21,7 +21,7 @@ if ($cid) {
 
                 <label>
                     <span class="title"><?php print __('Title') ?></span>
-                    <span class="input-text-wrap"><input type="text" name="title" class="title" value="<?php print $campaign->title ?>"></span>
+                    <span class="input-text-wrap"><input type="text" name="title" class="title" value="<?php print stripslashes($campaign->title) ?>"></span>
                 </label>
 
                 <label>
@@ -37,7 +37,7 @@ if ($cid) {
                             foreach ($authors as $author) {
                                 $selected = ($author->id == $campaign->author) ? 'selected' : '';
                                 ?>
-                                <option value="<?php print $author->id ?>" <?php print $selected ?> ><?php print $author->name ?></option>                                
+                                <option value="<?php print $author->id ?>" <?php print $selected ?> ><?php print stripslashes($author->name) ?></option>                                
                                 <?php
                             }
                         }

@@ -2,7 +2,7 @@
 
 
 <?php if ($cid) { ?>
-    <h3><?php print __('Campaign') ?>: [<?php print $cid ?>] <?php print $campaign->title ?></h3>
+    <h3><?php print __('Campaign') ?>: [<?php print $cid ?>] <?php print stripslashes($campaign->title) ?></h3>
     <?php
 }
 

@@ -26,7 +26,7 @@
                     if (sizeof($authors)) {
                         foreach ($authors as $author) {
                             ?>
-                            <option value="<?php print $author->id ?>"><?php print $author->name ?></option>                                
+                            <option value="<?php print $author->id ?>"><?php print stripslashes($author->name) ?></option>                                
                             <?php
                         }
                     }

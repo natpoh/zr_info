@@ -45,7 +45,7 @@ if (sizeof($posts) > 0) {
                     <td class="mob-hide"><?php print $item->id ?></td>     
                     <td class="mob-hide"><?php print $this->cm->curr_date($item->date) ?></td>                                           
                     <td>
-                        <b><?php print $item->title ?></b><br />        
+                        <b><?php print stripslashes($item->title) ?></b><br />        
                         <?php print $item->content ?>                       
                     </td> 
                     <td><?php
