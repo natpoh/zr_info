@@ -97,6 +97,8 @@ class Import
     {
 
         $q ="SELECT {$row} FROM {$db} order by {$row} asc LIMIT {$start}, {$limit}";
+
+        echo $q;
         $r = Pdo_an::db_results_array($q);
         return $r;
 
@@ -109,17 +111,21 @@ class Import
 
         ////get last id
 
-        $last_id = self::get_last_id($db);
+        $last_id_array = self::get_last_id($db);
 
-        $remote_id = self::get_remote_last_id($db);
+        $last_id =$last_id_array['id'];
 
+        $remote_id_array = self::get_remote_last_id($db);
+
+
+        $remote_id=$remote_id_array['id'];
 
         if ($last_id>$remote_id)
         {
 
             ///add new id
 
-            $r = self::get_data_from_db($db,$last_id);
+            $r = self::get_data_from_db($db,$remote_id);
 
             foreach ($r as $d)
             {
@@ -129,11 +135,15 @@ class Import
 
                 ///check commit
                 $rs =  self::check_status_commit($name);
+
+
                 if (!$rs) {
                     self::create_commit($name, 'update', $db, array('id' => $d['id']), 'sync_'.$db,30);
                 }
             }
+            echo $db.' updated<br>';
         }
+        else echo $db.' '. $last_id.' = '.$remote_id.'<br>';
     }
 
 
