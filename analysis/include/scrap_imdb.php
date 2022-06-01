@@ -16,6 +16,23 @@ if (!defined('ABSPATH'))
 /////////add rating
 
 
+function sync_tables()
+{
+$array_tables = array('data_familysearch_verdict', 'data_forebears_verdict');
+
+!class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+
+
+foreach ($array_tables as $table)
+{
+
+    Import::sync_db($table);
+}
+
+
+}
+
+
 function get_array($id='')
 {
 
@@ -509,7 +526,7 @@ function get_forebears($data='')
     }
     else {
 
-        $last_id = get_last_options(19);
+        $last_id = get_last_options(20);
 
         if (!$last_id) $last_id = 0;
 
@@ -552,7 +569,7 @@ function get_forebears($data='')
             }
         }
 
-        set_option(19, $family_id);
+        set_option(20, $family_id);
     }
 
 
@@ -2763,6 +2780,17 @@ if (isset($_GET['check_curl'])) {
 
     $Result = GETCURL::getCurlCookie($_GET['check_curl'],'172.17.0.1:8118');
     echo $Result;
+
+    return;
+}
+
+
+if (isset($_GET['check_sync'])) {
+
+
+    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+    Import::sync_db($_GET['check_sync']);
+
 
     return;
 }
