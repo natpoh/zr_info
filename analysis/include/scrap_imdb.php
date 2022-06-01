@@ -25,6 +25,7 @@ $array_tables = array('data_familysearch_verdict', 'data_forebears_verdict');
 
 foreach ($array_tables as $table)
 {
+
     Import::sync_db($table);
 }
 
@@ -2793,6 +2794,14 @@ if (isset($_GET['check_sync'])) {
 
     return;
 }
+if (isset($_GET['sync_tables'])) {
+
+
+  sync_tables();
+
+    return;
+}
+
 
 
 echo 'ok';
