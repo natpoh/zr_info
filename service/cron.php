@@ -34,7 +34,7 @@ $array_jobs = array(
 'check_tv_series_imdb'=>120, ///add tvseries from list
 
 
-'sync_tables'=>60, ///sync all remote tables
+'sync_tables'=>20, ///sync all remote tables
 
 'get_new_movies'=>(60*12),///add new movies from fandango
 'get_new_tv'=>(60*12),///add new tv from tmdb
