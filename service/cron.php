@@ -27,7 +27,7 @@ $array_jobs = array(
 
 'download_crowd_images'=>60,///load image to server from crowdsource status 1
 'update_actors_verdict'=>30,///update verdict actors
-'set_tmdb_actors_for_movies'=>30,////update tmdb actors from japan anime
+
 
 'update_all_rwt_rating'=>60,////update all rating
 'check_tv_series_imdb'=>120, ///add tvseries from list
@@ -50,8 +50,8 @@ $array_jobs = array(
     'sync_tables'=>20, ///sync all remote tables
     'get_family'=>10, //family to actors meta
     'get_forebears'=>10, //forebears to actors meta
+    'set_tmdb_actors_for_movies'=>30,////update tmdb actors from japan anime
 
-    
 ///'add_rating'=>10,  ////add new rating to movies (old version)
 //'check_tvexport'=>10
 );
