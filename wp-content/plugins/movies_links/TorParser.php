@@ -119,7 +119,7 @@ class TorParser extends MoviesAbstractDB {
                 $this->log_error($message, $log_data);
 
                 $message = 'Parsing error ' . $status;
-                $this->reboot_service($log_data['driver'], $message);
+                $this->reboot_service($log_data['driver'], $message, false, $debug);
             }
         }
         return $content;
@@ -201,20 +201,8 @@ class TorParser extends MoviesAbstractDB {
                 }
 
                 if ($hour || $day) {
-                    // Do not reboot a new service                    
-                    $last_reboot = $service->last_reboot;
-                    $service_life_time = $curr_time - $last_reboot;
-                    if ($service_life_time > $this->service_min_life_time) {
-                        // Hour limit. Reboot
-                        if ($debug) {
-                            print "Reboot\n";
-                        }
-                        $this->reboot_service($service_id, $message);
-                    } else {
-                        if ($debug) {
-                            print "No reboot\n";
-                        }
-                    }
+                    // Do not reboot a new service
+                    $this->reboot_service($service_id, $message, false, $debug);                                        
                     if ($debug) {
                         print $message . "\n";
                     }
@@ -421,9 +409,27 @@ class TorParser extends MoviesAbstractDB {
         return false;
     }
 
-    public function reboot_service($id, $reboot_message = '') {
+    public function reboot_service($id, $reboot_message = '', $force = false, $debug = false) {
         // 1. Add reboot hook
+        $curr_time = $this->curr_time();
         $service = $this->get_service($id, true);
+
+        if (!$force) {
+            $last_reboot = $service->last_reboot;
+            $service_life_time = $curr_time - $last_reboot;
+            if ($service_life_time > $this->service_min_life_time) {
+                // Hour limit. Reboot
+                if ($debug) {
+                    print "Reboot\n";
+                }
+            } else {
+                if ($debug) {
+                    print "No reboot\n";
+                }
+                return false;
+            }
+        }
+
         $name = $service->name;
         $tor_path = $this->tor_reboot_dir . '/' . $name;
 

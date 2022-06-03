@@ -268,7 +268,7 @@ class TorAdmin extends ItemAdmin {
                     }
                 } else if ($b == 'tor_reboot') {
                     foreach ($ids as $id) {
-                        $this->tp->reboot_service($id, 'Manual');
+                        $this->tp->reboot_service($id, 'Manual', true, false);
                     }
                 }
             }
