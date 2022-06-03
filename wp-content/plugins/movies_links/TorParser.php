@@ -108,7 +108,7 @@ class TorParser extends MoviesAbstractDB {
                 print_r($log_data);
             }
 
-            if ($status == 200) {
+            if ($status == 200 || $status == 301) {
                 $content = $data;
                 // Add log
                 $message = 'Parser URL';
@@ -118,7 +118,7 @@ class TorParser extends MoviesAbstractDB {
                 $message = 'Error parser URL: ' . $status;
                 $this->log_error($message, $log_data);
 
-                $message = 'Parsing error '.$status;
+                $message = 'Parsing error ' . $status;
                 $this->reboot_service($log_data['driver'], $message);
             }
         }
@@ -1008,6 +1008,8 @@ class TorParser extends MoviesAbstractDB {
     }
 
     public function curl($url, &$header = '') {
+        $ss = $settings ? $settings : array();
+        $curl_user_agent = isset($ss['parser_user_agent']) ? $ss['parser_user_agent'] : '';
 
         $ch = curl_init();
 
@@ -1019,12 +1021,19 @@ class TorParser extends MoviesAbstractDB {
         curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 60);
         curl_setopt($ch, CURLOPT_TIMEOUT, 60);
-
+        if ($curl_user_agent) {
+            curl_setopt($ch, CURLOPT_USERAGENT, $curl_user_agent);
+        }
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 
-        curl_setopt($ch, CURLINFO_HEADER_OUT, true); // enable tracking
+        $cookie_path = isset($ss['parser_cookie_path']) ? $ss['parser_cookie_path'] : '';
 
+        if ($cookie_path) {
+            curl_setopt($ch, CURLOPT_COOKIEJAR, $cookie_path);
+            curl_setopt($ch, CURLOPT_COOKIEFILE, $cookie_path);
+        }
+        curl_setopt($ch, CURLINFO_HEADER_OUT, true); // enable tracking
         // No cache
         curl_setopt($ch, CURLOPT_HTTPHEADER, array("Cache-Control: no-cache"));
         curl_setopt($ch, CURLOPT_FRESH_CONNECT, TRUE);
