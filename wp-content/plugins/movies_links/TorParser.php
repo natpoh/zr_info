@@ -235,6 +235,8 @@ class TorParser extends MoviesAbstractDB {
         $sql = "SELECT ip FROM {$this->db['log']} WHERE status=1 AND type=0 AND IP IN(" . implode(',', $ip_ids) . ") ORDER BY date DESC LIMIT 1";
         $last_ip = $this->db_get_var($sql);
         if (!$last_ip) {
+            // Random ip from ids
+            shuffle($ip_ids);
             $last_ip = current($ip_ids);
         }
 
