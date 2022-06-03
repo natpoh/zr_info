@@ -452,12 +452,17 @@ class MoviesParserCron extends MoviesAbstractDB {
         $first_letter = substr($link_hash, 0, 1);
 
         $settings = $this->ml->get_settings();
-        if ($use_webdriver) {
+        if ($use_webdriver == 1) {
+            // Webdriver
             $code = $this->mp->get_webdriver($url, $headers, $settings);
+        } else if ($use_webdriver == 2) {
+            // Tor webdriver
+            $tp = $this->ml->get_tp();            
+            $code = $tp->get_url_content($url, $headers);
         } else {
             $code = $this->mp->get_proxy($url, $use_proxy, $headers, $settings);
         }
-
+        
         if (preg_match('/HTTP\/1\.1[^\d]+403/', $headers)) {
             // Status - 403 error
             $status = 4;

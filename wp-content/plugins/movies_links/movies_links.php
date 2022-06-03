@@ -19,6 +19,7 @@
  * - parse page and find attributes
  * - link pages to movies
  * 
+ * Dove mlr class
  * 
  */
 
@@ -214,39 +215,42 @@ function movies_links_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
+    movies_links_create_index(array('url'), 'tor_dst_url');
 
     $sql = "CREATE TABLE IF NOT EXISTS  `tor_user_agents`(
 				`id` int(11) unsigned NOT NULL auto_increment,                                                               
-                                `user_agent` text default NULL,
+                                `user_agent` varchar(255) NOT NULL default '',
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
+    movies_links_create_index(array('user_agent'), 'tor_user_agents');
 
-    $sql = "CREATE TABLE IF NOT EXISTS  `tor_url_meta`(
-				`id` int(11) unsigned NOT NULL auto_increment,                                                               
-                                `driver` int(11) NOT NULL DEFAULT '0',
-                                `url` int(11) NOT NULL DEFAULT '0',
-                                `status` int(11) NOT NULL DEFAULT '0',
+    $sql = "CREATE TABLE IF NOT EXISTS  `tor_ip_meta`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                                                                               
+                                `ip` int(11) NOT NULL DEFAULT '0',
+                                `agent` int(11) NOT NULL DEFAULT '0',
                                 `date` int(11) NOT NULL DEFAULT '0',
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
-    movies_links_create_index(array('driver', 'url', 'status'), 'tor_url_meta');
+    movies_links_create_index(array('ip', 'agent', 'date'), 'tor_ip_meta');
 
     // Tor log
     $sql = "CREATE TABLE IF NOT EXISTS  `tor_log`(
 				`id` int(11) unsigned NOT NULL auto_increment,				
                                 `date` int(11) NOT NULL DEFAULT '0',
                                 `driver` int(11) NOT NULL DEFAULT '0',
-                                `url` int(11) NOT NULL DEFAULT '0',
+                                `ip` int(11) NOT NULL DEFAULT '0',
+                                `agent` int(11) NOT NULL DEFAULT '0',                                
+                                `url` int(11) NOT NULL DEFAULT '0',                                
                                 `type` int(11) NOT NULL DEFAULT '0',
-                                `status` int(11) NOT NULL DEFAULT '0',
-                                `link` varchar(255) NOT NULL default '',
+                                `status` int(11) NOT NULL DEFAULT '0',                                
 				`message` varchar(255) NOT NULL default '',				
+                                `dst_url` text default NULL,   			
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
-    movies_links_create_index(array('date', 'driver', 'url', 'type', 'status'), 'tor_log');
+    movies_links_create_index(array('date', 'driver', 'url', 'ip','agent', 'type', 'status'), 'tor_log');
 
     /*
      * Actors names

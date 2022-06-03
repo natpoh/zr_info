@@ -11,8 +11,8 @@ class MoviesAbstractDB extends MoviesAbstractFunctions {
         return Pdo_ml::db_query($sql);
     }
 
-    public function db_results($sql) {
-        return Pdo_ml::db_results($sql);
+    public function db_results($sql, $array = []) {
+        return Pdo_ml::db_results($sql, $array);
     }
 
     public function db_fetch_object(&$arr) {
@@ -22,16 +22,24 @@ class MoviesAbstractDB extends MoviesAbstractFunctions {
         return null;
     }
 
-    public function db_fetch_row($sql) {
-        return Pdo_ml::db_fetch_row($sql);
+    public function db_fetch_row($sql, $array = []) {
+        return Pdo_ml::db_fetch_row($sql, $array);
     }
 
-    public function db_get_var($sql) {
-        return Pdo_ml::db_get_var($sql);
+    public function db_get_var($sql, $array = []) {
+        return Pdo_ml::db_get_var($sql, $array);
     }
 
     public function escape($text) {
         return addslashes($text);
+    }
+
+    public function db_update($data, $table, $id) {
+        return Pdo_ml::db_update($data, $table, $id);
+    }
+
+    public function db_insert($data, $table) {
+        return Pdo_ml::db_insert($data, $table);
     }
 
 }

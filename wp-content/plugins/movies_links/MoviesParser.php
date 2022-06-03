@@ -955,8 +955,12 @@ class MoviesParser extends MoviesAbstractDB {
         // Get posts (last is first)       
 
         $use_webdriver = $type_opt['webdrivers'];
-        if ($use_webdriver) {
+        if ($use_webdriver == 1) {
             $code = $this->get_webdriver($url, $headers, $settings);
+        } else if ($use_webdriver == 2) {
+            // Tor webdriver
+            $tp = $this->ml->get_tp();            
+            $code = $tp->get_url_content($url, $headers);
         } else {
             $use_proxy = $type_opt['proxy'];
             $code = $this->get_proxy($url, $use_proxy, $headers, $settings);
@@ -1235,7 +1239,7 @@ class MoviesParser extends MoviesAbstractDB {
         return $ret;
     }
 
-    public function get_last_posts($count = 10, $cid = 0, $status_links = -1, $status = -1, $min_pid=0, $order="DESC") {
+    public function get_last_posts($count = 10, $cid = 0, $status_links = -1, $status = -1, $min_pid = 0, $order = "DESC") {
 
         // Company id
         $cid_and = '';
@@ -1254,16 +1258,16 @@ class MoviesParser extends MoviesAbstractDB {
         if ($status_links != -1) {
             $status_links_and = sprintf(' AND p.status_links = %d', $status_links);
         }
-        
+
         $and_order = "DESC";
-        if ($order=="ASC"){
+        if ($order == "ASC") {
             $and_order = $order;
         }
 
         $query = sprintf("SELECT p.* FROM {$this->db['posts']} p"
                 . " INNER JOIN {$this->db['url']} u ON p.uid = u.id"
                 . " WHERE p.id>%d" . $cid_and . $status_and . $status_links_and
-                . " ORDER BY p.id $and_order LIMIT %d",  (int) $min_pid, (int) $count);
+                . " ORDER BY p.id $and_order LIMIT %d", (int) $min_pid, (int) $count);
 
 
         $result = $this->db_results($query);
@@ -2303,7 +2307,7 @@ class MoviesParser extends MoviesAbstractDB {
     public function get_webdriver($url, &$header = '', $settings = '', $use_driver = -1) {
 
         $webdrivers_text = base64_decode($settings['web_drivers']);
-        //http://165.227.101.220:8110/?p=ds1bfgFe_23_KJDS-F&url= http://185.135.80.156:8110/?p=ds1bfgFe_23_KJDS-F&url= http://148.251.54.53:8110/?p=ds1bfgFe_23_KJDS-F&url=
+        //http://165.227.101.220:8110/?p=ds1bfgFe_23_KJDS-F&url=
         $web_arr = array();
         if ($webdrivers_text) {
             if (strstr($webdrivers_text, "\n")) {

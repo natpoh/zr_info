@@ -56,28 +56,21 @@ if ($cid) {
                     <span class="inline-edit"><?php print __('Number of URLs for cron parsing') ?></span> 
                 </label>
 
-                <label class="inline-edit-status">                
-                    <?php
-                    $checked = '';
-                    if ($ao['proxy'] == 1) {
-                        $checked = 'checked="checked"';
-                    }
-                    ?>
-                    <input type="checkbox" name="proxy" value="1" <?php print $checked ?> >
-                    <span class="checkbox-title"><?php print __('Use TOR') ?></span>
+                <label class="inline-edit-interval">
+                    <span class="title"><?php print __('Parse with') ?></span>
+                    <select name="webdrivers" class="interval">
+                        <?php
+                        $current = $ao['webdrivers'];
+                        foreach ($this->parse_mode as $key => $name) {
+                            $selected = ($key == $current) ? 'selected' : '';
+                            ?>
+                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                            <?php
+                        }
+                        ?>                          
+                    </select>                                        
                 </label>
-
-                <label class="inline-edit-status">                
-                    <?php
-                    $checked = '';
-                    if ($ao['webdrivers'] == 1) {
-                        $checked = 'checked="checked"';
-                    }
-                    ?>
-                    <input type="checkbox" name="webdrivers" value="1" <?php print $checked ?> >
-                    <span class="checkbox-title"><?php print __('Use webdrivers') ?></span>
-                </label>
-
+               
                 <label class="inline-edit-status">                
                     <?php
                     $checked = '';
@@ -114,7 +107,7 @@ if ($cid) {
                 </label>
                 <br />
                 <label class="inline-edit-interval">
-                   
+
                     <select name="del_pea_int" class="interval">
                         <?php
                         $inetrval = $ao['del_pea_int'];

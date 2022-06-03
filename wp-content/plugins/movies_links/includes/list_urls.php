@@ -44,10 +44,10 @@ if (sizeof($posts) > 0) {
             <?php $this->sorted_head('pdate', 'Post', $orderby, $order, $page_url) ?>                    
             <th><?php print __('Link') ?></th>
             <th><?php print __('Campaign') ?></th> 
-            <?php /*?>
-            <th><?php print __('Last log') ?></th> 
-            <?php */ ?>
-             
+            <?php /* ?>
+              <th><?php print __('Last log') ?></th>
+              <?php */ ?>
+
             <th><?php print __('Action') ?></th> 
 
             </thead>
@@ -97,11 +97,11 @@ if (sizeof($posts) > 0) {
                         <td>
                             <?php
                             if ($item->ptop_movie) {
-                                /*$m = $ma->get_movie_by_id($item->ptop_movie);
-                                $title = '<b>' . $m->title . '</b>';                              
-                                print $title . '  ['.$m->year.']<br />';*/
-                                print $item->ptop_movie.'<br />';
-                            }    
+                                /* $m = $ma->get_movie_by_id($item->ptop_movie);
+                                  $title = '<b>' . $m->title . '</b>';
+                                  print $title . '  ['.$m->year.']<br />'; */
+                                print $item->ptop_movie . '<br />';
+                            }
                             if ($item->prating) {
                                 print 'Rating: ' . $item->prating . '<br />';
                             }
@@ -113,9 +113,9 @@ if (sizeof($posts) > 0) {
                         <td>
                             <?php print $camp_title ?>
                         </td>
-                        <?php /*?>
-                        <td><?php print $this->get_last_log($item->id); ?></td>
-                        <?php */ ?>
+                        <?php /* ?>
+                          <td><?php print $this->get_last_log($item->id); ?></td>
+                          <?php */ ?>
                         <td><a href="<?php print $url . '&uid=' . $item->id ?>"><?php print 'View' ?></a></td>
                     </tr> 
                 <?php } ?>
