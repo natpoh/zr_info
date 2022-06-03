@@ -107,10 +107,10 @@ class TorParser extends MoviesAbstractDB {
                 print_r($log_data);
             }
 
-            if ($status == 200 || $status == 301) {
+            if ($status == 200 || $status == 301|| $status == 148) {
                 $content = $data;
                 // Add log
-                $message = 'Parser URL';
+                $message = 'Parser URL: '.$status;
                 $this->log_info($message, $log_data);
             } else {
                 // Add log
