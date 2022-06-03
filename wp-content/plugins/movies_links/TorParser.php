@@ -12,9 +12,8 @@ class TorParser extends MoviesAbstractDB {
     // public $web_driver = '148.251.54.53:8110';
     public $web_driver = '';
     public $get_ip_url = '';
-    public $webd_river_pass = 'ds1bfgFe_23_KJDS-F';
     public $service_min_life_time = 180; // 3 min
-    public $service_life_time = 1800; // 30 min
+    public $service_life_time = 3600; // 60 min
     public $tor_reboot_dir = ABSPATH . 'wp-content/uploads/tor';
     public $ip_limit = array(
         'h' => 10,
