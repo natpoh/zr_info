@@ -36,21 +36,7 @@ if (isset($_POST['filters'])) {
         // Get post from an db
         $ma = $cfront->get_ma();
         $post_id = $ma->get_post_id_by_name($post_name, $post_type);
-        if (!$post_id) {
-            //Id not found. Try to get rwt id
-            if ($is_movie) {
-                $wp_post = $cfront->get_movie_by_slug($post_name);
-            } else {
-                $wp_post = $cfront->get_tvseries_by_slug($post_name);
-            }
-            if ($wp_post && $wp_post->ID) {
-                $post_id = $ma->get_post_id_by_rwt_id($wp_post->ID);
-            }
-            if ($post_id) {
-                //Add slug to post id
-                $ma->add_post_name($post_id, $post_name);
-            }
-        }
+
 
         if (!$post_id) {
             // Not found. Go to 404

@@ -427,7 +427,7 @@ if (isset($_POST['filters'])) {
             $movie_id = 0;
             if (isset($filters->movie[0])) {
                 $slug = $filters->movie[0];
-                $movie = $cfront->get_movie_by_slug($slug);
+                //$movie = $cfront->get_movie_by_slug($slug);
                 if ($movie) {
                     $movie_id = $movie->ID;
                 }

@@ -1,14 +1,120 @@
 <?php
+if (!isset($_GET['debug']))header('Content-Type: image/jpeg');
+
 error_reporting('E_ERROR');
 set_time_limit(0);
-ini_set('display_errors','On');
+//ini_set('display_errors','On');
+
+if (!defined('ABSPATH'))
+    define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
+
+//DB config
+!defined('DB_HOST_AN') ? include ABSPATH . 'analysis/db_config.php' : '';
+
+//Abstract DB
+!class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
+
+
+
 
 $watermark_src = $_SERVER['DOCUMENT_ROOT'].'/analysis/images/mask.png';
 $noimage_src = $_SERVER['DOCUMENT_ROOT'].'/analysis/images/noimage.png';
 
+
+
 $id =$_GET['id'];
 
 //echo $filename;
+
+if (strstr($id,'_v'))
+{
+    $id = substr($id,0,strpos($id,'_v'));
+}
+
+if (strstr($id,'m_'))
+{
+
+    //Curl
+    !class_exists('GETCURL') ? include ABSPATH . "analysis/include/get_curl.php" : '';
+
+    function get_tmb_img_from_db($id){
+        $image='';
+
+        $sql ="SELECT `data` FROM `cache_tmdb_sinc` WHERE `rwt_id`={$id} and `type`=2 and `status`=1 limit 1";
+
+        $rows = Pdo_an::db_fetch_row($sql);
+        if ($rows)
+        {
+        $image_data = $rows->data;
+        if ($image_data)
+        {
+            $image = 'https://image.tmdb.org/t/p/w1280'.$image_data;
+        }
+            return $image;
+        }
+    }
+
+    function get_img_from_db($id){
+
+    $sql ="select `data` from `data_movie_imdb` where  id = ".intval($id)." limit 1";
+    $rows = Pdo_an::db_fetch_row($sql);
+    if ($rows) {
+        $image_data = $rows->data;
+        if ($image_data) {
+            $image_data = json_decode($image_data, 1);
+            $image = $image_data['image'];
+        }
+        return $image;
+    }
+    }
+
+
+    $id = substr($id,2);
+    if (isset($_GET['debug']))echo 'id='.$id.'<br>';
+    ////get poster
+    $link =  get_tmb_img_from_db($id);
+    if (isset($_GET['debug']))echo 'tmdb '.$link;
+
+    if (!$link)
+    {
+        $link = get_img_from_db($id);
+    }
+
+    if (isset($_GET['debug']))echo 'imdb '.$link;
+
+    if ($link)
+    {
+        $result = GETCURL::getCurlCookie($link);
+
+
+        if ($result=='Not Found')
+        {
+         ///try get imdb images
+            if (isset($_GET['debug']))echo 'result '.$result;
+            $result='';
+        }
+    }
+
+    if (!$result)
+    {
+        //add empty image
+
+        $file = ABSPATH.'/wp-content/themes/custom_twentysixteen/images/empty.jpg';
+        $result = file_get_contents($file);
+
+    }
+    if ($result)
+    {
+        if (!isset($_GET['debug']))echo $result;
+    }
+
+
+    return;
+}
+
+
+
+
 
 global $array_exclude;
 
@@ -32,28 +138,7 @@ if (!$e)
 }
 
 
-$filename = $id.'_'.md5($_GET['e']);
-$filename_ex  = $_SERVER['DOCUMENT_ROOT'].'/analysis/img_result/'.$filename.'.jpg';
 
-if (!isset($_GET['nocache'])) {
-
-    if (file_exists($filename_ex)) {
-        header('Content-Type: image/jpeg');
-
-        $cache = 86400 * 7;
-
-    if (time() - filemtime($filename_ex) > $cache) {
-        unlink($filename_ex);
-
-    }
-    else
-    {
-        echo file_get_contents($filename_ex);
-        return;
-
-    }
-    }
-}
 
 
 
@@ -75,16 +160,14 @@ $array_type=array( "crowd"=>'CROWDSOURCE:' , "jew"=>'JEWORNOTJEW:' ,"ethnic"=>'E
 
 $id =intval($id);
 
-include 'db_config.php';
-global $pdo;
-pdoconnect_db();
+
 
 
 
     $sql = "SELECT * FROM `data_actors_meta` where actor_id =" . $id . " ";
-    $q = $pdo->prepare($sql);
-    $q->execute();
-    while ($r = $q->fetch()) {
+    $row = Pdo_an::db_results_array($sql);
+
+    foreach ($row as $r) {
         if ($r['gender'])$gender = $array_convert[$r['gender']];
         if ($r['jew']) $ethnic['jew'][$r['actor_id']] = $r['jew'];
         if ($r['bettaface'] && $r['bettaface']!=2 && $r['bettaface']!=1) $ethnic['bettaface'][$r['actor_id']] = $r['bettaface'];
@@ -199,11 +282,18 @@ imagesavealpha($im, true);
 
 $number = str_pad($id, 7, '0', STR_PAD_LEFT);
 
-$imgsource =$_SERVER['DOCUMENT_ROOT'].'/analysis/img_final/'.$number.'.jpg';
-if (!file_exists($imgsource)) {
+
 $imgsource =$_SERVER['DOCUMENT_ROOT'].'/analysis/img_final_tmdb/'.$number.'.jpg';
 
+if (!file_exists($imgsource)) {
+    $imgsource =$_SERVER['DOCUMENT_ROOT'].'/analysis/img_final/'.$number.'.jpg';
 }
+if (!file_exists($imgsource)) {
+    $imgsource =$_SERVER['DOCUMENT_ROOT'].'/analysis/img_final_crowd/'.$number.'.jpg';
+}
+
+
+
 if (file_exists($imgsource)) {
    // echo "The file $imgsource exists";
     $image = imagecreatefromjpeg($imgsource);
@@ -219,11 +309,6 @@ if (file_exists($imgsource)) {
     // echo "The file $imgsource does not exist";
     $imagebig = imagecreatefrompng($noimage_src);
 }
-
-
-
-
-
 
 
 
@@ -262,7 +347,7 @@ if ($img_gender)
 imagejpeg($imagebig, $filename_ex);
 
 
-header('Content-Type: image/jpeg');
+
 imagejpeg($imagebig);
 
 imagedestroy($image);

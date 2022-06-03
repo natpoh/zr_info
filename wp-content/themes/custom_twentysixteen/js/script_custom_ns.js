@@ -50,6 +50,7 @@ jQuery(document).ready(function () {
     });
 
 
+
     jQuery('body:not(.menu-open)').on('click', '.open_menu', function () {
 
         console.log('open');

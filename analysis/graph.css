@@ -11,7 +11,14 @@ body{
     color: #bfbfbf;
     font-family: Tahoma;
 }
-
+.nte_show {
+    display: none;
+    position: absolute;
+    left: 50%;
+    z-index: 1000;
+    bottom: 60px;
+    top: auto;
+}
 
 .site , .is-singular:not(.home) .site-inner {
     margin: 0;
@@ -30,10 +37,13 @@ body #custom-handle,body #custom-handle2 ,body #budget_custom-handle, body #budg
     line-height: 1.6em;
 }
 
-.content{
-    display: grid;
-    grid-gap: 25px;
-    grid-template-columns: 305px 1fr;
+.content {
+
+    display: flex;
+}
+.control_panel{
+    position: relative;
+    width: 292px;
 }
 select{
     width: 100%;
@@ -94,6 +104,50 @@ select{
 }
 .extra_actors .a_data{
     min-height: 245px;
+}
+.control_panel_block.ethnicity_block{
+    background-color: #343434;
+    border: 2px solid #757575;
+}
+
+
+.control_panel_block.filter_block {
+    background-color: #141414;
+    border: 2px solid #757575;
+    margin-top: 15px;
+}
+
+.control_panel_block > a.v_type {
+    color: #bfbfbf;
+    display: block;
+    padding: 8px 10px;
+    background-color: #333;
+    border: 2px solid #4d4d4d;
+    text-decoration: none;
+    margin-bottom: 8px;
+}
+button.change_color {
+    position: absolute;
+    right: 0px;
+    z-index: 1000;
+    top: -46px;
+}
+
+
+.chart_script container_main_movie_graph{
+    display: none;
+}
+
+.control_panel_block > a.v_type:hover {
+    background-color: #141414;
+    color: #70b8d4;
+    border-color: #1a4151;
+}
+.control_panel_block > a.v_type.is_selected
+{
+    background-color: #141414;
+    color: #70b8d4;
+    border-color: #3890b3;
 }
 
 
@@ -498,8 +552,9 @@ a#op.open_ul:hover {
     top: 7px;
     color: red;
 }
-.graph{
+.graph {
     max-width: 1200px;
+    width: 100%;
 }
 .note_container {
     color: #7b7b7b;
@@ -763,4 +818,82 @@ body .source_link{
     font-display: swap;
     src: url(https://fonts.gstatic.com/s/courierprime/v2/u-450q2lgwslOqpF_6gQ8kELawFpWg.woff2) format('woff2');
     unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+.slide_control {
+    display: none;
+}
+@media screen and (max-width: 768px) {
+
+    .control_panel {
+        position: absolute;
+        width: 292px;
+
+        z-index: 1000;
+        background-color: #282828;
+        border-right: 2px solid #494949;
+        left: -305px;
+        transition:  all 0.4s ease-out;
+    }
+
+    .hdr_drp_dwn_menu {
+        background-color: transparent;
+        display: block;
+        position: relative;
+        width: 61px;
+        height: 60px;
+        box-sizing: border-box;
+        padding: 10px;
+        padding-top: 10px;
+        cursor: pointer;
+    }
+    .hdr_drp_dwn_menu .clear {
+        clear: both;
+        display: block;
+        font-size: 0;
+        height: 0;
+        line-height: 0;
+        width: 100%;
+    }
+    .slide_control{
+        display: block;
+        position: absolute;
+        right: -64px;
+    }
+    .control_panel.visible{
+        left: 0px;
+    }
+    .control_panel.visible  .slide_control{
+
+        right: 5px;
+    }
+
+    .get_data_refresh {
+        position: fixed;
+        z-index: 100000;
+        background-color: #5e5e5e;
+        padding: 16px 2px;
+        border: 2px solid #6a6a6a;
+        box-shadow: 4px 4px 5px #000;
+        display: none;
+        top: 40%;
+        left: 303px;
+    }
+
+    .get_data_refresh button {
+        font-size: 16px;
+        padding: 16px 4px;
+        cursor: pointer;
+    }
+
+    .hdr_drp_dwn_menu .bar {
+        background: none repeat scroll 0 0 #ececec;
+        display: block;
+        height: 3px;
+        margin-bottom: 6px;
+        width: 100%;
+    }
+.main-navigation{
+    display: none;
+}
+
 }

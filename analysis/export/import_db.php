@@ -93,6 +93,61 @@ class Import
     return $result;
     }
 
+    public static function get_data_from_db($db,$start=0,$limit=200,$row = 'id')
+    {
+        if (!$start)$start=0;
+
+        $q ="SELECT {$row} FROM {$db} order by {$row} asc LIMIT {$start}, {$limit}";
+
+        $r = Pdo_an::db_results_array($q);
+        return $r;
+
+
+    }
+
+
+    public static function sync_db($db)
+    {
+
+        ////get last id
+
+        $last_id_array = self::get_last_id($db);
+
+        $last_id =$last_id_array['id'];
+
+        $remote_id_array = self::get_remote_last_id($db);
+
+
+        $remote_id=$remote_id_array['id'];
+
+        if ($last_id>$remote_id)
+        {
+
+            ///add new id
+
+            $r = self::get_data_from_db($db,$remote_id);
+
+            foreach ($r as $d)
+            {
+                $b =self::get_prefix();
+
+                $name = $b.$db.'_'.$d['id'];
+
+                ///check commit
+                $rs =  self::check_status_commit($name);
+
+
+                if (!$rs) {
+                    self::create_commit($name, 'update', $db, array('id' => $d['id']), 'sync_'.$db,30);
+                }
+            }
+            echo $db.' updated<br>';
+        }
+        else echo $db.' '. $last_id.' = '.$remote_id.'<br>';
+    }
+
+
+
     public static function commit_info_request($uid)
 {
 
@@ -120,6 +175,25 @@ class Import
     return $result;
 
 }
+    public static function get_last_id($table='',$data='',$row='id')
+    {
+        if ($data)
+        {
+            $array =$data['data'];
+            $array = json_decode($array,1);
+            $table = $array['table'];
+
+        }
+
+        if ($table)
+        {
+            $q = "SELECT {$row} FROM {$table} ORDER BY {$row} DESC limit 1  ";
+            $r = Pdo_an::db_results_array($q);
+            return array ($row=>$r[0][$row]);
+        }
+    }
+
+
     public static function get_remote_table($arrayinput)
     {
 
@@ -173,7 +247,25 @@ class Import
 
       return $result;
     }
-
+    public static function get_remote_last_id($table)
+    {
+        $key = self::get_key();
+        $options_data = self::get_import_data();
+        $link  = $options_data['link_request'];
+        $array = array('table'=>$table);
+        if ($array){$array_sql = json_encode($array);}
+        $request = array(
+            'data'=>$array_sql,
+            'action'=>'get_last_id',
+            'key'=>$key,
+        );
+        $result =  GETCURL::getCurlCookie($link,'',$request);
+        if ($result)
+        {
+            $result = json_decode($result,1);
+        }
+        return $result;
+    }
     public static function get_remote_id($array)
     {
 
@@ -234,6 +326,25 @@ class Import
 
 
        return $result;
+
+    }
+
+
+    public static function get_prefix()
+    {
+
+        $options_data = self::get_import_data();
+        $site_id = $options_data['site_id_request'];
+        $prefix = array(1=>'t_',2=>'p_');
+
+        if (!$site_id)
+        {
+            $site_id =0;
+        }
+
+        $b=$prefix[$site_id];
+
+        return $b;
 
     }
 
@@ -991,7 +1102,7 @@ class Import
         $res_return['last_sinc_commits']=count($array_sql);
 
         $send_request  = self::check_status(2);
-        if ($send_request>300)
+        if ($send_request>200)
         {
             ///wait
            return 'A request is already executed';
@@ -1092,6 +1203,11 @@ class Import
         else if ($action == 'get_remote_id') {
         $result = self::get_remote_table($data); ///create id from table
          }
+
+        else if ($action == 'get_last_id') {
+            $result = self::get_last_id('',$data); ///create id from table
+        }
+
 
         else
         {

@@ -3,6 +3,22 @@ include 'db_config.php';
 global $pdo;
 pdoconnect_db();
 
+
+global $WP_include;
+
+if (!$WP_include) {
+    include ABSPATH . 'wp-load.php';
+}
+
+if (function_exists('current_user_can')) {
+    $curent_user = current_user_can("administrator");
+}
+
+if (!$curent_user) {
+    return;
+}
+
+
 ///debug;
 $version = time();
 
@@ -105,8 +121,11 @@ foreach ($array_country as $country => $enable) {
 
 
 ?>
-<html>
+<!DOCTYPE html>
+<html lang="en-US" prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb#" class="no-js">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Analysis</title>
     <!--Load the AJAX API-->
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -209,54 +228,92 @@ for ($r = $end_time; $r >= $start_time; $r--) {
     }
     $option1 .= '<option ' . $seleced . ' value="' . $r . '">' . $r . '</option>';
 }
+
+$array_type = array(
+    'date_range_international'=>array('name'=>'Box Office international v.s. domestic','filters'=>'all'),
+    'date_range_country'=>array('name'=>'Box Office breakdown by country','filters'=>'all'),
+    'ethnicity'=>array('name'=>'Ethnicity Data Set','ethnic_setup'=>1,'filters'=>'all'),
+    'world_population'=>array('name'=>'World population','filters'=>'year'),
+    'world_map'=>array('name'=>'Ethnic world map'),
+    'Buying_power'=>array('name'=>'Buying power'),
+    'Buying_power_by_race'=>array('name'=>'Buying power by race')
+    );
+if (!isset($_GET['type']))
+{
+    $_GET['type']='date_range_international';
+}
+
+foreach ($array_type as $i=>$v)
+{
+    $selected='';
+
+    if (isset($_GET['type']))
+    {
+
+        if ($_GET['type']==$i)
+        {
+            $selected = ' is_selected ';
+        }
+
+
+    }
+
+
+    $type_option.='<a  href="?type='.$i.'" id="'.$i.'" class="v_type'.$selected.'" >'.$v['name'].'</a>';
+
+
+
+
+}
+
+
+
+
 ?>
 <div class="content">
-    <div class="control_top"></div>
-    <div class="control_panel" style="position: relative">
+
+    <div class="control_panel" >
         <div class="get_data_refresh">
             <button class="data_refresh">Refresh data</button>
         </div>
-        <div class="control_panel_block">
-            <select style="width: 135px" autocomplete="off" type="text"
-                    class="date_range date_range_start"><?php echo $option1; ?></select>
 
-            <select style="width: 135px" autocomplete="off" type="text"
-                    class="date_range date_range_end"><?php echo $option; ?></select>
+        <div class="control_panel_block">
+            <div class="slide_control">
+                <span class="hdr_drp_dwn_menu">
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                 <div class="bar"></div>
+                                <div class="clear"></div>
+                            </span>
+            </div>
+            <p>Visualization type</p>
+
+            <?php echo $type_option; ?>
         </div>
 
-        <div class="control_panel_block">
-            <p>Crew Filter</p>
-            <span class="row"><label>Director</label><select multiple="multiple" autocomplete="off" class="date_range director_select"><?php echo  $option_crew; ?></select></span>
-            <span class="row"><label>Cast Director</label><select multiple="multiple" autocomplete="off" class="date_range cast_director_select"><?php echo  $option_crew; ?></select></span>
-            <span class="row"><label>Writer</label><select multiple="multiple" autocomplete="off" class="date_range writer_select"><?php echo  $option_crew; ?></select></span>
-            <span class="row"><label>Lead Actor</label><select multiple="multiple" autocomplete="off" class="date_range leed_actor_select"><?php echo  $option_crew; ?></select></span>
-</div>
-        <div class="control_panel_block">
-            <p>Visualization</p>
+
+        <?php
+
+        if ($array_type[$_GET['type']]['ethnic_setup']==1)
+        {
+
+        ?>
+        <div class="control_panel_block ethnicity_block">
+
+            <h4>Ethnicity</h4>
+            <p>Ethnic visualization</p>
 
             <select autocomplete="off" class="date_range display_select">
-                <option selected value="date_range_international">Box Office international v.s. domestic</option>
-                <option value="date_range_country">Box Office breakdown by country</option>
-                <option value="ethnicity">Ethnicity Data Set</option>
+                <option value="ethnicity">Default</option>
                 <option value="scatter">Scatter Chart</option>
                 <option value="bubble">Plurality Scatterplot</option>
                 <option value="regression">Regression line</option>
                 <option value="bellcurve">Bell curve</option>
                 <option value="plurality_bellcurve">Plurality Bell curve</option>
                 <option value="performance_country">Average (performance metric) per country</option>
-                <option value="world_population">World population</option>
-                <option value="world_map">Ethnic world map</option>
-                <option value="Buying_power">Buying power</option>
-                <option value="Buying_power_by_race">Buying power by race</option>
+
             </select>
-        </div>
-
-
-        <div class="control_panel_block">
-
-            <?php include 'include/template_control.php'; echo $data_Set;?>
-
-
             <p>Diversity</p>
 
             <select autocomplete="off" class="date_range diversity_select">
@@ -281,11 +338,72 @@ for ($r = $end_time; $r >= $start_time; $r--) {
                 <option value="Movie release date">Movie release date</option>
                 <option value="Rating">Rating imdb</option>
             </select>
+<p>
+            <details class="dark actor_details">
+                <summary>Setup</summary>
+                <div>
+                    <?php include 'include/template_control.php'; echo $data_Set;?>
+                </div>
+ </details></p>
+
+
+        </div>
+<?php
+
+
+
+        }
+
+
+        if ($array_type[$_GET['type']]['filters'])
+        {
+
+?>
+        <div class="control_panel_block filter_block">
+                <h4>Filters</h4>
+
+            <div class="block_year">
+            <p>Year</p>
+                <div style="display:flex;">
+                <select style="width: 135px" autocomplete="off" type="text"
+                        class="date_range date_range_start"><?php echo $option1; ?></select>
+
+                <select style="width: 135px" autocomplete="off" type="text"
+                        class="date_range date_range_end"><?php echo $option; ?></select>
+                </div>
+                <p>Year</p>
+                <div class="main_slider_range" id="main_slider" style="margin: 20px 40px;">
+                    <div id="custom-handle" class="ui-slider-handle"></div>
+                    <div id="custom-handle2" class="ui-slider-handle"></div>
+                </div>
+
+
+            </div>
+
 
             <?php
-
-
+            if ($array_type[$_GET['type']]['filters']=='all')
+            {
             ?>
+
+            <p>Production budget</p>
+            <input type="hidden" value="<?php echo $budget_min; ?>" default-value="<?php echo $budget_min; ?>"
+                   id="budget_min" autocomplete="off" class="date_range budget_min"/><input type="hidden" autocomplete="off"
+                                                                                            value="<?php echo $budget_max; ?>"
+                                                                                            default-value="<?php echo $budget_max; ?>"
+                                                                                            id="budget_max"
+                                                                                            class="date_range budget_max"/>
+
+            <div class="budget_slider_range" id="budget_slider" style="margin: 20px 40px;">
+                <div id="budget_custom-handle" class="ui-slider-handle"></div>
+                <div id="budget_custom-handle2" class="ui-slider-handle"></div>
+            </div>
+
+                <p>Crew Filter</p>
+                <span class="row"><label>Director</label><select multiple="multiple" autocomplete="off" class="date_range director_select"><?php echo  $option_crew; ?></select></span>
+                <span class="row"><label>Cast Director</label><select multiple="multiple" autocomplete="off" class="date_range cast_director_select"><?php echo  $option_crew; ?></select></span>
+                <span class="row"><label>Writer</label><select multiple="multiple" autocomplete="off" class="date_range writer_select"><?php echo  $option_crew; ?></select></span>
+                <span class="row"><label>Lead Actor</label><select multiple="multiple" autocomplete="off" class="date_range leed_actor_select"><?php echo  $option_crew; ?></select></span>
 
             <p>Production country</p>
 
@@ -328,58 +446,40 @@ for ($r = $end_time; $r >= $start_time; $r--) {
                             <option value="100">100</option>
                             <option value="10000">All</option>
                         </select>
-                -->
+
 
 
                 <div class="g_block" style="margin-top: 100px">
                     <?php
-
-                    $sql = "SELECT * FROM `options` where id =1 limit 1";
-
-                    $q = $pdo->prepare($sql);
-                    $q->execute();
-                    $r = $q->fetch();
-
-                    $val = $r['val'];
-                    $val = stripcslashes($val);
-                    echo $val;
+//
+//                    $sql = "SELECT * FROM `options` where id =1 limit 1";
+//
+//                    $q = $pdo->prepare($sql);
+//                    $q->execute();
+//                    $r = $q->fetch();
+//
+//                    $val = $r['val'];
+//                    $val = stripcslashes($val);
+//                    echo $val;
                     ?>
 
-                </div>
+                </div>     -->
+            <?php } ?>
         </div>
+<?php }
 
+        ?>
 
     </div>
 
     <div class="graph">
-        <p>Production budget <span style="float: right; margin-top: -30px;"><button id="default"
-                                                                                    class="change_color button_big">Skin color</button></span>
-        </p>
-        <input type="hidden" value="<?php echo $budget_min; ?>" default-value="<?php echo $budget_min; ?>"
-               id="budget_min" autocomplete="off" class="date_range budget_min"/><input type="hidden" autocomplete="off"
-                                                                                        value="<?php echo $budget_max; ?>"
-                                                                                        default-value="<?php echo $budget_max; ?>"
-                                                                                        id="budget_max"
-                                                                                        class="date_range budget_max"/>
-
-        <div class="budget_slider_range" id="budget_slider" style="margin: 20px 40px;">
-            <div id="budget_custom-handle" class="ui-slider-handle"></div>
-            <div id="budget_custom-handle2" class="ui-slider-handle"></div>
-        </div>
-
-        <p>Year</p>
-        <div class="main_slider_range" id="main_slider" style="margin: 20px 40px;">
-            <div id="custom-handle" class="ui-slider-handle"></div>
-            <div id="custom-handle2" class="ui-slider-handle"></div>
-        </div>
+        <p style="position: relative"><button id="default"  class="change_color button_big">Skin color</button></p>
         <div id="chart_div"></div>
         <div class="chart_script"></div>
 
         <div class="footer_table_result"></div>
     </div>
-    <div class="footer">
 
-    </div>
 </div>
 <!-- Own scripts -->
 <script src="/analysis/scripts.js?<?php echo $version ?>"></script>

@@ -16,6 +16,23 @@ if (!defined('ABSPATH'))
 /////////add rating
 
 
+function sync_tables()
+{
+$array_tables = array('data_familysearch_verdict', 'data_forebears_verdict');
+
+!class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+
+
+foreach ($array_tables as $table)
+{
+
+    Import::sync_db($table);
+}
+
+
+}
+
+
 function get_array($id='')
 {
 
@@ -191,7 +208,7 @@ $sql = "select * from data_actors_meta ".$where." ";
 
     $rows = Pdo_an::db_results_array($sql);
     ///echo 'count = '.count($rows).'<br>';
-    $array_verdict = array('crowdsource','ethnic','jew','kairos','bettaface','placebirth','surname','familysearch');
+    $array_verdict = array('crowdsource','ethnic','jew','kairos','bettaface','placebirth','surname','familysearch','forebears');
     $array_exclude = array('NJW');
     foreach ($rows as $row)
     {
@@ -201,12 +218,24 @@ $sql = "select * from data_actors_meta ".$where." ";
             $verdict = $row[$val];
             if ($verdict && !is_numeric($verdict) && !in_array($verdict,$array_exclude) )
             {
+                ///check last verdict
 
-                $sql = "update `data_actors_meta` set verdict =?, n_verdict =?  where id = ".$row['id']." ";
-                Pdo_an::db_results_array($sql,array($row[$val],intconvert($row[$val])));
+                $q = "SELECT verdict, n_verdict from data_actors_meta where id = ".$row['id'];
+                $rv = Pdo_an::db_results_array($q);
 
-                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', 'data_actors_meta', array('id' => $row['id']), 'actor_meta',9);
+               if ($verdict ==$rv[0]['verdict'] && intconvert($verdict) == $rv[0]['n_verdict'])
+               {
+                   ///skip
+
+               }
+               else
+               {
+                   $sql = "update `data_actors_meta` set verdict =?, n_verdict =?  where id = ".$row['id']." ";
+                   Pdo_an::db_results_array($sql,array($verdict,intconvert($verdict)));
+
+                   !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                   Import::create_commit('', 'update', 'data_actors_meta', array('id' => $row['id']), 'actor_meta',9);
+               }
 
                /// ACTIONLOG::update_actor_log('verdict');
                 break;
@@ -473,8 +502,6 @@ function get_family($data='')
                   Pdo_an::db_query($sql1);
 
                   update_actors_verdict($i);
-                  ACTIONLOG::update_actor_log('kairos');
-
               }
           }
 
@@ -484,7 +511,82 @@ function get_family($data='')
 
 
 }
+function get_forebears($data='')
+{
 
+
+    $race_small = array(
+        1 =>'W',
+        2 => 'EA',
+        3 =>'H',
+        4 =>'B',
+        5 => 'I',
+        6 => 'M' ,
+        7 => 'MIX',
+        8 =>'JW' ,
+        9 => 'IND',
+    );
+
+
+    if ($data)
+    {
+
+        $data = intval($data);
+        $sql =  "SELECT * FROM `data_forebears_verdict` WHERE `id` = {$data} ";
+        $rows = Pdo_an::db_results_array($sql);
+
+    }
+    else {
+
+        $last_id = get_last_options(20);
+
+        if (!$last_id) $last_id = 0;
+
+        $sql = "SELECT * FROM `data_forebears_verdict` WHERE `id` > {$last_id} limit 200";
+        $rows = Pdo_an::db_results_array($sql);
+
+    }
+
+
+    foreach ($rows as $r)
+    {
+
+        $family_id = $r['id'];
+        $lastname =  $r['lastname'];
+        $verdict  =  $r['verdict'];
+
+        echo $family_id.' lastname='.$lastname.'<br>';
+
+
+        if ($lastname) {
+
+            /////get all actors
+            $sql = "SELECT aid FROM `data_actors_normalize` WHERE  `lastname` = '" . $lastname . "' order by id ASC";
+            $result = Pdo_an::db_results_array($sql);
+            foreach ($result as $val) {
+                $i = $val['aid'];
+
+
+                ///update data
+                $fm = $race_small[$verdict];
+
+                $sql1 = "UPDATE `data_actors_meta` SET `forebears` = '" . $fm . "'  , `n_forebears` = '" . intconvert($fm) . "',
+                 `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $i. "'";
+
+                //echo $sql1.'<br>';
+
+                Pdo_an::db_query($sql1);
+
+                update_actors_verdict($i);
+            }
+        }
+
+        set_option(20, $family_id);
+    }
+
+
+
+}
 
 function set_tmdb_actors_for_movies()
 {
@@ -2088,7 +2190,7 @@ if ($rows)echo 'add empty '.count($rows);
 foreach ($rows as $r)
 {
         $id = $r['id'];
-        echo 'rwt_id=' . $id . '  <br>' . PHP_EOL;
+       // echo 'rwt_id=' . $id . '  <br>' . PHP_EOL;
         if ($id)
         {
             get_just_wach($id);
@@ -2663,6 +2765,14 @@ if (isset($_GET['get_family'])) {
 
     return;
 }
+if (isset($_GET['get_forebears'])) {
+
+    get_forebears($_GET['get_forebears']);
+
+    return;
+}
+
+
 
 
 if (isset($_GET['disqus_comments'])) {
@@ -2685,6 +2795,25 @@ if (isset($_GET['check_curl'])) {
 
     return;
 }
+
+
+if (isset($_GET['check_sync'])) {
+
+
+    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+    Import::sync_db($_GET['check_sync']);
+
+
+    return;
+}
+if (isset($_GET['sync_tables'])) {
+
+
+  sync_tables();
+
+    return;
+}
+
 
 
 echo 'ok';

@@ -26,7 +26,24 @@ function get_user_reactions($rpid) {
         $user_class = '';
     }
 
-    $reaction_data = '<div class="review_comment_data" id="' . $rpid . '"><a  href="#" data_title="' . $disquss_title . '" class="disquss_coment"><span  class="disquss_coment_count">' . $disquss_count . '</span></a>
+    $sql = "SELECT `count` FROM `cache_disqus_treheads` WHERE `type`='critics' and `post_id` ='" . $rpid . "' limit 1";
+    $r1 = Pdo_an::db_fetch_row($sql);
+    if ($r1) {
+        $disquss_count = $r1->count;
+    }
+
+    $disquss_count_text=' ';
+    $disquss_class='';
+    if ($disquss_count)
+    {
+        $disquss_class  =' comment_count';
+        $disquss_count_text = '<span  class="disquss_coment_count">' . $disquss_count . '</span>';
+    }
+
+
+
+
+    $reaction_data = '<div class="review_comment_data" id="' . $rpid . '"><a  href="#" data_title="' . $disquss_title . '" class="disquss_coment'.$disquss_class.'">'.$disquss_count_text.'</a>
                 <a href="#"   class="emotions  ' . $user_class . '  "><span class="emotions_count">' . $reaction_count . '</span></a></div>';
 
     return $reaction_data;

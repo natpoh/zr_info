@@ -73,11 +73,14 @@ if (!$site_url)$site_url ='https://'.$_SERVER['HTTP_HOST'].'/';
         $comments_account = get_option('disqus_forum_url');
 
         echo '<div style="text-align: center"><h3 class="column_header">Comments:</h3></div>
-<div class="not_load" id="disquss_container" data_comments="' . $comments_account . '"  data_title="' . $post_title . '" data_link="' . $link . '" data_idn="' . $pg_idnt . '"></div>';
+        <div class="not_load" id="disquss_container" data_comments="' . $comments_account . '"  data_title="' . $post_title . '" data_link="' . $link . '" data_idn="' . $pg_idnt . '"></div>';
 
 
 
         ?>
+        <div id="disqus_recommendations"></div>
+
+
 <div  id="twitter_scroll" data-value="<?php echo  $post_id ?>" class="not_load"></div>
 
 <div class="section_content">

@@ -63,7 +63,7 @@ if ($_POST['action'] == 'ajax_search') {
     if ($_POST['type'] == 'movie') {
         //Quick movie filter
 
-        $keyword = isset($_POST['keyword']) ? strip_tags(stripslashes($_POST['keyword'])) : '';
+        $keyword = isset($_POST['keyword']) ? strip_tags(stripslashes($_POST['keyword'])) : '';        
         $limit = 6;
 
         if (isset($_POST['nolinks'])) {

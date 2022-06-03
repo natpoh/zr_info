@@ -14,6 +14,11 @@ function attachScroller(distance, scroller, hasScrolled, scrollLeft) {
         }
     }
 }
+function recomendations_resset()
+{
+   /// console.log(window.DISQUS_RECOMMENDATIONS);
+   //window.DISQUS_RECOMMENDATIONS.reset();
+}
 
 function discuss_config(data_object) {
     var page_url = data_object['page_url'];
@@ -50,25 +55,21 @@ function discuss_config(data_object) {
         })();
 
     }
-    //console.log(data_object['data_comments']);
-    // if (data_object['data_comments'])
-    // {
-    //     if (!jQuery('div[id="disqus_recommendations"]').html())
-    //     {
-    //         // console.log('https://'+data_object['data_comments']+'.disqus.com/recommendations.js');
-    //
-    //         jQuery('div[data_comments="' + data_object['data_comments'] + '"]').after('<div id="disqus_recommendations"></div>');
-    //         (function () { // REQUIRED CONFIGURATION VARIABLE: EDIT THE SHORTNAME BELOW
-    //             var d = document, s = d.createElement('script'); // IMPORTANT: Replace EXAMPLE with your forum shortname!
-    //             s.src = 'https://' + data_object['data_comments'] + '.disqus.com/recommendations.js';
-    //             s.setAttribute('data-timestamp', +new Date());
-    //             (d.head || d.body).appendChild(s);
-    //         })();
-    //     }
-    //
-    // }
+
+    if (data_object['data_comments'])
+    {
+        if (jQuery('div[id="disqus_recommendations"]').attr('id'))
+        {
+             var third_scripts = {omendations: 'https://'+data_object['data_comments']+'.disqus.com/recommendations.js'  };
+            use_ext_js(recomendations_resset, third_scripts);
+
+
+        }
+
+    }
 
 }
+
 
 function initializeScroller(mobile, scroller) {
 
@@ -433,7 +434,7 @@ function create_rating_content(object, m_id)
 
                 lgbt_class = ' lgbt ';
 
-                lgbt_warning_text = popup_cusomize('row_text_head', 'LGBT content included') + popup_cusomize('row_text', ltext);
+                lgbt_warning_text = popup_cusomize('row_text_head', 'LGBT content included: <a target="_blank" href="https://rightwingtomatoes.com/faq/" class="link_info">i</a>') + popup_cusomize('row_text', ltext);
             }
             woke_warning_text = '';
 
@@ -444,7 +445,7 @@ function create_rating_content(object, m_id)
                     woketext = '<span class="bg_woke">' + object['woke_text'] + '</span>';
                 }
                 woke_class = ' woke ';
-                woke_warning_text = popup_cusomize('row_text_head', 'Possibly woke elements') + popup_cusomize('row_text', woketext);
+                woke_warning_text = popup_cusomize('row_text_head', 'Possibly woke elements: <a target="_blank" href="https://rightwingtomatoes.com/faq/" class="link_info">i</a>') + popup_cusomize('row_text', woketext);
             }
 
 
@@ -639,6 +640,7 @@ function set_video_scroll(data, block_id) {
                                 let user_class = '';
 
                                 let pid = b.pid;
+                                let ccount ='';
 
                                 if (data['reaction']) {
                                     if (data['reaction']['total']) {
@@ -651,19 +653,37 @@ function set_video_scroll(data, block_id) {
                                             user_class = ' emotions_custom ' + data['reaction']['user'][pid];
                                         }
                                     }
+                                    if (data['reaction']['comments']) {
 
+
+                                        if (data['reaction']['comments'][pid]) {
+
+                                            ccount = data['reaction']['comments'][pid];
+                                        }
+                                    }
                                 }
 
-                                let ccount = b.c_count;
-                                if (!ccount)
-                                    ccount = ' ';
+                                var disquss_class='';
+                                if (ccount)
+                                {
+                                    disquss_class  =' comment_count';
+                                    ccount_data ='<span  class="disquss_coment_count">' + ccount + '</span>';
+                                }
+                                else
+                                {
+                                    ccount_data =' ';
+                                }
+
+
+
+
                                 let ptitle = b.pid_title;
                                 if (!ptitle)
                                     ptitle = '';
                                 if (!ecount)
                                     ecount = '';
 
-                                block.find('.review_comment_data').html('<a  href="#" data_title="' + ptitle + '" class="disquss_coment"><span  class="disquss_coment_count">' + ccount + '</span></a><a href="#"   class="emotions  ' + user_class + '  "><span class="emotions_count">' + ecount + '</span></a>').attr('id', b.pid);
+                                block.find('.review_comment_data').html('<a  href="#" data_title="' + ptitle + '" class="disquss_coment'+disquss_class+'">'+ccount_data+'</a><a href="#"   class="emotions  ' + user_class + '  "><span class="emotions_count">' + ecount + '</span></a>').attr('id', b.pid);
 
 
                             }
@@ -869,7 +889,7 @@ function add_movie_rating(block_id, data)
                     {
                         ltext = '<span class="bg_rainbow">' + obj.family.lgbt_text + '</span>';
                     }
-                    lgbt_text = popup_cusomize('row_text_head', 'LGBT content included') + popup_cusomize('row_text', ltext);
+                    lgbt_text = popup_cusomize('row_text_head', 'LGBT content included: <a target="_blank" href="https://rightwingtomatoes.com/faq/" class="link_info">i</a>') + popup_cusomize('row_text', ltext);
 
                 }
                 if (obj.family.woke == 1) {
@@ -878,7 +898,7 @@ function add_movie_rating(block_id, data)
                     {
                         woketext = '<span class="bg_woke">' + obj.family.woke_text + '</span>';
                     }
-                    woke_warning_text = popup_cusomize('row_text_head', 'Possibly woke elements') + popup_cusomize('row_text', woketext);
+                    woke_warning_text = popup_cusomize('row_text_head', 'Possibly woke elements: <a target="_blank" href="https://rightwingtomatoes.com/faq/" class="link_info">i</a>') + popup_cusomize('row_text', woketext);
 
                 }
 
@@ -3013,6 +3033,11 @@ jQuery(document).ready(function () {
     //  jQuery('#rwt_footer').addClass('not_load');
     //
     // }
+
+    jQuery('body').on('click','.disqus_content',function (){
+       jQuery(this).addClass('disqus_content_full');
+    });
+
 
 
 

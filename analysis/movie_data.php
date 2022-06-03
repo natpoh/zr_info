@@ -7,12 +7,13 @@ if (!defined('ABSPATH'))
 //Abstract DB
 !class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
 
-class MOVIE_DATA{
+class MOVIE_DATA
+{
 
 
     public static function get_actor_name($id)
     {
-        $sql = "SELECT name FROM `data_actors_imdb` where id =".$id;
+        $sql = "SELECT name FROM `data_actors_imdb` where id =" . $id;
         $r = Pdo_an::db_fetch_row($sql);
         $name = $r->name;
 //        if (!$name)
@@ -25,8 +26,11 @@ class MOVIE_DATA{
     }
 
 
-    public static function get_actors_template($movie_id,$actor_type,$ethnycity_string='')
+    public static function get_actors_template($movie_id, $actor_type, $ethnycity_string = '')
     {
+
+        !class_exists('RWTimages') ? include ABSPATH . "analysis/include/rwt_images.php" : '';
+
 
         $actors_array = self::get_actors_from_movie($movie_id, '', $actor_type);
 
@@ -46,18 +50,19 @@ class MOVIE_DATA{
                         if ($ethnycity_string) {
                             $e = '&e=' . $ethnycity_string;
                         }
-                        if ($type=='main')
-                        {
+                        if ($type == 'main') {
                             $type = 'supporting';
                         }
 
                         $dop_string = '<span class="a_data_n_d">' . str_replace('_', ' ', ucfirst($type)) . '</span>';
 
+                        $image_link = RWTimages::get_image_link($id);
 
                         $actor_cntr = '<div class="card style_1 img_tooltip">
                      <a  class="actor_info" data-id="' . $id . '"  href="#">
                      <div class="a_data_n">' . $name . $dop_string . ' </div>
-                     <img loading="lazy" class="a_data_i" src="https://' . $_SERVER['HTTP_HOST'] . '/analysis/create_image.php?id=' . $id . $e . '" />
+                     <img loading="lazy" title="What ethnicity is ' . $name . '?" alt="' . $name . ' ethnicity" class="a_data_i" 
+                     src="' . $image_link . '" />
                      </a><span class="actor_edit actor_crowdsource_container"><a title="Edit Actor data" id="op" data-value="' . $id . '" class="actor_crowdsource button_edit" href="#"></a></span>
                     </div>';
 
@@ -77,79 +82,79 @@ class MOVIE_DATA{
     }
 
 
-    public static function get_actors_from_movie($id='',$imdb_id='',$actor_type=[])
+    public static function get_actors_from_movie($id = '', $imdb_id = '', $actor_type = [])
     {
-        $w='';
-        $actor_result=[];
+        $w = '';
+        $actor_result = [];
         $actor_types = array('1' => 's', '2' => 'm', '3' => 'e');
 
         $actor_types_big = array('star' => '1', 'main' => '2', 'extra' => '3');
 
-        $director_types = array(1=>'director', 2 =>'writer',3=> 'cast_director' ,4=>'producer');
+        $director_types = array(1 => 'director', 2 => 'writer', 3 => 'cast_director', 4 => 'producer');
 
 
-        if (!$id && $imdb_id)
-        {
+        if (!$id && $imdb_id) {
             $imdb_id = intval($imdb_id);
 
             $sql = "SELECT id FROM `data_movie_imdb` where `movie_id` ='" . $imdb_id . "'  limit 1 ";
 
             $r = Pdo_an::db_fetch_row($sql);
-            $id =  $r->id;
+            $id = $r->id;
         }
-        if ($id)
-        {
+        if ($id) {
 
-            if ($actor_type)
-            {
-                foreach ($actor_type as $val)
-                {
-                    if ($val && ($val!='director' && $val!='writer' && $val!='cast_director' && $val!='producer'))
-                    {
-                        $w.= "OR `type` = '".$actor_types_big[$val]."' ";
+            if ($actor_type) {
+                foreach ($actor_type as $val) {
+                    if ($val && ($val != 'director' && $val != 'writer' && $val != 'cast_director' && $val != 'producer')) {
+                        $w .= "OR `type` = '" . $actor_types_big[$val] . "' ";
                     }
 
                 }
-                if ($w)
-                {
-                    $w = substr($w,2);
-                    $w  =" AND (".$w.") ";
+                if ($w) {
+                    $w = substr($w, 2);
+                    $w = " AND (" . $w . ") ";
                 }
 
 
-
-                if (in_array('director',$actor_type) || in_array('writer',$actor_type) || in_array('cast_director',$actor_type) || in_array('producer',$actor_type))
-                {
+                if (in_array('director', $actor_type) || in_array('writer', $actor_type) || in_array('cast_director', $actor_type) || in_array('producer', $actor_type)) {
                     $sql = "SELECT * FROM meta_movie_director WHERE mid={$id} ";
 
 
                     $r = Pdo_an::db_results_array($sql);
-                    foreach ($r as $row)
-                    {
-                        $actor_result[$director_types[$row['type']]][$row['aid']]=1;
+                    foreach ($r as $row) {
+                        $actor_result[$director_types[$row['type']]][$row['aid']] = 1;
                     }
                 }
             }
 
 
-            if ($w)
-            {
-            $sql = "SELECT * FROM meta_movie_actor WHERE mid={$id}  {$w} ";
-             //echo $sql;
-            $r = Pdo_an::db_results_array($sql);
-            foreach ($r as $row)
-            {
-             $actor_result[$actor_types[$row['type']]][$row['aid']]=1;
-            }
+            if ($w) {
+                $sql = "SELECT * FROM meta_movie_actor WHERE mid={$id}  {$w} ";
+                //echo $sql;
+                $r = Pdo_an::db_results_array($sql);
+                foreach ($r as $row) {
+                    $actor_result[$actor_types[$row['type']]][$row['aid']] = 1;
+                }
             }
 
         }
-return $actor_result;
+        return $actor_result;
     }
 
-
-    public static function get_movie_data_from_db($id='', $a_sql = '', $only_etnic = 0, $actor_type = [], $actors_array = [], $diversity_select = "default", $ethnycity = [], $all_data = '')
+    public static function get_array_convert_type()
     {
+
+        $array_convert_type = array('crowd' => 'crowd', 'ethnic' => 'ethnic', 'jew' => 'jew', 'face' => 'kairos', 'face2' => 'bettaface', 'surname' => 'surname');
+
+        return $array_convert_type;
+    }
+
+    public static function get_movie_data_from_db($id = '', $a_sql = '', $only_etnic = 0, $actor_type = [], $actors_array = [], $diversity_select = "default", $ethnycity = [], $all_data = '')
+    {
+
+
+
+
 
         $i = $i0 = $i_j = 0;
         $need_request = '';
@@ -158,11 +163,11 @@ return $actor_result;
         if (!$a_sql) {
 
             if (!count($actors_array)) {
-                $actors_array = self::get_actors_from_movie($id,'',$actor_type);
+                $actors_array = self::get_actors_from_movie($id, '', $actor_type);
             }
 
 
-            $actors_array =self::check_actors_to_stars($actors_array,$actor_type);
+            $actors_array = self::check_actors_to_stars($actors_array, $actor_type);
 //{ [1]=> string(8) "director" [2]=> string(6) "writer" [3]=> string(13) "cast_director" [4]=> string(8) "producer" }
             //var_dump($actor_type);
 
@@ -177,9 +182,7 @@ return $actor_result;
                     }
                 }
             }
-        }
-
-        else {
+        } else {
             $all_actors[$id] = 1;
             $total_actors_data[$id] = 1;
         }
@@ -189,16 +192,16 @@ return $actor_result;
             $sql = "SELECT * FROM `data_actors_meta` where actor_id =" . $id . " ";
             $rows = Pdo_an::db_results_array($sql);
 
-            foreach ($rows  as $r) {
+            foreach ($rows as $r) {
 
                 //if ($r['gender'])
                 //{
-                 //  echo $r['actor_id'].' - '.$r['gender'].'<br>';
+                //  echo $r['actor_id'].' - '.$r['gender'].'<br>';
 
-                    $gender_result = $array_convert[$r['gender']];
-                    if (!$gender_result)$gender_result='NA';
+                $gender_result = $array_convert[$r['gender']];
+                if (!$gender_result) $gender_result = 'NA';
 
-                    $ethnic['gender'][$r['actor_id']] = $gender_result;
+                $ethnic['gender'][$r['actor_id']] = $gender_result;
                 //}
 
 
@@ -212,8 +215,7 @@ return $actor_result;
         }
 
 
-
-        $array_convert_type = array('crowd' => 'crowd', 'ethnic' => 'ethnic', 'jew' => 'jew', 'face' => 'kairos', 'face2' => 'bettaface', 'surname' => 'surname');
+        $array_convert_type = self::get_array_convert_type();
 
 
         $ethnic_sort = [];
@@ -221,8 +223,7 @@ return $actor_result;
 
         if ($diversity_select == 'm_f' && !$a_sql) {
             $result['gender'] = $ethnic['gender'];
-        }
-        else {
+        } else {
             if ($diversity_select == 'wmj_nwm' || $diversity_select == 'wm_j_nwmj') {
                 $ethnic_sort['gender'] = [];
             }
@@ -288,7 +289,7 @@ return $actor_result;
             $total = self::get_summary_request($all_data['actors_data'], $all_data['result'], $all_data['type'], $all_data['request'], $ethnycity, 1);
         }
 
-        return array('data' => $data, 'all_data' => $all_data, 'current' => $current, 'total' => $total, 'diversity' => $diversity,'default_data'=>$ethnic_array['array_default']);
+        return array('data' => $data, 'all_data' => $all_data, 'current' => $current, 'total' => $total, 'diversity' => $diversity, 'default_data' => $ethnic_array['array_default']);
 
 
     }
@@ -316,19 +317,17 @@ return $actor_result;
         return $array;
     }
 
-    public static function   check_actors_to_stars($actors_array,$actor_type=[])
+    public static function check_actors_to_stars($actors_array, $actor_type = [])
     {
 
-        if (((in_array('s',$actor_type) && !$actors_array['s']) || (in_array('m',$actor_type) && !$actors_array['m'])) && $actors_array['e']) {
+        if (((in_array('s', $actor_type) && !$actors_array['s']) || (in_array('m', $actor_type) && !$actors_array['m'])) && $actors_array['e']) {
             $a = 0;
 
-            if (in_array('s',$actor_type) && !$actors_array['s'])
-            {
-                $s=1;
+            if (in_array('s', $actor_type) && !$actors_array['s']) {
+                $s = 1;
             }
-            if (in_array('m',$actor_type) && !$actors_array['m'])
-            {
-                $m=1;
+            if (in_array('m', $actor_type) && !$actors_array['m']) {
+                $m = 1;
             }
 
             foreach ($actors_array['e'] as $id => $val) {
@@ -352,649 +351,1111 @@ return $actor_result;
                 }
 
                 $a++;
-           }
+            }
         }
         return $actors_array;
     }
 
-public static function get_echnic_custom($array_actors, $ethnic, $diversity_select, $arrayneed_compare, $request_type, $array_request, $all_data = '')
-{
+    public static function get_echnic_custom($array_actors, $ethnic, $diversity_select, $arrayneed_compare, $request_type, $array_request, $all_data = '')
+    {
 
-    $array_compare_cache = array('Sadly, not'  => 'N/A','1' => 'N/A', '2' => 'N/A', 'NJW' => 'N/A','W' => 'White', 'B' => 'Black', 'EA' => 'Asian', 'H' => 'Latino', 'JW' => 'Jewish', 'I' => 'Indian', 'M' => 'Arab', 'MIX' => 'Mixed / Other', 'IND' => 'Indigenous');
+        $array_compare_cache = array('Sadly, not' => 'N/A', '1' => 'N/A', '2' => 'N/A', 'NJW' => 'N/A', 'W' => 'White', 'B' => 'Black', 'EA' => 'Asian', 'H' => 'Latino', 'JW' => 'Jewish', 'I' => 'Indian', 'M' => 'Arab', 'MIX' => 'Mixed / Other', 'IND' => 'Indigenous');
 
 
-    global $array_compare;
-    $array_default=[];
-    $array_type = [];
-    $array_result = [];
-    $all_data_request = [];
-    foreach ($array_actors as $id => $enable) {
+        global $array_compare;
+        $array_default = [];
+        $array_type = [];
+        $array_result = [];
+        $all_data_request = [];
+        foreach ($array_actors as $id => $enable) {
 
-        //echo 'prepare '.$id.'<br>';
-        ////////sor ethnic
-        $a = 0;
-        foreach ($ethnic as $type => $array) {
-            if ($array[$id]) {
-                //var_dump($array);
-                $data = $array[$id];
-                ///echo '$data='.$data.'<br>';
-                if (!is_numeric($data) &&   $array_compare_cache[$data]!='N/A' ) {
+            //echo 'prepare '.$id.'<br>';
+            ////////sor ethnic
+            $a = 0;
+            foreach ($ethnic as $type => $array) {
+                if ($array[$id]) {
+                    //var_dump($array);
+                    $data = $array[$id];
+                    ///echo '$data='.$data.'<br>';
+                    if (!is_numeric($data) && $array_compare_cache[$data] != 'N/A') {
 
-                    if ($array_compare_cache[$data] )
-                    {
-                        $data = $array_compare_cache[$data];
-                    } else if ($array_compare[$data]) {
-                        $data = $array_compare[$data];
-                    }
-                    //echo '$data =' .$data.' <bR>';
-
-                    if ($diversity_select == 'wj_nw') {//////White (+ Jews ) v.s. non-White
-
-                        $array_default[$data]++;
-                        if ($data == 'White' || $data == 'Jewish') {
-                            $data = 'White (+ Jews )';
-
-                        } else {
-                            $data = 'non-White';
+                        if ($array_compare_cache[$data]) {
+                            $data = $array_compare_cache[$data];
+                        } else if ($array_compare[$data]) {
+                            $data = $array_compare[$data];
                         }
-                        $array_result[$data]++;
-                        $array_type[$type]++;
-                        break;
-                    }
-                    else if ($diversity_select == 'w_j_nwj') {///////White (- Jews ) v.s. non-White (+ Jews)
+                        //echo '$data =' .$data.' <bR>';
 
-                        if ($data == 'White') {
-                            $data = 'White (- Jews )';
-                            $array_result[$data]++;
-                        } else if ($data == 'Jewish') {
-                            $data = 'White (- Jews )';
-                            $array_result[$data]--;
-                        } else {
-                            $data = 'non-White (+ Jews)';
-                            $array_result[$data]++;
-                        }
+                        if ($diversity_select == 'wj_nw') {//////White (+ Jews ) v.s. non-White
 
-                        $array_type[$type]++;
-                        break;
-                    }
-                    else if ($diversity_select == 'wmj_nwm') {
-                        if ($type != 'gender') {
-                            //////White Male (+ Jews ) v.s. non-Whites ( + Female Whites )
-                            $gender = $ethnic['gender'][$id];
-
-                            //echo $type.' '.$data.' ';
-                            //echo 'gender: '. $gender . '  <br>';
-
-                            if (($data == 'White' || $data == 'Jewish') && $gender == "Male") {
-
-                                $data = 'White Male (+ Jews )';
+                            $array_default[$data]++;
+                            if ($data == 'White' || $data == 'Jewish') {
+                                $data = 'White (+ Jews )';
 
                             } else {
-
-                                $data = 'non-Whites ( + Female Whites )';
+                                $data = 'non-White';
                             }
-
                             $array_result[$data]++;
                             $array_type[$type]++;
-
                             break;
-                        }
-                    }
-                    else if ($diversity_select == 'wm_j_nwmj') {
-                        if ($type != 'gender') {
-                            //////White Male (- Jews ) v.s. non-White Males (+ Jews + Female Whites)
-                            $gender = $ethnic['gender'][$id];
+                        } else if ($diversity_select == 'w_j_nwj') {///////White (- Jews ) v.s. non-White (+ Jews)
 
-                            //echo $type.' '.$data.' ';
-                            //echo 'gender: '. $gender . '  <br>';
+                            if ($data == 'White') {
+                                $data = 'White (- Jews )';
+                                $array_result[$data]++;
+                            } else if ($data == 'Jewish') {
+                                $data = 'White (- Jews )';
+                                $array_result[$data]--;
+                            } else {
+                                $data = 'non-White (+ Jews)';
+                                $array_result[$data]++;
+                            }
 
-                            if (($data == 'White') && $gender == "Male") {
+                            $array_type[$type]++;
+                            break;
+                        } else if ($diversity_select == 'wmj_nwm') {
+                            if ($type != 'gender') {
+                                //////White Male (+ Jews ) v.s. non-Whites ( + Female Whites )
+                                $gender = $ethnic['gender'][$id];
 
-                                $data = 'White Male (- Jews )';
+                                //echo $type.' '.$data.' ';
+                                //echo 'gender: '. $gender . '  <br>';
+
+                                if (($data == 'White' || $data == 'Jewish') && $gender == "Male") {
+
+                                    $data = 'White Male (+ Jews )';
+
+                                } else {
+
+                                    $data = 'non-Whites ( + Female Whites )';
+                                }
+
                                 $array_result[$data]++;
                                 $array_type[$type]++;
+
+                                break;
+                            }
+                        } else if ($diversity_select == 'wm_j_nwmj') {
+                            if ($type != 'gender') {
+                                //////White Male (- Jews ) v.s. non-White Males (+ Jews + Female Whites)
+                                $gender = $ethnic['gender'][$id];
+
+                                //echo $type.' '.$data.' ';
+                                //echo 'gender: '. $gender . '  <br>';
+
+                                if (($data == 'White') && $gender == "Male") {
+
+                                    $data = 'White Male (- Jews )';
+                                    $array_result[$data]++;
+                                    $array_type[$type]++;
+                                } else {
+
+                                    $data = 'non-Whites ( + Jews + Female Whites )';
+                                    $array_result[$data]++;
+                                    $array_type[$type]++;
+                                }
+
+                                break;
+                            }
+                        } else {
+
+
+                            if ($a == 0) {
+                                $array_result[$data]++;
+                                $request_type[$type]++;
+                                $array_request[$type][$data]++;
+                                $arrayneed_compare[$data]++;
+                                $all_data_request['actors_data'][$data][$type][] = $id;
+                                //echo 'result  '.$type.' - '.$data.'<br>';
+                            }
+                            $a++;
+                            if (!$all_data) {
+
+                                break;
+
                             } else {
 
-                                $data = 'non-Whites ( + Jews + Female Whites )';
-                                $array_result[$data]++;
-                                $array_type[$type]++;
+                                $all_data_request['result'][$data]++;
+                                $all_data_request['type'][$type]++;
+                                $all_data_request['request'][$type][$data]++;
+
+
+                                $array_enable = $all_data_request['actors_data'][$data][$type];
+                                if (!$array_enable) $array_enable = [];
+                                if (!in_array($id, $array_enable)) {
+
+                                    $all_data_request['actors_data'][$data][$type][] = $id;
+                                }
+
+
                             }
 
-                            break;
                         }
-                    }
-                    else {
-
-
-                        if ($a == 0) {
-                            $array_result[$data]++;
-                            $request_type[$type]++;
-                            $array_request[$type][$data]++;
-                            $arrayneed_compare[$data]++;
-                            $all_data_request['actors_data'][$data][$type][] = $id;
-                            //echo 'result  '.$type.' - '.$data.'<br>';
-                        }
-                        $a++;
-                        if (!$all_data) {
-
-                            break;
-
-                        }
-                        else {
-
-                            $all_data_request['result'][$data]++;
-                            $all_data_request['type'][$type]++;
-                            $all_data_request['request'][$type][$data]++;
-
-
-                            $array_enable =$all_data_request['actors_data'][$data][$type];
-                            if (!$array_enable)$array_enable=[];
-                            if (!in_array($id, $array_enable)) {
-
-                                $all_data_request['actors_data'][$data][$type][] = $id;
-                            }
-
-
-                        }
-
                     }
                 }
+
             }
-
         }
-    }
 
 
-    if ($diversity_select == 'diversity') {
+        if ($diversity_select == 'diversity') {
 
-        $total_d = 0;
+            $total_d = 0;
 
-        foreach ($array_result as $index => $summ) {
+            foreach ($array_result as $index => $summ) {
 
-            $total = $summ;
-            if (!$total) $total = 0;
+                $total = $summ;
+                if (!$total) $total = 0;
 
-            $total_d += $total * ($total - 1);
-            $total_summ += $total;
+                $total_d += $total * ($total - 1);
+                $total_summ += $total;
 
-        }
+            }
 
 //echo '$total_summ = '.$total_summ.' $total_d= '.$total_d.'<br>';
 
-        $total_summ_result = 1 - ($total_d / ($total_summ * ($total_summ - 1)));
-        $total_summ_result = round($total_summ_result, 2);
+            $total_summ_result = 1 - ($total_d / ($total_summ * ($total_summ - 1)));
+            $total_summ_result = round($total_summ_result, 2);
 
 
 //echo '$total_summ_result ='.$total_summ_result.'<br>';
 
-    }
-    if (!$total_summ_result) {
-        $total_summ_result = 0;
-    }
+        }
+        if (!$total_summ_result) {
+            $total_summ_result = 0;
+        }
 
-    //var_dump($array_result);
+        //var_dump($array_result);
 //echo '<br>';
 
-    if ($array_default)
+        if ($array_default) {
+            $array_default = self::normalise_array($array_default);
+        }
+        return array('diversity' => $total_summ_result, 'array_default' => $array_default, 'all_data' => $all_data_request, 'array_request' => $array_request, 'total' => count($array_actors), 'type' => $request_type, 'result' => $array_result, 'arrayneed_compare' => $arrayneed_compare);
+
+
+    }
+
+    public static function get_population_array($type)
     {
-        $array_default = self::normalise_array($array_default);
-    }
-    return array('diversity' => $total_summ_result, 'array_default'=>$array_default, 'all_data' => $all_data_request, 'array_request' => $array_request, 'total' => count($array_actors), 'type' => $request_type, 'result' => $array_result, 'arrayneed_compare' => $arrayneed_compare);
+        $array_desc = [];
+        $sql = "SELECT * FROM `data_population` where `type`='" . $type . "'";
+        $rows = Pdo_an::db_results_array($sql);
 
 
-}
-
-
-public static function get_summary_request($array_request_actors, $arrayneed_compare, $request_type, $array_request, $enable_ethnycity = '', $enable_actors_link = '', $enable_demograpic = '')
-{
-
-
-    $summ = 0;
-    $content = '<table class="tablesorter-blackice"><tr><th>Race</th>';
-
-    foreach ($arrayneed_compare as $race => $count) {
-        $content .= '<th>' . ucfirst($race) . '</th>';
-    }
-    $content .= '<th>Total:</th><tr>';
-
-
-    foreach ($request_type as $name => $val) {
-        $content .= '<tr>';
-        $i = 0;
-
-        foreach ($arrayneed_compare as $race => $count) {
-            if ($i == 0) {
-                $content .= '<td>' . ucfirst($name) . '</td>';
+        if ($type == 'ethnic_desc') {
+            foreach ($rows as $r) {
+                $array_desc[$r['name']] = array('desc' => $r['Notes'], 'link' => $r['Source']);
             }
 
-            if ($enable_actors_link) {
-
-
-                if ($array_request[$name][$race]) {
-
-
-                    $actors_data = $array_request_actors[$race][$name];
-                    $actors_data_string = implode(',', $actors_data);
-                    $content .= '<td><a class="actors_link" href="#" data-id="' . $actors_data_string . '">' . $array_request[$name][$race] . '</a></td>';
-                } else {
-                    $content .= '<td></td>';
-                }
-
-
-            } else {
-                $content .= '<td>' . $array_request[$name][$race] . '</td>';
-            }
-
-
-            $i++;
-        }
-
-        $content .= '<td>' . $val . '</td>';
-        $summ += $val;
-
-        $content .= '</tr>';
-
-
-    }
-
-    ///footer
-
-    if (!$enable_ethnycity) {
-        $content .= '<tr><th>Total:</th>';
-        foreach ($arrayneed_compare as $race => $count) {
-
-            $actors_all_data = '';
-            if ($enable_actors_link) {
-                foreach ($array_request_actors[$race] as $ai => $af) {
-                    $actors_all_data .= ',' . implode($af, ',');
-                }
-                if ($actors_all_data) {
-                    $actors_all_data = substr($actors_all_data, 1);
-                }
-
-                $content .= '<th><a class="actors_link" href="#" data-id="' . $actors_all_data . '">' . $count . '</a></th>';
-            } else {
-                $content .= '<th>' . $count . '</th>';
-            }
-
-
-        }
-        $content .= '<th>' . $summ . '</th></tr>';
-
-
-        if ($enable_demograpic) {
-            $footer = 'Demographic:';
+            return $array_desc;
 
         } else {
-            $footer = 'Total Percent:';
+            return $rows;
         }
 
+    }
 
-        $content .= '<tr><th>' . $footer . '</th>';
+    public static function get_summary_request($array_request_actors, $arrayneed_compare, $request_type, $array_request, $enable_ethnycity = '', $enable_actors_link = '', $enable_demograpic = '')
+    {
 
+        $array_desc = self::get_population_array('ethnic_desc');
+
+        $summ = 0;
+        $content = '<div id="container_main_movie_graph" class="section_chart section_ethnic"></div>
+<table class="tablesorter-blackice"><tr><th class="t_header">Race</th>';
 
         foreach ($arrayneed_compare as $race => $count) {
-            $count_percent = '';
-            if ($summ) {
-                $count_percent = round(($count / $summ) * 100, 2) . ' %';
+            $content .= '<th>' . ucfirst($race) . '</th>';
+        }
+        $content .= '<th class="total_column">Total</th><th class="t_small">Visuals</th><th class="t_small">Info</th><tr>';
+
+        $r = 0;
+        foreach ($request_type as $name => $val) {
+            $content .= '<tr class="row_demograpic">';
+            $i = 0;
+
+            foreach ($arrayneed_compare as $race => $count) {
+                if ($i == 0) {
+                    $content .= '<td>' . ucfirst($name) . '</td>';
+                }
+
+                if ($enable_actors_link) {
+
+
+                    if ($array_request[$name][$race]) {
+
+
+                        $actors_data = $array_request_actors[$race][$name];
+                        $actors_data_string = implode(',', $actors_data);
+                        $content .= '<td><a class="actors_link" href="#" data-id="' . $actors_data_string . '">' . $array_request[$name][$race] . '</a></td>';
+                    } else {
+                        $content .= '<td></td>';
+                    }
+
+
+                } else {
+                    $content .= '<td>' . $array_request[$name][$race] . '</td>';
+                }
+
+
+                $i++;
             }
 
-            $content .= '<th>' . $count_percent . '</th>';
+            $content .= '<td>' . $val . '</td>';
+            $summ += $val;
+
+
+
+
+            $source = '';
+
+            if ($array_desc[$name]['link']) {
+                $source = '<p style="margin-top: 10px"><a target="_blank"  href="' . $array_desc[$name]['link'] . '">Source: '.$array_desc[$name]['link'] .'</a></p>';
+            }
+            $graph = '';
+            $comment=$array_desc[$name]['desc'];
+            if ($comment )
+            {
+                $comment = str_replace("\'","'",$comment);
+
+                $comment_graph='<div class="note"><div class="t_desc"></div><div class="note_show" style="display: none;"><div class="note_show_content"><div>'.$comment.$source.'</div></div></div></div>';
+            }
+            else
+            {
+                $comment_graph='';
+            }
+
+
+            $content .= $graph . '<td></td><td class="o_viz">'.$comment_graph.'</td></tr>';
+
+            $r++;
+
         }
-        $content .= '<th>100%</th></tr>';
 
-        if ($enable_demograpic) {
+        $data_graph = self::normalise_array($arrayneed_compare);
+        $ethnic_graph_data = self::create_pie('Cast Percentages',$data_graph);
+        ///footer
 
-            $actor_content = self::set_table_ethnic($arrayneed_compare);
-            $buying_power = self::set_table_ethnic($arrayneed_compare, '', 'buying_power');
+        if (!$enable_ethnycity) {
+            $content .= '<tr><th class="align_left">Total</th>';
+            foreach ($arrayneed_compare as $race => $count) {
 
-            $content .= $actor_content . $buying_power;
+                $actors_all_data = '';
+                if ($enable_actors_link) {
+                    foreach ($array_request_actors[$race] as $ai => $af) {
+                        $actors_all_data .= ',' . implode($af, ',');
+                    }
+                    if ($actors_all_data) {
+                        $actors_all_data = substr($actors_all_data, 1);
+                    }
 
+                    $content .= '<th><a class="actors_link" href="#" data-id="' . $actors_all_data . '">' . $count . '</a></th>';
+                } else {
+                    $content .= '<th>' . $count . '</th>';
+                }
+
+
+            }
+            $content .= '<th>' . $summ . '</th><th><span class="t_edit"></span></th><th rowspan="2"><a id="op" class="open_demographic open_ul" href="#"></a></th></tr>';
+
+
+            if ($enable_demograpic) {
+                $footer = 'Cast Percentages';
+
+            } else {
+                $footer = 'Total Percent';
+            }
+
+
+            $content .= '<tr><th class="align_left">' . $footer . '</th>';
+
+
+            foreach ($arrayneed_compare as $race => $count) {
+                $count_percent = '';
+                if ($summ) {
+                    $count_percent = round(($count / $summ) * 100, 2) . '<span class="prcnt">%</span>';
+                }
+
+                $content .= '<th>' . $count_percent . '</th>';
+            }
+
+
+
+            $content .= '<th>100<span class="prcnt">%</span></th><th><span class="t_graph ethnic_graph main_ethnic_graph"></span><div style="display: none" class="ethnic_graph_data">'.$ethnic_graph_data.'</div></th></tr>';
+
+            if ($enable_demograpic) {
+
+                $actor_content = self::set_table_ethnic($arrayneed_compare,'');
+
+                $content .= $actor_content ;
+
+
+            }
 
         }
 
-    }
+        $content .= '</table>';
 
-    $content .= '</table>';
+
 //echo $content;
-    return $content;
-}
-public static function set_table_ethnic($data, $year = '', $type = '')
-{
-
-    if (!$year) {
-        $year = date('Y', time());
-    }
-    $population_prefix = 'population ';
-    if ($type == 'buying_power') {
-        $population_prefix = ' ';
-
+        return $content;
     }
 
-    global $pdo;
-    global $country;
-    // var_dump($country);
-    $countries = $country;
-    $result_compare = '';
+    public static function get_populaton_countries($index,$year, $type, $array_population, $population_prefix, $countries,$prefix)
+    {
 
-    $data = self::normalise_array($data);
-    $array_population = [];
 
-    if (is_string($countries)) {
-        $countries[0] = $countries;
-    }
 
-    if ($countries) {
         foreach ($countries as $innercountry) {
-            ///   echo $country;
 
+            $at=[];
             $array_countries = array('USA' => 'United States', 'UK' => 'United Kingdom', 'Russia (CIS)' => 'Russia');
 
             if ($array_countries[$innercountry]) {
                 $innercountry = $array_countries[$innercountry];
             }
+
             if ($type == 'buying_power') {
 
                 $sql = "SELECT *   FROM `data_buying_power`, data_population_country where data_buying_power.cca2=data_population_country.cca2 and  data_population_country.`country_name` = '" . $innercountry . "' limit 1";
 
+            } else {
+                $sql = "SELECT populatin_by_year, ethnic_array_result  FROM data_population_country  WHERE `country_name` = '" . $innercountry . "' limit 1";
             }
-            else {
-                $sql = "SELECT ethnic_array_result  FROM data_population_country  WHERE `country_name` = '" . $innercountry . "' limit 1";
+            $r = Pdo_an::db_fetch_row($sql, [], 'array');
+
+            $rows = Pdo_an::db_results_array($sql);
+
+            $year_range_max = 1000;
+            $current_year = '';
+            foreach ($rows as $r) {
+
+
+                if ($type == 'buying_power') {
+
+                    $current_population = $r['total'];
+
+                    // echo $current_population.' ';
+                } else {
+
+                    $population = $r['populatin_by_year'];
+                    if ($population) {
+                        $population_array = json_decode($population);
+
+                        foreach ($population_array as $cy => $count) {
+                            $year_range = abs($year - $cy);
+
+                            if ($year_range < $year_range_max && $cy <= date('Y', time()) && $count > 0) {
+                                $year_range_max = $year_range;
+                                $current_year = $cy;
+                            }
+                        }
+                    }
+                    $current_population = $population_array->{$current_year};
+                }
+
+                if ($current_year)
+                {
+                    $pname = $innercountry . $population_prefix . ' (' . $current_year . ')';
+                }
+                else
+                {
+                    $pname = $innercountry . $population_prefix ;
+                }
+
+
+                $ethnic = $r['ethnic_array_result'];
+                if ($ethnic) {
+                    $ethnic_array = json_decode($ethnic);
+                    foreach ($ethnic_array as $i => $d) {
+                        $at[$i] += $d * $current_population;
+                    }
+
+                }
+
             }
-            $r = Pdo_an::db_fetch_row($sql,[],'array');
+
+
+            $array_population[$innercountry.$index] = array(
+                'name'=>$pname,
+                'data' => $at,
+                'percent'=>self::normalise_array($at),
+                'comment'=>'',
+                'prefix'=>$prefix
+            );
+
+        }
+
+
+        return $array_population;
+    }
+
+
+    public static function get_populaton_domestic($year, $type, $array_population, $population_prefix)
+    {
+
+
+        if ($type == 'buying_power') {
+
+            $sql = "SELECT *   FROM `data_buying_power`, data_population_country where data_buying_power.cca2=data_population_country.cca2 and (  `country_name` = 'United States' or `country_name` = 'Canada') limit 2";
+
+        } else {
+            $sql = "SELECT ethnic_array_result, populatin_by_year  FROM data_population_country  WHERE `country_name` = 'United States' or `country_name` = 'Canada' limit 2";
+        }
+        $rows = Pdo_an::db_results_array($sql);
+
+        $year_range_max = 1000;
+        $current_year = '';
+        foreach ($rows as $r) {
+
 
             if ($type == 'buying_power') {
+
                 $current_population = $r['total'];
+
+                // echo $current_population.' ';
+            } else {
+
+                $population = $r['populatin_by_year'];
+                if ($population) {
+                    $population_array = json_decode($population);
+
+                    foreach ($population_array as $cy => $count) {
+                        $year_range = abs($year - $cy);
+
+                        if ($year_range < $year_range_max && $cy <= date('Y', time()) && $count > 0) {
+                            $year_range_max = $year_range;
+                            $current_year = $cy;
+                        }
+                    }
+                }
+                $current_population = $population_array->{$current_year};
+            }
+
+            if ($current_year)
+            {
+                $pname = 'Domestic ' . $population_prefix . ' (' . $current_year . ')';
             }
             else
             {
-                $current_population=1;
+                $pname = 'Domestic ' . $population_prefix ;
             }
+
+
             $ethnic = $r['ethnic_array_result'];
-
             if ($ethnic) {
-
                 $ethnic_array = json_decode($ethnic);
-
                 foreach ($ethnic_array as $i => $d) {
-                    $array_population[$innercountry . ' '.$population_prefix][$i] = $d*$current_population/100;
+                    $array_population[$pname][$i] += $d * $current_population;
                 }
-                if ($type == 'buying_power') {
-                    foreach ($array_population[$innercountry . ' '.$population_prefix] as $i => $d) {
-                        $array_population[$innercountry . ' '.$population_prefix][$i] = self::k_m_b_generator($d);
-                    }
-                    //    $array_population[$innercountry . ' '.$population_prefix] =self::normalise_array($array_population[$innercountry . ' '.$population_prefix]);
 
-                    // var_dump($array_population);
-                }
             }
+
         }
 
 
 
-    }
-
-////get domestic population
-    if ($type == 'buying_power') {
-
-        $sql = "SELECT *   FROM `data_buying_power`, data_population_country where data_buying_power.cca2=data_population_country.cca2 and (  `country_name` = 'United States' or `country_name` = 'Canada') limit 2";
-
-    } else {
-        $sql = "SELECT ethnic_array_result, populatin_by_year  FROM data_population_country  WHERE `country_name` = 'United States' or `country_name` = 'Canada' limit 2";
-    }
-    $rows = Pdo_an::db_results_array($sql);
-
-    $year_range_max = 1000;
-    $current_year = '';
-    foreach ($rows as $r)
-    {
 
 
-        if ($type == 'buying_power') {
-
-            $current_population = $r['total'];
-
-            // echo $current_population.' ';
+        if (!$type == 'buying_power') {
+            $array_population[$pname] = self::normalise_array($array_population[$pname]);
         } else {
-
-            $population = $r['populatin_by_year'];
-            if ($population) {
-                $population_array = json_decode($population);
-
-                foreach ($population_array as $cy => $count) {
-                    $year_range = abs($year - $cy);
-
-                    if ($year_range < $year_range_max && $cy <= date('Y', time()) && $count > 0) {
-                        $year_range_max = $year_range;
-                        $current_year = $cy;
-                    }
-                }
-            }
-            $current_population = $population_array->{$current_year};
-        }
-
-
-        $ethnic = $r['ethnic_array_result'];
-        if ($ethnic) {
-            $ethnic_array = json_decode($ethnic);
-            foreach ($ethnic_array as $i => $d) {
-                $array_population['Domestic '.$population_prefix][$i] += $d * $current_population;
+            foreach ($array_population[$pname] as $i => $d) {
+                $array_population[$pname][$i] = self::k_m_b_generator($d / 100);
             }
 
         }
 
+
+        return $array_population;
+
     }
-    if (!$type == 'buying_power')
+
+
+    public static function get_populaton_custom($index,$year, $type, $array_population,$prefix='')
     {
-        $array_population['Domestic '.$population_prefix] = self::normalise_array($array_population['Domestic '.$population_prefix]);
-    }
-    else
-    {
-        foreach ($array_population['Domestic '.$population_prefix]  as $i => $d) {
-            $array_population['Domestic '.$population_prefix] [$i] = self::k_m_b_generator($d/100);
-        }
 
-    }
 
-//        $sql = "SELECT * FROM data_population WHERE `type` = 'percent' ";
-//
-//        $q = $pdo->prepare($sql);
-//        $q->execute();
-//        $q->setFetchMode(PDO::FETCH_ASSOC);
-//
-//        while ($r = $q->fetch()) {
-//
-//            foreach ($r as $i => $d) {
-//                $array_population[$r['name']][$i] = $d;
-//            }
-//        }
-    ////  var_dump($array_population);
+        $custom_ethnic_array = array('White', 'Arab', 'Asian', 'Black', 'Indian', 'Indigenous', 'Latino', 'Mixed / Other', 'Jewish');
 
-    ////get world population
-    if ($type == 'buying_power') {
-
-        $sql = "SELECT *   FROM `data_buying_power`, data_population_country where data_buying_power.cca2=data_population_country.cca2 and   data_population_country.`ethnic_array_result` !=''  and data_population_country.populatin_by_year !=''";
-
-    }
-    else
-    {
-        $sql = "SELECT ethnic_array_result,populatin_by_year  FROM data_population_country  WHERE `ethnic_array_result` !=''  and populatin_by_year !='' ";
-    }
-
-    $rows = Pdo_an::db_results_array($sql);
-
-    foreach ($rows as $r)
-    {
 
         if ($type == 'buying_power') {
-            $current_population = $r['total'];
+
+          $custom_population = self::get_population_array('buying_power');
+        }
+        else if ($type == 'income') {
+
+            $custom_population = self::get_population_array('income');
+        }
+        else
+        {
+            $custom_population = self::get_population_array('population');
+        }
+
+        $population_array_custom = [];
+
+
+        foreach ($custom_population as $r) {
+            $population_array_custom[$r['Year']] = $r;
+        }
+
+
+        $year_range_max = 1000;
+        $current_year = '';
+
+        foreach ($population_array_custom as $cy => $data) {
+            $year_range = abs($year - $cy);
+
+            if ($year_range < $year_range_max && $cy <= date('Y', time())) {
+                $year_range_max = $year_range;
+                $current_year = $cy;
+            }
+        }
+
+
+        $custom_population_data = $population_array_custom[$current_year];
+
+
+        $custon_name = $custom_population_data['name'];
+
+
+        $at = [];
+
+
+        foreach ($custom_ethnic_array as $eth) {
+
+            $number = $custom_population_data[$eth];
+            if ($type == 'buying_power') {
+                $number = self::to_number($number);
+              //  $number= self::k_m_b_generator($number);
+            }
+            if (!$number)  $number=0;
+
+            if ($index=='us_income')
+            {
+
+
+               $population =  $array_population['us']['data'][$eth];
+
+                $at[$eth] = round($number*$population,0);
+
+
+            }
+            else
+            {
+                $at[$eth] =  round($number,0);
+            }
+
+
+
+
+
+        }
+        if ($type == 'buying_power') {
+            $comment_array = self::get_population_array('buying_power_notes');
+        }
+        else
+        {
+            $comment_array = self::get_population_array('population_notes');
+        }
+
+
+
+
+        $comment = $comment_array[0]['Notes'];
+        $array_population[$index] = array(
+            'name'=>$custon_name . ' (' . $current_year . ')',
+            'data' => $at,
+            'percent'=>self::normalise_array($at),
+            'comment'=>$comment,
+            'prefix'=>$prefix
+        );
+
+        return $array_population;
+    }
+
+    public static function get_populaton_world($index,$year, $type, $array_population_result, $population_prefix,$prefix='')
+    {
+        $custom_ethnic_array = array('White', 'Arab', 'Asian', 'Black', 'Indian', 'Indigenous', 'Latino', 'Mixed / Other', 'Jewish');
+        $year_range_max = 1000;
+        $current_year = '';
+        $array_population=[];
+
+        if ($type == 'buying_power') {
+
+            $sql = "SELECT *   FROM `data_buying_power`, data_population_country where data_buying_power.cca2=data_population_country.cca2 and   data_population_country.`ethnic_array_result` !=''  and data_population_country.populatin_by_year !=''";
+
+        } else {
+            $sql = "SELECT ethnic_array_result,populatin_by_year  FROM data_population_country  WHERE `ethnic_array_result` !=''  and populatin_by_year !='' ";
+        }
+
+        $rows = Pdo_an::db_results_array($sql);
+
+        foreach ($rows as $r) {
+
+            if ($type == 'buying_power') {
+                $current_population = $r['total'];
+            } else {
+                $population = $r['populatin_by_year'];
+                if ($population) {
+                    $population_array = json_decode($population);
+
+                    foreach ($population_array as $cy => $count) {
+                        $year_range = abs($year - $cy);
+
+                        if ($year_range < $year_range_max && $cy <= date('Y', time()) && $count > 0) {
+                            $year_range_max = $year_range;
+                            $current_year = $cy;
+                        }
+                    }
+                }
+                $current_population = $population_array->{$current_year};
+            }
+
+            if ($current_year)
+            {
+                $pname_w = 'World ' . $population_prefix. ' ('.$current_year.') ';
+            }
+            else
+            {
+
+            }
+            if ($type == 'buying_power') {
+
+                $pname_w = 'World Buying Power' . $population_prefix;
+            }
+            $pname =  $index;
+
+            ///var_dump($current_population);
+
+            $ethnic = $r['ethnic_array_result'];
+            if ($ethnic) {
+                $ethnic_array = json_decode($ethnic);
+                foreach ($ethnic_array as $i => $d) {
+                    if( in_array($i,$custom_ethnic_array))  $array_population[$pname][$i] += round($d * $current_population,0);
+
+                }
+
+            }
+
+
+        }
+        if ($type == 'buying_power') {
+            $comment_array = self::get_population_array('world_buying_power_notes');
+        }
+        else
+        {
+            $comment_array = self::get_population_array('world_notes');
+        }
+
+
+
+
+        $comment = $comment_array[0]['Notes'];
+
+        $array_population_result[$index] = array(
+            'name'=>$pname_w,
+            'data' =>$array_population[$pname],
+            'percent'=>self::normalise_array($array_population[$pname]),
+            'comment'=>'',
+            'prefix'=>$prefix
+        );
+
+        return $array_population_result;
+    }
+
+    public static function get_actor_type_min()
+    {
+        return  array('star' => 's', 'main' => 'm', 'extra' => 'e','director'=>'director','writer'=>'writer','cast_director'=>'cast_director','producer'=>'producer');
+
+    }
+
+    public static function get_ethnic_color($selected_color='default')
+    {
+        if ($selected_color == 'default') {
+
+            $array_ethnic_color = array(
+
+                'White' => '#2b908f',
+                'Asian' => '#90ee7e',
+                'Black' => '#f45b5b',
+                'Indian' => '#7798BF',
+                'Indigenous' => '#aaeeee',
+                'Jewish' => '#ff0066',
+                'Latino' => '#eeaaee',
+                'Mixed / Other' => '#55BF3B',
+                'Arab' => '#DF5353',
+
+                'Male' => '#2b908f',
+                'Female' => '#90ee7e',
+
+                'White (+ Jews )' => '#2b908f',
+                'non-White' => '#90ee7e',
+
+                'White (- Jews )' => '#2b908f',
+                'non-White (+ Jews)' => '#90ee7e',
+
+                'White Male (+ Jews )' => '#2b908f',
+                'non-Whites ( + Female Whites )' => '#90ee7e',
+
+                'White Male (- Jews )' => '#2b908f',
+                'non-Whites ( + Jews + Female Whites )' => '#90ee7e',
+
+                'Box Office International' => '#2b908f',
+                'Box Office Domestic' => '#90ee7e',
+
+                'Box Office per movie' => '#0006ee',
+                'Box Office total' => '#00ee1a'
+            );
+
+
         }
         else {
-            $population = $r['populatin_by_year'];
-            if ($population) {
-                $population_array = json_decode($population);
+            $array_ethnic_color = [];
 
-                foreach ($population_array as $cy => $count) {
-                    $year_range = abs($year - $cy);
+            $sql = "SELECT * FROM `options` where id =6 limit 1";
 
-                    if ($year_range < $year_range_max && $cy <= date('Y', time()) && $count > 0) {
-                        $year_range_max = $year_range;
-                        $current_year = $cy;
-                    }
-                }
+            $r = Pdo_an::db_fetch_row($sql);
+            $val = $r->val;
+            $val = str_replace('\\', '', $val);
+            $array_compare_0 = explode("',", $val);
+            foreach ($array_compare_0 as $val) {
+                $val = trim($val);
+                // echo $val.' ';
+                $result = explode('=>', $val);
+                ///var_dump($result);
+                $index = trim(str_replace("'", "", $result[0]));
+                $value = trim(str_replace("'", "", $result[1]));
+                $index = trim($index);
+                $array_ethnic_color[$index] = $value;
             }
-            $current_population = $population_array->{$current_year};
         }
 
-        $ethnic = $r['ethnic_array_result'];
-        if ($ethnic) {
-            $ethnic_array = json_decode($ethnic);
-            foreach ($ethnic_array as $i => $d) {
-                $array_population['World ' . $population_prefix][$i] += $d * $current_population;
-            }
-
-        }
-
-
+        return $array_ethnic_color;
     }
-    if (!$type == 'buying_power')
+
+    public static function create_pie($p_name,$data_graph,$prefix='')
     {
-        $array_population['World ' . $population_prefix] = self::normalise_array($array_population['World ' . $population_prefix]);
+        $array_ethnic_color =  self::get_ethnic_color();
+
+        $data_series=[];
+        foreach ($data_graph as $race => $count) {
+            if (!$count) $count = 0;
+            $data_series[] =[
+                'name'=> $race ,
+                'y' =>  floatval($count) ,
+                'color'=> $array_ethnic_color[$race] ,
+                'sliced'=> true,
+                'selected'=> true
+            ];
+        }
+        $ethnic_graph_data = json_encode(array('name'=>$p_name,'series'=>$data_series,'prefix'=>$prefix));
+
+        return $ethnic_graph_data;
     }
-    else
+    public static function create_column($p_name,$data_graph,$data_ethnic)
     {
-        $array_population['World ' . $population_prefix.' Percent'] = self::normalise_array($array_population['World ' . $population_prefix]);
+
+        $array_ethnic_color =  self::get_ethnic_color();
+
+        $data_series=[];
+        $data_series_ethnic=[];
 
 
-        if ($array_population['World ' . $population_prefix.' percent'])
-        {
-        foreach ($array_population['World ' . $population_prefix.' percent']   as $i => $d) {
-            $array_population['World ' . $population_prefix.' percent'][$i] = $d.' %';
-        }
-        }
-        if ($array_population['World ' . $population_prefix] ) {
-            foreach ($array_population['World ' . $population_prefix] as $i => $d) {
-                $array_population['World ' . $population_prefix][$i] = self::k_m_b_generator($d / 100);
-            }
+        foreach ($data_ethnic as $race => $count) {
+            if (!$count) $count = 0;
+          //   $data_series[] =[$race,floatval($count)];
+
+
+            $data_series_ethnic[] =[
+                'name'=> $race ,
+                'y' =>  floatval($count) ,
+                'color'=> $array_ethnic_color[$race] ,
+            ];
+
+            $count =$data_graph[$race];
+            if (!$count) $count = 0;
+
+            $data_series[] =[$race,floatval($count)];
+
         }
 
+
+        $ethnic_graph_data = json_encode(array('name'=>$p_name,'series'=>$data_series,'cast'=>$data_series_ethnic));
+
+        return $ethnic_graph_data;
     }
 
-    $array_pname = array('Jewish (Law of Return)' => 'Jewish');
+    public static function set_table_ethnic($data, $year = '', $type = '')
+    {
 
-    $array_population_result = [];
-
-
-    //arsort($data);
-    if (is_array($data)) {
-
-
-        $i = 0;
-        $actor_content = '';
-        $actor_heder = '';
-        $actor_result = '';
-        foreach ($data as $name => $summ) {
-
-            $actor_heder .= '<th></th>';
-            // $actor_result .= '<td>' . $summ . '%</td>';
-
-            /// echo $name.'-'.$summ.'<br>';
-
-            foreach ($array_population as $p_name => $p_data) {
-
-                foreach ($p_data as $p_data_name => $p_data_val) {
-
-                    if ($p_data_name == $name || $array_pname[$p_data_name] == $name) {
-
-
-
-                        if ($type == 'buying_power') {
-
-                            $array_population_result[$p_name]['value'][$name][0] = $p_data_val;
-                        }
-                        else
-                        {
-                            $p_data_val = str_replace('%', '', $p_data_val);
-                            $presult = $summ - $p_data_val;
-                            $array_population_result[$p_name]['value'][$name][0] = round($p_data_val, 2);
-                            $array_population_result[$p_name]['value'][$name][1] = round($presult, 2);
-                        }
-
-
-
-                    }
-                }
-
-                if ((!$array_population[$name] && $summ) && !$array_population_result[$p_name]['value'][$name][1]) {
-                    $array_population_result[$p_name]['value'][$name][1] = round($summ, 2);
-                }
-
-            }
-
-
-            $i++;
+        if (!$year) {
+            $year = date('Y', time());
+        }
+        $population_prefix = 'population ';
+        if ($type == 'buying_power') {
+            $population_prefix = ' ';
 
         }
+//        global $end;
+//        if ($end)
+//        {
+//            $year = $end;
+//        }
+
+        //$year = 1980;
+
+        $array_year = [];
+
+
+        global $country;
+
+      /// $country=['France','USA'];
+
+        // var_dump($country);
+        $countries = $country;
         $result_compare = '';
 
-///var_dump($array_population_result);
+        $data = self::normalise_array($data);
+        $array_population = [];
 
-        foreach ($array_population_result as $p_name => $p_data_val_main) {
+        if (is_string($countries)) {
+            $countries[0] = $countries;
+        }
+/////////get contries
 
 
-            $res_dt = '';
-            $res_dtpercent = '';
+
+
+////get domestic population
+
+     // $array_population = self::get_populaton_domestic($year,$type,$array_population,$population_prefix);
+
+
+///get custom data
+
+       $array_population = self::get_populaton_custom('us',$year,'',$array_population,'');
+       $array_population = self::get_populaton_custom('us_bp',$year,'buying_power',$array_population,'$');
+        $array_population = self::get_populaton_custom('us_income',$year,'income',$array_population,'$');
+
+        ////get world population
+
+       $array_population = self::get_populaton_world('w',$year,'',$array_population,'population ');
+       $array_population = self::get_populaton_world('w_bp',$year,'buying_power',$array_population,'','$');
+
+
+        if ($countries) {
+            $array_population = self::get_populaton_countries('cntr',$year,'',$array_population,' Population ',$countries,'');
+        }
+
+        $array_pname = array('Jewish (Law of Return)' => 'Jewish');
+
+        $array_population_result = [];
+
+
+        //arsort($data);
+        if (is_array($data)) {
+
+
+            $i = 0;
+            $actor_content = '';
+            $actor_heder = '';
+            $actor_result = '';
             foreach ($data as $name => $summ) {
-                //foreach ($p_data_val['value'] as $p_data_name => $p_data_val) {
+
+                $actor_heder .= '<th></th>';
+                // $actor_result .= '<td>' . $summ . '%</td>';
+
+                /// echo $name.'-'.$summ.'<br>';
+
+                ///var_dump($array_population);
 
 
-                $p_data_val = $p_data_val_main['value'][$name];
+                foreach ($array_population as $index => $object) {
 
-                if (!$p_data_val[0]) {
+                    $p_name = $object['name'];
+                    $p_data = $object['percent'];
 
-                    $p_data_val[0] = 0;
+
+                    foreach ($p_data as $p_data_name => $p_data_val) {
+
+                        if ($p_data_name == $name || $array_pname[$p_data_name] == $name) {
+
+                            $presult = 0;
+
+                            $p_data_val = str_replace('%', '', $p_data_val);
+
+                            if ($p_data_val) {
+                                $presult = $summ - $p_data_val;
+                            }
+
+
+                            $array_population_result[$index]['value'][$name][0] = round($p_data_val, 2);
+                            $array_population_result[$index]['value'][$name][1] = round($presult, 2);
+
+                        }
+                    }
+
+                    if ((!$array_population[$index] && $summ) && !$array_population_result[$index]['value'][$name][1]) {
+                        $array_population_result[$index]['value'][$name][1] = round($summ, 2);
+                    }
+
                 }
 
-                if ($type == 'buying_power') {
-                    $res_dt .= '<td>' . $p_data_val[0] . '</td>';
+
+                $i++;
+
+            }
+            $result_compare = '';
+
+
+            foreach ($array_population_result as $index => $p_data_val_main) {
+
+
+                $comment = $array_population[$index]['comment'];
+
+
+                $p_name = $array_population[$index]['name'];
+                $data_graph = $array_population[$index]['data'];
+                $prefix = $array_population[$index]['prefix'];
+                $data_graph_percent = $array_population[$index]['percent'];
+
+                if ($array_year[$p_name]) {
+
+                    $p_name = $p_name . ' (' . $array_year[$p_name] . ' )';
                 }
-                else {
-                    $res_dt .= '<td>' . $p_data_val[0] . ' %</td>';
+
+                $res_dt = '';
+                $res_dtpercent = '';
+                foreach ($data as $name => $summ) {
+                    //foreach ($p_data_val['value'] as $p_data_name => $p_data_val) {
+
+
+                    $p_data_val = $p_data_val_main['value'][$name];
+
+                    if (!$p_data_val[0]) {
+
+                        $p_data_val[0] = 0;
+                    }
+
+
+                    if ($p_data_val[0]) {
+                        $res_dt .= '<td>' . $p_data_val[0] . '<span class="prcnt">%</span></td>';
+
+                    } else {
+                        $res_dt .= '<td></td>';
+                    }
+
+
                     $cur_prcnt = round($p_data_val[1], 2);
                     if ($cur_prcnt < 0) {
                         $cur_prcnt = '<span class="red">' . $cur_prcnt . '</span>';
                     } else if ($cur_prcnt > 0) {
                         $cur_prcnt = '<span class="green">+' . $cur_prcnt . '</span>';
+                    } else if ($cur_prcnt == 0) {
+                        $cur_prcnt = '';
                     } else {
                         $cur_prcnt = '<span class="green">' . $cur_prcnt . '</span>';
                     }
                     $res_dtpercent .= '<td>' . $cur_prcnt . '</td>';
+
+
+                }
+
+
+                $ethnic_graph_data = self::create_pie($p_name, $data_graph, $prefix);
+                $ethnic_graph_column = self::create_column($p_name, $data_graph_percent, $data);
+
+
+                if ($comment) {
+                    $comment_graph = self::to_comments($comment);
+                } else {
+                    $comment_graph = '';
+                }
+
+                $source_graph = '<td ><span class="t_graph ethnic_graph"></span><div style="display: none" class="ethnic_graph_data">' . $ethnic_graph_data . '</div></td><td class="o_viz">' . $comment_graph . '</td></tr>';
+
+                $source_column = '<td ><span class="t_column ethnic_graph ethnic_graph_column"></span><div style="display: none" class="ethnic_graph_data">' . $ethnic_graph_column . '</div></td><td></td></tr>';
+
+
+                $result_compare .= '<tr class="actor_data"><td class="align_left">' . $p_name . ' <span class="gray">Percentage</span></td>' . $res_dt . '<td></td>' . $source_graph . '</tr>';
+                $result_compare .= '<tr class="actor_data"><td class="align_left">' . $p_name . ' <span class="gray">Representation</span></td>' . $res_dtpercent . '<td></td>' . $source_column . '</tr>';
+
+            }
+            ///notes
+            //total_notes
+            $notes = self::get_population_array('total_notes');
+
+            $comments = '';
+
+
+            if ($notes[0]) {
+                foreach ($data as $race => $count) {
+
+                    $reslt = '';
+                    if ($notes[0][$race]) {
+                        $reslt = $notes[0][$race];
+                        $comments .= '<td>' . self::to_comments($reslt) . '</td>';
+                    } else {
+                        $comments .= '<td></td>';
+                    }
+
+                }
+                if ($comments) {
+                    $comments = '<tr><td>Notes</td>' . $comments . '<td colspan="3"></td></tr>';
+
+                    $result_compare .= $comments;
                 }
 
 
             }
-
-            if ($type == 'buying_power') {
-
-
-                $result_compare .= '<tr class="actor_data"><td>Buying Power: ' . $p_name . '</td>' . $res_dt . '<td></td></tr>';
-
-            }
-            else {
-
-
-
-
-                $result_compare .= '<tr class="actor_data"><td>Percent: ' . $p_name . '</td>' . $res_dt . '<td></td></tr>';
-                $result_compare .= '<tr class="actor_data"><td>' . $p_name . ' Representation</td>' . $res_dtpercent . '<td></td></tr>';
-            }
         }
-
-
-    }
-
     return $result_compare;
 }
+public  static function to_comments($comment)
+{
+    $comment_graph='<div class="note nte"><div class="t_desc btn"></div><div class="nte_show"><div class="nte_in"><div class="nte_cnt "><div class="note_show_content">'.$comment.'</div></div></div></div></div></div>';
+
+    return $comment_graph;
+}
+
+public static function to_number($data)
+{
+    $data = trim($data);
+    $data = str_replace(',','',$data);
+    $data = str_replace(' ','',$data);
+
+    $data = strtolower($data);
+
+
+
+    if (strstr($data,'k'))
+    {
+        $data  =str_replace('k','',$data);
+        $data = $data*1000;
+    }
+
+    else if (strstr($data,'m'))
+    {
+        $data  =str_replace('m','',$data);
+        $data = $data*1000000;
+    }
+    else if (strstr($data,'b'))
+    {
+        $data  =str_replace('b','',$data);
+        $data = $data*1000000000;
+    }
+    else if (strstr($data,'t'))
+    {
+        $data  =str_replace('t','',$data);
+        $data = $data*1000000000000;
+    }
+    return $data;
+
+}
+
+
 public static function   k_m_b_generator($num) {
       if ($num > 999 && $num < 99999) {
           return round(($num / 1000),0)." K";

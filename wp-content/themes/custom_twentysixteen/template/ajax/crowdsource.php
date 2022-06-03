@@ -190,12 +190,17 @@ if (isset($_POST['oper'])) {
                     $oper_update = substr($oper_update, 1);
 
                     $inser_sql = "UPDATE `data_" . $array_crowd[$type] . "` SET " . $oper_update . "  WHERE id = " . $uddate_id;
+                    Pdo_an::db_results_array($inser_sql, $data_array);
                 } else {
                     $inser_sql = "INSERT INTO `data_" . $array_crowd[$type] . "`(`id` " . $oper_insert_colums . " ) VALUES (NULL " . $oper_insert_data . " )";
+                    Pdo_an::db_results_array($inser_sql, $data_array);
+                    $uddate_id =Pdo_an::last_id();
                 }
 
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                Import::create_commit('', 'update', "data_" . $array_crowd[$type], array('id' => $uddate_id), 'crowsource',5);
 
-                Pdo_an::db_results_array($inser_sql, $data_array);
+
 
                 if ($status == 1 && $uddate_id) {
 
@@ -250,13 +255,13 @@ if (isset($_POST['oper'])) {
             $array_user['id'] = $user_id;
             $array_user['admin'] = 1;
             $only_edit = 1;
-        } else {
+        }
+        else {
             if (!$id || !$ma_id) {
                 return;
             }
 
             $array_user = Crowdsource::get_user();
-
             $user_id = $array_user['id'];
         }
 
@@ -291,9 +296,12 @@ if (isset($_POST['oper'])) {
             ////get movies
             $sql = "SELECT * FROM `data_review_crowd` where `user` = ? and `review_id` = ? limit 1";
 
+
             $movie_tmpl = '';
 
             $rw = Pdo_an::db_results_array($sql, array($user_id, $id));
+
+
 
             $i = 0;
             if ($rw[0]['id']) {
@@ -316,7 +324,7 @@ if (isset($_POST['oper'])) {
 
                 if ($rw[0]['status'] > 0 && !$only_edit) {
                     ///return
-                    $content = '<p class="user_message_info">You already left a comment.</p><div class="submit_data"><button class="button close" >Close</button></div>';
+                    $content = '<!--u '.$user_id.' s '.$rw[0]['status'].' --><p class="user_message_info">You already left a comment.</p><div class="submit_data"><button class="button close" >Close</button></div>';
 
                     echo $content;
                     return;

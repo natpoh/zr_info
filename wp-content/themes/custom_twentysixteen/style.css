@@ -552,6 +552,11 @@ img {
     vertical-align: middle;
 }
 
+.scroller img.poster {
+    height: 330px;
+    width: 220px;
+}
+
 del {
     opacity: 0.8;
 }
@@ -2062,11 +2067,13 @@ p.advanced_search_shead {
 }
 
 .pt-cv-wrapper .pagination {
-    display:inline-block;
-    padding-left:0;
-    margin:20px 0;
-    border-radius:4px
+    display: flex;
+    padding-left: 0;
+    margin: 20px 0;
+    flex-wrap: wrap;
+    justify-content: center;
 }
+
 .pt-cv-wrapper .pagination > li {
     display: contents;
 }
@@ -2080,7 +2087,9 @@ p.advanced_search_shead {
     color:#337ab7;
     background-color:#fff;
     border:1px solid #ddd;
-    margin-left:-1px
+    margin-left:-1px;
+    display: flex;
+    align-items: center;
 }
 .pt-cv-wrapper .pagination>li:first-child>a,
 .pt-cv-wrapper .pagination>li:first-child>span {
@@ -4494,9 +4503,7 @@ p > video {
 
 }
 
-#disqus_recommendations{
-    display: none;
-}
+
 .site-main > article {
 
     background-color: #fff;
