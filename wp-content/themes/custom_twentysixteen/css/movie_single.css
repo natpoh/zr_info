@@ -366,8 +366,9 @@ section.inner_content.section_actors  div.column_content.flex.scroller {
     min-height: 300px;
 
 }
-.wrapper img.poster{
-    width: 100%;
+.wrapper img.poster {
+    width: 220px;
+    height: 330px;
 }
 
 .header_title {
@@ -638,7 +639,12 @@ a#op.open_ul:hover {
     height: 450px;
 }
 .s_container.smoched {
-    filter: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'><filter id='blur'><feGaussianBlur stdDeviation='4' /></filter></svg>#blur");
+    -webkit-filter: blur(5px);
+    -moz-filter: blur(5px);
+    -o-filter: blur(5px);
+    -ms-filter: blur(5px);
+    filter: blur(5px);
+
 }
 .ctf_lightbox {
     display: none;

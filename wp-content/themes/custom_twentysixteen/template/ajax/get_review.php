@@ -61,9 +61,22 @@ if (isset($_GET['id'])) {
         // Emotions
         $emotions = $cfront->ce->get_emotions($post->id, true);
 
+        ///try pet pgind from db
+        $sql ="SELECT `idn` FROM `cache_disqus_treheads` WHERE `type`='critics' and `post_id` ='".$critic_id."' limit 1";
+        $r1 = Pdo_an::db_fetch_row($sql);
+        if ($r1)
+        {
+            $pg_idnt =  $r1->idn;
+        }
+        if (!$pg_idnt)
+        {
+            $pg_idnt = $critic_id.' '.$link;
+        }
+
+
         $result = array(
             'page_url' => $link,
-            'page_identifier' => $critic_id,
+            'page_identifier' => $pg_idnt,
             'title' => $title,
             'content' => $content_templ,
             'emotions' => $emotions

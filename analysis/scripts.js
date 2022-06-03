@@ -2,6 +2,9 @@ var curent_load = 0;
 var last_date = 0;
 var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
 
+var analysis_path =window.location.protocol + "/analysis/";
+
+
 $('body').on('mouseenter', '.main_actors .img_tooltip, .extra_actors .img_tooltip', function () {
     $(this).addClass('relative');
     var img = $(this).find('img').attr('src');
@@ -29,10 +32,16 @@ function get_data() {
     data['start'] = $('.date_range_start').val();
     data['end'] = $('.date_range_end').val();
     data['data_type'] = $('.select_type_block.active').attr('id');
+
     data['actor_type'] = $('.actos_range_category').val();
     data['movies_limit'] = $('.movies_limit').val();
     data['diversity_select'] = $('.diversity_select').val();
-    data['display_select'] = $('.display_select').val();
+
+    data['ethnic_display_select'] = $('.display_select').val();
+
+    data['display_select'] = $('a.v_type.is_selected ').attr('id');
+
+
     data['country_movie_select'] = $('.country_movie_select').val();
     data['display_xa_axis'] = $('.display_xa_axis').val();
     data['color'] = $('.change_color').attr('id');
@@ -94,7 +103,7 @@ function get_ajax_cast_total(topping,type)
 
     $.ajax({
         type: "POST",
-        url: "get_data.php",
+        url: analysis_path+"get_data.php",
 
         data: ({
             oper: 'get_movie_cast_data_total',
@@ -118,6 +127,7 @@ function get_ajax_cast_total(topping,type)
 
 function get_ajax_cast(opened_id) {
 
+return ;
 
    /// console.log('get_ajax_cast started '+opened_id);
     if (ajax_cast_data_main==1)
@@ -141,7 +151,7 @@ function get_ajax_cast(opened_id) {
         if (!child.html()) {
             $.ajax({
                 type: "POST",
-                url: "get_data.php",
+                url: analysis_path+"get_data.php",
 
                 data: ({
                     oper: 'get_movie_cast_data_main',
@@ -196,6 +206,7 @@ function get_ajax_cast(opened_id) {
 
 function get_inner(topping) {
 
+
     var whait_html = '<div class="cssload-circle">\n' +
         '\t\t<div class="cssload-up">\n' +
         '\t\t\t\t<div class="cssload-innera"></div>\n' +
@@ -216,7 +227,7 @@ function get_inner(topping) {
 
     $.ajax({
         type: "POST",
-        url: "get_data.php",
+        url: analysis_path+"get_data.php",
 
         data: ({
             oper: 'get_inner',
@@ -266,7 +277,7 @@ $('div[id="chart_div"]').html(whait_html);
         curent_load = 1;
         $.ajax({
             type: "POST",
-            url: "get_data.php",
+            url: analysis_path+"get_data.php",
             data: ({
                 oper: 'box',
                 data: request
@@ -301,7 +312,7 @@ $('div[id="chart_div"]').html(whait_html);
 
                             $.ajax({
                                 type: "POST",
-                                url: "get_data.php",
+                                url: analysis_path+"get_data.php",
 
                                 data: ({
                                     oper: 'movie_data',
@@ -341,11 +352,7 @@ $('div[id="chart_div"]').html(whait_html);
     }
 
 }
-function check_tmdb_id()
-{
 
-
-}
 function check_trailers(m_id) {
     //console.log('check load');
 
@@ -481,6 +488,7 @@ $(document).ready(function () {
 
     $('body').on('click', '.data_refresh', function () {
 
+        $('.control_panel').removeClass('visible');
         loaddata(1);
         $('.get_data_refresh').hide();
     });
@@ -594,7 +602,7 @@ $(document).ready(function () {
             if (id) {
                 $.ajax({
                     type: "POST",
-                    url: "get_data.php",
+                    url: analysis_path+"get_data.php",
                     data: ({
                         oper: 'get_country_data',
                         id: id,
@@ -662,7 +670,7 @@ $(document).ready(function () {
             if (id > 0) {
                 $.ajax({
                     type: "POST",
-                    url: "get_data.php",
+                    url: analysis_path+"get_data.php",
                     data: ({
                         oper: 'movie_data',
                         id: id,
@@ -676,6 +684,8 @@ $(document).ready(function () {
                         cntnr_big.show();
 
                         check_trailers(id);
+                        cntnr.find('.main_ethnic_graph').click();
+
 
 
                     }
@@ -710,7 +720,7 @@ $(document).ready(function () {
 
             $.ajax({
                 type: "POST",
-                url: "get_data.php",
+                url: analysis_path+"get_data.php",
                 data: ({
                     oper: 'get_actordata',
                     id: actor_id,
@@ -742,7 +752,7 @@ $(document).ready(function () {
 
     $('body').on('click', '.ethnycity_select', function () {
 
-        $(this).toggleClass('select_disabled');
+       /// $(this).toggleClass('select_disabled');
         $('.get_data_refresh').show();
         //loaddata();
     });
@@ -779,5 +789,9 @@ $(document).ready(function () {
     });
 
 
+    $('body').on('click', '.slide_control', function () {
 
+        let prnt = $(this).parents('.control_panel');
+        prnt.toggleClass('visible');
+    });
 });

@@ -196,6 +196,8 @@ section.inner_content.no_pad div.column_header {
     padding-left: 40px;
     padding-right: 40px;
 }
+
+
 div.column_wrapper div.column {
     width: 100%;
 }
@@ -432,7 +434,8 @@ div.check_container {
     padding-left: 10px;
     color: #000;
     line-height: 17px;
-    width: calc(100% - 110px);
+    width: calc(100% - 150px);
+    min-width: 120px;
 }
 .a_cat {
     display: flex;
@@ -462,11 +465,22 @@ section.inner_content.widthed div.column_content div.card.style_1 {
     min-width: 300px;
 }
 
-.review_comment_data .disquss_coment, .review_comment_data .emotions{
+.review_comment_data .emotions{
     width: 38px;
     height: 55px;
     display: flex;
     align-items: end;
+    justify-content: center;
+    color: #000;
+    opacity: 0.8;
+    outline: none;
+}
+
+.review_comment_data .disquss_coment {
+    width: 38px;
+    height: 55px;
+    display: flex;
+    align-items: start;
     justify-content: center;
     color: #000;
     opacity: 0.8;
@@ -532,11 +546,29 @@ a.title_desc
     background-size: contain;
 
 }
+.review_comment_data .disquss_coment.comment_count{
+    background: url(../images/comment_count.svg) no-repeat;
+    background-size: contain;
+
+}
+
 .review_comment_data .emotions {
     background: url(../images/thinking.svg) no-repeat;
 
     background-size: contain;
 
+}
+
+.disquss_coment_count{
+    position: relative;
+    top: 7px;
+    display: inline-block;
+    width: 31px;
+    height: 18px;
+    text-align: center;
+    font-size: 19px;
+    line-height: 19px;
+    font-weight: bold;
 }
 
 section.inner_content.widthed div.media.discover div.column_content div.card.style_1 div.image {
@@ -1252,12 +1284,33 @@ section.inner_content.section_actors  div.column_content div.card.style_1 {
     margin-bottom: 14px;
 }
 .big_block_comment .review_block {
-    display: flex;
-    gap: 10px;
-    align-items: center;
+    display: block;
     margin-bottom: 10px;
-    flex-wrap: wrap;
 }
+.disqus_content{
+    overflow: hidden;
+    max-height: 188px;
+    position: relative;
+}
+.disqus_see_more {
+    position: absolute;
+    top: 168px;
+    text-align: center;
+    width: 100%;
+    background-color: #fff;
+    border-top: 2px solid #ccc;
+    color: #6e6e6e;
+}
+
+.disqus_content_full{
+    overflow: visible;
+    max-height: unset;
+}
+
+.disqus_content_full .disqus_see_more{
+    display: none;
+}
+
 .big_block_comment .review_block .review_block_title
 {
     font-family: 'Encode Sans Condensed',Lato;
@@ -1825,6 +1878,20 @@ body .user-reactions-single .user-reactions-button.reaction-show .user-reactions
 }
 .popup_header{
 margin-bottom: 5px;
+}
+
+body a.link_info {
+    cursor: pointer;
+    border: 1px solid #8f8f8f;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    text-align: center;
+    line-height: 18px;
+    font-size: 15px;
+    color: #8f8f8f;
+    text-decoration: none;
+    display: inline-block;
 }
 
 .scroller .note_show_content_4 .popup_header{

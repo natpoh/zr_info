@@ -82,8 +82,26 @@ get_header();
 
                 <script type="text/javascript">
                     var data_object = new Object();
+
+                    //data_object['page_url'] ='<?php //print 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']; ?>//';
+                    //data_object['page_identifier'] = '<?php //print $post->id.' https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']; ?>//';
+
+                    <?php
+                    ///try pet pgind from db
+                    $sql ="SELECT `idn` FROM `cache_disqus_treheads` WHERE `type`='critics' and `post_id` ='".$post->id."' limit 1";
+                    $r1 = Pdo_an::db_fetch_row($sql);
+                    if ($r1)
+                    {
+                        $pg_idnt =  $r1->idn;
+                    }
+                    if (!$pg_idnt)
+                    {
+                        $pg_idnt = $post->id.' '.$cfront->get_critic_url($post);
+                    }
+                    ?>
+
                     data_object['page_url'] = '<?php print $cfront->get_critic_url($post); ?>';
-                    data_object['page_identifier'] = '<?php print $post->id ?>';
+                    data_object['page_identifier'] = '<?php print $pg_idnt ?>';
                     data_object['title'] = '<?php print addslashes($post->title) ?>';
                     document.addEventListener("DOMContentLoaded", function (event) {
                         discuss_config(data_object);

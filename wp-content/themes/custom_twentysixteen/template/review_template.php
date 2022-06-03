@@ -65,8 +65,22 @@ function get_content_review() {
 
 
 
+        ///try pet pgind from db
+        $sql ="SELECT `idn` FROM `cache_disqus_treheads` WHERE `type`='critics' and `post_id` ='{$review_id}' limit 1";
+        $r1 = Pdo_an::db_fetch_row($sql);
+        if ($r1)
+        {
+            $pg_idnt =  $r1->idn;
+        }
 
-        $pg_idnt = $review_id . ' ' . $link;
+        if (!$pg_idnt)
+        {
+            $pg_idnt = $review_id . ' ' . $link;
+        }
+
+
+
+
 
         if (function_exists('get_the_title')) {
 

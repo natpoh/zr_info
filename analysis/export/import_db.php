@@ -93,7 +93,7 @@ class Import
     return $result;
     }
 
-    public static function get_data_from_db($db,$start=0,$limit=100,$row = 'id')
+    public static function get_data_from_db($db,$start=0,$limit=200,$row = 'id')
     {
         if (!$start)$start=0;
 

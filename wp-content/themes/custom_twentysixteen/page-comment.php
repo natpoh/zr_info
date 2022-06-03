@@ -5,6 +5,8 @@ Template Name: comments
 
 
 get_header();
+
+
 ?>
 
 <div id="primary" class="content-area">
@@ -24,13 +26,17 @@ get_header();
 <?php
 
 
-include (ABSPATH.'wp-content/themes/custom_twentysixteen/template/ajax/disqus_last_comments.php');
+if (!class_exists('DISQUS_DATA') )
+    {
 
-echo get_last_disqus_comment(20);
+      include ABSPATH . "analysis/include/disqus.php";
+    }
+
+
+$cache =DISQUS_DATA::get_comment_from_db(20);
+echo $cache;
 
 wp_enqueue_style('colums_template', get_template_directory_uri() . '/css/colums_template.css', array(), LASTVERSION);
-
-
 
 
 ?>
@@ -77,7 +83,9 @@ function loadArticle(){
         }
     })
 
-
+    jQuery('body').on('click','.disqus_content',function (){
+        jQuery(this).addClass('disqus_content_full');
+    });
 </script>
 
 

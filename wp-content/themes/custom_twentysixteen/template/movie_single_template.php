@@ -333,8 +333,10 @@ if (!function_exists('template_single_movie_small')) {
             $img = '<img src="' . $imgsrc . '">';
         }
 
-
-        if ($onlytitle) {
+        if ($onlytitle==2) {
+            $content =  $title . $date ;
+               }
+        else if ($onlytitle) {
             $content = '<div class="movie_small">' . $img . '<div class="movie_small_desc">' . $title . $date . '</div></div>';
         } else {
             $content = '<div class="full_review_movie">' . $img . '<div class="movie_link_desc"><span  class="itm_hdr">' . $title . $date . '</span><span>' . $movie_meta['overview'] . '</span></div></div>';

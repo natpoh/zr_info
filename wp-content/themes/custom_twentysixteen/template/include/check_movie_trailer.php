@@ -47,7 +47,7 @@ function sort_data($array)
 
 function get_movie_trailer($movie_id=0)
 {
-    //$data  =check_movie_trailer($movie_id);
+    $data  =check_movie_trailer($movie_id);
     if ($data)
     {
         if ($data->status==1)
@@ -57,13 +57,11 @@ function get_movie_trailer($movie_id=0)
             {
             return  sort_data(json_decode($result,1));
             }
-
-
         }
-        if ($data->status==2 && $data->last_update<time()-86400)
-        {
-            return '';
-        }
+//        if ($data->status==2 && $data->last_update<time()-86400)
+//        {
+//            return '';
+//        }
     }
 
     $api_key ='1dd8ba78a36b846c34c76f04480b5ff0';
@@ -114,8 +112,6 @@ $array_data = [];
             }
         }
     }
-
-
     if (!$key) {
         $status=2;
     }
@@ -128,15 +124,23 @@ $array_data = [];
 
     if ($data)
     {
+        $id =$data->id;
+
         $sql="UPDATE `cache_movie_trailers` SET  `data`=?, `status`=?, `last_update`=? WHERE `id`=? ";
-        Pdo_an::db_results_array($sql,array($array_data_string,$status,time(),$movie_id));
+        Pdo_an::db_results_array($sql,array($array_data_string,$status,time(),$id));
     }
     else
     {
         $sql="INSERT INTO `cache_movie_trailers` (`id`, `rwt_id`, `data`, `status`, `last_update`) 
                                                 VALUES (NULL, ?, ?, ?, ?);";
         Pdo_an::db_results_array($sql,array($movie_id,$array_data_string,$status,time()));
+        $id = Pdo_an::last_id();
     }
+
+    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+    Import::create_commit('', 'update', 'cache_movie_trailers', array('id' => $id), 'movie_trailers',20);
+
+
     if ($array_data_string) {
      return  sort_data(json_decode($array_data_string,1));
     }

@@ -31,6 +31,7 @@ require_once(ABSPATH . 'analysis/export/import_db.php');
 // Database
 
 ///get commit
+/// /service/import.php?key=1R3W5T8s13t21a34f&action=sync
 //////service/import.php?key=1R3W5T8s13t21a34f&action=last_commit&count=10
 //////service/import.php?key=1R3W5T8s13t21a34f&action=get_commit&uid=t_add_movies1643729961,t_actor_meta1643729962
 
