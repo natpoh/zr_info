@@ -47,7 +47,7 @@ $array_jobs = array(
 'add_imdb_data_to_options'=>(60*24*7),
 'add_tv_shows_to_options'=>(60*24*30),
 
-    'sync_tables'=>20, ///sync all remote tables
+    'sync_tables'=>60, ///sync all remote tables
     'get_family'=>10, //family to actors meta
     'get_forebears'=>10, //forebears to actors meta
     'set_tmdb_actors_for_movies'=>30,////update tmdb actors from japan anime

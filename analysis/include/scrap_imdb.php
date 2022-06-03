@@ -2178,7 +2178,7 @@ if ($rows)echo 'add empty '.count($rows);
 foreach ($rows as $r)
 {
         $id = $r['id'];
-        echo 'rwt_id=' . $id . '  <br>' . PHP_EOL;
+       // echo 'rwt_id=' . $id . '  <br>' . PHP_EOL;
         if ($id)
         {
             get_just_wach($id);
