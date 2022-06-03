@@ -110,15 +110,17 @@ class TorParser extends MoviesAbstractDB {
             if ($status == 200 || $status == 301) {
                 $content = $data;
                 // Add log
-                $message = 'Parser URL: '.$status;
+                $message = 'Parser URL: ' . $status;
                 $this->log_info($message, $log_data);
             } else {
                 // Add log
                 $message = 'Error parser URL: ' . $status;
                 $this->log_error($message, $log_data);
 
-                $message = 'Parsing error ' . $status;
-                $this->reboot_service($log_data['driver'], $message, false, $debug);
+                if ($status == 403) {
+                    $message = 'Parsing error ' . $status;
+                    $this->reboot_service($log_data['driver'], $message, false, $debug);
+                }
             }
         }
         return $content;
@@ -201,7 +203,7 @@ class TorParser extends MoviesAbstractDB {
 
                 if ($hour || $day) {
                     // Do not reboot a new service
-                    $this->reboot_service($service_id, $message, false, $debug);                                        
+                    $this->reboot_service($service_id, $message, false, $debug);
                     if ($debug) {
                         print $message . "\n";
                     }
