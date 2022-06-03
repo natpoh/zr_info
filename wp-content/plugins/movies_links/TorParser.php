@@ -10,8 +10,8 @@ class TorParser extends MoviesAbstractDB {
     private $ml;
     private $db;
     // public $web_driver = '148.251.54.53:8110';
-    public $web_driver = '172.17.0.1:8110';
-    public $get_ip_url = '148.251.54.53:8110';
+    public $web_driver = '';
+    public $get_ip_url = '';
     public $webd_river_pass = 'ds1bfgFe_23_KJDS-F';
     public $service_min_life_time = 180; // 3 min
     public $service_life_time = 1800; // 30 min
@@ -39,6 +39,9 @@ class TorParser extends MoviesAbstractDB {
             'ip_meta' => 'tor_ip_meta',
             'log' => 'tor_log',
         );
+        $ss = $this->ml->get_settings();
+        $this->web_driver = $ss['tor_driver'];
+        $this->get_ip_url = $ss['tor_get_ip_driver'];
     }
 
     public function run_cron($type = 0, $debug = false, $force = false) {
