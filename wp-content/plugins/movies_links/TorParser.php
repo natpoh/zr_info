@@ -94,7 +94,7 @@ class TorParser extends MoviesAbstractDB {
         $content = '';
         $get_url = $this->get_tor_url($url, $ip_limit, $log_data, $debug);
         if ($get_url) {
-            $data = $this->curl($url, $header);
+            $data = $this->curl($get_url, $header);
             if ($debug) {
                 print_r($header);
                 print_r($data);
