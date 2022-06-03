@@ -218,12 +218,24 @@ $sql = "select * from data_actors_meta ".$where." ";
             $verdict = $row[$val];
             if ($verdict && !is_numeric($verdict) && !in_array($verdict,$array_exclude) )
             {
+                ///check last verdict
 
-                $sql = "update `data_actors_meta` set verdict =?, n_verdict =?  where id = ".$row['id']." ";
-                Pdo_an::db_results_array($sql,array($row[$val],intconvert($row[$val])));
+                $q = "SELECT verdict, n_verdict from data_actors_meta where id = ".$row['id'];
+                $rv = Pdo_an::db_results_array($q);
 
-                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', 'data_actors_meta', array('id' => $row['id']), 'actor_meta',9);
+               if ($verdict ==$rv[0]['verdict'] && intconvert($verdict) == $rv[0]['n_verdict'])
+               {
+                   ///skip
+
+               }
+               else
+               {
+                   $sql = "update `data_actors_meta` set verdict =?, n_verdict =?  where id = ".$row['id']." ";
+                   Pdo_an::db_results_array($sql,array($verdict,intconvert($verdict)));
+
+                   !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                   Import::create_commit('', 'update', 'data_actors_meta', array('id' => $row['id']), 'actor_meta',9);
+               }
 
                /// ACTIONLOG::update_actor_log('verdict');
                 break;
