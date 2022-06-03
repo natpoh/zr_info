@@ -1025,6 +1025,9 @@ class TorParser extends MoviesAbstractDB {
 
         curl_setopt($ch, CURLINFO_HEADER_OUT, true); // enable tracking
 
+        // No cache
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("Cache-Control: no-cache"));
+        curl_setopt($ch, CURLOPT_FRESH_CONNECT, TRUE);
 
         $response = curl_exec($ch);
         $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
