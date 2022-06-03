@@ -117,6 +117,9 @@ class TorParser extends MoviesAbstractDB {
                 // Add log
                 $message = 'Error parser URL: ' . $status;
                 $this->log_error($message, $log_data);
+
+                $message = 'Parsing error '.$status;
+                $this->reboot_service($log_data['driver'], $message);
             }
         }
         return $content;
