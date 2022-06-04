@@ -179,7 +179,7 @@ class TorParser extends MoviesAbstractDB {
                             'message' => $message,
                         );
                     } else {
-                        $q_req['type'] = 1;
+                        $q_req['type'] = 0;
                         // Valid ips
                         $ip_last_hour_count = $this->get_logs($q_req, 1, 0, 'date', 'DESC', true);
                         $ip_last_hour_limit_gen = rand($ip_limit['h'] - (int) ($ip_limit['h'] / 2), $ip_limit['h'] + (int) ($ip_limit['h'] / 2));
