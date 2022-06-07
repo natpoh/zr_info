@@ -26,7 +26,7 @@ function getLogDataFromDB($count, $pdo_connect_data) {
 
 
         // Добавляем значения в таблицу
-        $query = sprintf("SELECT cpu, date, info FROM info ORDER BY id DESC limit %d", $count);
+        $query = sprintf("SELECT cpu, date, info, memtotal,memfree,buffers,cached,dirty,slab,swaptotal,swapfree FROM info ORDER BY id DESC limit %d", $count);
 
         $sth = $dbh->prepare($query);
 
@@ -37,7 +37,7 @@ function getLogDataFromDB($count, $pdo_connect_data) {
 
 
 
-    // соединение больше не нужно, закрываем
+        // соединение больше не нужно, закрываем
         $sth = null;
         $dbh = null;
     }
@@ -68,6 +68,9 @@ function groupData($data, $mod) {
         foreach ($data as $item) {
             //cpu
             $group['cpu'] += $item['cpu'] / $mod;
+            // memfree
+            $group['memfree'] += $item['memfree'] / $mod;
+            $group['swapfree'] += $item['swapfree'] / $mod;
             //date
             if (!isset($group['date'])) {
                 $group['date'] = $item['date'];
@@ -82,7 +85,7 @@ function groupData($data, $mod) {
                 foreach ($hostinfo as $key => $value) {
                     if ($key == 'status') {
                         foreach ($value as $skey => $sval) {
-                            $group['info'][$host]['status'][$skey]+=$sval;
+                            $group['info'][$host]['status'][$skey] += $sval;
                         }
                         continue;
                     }
@@ -93,6 +96,8 @@ function groupData($data, $mod) {
             $i++;
             if ($i >= $mod) {
                 $group['cpu'] = round($group['cpu'], 0);
+                $group['memfree'] = round($group['memfree'], 0);
+                $group['swapfree'] = round($group['swapfree'], 0);
                 $ret[] = $group;
                 $i = 0;
                 $group = array();
@@ -173,21 +178,24 @@ function renderData($data) {
                 $hosts = array();
                 $hostnames = array();
                 $cpuarr = array();
+                $memfree_arr = array();
+                $swapfree_arr = array();
                 foreach ($data as $item) {
                     if (is_string($item['info'])) {
                         $info = unserialize($item['info']);
                     } else {
                         $info = $item['info'];
                     }
-                    $cpu = $item['cpu'];
                     $date = $item['date'];
 
-                    $cpuarr[$date] = $cpu;
+                    $cpuarr[$date] = $item['cpu'];
+                    $memfree_arr[$date] = $item['memfree'];
+                    $swapfree_arr[$date] = $item['swapfree'];
 
                     foreach ($info as $host => $hostinfo) {
                         $hosts[$host][$date] = $hostinfo;
                         if (isset($hostnames[$host])) {
-                            $hostnames[$host]+=1;
+                            $hostnames[$host] += 1;
                         } else {
                             $hostnames[$host] = 1;
                         }
@@ -198,6 +206,8 @@ function renderData($data) {
                 $data = null;
                 arsort($hostnames);
                 ksort($cpuarr);
+                ksort($memfree_arr);
+                ksort($swapfree_arr);
                 //p_r($hostnames);
                 //p_r($cpuarr);
                 //p_r($hosts);
@@ -242,13 +252,13 @@ function renderData($data) {
                 renderStatusHost($total_info, $host_name);
 
                 //Server info
-                print_graphics($cpuarr, $hosts);
+                print_graphics($cpuarr, $memfree_arr, $swapfree_arr, $hosts);
 
 
                 //Host table
 
                 $hostdata = $hosts[$host_name];
-                render_host_info_table($host_name, $hostdata, $cpuarr);
+                render_host_info_table($host_name, $hostdata, $cpuarr, $memfree_arr, $swapfree_arr);
                 ?>
 
 
@@ -367,7 +377,7 @@ function getHostsPrecent($total_info, $from, $key) {
 function hosts_total_info($hostnames, $hosts) {
     $total = array();
     foreach ($hostnames as $name => $count) {
-        $hostdata = isset($hosts[$name])? $hosts[$name]:array();
+        $hostdata = isset($hosts[$name]) ? $hosts[$name] : array();
 
         if ($hostdata) {
             /*    [1500224531] => Array
@@ -389,16 +399,15 @@ function hosts_total_info($hostnames, $hosts) {
                 foreach ($data as $key => $value) {
                     if ($key == 'status') {
                         foreach ($value as $st => $n) {
-                            $total[$name][$key][$st]+=$n;
+                            $total[$name][$key][$st] += $n;
                         }
                         continue;
-                    }            
-                    
-                    if (!$value){
-                        $value=0;
                     }
-                    $total[$name][$key]+=$value;
-                    
+
+                    if (!$value) {
+                        $value = 0;
+                    }
+                    $total[$name][$key] += $value;
                 }
             }
         }
@@ -419,7 +428,7 @@ function renderStatusHost($total_info, $host_name) {
 
                 $all = 0;
                 foreach ($stlocal as $st => $v) {
-                    $all+=$v;
+                    $all += $v;
                 }
 
                 foreach ($stlocal as $st => $v) {
@@ -436,33 +445,35 @@ function renderStatusHost($total_info, $host_name) {
     }
 }
 
-function print_graphics($cpuarr, $hosts) {
+function print_graphics($cpuarr, $memfree_arr, $swapfree_arr, $hosts) {
     $period = getPeriod();
     $host_name = getHostNameByReq();
     $date_format = $period > 24 ? 'd.m H:i' : 'H:i';
     ?>
     <script type="text/javascript">
-                google.charts.load('current', {'packages': ['corechart']});
-                //cpu                
-                google.charts.setOnLoadCallback(drawChartCPU);
+                    google.charts.load('current', {'packages': ['corechart']});
+                    //cpu                
+                    google.charts.setOnLoadCallback(drawChartCPU);
+                    //memory
+                    google.charts.setOnLoadCallback(drawChartMem);
 
-                //request time
-                google.charts.setOnLoadCallback(drawChartReqTime);
+                    //request time
+                    google.charts.setOnLoadCallback(drawChartReqTime);
 
-                //request
-                google.charts.setOnLoadCallback(drawChartReq);
+                    //request
+                    google.charts.setOnLoadCallback(drawChartReq);
 
-                //one request
-                google.charts.setOnLoadCallback(drawChartOneReq);
+                    //one request
+                    google.charts.setOnLoadCallback(drawChartOneReq);
 
-                //one statuses
-                google.charts.setOnLoadCallback(drawChartStatuses);
+                    //one statuses
+                    google.charts.setOnLoadCallback(drawChartStatuses);
 
-                google.charts.setOnLoadCallback(drawChartStatusesOther);
+                    google.charts.setOnLoadCallback(drawChartStatusesOther);
 
-                function drawChartCPU() {
-                    var data = google.visualization.arrayToDataTable([
-                        ['Time', 'CPU'],
+                    function drawChartCPU() {
+                        var data = google.visualization.arrayToDataTable([
+                            ['Time', 'CPU'],
     <?php
     $cpu_total = 0;
 
@@ -475,29 +486,54 @@ function print_graphics($cpuarr, $hosts) {
     $cpu_average = round(($cpu_total / (sizeof($cpuarr))) / 100, 2);
     $cpu_title = 'CPU time. Total: ' . $cpu_total_time . '; Average: ' . $cpu_average;
     ?>
-                    ]);
+                        ]);
 
-                    var options = {
-                        title: '<?php print $cpu_title ?>',
-                    };
+                        var options = {
+                            title: '<?php print $cpu_title ?>',
+                        };
 
-                    var chart = new google.visualization.AreaChart(document.getElementById('cpu_div'));
-                    chart.draw(data, options);
-                }
+                        var chart = new google.visualization.AreaChart(document.getElementById('cpu_div'));
+                        chart.draw(data, options);
+                    }
+                    
+                    function drawChartMem() {
+                        var data = google.visualization.arrayToDataTable([
+                            ['Time', 'Memory Free', 'Swap Free'],
+    <?php   
+    foreach ($cpuarr as $key => $cpu) {
+        $memfree= isset($memfree_arr[$key]) ? $memfree_arr[$key] : 0;
+        $swapfree= isset($swapfree_arr[$key]) ? $swapfree_arr[$key] : 0;
+       
+        $total['mem'] += $memfree;
+        $total['swap'] += $swapfree;
 
-                function drawChartReqTime() {
-                    var data = google.visualization.arrayToDataTable([
-                        ['Time', 'Total time', 'Bots time', 'Users time'],
+        print "['" . gmdate($date_format, $key + 18000) . "', $memfree, $swapfree],";
+    }
+    $mem_pr = round($total['mem'] / sizeof($cpuarr), 0);
+    $swap_pr = round($total['swap'] / sizeof($cpuarr), 0);
+    $title = 'Memory free avg - ' . $mem_pr . ' Mb. Swap free avg - ' . $swap_pr.' Mb';
+    ?>
+                        ]);
+                        var options = {
+                            title: '<?php print $title ?>',
+                        };
+                        var chart = new google.visualization.AreaChart(document.getElementById('mem_div'));
+                        chart.draw(data, options);
+                    }
+
+                    function drawChartReqTime() {
+                        var data = google.visualization.arrayToDataTable([
+                            ['Time', 'Total time', 'Bots time', 'Users time'],
     <?php
     $total_time = array();
     foreach ($cpuarr as $key => $cpu) {
-        $req_time = isset($hosts[$host_name][$key]['req_time']) ? round($hosts[$host_name][$key]['req_time'],2) : 0;
-        $bots_time = isset($hosts[$host_name][$key]['bots_time']) ? round($hosts[$host_name][$key]['bots_time'],2) : 0;
+        $req_time = isset($hosts[$host_name][$key]['req_time']) ? round($hosts[$host_name][$key]['req_time'], 2) : 0;
+        $bots_time = isset($hosts[$host_name][$key]['bots_time']) ? round($hosts[$host_name][$key]['bots_time'], 2) : 0;
         $users_time = $req_time - $bots_time;
 
-        $total_time['req']+=$req_time;
-        $total_time['bot']+=$bots_time;
-        $total_time['user']+=$users_time;
+        $total_time['req'] += $req_time;
+        $total_time['bot'] += $bots_time;
+        $total_time['user'] += $users_time;
 
         print "['" . gmdate($date_format, $key + 18000) . "', $req_time, $bots_time, $users_time],";
     }
@@ -505,17 +541,17 @@ function print_graphics($cpuarr, $hosts) {
     $user_pr = round(100 * $total_time['user'] / $total_time['req'], 2);
     $title = 'Request time total - ' . $total_time['req'] . ' sec. Bots time - ' . $total_time['bot'] . ' sec. (' . $bots_pr . '%). User time - ' . $total_time['user'] . ' sec. (' . $user_pr . '%)';
     ?>
-                    ]);
-                    var options = {
-                        title: '<?php print $title ?>',
-                    };
-                    var chart = new google.visualization.AreaChart(document.getElementById('reqtime_div'));
-                    chart.draw(data, options);
-                }
+                        ]);
+                        var options = {
+                            title: '<?php print $title ?>',
+                        };
+                        var chart = new google.visualization.AreaChart(document.getElementById('reqtime_div'));
+                        chart.draw(data, options);
+                    }
 
-                function drawChartReq() {
-                    var data = google.visualization.arrayToDataTable([
-                        ['Time', 'Total', 'Bots', 'Users'],
+                    function drawChartReq() {
+                        var data = google.visualization.arrayToDataTable([
+                            ['Time', 'Total', 'Bots', 'Users'],
     <?php
     $total_req = array();
     foreach ($cpuarr as $key => $cpu) {
@@ -524,9 +560,9 @@ function print_graphics($cpuarr, $hosts) {
         $users_time = $req_time - $bots_time;
 
 
-        $total_req['req']+=$req_time;
-        $total_req['bot']+=$bots_time;
-        $total_req['user']+=$users_time;
+        $total_req['req'] += $req_time;
+        $total_req['bot'] += $bots_time;
+        $total_req['user'] += $users_time;
 
         print "['" . gmdate($date_format, $key + 18000) . "', $req_time, $bots_time, $users_time],";
     }
@@ -535,17 +571,17 @@ function print_graphics($cpuarr, $hosts) {
     $user_cpr = round(100 * $total_req['user'] / $total_req['req'], 2);
     $title = 'Request total count - ' . $total_req['req'] . '. Bots count - ' . $total_req['bot'] . ' (' . $bots_cpr . '%). Users count - ' . $total_req['user'] . ' (' . $user_cpr . '%)';
     ?>
-                    ]);
-                    var options = {
-                        title: '<?php print $title ?>',
-                    };
-                    var chart = new google.visualization.AreaChart(document.getElementById('req_div'));
-                    chart.draw(data, options);
-                }
+                        ]);
+                        var options = {
+                            title: '<?php print $title ?>',
+                        };
+                        var chart = new google.visualization.AreaChart(document.getElementById('req_div'));
+                        chart.draw(data, options);
+                    }
 
-                function drawChartOneReq() {
-                    var data = google.visualization.arrayToDataTable([
-                        ['Time', 'Total', 'User', 'Bots'],
+                    function drawChartOneReq() {
+                        var data = google.visualization.arrayToDataTable([
+                            ['Time', 'Total', 'User', 'Bots'],
     <?php
     $total_one = array();
 
@@ -557,16 +593,16 @@ function print_graphics($cpuarr, $hosts) {
         $req_time = isset($hosts[$host_name][$key]['req_time']) ? $hosts[$host_name][$key]['req_time'] : 0;
         $bots_time = isset($hosts[$host_name][$key]['bots_time']) ? $hosts[$host_name][$key]['bots_time'] : 0;
 
-        $one_total = $req?round($req_time / $req, 2):0;
-        $one_bot = $bots?round($bots_time / $bots, 2):0;
+        $one_total = $req ? round($req_time / $req, 2) : 0;
+        $one_bot = $bots ? round($bots_time / $bots, 2) : 0;
 
         $user_time = $req_time - $bots_time;
         $user_req = $req - $bots;
-        $one_user = $user_req?round($user_time / $user_req, 2):0;
+        $one_user = $user_req ? round($user_time / $user_req, 2) : 0;
 
-        $total_one['req']+=$one_total;
-        $total_one['bot']+=$one_bot;
-        $total_one['user']+=$one_user;
+        $total_one['req'] += $one_total;
+        $total_one['bot'] += $one_bot;
+        $total_one['user'] += $one_user;
 
         print "['" . gmdate($date_format, $key + 18000) . "', $one_total, $one_user, $one_bot],";
     }
@@ -576,45 +612,45 @@ function print_graphics($cpuarr, $hosts) {
     $user_avg = round($total_one['user'] / sizeof($cpuarr), 2);
     $title = 'One request time. Total avg - ' . $one_avg . ' sec. Bots avg - ' . $bots_avg . ' sec. User avg - ' . $user_avg . ' sec';
     ?>
-                    ]);
-                    var options = {
-                        title: '<?php print $title ?>',
-                    };
-                    var chart = new google.visualization.AreaChart(document.getElementById('onereq_div'));
-                    chart.draw(data, options);
-                }
+                        ]);
+                        var options = {
+                            title: '<?php print $title ?>',
+                        };
+                        var chart = new google.visualization.AreaChart(document.getElementById('onereq_div'));
+                        chart.draw(data, options);
+                    }
 
-                function drawChartStatuses() {
-                    var data = google.visualization.arrayToDataTable([
+                    function drawChartStatuses() {
+                        var data = google.visualization.arrayToDataTable([
     <?php
     global $statuses;
     $ret = '';
     $allowSt = array('200', '301', '302');
     if (sizeof($statuses)) {
-        $ret.= '[';
-        $ret.= "'Time',";
+        $ret .= '[';
+        $ret .= "'Time',";
         foreach ($statuses as $st => $cnt) {
             if (in_array($st, $allowSt)) {
-                $ret.= "'$st ($cnt)',";
+                $ret .= "'$st ($cnt)',";
             }
         }
-        $ret.= '],';
+        $ret .= '],';
 
 
         foreach ($cpuarr as $key => $cpu) {
-            $ret.= "[";
+            $ret .= "[";
             //time
 
             $time = gmdate($date_format, $key + 18000);
 
-            $ret.= "'$time',";
+            $ret .= "'$time',";
             foreach ($statuses as $st => $cnt) {
                 if (in_array($st, $allowSt)) {
                     $stval = isset($hosts[$host_name][$key]['status'][$st]) ? $hosts[$host_name][$key]['status'][$st] : 0;
-                    $ret.= "$stval,";
+                    $ret .= "$stval,";
                 }
             }
-            $ret.= "],";
+            $ret .= "],";
         }
     }
 //$ret = str_replace(',]', ']', $ret);
@@ -624,49 +660,49 @@ function print_graphics($cpuarr, $hosts) {
     foreach ($statuses as $st => $cnt) {
         if (in_array($st, $allowSt)) {
             $st_pr = round(100 * $cnt / $total_req['req'], 2);
-            $title.= "$st ($cnt - $st_pr%).  ";
+            $title .= "$st ($cnt - $st_pr%).  ";
         }
     }
     ?>
-                    ]);
-                    var options = {
-                        title: '<?php print $title ?>',
-                    };
-                    var chart = new google.visualization.AreaChart(document.getElementById('statuses_div'));
-                    chart.draw(data, options);
-                }
+                        ]);
+                        var options = {
+                            title: '<?php print $title ?>',
+                        };
+                        var chart = new google.visualization.AreaChart(document.getElementById('statuses_div'));
+                        chart.draw(data, options);
+                    }
 
 
-                function drawChartStatusesOther() {
-                    var data = google.visualization.arrayToDataTable([
+                    function drawChartStatusesOther() {
+                        var data = google.visualization.arrayToDataTable([
     <?php
     global $statuses;
     $ret = '';
     if (sizeof($statuses)) {
-        $ret.= '[';
-        $ret.= "'Time',";
+        $ret .= '[';
+        $ret .= "'Time',";
         foreach ($statuses as $st => $cnt) {
             if (!in_array($st, $allowSt)) {
-                $ret.= "'$st ($cnt)',";
+                $ret .= "'$st ($cnt)',";
             }
         }
-        $ret.= '],';
+        $ret .= '],';
 
 
         foreach ($cpuarr as $key => $cpu) {
-            $ret.= "[";
+            $ret .= "[";
             //time
 
             $time = gmdate($date_format, $key + 18000);
 
-            $ret.= "'$time',";
+            $ret .= "'$time',";
             foreach ($statuses as $st => $cnt) {
                 if (!in_array($st, $allowSt)) {
                     $stval = isset($hosts[$host_name][$key]['status'][$st]) ? $hosts[$host_name][$key]['status'][$st] : 0;
-                    $ret.= "$stval,";
+                    $ret .= "$stval,";
                 }
             }
-            $ret.= "],";
+            $ret .= "],";
         }
     }
 //$ret = str_replace(',]', ']', $ret);
@@ -676,21 +712,22 @@ function print_graphics($cpuarr, $hosts) {
     foreach ($statuses as $st => $cnt) {
         if (!in_array($st, $allowSt)) {
             $st_pr = round(100 * $cnt / $total_req['req'], 2);
-            $title.= "$st ($cnt - $st_pr%).  ";
+            $title .= "$st ($cnt - $st_pr%).  ";
         }
     }
     ?>
-                    ]);
-                    var options = {
-                        title: '<?php print $title ?>',
-                    };
-                    var chart = new google.visualization.AreaChart(document.getElementById('statuses_other_div'));
-                    chart.draw(data, options);
-                }
+                        ]);
+                        var options = {
+                            title: '<?php print $title ?>',
+                        };
+                        var chart = new google.visualization.AreaChart(document.getElementById('statuses_other_div'));
+                        chart.draw(data, options);
+                    }
     </script>
 
     <div class = "graphics" style = "margin-left:-100px; margin-right:0">
         <div id = "cpu_div" style = "width: 100%; height: 300px;"></div>
+        <div id = "mem_div" style = "width: 100%; height: 300px;"></div>
         <div id = "reqtime_div" style = "width: 100%; height: 300px;"></div>
         <div id = "req_div" style = "width: 100%; height: 300px;"></div>
         <div id = "onereq_div" style = "width: 100%; height: 300px;"></div>
@@ -700,7 +737,7 @@ function print_graphics($cpuarr, $hosts) {
     <?php
 }
 
-function render_host_info_table($name, $info, $cpuarr) {
+function render_host_info_table($name, $info, $cpuarr, $memfree_arr=array(), $swapfree_arr=array()) {
     if (sizeof($info) > 0) {
         
     } else {
@@ -755,20 +792,20 @@ function render_host_info_table($name, $info, $cpuarr) {
                                 $val = '';
                                 arsort($data[$key]);
                                 foreach ($data[$key] as $k => $v) {
-                                    $val.= "$k:$v, ";
+                                    $val .= "$k:$v, ";
                                 }
                                 $val = preg_replace('/\, $/', '', $val);
                             }
                         }
                     } else {
                         if ($key == 'one_req') {
-                            $val = $data['req']?round($data['req_time'] / $data['req'], 3):0;
+                            $val = $data['req'] ? round($data['req_time'] / $data['req'], 3) : 0;
                         } else if ($key == 'bots_%') {
-                            $val = $data['req_time']?(round($data['bots_time'] / $data['req_time'], 4) * 100):0;
+                            $val = $data['req_time'] ? (round($data['bots_time'] / $data['req_time'], 4) * 100) : 0;
                         } else if ($key == 'user_%') {
-                            $val = $data['req_time']?(round(($data['req_time'] - $data['bots_time']) / $data['req_time'], 4) * 100):0;
+                            $val = $data['req_time'] ? (round(($data['req_time'] - $data['bots_time']) / $data['req_time'], 4) * 100) : 0;
                         } else if ($key == 'bot_req') {
-                            $val = $data['bots_req']?round($data['bots_time'] / $data['bots_req'], 3):0;
+                            $val = $data['bots_req'] ? round($data['bots_time'] / $data['bots_req'], 3) : 0;
                         } else if ($key == 'user_time') {
                             $val = round($data['req_time'] - $data['bots_time'], 2);
                         }
@@ -886,8 +923,8 @@ function render_host_info($name, $info, $cpuarr) {
                     if (sizeof($valdata) > 0) {
                         arsort($valdata);
                         foreach ($valdata as $key => $value) {
-                            $val.= "$key:$value";
-                            $val.= '<br />';
+                            $val .= "$key:$value";
+                            $val .= '<br />';
                         }
                     }
                     print '<td>' . $val . '</td>';

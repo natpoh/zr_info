@@ -2,7 +2,7 @@
 $p = 'agd2e2SDsdf3d3sl';
 $pass = $_GET['p'];
 
-if ($pass!==$p){
+if ($pass !== $p) {
     die();
 }
 
@@ -38,29 +38,29 @@ function renderLogData($data) {
         $def_host = array('req' => 0, 'ip' => array(), 'status' => array(), 'req_time' => 0, 'b_sent' => 0, 'bots_req' => 0, 'bots_ip' => array(), 'bots_time' => 0);
 
         foreach ($data as $item) {
-            
+
             //SERVER
             if (!isset($host['SERVER'])) {
                 $host['SERVER'] = $def_host;
             }
 
-            $host['SERVER']['req']+=1;
+            $host['SERVER']['req'] += 1;
 
-            $host['SERVER']['ip'][$item['ip']]+=1;
-            
-            $host['SERVER']['status'][$item['status']]+=1;
-            $host['SERVER']['req_time']+=$item['request_time'];
-            $host['SERVER']['b_sent']+=$item['bytes_sent'];
+            $host['SERVER']['ip'][$item['ip']] += 1;
+
+            $host['SERVER']['status'][$item['status']] += 1;
+            $host['SERVER']['req_time'] += $item['request_time'];
+            $host['SERVER']['b_sent'] += $item['bytes_sent'];
 
             //host   
             if (!isset($host['host'])) {
                 $host['host'] = $def_host;
             }
-            $host[$item['host']]['req']+=1;
-            $host[$item['host']]['ip'][$item['ip']]+=1;
-            $host[$item['host']]['status'][$item['status']]+=1;
-            $host[$item['host']]['req_time']+=$item['request_time'];
-            $host[$item['host']]['b_sent']+=$item['bytes_sent'];
+            $host[$item['host']]['req'] += 1;
+            $host[$item['host']]['ip'][$item['ip']] += 1;
+            $host[$item['host']]['status'][$item['status']] += 1;
+            $host[$item['host']]['req_time'] += $item['request_time'];
+            $host[$item['host']]['b_sent'] += $item['bytes_sent'];
 
 
 
@@ -69,13 +69,13 @@ function renderLogData($data) {
             foreach ($bots as $name => $lookfor) {
                 if (stristr($item['http_user_agent'], $lookfor) !== false) {
 
-                    $host['SERVER']['bots_req']+=1;
-                    $host['SERVER']['bots_ip'][$item['ip']]+=1;
-                    $host['SERVER']['bots_time']+=$item['request_time'];
+                    $host['SERVER']['bots_req'] += 1;
+                    $host['SERVER']['bots_ip'][$item['ip']] += 1;
+                    $host['SERVER']['bots_time'] += $item['request_time'];
 
-                    $host[$item['host']]['bots_req']+=1;
-                    $host[$item['host']]['bots_ip'][$item['ip']]+=1;
-                    $host[$item['host']]['bots_time']+=$item['request_time'];
+                    $host[$item['host']]['bots_req'] += 1;
+                    $host[$item['host']]['bots_ip'][$item['ip']] += 1;
+                    $host[$item['host']]['bots_time'] += $item['request_time'];
 
                     break;
                 }
@@ -112,14 +112,19 @@ function renderLogData($data) {
                 $dbhost = 'mysql:host=' . $pdo_connect_data['host'] . ';dbname=' . $pdo_connect_data['db'];
                 $dbh = new SafePDO($dbhost, $pdo_connect_data['user'], $pdo_connect_data['pass']);
 
-                //install_info($dbh);
+                if ($_GET['install_info']) {
+                    install_info($dbh);
+                }
 
                 $infostr = serialize($host);
                 $date = $time_first;
 
+                $mem_info = getSystemMemInfo();
+
                 //Добавляем значения в таблицу
-                $query = sprintf("INSERT INTO info (cpu,date,info) VALUES ('%d','%d','%s')", $cpu, $date, $infostr);
-            
+                $query = sprintf("INSERT INTO info (cpu,date,info,memtotal,memfree,buffers,cached,dirty,slab,swaptotal,swapfree) "
+                        . "VALUES ('%d','%d','%s','%d','%d','%d','%d','%d','%d','%d','%d')", $cpu, $date, $infostr, $mem_info['MemTotal'], $mem_info['MemFree'], $mem_info['Buffers'], $mem_info['Cached'], $mem_info['Dirty'], $mem_info['Slab'], $mem_info['SwapTotal'], $mem_info['SwapFree']);
+
                 $sth = $dbh->query($query);
 
                 // соединение больше не нужно, закрываем
@@ -156,33 +161,61 @@ function renderLogData($data) {
                 <body>
                     <h1>Информация о системе</h1>
                     <p>Период <?php print date('d.m.y H:i:s', $time_first); ?> — <?php print date('d.m.y H:i:s', $time_end); ?></p>
-                    <p>CPU <?php print $cpu; ?></p>
-                    <?php
-                    //Хосты
-                    if ($host) {
-                        if (sizeof($host) > 0) {
-                            ksort($host);
-                            //   p_r($host);
-                            //Выводим данные
-                            $host_names = array();
-                            foreach ($host as $name => $info) {
-                                $host_names[] = $name;
-                            }
-                            print '<p>Hosts: ' . implode(', ', $host_names) . '</p>';
-
-                            foreach ($host as $name => $info) {
-                                render_host_info($name, $info);
-                            }
-                        }
+                    <p>CPU <?php print $cpu; ?></p>                    
+                    <p>Память<br />
+                    <pre><?php
+            $mem_info = getSystemMemInfo();
+            print_r($mem_info);
+            ?></pre>
+                </p><?php
+            //Хосты
+            if ($host) {
+                if (sizeof($host) > 0) {
+                    ksort($host);
+                    //   p_r($host);
+                    //Выводим данные
+                    $host_names = array();
+                    foreach ($host as $name => $info) {
+                        $host_names[] = $name;
                     }
-                    ?>
+                    print '<p>Hosts: ' . implode(', ', $host_names) . '</p>';
+
+                    foreach ($host as $name => $info) {
+                        render_host_info($name, $info);
+                    }
+                }
+            }
+            ?>
 
 
-                </body>
+            </body>
             </html>
             <?php
         }
     }
+}
+
+function getSystemMemInfo() {
+    $data = file_get_contents("/proc/meminfo");
+    preg_match_all('/(\w+):\s+(\d+)\s/', $data, $matches);
+    $info = array_combine($matches[1], $matches[2]);
+    $mem_array = array(
+        'MemTotal' => 0,
+        'MemFree' => 0,
+        'Buffers' => 0,
+        'Cached' => 0,
+        'Dirty' => 0,
+        'Slab' => 0,
+        'SwapTotal' => 0,
+        'SwapFree' => 0,
+    );
+    $keys = array_keys($mem_array);
+    foreach ($keys as $key) {
+        if ($info[$key]) {
+            $mem_array[$key] = round($info[$key] / 1000, 0);
+        }
+    }
+    return $mem_array;
 }
 
 function render_host_info($name, $info) {
@@ -222,14 +255,14 @@ function render_host_info($name, $info) {
             <tr><td>Время ботов</td><td><?php print isset($info['bots_time']) ? $info['bots_time'] : 0  ?></td></tr>
             <tr><td>Статус:</td>
                 <td><?php
-                    if ($info['status']) {
-                        arsort($info['status']);
-                        foreach ($info['status'] as $key => $value) {
-                            print "$key:$value";
-                            print '<br />';
-                        }
-                    }
-                    ?></td>
+    if ($info['status']) {
+        arsort($info['status']);
+        foreach ($info['status'] as $key => $value) {
+            print "$key:$value";
+            print '<br />';
+        }
+    }
+    ?></td>
             </tr>
         </tbody>
     </table>
@@ -404,7 +437,7 @@ function coreInfoSleep() {
 function GetCoreInformation() {
     $data = file('/proc/stat');
     $cores = array();
-  //  p_r($data);
+    //  p_r($data);
     foreach ($data as $line) {
         if (preg_match('/^cpu[0-9]/', $line)) {
             $info = explode(' ', $line);
@@ -467,6 +500,17 @@ function install_info($dbh) {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     $sth = $dbh->query($sql);
+
+    $sql = "ALTER TABLE `info` ADD `memtotal` int(11) NOT NULL DEFAULT '0';"
+            . " ALTER TABLE `info` ADD `memfree` int(11) NOT NULL DEFAULT '0'; "
+            . " ALTER TABLE `info` ADD `buffers` int(11) NOT NULL DEFAULT '0'; "
+            . " ALTER TABLE `info` ADD `cached` int(11) NOT NULL DEFAULT '0'; "
+            . " ALTER TABLE `info` ADD `dirty` int(11) NOT NULL DEFAULT '0'; "
+            . " ALTER TABLE `info` ADD `slab` int(11) NOT NULL DEFAULT '0'; "
+            . " ALTER TABLE `info` ADD `swaptotal` int(11) NOT NULL DEFAULT '0'; "
+            . " ALTER TABLE `info` ADD `swapfree` int(11) NOT NULL DEFAULT '0'; ";
+    $sth = $dbh->query($sql);
+
     return $sth;
 }
 
