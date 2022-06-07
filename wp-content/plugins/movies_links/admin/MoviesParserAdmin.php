@@ -145,6 +145,12 @@ class MoviesParserAdmin extends ItemAdmin {
         1 => 'Done',
         2 => 'Error',
     );
+    
+    public $parse_mode = array(
+        0=>'Curl',
+        1=>'Webdrivers',
+        2=>'Tor webdrivers',
+    );
 
     /* Generate urls */
     public $rwt_movie_type = array(

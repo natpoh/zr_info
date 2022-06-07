@@ -56,6 +56,56 @@ class ItemAdmin {
      * Page filters
      */
 
+    public function get_filters_tabs($q_class, $fname = '', $filters = array(), $p = '', $query_adb = '') {
+        if (!$query_adb) {
+            $query_adb = new MoviesQueryADB();
+        }
+        $count = 0;
+        $filters_tabs = array();
+
+        if ($filters) {
+            foreach ($filters as $key => $type_list) {
+                $home_type = -1;
+                $type = isset($_GET[$key]) ? (int) $_GET[$key] : $home_type;
+                $filter_type_arr = $this->get_type_count($q_class,$fname,$query_adb->get_query(), $type_list, $key);
+                $filters_type = $this->get_filters($filter_type_arr, $p, $type, '', $key);
+                if ($type != $home_type) {
+                    $p = $p . '&' . $key . '=' . $type;
+                }
+                $query_adb->add_query($key, $type);
+                $filters_tabs['filters'][$key] = $filters_type;
+            }
+
+            $count = isset($filter_type_arr[$type]['count']) ? $filter_type_arr[$type]['count'] : 0;
+        }
+
+        $filters_tabs['query_adb'] = $query_adb;
+        $filters_tabs['p'] = $p;
+        $filters_tabs['c'] = $count;
+
+        return $filters_tabs;
+    }
+
+    public function get_type_count($q_class, $fname = '', $q_req = array(), $types = array(), $custom_type = '') {
+        $status = -1;
+        $count = $q_class->$fname($q_req);
+        $states = array(
+            '-1' => array(
+                'title' => 'All',
+                'count' => $count
+            )
+        );
+        $q_req_custom = $q_req;
+
+        foreach ($types as $key => $value) {
+            $q_req_custom[$custom_type] = $key;
+            $states[$key] = array(
+                'title' => $value,
+                'count' => $q_class->$fname($q_req_custom));
+        }
+        return $states;
+    }
+
     public function get_filters($filter_arr = array(), $url = '', $curr_tab = -1, $front_slug = '', $name = 'status', $class = '', $show_name = true) {
         $ret = array();
         if (sizeof($filter_arr)) {
@@ -180,14 +230,14 @@ class ItemAdmin {
         if ($count > $this->per_pages[0]) {
             $ret .= ' Per page: ';
             foreach ($this->per_pages as $pp) {
-                
+
                 $pp_active = '';
                 if ($pp == $per_page) {
                     $pp_active = $active_class;
                 }
 
                 $ret .= '<a class="tab button ' . $pp_active . '" href="' . $url . '&perpage=' . $pp . $orderby_link . $order_link . '"><span>' . $pp . '</span></a>';
-                
+
                 if ($count < $pp) {
                     break;
                 }
