@@ -363,7 +363,6 @@ public function graph()
     <option value="6">6 hour</option>
     <option selected="selected" value="24">24 hour</option>
     <option  value="168">7 days</option>
-    <option  value="720">30 days</option>
     </select> Datatype <select autocomplete="off" class="graph_type">
     <option value="count">count</option>
     <option value="requests">requests</option>

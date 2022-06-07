@@ -1001,7 +1001,7 @@ class Import
 
         ////delete old comlete request
 
-        $sql = "DELETE FROM `commit` WHERE `complete` = 1 and `last_update` < ".(time()-86400*30);
+        $sql = "DELETE FROM `commit` WHERE `complete` = 1 and `last_update` < ".(time()-86400*8);
 
         Pdo_an::db_query($sql);
 
