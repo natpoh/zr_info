@@ -998,7 +998,7 @@ class Import
 
     public static function service()
     {
-        
+
         ////delete old comlete request
 
         $sql = "DELETE FROM `commit` WHERE `complete` = 1 and `last_update` < ".(time()-86400*30);
