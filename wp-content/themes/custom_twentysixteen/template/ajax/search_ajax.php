@@ -184,7 +184,7 @@ If what you\'re looking for isn\'t on RWT yet, try finding it below.</b>
 
 <table >'.$result_data.'</table>
 <b style="text-align: center;display: block;">If the movie or show you\'re looking for isn\'t shown above, try entering an IMDb ID or url here:</b>
-<table><tr class="container_for_add_movies"><td><input autocomplete="off" placeholder="IMDb ID or link" class="addmoviesfrom_id" /></td><td><button  id="'.$movie_id.'" class="button button-primary add_movie_todb check_imdb_movie">Add to database</button></td></tr></table>
+<table><tr class="container_for_add_movies"><td><input autocomplete="off" placeholder="IMDb ID or Link" class="addmoviesfrom_id" /></td><td><button  id="'.$movie_id.'" class="button button-primary add_movie_todb check_imdb_movie">Add to database</button></td></tr></table>
 </div>';
 
         }

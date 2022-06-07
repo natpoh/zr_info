@@ -366,7 +366,12 @@ public function graph()
     <option  value="720">30 days</option>
     </select> Datatype <select autocomplete="off" class="graph_type">
     <option value="count">count</option>
+    <option value="requests">requests</option>
     <option value="time">time</option>
+    </select>
+     Time <select autocomplete="off" class="graph_time">
+    <option value="add_time">add time</option>
+    <option value="last_update">last update</option>
     </select></p>
     <div id="container_commit_graph" class="commit_graph"></div>
     <script type="text/javascript" src="https://code.highcharts.com/highcharts.js"></script>
@@ -432,7 +437,7 @@ function create_Highcharts(data, block)
    var data = jQuery("#jqGrid").jqGrid("getGridParam", "postData");
     data.period = jQuery('.graph_period').val();
     data.type = jQuery('.graph_type').val();
-
+    data.time = jQuery('.graph_time').val();
 
     ///get graph data
                 jQuery.ajax({
@@ -456,7 +461,7 @@ function create_Highcharts(data, block)
 
 
 
-jQuery('body').on('change','.graph_period, .graph_type',function ()
+jQuery('body').on('change','.graph_period, .graph_type, .last_update',function ()
 {
 check_request();
 

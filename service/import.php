@@ -218,7 +218,14 @@ else if (isset($_POST['_search']))//////
 
     $period =$_POST['period'];
     $data_type =$_POST['type'];
+    $data_time =$_POST['time'];
 
+    if ($data_time!='add_time' && $data_time!='last_update')
+    {
+        $data_time='add_time';
+    }
+
+    if (!$data_time)$data_time='add_time';
 
     if ($period)$period = intval($period);
     if (!$period)$period=24*86400;
@@ -229,7 +236,7 @@ else if (isset($_POST['_search']))//////
 
 
     //$sql ="SELECT * FROM `commit` WHERE last_update > {$min_time}  ".$where1;
-    $sql ="SELECT * FROM `commit` WHERE add_time > {$min_time}  ".$where1." order by add_time ASC";
+    $sql ="SELECT * FROM `commit` WHERE {$data_time} > {$min_time}  ".$where1." order by {$data_time} ASC";
     $row = Pdo_an::db_results_array($sql);
     $result = [];
     foreach ($row as $r)
@@ -238,7 +245,7 @@ else if (isset($_POST['_search']))//////
         $description = $r['description'];
 
 
-            $add_time = $r['add_time'];
+            $add_time = $r[$data_time];
 
 
         if ($add_time)
@@ -250,6 +257,13 @@ else if (isset($_POST['_search']))//////
             {
               $count = $r['run_time'];
               if (!$count)$count=1;
+
+            }
+
+            else if ($data_type=='requests')
+            {
+                $count = $r['requests'];
+                if (!$count)$count=1;
 
             }
             else

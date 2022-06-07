@@ -1020,7 +1020,21 @@ class Import
         Pdo_an::db_query($sql);
 
 
+        ////check requests
 
+        $sql = "SELECT `text`, `id` FROM `commit` WHERE `requests`  = 0 and `text` IS NOT NULL limit 10000";
+        $row = Pdo_an::db_results_array($sql);
+        foreach ($row as $r)
+        {
+            $data = $r['text'];
+            if ($data)
+            {
+                $array = json_decode($data,1);
+                $count_array= count($array);
+                $sql2 = "UPDATE `commit` SET `requests` = {$count_array} where id = ".$r['id'];
+                Pdo_an::db_query($sql2);
+            }
+        }
     }
 
     public static function check_status($status)
