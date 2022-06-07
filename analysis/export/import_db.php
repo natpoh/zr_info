@@ -998,6 +998,7 @@ class Import
 
     public static function service()
     {
+        
         ////delete old comlete request
 
         $sql = "DELETE FROM `commit` WHERE `complete` = 1 and `last_update` < ".(time()-86400*30);
@@ -1005,16 +1006,20 @@ class Import
         Pdo_an::db_query($sql);
 
 
-        ////delete old sync status
+        ////delete old status
 
-        $sql = "UPDATE `commit` SET `status` = 1  where `status` = 2 and `last_update` < ".(time()-1800);
+        $site_id = self::generate_id();
+
+
+        $sql = "UPDATE `commit` SET `status` = 0 , `complete` = 0   where (`status` = 1 OR `status` = 2 OR `status` = 3 OR `status` = 4 ) and site_id='".$site_id."' and `last_update` < ".(time()-3600);
 
         Pdo_an::db_query($sql);
 
-        ///move to status 0 each 10 minutes
+        $sql = "UPDATE `commit` SET `status` = 1 , `complete` = 0   where (`status` = 2 OR `status` = 3 OR `status` = 4 ) and site_id!='".$site_id."' and `last_update` < ".(time()-3600);
 
-        $sql = "UPDATE `commit` SET `status` = 0,  `complete` = 0  where `status` = 6 and `last_update` < ".(time()-600);
         Pdo_an::db_query($sql);
+
+
 
     }
 
