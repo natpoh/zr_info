@@ -461,7 +461,7 @@ function create_Highcharts(data, block)
 
 
 
-jQuery('body').on('change','.graph_period, .graph_type, .last_update',function ()
+jQuery('body').on('change','.graph_period, .graph_type, .graph_time',function ()
 {
 check_request();
 
