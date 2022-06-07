@@ -122,8 +122,8 @@ function renderLogData($data) {
                 $mem_info = getSystemMemInfo();
 
                 //Добавляем значения в таблицу
-                $query = sprintf("INSERT INTO info (cpu,date,info,memtotal,memfree,buffers,cached,dirty,slab,swaptotal,swapfree) "
-                        . "VALUES ('%d','%d','%s','%d','%d','%d','%d','%d','%d','%d','%d')", $cpu, $date, $infostr, $mem_info['MemTotal'], $mem_info['MemFree'], $mem_info['Buffers'], $mem_info['Cached'], $mem_info['Dirty'], $mem_info['Slab'], $mem_info['SwapTotal'], $mem_info['SwapFree']);
+                $query = sprintf("INSERT INTO info (cpu,date,info,memtotal,memfree,buffers,cached,dirty,slab,swaptotal,swapfree,memavailable) "
+                        . "VALUES ('%d','%d','%s','%d','%d','%d','%d','%d','%d','%d','%d','%d')", $cpu, $date, $infostr, $mem_info['MemTotal'], $mem_info['MemFree'], $mem_info['Buffers'], $mem_info['Cached'], $mem_info['Dirty'], $mem_info['Slab'], $mem_info['SwapTotal'], $mem_info['SwapFree'], $mem_info['MemAvailable']);
 
                 $sth = $dbh->query($query);
 
@@ -208,6 +208,7 @@ function getSystemMemInfo() {
         'Slab' => 0,
         'SwapTotal' => 0,
         'SwapFree' => 0,
+        'MemAvailable' => 0,
     );
     $keys = array_keys($mem_array);
     foreach ($keys as $key) {
@@ -510,6 +511,9 @@ function install_info($dbh) {
             . " ALTER TABLE `info` ADD `swaptotal` int(11) NOT NULL DEFAULT '0'; "
             . " ALTER TABLE `info` ADD `swapfree` int(11) NOT NULL DEFAULT '0'; ";
     $sth = $dbh->query($sql);
+    
+    $sql = "ALTER TABLE `info` ADD  `memavailable` int(11) NOT NULL DEFAULT '0';";
+    $sth = $dbh->query($sql);        
 
     return $sth;
 }

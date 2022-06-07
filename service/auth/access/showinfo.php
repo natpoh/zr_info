@@ -26,7 +26,7 @@ function getLogDataFromDB($count, $pdo_connect_data) {
 
 
         // Добавляем значения в таблицу
-        $query = sprintf("SELECT cpu, date, info, memtotal,memfree,buffers,cached,dirty,slab,swaptotal,swapfree FROM info ORDER BY id DESC limit %d", $count);
+        $query = sprintf("SELECT cpu, date, info, memtotal,memfree,buffers,cached,dirty,slab,swaptotal,swapfree,memavailable FROM info ORDER BY id DESC limit %d", $count);
 
         $sth = $dbh->prepare($query);
 
@@ -71,6 +71,8 @@ function groupData($data, $mod) {
             // memfree
             $group['memfree'] += $item['memfree'] / $mod;
             $group['swapfree'] += $item['swapfree'] / $mod;
+            $group['memavailable'] += $item['memavailable'] / $mod;
+            
             //date
             if (!isset($group['date'])) {
                 $group['date'] = $item['date'];
@@ -98,6 +100,7 @@ function groupData($data, $mod) {
                 $group['cpu'] = round($group['cpu'], 0);
                 $group['memfree'] = round($group['memfree'], 0);
                 $group['swapfree'] = round($group['swapfree'], 0);
+                $group['memavailable'] = round($group['memavailable'], 0);
                 $ret[] = $group;
                 $i = 0;
                 $group = array();
@@ -180,6 +183,7 @@ function renderData($data) {
                 $cpuarr = array();
                 $memfree_arr = array();
                 $swapfree_arr = array();
+                $memavailable_arr = array();
                 foreach ($data as $item) {
                     if (is_string($item['info'])) {
                         $info = unserialize($item['info']);
@@ -191,6 +195,7 @@ function renderData($data) {
                     $cpuarr[$date] = $item['cpu'];
                     $memfree_arr[$date] = $item['memfree'];
                     $swapfree_arr[$date] = $item['swapfree'];
+                    $memavailable_arr[$date] = $item['memavailable'];
 
                     foreach ($info as $host => $hostinfo) {
                         $hosts[$host][$date] = $hostinfo;
@@ -208,6 +213,7 @@ function renderData($data) {
                 ksort($cpuarr);
                 ksort($memfree_arr);
                 ksort($swapfree_arr);
+                ksort($memavailable_arr);
                 //p_r($hostnames);
                 //p_r($cpuarr);
                 //p_r($hosts);
@@ -252,7 +258,7 @@ function renderData($data) {
                 renderStatusHost($total_info, $host_name);
 
                 //Server info
-                print_graphics($cpuarr, $memfree_arr, $swapfree_arr, $hosts);
+                print_graphics($cpuarr, $memfree_arr, $swapfree_arr, $memavailable_arr, $hosts);
 
 
                 //Host table
@@ -445,7 +451,7 @@ function renderStatusHost($total_info, $host_name) {
     }
 }
 
-function print_graphics($cpuarr, $memfree_arr, $swapfree_arr, $hosts) {
+function print_graphics($cpuarr, $memfree_arr, $swapfree_arr, $memavailable_arr, $hosts) {
     $period = getPeriod();
     $host_name = getHostNameByReq();
     $date_format = $period > 24 ? 'd.m H:i' : 'H:i';
@@ -498,20 +504,23 @@ function print_graphics($cpuarr, $memfree_arr, $swapfree_arr, $hosts) {
                     
                     function drawChartMem() {
                         var data = google.visualization.arrayToDataTable([
-                            ['Time', 'Memory Free', 'Swap Free'],
+                            ['Time', 'Memory Free', 'Memory Available', 'Swap Free'],
     <?php   
     foreach ($cpuarr as $key => $cpu) {
         $memfree= isset($memfree_arr[$key]) ? $memfree_arr[$key] : 0;
         $swapfree= isset($swapfree_arr[$key]) ? $swapfree_arr[$key] : 0;
+        $memavailable = isset($memavailable_arr[$key]) ? $memavailable_arr[$key] : 0;
        
         $total['mem'] += $memfree;
         $total['swap'] += $swapfree;
+        $total['memavailable'] += $memavailable;
 
-        print "['" . gmdate($date_format, $key + 18000) . "', $memfree, $swapfree],";
+        print "['" . gmdate($date_format, $key + 18000) . "', $memfree, $memavailable, $swapfree],";
     }
     $mem_pr = round($total['mem'] / sizeof($cpuarr), 0);
     $swap_pr = round($total['swap'] / sizeof($cpuarr), 0);
-    $title = 'Memory free avg - ' . $mem_pr . ' Mb. Swap free avg - ' . $swap_pr.' Mb';
+    $memavailable_pr = round($total['memavailable'] / sizeof($cpuarr), 0);
+    $title = 'Memory free avg - ' . $mem_pr . ' Mb. Memory available avg - ' . $memavailable_pr . ' Mb. Swap free avg - ' . $swap_pr.' Mb';
     ?>
                         ]);
                         var options = {
