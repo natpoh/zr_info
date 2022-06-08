@@ -91,6 +91,10 @@ AND table_schema='imdbvisualization'";
             $sql = "DELETE FROM  `" . $table_data . "`   WHERE `id` = '" . intval($_POST['parent']) . "'";
             Pdo_an::db_query($sql);
 
+            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+            Import::create_commit('', 'delete', $table_data, array('id' => intval($_POST['parent'])), 'user_'.$table_data,6);
+
+
         } else if (($_POST['oper'] == 'edit') || ($_POST['oper'] == 'add')) {
 
             $array = $_POST;
@@ -196,6 +200,7 @@ AND table_schema='imdbvisualization'";
                     !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
                     TMDB::add_log('',$movie_id,'update movies',$comment,1);
                 }
+                $res_id = $array['parent'] ;
 
             } else if ($_POST['oper'] == 'add') {
 
@@ -205,14 +210,15 @@ AND table_schema='imdbvisualization'";
                 ///$qres = implode(',',$arrayrequest);
 
                 $sql = "INSERT INTO  `" . $table_data . "` (" . $array_index . ") values ( " . $qres . " ) ";
-                echo $sql;
+                //echo $sql;
                 $result = Pdo_an::db_results_array($sql, $arrayrequest);
-
+                $res_id=Pdo_an::last_id();
 
 
 
             }
-
+            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+            Import::create_commit('', 'update', $table_data, array('id' => intval($res_id)), 'user_'.$table_data,6);
 
         }
     }
