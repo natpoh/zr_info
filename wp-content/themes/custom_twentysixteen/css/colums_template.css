@@ -617,6 +617,16 @@ section.inner_content.widthed div.media.discover div.card.style_1 {
     margin-right: 30px;
     align-self: start;
 }
+.load_more_link {
+    font-family: 'HOLLYWOODSTARFIRE', "Helvetica Neue", Courier;
+    color: #313131;
+    font-size: 24px;
+    line-height: 1.4em;
+    position: relative;
+    display: block;
+    text-align: center;
+}
+
 
 div.card.style_1 .load_more {
     font-family: 'HOLLYWOODSTARFIRE', "Helvetica Neue", Courier;
@@ -1301,6 +1311,11 @@ section.inner_content.section_actors  div.column_content div.card.style_1 {
     border-top: 2px solid #ccc;
     color: #6e6e6e;
 }
+
+.inner_content   .disqus_see_more {
+    background-color: #fbfbfb;
+}
+
 
 .disqus_content_full{
     overflow: visible;
