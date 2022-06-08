@@ -75,19 +75,6 @@ class GETCOINS
         return $last_id;
     }
 
-    public static function set_option($id, $option)
-    {
-        if ($option && $id) {
-
-            $sql = "DELETE FROM `options` WHERE `options`.`id` = " . $id;
-            Pdo_an::db_query($sql);
-
-            $sql = "INSERT INTO `options`  VALUES ('" . $id . "',?)";
-            Pdo_an::db_results_array($sql,array($option));
-        }
-    }
-
-
 
 
     public static function get_request()

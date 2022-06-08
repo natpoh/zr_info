@@ -105,16 +105,9 @@ class GETNEWMOVIES{
 
         if ($array_rwt_id)
         {
-
             $result = json_encode($array_rwt_id);
-            $sql = "DELETE FROM `options` WHERE `options`.`id` = 14";
-            Pdo_an::db_query($sql);
-
-            $sql = "INSERT INTO `options`  VALUES (14,?)";
-            Pdo_an::db_results_array($sql,array($result));
-
-            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-            Import::create_commit('', 'update', 'options', array('id' => 14), 'options',7);
+            !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+            OptionData::set_option(14,$result,'get_new_tv',1);
 
             echo 'updated';
         }
@@ -272,16 +265,9 @@ class GETNEWMOVIES{
         {
 
             $result = json_encode($array_movies);
-            $sql = "DELETE FROM `options` WHERE `options`.`id` = 13";
-            Pdo_an::db_query($sql);
 
-            $sql = "INSERT INTO `options`  VALUES (13,?)";
-            Pdo_an::db_results_array($sql,array($result));
-
-
-            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-            Import::create_commit('', 'update', 'options', array('id' => 13), 'options',7);
-
+            !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+            OptionData::set_option(13,$result,'get_new_movies',1);
 
             echo 'updated';
         }

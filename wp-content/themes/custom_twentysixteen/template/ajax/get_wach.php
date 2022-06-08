@@ -134,11 +134,10 @@ function get_providers($force='')
         $providers = array('last_update' => time());
 
         $option = json_encode($providers);
-        $sql = "DELETE FROM `options` WHERE `options`.`id` = 15";
-        Pdo_an::db_query($sql);
 
-        $sql = "INSERT INTO `options`  VALUES (15,?)";
-        Pdo_an::db_results_array($sql, array($option));
+        !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+        OptionData::set_option(15,$option,'get_providers',1);
+
 
         $providers_array = get_providers_table();
         return json_encode($providers_array);

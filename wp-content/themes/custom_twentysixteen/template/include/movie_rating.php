@@ -182,6 +182,7 @@ class RWT_RATING
     }
     public  function ajax_pg_rating($movie_id)
     {
+
         $sql = "SELECT `movie_id` FROM `data_movie_imdb` WHERE `id` = {$movie_id} limit 1";
         $row = Pdo_an::db_fetch_row($sql);
         $imdb_id = $row->movie_id;
@@ -199,6 +200,12 @@ class RWT_RATING
             if ($certification_countries['Russia'])
             {
                 $data['mpaa_rus']=$certification_countries['Russia'];
+
+                if (count($data['mpaa_rus'])>1)
+                {
+                    $reversed = array_reverse($data['mpaa_rus']);
+                    $data['mpaa_rus'] =$reversed[0];
+                }
             }
         }
 

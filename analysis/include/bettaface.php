@@ -179,7 +179,7 @@ function set_option($id, $option)
     $q = $pdo->prepare($sql);
     $q->execute();
 
-    $sql = "INSERT INTO `options`  VALUES ('" . $id . "',?)";
+    $sql = "INSERT INTO `options`  VALUES ('" . $id . "',?,'')";
     $q = $pdo->prepare($sql);
     $q->execute(array($option));
 //print_r($q->errorInfo());

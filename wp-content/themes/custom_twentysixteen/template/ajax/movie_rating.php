@@ -46,11 +46,11 @@ function get_movie_rating()
 if (isset($_GET['id'])) {
 
 
-if (function_exists('wp_custom_cache') )
-{
-    $cache=   wp_custom_cache('p-'.$_GET['id'].'_get_movie_rating_1','file_cache', 3600);
-}
-else
+//if (function_exists('wp_custom_cache') )
+//{
+//    $cache=   wp_custom_cache('p-'.$_GET['id'].'_get_movie_rating_1','file_cache', 3600);
+//}
+//else
 {
     $cache =get_movie_rating(); //////single movie
 }

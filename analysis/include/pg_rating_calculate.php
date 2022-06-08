@@ -25,17 +25,13 @@ class PgRatingCalculate {
         ///get option
 
         if (!$rwt_array) {
-            global $table_prefix;
 
-            $sql = "SELECT option_value FROM `{$table_prefix}options` WHERE `option_name` = 'movies_raiting_weight' ";
-            $r = Pdo_wp::db_fetch_row($sql);
-            if ($r) {
-                $value = $r->option_value;
+            !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+            $value  =OptionData::get_options('','movies_raiting_weight');
+
+            if ($value) {
                 $value = unserialize($value);
-
                 $rwt_array = $value["rwt"];
-
-                ///  var_dump($rwt_array);
             }
         }
 
@@ -206,16 +202,8 @@ class PgRatingCalculate {
             self::debug_table('Total RWT Rating: ', $total_rating, 'green');
         }
 
-
-
-
-
-
         if ($debug)
             self::debug_table('e'); ///end of table
-
-
-
 
         if ($update) {
             ///update
@@ -426,13 +414,18 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
     public function get_data() {
 
+
+
+
         global $table_prefix;
 
-        $sql = "SELECT option_value FROM {$table_prefix}options WHERE option_name = 'custom_rating_data' LIMIT 1";
-        $result = Pdo_wp::db_fetch_row($sql);
-        if ($result) {
-            $result = unserialize($result->option_value);
-            return $result;
+        !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+        $value  =OptionData::get_options('','custom_rating_data');
+        if ($value) {
+
+        $result = unserialize($value);
+        return $result;
+
         } else {
             $rating = [];
 
