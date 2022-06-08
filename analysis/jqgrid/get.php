@@ -108,6 +108,16 @@ AND table_schema='imdbvisualization'";
                     $v = str_replace('\"', '"', $v);
                     $array[$i] = $v;
                 }
+                if (strstr($v, "\'")) {
+                    $v = str_replace("\'", "'", $v);
+                    $array[$i] = $v;
+                }
+                if (strstr($v, "\\/")) {
+                    $v = str_replace("\\/", "\/", $v);
+                    $array[$i] = $v;
+                }
+
+
             }
 
             $countval = count($array);
@@ -174,8 +184,8 @@ AND table_schema='imdbvisualization'";
 
 
                 $sql = "UPDATE `" . $table_data . "` SET " . $qres . "  WHERE `id` = '" . $array['parent'] . "'";
-               // echo $sql;
-               // print_r($arrayrequest);
+                echo $sql;
+                print_r($arrayrequest);
 
 
                 $result = Pdo_an::db_results_array($sql, $arrayrequest);
