@@ -22,11 +22,21 @@ if (class_exists('Pdo_wp')) {
 
     $cfront = new CriticFront();
 
+    $movie_id = 0;
     if (isset($_GET['id'])) {
         $movie_id = (int) $_GET['id'];
     }
-    
-    print $cfront->get_audience_scroll_data($movie_id);
+
+    // Default positive
+    $vote = 1;
+    if (isset($_GET['vote'])) {
+        $vote = (int) $_GET['vote'];
+    }
+
+
+    print $cfront->get_scroll('audience_scroll', $movie_id, $vote);
+
+
     exit();
 }
 

@@ -9,6 +9,7 @@ $section = '<section class="inner_content no_pad {class}">
                     <h2>{title}</h2>
                 </div>
                 {title_desc}
+                {tabs}
                 <div id="{id}" data-value="{post_id}" class="not_load media discover scroller_wrap should_fade is_fading">
                     <div class="column_content flex scroller">{content}</div>
                 </div>

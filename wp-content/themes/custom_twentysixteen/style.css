@@ -847,6 +847,10 @@ input.radio {
  * 6.0 - Navigation
  */
 
+.home-tabs {
+    text-align: center;
+}
+
 .tab-wrapper {
     display: block;
     padding-left: 0;
@@ -867,6 +871,11 @@ input.radio {
     border: 1px solid #ddd;
     margin-left: -1px;
 }
+
+.home-tabs.tab-wrapper li.nav-tab a {
+    border-color: #000;
+}
+
 
 .tab-wrapper li.nav-tab a .count {
     color: #aaa;

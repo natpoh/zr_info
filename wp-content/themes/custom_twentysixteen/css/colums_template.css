@@ -162,6 +162,10 @@ section.inner_content div.column_content.flex.scroller {
     overflow-y: hidden;
     transition: height .5s linear;
 }
+
+section.inner_content div.column_content.flex.hide {
+    display: none;
+} 
 div.media {
     width: 100%;
     display: flex;

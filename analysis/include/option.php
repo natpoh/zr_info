@@ -27,6 +27,9 @@ class OptionData {
                 {
                     $sql ="UPDATE `options` SET `val`=? WHERE `type`=?";
                     Pdo_an::db_results_array($sql,array($option,$type));
+
+                    $id =self::get_id($type);
+
                 }
             }
             else
@@ -55,6 +58,15 @@ class OptionData {
 
         }
 
+    }
+
+    public static function get_id($type)
+    {
+
+        $sql = "SELECT id FROM `options` where `type` = '{$type}'";
+        $rows = Pdo_an::db_fetch_row($sql);
+        $data = $rows->id;
+        return $data;
     }
 
     public static function get_options($id=null,$type=null)
