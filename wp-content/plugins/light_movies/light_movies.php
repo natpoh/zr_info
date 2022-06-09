@@ -28,16 +28,10 @@ class LightMovies{
 
 
 
-public function set_option($id,$option)
+public function set_option($id,$option,$type='')
 {
-if ($option && $id)
-    {
-
-    $sql = "DELETE FROM `options` WHERE `options`.`id` = ".$id;
-    Pdo_an::db_query($sql);
-    $sql = "INSERT INTO `options`  VALUES ('".$id."',?)";
-    Pdo_an::db_results_array($sql,array($option));
-    }
+            !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+            OptionData::set_option($id,$option,$type,1);
 
 }
 
@@ -104,10 +98,10 @@ tr.jqgrow>td
     if (isset($_POST['option_1']))
         {
 
-$this->set_option(1,$_POST['option_1']);
-$this->set_option(3,$_POST['option_3']);
-$this->set_option(4,$_POST['option_4']);
-$this->set_option(6,$_POST['option_6']);
+$this->set_option(1,$_POST['option_1'],'Ads');
+$this->set_option(3,$_POST['option_3'],'Ethnic array');
+$this->set_option(4,$_POST['option_4'],'Ethnic array fast');
+$this->set_option(6,$_POST['option_6'],'Color array');
         }
 
 
@@ -167,15 +161,11 @@ $fi = new FilesystemIterator($dir, FilesystemIterator::SKIP_DOTS);
 $fileCount = iterator_count($fi);
 
 ?>
-<form action="admin.php?page=light_movies_custom_options&clear_imgcahe" method="post">
-Total images cache: <?php echo $fileimgCount; ?> <button type="submit" class="button">Clear all image cache</button>
-</form>
 
 <!--<form action="admin.php?page=light_movies_custom_options&clear_reqcahe" method="post">-->
 <!--Total request cache: --><?php //echo $fileCount; ?><!-- <button type="submit" class="button">Clear all request cache</button>-->
 <!--</form>-->
-<h2>Inflation</h2>
-<a target="_blank" href="/analysis/include/setinflation.php">Update inflation data</a>
+
 </div>
 
 
@@ -434,7 +424,7 @@ display: inline-block;
             {
                 $movie_list_str = json_encode($movie_list);
 
-                $this->set_option(16,$movie_list_str);
+                $this->set_option(16,$movie_list_str,'movie_list');
 
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
                  Import::create_commit('', 'update', 'options', array('id' => 16), 'options',7);

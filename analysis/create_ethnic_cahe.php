@@ -12,7 +12,7 @@ function set_option($id,$option)
 
 
 
-    $sql = "INSERT INTO `options`  VALUES ('".$id."',?)";
+    $sql = "INSERT INTO `options`  VALUES ('".$id."',?,'')";
 
 
     $q = $pdo->prepare($sql);

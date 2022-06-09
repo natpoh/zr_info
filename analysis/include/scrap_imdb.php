@@ -14,7 +14,8 @@ if (!defined('ABSPATH'))
 
 !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
 /////////add rating
-
+///add option
+!class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : ''; 
 
 function sync_tables()
 {
@@ -251,13 +252,7 @@ $sql = "select * from data_actors_meta ".$where." ";
 function get_last_options($id)
 {
 
-
-    $sql = "SELECT val FROM `options` where id = " . $id;
-    $rows = Pdo_an::db_fetch_row($sql);
-    $last_id = $rows->val;
-
-
-
+    $last_id =OptionData::get_options($id);
     if (!$last_id) $last_id = 0;
     return $last_id;
 }
@@ -266,26 +261,13 @@ if (!function_exists('set_option')) {
 
     function set_option($id, $option)
     {
-        if ($option && $id) {
-
-            $sql = "DELETE FROM `options` WHERE `options`.`id` = " . $id;
-            Pdo_an::db_query($sql);
-
-            $sql = "INSERT INTO `options`  VALUES ('" . $id . "',?)";
-            Pdo_an::db_results_array($sql,array($option));
-
-        }
-
-//print_r($q->errorInfo());
-
+        OptionData::set_option($id, $option);
     }
 }
 
 function add_to_db_from_userlist()
 {
-    $sql = "SELECT * FROM `options` where id=16 ";
-    $rows = Pdo_an::db_fetch_row($sql);
-    $data = $rows->val;
+    $data =OptionData::get_options(16);
     if ($data) {
         $movie_list = json_decode($data, 1);
 
@@ -313,12 +295,9 @@ function add_to_db_from_userlist()
     }
 
     }
-
-    $sql = "DELETE FROM `options` WHERE `options`.`id` = 16";
-    Pdo_an::db_query($sql);
-    $sql = "INSERT INTO `options`  VALUES ('16',?)";
-    Pdo_an::db_results_array($sql,array(json_encode($movie_list)));
-
+    //userlist
+    OptionData::set_option(16,json_encode($movie_list),'userlist');
+    
     !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
     Import::create_commit('', 'update', 'options', array('id' => 16), 'options',7);
 
@@ -671,31 +650,34 @@ function update_all_rwt_rating($force='')
     !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
 
     ///get option
+//
+    $value  =OptionData::get_options('','movies_raiting_weight');
 
-    global $table_prefix;
-
-    $sql="SELECT option_value FROM `{$table_prefix}options` WHERE `option_name` = 'movies_raiting_weight' ";
-    $r = Pdo_wp::db_fetch_row($sql);
-    if ($r)
+    if ($value)
     {
-     $value =    $r->option_value;
         $value= unserialize($value);
-
         $rwt_array= $value["rwt"];
-
       ///  var_dump($rwt_array);
     }
-
-    if ($force)
+    if (isset($_GET['id']))
     {
-        $sql = "SELECT `data_movie_imdb`.id  FROM `data_movie_imdb`";
+        $rwt_id = intval($_GET['id']);
+        $result = PgRatingCalculate::add_movie_rating($rwt_id,$rwt_array,1);
+
+        return;
     }
     else
     {
-        $last_update_min = time()-86400;
-        $last_update = time()-86400*30;
+        if ($force)
+        {
+            $sql = "SELECT `data_movie_imdb`.id  FROM `data_movie_imdb`";
+        }
+        else
+        {
+            $last_update_min = time()-86400;
+            $last_update = time()-86400*30;
 
-        $sql = "SELECT `data_movie_imdb`.id  FROM `data_movie_imdb` LEFT JOIN data_movie_rating 
+            $sql = "SELECT `data_movie_imdb`.id  FROM `data_movie_imdb` LEFT JOIN data_movie_rating 
     ON `data_movie_imdb`.id=data_movie_rating.movie_id
         WHERE   (
             data_movie_rating.id IS NULL 
@@ -703,7 +685,12 @@ function update_all_rwt_rating($force='')
                 OR (`data_movie_imdb`.rating>0  AND data_movie_rating.imdb ='')
             ) order by `data_movie_rating`.last_update desc  limit 1000";
 //echo $sql;
+        }
+
+
     }
+
+
 
 
     $rows = Pdo_an::db_results_array($sql);

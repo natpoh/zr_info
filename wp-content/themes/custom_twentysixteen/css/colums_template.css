@@ -162,6 +162,10 @@ section.inner_content div.column_content.flex.scroller {
     overflow-y: hidden;
     transition: height .5s linear;
 }
+
+section.inner_content div.column_content.flex.hide {
+    display: none;
+} 
 div.media {
     width: 100%;
     display: flex;
@@ -617,6 +621,16 @@ section.inner_content.widthed div.media.discover div.card.style_1 {
     margin-right: 30px;
     align-self: start;
 }
+.load_more_link {
+    font-family: 'HOLLYWOODSTARFIRE', "Helvetica Neue", Courier;
+    color: #313131;
+    font-size: 24px;
+    line-height: 1.4em;
+    position: relative;
+    display: block;
+    text-align: center;
+}
+
 
 div.card.style_1 .load_more {
     font-family: 'HOLLYWOODSTARFIRE', "Helvetica Neue", Courier;
@@ -907,6 +921,16 @@ a.original_link {
 }
 
 
+.disqus_content spoiler {
+    display: inline;
+    background: #687a86;
+    color: transparent;
+    padding: 0 .5em;
+}
+.disqus_content spoiler:hover, .disqus_content .spoiler_visible {
+    background: #e7e9ee;
+    color: inherit;
+}
 .a_msg img {
     max-height: 300px;
 }
@@ -1301,6 +1325,11 @@ section.inner_content.section_actors  div.column_content div.card.style_1 {
     border-top: 2px solid #ccc;
     color: #6e6e6e;
 }
+
+.inner_content   .disqus_see_more {
+    background-color: #fbfbfb;
+}
+
 
 .disqus_content_full{
     overflow: visible;

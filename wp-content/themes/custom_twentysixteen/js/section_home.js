@@ -16,8 +16,8 @@ function attachScroller(distance, scroller, hasScrolled, scrollLeft) {
 }
 function recomendations_resset()
 {
-   /// console.log(window.DISQUS_RECOMMENDATIONS);
-   //window.DISQUS_RECOMMENDATIONS.reset();
+    /// console.log(window.DISQUS_RECOMMENDATIONS);
+    //window.DISQUS_RECOMMENDATIONS.reset();
 }
 
 function discuss_config(data_object) {
@@ -60,7 +60,7 @@ function discuss_config(data_object) {
     {
         if (jQuery('div[id="disqus_recommendations"]').attr('id'))
         {
-             var third_scripts = {omendations: 'https://'+data_object['data_comments']+'.disqus.com/recommendations.js'  };
+            var third_scripts = {omendations: 'https://' + data_object['data_comments'] + '.disqus.com/recommendations.js'};
             use_ext_js(recomendations_resset, third_scripts);
 
 
@@ -542,14 +542,15 @@ function create_rating_content(object, m_id)
     return content;
 }
 
-function set_video_scroll(data, block_id) {
-//console.log(block_id);
+function set_video_scroll(data, block_id, append = '') {
+
     if (data) {
         data = JSON.parse(data);
-//console.log(data['count'] ,block_id);
 
         if (data['count'] > 0 && data['tmpl']) {
-            jQuery('div[id="' + block_id + '"]').parents('section').addClass('loaded');
+            if (!append) {
+                jQuery('div[id="' + block_id + '"]').parents('section').addClass('loaded');
+            }
             var content = '';
             var tmpl = data['tmpl'];
             var tmpl_type = data['type'];
@@ -578,21 +579,18 @@ function set_video_scroll(data, block_id) {
                     // let title = head.html();
                     // head.html('<div class="i_head">'+title+data['html']+'</div>')
                 }
-
-
-
-
-
             } else {
                 for (var i = 1; i <= Number(data['count']); i++) {
                     content += tmpl.replace('{id}', i);
                 }
 
-
-
                 ///console.log(block_id);
+                if (append) {
+                    jQuery('div[id="' + block_id + '"] .column_content' + append).html(content);
+                } else {
+                    jQuery('div[id="' + block_id + '"]').html('<div class="column_content flex scroller">' + content + '</div>');
+                }
 
-                jQuery('div[id="' + block_id + '"]').html('<div class="column_content flex scroller">' + content + '</div>');
                 if (data['rating'] && typeof (data['rating']) == 'string')
                 {
                     data['rating'] = JSON.parse(data['rating']);
@@ -601,46 +599,33 @@ function set_video_scroll(data, block_id) {
                 if (data['result']) {
                     var i = 1;
                     jQuery.each(data['result'], function (a, b) {
-
-
-
-                        var block = jQuery('div[id="' + block_id + '"] .column_content .loading[id="' + i + '"]');
-
+                        var block = jQuery('div[id="' + block_id + '"] .column_content' + append + ' .loading[id="' + i + '"]');
 
                         if (b.genre == 'load_more') {
-
                             block.html('<a class="load_more" href="' + b.link + '/">' + b.title + '</a>');
                             block.removeClass('loading');
                         } else {
-
                             let array_title = {'movies': 'Movie', 'tvseries': 'TV Show', 'videogame': 'Game'};
                             let mtitle = 'Movie';
                             if (array_title[b.type])
                             {
                                 mtitle = array_title[b.type];
                             }
-
-
-
                             var image = '<a class="image" href="' + b.link + '/" title="' + b.title + '">' +
                                     '<span class="card_movie_type ctype_' + b.type + '" title="' + mtitle + '"></span>\n' +
                                     '<img loading="lazy" class="poster"  srcset="' + b.poster_link_small + ' 1x, ' + b.poster_link_big + ' 2x" alt="">\n' +
                                     '</a>';
-
                             block.find('.wrapper').html(image);
                             block.find('.content h2').html('<a href="' + b.link + '/" title="' + b.title + '">' + b.title + '</a>');
                             block.find('.content p').html(b.genre);
-
-
                             block.removeClass('loading');
-
                             if (b.content_pro) {
                                 block.find('.mbp_f').html(b.content_pro);
                                 let ecount = 0;
                                 let user_class = '';
 
                                 let pid = b.pid;
-                                let ccount ='';
+                                let ccount = '';
 
                                 if (data['reaction']) {
                                     if (data['reaction']['total']) {
@@ -663,19 +648,15 @@ function set_video_scroll(data, block_id) {
                                     }
                                 }
 
-                                var disquss_class='';
+                                var disquss_class = '';
                                 if (ccount)
                                 {
-                                    disquss_class  =' comment_count';
-                                    ccount_data ='<span  class="disquss_coment_count">' + ccount + '</span>';
-                                }
-                                else
+                                    disquss_class = ' comment_count';
+                                    ccount_data = '<span  class="disquss_coment_count">' + ccount + '</span>';
+                                } else
                                 {
-                                    ccount_data =' ';
+                                    ccount_data = ' ';
                                 }
-
-
-
 
                                 let ptitle = b.pid_title;
                                 if (!ptitle)
@@ -683,12 +664,10 @@ function set_video_scroll(data, block_id) {
                                 if (!ecount)
                                     ecount = '';
 
-                                block.find('.review_comment_data').html('<a  href="#" data_title="' + ptitle + '" class="disquss_coment'+disquss_class+'">'+ccount_data+'</a><a href="#"   class="emotions  ' + user_class + '  "><span class="emotions_count">' + ecount + '</span></a>').attr('id', b.pid);
+                                block.find('.review_comment_data').html('<a  href="#" data_title="' + ptitle + '" class="disquss_coment' + disquss_class + '">' + ccount_data + '</a><a href="#"   class="emotions  ' + user_class + '  "><span class="emotions_count">' + ecount + '</span></a>').attr('id', b.pid);
 
 
                             }
-
-
                             if (data['rating'])
                             {
                                 if (b.content_pro) {
@@ -713,38 +692,33 @@ function set_video_scroll(data, block_id) {
                                 }
 
                             }
-
                         }
 
                         i++;
                     });
 
                     init_spoilers();
-
                 }
-
             }
-
-
         } else {
+            if (!append) {
+                let prnt = jQuery('div[id="' + block_id + '"]').parents('section.inner_content');
+                prnt.remove();
+                var tmpl_type = data['type'];
 
-            let prnt = jQuery('div[id="' + block_id + '"]').parents('section.inner_content');
-            prnt.remove();
-            var tmpl_type = data['type'];
-
-            if (tmpl_type == 'actors_data')
-            {
-                //  jQuery('.actor_details>div').html('  Sorry. No actor data available yet. Stay tuned.').addClass('dmg_content');
-
+                if (tmpl_type == 'actors_data')
+                {
+                    //  jQuery('.actor_details>div').html('  Sorry. No actor data available yet. Stay tuned.').addClass('dmg_content');
+                }
             }
-
         }
     } else
     {
-        let prnt = jQuery('div[id="' + block_id + '"]').parents('section.inner_content');
-        prnt.remove();
-    }
-
+        if (!append) {
+            let prnt = jQuery('div[id="' + block_id + '"]').parents('section.inner_content');
+            prnt.remove();
+        }
+}
 }
 
 function  add_rating_row(title, content, id, content_text)
@@ -1139,10 +1113,10 @@ function load_actor_representation(movie_id) {
 function load_ajax_block(block_id) {
 
     lastload = block_id;
-
+    var parent_id = '';
     if (jQuery('div[id="' + block_id + '"]').attr('data-value')) {
         var request_block = '';
-        var parent_id = jQuery('div[id="' + block_id + '"]').attr('data-value');
+        parent_id = jQuery('div[id="' + block_id + '"]').attr('data-value');
         var request = "?id=" + parent_id;
 
     } else {
@@ -1191,6 +1165,8 @@ function load_ajax_block(block_id) {
             scroll_data = audience_scroll_data;
             local_sroll = true;
         }
+        // Init tabs
+        init_audience_tabs(block_id, parent_id);
     }
     if (local_sroll) {
         set_video_scroll(scroll_data, block_id);
@@ -1330,16 +1306,78 @@ function load_ajax_block(block_id) {
 
                     }
 
-
-
-
                 }
             } else {
                 set_video_scroll(data, block_id);
                 initializeScroller(0, 'div[id="' + block_id + '"]');
-            }            
+            }
             init_nte();
         }
+    });
+}
+
+function init_audience_tabs(block_id, parent_id) {
+    jQuery('.audience_review .tab-wrapper:not(.init)').each(function (i, v) {
+        var tabs = jQuery(v);
+        tabs.addClass('init');
+
+        tabs.find('a').click(function () {
+            var first_tab_id = tabs.find('li.active a').first().attr('data-id');
+            var tab = jQuery(this);
+            var tab_id = tab.attr('data-id');
+            var parrent = tab.closest('li');
+            var is_active = parrent.hasClass('active');
+            if (is_active) {
+                return false;
+            }
+
+            // 1. Mark last tab            
+            jQuery('.audience_review .column_content:not(.init)').each(function () {
+                jQuery(this).addClass(first_tab_id);
+                jQuery(this).addClass('init');
+            });
+
+
+            // 2. Hide active tab
+            jQuery('.audience_review .column_content.' + first_tab_id).addClass('hide');
+
+            // 3. Try to select tab
+            var select_tab = jQuery('.audience_review .column_content.' + tab_id);
+            if (select_tab.length) {
+                select_tab.removeClass('hide');
+            } else {
+                // 4. If no content, get content and select
+                jQuery('#audience_scroll').append('<div class="column_content flex scroller init ' + tab_id + '"></div>');
+                // 5. Get ajax content
+                // Ajax load
+                var vote = 0;
+                if (tab_id == 'tab-p') {
+                    vote = 1;
+                } else if (tab_id == 'tab-n') {
+                    vote = 2;
+                }
+                var and_parent = '';
+                if (parent_id) {
+                    and_parent = "&id=" + parent_id;
+                }
+                var url = window.location.protocol + template_path + block_id + ".php" + "?vote=" + vote + and_parent;
+               
+                jQuery.ajax({
+                    type: "GET",
+                    url: url,
+                    success: function (data) {
+                        var tab_class = '.' + tab_id;
+                        set_video_scroll(data, block_id, tab_class);
+                    }
+                });
+            }
+            tabs.find('li.active').removeClass('active');
+            parrent.addClass('active');
+
+            return false;
+        });
+
+
     });
 }
 
@@ -2486,6 +2524,18 @@ jQuery(document).ready(function () {
         button.attr('disabled', true);
 
         var movie = button.attr('id');
+        if(jQuery(this).has('check_imdb_movie'))
+        {
+            let pr = jQuery(this).parents('.container_for_add_movies');
+            movie = pr.find('input.addmoviesfrom_id').val();
+            if (!movie)
+            {
+                return false;
+            }
+
+        }
+
+
         jQuery.ajax({
             type: 'post',
             data: ({'add_movie': movie}),
@@ -2498,6 +2548,8 @@ jQuery(document).ready(function () {
                 button.remove();
             }
         });
+
+        return false;
     });
 
 
@@ -3034,33 +3086,34 @@ jQuery(document).ready(function () {
     //
     // }
 
-    jQuery('body').on('click','.disqus_content',function (){
-       jQuery(this).addClass('disqus_content_full');
+    jQuery('body').on('click', '.disqus_content', function () {
+        jQuery(this).addClass('disqus_content_full');
     });
 
 
 
 
 });
-
+jQuery('body').on('click', '.disqus_content spoiler', function () {
+    jQuery(this).toggleClass('spoiler_visible');
+});
 function init_spoilers() {
     jQuery('.spoiler_default:not(.init)').each(function () {
         var $this = jQuery(this);
-
-
-
         if (typeof $this.spoilerAlert !== "undefined") {
-
             $this.addClass('init');
             $this.spoilerAlert({max: 4, partial: 2});
-        }
-        else {
-            console.log('spoilerAlert not load');
+        } else {
             ////try to load
-            var third_scripts = {
-                spoilerAlert: '/wp-content/themes/custom_twentysixteen/js/spoiler.min.js'
-            };
-            use_ext_js(init_spoilers, third_scripts);
+            if (jQuery('body').hasClass('spoilerAlert')) {
+                //console.log('spoilerAlert not init');
+            } else {
+                //console.log('spoilerAlert not load');
+                var third_scripts = {
+                    spoilerAlert: '/wp-content/themes/custom_twentysixteen/js/spoiler.min.js'
+                };
+                use_ext_js(init_spoilers, third_scripts);
+            }
         }
     });
 }

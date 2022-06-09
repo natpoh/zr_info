@@ -14,7 +14,8 @@ $array_list = array(
     'TV' => array('title' => 'Popular Shows Streaming:', 'id' => 'tv_scroll', 'class' => ''),
     'Pro' => array('title' => 'Latest Critic Reviews:', 'id' => 'review_scroll', 'class' => 'pro_review widthed secton_gray'),
     'Staff' => array('title' => 'Latest Staff Reviews:', 'id' => 'stuff_scroll', 'class' => 'stuff_review widthed', 'title_desc' => '<a class="title_desc" href="https://rightwingtomatoes.com/writers-wanted/" target="_blank">Writers Wanted</a>'),
-    'Audience' => array('title' => 'Latest Audience Reviews:', 'id' => 'audience_scroll', 'class' => 'audience_review widthed secton_gray'),
+    'Audience' => array('title' => 'Latest Audience Reviews:', 'id' => 'audience_scroll', 'class' => 'audience_review widthed secton_gray',
+        'tabs' => array('p' => 'Positive', 'n' => 'Negative', 'a' => 'All')),
 );
 // add scripts
 $scrpts = array();
@@ -23,10 +24,10 @@ $scrpts[] = '<script  type="text/javascript" >';
 foreach ($array_list as $value) {
     $scoll_id = $value['id'];
     $data = $cfront->get_scroll($scoll_id);
-    if($data){
-        $data = '"'.addslashes($data).'"';
+    if ($data) {
+        $data = '"' . addslashes($data) . '"';
     } else {
-        $data='null';
+        $data = 'null';
     }
     $scrpts[] = 'var ' . $scoll_id . '_data = ' . $data . '; ';
 }
@@ -44,6 +45,22 @@ $content = '';
 foreach ($array_list as $value) {
     $content_inner = $section;
     foreach ($value as $id => $name) {
+        if ($id == 'tabs') {
+            // Tabs logic
+            $name_arr = $name;
+            $t = '<ul class="tab-wrapper home-tabs">';
+            $i=0;
+            foreach ($name_arr as $k => $v) {
+                $active = '';
+                if ($i==0){
+                    $active = ' active';
+                }
+                $t .= '<li class="nav-tab'.$active.'"><a href="#tab-'.$k.'" data-id="tab-'.$k.'">' . $v . '</a></li>';
+                $i++;
+            }
+            $t .= '</ul>';
+            $name = $t;
+        }
         $content_inner = str_replace('{' . $id . '}', $name, $content_inner);
     }
     $content_inner = str_replace('{content}', $video_items, $content_inner);

@@ -8,7 +8,7 @@ if (!defined('ABSPATH'))
 
 !class_exists('DISQUS_DATA') ? include ABSPATH . "analysis/include/disqus.php" : '';
 
-$count=20;
+$count=7;
 
 if (isset($_GET['count']))
 {
@@ -27,3 +27,4 @@ echo $cache;
 
 
 ?>
+

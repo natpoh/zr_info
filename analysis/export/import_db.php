@@ -998,24 +998,43 @@ class Import
 
     public static function service()
     {
+
         ////delete old comlete request
 
-        $sql = "DELETE FROM `commit` WHERE `complete` = 1 and `last_update` < ".(time()-86400*30);
+        $sql = "DELETE FROM `commit` WHERE `complete` = 1 and `last_update` < ".(time()-86400*8);
 
         Pdo_an::db_query($sql);
 
 
-        ////delete old sync status
+        ////delete old status
 
-        $sql = "UPDATE `commit` SET `status` = 1  where `status` = 2 and `last_update` < ".(time()-1800);
+        $site_id = self::generate_id();
+
+
+        $sql = "UPDATE `commit` SET `status` = 0 , `complete` = NULL  where (`status` = 1 OR `status` = 2 OR `status` = 3 OR `status` = 4 ) and site_id='".$site_id."' and `last_update` < ".(time()-3600);
 
         Pdo_an::db_query($sql);
 
-        ///move to status 0 each 10 minutes
+        $sql = "UPDATE `commit` SET `status` = 1 , `complete` = NULL  where (`status` = 2 OR `status` = 3 OR `status` = 4 ) and site_id!='".$site_id."' and `last_update` < ".(time()-3600);
 
-        $sql = "UPDATE `commit` SET `status` = 0,  `complete` = 0  where `status` = 6 and `last_update` < ".(time()-600);
         Pdo_an::db_query($sql);
 
+
+        ////check requests
+
+        $sql = "SELECT `text`, `id` FROM `commit` WHERE `requests`  = 0 and `text` IS NOT NULL limit 10000";
+        $row = Pdo_an::db_results_array($sql);
+        foreach ($row as $r)
+        {
+            $data = $r['text'];
+            if ($data)
+            {
+                $array = json_decode($data,1);
+                $count_array= count($array);
+                $sql2 = "UPDATE `commit` SET `requests` = {$count_array} where id = ".$r['id'];
+                Pdo_an::db_query($sql2);
+            }
+        }
     }
 
     public static function check_status($status)

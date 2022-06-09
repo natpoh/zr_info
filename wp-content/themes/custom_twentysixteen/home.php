@@ -28,6 +28,7 @@ get_header();
                             <h2>Latest Comments:</h2>
                         </div>
                         <div class="not_load" id="disqus_last_comments"></div>
+                        <a class="load_more_link" href="/comments">Load more Comments..</a>
                     </div>
                 </div>
             </div>

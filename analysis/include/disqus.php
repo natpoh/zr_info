@@ -275,7 +275,7 @@ class DISQUS_DATA
         $result = '';
 
 
-        $sql = "SELECT * FROM `cache_disqus_comments` ORDER BY `add_time` desc limit ".$pos.', ' . $count;
+        $sql = "SELECT * FROM `cache_disqus_comments` where is_deleted  =  0 ORDER BY `add_time` desc limit ".$pos.', ' . $count;
 
 
         $r1 = Pdo_an::db_results_array($sql);
@@ -299,20 +299,66 @@ class DISQUS_DATA
 
         $add_time = $data['createdAt'];
         $add_time = strtotime($add_time);
+        //print_r($data);
+        $datastring = json_encode($data);
+        $deleted = $data['isDeleted'];
+        if (!$deleted)
+        {
+            $deleted=0;
+        }
 
-        $data = json_encode($data);
+        // echo '<br>';
 
-        $sql = "SELECT * FROM `cache_disqus_comments` WHERE `disqus_id`='" . $id . "' limit 1";
+        $sql = "SELECT * FROM `cache_disqus_comments` WHERE `disqus_id`='" . $id . "'  limit 1";
         $r = Pdo_an::db_fetch_row($sql);
         if (!$r) {
-            $sql = "INSERT INTO `cache_disqus_comments`(`id`, `disqus_id`, `thread`, `data`, `add_time`,`last_update`) 
-            VALUES (NULL," . intval($id) . "," . intval($thread) . ",?,?," . time() . ")";
-            Pdo_an::db_results_array($sql, [$data, $add_time]);
+            echo 'add '.$id.'<br>';
+            $db_code = md5($data);
+            $sql = "INSERT INTO `cache_disqus_comments`(`id`, `disqus_id`, `thread`, `data`, `add_time`,`msg_code`,`is_deleted`,`last_update`) 
+            VALUES (NULL," . intval($id) . "," . intval($thread) . ",?,?,?,?," . time() . ")";
+            Pdo_an::db_results_array($sql, [$datastring, $add_time,$db_code,$deleted]);
 
 
             !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
             Import::create_commit('', 'update', 'cache_disqus_comments', array('disqus_id' => $id), 'disqus', 4, ['skip' => ['id']]);
+        }
+        else
+        {
+            echo 'already add '.$id.' =>'.$r->id.'<br>';
 
+            if ($data['isDeleted']) {
+
+                if (!$r->is_deleted)
+                {
+
+                echo 'delete '.$id.'<br>';
+
+                $sql ="UPDATE `cache_disqus_comments` SET `is_deleted` =1, `last_update` = ?   WHERE `cache_disqus_comments`.`id` = ".$r->id;
+                Pdo_an::db_results_array($sql, [time()]);
+
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                Import::create_commit('', 'update', 'cache_disqus_comments', array('disqus_id' => $id), 'disqus', 4, ['skip' => ['id']]);
+                }
+
+            }
+            else if ($data['isEdited']) {
+                $db_code = md5($datastring);
+                ///update
+                //check update date
+
+                if ($db_code != $r->msg_code)
+                {
+                    echo 'update '.$id.'<br>';
+                    echo $db_code.'!= '.$r->msg_code.'<br>';
+                    //update
+                    $sql ="UPDATE `cache_disqus_comments` SET `data` =?, `msg_code` = ? , `last_update` =? WHERE `cache_disqus_comments`.`id` = ".$r->id;
+                    Pdo_an::db_results_array($sql, [$datastring, $db_code,time()]);
+
+                    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                    Import::create_commit('', 'update', 'cache_disqus_comments', array('disqus_id' => $id), 'disqus', 4, ['skip' => ['id']]);
+
+                }
+            }
         }
     }
 
@@ -475,10 +521,14 @@ WHERE cache_disqus_treheads.id is NULL";
             $cursoradd = '&cursor=' . $cursor;
         }
 
-    $endpoint = $url . '?api_secret=' . self::$key . '&forum=' . self::$forum . '&limit=' . $limit . $cursoradd;
-        echo $endpoint.'<br>';
+    $endpoint = $url . '?api_secret=' . self::$key . '&forum=' . self::$forum . '&include=approved&include=deleted&order=desc&limit=' . $limit . $cursoradd;
+        //echo $endpoint.'<br>';
     $result = GETCURL::getCurlCookie($endpoint);
     ///$code =json_decode($result,1);
+//        header('Content-Type: application/json');
+//        echo $result;
+//
+//        return;
 
         $code =json_decode($result,1);
 

@@ -182,6 +182,7 @@ class RWT_RATING
     }
     public  function ajax_pg_rating($movie_id)
     {
+
         $sql = "SELECT `movie_id` FROM `data_movie_imdb` WHERE `id` = {$movie_id} limit 1";
         $row = Pdo_an::db_fetch_row($sql);
         $imdb_id = $row->movie_id;
@@ -199,6 +200,12 @@ class RWT_RATING
             if ($certification_countries['Russia'])
             {
                 $data['mpaa_rus']=$certification_countries['Russia'];
+
+                if (count($data['mpaa_rus'])>1)
+                {
+                    $reversed = array_reverse($data['mpaa_rus']);
+                    $data['mpaa_rus'] =$reversed[0];
+                }
             }
         }
 
@@ -250,7 +257,17 @@ class RWT_RATING
     }
     public function rwt_total_rating($id)
     {
-        return PgRatingCalculate::rwt_total_rating($id);
+        $rating =  PgRatingCalculate::rwt_total_rating($id);
+///check and update
+        $last_update = $rating['last_update'];
+
+        if ($last_update<time() - 86400*7)
+        {
+            PgRatingCalculate::add_movie_rating($id);
+            $rating =  PgRatingCalculate::rwt_total_rating($id);
+        }
+
+        return $rating;
     }
 
 

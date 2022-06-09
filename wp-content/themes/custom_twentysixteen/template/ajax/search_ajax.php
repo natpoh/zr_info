@@ -178,16 +178,14 @@ Vote to increase its priority.</p>';
 
         if ($result_data)
         {
-            $content= $content.'<div style="width: 100%; background-color: #fff; color: #000; padding: 10px; margin-top: 20px"><h5 style="
-width: 100%;
-text-align: center;
-padding: 10px;
-font-size: 18px;
-">Please help us crowdsource the RWT database.
+            $content= $content.'<div style="width: 100%; background-color: #fff; color: #000; padding: 10px; margin-top: 20px"><b style="text-align: center;display: block;">Please help us crowdsource the RWT database.
 <br>
-If what you\'re looking for isn\'t on RWT yet, try finding it below.</h5>
+If what you\'re looking for isn\'t on RWT yet, try finding it below.</b>
 
-<table >'.$result_data.'</table></div>';
+<table >'.$result_data.'</table>
+<b style="text-align: center;display: block;">If the movie or show you\'re looking for isn\'t shown above, try entering an IMDb ID or url here:</b>
+<table><tr class="container_for_add_movies"><td><input autocomplete="off" placeholder="IMDb ID or Link" class="addmoviesfrom_id" /></td><td><button  id="'.$movie_id.'" class="button button-primary add_movie_todb check_imdb_movie">Add to database</button></td></tr></table>
+</div>';
 
         }
 
@@ -367,8 +365,19 @@ if (isset($_POST['add_movie']))
    $movie = $_POST['add_movie'];
    if ($movie)
    {
+       ///check regx
+       if (preg_match('#(imdb\.com\/title\/)*(tt)([0-9]+)#',$movie,$match))
+       {
+           $movie = $match[3];
+       }
+
+
        $movie=intval($movie);
-       custom_imdb_search::add_movie_to_list($movie);
+       if ($movie)
+       {
+           custom_imdb_search::add_movie_to_list($movie);
+       }
+
 
    }
 
