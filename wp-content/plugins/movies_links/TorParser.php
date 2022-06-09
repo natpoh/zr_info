@@ -96,9 +96,13 @@ class TorParser extends MoviesAbstractDB {
                     // Old used services. Set active status
                     $service_used_time = $curr_time - $last_upd;
                     if ($service_used_time > $this->service_used_time) {
+                        $status = 3;
+                        if ($service->ip) {
+                            $status = 1;
+                        }
                         $data_upd = array(
                             'last_upd' => $curr_time,
-                            'status' => 1,
+                            'status' => $status,
                         );
                         $this->update_service_field($data_upd, $service->id);
                     }
@@ -113,6 +117,7 @@ class TorParser extends MoviesAbstractDB {
         if ($get_url) {
 
             $service = $log_data['driver'];
+            $last_status = $service->status;
             // Service used
             $date = $this->curr_time();
             $data_upd = array(
@@ -124,7 +129,7 @@ class TorParser extends MoviesAbstractDB {
             $data = $this->curl($get_url, $header);
 
             // Service active
-            $data_upd = array('status' => 1);
+            $data_upd = array('status' => $last_status);
             $this->update_service_field($data_upd, $service);
 
             if ($debug) {
