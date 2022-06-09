@@ -17,6 +17,13 @@ if (!defined('ABSPATH'))
 ///add option
 !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : ''; 
 
+
+function get_similar($id)
+{
+    !class_exists('SimilarMovies') ? include ABSPATH . "analysis/include/similar_movies.php" : '';
+    echo SimilarMovies::get_movies($id);
+}
+
 function sync_tables()
 {
 $array_tables = array('data_familysearch_verdict', 'data_forebears_verdict');
@@ -2801,7 +2808,13 @@ if (isset($_GET['sync_tables'])) {
     return;
 }
 
+if (isset($_GET['get_similar'])) {
 
+
+    get_similar($_GET['get_similar']);
+
+    return;
+}
 
 echo 'ok';
 

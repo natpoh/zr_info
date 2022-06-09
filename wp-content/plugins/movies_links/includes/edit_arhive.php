@@ -13,7 +13,6 @@ if ($cid) {
     $ao = $options['arhive'];
     ?>
     <form accept-charset="UTF-8" method="post" id="campaign">
-
         <div class="cm-edit inline-edit-row">
             <fieldset>
 
@@ -70,7 +69,50 @@ if ($cid) {
                         ?>                          
                     </select>                                        
                 </label>
-               
+
+
+                <label class="inline-edit-interval"> 
+                    <span class="title"><?php print __('Tor hour') ?></span>         
+                    <?php
+                    $parse_num = $ao['tor_h'];
+                    $previews_number = $this->parse_number;
+                    ?>
+
+                    <select name="tor_h" class="tor_h">
+                        <?php
+                        foreach ($previews_number as $key => $name) {
+                            $selected = ($key == $parse_num) ? 'selected' : '';
+                            ?>
+                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                            <?php
+                        }
+                        ?>                          
+                    </select>                     
+                    <span class="inline-edit"><?php print __('Number of URLs parsing from one IP at one hour') ?></span> 
+                </label>
+
+
+                <label class="inline-edit-interval"> 
+                    <span class="title"><?php print __('Tor day') ?></span>         
+                    <?php
+                    $parse_num = $ao['tor_d'];
+                    $previews_number = $this->parse_number;
+                    ?>
+
+                    <select name="tor_d" class="tor_d">
+                        <?php
+                        foreach ($previews_number as $key => $name) {
+                            $selected = ($key == $parse_num) ? 'selected' : '';
+                            ?>
+                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                            <?php
+                        }
+                        ?>                          
+                    </select>                     
+                    <span class="inline-edit"><?php print __('Number of URLs parsing from one IP at one day') ?></span> 
+                </label>
+
+
                 <label class="inline-edit-status">                
                     <?php
                     $checked = '';

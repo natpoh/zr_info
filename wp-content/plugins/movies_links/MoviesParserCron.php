@@ -155,13 +155,9 @@ class MoviesParserCron extends MoviesAbstractDB {
     private function arhive_urls($campaign, $options, $urls = array()) {
         $type_name = 'arhive';
         $type_opt = $options[$type_name];
-
-        $use_proxy = $type_opt['proxy'];
-        $use_webdriver = $type_opt['webdrivers'];
-
         if ($urls) {
             foreach ($urls as $item) {
-                $this->arhive_url($item, $use_proxy, $use_webdriver);
+                $this->arhive_url($item, $campaign, $type_opt);
             }
         }
 
@@ -425,7 +421,9 @@ class MoviesParserCron extends MoviesAbstractDB {
         return $count;
     }
 
-    private function arhive_url($item, $use_proxy = 0, $use_webdriver = false, $force = false) {
+    private function arhive_url($item, $campaign, $type_opt, $force=false) {
+        $use_proxy = $type_opt['proxy'];
+        $use_webdriver = $type_opt['webdrivers'];        
         /*
           [id] => 21
           [cid] => 2
@@ -456,9 +454,10 @@ class MoviesParserCron extends MoviesAbstractDB {
             // Webdriver
             $code = $this->mp->get_webdriver($url, $headers, $settings);
         } else if ($use_webdriver == 2) {
-            // Tor webdriver
+            // Tor webdriver           
+            $ip_limit = array('h'=>$type_opt['tor_h'],'d'=>$type_opt['tor_d']);            
             $tp = $this->ml->get_tp();            
-            $code = $tp->get_url_content($url, $headers);
+            $code = $tp->get_url_content($url, $headers, $ip_limit);
         } else {
             $code = $this->mp->get_proxy($url, $use_proxy, $headers, $settings);
         }

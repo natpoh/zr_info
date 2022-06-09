@@ -23,10 +23,12 @@ class MoviesLinks extends MoviesAbstractDB {
             'parser_user_agent' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36',
             'parser_cookie_path' => ABSPATH . 'wp-content/uploads/movies_links_cookies.txt',
             'web_drivers' => '',
-            'tor_driver'=>'148.251.54.53:8110',
-            'tor_get_ip_driver'=>'148.251.54.53:8110',
+            'tor_driver' => '148.251.54.53:8110',
+            'tor_get_ip_driver' => '148.251.54.53:8110',
+            'tor_ip_h' => 100,
+            'tor_ip_d' => 1000,
         );
-        
+
         $this->db = array(
             'posts' => 'movies_links_posts',
             'url' => 'movies_links_url',

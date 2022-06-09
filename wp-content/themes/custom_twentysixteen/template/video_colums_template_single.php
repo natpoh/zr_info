@@ -43,13 +43,15 @@ gmi('scroll before');
 $scrpts[] = '<script  type="text/javascript" >';
 foreach ($array_list as $value) {
     $scoll_id = $value['id'];
-    $data = $cfront->get_scroll($scoll_id, $movie_id, $vote_scroll);
-    if ($data) {
-        $data = '"' . addslashes($data) . '"';
-    } else {
-        $data = 'null';
-    }
-    $scrpts[] = 'var ' . $scoll_id . '_data = ' . $data . '; ';
+    //if ($scoll_id == 'audience_scroll') {
+        $data = $cfront->get_scroll($scoll_id, $movie_id, $vote_scroll);
+        if ($data) {
+            $data = '"' . addslashes($data) . '"';
+        } else {
+            $data = 'null';
+        }
+        $scrpts[] = 'var ' . $scoll_id . '_data = ' . $data . '; ';
+    //}
 }
 gmi('scroll after');
 $scrpts[] = '</script>';
@@ -66,7 +68,7 @@ foreach ($array_list as $value) {
                 $name_arr = $name;
                 $t = '<ul class="tab-wrapper home-tabs">';
                 foreach ($name_arr as $k => $v) {
-                    if (!$post_count[$k]){
+                    if (!$post_count[$k]) {
                         continue;
                     }
                     $active = '';
