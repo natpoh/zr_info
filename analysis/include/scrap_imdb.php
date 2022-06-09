@@ -659,17 +659,25 @@ function update_all_rwt_rating($force='')
         $rwt_array= $value["rwt"];
       ///  var_dump($rwt_array);
     }
-
-    if ($force)
+    if (isset($_GET['id']))
     {
-        $sql = "SELECT `data_movie_imdb`.id  FROM `data_movie_imdb`";
+        $rwt_id = intval($_GET['id']);
+        $result = PgRatingCalculate::add_movie_rating($rwt_id,$rwt_array,1);
+
+        return;
     }
     else
     {
-        $last_update_min = time()-86400;
-        $last_update = time()-86400*30;
+        if ($force)
+        {
+            $sql = "SELECT `data_movie_imdb`.id  FROM `data_movie_imdb`";
+        }
+        else
+        {
+            $last_update_min = time()-86400;
+            $last_update = time()-86400*30;
 
-        $sql = "SELECT `data_movie_imdb`.id  FROM `data_movie_imdb` LEFT JOIN data_movie_rating 
+            $sql = "SELECT `data_movie_imdb`.id  FROM `data_movie_imdb` LEFT JOIN data_movie_rating 
     ON `data_movie_imdb`.id=data_movie_rating.movie_id
         WHERE   (
             data_movie_rating.id IS NULL 
@@ -677,7 +685,12 @@ function update_all_rwt_rating($force='')
                 OR (`data_movie_imdb`.rating>0  AND data_movie_rating.imdb ='')
             ) order by `data_movie_rating`.last_update desc  limit 1000";
 //echo $sql;
+        }
+
+
     }
+
+
 
 
     $rows = Pdo_an::db_results_array($sql);
