@@ -190,6 +190,18 @@ div.scroller_wrap {
     display: none;
 }
 
+#similar_movies .column_header{
+    margin-top: 40px;
+}
+body .movie_scroller div.column_content.flex.scroller {
+    min-height: 432px;
+    flex-wrap: nowrap;
+}
+body .movie_scroller div.column_content.flex.scroller  .movie_container {
+
+    margin-right: 25px;
+}
+
 section.inner_content div.column_header {
     display: flex;
     justify-content: center;
@@ -2176,10 +2188,10 @@ width: 50%;
     overflow-y: auto;
     max-height: 63px;
 }
-body.search  .note_show_content_1,
-body.search  .note_show_content_2,
-body.search  .note_show_content_3,
-body.search  .note_show_content_4
+.main-search  .note_show_content_1,
+.main-search  .note_show_content_2,
+.main-search  .note_show_content_3,
+.main-search  .note_show_content_4
 {
     max-height: 300px;
 

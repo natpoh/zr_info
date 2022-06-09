@@ -1188,9 +1188,35 @@ function load_ajax_block(block_id) {
         type: "GET",
         url: url,
         success: function (data) {
+            if (block_id == 'similar_movies') {
+                if (data) {
+                    let obj = JSON.parse(data);
+                    if (obj)
+                    {
+                        if (obj.content)
+                        {
+                            jQuery('div[id="' + block_id + '"]').html('<div class="column_header">\n' +
+                                '                    <h2>Similar Movies and TV:</h2>\n' +
+                                '                </div><div class="movie_scroller scroller_wrap"><div class="column_content flex scroller flex_movies_block">'+obj.content+'</div></div>');
 
+                            if (obj['rating'])
+                            {
+                                jQuery.each(obj['rating'], function (a, b) {
+                                    ///console.log(a,b);
+                                    let rating_content = create_rating_content(b, a);
+                                    if (rating_content) {
+                                        jQuery('div.movie_container[id="' + a + '"]').append(rating_content);
+                                    }
+                                });
 
-            if (block_id == 'twitter_scroll') {
+                            }
+
+                        }
+                    }
+                    }
+            }
+
+            else if (block_id == 'twitter_scroll') {
                 if (data) {
                     jQuery('div.column_header_main').prepend(data);
 
@@ -1227,7 +1253,8 @@ function load_ajax_block(block_id) {
                 jQuery('div[id="' + block_id + '"]').html(data);
             } else if (block_id == 'disqus_last_comments') {
                 jQuery('div[id="' + block_id + '"]').html(data);
-            } else if (block_id == 'actor_representation') {
+            }
+            else if (block_id == 'actor_representation') {
                 jQuery('div[id="' + block_id + '"]').html(data);
                 load_actor_representation(parent_id);
 
@@ -1249,7 +1276,8 @@ function load_ajax_block(block_id) {
                 jQuery('body').on('click', '.r_row  .ethnycity_select', function () {
                     load_actor_representation(parent_id);
                 });
-            } else if (block_id == 'audience_form') {
+            }
+            else if (block_id == 'audience_form') {
                 jQuery('div[id="' + block_id + '"]').html(data);
                 //check load script
 
@@ -1280,7 +1308,8 @@ function load_ajax_block(block_id) {
                 }
 
 
-            } else if (block_id == 'search_ajax') {
+            }
+            else if (block_id == 'search_ajax') {
                 if (data) {
                     try {
                         var Object_data = JSON.parse(data);
