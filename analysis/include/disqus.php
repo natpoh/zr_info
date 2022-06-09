@@ -302,6 +302,10 @@ class DISQUS_DATA
         //print_r($data);
         $datastring = json_encode($data);
         $deleted = $data['isDeleted'];
+        if (!$deleted)
+        {
+            $deleted=0;
+        }
 
         // echo '<br>';
 
@@ -313,6 +317,7 @@ class DISQUS_DATA
             $sql = "INSERT INTO `cache_disqus_comments`(`id`, `disqus_id`, `thread`, `data`, `add_time`,`msg_code`,`is_deleted`,`last_update`) 
             VALUES (NULL," . intval($id) . "," . intval($thread) . ",?,?,?,?," . time() . ")";
             Pdo_an::db_results_array($sql, [$datastring, $add_time,$db_code,$deleted]);
+
 
             !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
             Import::create_commit('', 'update', 'cache_disqus_comments', array('disqus_id' => $id), 'disqus', 4, ['skip' => ['id']]);

@@ -3094,7 +3094,9 @@ jQuery(document).ready(function () {
 
 
 });
-
+jQuery('body').on('click', '.disqus_content spoiler', function () {
+    jQuery(this).toggleClass('spoiler_visible');
+});
 function init_spoilers() {
     jQuery('.spoiler_default:not(.init)').each(function () {
         var $this = jQuery(this);

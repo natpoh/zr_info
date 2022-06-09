@@ -257,7 +257,17 @@ class RWT_RATING
     }
     public function rwt_total_rating($id)
     {
-        return PgRatingCalculate::rwt_total_rating($id);
+        $rating =  PgRatingCalculate::rwt_total_rating($id);
+///check and update
+        $last_update = $rating['last_update'];
+
+        if ($last_update<time() - 86400*7)
+        {
+            PgRatingCalculate::add_movie_rating($id);
+            $rating =  PgRatingCalculate::rwt_total_rating($id);
+        }
+
+        return $rating;
     }
 
 

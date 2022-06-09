@@ -921,6 +921,16 @@ a.original_link {
 }
 
 
+.disqus_content spoiler {
+    display: inline;
+    background: #687a86;
+    color: transparent;
+    padding: 0 .5em;
+}
+.disqus_content spoiler:hover, .disqus_content .spoiler_visible {
+    background: #e7e9ee;
+    color: inherit;
+}
 .a_msg img {
     max-height: 300px;
 }

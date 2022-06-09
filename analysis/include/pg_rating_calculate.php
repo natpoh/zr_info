@@ -12,7 +12,7 @@ class PgRatingCalculate {
     public static function rwt_total_rating($id) {
 
 
-        $sql = "SELECT rwt_audience,	rwt_staff,	imdb,	rotten_tomatoes,	rotten_tomatoes_audience , rotten_tomatoes_gap,metacritic , tmdb	,total_rating	FROM `data_movie_rating` where `movie_id` = " . $id . " limit 1";
+        $sql = "SELECT rwt_audience,	rwt_staff,	imdb,	rotten_tomatoes,	rotten_tomatoes_audience , rotten_tomatoes_gap,metacritic , tmdb	,total_rating,  	last_update	FROM `data_movie_rating` where `movie_id` = " . $id . " limit 1";
         //echo $sql;
         $r = Pdo_an::db_results_array($sql);
         if ($r) {

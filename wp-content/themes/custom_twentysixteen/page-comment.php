@@ -8,6 +8,8 @@ get_header();
 
 
 ?>
+<link rel="stylesheet" href="<?php echo site_url(); ?>/wp-content/themes/custom_twentysixteen/css/colums_template.css?<?php echo LASTVERSION; ?>">
+<script src="<?php echo site_url().'/wp-content/themes/custom_twentysixteen/js/section_home.js?'.LASTVERSION ?>"></script>
 
 <div id="primary" class="content-area">
         <main id="main" class="site-main" role="main">
@@ -36,13 +38,11 @@ if (!class_exists('DISQUS_DATA') )
 $cache =DISQUS_DATA::get_comment_from_db(20);
 echo $cache;
 
-wp_enqueue_style('colums_template', get_template_directory_uri() . '/css/colums_template.css', array(), LASTVERSION);
+//wp_enqueue_style('colums_template', get_template_directory_uri() . '/css/colums_template.css', array(), LASTVERSION);
 
 
 ?>
-
-
-                        </div><!-- .entry-content -->
+                                 </div><!-- .entry-content -->
                 </article>
 
 <script type="text/javascript">
@@ -83,9 +83,14 @@ function loadArticle(){
         }
     })
 
-    jQuery('body').on('click','.disqus_content',function (){
-        jQuery(this).addClass('disqus_content_full');
-    });
+    // jQuery('body').on('click','.disqus_content',function (){
+    //     jQuery(this).addClass('disqus_content_full');
+    // });
+    //
+    // jQuery('body').on('click', '.disqus_content spoiler', function () {
+    //     jQuery(this).toggleClass('spoiler_visible');
+    // });
+
 </script>
 
 
