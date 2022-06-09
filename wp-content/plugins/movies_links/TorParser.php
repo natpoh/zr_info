@@ -174,7 +174,7 @@ class TorParser extends MoviesAbstractDB {
         }
         // 2. Get active services
         $q_req = array(
-            'status' => 1,
+            'status' => array(1, 5),
         );
 
         $services = $this->get_services($q_req, 1, 0);
@@ -204,12 +204,14 @@ class TorParser extends MoviesAbstractDB {
                     if ($ip_error_last_hour_count) {
                         // Get last error ips
                         $message = 'Last parsing error: ' . $ip_error_last_hour_count;
-                        $ips_error[$service->last_reboot] = array(
-                            'service' => $service->id,
-                            'name' => $ip_name,
-                            'ip_id' => $ip_id,
-                            'message' => $message,
-                        );
+                        if ($service->status != 5) {
+                            $ips_error[$service->last_reboot] = array(
+                                'service' => $service->id,
+                                'name' => $ip_name,
+                                'ip_id' => $ip_id,
+                                'message' => $message,
+                            );
+                        }
                     } else {
                         $q_req['type'] = 0;
                         // Valid ips
@@ -260,8 +262,10 @@ class TorParser extends MoviesAbstractDB {
 
                 if ($hour || $day) {
                     // Do not reboot a new service
-                    $item['message'] = $message;
-                    $ips_on_limit[$last_reboot] = $item;
+                    $item['message'] = $message; 
+                    if ($service->status != 5) {
+                        $ips_on_limit[$last_reboot] = $item;
+                    }                    
                     /* $this->reboot_service($service_id, $message, false, $debug);
                       if ($debug) {
                       print $message . "\n";
@@ -410,7 +414,9 @@ class TorParser extends MoviesAbstractDB {
         // Custom status
         $status_trash = 2;
         $status_query = " WHERE p.status != " . $status_trash;
-        if ($q['status'] != -1) {
+        if (is_array($q['status'])) {
+            $status_query = " WHERE p.status IN (" . implode(',', $q['status']) . ")";
+        } else if ($q['status'] != -1) {
             $status_query = " WHERE p.status = " . (int) $q['status'];
         }
 
