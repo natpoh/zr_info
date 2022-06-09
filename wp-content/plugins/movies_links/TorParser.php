@@ -13,15 +13,17 @@ class TorParser extends MoviesAbstractDB {
     public $web_driver = '';
     public $get_ip_url = '';
     public $service_min_life_time = 180; // 3 min
+    public $service_used_time = 180; // 3 min
     public $service_life_time = 3600; // 60 min
     public $min_valid_ips = 3;
     public $tor_reboot_dir = ABSPATH . 'wp-content/uploads/tor';
     public $ip_limit = array(
-        'h' => 10,
-        'd' => 100,
+        'h' => 100,
+        'd' => 1000,
     );
     public $service_status = array(
         1 => 'Active',
+        5 => 'Used',
         0 => 'Inactive',
         3 => 'Reboot',
         4 => 'Error',
@@ -42,6 +44,10 @@ class TorParser extends MoviesAbstractDB {
         $ss = $this->ml->get_settings();
         $this->web_driver = $ss['tor_driver'];
         $this->get_ip_url = $ss['tor_get_ip_driver'];
+        $this->ip_limit = array(
+            'h' => $ss['tor_ip_h'],
+            'd' => $ss['tor_ip_d'],
+        );
     }
 
     public function run_cron($type = 0, $debug = false, $force = false) {
@@ -57,6 +63,7 @@ class TorParser extends MoviesAbstractDB {
             foreach ($services as $service) {
                 $status = $service->status;
                 $last_reboot = $service->last_reboot;
+                $last_upd = $service->last_upd;
                 if ($status == 3) {
                     // Reboot status
                     $already_reboot = $this->service_is_reboot($service->id);
@@ -85,6 +92,16 @@ class TorParser extends MoviesAbstractDB {
                             print "Service active $service_life_time < " . $this->service_life_time . "\n";
                         }
                     }
+                } if ($status == 5) {
+                    // Old used services. Set active status
+                    $service_used_time = $curr_time - $last_upd;
+                    if ($service_used_time > $this->service_used_time) {
+                        $data_upd = array(
+                            'last_upd' => $curr_time,
+                            'status' => 1,
+                        );
+                        $this->update_service_field($data_upd, $service->id);
+                    }
                 }
             }
         }
@@ -94,7 +111,22 @@ class TorParser extends MoviesAbstractDB {
         $content = '';
         $get_url = $this->get_tor_url($url, $ip_limit, $log_data, $debug);
         if ($get_url) {
+
+            $service = $log_data['driver'];
+            // Service used
+            $date = $this->curr_time();
+            $data_upd = array(
+                'last_upd' => $date,
+                'status' => 5
+            );
+            $this->update_service_field($data_upd, $service);
+
             $data = $this->curl($get_url, $header);
+
+            // Service active
+            $data_upd = array('status' => 1);
+            $this->update_service_field($data_upd, $service);
+
             if ($debug) {
                 print_r($header);
                 print_r($data);
@@ -118,10 +150,10 @@ class TorParser extends MoviesAbstractDB {
                 $message = 'Error parser URL: ' . $status;
                 $this->log_error($message, $log_data);
 
-                /*if ($status == 403) {
-                    $message = 'Parsing error ' . $status;
-                    $this->reboot_service($log_data['driver'], $message, false, $debug);
-                }*/
+                /* if ($status == 403) {
+                  $message = 'Parsing error ' . $status;
+                  $this->reboot_service($log_data['driver'], $message, false, $debug);
+                  } */
             }
         }
         return $content;
@@ -277,7 +309,7 @@ class TorParser extends MoviesAbstractDB {
         }
 
         $service_ip = array();
-        foreach ($ips_valid as $item) {            
+        foreach ($ips_valid as $item) {
             $service_ip[$item['service']] = $item['ip_id'];
         }
 
@@ -298,7 +330,7 @@ class TorParser extends MoviesAbstractDB {
         }
 
         if ($debug) {
-            print "Last valid ip $last_ip\n";            
+            print "Last valid ip $last_ip\n";
         }
 
         $service_id = array_search($last_ip, $service_ip);

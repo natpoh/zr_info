@@ -201,7 +201,7 @@ function movies_links_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
     movies_links_create_index(array('last_upd', 'status', 'ip', 'agent'), 'tor_drivers');
-
+    
     $sql = "CREATE TABLE IF NOT EXISTS  `tor_ip`(
 				`id` int(11) unsigned NOT NULL auto_increment,                                                               
                                 `ip` varchar(255) NOT NULL default '',

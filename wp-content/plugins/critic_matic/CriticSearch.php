@@ -50,7 +50,7 @@ class CriticSearch extends AbstractDB {
     );
     // Facets
     public $facets = array(
-        'movies' => array('release', 'type', 'genre', 'provider', 'providerfree', 'actor', 'rating', 'country', 'race', 'dirrace',
+        'movies' => array('release', 'type', 'genre', 'provider', 'providerfree', 'actor', 'rating', 'country', 'race', 'dirrace', 'lgbt', 'woke',
             'race_cast', 'race_dir', 'gender_cast', 'gender_dir'),
         'critics' => array('release', 'type', 'movie', 'genre', 'author', 'state', 'tags', 'from')
     );
@@ -149,6 +149,10 @@ class CriticSearch extends AbstractDB {
             'pay' => array('key' => 1, 'title' => 'Pay To Watch'),
         ),
         'movie' => array('key' => 'id', 'name_pre' => 'Movie ', 'filter_pre' => 'Movie'),
+        'rf' => array(
+            'lgbt' => array('key' => 'lgbt', 'title' => 'LGBT'),
+            'woke' => array('key' => 'woke', 'title' => 'Woke'),
+        ),
     );
 
     public function __construct($cm) {
@@ -1583,6 +1587,16 @@ class CriticSearch extends AbstractDB {
                 $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
                         . " GROUP BY " . $facet . " ORDER BY " . $facet . " ASC LIMIT 0," . $max_count;
                 $sql_arr[] = "SHOW META";
+            } else if ($facet == 'lgbt') {
+                $filters_and = $this->get_filters_query($filters, array('rf','minus-rf'));
+                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
+                        . " GROUP BY lgbt ORDER BY cnt DESC LIMIT 0,10";
+                $sql_arr[] = "SHOW META";
+            } else if ($facet == 'woke') {
+                $filters_and = $this->get_filters_query($filters, array('rf','minus-rf'));
+                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
+                        . " GROUP BY woke ORDER BY cnt DESC LIMIT 0,10";
+                $sql_arr[] = "SHOW META";
             }
         }
         return array('sql_arr' => $sql_arr, 'skip' => $skip);
@@ -1875,6 +1889,14 @@ class CriticSearch extends AbstractDB {
                         if ($key == 'rrtg') {
                             $filters_and .= " AND rrta>0 AND rrt>0";
                         }
+                    } else if ($key == 'rf') {
+                        // Country                       
+                        $value = is_array($value) ? $value : array($value);
+                        foreach ($value as $slug) {
+                            if ($this->search_filters[$key][$slug]) {
+                                $filters_and .= $this->filter_multi_value($slug, 1, false, $minus, true, true, false);                                
+                            }
+                        }
                     }
                 } else if ($query_type == 'critics') {
                     if ($key == 'author') {
@@ -1915,7 +1937,7 @@ class CriticSearch extends AbstractDB {
         return $filters_and;
     }
 
-    public function filter_multi_value($key, $value, $multi = false, $not = false, $any = true, $not_all = true) {
+    public function filter_multi_value($key, $value, $multi = false, $not = false, $any = true, $not_all = true, $not_and = true) {
         $filters_and = '';
         $and = 'ANY';
         if (!$any) {
@@ -1949,13 +1971,17 @@ class CriticSearch extends AbstractDB {
                     }
                 } else {
                     // Filter not
+                    $and_any = '';
+                    if ($not_and) {
+                        $and_any = sprintf(" AND ANY(%s)>0", $key);
+                    }
                     if ($multi) {
                         foreach ($provider_valid_arr as $filter) {
-                            $filters_and .= sprintf(" AND $and_not(%s)!=%s AND ANY(%s)>0", $key, $filter, $key);
+                            $filters_and .= sprintf(" AND $and_not(%s)!=%s" . $and_any, $key, $filter);
                         }
                     } else {
                         foreach ($provider_valid_arr as $filter) {
-                            $filters_and .= sprintf(" AND %s!=%s AND ANY(%s)>0", $key, $filter, $key);
+                            $filters_and .= sprintf(" AND %s!=%s" . $and_any, $key, $filter);
                         }
                     }
                 }
@@ -1971,10 +1997,14 @@ class CriticSearch extends AbstractDB {
                     }
                 } else {
                     // Filter not
+                    $and_any = '';
+                    if ($not_and) {
+                        $and_any = sprintf(" AND ANY(%s)>0", $key);
+                    }
                     if ($multi) {
-                        $filters_and .= sprintf(" AND ALL(%s)!=%s AND ANY(%s)>0", $key, $filter, $key);
+                        $filters_and .= sprintf(" AND ALL(%s)!=%s".$and_any, $key, $filter);
                     } else {
-                        $filters_and .= sprintf(" AND %s!=%s AND ANY(%s)>0", $key, $filter, $key);
+                        $filters_and .= sprintf(" AND %s!=%s".$and_any, $key, $filter);
                     }
                 }
             }

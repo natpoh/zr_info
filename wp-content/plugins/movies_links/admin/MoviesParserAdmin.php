@@ -31,7 +31,7 @@ class MoviesParserAdmin extends ItemAdmin {
         20160 => 'Two weeks',
         43200 => 'Mounth',
     );
-    public $parse_number = array(1 => 1, 5 => 5, 10 => 10, 20 => 20, 50 => 50, 100 => 100, 200 => 200, 500 => 500);
+    public $parse_number = array(1 => 1, 5 => 5, 10 => 10, 20 => 20, 50 => 50, 100 => 100, 200 => 200, 500 => 500, 1000 => 1000);
     public $camp_state = array(
         1 => array('title' => 'Active'),
         4 => array('title' => 'Done'),
@@ -781,6 +781,8 @@ class MoviesParserAdmin extends ItemAdmin {
                 'random' => isset($form_state['random']) ? $form_state['random'] : 0,
                 'del_pea' => isset($form_state['del_pea']) ? $form_state['del_pea'] : 0,
                 'del_pea_int' => isset($form_state['del_pea_int']) ? $form_state['del_pea_int'] : $opt_prev['arhive']['del_pea_int'],
+                'tor_h' => isset($form_state['tor_h']) ? $form_state['tor_h'] : $opt_prev['arhive']['tor_h'],
+                'tor_d' => isset($form_state['tor_d']) ? $form_state['tor_d'] : $opt_prev['arhive']['tor_d'],
             );
 
             $options = $opt_prev;

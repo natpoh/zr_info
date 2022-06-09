@@ -21,7 +21,7 @@ class CriticFront extends SearchFacets {
     public $thumb_class;
     private $db = array();
     // Show hollywood bs rating
-    private $show_hollywood=false;
+    private $show_hollywood = false;
 
     public function __construct($cm = '', $cs = '', $ce = '') {
         $this->cm = $cm ? $cm : new CriticMatic();
@@ -36,6 +36,8 @@ class CriticFront extends SearchFacets {
             'tag_meta' => $table_prefix . 'critic_matic_tag_meta',
             'authors' => $table_prefix . 'critic_matic_authors',
             'authors_meta' => $table_prefix . 'critic_matic_authors_meta',
+            'rating' => $table_prefix . 'critic_matic_rating',
+            //CA
             'movies_meta' => $table_prefix . 'critic_movies_meta',
             //CF
             'feed_meta' => $table_prefix . 'critic_feed_meta',
@@ -73,8 +75,8 @@ class CriticFront extends SearchFacets {
      * Critic functions
      */
 
-    public function theme_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tag_id = 0, $meta_type = array(), $min_rating = 0) {
-        $posts = $this->get_last_posts($a_type, $limit, $movie_id, $start, $tag_id, $meta_type, $min_rating);
+    public function theme_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tag_id = 0, $meta_type = array(), $min_rating = 0, $vote = 0) {
+        $posts = $this->get_last_posts($a_type, $limit, $movie_id, $start, $tag_id, $meta_type, $min_rating, $vote);
         $items = array();
         if (sizeof($posts)) {
             foreach ($posts as $item) {
@@ -97,7 +99,7 @@ class CriticFront extends SearchFacets {
         return $items;
     }
 
-    public function get_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tag_id = 0, $meta_type = array(), $min_rating = 0) {
+    public function get_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tag_id = 0, $meta_type = array(), $min_rating = 0, $vote = 0) {
         $and_author = '';
         if ($a_type != -1) {
             $and_author = sprintf(' AND a.type = %d', $a_type);
@@ -138,17 +140,25 @@ class CriticFront extends SearchFacets {
             $tag_and = sprintf(" AND t.tid=%d", (int) $tag_id);
         }
 
+        // Vote logic
+        $vote_inner = '';
+        $vote_and = '';
+        if ($vote > 0) {
+            $vote_inner = " LEFT JOIN {$this->db['rating']} r ON r.cid = p.id";
+            $vote_and = sprintf(" AND r.vote=%d", $vote);
+        }
+
         $sql = sprintf("SELECT p.id, p.date_add, p.top_movie FROM {$this->db['posts']} p"
                 . " INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
-                . " INNER JOIN {$this->db['authors']} a ON a.id = am.aid" . $movie_inner . $tag_inner
-                . " WHERE p.top_movie > 0 AND p.status=1" . $and_author . $movie_and . $tag_and . $min_rating_and . $meta_type_and . " ORDER BY" . $custom_order . " p.date DESC LIMIT %d, %d", (int) $start, (int) $limit);
+                . " INNER JOIN {$this->db['authors']} a ON a.id = am.aid" . $movie_inner . $tag_inner . $vote_inner
+                . " WHERE p.top_movie > 0 AND p.status=1" . $and_author . $movie_and . $tag_and . $min_rating_and . $meta_type_and . $vote_and . " ORDER BY" . $custom_order . " p.date DESC LIMIT %d, %d", (int) $start, (int) $limit);
 
         $results = $this->db_results($sql);
 
         return $results;
     }
 
-    public function get_post_count($a_type, $movie_id = 0, $tag_id = 0) {
+    public function get_post_count($a_type, $movie_id = 0, $tag_id = 0, $vote = 0) {
         $and_author = '';
         if ($a_type != -1) {
             $and_author = sprintf(' AND a.type = %d', $a_type);
@@ -161,7 +171,7 @@ class CriticFront extends SearchFacets {
             $movie_and = sprintf(" AND m.fid=%d AND m.state!=0", (int) $movie_id);
         }
 
-//Tag logic
+        // Tag logic
         $tag_inner = '';
         $tag_and = '';
         if ($tag_id > 0) {
@@ -169,13 +179,48 @@ class CriticFront extends SearchFacets {
             $tag_and = sprintf(" AND t.tid=%d", (int) $tag_id);
         }
 
+        // Vote logic
+        $vote_inner = '';
+        $vote_and = '';
+        if ($vote > 0) {
+            $vote_inner = " LEFT JOIN {$this->db['rating']} r ON r.cid = p.id";
+            $vote_and = sprintf(" AND r.vote=%d", $vote);
+        }
+
         $sql = "SELECT COUNT(p.id) FROM {$this->db['posts']} p"
                 . " INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
-                . " INNER JOIN {$this->db['authors']} a ON a.id = am.aid" . $movie_inner . $tag_inner
-                . " WHERE p.top_movie > 0 AND p.status=1" . $and_author . $movie_and . $tag_and;
+                . " INNER JOIN {$this->db['authors']} a ON a.id = am.aid" . $movie_inner . $tag_inner . $vote_inner
+                . " WHERE p.top_movie > 0 AND p.status=1" . $and_author . $movie_and . $tag_and . $vote_and;
 
         $results = $this->db_get_var($sql);
         return $results;
+    }
+
+    public function get_audience_post_count($id = 0, $cache = true) {
+        //Get from cache
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$id])) {
+                return $dict[$id];
+            }
+        }
+
+        // 1 - pay, 2 - skip
+        $votes = array('p' => 1, 'n' => 2, 'a' => 0);
+        $result = array();
+        foreach ($votes as $key => $vote) {
+            $post_count = $this->get_post_count(2, $id, 0, $vote);
+            $result[$key]=$post_count;
+        }
+        
+        if ($cache){
+            $dict[$id] = $result;
+        }
+        return $result;
     }
 
     public function admin_edit_link($id = 0, $type = 'critic') {
@@ -378,7 +423,7 @@ class CriticFront extends SearchFacets {
         // if ($critic->type == 4) {
         if (strstr($content, '<div class="transcriptions">')) {
             if ($fullsize) {
-                $time_codes = $this->find_transcriptions($top_movie, $critic->id, $content);                
+                $time_codes = $this->find_transcriptions($top_movie, $critic->id, $content);
             }
             $content = preg_replace('/<div class="transcriptions">.*<\/div>/Us', '', $content);
         }
@@ -892,8 +937,8 @@ class CriticFront extends SearchFacets {
 
         $stars = $this->rating_images('rating', $stars);
 
-        
-        
+
+
         if ($this->show_hollywood && $hollywood) {
             $hollywood = $this->rating_images('hollywood', $hollywood);
         } else {
@@ -1522,7 +1567,7 @@ class CriticFront extends SearchFacets {
      * Home scrolls
      */
 
-    public function get_scroll($type = '') {
+    public function get_scroll($type = '', $movie_id = 0, $vote = 1) {
         static $last_posts_id = '';
         static $last_movies_id = '';
 
@@ -1555,26 +1600,31 @@ class CriticFront extends SearchFacets {
                 $last_posts_id = $this->cm->get_posts_last_update();
             }
 
+            $arg = array(
+                'movie_id' => $movie_id
+            );
+
             if ($type == 'review_scroll') {
                 if ($this->cache_results) {
-                    $filename = "scroll-rev-$last_posts_id";
-                    $content = ThemeCache::cache('get_review_scroll', false, $filename, 'def', $this);
+                    $filename = "scroll-rev-$last_posts_id-$movie_id";
+                    $content = ThemeCache::cache('get_review_scroll', false, $filename, 'def', $this, $arg);
                 } else {
-                    $content = $this->get_review_scroll();
+                    $content = $this->get_review_scroll($arg);
                 }
             } else if ($type == 'stuff_scroll') {
                 if ($this->cache_results) {
-                    $filename = "scroll-stf-$last_posts_id";
-                    $content = ThemeCache::cache('get_stuff_scroll', false, $filename, 'def', $this);
+                    $filename = "scroll-stf-$last_posts_id-$movie_id";
+                    $content = ThemeCache::cache('get_stuff_scroll', false, $filename, 'def', $this, $arg);
                 } else {
-                    $content = $this->get_stuff_scroll();
+                    $content = $this->get_stuff_scroll($arg);
                 }
             } else if ($type == 'audience_scroll') {
+                $arg['vote'] = $vote;
                 if ($this->cache_results) {
-                    $filename = "scroll-aud-$last_posts_id";
-                    $content = ThemeCache::cache('get_audience_scroll', false, $filename, 'def', $this);
+                    $filename = "scroll-aud-$last_posts_id-$vote-$movie_id";
+                    $content = ThemeCache::cache('get_audience_scroll', false, $filename, 'def', $this, $arg);
                 } else {
-                    $content = $this->get_audience_scroll();
+                    $content = $this->get_audience_scroll($arg);
                 }
             }
         }
@@ -1598,18 +1648,22 @@ class CriticFront extends SearchFacets {
         return $content;
     }
 
-    public function get_review_scroll($movie_id = 0) {
+    public function get_review_scroll($arg = array()) {
+        $movie_id = $arg['movie_id'] ? $arg['movie_id'] : 0;
         $content = $this->get_review_scroll_data($movie_id);
         return $content;
     }
 
-    public function get_stuff_scroll($movie_id = 0) {
+    public function get_stuff_scroll($arg = array()) {
+        $movie_id = $arg['movie_id'] ? $arg['movie_id'] : 0;
         $content = $this->get_stuff_scroll_data($movie_id);
         return $content;
     }
 
-    public function get_audience_scroll($movie_id = 0) {
-        $content = $this->get_audience_scroll_data($movie_id);
+    public function get_audience_scroll($arg = array()) {
+        $vote = $arg['vote'] ? $arg['vote'] : 0;
+        $movie_id = $arg['movie_id'] ? $arg['movie_id'] : 0;
+        $content = $this->get_audience_scroll_data($movie_id, $vote);
         return $content;
     }
 
@@ -1760,7 +1814,7 @@ class CriticFront extends SearchFacets {
         return '';
     }
 
-    public function get_audience_scroll_data($movie_id = 0) {
+    public function get_audience_scroll_data($movie_id = 0, $vote = 1) {
         global $site_url;
         if (!$site_url)
             $site_url = 'https://' . $_SERVER['HTTP_HOST'] . '/';
@@ -1774,9 +1828,9 @@ class CriticFront extends SearchFacets {
         $a_type = 2;
         $limit = 10;
 
-
-        $posts = $this->theme_last_posts($a_type, $limit, $movie_id);
-        $count = $this->get_post_count($a_type, $movie_id);
+        $posts = $this->theme_last_posts($a_type, $limit, $movie_id, 0, 0, array(), 0, $vote);
+        $count = $this->get_post_count($a_type, $movie_id, 0, $vote);
+        //print_r($vote);
         $content = array();
 
         if (sizeof($posts)) {
@@ -1799,26 +1853,20 @@ class CriticFront extends SearchFacets {
             global $site_url;
             // Link more
             if ($count > $limit) {
-
-
                 // Old api
                 // $link = '/critics/group_audience';
                 // New api
                 $link = '/search/tab_critics/author_audience';
 
                 if ($movie_id) {
-                    // Old api
-                    /*
-                      $ma = $this->get_ma();
-                      $ma_id = $movie_id; //$ma->get_post_id_by_rwt_id($movie_id);
-                      $movie = $ma->get_post($ma_id);
-                      if ($movie) {
-                      $slug = $this->get_or_create_ma_post_name($ma_id, $movie->rwt_id, $movie->title, $movie->type);
-                      $type_slug = $ma->get_post_slug($movie->type);
-                      $link = $site_url . 'critics/group_audience/' . $type_slug . '/' . $slug;
-                      } */
                     // New api
                     $link = '/search/tab_critics/author_audience/movie_' . $movie_id;
+                }
+
+                if ($vote == 1) {
+                    $link .= '/auvote_pay';
+                } else if ($vote == 2) {
+                    $link .= '/auvote_skip';
                 }
 
                 $title = 'Load more<br>Audience Reviews';

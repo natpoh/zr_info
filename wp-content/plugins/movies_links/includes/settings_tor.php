@@ -14,6 +14,21 @@
             </div>
             <input type="text" name="tor_get_ip_driver" class="title" value="<?php print $ss['tor_get_ip_driver'] ?>" style="width:90%">
             <br /><br />
+
+            <div class="label">
+                <?php print __('Tor IP hour limit') ?>
+            </div>
+            <input type="text" name="tor_ip_h" class="title" value="<?php print $ss['tor_ip_h'] ?>" style="width:90%">
+            <br /><br />
+
+
+            <div class="label">
+                <?php print __('Tor IP day limit') ?>
+            </div>
+            <input type="text" name="tor_ip_d" class="title" value="<?php print $ss['tor_ip_d'] ?>" style="width:90%">
+            <br /><br />
+
+
             <?php wp_nonce_field('ml-nonce', 'ml-nonce'); ?>
             <br />
             <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save') ?>" class="button-primary">  
