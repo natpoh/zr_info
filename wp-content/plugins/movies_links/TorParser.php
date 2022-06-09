@@ -124,13 +124,13 @@ class TorParser extends MoviesAbstractDB {
                 'last_upd' => $date,
                 'status' => 5
             );
-            $this->update_service_field($data_upd, $service);
+            //$this->update_service_field($data_upd, $service);
 
             $data = $this->curl($get_url, $header);
 
             // Service active
             $data_upd = array('status' => $last_status);
-            $this->update_service_field($data_upd, $service);
+            //$this->update_service_field($data_upd, $service);
 
             if ($debug) {
                 print_r($header);
