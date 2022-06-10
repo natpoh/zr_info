@@ -114,6 +114,7 @@ class MoviesAn extends AbstractDBAn {
             'power' => 'data_buying_power',
             'options' => 'options',
             'cpi' => 'data_cpi',
+            'title_slugs' => 'data_movie_title_slugs',
         );
         $this->timer_start();
         $this->get_perpage();
@@ -145,6 +146,12 @@ class MoviesAn extends AbstractDBAn {
 
     public function get_post_id_by_name($post_name = '', $type = '') {
         $sql = sprintf("SELECT id FROM {$this->db['movie_imdb']} WHERE post_name='%s' AND type='%s'", $this->escape($post_name), $this->escape($type));
+        $result = $this->db_get_var($sql);
+        return $result;
+    }
+    
+    public function get_post_name_by_old_slug($post_name = '') {
+        $sql = sprintf("SELECT newslug FROM {$this->db['title_slugs']} WHERE oldslug='%s'", $this->escape($post_name));
         $result = $this->db_get_var($sql);
         return $result;
     }
