@@ -1905,9 +1905,12 @@ class CriticSearch extends AbstractDB {
                     } else if ($key == 'from') {
                         // From author
                         $value = is_array($value) ? $value : array($value);
+                        $ids = array();                                               
+                        $authors = $this->cm->get_authors_by_ids($value);
+                        
                         foreach ($value as $slug) {
                             // Todo get author by slug
-                            $this->search_filters[$key][$slug] = array('key' => $slug, 'title' => $slug);
+                            $this->search_filters[$key][$slug] = array('key' => $slug, 'title' => $authors[$slug]->name);
                         }
                         $filters_and .= $this->filter_multi_value('aid', $value, true);
                     } else if ($key == 'tags') {

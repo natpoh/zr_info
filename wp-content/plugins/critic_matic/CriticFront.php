@@ -161,7 +161,7 @@ class CriticFront extends SearchFacets {
 
         return $results;
     }
-    
+
     public function get_post_count($a_type, $movie_id = 0, $tag_id = 0, $vote = 0) {
         $and_author = '';
         if ($a_type != -1) {
@@ -486,9 +486,13 @@ class CriticFront extends SearchFacets {
 
 
         // Author name
-        $actorstitle = $author->name;
-        $actorstitle = $this->pccf_filter($actorstitle);
+        $author_title = $author->name;
+        $author_title = $this->pccf_filter($author_title);        
+        $author_link = '/search/tab_critics/from_' . $author->id;
+        $author_title_link = '<a href="' . $author_link . '">' . $author_title . '</a>';
 
+        $actorsdata_link = '<a href="' . $author_link . '">' . $actorsdata . '</a>';
+        
         // Tags
         $catdata = '';
         $tags = $this->cm->get_author_tags($author->id);
@@ -554,10 +558,10 @@ class CriticFront extends SearchFacets {
 
             if ($fullsize == 2) {
                 $actorsresult = $video_embed . $title_str . $content . $review_bottom . $original_link .
-                        '<div class="amsg_aut">' . $actorsdata . '<div class="review_autor_name">' . $actorstitle . '<div class="a_cat">' . $catdata . '</div></div></div>';
+                        '<div class="amsg_aut">' . $actorsdata_link . '<div class="review_autor_name">' . $author_title_link . '<div class="a_cat">' . $catdata . '</div></div></div>';
             } else {
                 $actorsresult = '<div class="full_review_content_block' . $largest . '">' . $video_embed . $title_str . $content . '</div>' . $after_content . $review_bottom . $original_link . '
- <div class="amsg_aut">' . $actorsdata . '<div class="review_autor_name">' . $actorstitle . '<div class="a_cat">' . $catdata . '</div></div></div>';
+ <div class="amsg_aut">' . $actorsdata_link . '<div class="review_autor_name">' . $author_title_link . '<div class="a_cat">' . $catdata . '</div></div></div>';
             }
             // }
         } else if ($link) {
@@ -587,7 +591,7 @@ class CriticFront extends SearchFacets {
                     . '<a class="icntn' . $wp_core . '" href="' . $link . '">' . $video_img . $title_str . $content . '</a>'
                     . $review_bottom
                     . '<div class="ugol"><div></div></div></div>
-        <div class="amsg_aut">' . $actorsdata . '<div class="review_autor_name">' . $actorstitle . '<div class="a_cat">' . $catdata . '</div>'
+        <div class="amsg_aut">' . $actorsdata_link . '<div class="review_autor_name">' . $author_title_link . '<div class="a_cat">' . $catdata . '</div>'
                     . '</div>' . $reaction_data . '</div></div>';
         }
         return $actorsresult;
@@ -728,9 +732,10 @@ class CriticFront extends SearchFacets {
         $author = $this->cm->get_author($critic->aid);
 
         // Author name
-        $actorstitle = $author->name;
-
-        $actorstitle = $this->pccf_filter($actorstitle);
+        $author_title = $author->name;
+        $author_title = $this->pccf_filter($author_title);
+        $author_link = '/search/tab_critics/from_' . $author->id;
+        $author_title_link = '<a href="' . $author_link . '">' . $author_title . '</a>';
 
         // Tags
         $catdata = '';
@@ -824,25 +829,23 @@ class CriticFront extends SearchFacets {
         }
 
         if ($avatar_user) {
-
             $actorsdata = '<div class="a_img_container_audience" style="background: url(https://' . $_SERVER['HTTP_HOST'] . '/wp-content/uploads/avatars/custom/' . $avatar_user . '); background-size: cover;"></div>';
         } else {
             $actorsdata = '<span></span>';
         }
 
+        $actorsdata_link = '<a href="' . $author_link . '">' . $actorsdata . '</a>';
 
         // get link
         // $link = $link . '?a=' . $c_pid;
 
-
         $review_bottom = '<div class="review_bottom"><div class="r_type"></div><div class="r_right"><div class="r_date">' . $critic_addtime . '</div>' . $country_img . '</div></div>';
-
 
         if ($fullsize) {
 
             $actorsresult = '
-' . $content . $review_bottom . '<div class="amsg_aut">' . $actorsdata . '
-        <div class="review_autor_name">' . $actorstitle . '<div class="a_cat">' . $catdata . '</div></div>
+' . $content . $review_bottom . '<div class="amsg_aut">' . $actorsdata_link . '
+        <div class="review_autor_name">' . $author_title_link . '<div class="a_cat">' . $catdata . '</div></div>
        
     </div>';
         } else {
@@ -854,8 +857,8 @@ class CriticFront extends SearchFacets {
     </div>
         
         <div class="amsg_aut">
-            ' . $actorsdata . '
-            <div class="review_autor_name">' . $actorstitle . '
+            ' . $actorsdata_link . '
+            <div class="review_autor_name">' . $author_title_link . '
                 <div class="a_cat">' . $catdata . '</div>
             </div>
             ' . $reaction_data . '
