@@ -1588,12 +1588,12 @@ class CriticSearch extends AbstractDB {
                         . " GROUP BY " . $facet . " ORDER BY " . $facet . " ASC LIMIT 0," . $max_count;
                 $sql_arr[] = "SHOW META";
             } else if ($facet == 'lgbt') {
-                $filters_and = $this->get_filters_query($filters, array('rf','minus-rf'));
+                $filters_and = $this->get_filters_query($filters, array('rf', 'minus-rf'));
                 $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
                         . " GROUP BY lgbt ORDER BY cnt DESC LIMIT 0,10";
                 $sql_arr[] = "SHOW META";
             } else if ($facet == 'woke') {
-                $filters_and = $this->get_filters_query($filters, array('rf','minus-rf'));
+                $filters_and = $this->get_filters_query($filters, array('rf', 'minus-rf'));
                 $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
                         . " GROUP BY woke ORDER BY cnt DESC LIMIT 0,10";
                 $sql_arr[] = "SHOW META";
@@ -1894,7 +1894,7 @@ class CriticSearch extends AbstractDB {
                         $value = is_array($value) ? $value : array($value);
                         foreach ($value as $slug) {
                             if ($this->search_filters[$key][$slug]) {
-                                $filters_and .= $this->filter_multi_value($slug, 1, false, $minus, true, true, false);                                
+                                $filters_and .= $this->filter_multi_value($slug, 1, false, $minus, true, true, false);
                             }
                         }
                     }
@@ -2002,9 +2002,9 @@ class CriticSearch extends AbstractDB {
                         $and_any = sprintf(" AND ANY(%s)>0", $key);
                     }
                     if ($multi) {
-                        $filters_and .= sprintf(" AND ALL(%s)!=%s".$and_any, $key, $filter);
+                        $filters_and .= sprintf(" AND ALL(%s)!=%s" . $and_any, $key, $filter);
                     } else {
-                        $filters_and .= sprintf(" AND %s!=%s".$and_any, $key, $filter);
+                        $filters_and .= sprintf(" AND %s!=%s" . $and_any, $key, $filter);
                     }
                 }
             }
@@ -2406,6 +2406,49 @@ class CriticSearch extends AbstractDB {
                 }
             }
         }
+    }
+
+    public function get_last_critics($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tag_id = 0, $meta_type = array(), $min_rating = 0, $vote = 0) {
+     
+        $filters_and ='';
+        
+        if ($a_type != -1) {
+            $filters_and .= sprintf(' AND author_type = %d', $a_type);
+        }
+
+        if ($movie_id > 0) {            
+            $filters_and .= $this->filter_multi_value('movies', $movie_id, true);
+        }
+        
+        if ($min_rating) {
+            // TODO meta raring
+        }
+
+        if ($meta_type) {
+            // TODO meta type
+        }
+
+        // Odrer by rating desc
+        if ($movie_id > 0) {
+           
+        }
+
+        // Tag logic
+        if ($tag_id > 0) {
+            $filters_and .= $this->filter_multi_value('tags', $tag_id, true);            
+        }
+
+        // Vote logic
+        if ($vote > 0) {
+            $filters_and .= sprintf(" AND auvote=%d", $vote);
+        }
+        
+        $order = " ORDER BY post_date DESC";        
+        $sql = sprintf("SELECT id, date_add, top_movie FROM critic WHERE top_movie>0" . $filters_and . $order . " LIMIT %d,%d", $start, $limit);
+        
+        $results = $this->sdb_results($sql);     
+
+        return $results;
     }
 
     /*

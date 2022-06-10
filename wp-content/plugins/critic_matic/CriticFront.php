@@ -75,8 +75,12 @@ class CriticFront extends SearchFacets {
      * Critic functions
      */
 
-    public function theme_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tag_id = 0, $meta_type = array(), $min_rating = 0, $vote = 0) {
-        $posts = $this->get_last_posts($a_type, $limit, $movie_id, $start, $tag_id, $meta_type, $min_rating, $vote);
+    public function theme_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tag_id = 0, $meta_type = array(), $min_rating = 0, $vote = 0, $search = false) {
+        if ($search) {
+            $posts = $this->cs->get_last_critics($a_type, $limit, $movie_id, $start, $tag_id, $meta_type, $min_rating, $vote);
+        } else {
+            $posts = $this->get_last_posts($a_type, $limit, $movie_id, $start, $tag_id, $meta_type, $min_rating, $vote);
+        }
         $items = array();
         if (sizeof($posts)) {
             foreach ($posts as $item) {
@@ -157,7 +161,7 @@ class CriticFront extends SearchFacets {
 
         return $results;
     }
-
+    
     public function get_post_count($a_type, $movie_id = 0, $tag_id = 0, $vote = 0) {
         $and_author = '';
         if ($a_type != -1) {
@@ -214,10 +218,10 @@ class CriticFront extends SearchFacets {
         $result = array();
         foreach ($votes as $key => $vote) {
             $post_count = $this->get_post_count(2, $id, 0, $vote);
-            $result[$key]=$post_count;
+            $result[$key] = $post_count;
         }
-        
-        if ($cache){
+
+        if ($cache) {
             $dict[$id] = $result;
         }
         return $result;
@@ -1567,7 +1571,7 @@ class CriticFront extends SearchFacets {
      * Home scrolls
      */
 
-    public function get_scroll($type = '', $movie_id = 0, $vote = 1) {
+    public function get_scroll($type = '', $movie_id = 0, $vote = 1, $search = false) {
         static $last_posts_id = '';
         static $last_movies_id = '';
 
@@ -1620,6 +1624,9 @@ class CriticFront extends SearchFacets {
                 }
             } else if ($type == 'audience_scroll') {
                 $arg['vote'] = $vote;
+                if ($search) {
+                    $arg['search'] = 1;
+                }
                 if ($this->cache_results) {
                     $filename = "scroll-aud-$last_posts_id-$vote-$movie_id";
                     $content = ThemeCache::cache('get_audience_scroll', false, $filename, 'def', $this, $arg);
@@ -1663,7 +1670,8 @@ class CriticFront extends SearchFacets {
     public function get_audience_scroll($arg = array()) {
         $vote = $arg['vote'] ? $arg['vote'] : 0;
         $movie_id = $arg['movie_id'] ? $arg['movie_id'] : 0;
-        $content = $this->get_audience_scroll_data($movie_id, $vote);
+        $search = $arg['search'] ? true : false;
+        $content = $this->get_audience_scroll_data($movie_id, $vote, $search);
         return $content;
     }
 
@@ -1814,7 +1822,7 @@ class CriticFront extends SearchFacets {
         return '';
     }
 
-    public function get_audience_scroll_data($movie_id = 0, $vote = 1) {
+    public function get_audience_scroll_data($movie_id = 0, $vote = 1, $search = false) {
         global $site_url;
         if (!$site_url)
             $site_url = 'https://' . $_SERVER['HTTP_HOST'] . '/';
@@ -1828,7 +1836,7 @@ class CriticFront extends SearchFacets {
         $a_type = 2;
         $limit = 10;
 
-        $posts = $this->theme_last_posts($a_type, $limit, $movie_id, 0, 0, array(), 0, $vote);
+        $posts = $this->theme_last_posts($a_type, $limit, $movie_id, 0, 0, array(), 0, $vote, $search);
         $count = $this->get_post_count($a_type, $movie_id, 0, $vote);
         //print_r($vote);
         $content = array();
