@@ -101,13 +101,13 @@ class TorParser extends MoviesAbstractDB {
         $get_url = $this->get_tor_url($url, $ip_limit, $log_data, $debug);
         if ($get_url) {
 
-            $service = $log_data['driver'];
+            $service_id = $log_data['driver'];
             // Service used
             $date = $this->curr_time();
             $data_upd = array(
                 'last_upd' => $date,
             );
-            $this->update_service_field($data_upd, $service->id);
+            $this->update_service_field($data_upd, $service_id);
 
             $data = $this->curl($get_url, $header);
 
