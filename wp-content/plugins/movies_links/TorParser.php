@@ -23,7 +23,6 @@ class TorParser extends MoviesAbstractDB {
     );
     public $service_status = array(
         1 => 'Active',
-        5 => 'Used',
         0 => 'Inactive',
         3 => 'Reboot',
         4 => 'Error',
@@ -92,20 +91,6 @@ class TorParser extends MoviesAbstractDB {
                             print "Service active $service_life_time < " . $this->service_life_time . "\n";
                         }
                     }
-                } if ($status == 5) {
-                    // Old used services. Set active status
-                    $service_used_time = $curr_time - $last_upd;
-                    if ($service_used_time > $this->service_used_time) {
-                        $status = 3;
-                        if ($service->ip) {
-                            $status = 1;
-                        }
-                        $data_upd = array(
-                            'last_upd' => $curr_time,
-                            'status' => $status,
-                        );
-                        $this->update_service_field($data_upd, $service->id);
-                    }
                 }
             }
         }
@@ -116,21 +101,15 @@ class TorParser extends MoviesAbstractDB {
         $get_url = $this->get_tor_url($url, $ip_limit, $log_data, $debug);
         if ($get_url) {
 
-            $service = $log_data['driver'];
-            $last_status = $service->status;
+            $service = $log_data['driver'];            
             // Service used
             $date = $this->curr_time();
             $data_upd = array(
-                'last_upd' => $date,
-                'status' => 5
+                'last_upd' => $date,            
             );
-            //$this->update_service_field($data_upd, $service);
+            $this->update_service_field($data_upd, $service->id);
 
             $data = $this->curl($get_url, $header);
-
-            // Service active
-            $data_upd = array('status' => $last_status);
-            //$this->update_service_field($data_upd, $service);
 
             if ($debug) {
                 print_r($header);
@@ -179,7 +158,7 @@ class TorParser extends MoviesAbstractDB {
         }
         // 2. Get active services
         $q_req = array(
-            'status' => array(1, 5),
+            'status' => 1,
         );
 
         $services = $this->get_services($q_req, 1, 0);
@@ -209,7 +188,8 @@ class TorParser extends MoviesAbstractDB {
                     if ($ip_error_last_hour_count) {
                         // Get last error ips
                         $message = 'Last parsing error: ' . $ip_error_last_hour_count;
-                        if ($service->status != 5) {
+                        
+                        if (($curr_time - $this->service_used_time) > $service->last_upd) {
                             $ips_error[$service->last_reboot] = array(
                                 'service' => $service->id,
                                 'name' => $ip_name,
@@ -266,9 +246,9 @@ class TorParser extends MoviesAbstractDB {
                 }
 
                 if ($hour || $day) {
-                    // Do not reboot a new service
+                    // Do not reboot a last update service
                     $item['message'] = $message; 
-                    if ($service->status != 5) {
+                    if (($curr_time - $this->service_used_time) > $service->last_upd) {
                         $ips_on_limit[$last_reboot] = $item;
                     }                    
                     /* $this->reboot_service($service_id, $message, false, $debug);
