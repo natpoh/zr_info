@@ -28,7 +28,7 @@ class TorParser extends MoviesAbstractDB {
         4 => 'Error',
         2 => 'Trash'
     );
-    public $sort_pages = array('date', 'id', 'ip', 'drivers', 'dst_url', 'user_agents', 'url_meta');
+    public $sort_pages = array('date', 'id', 'ip', 'drivers', 'dst_url', 'user_agents', 'url_meta', 'last_upd', 'last_reboot', 'status');
 
     public function __construct($ml = '') {
         $this->ml = $ml ? $ml : new MoviesLinks();
@@ -101,11 +101,11 @@ class TorParser extends MoviesAbstractDB {
         $get_url = $this->get_tor_url($url, $ip_limit, $log_data, $debug);
         if ($get_url) {
 
-            $service = $log_data['driver'];            
+            $service = $log_data['driver'];
             // Service used
             $date = $this->curr_time();
             $data_upd = array(
-                'last_upd' => $date,            
+                'last_upd' => $date,
             );
             $this->update_service_field($data_upd, $service->id);
 
@@ -188,7 +188,7 @@ class TorParser extends MoviesAbstractDB {
                     if ($ip_error_last_hour_count) {
                         // Get last error ips
                         $message = 'Last parsing error: ' . $ip_error_last_hour_count;
-                        
+
                         if (($curr_time - $this->service_used_time) > $service->last_upd) {
                             $ips_error[$service->last_reboot] = array(
                                 'service' => $service->id,
@@ -247,10 +247,10 @@ class TorParser extends MoviesAbstractDB {
 
                 if ($hour || $day) {
                     // Do not reboot a last update service
-                    $item['message'] = $message; 
+                    $item['message'] = $message;
                     if (($curr_time - $this->service_used_time) > $service->last_upd) {
                         $ips_on_limit[$last_reboot] = $item;
-                    }                    
+                    }
                     /* $this->reboot_service($service_id, $message, false, $debug);
                       if ($debug) {
                       print $message . "\n";
