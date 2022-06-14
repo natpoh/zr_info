@@ -25,8 +25,8 @@ if (!class_exists('CriticParser')) {
 
 $cp = new CriticParser();
 
-$channel = $cp->cm_find_yt_channel($url);
+$data = $cp->yt_video_data($url);
 
 print '<pre>';
-print_r($channel);
+print_r($data);
 print '</pre>';

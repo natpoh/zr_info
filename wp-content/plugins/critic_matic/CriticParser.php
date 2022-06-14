@@ -3096,65 +3096,31 @@ class CriticParser extends AbstractDBWp {
      * Youtube API
      */
 
-    public function cm_find_yt_channel($keyword) {
+    public function yt_video_data($url) {
 
-        $channel = '';
-        $video_id = '';
-        $title = '';
-        $total = -1;
-        $err = '';
-        $valid = 0;
-
-        if (preg_match('/\/channel\/([\w\d_-]+)/', $keyword, $match)) {
-            $channel = $match[1];
-        }
-
-        if (!$channel) {
-            //Get youtube urls
-            if ((strstr($keyword, 'youtube') || strstr($keyword, 'youtu.be'))) {
-                if (preg_match('#//www\.youtube\.com/embed/([a-zA-Z0-9\-_]+)#', $keyword, $match) ||
-                        preg_match('#//(?:www\.|)youtube\.com/(?:v/|watch\?v=|watch\?.*v=|embed/)([a-zA-Z0-9\-_]+)#', $keyword, $match) ||
-                        preg_match('#//youtu\.be/([a-zA-Z0-9\-_]+)#', $keyword, $match)) {
-                    if (count($match) > 1) {
-                        $video_id = $match[1];
-                    }
+        $keyword = $url;
+        //Get youtube urls
+        if ((strstr($keyword, 'youtube') || strstr($keyword, 'youtu.be'))) {
+            if (preg_match('#//www\.youtube\.com/embed/([a-zA-Z0-9\-_]+)#', $keyword, $match) ||
+                    preg_match('#//(?:www\.|)youtube\.com/(?:v/|watch\?v=|watch\?.*v=|embed/)([a-zA-Z0-9\-_]+)#', $keyword, $match) ||
+                    preg_match('#//youtu\.be/([a-zA-Z0-9\-_]+)#', $keyword, $match)) {
+                if (count($match) > 1) {
+                    $video_id = $match[1];
                 }
             }
         }
 
-        if (!$channel && $video_id) {
+        $ret = array();
+
+
+
+        if ($video_id) {
             $result = $this->find_youtube_data_api(array($video_id));
             if (isset($result[$video_id])) {
-                $channel = $result[$video_id]->channelId;
-                $title = $result[$video_id]->channelTitle;
+                $ret = $result[$video_id];                
             }
         }
 
-        if ($channel) {
-            try {
-                $responce = $this->youtube_get_videos($channel, 5);
-
-                if ($responce) {
-                    $total = $responce->pageInfo->totalResults;
-                    if ($total) {
-                        $title = $responce->items[0]->snippet->channelTitle;
-                    }
-                }
-            } catch (Exception $exc) {
-
-                //$err = $exc->getTraceAsString();
-                $err = 'Channel error';
-            }
-        }
-
-        if ($total > 0) {
-            $valid = 1;
-        } else {
-            if (!$err) {
-                $err = 'Channel invalid';
-            }
-        }
-        $ret = array('err' => $err, 'total' => $total, 'channel' => $channel, 'valid' => $valid, 'title' => $title);
         return $ret;
     }
 
