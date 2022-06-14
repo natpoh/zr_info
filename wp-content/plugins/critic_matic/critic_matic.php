@@ -1014,6 +1014,13 @@ UPDATE wp_bcw98b_critic_matic_posts SET content = REPLACE(content, '<!--Taboola:
 UPDATE wp_bcw98b_critic_matic_posts SET content = REPLACE(content, '(\'tbl_ic\');}</div>', '(\'tbl_ic\');}</script></div>')
 
 
+SELECT link_hash, count(*) FROM `movies_links_url` WHERE cid=13 GROUP by link_hash having count(*) > 1;
+
+DELETE m FROM `movies_links_url` m
+INNER JOIN `movies_links_url` s
+WHERE 
+    m.id > s.id AND 
+    m.link_hash = s.link_hash;
  * 
  * 
  *  *  * 

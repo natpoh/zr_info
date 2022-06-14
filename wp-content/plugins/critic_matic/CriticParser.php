@@ -160,7 +160,7 @@ class CriticParser extends AbstractDBWp {
     public $yt_error_msg = '';
 
     public function __construct($cm = '') {
-        $this->cm = $cm;
+        $this->cm = $cm ? $cm : new CriticMatic();
         $table_prefix = DB_PREFIX_WP;
         $this->db = array(
             'posts' => DB_PREFIX_WP_AN . 'critic_matic_posts',
@@ -1421,7 +1421,7 @@ class CriticParser extends AbstractDBWp {
 
         $last_update = $date = $this->curr_time();
         $update_interval = isset($form_state['interval']) ? $form_state['interval'] : $def_opt['interval'];
-        $parser_status = $form_state['parser_status']?$form_state['parser_status']:0;
+        $parser_status = $form_state['parser_status'] ? $form_state['parser_status'] : 0;
         $author = $form_state['author'];
         $type = $form_state['type'];
 
@@ -1465,7 +1465,7 @@ class CriticParser extends AbstractDBWp {
             $result = $id;
         } else {
             // ADD
-            $data['date'] = $date;            
+            $data['date'] = $date;
             $result = $this->db_insert($data, $this->db['campaign']);
         }
         return $result;
@@ -3095,6 +3095,68 @@ class CriticParser extends AbstractDBWp {
     /*
      * Youtube API
      */
+
+    public function cm_find_yt_channel($keyword) {
+
+        $channel = '';
+        $video_id = '';
+        $title = '';
+        $total = -1;
+        $err = '';
+        $valid = 0;
+
+        if (preg_match('/\/channel\/([\w\d_-]+)/', $keyword, $match)) {
+            $channel = $match[1];
+        }
+
+        if (!$channel) {
+            //Get youtube urls
+            if ((strstr($keyword, 'youtube') || strstr($keyword, 'youtu.be'))) {
+                if (preg_match('#//www\.youtube\.com/embed/([a-zA-Z0-9\-_]+)#', $keyword, $match) ||
+                        preg_match('#//(?:www\.|)youtube\.com/(?:v/|watch\?v=|watch\?.*v=|embed/)([a-zA-Z0-9\-_]+)#', $keyword, $match) ||
+                        preg_match('#//youtu\.be/([a-zA-Z0-9\-_]+)#', $keyword, $match)) {
+                    if (count($match) > 1) {
+                        $video_id = $match[1];
+                    }
+                }
+            }
+        }
+
+        if (!$channel && $video_id) {
+            $result = $this->find_youtube_data_api(array($video_id));
+            if (isset($result[$video_id])) {
+                $channel = $result[$video_id]->channelId;
+                $title = $result[$video_id]->channelTitle;
+            }
+        }
+
+        if ($channel) {
+            try {
+                $responce = $this->youtube_get_videos($channel, 5);
+
+                if ($responce) {
+                    $total = $responce->pageInfo->totalResults;
+                    if ($total) {
+                        $title = $responce->items[0]->snippet->channelTitle;
+                    }
+                }
+            } catch (Exception $exc) {
+
+                //$err = $exc->getTraceAsString();
+                $err = 'Channel error';
+            }
+        }
+
+        if ($total > 0) {
+            $valid = 1;
+        } else {
+            if (!$err) {
+                $err = 'Channel invalid';
+            }
+        }
+        $ret = array('err' => $err, 'total' => $total, 'channel' => $channel, 'valid' => $valid, 'title' => $title);
+        return $ret;
+    }
 
     public function yt_total_posts($options) {
 

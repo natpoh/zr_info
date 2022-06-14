@@ -423,13 +423,18 @@ class CriticFront extends SearchFacets {
         }
 
         // Find transcriptions
-        $time_codes = '';
+        $time_codes = array();
+        $desc_results = array();
         // if ($critic->type == 4) {
         if (strstr($content, '<div class="transcriptions">')) {
             if ($fullsize) {
-                $time_codes = $this->find_transcriptions($top_movie, $critic->id, $content);
+                $codes_arr = $this->find_transcriptions($top_movie, $critic->id, $content);
+                $time_codes = $codes_arr['time_codes'];
+                $desc_results = $codes_arr['desc_results'];
             }
-            $content = preg_replace('/<div class="transcriptions">.*<\/div>/Us', '', $content);
+            // $content = preg_replace('/<div class="transcriptions">.*<\/div>/Us', '', $content);
+            // Remove the content from posts witch transcriptions
+            $content = '';            
         }
         // }
         // Get meta state
@@ -471,6 +476,11 @@ class CriticFront extends SearchFacets {
                 $content = preg_replace($regv, '', $content);
             }
         }
+        
+        if ($desc_results){
+            $content= '<p>'.implode('</p><p>', $desc_results).'</p>';
+        }
+        
         // Author image
         $author = $this->cm->get_author($critic->aid);
         $author_options = unserialize($author->options);
@@ -487,12 +497,12 @@ class CriticFront extends SearchFacets {
 
         // Author name
         $author_title = $author->name;
-        $author_title = $this->pccf_filter($author_title);        
+        $author_title = $this->pccf_filter($author_title);
         $author_link = '/search/tab_critics/from_' . $author->id;
         $author_title_link = '<a href="' . $author_link . '">' . $author_title . '</a>';
 
         $actorsdata_link = '<a href="' . $author_link . '">' . $actorsdata . '</a>';
-        
+
         // Tags
         $catdata = '';
         $tags = $this->cm->get_author_tags($author->id);
@@ -630,12 +640,19 @@ class CriticFront extends SearchFacets {
                 }
             }
 
+            $desc_results = array();
+
             if ($results) {
                 if (preg_match_all('/<b>([^<]+)<\/b>/', $results, $match)) {
                     $unique_words = array();
                     foreach ($match[1] as $value) {
                         $unique_words[$value] = $value;
                     }
+
+                    $desc = preg_replace('/<div class="transcriptions">.*<\/div>/Us', '', $content);
+                    $desc = preg_replace('/<br[^>]*>/', "\n", $desc);
+                    $desc = strip_tags($desc);
+
                     foreach ($unique_words as $key => $value) {
                         $w_arr = explode(' ', $key);
                         $reg = '/<span data-time="([0-9]+\:[0-9]+\:[0-9]+)[^"]*">([^<]*)(' . implode('(?: |<[\/]*span[^>]*>)', $w_arr) . ')([^<]*)/';
@@ -649,6 +666,14 @@ class CriticFront extends SearchFacets {
                                 $timecodes[$time_sec] = $time_str_small . ' "... ' . $match[2][$i] . ' <b>' . $match[3][$i] . '</b> ' . $match[4][$i] . ' ..."';
                             }
                         }
+
+                        $reg_desc = '/.*' . $value . '.*/';
+                        if (preg_match_all($reg_desc, $desc, $match)) {
+                            for ($i = 0; $i < sizeof($match[0]); $i++) {
+                                $result = $match[0][$i];
+                                $desc_results[] = str_replace($value, '<b>'.$value.'</b>', $result);
+                            }
+                        }
                     }
                 }
             }
@@ -656,7 +681,7 @@ class CriticFront extends SearchFacets {
 
         ksort($timecodes);
 
-        return $timecodes;
+        return array('time_codes' => $timecodes, 'desc_results' => $desc_results);
     }
 
     public function get_info_link($cid = 0, $mid = 0, $meta_state = 0) {
@@ -1184,6 +1209,8 @@ class CriticFront extends SearchFacets {
     public function format_content($content = '', $crop_len = 0, $max_p = 0) {
         // Remove tags
         $content = str_replace('<br>', '\n', $content);
+        $content = str_replace('<br/>', '\n', $content);
+        $content = str_replace('<br />', '\n', $content);
         $content = str_replace('</p>', '\n', $content);
         $content = str_replace('</div>', '\n', $content);
         $content = strip_tags($content);
