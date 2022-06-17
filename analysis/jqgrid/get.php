@@ -143,17 +143,31 @@ AND table_schema='imdbvisualization'";
 
                 if ($_POST['oper'] == 'edit') {
 
+                    ///check data
+
+
+
 
                     if ($val != 'id' && $val != 'parent') {
-                        $qres .= ", `" . $val . "` = ? ";
+
+
+
+
 
                         if ($val == 'add_time' || $val == 'last_update'  || $val == 'lastupdate'  ) {
                             $arrayrequest[] = time();
+
+
+                                $qres .= ", `" . $val . "` = ? ";
+
                         }
 
                         else {
 
-                            $arrayrequest[] = $array[str_replace(' ', '_', $val)];
+                            if (isset( $array[str_replace(' ', '_', $val)])) {
+                                $qres .= ", `" . $val . "` = ? ";
+                                $arrayrequest[] = $array[str_replace(' ', '_', $val)];
+                            }
                         }
                     }
 
@@ -184,8 +198,8 @@ AND table_schema='imdbvisualization'";
 
 
                 $sql = "UPDATE `" . $table_data . "` SET " . $qres . "  WHERE `id` = '" . $array['parent'] . "'";
-                echo $sql;
-                print_r($arrayrequest);
+                //echo $sql;
+               // print_r($arrayrequest);
 
 
                 $result = Pdo_an::db_results_array($sql, $arrayrequest);

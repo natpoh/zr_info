@@ -30,9 +30,8 @@ if (isset($_GET['id']))
     }
 
     $cache = wp_custom_cache('p-'.$id.'_similar_movies_1', 'fastcache', 86400);
-
     echo $cache;
 
-   // similar_movies($id);
+  // similar_movies($id);
 }
 

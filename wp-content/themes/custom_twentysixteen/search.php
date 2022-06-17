@@ -23,20 +23,33 @@ if (isset($_POST['filters'])) {
     // Get the video from an db. Video logic after 25.08.2021. 
     $is_movie = isset($filters['movies']);
     $is_tv = isset($filters['tvseries']);
+    $post_type_slug = '';
     if ($is_movie || $is_tv) {
 
         if ($is_movie) {
             $post_name = $filters['movies'];
             $post_type = 'Movie';
+            $post_type_slug = 'movies';
         } else {
             $post_name = $filters['tvseries'];
             $post_type = 'TVseries';
+            $post_type_slug = 'tvseries';
         }
 
         // Get post from an db
         $ma = $cfront->get_ma();
         $post_id = $ma->get_post_id_by_name($post_name, $post_type);
 
+        // Try to redirect from old slug
+        if (!$post_id) {
+            $new_post_name = $ma->get_post_name_by_old_slug($post_name, $post_type);
+            if ($new_post_name) {
+                $url = $_SERVER['REQUEST_URI'];
+                $redirect_url = str_replace($post_type_slug . '/' . $post_name, $post_type_slug . '/' . $new_post_name, $url);
+                wp_redirect($redirect_url, 301);
+                exit();
+            }
+        }
 
         if (!$post_id) {
             // Not found. Go to 404
@@ -281,7 +294,7 @@ if (isset($_POST['filters'])) {
             $tag = $cfront->cm->get_tag_by_slug($filters['category']);
             if ($tag) {
                 $tag_id = $tag->id;
-                $redirect_url .= '/tags_' . $filters['category'];               
+                $redirect_url .= '/tags_' . $filters['category'];
             }
         }
 

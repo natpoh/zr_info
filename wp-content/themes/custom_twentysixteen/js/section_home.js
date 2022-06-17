@@ -2,6 +2,8 @@ var disqus_config = function () {
 };
 var lastload = '';
 var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
+var crowdsource_url = "/wp-content/themes/custom_twentysixteen/template/ajax/crowdsource.php"
+
 
 function attachScroller(distance, scroller, hasScrolled, scrollLeft) {
     if (jQuery(scroller).hasClass('should_fade')) {
@@ -529,6 +531,7 @@ function create_rating_content(object, m_id)
             '<div  class="edit_area  note_show">' +
             '<div class="edit_comment"><div class="desc">Add Comment</div></div>' +
             '<div   class="edit_review"><div class="desc">Add Review</div></div>' +
+            '<div   class="edit_critic"><div class="desc">Add Critic review</div></div>' +
             '<div class="edit_family_rating"><span class="f_name"></span><div class="desc">Edit Family Friendly Rating</div></div>' +
             '</div></div>';
 
@@ -1196,8 +1199,8 @@ function load_ajax_block(block_id) {
                         if (obj.content)
                         {
                             jQuery('div[id="' + block_id + '"]').html('<div class="column_header">\n' +
-                                '                    <h2>Similar Movies and TV:</h2>\n' +
-                                '                </div><div class="movie_scroller scroller_wrap"><div class="column_content flex scroller flex_movies_block">'+obj.content+'</div></div>');
+                                    '                    <h2>Related Movies and TV:</h2>\n' +
+                                    '                </div><div class="movie_scroller scroller_wrap"><div class="column_content flex scroller flex_movies_block">' + obj.content + '</div></div>');
 
                             if (obj['rating'])
                             {
@@ -1213,10 +1216,8 @@ function load_ajax_block(block_id) {
 
                         }
                     }
-                    }
-            }
-
-            else if (block_id == 'twitter_scroll') {
+                }
+            } else if (block_id == 'twitter_scroll') {
                 if (data) {
                     jQuery('div.column_header_main').prepend(data);
 
@@ -1253,8 +1254,7 @@ function load_ajax_block(block_id) {
                 jQuery('div[id="' + block_id + '"]').html(data);
             } else if (block_id == 'disqus_last_comments') {
                 jQuery('div[id="' + block_id + '"]').html(data);
-            }
-            else if (block_id == 'actor_representation') {
+            } else if (block_id == 'actor_representation') {
                 jQuery('div[id="' + block_id + '"]').html(data);
                 load_actor_representation(parent_id);
 
@@ -1276,8 +1276,7 @@ function load_ajax_block(block_id) {
                 jQuery('body').on('click', '.r_row  .ethnycity_select', function () {
                     load_actor_representation(parent_id);
                 });
-            }
-            else if (block_id == 'audience_form') {
+            } else if (block_id == 'audience_form') {
                 jQuery('div[id="' + block_id + '"]').html(data);
                 //check load script
 
@@ -1308,8 +1307,7 @@ function load_ajax_block(block_id) {
                 }
 
 
-            }
-            else if (block_id == 'search_ajax') {
+            } else if (block_id == 'search_ajax') {
                 if (data) {
                     try {
                         var Object_data = JSON.parse(data);
@@ -1390,7 +1388,7 @@ function init_audience_tabs(block_id, parent_id) {
                     and_parent = "&id=" + parent_id;
                 }
                 var url = window.location.protocol + template_path + block_id + ".php" + "?vote=" + vote + and_parent;
-               
+
                 jQuery.ajax({
                     type: "GET",
                     url: url,
@@ -2443,7 +2441,7 @@ jQuery(document).ready(function () {
                 'movie': movie,
                 'robot': enable_robot
             },
-            url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/template/ajax/crowdsource.php",
+            url: crowdsource_url,
             success: function (html) {
 
                 if (!popup_enable)
@@ -2493,7 +2491,7 @@ jQuery(document).ready(function () {
                 'id': id,
                 'r_id': r_id
             },
-            url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/template/ajax/crowdsource.php",
+            url: crowdsource_url,
             success: function (html) {
 
                 if (!jQuery('.check_inner_container[id="' + id + '"]').html())
@@ -2553,7 +2551,7 @@ jQuery(document).ready(function () {
         button.attr('disabled', true);
 
         var movie = button.attr('id');
-        if(jQuery(this).has('check_imdb_movie'))
+        if (jQuery(this).has('check_imdb_movie'))
         {
             let pr = jQuery(this).parents('.container_for_add_movies');
             movie = pr.find('input.addmoviesfrom_id').val();
@@ -2584,6 +2582,14 @@ jQuery(document).ready(function () {
 
     jQuery('body').on('click', '.submit_data .submit_user_data', function (e) {
 
+        var $this = jQuery(this);
+
+        if ($this.hasClass('in_process')) {
+            return false;
+        }
+
+        $this.addClass('in_process');
+
         var closep = 0;
         let prnt = jQuery(this).parents('.crowd_data');
         if (!prnt.hasClass('crowd_data'))
@@ -2595,9 +2601,11 @@ jQuery(document).ready(function () {
         var result = new Object();
         prnt.find('input, select, textarea').each(function () {
 
-            let cls = jQuery(this).attr('class');
-            let data = jQuery(this).val();
 
+
+            let cls = jQuery(this).attr('data-id');
+            let data = jQuery(this).val();
+            console.log(cls+' '+jQuery(this).attr('class'));
             if (jQuery(this).attr('type') == 'checkbox')
             {
                 if (jQuery(this).is(":checked"))
@@ -2612,6 +2620,14 @@ jQuery(document).ready(function () {
             result[cls] = data;
 
         });
+        prnt.find('div.input_content').each(function () {
+
+
+            let cls = jQuery(this).attr('data-id');
+            let data = jQuery(this).html();
+
+            result[cls] = data;
+        });
 
         if (closep)
         {
@@ -2625,8 +2641,7 @@ jQuery(document).ready(function () {
 
         }
 
-
-
+        jQuery('.form_msg').html('');
 
         jQuery.ajax({
             type: 'post',
@@ -2635,21 +2650,45 @@ jQuery(document).ready(function () {
                 'type': type,
                 'data': JSON.stringify(result),
             },
-            url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/template/ajax/crowdsource.php",
+            url: crowdsource_url,
             success: function (html) {
+
+                $this.removeClass('in_process');
+
                 if (html)
                 {
-                    var error_obj = JSON.parse(html);
-                    console.log(error_obj);
-                }
-                let msg = '<p class="user_message_info">Thank you for your help, we\'ll check it soon</p>';
-                if (closep)
-                {
-                    prnt.html(msg + '<div class="submit_data"><button class="button close" >Close</button></div>');
+
+
+                    var data = JSON.parse(html);
+
+                    if (data.critic_data)
+                    {
+
+                        prnt.html(data.critic_data);
+                        // Init author autocomplite
+                        author_autocomplete('.default_popup');
+                    }
+
+                    if (data.error && data.error.link)
+                    {
+                        var error_msg = '<div class="alert alert-danger">' + data.error.link + '</div>';
+                        jQuery('.form_msg').html(error_msg);
+
+                    }
+
                 } else
                 {
-                    prnt.html('<div class="open_rating_container note_show">' + msg + '<div class="submit_data"><button class="button close" >Close</button></div></div>');
+                    let msg = '<p class="user_message_info">Thank you for your help, we\'ll check it soon</p>';
+                    if (closep)
+                    {
+                        prnt.html(msg + '<div class="submit_data"><button class="button close" >Close</button></div>');
+                    } else
+                    {
+                        prnt.html('<div class="open_rating_container note_show">' + msg + '<div class="submit_data"><button class="button close" >Close</button></div></div>');
+                    }
+
                 }
+
 
 
             }
@@ -2748,6 +2787,40 @@ jQuery(document).ready(function () {
 
     });
 
+    jQuery('body').on('click', '.add_critic_button, .edit_critic', function (e) {
+
+        if (jQuery(this).hasClass('edit_critic'))
+        {
+            var prnt = jQuery(this).parents('.note.edit');
+            var id = prnt.attr('id');
+        } else
+        {
+            var prnt = jQuery(this).parents('.movie_total_rating');
+            var id = prnt.attr('data-value');
+        }
+
+
+
+        jQuery.ajax({
+            type: 'post',
+            data: {
+                'oper': 'add_critic',
+                'id': id
+            },
+            url: crowdsource_url,
+            success: function (html) {
+
+                add_popup();
+                jQuery('.popup-content').html('<div id="' + id + '" class="default_popup"><h2>Add Critic review</h2><p>Please help improve RWT, add  a critics review link.</p>' + html + '</div>');
+                jQuery('input[id="action-popup"]').click();
+
+            }
+        });
+
+
+        return false;
+    });
+
 
     jQuery('body').on('click', '.add_pg_rating_button, .edit_family_rating', function (e) {
 
@@ -2769,7 +2842,7 @@ jQuery(document).ready(function () {
                 'oper': 'pg_rating',
                 'id': id
             },
-            url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/template/ajax/crowdsource.php",
+            url: crowdsource_url,
             success: function (html) {
 
                 add_popup();
@@ -2840,7 +2913,7 @@ jQuery(document).ready(function () {
                 data: {'oper': 'actor_crowd',
                     'id': id
                 },
-                url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/template/ajax/crowdsource.php",
+                url: crowdsource_url,
                 success: function (html) {
 
                     if (cont)
@@ -3181,6 +3254,77 @@ function init_gallery() {
 
 }
 
+
+function author_autocomplete(form_class = '') {
+    var $this = jQuery(form_class)
+    if ($this.hasClass('init_at')) {
+        return false;
+    }
+    $this.addClass('init_at');
+
+    var cname_form = $this.find('input.critic_name:not(:disabled)').first();
+    if (cname_form.length) {
+        var aid_form = $this.find('input.critic_id').first();
+        var aid = aid_form.attr('value');
+        if (aid > 0) {
+            cname_form.addClass('valid');
+        }
+
+        cname_form.closest('.row').after('<div class="crowd_items_search hide"><div class="advanced_search_menu crowd_items"><p class="advanced_search_head">Maybe you were looking for...<span class="advanced_search_head_close"></span></p><div class="search_results"></div></div></div>');
+        var $crowd_items_search = $this.find('.crowd_items_search').first();
+        $this.find('.advanced_search_head_close').click(function () {
+            $crowd_items_search.removeClass('show');
+            return false;
+        });
+       
+        cname_form.keyup(function (e) {
+            var $results = $this.find('.search_results').first();
+            aid_form.val(0);
+            cname_form.removeClass('valid');
+            
+            var keyword = cname_form.val();
+            if (keyword.length >= 2) {
+                $.ajax({
+                    type: 'POST',
+                    dataType: "json",
+                    url: crowdsource_url,
+                    data: {"action": "author_autocomplite", "keyword": keyword},
+                    success: function (response) {
+                        if (response.type == "ok") {
+                            $results.html('');
+                            for (var i = 0; i < response.data.length; i++) {
+                                var id = response.data[i]['id'];
+                                var title = response.data[i]['title'];
+                                $results.append('<div class="result" data-id="' + id + '" data-title="' + title + '">' + title + '</div>');
+                            }
+
+                            if (!$crowd_items_search.hasClass('show')) {
+                                $crowd_items_search.addClass('show');
+                            }
+
+                            $this.find('.result').click(function () {
+                                var $this_res = $(this);
+                                cname_form.val($this_res.attr('data-title'));
+                                var auto_aid = $this_res.attr('data-id');
+                                if (auto_aid > 0) {
+                                    cname_form.addClass('valid');
+                                }
+                                aid_form.val(auto_aid);
+                                $crowd_items_search.removeClass('show');
+                                return false;
+                            });
+
+                        } else {
+                            $crowd_items_search.removeClass('show');
+                        }
+
+
+                    }
+                });
+            }
+        });
+}
+}
 
 function loadScript($url, success = '') {
     jQuery.ajax({

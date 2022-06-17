@@ -57,47 +57,150 @@ class SimilarMovies
 
         return $resultarray;
     }
-
-    public static function get_movie_by_name($title)
+    public static function compare($type,$i1,$i2)
     {
-        $sql = "SELECT id from data_movie_imdb where title =? ORDER BY `data_movie_imdb`.`rating` DESC limit 1";
+        if ($type=='type' )
+        {
+            if ($i1==$i2)$r = 100;
+            else $r = 0;
+        }
+        else if ($type=='rating')
+        {
+            if (!$i1)
+            {
+                $i1=0;
+            }
+            if (!$i2)
+            {
+                $i2=0;
+            }
+            $sm = abs($i1*10-$i2*10);
+            if ($sm==0)
+            {
+                $sm=1;
+            }
+
+            $r = 100/$sm;
+            if ($r>100)$r=100;
+
+        }
+        else if ( $type=='year')
+        {
+            if (!$i1)
+            {
+                $i1=0;
+            }
+            if (!$i2)
+            {
+                $i2=0;
+            }
+            $sm = abs($i1-$i2);
+            if ($sm==0)
+            {
+                $sm=1;
+            }
+
+            $r = 100/$sm;
+
+        }
+        else
+        {
+            $sim = similar_text($i1, $i2, $r);
+        }
+
+
+        return $r;
+    }
+
+    public static function compare_data($r,$row_original)
+    {
+        $array_compare = array('type'=>1,'genre'=>2,'country'=>1,'language'=>1,'keywords'=>1,'rating'=>1,'year'=>1);
+
+
+        $array_movies_result=[];
+        foreach ($r as $row)
+        {
+
+           // echo $row['title'].' '.$row['id'].' vs '.$row_original['title'].' '.$row_original['id'].PHP_EOL;
+            $array_result =0;
+            foreach ($array_compare as $type=>$weight)
+            {
+                $rs = self::compare($type,$row[$type],$row_original[$type]);
+
+              //  echo $type.' '.$row[$type].' = '.$row_original[$type].' ( '.$rs.' )'.PHP_EOL;
+
+                $array_result+=$rs*$weight;
+
+            }
+            $array_movies_result[$row['id']]=$array_result;
+
+        }
+        arsort($array_movies_result);
+        //var_dump($array_movies_result);
+        $keys = array_keys($array_movies_result);
+        return $keys[0];
+
+
+
+
+    }
+
+    public static function get_movie_by_name($title,$row_original)
+    {
+        $sql = "SELECT * from data_movie_imdb where title =? ORDER BY ABS (`data_movie_imdb`.`productionBudget`)  DESC ,ABS (`data_movie_imdb`.`rating`)  DESC";
+
         $r = Pdo_an::db_results_array($sql,[$title]);
-        $id = $r[0]['id'];
+        if (count($r)>1)
+        {
+            $id = self::compare_data($r,$row_original);
+           /// var_dump($r);
+
+
+
+        }
+        else
+        {
+            $id  = $r[0]['id'];
+
+        }
+
+
 
         return $id;
     }
 
-    public static function find_movies_byname($resultarray)
+    public static function find_movies_byname($resultarray,$row_original)
     {
         $result = [];
         foreach ($resultarray as $index=>$name)
         {
-            $id = self::get_movie_by_name($name);
+            $id = self::get_movie_by_name($name,$row_original);
             if ($id)
             {
+
                 $result[$index]=$id;
             }
         }
         return $result;
     }
 
-    public static function save_data($id,$result_ids)
+    public static function save_data($id,$result_ids,$resultarray)
     {
         ///check
-
+        $resultarray= json_encode($resultarray);
         $result_ids = json_encode($result_ids);
 
         $data  = self::get_from_db($id);
         if ($data)
         {
             $mid = $data->id;
-            $sql ="UPDATE `cache_movies_similar` SET `data`=?,`last_update`=? WHERE `id` =?";
-            Pdo_an::db_results_array($sql,[$result_ids,time(),$mid]);
+            $sql ="UPDATE `cache_movies_similar` SET `titles`=?, `data`=?,`last_update`=? WHERE `id` =?";
+            Pdo_an::db_results_array($sql,[$resultarray,$result_ids,time(),$mid]);
         }
         else
         {
-            $sql="INSERT INTO `cache_movies_similar`(`id`, `movie_id`, `data`, `last_update`) VALUES (NULL,?,?,?)";
-            Pdo_an::db_results_array($sql,[$id,$result_ids,time()]);
+            $sql="INSERT INTO `cache_movies_similar`(`id`, `movie_id`, `titles` ,`data`, `last_update`) VALUES (NULL,?,?,?,?)";
+            Pdo_an::db_results_array($sql,[$id,$resultarray,$result_ids,time()]);
             $mid = Pdo_an::last_id();
 
         }
@@ -169,7 +272,7 @@ return json_encode($rs);
     public static function get_movies($id)
     {
 
-        $data  = self::get_from_db($id,14);
+         $data  = self::get_from_db($id,14);
         if ($data)
         {
             $result_ids = json_decode($data->data,1);
@@ -177,16 +280,17 @@ return json_encode($rs);
 
         else
         {
-            $sql = "SELECT title from data_movie_imdb where id =".intval($id);
-            $r = Pdo_an::db_fetch_row($sql);
-            $title = $r->title;
+            $sql = "SELECT * from data_movie_imdb where id =".intval($id);
+            $r = Pdo_an::db_results_array($sql);
+            $title = $r[0]['title'];
             $resultarray = self::get_data($title);
-            $result_ids = self::find_movies_byname($resultarray);
+            $result_ids = self::find_movies_byname($resultarray,$r[0]);
             if ($result_ids)
             {
-                self::save_data($id,$result_ids);
+                self::save_data($id,$result_ids,$resultarray);
             }
         }
+//return ;
 
         if ($result_ids)
         {

@@ -110,12 +110,17 @@ class CustomRating
     {
         echo '<h1>Movies Rating</h1>';
 
-        $array = get_option('movies_raiting_weight');
+        !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+        $value  =OptionData::get_options('','movies_raiting_weight');
+        if ($value) {
+            $array = unserialize($value);
+        }
+
         if (!$array)
         {
             $array=array(  'total_rwt_staff' => 5,  'total_rwt_audience' => 5, 'total_imdb' => 5, 'total_tomatoes' => 5, 'total_tmdb' => 5);
-
-            update_option('movies_raiting_weight', $array);
+            !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+             OptionData::set_option('',serialize($array),'movies_raiting_weight',1);
         }
         else
         {
@@ -200,7 +205,10 @@ class CustomRating
 
                 $data = json_decode($data, 1);
                 //var_dump($data);
-                update_option('custom_rating_data', $data);
+
+
+                !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+                OptionData::set_option('',serialize($data),'custom_rating_data',1);
                 echo 'ok';
 
                 return;
@@ -211,7 +219,8 @@ class CustomRating
 
                 $data = json_decode($data, 1);
                 //var_dump($data);
-                update_option('movies_raiting_weight', $data);
+                !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+                OptionData::set_option('',serialize($data),'movies_raiting_weight',1);
                 echo 'ok';
 
                 return;
@@ -292,7 +301,14 @@ class CustomRating
 
     public function get_data()
     {
-        $rating = get_option('custom_rating_data');
+
+        !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+        $value  =OptionData::get_options('','custom_rating_data');
+        if ($value) {
+
+            $rating = unserialize($value);
+        }
+
         if (!$rating || !$rating['PG_limit'])
         {
             $rating = [];
@@ -309,8 +325,9 @@ class CustomRating
             $rating['lgbt_warning'] = array('text' => 'gay relationship,homosexuality,gay sex,lesbian,gay subtext,gay man,transgender,lgbt,bisexual,gay dog','max_rating'=>'0-3.5');
             $rating['woke'] = array('text' => 'feminism,female protoganist,misogyny,female buisnes owner,male secretary,f rated,interracial','max_rating'=>'0-4');
 
+            !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+            OptionData::set_option('',serialize($rating),'custom_rating_data',1);
 
-            update_option('custom_rating_data', $rating);
         }
 
         if (!$rating['woke']) {

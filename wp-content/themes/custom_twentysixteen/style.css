@@ -4839,6 +4839,10 @@ button, input[type="submit"] {
     text-transform: uppercase;
 }
 
+button.in_process {
+    background-color: #999;
+}
+
 #secondary .mailpoet_form p.mailpoet_paragraph {
 
 }
