@@ -128,16 +128,16 @@ class CriticCrowd extends AbstractDB {
                 if ($youtube) {
                     $ts_updated = false;
                     $ts = $this->get_ts_status($cid);
-                    if ($debug){
+                    if ($debug) {
                         print_r($ts);
                     }
                     if ($ts) {
                         $ts_status = $ts->status;
-                        
+
                         $msg = "Info $cid. Ts status: $ts_status\n";
-                        if ($ts_status == 2){
+                        if ($ts_status == 2) {
                             $msg .= "Info $cid. Ts in post\n";
-                            $ts_updated = true;                             
+                            $ts_updated = true;
                         } else if ($ts_status == 0) {
                             $msg .= "Info $cid. No ts\n";
                             $ts_updated = true;
@@ -145,7 +145,7 @@ class CriticCrowd extends AbstractDB {
                     } else {
                         $msg = "Info $cid. No ts status\n";
                     }
-                    if ($debug){
+                    if ($debug) {
                         print $msg;
                     }
                     if (!$ts_updated) {
@@ -199,6 +199,8 @@ class CriticCrowd extends AbstractDB {
     private function add_post($crowd_item, $debug = false) {
         // TODO Validate bad words
         $data = array();
+        $curr_time = $this->curr_time();
+        $date = $curr_time;
         $ret = 0;
         $msg = '';
         $link = $crowd_item->link;
@@ -231,6 +233,7 @@ class CriticCrowd extends AbstractDB {
             // Get youtube data
             $result = $cp->yt_video_data($link);
             if ($result && $result->description) {
+                $date = strtotime($result->publishedAt);
                 $content = str_replace("\n", '<br />', $result->description);
             }
         } else {
@@ -255,9 +258,10 @@ class CriticCrowd extends AbstractDB {
         $type = 2;
         // Status publish
         $post_status = 1;
-        $date = $this->curr_time();
 
-        $date_add = $date;
+
+        $content = $this->cm->clear_utf8($content);
+        $date_add = $curr_time;
         $post_data = array(
             'date' => $date,
             'date_add' => $date_add,
@@ -272,6 +276,10 @@ class CriticCrowd extends AbstractDB {
             'view_type' => $view_type
         );
 
+        if ($debug){
+            print_r($post_data);
+        }
+        
         $post_id = $this->sync_insert_data($post_data, $this->db['posts'], $this->sync_client, $this->sync_data);
 
 
