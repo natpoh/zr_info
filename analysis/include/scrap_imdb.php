@@ -2093,7 +2093,8 @@ function update_all_audience_and_staff()
     global $table_prefix;
     $data = new RWT_RATING;
 
-    for ($type = 1; $type < 3; $type++) {
+    for ($type = 1; $type < 3; $type++)
+    {
 
         if ($type==1)
         {
@@ -2124,6 +2125,7 @@ where  m.state!=0  and p.status=1 ".$staff_type;
             $rwt_id = $r2['fid'];
 
             $result =PgRatingCalculate::rwt_audience($rwt_id,$type,1);
+            PgRatingCalculate::add_movie_rating($rwt_id,'',0,1);
             echo $i.' of '.$count. ' id=' . $rwt_id .' '.$type.'<br>'. PHP_EOL;
             print_r($result);
             echo '<br><hr><br>';
