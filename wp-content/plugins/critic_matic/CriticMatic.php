@@ -13,6 +13,7 @@ class CriticMatic extends AbstractDB {
     public $new_audience_count = 0;
     private $cp;
     private $cs;
+    private $ts;
 
     /*
      * Posts
@@ -249,12 +250,23 @@ class CriticMatic extends AbstractDB {
     public function get_cs() {
         // Get CriticSearch
         if (!$this->cs) {
-            if (!class_exists('CriticSearch')) {                
+            if (!class_exists('CriticSearch')) {
                 require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticSearch.php' );
             }
             $this->cs = new CriticSearch($this);
         }
         return $this->cs;
+    }
+
+    public function get_ts() {
+        if (!$this->ts) {
+            //init 
+            if (!class_exists('CriticMaticTrans')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticMaticTrans.php' );
+            }
+            $this->ts = new CriticMaticTrans($this->cm);
+        }
+        return $this->ts;
     }
 
     function admin_bar_render($wp_admin_bar) {

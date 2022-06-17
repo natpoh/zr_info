@@ -30,6 +30,7 @@ class CriticCrowd extends AbstractDB {
             'meta' => $table_prefix . 'critic_matic_posts_meta',
             'critic_crowd' => 'data_critic_crowd',
             'movie_imdb' => 'data_movie_imdb',
+            'transcriptions' => $table_prefix . 'critic_transcritpions',
         );
     }
 
@@ -116,6 +117,39 @@ class CriticCrowd extends AbstractDB {
                 if (!$in_index) {
                     continue;
                 }
+
+                $link = $item->link;
+                // Is youtube
+                $youtube = false;
+                if (strstr($link, 'https://www.youtube.com/watch?v=')) {
+                    $youtube = true;
+                }
+
+                if ($youtube) {
+                    $ts_updated = false;
+                    $ts = $this->get_ts_status($cid);
+                    if ($ts) {
+                        $ts_status = $ts->status;
+                        
+                        $msg = "Info $cid. Ts status: $ts_status\n";
+                        if ($ts_status == 2){
+                            $msg .= "Info $cid. Ts in post\n";
+                            $ts_updated = true;                             
+                        } else if ($ts_status == 0) {
+                            $msg .= "Info $cid. No ts\n";
+                            $ts_updated = true;
+                        }
+                    } else {
+                        $msg = "Info $cid. No ts status\n";
+                    }
+                    if ($debug){
+                        print $msg;
+                    }
+                    if (!$ts_updated) {
+                        continue;
+                    }
+                }
+
                 // Calculate rating
                 $movie_id = $item->rwt_id;
                 $movie = $this->get_movie_by_id($movie_id, true);
@@ -127,27 +161,27 @@ class CriticCrowd extends AbstractDB {
                 // Update crowd                
                 $critic_status = 2;
                 $data = array('critic_status' => $critic_status);
-                                
+
                 //Get meta
                 $movie_exist = $this->cm->get_movies_data($cid, $movie_id);
-                if ($debug){
+                if ($debug) {
                     print_r($movie_exist);
                 }
-                if ($movie_exist){
+                if ($movie_exist) {
                     $movie_exist_meta = $movie_exist[0];
                     $data['weight'] = $movie_exist_meta->rating;
                     // Update post status
                     $data['status'] = 1;
                     // Update meta state to Approved
-                    $meta_data = array('state'=>1);
+                    $meta_data = array('state' => 1);
                     $this->sync_update_data($meta_data, $movie_exist_meta->id, $this->db['meta'], $this->cm->sync_data, 5);
                     $msg = "Info: Add meta $cid\n";
                 } else {
                     // Can not find meta
                     $data['status'] = 2;
                     $msg = "Error: Can not find meta $cid\n";
-                }      
-                if ($debug){
+                }
+                if ($debug) {
                     print $msg;
                 }
                 $this->update_crowd($item->id, $data);
@@ -288,7 +322,7 @@ class CriticCrowd extends AbstractDB {
 
         // 2. Get post movie meta
         $movie_exist = $this->cm->get_movies_data($cid, $movie_id);
-       
+
         $msg = '';
 
         if ($post_publish && $movie_exist) {
@@ -344,6 +378,12 @@ class CriticCrowd extends AbstractDB {
         $dict[$id] = $movie;
 
         return $movie;
+    }
+
+    private function get_ts_status($pid = 0) {
+        $sql = sprintf("SELECT id, status FROM {$this->db['transcriptions']} WHERE pid=%d limit %d", (int) $pid);
+        $result = $this->db_fetch_row($sql);
+        return $result;
     }
 
 }
