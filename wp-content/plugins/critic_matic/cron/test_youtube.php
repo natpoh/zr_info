@@ -13,6 +13,12 @@ if ($_GET['p'] != $p) {
     return;
 }
 
+$json = false;
+if ($_GET['json']) {
+    $json = true;
+}
+
+
 $url = 'https://www.youtube.com/watch?v=DapcHLXSLPo';
 if ($_GET['url']) {
     $url = $_GET['url'];
@@ -27,4 +33,15 @@ $cp = new CriticParser();
 
 $data = $cp->yt_video_data($url);
 
-echo json_encode($data);
+if ($data) {
+
+    if ($json) {
+
+        echo json_encode($data);
+        
+    } else {
+        print '<pre>';
+        print_r($data);
+        print '</pre>';
+    }
+}
