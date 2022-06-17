@@ -313,6 +313,18 @@ function critic_matic_plugin_activation() {
     /* Critics table 
      * date - critic public date
      * date_add - last update date
+     *     public $post_type = array(
+      0 => 'Import',
+      1 => 'Feed',
+      2 => 'Manual',
+      3 => 'Parser',
+      4 => 'Transcript'
+      );
+      public $post_status = array(
+      1 => 'Publish',
+      0 => 'Draft',
+      2 => 'Trash'
+      );
      */
 
     $table_prefix = DB_PREFIX_WP_AN;
@@ -361,12 +373,12 @@ function critic_matic_plugin_activation() {
     $sql = "ALTER TABLE `" . $table_prefix . "critic_transcritpions` ADD `status` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('status'), $table_prefix . "critic_transcritpions");
-    
+
     // Add type
     $sql = "ALTER TABLE `" . $table_prefix . "critic_transcritpions` ADD `type` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('type'), $table_prefix . "critic_transcritpions");
-    
+
     /*
      * cid - campaign id
      * pid - post id

@@ -25,7 +25,9 @@ class MoviesParserCron extends MoviesAbstractDB {
 
     public function process_all($cron_type, $debug = false, $force = false) {
         $campaigns = $this->mp->get_campaigns(1, -1, 1, '', 'ASC', 0);
-
+        if ($debug){
+            print_r($campaigns);
+        }
         $count = 0;
         foreach ($campaigns as $campaign) {
             $count += $this->check_time_campaign($campaign, $cron_type, $debug, $force);
@@ -69,6 +71,10 @@ class MoviesParserCron extends MoviesAbstractDB {
 
     public function process_campaign($campaign, $options, $type_name, $debug = false) {
 
+        if ($debug){
+            print_r($type_name);
+        }
+        
         if ($type_name == 'arhive') {
             $count = $this->proccess_arhive($campaign, $options);
         } else if ($type_name == 'parsing') {

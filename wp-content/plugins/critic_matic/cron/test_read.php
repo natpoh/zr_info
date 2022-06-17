@@ -39,8 +39,9 @@ if ($result === FALSE) {
 }
 
 if ($data){
-    print '<h1>'.$data->title.'</h1>';
-    print '<h3>'.$data->author.'</h3>';
-    print $data->content;
+    $result = array('title'=>$data->title,'autor'=>$data->author,'content'=>$data->content);
+    $result_string = json_encode($result);
+
+echo $result_string;
 }
 

@@ -27,6 +27,4 @@ $cp = new CriticParser();
 
 $data = $cp->yt_video_data($url);
 
-print '<pre>';
-print_r($data);
-print '</pre>';
+echo json_encode($data);

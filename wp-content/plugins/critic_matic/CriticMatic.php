@@ -232,8 +232,14 @@ class CriticMatic extends AbstractDB {
         // Get CriticParser
         if (!$this->cp) {
             if (!class_exists('CriticParser')) {
+                if (!class_exists('AbstractDBWp')) {
+                    require_once( CRITIC_MATIC_PLUGIN_DIR . 'db/AbstractDBWp.php' );
+                }
                 require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticParser.php' );
             }
+
+
+
             $this->cp = new CriticParser($this->cp);
         }
         return $this->cp;
@@ -512,7 +518,7 @@ class CriticMatic extends AbstractDB {
         $sql = "SELECT" . $select
                 . " FROM {$this->db['posts']} p"
                 . " LEFT JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
-                . $atype_inner . $cid_inner . $ts_inner . $status_query . $cid_and . $and_date_add .$and_date. $aid_and . $type_and . $view_type_and . $ts_and . $meta_type_and . $atype_and . $and_orderby . $limit;
+                . $atype_inner . $cid_inner . $ts_inner . $status_query . $cid_and . $and_date_add . $and_date . $aid_and . $type_and . $view_type_and . $ts_and . $meta_type_and . $atype_and . $and_orderby . $limit;
 
 
         if (!$count) {
@@ -1227,6 +1233,12 @@ class CriticMatic extends AbstractDB {
         return $author;
     }
 
+    public function get_post_author($cid) {
+        $sql = sprintf("SELECT a.* FROM {$this->db['authors']} a INNER JOIN {$this->db['authors_meta']} am ON am.aid = a.id  WHERE am.cid=%d LIMIT 1", $cid);
+        $result = $this->db_fetch_row($sql);
+        return $result;
+    }
+
     public function get_author_by_name($name, $cache = false, $type = -1, $multi = false) {
         if ($cache) {
             static $dict;
@@ -1271,17 +1283,34 @@ class CriticMatic extends AbstractDB {
         return $arr;
     }
 
-    public function find_authors($name_or_id) {
+    public function find_authors($name_or_id, $limit = 10, $type = -1, $status = 1) {
         $name_or_id = strip_tags($name_or_id);
         $name_or_id = preg_replace('/[^\w\d ]+/', '', $name_or_id);
 
-        $and_id = '';
+        $and_id = ' AND';
         if (preg_match('/([0-9]+)/', $name_or_id, $match)) {
             $id = $match[1];
-            $and_id = ' id=' . $id . ' OR';
+            $and_id = 'AND id=' . $id . ' OR';
         }
 
-        $sql = "SELECT id, name, type FROM {$this->db['authors']} WHERE " . $and_id . " name LIKE '{$name_or_id}%'";
+        $and_type = '';
+        if ($type != -1) {
+            $and_type = sprintf(' AND type = %d', $type);
+        }
+
+        $and_status = '';
+        if ($status != -1) {
+            $and_status = sprintf(' AND status = %d', $status);
+        }
+
+
+        $and_limit = '';
+        if ($limit) {
+            $and_limit = sprintf(' LIMIT %d', $limit);
+        }
+
+        $sql = "SELECT id, name, type FROM {$this->db['authors']} WHERE id>0 ". $and_type . $and_status . $and_id ." name LIKE '{$name_or_id}%'" . $and_limit;
+        
         $results = $this->db_results($sql);
         return $results;
     }
@@ -1585,7 +1614,7 @@ class CriticMatic extends AbstractDB {
             $data = array(
                 'status' => $status,
                 'type' => $from,
-                'name' => $name,
+                'name' => stripslashes($name),
                 'options' => $opt_str
             );
 

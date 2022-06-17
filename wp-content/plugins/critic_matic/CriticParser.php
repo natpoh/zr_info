@@ -3092,6 +3092,45 @@ class CriticParser extends AbstractDBWp {
         $this->db_query($sql);
     }
 
+    public function clear_read($url, $content = '', $proxy = '') {
+        if (!$content) {
+            $content = $this->get_proxy($url, $proxy, $header);
+        }
+
+        $result = false;
+        $ret = array();
+
+        if ($content) {
+            // $content = "<body>Look at this cat: <img src='./cat.jpg'> 123 <img src=x onerror=alert(1)//></body>";
+            // TODO move service and pass to options
+            $pass = 'sdDclSPMF_32sd-s';
+            $service = 'http://148.251.54.53:8980/';
+
+            $data = array('p' => $pass, 'u' => $url, 'c' => $content);
+
+            // use key 'http' even if you send the request to https://...
+            $options = array(
+                'http' => array(
+                    'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+                    'method' => 'POST',
+                    'content' => http_build_query($data)
+                )
+            );
+            $context = stream_context_create($options);
+            $result = file_get_contents($service, false, $context);
+        }
+
+        if ($result) {
+            $result_data = json_decode($result);
+
+            if ($result_data) {
+                $ret = array('title' => $result_data->title, 'author' => $result_data->author, 'content' => $result_data->content);
+            }
+        }
+
+        return $ret;
+    }
+
     /*
      * Youtube API
      */
@@ -3112,12 +3151,10 @@ class CriticParser extends AbstractDBWp {
 
         $ret = array();
 
-
-
         if ($video_id) {
             $result = $this->find_youtube_data_api(array($video_id));
             if (isset($result[$video_id])) {
-                $ret = $result[$video_id];                
+                $ret = $result[$video_id];
             }
         }
 
