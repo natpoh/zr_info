@@ -127,7 +127,7 @@ class CrowdAdmin
                         'href' => '/wp-admin/admin.php?page='.$this->parrent_slug.'_actors_crowdsource&status=0',
                     ));
                 }
-                if ($rw_count) {
+                if ($rwc_count) {
                     $wp_admin_bar->add_menu(array(
                         'parent' => 'flag-report-crowd',
                         'id' => 'flag-report-crowd-actor',
@@ -167,7 +167,7 @@ class CrowdAdmin
             'critic_id' =>array('w'=>10, 'type' => 'textarea','editfalse'=>1),
             'weight' =>array('w'=>10, 'type' => 'textarea','editfalse'=>1),
             'bad_words' =>array('w'=>10, 'type' => 'textarea','editfalse'=>1),
-            'critic_status' =>array('w'=>10, 'type' => 'textarea','editfalse'=>1),
+            'critic_status'=>array('type'=>'select','options'=>'0:Waiting;1:Processed;2:Approved;3:Rejected'),
             'status'=>array('type'=>'select','options'=>'0:Waiting;1:Approved;2:Rejected')
         );
 

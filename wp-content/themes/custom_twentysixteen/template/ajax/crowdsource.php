@@ -72,17 +72,9 @@ function critic_crowd_validation($link, $row = []) {
                     $post_publish = true;
                 }
 
-                // 2. Gem post movie meta
-                $movies_meta = $cm->get_movies_data($cid);
-                $movie_exist = false;
-                if ($movies_meta) {
-                    foreach ($movies_meta as $meta) {
-                        if ($meta->fid == $id) {
-                            $movie_exist = true;
-                            break;
-                        }
-                    }
-                }
+                // 2. Get post movie meta
+                $movie_exist = $cm->get_movies_data($cid, $id);
+                
 
                 if ($post_publish && $movie_exist) {
                     // Post pulbish already linked
