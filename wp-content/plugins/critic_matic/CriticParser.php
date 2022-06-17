@@ -160,7 +160,7 @@ class CriticParser extends AbstractDBWp {
     public $yt_error_msg = '';
 
     public function __construct($cm = '') {
-        $this->cm = $cm;
+        $this->cm = $cm ? $cm : new CriticMatic();
         $table_prefix = DB_PREFIX_WP;
         $this->db = array(
             'posts' => DB_PREFIX_WP_AN . 'critic_matic_posts',
@@ -1421,7 +1421,7 @@ class CriticParser extends AbstractDBWp {
 
         $last_update = $date = $this->curr_time();
         $update_interval = isset($form_state['interval']) ? $form_state['interval'] : $def_opt['interval'];
-        $parser_status = $form_state['parser_status']?$form_state['parser_status']:0;
+        $parser_status = $form_state['parser_status'] ? $form_state['parser_status'] : 0;
         $author = $form_state['author'];
         $type = $form_state['type'];
 
@@ -1465,7 +1465,7 @@ class CriticParser extends AbstractDBWp {
             $result = $id;
         } else {
             // ADD
-            $data['date'] = $date;            
+            $data['date'] = $date;
             $result = $this->db_insert($data, $this->db['campaign']);
         }
         return $result;
@@ -3092,9 +3092,74 @@ class CriticParser extends AbstractDBWp {
         $this->db_query($sql);
     }
 
+    public function clear_read($url, $content = '', $proxy = '') {
+        if (!$content) {
+            $content = $this->get_proxy($url, $proxy, $header);
+        }
+
+        $result = false;
+        $ret = array();
+
+        if ($content) {
+            // $content = "<body>Look at this cat: <img src='./cat.jpg'> 123 <img src=x onerror=alert(1)//></body>";
+            // TODO move service and pass to options
+            $pass = 'sdDclSPMF_32sd-s';
+            $service = 'http://148.251.54.53:8980/';
+
+            $data = array('p' => $pass, 'u' => $url, 'c' => $content);
+
+            // use key 'http' even if you send the request to https://...
+            $options = array(
+                'http' => array(
+                    'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+                    'method' => 'POST',
+                    'content' => http_build_query($data)
+                )
+            );
+            $context = stream_context_create($options);
+            $result = file_get_contents($service, false, $context);
+        }
+
+        if ($result) {
+            $result_data = json_decode($result);
+
+            if ($result_data) {
+                $ret = array('title' => $result_data->title, 'author' => $result_data->author, 'content' => $result_data->content);
+            }
+        }
+
+        return $ret;
+    }
+
     /*
      * Youtube API
      */
+
+    public function yt_video_data($url) {
+
+        $keyword = $url;
+        //Get youtube urls
+        if ((strstr($keyword, 'youtube') || strstr($keyword, 'youtu.be'))) {
+            if (preg_match('#//www\.youtube\.com/embed/([a-zA-Z0-9\-_]+)#', $keyword, $match) ||
+                    preg_match('#//(?:www\.|)youtube\.com/(?:v/|watch\?v=|watch\?.*v=|embed/)([a-zA-Z0-9\-_]+)#', $keyword, $match) ||
+                    preg_match('#//youtu\.be/([a-zA-Z0-9\-_]+)#', $keyword, $match)) {
+                if (count($match) > 1) {
+                    $video_id = $match[1];
+                }
+            }
+        }
+
+        $ret = array();
+
+        if ($video_id) {
+            $result = $this->find_youtube_data_api(array($video_id));
+            if (isset($result[$video_id])) {
+                $ret = $result[$video_id];
+            }
+        }
+
+        return $ret;
+    }
 
     public function yt_total_posts($options) {
 

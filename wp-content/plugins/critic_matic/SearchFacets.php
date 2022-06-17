@@ -700,6 +700,12 @@ class SearchFacets extends AbstractDB {
                     $name = isset($this->cs->search_filters[$key][$slug]['title']) ? $this->cs->search_filters[$key][$slug]['title'] : $slug;
                     $tags[] = array('name' => $name, 'type' => $key, 'id' => $slug, 'tab' => 'critics', 'minus' => $minus);
                 }
+            }else if ($key == 'from') {
+                $value = is_array($value) ? $value : array($value);
+                foreach ($value as $slug) {
+                    $name = isset($this->cs->search_filters[$key][$slug]['title']) ? $this->cs->search_filters[$key][$slug]['title'] : $slug;
+                    $tags[] = array('name' => $name, 'type' => $key, 'id' => $slug, 'tab' => 'critics', 'minus' => $minus);
+                }
             }
         }
         return $tags;
@@ -1884,6 +1890,8 @@ class SearchFacets extends AbstractDB {
 
     public function show_from_author_facet($data, $more) {
         $keys = array();
+        $filter = 'from';
+
         foreach ($data as $value) {
             $keys[] = (int) $value->id;
         }
@@ -1908,7 +1916,7 @@ class SearchFacets extends AbstractDB {
         }
         $dates = $sort_dates;
 
-        $filter = 'from';
+
         $title = 'From author';
         $ftype = 'critics';
         $this->theme_facet_multi($filter, $dates, $title, $more, $ftype);

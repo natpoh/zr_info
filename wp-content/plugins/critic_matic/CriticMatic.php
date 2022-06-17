@@ -12,6 +12,8 @@ class CriticMatic extends AbstractDB {
     public $user_can;
     public $new_audience_count = 0;
     private $cp;
+    private $cs;
+    private $ts;
 
     /*
      * Posts
@@ -200,6 +202,7 @@ class CriticMatic extends AbstractDB {
         //Settings
         $this->settings_def = array(
             'parser_user_agent' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36',
+            'parser_proxy' => '',
             'parser_cookie_path' => ABSPATH . 'wp-content/uploads/critic_parser_cookies.txt',
             'parser_gdk' => '',
             'parser_gapp' => '',
@@ -232,11 +235,39 @@ class CriticMatic extends AbstractDB {
         // Get CriticParser
         if (!$this->cp) {
             if (!class_exists('CriticParser')) {
+                if (!class_exists('AbstractDBWp')) {
+                    require_once( CRITIC_MATIC_PLUGIN_DIR . 'db/AbstractDBWp.php' );
+                }
                 require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticParser.php' );
             }
+
+
+
             $this->cp = new CriticParser($this->cp);
         }
         return $this->cp;
+    }
+
+    public function get_cs() {
+        // Get CriticSearch
+        if (!$this->cs) {
+            if (!class_exists('CriticSearch')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticSearch.php' );
+            }
+            $this->cs = new CriticSearch($this);
+        }
+        return $this->cs;
+    }
+
+    public function get_ts() {
+        if (!$this->ts) {
+            //init 
+            if (!class_exists('CriticMaticTrans')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticMaticTrans.php' );
+            }
+            $this->ts = new CriticMaticTrans($this->cm);
+        }
+        return $this->ts;
     }
 
     function admin_bar_render($wp_admin_bar) {
@@ -512,7 +543,7 @@ class CriticMatic extends AbstractDB {
         $sql = "SELECT" . $select
                 . " FROM {$this->db['posts']} p"
                 . " LEFT JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
-                . $atype_inner . $cid_inner . $ts_inner . $status_query . $cid_and . $and_date_add .$and_date. $aid_and . $type_and . $view_type_and . $ts_and . $meta_type_and . $atype_and . $and_orderby . $limit;
+                . $atype_inner . $cid_inner . $ts_inner . $status_query . $cid_and . $and_date_add . $and_date . $aid_and . $type_and . $view_type_and . $ts_and . $meta_type_and . $atype_and . $and_orderby . $limit;
 
 
         if (!$count) {
@@ -1227,6 +1258,12 @@ class CriticMatic extends AbstractDB {
         return $author;
     }
 
+    public function get_post_author($cid) {
+        $sql = sprintf("SELECT a.* FROM {$this->db['authors']} a INNER JOIN {$this->db['authors_meta']} am ON am.aid = a.id  WHERE am.cid=%d LIMIT 1", $cid);
+        $result = $this->db_fetch_row($sql);
+        return $result;
+    }
+
     public function get_author_by_name($name, $cache = false, $type = -1, $multi = false) {
         if ($cache) {
             static $dict;
@@ -1271,17 +1308,34 @@ class CriticMatic extends AbstractDB {
         return $arr;
     }
 
-    public function find_authors($name_or_id) {
+    public function find_authors($name_or_id, $limit = 10, $type = -1, $status = 1) {
         $name_or_id = strip_tags($name_or_id);
         $name_or_id = preg_replace('/[^\w\d ]+/', '', $name_or_id);
 
-        $and_id = '';
+        $and_id = ' AND';
         if (preg_match('/([0-9]+)/', $name_or_id, $match)) {
             $id = $match[1];
-            $and_id = ' id=' . $id . ' OR';
+            $and_id = 'AND id=' . $id . ' OR';
         }
 
-        $sql = "SELECT id, name, type FROM {$this->db['authors']} WHERE " . $and_id . " name LIKE '{$name_or_id}%'";
+        $and_type = '';
+        if ($type != -1) {
+            $and_type = sprintf(' AND type = %d', $type);
+        }
+
+        $and_status = '';
+        if ($status != -1) {
+            $and_status = sprintf(' AND status = %d', $status);
+        }
+
+
+        $and_limit = '';
+        if ($limit) {
+            $and_limit = sprintf(' LIMIT %d', $limit);
+        }
+
+        $sql = "SELECT id, name, type FROM {$this->db['authors']} WHERE id>0 " . $and_type . $and_status . $and_id . " name LIKE '{$name_or_id}%'" . $and_limit;
+
         $results = $this->db_results($sql);
         return $results;
     }
@@ -1585,7 +1639,7 @@ class CriticMatic extends AbstractDB {
             $data = array(
                 'status' => $status,
                 'type' => $from,
-                'name' => $name,
+                'name' => stripslashes($name),
                 'options' => $opt_str
             );
 
@@ -1957,7 +2011,7 @@ class CriticMatic extends AbstractDB {
         if ($fid > 0) {
             $fid_and = sprintf(' AND fid=%d', $fid);
         }
-        $sql = sprintf("SELECT fid, type, state, rating FROM {$this->db['meta']} WHERE cid=%d" . $fid_and, (int) $cid);
+        $sql = sprintf("SELECT id, fid, type, state, rating FROM {$this->db['meta']} WHERE cid=%d" . $fid_and, (int) $cid);
         $result = $this->db_results($sql);
         return $result;
     }
@@ -2867,6 +2921,10 @@ class CriticMatic extends AbstractDB {
             $ss['posts_type_3'] = $form['posts_type_3'] ? 1 : 0;
         }
 
+        if (isset($form['parser_proxy'])) {
+            $ss['parser_proxy'] = base64_encode($form['parser_proxy']);
+        }
+
         $audience_desc_encode = array();
         if (isset($form['audience_descriptions'])) {
             foreach ($this->settings_def['audience_desc'] as $key => $value) {
@@ -2889,6 +2947,23 @@ class CriticMatic extends AbstractDB {
 
         // Update settings
         $this->settings = $this->get_settings();
+    }
+
+    public function get_parser_proxy() {
+        $proxy_arr = array();
+        $ss = $this->get_settings();
+        if ($ss['parser_proxy']) {
+            $proxy_text = base64_decode($ss['parser_proxy']);
+            
+            if ($proxy_text) {
+                if (strstr($proxy_text, "\n")) {
+                    $proxy_arr = explode("\n", $proxy_text);
+                } else {
+                    $proxy_arr = array($proxy_text);
+                }
+            }
+        }
+        return $proxy_arr;
     }
 
     /*

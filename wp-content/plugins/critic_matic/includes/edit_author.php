@@ -26,7 +26,7 @@ if ($aid) {
 
                 <label>
                     <span class="title"><?php print __('Name') ?></span>
-                    <span class="input-text-wrap"><input type="text" name="name" value="<?php print stripslashes($author->name) ?>"></span>
+                    <span class="input-text-wrap"><input type="text" name="name" value="<?php print $author->name ?>"></span>
                 </label>
 
 

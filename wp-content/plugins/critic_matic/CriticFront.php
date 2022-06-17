@@ -75,8 +75,12 @@ class CriticFront extends SearchFacets {
      * Critic functions
      */
 
-    public function theme_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tag_id = 0, $meta_type = array(), $min_rating = 0, $vote = 0) {
-        $posts = $this->get_last_posts($a_type, $limit, $movie_id, $start, $tag_id, $meta_type, $min_rating, $vote);
+    public function theme_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tag_id = 0, $meta_type = array(), $min_rating = 0, $vote = 0, $search = false) {
+        if ($search) {
+            $posts = $this->cs->get_last_critics($a_type, $limit, $movie_id, $start, $tag_id, $meta_type, $min_rating, $vote);
+        } else {
+            $posts = $this->get_last_posts($a_type, $limit, $movie_id, $start, $tag_id, $meta_type, $min_rating, $vote);
+        }
         $items = array();
         if (sizeof($posts)) {
             foreach ($posts as $item) {
@@ -214,10 +218,10 @@ class CriticFront extends SearchFacets {
         $result = array();
         foreach ($votes as $key => $vote) {
             $post_count = $this->get_post_count(2, $id, 0, $vote);
-            $result[$key]=$post_count;
+            $result[$key] = $post_count;
         }
-        
-        if ($cache){
+
+        if ($cache) {
             $dict[$id] = $result;
         }
         return $result;
@@ -419,13 +423,18 @@ class CriticFront extends SearchFacets {
         }
 
         // Find transcriptions
-        $time_codes = '';
+        $time_codes = array();
+        $desc_results = array();
         // if ($critic->type == 4) {
         if (strstr($content, '<div class="transcriptions">')) {
             if ($fullsize) {
-                $time_codes = $this->find_transcriptions($top_movie, $critic->id, $content);
+                $codes_arr = $this->find_transcriptions($top_movie, $critic->id, $content);
+                $time_codes = $codes_arr['time_codes'];
+                $desc_results = $codes_arr['desc_results'];
             }
-            $content = preg_replace('/<div class="transcriptions">.*<\/div>/Us', '', $content);
+            // $content = preg_replace('/<div class="transcriptions">.*<\/div>/Us', '', $content);
+            // Remove the content from posts witch transcriptions
+            $content = '';            
         }
         // }
         // Get meta state
@@ -467,6 +476,11 @@ class CriticFront extends SearchFacets {
                 $content = preg_replace($regv, '', $content);
             }
         }
+        
+        if ($desc_results){
+            $content= '<p>'.implode('</p><p>', $desc_results).'</p>';
+        }
+        
         // Author image
         $author = $this->cm->get_author($critic->aid);
         $author_options = unserialize($author->options);
@@ -482,8 +496,12 @@ class CriticFront extends SearchFacets {
 
 
         // Author name
-        $actorstitle = $author->name;
-        $actorstitle = $this->pccf_filter($actorstitle);
+        $author_title = $author->name;
+        $author_title = $this->pccf_filter($author_title);
+        $author_link = '/search/tab_critics/from_' . $author->id;
+        $author_title_link = '<a href="' . $author_link . '">' . $author_title . '</a>';
+
+        $actorsdata_link = '<a href="' . $author_link . '">' . $actorsdata . '</a>';
 
         // Tags
         $catdata = '';
@@ -550,10 +568,10 @@ class CriticFront extends SearchFacets {
 
             if ($fullsize == 2) {
                 $actorsresult = $video_embed . $title_str . $content . $review_bottom . $original_link .
-                        '<div class="amsg_aut">' . $actorsdata . '<div class="review_autor_name">' . $actorstitle . '<div class="a_cat">' . $catdata . '</div></div></div>';
+                        '<div class="amsg_aut">' . $actorsdata_link . '<div class="review_autor_name">' . $author_title_link . '<div class="a_cat">' . $catdata . '</div></div></div>';
             } else {
                 $actorsresult = '<div class="full_review_content_block' . $largest . '">' . $video_embed . $title_str . $content . '</div>' . $after_content . $review_bottom . $original_link . '
- <div class="amsg_aut">' . $actorsdata . '<div class="review_autor_name">' . $actorstitle . '<div class="a_cat">' . $catdata . '</div></div></div>';
+ <div class="amsg_aut">' . $actorsdata_link . '<div class="review_autor_name">' . $author_title_link . '<div class="a_cat">' . $catdata . '</div></div></div>';
             }
             // }
         } else if ($link) {
@@ -583,7 +601,7 @@ class CriticFront extends SearchFacets {
                     . '<a class="icntn' . $wp_core . '" href="' . $link . '">' . $video_img . $title_str . $content . '</a>'
                     . $review_bottom
                     . '<div class="ugol"><div></div></div></div>
-        <div class="amsg_aut">' . $actorsdata . '<div class="review_autor_name">' . $actorstitle . '<div class="a_cat">' . $catdata . '</div>'
+        <div class="amsg_aut">' . $actorsdata_link . '<div class="review_autor_name">' . $author_title_link . '<div class="a_cat">' . $catdata . '</div>'
                     . '</div>' . $reaction_data . '</div></div>';
         }
         return $actorsresult;
@@ -622,12 +640,19 @@ class CriticFront extends SearchFacets {
                 }
             }
 
+            $desc_results = array();
+
             if ($results) {
                 if (preg_match_all('/<b>([^<]+)<\/b>/', $results, $match)) {
                     $unique_words = array();
                     foreach ($match[1] as $value) {
                         $unique_words[$value] = $value;
                     }
+
+                    $desc = preg_replace('/<div class="transcriptions">.*<\/div>/Us', '', $content);
+                    $desc = preg_replace('/<br[^>]*>/', "\n", $desc);
+                    $desc = strip_tags($desc);
+
                     foreach ($unique_words as $key => $value) {
                         $w_arr = explode(' ', $key);
                         $reg = '/<span data-time="([0-9]+\:[0-9]+\:[0-9]+)[^"]*">([^<]*)(' . implode('(?: |<[\/]*span[^>]*>)', $w_arr) . ')([^<]*)/';
@@ -641,6 +666,14 @@ class CriticFront extends SearchFacets {
                                 $timecodes[$time_sec] = $time_str_small . ' "... ' . $match[2][$i] . ' <b>' . $match[3][$i] . '</b> ' . $match[4][$i] . ' ..."';
                             }
                         }
+
+                        $reg_desc = '/.*' . $value . '.*/';
+                        if (preg_match_all($reg_desc, $desc, $match)) {
+                            for ($i = 0; $i < sizeof($match[0]); $i++) {
+                                $result = $match[0][$i];
+                                $desc_results[] = str_replace($value, '<b>'.$value.'</b>', $result);
+                            }
+                        }
                     }
                 }
             }
@@ -648,7 +681,7 @@ class CriticFront extends SearchFacets {
 
         ksort($timecodes);
 
-        return $timecodes;
+        return array('time_codes' => $timecodes, 'desc_results' => $desc_results);
     }
 
     public function get_info_link($cid = 0, $mid = 0, $meta_state = 0) {
@@ -724,9 +757,10 @@ class CriticFront extends SearchFacets {
         $author = $this->cm->get_author($critic->aid);
 
         // Author name
-        $actorstitle = $author->name;
-
-        $actorstitle = $this->pccf_filter($actorstitle);
+        $author_title = $author->name;
+        $author_title = $this->pccf_filter($author_title);
+        $author_link = '/search/tab_critics/from_' . $author->id;
+        $author_title_link = '<a href="' . $author_link . '">' . $author_title . '</a>';
 
         // Tags
         $catdata = '';
@@ -820,25 +854,23 @@ class CriticFront extends SearchFacets {
         }
 
         if ($avatar_user) {
-
             $actorsdata = '<div class="a_img_container_audience" style="background: url(https://' . $_SERVER['HTTP_HOST'] . '/wp-content/uploads/avatars/custom/' . $avatar_user . '); background-size: cover;"></div>';
         } else {
             $actorsdata = '<span></span>';
         }
 
+        $actorsdata_link = '<a href="' . $author_link . '">' . $actorsdata . '</a>';
 
         // get link
         // $link = $link . '?a=' . $c_pid;
 
-
         $review_bottom = '<div class="review_bottom"><div class="r_type"></div><div class="r_right"><div class="r_date">' . $critic_addtime . '</div>' . $country_img . '</div></div>';
-
 
         if ($fullsize) {
 
             $actorsresult = '
-' . $content . $review_bottom . '<div class="amsg_aut">' . $actorsdata . '
-        <div class="review_autor_name">' . $actorstitle . '<div class="a_cat">' . $catdata . '</div></div>
+' . $content . $review_bottom . '<div class="amsg_aut">' . $actorsdata_link . '
+        <div class="review_autor_name">' . $author_title_link . '<div class="a_cat">' . $catdata . '</div></div>
        
     </div>';
         } else {
@@ -850,8 +882,8 @@ class CriticFront extends SearchFacets {
     </div>
         
         <div class="amsg_aut">
-            ' . $actorsdata . '
-            <div class="review_autor_name">' . $actorstitle . '
+            ' . $actorsdata_link . '
+            <div class="review_autor_name">' . $author_title_link . '
                 <div class="a_cat">' . $catdata . '</div>
             </div>
             ' . $reaction_data . '
@@ -1177,6 +1209,8 @@ class CriticFront extends SearchFacets {
     public function format_content($content = '', $crop_len = 0, $max_p = 0) {
         // Remove tags
         $content = str_replace('<br>', '\n', $content);
+        $content = str_replace('<br/>', '\n', $content);
+        $content = str_replace('<br />', '\n', $content);
         $content = str_replace('</p>', '\n', $content);
         $content = str_replace('</div>', '\n', $content);
         $content = strip_tags($content);
@@ -1567,7 +1601,7 @@ class CriticFront extends SearchFacets {
      * Home scrolls
      */
 
-    public function get_scroll($type = '', $movie_id = 0, $vote = 1) {
+    public function get_scroll($type = '', $movie_id = 0, $vote = 1, $search = false) {
         static $last_posts_id = '';
         static $last_movies_id = '';
 
@@ -1620,6 +1654,9 @@ class CriticFront extends SearchFacets {
                 }
             } else if ($type == 'audience_scroll') {
                 $arg['vote'] = $vote;
+                if ($search) {
+                    $arg['search'] = 1;
+                }
                 if ($this->cache_results) {
                     $filename = "scroll-aud-$last_posts_id-$vote-$movie_id";
                     $content = ThemeCache::cache('get_audience_scroll', false, $filename, 'def', $this, $arg);
@@ -1663,7 +1700,8 @@ class CriticFront extends SearchFacets {
     public function get_audience_scroll($arg = array()) {
         $vote = $arg['vote'] ? $arg['vote'] : 0;
         $movie_id = $arg['movie_id'] ? $arg['movie_id'] : 0;
-        $content = $this->get_audience_scroll_data($movie_id, $vote);
+        $search = $arg['search'] ? true : false;
+        $content = $this->get_audience_scroll_data($movie_id, $vote, $search);
         return $content;
     }
 
@@ -1814,7 +1852,7 @@ class CriticFront extends SearchFacets {
         return '';
     }
 
-    public function get_audience_scroll_data($movie_id = 0, $vote = 1) {
+    public function get_audience_scroll_data($movie_id = 0, $vote = 1, $search = false) {
         global $site_url;
         if (!$site_url)
             $site_url = 'https://' . $_SERVER['HTTP_HOST'] . '/';
@@ -1828,7 +1866,7 @@ class CriticFront extends SearchFacets {
         $a_type = 2;
         $limit = 10;
 
-        $posts = $this->theme_last_posts($a_type, $limit, $movie_id, 0, 0, array(), 0, $vote);
+        $posts = $this->theme_last_posts($a_type, $limit, $movie_id, 0, 0, array(), 0, $vote, $search);
         $count = $this->get_post_count($a_type, $movie_id, 0, $vote);
         //print_r($vote);
         $content = array();
