@@ -128,6 +128,9 @@ class CriticCrowd extends AbstractDB {
                 if ($youtube) {
                     $ts_updated = false;
                     $ts = $this->get_ts_status($cid);
+                    if ($debug){
+                        print_r($ts);
+                    }
                     if ($ts) {
                         $ts_status = $ts->status;
                         
@@ -381,7 +384,7 @@ class CriticCrowd extends AbstractDB {
     }
 
     private function get_ts_status($pid = 0) {
-        $sql = sprintf("SELECT id, status FROM {$this->db['transcriptions']} WHERE pid=%d limit %d", (int) $pid);
+        $sql = sprintf("SELECT id, status FROM {$this->db['transcriptions']} WHERE pid=%d limit 1", (int) $pid);
         $result = $this->db_fetch_row($sql);
         return $result;
     }

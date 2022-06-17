@@ -202,6 +202,7 @@ class CriticMatic extends AbstractDB {
         //Settings
         $this->settings_def = array(
             'parser_user_agent' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36',
+            'parser_proxy' => '',
             'parser_cookie_path' => ABSPATH . 'wp-content/uploads/critic_parser_cookies.txt',
             'parser_gdk' => '',
             'parser_gapp' => '',
@@ -2920,6 +2921,10 @@ class CriticMatic extends AbstractDB {
             $ss['posts_type_3'] = $form['posts_type_3'] ? 1 : 0;
         }
 
+        if (isset($form['parser_proxy'])) {
+            $ss['parser_proxy'] = base64_encode($form['parser_proxy']);
+        }
+
         $audience_desc_encode = array();
         if (isset($form['audience_descriptions'])) {
             foreach ($this->settings_def['audience_desc'] as $key => $value) {
@@ -2942,6 +2947,23 @@ class CriticMatic extends AbstractDB {
 
         // Update settings
         $this->settings = $this->get_settings();
+    }
+
+    public function get_parser_proxy() {
+        $proxy_arr = array();
+        $ss = $this->get_settings();
+        if ($ss['parser_proxy']) {
+            $proxy_text = base64_decode($ss['parser_proxy']);
+            
+            if ($proxy_text) {
+                if (strstr($proxy_text, "\n")) {
+                    $proxy_arr = explode("\n", $proxy_text);
+                } else {
+                    $proxy_arr = array($proxy_text);
+                }
+            }
+        }
+        return $proxy_arr;
     }
 
     /*

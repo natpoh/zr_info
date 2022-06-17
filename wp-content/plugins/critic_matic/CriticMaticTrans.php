@@ -157,7 +157,7 @@ class CriticMaticTrans extends AbstractDB {
             update_option($cron_option, $currtime);
 
             // Find transcripts from posts from three days ago. We need a lot of time to create transcripts for new YouTube videos.
-            $min_date = $currtime - 86400 * 3; // 3 days
+            $min_date = $currtime - 86400 * 1; // 1 day
             // 1. Get no ts posts
             $no_ts = $this->get_no_ts_posts($count, $min_date);
             if ($debug) {
@@ -180,15 +180,14 @@ class CriticMaticTrans extends AbstractDB {
         // Service
         // http://172.17.0.1:8009/?p=43dfsfgFe_dJD4S-fdds&proxy=107.152.153.239:9942&url=
         $service = 'http://148.251.54.53:8009/?p=43dfsfgFe_dJD4S-fdds';
-        $proxy = array(
-            '165.227.101.220:23128',
-            '185.135.80.156:23128',
-            '107.152.153.239:9942',
-        );
 
-        $proxy_num = array_rand($proxy);
-
-        $service = $service . "&proxy=" . $proxy[$proxy_num] . '&url=' . $link;
+        $proxy = $this->cm->get_parser_proxy();
+        $proxy_text = '';
+        if ($proxy) {
+            $proxy_num = array_rand($proxy);
+            $proxy_text = "&proxy=" . $proxy[$proxy_num];
+        }
+        $service = $service . $proxy_text . '&url=' . $link;
 
         $data = $cp->get_proxy($service, '', $headers);
         $code = $this->get_code($headers);

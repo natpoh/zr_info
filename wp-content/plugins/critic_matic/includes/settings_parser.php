@@ -23,6 +23,14 @@
             ?>
             <textarea name="parser_cookie_text" style="width:90%" rows="10"><?php print $cookie_text ?></textarea>
 
+            <div class="label">
+                <?php print __('Proxy') ?>
+            </div>
+            <?php
+            $proxy_text = htmlspecialchars(base64_decode($ss['parser_proxy']));
+            ?>
+            <textarea name="parser_proxy" style="width:90%" rows="10"><?php print $proxy_text ?></textarea>
+
             <h3>Google Service</h3>
 
             <div class="label">
@@ -36,6 +44,8 @@
             </div>
             <input type="text" name="parser_gapp" class="title" value="<?php print $ss['parser_gapp'] ?>" style="width:90%">
             <br />
+
+
 
             <?php wp_nonce_field('critic-feeds-options', 'critic-feeds-nonce'); ?>
             <br />
