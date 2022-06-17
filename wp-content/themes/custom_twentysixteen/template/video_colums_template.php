@@ -23,7 +23,7 @@ gmi('scroll before');
 $scrpts[] = '<script  type="text/javascript" >';
 foreach ($array_list as $value) {
     $scoll_id = $value['id'];
-    $data = $cfront->get_scroll($scoll_id);
+    $data = $cfront->get_scroll($scoll_id, 0, 1, true);
     if ($data) {
         $data = '"' . addslashes($data) . '"';
     } else {
@@ -49,13 +49,13 @@ foreach ($array_list as $value) {
             // Tabs logic
             $name_arr = $name;
             $t = '<ul class="tab-wrapper home-tabs">';
-            $i=0;
+            $i = 0;
             foreach ($name_arr as $k => $v) {
                 $active = '';
-                if ($i==0){
+                if ($i == 0) {
                     $active = ' active';
                 }
-                $t .= '<li class="nav-tab'.$active.'"><a href="#tab-'.$k.'" data-id="tab-'.$k.'">' . $v . '</a></li>';
+                $t .= '<li class="nav-tab' . $active . '"><a href="#tab-' . $k . '" data-id="tab-' . $k . '">' . $v . '</a></li>';
                 $i++;
             }
             $t .= '</ul>';

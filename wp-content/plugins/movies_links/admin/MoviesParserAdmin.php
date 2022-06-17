@@ -64,6 +64,7 @@ class MoviesParserAdmin extends ItemAdmin {
     public $parser_types = array(
         0 => 'Movies',
         1 => 'Actors',
+        2 => 'Links',
     );
     public $paser_actor_fields = array(
         'a' => 'First and Last Names',
@@ -127,6 +128,15 @@ class MoviesParserAdmin extends ItemAdmin {
         'delete_post' => 'Delete Post',
         'delete_arhive' => 'Delete Arhive and Post',
     );
+    public $bulk_actions_parser = array(
+        'start_campaign' => 'Start campaigns',
+        'stop_campaign' => 'Stop campaigns',
+        'trash_campaign' => 'Trash campaigns',
+            /* 'active_parser' => 'Active parser',
+              'inactive_parser' => 'Inactive parser',
+              'active_find' => 'Active find urls',
+              'inactive_find' => 'Inactive find urls' */
+    );
     public $post_arhive_status = array(
         1 => 'With arhive',
         0 => 'No arhive',
@@ -145,11 +155,10 @@ class MoviesParserAdmin extends ItemAdmin {
         1 => 'Done',
         2 => 'Error',
     );
-    
     public $parse_mode = array(
-        0=>'Curl',
-        1=>'Webdrivers',
-        2=>'Tor webdrivers',
+        0 => 'Curl',
+        1 => 'Webdrivers',
+        2 => 'Tor webdrivers',
     );
 
     /* Generate urls */
@@ -466,6 +475,9 @@ class MoviesParserAdmin extends ItemAdmin {
         if (!$curr_tab) {
             $page_url = $url;
 
+            // Bulk actions
+            $this->bulk_submit();
+
             // Author id            
             // Filter by status
             $home_status = -1;
@@ -535,7 +547,10 @@ class MoviesParserAdmin extends ItemAdmin {
         $page = $this->get_page();
         $per_page = $this->get_perpage();
 
-        //Sort
+        // Bulk actions
+        $this->bulk_submit();
+
+        // Sort
         $orderby = $this->get_orderby($this->sort_pages);
         $order = $this->get_order();
 
@@ -715,6 +730,27 @@ class MoviesParserAdmin extends ItemAdmin {
         return true;
     }
 
+    public function bulk_submit() {
+        if (isset($_POST['bulkaction'])) {
+
+            //[bulkaction] => draft [bulk-35660] => on [bulk-35659] => on
+            $b = $_POST['bulkaction'];
+            $ids = array();
+
+            foreach ($_POST as $key => $value) {
+                if (strstr($key, 'bulk-')) {
+                    $ids[] = (int) str_replace('bulk-', '', $key);
+                }
+            }
+
+            if ($b && sizeof($ids)) {
+                if (in_array($b, array_keys($this->bulk_actions_parser))) {
+                    $this->bulk_change_campaign_status($ids, $b);
+                }
+            }
+        }
+    }
+
     public function bulk_parser_submit() {
         if (isset($_POST['bulkaction'])) {
 
@@ -840,7 +876,7 @@ class MoviesParserAdmin extends ItemAdmin {
             $options = $opt_prev;
 
             // Update option logic 27.05.2022
-            $parsing = $options['links'];            
+            $parsing = $options['links'];
             $form_fields = array_keys($opt_prev['links']);
             foreach ($form_fields as $field) {
                 if (isset($form_state[$field])) {
@@ -878,6 +914,31 @@ class MoviesParserAdmin extends ItemAdmin {
             $result = $this->mp->add_campaing($status, $title, $site, $type);
         }
         return $result;
+    }
+
+    public function bulk_change_campaign_status($ids = array(), $b) {
+        /*
+          'start_campaign' => 'Start campaigns',
+          'stop_campaign' => 'Stop campaigns',
+          'trash_campaign' => 'Trash campaigns',
+          'active_parser' => 'Active parser',
+          'inactive_parser' => 'Inactive parser',
+          'active_find' => 'Active find urls',
+          'inactive_find' => 'Inactive find urls'
+         */
+        foreach ($ids as $id) {
+            if ($b == 'start_campaign') {
+                $status = 1;
+                $this->mp->update_campaign_status($id, $status);
+            } else if ($b == 'stop_campaign') {
+                $status = 0;
+                $this->mp->update_campaign_status($id, $status);
+            } else if ($b == 'trash_campaign') {
+                $status = 2;
+                $this->mp->update_campaign_status($id, $status);
+            }
+        }
+        return true;
     }
 
     public function get_campaign_tabs($mlr_name = '') {

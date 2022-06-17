@@ -33,8 +33,12 @@ if (class_exists('Pdo_wp')) {
         $vote = (int) $_GET['vote'];
     }
 
+    $search = false;
+    if (!$movie_id) {
+        $search = true;
+    }
 
-    print $cfront->get_scroll('audience_scroll', $movie_id, $vote);
+    print $cfront->get_scroll('audience_scroll', $movie_id, $vote, $search);
 
 
     exit();

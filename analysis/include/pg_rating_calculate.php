@@ -1225,9 +1225,6 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
                 // echo $rid.'<br>';
                 ///  var_dump($val);
 
-
-
-
                 if ($val['hollywood']) {
                     $hollywood_total[$rid]['data'] = $val['hollywood'];
                     $hollywood_total[$rid]['count'] ++;
@@ -1256,9 +1253,6 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
             }
 
             $result_summ_rating = [];
-
-
-
 
          //   $array_convert = array('r' => 'rating', 'h' => 'hollywood', 'p' => 'patriotism', 'm' => 'misandry', 'a' => 'affirmative', 'l' => 'lgbtq', 'g' => 'god', 'v' => 'vote');
 

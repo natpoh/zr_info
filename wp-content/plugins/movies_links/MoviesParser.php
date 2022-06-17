@@ -37,8 +37,8 @@ class MoviesParser extends MoviesAbstractDB {
                     'progress' => 0,
                     'del_pea' => 0,
                     'del_pea_int' => 1440,
-                    'tor_h' => 100,
-                    'tor_d' => 1000,
+                    'tor_h' => 20,
+                    'tor_d' => 100,
                 ),
                 'find_urls' => array(
                     'first' => '',

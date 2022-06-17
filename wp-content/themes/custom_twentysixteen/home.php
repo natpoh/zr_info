@@ -47,5 +47,19 @@ if (is_active_sidebar('sidebar-4')) {
 
 </div><!-- .content-area -->
 
+<?php if (function_exists('current_user_can')) {
+    $curent_user = current_user_can("administrator");
+}
 
+if ($curent_user) {
+
+    ?>
+    <style type="text/css">
+        .edit_area .edit_critic {
+            display: block!important;
+        }
+    </style>
+    <?php
+}
+?>
 <?php get_footer(); ?>

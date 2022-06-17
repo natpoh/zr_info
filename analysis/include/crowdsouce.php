@@ -132,7 +132,7 @@ class Crowdsource
 
         }
 
-        $select_type = '<select id="'.$array_replace[$cur_rtype].'" class="movie_link link_'.$ma_id.'">'.$option.'</select>';
+        $select_type = '<select id="'.$array_replace[$cur_rtype].'" data-id="movie_link link_'.$ma_id.'" class="movie_link link_'.$ma_id.'">'.$option.'</select>';
 
         if ($main)
         {
@@ -351,44 +351,39 @@ public static function front($datatype, $array_rows, $array_user = [], $id = '',
 
         $user_id = $array_user['id'];
 
-        if ($datatype == 'review_crowdsource')
-        {
-            $sql="SELECT * FROM `data_review_crowd` where `user` = ? and `review_id` = ? limit 1";
+        if ($datatype == 'review_crowdsource') {
+            $sql = "SELECT * FROM `data_review_crowd` where `user` = ? and `review_id` = ? limit 1";
         }
-        if ($datatype == 'actor_crowdsource')
-        {
-            $sql="SELECT * FROM `data_actors_crowd` where `user` = ? and `actor_id` = ? limit 1";
-        }
-        else if ($datatype=='moviespgcrowd') {
+        if ($datatype == 'actor_crowdsource') {
+            $sql = "SELECT * FROM `data_actors_crowd` where `user` = ? and `actor_id` = ? limit 1";
+        } else if ($datatype == 'moviespgcrowd') {
             $sql = "SELECT * FROM `data_movies_pg_crowd` where `user` = ? and `rwt_id` = ? limit 1";
         }
 
 
+        if ($sql) {
+            $rw = Pdo_an::db_results_array($sql, array($user_id, $id));
+            if ($rw[0]['id']) {
+                $row = $rw[0];
+                if ($row['status'] > 0 && !$array_user['admin']) {
+                    ///return
+                    $content = '<p class="user_message_info">You already left a comment.</p><div class="submit_data"><button class="button close" >Close</button></div>';
 
-            $rw = Pdo_an::db_results_array($sql,array($user_id,$id));
-        if ($rw[0]['id'])
-        {
-            $row=$rw[0];
-            if ($row['status']>0 && !$array_user['admin'])
-            {
-                ///return
-                $content = '<p class="user_message_info">You already left a comment.</p><div class="submit_data"><button class="button close" >Close</button></div>';
+                    return $content;
+                } else if ($row['status'] == 0 || $array_user['admin']) {
 
-                return  $content;
-            }
-            else if ($row['status']==0 || $array_user['admin'])
-            {
+                    $array_value = $row;
 
-                $array_value=$row;
 
+                }
 
             }
+
 
         }
-
-
     }
 
+    $content='<div class="form_msg"></div>';
 
     foreach ($array_rows as $name=>$value) {
 
@@ -409,7 +404,8 @@ public static function front($datatype, $array_rows, $array_user = [], $id = '',
                 $title = $value['title'];
                 $style = $value['style'];
                 $class = $value['class'];
-
+                $textval = $value['default_value'];
+                if (!$textval)$textval='';
 
                 $type = $value['type'];
                 $desc = $value['desc'];
@@ -417,12 +413,12 @@ public static function front($datatype, $array_rows, $array_user = [], $id = '',
 
                 if ($type == 'checkbox') {
 
-                    $textval = '';
+
                     if ($array_value[$name]) {
                         $textval = 'checked="checked"';
                     }
 
-                    $textarea = '<input type="checkbox" id="' . $name . '" class="' . $name . $class . '" ' . $textval . ' />';
+                    $textarea = '<input type="checkbox" data-id="' . $name . '" id="' . $name . '" class="' . $name . $class . '" ' . $textval . ' />';
 
                     $content .= '<div class="row default_checkbox ' . $style . '">' . $textarea . '<label for="' . $name . '" class="col_desc">' . $desc . '</label></div>';
 
@@ -430,13 +426,13 @@ public static function front($datatype, $array_rows, $array_user = [], $id = '',
 
                 if ($type == 'big_checkbox') {
 
-                    $textval = '';
+
                     if ($array_value[$name]) {
                         $textval = 'checked="checked"';
                         $display = 'style="display:block;"';
                     }
 
-                    $textarea = '<input type="checkbox" id="' . $name . '" class="' . $name . $class . '" ' . $textval . ' />';
+                    $textarea = '<input type="checkbox" data-id="' . $name . '"  id="' . $name . '" class="' . $name . $class . '" ' . $textval . ' />';
 
                     $content .= '<div class="big_checkbox ' . $style . '">' . $textarea . '<label for="' . $name . '" class="col_desc">' . $desc . '</label><div class="check_container" '.$display.'>' . $inner_content . '</div></div>';
 
@@ -455,7 +451,7 @@ public static function front($datatype, $array_rows, $array_user = [], $id = '',
                             }
                         }
 
-                        $option.='<div class="radio_block"><input type="radio" id="'.$i.'"
+                        $option.='<div class="radio_block"><input data-id="' . $name . '" type="radio" id="'.$i.'"
      name="'.$name.'" value="'.$i.'" class="radio '.$name.'">
     <label for="'.$i.'">'.$v.'</label></div>';
 
@@ -488,7 +484,7 @@ public static function front($datatype, $array_rows, $array_user = [], $id = '',
 
                   }
 
-                  $select = '<select '.$select_id.' class="'.$name.'">'.$option.'</select>';
+                  $select = '<select data-id="' . $name . '" '.$select_id.' class="'.$name.'">'.$option.'</select>';
                   if ($pt) {
                       $name = $name . $pt_cm;
                       $style = $style.$ptcls;
@@ -498,23 +494,57 @@ public static function front($datatype, $array_rows, $array_user = [], $id = '',
               }
                 if ($type=='textarea')
                 {
-                    $textval='';
+
                     if ($array_value[$name])
                     {
                        $textval= $array_value[$name];
                     }
-                    $textarea = '<textarea class="'.$name.'"  placeholder="'.$value['placeholer'].'">'.$textval.'</textarea>';
+                    $textarea = '<textarea data-id="' . $name . '"  class="'.$name.'"  placeholder="'.$value['placeholer'].'">'.$textval.'</textarea>';
                     $content.= self::setcol($name,$textarea,$desc,$style,$title);
                 }
                 if ($type=='input')
                 {
-                    $textval='';
+
                     if ($array_value[$name])
                     {
                         $textval= $array_value[$name];
                     }
 
-                    $textarea = '<input class="' . $name . $class . '" value="' . $textval . '" placeholder="' . $value['placeholer'] . '" >';
+                    $textarea = '<input data-id="' . $name . '" class="' . $name . $class . '" value="' . $textval . '" placeholder="' . $value['placeholer'] . '" >';
+                    $content .= self::setcol($name, $textarea, $desc, $style, $title);
+                }
+                if ($type=='disabled')
+                {
+
+                    if ($array_value[$name])
+                    {
+                        $textval= $array_value[$name];
+                    }
+
+                    $textarea = '<input data-id="' . $name . '" class="' . $name . $class . '" value="' . $textval . '" disabled="disabled" placeholder="' . $value['placeholer'] . '" >';
+                    $content .= self::setcol($name, $textarea, $desc, $style, $title);
+                }
+                if ($type=='hidden')
+                {
+
+                    if ($array_value[$name])
+                    {
+                        $textval= $array_value[$name];
+                    }
+
+                    $textarea = '<input data-id="' . $name . '" name="'.$name.'" class="' . $name . $class . '" value="' . $textval . '" type="hidden" >';
+                    $style = 'hidden';
+                    $content .= self::setcol('', $textarea, $desc, $style, '');
+                }
+                if ($type=='html')
+                {
+
+                    if ($array_value[$name])
+                    {
+                        $textval= $array_value[$name];
+                    }
+
+                    $textarea = '<div data-id="' . $name . '" class="' . $name . $class . ' input_content" >'.$textval.'</div>';
                     $content .= self::setcol($name, $textarea, $desc, $style, $title);
                 }
 
@@ -597,6 +627,7 @@ public static function Show_admin_table($datatype,$array_rows,$WP_include,$custo
     $subgrid = 1;
     $edit =1;
 
+
     if ($custom_table)
     {
         $sql = "SHOW COLUMNS FROM ".$custom_table;
@@ -622,7 +653,7 @@ public static function Show_admin_table($datatype,$array_rows,$WP_include,$custo
         $width=10;
         $edittipe='';
         $edittable = 'true';
-
+        $hidden ='';
 
         if ($array_rows[$name])
         {
@@ -644,6 +675,14 @@ public static function Show_admin_table($datatype,$array_rows,$WP_include,$custo
                     $edittipe = 'edittype:"textarea",editoptions: {  rows: 3,   cols: 40,  wrap: "off" }';
                 }
               }
+            if ($array_rows[$name]['hidden'])
+            {
+              $hidden =  ' hidden:true, ';
+            }
+            if ($array_rows[$name]['editfalse'])
+            {
+                $edittable='false';
+            }
         }
 
 
@@ -658,10 +697,12 @@ public static function Show_admin_table($datatype,$array_rows,$WP_include,$custo
                         key: true,
                         width: ".$width.",
                         editable:".$edittable.",
+                        ".$hidden."
                         ".$edittipe."
 
                     },";
     }
+
 
     $link =$_SERVER['REQUEST_URI'];// "/wp-admin/admin.php?page=crowdsource_".$datatype;
     //get counts
@@ -760,14 +801,15 @@ var first_run = 0;
 
         var grid = jQuery('.header_menu a.selected').html();
 
+        var data_type ='<?php echo $datatype; ?>';
 
 
-            var actor_id  = jQuery("#jqGrid").jqGrid('getCell',row_id,'actor_id');
+        var actor_id  = jQuery("#jqGrid").jqGrid('getCell',row_id,'actor_id');
             var movie  = jQuery("#jqGrid").jqGrid('getCell',row_id,'movie_id');
             var review_id  = jQuery("#jqGrid").jqGrid('getCell',row_id,'id');
 
 
-        if (movie)
+        if (data_type =='movies_pg_crowd')
         {
 
             jQuery.ajax({
@@ -785,10 +827,7 @@ var first_run = 0;
             });
         }
 
-
-
-
-        else if (actor_id) {
+        else if (data_type =='actors_crowd') {
             /// console.log(actor_id);
             ///jQuery('#'+subgrid_id).html('<img src="create_image.php?id='+actor_id+'&nocache=1" />');
             jQuery.ajax({
@@ -804,7 +843,42 @@ var first_run = 0;
                 }
             });
         }
-        else if (review_id)
+        else if (data_type =='critic_crowd')
+        {
+            var re = /(\<[^\>]+\>.([0-9]+))/;
+            review_id = review_id.replace(re, "$2");
+
+            jQuery.ajax({
+                type: "POST",
+                url: "<?php echo $home_url ?>wp-content/themes/custom_twentysixteen/template/ajax/crowdsource.php",
+
+                data: ({
+                    oper: 'crowd_submit',
+                    type:'critic_crowd_link',
+                    'admin_view': review_id,
+                }),
+                success: function (html) {
+
+                    var obj = JSON.parse(html);
+                    var data = obj.critic_data;
+
+
+                    jQuery('#'+subgrid_id).html(data);
+                    //add link to sritic matic
+                    var td = jQuery('td[title="'+review_id+'"][aria-describedby="jqGrid_id"]');
+                   // var prnt = td.parents('tr.jqgrow');
+                   // var id = prnt.find('td[aria-describedby="jqGrid_review_id"]').html();
+
+                    jQuery('#'+subgrid_id+' .submit_data').remove();
+
+
+                   // jQuery('h2.r_info').after('<a href="<?php echo $home_url ?>wp-admin/admin.php?page=critic_matic&pid='+id+'"> View Review in "Critic Matic"</a>');
+                }
+            });
+
+        }
+
+        else if (data_type =='review_crowd')
         {
             var re = /(\<[^\>]+\>.([0-9]+))/;
             review_id = review_id.replace(re, "$2");
@@ -868,7 +942,6 @@ var first_run = 0;
             multiselect: true,
             beforeRequest:function(){
 
-                console.log(typeof check_request);
 
                 if (typeof check_request=='function')
                 {
@@ -904,6 +977,9 @@ var first_run = 0;
                 }
             },
             afterInsertRow : function( row_id, rowdata, rawdata) {
+
+                var data_type = '<?php echo  $datatype; ?>';
+
             ///console.log( row_id, rowdata, rawdata);
             //     if (rowdata.add_time) {
             //         let timeStampCon = convertTimestamp(rowdata.add_time);
@@ -917,6 +993,20 @@ var first_run = 0;
                 //if (rowdata.id) {
                   ///  $('#jqGrid').jqGrid('setCell', row_id, 'id', '<input id="check_'+rowdata.id+'" class="ocheck" type="checkbox"> '+rowdata.id);
                 //}
+
+
+                if (data_type =='critic_crowd')
+                {
+
+                    if (rowdata.review_id && rowdata.review_id!=0) {
+                        $('#jqGrid').jqGrid('setCell', row_id, 'review_id', '<a target="_blank" href="/wp-admin/admin.php?page=critic_matic&pid='+rowdata.review_id+'">'+rowdata.review_id+'</a>', {'color': 'blue'});
+                    }
+                    if (rowdata.critic_id && rowdata.critic_id!=0) {
+                        $('#jqGrid').jqGrid('setCell', row_id, 'critic_name', '<a target="_blank" href="/wp-admin/admin.php?page=critic_matic_authors&aid='+rowdata.critic_id+'">'+rowdata.critic_name+'</a>', {'color': 'blue'});
+                    }
+
+
+                }
 
                 if (rowdata.link) {
                     $('#jqGrid').jqGrid('setCell', row_id, 'link', '<a target="_blank" href="'+rowdata.link+'">'+rowdata.link+'</a>', {'color': 'blue'});

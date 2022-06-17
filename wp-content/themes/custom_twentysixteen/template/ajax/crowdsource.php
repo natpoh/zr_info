@@ -2,16 +2,215 @@
 
 if (!defined('ABSPATH'))
     define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
-//DB config
+
+// DB config
 !defined('DB_HOST_AN') ? include ABSPATH . 'analysis/db_config.php' : '';
-//Abstract DB
+// Abstract DB
 !class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
 
 !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
 
+
+// Critic matic
 if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
     define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
     require_once( CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php' );
+}
+
+function critic_crowd_validation($link, $row = []) {
+    !class_exists('GETCURL') ? include ABSPATH . "analysis/include/get_curl.php" : '';
+
+
+
+    $id = intval($_POST['id']);
+
+    $error = array();
+
+    if (!$link) {
+        $error['link'] = 'No link';
+    }
+
+    $title_type = 'input';
+    $critic_name_type = 'input';
+
+    if ($link) {
+        if ($row) {
+            $id = $row->rwt_id;
+            $content = $row->content;
+            $title = $row->title;
+            $author = $row->critic_name;
+            $author_id = $row->critic_id;
+            $cid = $row->review_id;
+        } else {
+
+            $cm = new CriticMatic();
+            $cp = $cm->get_cp();
+
+            ///validate link
+            ///1 check link on critic bd
+
+            $youtube = false;
+            $reg_v = '#youtu(\.)*be(\.com)*\/(watch\?v\=)*([a-zA-Z0-9_-]+)#';
+            if (preg_match($reg_v, $link, $match)) {
+                $link = 'https://www.youtube.com/watch?v=' . $match[4];
+                $youtube = true;
+            }
+
+            $link_hash = $cm->link_hash($link);
+            $post_exist = $cm->get_post_by_link_hash($link_hash);
+            $author_id = 0;
+            $cid = 0;
+
+
+            $array_result = array();
+            if ($post_exist) {
+                // 1. Get post status
+                $post_publish = false;
+                $cid = $post_exist->id;
+
+                if ($post_exist->status == 1) {
+                    $post_publish = true;
+                }
+
+                // 2. Gem post movie meta
+                $movies_meta = $cm->get_movies_data($cid);
+                $movie_exist = false;
+                if ($movies_meta) {
+                    foreach ($movies_meta as $meta) {
+                        if ($meta->fid == $id) {
+                            $movie_exist = true;
+                            break;
+                        }
+                    }
+                }
+
+                if ($post_publish && $movie_exist) {
+                    // Post pulbish already linked
+                    $error['link'] = 'The post already exist';
+                } else {
+                    $author_obj = $cm->get_post_author($cid);
+
+                    $title = $post_exist->title;
+                    if ($title) {
+                        $title_type = 'disabled';
+                    }
+                    $author = $author_obj->name;
+                    if ($author) {
+                        $critic_name_type = 'disabled';
+                    }
+                    $author_id = $author_obj->id;
+                    $content = $post_exist->content;
+
+                    if ($post_publish) {
+                        // Need add a new movie to post
+                    } else {
+                        // Need publish post
+                        if (!$movies_meta) {
+                            // Need add a new movie to post
+                        }
+                    }
+                }
+            } else {
+
+                //add data
+                ///2 get content
+                if ($youtube) {
+                    $link = 'https://www.youtube.com/watch?v=' . $match[4];
+                    ///get youtube data
+                    $result = $cp->yt_video_data($link);
+                    if ($result) {
+                        $title = $result->title;
+                        $author = $result->channelTitle;
+                        $author_obj = $cm->get_author_by_name($author);
+                        if ($author_obj) {
+                            // author valid
+                            $author_id = $author_obj->id;
+                        }
+                        $content = '<iframe width="560" height="315" src="https://www.youtube.com/embed/' . $match[4] . '" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+                    } else {
+                        $error['link'] = 'Can not get the data from Youtube URL';
+                    }
+                } else {
+                    ///get main data
+                    $result = $cp->clear_read($link);
+                    if ($result) {
+                        $title = $result['title'];
+                        $author = $result['author'];
+                        if ($author) {
+                            $author_obj = $cm->get_author_by_name($author);
+                            if ($author_obj) {
+                                // author valid
+                                $author_id = $author_obj->id;
+                            }
+                        }
+                        $content = $result['content'];
+                        if (!$title && !$content) {
+                            $error['link'] = 'Can not get the data from URL';
+                        }
+                    } else {
+                        $error['link'] = 'Can not get the data from URL';
+                    }
+                }
+            }
+        }
+
+        if ($content) {
+            ////create data
+
+            include($_SERVER['DOCUMENT_ROOT'] . '/wp-content/themes/custom_twentysixteen/template/movie_single_template.php');
+
+            $chead = template_single_movie_small($id);
+
+            $array_user = Crowdsource::get_user();
+
+            $array_rows = array(
+                'link' => array('type' => 'disabled', 'title' => 'Link to the review source', 'default_value' => $link),
+                'title' => array('type' => $title_type, 'placeholer' => 'title', 'title' => 'Review title', 'default_value' => $title),
+                'critic_name' => array('type' => $critic_name_type, 'placeholer' => 'Critic name', 'title' => 'Autor name', 'default_value' => $author),
+                'critic_id' => array('type' => 'hidden', 'default_value' => $author_id),
+                'review_id' => array('type' => 'hidden', 'default_value' => $cid),
+                'content' => array('type' => 'html', 'title' => 'Review content', 'default_value' => $content),
+            );
+
+
+            $content = Crowdsource::front('critic_crowd_result', $array_rows, $array_user, $id);
+            $array_result['critic_data'] = $chead . $content;
+        }
+    }
+    if ($error) {
+        $array_result['error'] = $error;
+    }
+
+
+    echo json_encode($array_result);
+}
+
+if (isset($_POST['action']) && $_POST['action'] == 'author_autocomplite') {
+
+    $keyword = isset($_POST['keyword']) ? strip_tags(stripslashes($_POST['keyword'])) : '';
+    $ret = array('type' => 'no', 'data' => array());
+    if ($keyword) {
+        $limit = 6;
+        // Only pro authors
+        $author_type = 1;
+        $cm = new CriticMatic();
+        $results = $cm->find_authors($cm->escape($keyword), $limit, $author_type);
+
+        if (sizeof($results)) {
+            $ret['type'] = 'ok';
+            foreach ($results as $item) {
+                $type = $cm->get_author_type($item->type);
+                $title = $item->name;
+                $ret['data'][] = array('id' => $item->id, 'title' => $title);
+            }
+        }
+    }
+    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+        print json_encode($ret);
+    } else {
+        header("Location: " . $_SERVER["HTTP_REFERER"]);
+    }
+    exit();
 }
 
 if (isset($_POST['oper'])) {
@@ -25,10 +224,63 @@ if (isset($_POST['oper'])) {
 
     if ($oper == 'crowd_submit') {
 
-        $array_crowd = array('actor_crowdsource' => 'actors_crowd', 'moviespgcrowd' => 'movies_pg_crowd', 'review_crowdsource' => 'review_crowd');
+
+
+
+        $array_crowd = array('actor_crowdsource' => 'actors_crowd', 'moviespgcrowd' => 'movies_pg_crowd', 'review_crowdsource' => 'review_crowd', 'critic_crowd_link' => 'critic_crowd_link', 'critic_crowd_result' => 'critic_crowd');
 
         $type = $_POST['type'];
         $data = $_POST['data'];
+
+
+        if ($array_crowd[$type] == 'critic_crowd_link') {
+            $error = [];
+
+
+            $data = json_decode($data, 1);
+
+            $link = strip_tags($data['link']);
+            $row = [];
+
+
+            if (isset($_POST['admin_view'])) {
+                $rid = intval($_POST['admin_view']);
+
+                $sql = "select * from `data_critic_crowd` where id=" . $rid;
+                $row = Pdo_an::db_fetch_row($sql);
+                $link = $row->link;
+            } else {
+
+                if ($link) {
+                    if (!filter_var($link, FILTER_VALIDATE_URL)) {
+                        $data_obj['link'] = '';
+                        $error['link'] = 'Link url is not valid';
+                    }
+                }
+
+                ///check link
+
+                $sql = "SELECT id FROM `data_critic_crowd` where `link` = ? limit 1";
+                $count_link = Pdo_an::db_results_array($sql, [$link]);
+
+                if ($count_link) {
+                    $array_result = array('critic_data' => '<p class="user_message_info">This review has already been added.</p><div class="submit_data"><button class="button close" >Close</button></div>');
+                    echo json_encode($array_result);
+
+
+                    return;
+                }
+
+                if ($error) {
+                    echo json_encode(array('error' => $error));
+                    return;
+                }
+            }
+
+            critic_crowd_validation($link, $row);
+            return;
+        }
+
 
         //////////get user
 
@@ -55,7 +307,8 @@ if (isset($_POST['oper'])) {
                     $error['image'] = 'image url is not valid';
                 }
             }
-            $link = $data_obj['link'];
+            $link = strip_tags($data_obj['link']);
+            $link = trim(strip_tags($link));
             if ($link) {
                 if (!filter_var($link, FILTER_VALIDATE_URL)) {
                     $data_obj['link'] = '';
@@ -68,14 +321,14 @@ if (isset($_POST['oper'])) {
             $data_array = [];
             $oper_update = "";
             $reqest_field = '';
-
+            $reqest_field_dop = '';
 
             if ($array_crowd[$type] == 'review_crowd') {
                 $array_movies = [];
 
 
                 foreach ($data_obj as $i => $v) {
-                    if (strstr($i, 'crowd_movie_autoinput')) {
+                    if ($i == 'incorrect_item_inner') {
 
                         unset($data_obj[$i]);
                     }
@@ -92,10 +345,8 @@ if (isset($_POST['oper'])) {
                 $reqest_field = 'review_id';
 
                 $data_obj['movies'] = json_encode($array_movies);
-            }
-
-            if ($array_crowd[$type] == 'actors_crowd') {
-                ///add name from autors
+            } else if ($array_crowd[$type] == 'actors_crowd') {
+                ///add name from authors
 
                 $sql = "SELECT `name` FROM `data_actors_imdb` where id = " . $id;
                 $name_array = Pdo_an::db_fetch_row($sql);
@@ -105,7 +356,7 @@ if (isset($_POST['oper'])) {
                 $data_obj['actor_id'] = $id;
                 $reqest_field = 'actor_id';
             } else if ($array_crowd[$type] == 'movies_pg_crowd') {
-                ///add name from autors
+                ///add name from authors
 
                 $sql = "SELECT * FROM `data_movie_imdb` where id = " . $id;
                 $name_array = Pdo_an::db_fetch_row($sql);
@@ -116,8 +367,25 @@ if (isset($_POST['oper'])) {
                 $data_obj['movie_id'] = $imdb_id;
                 $data_obj['rwt_id'] = $id;
                 $reqest_field = 'rwt_id';
+            } else if ($array_crowd[$type] == 'critic_crowd') {
+                ///add name from authors
+
+                $sql = "SELECT * FROM `data_movie_imdb` where id = " . $id;
+                $name_array = Pdo_an::db_fetch_row($sql);
+                $title = $name_array->title;
+                $imdb_id = $name_array->movie_id;
+
+                $data_obj['movie_title'] = $title;
+                $data_obj['rwt_id'] = $id;
+                $reqest_field = '';
+                $data_obj['review_id'] = intval($data_obj['review_id']);
+                $data_obj['critic_id'] = intval($data_obj['critic_id']);
+
+                $reqest_field = 'rwt_id';
+                $reqest_field_dop = array('r' => 'and link = ? ', 'a' => strip_tags($data_obj['link']));
             }
-            
+
+
             $cm = new CriticMatic();
             $remote_ip = $cm->get_remote_ip();
 
@@ -161,7 +429,6 @@ if (isset($_POST['oper'])) {
 
 
 
-
             if ($data_obj) {
                 foreach ($data_obj as $row => $value) {
                     if ($row != 'button submit_user_data' && $row != 'button close') {
@@ -172,13 +439,22 @@ if (isset($_POST['oper'])) {
                     }
                 }
 
-                if ($oper_insert_colums && $user_id) {
-
-                    $sql = "SELECT id FROM `data_" . $array_crowd[$type] . "` where `user` = ? and `" . $reqest_field . "` = ? limit 1";
+                if ($oper_insert_colums && $user_id && $reqest_field) {
 
 
 
-                    $rw = Pdo_an::db_results_array($sql, array($user_id, $id));
+
+                    if ($reqest_field_dop) {
+                        $sql = "SELECT id FROM `data_" . $array_crowd[$type] . "` where `user` = ? and `" . $reqest_field . "` = ? " . $reqest_field_dop['r'] . " limit 1";
+                        $rw = Pdo_an::db_results_array($sql, array($user_id, $id, $reqest_field_dop['a']));
+                    } else {
+                        $sql = "SELECT id FROM `data_" . $array_crowd[$type] . "` where `user` = ? and `" . $reqest_field . "` = ? limit 1";
+                        $rw = Pdo_an::db_results_array($sql, array($user_id, $id));
+                    }
+
+
+
+
                     if ($rw[0]['id']) {
                         $uddate_id = $rw[0]['id'];
                     }
@@ -194,11 +470,10 @@ if (isset($_POST['oper'])) {
                 } else {
                     $inser_sql = "INSERT INTO `data_" . $array_crowd[$type] . "`(`id` " . $oper_insert_colums . " ) VALUES (NULL " . $oper_insert_data . " )";
                     Pdo_an::db_results_array($inser_sql, $data_array);
-                    $uddate_id =Pdo_an::last_id();
+                    $uddate_id = Pdo_an::last_id();
                 }
-
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', "data_" . $array_crowd[$type], array('id' => $uddate_id), 'crowsource',5);
+                Import::create_commit('', 'update', "data_" . $array_crowd[$type], array('id' => $uddate_id), 'crowsource', 5);
 
 
 
@@ -238,8 +513,7 @@ if (isset($_POST['oper'])) {
 
         //////movie
         if (isset($_POST['movie']))
-            ;
-        {
+            ; {
             $movie_id = $_POST['movie'];
             $ma_id = intval($movie_id);
         }
@@ -255,8 +529,7 @@ if (isset($_POST['oper'])) {
             $array_user['id'] = $user_id;
             $array_user['admin'] = 1;
             $only_edit = 1;
-        }
-        else {
+        } else {
             if (!$id || !$ma_id) {
                 return;
             }
@@ -324,7 +597,7 @@ if (isset($_POST['oper'])) {
 
                 if ($rw[0]['status'] > 0 && !$only_edit) {
                     ///return
-                    $content = '<!--u '.$user_id.' s '.$rw[0]['status'].' --><p class="user_message_info">You already left a comment.</p><div class="submit_data"><button class="button close" >Close</button></div>';
+                    $content = '<!--u ' . $user_id . ' s ' . $rw[0]['status'] . ' --><p class="user_message_info">You already left a comment.</p><div class="submit_data"><button class="button close" >Close</button></div>';
 
                     echo $content;
                     return;
@@ -385,7 +658,7 @@ if (isset($_POST['oper'])) {
 
         if (!$only_edit) {
             $array_rows = array(
-                'incorrect_item' => array('class' => ' crowd_movie_autoinput', 'type' => 'input', 'placeholer' => 'type movies, tv, games', 'title' => 'Add other items to the review'),
+                'incorrect_item_inner' => array('class' => ' crowd_movie_autoinput', 'type' => 'input', 'placeholer' => 'type movies, tv, games', 'title' => 'Add other items to the review'),
             );
 
             $content_input = Crowdsource::front('', $array_rows, $array_user, $id, 1, $inner_content);
@@ -491,6 +764,27 @@ if (isset($_POST['oper'])) {
         );
 
         $content = Crowdsource::front('moviespgcrowd', $array_rows, $array_user, $id);
+        echo $chead . $content;
+    } else if ($oper == 'add_critic') {
+
+
+        include($_SERVER['DOCUMENT_ROOT'] . '/wp-content/themes/custom_twentysixteen/template/movie_single_template.php');
+
+
+        $id = intval($_POST['id']);
+
+
+        $chead = template_single_movie_small($id);
+
+        $array_user = Crowdsource::get_user();
+
+        $array_rows = array(
+            'link' => array('type' => 'input', 'placeholer' => 'link', 'title' => 'Add a link to the review source'),
+        );
+
+        $content = Crowdsource::front('critic_crowd_link', $array_rows, $array_user, $id);
+
+
         echo $chead . $content;
     }
 }

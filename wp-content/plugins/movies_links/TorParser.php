@@ -23,13 +23,12 @@ class TorParser extends MoviesAbstractDB {
     );
     public $service_status = array(
         1 => 'Active',
-        5 => 'Used',
         0 => 'Inactive',
         3 => 'Reboot',
         4 => 'Error',
         2 => 'Trash'
     );
-    public $sort_pages = array('date', 'id', 'ip', 'drivers', 'dst_url', 'user_agents', 'url_meta');
+    public $sort_pages = array('date', 'id', 'ip', 'drivers', 'dst_url', 'user_agents', 'url_meta', 'last_upd', 'last_reboot', 'status');
 
     public function __construct($ml = '') {
         $this->ml = $ml ? $ml : new MoviesLinks();
@@ -92,16 +91,6 @@ class TorParser extends MoviesAbstractDB {
                             print "Service active $service_life_time < " . $this->service_life_time . "\n";
                         }
                     }
-                } if ($status == 5) {
-                    // Old used services. Set active status
-                    $service_used_time = $curr_time - $last_upd;
-                    if ($service_used_time > $this->service_used_time) {
-                        $data_upd = array(
-                            'last_upd' => $curr_time,
-                            'status' => 1,
-                        );
-                        $this->update_service_field($data_upd, $service->id);
-                    }
                 }
             }
         }
@@ -112,20 +101,15 @@ class TorParser extends MoviesAbstractDB {
         $get_url = $this->get_tor_url($url, $ip_limit, $log_data, $debug);
         if ($get_url) {
 
-            $service = $log_data['driver'];
+            $service_id = $log_data['driver'];
             // Service used
             $date = $this->curr_time();
             $data_upd = array(
                 'last_upd' => $date,
-                'status' => 5
             );
-            $this->update_service_field($data_upd, $service);
+            $this->update_service_field($data_upd, $service_id);
 
             $data = $this->curl($get_url, $header);
-
-            // Service active
-            $data_upd = array('status' => 1);
-            $this->update_service_field($data_upd, $service);
 
             if ($debug) {
                 print_r($header);
@@ -204,12 +188,15 @@ class TorParser extends MoviesAbstractDB {
                     if ($ip_error_last_hour_count) {
                         // Get last error ips
                         $message = 'Last parsing error: ' . $ip_error_last_hour_count;
-                        $ips_error[$service->last_reboot] = array(
-                            'service' => $service->id,
-                            'name' => $ip_name,
-                            'ip_id' => $ip_id,
-                            'message' => $message,
-                        );
+
+                        if (($curr_time - $this->service_used_time) > $service->last_upd) {
+                            $ips_error[$service->last_reboot] = array(
+                                'service' => $service->id,
+                                'name' => $ip_name,
+                                'ip_id' => $ip_id,
+                                'message' => $message,
+                            );
+                        }
                     } else {
                         $q_req['type'] = 0;
                         // Valid ips
@@ -259,9 +246,11 @@ class TorParser extends MoviesAbstractDB {
                 }
 
                 if ($hour || $day) {
-                    // Do not reboot a new service
+                    // Do not reboot a last update service
                     $item['message'] = $message;
-                    $ips_on_limit[$last_reboot] = $item;
+                    if (($curr_time - $this->service_used_time) > $service->last_upd) {
+                        $ips_on_limit[$last_reboot] = $item;
+                    }
                     /* $this->reboot_service($service_id, $message, false, $debug);
                       if ($debug) {
                       print $message . "\n";
@@ -410,7 +399,9 @@ class TorParser extends MoviesAbstractDB {
         // Custom status
         $status_trash = 2;
         $status_query = " WHERE p.status != " . $status_trash;
-        if ($q['status'] != -1) {
+        if (is_array($q['status'])) {
+            $status_query = " WHERE p.status IN (" . implode(',', $q['status']) . ")";
+        } else if ($q['status'] != -1) {
             $status_query = " WHERE p.status = " . (int) $q['status'];
         }
 

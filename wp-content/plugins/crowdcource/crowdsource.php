@@ -29,12 +29,15 @@ class CrowdAdmin
         add_submenu_page($this->parrent_slug, __('Actors Crowdsource'), __('Actors'), $this->access_level, $this->parrent_slug. '_actors_crowdsource', array($this, 'actors_crowdsource'));
         add_submenu_page($this->parrent_slug, __('PG Rating Crowdsource'), __('PG Rating'), $this->access_level, $this->parrent_slug . '_pgrating_crowd', array($this, 'pgrating_crowd'));
         add_submenu_page($this->parrent_slug, __('Review Crowdsource'), __('Review'), $this->access_level, $this->parrent_slug . '_review_crowd', array($this, 'review_crowd'));
+        add_submenu_page($this->parrent_slug, __('Critic Review Crowdsource'), __('Critic Review'), $this->access_level, $this->parrent_slug . '_critic_review_crowd', array($this, 'critic_review_crowd'));
     }
     public function overview()
     {
         $actor_count = Crowdsource::get_new_draft('data_actors_crowd');
         $pg_count = Crowdsource::get_new_draft('data_movies_pg_crowd');
         $rw_count = Crowdsource::get_new_draft('data_review_crowd');
+        $rwc_count = Crowdsource::get_new_draft('data_critic_crowd');
+
 
         echo '<h1>Crowdsource</h1>';
         if ($pg_count || $actor_count|| $rw_count) {
@@ -45,13 +48,16 @@ class CrowdAdmin
             }
             if ($actor_count)
             {
-                echo '<h2><a href="/wp-admin/admin.php?page='.$this->parrent_slug.'_pgrating_crowd&status=0">New Actor crowdsource '.$actor_count.'</a></h2>';
+                echo '<h2><a href="/wp-admin/admin.php?page='.$this->parrent_slug.'_actors_crowdsource&status=0">New Actor crowdsource '.$actor_count.'</a></h2>';
             }
             if ($rw_count)
             {
-                echo '<h2><a href="/wp-admin/admin.php?page='.$this->parrent_slug.'_pgrating_crowd&status=0">New Review crowdsource '.$rw_count.'</a></h2>';
+                echo '<h2><a href="/wp-admin/admin.php?page='.$this->parrent_slug.'_review_crowd&status=0">New Review crowdsource '.$rw_count.'</a></h2>';
             }
-
+            if ($rwc_count)
+            {
+                echo '<h2><a href="/wp-admin/admin.php?page='.$this->parrent_slug.'_critic_review_crowd&status=0">New Critic Review crowdsource '.$rwc_count.'</a></h2>';
+            }
         }
         else{
             echo '<h2>no new draft</h2>';
@@ -85,10 +91,10 @@ class CrowdAdmin
             $actor_count = Crowdsource::get_new_draft('data_actors_crowd');
             $pg_count = Crowdsource::get_new_draft('data_movies_pg_crowd');
             $rw_count = Crowdsource::get_new_draft('data_review_crowd');
+            $rwc_count= Crowdsource::get_new_draft('data_critic_crowd');
 
-
-            $total_crowd = $pg_count + $actor_count+$rw_count;
-            if ($pg_count || $actor_count|| $rw_count) {
+            $total_crowd = $pg_count + $actor_count+$rw_count+$rwc_count;
+            if ($pg_count || $actor_count|| $rw_count || $rwc_count) {
                 $wp_admin_bar->add_menu(array(
                     'parent' => '',
                     'id' => 'flag-report-crowd',
@@ -121,10 +127,56 @@ class CrowdAdmin
                         'href' => '/wp-admin/admin.php?page='.$this->parrent_slug.'_actors_crowdsource&status=0',
                     ));
                 }
+                if ($rw_count) {
+                    $wp_admin_bar->add_menu(array(
+                        'parent' => 'flag-report-crowd',
+                        'id' => 'flag-report-crowd-actor',
+                        'title' => '<span style="color: #ff5e28; font-weight: bold;">Critic Review Crowdsource: ' . $rwc_count . '</span>',
+                        'href' => '/wp-admin/admin.php?page='.$this->parrent_slug.'_critic_review_crowd&status=0',
+                    ));
+                }
             }
 
         }
     }
+
+
+
+    public function critic_review_crowd()
+    {
+        !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
+
+        if (Crowdsource::checkpost())
+        {
+            return;
+        }
+
+        echo '<h1>Critic Review Crowdsource</h1>';
+
+
+/// 	id	rwt_id	movie_title	link	title	content	review_id	critic_name	critic_id
+/// weight	bad_words	critic_status	user	ip	add_time	status
+        $array_rows = array(
+            'id'=>array('w'=>10),
+            'rwt_id' =>array('w'=>10, 'type' => 'textarea','editfalse'=>1),
+            'movie_title' =>array('w'=>20, 'type' => 'textarea','editfalse'=>1),
+            'link' =>array('w'=>10, 'type' => 'textarea','editfalse'=>1),
+            'title' =>array('w'=>20, 'type' => 'textarea','editfalse'=>1),
+            'content' =>array('w'=>40, 'type' => 'textarea','hidden'=>'hidden','editfalse'=>1),
+            'critic_name' =>array('w'=>10, 'type' => 'textarea','editfalse'=>1),
+            'critic_id' =>array('w'=>10, 'type' => 'textarea','editfalse'=>1),
+            'weight' =>array('w'=>10, 'type' => 'textarea','editfalse'=>1),
+            'bad_words' =>array('w'=>10, 'type' => 'textarea','editfalse'=>1),
+            'critic_status' =>array('w'=>10, 'type' => 'textarea','editfalse'=>1),
+            'status'=>array('type'=>'select','options'=>'0:Waiting;1:Approved;2:Rejected')
+        );
+
+
+        Crowdsource::Show_admin_table('critic_crowd',$array_rows,1);
+
+    }
+
+
 
     public function review_crowd()
     {
@@ -147,7 +199,6 @@ class CrowdAdmin
             'irrelevant' => array('w'=>10, 'type' => 'select','options'=>'0:Off;1:On'),
             'remove' => array('w'=>10, 'type' => 'select','options'=>'0:Off;1:On'),
             'blur' => array('w'=>10, 'type' => 'select','options'=>'0:Off;1:On'),
-
             'comment' =>array('w'=>20, 'type' => 'textarea'),
             'status'=>array('type'=>'select','options'=>'0:Waiting;1:Approved;2:Rejected')
         );
