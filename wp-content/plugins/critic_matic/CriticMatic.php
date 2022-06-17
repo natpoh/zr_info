@@ -12,6 +12,7 @@ class CriticMatic extends AbstractDB {
     public $user_can;
     public $new_audience_count = 0;
     private $cp;
+    private $cs;
 
     /*
      * Posts
@@ -243,6 +244,17 @@ class CriticMatic extends AbstractDB {
             $this->cp = new CriticParser($this->cp);
         }
         return $this->cp;
+    }
+
+    public function get_cs() {
+        // Get CriticSearch
+        if (!$this->cs) {
+            if (!class_exists('CriticSearch')) {                
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticSearch.php' );
+            }
+            $this->cs = new CriticSearch($this);
+        }
+        return $this->cs;
     }
 
     function admin_bar_render($wp_admin_bar) {
@@ -1309,8 +1321,8 @@ class CriticMatic extends AbstractDB {
             $and_limit = sprintf(' LIMIT %d', $limit);
         }
 
-        $sql = "SELECT id, name, type FROM {$this->db['authors']} WHERE id>0 ". $and_type . $and_status . $and_id ." name LIKE '{$name_or_id}%'" . $and_limit;
-        
+        $sql = "SELECT id, name, type FROM {$this->db['authors']} WHERE id>0 " . $and_type . $and_status . $and_id . " name LIKE '{$name_or_id}%'" . $and_limit;
+
         $results = $this->db_results($sql);
         return $results;
     }
@@ -1986,7 +1998,7 @@ class CriticMatic extends AbstractDB {
         if ($fid > 0) {
             $fid_and = sprintf(' AND fid=%d', $fid);
         }
-        $sql = sprintf("SELECT fid, type, state, rating FROM {$this->db['meta']} WHERE cid=%d" . $fid_and, (int) $cid);
+        $sql = sprintf("SELECT id, fid, type, state, rating FROM {$this->db['meta']} WHERE cid=%d" . $fid_and, (int) $cid);
         $result = $this->db_results($sql);
         return $result;
     }

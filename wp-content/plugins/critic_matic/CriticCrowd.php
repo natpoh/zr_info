@@ -16,17 +16,32 @@ class CriticCrowd extends AbstractDB {
 
     private $cm;
     private $db;
+    public $critic_status = array(
+        0 => 'New',
+        1 => 'Waiting',
+        2 => 'Done'
+    );
 
     public function __construct($cm = '') {
         $this->cm = $cm ? $cm : new CriticMatic();
         $table_prefix = DB_PREFIX_WP_AN;
         $this->db = array(
             'posts' => $table_prefix . 'critic_matic_posts',
+            'meta' => $table_prefix . 'critic_matic_posts_meta',
             'critic_crowd' => 'data_critic_crowd',
+            'movie_imdb' => 'data_movie_imdb',
         );
     }
 
     public function run_cron($count = 100, $debug = false) {
+        // 1. Get new crowd and create posts
+        $this->get_new_crowd($count, $debug);
+
+        // 2. Calculate rating
+        $this->calculate_posts($count, $debug);
+    }
+
+    private function get_new_crowd($count = 100, $debug = false) {
         $sql = sprintf("SELECT * FROM {$this->db['critic_crowd']} WHERE status=0 AND critic_status=0 ORDER BY id ASC LIMIT %d", $count);
         $results = $this->db_results($sql);
         if ($debug) {
@@ -75,6 +90,67 @@ class CriticCrowd extends AbstractDB {
                         print $msg . "\n";
                     }
                 }
+            }
+        }
+    }
+
+    private function calculate_posts($count = 100, $debug = false) {
+        $sql = sprintf("SELECT * FROM {$this->db['critic_crowd']} WHERE status=0 AND critic_status=1 ORDER BY id ASC LIMIT %d", $count);
+        $results = $this->db_results($sql);
+        if ($debug) {
+            print_r($results);
+        }
+        $cs = $this->cm->get_cs();
+
+        if ($results) {
+            foreach ($results as $item) {
+                $msg = '';
+                $id = $item->id;
+                $cid = $item->review_id;
+                // Post in index?
+                $in_index = $cs->critic_in_index($cid);
+                $msg = "Post $cid index:" . ($in_index ? "true" : "false") . "\n";
+                if ($debug) {
+                    print $msg;
+                }
+                if (!$in_index) {
+                    continue;
+                }
+                // Calculate rating
+                $movie_id = $item->rwt_id;
+                $movie = $this->get_movie_by_id($movie_id, true);
+
+                $bulk = true;
+                $ids = array($cid);
+                $cs->update_movie($movie, $debug, $bulk, $ids);
+
+                // Update crowd                
+                $critic_status = 2;
+                $data = array('critic_status' => $critic_status);
+                                
+                //Get meta
+                $movie_exist = $this->cm->get_movies_data($cid, $movie_id);
+                if ($debug){
+                    print_r($movie_exist);
+                }
+                if ($movie_exist){
+                    $movie_exist_meta = $movie_exist[0];
+                    $data['weight'] = $movie_exist_meta->rating;
+                    // Update post status
+                    $data['status'] = 1;
+                    // Update meta state to Approved
+                    $meta_data = array('state'=>1);
+                    $this->sync_update_data($meta_data, $movie_exist_meta->id, $this->db['meta'], $this->cm->sync_data, 5);
+                    $msg = "Info: Add meta $cid\n";
+                } else {
+                    // Can not find meta
+                    $data['status'] = 2;
+                    $msg = "Error: Can not find meta $cid\n";
+                }      
+                if ($debug){
+                    print $msg;
+                }
+                $this->update_crowd($item->id, $data);
             }
         }
     }
@@ -141,7 +217,7 @@ class CriticCrowd extends AbstractDB {
         // Type manual
         $type = 2;
         // Status publish
-        $post_status = 1;        
+        $post_status = 1;
         $date = $this->curr_time();
 
         $date_add = $date;
@@ -182,7 +258,7 @@ class CriticCrowd extends AbstractDB {
             $msg .= "Info $id: Add post author $author_id\n";
 
             // Success
-            $data['crowd_status'] = 1;
+            $data['critic_status'] = 1;
             $data['review_id'] = $post_id;
             $data['critic_id'] = $author_id;
         } else {
@@ -210,17 +286,9 @@ class CriticCrowd extends AbstractDB {
             $post_publish = true;
         }
 
-        // 2. Gem post movie meta
-        $movies_meta = $this->cm->get_movies_data($cid);
-        $movie_exist = false;
-        if ($movies_meta) {
-            foreach ($movies_meta as $meta) {
-                if ($meta->fid == $movie_id) {
-                    $movie_exist = true;
-                    break;
-                }
-            }
-        }
+        // 2. Get post movie meta
+        $movie_exist = $this->cm->get_movies_data($cid, $movie_id);
+       
         $msg = '';
 
         if ($post_publish && $movie_exist) {
@@ -231,7 +299,7 @@ class CriticCrowd extends AbstractDB {
             $data['status'] = 2;
         } else {
             // Crowd status wait
-            $data['crowd_status'] = 1;
+            $data['critic_status'] = 1;
             if (!$post_publish) {
                 // Need publish post
                 $post_data = array(
@@ -240,16 +308,16 @@ class CriticCrowd extends AbstractDB {
                 $this->cm->update_post_fields($cid, $post_data);
                 $msg = "Info $id. Publish post $cid\n";
             }
-            /*if (!$movie_exist) {
-                // Need add a new movie to post                
-                // Type: 1 => 'Proper Review',
-                $type = 1;
-                // State: 1 => 'Approved',
-                $state = 1;
-                // Add meta
-                $this->cm->add_post_meta($movie_id, $type, $state, $cid);
-                $msg .= "Info. Add movie $movie_id to post $cid\n";
-            }*/
+            /* if (!$movie_exist) {
+              // Need add a new movie to post
+              // Type: 1 => 'Proper Review',
+              $type = 1;
+              // State: 1 => 'Approved',
+              $state = 1;
+              // Add meta
+              $this->cm->add_post_meta($movie_id, $type, $state, $cid);
+              $msg .= "Info. Add movie $movie_id to post $cid\n";
+              } */
         }
         if ($debug) {
             if ($msg) {
@@ -258,6 +326,24 @@ class CriticCrowd extends AbstractDB {
         }
 
         return $data;
+    }
+
+    public function get_movie_by_id($id, $cache = false) {
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$id])) {
+                return $dict[$id];
+            }
+        }
+        $sql = sprintf("SELECT * FROM {$this->db['movie_imdb']} WHERE id = %d", $id);
+        $movie = $this->db_fetch_row($sql);
+        $dict[$id] = $movie;
+
+        return $movie;
     }
 
 }

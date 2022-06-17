@@ -238,7 +238,7 @@ class CriticSearch extends AbstractDB {
         if ($debug) {
             print_r($movie);
         }
-        $critics_search = $this->search_critics($movie);
+        $critics_search = $this->search_critics($movie,$debug,$ids);
 
         // Get old movie meta
         $old_meta = array();
