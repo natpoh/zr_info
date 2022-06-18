@@ -249,7 +249,7 @@ class CriticCrowd extends AbstractDB {
                     // Add a new critic
                     $msg = "Info $id. Add a new critic\n";
                     $data = $this->add_post($item, $debug);
-                    if ($debug){
+                    if ($debug) {
                         print_r($data);
                     }
                     // Success
@@ -285,6 +285,7 @@ class CriticCrowd extends AbstractDB {
         $data = array();
         $curr_time = $this->curr_time();
         $date = $curr_time;
+        $channelId = '';
         $ret = 0;
         $msg = '';
         $link = $crowd_item->link;
@@ -316,9 +317,12 @@ class CriticCrowd extends AbstractDB {
         if ($youtube) {
             // Get youtube data
             $result = $cp->yt_video_data($link);
-            if ($result && $result->description) {
-                $date = strtotime($result->publishedAt);
-                $content = str_replace("\n", '<br />', $result->description);
+            if ($result) {
+                $channelId = $result->channelId;
+                if ($result->description) {
+                    $date = strtotime($result->publishedAt);
+                    $content = str_replace("\n", '<br />', $result->description);
+                }
             }
         } else {
             ///get main data
@@ -374,13 +378,32 @@ class CriticCrowd extends AbstractDB {
                 print_r($post_data);
             }
 
-            //Add author meta
+            // Add author meta
             if (!$author_id) {
                 // Status: 0 => 'Draft'
                 $author_status = 0;
                 // Type: 1 => 'Critic'
                 $author_type = 1;
                 $author_id = $this->cm->get_or_create_author_by_name($author_name, $author_type, $author_status);
+                if ($channelId) {
+                    $author_ob = $this->cm->get_author($author_id);
+                    //Options
+                    $options = unserialize($author_ob->options);
+                    if (!$options['image']) {
+                        // Add author avatar
+                        $channel_info = $cp->youtube_get_channel_info($channelId);
+                        if ($channel_info->items[0]->snippet->thumbnails->medium->url) {
+                            $avatar = $channel_info->items[0]->snippet->thumbnails->medium->url;
+                            if ($avatar){
+                                $options['image']=$avatar;
+                                $author_ob->options = $options;
+                                // Publish author
+                                $author_ob->status = 1;
+                                $this->cm->update_author($author_ob);
+                            }
+                        }
+                    }
+                }
             }
             $this->cm->add_post_author($post_id, $author_id);
 

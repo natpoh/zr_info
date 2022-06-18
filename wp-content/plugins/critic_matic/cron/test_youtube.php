@@ -19,9 +19,13 @@ if ($_GET['json']) {
 }
 
 
-$url = 'https://www.youtube.com/watch?v=DapcHLXSLPo';
+
 if ($_GET['url']) {
     $url = $_GET['url'];
+}
+
+if ($_GET['cid']) {
+    $cid = $_GET['cid'];
 }
 
 
@@ -31,14 +35,16 @@ if (!class_exists('CriticParser')) {
 
 $cp = new CriticParser();
 
-$data = $cp->yt_video_data($url);
-
+if ($url) {
+    $data = $cp->yt_video_data($url);
+} else if ($cid) {
+    $data = $cp->youtube_get_channel_info($cid);
+}
 if ($data) {
 
     if ($json) {
 
         echo json_encode($data);
-        
     } else {
         print '<pre>';
         print_r($data);
