@@ -25,7 +25,7 @@ class MoviesParserCron extends MoviesAbstractDB {
 
     public function process_all($cron_type, $debug = false, $force = false) {
         $campaigns = $this->mp->get_campaigns(1, -1, 1, '', 'ASC', 0);
-        if ($debug){
+        if ($debug) {
             print_r($campaigns);
         }
         $count = 0;
@@ -71,10 +71,10 @@ class MoviesParserCron extends MoviesAbstractDB {
 
     public function process_campaign($campaign, $options, $type_name, $debug = false) {
 
-        if ($debug){
+        if ($debug) {
             print_r($type_name);
         }
-        
+
         if ($type_name == 'arhive') {
             $count = $this->proccess_arhive($campaign, $options);
         } else if ($type_name == 'parsing') {
@@ -427,9 +427,9 @@ class MoviesParserCron extends MoviesAbstractDB {
         return $count;
     }
 
-    private function arhive_url($item, $campaign, $type_opt, $force=false) {
+    private function arhive_url($item, $campaign, $type_opt, $force = false) {
         $use_proxy = $type_opt['proxy'];
-        $use_webdriver = $type_opt['webdrivers'];        
+        $use_webdriver = $type_opt['webdrivers'];
         /*
           [id] => 21
           [cid] => 2
@@ -461,29 +461,31 @@ class MoviesParserCron extends MoviesAbstractDB {
             $code = $this->mp->get_webdriver($url, $headers, $settings);
         } else if ($use_webdriver == 2) {
             // Tor webdriver           
-            $ip_limit = array('h'=>$type_opt['tor_h'],'d'=>$type_opt['tor_d']);            
-            $tp = $this->ml->get_tp();            
+            $ip_limit = array('h' => $type_opt['tor_h'], 'd' => $type_opt['tor_d']);
+            $tp = $this->ml->get_tp();
             $code = $tp->get_url_content($url, $headers, $ip_limit);
         } else {
             $code = $this->mp->get_proxy($url, $use_proxy, $headers, $settings);
         }
+
+        $header_status = $this->get_header_status($headers);
         
-        if (preg_match('/HTTP\/1\.1[^\d]+403/', $headers)) {
+        if ($header_status==403) {
             // Status - 403 error
             $status = 4;
             $this->mp->change_url_state($item->id, $status, true);
             $message = 'Error 403 Forbidden';
             $this->mp->log_error($message, $item->cid, $item->id, 2);
             return;
-        } else if (preg_match('/HTTP\/1\.1[^\d]+500/', $headers)) {
+        } else if ($header_status==500) {
             // Status - 500 error
             $status = 4;
             $this->mp->change_url_state($item->id, $status, true);
             $message = 'Error 500 Internal Server Error';
             $this->mp->log_error($message, $item->cid, $item->id, 2);
             return;
-        } else if (preg_match('/HTTP\/1\.1[^\d]+404/', $headers)) {
-            // Status - 500 error
+        } else if ($header_status==404) {
+            // Status - 404
             $status = 4;
             $this->mp->change_url_state($item->id, $status, true);
             $message = 'Error 404 Not found';
@@ -529,6 +531,16 @@ class MoviesParserCron extends MoviesAbstractDB {
             $message = 'Can not get code from URL';
             $this->mp->log_error($message, $item->cid, $item->id, 2);
         }
+    }
+
+    public function get_header_status($headers) {
+        $status = 200;
+        if ($headers) {
+            if (preg_match('/HTTP[^ ]*[^\d]+([0-9]{3})/', $headers, $match)) {
+                $status = $match[1];
+            }
+        }
+        return $status;
     }
 
     private function check_and_create_dir($dst_path) {
