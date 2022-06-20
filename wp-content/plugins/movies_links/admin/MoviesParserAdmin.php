@@ -124,6 +124,7 @@ class MoviesParserAdmin extends ItemAdmin {
     );
     public $bulk_actions = array(
         'post_status_new' => 'Post status New',
+        'validate_arhive' => 'Validate Arhive len',
         'delete_url' => 'Delete URL',
         'delete_post' => 'Delete Post',
         'delete_arhive' => 'Delete Arhive and Post',
@@ -771,6 +772,12 @@ class MoviesParserAdmin extends ItemAdmin {
                     // Change post status
                     foreach ($ids as $id) {
                         $this->mp->update_post_status($id, 0);
+                    }
+                    print "<div class=\"updated\"><p><strong>Updated</strong></p></div>";
+                }else if ($b == 'validate_arhive') {
+                    // Validate arhive
+                    foreach ($ids as $id) {
+                        $this->mp->validate_arhive_len($id);
                     }
                     print "<div class=\"updated\"><p><strong>Updated</strong></p></div>";
                 } else if ($b == 'delete_post') {

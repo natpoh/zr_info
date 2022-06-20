@@ -39,7 +39,7 @@ class MoviesParser extends MoviesAbstractDB {
                     'del_pea_int' => 1440,
                     'tor_h' => 20,
                     'tor_d' => 100,
-                    'body_len'=>500,
+                    'body_len' => 500,
                 ),
                 'find_urls' => array(
                     'first' => '',
@@ -958,18 +958,18 @@ class MoviesParser extends MoviesAbstractDB {
         // Get posts (last is first)       
 
         $use_webdriver = $type_opt['webdrivers'];
-        $ip_limit = array('h'=>$type_opt['tor_h'],'d'=>$type_opt['tor_d']);
-        
+        $ip_limit = array('h' => $type_opt['tor_h'], 'd' => $type_opt['tor_d']);
+
         if ($use_webdriver == 1) {
             $code = $this->get_webdriver($url, $headers, $settings);
         } else if ($use_webdriver == 2) {
             // Tor webdriver            
-            $tp = $this->ml->get_tp();            
+            $tp = $this->ml->get_tp();
             $code = $tp->get_url_content($url, $headers, $ip_limit);
         } else if ($use_webdriver == 3) {
             // Tor curl            
-            $tp = $this->ml->get_tp();            
-            $code = $tp->get_url_content($url, $headers, $ip_limit,true);
+            $tp = $this->ml->get_tp();
+            $code = $tp->get_url_content($url, $headers, $ip_limit, true);
         } else {
             $use_proxy = $type_opt['proxy'];
             $code = $this->get_proxy($url, $use_proxy, $headers, $settings);
@@ -980,13 +980,13 @@ class MoviesParser extends MoviesAbstractDB {
         $ret['valid_body'] = $valid_body_len;
         return $ret;
     }
-    
-    public function validate_body_len($code='',$valid_len=500){
-         $body_len = strlen($code);
-         if ($body_len>$valid_len){
-             return true;
-         }
-         return false;
+
+    public function validate_body_len($code = '', $valid_len = 500) {
+        $body_len = strlen($code);
+        if ($body_len > $valid_len) {
+            return true;
+        }
+        return false;
     }
 
     /*
@@ -2107,6 +2107,25 @@ class MoviesParser extends MoviesAbstractDB {
     public function delete_url($uid) {
         $sql = sprintf("DELETE FROM {$this->db['url']} WHERE id=%d", (int) $uid);
         $this->db_query($sql);
+    }
+
+    public function validate_arhive_len($uid) {
+        $valid = false;
+        $arhive = $this->get_arhive_by_url_id($uid);
+        $url = $this->get_url($uid);
+        if ($url) {
+            $content = $this->get_arhive_file($url->cid, $arhive->arhive_hash);
+            $campaign = $this->get_campaign($url->cid, true);
+            if ($campaign) {
+                $options = $this->get_options($campaign);
+                $type_name = 'arhive';
+                $type_opt = $options[$type_name];
+                $valid = $this->validate_body_len($content, $type_opt['body_len']);
+            }
+        }
+        if (!$valid){
+            $this->change_url_state($uid, 4);
+        } 
     }
 
     /*
