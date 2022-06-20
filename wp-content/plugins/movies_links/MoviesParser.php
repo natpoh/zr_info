@@ -2303,7 +2303,7 @@ class MoviesParser extends MoviesAbstractDB {
         $status = 200;
         
         if ($headers) {
-            if (preg_match_all('/HTTP\/[0-9\.]+[\d]+([0-9]{3})/', $headers, $match)) {
+            if (preg_match_all('/HTTP\/[0-9\.]+[ ]+([0-9]{3})/', $headers, $match)) {
                 $status = $match[1][(sizeof($match[1]) - 1)];
             }
         }
