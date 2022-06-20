@@ -90,9 +90,10 @@ class TorParser extends MoviesAbstractDB {
         }
     }
 
-    public function get_url_content($url = '', &$header, $ip_limit = array(), $debug = false) {
+    public function get_url_content($url = '', &$header, $ip_limit = array(), $curl = false, $debug = false) {
         $content = '';
-        $get_url = $this->get_tor_url($url, $ip_limit, $log_data, $debug);
+        $get_url_data = $this->get_tor_url($url, $ip_limit, $log_data, $debug);
+        $get_url = $get_url_data['url'];
         if ($get_url) {
 
             $service_id = $log_data['driver'];
@@ -103,7 +104,14 @@ class TorParser extends MoviesAbstractDB {
             );
             $this->update_service_field($data_upd, $service_id);
 
-            $data = $this->curl($get_url, $header);
+            if (!$curl) {
+                // Webdriver
+                $data = $this->curl($get_url, $header);
+            } else {
+                $user_agent = $get_url_data['agent'];
+                $proxy = $get_url_data['proxy'];
+                $data = $this->curl($url, $header, $user_agent, $proxy);
+            }
 
             if ($debug) {
                 print_r($header);
@@ -141,7 +149,12 @@ class TorParser extends MoviesAbstractDB {
         if (!$ip_limit) {
             $ip_limit = $this->ip_limit;
         }
-        $get_url = '';
+        $ret = array(
+            'url' => '',
+            'agent' => '',
+            'proxy' => '',
+        );
+
         $curr_time = $this->curr_time();
 
         // 1. Get dst site id
@@ -183,7 +196,7 @@ class TorParser extends MoviesAbstractDB {
                         // Get last error ips
                         $message = 'Last parsing error: ' . $ip_error_last_hour_count;
 
-                        if ($service->type==0 && ($curr_time - $this->service_used_time) > $service->last_upd) {
+                        if ($service->type == 0 && ($curr_time - $this->service_used_time) > $service->last_upd) {
                             $ips_error[$service->last_reboot] = array(
                                 'service' => $service->id,
                                 'name' => $ip_name,
@@ -242,7 +255,7 @@ class TorParser extends MoviesAbstractDB {
                 if ($hour || $day) {
                     // Do not reboot a last update service
                     $item['message'] = $message;
-                    if ($service->type==0 && ($curr_time - $this->service_used_time) > $service->last_upd) {
+                    if ($service->type == 0 && ($curr_time - $this->service_used_time) > $service->last_upd) {
                         $ips_on_limit[$last_reboot] = $item;
                     }
                     /* $this->reboot_service($service_id, $message, false, $debug);
@@ -329,9 +342,10 @@ class TorParser extends MoviesAbstractDB {
 
         if ($service) {
             $agent = $this->get_agent_name_by_id($service->agent);
+            $proxy = $service->url;
             $agent_encode = urlencode($agent);
             $url_encode = urlencode($url);
-            $get_url = 'http://' . $this->web_driver . '/?p=ds1bfgFe_23_KJDS-F&proxy=' . $service->url . '&agent=' . $agent_encode . '&url=' . $url_encode;
+            $get_url = 'http://' . $this->web_driver . '/?p=ds1bfgFe_23_KJDS-F&proxy=' . $proxy . '&agent=' . $agent_encode . '&url=' . $url_encode;
             if ($debug) {
                 print_r(array($url, $get_url));
             }
@@ -344,9 +358,13 @@ class TorParser extends MoviesAbstractDB {
                 'status' => 1,
                 'dst_url' => $url,
             );
+
+            $ret['url'] = $url;
+            $ret['agent'] = $agent;
+            $ret['proxy'] = $proxy;
         }
 
-        return $get_url;
+        return $ret;
     }
 
     /*
@@ -1103,9 +1121,11 @@ class TorParser extends MoviesAbstractDB {
         $this->log($message, 2, $q_arr);
     }
 
-    public function curl($url, &$header = '') {
+    public function curl($url, &$header = '', $curl_user_agent = '', $proxy = '') {
         $ss = $settings ? $settings : array();
-        $curl_user_agent = isset($ss['parser_user_agent']) ? $ss['parser_user_agent'] : '';
+        if (!$curl_user_agent) {
+            $curl_user_agent = isset($ss['parser_user_agent']) ? $ss['parser_user_agent'] : '';
+        }
 
         $ch = curl_init();
 
@@ -1133,6 +1153,10 @@ class TorParser extends MoviesAbstractDB {
         // No cache
         curl_setopt($ch, CURLOPT_HTTPHEADER, array("Cache-Control: no-cache"));
         curl_setopt($ch, CURLOPT_FRESH_CONNECT, TRUE);
+
+        if ($proxy) {
+            curl_setopt($ch, CURLOPT_PROXY, $proxy);
+        }
 
         $response = curl_exec($ch);
         $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);

@@ -158,7 +158,8 @@ class MoviesParserAdmin extends ItemAdmin {
     public $parse_mode = array(
         0 => 'Curl',
         1 => 'Webdrivers',
-        2 => 'Tor webdrivers',
+        2 => 'Webdrivers with Tor service',
+        3 => 'Curl with Tor service',
     );
 
     /* Generate urls */

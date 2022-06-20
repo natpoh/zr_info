@@ -958,13 +958,18 @@ class MoviesParser extends MoviesAbstractDB {
         // Get posts (last is first)       
 
         $use_webdriver = $type_opt['webdrivers'];
+        $ip_limit = array('h'=>$type_opt['tor_h'],'d'=>$type_opt['tor_d']);
+        
         if ($use_webdriver == 1) {
             $code = $this->get_webdriver($url, $headers, $settings);
         } else if ($use_webdriver == 2) {
-            // Tor webdriver
-            $ip_limit = array('h'=>$type_opt['tor_h'],'d'=>$type_opt['tor_d']);
+            // Tor webdriver            
             $tp = $this->ml->get_tp();            
             $code = $tp->get_url_content($url, $headers, $ip_limit);
+        } else if ($use_webdriver == 3) {
+            // Tor curl            
+            $tp = $this->ml->get_tp();            
+            $code = $tp->get_url_content($url, $headers, $ip_limit,true);
         } else {
             $use_proxy = $type_opt['proxy'];
             $code = $this->get_proxy($url, $use_proxy, $headers, $settings);

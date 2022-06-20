@@ -455,15 +455,19 @@ class MoviesParserCron extends MoviesAbstractDB {
         $link_hash = $item->link_hash;
         $first_letter = substr($link_hash, 0, 1);
 
+        $ip_limit = array('h' => $type_opt['tor_h'], 'd' => $type_opt['tor_d']);
         $settings = $this->ml->get_settings();
         if ($use_webdriver == 1) {
             // Webdriver
             $code = $this->mp->get_webdriver($url, $headers, $settings);
         } else if ($use_webdriver == 2) {
-            // Tor webdriver           
-            $ip_limit = array('h' => $type_opt['tor_h'], 'd' => $type_opt['tor_d']);
+            // Tor webdriver                       
             $tp = $this->ml->get_tp();
             $code = $tp->get_url_content($url, $headers, $ip_limit);
+        } else if ($use_webdriver == 3) {
+            // Tor Curl            
+            $tp = $this->ml->get_tp();
+            $code = $tp->get_url_content($url, $headers, $ip_limit, true);
         } else {
             $code = $this->mp->get_proxy($url, $use_proxy, $headers, $settings);
         }

@@ -23,6 +23,12 @@ if ($_GET['force']) {
     $force = true;
 }
 
+$curl = false;
+if ($_GET['curl']) {
+    $curl = true;
+}
+
+
 $url_test = 'https://rightwingtomatoes.com/service/request.php?p=dfs_WFDS-32FhGSD6';
 if ($_GET['url_test']) {
     $url_test = urldecode($_GET['url_test']);
@@ -37,4 +43,4 @@ if (!class_exists('MoviesLinks')) {
 
 $tp = new TorParser();
 
-$content = $tp->get_url_content($url_test, $header, array(), true);
+$content = $tp->get_url_content($url_test, $header, array(), $curl, true);
