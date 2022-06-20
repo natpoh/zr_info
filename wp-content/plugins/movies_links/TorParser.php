@@ -12,21 +12,14 @@ class TorParser extends MoviesAbstractDB {
     // public $web_driver = '148.251.54.53:8110';
     public $web_driver = '';
     public $get_ip_url = '';
-    public $service_min_life_time = 180; // 3 min
-    public $service_used_time = 180; // 3 min
+    public $service_min_life_time = 300; // 5 min
+    public $service_used_time = 300; // 5 min
     public $service_life_time = 3600; // 60 min
     public $min_valid_ips = 3;
     public $tor_reboot_dir = ABSPATH . 'wp-content/uploads/tor';
     public $ip_limit = array(
-        'h' => 100,
+        'h' => 30,
         'd' => 1000,
-    );
-    public $service_status = array(
-        1 => 'Active',
-        0 => 'Inactive',
-        3 => 'Reboot',
-        4 => 'Error',
-        2 => 'Trash'
     );
     public $sort_pages = array('date', 'id', 'ip', 'drivers', 'dst_url', 'user_agents', 'url_meta', 'last_upd', 'last_reboot', 'status');
 
@@ -61,12 +54,13 @@ class TorParser extends MoviesAbstractDB {
         if ($services) {
             foreach ($services as $service) {
                 $status = $service->status;
+                $type = $service->type;
                 $last_reboot = $service->last_reboot;
                 $last_upd = $service->last_upd;
                 if ($status == 3) {
                     // Reboot status
                     $already_reboot = $this->service_is_reboot($service->id);
-                    if (!$already_reboot) {
+                    if (!$already_reboot || $type == 1) {
                         // Get IP
                         if ($debug) {
                             print "Get IP\n";
@@ -385,6 +379,7 @@ class TorParser extends MoviesAbstractDB {
             'last_upd' => -1,
             'last_reboot' => -1,
             'status' => -1,
+            'type' => -1,
             'ip' => -1,
             'agent' => -1,
             'name' => -1,
@@ -403,6 +398,11 @@ class TorParser extends MoviesAbstractDB {
             $status_query = " WHERE p.status IN (" . implode(',', $q['status']) . ")";
         } else if ($q['status'] != -1) {
             $status_query = " WHERE p.status = " . (int) $q['status'];
+        }
+
+        $type_query = '';
+        if ($q['type'] != -1) {
+            $type_query = " AND p.type = " . (int) $q['type'];
         }
 
         //Sort
@@ -432,7 +432,7 @@ class TorParser extends MoviesAbstractDB {
 
         $sql = "SELECT" . $select
                 . " FROM {$this->db['drivers']} p"
-                . $status_query . $and_orderby . $limit;
+                . $status_query . $type_query . $and_orderby . $limit;
 
         if (!$count) {
             $result = $this->db_results($sql);
@@ -446,9 +446,11 @@ class TorParser extends MoviesAbstractDB {
         return $this->get_services($q_req, $page = 1, 1, '', '', true);
     }
 
-    public function add_service($status, $name, $url) {
+    public function add_service($status, $name, $url, $type) {
         $data = array(
+            'last_upd' => $this->curr_time(),
             'status' => $status,
+            'type' => $type,
             'name' => $name,
             'url' => $url,
         );
@@ -457,9 +459,11 @@ class TorParser extends MoviesAbstractDB {
         return $id;
     }
 
-    public function update_service($status, $name, $url, $id) {
+    public function update_service($status, $name, $url, $type, $id) {
         $data = array(
+            'last_upd' => $this->curr_time(),
             'status' => $status,
+            'type' => $type,
             'name' => $name,
             'url' => $url,
         );
@@ -511,22 +515,26 @@ class TorParser extends MoviesAbstractDB {
                 return false;
             }
         }
+        $type = $service->type;
 
-        $name = $service->name;
-        $tor_path = $this->tor_reboot_dir . '/' . $name;
+        if ($type == 0) {
+            // Tor logic
 
-        if (!file_exists($this->tor_reboot_dir)) {
-            mkdir($this->tor_reboot_dir, 0777, true);
+            $name = $service->name;
+            $tor_path = $this->tor_reboot_dir . '/' . $name;
+
+            if (!file_exists($this->tor_reboot_dir)) {
+                mkdir($this->tor_reboot_dir, 0777, true);
+            }
+
+            if (file_exists($tor_path)) {
+                return true;
+            }
+
+            // File not exist
+            $time = $this->curr_time();
+            file_put_contents($tor_path, $time);
         }
-
-        if (file_exists($tor_path)) {
-            return true;
-        }
-
-        // File not exist
-        $time = $this->curr_time();
-        file_put_contents($tor_path, $time);
-
 
         // 2. Update service
         $date = $this->curr_time();

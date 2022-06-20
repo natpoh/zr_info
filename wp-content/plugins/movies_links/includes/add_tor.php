@@ -18,10 +18,24 @@ print $tabs;
                 <span class="input-text-wrap"><input type="text" name="url" value="" placeholder="172.17.0.1:8218"></span>
             </label>
 
+            <label>
+                <span class="title"><?php print __('Type') ?></span>
+                <select id="type" name="type" class="type">                    
+                    <?php
+                    foreach ($this->service_type as $key => $name) {
+                        ?>
+                        <option value="<?php print $key ?>"><?php print $name ?></option>                                
+                        <?php
+                    }
+                    ?>                          
+                </select> 
+                <span class="inline-edit"><?php print __('Type of the service') ?></span>                    
+            </label>
+
             <label class="inline-edit-active">                               
                 <input type="checkbox" name="status" value="1">
                 <span class="checkbox-title"><?php print __('Active') ?></span>
-            </label>                                   
+            </label>   
 
             <?php wp_nonce_field('ml-nonce', 'ml-nonce'); ?>
             <br />
