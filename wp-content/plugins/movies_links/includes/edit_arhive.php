@@ -55,6 +55,13 @@ if ($cid) {
                     <span class="inline-edit"><?php print __('Number of URLs for cron parsing') ?></span> 
                 </label>
 
+                <label>
+                    <span class="title"><?php print __('Min body') ?></span>
+                    <?php $body_len = $ao['body_len']; ?>
+                    <span class="input-text-wrap"><input type="text" name="body_len" value="<?php print $body_len ?>"></span>
+                    <span class="inline-edit"><?php print __('Minimal valid length of the body.') ?></span> 
+                </label>
+
                 <label class="inline-edit-interval">
                     <span class="title"><?php print __('Parse with') ?></span>
                     <select name="webdrivers" class="interval">
@@ -187,7 +194,15 @@ if ($cid) {
             </fieldset>
         </div>
     </form>
-    <?php if ($preivew_data) { ?>
+    <?php
+    if ($preivew_data) {
+        $valid_body = $preivew_data['valid_body'];
+        $valid_result = 'Valid';
+        if (!$valid_body) {
+            $valid_result = 'Invalid';
+        }
+        ?>
+        <p>Validaton reslult is <?php print $valid_result ?></p>
         <h2>Headers</h2>
         <textarea style="width: 90%; height: 300px;"><?php print $preivew_data['headers'] ?></textarea>        
         <h2>Content</h2>

@@ -39,6 +39,7 @@ class MoviesParser extends MoviesAbstractDB {
                     'del_pea_int' => 1440,
                     'tor_h' => 20,
                     'tor_d' => 100,
+                    'body_len'=>500,
                 ),
                 'find_urls' => array(
                     'first' => '',
@@ -968,9 +969,19 @@ class MoviesParser extends MoviesAbstractDB {
             $use_proxy = $type_opt['proxy'];
             $code = $this->get_proxy($url, $use_proxy, $headers, $settings);
         }
+        $valid_body_len = $this->validate_body_len($code, $type_opt['body_len']);
         $ret['content'] = $code;
         $ret['headers'] = $headers;
+        $ret['valid_body'] = $valid_body_len;
         return $ret;
+    }
+    
+    public function validate_body_len($code='',$valid_len=500){
+         $body_len = strlen($code);
+         if ($body_len>$valid_len){
+             return true;
+         }
+         return false;
     }
 
     /*

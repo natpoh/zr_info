@@ -468,27 +468,47 @@ class MoviesParserCron extends MoviesAbstractDB {
             $code = $this->mp->get_proxy($url, $use_proxy, $headers, $settings);
         }
 
+        // Validate headers
         $header_status = $this->get_header_status($headers);
-        
-        if ($header_status==403) {
+
+        if ($header_status == 403) {
             // Status - 403 error
             $status = 4;
             $this->mp->change_url_state($item->id, $status, true);
             $message = 'Error 403 Forbidden';
             $this->mp->log_error($message, $item->cid, $item->id, 2);
             return;
-        } else if ($header_status==500) {
+        } else if ($header_status == 500) {
             // Status - 500 error
             $status = 4;
             $this->mp->change_url_state($item->id, $status, true);
             $message = 'Error 500 Internal Server Error';
             $this->mp->log_error($message, $item->cid, $item->id, 2);
             return;
-        } else if ($header_status==404) {
+        } else if ($header_status == 404) {
             // Status - 404
             $status = 4;
             $this->mp->change_url_state($item->id, $status, true);
             $message = 'Error 404 Not found';
+            $this->mp->log_error($message, $item->cid, $item->id, 2);
+            return;
+        }
+
+        if ($code) {
+            // Validate body
+            $valid_body_len = $this->mp->validate_body_len($code, $type_opt['body_len']);
+            if (!$valid_body_len) {
+                $status = 4;
+                $this->mp->change_url_state($item->id, $status, true);
+                $message = 'Error validate body length: ' . strlen($code);
+                $this->mp->log_error($message, $item->cid, $item->id, 2);
+                return;
+            }
+        } else {
+            // Status - error
+            $status = 4;
+            $this->mp->change_url_state($item->id, $status, true);
+            $message = 'Can not get code from URL';
             $this->mp->log_error($message, $item->cid, $item->id, 2);
             return;
         }
@@ -499,38 +519,31 @@ class MoviesParserCron extends MoviesAbstractDB {
 
         $full_path = $first_letter_path . $link_hash;
 
-        if ($code) {
-            $this->check_and_create_dir($first_letter_path);
 
-            if (file_exists($full_path)) {
-                unlink($full_path);
-            }
+        $this->check_and_create_dir($first_letter_path);
 
-            // Save code to arhive folder
-            $gzdata = gzencode($code, 9);
-
-            file_put_contents($full_path, $gzdata);
-
-            // Add arhive db object
-            if ($arhive_exist) {
-                $this->mp->update_arhive($item);
-                $message = 'Update arhive';
-                $this->mp->log_info($message, $item->cid, $item->id, 2);
-            } else {
-                $message = 'Add arhive';
-                $this->mp->add_arhive($item);
-                $this->mp->log_info($message, $item->cid, $item->id, 2);
-            }
-            // Status - exist
-            $status = 1;
-            $this->mp->change_url_state($item->id, $status, true);
-        } else {
-            // Status - error
-            $status = 4;
-            $this->mp->change_url_state($item->id, $status, true);
-            $message = 'Can not get code from URL';
-            $this->mp->log_error($message, $item->cid, $item->id, 2);
+        if (file_exists($full_path)) {
+            unlink($full_path);
         }
+
+        // Save code to arhive folder
+        $gzdata = gzencode($code, 9);
+
+        file_put_contents($full_path, $gzdata);
+
+        // Add arhive db object
+        if ($arhive_exist) {
+            $this->mp->update_arhive($item);
+            $message = 'Update arhive';
+            $this->mp->log_info($message, $item->cid, $item->id, 2);
+        } else {
+            $message = 'Add arhive';
+            $this->mp->add_arhive($item);
+            $this->mp->log_info($message, $item->cid, $item->id, 2);
+        }
+        // Status - exist
+        $status = 1;
+        $this->mp->change_url_state($item->id, $status, true);
     }
 
     public function get_header_status($headers) {
