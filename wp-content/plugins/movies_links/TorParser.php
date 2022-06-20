@@ -117,7 +117,8 @@ class TorParser extends MoviesAbstractDB {
                 print_r($header);
                 print_r($data);
             }
-            $status = $this->mp->get_header_status($header);
+            
+            $status = $this->get_header_status($header);
             if ($debug) {
                 print "Status: $status\n";
             }
@@ -1171,5 +1172,15 @@ class TorParser extends MoviesAbstractDB {
 
         return $body;
     }
-
+    
+    public function get_header_status($headers) {
+        $status = 200;
+        
+        if ($headers) {
+            if (preg_match_all('/HTTP[^ ]*[^\d]+([0-9]{3})/', $headers, $match)) {
+                $status = $match[1][(sizeof($match[1]) - 1)];
+            }
+        }
+        return $status;
+    }
 }
