@@ -183,7 +183,7 @@ class TorParser extends MoviesAbstractDB {
                         // Get last error ips
                         $message = 'Last parsing error: ' . $ip_error_last_hour_count;
 
-                        if (($curr_time - $this->service_used_time) > $service->last_upd) {
+                        if ($service->type==0 && ($curr_time - $this->service_used_time) > $service->last_upd) {
                             $ips_error[$service->last_reboot] = array(
                                 'service' => $service->id,
                                 'name' => $ip_name,
@@ -242,7 +242,7 @@ class TorParser extends MoviesAbstractDB {
                 if ($hour || $day) {
                     // Do not reboot a last update service
                     $item['message'] = $message;
-                    if (($curr_time - $this->service_used_time) > $service->last_upd) {
+                    if ($service->type==0 && ($curr_time - $this->service_used_time) > $service->last_upd) {
                         $ips_on_limit[$last_reboot] = $item;
                     }
                     /* $this->reboot_service($service_id, $message, false, $debug);
