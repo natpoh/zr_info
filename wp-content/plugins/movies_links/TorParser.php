@@ -340,6 +340,7 @@ class TorParser extends MoviesAbstractDB {
             print_r($service);
         }
 
+        $get_url='';
         if ($service) {
             $agent = $this->get_agent_name_by_id($service->agent);
             $proxy = $service->url;
@@ -359,7 +360,7 @@ class TorParser extends MoviesAbstractDB {
                 'dst_url' => $url,
             );
 
-            $ret['url'] = $url;
+            $ret['url'] = $get_url;
             $ret['agent'] = $agent;
             $ret['proxy'] = $proxy;
         }
