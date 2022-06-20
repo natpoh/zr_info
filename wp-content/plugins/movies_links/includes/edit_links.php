@@ -19,7 +19,7 @@ if ($cid) {
 
                 <input type="hidden" name="edit_parsing_data" value="1">
                 <input type="hidden" name="id" class="id" value="<?php print $campaign->id ?>">
-
+                
                 <label class="inline-edit-interval">
                     <span class="title"><?php print __('Update') ?></span>
                     <select name="interval" class="interval">

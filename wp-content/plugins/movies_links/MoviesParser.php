@@ -65,6 +65,10 @@ class MoviesParser extends MoviesAbstractDB {
                     'last_id' => 0,
                     'status' => 0,
                 ),
+                'service_urls' => array(
+                    'del_pea' => 0,
+                    'del_pea_int' => 1440,
+                ),
                 'parsing' => array(
                     'last_update' => 0,
                     'interval' => 60,
@@ -977,6 +981,7 @@ class MoviesParser extends MoviesAbstractDB {
         $valid_body_len = $this->validate_body_len($code, $type_opt['body_len']);
         $ret['content'] = $code;
         $ret['headers'] = $headers;
+        $ret['headers_status'] = $this->get_header_status($headers);
         $ret['valid_body'] = $valid_body_len;
         return $ret;
     }
@@ -2123,9 +2128,9 @@ class MoviesParser extends MoviesAbstractDB {
                 $valid = $this->validate_body_len($content, $type_opt['body_len']);
             }
         }
-        if (!$valid){
+        if (!$valid) {
             $this->change_url_state($uid, 4);
-        } 
+        }
     }
 
     /*
@@ -2293,6 +2298,17 @@ class MoviesParser extends MoviesAbstractDB {
     /*
      * Other functions
      */
+
+    public function get_header_status($headers) {
+        $status = 200;
+        
+        if ($headers) {
+            if (preg_match_all('/HTTP[^ ]*[^\d]+([0-9]{3})/', $headers, $match)) {
+                $status = $match[1][(sizeof($match[1]) - 1)];
+            }
+        }
+        return $status;
+    }
 
     public function get_proxy($url, $proxy = '', &$header = '', $settings = '') {
 

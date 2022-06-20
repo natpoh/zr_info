@@ -156,7 +156,6 @@ if ($cid) {
                 </label>
                 <br />
                 <label class="inline-edit-interval">
-
                     <select name="del_pea_int" class="interval">
                         <?php
                         $inetrval = $ao['del_pea_int'];
@@ -201,8 +200,10 @@ if ($cid) {
         if (!$valid_body) {
             $valid_result = 'Invalid';
         }
+        
         ?>
         <p>Validaton reslult is <?php print $valid_result ?></p>
+        <p>Header status is <?php print $preivew_data['headers_status']; ?></p>
         <h2>Headers</h2>
         <textarea style="width: 90%; height: 300px;"><?php print $preivew_data['headers'] ?></textarea>        
         <h2>Content</h2>

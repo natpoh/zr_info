@@ -774,7 +774,7 @@ class MoviesParserAdmin extends ItemAdmin {
                         $this->mp->update_post_status($id, 0);
                     }
                     print "<div class=\"updated\"><p><strong>Updated</strong></p></div>";
-                }else if ($b == 'validate_arhive') {
+                } else if ($b == 'validate_arhive') {
                     // Validate arhive
                     foreach ($ids as $id) {
                         $this->mp->validate_arhive_len($id);
@@ -1887,6 +1887,21 @@ class MoviesParserAdmin extends ItemAdmin {
                 $options = $opt_prev;
                 $options['gen_urls'] = $find_urls;
 
+                $this->mp->update_campaign_options($id, $options);
+            } else if ($form_state['service_urls']) {
+                $campaign = $this->mp->get_campaign($id);
+                $opt_prev = $this->mp->get_options($campaign);
+                $urls_prev = $opt_prev['service_urls'];
+                $urls = array();
+                foreach ($urls_prev as $key => $value) {
+                    if (isset($form_state[$key])) {
+                        $urls[$key] = $form_state[$key];
+                    } else {
+                        $urls[$key] = $value;
+                    }
+                }
+                $options = $opt_prev;
+                $options['service_urls'] = $urls;
                 $this->mp->update_campaign_options($id, $options);
             }
         }

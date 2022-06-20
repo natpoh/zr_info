@@ -473,7 +473,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         }
 
         // Validate headers
-        $header_status = $this->get_header_status($headers);
+        $header_status = $this->mp->get_header_status($headers);
 
         if ($header_status == 403) {
             // Status - 403 error
@@ -550,15 +550,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         $this->mp->change_url_state($item->id, $status, true);
     }
 
-    public function get_header_status($headers) {
-        $status = 200;
-        if ($headers) {
-            if (preg_match('/HTTP[^ ]*[^\d]+([0-9]{3})/', $headers, $match)) {
-                $status = $match[1];
-            }
-        }
-        return $status;
-    }
+
 
     private function check_and_create_dir($dst_path) {
         $path = '';
