@@ -355,10 +355,10 @@ if ($cid) {
 
                 <label class="inline-edit-interval">
 
-                    <select name="del_pea_int" class="interval">
+                    <select name="del_pea_cnt" class="interval">
                         <?php
-                        $inetrval = $service_urls['del_pea_int'];
-                        foreach ($this->remove_interval as $key => $name) {
+                        $inetrval = $service_urls['del_pea_cnt'];
+                        foreach ($this->parse_number as $key => $name) {
                             $selected = ($key == $inetrval) ? 'selected' : '';
                             ?>
                             <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
@@ -366,7 +366,7 @@ if ($cid) {
                         }
                         ?>                          
                     </select> 
-                    <span class="inline-edit"><?php print __('Delete archives after timeout') ?></span>                    
+                    <span class="inline-edit"><?php print __('URLs count') ?></span>                    
                 </label>
 
                 <br />

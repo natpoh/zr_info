@@ -618,6 +618,8 @@ class MoviesParserCron extends MoviesAbstractDB {
             }
 
             // Delete garbage
+            
+            // Delete error arhives
             $del_pea = $type_opt['del_pea'];
             if ($del_pea == 1) {
                 // Delete arhives witch error posts
@@ -628,7 +630,27 @@ class MoviesParserCron extends MoviesAbstractDB {
                 $expire = $curr_time - $del_pea_int * 60;
                 $urls = $this->mp->get_urls(-1, 1, $cid, -1, $parser_type, -1, '', 'ASC', $count, $expire);
                 if ($debug) {
-                    print_r(array('Delete arhives', $urls));
+                    print_r(array('Delete arhives witch post error', $urls));
+                }
+                if ($urls) {
+                    foreach ($urls as $url) {
+                        $this->mp->delete_arhive_by_url_id($url->id);
+                    }
+                }
+            }
+            
+            // Delete error urls
+            $service_opt = $options['service_urls'];
+            $del_pea = $service_opt['del_pea'];
+            if ($del_pea == 1) {
+                // Delete arhives witch error url                
+                $status = 4;
+                $count = $service_opt['del_pea_cnt'];
+                $curr_time = $this->curr_time();
+                
+                $urls = $this->mp->get_urls($status, 1, $cid, -1, -1, -1, '', 'ASC', $count);
+                if ($debug) {
+                    print_r(array('Delete arhives witch url error', $urls));
                 }
                 if ($urls) {
                     foreach ($urls as $url) {

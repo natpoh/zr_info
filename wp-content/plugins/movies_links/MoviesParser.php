@@ -68,7 +68,7 @@ class MoviesParser extends MoviesAbstractDB {
                 ),
                 'service_urls' => array(
                     'del_pea' => 0,
-                    'del_pea_int' => 1440,
+                    'del_pea_cnt' => 10,
                 ),
                 'parsing' => array(
                     'last_update' => 0,
