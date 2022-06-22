@@ -906,9 +906,11 @@ class MoviesParserAdmin extends ItemAdmin {
                     $parsing[$field] = $form_state[$field];
                 }
             }
+            
+            $parsing['status'] = isset($form_state['status']) ? $form_state['status'] : 0;
 
             $parsing['rules'] = $this->links_rules_form($form_state);
-
+            
             if ($form_state['import_rules_json']) {
                 $rules = json_decode(trim(stripslashes($form_state['import_rules_json'])), true);
                 if (sizeof($rules)) {

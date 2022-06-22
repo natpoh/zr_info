@@ -8,7 +8,7 @@
 print $tabs;
 
 
-if ($cid) {
+if ($cid) {    
     $options = $this->mp->get_options($campaign);
     $o = $options['links'];
     ?>
