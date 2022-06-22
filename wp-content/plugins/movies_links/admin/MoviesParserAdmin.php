@@ -272,7 +272,7 @@ class MoviesParserAdmin extends ItemAdmin {
                         print '<textarea style="width:90%; height:500px">' . $json . '</textarea>';
 
                         exit;
-                    }else if ($_GET['find_urls']) {
+                    } else if ($_GET['find_urls']) {
                         print '<h2>Find campaign URLs</h2>';
                         $settings = $this->ml->get_settings();
                         $preivew_data = $this->mp->find_urls($campaign, $this->mp->get_options($campaign), $settings, false);
@@ -906,11 +906,11 @@ class MoviesParserAdmin extends ItemAdmin {
                     $parsing[$field] = $form_state[$field];
                 }
             }
-            
+
             $parsing['status'] = isset($form_state['status']) ? $form_state['status'] : 0;
 
             $parsing['rules'] = $this->links_rules_form($form_state);
-            
+
             if ($form_state['import_rules_json']) {
                 $rules = json_decode(trim(stripslashes($form_state['import_rules_json'])), true);
                 if (sizeof($rules)) {
@@ -1845,6 +1845,8 @@ class MoviesParserAdmin extends ItemAdmin {
 
     public function campaign_find_urls_submit($form_state) {
 
+
+
         if ($form_state['id']) {
             $id = $form_state['id'];
             if ($form_state['find_urls']) {
@@ -1865,6 +1867,7 @@ class MoviesParserAdmin extends ItemAdmin {
                         $find_urls[$key] = $value;
                     }
                 }
+
                 $options = $opt_prev;
                 $options['find_urls'] = $find_urls;
 
@@ -1885,6 +1888,12 @@ class MoviesParserAdmin extends ItemAdmin {
                         $urls[$key] = $value;
                     }
                 }
+
+                $checkbox_fields = array('status');
+                foreach ($checkbox_fields as $field) {
+                    $urls[$field] = isset($form_state[$field]) ? $form_state[$field] : 0;
+                }
+
                 $options = $opt_prev;
                 $options['cron_urls'] = $urls;
                 $this->mp->update_campaign_options($id, $options);
@@ -1909,6 +1918,11 @@ class MoviesParserAdmin extends ItemAdmin {
                         $find_urls[$key] = $value;
                     }
                 }
+                $checkbox_fields = array('status');
+                foreach ($checkbox_fields as $field) {
+                    $find_urls[$field] = isset($form_state[$field]) ? $form_state[$field] : 0;
+                }
+
                 $options = $opt_prev;
                 $options['gen_urls'] = $find_urls;
 
@@ -1925,6 +1939,11 @@ class MoviesParserAdmin extends ItemAdmin {
                         $urls[$key] = $value;
                     }
                 }
+                $checkbox_fields = array('del_pea');
+                foreach ($checkbox_fields as $field) {
+                    $urls[$field] = isset($form_state[$field]) ? $form_state[$field] : 0;
+                }
+
                 $options = $opt_prev;
                 $options['service_urls'] = $urls;
                 $this->mp->update_campaign_options($id, $options);

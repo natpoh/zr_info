@@ -343,6 +343,7 @@ class MoviesParser extends MoviesAbstractDB {
     }
 
     public function update_campaign_options($id, $options) {
+
         // 1. Get options
         $campaign = $this->get_campaign($id, false);
         $opt_prev = $this->get_options($campaign);
@@ -350,14 +351,14 @@ class MoviesParser extends MoviesAbstractDB {
         // 2. Get new options
         if ($options) {
             foreach ($options as $key => $value) {
-                if (!$opt_prev[$key]) {
+                if (!isset($opt_prev[$key])) {
                     $opt_prev[$key] = $value;
                     $update = true;
                 } else {
                     if (is_array($opt_prev[$key])) {
                         // Value vitch childs
                         foreach ($options[$key] as $ckey => $cvalue) {
-                            if (!$opt_prev[$key][$ckey]) {
+                            if (!isset($opt_prev[$key][$ckey])) {
                                 // Add child
                                 $opt_prev[$key][$ckey] = $cvalue;
                                 $update = true;
