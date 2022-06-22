@@ -159,8 +159,14 @@ class MoviesParserAdmin extends ItemAdmin {
     public $parse_mode = array(
         0 => 'Curl',
         1 => 'Webdrivers',
-        2 => 'Webdrivers with Tor service',
-        3 => 'Curl with Tor service',
+        2 => 'Tor Webdrivers',
+        3 => 'Tor Curl',
+    );
+    
+    public $tor_mode = array(
+        0 => 'Tor and Proxy',
+        1 => 'Tor',
+        2 => 'Proxy',        
     );
 
     /* Generate urls */
@@ -827,6 +833,7 @@ class MoviesParserAdmin extends ItemAdmin {
                 'del_pea_int' => isset($form_state['del_pea_int']) ? $form_state['del_pea_int'] : $opt_prev['arhive']['del_pea_int'],
                 'tor_h' => isset($form_state['tor_h']) ? $form_state['tor_h'] : $opt_prev['arhive']['tor_h'],
                 'tor_d' => isset($form_state['tor_d']) ? $form_state['tor_d'] : $opt_prev['arhive']['tor_d'],
+                'tor_mode' => isset($form_state['tor_mode']) ? $form_state['tor_mode'] : $opt_prev['arhive']['tor_mode'],
                 'body_len' => isset($form_state['body_len']) ? $form_state['body_len'] : $opt_prev['arhive']['body_len'],
             );
 

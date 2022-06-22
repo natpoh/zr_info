@@ -77,6 +77,21 @@ if ($cid) {
                     </select>                                        
                 </label>
 
+                <label class="inline-edit-interval">
+                    <span class="title"><?php print __('Tor mode') ?></span>
+                    <select name="tor_mode" class="interval">
+                        <?php
+                        $current = $ao['tor_mode'];
+                        foreach ($this->tor_mode as $key => $name) {
+                            $selected = ($key == $current) ? 'selected' : '';
+                            ?>
+                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                            <?php
+                        }
+                        ?>                          
+                    </select>                                        
+                </label>
+
 
                 <label class="inline-edit-interval"> 
                     <span class="title"><?php print __('Tor hour') ?></span>         
@@ -200,7 +215,6 @@ if ($cid) {
         if (!$valid_body) {
             $valid_result = 'Invalid';
         }
-        
         ?>
         <p>Validaton reslult is <?php print $valid_result ?></p>
         <p>Header status is <?php print $preivew_data['headers_status']; ?></p>

@@ -28,6 +28,11 @@ if ($_GET['curl']) {
     $curl = true;
 }
 
+$tor_mode = 0;
+if ($_GET['mode']) {
+    $tor_mode = (int) $_GET['mode'];
+}
+
 
 $url_test = 'https://info.antiwoketomatoes.com/service/request.php?p=dfs_WFDS-32FhGSD6';
 if ($_GET['url_test']) {
@@ -43,4 +48,4 @@ if (!class_exists('MoviesLinks')) {
 
 $tp = new TorParser();
 
-$content = $tp->get_url_content($url_test, $header, array(), $curl, true);
+$content = $tp->get_url_content($url_test, $header, array(), $curl, $tor_mode, true);

@@ -39,6 +39,7 @@ class MoviesParser extends MoviesAbstractDB {
                     'del_pea_int' => 1440,
                     'tor_h' => 20,
                     'tor_d' => 100,
+                    'tor_mode'=>0,
                     'body_len' => 500,
                 ),
                 'find_urls' => array(
@@ -963,17 +964,18 @@ class MoviesParser extends MoviesAbstractDB {
 
         $use_webdriver = $type_opt['webdrivers'];
         $ip_limit = array('h' => $type_opt['tor_h'], 'd' => $type_opt['tor_d']);
+        $tor_mode = $type_opt['tor_mode'];
 
         if ($use_webdriver == 1) {
             $code = $this->get_webdriver($url, $headers, $settings);
         } else if ($use_webdriver == 2) {
             // Tor webdriver            
             $tp = $this->ml->get_tp();
-            $code = $tp->get_url_content($url, $headers, $ip_limit);
+            $code = $tp->get_url_content($url, $headers, $ip_limit, false, $tor_mode);
         } else if ($use_webdriver == 3) {
             // Tor curl            
             $tp = $this->ml->get_tp();
-            $code = $tp->get_url_content($url, $headers, $ip_limit, true);
+            $code = $tp->get_url_content($url, $headers, $ip_limit, true, $tor_mode);
         } else {
             $use_proxy = $type_opt['proxy'];
             $code = $this->get_proxy($url, $use_proxy, $headers, $settings);
@@ -2300,8 +2302,7 @@ class MoviesParser extends MoviesAbstractDB {
      */
 
     public function get_header_status($headers) {
-        $status = 200;
-        
+        $status = 200;        
         if ($headers) {
             if (preg_match_all('/HTTP\/[0-9\.]+[ ]+([0-9]{3})/', $headers, $match)) {
                 $status = $match[1][(sizeof($match[1]) - 1)];
