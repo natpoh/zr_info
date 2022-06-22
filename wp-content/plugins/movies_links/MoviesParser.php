@@ -346,36 +346,45 @@ class MoviesParser extends MoviesAbstractDB {
         // 1. Get options
         $campaign = $this->get_campaign($id, false);
         $opt_prev = $this->get_options($campaign);
+        $update = false;
         // 2. Get new options
-        foreach ($options as $key => $value) {
-            if (!$opt_prev[$key]) {
-                $opt_prev[$key] = $value;
-            } else {
-                if (is_array($opt_prev[$key])) {
-                    // Value vitch childs
-                    foreach ($options[$key] as $ckey => $cvalue) {
-                        if (!$opt_prev[$key][$ckey]) {
-                            // Add child
-                            $opt_prev[$key][$ckey] = $cvalue;
-                        } else {
-                            // Update child
-                            if ($opt_prev[$key][$ckey] != $cvalue) {
+        if ($options) {
+            foreach ($options as $key => $value) {
+                if (!$opt_prev[$key]) {
+                    $opt_prev[$key] = $value;
+                    $update = true;
+                } else {
+                    if (is_array($opt_prev[$key])) {
+                        // Value vitch childs
+                        foreach ($options[$key] as $ckey => $cvalue) {
+                            if (!$opt_prev[$key][$ckey]) {
+                                // Add child
                                 $opt_prev[$key][$ckey] = $cvalue;
+                                $update = true;
+                            } else {
+                                // Update child
+                                if ($opt_prev[$key][$ckey] != $cvalue) {
+                                    $opt_prev[$key][$ckey] = $cvalue;
+                                    $update = true;
+                                }
                             }
                         }
-                    }
-                } else {
-                    // String value
-                    if ($opt_prev[$key] != $value) {
-                        $opt_prev[$key] = $value;
+                    } else {
+                        // String value
+                        if ($opt_prev[$key] != $value) {
+                            $opt_prev[$key] = $value;
+                            $update = true;
+                        }
                     }
                 }
             }
         }
-        // 3. Update options
-        $opt_str = serialize($opt_prev);
-        $sql = sprintf("UPDATE {$this->db['campaign']} SET options='%s' WHERE id = %d", $opt_str, (int) $id);
-        $this->db_query($sql);
+        if ($update) {
+            // 3. Update options
+            $opt_str = serialize($opt_prev);
+            $sql = sprintf("UPDATE {$this->db['campaign']} SET options='%s' WHERE id = %d", $opt_str, (int) $id);
+            $this->db_query($sql);
+        }
     }
 
     /*

@@ -254,6 +254,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         } else {
             // Campaign done
             // Status auto-stop
+            $options_upd=array();
             $options_upd[$type_name]['status'] = 3;
             $this->mp->update_campaign_options($campaign->id, $options_upd);
             $message = 'All arhives parsed to posts';
@@ -375,6 +376,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         } else {
             // Campaign done
             // Status auto-stop
+            $options_upd=array();
             $options_upd[$type_name]['status'] = 3;
             $this->mp->update_campaign_options($campaign->id, $options_upd);
             $message = 'All posts linked to movies';
