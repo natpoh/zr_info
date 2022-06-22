@@ -31,7 +31,7 @@ class MoviesParserAdmin extends ItemAdmin {
         20160 => 'Two weeks',
         43200 => 'Mounth',
     );
-    public $parse_number = array(1 => 1, 5 => 5, 10 => 10, 20 => 20, 50 => 50, 100 => 100, 200 => 200, 500 => 500, 1000 => 1000);
+    public $parse_number = array(1 => 1, 2 => 2, 3 => 3, 5 => 5, 7 => 7, 10 => 10, 20 => 20, 35 => 35, 50 => 50, 75 => 75, 100 => 100, 200 => 200, 500 => 500, 1000 => 1000);
     public $camp_state = array(
         1 => array('title' => 'Active'),
         4 => array('title' => 'Done'),
@@ -162,11 +162,10 @@ class MoviesParserAdmin extends ItemAdmin {
         2 => 'Tor Webdrivers',
         3 => 'Tor Curl',
     );
-    
     public $tor_mode = array(
         0 => 'Tor and Proxy',
         1 => 'Tor',
-        2 => 'Proxy',        
+        2 => 'Proxy',
     );
 
     /* Generate urls */
@@ -1299,37 +1298,37 @@ class MoviesParserAdmin extends ItemAdmin {
                     <?php } ?>
                 </tbody>
             </table>    <?php
-        }
-    }
+                }
+            }
 
-    /*
-     * Rules links
-     */
+            /*
+             * Rules links
+             */
 
-    public function preview_links($campaign) {
-        $options = $this->mp->get_options($campaign);
-        $o = $options['links'];
-        $count = $o['pr_num'];
-        $cid = $campaign->id;
-        $last_posts = $this->mp->get_last_posts($count, $cid, -1, 1);
-        $preivew_data = array();
+            public function preview_links($campaign) {
+                $options = $this->mp->get_options($campaign);
+                $o = $options['links'];
+                $count = $o['pr_num'];
+                $cid = $campaign->id;
+                $last_posts = $this->mp->get_last_posts($count, $cid, -1, 1);
+                $preivew_data = array();
 
-        if ($last_posts) {
-            $o = $options['links'];
-            $preivew_data = $this->mp->find_posts_links($last_posts, $o, $campaign->type);
-        } else {
-            return -1;
-        }
+                if ($last_posts) {
+                    $o = $options['links'];
+                    $preivew_data = $this->mp->find_posts_links($last_posts, $o, $campaign->type);
+                } else {
+                    return -1;
+                }
 
-        return $preivew_data;
-    }
+                return $preivew_data;
+            }
 
-    public function preview_links_search($preivew_data) {
+            public function preview_links_search($preivew_data) {
 
-        if ($preivew_data == -1) {
-            print '<p>No posts found</p>';
-        } else if ($preivew_data) {
-            ?>
+                if ($preivew_data == -1) {
+                    print '<p>No posts found</p>';
+                } else if ($preivew_data) {
+                    ?>
             <h3>Find links result:</h3>
             <?php
             foreach ($preivew_data as $id => $item) {
@@ -1377,12 +1376,12 @@ class MoviesParserAdmin extends ItemAdmin {
                                 <td><?php print $mid ?></td>             
                                 <?php foreach ($fields as $key => $value) { ?>
                                     <td><?php
-                                        $field = $data[$key]['data'];
-                                        if (is_array($field)) {
-                                            $field = implode(', ', $field);
-                                        }
-                                        print $field;
-                                        ?>
+                                    $field = $data[$key]['data'];
+                                    if (is_array($field)) {
+                                        $field = implode(', ', $field);
+                                    }
+                                    print $field;
+                                    ?>
                                     </td>             
                                 <?php } ?>       
                                 <td><?php print $data['total']['match'] ?></td>
