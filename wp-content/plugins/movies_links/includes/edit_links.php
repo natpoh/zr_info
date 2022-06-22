@@ -19,7 +19,7 @@ if ($cid) {
 
                 <input type="hidden" name="edit_parsing_data" value="1">
                 <input type="hidden" name="id" class="id" value="<?php print $campaign->id ?>">
-                
+
                 <label class="inline-edit-interval">
                     <span class="title"><?php print __('Update') ?></span>
                     <select name="interval" class="interval">
@@ -98,7 +98,17 @@ if ($cid) {
                 $rules = $o['rules'];
                 $data_fields = $this->mp->get_parser_fields($options);
                 $this->show_links_rules($rules, $data_fields, $campaign->type);
-                ?> 
+                ?>
+                <p><b>Export</b> Rules to <a target="_blank" href="<?php print $url ?>&cid=<?php print $cid ?>&export_links_rules=1">JSON array</a>.</p>
+                <p><b>Import</b> Rules from JSON array:</p>
+                <div class="inline-edit-row">
+                    <fieldset>              
+                        <textarea name="import_rules_json" style="width:100%" rows="3"></textarea>           
+                    </fieldset>
+                </div>
+                <div class="desc">Warning: adding new rules will replace all previous rules.</div>
+                <br />
+
                 <label class="inline-edit-status">                
                     <input type="checkbox" name="preview" value="1" checked="checked">
                     <span class="checkbox-title"><?php print __('Preview') ?></span>

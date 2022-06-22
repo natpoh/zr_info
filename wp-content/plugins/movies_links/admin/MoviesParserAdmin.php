@@ -264,7 +264,15 @@ class MoviesParserAdmin extends ItemAdmin {
                         print '<textarea style="width:90%; height:500px">' . $json . '</textarea>';
 
                         exit;
-                    } else if ($_GET['find_urls']) {
+                    } else if ($_GET['export_links_rules']) {
+                        $options = $this->mp->get_options($campaign);
+                        $parser_rules = $options['links']['rules'];
+                        $json = json_encode($parser_rules);
+                        print '<h2>Export campaign links rules</h2>';
+                        print '<textarea style="width:90%; height:500px">' . $json . '</textarea>';
+
+                        exit;
+                    }else if ($_GET['find_urls']) {
                         print '<h2>Find campaign URLs</h2>';
                         $settings = $this->ml->get_settings();
                         $preivew_data = $this->mp->find_urls($campaign, $this->mp->get_options($campaign), $settings, false);
@@ -898,7 +906,16 @@ class MoviesParserAdmin extends ItemAdmin {
                     $parsing[$field] = $form_state[$field];
                 }
             }
+
             $parsing['rules'] = $this->links_rules_form($form_state);
+
+            if ($form_state['import_rules_json']) {
+                $rules = json_decode(trim(stripslashes($form_state['import_rules_json'])), true);
+                if (sizeof($rules)) {
+                    $parsing['rules'] = $rules;
+                }
+            }
+
             $options['links'] = $parsing;
 
             $this->mp->update_campaign_options($id, $options);
@@ -1298,37 +1315,37 @@ class MoviesParserAdmin extends ItemAdmin {
                     <?php } ?>
                 </tbody>
             </table>    <?php
-                }
-            }
+        }
+    }
 
-            /*
-             * Rules links
-             */
+    /*
+     * Rules links
+     */
 
-            public function preview_links($campaign) {
-                $options = $this->mp->get_options($campaign);
-                $o = $options['links'];
-                $count = $o['pr_num'];
-                $cid = $campaign->id;
-                $last_posts = $this->mp->get_last_posts($count, $cid, -1, 1);
-                $preivew_data = array();
+    public function preview_links($campaign) {
+        $options = $this->mp->get_options($campaign);
+        $o = $options['links'];
+        $count = $o['pr_num'];
+        $cid = $campaign->id;
+        $last_posts = $this->mp->get_last_posts($count, $cid, -1, 1);
+        $preivew_data = array();
 
-                if ($last_posts) {
-                    $o = $options['links'];
-                    $preivew_data = $this->mp->find_posts_links($last_posts, $o, $campaign->type);
-                } else {
-                    return -1;
-                }
+        if ($last_posts) {
+            $o = $options['links'];
+            $preivew_data = $this->mp->find_posts_links($last_posts, $o, $campaign->type);
+        } else {
+            return -1;
+        }
 
-                return $preivew_data;
-            }
+        return $preivew_data;
+    }
 
-            public function preview_links_search($preivew_data) {
+    public function preview_links_search($preivew_data) {
 
-                if ($preivew_data == -1) {
-                    print '<p>No posts found</p>';
-                } else if ($preivew_data) {
-                    ?>
+        if ($preivew_data == -1) {
+            print '<p>No posts found</p>';
+        } else if ($preivew_data) {
+            ?>
             <h3>Find links result:</h3>
             <?php
             foreach ($preivew_data as $id => $item) {
@@ -1376,12 +1393,12 @@ class MoviesParserAdmin extends ItemAdmin {
                                 <td><?php print $mid ?></td>             
                                 <?php foreach ($fields as $key => $value) { ?>
                                     <td><?php
-                                    $field = $data[$key]['data'];
-                                    if (is_array($field)) {
-                                        $field = implode(', ', $field);
-                                    }
-                                    print $field;
-                                    ?>
+                                        $field = $data[$key]['data'];
+                                        if (is_array($field)) {
+                                            $field = implode(', ', $field);
+                                        }
+                                        print $field;
+                                        ?>
                                     </td>             
                                 <?php } ?>       
                                 <td><?php print $data['total']['match'] ?></td>
