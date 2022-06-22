@@ -60,8 +60,9 @@ class MoviesParserCron extends MoviesAbstractDB {
 
             if ($currtime > $next_update || $force) {
                 // Update timer
-                $options[$type_name]['last_update'] = $currtime;
-                $this->mp->update_campaign_options($campaign->id, $options);
+                $options_upd=array();
+                $options_upd[$type_name]['last_update'] = $currtime;
+                $this->mp->update_campaign_options($campaign->id, $options_upd);
 
                 $count = $this->process_campaign($campaign, $options, $type_name, $debug);
             }
@@ -112,9 +113,9 @@ class MoviesParserCron extends MoviesAbstractDB {
         }
 
         // Update progress
-        $type_opt['progress'] = $currtime;
-        $options[$type_name] = $type_opt;
-        $this->mp->update_campaign_options($campaign->id, $options);
+        $options_upd = array();
+        $options_upd[$type_name]['progress'] = $currtime;
+        $this->mp->update_campaign_options($campaign->id, $options_upd);
 
 
         // Get posts (last is first)        
@@ -142,9 +143,9 @@ class MoviesParserCron extends MoviesAbstractDB {
               3 => 'Parsing',
               4 => 'Links',
              */
-            $type_opt['status'] = 3;
-            $options[$type_name] = $type_opt;
-            $this->mp->update_campaign_options($campaign->id, $options);
+            $options_upd=array();
+            $options_upd[$type_name]['status'] = 3;
+            $this->mp->update_campaign_options($campaign->id, $options_upd);
             $message = 'All URLs parsed to arhive';
             $this->mp->log_info($message, $campaign->id, 0, 2);
         }
@@ -168,12 +169,12 @@ class MoviesParserCron extends MoviesAbstractDB {
         }
 
         // Unpaused parsing            
-        $options = $this->start_paused_module($campaign, 'parsing');
+        $this->start_paused_module($campaign, 'parsing', $options);
 
         // Remove proggess flag
-        $type_opt['progress'] = 0;
-        $options[$type_name] = $type_opt;
-        $this->mp->update_campaign_options($campaign->id, $options);
+        $options_upd=array();
+        $options_upd[$type_name]['progress'] = 0;
+        $this->mp->update_campaign_options($campaign->id, $options_upd);
     }
 
     private function proccess_parsing($campaign, $options, $force = false) {
@@ -253,9 +254,8 @@ class MoviesParserCron extends MoviesAbstractDB {
         } else {
             // Campaign done
             // Status auto-stop
-            $type_opt['status'] = 3;
-            $options[$type_name] = $type_opt;
-            $this->mp->update_campaign_options($campaign->id, $options);
+            $options_upd[$type_name]['status'] = 3;
+            $this->mp->update_campaign_options($campaign->id, $options_upd);
             $message = 'All arhives parsed to posts';
             $this->mp->log_info($message, $campaign->id, 0, 3);
         }
@@ -375,9 +375,8 @@ class MoviesParserCron extends MoviesAbstractDB {
         } else {
             // Campaign done
             // Status auto-stop
-            $type_opt['status'] = 3;
-            $options[$type_name] = $type_opt;
-            $this->mp->update_campaign_options($campaign->id, $options);
+            $options_upd[$type_name]['status'] = 3;
+            $this->mp->update_campaign_options($campaign->id, $options_upd);
             $message = 'All posts linked to movies';
             $this->mp->log_info($message, $campaign->id, 0, 4);
         }
@@ -392,32 +391,28 @@ class MoviesParserCron extends MoviesAbstractDB {
             $this->mp->log_info($message, $campaign->id, 0, 1);
 
             // Unpaused arhives            
-            $this->start_paused_module($campaign->id, 'arhive', $options);
+            $this->start_paused_module($campaign, 'arhive', $options);
         }
 
         return $count;
     }
 
-    private function start_paused_module($cid, $module) {
-        $campaign = $this->mp->get_campaign($cid, false);
-        $options = $this->mp->get_options($campaign);
-        $update_options = false;
+    private function start_paused_module($campaign, $module, $options) {
+        $options_upd = array();
         if (isset($options[$module])) {
             $status = $options[$module]['status'];
             // Update status
             if ($status == 3) {
-                $update_options = true;
-                $options[$module]['status'] = 1;
+                $options_upd[$module]['status'] = 1;
             }
         }
 
-        if ($update_options) {
-            $this->mp->update_campaign_options($campaign->id, $options);
+        if ($options_upd) {
+            $this->mp->update_campaign_options($campaign->id, $options_upd);
             $message = 'Module unpaused: ' . $module;
             $mtype = $this->mp->log_modules[$module] ? $this->mp->log_modules[$module] : 0;
             $this->mp->log_info($message, $campaign->id, 0, $mtype);
-        }
-        return $options;
+        }        
     }
 
     private function proccess_gen_urls($campaign = '', $options, $debug) {

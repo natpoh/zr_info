@@ -52,8 +52,9 @@ class MoviesCustomHooksCron {
             // Udpdate last run
             $last = end($result);
             $last_id = $last->id;
-            $options['links']['custom_last_run_id'] = $last_id;
-            $this->mp->update_campaign_options($cid, $options);
+            $options_upd=array();
+            $options_upd['links']['custom_last_run_id'] = $last_id;
+            $this->mp->update_campaign_options($cid, $options_upd);
 
             //Movies custom hook
             $mch = $this->ml->get_mch();

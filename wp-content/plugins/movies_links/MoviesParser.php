@@ -39,7 +39,7 @@ class MoviesParser extends MoviesAbstractDB {
                     'del_pea_int' => 1440,
                     'tor_h' => 20,
                     'tor_d' => 100,
-                    'tor_mode'=>0,
+                    'tor_mode' => 0,
                     'body_len' => 500,
                 ),
                 'find_urls' => array(
@@ -343,7 +343,37 @@ class MoviesParser extends MoviesAbstractDB {
     }
 
     public function update_campaign_options($id, $options) {
-        $opt_str = serialize($options);
+        // 1. Get options
+        $campaign = $this->get_campaign($id, false);
+        $opt_prev = $this->get_options($campaign);
+        // 2. Get new options
+        foreach ($options as $key => $value) {
+            if (!$opt_prev[$key]) {
+                $opt_prev[$key] = $value;
+            } else {
+                if (is_array($opt_prev[$key])) {
+                    // Value vitch childs
+                    foreach ($options[$key] as $ckey => $cvalue) {
+                        if (!$opt_prev[$key][$ckey]) {
+                            // Add child
+                            $opt_prev[$key][$ckey] = $cvalue;
+                        } else {
+                            // Update child
+                            if ($opt_prev[$key][$ckey] != $cvalue) {
+                                $opt_prev[$key][$ckey] = $cvalue;
+                            }
+                        }
+                    }
+                } else {
+                    // String value
+                    if ($opt_prev[$key] != $value) {
+                        $opt_prev[$key] = $value;
+                    }
+                }
+            }
+        }
+        // 3. Update options
+        $opt_str = serialize($opt_prev);
         $sql = sprintf("UPDATE {$this->db['campaign']} SET options='%s' WHERE id = %d", $opt_str, (int) $id);
         $this->db_query($sql);
     }
@@ -805,8 +835,9 @@ class MoviesParser extends MoviesAbstractDB {
         $ret['total_new'] = $total_new;
 
         if (!$preview && $post_last_id) {
-            $options['gen_urls']['last_id'] = $post_last_id;
-            $this->update_campaign_options($cid, $options);
+            $options_upd = array();
+            $options_upd['gen_urls']['last_id'] = $post_last_id;
+            $this->update_campaign_options($cid, $options_upd);
         }
 
 
@@ -2302,7 +2333,7 @@ class MoviesParser extends MoviesAbstractDB {
      */
 
     public function get_header_status($headers) {
-        $status = 200;        
+        $status = 200;
         if ($headers) {
             if (preg_match_all('/HTTP\/[0-9\.]+[ ]+([0-9]{3})/', $headers, $match)) {
                 $status = $match[1][(sizeof($match[1]) - 1)];
