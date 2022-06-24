@@ -17,6 +17,7 @@ class MoviesParserAdmin extends ItemAdmin {
         1440 => 'Daily'
     );
     public $parser_interval = array(
+        5 => 'Five min',
         15 => 'Fifteen min',
         30 => 'Thirty min',
         60 => 'Hourly',
@@ -32,6 +33,7 @@ class MoviesParserAdmin extends ItemAdmin {
         43200 => 'Mounth',
     );
     public $parse_number = array(1 => 1, 2 => 2, 3 => 3, 5 => 5, 7 => 7, 10 => 10, 20 => 20, 35 => 35, 50 => 50, 75 => 75, 100 => 100, 200 => 200, 500 => 500, 1000 => 1000);
+    public $gen_urls_number = array(10 => 10, 100 => 100, 500 => 500, 1000 => 1000);
     public $camp_state = array(
         1 => array('title' => 'Active'),
         4 => array('title' => 'Done'),
@@ -245,6 +247,11 @@ class MoviesParserAdmin extends ItemAdmin {
                 // Campaign view page
                 $update_interval = $this->update_interval;
                 if ($campaign) {
+                    $debug = false;
+                    if ($_GET['debug']) {
+                        $debug = true;
+                    }
+
                     if ($_GET['export']) {
                         $urls = $this->mp->get_all_urls($cid);
                         print '<h2>Export campaign URLs</h2>';
@@ -283,12 +290,11 @@ class MoviesParserAdmin extends ItemAdmin {
                     } else if ($_GET['gen_urls']) {
                         print '<h2>Generate campaign URLs</h2>';
                         $settings = $this->ml->get_settings();
-                        $preivew_data = $this->mp->generate_urls($campaign, $this->mp->get_options($campaign), $settings, 0, false);
+                        $options = $this->mp->get_options($campaign);
 
-                        if ($preivew_data['urls']) {
-                            print '<p>Total generated: ' . $preivew_data['total'] . '</p>';
-                            print '<p>Total add new: ' . $preivew_data['total_new'] . '</p>';
-                            print '<textarea style="width: 90%; height: 500px;">' . implode("\n", $preivew_data['urls']) . '</textarea>';
+                        $count = $this->mp->proccess_gen_urls($campaign, $options, $debug);
+                        if ($count) {
+                            print '<p>Total add new: ' . $count . '</p>';
                         }
                         exit;
                     }
@@ -1992,7 +1998,7 @@ class MoviesParserAdmin extends ItemAdmin {
                 if (!$results) {
                     print '<p>Results not found</p>';
                     continue;
-                }                                
+                }
                 ?>
                 <table class="wp-list-table widefat striped table-view-list">
                     <thead>
@@ -2158,8 +2164,6 @@ class MoviesParserAdmin extends ItemAdmin {
 
     public function campaign_find_urls_submit($form_state) {
 
-
-
         if ($form_state['id']) {
             $id = $form_state['id'];
             if ($form_state['find_urls']) {
@@ -2234,6 +2238,11 @@ class MoviesParserAdmin extends ItemAdmin {
                 $checkbox_fields = array('status');
                 foreach ($checkbox_fields as $field) {
                     $find_urls[$field] = isset($form_state[$field]) ? $form_state[$field] : 0;
+                }
+
+                $reset = isset($form_state['reset']) ? true : false;
+                if ($reset) {
+                    $find_urls['last_id'] = 0;
                 }
 
                 $options = $opt_prev;

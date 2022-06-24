@@ -60,7 +60,7 @@ class MoviesParserCron extends MoviesAbstractDB {
 
             if ($currtime > $next_update || $force) {
                 // Update timer
-                $options_upd=array();
+                $options_upd = array();
                 $options_upd[$type_name]['last_update'] = $currtime;
                 $this->mp->update_campaign_options($campaign->id, $options_upd);
 
@@ -83,11 +83,19 @@ class MoviesParserCron extends MoviesAbstractDB {
         } else if ($type_name == 'links') {
             $count = $this->proccess_links($campaign, $options);
         } else if ($type_name == 'cron_urls') {
-            $count = $this->proccess_cron_urls($campaign, $options);
+            $count = $this->mp->proccess_cron_urls($campaign, $options);
+            if ($count) {
+                // Unpaused arhives            
+                $this->start_paused_module($campaign, 'arhive', $options);
+            }
         } else if ($type_name == 'gen_urls') {
-            $count = $this->proccess_gen_urls($campaign, $options, $debug);
+            $count = $this->mp->proccess_gen_urls($campaign, $options, $debug);
+            if ($count) {
+                // Unpaused arhives            
+                $this->start_paused_module($campaign, 'arhive', $options);
+            }
         } else if ($type_name == 'delete_garbage') {
-            //$count = $this->proccess_gen_urls($campaign, $options, $debug);
+            
         }
 
 
@@ -143,7 +151,7 @@ class MoviesParserCron extends MoviesAbstractDB {
               3 => 'Parsing',
               4 => 'Links',
              */
-            $options_upd=array();
+            $options_upd = array();
             $options_upd[$type_name]['status'] = 3;
             $this->mp->update_campaign_options($campaign->id, $options_upd);
             $message = 'All URLs parsed to arhive';
@@ -172,7 +180,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         $this->start_paused_module($campaign, 'parsing', $options);
 
         // Remove proggess flag
-        $options_upd=array();
+        $options_upd = array();
         $options_upd[$type_name]['progress'] = 0;
         $this->mp->update_campaign_options($campaign->id, $options_upd);
     }
@@ -254,7 +262,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         } else {
             // Campaign done
             // Status auto-stop
-            $options_upd=array();
+            $options_upd = array();
             $options_upd[$type_name]['status'] = 3;
             $this->mp->update_campaign_options($campaign->id, $options_upd);
             $message = 'All arhives parsed to posts';
@@ -376,26 +384,12 @@ class MoviesParserCron extends MoviesAbstractDB {
         } else {
             // Campaign done
             // Status auto-stop
-            $options_upd=array();
+            $options_upd = array();
             $options_upd[$type_name]['status'] = 3;
             $this->mp->update_campaign_options($campaign->id, $options_upd);
             $message = 'All posts linked to movies';
             $this->mp->log_info($message, $campaign->id, 0, 4);
         }
-        return $count;
-    }
-
-    private function proccess_cron_urls($campaign = '', $options) {
-        $result = $this->mp->cron_urls($campaign, $options, false);
-        if (isset($result['add_urls'])) {
-            $count = sizeof($result['add_urls']);
-            $message = 'Add new URLs: ' . $count;
-            $this->mp->log_info($message, $campaign->id, 0, 1);
-
-            // Unpaused arhives            
-            $this->start_paused_module($campaign, 'arhive', $options);
-        }
-
         return $count;
     }
 
@@ -414,16 +408,7 @@ class MoviesParserCron extends MoviesAbstractDB {
             $message = 'Module unpaused: ' . $module;
             $mtype = $this->mp->log_modules[$module] ? $this->mp->log_modules[$module] : 0;
             $this->mp->log_info($message, $campaign->id, 0, $mtype);
-        }        
-    }
-
-    private function proccess_gen_urls($campaign = '', $options, $debug) {
-        $o = $options['gen_urls'];
-        $last_id = $o['last_id'];
-        $settings = $this->ml->get_settings();
-        $ret = $this->mp->generate_urls($campaign, $options, $settings, $last_id, false, $debug);
-        $count = $ret['total'];
-        return $count;
+        }
     }
 
     private function arhive_url($item, $campaign, $type_opt, $force = false) {
@@ -456,7 +441,7 @@ class MoviesParserCron extends MoviesAbstractDB {
 
         $ip_limit = array('h' => $type_opt['tor_h'], 'd' => $type_opt['tor_d']);
         $tor_mode = $type_opt['tor_mode'];
-        
+
         $settings = $this->ml->get_settings();
         if ($use_webdriver == 1) {
             // Webdriver
@@ -551,8 +536,6 @@ class MoviesParserCron extends MoviesAbstractDB {
         $this->mp->change_url_state($item->id, $status, true);
     }
 
-
-
     private function check_and_create_dir($dst_path) {
         $path = '';
         if (ABSPATH) {
@@ -617,7 +600,6 @@ class MoviesParserCron extends MoviesAbstractDB {
             }
 
             // Delete garbage
-            
             // Delete error arhives
             $del_pea = $type_opt['del_pea'];
             if ($del_pea == 1) {
@@ -637,7 +619,7 @@ class MoviesParserCron extends MoviesAbstractDB {
                     }
                 }
             }
-            
+
             // Delete error urls
             $service_opt = $options['service_urls'];
             $del_pea = $service_opt['del_pea'];
@@ -646,7 +628,7 @@ class MoviesParserCron extends MoviesAbstractDB {
                 $status = 4;
                 $count = $service_opt['del_pea_cnt'];
                 $curr_time = $this->curr_time();
-                
+
                 $urls = $this->mp->get_urls($status, 1, $cid, -1, -1, -1, '', 'ASC', $count);
                 if ($debug) {
                     print_r(array('Delete arhives witch url error', $urls));

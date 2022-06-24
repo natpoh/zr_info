@@ -39,6 +39,9 @@ if (sizeof($posts) > 0) {
             <td class="manage-column column-cb check-column" ><input type="checkbox" id="cb-select-all-1"></td>
             <?php $this->sorted_head('id', 'id', $orderby, $order, $page_url) ?>             
             <th><?php print __('Link') ?></th>                                
+            <?php if ($campaign->type != 1) { ?>
+                <th><?php print __('Movie ID') ?></th>
+            <?php } ?>
             <?php $this->sorted_head('status', 'Status', $orderby, $order, $page_url) ?>                                     
             <?php $this->sorted_head('adate', 'Arhive', $orderby, $order, $page_url) ?>            
             <?php $this->sorted_head('pdate', 'Post', $orderby, $order, $page_url) ?>                    
@@ -69,6 +72,9 @@ if (sizeof($posts) > 0) {
                         <td class="wrap">                            
                             <a href="<?php print $item->link ?>" target="_blank" title="<?php print $item->link ?>"><?php print $item->link ?></a>                                               
                         </td>
+                        <?php if ($campaign->type != 1) { ?>
+                            <th><a href="/wp-admin/admin.php?page=critic_matic_movies&mid=<?php print $item->pid ?>"><?php print $item->pid ?></a></th>
+                        <?php } ?>
                         <td><?php print $this->get_url_status($item->status) ?></td>
                         <td>
                             <?php

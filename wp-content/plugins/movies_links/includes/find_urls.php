@@ -13,8 +13,8 @@ if ($cid) {
     $options = $this->mp->get_options($campaign);
     $find_urls = $options['find_urls'];
     ?>
-    
-    
+
+
     <form accept-charset="UTF-8" method="post" id="generate_urls">
 
         <div class="cm-edit inline-edit-row">
@@ -24,10 +24,10 @@ if ($cid) {
                 ?>      
                 <input type="hidden" name="service_urls" value="1">
                 <input type="hidden" name="id" class="id" value="<?php print $campaign->id ?>">              
-                
+
                 <h3>Parser settings</h3>
-                
-                 <label class="inline-edit-interval">
+
+                <label class="inline-edit-interval">
                     <span class="title"><?php print __('Parse with') ?></span>
                     <select name="webdrivers" class="interval">
                         <?php
@@ -99,8 +99,8 @@ if ($cid) {
                     <span class="inline-edit"><?php print __('Number of URLs parsing from one IP at one day') ?></span> 
                 </label>
 
-                
-                
+
+
                 <h3>Garbage collector</h3>
                 <label class="inline-edit-status">                
                     <?php
@@ -135,189 +135,192 @@ if ($cid) {
             </fieldset>
         </div>
     </form>
-    
-    <h2><?php print __('Search URL addresses on site pages') ?></h2>
-       
-    <form accept-charset="UTF-8" method="post" id="find_urls">     
-        
-        <div class="cm-edit inline-edit-row">
-            <fieldset>                  
-                <input type="hidden" name="find_urls" value="1">
-                <input type="hidden" name="id" class="id" value="<?php print $campaign->id ?>">
 
-                <label>
-                    <span class="title"><?php print __('First page') ?></span>
-                    <span class="input-text-wrap"><input type="text" name="first" placeholder="Example: https://example.com/AutorName" class="title" value="<?php print htmlspecialchars(base64_decode($find_urls['first'])) ?>"></span>
-                </label>
+    <?php if ($campaign->type != 2): ?>
 
-                <label>
-                    <span class="title"><?php print __('Next page') ?></span>
-                    <span class="input-text-wrap"><input type="text" name="page" placeholder="Example: https://example.com/AutorName/page/$1" value="<?php print htmlspecialchars(base64_decode($find_urls['page'])) ?>"></span>
-                </label>
+        <h2><?php print __('Search URL addresses on site pages') ?></h2>
 
-                <label>
-                    <span class="title"><?php print __('Page from') ?></span>
-                    <span class="input-text-wrap"><input type="text" name="from" placeholder="Default: 2" value="<?php print $find_urls['from'] ?>"></span>
-                </label>
-
-                <label>
-                    <span class="title"><?php print __('Page to') ?></span>
-                    <span class="input-text-wrap"><input type="text" name="to" placeholder="Max page" value="<?php print $find_urls['to'] ?>"></span>
-                </label>
-
-                <label>
-                    <span class="title"><?php print __('Match reg') ?></span>
-                    <span class="input-text-wrap"><input type="text" name="match" placeholder="<?php print htmlspecialchars('Example: /<a[^>]+href="([^"]+)"[^>]*>Read More<\/a>/'); ?>" value="<?php print htmlspecialchars(base64_decode($find_urls['match'])) ?>"></span>
-                </label>
-
-                <label class="inline-edit-interval">
-                    <span class="title"><?php print __('Wait') ?></span>
-                    <select name="wait" class="interval">
-                        <?php
-                        $interval = array(1, 2, 3);
-                        foreach ($interval as $key) {
-                            $selected = ($key == $find_urls['wait']) ? 'selected' : '';
-                            ?>
-                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $key ?> sec.</option>                                
-                            <?php
-                        }
-                        ?>                          
-                    </select> 
-                    <span class="inline-edit"><?php print __('Waiting before loading the next page') ?></span>                    
-                </label>
-
-                <label class="inline-edit-status">                
-                    <input type="checkbox" name="preview" value="1" checked="checked">
-                    <span class="checkbox-title"><?php print __('Preview first page') ?></span>
-                </label>
-
-
-                <br />
-                <?php wp_nonce_field('ml-nonce', 'ml-nonce'); ?>
-                <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save settings') ?>" class="button-primary">  
-                <a target="_blank" href="<?php print $url ?>&cid=<?php print $cid ?>&find_urls=1" class="button-secondary">Find URLs</a> 
-
-            </fieldset>
-        </div>
-    </form>
-    <br />
-    <?php if ($preivew_data) { ?>
-
-        <h3>Find URLs</h3>
-        <div class="content-preview">
-            <textarea style="width: 90%; height: 300px;"><?php
-                if ($preivew_data['urls']) {
-                    foreach ($preivew_data['urls'] as $value) {
-                        print $value . "\n";
-                    }
-                }
-                ?></textarea>                                
-        </div>
-        <h2>Headers</h2>
-        <textarea style="width: 90%; height: 300px;"><?php print $preivew_data['headers'] ?></textarea>        
-        <h2>Content</h2>
-        <textarea style="width: 90%; height: 300px;"><?php print htmlspecialchars($preivew_data['content']) ?></textarea>      
-
-    <?php } ?>
-    <hr />
-
-    <?php
-    $cron_urls = $options['cron_urls'];
-    ?>
-    <h2><?php print __('Regularly fetching URLs from a website page') ?></h2>
-    <div style="overflow: hidden">
-        <form accept-charset="UTF-8" method="post" id="campaign">
+        <form accept-charset="UTF-8" method="post" id="find_urls">     
 
             <div class="cm-edit inline-edit-row">
-                <fieldset>                         
-                    <input type="hidden" name="cron_urls" value="1">
+                <fieldset>                  
+                    <input type="hidden" name="find_urls" value="1">
                     <input type="hidden" name="id" class="id" value="<?php print $campaign->id ?>">
-                    <label class="inline-edit-status">                
-                        <?php
-                        $checked = '';
-                        if ($cron_urls['status'] == 1) {
-                            $checked = 'checked="checked"';
-                        }
-                        ?>
-                        <input type="checkbox" name="status" value="1" <?php print $checked ?> >
-                        <span class="checkbox-title"><?php print __('Fetching is active') ?></span>
-                    </label>
-                    <label class="inline-edit-interval">
-                        <span class="title"><?php print __('Update') ?></span>
-                        <select name="interval" class="interval">
-                            <?php
-                            $inetrval = $cron_urls['interval'];
-                            foreach ($this->parser_interval as $key => $name) {
-                                $selected = ($key == $inetrval) ? 'selected' : '';
-                                ?>
-                                <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
-                                <?php
-                            }
-                            ?>                          
-                        </select> 
-                        <span class="inline-edit"><?php print __('The parser update interval') ?></span>                    
+
+                    <label>
+                        <span class="title"><?php print __('First page') ?></span>
+                        <span class="input-text-wrap"><input type="text" name="first" placeholder="Example: https://example.com/AutorName" class="title" value="<?php print htmlspecialchars(base64_decode($find_urls['first'])) ?>"></span>
                     </label>
 
                     <label>
-                        <span class="title"><?php print __('Page') ?></span>
-                        <span class="input-text-wrap"><input type="text" name="page" placeholder="Example: https://example.com/AutorName" class="title" value="<?php print htmlspecialchars(base64_decode($cron_urls['page'])) ?>"></span>
+                        <span class="title"><?php print __('Next page') ?></span>
+                        <span class="input-text-wrap"><input type="text" name="page" placeholder="Example: https://example.com/AutorName/page/$1" value="<?php print htmlspecialchars(base64_decode($find_urls['page'])) ?>"></span>
+                    </label>
+
+                    <label>
+                        <span class="title"><?php print __('Page from') ?></span>
+                        <span class="input-text-wrap"><input type="text" name="from" placeholder="Default: 2" value="<?php print $find_urls['from'] ?>"></span>
+                    </label>
+
+                    <label>
+                        <span class="title"><?php print __('Page to') ?></span>
+                        <span class="input-text-wrap"><input type="text" name="to" placeholder="Max page" value="<?php print $find_urls['to'] ?>"></span>
                     </label>
 
                     <label>
                         <span class="title"><?php print __('Match reg') ?></span>
-                        <span class="input-text-wrap"><input type="text" name="match" placeholder="<?php print htmlspecialchars('Example: /<a[^>]+href="([^"]+)"[^>]*>Read More<\/a>/'); ?>" value="<?php print htmlspecialchars(base64_decode($cron_urls['match'])) ?>"></span>
+                        <span class="input-text-wrap"><input type="text" name="match" placeholder="<?php print htmlspecialchars('Example: /<a[^>]+href="([^"]+)"[^>]*>Read More<\/a>/'); ?>" value="<?php print htmlspecialchars(base64_decode($find_urls['match'])) ?>"></span>
+                    </label>
+
+                    <label class="inline-edit-interval">
+                        <span class="title"><?php print __('Wait') ?></span>
+                        <select name="wait" class="interval">
+                            <?php
+                            $interval = array(1, 2, 3);
+                            foreach ($interval as $key) {
+                                $selected = ($key == $find_urls['wait']) ? 'selected' : '';
+                                ?>
+                                <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $key ?> sec.</option>                                
+                                <?php
+                            }
+                            ?>                          
+                        </select> 
+                        <span class="inline-edit"><?php print __('Waiting before loading the next page') ?></span>                    
                     </label>
 
                     <label class="inline-edit-status">                
-                        <input type="checkbox" name="cron_preview" value="1" checked="checked">
-                        <span class="checkbox-title"><?php print __('Preview') ?></span>
+                        <input type="checkbox" name="preview" value="1" checked="checked">
+                        <span class="checkbox-title"><?php print __('Preview first page') ?></span>
                     </label>
-                    <br />
 
+
+                    <br />
                     <?php wp_nonce_field('ml-nonce', 'ml-nonce'); ?>
                     <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save settings') ?>" class="button-primary">  
+                    <a target="_blank" href="<?php print $url ?>&cid=<?php print $cid ?>&find_urls=1" class="button-secondary">Find URLs</a> 
 
                 </fieldset>
             </div>
         </form>
-    </div>
-
-    <?php if ($cron_preivew_data) { ?>
-
         <br />
-        <h2>Fetch URLs</h2>
-        <div class="content-preview">
-            <textarea style="width: 90%; height: 300px;"><?php
-                if ($cron_preivew_data['urls']) {
-                    foreach ($cron_preivew_data['urls'] as $value) {
-                        print $value . "\n";
+        <?php if ($preivew_data) { ?>
+
+            <h3>Find URLs</h3>
+            <div class="content-preview">
+                <textarea style="width: 90%; height: 300px;"><?php
+                    if ($preivew_data['urls']) {
+                        foreach ($preivew_data['urls'] as $value) {
+                            print $value . "\n";
+                        }
                     }
-                }
-                ?></textarea>                                
+                    ?></textarea>                                
+            </div>
+            <h2>Headers</h2>
+            <textarea style="width: 90%; height: 300px;"><?php print $preivew_data['headers'] ?></textarea>        
+            <h2>Content</h2>
+            <textarea style="width: 90%; height: 300px;"><?php print htmlspecialchars($preivew_data['content']) ?></textarea>      
+
+        <?php } ?>
+        <hr />
+
+        <?php
+        $cron_urls = $options['cron_urls'];
+        ?>
+        <h2><?php print __('Regularly fetching URLs from a website page') ?></h2>
+        <div style="overflow: hidden">
+            <form accept-charset="UTF-8" method="post" id="campaign">
+
+                <div class="cm-edit inline-edit-row">
+                    <fieldset>                         
+                        <input type="hidden" name="cron_urls" value="1">
+                        <input type="hidden" name="id" class="id" value="<?php print $campaign->id ?>">
+                        <label class="inline-edit-status">                
+                            <?php
+                            $checked = '';
+                            if ($cron_urls['status'] == 1) {
+                                $checked = 'checked="checked"';
+                            }
+                            ?>
+                            <input type="checkbox" name="status" value="1" <?php print $checked ?> >
+                            <span class="checkbox-title"><?php print __('Fetching is active') ?></span>
+                        </label>
+                        <label class="inline-edit-interval">
+                            <span class="title"><?php print __('Update') ?></span>
+                            <select name="interval" class="interval">
+                                <?php
+                                $inetrval = $cron_urls['interval'];
+                                foreach ($this->parser_interval as $key => $name) {
+                                    $selected = ($key == $inetrval) ? 'selected' : '';
+                                    ?>
+                                    <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                                    <?php
+                                }
+                                ?>                          
+                            </select> 
+                            <span class="inline-edit"><?php print __('The parser update interval') ?></span>                    
+                        </label>
+
+                        <label>
+                            <span class="title"><?php print __('Page') ?></span>
+                            <span class="input-text-wrap"><input type="text" name="page" placeholder="Example: https://example.com/AutorName" class="title" value="<?php print htmlspecialchars(base64_decode($cron_urls['page'])) ?>"></span>
+                        </label>
+
+                        <label>
+                            <span class="title"><?php print __('Match reg') ?></span>
+                            <span class="input-text-wrap"><input type="text" name="match" placeholder="<?php print htmlspecialchars('Example: /<a[^>]+href="([^"]+)"[^>]*>Read More<\/a>/'); ?>" value="<?php print htmlspecialchars(base64_decode($cron_urls['match'])) ?>"></span>
+                        </label>
+
+                        <label class="inline-edit-status">                
+                            <input type="checkbox" name="cron_preview" value="1" checked="checked">
+                            <span class="checkbox-title"><?php print __('Preview') ?></span>
+                        </label>
+                        <br />
+
+                        <?php wp_nonce_field('ml-nonce', 'ml-nonce'); ?>
+                        <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save settings') ?>" class="button-primary">  
+
+                    </fieldset>
+                </div>
+            </form>
         </div>
-        <h2>Headers</h2>
-        <textarea style="width: 90%; height: 300px;"><?php print $cron_preivew_data['headers'] ?></textarea>        
-        <h2>Content</h2>
-        <textarea style="width: 90%; height: 300px;"><?php print htmlspecialchars($cron_preivew_data['content']) ?></textarea>      
 
-    <?php } ?>
-    <br />
-    <hr />
-    <h2>Add URLs list</h2>
+        <?php if ($cron_preivew_data) { ?>
 
-    <form accept-charset="UTF-8" method="post" id="add_urls">
+            <br />
+            <h2>Fetch URLs</h2>
+            <div class="content-preview">
+                <textarea style="width: 90%; height: 300px;"><?php
+                    if ($cron_preivew_data['urls']) {
+                        foreach ($cron_preivew_data['urls'] as $value) {
+                            print $value . "\n";
+                        }
+                    }
+                    ?></textarea>                                
+            </div>
+            <h2>Headers</h2>
+            <textarea style="width: 90%; height: 300px;"><?php print $cron_preivew_data['headers'] ?></textarea>        
+            <h2>Content</h2>
+            <textarea style="width: 90%; height: 300px;"><?php print htmlspecialchars($cron_preivew_data['content']) ?></textarea>      
 
-        <div class="cm-edit inline-edit-row">
-            <fieldset>              
-                <input type="hidden" name="id" class="id" value="<?php print $campaign->id ?>">
-                <textarea name="add_urls" style="width:100%" rows="10"></textarea>
-                <span class="inline-edit">Each address with a separate line.</span>
-                <br />    <br />
-                <?php wp_nonce_field('ml-nonce', 'ml-nonce'); ?>
-                <input type="submit" name="options" id="edit-submit" value="<?php echo __('Submit URLs') ?>" class="button-secondary">  
-            </fieldset>
-        </div>
-    </form>
+        <?php } ?>
+        <br />
+        <hr />
+        <h2>Add URLs list</h2>
+
+        <form accept-charset="UTF-8" method="post" id="add_urls">
+
+            <div class="cm-edit inline-edit-row">
+                <fieldset>              
+                    <input type="hidden" name="id" class="id" value="<?php print $campaign->id ?>">
+                    <textarea name="add_urls" style="width:100%" rows="10"></textarea>
+                    <span class="inline-edit">Each address with a separate line.</span>
+                    <br />    <br />
+                    <?php wp_nonce_field('ml-nonce', 'ml-nonce'); ?>
+                    <input type="submit" name="options" id="edit-submit" value="<?php echo __('Submit URLs') ?>" class="button-secondary">  
+                </fieldset>
+            </div>
+        </form>
+    <?php endif; ?>
     <br />
     <hr />
     <h2>Generate URLs from RWT database</h2>
@@ -343,6 +346,24 @@ if ($cid) {
                     <input type="checkbox" name="status" value="1" <?php print $checked ?> >
                     <span class="checkbox-title"><?php print __('Cron automatically generates new URLs is active') ?></span>
                 </label>
+                <label class="inline-edit-interval"> 
+                    <span class="title"><?php print __('URLs count') ?></span>         
+                    <?php
+                    $parse_num = $gen_urls['num'];
+                    $previews_number = $this->gen_urls_number;
+                    ?>
+                    <select name="num" class="interval">
+                        <?php
+                        foreach ($previews_number as $key => $name) {
+                            $selected = ($key == $parse_num) ? 'selected' : '';
+                            ?>
+                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                            <?php
+                        }
+                        ?>                          
+                    </select>                     
+                    <span class="inline-edit"><?php print __('Number of URLs for cron parsing') ?></span> 
+                </label>
                 <label class="inline-edit-interval">
                     <span class="title"><?php print __('Update') ?></span>
                     <select name="interval" class="interval">
@@ -362,9 +383,14 @@ if ($cid) {
                     <span class="title"><?php print __('Last Id') ?></span>
                     <span class="input-text-wrap"><input type="text" name="last_id" value="<?php print $gen_urls['last_id'] ?>" disabled="disabled"></span>
                 </label>
+
+                <label class="inline-edit-status">                                
+                    <input type="checkbox" name="reset" value="1" >
+                    <span class="checkbox-title"><?php print __('Reset last Id') ?></span>
+                </label>
                 <br />
 
-                <p><b>Generate URLs settings</b></p>
+                <h2>Generate URLs settings</h2>
 
                 <label class="inline-edit-interval">
                     <span class="title"><?php print __('Data type') ?></span>
@@ -455,6 +481,6 @@ if ($cid) {
 
     <?php } ?>
 
-    
+
 
 <?php } ?>
