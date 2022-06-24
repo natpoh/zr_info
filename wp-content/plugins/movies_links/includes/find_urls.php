@@ -13,10 +13,133 @@ if ($cid) {
     $options = $this->mp->get_options($campaign);
     $find_urls = $options['find_urls'];
     ?>
+    
+    
+    <form accept-charset="UTF-8" method="post" id="generate_urls">
+
+        <div class="cm-edit inline-edit-row">
+            <fieldset>              
+                <?php
+                $service_urls = $options['service_urls'];
+                ?>      
+                <input type="hidden" name="service_urls" value="1">
+                <input type="hidden" name="id" class="id" value="<?php print $campaign->id ?>">              
+                
+                <h3>Parser settings</h3>
+                
+                 <label class="inline-edit-interval">
+                    <span class="title"><?php print __('Parse with') ?></span>
+                    <select name="webdrivers" class="interval">
+                        <?php
+                        $current = $service_urls['webdrivers'];
+                        foreach ($this->parse_mode as $key => $name) {
+                            $selected = ($key == $current) ? 'selected' : '';
+                            ?>
+                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                            <?php
+                        }
+                        ?>                          
+                    </select>                                        
+                </label>
+
+                <label class="inline-edit-interval">
+                    <span class="title"><?php print __('Tor mode') ?></span>
+                    <select name="tor_mode" class="interval">
+                        <?php
+                        $current = $service_urls['tor_mode'];
+                        foreach ($this->tor_mode as $key => $name) {
+                            $selected = ($key == $current) ? 'selected' : '';
+                            ?>
+                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                            <?php
+                        }
+                        ?>                          
+                    </select>                                        
+                </label>
+
+
+                <label class="inline-edit-interval"> 
+                    <span class="title"><?php print __('Tor hour') ?></span>         
+                    <?php
+                    $parse_num = $service_urls['tor_h'];
+                    $previews_number = $this->parse_number;
+                    ?>
+
+                    <select name="tor_h" class="tor_h">
+                        <?php
+                        foreach ($previews_number as $key => $name) {
+                            $selected = ($key == $parse_num) ? 'selected' : '';
+                            ?>
+                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                            <?php
+                        }
+                        ?>                          
+                    </select>                     
+                    <span class="inline-edit"><?php print __('Number of URLs parsing from one IP at one hour') ?></span> 
+                </label>
+
+
+                <label class="inline-edit-interval"> 
+                    <span class="title"><?php print __('Tor day') ?></span>         
+                    <?php
+                    $parse_num = $service_urls['tor_d'];
+                    $previews_number = $this->parse_number;
+                    ?>
+
+                    <select name="tor_d" class="tor_d">
+                        <?php
+                        foreach ($previews_number as $key => $name) {
+                            $selected = ($key == $parse_num) ? 'selected' : '';
+                            ?>
+                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                            <?php
+                        }
+                        ?>                          
+                    </select>                     
+                    <span class="inline-edit"><?php print __('Number of URLs parsing from one IP at one day') ?></span> 
+                </label>
+
+                
+                
+                <h3>Garbage collector</h3>
+                <label class="inline-edit-status">                
+                    <?php
+                    $checked = '';
+                    if ($service_urls['del_pea'] == 1) {
+                        $checked = 'checked="checked"';
+                    }
+                    ?>
+                    <input type="checkbox" name="del_pea" value="1" <?php print $checked ?> >
+                    <span class="checkbox-title"><?php print __('Delete archives with errors') ?></span>
+                </label>
+
+                <label class="inline-edit-interval">
+
+                    <select name="del_pea_cnt" class="interval">
+                        <?php
+                        $inetrval = $service_urls['del_pea_cnt'];
+                        foreach ($this->parse_number as $key => $name) {
+                            $selected = ($key == $inetrval) ? 'selected' : '';
+                            ?>
+                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                            <?php
+                        }
+                        ?>                          
+                    </select> 
+                    <span class="inline-edit"><?php print __('URLs count') ?></span>                    
+                </label>
+
+                <br />
+                <?php wp_nonce_field('ml-nonce', 'ml-nonce'); ?>
+                <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save settings') ?>" class="button-primary">  
+            </fieldset>
+        </div>
+    </form>
+    
     <h2><?php print __('Search URL addresses on site pages') ?></h2>
-
-    <form accept-charset="UTF-8" method="post" id="find_urls">
-
+       
+    <form accept-charset="UTF-8" method="post" id="find_urls">     
+        
         <div class="cm-edit inline-edit-row">
             <fieldset>                  
                 <input type="hidden" name="find_urls" value="1">
@@ -332,48 +455,6 @@ if ($cid) {
 
     <?php } ?>
 
-    <form accept-charset="UTF-8" method="post" id="generate_urls">
-
-        <div class="cm-edit inline-edit-row">
-            <fieldset>              
-                <?php
-                $service_urls = $options['service_urls'];
-                ?>      
-                <input type="hidden" name="service_urls" value="1">
-                <input type="hidden" name="id" class="id" value="<?php print $campaign->id ?>">              
-                <h3>Garbage collector</h3>
-                <label class="inline-edit-status">                
-                    <?php
-                    $checked = '';
-                    if ($service_urls['del_pea'] == 1) {
-                        $checked = 'checked="checked"';
-                    }
-                    ?>
-                    <input type="checkbox" name="del_pea" value="1" <?php print $checked ?> >
-                    <span class="checkbox-title"><?php print __('Delete archives with errors') ?></span>
-                </label>
-
-                <label class="inline-edit-interval">
-
-                    <select name="del_pea_cnt" class="interval">
-                        <?php
-                        $inetrval = $service_urls['del_pea_cnt'];
-                        foreach ($this->parse_number as $key => $name) {
-                            $selected = ($key == $inetrval) ? 'selected' : '';
-                            ?>
-                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
-                            <?php
-                        }
-                        ?>                          
-                    </select> 
-                    <span class="inline-edit"><?php print __('URLs count') ?></span>                    
-                </label>
-
-                <br />
-                <?php wp_nonce_field('ml-nonce', 'ml-nonce'); ?>
-                <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save settings') ?>" class="button-primary">  
-            </fieldset>
-        </div>
-    </form>
+    
 
 <?php } ?>

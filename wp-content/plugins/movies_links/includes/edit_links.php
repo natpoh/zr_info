@@ -8,7 +8,7 @@
 print $tabs;
 
 
-if ($cid) {    
+if ($cid) {
     $options = $this->mp->get_options($campaign);
     $o = $options['links'];
     ?>
@@ -62,52 +62,75 @@ if ($cid) {
                     <span class="checkbox-title"><?php print __('Parser is active') ?></span>
                 </label>
 
-                <label>
-                    <span class="title"><?php print __('Min match') ?></span>
-                    <span class="input-text-wrap"><input type="match" name="match" class="match" value="<?php print $o['match'] ?>"></span>
-                </label>
+                <?php if ($campaign->type == 2): ?>
 
-                <label>
-                    <span class="title"><?php print __('Min rating') ?></span>
-                    <span class="input-text-wrap"><input type="rating" name="rating" class="rating" value="<?php print $o['rating'] ?>"></span>
-                </label>
+                    <h2>Create URLs rules</h2>
+                    <?php
+                    $rules = $o['rules_urls'];
 
-                <label class="inline-edit-interval">
-                    <span class="title"><?php print __('Link to') ?></span>
-                    <select name="type" class="interval">
-                        <?php
-                        $rwt_select_link_type = $this->rwt_movie_type;
-                        if ($campaign->type == 1) {
-                            // Actors   
-                            $rwt_select_link_type = $this->rwt_actor_link;
-                        }
-                        // Movies
-                        foreach ($rwt_select_link_type as $key => $value) {
-                            $selected = ($key == $o['type']) ? 'selected' : '';
-                            ?>
-                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $value ?></option>                                
+                    $data_fields = $this->mp->get_parser_fields($options);
+                    $this->show_create_urls_rules($rules, $data_fields, $campaign->type);
+                    ?>
+                    <p><b>Export</b> Rules to <a target="_blank" href="<?php print $url ?>&cid=<?php print $cid ?>&export_urls_rules=1">JSON array</a>.</p>
+                    <p><b>Import</b> Rules from JSON array:</p>
+                    <div class="inline-edit-row">
+                        <fieldset>              
+                            <textarea name="import_rules_json" style="width:100%" rows="3"></textarea>           
+                        </fieldset>
+                    </div>
+                    <div class="desc">Warning: adding new rules will replace all previous rules.</div>
+                    <br />
+
+                <?php else: ?>
+
+                    <label>
+                        <span class="title"><?php print __('Min match') ?></span>
+                        <span class="input-text-wrap"><input type="match" name="match" class="match" value="<?php print $o['match'] ?>"></span>
+                    </label>
+
+                    <label>
+                        <span class="title"><?php print __('Min rating') ?></span>
+                        <span class="input-text-wrap"><input type="rating" name="rating" class="rating" value="<?php print $o['rating'] ?>"></span>
+                    </label>
+
+                    <label class="inline-edit-interval">
+                        <span class="title"><?php print __('Link to') ?></span>
+                        <select name="type" class="interval">
                             <?php
-                        }
-                        ?>                          
-                    </select> 
-                    <span class="inline-edit"><?php print __('Choose where to look for a match.') ?></span>                    
-                </label>
+                            $rwt_select_link_type = $this->rwt_movie_type;
+                            if ($campaign->type == 1) {
+                                // Actors   
+                                $rwt_select_link_type = $this->rwt_actor_link;
+                            }
+                            // Movies
+                            foreach ($rwt_select_link_type as $key => $value) {
+                                $selected = ($key == $o['type']) ? 'selected' : '';
+                                ?>
+                                <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $value ?></option>                                
+                                <?php
+                            }
+                            ?>                          
+                        </select> 
+                        <span class="inline-edit"><?php print __('Choose where to look for a match.') ?></span>                    
+                    </label>
 
-                <h2>Links rules</h2>
-                <?php
-                $rules = $o['rules'];
-                $data_fields = $this->mp->get_parser_fields($options);
-                $this->show_links_rules($rules, $data_fields, $campaign->type);
-                ?>
-                <p><b>Export</b> Rules to <a target="_blank" href="<?php print $url ?>&cid=<?php print $cid ?>&export_links_rules=1">JSON array</a>.</p>
-                <p><b>Import</b> Rules from JSON array:</p>
-                <div class="inline-edit-row">
-                    <fieldset>              
-                        <textarea name="import_rules_json" style="width:100%" rows="3"></textarea>           
-                    </fieldset>
-                </div>
-                <div class="desc">Warning: adding new rules will replace all previous rules.</div>
-                <br />
+                    <h2>Links rules</h2>
+                    <?php
+                    $rules = $o['rules'];
+                    $data_fields = $this->mp->get_parser_fields($options);
+                    $this->show_links_rules($rules, $data_fields, $campaign->type);
+                    ?>
+                    <p><b>Export</b> Rules to <a target="_blank" href="<?php print $url ?>&cid=<?php print $cid ?>&export_links_rules=1">JSON array</a>.</p>
+                    <p><b>Import</b> Rules from JSON array:</p>
+                    <div class="inline-edit-row">
+                        <fieldset>              
+                            <textarea name="import_rules_json" style="width:100%" rows="3"></textarea>           
+                        </fieldset>
+                    </div>
+                    <div class="desc">Warning: adding new rules will replace all previous rules.</div>
+                    <br />
+
+                <?php endif ?>
 
                 <label class="inline-edit-status">                
                     <input type="checkbox" name="preview" value="1" checked="checked">

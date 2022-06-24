@@ -67,8 +67,12 @@ class MoviesParser extends MoviesAbstractDB {
                     'status' => 0,
                 ),
                 'service_urls' => array(
+                    'webdrivers' => 0,
                     'del_pea' => 0,
                     'del_pea_cnt' => 10,
+                    'tor_h' => 20,
+                    'tor_d' => 100,
+                    'tor_mode' => 0,
                 ),
                 'parsing' => array(
                     'last_update' => 0,
@@ -76,7 +80,7 @@ class MoviesParser extends MoviesAbstractDB {
                     'num' => 10,
                     'pr_num' => 5,
                     'status' => 0,
-                    'rules' => ''
+                    'rules' => '',
                 ),
                 'links' => array(
                     'last_update' => 0,
@@ -88,6 +92,7 @@ class MoviesParser extends MoviesAbstractDB {
                     'match' => 2,
                     'rating' => 20,
                     'rules' => '',
+                    'rules_urls' => '',
                     'custom_last_run_id' => 0,
                 ),
             ),
@@ -146,6 +151,9 @@ class MoviesParser extends MoviesAbstractDB {
         'f' => 'Firstname',
         'l' => 'Lastname',
         'e' => 'Exist'
+    );
+    public $links_rules_url_fields = array(
+        't' => 'Title',
     );
     public $links_match_type = array(
         'm' => 'Match',
@@ -646,6 +654,7 @@ class MoviesParser extends MoviesAbstractDB {
 
     public function find_urls($campaign, $options, $settings, $preview = true) {
         $find_urls = $options['find_urls'];
+        $service_urls = $options['service_urls'];
 
         $urls = array();
         if (isset($find_urls['first']) && $find_urls['first'] != '') {
@@ -679,8 +688,10 @@ class MoviesParser extends MoviesAbstractDB {
         if ($reg && $urls) {
             foreach ($urls as $url) {
                 $url = htmlspecialchars_decode($url);
-                $code = $this->get_proxy($url, '', $headers, $settings);
-                if (preg_match_all($reg, $code, $match)) {
+
+                $code = $this->get_code_by_current_driver($url, $headers, $settings, $service_urls);
+
+                if ($code && preg_match_all($reg, $code, $match)) {
                     foreach ($match[1] as $u) {
                         if (preg_match('#^/#', $u)) {
                             //Short links
@@ -772,7 +783,8 @@ class MoviesParser extends MoviesAbstractDB {
                 $query_page = str_replace($value, $post_encode, $query_page);
             }
 
-            $code = $this->get_proxy($query_page, '', $headers, $settings);
+            $service_urls = $options['service_urls'];
+            $code = $this->get_code_by_current_driver($query_page, $headers, $settings, $service_urls);
             $ret['url'] = $query_page;
             $ret['content'] = $code;
             $ret['headers'] = $headers;
@@ -882,11 +894,15 @@ class MoviesParser extends MoviesAbstractDB {
     private function parse_urls($cid, $reg, $urls, $wait, $preview) {
 
         $ret = array();
+        $campaign = $this->get_campaign($cid, false);
+        $options = $this->get_options($campaign);
+        $service_urls = $options['service_urls'];
+        $settings = $this->ml->get_settings();
 
         if ($reg && $urls) {
             foreach ($urls as $url) {
                 $url = htmlspecialchars_decode($url);
-                $code = $this->get_proxy($url, '', $headers);
+                $code = $this->get_code_by_current_driver($url, $headers, $settings, $service_urls);
                 if (preg_match_all($reg, $code, $match)) {
                     foreach ($match[1] as $u) {
                         if (preg_match('#^/#', $u)) {
@@ -1002,7 +1018,17 @@ class MoviesParser extends MoviesAbstractDB {
         $type_opt = $options[$type_name];
 
         // Get posts (last is first)       
+        $code = $this->get_code_by_current_driver($url, $headers, $settings, $type_opt);
 
+        $valid_body_len = $this->validate_body_len($code, $type_opt['body_len']);
+        $ret['content'] = $code;
+        $ret['headers'] = $headers;
+        $ret['headers_status'] = $this->get_header_status($headers);
+        $ret['valid_body'] = $valid_body_len;
+        return $ret;
+    }
+
+    public function get_code_by_current_driver($url, &$headers, $settings, $type_opt) {
         $use_webdriver = $type_opt['webdrivers'];
         $ip_limit = array('h' => $type_opt['tor_h'], 'd' => $type_opt['tor_d']);
         $tor_mode = $type_opt['tor_mode'];
@@ -1021,12 +1047,7 @@ class MoviesParser extends MoviesAbstractDB {
             $use_proxy = $type_opt['proxy'];
             $code = $this->get_proxy($url, $use_proxy, $headers, $settings);
         }
-        $valid_body_len = $this->validate_body_len($code, $type_opt['body_len']);
-        $ret['content'] = $code;
-        $ret['headers'] = $headers;
-        $ret['headers_status'] = $this->get_header_status($headers);
-        $ret['valid_body'] = $valid_body_len;
-        return $ret;
+        return $code;
     }
 
     public function validate_body_len($code = '', $valid_len = 500) {
@@ -1975,6 +1996,8 @@ class MoviesParser extends MoviesAbstractDB {
         $links_rules_fields = $this->links_rules_fields;
         if ($camp_type == 1) {
             $links_rules_fields = $this->links_rules_actor_fields;
+        } else if ($camp_type == 2) {
+            $links_rules_fields = $this->links_rules_url_fields;
         }
 
         if ($rules) {

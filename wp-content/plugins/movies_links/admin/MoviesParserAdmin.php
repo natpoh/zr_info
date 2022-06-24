@@ -223,7 +223,7 @@ class MoviesParserAdmin extends ItemAdmin {
 
             //Tabs
             $append = '&cid=' . $cid;
-            $tabs_arr = $this->get_campaign_tabs($mlr_name);
+            $tabs_arr = $this->get_campaign_tabs($campaign, $mlr_name);
 
             $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab, $append);
 
@@ -396,7 +396,14 @@ class MoviesParserAdmin extends ItemAdmin {
                 $campaign = $this->mp->get_campaign($cid);
 
                 if (isset($_POST['preview'])) {
-                    $preivew_data = $this->preview_links($campaign);
+
+                    if ($campaign->type == 2) {
+                        // Urls
+                        $preivew_urls_data = $this->preview_links($campaign);
+                    } else {
+                        // Links
+                        $preivew_data = $this->preview_links($campaign);
+                    }
                 }
 
                 include(MOVIES_LINKS_PLUGIN_DIR . 'includes/edit_links.php');
@@ -909,12 +916,26 @@ class MoviesParserAdmin extends ItemAdmin {
 
             $parsing['status'] = isset($form_state['status']) ? $form_state['status'] : 0;
 
-            $parsing['rules'] = $this->links_rules_form($form_state);
+            if ($campaign->type == 2) {
+                // Create URLs
+                $parsing['rules_urls'] = $this->links_rules_form($form_state);
 
-            if ($form_state['import_rules_json']) {
-                $rules = json_decode(trim(stripslashes($form_state['import_rules_json'])), true);
-                if (sizeof($rules)) {
-                    $parsing['rules'] = $rules;
+                if ($form_state['import_rules_json']) {
+                    $rules = json_decode(trim(stripslashes($form_state['import_rules_json'])), true);
+                    if (sizeof($rules)) {
+                        $parsing['rules_urls'] = $rules;
+                    }
+                }
+            } else {
+                // Link to movies
+
+                $parsing['rules'] = $this->links_rules_form($form_state);
+
+                if ($form_state['import_rules_json']) {
+                    $rules = json_decode(trim(stripslashes($form_state['import_rules_json'])), true);
+                    if (sizeof($rules)) {
+                        $parsing['rules'] = $rules;
+                    }
                 }
             }
 
@@ -975,17 +996,21 @@ class MoviesParserAdmin extends ItemAdmin {
         return true;
     }
 
-    public function get_campaign_tabs($mlr_name = '') {
+    public function get_campaign_tabs($campaign, $mlr_name = '') {
         $tabs_arr = $this->parser_campaign_tabs;
         if ($mlr_name) {
             $tabs_arr['mlr'] = 'Results';
+        }
+        if ($campaign->type == 2) {
+            // Create URLs
+            $tabs_arr['links'] = '4. Create URLs';
         }
         return $tabs_arr;
     }
 
     public function parser_actions($campaign) {
         $mlr_name = $this->ml->get_campaign_mlr_name($campaign);
-        $tabs = $this->get_campaign_tabs($mlr_name);
+        $tabs = $this->get_campaign_tabs($campaign, $mlr_name);
         foreach ($tabs as $key => $value) {
             $parser_actions[$key] = array('title' => $value);
         }
@@ -1623,6 +1648,197 @@ class MoviesParserAdmin extends ItemAdmin {
                                     ?>                          
                                 </select> 
                             </td>
+                            <td>
+                                <input type="text" name="reg_new_rule_mu" class="rule_m" value="" placeholder="Delimiler">                                
+                            </td>
+                            <td>
+                                <input type="text" name="reg_new_rule_ra" class="rule_m" value="" placeholder="Rating if match">                                
+                            </td>
+                            <td>
+                                <input type="text" name="reg_new_rule_c" class="rule_m" value="" placeholder="Comment">
+                            </td>
+                            <td>
+                                <input type="text" name="reg_new_rule_w" class="rule_w" value="0">
+                            </td>
+                            <td>
+                                <input type="checkbox" name="reg_new_rule_a" value="1" checked="checked">
+                            </td>
+                            <td></td>
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            </table> 
+            <p class="desc">
+                *Rule example (match/replace): "/(pattern)/Uis". For explode use ",".<br />               
+                *Match.  Example: "$1 $2" for regexp. Default: empty.<br />
+                *Multi. If multifield add delimiter. Example: "," or ";". Default empty: single field.<br />
+                *Rating. How many points the rule will get if it matches.
+            </p>
+            <?php
+        }
+    }
+
+    public function show_create_urls_rules($rules = array(), $data_fields = array(), $camp_type = 0, $edit = true, $check = array()) {
+        if ($rules || $edit) {
+            //$rules = $this->mp->sort_link_rules_by_weight($rules, $camp_type);
+
+            $disabled = '';
+            if (!$edit) {
+                $disabled = ' disabled ';
+                $title = __('Create URLs rules');
+                ?>
+                <h2><?php print $title ?></h2>            
+            <?php } ?>
+            <table id="rules" class="wp-list-table widefat striped table-view-list">
+                <thead>
+                    <tr>
+                        <th><?php print __('Id') ?></th>
+                        <th><?php print __('Data field') ?></th>
+
+                        <th><?php print __('Type') ?></th> 
+                        <th><?php print __('Rule*') ?></th>
+                        <th><?php print __('Match*') ?></th>
+
+                        <th><?php print __('Multi*') ?></th>
+                        <th><?php print __('Rating*') ?></th>
+                        <th><?php print __('Comment') ?></th>                        
+                        <th><?php print __('Weight') ?></th> 
+                        <th><?php print __('Active') ?></th>
+                        <?php if ($edit): ?>
+                            <th><?php print __('Remove') ?></th> 
+                        <?php endif ?>
+                        <?php if ($check): ?>
+                            <th><?php print __('Check') ?></th> 
+                        <?php endif ?>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if ($rules) { ?>
+                        <?php foreach ($rules as $rid => $rule) {
+                            ?>
+                            <tr>
+                                <td>
+                                    <?php print $rid ?>
+                                    <input type="hidden" name="rule_reg_id_<?php print $rid ?>" value="<?php print $rid ?>">
+                                </td>
+                                <td>
+                                    <select name="rule_reg_d_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
+                                        <?php
+                                        if ($data_fields) {
+                                            $con = $rule['d'];
+                                            foreach ($data_fields as $key => $name) {
+                                                $selected = ($key == $con) ? 'selected' : '';
+                                                ?>
+                                                <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                                                <?php
+                                            }
+                                        }
+                                        ?>                          
+                                    </select>  
+                                </td>
+
+                                <td>
+                                    <select name="rule_reg_t_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
+                                        <?php
+                                        $con = $rule['t'];
+                                        foreach ($this->mp->link_rules_type as $key => $name) {
+                                            $selected = ($key == $con) ? 'selected' : '';
+                                            ?>
+                                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                                            <?php
+                                        }
+                                        ?>                          
+                                    </select>     
+                                </td>
+                                <td>
+                                    <input type="text" name="rule_reg_r_<?php print $rid ?>" class="reg" value="<?php print htmlspecialchars(base64_decode($rule['r'])) ?>"<?php print $disabled ?>>
+                                </td>
+                                <td>
+                                    <input type="text" name="rule_reg_m_<?php print $rid ?>" class="rule_m" value="<?php print $rule['m'] ?>"<?php print $disabled ?>>
+                                </td>
+
+                                <td>
+                                    <input type="text" name="rule_reg_mu_<?php print $rid ?>" class="rule_m" value="<?php print $rule['mu'] ?>"<?php print $disabled ?>>
+                                </td>
+                                <td>
+                                    <input type="text" name="rule_reg_ra_<?php print $rid ?>" class="rule_m" value="<?php print $rule['ra'] ?>"<?php print $disabled ?>>
+                                </td>
+                                <td>
+                                    <input type="text" name="rule_reg_c_<?php print $rid ?>" class="rule_m" value="<?php print $rule['c'] ?>"<?php print $disabled ?>>
+                                </td>
+                                <td>
+                                    <input type="text" name="rule_reg_w_<?php print $rid ?>" class="rule_w" value="<?php print $rule['w'] ?>"<?php print $disabled ?>>
+                                </td>
+                                <td>
+                                    <?php
+                                    $checked = '';
+                                    $active = isset($rule['a']) ? $rule['a'] : '';
+                                    if ($active) {
+                                        $checked = 'checked="checked"';
+                                    }
+                                    ?>
+                                    <input type="checkbox" name="rule_reg_a_<?php print $rid ?>" value="1" <?php print $checked ?> <?php print $disabled ?>>                                    
+                                </td>
+
+                                <?php if ($edit): ?>
+                                    <td>
+                                        <input type="checkbox" name="remove_reg_rule[]" value="<?php print $rid ?>">
+                                    </td>
+                                <?php endif ?>
+                                <?php if ($check): ?>
+                                    <td>
+                                        <?php
+                                        if (isset($check[$rid])) {
+                                            print 'Match';
+                                        }
+                                        ?>
+                                    </td>
+                                <?php endif ?>
+                            </tr> 
+                        <?php } ?>
+                        <?php
+                    }
+                    if ($edit) {
+                        ?>
+                        <tr>                            
+                            <td colspan="12"><b><?php print __('Add a new rule') ?></b></td>        
+                        </tr>
+                        <tr>
+                            <td></td>
+
+                            <td>
+                                <select name="reg_new_rule_d" class="condition">
+                                    <?php
+                                    if ($data_fields) {
+                                        foreach ($data_fields as $key => $name) {
+                                            ?>
+                                            <option value="<?php print $key ?>"><?php print $name ?></option>                                
+                                            <?php
+                                        }
+                                    }
+                                    ?>                          
+                                </select> 
+                            </td>
+
+                            <td>
+                                <select name="reg_new_rule_t" class="condition">
+                                    <?php foreach ($this->mp->link_rules_type as $key => $name) { ?>
+                                        <option value="<?php print $key ?>"><?php print $name ?></option>                                
+                                        <?php
+                                    }
+                                    ?>                          
+                                </select> 
+                            </td>
+                            <td>
+                                <input type="text" name="reg_new_rule_r" class="reg" value="" placeholder="Enter a rule">
+                            </td>
+                            <td>
+                                <input type="text" name="reg_new_rule_m" class="rule_m" value="" placeholder="Match field number">
+                                <div class="desc">
+
+                                </div>
+                            </td>
+
                             <td>
                                 <input type="text" name="reg_new_rule_mu" class="rule_m" value="" placeholder="Delimiler">                                
                             </td>
