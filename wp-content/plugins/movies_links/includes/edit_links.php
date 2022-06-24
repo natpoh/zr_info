@@ -159,7 +159,11 @@ if ($cid) {
 
     <?php
     if (isset($_POST['preview'])) {
-        $this->preview_links_search($preivew_data);
+        if ($preivew_data){
+            $this->preview_links_search($preivew_data);
+        } else if ($preivew_urls_data){
+            $this->preview_create_found_urls($preivew_urls_data); 
+        }
     }
     ?>
 

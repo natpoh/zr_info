@@ -2051,6 +2051,76 @@ class MoviesParser extends MoviesAbstractDB {
     }
 
     /*
+     * Create URLs rules
+     */
+
+    public function create_posts_urls($posts = array(), $campaign = array(), $preview = false) {
+        if ($posts) {
+
+            $options = $this->get_options($campaign);
+            $o = $options['links'];
+            $data_fields = $this->get_parser_fields($options);
+
+            foreach ($posts as $post) {
+                $results = $this->check_urls_post($post, $o, $data_fields);
+                $results['post'] = $post;
+                $ret[$post->id] = $results;
+            }
+        }
+        return $ret;
+    }
+
+    public function check_urls_post($post, $o, $data_fields) {
+        $rules = $o['rules_urls'];
+
+        $active_rules = array();
+
+        if ($rules && sizeof($rules)) {
+            //$rules_w = $this->sort_link_rules_by_weight($rules, 1);
+            $rules_w = $rules;
+            
+            //Find active rules
+            foreach ($data_fields as $type => $title) {
+                $i = 0;
+                foreach ($rules_w as $key => $rule) {
+                    if ($type == $rule['d']) {
+
+                        if ($rule['a'] != 1) {
+                            continue;
+                        }
+
+                        $type_key = $type;
+
+                        if (!isset($active_rules[$type_key][$i])) {
+                            $active_rules[$type_key][$i] = $rule;
+                            $active_rules[$type_key][$i]['title'] = $title;
+
+                            $field = $this->get_post_field($rule, $post);
+
+                            if ($rule['mu']) {
+                                $fieldt_arr = explode($rule['mu'], $field);
+                            } else {
+                                $fieldt_arr = array($field);
+                            }
+
+                            foreach ($fieldt_arr as $item) {
+                                $field_text = trim($item);
+                                if ($field_text) {
+                                    $content = $this->use_reg_rule($rule, $field_text);
+                                    $active_rules[$type_key][$i]['content'][] = $content;
+                                }
+                            }
+                        }
+
+                        $i += 1;
+                    }
+                }
+            }
+        }
+        return array('active_rules' => $active_rules);
+    }
+
+    /*
      * Posts
      */
 

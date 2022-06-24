@@ -399,7 +399,7 @@ class MoviesParserAdmin extends ItemAdmin {
 
                     if ($campaign->type == 2) {
                         // Urls
-                        $preivew_urls_data = $this->preview_links($campaign);
+                        $preivew_urls_data = $this->preview_create_ulrs($campaign);
                     } else {
                         // Links
                         $preivew_data = $this->preview_links($campaign);
@@ -1358,7 +1358,6 @@ class MoviesParserAdmin extends ItemAdmin {
         $preivew_data = array();
 
         if ($last_posts) {
-            $o = $options['links'];
             $preivew_data = $this->mp->find_posts_links($last_posts, $o, $campaign->type);
         } else {
             return -1;
@@ -1678,9 +1677,72 @@ class MoviesParserAdmin extends ItemAdmin {
         }
     }
 
+    private function links_rules_form($form_state) {
+        $rule_exists = array();
+        $to_remove = isset($form_state['remove_reg_rule']) ? $form_state['remove_reg_rule'] : array();
+
+        $rule_keys = array('f', 't', 'r', 'm', 'e', 'd', 'mu', 'ra', 'c', 'w', 'a');
+
+        // Exists rules
+        foreach ($form_state as $name => $value) {
+            if (strstr($name, 'rule_reg_id_')) {
+                $key = $value;
+                if (in_array($key, $to_remove)) {
+                    continue;
+                }
+                $upd_rule = array();
+                foreach ($rule_keys as $k) {
+                    $form_name = 'rule_reg_' . $k . '_' . $key;
+                    $form_value = isset($form_state[$form_name]) ? $form_state[$form_name] : $this->mp->get_def_link_rule($k);
+                    if ($k == 'r') {
+                        //Regexp encode
+                        $form_value = base64_encode(stripslashes($form_value));
+                    }
+                    $upd_rule[$k] = $form_value;
+                }
+                $rule_exists[$key] = $upd_rule;
+            }
+        }
+
+        // New rule
+        if ($form_state['reg_new_rule_ra']) {
+
+            $old_key = 0;
+            if ($rule_exists) {
+                krsort($rule_exists);
+                $old_key = array_key_first($rule_exists);
+            }
+            $new_rule_key = $old_key + 1;
+
+            $new_rule = array();
+            foreach ($rule_keys as $k) {
+                $form_name = 'reg_new_rule_' . $k;
+                $form_value = isset($form_state[$form_name]) ? $form_state[$form_name] : $this->mp->get_def_link_rule($k);
+                if ($k == 'r') {
+                    //Regexp encode
+                    $form_value = base64_encode(stripslashes($form_value));
+                }
+                $new_rule[$k] = $form_value;
+            }
+
+
+            $rule_exists[$new_rule_key] = $new_rule;
+        }
+
+        ksort($rule_exists);
+
+        return $rule_exists;
+    }
+
+    /*
+     * Create URLs
+     */
+
     public function show_create_urls_rules($rules = array(), $data_fields = array(), $camp_type = 0, $edit = true, $check = array()) {
         if ($rules || $edit) {
             //$rules = $this->mp->sort_link_rules_by_weight($rules, $camp_type);
+
+            $campaigns = $this->mp->get_campaigns();
 
             $disabled = '';
             if (!$edit) {
@@ -1694,13 +1756,11 @@ class MoviesParserAdmin extends ItemAdmin {
                     <tr>
                         <th><?php print __('Id') ?></th>
                         <th><?php print __('Data field') ?></th>
-
+                        <th><?php print __('Multi*') ?></th>
                         <th><?php print __('Type') ?></th> 
                         <th><?php print __('Rule*') ?></th>
                         <th><?php print __('Match*') ?></th>
-
-                        <th><?php print __('Multi*') ?></th>
-                        <th><?php print __('Rating*') ?></th>
+                        <th><?php print __('Campaign*') ?></th>
                         <th><?php print __('Comment') ?></th>                        
                         <th><?php print __('Weight') ?></th> 
                         <th><?php print __('Active') ?></th>
@@ -1736,7 +1796,9 @@ class MoviesParserAdmin extends ItemAdmin {
                                         ?>                          
                                     </select>  
                                 </td>
-
+                                <td>
+                                    <input type="text" name="rule_reg_mu_<?php print $rid ?>" class="rule_m" value="<?php print $rule['mu'] ?>"<?php print $disabled ?>>
+                                </td>
                                 <td>
                                     <select name="rule_reg_t_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
                                         <?php
@@ -1757,11 +1819,24 @@ class MoviesParserAdmin extends ItemAdmin {
                                     <input type="text" name="rule_reg_m_<?php print $rid ?>" class="rule_m" value="<?php print $rule['m'] ?>"<?php print $disabled ?>>
                                 </td>
 
+
                                 <td>
-                                    <input type="text" name="rule_reg_mu_<?php print $rid ?>" class="rule_m" value="<?php print $rule['mu'] ?>"<?php print $disabled ?>>
-                                </td>
-                                <td>
-                                    <input type="text" name="rule_reg_ra_<?php print $rid ?>" class="rule_m" value="<?php print $rule['ra'] ?>"<?php print $disabled ?>>
+                                    <select name="rule_reg_ra_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
+                                        <option value="0" >Select</option>
+                                        <?php
+                                        if ($campaigns) {
+                                            $con = $rule['ra'];
+                                            foreach ($campaigns as $item) {
+                                                $key = $item->id;
+                                                $name = "[$key] " . $item->title;
+                                                $selected = ($key == $con) ? 'selected' : '';
+                                                ?>
+                                                <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                                                <?php
+                                            }
+                                        }
+                                        ?>                          
+                                    </select> 
                                 </td>
                                 <td>
                                     <input type="text" name="rule_reg_c_<?php print $rid ?>" class="rule_m" value="<?php print $rule['c'] ?>"<?php print $disabled ?>>
@@ -1819,6 +1894,10 @@ class MoviesParserAdmin extends ItemAdmin {
                                     ?>                          
                                 </select> 
                             </td>
+                            <td>
+                                <input type="text" name="reg_new_rule_mu" class="rule_m" value="" placeholder="Delimiler">                                
+                            </td>
+
 
                             <td>
                                 <select name="reg_new_rule_t" class="condition">
@@ -1834,16 +1913,24 @@ class MoviesParserAdmin extends ItemAdmin {
                             </td>
                             <td>
                                 <input type="text" name="reg_new_rule_m" class="rule_m" value="" placeholder="Match field number">
-                                <div class="desc">
-
-                                </div>
                             </td>
 
                             <td>
-                                <input type="text" name="reg_new_rule_mu" class="rule_m" value="" placeholder="Delimiler">                                
-                            </td>
-                            <td>
-                                <input type="text" name="reg_new_rule_ra" class="rule_m" value="" placeholder="Rating if match">                                
+
+                                <select name="reg_new_rule_ra" class="condition"<?php print $disabled ?>>
+                                    <option value="0">Select</option>
+                                    <?php
+                                    if ($campaigns) {
+                                        foreach ($campaigns as $item) {
+                                            $key = $item->id;
+                                            $name = "[$key] " . $item->title;
+                                            ?>
+                                            <option value="<?php print $key ?>" ><?php print $name ?></option>                                
+                                            <?php
+                                        }
+                                    }
+                                    ?>                          
+                                </select>                                 
                             </td>
                             <td>
                                 <input type="text" name="reg_new_rule_c" class="rule_m" value="" placeholder="Comment">
@@ -1863,67 +1950,77 @@ class MoviesParserAdmin extends ItemAdmin {
                 *Rule example (match/replace): "/(pattern)/Uis". For explode use ",".<br />               
                 *Match.  Example: "$1 $2" for regexp. Default: empty.<br />
                 *Multi. If multifield add delimiter. Example: "," or ";". Default empty: single field.<br />
-                *Rating. How many points the rule will get if it matches.
+                *Campaign. Where new URLs generated.
             </p>
             <?php
         }
     }
 
-    private function links_rules_form($form_state) {
-        $rule_exists = array();
-        $to_remove = isset($form_state['remove_reg_rule']) ? $form_state['remove_reg_rule'] : array();
+    public function preview_create_ulrs($campaign) {
+        $options = $this->mp->get_options($campaign);
+        $o = $options['links'];
+        $count = $o['pr_num'];
+        $cid = $campaign->id;
 
-        $rule_keys = array('f', 't', 'r', 'm', 'e', 'd', 'mu', 'ra', 'c', 'w', 'a');
+        $last_posts = $this->mp->get_last_posts($count, $cid, -1, 1);
+        $preivew_data = array();
 
-        // Exists rules
-        foreach ($form_state as $name => $value) {
-            if (strstr($name, 'rule_reg_id_')) {
-                $key = $value;
-                if (in_array($key, $to_remove)) {
+        if ($last_posts) {
+            $preivew_data = $this->mp->create_posts_urls($last_posts, $campaign, true);
+        } else {
+            return -1;
+        }
+
+        return $preivew_data;
+    }
+
+    public function preview_create_found_urls($preivew_data) {
+        if ($preivew_data == -1) {
+            print '<p>No posts found</p>';
+        } else if ($preivew_data) {
+            ?>
+            <h3>Find URLs result:</h3>
+            <?php
+            foreach ($preivew_data as $id => $item) {
+
+                $post = $item['post'];
+                $results = $item['active_rules'];
+                $post_title = $post->title . ' [' . $post->id . ']';
+                ?>
+                <h3><?php print $this->mla->theme_parser_url_link($post->uid, $post_title); ?></h3>
+                <?php
+                if (!$results) {
+                    print '<p>Results not found</p>';
                     continue;
-                }
-                $upd_rule = array();
-                foreach ($rule_keys as $k) {
-                    $form_name = 'rule_reg_' . $k . '_' . $key;
-                    $form_value = isset($form_state[$form_name]) ? $form_state[$form_name] : $this->mp->get_def_link_rule($k);
-                    if ($k == 'r') {
-                        //Regexp encode
-                        $form_value = base64_encode(stripslashes($form_value));
-                    }
-                    $upd_rule[$k] = $form_value;
-                }
-                $rule_exists[$key] = $upd_rule;
-            }
+                }                                
+                ?>
+                <table class="wp-list-table widefat striped table-view-list">
+                    <thead>
+                        <tr>     
+                            <th><?php print __('Data field') ?></th>
+                            <th><?php print __('Rule') ?></th>
+                            <th><?php print __('Results') ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($results as $fkey => $data) { ?>
+                            <?php foreach ($data as $i => $item) { ?>
+                                <tr>
+                                    <td><?php print $item['title'] ?></td>                                            
+                                    <td><?php print $i ?></td>
+                                    <td><?php print implode('<br />', $item['content']) ?></td>                                
+                                </tr>
+                            <?php } ?>
+                        <?php } ?>
+                    </tbody>        
+                </table>
+                <br />
+            <?php } ?>
+        <?php } else { ?>
+            <h3>No results</h3>
+            <p>Check regexp rules.</p>
+            <?php
         }
-
-        // New rule
-        if ($form_state['reg_new_rule_ra']) {
-
-            $old_key = 0;
-            if ($rule_exists) {
-                krsort($rule_exists);
-                $old_key = array_key_first($rule_exists);
-            }
-            $new_rule_key = $old_key + 1;
-
-            $new_rule = array();
-            foreach ($rule_keys as $k) {
-                $form_name = 'reg_new_rule_' . $k;
-                $form_value = isset($form_state[$form_name]) ? $form_state[$form_name] : $this->mp->get_def_link_rule($k);
-                if ($k == 'r') {
-                    //Regexp encode
-                    $form_value = base64_encode(stripslashes($form_value));
-                }
-                $new_rule[$k] = $form_value;
-            }
-
-
-            $rule_exists[$new_rule_key] = $new_rule;
-        }
-
-        ksort($rule_exists);
-
-        return $rule_exists;
     }
 
     /*
