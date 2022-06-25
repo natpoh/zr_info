@@ -198,7 +198,7 @@ function check_actors_meta()
     }
 }
 
-function update_actors_verdict($id='')
+function update_actors_verdict($id='',$force='')
 {
     !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
     set_time_limit(0);
@@ -231,7 +231,7 @@ $sql = "select * from data_actors_meta ".$where." ";
                 $q = "SELECT verdict, n_verdict from data_actors_meta where id = ".$row['id'];
                 $rv = Pdo_an::db_results_array($q);
 
-               if ($verdict ==$rv[0]['verdict'] && intconvert($verdict) == $rv[0]['n_verdict'])
+               if ($verdict ==$rv[0]['verdict'] && intconvert($verdict) == $rv[0]['n_verdict'] && !$force)
                {
                    ///skip
 
@@ -487,7 +487,7 @@ function get_family($data='')
 
                   Pdo_an::db_query($sql1);
 
-                  update_actors_verdict($i);
+                  update_actors_verdict($i,1);
               }
           }
 
@@ -563,7 +563,7 @@ function get_forebears($data='')
 
                 Pdo_an::db_query($sql1);
 
-                update_actors_verdict($i);
+                update_actors_verdict($i,1);
             }
         }
 
@@ -985,7 +985,7 @@ function check_verdict_surname()
             Pdo_an::db_query($sql1);
 
 
-            update_actors_verdict($r['aid']);
+            update_actors_verdict($r['aid'],1);
 
             !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
             $commit =Import::create_commit($commit, 'update', 'data_actors_ethnicolr', array('id' =>  $r['id']), 'ethnicolr',10);
@@ -1389,7 +1389,7 @@ function force_surname_update()
 
             $sql1 = "UPDATE `data_actors_meta` SET `surname` = '" . $meta_result . "'  ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
             Pdo_an::db_query($sql1);
-            update_actors_verdict($r['actor_id']);
+            update_actors_verdict($r['actor_id'],1);
         }
         echo $r['actor_id']. ' '.$meta_result. ' (' . $i . ' / '.$count.') <br>' . PHP_EOL;
     }
@@ -2588,7 +2588,7 @@ if (isset($_GET['set_actors_ethnic'])) {
     return;
 }
 if (isset($_GET['update_actors_verdict'])) {
-    update_actors_verdict($_GET['update_actors_verdict']);
+    update_actors_verdict($_GET['update_actors_verdict'],1);
     return;
 }
 if (isset($_GET['check_actors_meta'])) {
@@ -2743,7 +2743,7 @@ if (isset($_GET['fix_kairos'])) {
         
         `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
             Pdo_an::db_query($sql1);
-            update_actors_verdict($r['actor_id']);
+            update_actors_verdict($r['actor_id'],1);
 
 
             $sql2 = "UPDATE `data_actors_race` SET `kairos_verdict` = NULL WHERE `data_actors_race`.`id` = ".$r['id'];
