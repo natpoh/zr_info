@@ -197,7 +197,7 @@ class CriticAudience extends AbstractDb {
             $title = $posted->ftitle;
             $top_movie = $posted->postid;
             if (!$title) {
-                $title = $this->cm->crop_text(strip_tags($content), 100);
+                $title = $this->cm->crop_text(strip_tags($content), 30);
             }
 
             $unic_id = $this->unic_id();

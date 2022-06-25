@@ -40,6 +40,9 @@ class CriticCrowd extends AbstractDB {
 
         // 2. Calculate rating
         $this->calculate_posts($count, $debug);
+
+        // 3. Get admin approved posts
+        $this->get_approved_posts($count, $debug);
     }
 
     private function get_new_crowd($count = 100, $debug = false) {
@@ -128,16 +131,16 @@ class CriticCrowd extends AbstractDB {
                 if ($youtube) {
                     $ts_updated = false;
                     $ts = $this->get_ts_status($cid);
-                    if ($debug){
+                    if ($debug) {
                         print_r($ts);
                     }
                     if ($ts) {
                         $ts_status = $ts->status;
-                        
+
                         $msg = "Info $cid. Ts status: $ts_status\n";
-                        if ($ts_status == 2){
+                        if ($ts_status == 2) {
                             $msg .= "Info $cid. Ts in post\n";
-                            $ts_updated = true;                             
+                            $ts_updated = true;
                         } else if ($ts_status == 0) {
                             $msg .= "Info $cid. No ts\n";
                             $ts_updated = true;
@@ -145,7 +148,7 @@ class CriticCrowd extends AbstractDB {
                     } else {
                         $msg = "Info $cid. No ts status\n";
                     }
-                    if ($debug){
+                    if ($debug) {
                         print $msg;
                     }
                     if (!$ts_updated) {
@@ -192,6 +195,87 @@ class CriticCrowd extends AbstractDB {
         }
     }
 
+    private function get_approved_posts($count = 100, $debug = false) {
+        $sql = sprintf("SELECT * FROM {$this->db['critic_crowd']} WHERE status=1 AND critic_status !=2 ORDER BY id ASC LIMIT %d", $count);
+        $results = $this->db_results($sql);
+        if ($debug) {
+            print_r($results);
+        }
+
+        if ($results) {
+            foreach ($results as $item) {
+                $msg = '';
+                $id = $item->id;
+                $cid = $item->review_id;
+                $link = $item->link;
+                $movie_id = $item->rwt_id;
+
+                // Post exist?
+                $link_hash = $this->link_hash($link);
+                $post_exist = $this->cm->get_post_by_link_hash($link_hash);
+
+                if ($post_exist) {
+                    // Update exist critic
+                    $msg .= "Info. Critic already exist. Update critic\n";
+
+                    // Publish post
+                    if ($post_exist->status != 1) {
+                        $post_data = array(
+                            'status' => 1,
+                        );
+                        $this->cm->update_post_fields($cid, $post_data);
+                        $msg .= "Info $id. Publish post $cid\n";
+                    }
+
+                    // 2. Get post movie meta
+                    $movie_exist = $this->cm->get_movies_data($cid, $movie_id);
+
+                    if (!$movie_exist) {
+                        // Need add a new movie to post
+                        // Type: 1 => 'Proper Review',
+                        $type = 1;
+                        // State: 1 => 'Approved',
+                        $state = 1;
+                        // Add meta
+                        $this->cm->add_post_meta($movie_id, $type, $state, $cid);
+                        $msg .= "Info. Add movie $movie_id to post $cid\n";
+                    }
+                    $data = array();
+                    // Success
+                    $data['critic_status'] = 2;
+                    $data['review_id'] = $post_exist->id;
+                    $this->update_crowd($id, $data);
+                } else {
+                    // Add a new critic
+                    $msg = "Info $id. Add a new critic\n";
+                    $data = $this->add_post($item, $debug);
+                    if ($debug) {
+                        print_r($data);
+                    }
+                    // Success
+                    if ($data['review_id']) {
+                        $post_id = $data['review_id'];
+                        $data['critic_status'] = 2;
+                        // Type: 1 => 'Proper Review',
+                        $type = 1;
+                        // State: 1 => 'Approved',
+                        $state = 1;
+                        // Add meta
+                        $this->cm->add_post_meta($movie_id, $type, $state, $post_id);
+                        $msg .= "Info. Add movie $movie_id to post $post_id\n";
+                    }
+
+                    $this->update_crowd($id, $data);
+                }
+                if ($debug) {
+                    if ($msg) {
+                        print $msg . "\n";
+                    }
+                }
+            }
+        }
+    }
+
     public function update_crowd($id = 0, $data) {
         $this->sync_update_data($data, $id, $this->db['critic_crowd'], $this->cm->sync_data, 10);
     }
@@ -199,6 +283,9 @@ class CriticCrowd extends AbstractDB {
     private function add_post($crowd_item, $debug = false) {
         // TODO Validate bad words
         $data = array();
+        $curr_time = $this->curr_time();
+        $date = $curr_time;
+        $channelId = '';
         $ret = 0;
         $msg = '';
         $link = $crowd_item->link;
@@ -230,8 +317,12 @@ class CriticCrowd extends AbstractDB {
         if ($youtube) {
             // Get youtube data
             $result = $cp->yt_video_data($link);
-            if ($result && $result->description) {
-                $content = str_replace("\n", '<br />', $result->description);
+            if ($result) {
+                $channelId = $result->channelId;
+                if ($result->description) {
+                    $date = strtotime($result->publishedAt);
+                    $content = str_replace("\n", '<br />', $result->description);
+                }
             }
         } else {
             ///get main data
@@ -255,9 +346,10 @@ class CriticCrowd extends AbstractDB {
         $type = 2;
         // Status publish
         $post_status = 1;
-        $date = $this->curr_time();
 
-        $date_add = $date;
+
+        $content = $this->cm->clear_utf8($content);
+        $date_add = $curr_time;
         $post_data = array(
             'date' => $date,
             'date_add' => $date_add,
@@ -272,6 +364,10 @@ class CriticCrowd extends AbstractDB {
             'view_type' => $view_type
         );
 
+        if ($debug) {
+            print_r($post_data);
+        }
+
         $post_id = $this->sync_insert_data($post_data, $this->db['posts'], $this->sync_client, $this->sync_data);
 
 
@@ -282,13 +378,32 @@ class CriticCrowd extends AbstractDB {
                 print_r($post_data);
             }
 
-            //Add author meta
+            // Add author meta
             if (!$author_id) {
                 // Status: 0 => 'Draft'
                 $author_status = 0;
                 // Type: 1 => 'Critic'
                 $author_type = 1;
                 $author_id = $this->cm->get_or_create_author_by_name($author_name, $author_type, $author_status);
+                if ($channelId) {
+                    $author_ob = $this->cm->get_author($author_id);
+                    //Options
+                    $options = unserialize($author_ob->options);
+                    if (!$options['image']) {
+                        // Add author avatar
+                        $channel_info = $cp->youtube_get_channel_info($channelId);
+                        if ($channel_info->items[0]->snippet->thumbnails->medium->url) {
+                            $avatar = $channel_info->items[0]->snippet->thumbnails->medium->url;
+                            if ($avatar){
+                                $options['image']=$avatar;
+                                $author_ob->options = $options;
+                                // Publish author
+                                $author_ob->status = 1;
+                                $this->cm->update_author($author_ob);
+                            }
+                        }
+                    }
+                }
             }
             $this->cm->add_post_author($post_id, $author_id);
 

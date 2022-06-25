@@ -3273,6 +3273,20 @@ class CriticParser extends AbstractDBWp {
         return $responce;
     }
 
+    public function youtube_get_channel_info($cid = 0) {
+        if (!$cid) {
+            return;
+        }
+        $arg = array();
+        $arg['cid'] = $cid;
+        
+        $filename = "yci-$cid";
+        $str = ThemeCache::cache('yt_channel_info', false, $filename, 'def', $this, $arg);
+        $responce = json_decode(gzdecode($str));
+
+        return $responce;
+    }
+
     public function find_youtube_data_api($ids, $debug = false) {
         if (!$ids) {
             return;
@@ -3379,6 +3393,25 @@ class CriticParser extends AbstractDBWp {
 
         try {
             $response = $service->playlists->listPlaylists('snippet', $queryParams);
+        } catch (Exception $exc) {
+            $message = $exc->getMessage();
+            $this->log_error($message, $arg['cid'], 0, 3);
+            $response = array();
+            $this->yt_in_quota = false;
+            $this->yt_error_msg = $message;
+        }
+        return gzencode(json_encode($response));
+    }
+
+    public function yt_channel_info($arg = array()) {
+        $service = $this->init_gs();
+
+        $queryParams = [
+            'id' => $arg['cid'],
+        ];
+
+        try {
+            $response = $service->channels->listChannels('snippet', $queryParams);
         } catch (Exception $exc) {
             $message = $exc->getMessage();
             $this->log_error($message, $arg['cid'], 0, 3);

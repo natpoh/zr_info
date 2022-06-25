@@ -5,6 +5,10 @@ if ($_GET['url']) {
     $url = $_GET['url'];
 }
 
+$json = false;
+if ($_GET['json']) {
+    $json = true;
+}
 
 $p = '8ggD_23_2D0DSF-F';
 
@@ -38,10 +42,16 @@ if ($result === FALSE) {
     $data = json_decode($result);
 }
 
-if ($data){
-    $result = array('title'=>$data->title,'autor'=>$data->author,'content'=>$data->content);
-    $result_string = json_encode($result);
+if ($data) {
+    $result = array('title' => $data->title, 'autor' => $data->author, 'content' => $data->content);
+    if ($json) {
+        $result_string = json_encode($result);
 
-echo $result_string;
+        echo $result_string;
+    } else {
+        print '<h1>'.$data->title.'</h1>';
+        print '<h3>'.$data->author.'</h3>';
+        print $data->content;
+    }
 }
 
