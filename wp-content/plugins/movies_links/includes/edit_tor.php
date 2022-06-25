@@ -8,7 +8,7 @@
 print $tabs;
 
 
-if ($cid) {   
+if ($cid) {
     ?>
     <form accept-charset="UTF-8" method="post" id="campaign">
 
@@ -27,7 +27,21 @@ if ($cid) {
                     <span class="title"><?php print __('Url') ?></span>
                     <span class="input-text-wrap"><input type="text" name="url" value="<?php print $service->url ?>"></span>
                 </label>
-              
+                <label>
+                    <span class="title"><?php print __('Type') ?></span>
+                    <select id="add-campaing-type" name="type" class="type">
+
+                        <?php
+                        foreach ($this->service_type as $key => $name) {
+                            $selected = ($key == $service->type) ? 'selected' : '';
+                            ?>
+                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                            <?php
+                        }
+                        ?>                          
+                    </select> 
+                    <span class="inline-edit"><?php print __('Type of the service') ?></span>                    
+                </label>
                 <label class="inline-edit-status">                
                     <?php
                     $checked = '';

@@ -28,6 +28,7 @@ if (sizeof($services) > 0) {
             <td class="manage-column column-cb check-column" ><input type="checkbox" id="cb-select-all-1"></td>
             <?php $this->sorted_head('id', 'id', $orderby, $order, $page_url) ?>                                
             <?php $this->sorted_head('name', 'Name', $orderby, $order, $page_url) ?>  
+            <?php $this->sorted_head('type', 'Type', $orderby, $order, $page_url) ?> 
             <?php $this->sorted_head('last_upd', 'Last update', $orderby, $order, $page_url) ?> 
             <?php $this->sorted_head('last_reboot', 'Last reboot', $orderby, $order, $page_url) ?>            
             <?php $this->sorted_head('status', 'State', $orderby, $order, $page_url) ?>                           
@@ -42,7 +43,7 @@ if (sizeof($services) > 0) {
                     <tr> 
                         <th  class="check-column" ><input type="checkbox" name="bulk-<?php print $service->id ?>"></th>
                         <td><?php print $service->id ?></td>
-                        <td><?php print $service->name ?>
+                        <td><?php print $service->name ?>                        
                             <?php
                             $actions = $this->service_actions();
                             $parser_url = $url . '&cid=' . $service->id;
@@ -50,13 +51,14 @@ if (sizeof($services) > 0) {
                             print $action_links;
                             ?>
                         </td>
+                        <td><?php print $this->service_type[$service->type] ?></td>
                         <td><?php print $this->ml->format_time($service->last_upd) ?></td>
                         <td><?php
                             if ($service->last_reboot) {
                                 print $this->ml->format_time($service->last_reboot);
                             }
                             ?></td>                                
-                        <td class="nowrap"><i class="sticn st-<?php print $service->status ?>"></i><?php print $this->tp->service_status[$service->status] ?></td>
+                        <td class="nowrap"><i class="sticn st-<?php print $service->status ?>"></i><?php print $this->service_status[$service->status] ?></td>
                         <td><?php print $this->tp->get_ip_name_by_id($service->ip) ?></td>
                         <td><?php print $this->tp->get_agent_name_by_id($service->agent) ?></td>
                         <td><?php print $service->url ?></td>

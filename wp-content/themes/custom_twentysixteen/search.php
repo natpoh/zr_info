@@ -75,7 +75,7 @@ if (isset($_POST['filters'])) {
 
     // Single critic post
 
-
+/*
     if (isset($filters['old_reviews'])) {
         // Redirect from old reviews to new
         $critic_id = $cfront->get_critic_url_by_old_slug($filters['old_reviews']);
@@ -83,7 +83,7 @@ if (isset($_POST['filters'])) {
             $filters['critics'][0] = $critic_id;
         }
     }
-
+*/
     if (isset($filters['search'])) {
         // Search page
         if ($cfront->need_redirect()) {

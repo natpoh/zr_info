@@ -39,6 +39,8 @@ class MoviesParser extends MoviesAbstractDB {
                     'del_pea_int' => 1440,
                     'tor_h' => 20,
                     'tor_d' => 100,
+                    'tor_mode' => 0,
+                    'body_len' => 500,
                 ),
                 'find_urls' => array(
                     'first' => '',
@@ -63,6 +65,17 @@ class MoviesParser extends MoviesAbstractDB {
                     'last_update' => 0,
                     'last_id' => 0,
                     'status' => 0,
+                    'num' => 100,
+                    'progress' => 0,
+                ),
+                'service_urls' => array(
+                    'webdrivers' => 0,
+                    'del_pea' => 0,
+                    'del_pea_cnt' => 10,
+                    'tor_h' => 20,
+                    'tor_d' => 100,
+                    'tor_mode' => 0,
+                    'progress' => 0,
                 ),
                 'parsing' => array(
                     'last_update' => 0,
@@ -70,7 +83,7 @@ class MoviesParser extends MoviesAbstractDB {
                     'num' => 10,
                     'pr_num' => 5,
                     'status' => 0,
-                    'rules' => ''
+                    'rules' => '',
                 ),
                 'links' => array(
                     'last_update' => 0,
@@ -82,6 +95,7 @@ class MoviesParser extends MoviesAbstractDB {
                     'match' => 2,
                     'rating' => 20,
                     'rules' => '',
+                    'rules_urls' => '',
                     'custom_last_run_id' => 0,
                 ),
             ),
@@ -140,6 +154,9 @@ class MoviesParser extends MoviesAbstractDB {
         'f' => 'Firstname',
         'l' => 'Lastname',
         'e' => 'Exist'
+    );
+    public $links_rules_url_fields = array(
+        't' => 'Title',
     );
     public $links_match_type = array(
         'm' => 'Match',
@@ -337,18 +354,64 @@ class MoviesParser extends MoviesAbstractDB {
     }
 
     public function update_campaign_options($id, $options) {
-        $opt_str = serialize($options);
-        $sql = sprintf("UPDATE {$this->db['campaign']} SET options='%s' WHERE id = %d", $opt_str, (int) $id);
-        $this->db_query($sql);
+
+        // 1. Get options
+        $campaign = $this->get_campaign($id, false);
+        $opt_prev = $this->get_options($campaign);
+        $update = false;
+        // 2. Get new options
+        if ($options) {
+            foreach ($options as $key => $value) {
+                if (!isset($opt_prev[$key])) {
+                    $opt_prev[$key] = $value;
+                    $update = true;
+                } else {
+                    if (is_array($opt_prev[$key])) {
+                        // Value vitch childs
+                        foreach ($options[$key] as $ckey => $cvalue) {
+                            if (!isset($opt_prev[$key][$ckey])) {
+                                // Add child
+                                $opt_prev[$key][$ckey] = $cvalue;
+                                $update = true;
+                            } else {
+                                // Update child
+                                if ($opt_prev[$key][$ckey] != $cvalue) {
+                                    $opt_prev[$key][$ckey] = $cvalue;
+                                    $update = true;
+                                }
+                            }
+                        }
+                    } else {
+                        // String value
+                        if ($opt_prev[$key] != $value) {
+                            $opt_prev[$key] = $value;
+                            $update = true;
+                        }
+                    }
+                }
+            }
+        }
+        if ($update) {
+            // 3. Update options
+            $opt_str = serialize($opt_prev);
+            $sql = sprintf("UPDATE {$this->db['campaign']} SET options='%s' WHERE id = %d", $opt_str, (int) $id);
+            $this->db_query($sql);
+        }
     }
 
     /*
      * Urls
      */
 
-    public function add_url($cid, $link) {
+    public function add_url($cid, $link, $pid = 0) {
         $link_hash = $this->link_hash($link);
-        if ($this->get_url_by_hash($link_hash)) {
+        $exist = $this->get_url_by_hash($link_hash);
+        if ($exist) {
+            $epid = $exist->pid;
+            if (!$epid && $pid) {
+                // Update post pid
+                $this->update_url_pid($exist->id, $pid);
+            }
             return 0;
         }
         /*
@@ -359,7 +422,7 @@ class MoviesParser extends MoviesAbstractDB {
           `link` text default NULL,
          */
 
-        $pid = 0;
+
         // Status 'NEW'
         $status = 0;
 
@@ -600,6 +663,7 @@ class MoviesParser extends MoviesAbstractDB {
 
     public function find_urls($campaign, $options, $settings, $preview = true) {
         $find_urls = $options['find_urls'];
+        $service_urls = $options['service_urls'];
 
         $urls = array();
         if (isset($find_urls['first']) && $find_urls['first'] != '') {
@@ -633,8 +697,10 @@ class MoviesParser extends MoviesAbstractDB {
         if ($reg && $urls) {
             foreach ($urls as $url) {
                 $url = htmlspecialchars_decode($url);
-                $code = $this->get_proxy($url, '', $headers, $settings);
-                if (preg_match_all($reg, $code, $match)) {
+
+                $code = $this->get_code_by_current_driver($url, $headers, $settings, $service_urls);
+
+                if ($code && preg_match_all($reg, $code, $match)) {
                     foreach ($match[1] as $u) {
                         if (preg_match('#^/#', $u)) {
                             //Short links
@@ -669,13 +735,79 @@ class MoviesParser extends MoviesAbstractDB {
         return $ret;
     }
 
+    public function proccess_cron_urls($campaign = '', $options) {
+        if ($this->find_urls_in_progress($campaign, $options)) {
+            return 0;
+        }
+
+        $result = $this->cron_urls($campaign, $options, false);
+        if (isset($result['add_urls'])) {
+            $count = sizeof($result['add_urls']);
+            $message = 'Add new URLs: ' . $count;
+            $this->log_info($message, $campaign->id, 0, 1);
+        }
+
+        $this->fund_urls_update_progress($campaign);
+
+        return $count;
+    }
+
+    public function proccess_gen_urls($campaign = '', $options = array(), $debug = false) {
+        if ($this->find_urls_in_progress($campaign, $options)) {
+            if ($debug){
+                print "Find URLs in progress\n";
+            }
+            return 0;
+        }
+
+        $o = $options['gen_urls'];
+        $last_id = $o['last_id'];
+        $settings = $this->ml->get_settings();
+        $ret = $this->generate_urls($campaign, $options, $settings, $last_id, false, $debug);
+
+        $this->find_urls_update_progress($campaign);
+
+        $count = $ret['total'];
+        return $count;
+    }
+
+    private function find_urls_in_progress($campaign, $options) {
+        $type_name = 'service_urls';
+        $type_opt = $options[$type_name];
+
+        // Already progress
+        $progress = isset($type_opt['progress']) ? $type_opt['progress'] : 0;
+        $currtime = $this->curr_time();
+        if ($progress) {
+            // Ignore old last update            
+            $wait = 180; // 3 min
+            if ($currtime < $progress + $wait) {
+                $message = 'Find URLs is in progress already.';
+                $this->log_warn($message, $campaign->id, 0, 2);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private function find_urls_update_progress($campaign) {
+        $type_name = 'service_urls';
+        
+        // Update progress
+        $options_upd = array();
+        $options_upd[$type_name]['progress'] = 0;
+        $this->update_campaign_options($campaign->id, $options_upd);
+    }
+
     public function generate_urls($campaign, $options, $settings, $last_id = 0, $preview = true, $debug = false) {
         $ret = array();
 
         $gen_urls = $options['gen_urls'];
+
         $page = base64_decode($gen_urls['page']);
         $regexp = base64_decode($gen_urls['regexp']);
         $type = $gen_urls['type'];
+        $num = $gen_urls['num'];
 
         //Find keys
         $keys = array();
@@ -726,7 +858,8 @@ class MoviesParser extends MoviesAbstractDB {
                 $query_page = str_replace($value, $post_encode, $query_page);
             }
 
-            $code = $this->get_proxy($query_page, '', $headers, $settings);
+            $service_urls = $options['service_urls'];
+            $code = $this->get_code_by_current_driver($query_page, $headers, $settings, $service_urls);
             $ret['url'] = $query_page;
             $ret['content'] = $code;
             $ret['headers'] = $headers;
@@ -740,13 +873,12 @@ class MoviesParser extends MoviesAbstractDB {
         $post_last_id = 0;
 
         if ($campaign->type == 1) {
-            // Actors
-            $max_count = 1000;
-            $posts = $ma->get_actors($type, $max_count, $last_id);
+            // Actors            
+            $posts = $ma->get_actors($type, $num, $last_id);
         } else {
             // Movies
             // Get all URLs
-            $posts = $ma->get_posts($type, $get_keys, 0, $last_id);
+            $posts = $ma->get_posts($type, $get_keys, $num, $last_id);
         }
 
         if ($debug) {
@@ -786,7 +918,13 @@ class MoviesParser extends MoviesAbstractDB {
                     continue;
                 }
 
-                if ($this->add_url($cid, $query_page)) {
+                $pid = $post->id;
+                if ($campaign->type == 1) {
+                    // Actors
+                    $pid = 0;
+                }
+
+                if ($this->add_url($cid, $query_page, $pid)) {
                     $total_new += 1;
                 }
 
@@ -799,8 +937,9 @@ class MoviesParser extends MoviesAbstractDB {
         $ret['total_new'] = $total_new;
 
         if (!$preview && $post_last_id) {
-            $options['gen_urls']['last_id'] = $post_last_id;
-            $this->update_campaign_options($cid, $options);
+            $options_upd = array();
+            $options_upd['gen_urls']['last_id'] = $post_last_id;
+            $this->update_campaign_options($cid, $options_upd);
         }
 
 
@@ -835,11 +974,15 @@ class MoviesParser extends MoviesAbstractDB {
     private function parse_urls($cid, $reg, $urls, $wait, $preview) {
 
         $ret = array();
+        $campaign = $this->get_campaign($cid, false);
+        $options = $this->get_options($campaign);
+        $service_urls = $options['service_urls'];
+        $settings = $this->ml->get_settings();
 
         if ($reg && $urls) {
             foreach ($urls as $url) {
                 $url = htmlspecialchars_decode($url);
-                $code = $this->get_proxy($url, '', $headers);
+                $code = $this->get_code_by_current_driver($url, $headers, $settings, $service_urls);
                 if (preg_match_all($reg, $code, $match)) {
                     foreach ($match[1] as $u) {
                         if (preg_match('#^/#', $u)) {
@@ -870,6 +1013,11 @@ class MoviesParser extends MoviesAbstractDB {
         }
 
         return $ret;
+    }
+
+    public function update_url_pid($id = 0, $pid = 0) {
+        $sql = sprintf("UPDATE {$this->db['url']} SET pid=%d WHERE id=%d", $pid, $id);
+        $this->db_query($sql);
     }
 
     /* Arhive URLs */
@@ -955,22 +1103,44 @@ class MoviesParser extends MoviesAbstractDB {
         $type_opt = $options[$type_name];
 
         // Get posts (last is first)       
+        $code = $this->get_code_by_current_driver($url, $headers, $settings, $type_opt);
 
+        $valid_body_len = $this->validate_body_len($code, $type_opt['body_len']);
+        $ret['content'] = $code;
+        $ret['headers'] = $headers;
+        $ret['headers_status'] = $this->get_header_status($headers);
+        $ret['valid_body'] = $valid_body_len;
+        return $ret;
+    }
+
+    public function get_code_by_current_driver($url, &$headers, $settings, $type_opt) {
         $use_webdriver = $type_opt['webdrivers'];
+        $ip_limit = array('h' => $type_opt['tor_h'], 'd' => $type_opt['tor_d']);
+        $tor_mode = $type_opt['tor_mode'];
+
         if ($use_webdriver == 1) {
             $code = $this->get_webdriver($url, $headers, $settings);
         } else if ($use_webdriver == 2) {
-            // Tor webdriver
-            $ip_limit = array('h'=>$type_opt['tor_h'],'d'=>$type_opt['tor_d']);
-            $tp = $this->ml->get_tp();            
-            $code = $tp->get_url_content($url, $headers, $ip_limit);
+            // Tor webdriver            
+            $tp = $this->ml->get_tp();
+            $code = $tp->get_url_content($url, $headers, $ip_limit, false, $tor_mode);
+        } else if ($use_webdriver == 3) {
+            // Tor curl            
+            $tp = $this->ml->get_tp();
+            $code = $tp->get_url_content($url, $headers, $ip_limit, true, $tor_mode);
         } else {
             $use_proxy = $type_opt['proxy'];
             $code = $this->get_proxy($url, $use_proxy, $headers, $settings);
         }
-        $ret['content'] = $code;
-        $ret['headers'] = $headers;
-        return $ret;
+        return $code;
+    }
+
+    public function validate_body_len($code = '', $valid_len = 500) {
+        $body_len = strlen($code);
+        if ($body_len > $valid_len) {
+            return true;
+        }
+        return false;
     }
 
     /*
@@ -1911,6 +2081,8 @@ class MoviesParser extends MoviesAbstractDB {
         $links_rules_fields = $this->links_rules_fields;
         if ($camp_type == 1) {
             $links_rules_fields = $this->links_rules_actor_fields;
+        } else if ($camp_type == 2) {
+            $links_rules_fields = $this->links_rules_url_fields;
         }
 
         if ($rules) {
@@ -1961,6 +2133,76 @@ class MoviesParser extends MoviesAbstractDB {
             }
         }
         return $ret;
+    }
+
+    /*
+     * Create URLs rules
+     */
+
+    public function create_posts_urls($posts = array(), $campaign = array(), $preview = false) {
+        if ($posts) {
+
+            $options = $this->get_options($campaign);
+            $o = $options['links'];
+            $data_fields = $this->get_parser_fields($options);
+
+            foreach ($posts as $post) {
+                $results = $this->check_urls_post($post, $o, $data_fields);
+                $results['post'] = $post;
+                $ret[$post->id] = $results;
+            }
+        }
+        return $ret;
+    }
+
+    public function check_urls_post($post, $o, $data_fields) {
+        $rules = $o['rules_urls'];
+
+        $active_rules = array();
+
+        if ($rules && sizeof($rules)) {
+            //$rules_w = $this->sort_link_rules_by_weight($rules, 1);
+            $rules_w = $rules;
+
+            //Find active rules
+            foreach ($data_fields as $type => $title) {
+                $i = 0;
+                foreach ($rules_w as $key => $rule) {
+                    if ($type == $rule['d']) {
+
+                        if ($rule['a'] != 1) {
+                            continue;
+                        }
+
+                        $type_key = $type;
+
+                        if (!isset($active_rules[$type_key][$i])) {
+                            $active_rules[$type_key][$i] = $rule;
+                            $active_rules[$type_key][$i]['title'] = $title;
+
+                            $field = $this->get_post_field($rule, $post);
+
+                            if ($rule['mu']) {
+                                $fieldt_arr = explode($rule['mu'], $field);
+                            } else {
+                                $fieldt_arr = array($field);
+                            }
+
+                            foreach ($fieldt_arr as $item) {
+                                $field_text = trim($item);
+                                if ($field_text) {
+                                    $content = $this->use_reg_rule($rule, $field_text);
+                                    $active_rules[$type_key][$i]['content'][] = $content;
+                                }
+                            }
+                        }
+
+                        $i += 1;
+                    }
+                }
+            }
+        }
+        return array('active_rules' => $active_rules);
     }
 
     /*
@@ -2091,6 +2333,25 @@ class MoviesParser extends MoviesAbstractDB {
     public function delete_url($uid) {
         $sql = sprintf("DELETE FROM {$this->db['url']} WHERE id=%d", (int) $uid);
         $this->db_query($sql);
+    }
+
+    public function validate_arhive_len($uid) {
+        $valid = false;
+        $arhive = $this->get_arhive_by_url_id($uid);
+        $url = $this->get_url($uid);
+        if ($url) {
+            $content = $this->get_arhive_file($url->cid, $arhive->arhive_hash);
+            $campaign = $this->get_campaign($url->cid, true);
+            if ($campaign) {
+                $options = $this->get_options($campaign);
+                $type_name = 'arhive';
+                $type_opt = $options[$type_name];
+                $valid = $this->validate_body_len($content, $type_opt['body_len']);
+            }
+        }
+        if (!$valid) {
+            $this->change_url_state($uid, 4);
+        }
     }
 
     /*
@@ -2258,6 +2519,16 @@ class MoviesParser extends MoviesAbstractDB {
     /*
      * Other functions
      */
+
+    public function get_header_status($headers) {
+        $status = 200;
+        if ($headers) {
+            if (preg_match_all('/HTTP\/[0-9\.]+[ ]+([0-9]{3})/', $headers, $match)) {
+                $status = $match[1][(sizeof($match[1]) - 1)];
+            }
+        }
+        return $status;
+    }
 
     public function get_proxy($url, $proxy = '', &$header = '', $settings = '') {
 

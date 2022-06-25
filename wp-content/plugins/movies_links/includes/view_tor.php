@@ -34,13 +34,20 @@ if ($cid) {
             <tr>
                 <td><?php print __('Status') ?></td>
                 <td><?php
-                    print $this->tp->service_status[$service->status];
+                    print $this->service_status[$service->status];
                     ?>
                 </td>
-            </tr>           
+            </tr>    
+            <tr>
+                <td><?php print __('Type') ?></td>
+                <td><?php
+                    print $this->service_type[$service->type];
+                    ?>
+                </td>
+            </tr> 
             <tr>
                 <td><?php print __('Last log') ?></td>
-                <td><?php //print $this->get_last_log(0, $cid) ?></td>
+                <td><?php //print $this->get_last_log(0, $cid)  ?></td>
             </tr>
         </tbody>        
     </table>

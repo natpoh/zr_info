@@ -32,7 +32,7 @@ if (sizeof($campaigns) > 0) {
             <th><?php print __('Arhive') ?></th>         
             <th><?php print __('Parsed') ?></th>  
             <th><?php print __('Linked') ?></th>  
-            <th><?php print __('Last log') ?></th> 
+            <?php /* ?><th><?php print __('Last log') ?></th> <?php */ ?>
 
             </thead>
             <tbody>
@@ -60,7 +60,7 @@ if (sizeof($campaigns) > 0) {
                         <td><?php print $this->mp->get_urls_count(-1, $parser->id, 1) ?></td>
                         <td><?php print $this->mp->get_urls_count(-1, $parser->id, -1, 1) ?></td>
                         <td><?php print $this->mp->get_urls_count(-1, $parser->id, -1, -1, 1) ?></td>
-                        <td><?php print $this->get_last_log(0, $parser->id) ?></td>
+                         <?php /* ?><td><?php print $this->get_last_log(0, $parser->id) ?></td> <?php */ ?>
                     </tr> 
                 <?php } ?>
             </tbody>

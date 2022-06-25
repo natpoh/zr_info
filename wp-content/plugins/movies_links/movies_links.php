@@ -106,7 +106,7 @@ function movies_links_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
-
+    movies_links_create_index(array('date', 'cid', 'uid', 'type','status'), 'movies_links_log');
     /*
      * cid - campaign id
      * pid - post id
@@ -201,6 +201,12 @@ function movies_links_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
     movies_links_create_index(array('last_upd', 'status', 'ip', 'agent'), 'tor_drivers');
+    
+    $sql = "ALTER TABLE `tor_drivers` ADD `type` int(11) NOT NULL DEFAULT '0'";
+    Pdo_ml::db_query($sql);
+
+    movies_links_create_index(array('type'), 'tor_drivers');
+    
     
     $sql = "CREATE TABLE IF NOT EXISTS  `tor_ip`(
 				`id` int(11) unsigned NOT NULL auto_increment,                                                               

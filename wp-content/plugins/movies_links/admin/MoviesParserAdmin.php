@@ -17,6 +17,7 @@ class MoviesParserAdmin extends ItemAdmin {
         1440 => 'Daily'
     );
     public $parser_interval = array(
+        5 => 'Five min',
         15 => 'Fifteen min',
         30 => 'Thirty min',
         60 => 'Hourly',
@@ -31,7 +32,8 @@ class MoviesParserAdmin extends ItemAdmin {
         20160 => 'Two weeks',
         43200 => 'Mounth',
     );
-    public $parse_number = array(1 => 1, 5 => 5, 10 => 10, 20 => 20, 50 => 50, 100 => 100, 200 => 200, 500 => 500, 1000 => 1000);
+    public $parse_number = array(1 => 1, 2 => 2, 3 => 3, 5 => 5, 7 => 7, 10 => 10, 20 => 20, 35 => 35, 50 => 50, 75 => 75, 100 => 100, 200 => 200, 500 => 500, 1000 => 1000);
+    public $gen_urls_number = array(10 => 10, 100 => 100, 500 => 500, 1000 => 1000);
     public $camp_state = array(
         1 => array('title' => 'Active'),
         4 => array('title' => 'Done'),
@@ -124,6 +126,7 @@ class MoviesParserAdmin extends ItemAdmin {
     );
     public $bulk_actions = array(
         'post_status_new' => 'Post status New',
+        'validate_arhive' => 'Validate Arhive len',
         'delete_url' => 'Delete URL',
         'delete_post' => 'Delete Post',
         'delete_arhive' => 'Delete Arhive and Post',
@@ -158,7 +161,13 @@ class MoviesParserAdmin extends ItemAdmin {
     public $parse_mode = array(
         0 => 'Curl',
         1 => 'Webdrivers',
-        2 => 'Tor webdrivers',
+        2 => 'Tor Webdrivers',
+        3 => 'Tor Curl',
+    );
+    public $tor_mode = array(
+        0 => 'Tor and Proxy',
+        1 => 'Tor',
+        2 => 'Proxy',
     );
 
     /* Generate urls */
@@ -216,7 +225,7 @@ class MoviesParserAdmin extends ItemAdmin {
 
             //Tabs
             $append = '&cid=' . $cid;
-            $tabs_arr = $this->get_campaign_tabs($mlr_name);
+            $tabs_arr = $this->get_campaign_tabs($campaign, $mlr_name);
 
             $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab, $append);
 
@@ -238,6 +247,11 @@ class MoviesParserAdmin extends ItemAdmin {
                 // Campaign view page
                 $update_interval = $this->update_interval;
                 if ($campaign) {
+                    $debug = false;
+                    if ($_GET['debug']) {
+                        $debug = true;
+                    }
+
                     if ($_GET['export']) {
                         $urls = $this->mp->get_all_urls($cid);
                         print '<h2>Export campaign URLs</h2>';
@@ -257,6 +271,14 @@ class MoviesParserAdmin extends ItemAdmin {
                         print '<textarea style="width:90%; height:500px">' . $json . '</textarea>';
 
                         exit;
+                    } else if ($_GET['export_links_rules']) {
+                        $options = $this->mp->get_options($campaign);
+                        $parser_rules = $options['links']['rules'];
+                        $json = json_encode($parser_rules);
+                        print '<h2>Export campaign links rules</h2>';
+                        print '<textarea style="width:90%; height:500px">' . $json . '</textarea>';
+
+                        exit;
                     } else if ($_GET['find_urls']) {
                         print '<h2>Find campaign URLs</h2>';
                         $settings = $this->ml->get_settings();
@@ -268,12 +290,11 @@ class MoviesParserAdmin extends ItemAdmin {
                     } else if ($_GET['gen_urls']) {
                         print '<h2>Generate campaign URLs</h2>';
                         $settings = $this->ml->get_settings();
-                        $preivew_data = $this->mp->generate_urls($campaign, $this->mp->get_options($campaign), $settings, 0, false);
+                        $options = $this->mp->get_options($campaign);
 
-                        if ($preivew_data['urls']) {
-                            print '<p>Total generated: ' . $preivew_data['total'] . '</p>';
-                            print '<p>Total add new: ' . $preivew_data['total_new'] . '</p>';
-                            print '<textarea style="width: 90%; height: 500px;">' . implode("\n", $preivew_data['urls']) . '</textarea>';
+                        $count = $this->mp->proccess_gen_urls($campaign, $options, $debug);
+                        if ($count) {
+                            print '<p>Total add new: ' . $count . '</p>';
                         }
                         exit;
                     }
@@ -381,7 +402,14 @@ class MoviesParserAdmin extends ItemAdmin {
                 $campaign = $this->mp->get_campaign($cid);
 
                 if (isset($_POST['preview'])) {
-                    $preivew_data = $this->preview_links($campaign);
+
+                    if ($campaign->type == 2) {
+                        // Urls
+                        $preivew_urls_data = $this->preview_create_ulrs($campaign);
+                    } else {
+                        // Links
+                        $preivew_data = $this->preview_links($campaign);
+                    }
                 }
 
                 include(MOVIES_LINKS_PLUGIN_DIR . 'includes/edit_links.php');
@@ -772,6 +800,12 @@ class MoviesParserAdmin extends ItemAdmin {
                         $this->mp->update_post_status($id, 0);
                     }
                     print "<div class=\"updated\"><p><strong>Updated</strong></p></div>";
+                } else if ($b == 'validate_arhive') {
+                    // Validate arhive
+                    foreach ($ids as $id) {
+                        $this->mp->validate_arhive_len($id);
+                    }
+                    print "<div class=\"updated\"><p><strong>Updated</strong></p></div>";
                 } else if ($b == 'delete_post') {
                     // Delete url                   
                     foreach ($ids as $id) {
@@ -819,6 +853,8 @@ class MoviesParserAdmin extends ItemAdmin {
                 'del_pea_int' => isset($form_state['del_pea_int']) ? $form_state['del_pea_int'] : $opt_prev['arhive']['del_pea_int'],
                 'tor_h' => isset($form_state['tor_h']) ? $form_state['tor_h'] : $opt_prev['arhive']['tor_h'],
                 'tor_d' => isset($form_state['tor_d']) ? $form_state['tor_d'] : $opt_prev['arhive']['tor_d'],
+                'tor_mode' => isset($form_state['tor_mode']) ? $form_state['tor_mode'] : $opt_prev['arhive']['tor_mode'],
+                'body_len' => isset($form_state['body_len']) ? $form_state['body_len'] : $opt_prev['arhive']['body_len'],
             );
 
             $options = $opt_prev;
@@ -883,7 +919,32 @@ class MoviesParserAdmin extends ItemAdmin {
                     $parsing[$field] = $form_state[$field];
                 }
             }
-            $parsing['rules'] = $this->links_rules_form($form_state);
+
+            $parsing['status'] = isset($form_state['status']) ? $form_state['status'] : 0;
+
+            if ($campaign->type == 2) {
+                // Create URLs
+                $parsing['rules_urls'] = $this->links_rules_form($form_state);
+
+                if ($form_state['import_rules_json']) {
+                    $rules = json_decode(trim(stripslashes($form_state['import_rules_json'])), true);
+                    if (sizeof($rules)) {
+                        $parsing['rules_urls'] = $rules;
+                    }
+                }
+            } else {
+                // Link to movies
+
+                $parsing['rules'] = $this->links_rules_form($form_state);
+
+                if ($form_state['import_rules_json']) {
+                    $rules = json_decode(trim(stripslashes($form_state['import_rules_json'])), true);
+                    if (sizeof($rules)) {
+                        $parsing['rules'] = $rules;
+                    }
+                }
+            }
+
             $options['links'] = $parsing;
 
             $this->mp->update_campaign_options($id, $options);
@@ -941,17 +1002,21 @@ class MoviesParserAdmin extends ItemAdmin {
         return true;
     }
 
-    public function get_campaign_tabs($mlr_name = '') {
+    public function get_campaign_tabs($campaign, $mlr_name = '') {
         $tabs_arr = $this->parser_campaign_tabs;
         if ($mlr_name) {
             $tabs_arr['mlr'] = 'Results';
+        }
+        if ($campaign->type == 2) {
+            // Create URLs
+            $tabs_arr['links'] = '4. Create URLs';
         }
         return $tabs_arr;
     }
 
     public function parser_actions($campaign) {
         $mlr_name = $this->ml->get_campaign_mlr_name($campaign);
-        $tabs = $this->get_campaign_tabs($mlr_name);
+        $tabs = $this->get_campaign_tabs($campaign, $mlr_name);
         foreach ($tabs as $key => $value) {
             $parser_actions[$key] = array('title' => $value);
         }
@@ -1299,7 +1364,6 @@ class MoviesParserAdmin extends ItemAdmin {
         $preivew_data = array();
 
         if ($last_posts) {
-            $o = $options['links'];
             $preivew_data = $this->mp->find_posts_links($last_posts, $o, $campaign->type);
         } else {
             return -1;
@@ -1677,6 +1741,295 @@ class MoviesParserAdmin extends ItemAdmin {
     }
 
     /*
+     * Create URLs
+     */
+
+    public function show_create_urls_rules($rules = array(), $data_fields = array(), $camp_type = 0, $edit = true, $check = array()) {
+        if ($rules || $edit) {
+            //$rules = $this->mp->sort_link_rules_by_weight($rules, $camp_type);
+
+            $campaigns = $this->mp->get_campaigns();
+
+            $disabled = '';
+            if (!$edit) {
+                $disabled = ' disabled ';
+                $title = __('Create URLs rules');
+                ?>
+                <h2><?php print $title ?></h2>            
+            <?php } ?>
+            <table id="rules" class="wp-list-table widefat striped table-view-list">
+                <thead>
+                    <tr>
+                        <th><?php print __('Id') ?></th>
+                        <th><?php print __('Data field') ?></th>
+                        <th><?php print __('Multi*') ?></th>
+                        <th><?php print __('Type') ?></th> 
+                        <th><?php print __('Rule*') ?></th>
+                        <th><?php print __('Match*') ?></th>
+                        <th><?php print __('Campaign*') ?></th>
+                        <th><?php print __('Comment') ?></th>                        
+                        <th><?php print __('Weight') ?></th> 
+                        <th><?php print __('Active') ?></th>
+                        <?php if ($edit): ?>
+                            <th><?php print __('Remove') ?></th> 
+                        <?php endif ?>
+                        <?php if ($check): ?>
+                            <th><?php print __('Check') ?></th> 
+                        <?php endif ?>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if ($rules) { ?>
+                        <?php foreach ($rules as $rid => $rule) {
+                            ?>
+                            <tr>
+                                <td>
+                                    <?php print $rid ?>
+                                    <input type="hidden" name="rule_reg_id_<?php print $rid ?>" value="<?php print $rid ?>">
+                                </td>
+                                <td>
+                                    <select name="rule_reg_d_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
+                                        <?php
+                                        if ($data_fields) {
+                                            $con = $rule['d'];
+                                            foreach ($data_fields as $key => $name) {
+                                                $selected = ($key == $con) ? 'selected' : '';
+                                                ?>
+                                                <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                                                <?php
+                                            }
+                                        }
+                                        ?>                          
+                                    </select>  
+                                </td>
+                                <td>
+                                    <input type="text" name="rule_reg_mu_<?php print $rid ?>" class="rule_m" value="<?php print $rule['mu'] ?>"<?php print $disabled ?>>
+                                </td>
+                                <td>
+                                    <select name="rule_reg_t_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
+                                        <?php
+                                        $con = $rule['t'];
+                                        foreach ($this->mp->link_rules_type as $key => $name) {
+                                            $selected = ($key == $con) ? 'selected' : '';
+                                            ?>
+                                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                                            <?php
+                                        }
+                                        ?>                          
+                                    </select>     
+                                </td>
+                                <td>
+                                    <input type="text" name="rule_reg_r_<?php print $rid ?>" class="reg" value="<?php print htmlspecialchars(base64_decode($rule['r'])) ?>"<?php print $disabled ?>>
+                                </td>
+                                <td>
+                                    <input type="text" name="rule_reg_m_<?php print $rid ?>" class="rule_m" value="<?php print $rule['m'] ?>"<?php print $disabled ?>>
+                                </td>
+
+
+                                <td>
+                                    <select name="rule_reg_ra_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
+                                        <option value="0" >Select</option>
+                                        <?php
+                                        if ($campaigns) {
+                                            $con = $rule['ra'];
+                                            foreach ($campaigns as $item) {
+                                                $key = $item->id;
+                                                $name = "[$key] " . $item->title;
+                                                $selected = ($key == $con) ? 'selected' : '';
+                                                ?>
+                                                <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                                                <?php
+                                            }
+                                        }
+                                        ?>                          
+                                    </select> 
+                                </td>
+                                <td>
+                                    <input type="text" name="rule_reg_c_<?php print $rid ?>" class="rule_m" value="<?php print $rule['c'] ?>"<?php print $disabled ?>>
+                                </td>
+                                <td>
+                                    <input type="text" name="rule_reg_w_<?php print $rid ?>" class="rule_w" value="<?php print $rule['w'] ?>"<?php print $disabled ?>>
+                                </td>
+                                <td>
+                                    <?php
+                                    $checked = '';
+                                    $active = isset($rule['a']) ? $rule['a'] : '';
+                                    if ($active) {
+                                        $checked = 'checked="checked"';
+                                    }
+                                    ?>
+                                    <input type="checkbox" name="rule_reg_a_<?php print $rid ?>" value="1" <?php print $checked ?> <?php print $disabled ?>>                                    
+                                </td>
+
+                                <?php if ($edit): ?>
+                                    <td>
+                                        <input type="checkbox" name="remove_reg_rule[]" value="<?php print $rid ?>">
+                                    </td>
+                                <?php endif ?>
+                                <?php if ($check): ?>
+                                    <td>
+                                        <?php
+                                        if (isset($check[$rid])) {
+                                            print 'Match';
+                                        }
+                                        ?>
+                                    </td>
+                                <?php endif ?>
+                            </tr> 
+                        <?php } ?>
+                        <?php
+                    }
+                    if ($edit) {
+                        ?>
+                        <tr>                            
+                            <td colspan="12"><b><?php print __('Add a new rule') ?></b></td>        
+                        </tr>
+                        <tr>
+                            <td></td>
+
+                            <td>
+                                <select name="reg_new_rule_d" class="condition">
+                                    <?php
+                                    if ($data_fields) {
+                                        foreach ($data_fields as $key => $name) {
+                                            ?>
+                                            <option value="<?php print $key ?>"><?php print $name ?></option>                                
+                                            <?php
+                                        }
+                                    }
+                                    ?>                          
+                                </select> 
+                            </td>
+                            <td>
+                                <input type="text" name="reg_new_rule_mu" class="rule_m" value="" placeholder="Delimiler">                                
+                            </td>
+
+
+                            <td>
+                                <select name="reg_new_rule_t" class="condition">
+                                    <?php foreach ($this->mp->link_rules_type as $key => $name) { ?>
+                                        <option value="<?php print $key ?>"><?php print $name ?></option>                                
+                                        <?php
+                                    }
+                                    ?>                          
+                                </select> 
+                            </td>
+                            <td>
+                                <input type="text" name="reg_new_rule_r" class="reg" value="" placeholder="Enter a rule">
+                            </td>
+                            <td>
+                                <input type="text" name="reg_new_rule_m" class="rule_m" value="" placeholder="Match field number">
+                            </td>
+
+                            <td>
+
+                                <select name="reg_new_rule_ra" class="condition"<?php print $disabled ?>>
+                                    <option value="0">Select</option>
+                                    <?php
+                                    if ($campaigns) {
+                                        foreach ($campaigns as $item) {
+                                            $key = $item->id;
+                                            $name = "[$key] " . $item->title;
+                                            ?>
+                                            <option value="<?php print $key ?>" ><?php print $name ?></option>                                
+                                            <?php
+                                        }
+                                    }
+                                    ?>                          
+                                </select>                                 
+                            </td>
+                            <td>
+                                <input type="text" name="reg_new_rule_c" class="rule_m" value="" placeholder="Comment">
+                            </td>
+                            <td>
+                                <input type="text" name="reg_new_rule_w" class="rule_w" value="0">
+                            </td>
+                            <td>
+                                <input type="checkbox" name="reg_new_rule_a" value="1" checked="checked">
+                            </td>
+                            <td></td>
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            </table> 
+            <p class="desc">
+                *Rule example (match/replace): "/(pattern)/Uis". For explode use ",".<br />               
+                *Match.  Example: "$1 $2" for regexp. Default: empty.<br />
+                *Multi. If multifield add delimiter. Example: "," or ";". Default empty: single field.<br />
+                *Campaign. Where new URLs generated.
+            </p>
+            <?php
+        }
+    }
+
+    public function preview_create_ulrs($campaign) {
+        $options = $this->mp->get_options($campaign);
+        $o = $options['links'];
+        $count = $o['pr_num'];
+        $cid = $campaign->id;
+
+        $last_posts = $this->mp->get_last_posts($count, $cid, -1, 1);
+        $preivew_data = array();
+
+        if ($last_posts) {
+            $preivew_data = $this->mp->create_posts_urls($last_posts, $campaign, true);
+        } else {
+            return -1;
+        }
+
+        return $preivew_data;
+    }
+
+    public function preview_create_found_urls($preivew_data) {
+        if ($preivew_data == -1) {
+            print '<p>No posts found</p>';
+        } else if ($preivew_data) {
+            ?>
+            <h3>Find URLs result:</h3>
+            <?php
+            foreach ($preivew_data as $id => $item) {
+
+                $post = $item['post'];
+                $results = $item['active_rules'];
+                $post_title = $post->title . ' [' . $post->id . ']';
+                ?>
+                <h3><?php print $this->mla->theme_parser_url_link($post->uid, $post_title); ?></h3>
+                <?php
+                if (!$results) {
+                    print '<p>Results not found</p>';
+                    continue;
+                }
+                ?>
+                <table class="wp-list-table widefat striped table-view-list">
+                    <thead>
+                        <tr>     
+                            <th><?php print __('Data field') ?></th>
+                            <th><?php print __('Rule') ?></th>
+                            <th><?php print __('Results') ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($results as $fkey => $data) { ?>
+                            <?php foreach ($data as $i => $item) { ?>
+                                <tr>
+                                    <td><?php print $item['title'] ?></td>                                            
+                                    <td><?php print $i ?></td>
+                                    <td><?php print implode('<br />', $item['content']) ?></td>                                
+                                </tr>
+                            <?php } ?>
+                        <?php } ?>
+                    </tbody>        
+                </table>
+                <br />
+            <?php } ?>
+        <?php } else { ?>
+            <h3>No results</h3>
+            <p>Check regexp rules.</p>
+            <?php
+        }
+    }
+
+    /*
      * URLs
      */
 
@@ -1831,6 +2184,7 @@ class MoviesParserAdmin extends ItemAdmin {
                         $find_urls[$key] = $value;
                     }
                 }
+
                 $options = $opt_prev;
                 $options['find_urls'] = $find_urls;
 
@@ -1851,6 +2205,12 @@ class MoviesParserAdmin extends ItemAdmin {
                         $urls[$key] = $value;
                     }
                 }
+
+                $checkbox_fields = array('status');
+                foreach ($checkbox_fields as $field) {
+                    $urls[$field] = isset($form_state[$field]) ? $form_state[$field] : 0;
+                }
+
                 $options = $opt_prev;
                 $options['cron_urls'] = $urls;
                 $this->mp->update_campaign_options($id, $options);
@@ -1875,9 +2235,39 @@ class MoviesParserAdmin extends ItemAdmin {
                         $find_urls[$key] = $value;
                     }
                 }
+                $checkbox_fields = array('status');
+                foreach ($checkbox_fields as $field) {
+                    $find_urls[$field] = isset($form_state[$field]) ? $form_state[$field] : 0;
+                }
+
+                $reset = isset($form_state['reset']) ? true : false;
+                if ($reset) {
+                    $find_urls['last_id'] = 0;
+                }
+
                 $options = $opt_prev;
                 $options['gen_urls'] = $find_urls;
 
+                $this->mp->update_campaign_options($id, $options);
+            } else if ($form_state['service_urls']) {
+                $campaign = $this->mp->get_campaign($id);
+                $opt_prev = $this->mp->get_options($campaign);
+                $urls_prev = $opt_prev['service_urls'];
+                $urls = array();
+                foreach ($urls_prev as $key => $value) {
+                    if (isset($form_state[$key])) {
+                        $urls[$key] = $form_state[$key];
+                    } else {
+                        $urls[$key] = $value;
+                    }
+                }
+                $checkbox_fields = array('del_pea');
+                foreach ($checkbox_fields as $field) {
+                    $urls[$field] = isset($form_state[$field]) ? $form_state[$field] : 0;
+                }
+
+                $options = $opt_prev;
+                $options['service_urls'] = $urls;
                 $this->mp->update_campaign_options($id, $options);
             }
         }

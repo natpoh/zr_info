@@ -30,7 +30,7 @@ if (sizeof($campaigns) > 0) {
             <?php foreach ($this->mp->campaign_modules as $module) { ?>
             <th><?php print $mtitle = $this->option_names[$module]['title']; ?></th>
         <?php } ?>
-        <th><?php print __('Last log') ?></th> 
+        <?php /*?><th><?php print __('Last log') ?></th> <?php */?>
     </thead>
     <tbody>
         <?php
@@ -65,7 +65,7 @@ if (sizeof($campaigns) > 0) {
                         <?php }
                 }
                 ?>
-                <td><?php print $this->get_last_log(0, $parser->id) ?></td>
+                <?php /*?><td><?php print $this->get_last_log(0, $parser->id) ?></td><?php */?>
 
 
             </tr> 

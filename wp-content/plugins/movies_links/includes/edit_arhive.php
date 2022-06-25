@@ -55,12 +55,34 @@ if ($cid) {
                     <span class="inline-edit"><?php print __('Number of URLs for cron parsing') ?></span> 
                 </label>
 
+                <label>
+                    <span class="title"><?php print __('Min body') ?></span>
+                    <?php $body_len = $ao['body_len']; ?>
+                    <span class="input-text-wrap"><input type="text" name="body_len" value="<?php print $body_len ?>"></span>
+                    <span class="inline-edit"><?php print __('Minimal valid length of the body.') ?></span> 
+                </label>
+
                 <label class="inline-edit-interval">
                     <span class="title"><?php print __('Parse with') ?></span>
                     <select name="webdrivers" class="interval">
                         <?php
                         $current = $ao['webdrivers'];
                         foreach ($this->parse_mode as $key => $name) {
+                            $selected = ($key == $current) ? 'selected' : '';
+                            ?>
+                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                            <?php
+                        }
+                        ?>                          
+                    </select>                                        
+                </label>
+
+                <label class="inline-edit-interval">
+                    <span class="title"><?php print __('Tor mode') ?></span>
+                    <select name="tor_mode" class="interval">
+                        <?php
+                        $current = $ao['tor_mode'];
+                        foreach ($this->tor_mode as $key => $name) {
                             $selected = ($key == $current) ? 'selected' : '';
                             ?>
                             <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
@@ -149,7 +171,6 @@ if ($cid) {
                 </label>
                 <br />
                 <label class="inline-edit-interval">
-
                     <select name="del_pea_int" class="interval">
                         <?php
                         $inetrval = $ao['del_pea_int'];
@@ -187,7 +208,16 @@ if ($cid) {
             </fieldset>
         </div>
     </form>
-    <?php if ($preivew_data) { ?>
+    <?php
+    if ($preivew_data) {
+        $valid_body = $preivew_data['valid_body'];
+        $valid_result = 'Valid';
+        if (!$valid_body) {
+            $valid_result = 'Invalid';
+        }
+        ?>
+        <p>Validaton reslult is <?php print $valid_result ?></p>
+        <p>Header status is <?php print $preivew_data['headers_status']; ?></p>
         <h2>Headers</h2>
         <textarea style="width: 90%; height: 300px;"><?php print $preivew_data['headers'] ?></textarea>        
         <h2>Content</h2>

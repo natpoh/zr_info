@@ -28,6 +28,17 @@ class TorAdmin extends ItemAdmin {
         1 => 'Attached',
         0 => 'Empty',
     );
+    public $service_status = array(
+        1 => 'Active',
+        0 => 'Inactive',
+        3 => 'Reboot',
+        4 => 'Error',
+        2 => 'Trash'
+    );
+    public $service_type = array(
+        0 => 'Tor',
+        1 => 'Proxy',
+    );
 
     /* Log */
     public $log_type = array(
@@ -39,7 +50,7 @@ class TorAdmin extends ItemAdmin {
         0 => 'Other',
         1 => 'Parsing',
         2 => 'Update IP',
-        3 => 'Reboot',        
+        3 => 'Reboot',
     );
 
     public function __construct($mla = '') {
@@ -133,7 +144,8 @@ class TorAdmin extends ItemAdmin {
             //Pager
 
             $filters = array(
-                'status' => $this->tp->service_status
+                'status' => $this->service_status,
+                'type' => $this->service_type
             );
 
             $filters_tabs = $this->get_filters_tabs($this->tp, 'get_services_count', $filters, $page_url);
@@ -288,7 +300,7 @@ class TorAdmin extends ItemAdmin {
         if (isset($form_state['add_tor']) || isset($form_state['edit_tor'])) {
             // Add
             if ($form_state['name'] == '') {
-                return __('Enter the title');
+                return __('Enter the name');
             }
 
             if ($form_state['url'] == '') {
@@ -315,16 +327,17 @@ class TorAdmin extends ItemAdmin {
 
         $status = isset($form_state['status']) ? $form_state['status'] : 0;
         $name = $form_state['name'];
+        $type = $form_state['type'];
         $url = $form_state['url'];
 
         $id = $form_state['id'] ? $form_state['id'] : 0;
         if ($id) {
             //EDIT
-            $this->tp->update_service($status, $name, $url, $id);
+            $this->tp->update_service($status, $name, $url, $type, $id);
             $result = $id;
         } else {
             //ADD
-            $result = $this->tp->add_service($status, $name, $url);
+            $result = $this->tp->add_service($status, $name, $url, $type);
         }
         return $result;
     }

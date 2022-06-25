@@ -156,12 +156,12 @@ function critic_crowd_validation($link, $row = []) {
             $array_user = Crowdsource::get_user();
 
             $array_rows = array(
-                'link' => array('type' => 'disabled', 'title' => 'Link to the review source', 'default_value' => $link),
-                'title' => array('type' => $title_type, 'placeholer' => 'title', 'title' => 'Review title', 'default_value' => $title),
-                'critic_name' => array('type' => $critic_name_type, 'placeholer' => 'Critic name', 'title' => 'Autor name', 'default_value' => $author),
+                'link' => array('type' => 'disabled', 'title' => 'Link to the review source:', 'default_value' => $link),
+                'title' => array('type' => $title_type, 'placeholer' => 'title', 'title' => 'Review Title:', 'default_value' => $title),
+                'critic_name' => array('type' => $critic_name_type, 'placeholer' => 'Critic name', 'title' => 'Critic\'s Name:', 'default_value' => $author),
                 'critic_id' => array('type' => 'hidden', 'default_value' => $author_id),
                 'review_id' => array('type' => 'hidden', 'default_value' => $cid),
-                'content' => array('type' => 'html', 'title' => 'Review content', 'default_value' => $content),
+                'content' => array('type' => 'html', 'title' => 'Review Content:', 'default_value' => $content),
             );
 
 
@@ -771,7 +771,7 @@ if (isset($_POST['oper'])) {
         $array_user = Crowdsource::get_user();
 
         $array_rows = array(
-            'link' => array('type' => 'input', 'placeholer' => 'link', 'title' => 'Add a link to the review source'),
+            'link' => array('type' => 'input', 'placeholer' => 'link', 'title' => 'Add a link to the review source:'),
         );
 
         $content = Crowdsource::front('critic_crowd_link', $array_rows, $array_user, $id);

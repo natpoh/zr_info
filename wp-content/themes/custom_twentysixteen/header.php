@@ -96,11 +96,21 @@
                                                 )
                                         );
                                         ?>
+                                        <div class="site_theme_switch" title="Color theme">
+                                            <div class="btn">
+                                                <div class="box">
+                                                    <div class="ball"></div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </nav><!-- .main-navigation -->
                                 <?php endif; ?>
 
                             </div><!-- .site-header-menu -->
                         <?php endif; ?>
+
+
+
                     </div><!-- .site-header-main -->
 
                     <?php if (get_header_image()) : ?>
@@ -122,9 +132,21 @@
                     ?>
                     <div class="scont site-header-menu"></div>
 
+
                 </header><!-- .site-header -->
             </div>
+<script type="text/javascript">
+    var site_theme = localStorage.getItem('site_theme');
+    if (site_theme =='theme_dark')
+    {
+        document.querySelector('body').classList.add('theme_dark');
+    }
+    else
+    {
+        document.querySelector('body').classList.add('theme_white');
+    }
 
+</script>
             <?php
         }
 
@@ -144,6 +166,7 @@
 
 
         <div id="page" class="site">
+
             <div id="content" class="site-content">
 
                 <?php
