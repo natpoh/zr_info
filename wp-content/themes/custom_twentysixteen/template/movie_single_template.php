@@ -160,8 +160,8 @@ if (!function_exists('template_single_movie')) {
             $array_genre = [];
             foreach ($genre_array as $val) {
                 $val = trim($val);
-                //  $array_genre[] = '<a href="' . $site_url . '/genre/' . $val . '/sort_by/movie_asc/">' . $val . '</a>';
-                $array_genre[] = $val;
+                $array_genre[] = '<a target="_blank" href="' . $site_url . '/search/genre_' . strtolower($val) . '">' . $val . '</a>';
+                //$array_genre[] = $val;
             }
             $genre_string = implode($array_genre, ', ');
             $_wpmoly_movie_genres = '<div class="block"><span>Genres: </span>' . $genre_string . '</div>';
@@ -182,7 +182,7 @@ if (!function_exists('template_single_movie')) {
             $array_wpmoly_movie_country = [];
             foreach ($_wpmoly_movie_country as $val) {
                 if ($val)
-                    $array_wpmoly_movie_country[] = $val;
+                    $array_wpmoly_movie_country[] = '<a target="_blank" href="' . $site_url . '/search/country_' . str_replace(' ','-',strtolower($val))  . '">' . $val . '</a>';
             }
             $_wpmoly_movie_country = implode($array_wpmoly_movie_country, ', ');
             if (count($array_wpmoly_movie_country) > 1) {

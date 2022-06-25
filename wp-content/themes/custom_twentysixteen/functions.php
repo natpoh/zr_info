@@ -37,7 +37,7 @@ add_action('wp_print_styles', 'custom_styles', 100);
 
 function custom_styles() {
     wp_deregister_style('twentysixteen-style');
-    $version = '1.2.25';
+    $version = '1.2.26';
     if (defined('LASTVERSION')) {
         $version = $version . LASTVERSION;
     }

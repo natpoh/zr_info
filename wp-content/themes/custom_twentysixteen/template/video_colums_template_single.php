@@ -11,7 +11,7 @@ wp_enqueue_script('spoiler-min', get_template_directory_uri() . '/js/spoiler.min
 wp_enqueue_script('section_home', get_template_directory_uri() . '/js/section_home.js', array('jquery'), LASTVERSION);
 
 $array_list = array(
-    'Pro' => array('title' => 'Critic Reviews:', 'id' => 'review_scroll', 'class' => 'single pro_review'),
+    'Pro' => array('title' => 'Critic Reviews: <a href="#" id-data="'.$post_id.'" class="add_critic" >+add</a>', 'id' => 'review_scroll', 'class' => 'single pro_review'),
     'Staff' => array('title' => 'Staff Reviews:', 'id' => 'stuff_scroll', 'class' => 'single stuff_review widthed secton_gray'),
     'Audience' => array('title' => 'Audience Reviews:', 'id' => 'audience_scroll', 'class' => 'single audience_review',
         'tabs' => array('p' => 'Positive', 'n' => 'Negative', 'a' => 'All')),

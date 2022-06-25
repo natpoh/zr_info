@@ -104,13 +104,14 @@ if (!$site_url)$site_url ='https://'.$_SERVER['HTTP_HOST'].'/';
     </div>
 </div>
 
-<section class="inner_content">
-    <div  id="similar_movies" data-value="<?php echo  $post_id ?>" class="not_load"></div>
-</section>
+
 
 
 
     </div><!-- .entry-content -->
+    <section class="inner_content">
+        <div  id="similar_movies" data-value="<?php echo  $post_id ?>" class="not_load"></div>
+    </section>
     <footer class="entry-footer">
     </footer><!-- .entry-footer -->
 </article>

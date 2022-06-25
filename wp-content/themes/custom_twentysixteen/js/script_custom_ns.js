@@ -214,7 +214,21 @@ jQuery(document).ready(function () {
         }
 
     });
+    jQuery('body').on('click', '.site_theme_switch', function () {
 
+        if (jQuery('body').hasClass('theme_dark'))
+        {
+        jQuery('body').removeClass('theme_dark').addClass('theme_white');
+            localStorage.setItem('site_theme','theme_white');
+        }
+        else
+        {
+         jQuery('body').removeClass('theme_white').addClass('theme_dark');
+            localStorage.setItem('site_theme','theme_dark');
+        }
+
+        return false;
+    });
 });
 
 function init_nte() {

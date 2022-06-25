@@ -1,11 +1,13 @@
 .movie_container{
-    background-color: #040708;
-    color: #fff;
+    color: #000;
     font-family: 'Courier Prime', Courier;
     font-size: 16px;
     line-height: 1.75;
 }
-
+body.theme_dark  .movie_container {
+    background-color: #040708;
+    color: #fff;
+}
 .movie_description {
     background-color: #fff;
     color: #000;
@@ -19,12 +21,18 @@
     box-shadow: 2px 0px 2px rgba(255, 255, 255, 0.3);
 }
 .single_post .movie_description{
-    background-color: #040708;
-    color: #fff;
+    color: #000;
+
     padding: 0;
 
     box-shadow: none;
 }
+
+body.theme_dark  .single_post .movie_description {
+    color: #fff;
+    background-color: #040708;
+}
+
 .single_post  .movie_poster {
     box-shadow: none;
 }
@@ -62,8 +70,12 @@
     padding: 15px;
 }
 .single_post .movie_credits_bloc ,.single_post  .movie_summary {
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: transparent;
     padding: 12px;
+}
+
+body.theme_dark  .single_post .movie_credits_bloc,body.theme_dark .single_post .movie_summary {
+    background-color: rgba(0, 0, 0, 0.7);
 }
 
 .movie_load_grid{
@@ -72,8 +84,8 @@
 }
 
 .single_post .movie_summary {
+    color: #3e3b3b;
 
-    color: gray;
 }
 .single_post  .mcb_content {
     color: #868686;
@@ -82,6 +94,13 @@
     font-size: 1.2em;
 }
 .single_post .movie_summary .block span {
+    color: #000;
+}
+
+body.theme_dark .single_post .movie_summary {
+    color: gray;
+}
+body.theme_dark .single_post .movie_summary .block span {
     color: #fff;
 }
 .block_summary{
@@ -120,9 +139,16 @@
 }
 .providers_colum {
     display: flex;
-    background-color: #000;
+    background-color: #646464;
     position: relative;
     border-bottom: 1px solid #262626;
+}
+
+
+body.theme_dark .providers_colum {
+
+    background-color: #000;
+
 }
 .providers_colum_data {
     display: flex;
@@ -147,7 +173,9 @@
     font-size: 14px;
     height: 24px;
     z-index: 1;
+    color: #fff;
 }
+
 .providers_desc{
     background-color: #121212;
 }
@@ -174,6 +202,9 @@
     background-color: #252525;
     color: #fff;
 }
+
+
+
 .providers_colum a {
     width: auto;
     height: 70px;
@@ -244,20 +275,29 @@
 
     opacity: 0.9;
 }
+
 body .ready_to_load .button_play_trailer {
     position: relative;
     padding-left: 50px;
     display: flex;
-    color: #fff;
+    color: #338cff;
     text-decoration: none;
     font-size: 24px;
     outline: none !important;
-    text-shadow: 0px 0px 2px #0167a4,0px 0px 4px #0167a4,0px 0px 8px #0167a4,0px 0px 10px #0167a4;
+    text-shadow: 0px 0px 2px #338cff;
     transition: all 0.4s;
     height: 36px;
     box-sizing: border-box;
     align-items: center;
 }
+
+
+body.theme_dark  body .ready_to_load .button_play_trailer {
+    color: #fff;
+    text-shadow: 0px 0px 2px #0167a4,0px 0px 4px #0167a4,0px 0px 8px #0167a4,0px 0px 10px #0167a4;
+
+}
+
 body .ready_to_load .button_play_trailer::before {
     content: "▲";
     width: 34px;
@@ -296,10 +336,23 @@ body .section_ethnic .highcharts-contextbutton {
 body .section_ethnic .highcharts-background {
     fill: transparent;
 }
-
 body .section_ethnic .highcharts-title {
+    fill: #464646 !important;
+}
+body.theme_dark  .section_ethnic .highcharts-title {
     fill: #E0E0E3 !important;
 }
+
+
+body.theme_white .section_ethnic  .highcharts-label text{
+    fill: #000!important;
+    color: #000!important;
+}
+body.theme_white .section_ethnic  .highcharts-label text> tspan.highcharts-text-outline{
+display: none;
+}
+
+
 .section_chart {
     height: 260px;
     margin: 0 auto;
@@ -377,17 +430,25 @@ section.inner_content.section_actors  div.column_content.flex.scroller {
     flex-wrap: wrap;
     justify-content: center;
 }
-
 .movie_total_rating {
     min-height: 250px;
-    background-color: #040708;
-    color: #c7c7c7;
+    background-color: transparent;
+    color: #000;
     font-family: 'HOLLYWOODSTARFIRE', "Helvetica Neue", Courier;
     font-size: 20px;
     display: flex;
     flex-wrap: wrap;
     align-content: space-around;
     justify-content: space-evenly;
+    border-top: 1px solid #e3e3e3;
+    border-bottom: 1px solid #e3e3e3;
+}
+body.theme_dark  .movie_total_rating {
+
+    background-color: #040708;
+    color: #c7c7c7;
+border: none;
+
 }
 .rating_row {
     margin-bottom: 10px;
@@ -399,12 +460,22 @@ section.inner_content.section_actors  div.column_content.flex.scroller {
     display: block;
     margin-left: 15px;
 }
+
 .rating_row .rating_row_content {
+
+    color: #202020;
     display: block;
     margin-left: 15px;
-    color: #fff;
     font-size: 25px;
 }
+
+body.theme_dark  .rating_row .rating_row_content {
+
+    color: #fff;
+
+}
+
+
 .flex_movies_block .page-header{
     width: 100%;
     padding-top: 0;
@@ -595,6 +666,12 @@ a#op.open_ul:hover {
     align-items: center;
     margin-right: 15px;
 }
+
+body.theme_dark .imdb_rating, body.theme_dark .rotten_tomatoes_score  {
+
+    color: #919191;
+}
+
 .rotten_tomatoes_score>span::before{
     margin: 0 6px;
     content: "";
@@ -746,16 +823,23 @@ display: none;
 }
 
 .add_pg_rating_button.button_edit {
-    background: url("../images/edit_modify.svg") no-repeat scroll left 0 top 0px transparent;
+    background: url("../images/edit_b.svg") no-repeat scroll left 6px top 1px  transparent;
 
     display: inline-block;
     width: 40px;
     height: 28px;
     cursor: pointer;
-    background-size: 37px;
+    background-size: 28px;
     opacity: 0.38;
 
 }
+
+body.theme_dark  .add_pg_rating_button.button_edit {
+    background: url("../images/edit.svg") no-repeat scroll left 6px top 1px  transparent;
+    background-size: 28px;
+
+}
+
 .actor_crowdsource_container .actor_crowdsource::before {
     content: "";
     display: inline-block;
@@ -773,7 +857,7 @@ display: none;
 .actor_edit {
     position: absolute;
     right: 5px;
-    bottom: -8px;
+    bottom: 0px;
 }
 .actor_edit .button_edit
 {
@@ -932,6 +1016,20 @@ div.sortable {
     white-space: pre;
     font-weight: bold;
 }
+
+body.theme_dark  .sug_buttons_wrapper .options li::before {
+
+    color: #fff;
+}
+body.theme_dark  .sug_buttons_wrapper .selected.s1::before {
+    color: #02c302;
+}
+body.theme_dark  .sug_buttons_wrapper .selected.s2::before {
+    color: red;
+}
+body.theme_dark  .sug_buttons_wrapper .selected.s3::before {
+    color: orange;
+}
 .content_warning {
     font-size: 1.4375rem;
     margin-bottom: 2.438rem;
@@ -947,9 +1045,12 @@ div.sortable {
     max-height: unset;
 
     }
-    .twitter_content  h3.column_header{
+
+    .column_inner_content  h3.column_header{
         margin-top: 50px;
     }
+
+
     .column_inner_content {
         flex: unset;
         width: 100%;

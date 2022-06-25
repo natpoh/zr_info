@@ -357,7 +357,7 @@ function create_diversity(diversity_data, value)
             diversity_data_content += popup_cusomize('row_inner', b.r, b.c + '%');
 
         });
-        diversity_data_content += '<p class="gray_comment">We love all demographics at RWT!<br>We just grow tired of forced diversity. Like Blackwashing superheroes and writing Europeans out of their own history. Unfortunately, we can\'t automatically scan for "forced diversity," only analyze the entire cast. On the bright side, you can use these percentages to help support diverse media as well!</p>';
+        diversity_data_content += '<p class="gray_comment">We love all demographics at RWT!<br>We just grow tired of forced "<a href="https://www.facebook.com/868164246578472/posts/the-cast-of-black-panther-is-hella-diverse/1236999296361630/" target="_blank:"><u>diversity</u></a>". Like Blackwashing superheroes and writing Europeans out of their own history. Unfortunately, we can\'t automatically scan for forced diversity, only analyze the entire cast. On the bright side, you can use these percentages to help support <a href="https://rightwingtomatoes.com/analytics/tab_ethnicity/budget_12000-500000/minus-genre_animation/release_1984-2022/type_movies/showcast_2_1/stacking_percent/vis_regression/xaxis_release/yaxis_simpson/setup_noclasters_inflation" target="_blank"><u>truly diverse</u></a> media as well!</p>';
 
     }
 
@@ -2459,7 +2459,7 @@ jQuery(document).ready(function () {
                     jQuery.ajax({
                         type: 'get',
                         dataType: 'html',
-                        url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/images/roboto_a.svg",
+                        url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/images/roboto.svg",
                         success: function (html) {
                             jQuery('.review_crowd').append(html);
 
@@ -2678,7 +2678,7 @@ jQuery(document).ready(function () {
 
                 } else
                 {
-                    let msg = '<p class="user_message_info">Thank you for your help, we\'ll check it soon</p>';
+                    let msg = '<p class="user_message_info">Thank you for your help, we\'ll check it soon.</p>';
                     if (closep)
                     {
                         prnt.html(msg + '<div class="submit_data"><button class="button close" >Close</button></div>');
@@ -2787,7 +2787,7 @@ jQuery(document).ready(function () {
 
     });
 
-    jQuery('body').on('click', '.add_critic_button, .edit_critic', function (e) {
+    jQuery('body').on('click', '.add_critic, .edit_critic', function (e) {
 
         if (jQuery(this).hasClass('edit_critic'))
         {
@@ -2795,8 +2795,7 @@ jQuery(document).ready(function () {
             var id = prnt.attr('id');
         } else
         {
-            var prnt = jQuery(this).parents('.movie_total_rating');
-            var id = prnt.attr('data-value');
+            var id =  jQuery(this).attr('id-data');
         }
 
 
@@ -2811,7 +2810,7 @@ jQuery(document).ready(function () {
             success: function (html) {
 
                 add_popup();
-                jQuery('.popup-content').html('<div id="' + id + '" class="default_popup"><h2>Add Critic review</h2><p>Please help improve RWT, add  a critics review link.</p>' + html + '</div>');
+                jQuery('.popup-content').html('<div id="' + id + '" class="default_popup"><h2>Add Critic Review:</h2><p>Please help improve RWT, add a critic review link</p>' + html + '</div>');
                 jQuery('input[id="action-popup"]').click();
 
             }
