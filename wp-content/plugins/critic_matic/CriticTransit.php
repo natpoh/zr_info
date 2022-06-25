@@ -118,11 +118,27 @@ class CriticTransit extends AbstractDB {
             // 2. Update slugs 
             foreach ($results as $item) {
                 $mid = $item->mid;
-                $data = array(
-                    'post_name' => $item->newslug,
-                    'add_time' => $this->curr_time()
-                );
-                $this->sync_update_data($data, $mid, $this->db['movie_imdb'], true, 5);
+
+                // Get post
+                $sqlm = sprintf("SELECT id, post_name FROM {$this->db['movie_imdb']} WHERE id=%d", (int) $mid);
+                $result = $this->db_fetch_row($sqlm);
+                if ($result) {
+                    if ($result->post_name != $item->newslug) {
+
+                        $data = array(
+                            'post_name' => $item->newslug,
+                            'add_time' => $this->curr_time()
+                        );
+                        $this->sync_update_data($data, $mid, $this->db['movie_imdb'], true, 5);
+                        if ($debug){
+                            print_r(array('Update post',$result->post_name,$item->newslug));
+                        }
+                    } else {
+                        if ($debug){
+                             print_r(array('Continue',$result->post_name,$item->newslug));
+                        }
+                    }
+                }
             }
         }
     }
