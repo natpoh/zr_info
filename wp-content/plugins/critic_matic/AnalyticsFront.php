@@ -182,7 +182,7 @@ class AnalyticsFront extends SearchFacets {
         'Mixed / Other' => 'mix',
         'Arab' => 'm',
     );
-    public $race_data_priority = array('c', 'e', 'j', 'k', 'b', 's', 'f');
+    public $race_data_priority = array('c', 'e', 'j', 'k', 'b', 's', 'f', 'i');
     public $race_data_setup = array(
         'c' => array('title' => 'Crowdsource', 'titlehover' => 'Crowdsource'),
         'e' => array('title' => 'Ethnicelebs', 'titlehover' => 'Ethnicelebs'),
@@ -190,7 +190,8 @@ class AnalyticsFront extends SearchFacets {
         'k' => array('title' => 'Kairos', 'titlehover' => 'Facial Recognition by Kairos'),
         'b' => array('title' => 'Betaface', 'titlehover' => 'Facial Recognition by Betaface'),
         's' => array('title' => 'Surname', 'titlehover' => 'Surname Analysis'),
-        'f' => array('title' => 'FamilySearch', 'titlehover' => 'FamilySearch Surname Analysis')
+        'f' => array('title' => 'FamilySearch', 'titlehover' => 'FamilySearch Surname Analysis'),
+        'i' => array('title' => 'ForeBears', 'titlehover' => 'ForeBears Surname Analysis')
     );
     public $max_actors = 200;
     public $max_budget = 200000000;
@@ -3016,7 +3017,7 @@ class AnalyticsFront extends SearchFacets {
 
                 $item_race_count = 0;
                 foreach ($races as $race) {
-                    // Actor type                    
+                    // Actor type                                      
                     $actor_type_code = substr($race, 1, 1);
                     if (!$this->validate_show_cast($actor_type_code, $show_cast_valid)) {
                         continue;
@@ -4270,6 +4271,8 @@ class AnalyticsFront extends SearchFacets {
             $race_code = (int) substr($race, 8, 1);
         } else if ($key == 'f') {
             $race_code = (int) substr($race, 9, 1);
+        }else if ($key == 'i') {
+            $race_code = (int) substr($race, 10, 1);
         }
 
         return $race_code;

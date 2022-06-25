@@ -101,29 +101,30 @@ class CriticTransit extends AbstractDB {
     public function movie_set_new_slugs($count = 100, $debug = false, $force = false) {
         $option_name = 'movie_set_ne_slugs_unique_id';
         $last_id = get_option($option_name, 0);
-        if ($force){
-            $last_id=0;
+        if ($force) {
+            $last_id = 0;
         }
         // 1. Get slugs
         $sql = sprintf("SELECT id, mid, oldslug, newslug FROM {$this->db['title_slugs']} WHERE id>%d ORDER BY id ASC limit %d", (int) $last_id, (int) $count);
         $results = $this->db_results($sql);
-        $last = end($results);
-        if ($debug) {
-            print 'last id: ' . $last->id . "\n";
-            print_r($results);
-        }
-        update_option($option_name, $last->id);
-        // 2. Update slugs        
         if ($results) {
+            $last = end($results);
+            if ($debug) {
+                print 'last id: ' . $last->id . "\n";
+                print_r($results);
+            }
+            update_option($option_name, $last->id);
+
+            // 2. Update slugs 
             foreach ($results as $item) {
                 $mid = $item->mid;
                 $data = array(
                     'post_name' => $item->newslug,
                     'add_time' => $this->curr_time()
                 );
-                $this->sync_update_data($data, $mid, $this->db['movie_imdb'], true, 20);
+                $this->sync_update_data($data, $mid, $this->db['movie_imdb'], true, 5);
             }
-        }        
+        }
     }
 
     public function movie_title_slugs($count = 100, $debug = false, $force = false) {
