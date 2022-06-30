@@ -36,4 +36,19 @@ if ($cid) {
             </fieldset>
         </div>
     </form>
+    <br />
+
+    <h3>Remove all posts</h3>
+    <div class="desc">Attention, this action cannot be undone.</div>
+    <form accept-charset="UTF-8" method="post" id="campaign">
+        <div class="cm-edit inline-edit-row">
+            <fieldset>
+                <input type="hidden" name="id" value="<?php print $cid ?>">
+                <input type="hidden" name="remove_all_posts" value="1" >                
+                <?php wp_nonce_field('ml-nonce', 'ml-nonce'); ?>
+                
+                <input type="submit" name="options" id="edit-submit" value="Remove all posts" class="button">  
+            </fieldset>
+        </div>
+    </form>
 <?php } ?>

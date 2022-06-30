@@ -76,6 +76,7 @@ class MoviesParser extends MoviesAbstractDB {
                     'tor_d' => 100,
                     'tor_mode' => 0,
                     'progress' => 0,
+                    'weight' => 0,
                 ),
                 'parsing' => array(
                     'last_update' => 0,
@@ -84,6 +85,8 @@ class MoviesParser extends MoviesAbstractDB {
                     'pr_num' => 5,
                     'status' => 0,
                     'rules' => '',
+                    'row_rules' => '',
+                    'row_status' => 0,
                 ),
                 'links' => array(
                     'last_update' => 0,
@@ -95,8 +98,9 @@ class MoviesParser extends MoviesAbstractDB {
                     'match' => 2,
                     'rating' => 20,
                     'rules' => '',
-                    'rules_urls' => '',
                     'custom_last_run_id' => 0,
+                    'camp' => 0,
+                    'weight' => 10,
                 ),
             ),
         );
@@ -124,8 +128,18 @@ class MoviesParser extends MoviesAbstractDB {
     );
     public $parser_rules_type = array(
         'x' => 'XPath',
+        'p' => 'XPath all',
         'm' => 'Regexp match',
         'a' => 'Regexp match all',
+        'r' => 'Regexp replace',
+    );
+    public $parser_row_rules_type = array(
+        'x' => 'XPath',
+        'p' => 'XPath all',
+        'y' => 'XPath all (multi)',
+        'm' => 'Regexp match',
+        'a' => 'Regexp match all',
+        'b' => 'Regexp match all (multi)',
         'r' => 'Regexp replace',
     );
     public $parser_rules_fields = array(
@@ -136,6 +150,16 @@ class MoviesParser extends MoviesAbstractDB {
     );
     public $parser_rules_actor_fields = array(
         't' => 'Title',
+        'c' => 'Custom',
+    );
+    public $parser_row_rules_fields = array(
+        't' => 'Item',
+    );
+    public $parser_urls_rules_fields = array(
+        'r' => 'Release',
+        't' => 'Title',
+        'y' => 'Year',
+        'u' => 'URL',
         'c' => 'Custom',
     );
 
@@ -154,9 +178,6 @@ class MoviesParser extends MoviesAbstractDB {
         'f' => 'Firstname',
         'l' => 'Lastname',
         'e' => 'Exist'
-    );
-    public $links_rules_url_fields = array(
-        't' => 'Title',
     );
     public $links_match_type = array(
         'm' => 'Match',
@@ -300,6 +321,15 @@ class MoviesParser extends MoviesAbstractDB {
         return $result;
     }
 
+    public function remove_all_campaign_posts($form_state) {
+        if ($form_state['id']) {
+            // To trash
+            $id = $form_state['id'];
+            $sql = sprintf("DELETE p FROM {$this->db['posts']} p INNER JOIN {$this->db['url']} u ON p.uid = u.id WHERE u.cid=%d", (int) $id);                            
+            $this->db_query($sql);
+        }
+    }
+
     public function get_options($campaign) {
         $options = unserialize($campaign->options);
         foreach ($this->def_options['options'] as $key => $value) {
@@ -403,17 +433,29 @@ class MoviesParser extends MoviesAbstractDB {
      * Urls
      */
 
-    public function add_url($cid, $link, $pid = 0) {
+    public function add_url($cid, $link, $pid = 0, $weight = 0) {
         $link_hash = $this->link_hash($link);
-        $exist = $this->get_url_by_hash($link_hash);
-        if ($exist) {
-            $epid = $exist->pid;
+        $url_exist = $this->get_url_by_hash($link_hash);
+
+        if ($url_exist) {
+            $epid = $url_exist->pid;
             if (!$epid && $pid) {
                 // Update post pid
-                $this->update_url_pid($exist->id, $pid);
+                $this->update_url_pid($url_exist->id, $pid);
+            }
+            // URL already exist in another campaign            
+            if ($weight > 0 && $cid != $url_exist->cid) {
+                // Check old campaign weight
+                $old_weight = $this->get_campaign_weight($url_exist->cid);
+                if ($weight > $old_weight) {
+                    $this->update_url_campaing($url_exist->id, $cid);
+                    $message = 'Update URL campaign from ' . $url_exist->cid . ' to ' . $cid;
+                    $this->log_info($message, $cid, $url_exist->id, 1);
+                }
             }
             return 0;
         }
+
         /*
           `cid` int(11) NOT NULL DEFAULT '0',
           `pid` int(11) NOT NULL DEFAULT '0',
@@ -421,7 +463,6 @@ class MoviesParser extends MoviesAbstractDB {
           `link_hash` varchar(255) NOT NULL default '',
           `link` text default NULL,
          */
-
 
         // Status 'NEW'
         $status = 0;
@@ -437,6 +478,34 @@ class MoviesParser extends MoviesAbstractDB {
 
 
         return $id;
+    }
+
+    public function get_campaign_weight($id, $cache = true) {
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$id])) {
+                return $dict[$id];
+            }
+        }
+
+        $campaign = $this->get_campaign($id, $cache);
+        $options = $this->get_options($campaign);
+        $weight = $options['service_urls']['weight'];
+
+
+        if ($cache) {
+            $dict[$id] = $weight;
+        }
+        return $weight;
+    }
+
+    public function update_url_campaing($id, $cid) {
+        $sql = sprintf("UPDATE {$this->db['url']} SET cid=%d WHERE id = %d", (int) $cid, (int) $id);
+        $this->db_query($sql);
     }
 
     public function get_url($id) {
@@ -754,7 +823,7 @@ class MoviesParser extends MoviesAbstractDB {
 
     public function proccess_gen_urls($campaign = '', $options = array(), $debug = false) {
         if ($this->find_urls_in_progress($campaign, $options)) {
-            if ($debug){
+            if ($debug) {
                 print "Find URLs in progress\n";
             }
             return 0;
@@ -792,7 +861,7 @@ class MoviesParser extends MoviesAbstractDB {
 
     private function find_urls_update_progress($campaign) {
         $type_name = 'service_urls';
-        
+
         // Update progress
         $options_upd = array();
         $options_upd[$type_name]['progress'] = 0;
@@ -1171,7 +1240,7 @@ class MoviesParser extends MoviesAbstractDB {
         return $result;
     }
 
-    public function parse_arhives($items, $campaign) {
+    public function parse_arhives($items, $campaign, $rules_name = 'rules') {
         $ret = array();
         if ($items) {
             $cid = $campaign->id;
@@ -1183,7 +1252,22 @@ class MoviesParser extends MoviesAbstractDB {
                 $result = array();
                 if ($code) {
                     // Use reg rules
-                    $result = $this->check_reg_post($o['rules'], $code);
+                    if ($rules_name == 'rules' && $o['row_status'] == 1) {
+                        // Get rows, multi resulst
+                        $rules_fields = $this->parser_row_rules_fields;
+                        $row = $this->check_reg_post($o, 'row_rules', $code, $rules_fields);
+                        if ($row['t']) {
+                            $row_content = $row['t'];
+                            $rules_fields = $this->parser_urls_rules_fields;
+                            $result = $this->check_reg_post($o, 'rules', $row_content, $rules_fields);
+                        }
+                    } else {
+                        $rules_fields = array();
+                        if ($campaign->type == 2) {
+                            $rules_fields = $this->parser_urls_rules_fields;
+                        }
+                        $result = $this->check_reg_post($o, $rules_name, $code, $rules_fields);
+                    }
                 }
                 $ret[$item->uid] = $result;
             }
@@ -1193,31 +1277,77 @@ class MoviesParser extends MoviesAbstractDB {
 
     private function use_reg_rule($rule, $content) {
         $reg = base64_decode($rule['r']);
-        if ($rule['t'] == 'x') {
-            $content = $this->get_dom($reg, $rule['m'], $content);
-        } else if ($rule['t'] == 'm') {
-            $content = $this->get_reg_match($reg, $rule['m'], $content);
-        } else if ($rule['t'] == 'a') {
-            $content = $this->get_reg_match_all($reg, $rule['m'], $content);
-        } else if ($rule['t'] == 'r') {
-            $content = $this->get_reg($reg, $rule['m'], $content);
-        } else if ($rule['t'] == 'n') {
-            //No rules                        
+        $is_array = true;
+        if (!is_array($content)) {
+            $is_array = false;
+            $content_arr = array($content);
+        } else {
+            $content_arr = $content;
+        }
+        $rule_cnt = array();
+        foreach ($content_arr as $cnt) {
+            if ($rule['t'] == 'x') {
+                $rule_cnt[] = $this->get_dom($reg, $rule['m'], $cnt);
+            } else if ($rule['t'] == 'p') {
+                $rule_cnt[] = $this->get_dom($reg, $rule['m'], $cnt, true);
+            } else if ($rule['t'] == 'y') {
+                $is_array = true;
+                $rule_cnt[] = $this->get_dom($reg, $rule['m'], $cnt, true, false);
+            } else if ($rule['t'] == 'm') {
+                $rule_cnt[] = $this->get_reg_match($reg, $rule['m'], $cnt);
+            } else if ($rule['t'] == 'a') {
+                $rule_cnt[] = $this->get_reg_match_all($reg, $rule['m'], $cnt);
+            } else if ($rule['t'] == 'b') {
+                $is_array = true;
+                $rule_cnt[] = $this->get_reg_match_all($reg, $rule['m'], $cnt, false);
+            } else if ($rule['t'] == 'r') {
+                $rule_cnt[] = $this->get_reg($reg, $rule['m'], $cnt);
+            } else if ($rule['t'] == 'n') {
+                //No rules   
+                $rule_cnt = $cnt;
+            }
         }
 
         if (isset($rule['s']) && $rule['s'] > 0) {
-            $content = strip_tags($content);
-            $content = preg_replace('/(  |\&nbsp;|\n)/', ' ', $content);
-            $content = trim($content);
+            $strip_cnt = array();
+            foreach ($rule_cnt as $cnt) {
+                if (!is_array($cnt)) {
+                    $strip_cnt[] = $this->strip_tags_content($cnt);
+                } else {
+                    $strip_c = array();
+                    foreach ($cnt as $c) {
+                        $strip_c[] = $this->strip_tags_content($c);
+                    }
+                    $strip_cnt[] = $strip_c;
+                }
+            }
+            $rule_cnt = $strip_cnt;
         }
 
+        $ret = $rule_cnt;
+        if (!$is_array && is_array($rule_cnt)) {
+            $ret = array_pop($rule_cnt);
+        }
+
+        return $ret;
+    }
+
+    public function strip_tags_content($content = '') {
+        $content = strip_tags($content);
+        $content = preg_replace('/(  |\&nbsp;|\n)/', ' ', $content);
+        $content = trim($content);
         return $content;
     }
 
-    public function check_reg_post($rules, $content) {
+    public function check_reg_post($o, $rules_name, $content, $rules_fields = array()) {
         $results = array();
+        $rules = $o[$rules_name];
+
+        if (!$rules_fields) {
+            $rules_fields = $this->parser_rules_fields;
+        }
         if ($rules && sizeof($rules)) {
-            $rules_w = $this->sort_reg_rules_by_weight($rules);
+            $rules_w = $this->sort_reg_rules_by_weight($rules, $rules_fields);
 
             /*
              * (
@@ -1231,7 +1361,7 @@ class MoviesParser extends MoviesAbstractDB {
               )
              */
 
-            foreach ($this->parser_rules_fields as $type => $title) {
+            foreach ($rules_fields as $type => $title) {
                 $i = 0;
                 foreach ($rules_w as $key => $rule) {
                     if ($type == $rule['f']) {
@@ -1258,16 +1388,44 @@ class MoviesParser extends MoviesAbstractDB {
         }
 
         //implode results
-        $ret = array();
-        foreach ($results as $type => $items) {
-            $ret[$type] = implode('', $items);
-        }
 
+        $ret_arr = array();
+
+        foreach ($results as $type => $items) {
+            $found_array = false;
+            foreach ($items as $item) {
+                if (is_array($item)) {
+                    foreach ($item as $i) {
+
+
+                        if (is_array($i)) {
+                            foreach ($i as $j) {
+                                $ret_arr[$type][] = $j;
+                            }
+                        } else {
+                            $ret_arr[$type][] = $i;
+                        }
+                    }
+                    $found_array = true;
+                } else {
+                    $ret_arr[$type][] = $item;
+                }
+            }
+
+            if ($found_array) {
+                $ret[$type] = $ret_arr[$type];
+            } else {
+                $ret[$type] = implode('', $ret_arr[$type]);
+            }
+        }
         return $ret;
     }
 
-    public function sort_reg_rules_by_weight($rules) {
+    public function sort_reg_rules_by_weight($rules, $parser_rules_fields = array()) {
         $sort_rules = $rules;
+        if (!$parser_rules_fields) {
+            $parser_rules_fields = $this->parser_rules_fields;
+        }
         if ($rules) {
             $rules_w = array();
             foreach ($rules as $key => $value) {
@@ -1275,7 +1433,7 @@ class MoviesParser extends MoviesAbstractDB {
             }
             asort($rules_w);
             $sort_rules = array();
-            foreach ($this->parser_rules_fields as $id => $item) {
+            foreach ($parser_rules_fields as $id => $item) {
                 foreach ($rules_w as $key => $value) {
                     if ($rules[$key]['f'] == $id) {
                         $sort_rules[$key] = $this->get_valid_parser_rule($rules[$key]);
@@ -1300,8 +1458,8 @@ class MoviesParser extends MoviesAbstractDB {
         return $this->def_reg_rule[$key];
     }
 
-    private function get_dom($rule, $match_str, $code) {
-        $content = '';
+    private function get_dom($rule, $match_str, $code, $all = false, $str = true, $glue = '') {
+        $content = array();
         if ($rule && $code) {
             $code = force_balance_tags($code);
             $dom = new DOMDocument;
@@ -1311,17 +1469,28 @@ class MoviesParser extends MoviesAbstractDB {
             $result = $xpath->query($rule);
             if (!is_null($result)) {
                 foreach ($result as $element) {
-                    $content = $this->getNodeInnerHTML($element);
-                    break;
+                    $content[] = $this->getNodeInnerHTML($element);
+                    if (!$all) {
+                        break;
+                    }
                 }
             }
         }
         unset($dom);
         unset($xpath);
         if ($match_str) {
-            $content = str_replace('$1', $content, $match_str);
+            $ret = array();
+            foreach ($content as $item) {
+                $ret[] = str_replace('$1', $item, $match_str);
+            }
+            $content = $ret;
         }
-        return $content;
+        if ($str) {
+            $result = implode($glue, $content);
+        } else {
+            $result = $content;
+        }
+        return $result;
     }
 
     private function getNodeInnerHTML(DOMNode $oNode) {
@@ -1362,13 +1531,12 @@ class MoviesParser extends MoviesAbstractDB {
         return $ret;
     }
 
-    private function get_reg_match_all($rule, $match_str, $content) {
+    private function get_reg_match_all($rule, $match_str, $content, $str = true, $glue = '') {
         //Filters match all
-        $ret = '';
+        $ret_a = array();
         if ($rule && $content) {
             if (preg_match_all($rule, $content, $match)) {
-                //Math reg
-                $ret_a = '';
+                //Math reg                
                 for ($m = 0; $m < sizeof($match[0]); $m++) {
                     $ret = '';
                     if (preg_match_all('/\$([0-9]+)/', $match_str, $match_all)) {
@@ -1382,17 +1550,25 @@ class MoviesParser extends MoviesAbstractDB {
                             }
                         }
                     }
-                    $ret_a .= $ret;
+                    $ret_a[] = $ret;
                 }
-                $ret = $ret_a;
             }
         }
-        return $ret;
+
+        if ($str) {
+            $result = implode($glue, $ret_a);
+        } else {
+            $result = $ret_a;
+        }
+        return $result;
     }
 
-    public function get_parser_fields($options) {
+    public function get_parser_fields($options, $parser_rules_fields = array()) {
+        if (!$parser_rules_fields) {
+            $parser_rules_fields = $this->parser_rules_fields;
+        }
         $rules = $options['parsing']['rules'];
-        $rules_sort = $this->sort_reg_rules_by_weight($rules);
+        $rules_sort = $this->sort_reg_rules_by_weight($rules, $parser_rules_fields);
 
         $ret = array();
         if ($rules_sort) {
@@ -1404,7 +1580,7 @@ class MoviesParser extends MoviesAbstractDB {
                     $rule_key_custom = 'c-' . $rule_custom;
                     $ret[$rule_key_custom] = $rule_custom;
                 } else {
-                    $rule_title = $this->parser_rules_fields[$rule_key];
+                    $rule_title = $parser_rules_fields[$rule_key];
                     $ret[$rule_key] = $rule_title;
                 }
             }
@@ -1471,7 +1647,7 @@ class MoviesParser extends MoviesAbstractDB {
 
     /* Link rules */
 
-    public function check_link_post($o, $post) {
+    public function check_link_post($o, $post, $movie_id = 0) {
         $rules = $o['rules'];
 
         $min_match = $o['match'];
@@ -1480,7 +1656,7 @@ class MoviesParser extends MoviesAbstractDB {
 
         $results = array();
         $search_fields = array();
-        $pid = $post->id;
+
         if ($rules && sizeof($rules)) {
             $rules_w = $this->sort_link_rules_by_weight($rules);
 
@@ -1575,31 +1751,33 @@ class MoviesParser extends MoviesAbstractDB {
             }
 
             $ms = $this->ml->get_ms();
-
-            $movies_imdb = array();
-            if ($post_imdb) {
-                // Find movies by IMDB            
-                $movies_imdb = $ms->search_movies_by_imdb($post_imdb);
-            }
-
-            $movies_tmdb = array();
-            if ($post_tmdb) {
-                // Find movies by IMDB            
-                $movies_tmdb = $ms->search_movies_by_tmdb($post_tmdb);
-            }
-
-            $movies_title = array();
-            if ($post_title_name) {
-                // Find movies by title and year
-                $movies_title = $ms->search_movies_by_title($post_title_name, $title_rule['e'], $post_year_name, 20, $movie_type);
-            }
-
             $facets = array();
+            if ($movie_id) {
+                $movies = $ms->search_movies_by_id($movie_id);
+            } else {
+                $movies_imdb = array();
+                if ($post_imdb) {
+                    // Find movies by IMDB            
+                    $movies_imdb = $ms->search_movies_by_imdb($post_imdb);
+                }
 
-            $movies = array_merge($movies_imdb, $movies_title);
+                $movies_tmdb = array();
+                if ($post_tmdb) {
+                    // Find movies by IMDB            
+                    $movies_tmdb = $ms->search_movies_by_tmdb($post_tmdb);
+                }
 
-            if ($movies_tmdb) {
-                $movies = array_merge($movies, $movies_tmdb);
+                $movies_title = array();
+                if ($post_title_name) {
+                    // Find movies by title and year
+                    $movies_title = $ms->search_movies_by_title($post_title_name, $title_rule['e'], $post_year_name, 20, $movie_type);
+                }
+
+                $movies = array_merge($movies_imdb, $movies_title);
+
+                if ($movies_tmdb) {
+                    $movies = array_merge($movies, $movies_tmdb);
+                }
             }
 
             if ($movies) {
@@ -2081,8 +2259,6 @@ class MoviesParser extends MoviesAbstractDB {
         $links_rules_fields = $this->links_rules_fields;
         if ($camp_type == 1) {
             $links_rules_fields = $this->links_rules_actor_fields;
-        } else if ($camp_type == 2) {
-            $links_rules_fields = $this->links_rules_url_fields;
         }
 
         if ($rules) {
@@ -2139,70 +2315,66 @@ class MoviesParser extends MoviesAbstractDB {
      * Create URLs rules
      */
 
-    public function create_posts_urls($posts = array(), $campaign = array(), $preview = false) {
-        if ($posts) {
+    public function find_url_posts_links($posts = array(), $o = array()) {
+        $ret = array();
 
-            $options = $this->get_options($campaign);
-            $o = $options['links'];
-            $data_fields = $this->get_parser_fields($options);
+        if (sizeof($posts)) {
+            foreach ($posts as $uid => $data) {
+                $posts_arr = array();
+                $url = $this->get_url($uid);
 
-            foreach ($posts as $post) {
-                $results = $this->check_urls_post($post, $o, $data_fields);
-                $results['post'] = $post;
-                $ret[$post->id] = $results;
-            }
-        }
-        return $ret;
-    }
-
-    public function check_urls_post($post, $o, $data_fields) {
-        $rules = $o['rules_urls'];
-
-        $active_rules = array();
-
-        if ($rules && sizeof($rules)) {
-            //$rules_w = $this->sort_link_rules_by_weight($rules, 1);
-            $rules_w = $rules;
-
-            //Find active rules
-            foreach ($data_fields as $type => $title) {
-                $i = 0;
-                foreach ($rules_w as $key => $rule) {
-                    if ($type == $rule['d']) {
-
-                        if ($rule['a'] != 1) {
-                            continue;
+                foreach ($data as $k => $v) {
+                    foreach ($v as $ck => $cv) {
+                        if (!$posts_arr[$ck]) {
+                            $posts_arr[$ck] = array();
                         }
+                        $posts_arr[$ck][$k] = $cv;
+                    }
+                }
 
-                        $type_key = $type;
-
-                        if (!isset($active_rules[$type_key][$i])) {
-                            $active_rules[$type_key][$i] = $rule;
-                            $active_rules[$type_key][$i]['title'] = $title;
-
-                            $field = $this->get_post_field($rule, $post);
-
-                            if ($rule['mu']) {
-                                $fieldt_arr = explode($rule['mu'], $field);
-                            } else {
-                                $fieldt_arr = array($field);
-                            }
-
-                            foreach ($fieldt_arr as $item) {
-                                $field_text = trim($item);
-                                if ($field_text) {
-                                    $content = $this->use_reg_rule($rule, $field_text);
-                                    $active_rules[$type_key][$i]['content'][] = $content;
-                                }
-                            }
-                        }
-
-                        $i += 1;
+                if ($posts_arr) {
+                    foreach ($posts_arr as $arr) {
+                        $post = $this->create_post($arr);
+                        $results = $this->check_link_post($o, $post, $url->pid);
+                        $results['post'] = $post;
+                        $ret[$uid][] = $results;
                     }
                 }
             }
         }
-        return array('active_rules' => $active_rules);
+
+        return $ret;
+    }
+
+    public function create_post($item) {
+        $post = new stdClass();
+
+        $post_options = array();
+        $title = '';
+        $year = '';
+        $release = '';
+        $url = '';
+        foreach ($item as $key => $value) {
+            if ($key == 't') {
+                $title = $value;
+            } else if ($key == 'y') {
+                $year = $value;
+            } else if ($key == 'r') {
+                $release = $value;
+            } else if ($key == 'u') {
+                $url = $value;
+            } else {
+                $post_options[$key] = base64_encode($value);
+            }
+        }
+
+        $post->title = $title;
+        $post->year = $year;
+        $post->release = $year;
+        $post->url = $url;
+        $post->options = $post_options;
+
+        return $post;
     }
 
     /*

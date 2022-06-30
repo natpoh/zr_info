@@ -79,7 +79,11 @@ class MoviesParserCron extends MoviesAbstractDB {
         if ($type_name == 'arhive') {
             $count = $this->proccess_arhive($campaign, $options);
         } else if ($type_name == 'parsing') {
-            $count = $this->proccess_parsing($campaign, $options);
+            if ($campaign->type == 2) {
+                $count = $this->proccess_parsing_create_urls($campaign, $options, false, $debug);
+            } else {
+                $count = $this->proccess_parsing($campaign, $options);
+            }
         } else if ($type_name == 'links') {
             $count = $this->proccess_links($campaign, $options);
         } else if ($type_name == 'cron_urls') {
@@ -259,6 +263,135 @@ class MoviesParserCron extends MoviesAbstractDB {
             }
             // Unpaused links            
             $this->start_paused_module($campaign, 'links', $options);
+        } else {
+            // Campaign done
+            // Status auto-stop
+            $options_upd = array();
+            $options_upd[$type_name]['status'] = 3;
+            $this->mp->update_campaign_options($campaign->id, $options_upd);
+            $message = 'All arhives parsed to posts';
+            $this->mp->log_info($message, $campaign->id, 0, 3);
+        }
+        return $count;
+    }
+
+    private function proccess_parsing_create_urls($campaign, $options, $force = false, $debug = false) {
+        $type_name = 'parsing';
+        $cid = $campaign->id;
+        $type_opt = $options[$type_name];
+
+        // Get posts (last is first)        
+        $urls_count = $type_opt['num'];
+        $count = 0;
+
+        // Get last posts
+        $last_posts = $this->mp->get_last_arhives_no_posts($urls_count, $cid);
+        if ($debug) {
+            print_r($last_posts);
+        }
+
+        if ($last_posts) {
+
+            $items = $this->mp->parse_arhives($last_posts, $campaign);
+            $lo = $options['links'];
+            $urls = $this->mp->find_url_posts_links($items, $lo);
+            $ms = $this->ml->get_ms();
+
+            $cid_dst = $lo['camp'];
+            $new_url_weight = $lo['weight'];
+
+            if ($debug) {
+                print_r($urls);
+            }
+
+            if ($urls && $cid_dst) {
+                foreach ($urls as $uid => $found) {
+                    $post_exist = $this->mp->get_post_by_uid($uid);
+
+                    $movie_id = 0;
+
+                    if (!$post_exist || $force) {
+                        $url = $this->mp->get_url($uid);
+                        $movie_id = $url->pid;
+                        $movie_data = $ms->search_movies_by_id($movie_id);
+                        $movie = array();
+                        if ($movie_data && $movie_data[$movie_id]) {
+                            $movie = $movie_data[$url->pid];
+                        }
+
+                        if ($debug) {
+                            print_r($movie);
+                        }
+
+                        $title = '';
+                        $year = '';
+                        $release = '';
+                        $post_options = array();
+
+                        $status = 0;
+
+                        if ($movie) {
+                            $title = $movie->title;
+                            $year = $movie->year;
+                            $release = $movie->release;
+
+                            // Add urls
+                            $add_urls = array();
+                            foreach ($found as $item) {
+                                if ($item['results'] && sizeof($item['results']) > 0) {
+                                    $first_result = array_pop($item['results']);
+                                    if ($first_result && $first_result['total']['valid'] && $first_result['total']['valid'] == 1) {
+                                        // Add link
+                                        if ($item['post']->url) {
+                                            $add_urls[] = $item['post']->url;
+                                            $count += 1;
+                                        }
+                                    }
+                                }
+                            }
+
+                            if ($debug) {
+                                print_r($add_urls);
+                            }
+
+                            if ($add_urls) {
+                                // Add urls
+                                foreach ($add_urls as $to_add) {
+                                    $this->mp->add_url($cid_dst, $to_add, $movie_id, $new_url_weight);
+                                }
+                                // Parsed done
+                                $status = 1;
+                                foreach ($add_urls as $key => $value) {
+                                    $post_options[$key] = base64_encode($value);
+                                }
+                            }
+                        }
+
+                        // Add post
+                        if (!$post_exist) {
+                            $top_movie = $movie_id;
+                            $rating = 0;
+                            $this->mp->add_post($uid, $status, $title, $release, $year, $post_options, $top_movie, $rating);
+
+                            if ($status == 1) {
+                                $message = 'Add post and URLs: ' . $title;
+                                $this->mp->log_info($message, $cid, $uid, 3);
+                            } else {
+                                $message = 'Can not find URLs';
+                                $this->mp->log_error($message, $cid, $uid, 3);
+                            }
+                        } else {
+                            //Force update post
+                            $top_movie = $post_exist->top_movie;
+                            $rating = $post_exist->rating;
+                            $this->mp->update_post($uid, $status, $title, $release, $year, $post_options, $top_movie, $rating);
+                        }
+                    } else {
+                        $message = 'Post already exist';
+                        $this->mp->log_warn($message, $cid, $uid, 3);
+                    }
+                }
+            }
         } else {
             // Campaign done
             // Status auto-stop

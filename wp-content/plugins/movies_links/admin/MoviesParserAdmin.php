@@ -62,6 +62,7 @@ class MoviesParserAdmin extends ItemAdmin {
         't' => 'Title',
         'r' => 'Release',
         'y' => 'Year',
+        'u' => 'URL',
     );
     public $parser_types = array(
         0 => 'Movies',
@@ -271,6 +272,14 @@ class MoviesParserAdmin extends ItemAdmin {
                         print '<textarea style="width:90%; height:500px">' . $json . '</textarea>';
 
                         exit;
+                    } else if ($_GET['export_row_rules']) {
+                        $options = $this->mp->get_options($campaign);
+                        $parser_rules = $options['parsing']['row_rules'];
+                        $json = json_encode($parser_rules);
+                        print '<h2>Export campaign parser row rules</h2>';
+                        print '<textarea style="width:90%; height:500px">' . $json . '</textarea>';
+
+                        exit;
                     } else if ($_GET['export_links_rules']) {
                         $options = $this->mp->get_options($campaign);
                         $parser_rules = $options['links']['rules'];
@@ -369,7 +378,11 @@ class MoviesParserAdmin extends ItemAdmin {
                 if (isset($_POST['id'])) {
                     $valid = $this->campaign_edit_validate($_POST);
                     if ($valid === true) {
-                        $result_id = $this->parsing_data_edit_submit($_POST);
+                        if ($_POST['links_parsing_data']) {
+                            $result_id = $this->links_data_edit_submit($_POST);
+                        } else {
+                            $result_id = $this->parsing_data_edit_submit($_POST);
+                        }
                         $result = __('Campaign') . ' [' . $result_id . '] ' . __('updated');
                         print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
                     } else {
@@ -382,8 +395,11 @@ class MoviesParserAdmin extends ItemAdmin {
 
                 if (isset($_POST['preview'])) {
                     $preivew_data = $this->preview_parsing($campaign);
+                } else if (isset($_POST['preview_row'])) {
+                    $preivew_data = $this->preview_parsing($campaign, 'row_rules');
+                } else if (isset($_POST['preview_links'])) {
+                    $preivew_data = $this->preview_parser_links($campaign);
                 }
-
                 include(MOVIES_LINKS_PLUGIN_DIR . 'includes/edit_parsing_data.php');
             } else if ($curr_tab == 'links') {
                 // 4. Link to movies
@@ -402,14 +418,7 @@ class MoviesParserAdmin extends ItemAdmin {
                 $campaign = $this->mp->get_campaign($cid);
 
                 if (isset($_POST['preview'])) {
-
-                    if ($campaign->type == 2) {
-                        // Urls
-                        $preivew_urls_data = $this->preview_create_ulrs($campaign);
-                    } else {
-                        // Links
-                        $preivew_data = $this->preview_links($campaign);
-                    }
+                    $preivew_data = $this->preview_links($campaign);
                 }
 
                 include(MOVIES_LINKS_PLUGIN_DIR . 'includes/edit_links.php');
@@ -421,13 +430,20 @@ class MoviesParserAdmin extends ItemAdmin {
                 if (isset($_POST['id'])) {
                     $valid = $this->campaign_edit_validate($_POST);
                     if ($valid === true) {
-                        $result_id = $this->mp->trash_campaign($_POST);
 
-                        $active = isset($_POST['status']) ? $_POST['status'] : 0;
-                        if ($active == 2) {
-                            $result = __('Campaign') . ' [' . $result_id . '] ' . __('moved to trash');
-                        } else {
-                            $result = __('Campaign') . ' [' . $result_id . '] ' . __('untrashed');
+                        if ($_POST['trash'] == 1) {
+
+                            $result_id = $this->mp->trash_campaign($_POST);
+
+                            $active = isset($_POST['status']) ? $_POST['status'] : 0;
+                            if ($active == 2) {
+                                $result = __('Campaign') . ' [' . $result_id . '] ' . __('moved to trash');
+                            } else {
+                                $result = __('Campaign') . ' [' . $result_id . '] ' . __('untrashed');
+                            }
+                        } else if ($_POST['remove_all_posts'] == 1) {
+                            $this->mp->remove_all_campaign_posts($_POST);
+                            $result = 'Removed';
                         }
 
                         print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
@@ -870,31 +886,45 @@ class MoviesParserAdmin extends ItemAdmin {
         $result = 0;
 
         if ($form_state['id']) {
-
             $id = $form_state['id'];
             $campaign = $this->mp->get_campaign($id);
-            $opt_prev = unserialize($campaign->options);
+            $opt_prev = $this->mp->get_options($campaign);
 
-            $parsing = array(
-                'interval' => isset($form_state['interval']) ? $form_state['interval'] : $opt_prev['parsing']['interval'],
-                'num' => isset($form_state['num']) ? $form_state['num'] : $opt_prev['parsing']['num'],
-                'pr_num' => isset($form_state['pr_num']) ? $form_state['pr_num'] : 5,
-                'status' => isset($form_state['status']) ? $form_state['status'] : 0,
-                'rules' => $this->parser_rules_form($form_state),
-            );
-
-            if ($form_state['import_rules_json']) {
-                $rules = json_decode(trim(stripslashes($form_state['import_rules_json'])), true);
-                if (sizeof($rules)) {
-                    $parsing['rules'] = $rules;
+            $parsing_prev = $opt_prev['parsing'];
+            $add_result = array();
+            foreach ($parsing_prev as $key => $value) {
+                if (isset($form_state[$key])) {
+                    $add_result[$key] = $form_state[$key];
                 }
             }
 
-            $options = $opt_prev;
+            if ($form_state['edit_parsing_options']) {
+                $add_result['status'] = isset($form_state['status']) ? $form_state['status'] : 0;
+            } else if ($form_state['edit_parsing_data']) {
+                // Rules logic
+                $add_result['rules'] = $this->parser_rules_form($form_state);
+                if ($form_state['import_rules_json']) {
+                    $rules = json_decode(trim(stripslashes($form_state['import_rules_json'])), true);
+                    if (sizeof($rules)) {
+                        $add_result['rules'] = $rules;
+                    }
+                }
+            } else if ($form_state['edit_parsing_row']) {
+                // Rules logic
+                $add_result['row_rules'] = $this->parser_rules_form($form_state);
+                if ($form_state['import_rules_json']) {
+                    $rules = json_decode(trim(stripslashes($form_state['import_rules_json'])), true);
+                    if (sizeof($rules)) {
+                        $add_result['row_rules'] = $rules;
+                    }
+                }
+                $add_result['row_status'] = isset($form_state['row_status']) ? $form_state['row_status'] : 0;
+            }
 
-            $options['parsing'] = $parsing;
+            $opt_upd = array();
+            $opt_upd['parsing'] = $add_result;
 
-            $this->mp->update_campaign_options($id, $options);
+            $this->mp->update_campaign_options($id, $opt_upd);
             $result = $id;
         }
         return $result;
@@ -919,35 +949,23 @@ class MoviesParserAdmin extends ItemAdmin {
                     $parsing[$field] = $form_state[$field];
                 }
             }
-
             $parsing['status'] = isset($form_state['status']) ? $form_state['status'] : 0;
 
-            if ($campaign->type == 2) {
-                // Create URLs
-                $parsing['rules_urls'] = $this->links_rules_form($form_state);
+            // Link to movies
+            $parsing['rules'] = $this->links_rules_form($form_state);
 
-                if ($form_state['import_rules_json']) {
-                    $rules = json_decode(trim(stripslashes($form_state['import_rules_json'])), true);
-                    if (sizeof($rules)) {
-                        $parsing['rules_urls'] = $rules;
-                    }
-                }
-            } else {
-                // Link to movies
-
-                $parsing['rules'] = $this->links_rules_form($form_state);
-
-                if ($form_state['import_rules_json']) {
-                    $rules = json_decode(trim(stripslashes($form_state['import_rules_json'])), true);
-                    if (sizeof($rules)) {
-                        $parsing['rules'] = $rules;
-                    }
+            if ($form_state['import_rules_json']) {
+                $rules = json_decode(trim(stripslashes($form_state['import_rules_json'])), true);
+                if (sizeof($rules)) {
+                    $parsing['rules'] = $rules;
                 }
             }
 
-            $options['links'] = $parsing;
 
-            $this->mp->update_campaign_options($id, $options);
+            $opt_upd = array();
+            $opt_upd['links'] = $parsing;
+
+            $this->mp->update_campaign_options($id, $opt_upd);
 
             $result = $id;
         }
@@ -1006,10 +1024,6 @@ class MoviesParserAdmin extends ItemAdmin {
         $tabs_arr = $this->parser_campaign_tabs;
         if ($mlr_name) {
             $tabs_arr['mlr'] = 'Results';
-        }
-        if ($campaign->type == 2) {
-            // Create URLs
-            $tabs_arr['links'] = '4. Create URLs';
         }
         return $tabs_arr;
     }
@@ -1071,7 +1085,7 @@ class MoviesParserAdmin extends ItemAdmin {
      * Rules parser
      */
 
-    public function preview_parsing($campaign) {
+    public function preview_parsing($campaign, $rules_name = 'rules') {
         $options = $this->mp->get_options($campaign);
         $o = $options['parsing'];
         $count = $o['pr_num'];
@@ -1079,7 +1093,7 @@ class MoviesParserAdmin extends ItemAdmin {
         $last_posts = $this->mp->get_last_arhives_no_posts($count, $cid, false);
 
         if ($last_posts) {
-            $preivew_data = $this->mp->parse_arhives($last_posts, $campaign);
+            $preivew_data = $this->mp->parse_arhives($last_posts, $campaign, $rules_name);
         } else {
             return -1;
         }
@@ -1141,17 +1155,27 @@ class MoviesParserAdmin extends ItemAdmin {
         return $rule_exists;
     }
 
-    public function show_parser_rules($rules = array(), $edit = true, $camp_type = 0, $check = array()) {
+    public function show_parser_rules($rules = array(), $edit = true, $camp_type = 0, $check = array(), $rules_fields = array(), $parser_rules_type = array()) {
         if ($rules || $edit) {
             if (!is_array($rules)) {
                 $rules = array();
             }
-            $rules = $this->mp->sort_reg_rules_by_weight($rules);
 
-            $rules_fields = $this->mp->parser_rules_fields;
-            if ($camp_type == 1) {
-                $rules_fields = $this->mp->parser_rules_actor_fields;
+
+            if (!$rules_fields) {
+                $rules_fields = $this->mp->parser_rules_fields;
+                if ($camp_type == 1) {
+                    $rules_fields = $this->mp->parser_rules_actor_fields;
+                } else if ($camp_type == 2) {
+                    $rules_fields = $this->mp->parser_urls_rules_fields;
+                }
             }
+
+            if (!$parser_rules_type) {
+                $parser_rules_type = $this->mp->parser_rules_type;
+            }
+
+            $rules = $this->mp->sort_reg_rules_by_weight($rules, $rules_fields);
 
             $disabled = '';
             if (!$edit) {
@@ -1211,7 +1235,7 @@ class MoviesParserAdmin extends ItemAdmin {
                                     <select name="rule_reg_t_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
                                         <?php
                                         $con = $rule['t'];
-                                        foreach ($this->mp->parser_rules_type as $key => $name) {
+                                        foreach ($parser_rules_type as $key => $name) {
                                             $selected = ($key == $con) ? 'selected' : '';
                                             ?>
                                             <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
@@ -1305,7 +1329,7 @@ class MoviesParserAdmin extends ItemAdmin {
                             </td>
                             <td>
                                 <select name="reg_new_rule_t" class="condition">
-                                    <?php foreach ($this->mp->parser_rules_type as $key => $name) { ?>
+                                    <?php foreach ($parser_rules_type as $key => $name) { ?>
                                         <option value="<?php print $key ?>"><?php print $name ?></option>                                
                                         <?php
                                     }
@@ -1351,6 +1375,152 @@ class MoviesParserAdmin extends ItemAdmin {
         }
     }
 
+    public function preview_parser_links($campaign) {
+        $options = $this->mp->get_options($campaign);
+        $o = $options['links'];
+
+        $parsing_data = $this->preview_parsing($campaign);
+
+        $preivew_data = array();
+
+        if ($parsing_data) {
+            $preivew_data = $this->mp->find_url_posts_links($parsing_data, $o);
+        } else {
+            return -1;
+        }
+
+        return $preivew_data;
+    }
+
+    public function preview_links_urls($preivew_data) {
+
+        if ($preivew_data == -1) {
+            print '<p>No posts found</p>';
+        } else if ($preivew_data) {
+            $ma = $this->ml->get_ma();
+            $col_span = 6;
+            ?>
+            <h3>Find links result:</h3>
+            <table class="wp-list-table widefat striped table-view-list">
+                <thead>
+                    <tr>
+                        <th></th>   
+
+                        <?php
+                        foreach ($preivew_data as $uid => $items) {
+                            foreach ($items as $item) {
+                                $fields = $item['fields'];
+                                foreach ($fields as $key => $value) {
+                                    $col_span += 1;
+                                    ?>
+                                    <th><?php print $key ?></th>             
+                                    <?php
+                                }
+                                break;
+                            }
+                            break;
+                        }
+                        ?>  
+                        <th><?php print __('Match') ?></th>
+                        <th><?php print __('Rating') ?></th>
+                        <th><?php print __('Valid') ?></th>
+                        <th><?php print __('Top') ?></th>
+                        <th><?php print __('Add URL') ?></th>
+                    </tr>
+
+                </thead>
+                <tbody>
+                    <?php
+                    foreach ($preivew_data as $uid => $items) {
+                        $url = $this->mp->get_url($uid);
+
+                        $m = $ma->get_movie_by_id($url->pid);
+                        $movie_title = $m->title . ' [' . $m->year . ']';
+                        ?>
+
+                        <tr>
+                            <td colspan="<?php print $col_span ?>">
+                                <h3><?php print $this->mla->theme_parser_url_link($url->id, $movie_title); ?></h3>
+                            </td>
+                        </tr>
+                        <?php
+                        foreach ($items as $item) {
+                            $post = $item['post'];
+                            $fields = $item['fields'];
+                            $results = $item['results'];
+                            $post_title = $post->title;
+                            foreach ($results as $mid => $data) {
+                                ?>
+                                <tr>
+                                    <td><?php print __('Input') ?></td>             
+                                    <?php foreach ($fields as $key => $value) { ?>
+                                        <td><?php
+                                            $field = $data[$key]['data'];
+                                            if (is_array($field)) {
+                                                $field = implode(', ', $field);
+                                            }
+                                            print $field;
+                                            ?>
+                                        </td>             
+                                    <?php } ?>       
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                                <?php
+                                break;
+                            }
+                            break;
+                        }
+
+
+                        foreach ($items as $item) {
+
+                            $post = $item['post'];
+                            $fields = $item['fields'];
+                            $results = $item['results'];
+                            $post_title = $post->title;
+
+                            if (!$results) {
+                                print '<p>Results not found</p>';
+                                continue;
+                            }
+                            ?>
+
+                            <?php foreach ($results as $mid => $data) { ?>
+                                <tr>
+                                    <td><?php print __('Found') ?></td>             
+                                    <?php foreach ($fields as $key => $value) { ?>
+                                        <td><?php print $value ?></td>             
+                                    <?php } ?>      
+                                    <td><?php print $data['total']['match'] ?></td>
+                                    <td><?php print $data['total']['rating'] ?></td>
+                                    <td><?php print $data['total']['valid'] ?></td>
+                                    <td><?php print $data['total']['top'] ?></td>
+                                    <td>
+                                        <?php if ($data['total']['valid']) { ?>
+                                            <a target="_blank" href="<?php print $post->url ?>"><?php print $post->url ?></a>
+                                        <?php } ?>
+                                    </td>
+                                </tr>
+                            <?php } ?>
+
+                            <?php
+                        }
+                    }
+                    ?>
+                </tbody>        
+            </table>
+            <br />
+        <?php } else { ?>
+            <h3>No results</h3>
+            <p>Check regexp rules.</p>
+            <?php
+        }
+    }
+
     /*
      * Rules links
      */
@@ -1364,6 +1534,7 @@ class MoviesParserAdmin extends ItemAdmin {
         $preivew_data = array();
 
         if ($last_posts) {
+            $o = $options['links'];
             $preivew_data = $this->mp->find_posts_links($last_posts, $o, $campaign->type);
         } else {
             return -1;
@@ -1960,24 +2131,6 @@ class MoviesParserAdmin extends ItemAdmin {
             </p>
             <?php
         }
-    }
-
-    public function preview_create_ulrs($campaign) {
-        $options = $this->mp->get_options($campaign);
-        $o = $options['links'];
-        $count = $o['pr_num'];
-        $cid = $campaign->id;
-
-        $last_posts = $this->mp->get_last_posts($count, $cid, -1, 1);
-        $preivew_data = array();
-
-        if ($last_posts) {
-            $preivew_data = $this->mp->create_posts_urls($last_posts, $campaign, true);
-        } else {
-            return -1;
-        }
-
-        return $preivew_data;
     }
 
     public function preview_create_found_urls($preivew_data) {

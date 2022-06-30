@@ -99,6 +99,10 @@ if ($cid) {
                     <span class="inline-edit"><?php print __('Number of URLs parsing from one IP at one day') ?></span> 
                 </label>
 
+                <label>
+                    <span class="title"><?php print __('Weight') ?></span>
+                    <span class="input-text-wrap"><input type="text" name="weight" class="weight" value="<?php print $service_urls['weight'] ?>"></span>
+                </label>
 
 
                 <h3>Garbage collector</h3>

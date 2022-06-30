@@ -72,6 +72,21 @@ class MoviesSearch extends MoviesAbstractDB {
         return $ret;
     }
 
+    public function search_movies_by_id($keyword = '') {
+        // Main sql
+        $sql = sprintf("SELECT id, title, release, year, runtime, movie_id, tmdb_id, weight() w"
+                . " FROM movie_an WHERE id=%d", (int) $keyword);
+        $result = $this->sdb_results($sql);
+
+        $ret = array();
+        if ($result) {
+            foreach ($result as $item) {
+                $ret[$item->id] = $item;
+            }
+        }
+        return $ret;
+    }
+    
     public function search_movies_by_imdb($keyword = '') {
         // Main sql
         $sql = sprintf("SELECT id, title, release, year, runtime, movie_id, tmdb_id, weight() w"
