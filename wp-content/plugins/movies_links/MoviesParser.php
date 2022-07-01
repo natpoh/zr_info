@@ -325,7 +325,7 @@ class MoviesParser extends MoviesAbstractDB {
         if ($form_state['id']) {
             // To trash
             $id = $form_state['id'];
-            $sql = sprintf("DELETE p FROM {$this->db['posts']} p INNER JOIN {$this->db['url']} u ON p.uid = u.id WHERE u.cid=%d", (int) $id);                            
+            $sql = sprintf("DELETE p FROM {$this->db['posts']} p INNER JOIN {$this->db['url']} u ON p.uid = u.id WHERE u.cid=%d", (int) $id);
             $this->db_query($sql);
         }
     }
@@ -1923,12 +1923,14 @@ class MoviesParser extends MoviesAbstractDB {
                                 continue;
                             }
 
-                            $runtime_valid = (int) $runtime_raw;
-                            if (strstr($runtime_raw, '*')) {
+                            if (preg_match('/([0-9]+)h ([0-9]+)m/', $runtime_raw, $match)) {
+                                $runtime_valid = $match[1] * 60 + $match[2];
+                            } else if (strstr($runtime_raw, '*')) {
                                 $runtime_raw_arr = explode('*', $runtime_raw);
                                 $runtime_valid = (int) $runtime_raw_arr[0] * (int) $runtime_raw_arr[1];
+                            } else {
+                                $runtime_valid = (int) $runtime_raw;
                             }
-
                             //print_r(array($runtime, $runtime_valid, $runtime_raw));
 
                             if ($runtime == $runtime_valid) {
