@@ -1924,7 +1924,7 @@ class MoviesParser extends MoviesAbstractDB {
                             }
 
                             if (preg_match('/([0-9]+)h ([0-9]+)m/', $runtime_raw, $match)) {
-                                $runtime_valid = $match[1] * 60 + $match[2];
+                                $runtime_valid = ($match[1] * 60 + $match[2])*60;
                             } else if (strstr($runtime_raw, '*')) {
                                 $runtime_raw_arr = explode('*', $runtime_raw);
                                 $runtime_valid = (int) $runtime_raw_arr[0] * (int) $runtime_raw_arr[1];
