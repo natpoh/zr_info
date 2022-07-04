@@ -49,7 +49,7 @@ class MoviesSearch extends MoviesAbstractDB {
         // Main sql
         $sql = sprintf("SELECT id, title, release, year, runtime, movie_id, tmdb_id, weight() w"
                 . " FROM movie_an WHERE id>0" . $match_title . $match_year . $type_and . " LIMIT %d ", $limit);
-
+        
 
         //Get result
         $stmt = $this->sps->prepare($sql);

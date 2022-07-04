@@ -885,13 +885,16 @@ class MoviesParser extends MoviesAbstractDB {
                 $keys[$match[1][$i]] = $match[0][$i];
             }
         }
-        if (!$keys) {
-            return $ret;
-        }
+
         if ($debug) {
             print_r($campaign);
             print_r($options);
         }
+
+        if (!$keys) {
+            return $ret;
+        }
+
 
         $ma = $this->ml->get_ma();
         $get_keys = array_keys($keys);
@@ -1754,6 +1757,10 @@ class MoviesParser extends MoviesAbstractDB {
             $facets = array();
             if ($movie_id) {
                 $movies = $ms->search_movies_by_id($movie_id);
+                $movies_title = $ms->search_movies_by_title($post_title_name, $title_rule['e'], $post_year_name, 20, $movie_type);
+                if (!isset($movies_title[$movie_id])) {
+                    $post_title_name='';
+                }
             } else {
                 $movies_imdb = array();
                 if ($post_imdb) {
@@ -1924,7 +1931,7 @@ class MoviesParser extends MoviesAbstractDB {
                             }
 
                             if (preg_match('/([0-9]+)h ([0-9]+)m/', $runtime_raw, $match)) {
-                                $runtime_valid = ($match[1] * 60 + $match[2])*60;
+                                $runtime_valid = ($match[1] * 60 + $match[2]) * 60;
                             } else if (strstr($runtime_raw, '*')) {
                                 $runtime_raw_arr = explode('*', $runtime_raw);
                                 $runtime_valid = (int) $runtime_raw_arr[0] * (int) $runtime_raw_arr[1];
