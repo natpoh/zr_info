@@ -1758,6 +1758,7 @@ class MoviesParser extends MoviesAbstractDB {
             if ($movie_id) {
                 $movies = $ms->search_movies_by_id($movie_id);
                 $movies_title = $ms->search_movies_by_title($post_title_name, $title_rule['e'], $post_year_name, 20, $movie_type);
+                
                 if (!isset($movies_title[$movie_id])) {
                     if ($movies[$movie_id]->title != $post_title_name) {
                         $post_title_name = '';
