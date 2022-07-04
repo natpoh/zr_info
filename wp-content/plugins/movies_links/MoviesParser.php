@@ -173,7 +173,8 @@ class MoviesParser extends MoviesAbstractDB {
         'rt' => 'Runtime',
         'im' => 'IMDB',
         'tm' => 'TMDB',
-    );
+        'm' => 'URL Movie ID',
+    );   
     public $links_rules_actor_fields = array(
         'f' => 'Firstname',
         'l' => 'Lastname',
@@ -1616,7 +1617,7 @@ class MoviesParser extends MoviesAbstractDB {
             $and_order = $order;
         }
 
-        $query = sprintf("SELECT p.* FROM {$this->db['posts']} p"
+        $query = sprintf("SELECT p.*, u.pid FROM {$this->db['posts']} p"
                 . " INNER JOIN {$this->db['url']} u ON p.uid = u.id"
                 . " WHERE p.id>%d" . $cid_and . $status_and . $status_links_and
                 . " ORDER BY p.id $and_order LIMIT %d", (int) $min_pid, (int) $count);
@@ -1659,6 +1660,7 @@ class MoviesParser extends MoviesAbstractDB {
 
         $results = array();
         $search_fields = array();
+        $active_rules = array();
 
         if ($rules && sizeof($rules)) {
             $rules_w = $this->sort_link_rules_by_weight($rules);
@@ -1753,18 +1755,37 @@ class MoviesParser extends MoviesAbstractDB {
                 $search_fields['tmdb'] = $post_tmdb;
             }
 
+            //Get link movie id
+            $post_mid = '';
+            $mid_rule = '';
+            if ($active_rules['m']) {
+                foreach ($active_rules['m'] as $item) {
+                    if ($item['content']) {
+                        $post_mid = (int) $item['content'];
+                        $mid_rule = $item;
+                        break;
+                    }
+                }
+                $search_fields['mid'] = $post_mid;
+            }
+
             $ms = $this->ml->get_ms();
             $facets = array();
             if ($movie_id) {
                 $movies = $ms->search_movies_by_id($movie_id);
                 $movies_title = $ms->search_movies_by_title($post_title_name, $title_rule['e'], $post_year_name, 20, $movie_type);
-                
+
                 if (!isset($movies_title[$movie_id])) {
                     if ($movies[$movie_id]->title != $post_title_name) {
                         $post_title_name = '';
                     }
                 }
             } else {
+                $movies_posts = array();
+                if ($post_mid) {
+                    $movies_posts = $ms->search_movies_by_id($post_mid);
+                }
+
                 $movies_imdb = array();
                 if ($post_imdb) {
                     // Find movies by IMDB            
@@ -1787,6 +1808,10 @@ class MoviesParser extends MoviesAbstractDB {
 
                 if ($movies_tmdb) {
                     $movies = array_merge($movies, $movies_tmdb);
+                }
+
+                if ($movies_posts) {
+                    $movies = array_merge($movies, $movies_posts);
                 }
             }
 
@@ -1850,6 +1875,20 @@ class MoviesParser extends MoviesAbstractDB {
                         }
                         $results[$movie->id]['tmdb']['match'] = $match;
                         $results[$movie->id]['tmdb']['rating'] = $rating;
+                        $results[$movie->id]['total']['match'] += $match;
+                        $results[$movie->id]['total']['rating'] += $rating;
+                    }
+
+                    if ($post_mid) {
+                        $results[$movie->id]['mid']['data'] = $movie->id;
+                        $match = 0;
+                        $rating = 0;
+                        if ($movie->id == $post_mid) {
+                            $match = 1;
+                            $rating = $mid_rule['ra'];
+                        }
+                        $results[$movie->id]['mid']['match'] = $match;
+                        $results[$movie->id]['mid']['rating'] = $rating;
                         $results[$movie->id]['total']['match'] += $match;
                         $results[$movie->id]['total']['rating'] += $rating;
                     }
@@ -2255,6 +2294,8 @@ class MoviesParser extends MoviesAbstractDB {
             return $post->year;
         } else if ($field['d'] === 'r') {
             return $post->rel;
+        } else if ($field['d'] === 'm') {
+            return $post->pid;
         } else {
             //Custom field
             $option_name = preg_replace('/^c-/', '', $field['d']);
