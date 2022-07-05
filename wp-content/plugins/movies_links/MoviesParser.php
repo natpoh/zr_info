@@ -174,6 +174,7 @@ class MoviesParser extends MoviesAbstractDB {
         'rt' => 'Runtime',
         'im' => 'IMDB',
         'tm' => 'TMDB',
+        'e' => 'Exist',
         'm' => 'URL Movie ID',
     );
     public $links_rules_actor_fields = array(
@@ -1780,6 +1781,20 @@ class MoviesParser extends MoviesAbstractDB {
                 $search_fields['mid'] = $post_mid;
             }
 
+            // Get exist
+            $post_exist_name = '';
+            $exist_rule = '';
+            if ($active_rules['e']) {
+                foreach ($active_rules['e'] as $item) {
+                    if ($item['content']) {
+                        $post_exist_name = $item['content'];
+                        $exist_rule = $item;
+                        break;
+                    }
+                }
+                $search_fields['exist'] = $post_exist_name;
+            }
+
             $ms = $this->ml->get_ms();
             $facets = array();
             if ($movie_id) {
@@ -1904,6 +1919,15 @@ class MoviesParser extends MoviesAbstractDB {
                         $results[$movie->id]['total']['rating'] += $rating;
                     }
 
+                    // Exist              
+                    if ($post_exist_name) {
+                        $results[$movie->id]['exist']['data'] = $post_exist_name;
+                        $results[$movie->id]['exist']['match'] = 1;
+                        $results[$movie->id]['exist']['rating'] = $exist_rule['ra'];
+
+                        $results[$movie->id]['total']['match'] += 1;
+                        $results[$movie->id]['total']['rating'] += $exist_rule['ra'];
+                    }
                     //Facets
                     $facets[$movie->id] = $ms->get_movie_facets($movie->id);
                 }
@@ -2257,10 +2281,10 @@ class MoviesParser extends MoviesAbstractDB {
                     if ($post_exist_name) {
                         $results[$actor->aid]['exist']['data'] = $post_exist_name;
                         $results[$actor->aid]['exist']['match'] = 1;
-                        $results[$actor->aid]['exist']['rating'] = $last_rule['ra'];
+                        $results[$actor->aid]['exist']['rating'] = $exist_rule['ra'];
 
                         $results[$actor->aid]['total']['match'] += 1;
-                        $results[$actor->aid]['total']['rating'] += $last_rule['ra'];
+                        $results[$actor->aid]['total']['rating'] += $exist_rule['ra'];
                     }
                 }
             } else {
