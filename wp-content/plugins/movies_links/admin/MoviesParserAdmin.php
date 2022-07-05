@@ -871,6 +871,7 @@ class MoviesParserAdmin extends ItemAdmin {
                 'tor_d' => isset($form_state['tor_d']) ? $form_state['tor_d'] : $opt_prev['arhive']['tor_d'],
                 'tor_mode' => isset($form_state['tor_mode']) ? $form_state['tor_mode'] : $opt_prev['arhive']['tor_mode'],
                 'body_len' => isset($form_state['body_len']) ? $form_state['body_len'] : $opt_prev['arhive']['body_len'],
+                'chd' => isset($form_state['chd']) ? base64_encode(stripslashes($form_state['chd'])) : '',
             );
 
             $options = $opt_prev;

@@ -156,7 +156,12 @@ if ($cid) {
                     <input type="checkbox" name="status" value="1" <?php print $checked ?> >
                     <span class="checkbox-title"><?php print __('Arhive parser is active') ?></span>
                 </label>
-                <br />
+                <p><b>Custom headers</b> (for Curl)</p>
+
+                <textarea name="chd" style="width:100%" rows="3"><?php if ($ao['chd']) {print htmlspecialchars(base64_decode($ao['chd']));} ?></textarea>
+                <span class="inline-edit">One command per line. Example: "accept: application/json".</span>                        
+
+
 
                 <h3>Garbage collector</h3>
                 <label class="inline-edit-status">                

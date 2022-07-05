@@ -545,8 +545,7 @@ class MoviesParserCron extends MoviesAbstractDB {
     }
 
     private function arhive_url($item, $campaign, $type_opt, $force = false) {
-        $use_proxy = $type_opt['proxy'];
-        $use_webdriver = $type_opt['webdrivers'];
+
         /*
           [id] => 21
           [cid] => 2
@@ -571,25 +570,11 @@ class MoviesParserCron extends MoviesAbstractDB {
         $url = $item->link;
         $link_hash = $item->link_hash;
         $first_letter = substr($link_hash, 0, 1);
-
-        $ip_limit = array('h' => $type_opt['tor_h'], 'd' => $type_opt['tor_d']);
-        $tor_mode = $type_opt['tor_mode'];
-
         $settings = $this->ml->get_settings();
-        if ($use_webdriver == 1) {
-            // Webdriver
-            $code = $this->mp->get_webdriver($url, $headers, $settings);
-        } else if ($use_webdriver == 2) {
-            // Tor webdriver                       
-            $tp = $this->ml->get_tp();
-            $code = $tp->get_url_content($url, $headers, $ip_limit, false, $tor_mode);
-        } else if ($use_webdriver == 3) {
-            // Tor Curl            
-            $tp = $this->ml->get_tp();
-            $code = $tp->get_url_content($url, $headers, $ip_limit, true, $tor_mode);
-        } else {
-            $code = $this->mp->get_proxy($url, $use_proxy, $headers, $settings);
-        }
+
+
+        // Get posts (last is first)       
+        $code = $this->mp->get_code_by_current_driver($url, $headers, $settings, $type_opt);
 
         // Validate headers
         $header_status = $this->mp->get_header_status($headers);
@@ -613,6 +598,16 @@ class MoviesParserCron extends MoviesAbstractDB {
             $status = 4;
             $this->mp->change_url_state($item->id, $status, true);
             $message = 'Error 404 Not found';
+            $this->mp->log_error($message, $item->cid, $item->id, 2);
+            return;
+        }
+        // Other statuses
+        $error_statuses = array(401, 402, 429);
+        if (in_array($header_status, $error_statuses)) {
+            // Status - 404
+            $status = 4;
+            $this->mp->change_url_state($item->id, $status, true);
+            $message = 'Error '.$header_status;
             $this->mp->log_error($message, $item->cid, $item->id, 2);
             return;
         }

@@ -41,6 +41,7 @@ class MoviesParser extends MoviesAbstractDB {
                     'tor_d' => 100,
                     'tor_mode' => 0,
                     'body_len' => 500,
+                    'chd' => '',
                 ),
                 'find_urls' => array(
                     'first' => '',
@@ -174,7 +175,7 @@ class MoviesParser extends MoviesAbstractDB {
         'im' => 'IMDB',
         'tm' => 'TMDB',
         'm' => 'URL Movie ID',
-    );   
+    );
     public $links_rules_actor_fields = array(
         'f' => 'Firstname',
         'l' => 'Lastname',
@@ -1191,6 +1192,16 @@ class MoviesParser extends MoviesAbstractDB {
         $ip_limit = array('h' => $type_opt['tor_h'], 'd' => $type_opt['tor_d']);
         $tor_mode = $type_opt['tor_mode'];
 
+        $chd = array();
+        $custom_headers = isset($type_opt['chd']) ? trim(base64_decode($type_opt['chd'])) : '';
+        if ($custom_headers) {
+            if (strstr($custom_headers, "\n")) {
+                $chd = explode("\n", $custom_headers);
+            } else {
+                $chd[] = $custom_headers;
+            }
+        }
+
         if ($use_webdriver == 1) {
             $code = $this->get_webdriver($url, $headers, $settings);
         } else if ($use_webdriver == 2) {
@@ -1203,7 +1214,7 @@ class MoviesParser extends MoviesAbstractDB {
             $code = $tp->get_url_content($url, $headers, $ip_limit, true, $tor_mode);
         } else {
             $use_proxy = $type_opt['proxy'];
-            $code = $this->get_proxy($url, $use_proxy, $headers, $settings);
+            $code = $this->get_proxy($url, $use_proxy, $headers, $settings, $chd);
         }
         return $code;
     }
@@ -2755,7 +2766,7 @@ class MoviesParser extends MoviesAbstractDB {
         return $status;
     }
 
-    public function get_proxy($url, $proxy = '', &$header = '', $settings = '') {
+    public function get_proxy($url, $proxy = '', &$header = '', $settings = '', $chd = array()) {
 
         $ch = curl_init();
         $ss = $settings ? $settings : array();
@@ -2780,6 +2791,10 @@ class MoviesParser extends MoviesAbstractDB {
         if ($cookie_path) {
             curl_setopt($ch, CURLOPT_COOKIEJAR, $cookie_path);
             curl_setopt($ch, CURLOPT_COOKIEFILE, $cookie_path);
+        }
+
+        if ($chd) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $chd);
         }
 
         curl_setopt($ch, CURLINFO_HEADER_OUT, true); // enable tracking
