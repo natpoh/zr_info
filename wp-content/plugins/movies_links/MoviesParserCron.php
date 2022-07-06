@@ -334,20 +334,25 @@ class MoviesParserCron extends MoviesAbstractDB {
                         $status = 0;
 
                         if ($movie) {
+
                             $title = $movie->title;
                             $year = $movie->year;
                             $release = $movie->release;
 
                             // Add urls
                             $add_urls = array();
-                            foreach ($found as $item) {
-                                if ($item['results'] && sizeof($item['results']) > 0) {
-                                    $first_result = array_pop($item['results']);
-                                    if ($first_result && $first_result['total']['valid'] && $first_result['total']['valid'] == 1) {
-                                        // Add link
-                                        if ($item['post']->url) {
-                                            $add_urls[] = $item['post']->url;
-                                            $count += 1;
+
+                            if ($found) {
+
+                                foreach ($found as $item) {
+                                    if ($item['results'] && sizeof($item['results']) > 0) {
+                                        $first_result = array_pop($item['results']);
+                                        if ($first_result && $first_result['total']['valid'] && $first_result['total']['valid'] == 1) {
+                                            // Add link
+                                            if ($item['post']->url) {
+                                                $add_urls[] = $item['post']->url;
+                                                $count += 1;
+                                            }
                                         }
                                     }
                                 }
@@ -395,7 +400,7 @@ class MoviesParserCron extends MoviesAbstractDB {
                     }
                 }
             } else {
-                if ($debug){
+                if ($debug) {
                     print "Can not find urls: $cid\n";
                 }
             }
@@ -614,7 +619,7 @@ class MoviesParserCron extends MoviesAbstractDB {
             // Status - 404
             $status = 4;
             $this->mp->change_url_state($item->id, $status, true);
-            $message = 'Error '.$header_status;
+            $message = 'Error ' . $header_status;
             $this->mp->log_error($message, $item->cid, $item->id, 2);
             return;
         }

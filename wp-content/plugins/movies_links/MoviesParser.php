@@ -2408,6 +2408,7 @@ class MoviesParser extends MoviesAbstractDB {
 
         if (sizeof($posts)) {
             foreach ($posts as $uid => $data) {
+                $ret[$uid] = array();
                 $posts_arr = array();
                 $url = $this->get_url($uid);
                 if ($debug) {
