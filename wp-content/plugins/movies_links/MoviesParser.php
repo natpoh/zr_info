@@ -2412,6 +2412,7 @@ class MoviesParser extends MoviesAbstractDB {
                 $url = $this->get_url($uid);
                 if ($debug) {
                     print_r($url);
+                    print_r($data);
                 }
 
                 foreach ($data as $k => $v) {
