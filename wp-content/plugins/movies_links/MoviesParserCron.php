@@ -294,7 +294,7 @@ class MoviesParserCron extends MoviesAbstractDB {
 
             $items = $this->mp->parse_arhives($last_posts, $campaign);
             $lo = $options['links'];
-            $urls = $this->mp->find_url_posts_links($items, $lo);
+            $urls = $this->mp->find_url_posts_links($items, $lo, $debug);
             $ms = $this->ml->get_ms();
 
             $cid_dst = $lo['camp'];

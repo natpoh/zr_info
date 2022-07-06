@@ -2403,13 +2403,16 @@ class MoviesParser extends MoviesAbstractDB {
      * Create URLs rules
      */
 
-    public function find_url_posts_links($posts = array(), $o = array()) {
+    public function find_url_posts_links($posts = array(), $o = array(), $debug = false) {
         $ret = array();
 
         if (sizeof($posts)) {
             foreach ($posts as $uid => $data) {
                 $posts_arr = array();
                 $url = $this->get_url($uid);
+                if ($debug) {
+                    print_r($url);
+                }
 
                 foreach ($data as $k => $v) {
                     foreach ($v as $ck => $cv) {
@@ -2423,6 +2426,9 @@ class MoviesParser extends MoviesAbstractDB {
                 if ($posts_arr) {
                     foreach ($posts_arr as $arr) {
                         $post = $this->create_post($arr);
+                        if ($debug) {
+                            print_r($post);
+                        }
                         $results = $this->check_link_post($o, $post, $url->pid);
                         $results['post'] = $post;
                         $ret[$uid][] = $results;
