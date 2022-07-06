@@ -391,6 +391,10 @@ class MoviesParserCron extends MoviesAbstractDB {
                         $this->mp->log_warn($message, $cid, $uid, 3);
                     }
                 }
+            } else {
+                if ($debug){
+                    print "Can not find urls: $cid\n";
+                }
             }
         } else {
             // Campaign done
