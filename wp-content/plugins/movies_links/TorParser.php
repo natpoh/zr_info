@@ -90,7 +90,7 @@ class TorParser extends MoviesAbstractDB {
         }
     }
 
-    public function get_url_content($url = '', &$header, $ip_limit = array(), $curl = false, $tor_mode = 0, $debug = false) {
+    public function get_url_content($url = '', &$header, $ip_limit = array(), $curl = false, $tor_mode = 0, $is_post = false, $post_vars = array(), $debug = false) {
         $content = '';
         $get_url_data = $this->get_tor_url($url, $ip_limit, $log_data, $tor_mode, $debug);
         $get_url = $get_url_data['url'];
@@ -110,14 +110,14 @@ class TorParser extends MoviesAbstractDB {
             } else {
                 $user_agent = $get_url_data['agent'];
                 $proxy = $get_url_data['proxy'];
-                $data = $this->curl($url, $header, $user_agent, $proxy);
+                $data = $this->curl($url, $header, $user_agent, $proxy, $is_post, $post_vars);
             }
 
             if ($debug) {
                 print_r($header);
                 print_r($data);
             }
-            
+
             $status = $this->get_header_status($header);
             if ($debug) {
                 print "Status: $status\n";
@@ -146,7 +146,7 @@ class TorParser extends MoviesAbstractDB {
         return $content;
     }
 
-    private function get_tor_url($url = '', $ip_limit = array(), &$log_data = array(), $tor_mode=0, $debug = false) {
+    private function get_tor_url($url = '', $ip_limit = array(), &$log_data = array(), $tor_mode = 0, $debug = false) {
         if (!$ip_limit) {
             $ip_limit = $this->ip_limit;
         }
@@ -168,18 +168,18 @@ class TorParser extends MoviesAbstractDB {
         $q_req = array(
             'status' => 1,
         );
-        
+
         // All
         $type = -1;
-        if ($tor_mode){
-            if ($tor_mode==1){
+        if ($tor_mode) {
+            if ($tor_mode == 1) {
                 // Tor
                 $type = 0;
             } else {
                 // Proxy
                 $type = 1;
             }
-            $q_req['type']=$type;
+            $q_req['type'] = $type;
         }
 
         $services = $this->get_services($q_req, 1, 0);
@@ -354,7 +354,7 @@ class TorParser extends MoviesAbstractDB {
             print_r($service);
         }
 
-        $get_url='';
+        $get_url = '';
         if ($service) {
             $agent = $this->get_agent_name_by_id($service->agent);
             $proxy = $service->url;
@@ -1136,7 +1136,7 @@ class TorParser extends MoviesAbstractDB {
         $this->log($message, 2, $q_arr);
     }
 
-    public function curl($url, &$header = '', $curl_user_agent = '', $proxy = '') {
+    public function curl($url, &$header = '', $curl_user_agent = '', $proxy = '', $is_post = false, $post_vars = array()) {
         $ss = $settings ? $settings : array();
         if (!$curl_user_agent) {
             $curl_user_agent = isset($ss['parser_user_agent']) ? $ss['parser_user_agent'] : '';
@@ -1173,6 +1173,13 @@ class TorParser extends MoviesAbstractDB {
             curl_setopt($ch, CURLOPT_PROXY, $proxy);
         }
 
+        if ($is_post) {
+            curl_setopt($ch, CURLOPT_POST, 1);
+            if ($post_vars) {
+                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_vars));
+            }
+        }
+
         $response = curl_exec($ch);
         $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
         $headerSent = curl_getinfo($ch, CURLINFO_HEADER_OUT); // request headers
@@ -1185,9 +1192,9 @@ class TorParser extends MoviesAbstractDB {
 
         return $body;
     }
-    
+
     public function get_header_status($headers) {
-        $status = 200;        
+        $status = 200;
         if ($headers) {
             if (preg_match_all('/HTTP\/[0-9\.]+[ ]+([0-9]{3})/', $headers, $match)) {
                 $status = $match[1][(sizeof($match[1]) - 1)];
@@ -1195,4 +1202,5 @@ class TorParser extends MoviesAbstractDB {
         }
         return $status;
     }
+
 }

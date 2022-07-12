@@ -182,16 +182,16 @@ class AnalyticsFront extends SearchFacets {
         'Mixed / Other' => 'mix',
         'Arab' => 'm',
     );
-    public $race_data_priority = array('c', 'e', 'j', 'k', 'b', 's', 'f', 'i');
+    public $race_data_priority = array('c', 'e', 'j', 'k', 'b', 'i', 'f', 's');
     public $race_data_setup = array(
         'c' => array('title' => 'Crowdsource', 'titlehover' => 'Crowdsource'),
         'e' => array('title' => 'Ethnicelebs', 'titlehover' => 'Ethnicelebs'),
         'j' => array('title' => 'JewOrNotJew', 'titlehover' => 'JewOrNotJew'),
         'k' => array('title' => 'Kairos', 'titlehover' => 'Facial Recognition by Kairos'),
         'b' => array('title' => 'Betaface', 'titlehover' => 'Facial Recognition by Betaface'),
-        's' => array('title' => 'Surname', 'titlehover' => 'Surname Analysis'),
+        'i' => array('title' => 'ForeBears', 'titlehover' => 'ForeBears Surname Analysis'),
         'f' => array('title' => 'FamilySearch', 'titlehover' => 'FamilySearch Surname Analysis'),
-        'i' => array('title' => 'ForeBears', 'titlehover' => 'ForeBears Surname Analysis')
+        's' => array('title' => 'Surname', 'titlehover' => 'Surname Analysis'),
     );
     public $max_actors = 200;
     public $max_budget = 200000000;
@@ -723,7 +723,19 @@ class AnalyticsFront extends SearchFacets {
           'b' => array('title' => 'Betaface', 'titlehover' => 'Facial Recognition by Betaface'),
           's' => array('title' => 'Surname', 'titlehover' => 'Surname Analysis')
           ); */
+        
+        /*
+        $select_types = array()
         ?>
+        <select autocomplete="off" class="facet-content facet-select">
+            <?php foreach ($data as $key => $item): ?>
+                <?php
+                $checked = $this->facet_checked($filter, $key);
+                ?>
+                <option value="<?php print $key ?>" data-title="<?php print $item['title'] ?>" <?php print $checked ? 'selected' : ''  ?>><?php print $item['title'] ?></option>
+            <?php endforeach; ?> 
+        </select>
+<?php */ ?>
         <div class="flex-row">
             <span class="t">Data Set Priority:</span>            
             <div class="nte">
@@ -1133,16 +1145,16 @@ class AnalyticsFront extends SearchFacets {
                                 ?>
                             </td>
                             <td class="a_right"><?php
-                print '$' . number_format($item->boxusa);
-                if ($inflation) {
-                    print $this->theme_page_inflation($item->boxusa, $imod);
-                }
+                                print '$' . number_format($item->boxusa);
+                                if ($inflation) {
+                                    print $this->theme_page_inflation($item->boxusa, $imod);
+                                }
                                 ?></td>
                             <td class="a_right"><?php
-                print '$' . number_format($item->boxint);
-                if ($inflation) {
-                    print $this->theme_page_inflation($item->boxint, $imod);
-                }
+                                print '$' . number_format($item->boxint);
+                                if ($inflation) {
+                                    print $this->theme_page_inflation($item->boxint, $imod);
+                                }
                                 ?></td>
                             <td class="a_right"><?php print round(($item->share * 100), 2) ?></td>
                             <?php if ($inflation) { ?>
@@ -1156,12 +1168,12 @@ class AnalyticsFront extends SearchFacets {
                         <tr>
                             <td colspan="2" class="movie_clmn"><?php $this->theme_movie_item($item); ?></td>
                             <td class="a_right"><?php
-                print $this->theme_axis_data($xaxis, $array_movie_bell[$item->id]['xdata'], $inflation);
-                        ?></td>
+                                print $this->theme_axis_data($xaxis, $array_movie_bell[$item->id]['xdata'], $inflation);
+                                ?></td>
                             <td class="a_right"><?php
-                print $this->theme_axis_data($yaxis, $array_movie_bell[$item->id]['ydata'], $inflation);
-                        ?></td>
-                                <?php if ($inflation) { ?>
+                                print $this->theme_axis_data($yaxis, $array_movie_bell[$item->id]['ydata'], $inflation);
+                                ?></td>
+                            <?php if ($inflation) { ?>
                                 <td class="a_right"><?php print ((round($imod, 2) * 100) - 100); ?>%</td>
                             <?php } ?>
                             <td class="more"><div class="acc collapsed" data-more="<?php print $item->id ?>"><div class="chevron"></div><div class="chevronup"></div></div></td>
@@ -2256,9 +2268,9 @@ class AnalyticsFront extends SearchFacets {
                 }
                 ?>
                 <table class="analytics_table <?php
-        if ($mob) {
-            print 'rspv';
-        }
+                if ($mob) {
+                    print 'rspv';
+                }
                 ?> <?php print $table_class ?>">
                     <thead>
                         <tr>
@@ -4271,7 +4283,7 @@ class AnalyticsFront extends SearchFacets {
             $race_code = (int) substr($race, 8, 1);
         } else if ($key == 'f') {
             $race_code = (int) substr($race, 9, 1);
-        }else if ($key == 'i') {
+        } else if ($key == 'i') {
             $race_code = (int) substr($race, 10, 1);
         }
 
@@ -4317,7 +4329,7 @@ class AnalyticsFront extends SearchFacets {
              */
             foreach ($list as $item) {
                 $title = $item->title;
-                $data_title = $title.' ('. $item->year.')';
+                $data_title = $title . ' (' . $item->year . ')';
                 $ret[$item->id] = array('title' => $title, 'data_title' => $data_title, 'count' => $item->year);
             }
         }
@@ -4838,53 +4850,53 @@ class AnalyticsFront extends SearchFacets {
              data-title="<?php print $filter_pre ?>"
              data-title-pre="<?php print $name_pre ?>" >
 
-        <?php
-        $table_class = 'rsdiv';
-        $title = "Ethnicity info";
-        $collapsed = "";
-        $type = "ethnicitytable";
-        $citems = array();
-        $select_movies_count = 0;
-        if ($curryear) {
-            $select_movies_count = $search_data[$tab_key]['count'];
-        } else if ($currmovie) {
-            $ids = array($currmovie);
-            $citems = array($currmovie_item);
-            $select_movies_count = sizeof($ids);
-        } else if ($currclaster) {
-            if (isset($claster_ids[$currclaster])) {
-                $ids = $claster_ids[$currclaster];
-                $citems = array();
-                foreach ($ids as $cid) {
-                    $citems[] = $array_movie_bell[$cid]['item'];
-                }
+            <?php
+            $table_class = 'rsdiv';
+            $title = "Ethnicity info";
+            $collapsed = "";
+            $type = "ethnicitytable";
+            $citems = array();
+            $select_movies_count = 0;
+            if ($curryear) {
+                $select_movies_count = $search_data[$tab_key]['count'];
+            } else if ($currmovie) {
+                $ids = array($currmovie);
+                $citems = array($currmovie_item);
                 $select_movies_count = sizeof($ids);
+            } else if ($currclaster) {
+                if (isset($claster_ids[$currclaster])) {
+                    $ids = $claster_ids[$currclaster];
+                    $citems = array();
+                    foreach ($ids as $cid) {
+                        $citems[] = $array_movie_bell[$cid]['item'];
+                    }
+                    $select_movies_count = sizeof($ids);
+                } else {
+                    $currclaster = '';
+                }
+            }
+
+            // Titles
+            $curr_title = '';
+            $movies_count_title = '';
+            if ($curryear) {
+                $curr_title = 'year: ' . $curryear;
+            } else if ($currclaster) {
+                $curr_title = 'claster: ' . $currclaster;
+            } else if ($currmovie) {
+                if ($currmovie_item) {
+                    $movie_title = addslashes($currmovie_item->title) . ' [' . $currmovie_item->year . ']';
+                }
+                $curr_title = 'movie: ' . $movie_title;
+            }
+            if ($select_movies_count) {
+                $movies_count_title = 'Select movies count: ' . $select_movies_count . '. Total: ' . $movies_count . '.';
             } else {
-                $currclaster = '';
+                $movies_count_title = 'Movies count: ' . $movies_count;
             }
-        }
 
-        // Titles
-        $curr_title = '';
-        $movies_count_title = '';
-        if ($curryear) {
-            $curr_title = 'year: ' . $curryear;
-        } else if ($currclaster) {
-            $curr_title = 'claster: ' . $currclaster;
-        } else if ($currmovie) {
-            if ($currmovie_item) {
-                $movie_title = addslashes($currmovie_item->title) . ' [' . $currmovie_item->year . ']';
-            }
-            $curr_title = 'movie: ' . $movie_title;
-        }
-        if ($select_movies_count) {
-            $movies_count_title = 'Select movies count: ' . $select_movies_count . '. Total: ' . $movies_count . '.';
-        } else {
-            $movies_count_title = 'Movies count: ' . $movies_count;
-        }
-
-        if ($curr_title) {
-            ?>
+            if ($curr_title) {
+                ?>
                 <h3>Current <?php print $curr_title ?></h3> 
                 <?php
             }
@@ -4903,303 +4915,303 @@ class AnalyticsFront extends SearchFacets {
                 </div>
                 <div class="facet-ch">
 
-        <?php
-        // Claster logic 
-        if ($currmovie || ($currclaster)) {
-            // Add relsult to other modules                     
-            $this->claster_data = $ids;
-            $cdata = $this->calculate_facet_ethnicity($citems);
-            $select_race_array = $cdata['race_array'];
-            $select_race_total = $cdata['race_total'];
-            $select_gender = $cdata['gender'];
-            $select_gender_total = $cdata['gender_total'];
-        }
-
-        if (!$movies_count) {
-            return;
-        }
-
-        if (!$diversity || $diversity == 'wjnw' || $diversity == 'wjnwj' || $diversity == 'wmjnwm' || $diversity == 'wmjnwmj') {
-            $table = array('Race' => '');
-            $all_count = 0;
-            $select_all_count = 0;
-            foreach ($race_total as $code => $count) {
-                $all_count += $count;
-                if ($curryear) {
-                    $select_all_count += $race_array[$curryear][$code];
-                } else if ($currclaster || $currmovie) {
-                    $select_all_count += $select_race_total[$code];
-                }
-            }
-            foreach ($race_total as $code => $count) {
-                $name = $this->race_small[$code]['key'];
-                $name_key_theme = $this->theme_name_key_diversity($name, $diversity);
-                $ethnic = $this->array_ethnic_data[$name_key_theme];
-                $average = round($count / $movies_count, 0);
-
-                if ($curryear || $currclaster || $currmovie) {
-                    if ($curryear) {
-                        $select_count = $race_array[$curryear][$code];
-                    } else if ($currclaster || $currmovie) {
-                        $select_count = $select_race_total[$code];
+                    <?php
+                    // Claster logic 
+                    if ($currmovie || ($currclaster)) {
+                        // Add relsult to other modules                     
+                        $this->claster_data = $ids;
+                        $cdata = $this->calculate_facet_ethnicity($citems);
+                        $select_race_array = $cdata['race_array'];
+                        $select_race_total = $cdata['race_total'];
+                        $select_gender = $cdata['gender'];
+                        $select_gender_total = $cdata['gender_total'];
                     }
 
-                    $select_percent = round(($select_count / $select_all_count) * 100, 2);
-                    $select_average = round($select_count / $select_movies_count, 0);
-
-                    // Select Average diff
-                    if ($average > 0) {
-                        $select_averaged = round((100 * $select_average / $average) - 100, 1);
-                    } else {
-                        $select_averaged = $select_average * 100;
+                    if (!$movies_count) {
+                        return;
                     }
 
-                    $table[$ethnic['title']] = array(
-                        number_format($select_count),
-                        $select_percent,
-                        array($select_average, $select_averaged),
-                        number_format($average),);
-                } else {
-                    $percent = round(($count / $all_count) * 100, 2);
-                    $table[$ethnic['title']] = array(number_format($count), $percent, number_format($average));
-                }
-            }
-            $total_average = round($all_count / $movies_count, 0);
-            if ($curryear || $currclaster || $currmovie) {
-                $select_total_average = round($select_all_count / $select_movies_count, 0);
-                if ($total_average) {
-                    $select_averaged = round((100 * $select_total_average / $total_average) - 100, 1);
-                }
-                $table['Total'] = array($select_all_count, 100, array($select_total_average, $select_averaged), $total_average);
-            } else {
-                $table['Total'] = array($all_count, 100, $total_average);
-            }
+                    if (!$diversity || $diversity == 'wjnw' || $diversity == 'wjnwj' || $diversity == 'wmjnwm' || $diversity == 'wmjnwmj') {
+                        $table = array('Race' => '');
+                        $all_count = 0;
+                        $select_all_count = 0;
+                        foreach ($race_total as $code => $count) {
+                            $all_count += $count;
+                            if ($curryear) {
+                                $select_all_count += $race_array[$curryear][$code];
+                            } else if ($currclaster || $currmovie) {
+                                $select_all_count += $select_race_total[$code];
+                            }
+                        }
+                        foreach ($race_total as $code => $count) {
+                            $name = $this->race_small[$code]['key'];
+                            $name_key_theme = $this->theme_name_key_diversity($name, $diversity);
+                            $ethnic = $this->array_ethnic_data[$name_key_theme];
+                            $average = round($count / $movies_count, 0);
 
-            $this->print_mob_styles($table, $table_class);
-            ?>
+                            if ($curryear || $currclaster || $currmovie) {
+                                if ($curryear) {
+                                    $select_count = $race_array[$curryear][$code];
+                                } else if ($currclaster || $currmovie) {
+                                    $select_count = $select_race_total[$code];
+                                }
+
+                                $select_percent = round(($select_count / $select_all_count) * 100, 2);
+                                $select_average = round($select_count / $select_movies_count, 0);
+
+                                // Select Average diff
+                                if ($average > 0) {
+                                    $select_averaged = round((100 * $select_average / $average) - 100, 1);
+                                } else {
+                                    $select_averaged = $select_average * 100;
+                                }
+
+                                $table[$ethnic['title']] = array(
+                                    number_format($select_count),
+                                    $select_percent,
+                                    array($select_average, $select_averaged),
+                                    number_format($average),);
+                            } else {
+                                $percent = round(($count / $all_count) * 100, 2);
+                                $table[$ethnic['title']] = array(number_format($count), $percent, number_format($average));
+                            }
+                        }
+                        $total_average = round($all_count / $movies_count, 0);
+                        if ($curryear || $currclaster || $currmovie) {
+                            $select_total_average = round($select_all_count / $select_movies_count, 0);
+                            if ($total_average) {
+                                $select_averaged = round((100 * $select_total_average / $total_average) - 100, 1);
+                            }
+                            $table['Total'] = array($select_all_count, 100, array($select_total_average, $select_averaged), $total_average);
+                        } else {
+                            $table['Total'] = array($all_count, 100, $total_average);
+                        }
+
+                        $this->print_mob_styles($table, $table_class);
+                        ?>
                         <table class="analytics_table rspv <?php print $table_class ?>">
                             <thead>
                                 <tr>
-            <?php
-            foreach ($table as $name => $count) {
-                print '<th class="a_center">' . $name . '</th>';
-            }
-            ?>
+                                    <?php
+                                    foreach ($table as $name => $count) {
+                                        print '<th class="a_center">' . $name . '</th>';
+                                    }
+                                    ?>
                                 </tr>
                             </thead>
                             <tbody>
-            <?php
-            $table_race = array('Total', 'Precent', 'Average');
-            if ($curryear || $currclaster || $currmovie) {
-                $slug = 'Year';
-                if ($currclaster) {
-                    $slug = 'Claster';
-                } else if ($currmovie) {
-                    $slug = 'Movie';
-                }
-                $table_race = array('Total ' . $slug, 'Precent ' . $slug, 'Average ' . $slug, 'Average Total');
-            }
+                                <?php
+                                $table_race = array('Total', 'Precent', 'Average');
+                                if ($curryear || $currclaster || $currmovie) {
+                                    $slug = 'Year';
+                                    if ($currclaster) {
+                                        $slug = 'Claster';
+                                    } else if ($currmovie) {
+                                        $slug = 'Movie';
+                                    }
+                                    $table_race = array('Total ' . $slug, 'Precent ' . $slug, 'Average ' . $slug, 'Average Total');
+                                }
 
-            $i = 0;
-            foreach ($table_race as $tr) {
-                ?>
+                                $i = 0;
+                                foreach ($table_race as $tr) {
+                                    ?>
                                     <tr>
-                                    <?php
-                                    foreach ($table as $name => $item) {
-                                        $count = $item[$i];
-                                        $class = 'a_right';
-                                        if ($name == 'Race') {
-                                            $count = $tr;
-                                        } else {
-                                            if (is_array($count)) {
-                                                $percent = $count[1];
-                                                $percent_str = '';
-                                                if ($percent != 0) {
-                                                    if ($percent > 0) {
-                                                        $percent_str = ' (<span class="plus">+' . $percent . '%</span>)';
-                                                    } else {
-                                                        $percent_str = ' (<span class="minus">' . $percent . '%</span>)';
+                                        <?php
+                                        foreach ($table as $name => $item) {
+                                            $count = $item[$i];
+                                            $class = 'a_right';
+                                            if ($name == 'Race') {
+                                                $count = $tr;
+                                            } else {
+                                                if (is_array($count)) {
+                                                    $percent = $count[1];
+                                                    $percent_str = '';
+                                                    if ($percent != 0) {
+                                                        if ($percent > 0) {
+                                                            $percent_str = ' (<span class="plus">+' . $percent . '%</span>)';
+                                                        } else {
+                                                            $percent_str = ' (<span class="minus">' . $percent . '%</span>)';
+                                                        }
                                                     }
+                                                    $count = $count[0] . '' . $percent_str;
                                                 }
-                                                $count = $count[0] . '' . $percent_str;
                                             }
-                                        }
-                                        ?>
+                                            ?>
                                             <td class="<?php print $class ?>"><?php print $count ?></td>
                                             <?php
                                         }
                                         ?>                                                        
                                     </tr>    
-                                        <?php
-                                        $i += 1;
-                                    }
-                                    ?>                        
+                                    <?php
+                                    $i += 1;
+                                }
+                                ?>                        
                             </tbody>
                         </table>
-                                <?php
-                            } else if ($diversity == 'mf') {
-                                $gender_data = $gender_total;
+                        <?php
+                    } else if ($diversity == 'mf') {
+                        $gender_data = $gender_total;
 
 
-                                $table = array('Gender' => '');
+                        $table = array('Gender' => '');
 
-                                // All data
+                        // All data
 
-                                $mt = $gender_data['male'];
-                                $ft = $gender_data['female'];
-                                $gender_data_count = $mt + $ft;
+                        $mt = $gender_data['male'];
+                        $ft = $gender_data['female'];
+                        $gender_data_count = $mt + $ft;
 
-                                $mp = round(100 * $mt / $gender_data_count, 2);
-                                $fp = round(100 * $ft / $gender_data_count, 2);
+                        $mp = round(100 * $mt / $gender_data_count, 2);
+                        $fp = round(100 * $ft / $gender_data_count, 2);
 
-                                $ma = number_format(round($mt / $movies_count, 0));
-                                $fa = number_format(round($ft / $movies_count, 0));
+                        $ma = number_format(round($mt / $movies_count, 0));
+                        $fa = number_format(round($ft / $movies_count, 0));
 
-                                $tt = $gender_data_count;
-                                $tp = 100;
-                                $ta = round($gender_data_count / $movies_count, 0);
+                        $tt = $gender_data_count;
+                        $tp = 100;
+                        $ta = round($gender_data_count / $movies_count, 0);
 
-                                // Select data
-                                if ($curryear || $currmovie || $currclaster) {
-                                    if ($curryear) {
-                                        $select_gender_data = array('male' => $gender[$curryear][2], 'female' => $gender[$curryear][1]);
-                                    } else if ($currmovie || $currclaster) {
-                                        $select_gender_data = array();
-                                        foreach ($ids as $cid) {
-                                            $select_gender_data['male'] += isset($array_movie_bell[$cid]['gender'][2]) ? $array_movie_bell[$cid]['gender'][2] : 0;
-                                            $select_gender_data['female'] += isset($array_movie_bell[$cid]['gender'][1]) ? $array_movie_bell[$cid]['gender'][1] : 0;
-                                        }
-                                    }
-
-                                    $smt = $select_gender_data['male'];
-                                    $sft = $select_gender_data['female'];
-                                    $select_gender_count = $smt + $sft;
-
-                                    $smp = round(100 * $smt / $select_gender_count, 2);
-                                    $sfp = round(100 * $sft / $select_gender_count, 2);
-
-                                    $sma = number_format(round($smt / $select_movies_count, 0));
-                                    $sfa = number_format(round($sft / $select_movies_count, 0));
-
-                                    $stt = $select_gender_count;
-                                    $stp = 100;
-                                    $sta = round($select_gender_count / $select_movies_count, 0);
-
-                                    // Select diff
-                                    $smad = round((100 * $sma / $ma) - 100, 1);
-                                    $sfad = round((100 * $sfa / $fa) - 100, 1);
-                                    $stad = round((100 * $sta / $ta) - 100, 1);
-
-
-                                    $table['Male'] = array(number_format($smt), $smp, array($sma, $smad), number_format($ma));
-                                    $table['Female'] = array(number_format($sft), $sfp, array($sfa, $sfad), number_format($fa));
-                                    $table['Total'] = array(number_format($stt), $stp, array($sta, $stad), number_format($ta));
-                                } else {
-                                    // No select
-                                    $table['Male'] = array(number_format($mt), $mp, number_format($ma));
-                                    $table['Female'] = array(number_format($ft), $fp, number_format($fa));
-                                    $table['Total'] = array(number_format($tt), $tp, number_format($ta));
+                        // Select data
+                        if ($curryear || $currmovie || $currclaster) {
+                            if ($curryear) {
+                                $select_gender_data = array('male' => $gender[$curryear][2], 'female' => $gender[$curryear][1]);
+                            } else if ($currmovie || $currclaster) {
+                                $select_gender_data = array();
+                                foreach ($ids as $cid) {
+                                    $select_gender_data['male'] += isset($array_movie_bell[$cid]['gender'][2]) ? $array_movie_bell[$cid]['gender'][2] : 0;
+                                    $select_gender_data['female'] += isset($array_movie_bell[$cid]['gender'][1]) ? $array_movie_bell[$cid]['gender'][1] : 0;
                                 }
-                                ?>
+                            }
+
+                            $smt = $select_gender_data['male'];
+                            $sft = $select_gender_data['female'];
+                            $select_gender_count = $smt + $sft;
+
+                            $smp = round(100 * $smt / $select_gender_count, 2);
+                            $sfp = round(100 * $sft / $select_gender_count, 2);
+
+                            $sma = number_format(round($smt / $select_movies_count, 0));
+                            $sfa = number_format(round($sft / $select_movies_count, 0));
+
+                            $stt = $select_gender_count;
+                            $stp = 100;
+                            $sta = round($select_gender_count / $select_movies_count, 0);
+
+                            // Select diff
+                            $smad = round((100 * $sma / $ma) - 100, 1);
+                            $sfad = round((100 * $sfa / $fa) - 100, 1);
+                            $stad = round((100 * $sta / $ta) - 100, 1);
+
+
+                            $table['Male'] = array(number_format($smt), $smp, array($sma, $smad), number_format($ma));
+                            $table['Female'] = array(number_format($sft), $sfp, array($sfa, $sfad), number_format($fa));
+                            $table['Total'] = array(number_format($stt), $stp, array($sta, $stad), number_format($ta));
+                        } else {
+                            // No select
+                            $table['Male'] = array(number_format($mt), $mp, number_format($ma));
+                            $table['Female'] = array(number_format($ft), $fp, number_format($fa));
+                            $table['Total'] = array(number_format($tt), $tp, number_format($ta));
+                        }
+                        ?>
                         <table class="analytics_table">
                             <thead>
                                 <tr>
-            <?php
-            foreach ($table as $name => $count) {
-                print '<th class="a_center">' . $name . '</th>';
-            }
-            ?>
+                                    <?php
+                                    foreach ($table as $name => $count) {
+                                        print '<th class="a_center">' . $name . '</th>';
+                                    }
+                                    ?>
                                 </tr>
                             </thead>
                             <tbody>
-            <?php
-            $table_race = array('Total', 'Precent', 'Average');
-            if ($curryear || $currclaster || $currmovie) {
-                $slug = 'Year';
-                if ($currclaster) {
-                    $slug = 'Claster';
-                } else if ($currmovie) {
-                    $slug = 'Movie';
-                }
-                $table_race = array('Total ' . $slug, 'Precent ' . $slug, 'Average ' . $slug, 'Average Total');
-            }
+                                <?php
+                                $table_race = array('Total', 'Precent', 'Average');
+                                if ($curryear || $currclaster || $currmovie) {
+                                    $slug = 'Year';
+                                    if ($currclaster) {
+                                        $slug = 'Claster';
+                                    } else if ($currmovie) {
+                                        $slug = 'Movie';
+                                    }
+                                    $table_race = array('Total ' . $slug, 'Precent ' . $slug, 'Average ' . $slug, 'Average Total');
+                                }
 
-            $i = 0;
-            foreach ($table_race as $tr) {
-                ?>
+                                $i = 0;
+                                foreach ($table_race as $tr) {
+                                    ?>
                                     <tr>
-                                    <?php
-                                    foreach ($table as $name => $item) {
-                                        $count = $item[$i];
-                                        $class = '';
-                                        if ($name == 'Gender') {
-                                            $count = $tr;
-                                        } else {
-                                            $class = 'a_right';
-                                            if (is_array($count)) {
-                                                $percent = $count[1];
-                                                $percent_str = '';
-                                                if ($percent != 0) {
-                                                    if ($percent > 0) {
-                                                        $percent_str = ' (<span class="plus">+' . $percent . '%</span>)';
-                                                    } else {
-                                                        $percent_str = ' (<span class="minus">' . $percent . '%</span>)';
+                                        <?php
+                                        foreach ($table as $name => $item) {
+                                            $count = $item[$i];
+                                            $class = '';
+                                            if ($name == 'Gender') {
+                                                $count = $tr;
+                                            } else {
+                                                $class = 'a_right';
+                                                if (is_array($count)) {
+                                                    $percent = $count[1];
+                                                    $percent_str = '';
+                                                    if ($percent != 0) {
+                                                        if ($percent > 0) {
+                                                            $percent_str = ' (<span class="plus">+' . $percent . '%</span>)';
+                                                        } else {
+                                                            $percent_str = ' (<span class="minus">' . $percent . '%</span>)';
+                                                        }
                                                     }
+                                                    $count = $count[0] . '' . $percent_str;
                                                 }
-                                                $count = $count[0] . '' . $percent_str;
                                             }
-                                        }
-                                        ?>
+                                            ?>
                                             <td class="<?php print $class ?>"><?php print $count ?></td>
                                             <?php
                                         }
                                         ?>                                                        
                                     </tr>    
-                                        <?php
-                                        $i += 1;
-                                    }
-                                    ?>                                
+                                    <?php
+                                    $i += 1;
+                                }
+                                ?>                                
                             </tbody>
                         </table>
 
-            <?php
-        } else if ($diversity == 'simpson') {
+                        <?php
+                    } else if ($diversity == 'simpson') {
 
-            $race_diversity = array();
-            $race_diversity_count = array();
-            $race_diversity_total = array();
-            $total = 0;
-            $simpson = 0;
+                        $race_diversity = array();
+                        $race_diversity_count = array();
+                        $race_diversity_total = array();
+                        $total = 0;
+                        $simpson = 0;
 
-            if ($currmovie) {
-                $race_diversity_total = $simpson_data[$currmovie];
-            } else if ($currclaster) {
+                        if ($currmovie) {
+                            $race_diversity_total = $simpson_data[$currmovie];
+                        } else if ($currclaster) {
 
-                foreach ($ids as $cid) {
-                    foreach ($simpson_data[$cid]as $k => $cm) {
-                        $race_diversity_total[$k] += $cm;
-                    }
-                }
-            } else {
-                foreach ($race_array as $y => $arr) {
-                    if ($curryear && $curryear != $y) {
-                        continue;
-                    }
-                    foreach ($arr as $r => $c) {
-                        $race_diversity_total[$r] += $c;
-                    }
-                }
-            }
-            foreach ($race_diversity_total as $r => $c) {
-                $s = $c * ($c - 1);
-                $race_diversity_count[$r] += $c;
-                $race_diversity[$r] += $s;
-                $total += $c;
-                $simpson += $s;
-            }
+                            foreach ($ids as $cid) {
+                                foreach ($simpson_data[$cid]as $k => $cm) {
+                                    $race_diversity_total[$k] += $cm;
+                                }
+                            }
+                        } else {
+                            foreach ($race_array as $y => $arr) {
+                                if ($curryear && $curryear != $y) {
+                                    continue;
+                                }
+                                foreach ($arr as $r => $c) {
+                                    $race_diversity_total[$r] += $c;
+                                }
+                            }
+                        }
+                        foreach ($race_diversity_total as $r => $c) {
+                            $s = $c * ($c - 1);
+                            $race_diversity_count[$r] += $c;
+                            $race_diversity[$r] += $s;
+                            $total += $c;
+                            $simpson += $s;
+                        }
 
-            arsort($race_diversity_count);
-            ?>
+                        arsort($race_diversity_count);
+                        ?>
                         <table class="analytics_table">
                             <thead>
                                 <tr>
@@ -5209,13 +5221,13 @@ class AnalyticsFront extends SearchFacets {
                                 </tr>
                             </thead>
                             <tbody>
-            <?php foreach ($race_diversity_count as $r => $count) { ?>
+                                <?php foreach ($race_diversity_count as $r => $count) { ?>
                                     <tr>                           
                                         <td class="a_left"><?php print $this->race_small[$r]['title']; ?></td>
                                         <td class="a_right"><?php print number_format($count) ?> (<?php print number_format(round(100 * $count / $total, 2)) ?>%)</td>
                                         <td class="a_right"><?php print number_format($race_diversity[$r]) ?></td>
                                     </tr>
-            <?php } ?>  
+                                <?php } ?>  
                                 <tr>
                                     <td class="a_right">Total:</td>
                                     <td class="a_right"><?php print number_format($total) ?></td>
@@ -5226,36 +5238,36 @@ class AnalyticsFront extends SearchFacets {
                                 </tr>
                             </tbody>
                         </table>
-            <?php
-        }
-        ?>
+                        <?php
+                    }
+                    ?>
                 </div>                    
             </div>
 
 
-        <?php
-        $title = "Box office";
-        $collapsed = "";
-        $type = "boxofficetable";
+            <?php
+            $title = "Box office";
+            $collapsed = "";
+            $type = "boxofficetable";
 
-        $boi = $box_total['boi'];
-        $bod = $box_total['bod'];
-        $box_count = $box_total['count'];
-        $sboi = $sbod = 0;
-        if ($curryear || $currmovie) {
-            $sboi = $select_box_total['boi'];
-            $sbod = $select_box_total['bod'];
-            $sbox_count = $select_box_total['count'];
-        } else if ($currclaster) {
-            $ids = $claster_ids[$currclaster];
+            $boi = $box_total['boi'];
+            $bod = $box_total['bod'];
+            $box_count = $box_total['count'];
+            $sboi = $sbod = 0;
+            if ($curryear || $currmovie) {
+                $sboi = $select_box_total['boi'];
+                $sbod = $select_box_total['bod'];
+                $sbox_count = $select_box_total['count'];
+            } else if ($currclaster) {
+                $ids = $claster_ids[$currclaster];
 
-            foreach ($ids as $cid) {
-                $sboi += $array_movie_bell[$cid]['boi'];
-                $sbod += $array_movie_bell[$cid]['bod'];
+                foreach ($ids as $cid) {
+                    $sboi += $array_movie_bell[$cid]['boi'];
+                    $sbod += $array_movie_bell[$cid]['bod'];
+                }
+                $sbox_count = sizeof($ids);
             }
-            $sbox_count = sizeof($ids);
-        }
-        ?>
+            ?>
             <div id="facet-<?php print $type ?>" class="facet ajload<?php print $collapsed ?>">
                 <div class="facet-title">
                     <h3 class="title"><?php print $title ?></h3>   
@@ -5265,7 +5277,7 @@ class AnalyticsFront extends SearchFacets {
                     </div>
                 </div>
                 <div class="facet-ch"> 
-        <?php print $this->show_box_office_table($boi, $bod, $box_count, $sboi, $sbod, $sbox_count, $curryear, $currmovie, $currclaster); ?>
+                    <?php print $this->show_box_office_table($boi, $bod, $box_count, $sboi, $sbod, $sbox_count, $curryear, $currmovie, $currclaster); ?>
                 </div>                    
             </div>
         </div>
@@ -5588,80 +5600,80 @@ class AnalyticsFront extends SearchFacets {
         <tr>
             <td colspan="2" class="movie_clmn"><?php $this->theme_movie_item($item); ?></td>
             <td class="a_right">
-        <?php
-        $xcolumn = '';
-        if ($xaxis == 'def') {
-            $xcolumn = '$' . number_format($item->boxworld);
-            if ($inflation) {
-                $xcolumn .= $this->theme_page_inflation($item->boxworld, $imod);
-            }
-        } else if ($xaxis == 'boxdom') {
-            $xcolumn = '$' . number_format($item->boxusa);
-            if ($inflation) {
-                $xcolumn .= $this->theme_page_inflation($item->boxusa, $imod);
-            }
-        } else if ($xaxis == 'boxint') {
-            $xcolumn = '$' . number_format($item->boxint);
-            if ($inflation) {
-                $xcolumn .= $this->theme_page_inflation($item->boxint, $imod);
-            }
-        } else if ($xaxis == 'budget') {
-            $xcolumn = '$' . number_format($item->budget);
-            if ($inflation) {
-                $xcolumn .= $this->theme_page_inflation($item->budget, $imod);
-            }
-        } else if ($xaxis == 'rimdb') {
-            $xcolumn = round($item->rimdb / 10, 1);
-        } else if ($xaxis == 'rrwt') {
-            $xcolumn = round($item->rrwt / 10, 1);
-        } else if ($xaxis == 'rrt') {
-            $xcolumn = $item->rrt;
-        } else if ($xaxis == 'rrta') {
-            $xcolumn = $item->rrta;
-        } else if ($xaxis == 'rrtg') {
-            $xcolumn = $item->rrtg - 100;
-        } else if ($xaxis == 'rating') {
-            $xcolumn = round($item->rating / 10, 1);
-        } else if ($xaxis == 'aurating') {
-            $xcolumn = $item->aurating;
-        } else if ($xaxis == 'boxprofit') {
-            $xcolumn = '$' . number_format($item->boxprofit);
-            if ($inflation) {
-                $xcolumn .= $this->theme_page_inflation($item->boxprofit, $imod);
-            }
-        } else if ($xaxis == 'release') {
-            $xcolumn = $item->release;
-            if (!$xcolumn) {
-                $xcolumn = $item->year;
-            }
-        } else if ($xaxis == 'actors') {
-            $xcolumn = $actors_total;
-        }
-        print $xcolumn;
-        ?>
+                <?php
+                $xcolumn = '';
+                if ($xaxis == 'def') {
+                    $xcolumn = '$' . number_format($item->boxworld);
+                    if ($inflation) {
+                        $xcolumn .= $this->theme_page_inflation($item->boxworld, $imod);
+                    }
+                } else if ($xaxis == 'boxdom') {
+                    $xcolumn = '$' . number_format($item->boxusa);
+                    if ($inflation) {
+                        $xcolumn .= $this->theme_page_inflation($item->boxusa, $imod);
+                    }
+                } else if ($xaxis == 'boxint') {
+                    $xcolumn = '$' . number_format($item->boxint);
+                    if ($inflation) {
+                        $xcolumn .= $this->theme_page_inflation($item->boxint, $imod);
+                    }
+                } else if ($xaxis == 'budget') {
+                    $xcolumn = '$' . number_format($item->budget);
+                    if ($inflation) {
+                        $xcolumn .= $this->theme_page_inflation($item->budget, $imod);
+                    }
+                } else if ($xaxis == 'rimdb') {
+                    $xcolumn = round($item->rimdb / 10, 1);
+                } else if ($xaxis == 'rrwt') {
+                    $xcolumn = round($item->rrwt / 10, 1);
+                } else if ($xaxis == 'rrt') {
+                    $xcolumn = $item->rrt;
+                } else if ($xaxis == 'rrta') {
+                    $xcolumn = $item->rrta;
+                } else if ($xaxis == 'rrtg') {
+                    $xcolumn = $item->rrtg - 100;
+                } else if ($xaxis == 'rating') {
+                    $xcolumn = round($item->rating / 10, 1);
+                } else if ($xaxis == 'aurating') {
+                    $xcolumn = $item->aurating;
+                } else if ($xaxis == 'boxprofit') {
+                    $xcolumn = '$' . number_format($item->boxprofit);
+                    if ($inflation) {
+                        $xcolumn .= $this->theme_page_inflation($item->boxprofit, $imod);
+                    }
+                } else if ($xaxis == 'release') {
+                    $xcolumn = $item->release;
+                    if (!$xcolumn) {
+                        $xcolumn = $item->year;
+                    }
+                } else if ($xaxis == 'actors') {
+                    $xcolumn = $actors_total;
+                }
+                print $xcolumn;
+                ?>
             </td>
 
-                <?php if (!$diversity || $diversity == 'wjnw' || $diversity == 'wjnwj' || $diversity == 'wmjnwm' || $diversity == 'wmjnwmj') { ?>
+            <?php if (!$diversity || $diversity == 'wjnw' || $diversity == 'wjnwj' || $diversity == 'wmjnwm' || $diversity == 'wmjnwmj') { ?>
                 <td class="a_right"><?php
-            if ($race_array) {
-                arsort($race_array);
-                foreach ($race_array as $code => $count) {
-                    $name = $this->race_small[$code]['key'];
-                    $name_key_theme = $this->theme_name_key_diversity($name, $diversity);
-                    $ethnic = $this->array_ethnic_data[$name_key_theme];
-                    $total = round(100 * $count / $race_total, 2);
-                    print $ethnic['title'] . ' - ' . $count . '&nbsp;(' . $total . '%)<br />';
-                }
-            }
+                    if ($race_array) {
+                        arsort($race_array);
+                        foreach ($race_array as $code => $count) {
+                            $name = $this->race_small[$code]['key'];
+                            $name_key_theme = $this->theme_name_key_diversity($name, $diversity);
+                            $ethnic = $this->array_ethnic_data[$name_key_theme];
+                            $total = round(100 * $count / $race_total, 2);
+                            print $ethnic['title'] . ' - ' . $count . '&nbsp;(' . $total . '%)<br />';
+                        }
+                    }
                     ?>
                 </td>
-                <?php } else if ($diversity == 'mf') { ?>
+            <?php } else if ($diversity == 'mf') { ?>
                 <td class="a_right"><?php
-            if ($gender_count) {
-                print $gender['male'] . '&nbsp;(' . round(100 * $gender['male'] / ($gender_count), 2) . '%)';
-            } else {
-                print 0;
-            }
+                    if ($gender_count) {
+                        print $gender['male'] . '&nbsp;(' . round(100 * $gender['male'] / ($gender_count), 2) . '%)';
+                    } else {
+                        print 0;
+                    }
                     ?></td>
                 <td class="a_right"><?php
                     if ($gender_count) {
@@ -5670,22 +5682,22 @@ class AnalyticsFront extends SearchFacets {
                         print 0;
                     }
                     ?></td>
-                    <?php
-                } else if ($diversity == 'simpson') {
+                <?php
+            } else if ($diversity == 'simpson') {
 
-                    $race_diversity = 0;
-                    $total = 0;
-                    foreach ($race_array as $r => $c) {
-                        if ($c > 0) {
-                            $race_diversity += $c * ($c - 1);
-                            $total += $c;
-                        }
+                $race_diversity = 0;
+                $total = 0;
+                foreach ($race_array as $r => $c) {
+                    if ($c > 0) {
+                        $race_diversity += $c * ($c - 1);
+                        $total += $c;
                     }
-                    $race_diversity_total = 0;
-                    if ($total > 0 && $race_diversity > 0) {
-                        $race_diversity_total = 1 - (round($race_diversity / ($total * ($total - 1)), 2));
-                    }
-                    ?>
+                }
+                $race_diversity_total = 0;
+                if ($total > 0 && $race_diversity > 0) {
+                    $race_diversity_total = 1 - (round($race_diversity / ($total * ($total - 1)), 2));
+                }
+                ?>
                 <td class="a_right"><?php print $race_diversity_total ?></td>
             <?php } ?>
             <?php if ($inflation) { ?>
@@ -5693,8 +5705,7 @@ class AnalyticsFront extends SearchFacets {
             <?php } ?>
             <td class="more"><div class="acc collapsed" data-more="<?php print $item->id ?>"><div class="chevron"></div><div class="chevronup"></div></div></td>
         </tr>
-            <?php
-        }
-
+        <?php
     }
-    
+
+}
