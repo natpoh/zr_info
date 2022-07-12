@@ -353,6 +353,13 @@ textarea {
     line-height: 1.75;
 }
 
+
+body.theme_dark  input,body.theme_dark  select,body.theme_dark  textarea {
+    color: #c4c4c4;
+    background-color: #242424;
+    border-color: #6f6f6f;
+}
+
 h1,
 h2,
 h3,
@@ -731,6 +738,28 @@ textarea:focus {
     outline: 0;
 }
 
+body.theme_dark input[type="date"]:focus,
+body.theme_dark input[type="time"]:focus,
+body.theme_dark input[type="datetime-local"]:focus,
+body.theme_dark input[type="week"]:focus,
+body.theme_dark input[type="month"]:focus,
+body.theme_dark input[type="text"]:focus,
+body.theme_dark input[type="email"]:focus,
+body.theme_dark input[type="url"]:focus,
+body.theme_dark input[type="password"]:focus,
+body.theme_dark input[type="search"]:focus,
+body.theme_dark input[type="tel"]:focus,
+body.theme_dark input[type="number"]:focus,
+body.theme_dark textarea:focus {
+    background-color: #2b2b2b;
+    border-color: #007acc;
+    color: #ffffff;
+    outline: 0;
+}
+
+
+
+
 body div.mce-fullscreen {
     top:78px;
     z-index: 999999;
@@ -815,7 +844,10 @@ input[type="search"].search-field {
     padding-right: 100px;    
     color: #1a1a1a;
 }
-
+body.theme_dark #spform input#sbar{
+    background-color: #252525;
+    color: #fff;
+}
 #spform #submit {
     position: absolute;
     right: 0;
@@ -2412,7 +2444,9 @@ body.theme_dark .advanced_search_head_close {
     text-align: center;
     cursor: pointer;
 }
-
+body.theme_dark .facet .more {
+    background: #656565;;
+}
 #search-filters {
     padding: 0;
     margin: 20px;
@@ -2517,7 +2551,12 @@ body.theme_dark #search-filters .filter {
     margin: 2px;
     min-width: 28px;
     background:  #f1f1f1;
-} 
+}
+body.theme_dark .facet .acc, body.theme_dark .facets .acc, body.theme_dark .more .acc {
+
+    border: 1px solid #949090;
+    background: #656565;
+}
 
 .facet.collapsed .chevron,
 .facet.collapsed .facet-ch,
@@ -2637,6 +2676,16 @@ body.theme_dark #search-filters .filter {
     top:-2px;
     border-bottom-color:#f1f1f1;
 }
+body.theme_dark .chevronup::after {
+    border-bottom-color: #656565;
+}
+
+body.theme_dark .chevron::after {
+    top: 2px;
+    border-top-color: #656565;
+}
+
+
 
 .chevronup {
     display: none;
@@ -2656,7 +2705,9 @@ body.theme_dark #search-filters .filter {
 .noUi-handle:before, .noUi-handle:after {
     background: #888;
 }
-
+body.theme_dark  .noUi-handle::before,body.theme_dark  .noUi-handle::after {
+    background: #bdbdbd;
+}
 .facet .select-holder {
     margin-top: 0.5rem;
     display: flex;

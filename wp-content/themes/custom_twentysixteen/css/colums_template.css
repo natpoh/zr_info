@@ -1008,7 +1008,7 @@ body.theme_dark .default_popup {
     box-shadow: none;
 }
 
-.actor_popup {
+body .actor_popup, body.theme_dark .actor_popup {
     background: #000 url(../images/matrix.gif) repeat;
 
     padding: 25px;
@@ -2933,9 +2933,76 @@ body.theme_dark .row .col_desc {
     border: none;
     border-radius: 3px;
 }
+body.theme_dark .rating select {
+color: #000;
+
+}
 .rating select option {
     font-size: 20px;
 }
+
+body.theme_dark .popup-content  textarea{
+background-color: rgba(0, 0, 0, 0.45);
+}
+
+
+.sug_buttons_wrapper{
+
+    font-size: 14px;
+    font-family: 'Encode Sans Condensed',Lato;
+}
+
+
+.sug_buttons_wrapper .s1::before {
+
+    content: "Pay to watch! ";
+    left: calc(50% - 38px);
+    top: -1.2em;
+    position: absolute;
+    color: green;
+    font-size: 14px;
+    white-space: pre;
+    font-weight: bold;
+
+}
+
+.sug_buttons_wrapper .s2::before {
+
+    content: "Skip it! ";
+    left: calc(50% - 21px);
+    top: -1.2em;
+    position: absolute;
+    color: red;
+    font-size: 14px;
+    white-space: pre;
+    font-weight: bold;
+
+}
+.sug_buttons_wrapper .s3::before {
+    content: "Watch if free. ";
+    top: -1.2em;
+    left: calc(50% - 38px);
+    position: absolute;
+    color: orange;
+    font-size: 14px;
+    white-space: pre;
+    font-weight: bold;
+}
+
+body.theme_dark  .sug_buttons_wrapper .options li::before {
+
+    color: #fff;
+}
+body.theme_dark  .sug_buttons_wrapper .selected.s1::before {
+    color: #02c302;
+}
+body.theme_dark  .sug_buttons_wrapper .selected.s2::before {
+    color: red;
+}
+body.theme_dark  .sug_buttons_wrapper .selected.s3::before {
+    color: orange;
+}
+
 
 .ratng_p  select, .ratng_p  select option[value="0"], .ratng_p  select[id="0"]{
     background-color: #bebebe;
@@ -2999,6 +3066,9 @@ body.theme_dark .row .col_desc {
 }
 
 
+body.theme_dark select.movie_link {
+    color: #000;
+}
 
 
 .tablesorter-blackice {
