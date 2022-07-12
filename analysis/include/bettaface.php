@@ -191,17 +191,7 @@ class BETTAFACE
 {
 
 
-
-
 $tp = new TorParser();
-
-
-// Example post vars
-$post_vars = array(
-    'id'=>1,
-    'string'=>'test'
-);
-
 
 $content = $tp->get_url_content($url, $header, array(), true, 0, $is_post, $post_vars, true);
 
