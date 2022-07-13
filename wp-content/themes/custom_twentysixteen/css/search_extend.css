@@ -196,7 +196,7 @@ body.theme_dark  .facet .sortitem {
 }
 
 .facet .sortitem.disabled {
-        background: #ddd;
+    background: #ddd;
 }
 
 .facet .sortitem.disabled i {
@@ -213,6 +213,10 @@ body.theme_dark  .facet .sortitem {
 
 .facet option.hide {
     display: none;
+}
+
+.verdict_cnt {
+    margin-top: 0.5rem;
 }
 
 @media only screen 

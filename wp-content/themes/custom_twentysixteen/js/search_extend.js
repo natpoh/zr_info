@@ -1007,7 +1007,7 @@ search_extend.change_sort = function (id) {
         //remove old filter and add new
         critic_search.remove_filter(type, from);
     }
-    var name_pre = 'Setup ';
+    var name_pre = 'Verdict ';
     var title = 'Priority ' + result;
     var key = 'p' + result;
 

@@ -164,7 +164,7 @@ class MoviesLinks extends MoviesAbstractDB {
             return $this->settings;
         }
         // Get settings from options
-        $settings = unserialize(get_option('movies_links_settings'));
+            $settings = unserialize($this->get_option('movies_links_settings'));
         if ($settings && sizeof($settings)) {
             foreach ($this->settings_def as $key => $value) {
                 if (!isset($settings[$key])) {
@@ -202,7 +202,9 @@ class MoviesLinks extends MoviesAbstractDB {
         }
 
         $this->settings = $ss;
-        update_option('movies_links_settings', serialize($ss));
+        if (function_exists('update_option')) {
+            update_option('movies_links_settings', serialize($ss));
+        }
     }
 
     public function format_time($timestamp) {
