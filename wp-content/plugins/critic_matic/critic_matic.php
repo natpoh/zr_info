@@ -890,6 +890,19 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('mid', 'oldslug', 'newslug'), "data_movie_title_slugs");
+    
+    
+     /*
+     * Analytics verdict user mode
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_an_race_rule`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                
+                                `rule_hash` varchar(255) NOT NULL default '',                                                                      
+                                `rule` text default NULL,                                                                     
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('rule_hash'), "data_an_race_rule");
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {

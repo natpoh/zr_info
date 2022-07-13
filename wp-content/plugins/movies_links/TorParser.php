@@ -90,7 +90,7 @@ class TorParser extends MoviesAbstractDB {
         }
     }
 
-    public function get_url_content($url = '', &$header, $ip_limit = array(), $curl = false, $tor_mode = 0, $is_post = false, $post_vars = array(), $debug = false) {
+    public function get_url_content($url = '', &$header='', $ip_limit = array(), $curl = false, $tor_mode = 0, $is_post = false, $post_vars = array(), $header_array = array(), $debug = false) {
         $content = '';
         $get_url_data = $this->get_tor_url($url, $ip_limit, $log_data, $tor_mode, $debug);
         $get_url = $get_url_data['url'];
@@ -110,10 +110,14 @@ class TorParser extends MoviesAbstractDB {
             } else {
                 $user_agent = $get_url_data['agent'];
                 $proxy = $get_url_data['proxy'];
-                $data = $this->curl($url, $header, $user_agent, $proxy, $is_post, $post_vars);
+                if ($debug) {
+                    print_r(array($url, $header, $user_agent, $proxy, $is_post, $post_vars, $header_array));
+                }
+                $data = $this->curl($url, $header, $user_agent, $proxy, $is_post, $post_vars, $header_array);
             }
 
             if ($debug) {
+                print "RESPONCE HEADER\n";
                 print_r($header);
                 print_r($data);
             }
@@ -1136,7 +1140,7 @@ class TorParser extends MoviesAbstractDB {
         $this->log($message, 2, $q_arr);
     }
 
-    public function curl($url, &$header = '', $curl_user_agent = '', $proxy = '', $is_post = false, $post_vars = array()) {
+    public function curl($url, &$header = '', $curl_user_agent = '', $proxy = '', $is_post = false, $post_vars = array(), $header_array = array()) {
         $ss = $settings ? $settings : array();
         if (!$curl_user_agent) {
             $curl_user_agent = isset($ss['parser_user_agent']) ? $ss['parser_user_agent'] : '';
@@ -1165,9 +1169,7 @@ class TorParser extends MoviesAbstractDB {
             curl_setopt($ch, CURLOPT_COOKIEFILE, $cookie_path);
         }
         curl_setopt($ch, CURLINFO_HEADER_OUT, true); // enable tracking
-        // No cache
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array("Cache-Control: no-cache"));
-        curl_setopt($ch, CURLOPT_FRESH_CONNECT, TRUE);
+
 
         if ($proxy) {
             curl_setopt($ch, CURLOPT_PROXY, $proxy);
@@ -1176,8 +1178,16 @@ class TorParser extends MoviesAbstractDB {
         if ($is_post) {
             curl_setopt($ch, CURLOPT_POST, 1);
             if ($post_vars) {
-                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_vars));
+                $post_vars_str = $post_vars;
+                if (is_array($post_vars)){
+                    $post_vars_str = http_build_query($post_vars);
+                } 
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $post_vars_str);
             }
+        }
+
+        if ($header_array) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $header_array);
         }
 
         $response = curl_exec($ch);
