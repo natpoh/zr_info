@@ -14,7 +14,7 @@ $array_jobs = array(
 'add_tmdb_without_id'=>10,///add imdb id to tmdb database
 'check_last_actors'=>10,
 'check_kairos'=>5,///add kairos images
-'check_face'=>10,///add bettaface verdict
+///'check_face'=>10,///add bettaface verdict
 
 'update_tmdb_actors'=>10, //update tmdb id and images
 

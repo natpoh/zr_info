@@ -204,7 +204,7 @@ class BETTAFACE {
         LEFT JOIN data_actors_face ON (data_actors_face.actor_id=data_actors_imdb.id)
 
         WHERE ( `data_actors_imdb`.image='Y' ) 
-        " . $dop . "  order by data_actors_imdb.id limit 20";
+        " . $dop . "  order by data_actors_imdb.id limit 10";
 
 
         $rw = Pdo_an::db_results_array($sql);
