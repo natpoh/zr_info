@@ -1782,7 +1782,8 @@ function check_bettaface($actor_id)
             ////try add actor data to db
 
             echo $actor_id . ' get data from ' . $actor_id . '<br>' . PHP_EOL;
-            $img_64 = create_image_64($actor_id);
+            !class_exists('KAIROS') ? include ABSPATH . "analysis/include/kairos.php" : '';
+            $img_64 = KAIROS::create_image_64($actor_id);
             if ($img_64) {
                 sleep(1);
                 $array_race = get_actor_race($img_64);

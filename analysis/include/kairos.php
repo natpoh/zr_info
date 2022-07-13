@@ -19,7 +19,7 @@ if (!defined('ABSPATH'))
 
 class KAIROS
 {
-    private  function getCurlCookieface($url, $b = '', $arrayhead = '',$proxy ='')
+    public static function getCurlCookieface($url, $b = '', $arrayhead = '',$proxy ='')
     {
         $cookiePath = ABSPATH . 'cookies/cookies.txt';
 
@@ -82,7 +82,7 @@ return $array_result;
 
 }
 
-    private function create_image_64($imgid,$imgsource='',$type = 'imdb')
+    public static  function create_image_64($imgid,$imgsource='',$type = 'imdb')
     {
         $base64='';
 
