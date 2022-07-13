@@ -51,7 +51,7 @@ class AnalyticsFront extends SearchFacets {
     // Facets
     public $facets = array(
         'international' => array('release', 'budget', 'international', 'setup', 'movie', 'type', 'genre', 'provider', 'providerfree', 'auratings', 'ratings', 'price', 'race', 'dirrace', 'actor', 'country'),
-        'ethnicity' => array('release', 'budget', 'ethnicity', 'movie', 'diversity', 'vis', 'xaxis', 'yaxis', 'setup', 'showcast', 'type', 'genre', 'provider', 'providerfree', 'auratings', 'ratings', 'price', 'race', 'dirrace', 'actor', 'country'),
+        'ethnicity' => array('release', 'budget', 'ethnicity', 'movie', 'diversity', 'vis', 'xaxis', 'yaxis', 'setup', 'verdict', 'showcast', 'type', 'genre', 'provider', 'providerfree', 'auratings', 'ratings', 'price', 'race', 'dirrace', 'actor', 'country'),
         'population' => array('year'),
         'worldmap' => array('year'),
     );
@@ -193,6 +193,20 @@ class AnalyticsFront extends SearchFacets {
         'f' => array('title' => 'FamilySearch', 'titlehover' => 'FamilySearch Surname Analysis'),
         's' => array('title' => 'Surname', 'titlehover' => 'Surname Analysis'),
     );
+    public $verdict_mode = array(
+        'def' => array('title' => 'Get race by priority'),
+        'w' => array('title' => 'Get race by weight'),
+    );
+    public $race_weight_priority = array(
+        'c' => array('w' => 1, 'ea' => 1, 'h' => 1, 'b' => 1, 'i' => 1, 'm' => 1, 'mix' => 1, 'jw' => 1),
+        'e' => array('w' => 1, 'ea' => 1, 'h' => 1, 'b' => 1, 'i' => 1, 'm' => 1, 'mix' => 1, 'jw' => 1),
+        'j' => array('w' => 1, 'ea' => 1, 'h' => 1, 'b' => 1, 'i' => 1, 'm' => 1, 'mix' => 1, 'jw' => 1),
+        'k' => array('w' => 1, 'ea' => 1, 'h' => 1, 'b' => 1, 'i' => 1, 'm' => 1, 'mix' => 1, 'jw' => 1),
+        'b' => array('w' => 1, 'ea' => 1, 'h' => 1, 'b' => 1, 'i' => 1, 'm' => 1, 'mix' => 1, 'jw' => 1),
+        'i' => array('w' => 1, 'ea' => 1, 'h' => 1, 'b' => 1, 'i' => 1, 'm' => 1, 'mix' => 1, 'jw' => 1),
+        'f' => array('w' => 1, 'ea' => 1, 'h' => 1, 'b' => 1, 'i' => 1, 'm' => 1, 'mix' => 1, 'jw' => 1),
+        's' => array('w' => 1, 'ea' => 1, 'h' => 1, 'b' => 1, 'i' => 1, 'm' => 1, 'mix' => 1, 'jw' => 1)
+    );
     public $max_actors = 200;
     public $max_budget = 200000000;
     public $max_boxprofit = 1000000000;
@@ -227,6 +241,7 @@ class AnalyticsFront extends SearchFacets {
         $this->filters['xaxis'] = '';
         $this->filters['yaxis'] = '';
         $this->filters['setup'] = '';
+        $this->filters['verdict'] = '';
 
 
         foreach ($this->cs->rating_facets as $facet => $item) {
@@ -308,13 +323,21 @@ class AnalyticsFront extends SearchFacets {
             } else if ($key == 'setup') {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
+                    $name = $this->setup[$slug]['title'];
+                    $name_pre = 'Setup ';
+                    $filter_pre = $name_pre;
+                    $tags[] = array('name' => $name, 'type' => $key, 'type_title' => $filter_pre, 'name_pre' => $name_pre, 'id' => $slug, 'tab' => 'all', 'minus' => $minus);
+                }
+            } else if ($key == 'verdict') {
+                $value = is_array($value) ? $value : array($value);
+                foreach ($value as $slug) {
                     $first = substr($slug, 0, 1);
                     if ($first == 'p') {
                         $name = 'Priority ' . str_replace('p', '', $slug);
                     } else {
-                        $name = $this->setup[$slug]['title'];
+                        $name = $this->verdict_mode[$slug]['title'];
                     }
-                    $name_pre = 'Setup ';
+                    $name_pre = 'Verdict ';
                     $filter_pre = $name_pre;
                     $tags[] = array('name' => $name, 'type' => $key, 'type_title' => $filter_pre, 'name_pre' => $name_pre, 'id' => $slug, 'tab' => 'all', 'minus' => $minus);
                 }
@@ -515,10 +538,10 @@ class AnalyticsFront extends SearchFacets {
     }
 
     public function get_filter_priority() {
-        $setup = $this->get_filter_multi('setup');
+        $verdict = $this->get_filter_multi('verdict');
         $priority_string = '';
-        if ($setup) {
-            foreach ($setup as $id => $slug) {
+        if ($verdict) {
+            foreach ($verdict as $id => $slug) {
                 $first = substr($slug, 0, 1);
                 if ($first == 'p') {
                     $priority_string = str_replace('p', '', $slug);
@@ -566,6 +589,28 @@ class AnalyticsFront extends SearchFacets {
         }
 
         return array('custom' => $custom, 'priority' => $priority);
+    }
+
+    public function get_filter_mode() {
+        $verdict = $this->get_filter_multi('verdict');
+        $mode_key = 0;
+        if ($verdict) {
+            foreach ($verdict as $id => $slug) {
+                $first = substr($slug, 0, 1);
+                if ($first == 'm') {
+                    $mode_key = (int) str_replace('m', '', $slug);
+                    break;
+                }
+            }
+        }
+
+        $priority = $this->race_weight_priority;
+
+        if ($mode_key>0 && $this->is_int($mode_key)) {            
+            // Get mode from db
+                        
+        }
+        return $priority;        
     }
 
     public function search_tabs($results = array()) {
@@ -684,8 +729,30 @@ class AnalyticsFront extends SearchFacets {
 
         $title = 'Setup';
         $ftype = 'all';
-        $tabs = $this->setup_race_priority($filter, $ftype);
-        $this->theme_facet_multi($filter, $dates, $title, 0, $ftype, false, $tabs, '', false, false);
+        $this->theme_facet_multi($filter, $dates, $title, 0, $ftype, false, '', '', false, false);
+
+
+        // Race priority               
+        $verdict = $this->get_filter_multi('verdict');
+
+        $ver_weight = false;
+        if (in_array('w', $verdict)) {
+            $ver_weight = true;
+        }
+
+        $title = 'Race verdict mode';
+        $dates = array();
+        foreach ($this->verdict_mode as $key => $value) {
+            $dates[$key] = array('title' => $value['title']);
+        }
+        $filter = 'verdict';
+        $name_pre = 'Verdict mode ';
+        $ftype = 'all';
+
+
+        $priority_content = $this->setup_race_priority($filter, $ftype, $ver_weight);
+
+        $this->theme_facet_select($filter, $dates, $title, $ftype, $name_pre, '', '', $priority_content);
 
         $content = ob_get_contents();
         ob_end_clean();
@@ -713,7 +780,7 @@ class AnalyticsFront extends SearchFacets {
         }
     }
 
-    public function setup_race_priority($filter = '', $ftype = '') {
+    public function setup_race_priority($filter = '', $ftype = '', $ver_weight = false) {
         ob_start();
         /*  public $race_data_setup = array(
           'c' => array('title' => 'Crowdsource', 'titlehover' => 'Crowdsource'),
@@ -723,69 +790,67 @@ class AnalyticsFront extends SearchFacets {
           'b' => array('title' => 'Betaface', 'titlehover' => 'Facial Recognition by Betaface'),
           's' => array('title' => 'Surname', 'titlehover' => 'Surname Analysis')
           ); */
-        
-        /*
-        $select_types = array()
         ?>
-        <select autocomplete="off" class="facet-content facet-select">
-            <?php foreach ($data as $key => $item): ?>
-                <?php
-                $checked = $this->facet_checked($filter, $key);
-                ?>
-                <option value="<?php print $key ?>" data-title="<?php print $item['title'] ?>" <?php print $checked ? 'selected' : ''  ?>><?php print $item['title'] ?></option>
-            <?php endforeach; ?> 
-        </select>
-<?php */ ?>
-        <div class="flex-row">
-            <span class="t">Data Set Priority:</span>            
-            <div class="nte">
-                <div class="btn">?</div>
-                <div class="nte_show">
-                    <div class="nte_in">
-                        <div class="nte_cnt">
-                            If no data is available from the prioritized data set, the following data set will be used. If no data is available in any of the data sets, then the cast member in question will be excluded from the analysis.
+        <div class="verdict_cnt">
+            <?php if ($ver_weight == false): ?>
+                <div class="flex-row">
+                    <span class="t">Data Set Priority:</span>            
+                    <div class="nte">
+                        <div class="btn">?</div>
+                        <div class="nte_show">
+                            <div class="nte_in">
+                                <div class="nte_cnt">
+                                    If no data is available from the prioritized data set, the following data set will be used. If no data is available in any of the data sets, then the cast member in question will be excluded from the analysis.
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="sort_container">
-            <div class="sort_desc">
+                <div class="sort_container">
+                    <div class="sort_desc">
+                        <?php
+                        $priority_arr = $this->get_filter_priority();
+                        $priority = $priority_arr['priority'];
+
+                        $i = 1;
+                        foreach ($priority as $item) {
+                            $after = 'th.';
+                            if ($i == 1) {
+                                $after = 'st.';
+                            } else if ($i == 2) {
+                                $after = 'nd.';
+                            }
+                            ?>
+                            <div><?php print $i . $after ?></div>
+                            <?php
+                            $i += 1;
+                        }
+                        ?>
+                    </div>
+                    <div id="ethnycity_sort" class="sort_data"  data-name="<?php print $filter ?>" data-ftype="<?php print $ftype ?>">
+                        <?php
+                        foreach ($priority as $id => $active) {
+                            $disabled = '';
+                            if ($active == 0) {
+                                $disabled = ' disabled';
+                            }
+                            $item = $this->race_data_setup[$id];
+                            if ($item) {
+                                ?>
+                                <div id="sort-<?php print $id ?>" data-id="<?php print $id ?>" class="sortitem<?php print $disabled ?>" title="<?php print $item['titlehover'] ?>"><span class="srti">&#8661;</span><span class="title"><?php print $item['title'] ?></span><i></i></div>
+                                <?php
+                            }
+                        }
+                        ?>                
+                    </div>
+                </div>
+            <?php else: ?>
                 <?php
                 $priority_arr = $this->get_filter_priority();
-                $priority = $priority_arr['priority'];
-
-                $i = 1;
-                foreach ($priority as $item) {
-                    $after = 'th.';
-                    if ($i == 1) {
-                        $after = 'st.';
-                    } else if ($i == 2) {
-                        $after = 'nd.';
-                    }
-                    ?>
-                    <div><?php print $i . $after ?></div>
-                    <?php
-                    $i += 1;
-                }
-                ?>
-            </div>
-            <div id="ethnycity_sort" class="sort_data"  data-name="<?php print $filter ?>" data-ftype="<?php print $ftype ?>">
-                <?php
-                foreach ($priority as $id => $active) {
-                    $disabled = '';
-                    if ($active == 0) {
-                        $disabled = ' disabled';
-                    }
-                    $item = $this->race_data_setup[$id];
-                    if ($item) {
-                        ?>
-                        <div id="sort-<?php print $id ?>" data-id="<?php print $id ?>" class="sortitem<?php print $disabled ?>" title="<?php print $item['titlehover'] ?>"><span class="srti">&#8661;</span><span class="title"><?php print $item['title'] ?></span><i></i></div>
-                        <?php
-                    }
-                }
-                ?>                
-            </div>
+                print 'Coming soon...';
+                /*?>            
+                <div class="more">Settings</div>
+            <?php*/ endif ?>
         </div>
         <?php
         $content = ob_get_contents();
@@ -986,7 +1051,7 @@ class AnalyticsFront extends SearchFacets {
                         </div>
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $first_item ?>">
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $max_item ?>">
-                        <?php //unset($items[count($items) - 1]);                        ?>
+                        <?php //unset($items[count($items) - 1]);                            ?>
                         <script type="text/javascript">var <?php print $type ?>_arr =<?php print json_encode($items) ?></script>
                     </div>  
                 </div>
@@ -1145,16 +1210,16 @@ class AnalyticsFront extends SearchFacets {
                                 ?>
                             </td>
                             <td class="a_right"><?php
-                                print '$' . number_format($item->boxusa);
-                                if ($inflation) {
-                                    print $this->theme_page_inflation($item->boxusa, $imod);
-                                }
+                print '$' . number_format($item->boxusa);
+                if ($inflation) {
+                    print $this->theme_page_inflation($item->boxusa, $imod);
+                }
                                 ?></td>
                             <td class="a_right"><?php
-                                print '$' . number_format($item->boxint);
-                                if ($inflation) {
-                                    print $this->theme_page_inflation($item->boxint, $imod);
-                                }
+                print '$' . number_format($item->boxint);
+                if ($inflation) {
+                    print $this->theme_page_inflation($item->boxint, $imod);
+                }
                                 ?></td>
                             <td class="a_right"><?php print round(($item->share * 100), 2) ?></td>
                             <?php if ($inflation) { ?>
@@ -1168,12 +1233,12 @@ class AnalyticsFront extends SearchFacets {
                         <tr>
                             <td colspan="2" class="movie_clmn"><?php $this->theme_movie_item($item); ?></td>
                             <td class="a_right"><?php
-                                print $this->theme_axis_data($xaxis, $array_movie_bell[$item->id]['xdata'], $inflation);
-                                ?></td>
+                print $this->theme_axis_data($xaxis, $array_movie_bell[$item->id]['xdata'], $inflation);
+                        ?></td>
                             <td class="a_right"><?php
-                                print $this->theme_axis_data($yaxis, $array_movie_bell[$item->id]['ydata'], $inflation);
-                                ?></td>
-                            <?php if ($inflation) { ?>
+                print $this->theme_axis_data($yaxis, $array_movie_bell[$item->id]['ydata'], $inflation);
+                        ?></td>
+                                <?php if ($inflation) { ?>
                                 <td class="a_right"><?php print ((round($imod, 2) * 100) - 100); ?>%</td>
                             <?php } ?>
                             <td class="more"><div class="acc collapsed" data-more="<?php print $item->id ?>"><div class="chevron"></div><div class="chevronup"></div></div></td>
@@ -2268,9 +2333,9 @@ class AnalyticsFront extends SearchFacets {
                 }
                 ?>
                 <table class="analytics_table <?php
-                if ($mob) {
-                    print 'rspv';
-                }
+        if ($mob) {
+            print 'rspv';
+        }
                 ?> <?php print $table_class ?>">
                     <thead>
                         <tr>
@@ -5655,34 +5720,34 @@ class AnalyticsFront extends SearchFacets {
 
             <?php if (!$diversity || $diversity == 'wjnw' || $diversity == 'wjnwj' || $diversity == 'wmjnwm' || $diversity == 'wmjnwmj') { ?>
                 <td class="a_right"><?php
-                    if ($race_array) {
-                        arsort($race_array);
-                        foreach ($race_array as $code => $count) {
-                            $name = $this->race_small[$code]['key'];
-                            $name_key_theme = $this->theme_name_key_diversity($name, $diversity);
-                            $ethnic = $this->array_ethnic_data[$name_key_theme];
-                            $total = round(100 * $count / $race_total, 2);
-                            print $ethnic['title'] . ' - ' . $count . '&nbsp;(' . $total . '%)<br />';
-                        }
+                if ($race_array) {
+                    arsort($race_array);
+                    foreach ($race_array as $code => $count) {
+                        $name = $this->race_small[$code]['key'];
+                        $name_key_theme = $this->theme_name_key_diversity($name, $diversity);
+                        $ethnic = $this->array_ethnic_data[$name_key_theme];
+                        $total = round(100 * $count / $race_total, 2);
+                        print $ethnic['title'] . ' - ' . $count . '&nbsp;(' . $total . '%)<br />';
                     }
-                    ?>
+                }
+                ?>
                 </td>
             <?php } else if ($diversity == 'mf') { ?>
                 <td class="a_right"><?php
-                    if ($gender_count) {
-                        print $gender['male'] . '&nbsp;(' . round(100 * $gender['male'] / ($gender_count), 2) . '%)';
-                    } else {
-                        print 0;
-                    }
-                    ?></td>
+                if ($gender_count) {
+                    print $gender['male'] . '&nbsp;(' . round(100 * $gender['male'] / ($gender_count), 2) . '%)';
+                } else {
+                    print 0;
+                }
+                ?></td>
                 <td class="a_right"><?php
-                    if ($gender_count) {
-                        print $gender['female'] . '&nbsp;(' . round(100 * $gender['female'] / ($gender_count), 2) . '%)';
-                    } else {
-                        print 0;
-                    }
-                    ?></td>
-                <?php
+            if ($gender_count) {
+                print $gender['female'] . '&nbsp;(' . round(100 * $gender['female'] / ($gender_count), 2) . '%)';
+            } else {
+                print 0;
+            }
+                ?></td>
+                    <?php
             } else if ($diversity == 'simpson') {
 
                 $race_diversity = 0;

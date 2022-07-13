@@ -2235,7 +2235,7 @@ class SearchFacets extends AbstractDB {
         <?php
     }
 
-    public function theme_facet_select($filter, $data, $title, $ftype = 'all', $name_pre = '', $tabs = '', $icon = '') {
+    public function theme_facet_select($filter, $data, $title, $ftype = 'all', $name_pre = '', $tabs = '', $icon = '', $footer='') {
         ?>
         <div id="facet-<?php print $filter ?>" class="facet ajload" data-type="<?php print $ftype ?>">
             <div class="facet-title">
@@ -2269,6 +2269,11 @@ class SearchFacets extends AbstractDB {
                         <p>No data avaliable</p>
                     </div>
                 <?php endif; ?>
+                <?php
+                if ($footer) {
+                    print $footer;
+                }
+                ?>
             </div>
         </div>
         <?php
