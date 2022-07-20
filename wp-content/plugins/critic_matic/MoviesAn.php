@@ -115,6 +115,7 @@ class MoviesAn extends AbstractDBAn {
             'options' => 'options',
             'cpi' => 'data_cpi',
             'title_slugs' => 'data_movie_title_slugs',
+            'race_rule' => 'data_an_race_rule',
         );
         $this->timer_start();
         $this->get_perpage();
@@ -149,7 +150,7 @@ class MoviesAn extends AbstractDBAn {
         $result = $this->db_get_var($sql);
         return $result;
     }
-    
+
     public function get_post_name_by_old_slug($post_name = '') {
         $sql = sprintf("SELECT newslug FROM {$this->db['title_slugs']} WHERE oldslug='%s'", $this->escape($post_name));
         $result = $this->db_get_var($sql);
@@ -1471,6 +1472,51 @@ class MoviesAn extends AbstractDBAn {
         }
         ksort($ret);
         return $ret;
+    }
+
+    /*
+     * Race rule
+     */
+
+    public function get_race_rule_by_id($id) {
+        $sql = sprintf("SELECT * FROM {$this->db['race_rule']} WHERE id=%d limit 1", $id);
+        $result = $this->db_fetch_row($sql);
+        return $result;
+    }
+
+    public function get_or_create_race_rule_id($rules = array()) {
+        $rule_hash = $this->get_race_rules_hash($rules);
+        $result = $this->get_race_rule_by_hash($rule_hash);
+        if ($result) {
+            $id = $result->id;
+        } else {
+            $id = $this->insert_race_rule($rules);
+        }
+
+        return $id;
+    }
+
+    public function get_race_rule_by_hash($rule_hash) {
+        $sql = sprintf("SELECT * FROM {$this->db['race_rule']} WHERE rule_hash='%s' limit 1", $rule_hash);
+        $result = $this->db_fetch_row($sql);
+        return $result;
+    }
+
+    public function insert_race_rule($rules = array()) {
+        $rule_str = json_encode($rules);
+        $rule_hash = $this->get_race_rules_hash($rules);
+        $data = array(
+            'rule' => $rule_str,
+            'rule_hash' => $rule_hash,
+        );
+        $id = $this->sync_insert_data($data, $this->db['race_rule'], false, false);
+        return $id;
+    }
+
+    public function get_race_rules_hash($data = array()) {
+        $data_str = json_encode($data);
+        $hash = md5($data_str);
+        return $hash;
     }
 
 }
