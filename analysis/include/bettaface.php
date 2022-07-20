@@ -83,7 +83,7 @@ class BETTAFACE {
         //$result = KAIROS::getCurlCookieface($url, $pos_data, $arrayhead, '');
         $result = self::get_curl($url, $arrayhead, $pos_data, true);
 
-        var_dump($result);
+        ///var_dump($result);
 
         if ($result) {
 
@@ -112,12 +112,12 @@ class BETTAFACE {
 
         if ($arraay->media) {
             if ($arraay->media->faces == NULL) {
-                return array($race, $percent, json_encode(['error' => 'face not found']));
+                return array($race, $percent, json_encode(['error' => 'face not found']),2);
             }
         }
 
 
-        return array($race, $percent, $attractive);
+        return array($race, $percent, $attractive,1);
     }
 
     private static function fileman($way) {
@@ -153,16 +153,21 @@ class BETTAFACE {
         }
     }
 
-    public static function add_toracebd($actor_id, $array_race) {
+    public static function add_toracebd($actor_id, $array_race,$status=1) {
 
         if (self::checkadd($actor_id)) {
-            $sql = "UPDATE `data_actors_face` SET `race`=?,`percent`=?,`array`=?,`last_update`=? WHERE `actor_id`=? ";
-            Pdo_an::db_results_array($sql, [$array_race[0], $array_race[1], $array_race[2], time(), $actor_id]);
+            $sql = "UPDATE `data_actors_face` SET `race`=?,`percent`=?,`array`=?,`status`=?,`last_update`=? WHERE `actor_id`=? ";
+            Pdo_an::db_results_array($sql, [$array_race[0], $array_race[1], $array_race[2], $status,time(), $actor_id]);
         } else {
-            $sql = "INSERT INTO `data_actors_face`(`id`, `actor_id`, `race`, `percent`, `array`, `last_update`) 
-            VALUES (NULL, ? , ? , ? , ? , ? )";
-            Pdo_an::db_results_array($sql, [$actor_id, $array_race[0], $array_race[1], $array_race[2], time()]);
+            $sql = "INSERT INTO `data_actors_face`(`id`, `actor_id`, `race`, `percent`, `array`,`status`, `last_update`) 
+            VALUES (NULL, ? , ? , ? , ? , ? ,? )";
+            Pdo_an::db_results_array($sql, [$actor_id, $array_race[0], $array_race[1], $array_race[2],$status, time()]);
         }
+
+        ////create commit
+        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+        Import::create_commit('', 'update', 'data_actors_face', array('actor_id' => $actor_id), 'bettaface',9,['skip'=>['id']]);
+
     }
 
     public static function checkadd($actor_id) {
@@ -199,7 +204,7 @@ class BETTAFACE {
         LEFT JOIN data_actors_face ON (data_actors_face.actor_id=data_actors_imdb.id)
 
         WHERE ( `data_actors_imdb`.image='Y' ) 
-        " . $dop . "  order by data_actors_imdb.id limit 1";
+        " . $dop . "  order by data_actors_imdb.id limit 10";
 
 
         $rw = Pdo_an::db_results_array($sql);
@@ -227,7 +232,7 @@ class BETTAFACE {
                     //////update bd
                     if ($array_race[1] || $array_race[2]) {
 
-                        self::add_toracebd($actor_id, $array_race);
+                        self::add_toracebd($actor_id, $array_race,$array_race[3]);
 
                         echo 'add<br>';
 
@@ -235,11 +240,11 @@ class BETTAFACE {
                     } else {
                         echo 'error get ethnic data <br>';
                         $array_race = [NULL, NULL, json_encode(['error' => 'error get ethnic data'])];
-                        self::add_toracebd($actor_id, $array_race);
+                        self::add_toracebd($actor_id, $array_race,3);
                     }
                 } else {
                     $array_race = [NULL, NULL, json_encode(['error' => 'no img64'])];
-                    self::add_toracebd($actor_id, $array_race);
+                    self::add_toracebd($actor_id, $array_race,4);
                 }
             } else
                 echo 'actor alredy addeded<br>';
@@ -250,4 +255,4 @@ class BETTAFACE {
 
 if (isset($_GET['bettaface'])) {
     BETTAFACE::Prepare($_GET['bettaface']);
-}    
+}

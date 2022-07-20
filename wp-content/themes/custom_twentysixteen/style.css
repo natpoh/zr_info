@@ -2430,6 +2430,10 @@ body.theme_dark .advanced_search_head_close {
     font-family: 'Encode Sans Condensed',Lato;
 }
 
+.facet-ch .facet-select {
+    width: 100%;
+}
+
 .facet .mob-header {
     display: none;
 }

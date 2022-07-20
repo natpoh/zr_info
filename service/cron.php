@@ -14,6 +14,8 @@ $array_jobs = array(
 'add_tmdb_without_id'=>10,///add imdb id to tmdb database
 'check_last_actors'=>10,
 'check_kairos'=>5,///add kairos images
+///'check_face'=>10,///add bettaface verdict
+
 'update_tmdb_actors'=>10, //update tmdb id and images
 
 'check_tmdb_data'=>15,///update country and poster from tmdb
@@ -51,6 +53,9 @@ $array_jobs = array(
     'get_family'=>10, //family to actors meta
     'get_forebears'=>10, //forebears to actors meta
     'set_tmdb_actors_for_movies'=>30,////update tmdb actors from japan anime
+
+
+
 
 ///'add_rating'=>10,  ////add new rating to movies (old version)
 //'check_tvexport'=>10
