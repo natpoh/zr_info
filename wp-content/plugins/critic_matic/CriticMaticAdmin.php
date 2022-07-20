@@ -39,6 +39,7 @@ class CriticMaticAdmin {
         'parser' => 'Parser',
         'audience' => 'Audience',
         'posts' => 'Posts view',
+        'analytics' => 'Analytics',
         'sync' => 'Sync'
     );
     public $bulk_actions = array(
@@ -2085,7 +2086,7 @@ class CriticMaticAdmin {
                     print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
                 }
             }
-            $ss = $this->cm->get_settings();
+            $ss = $this->cm->get_settings(false);
 
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/settings_parser.php');
@@ -2101,9 +2102,23 @@ class CriticMaticAdmin {
                     print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
                 }
             }
-            $ss = $this->cm->get_settings();
+            $ss = $this->cm->get_settings(false);
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/settings_audience.php');
+        } else if ($curr_tab == 'analytics') {
+            if (isset($_POST['critic-feeds-nonce'])) {
+                $valid = $this->nonce_validate($_POST);
+                if ($valid === true) {
+                    $this->cm->update_settings($_POST);
+                    $result = __('Updated');
+                    print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                } else {
+                    print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                }
+            }
+
+            $ss = $this->cm->get_settings(false);
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/settings_analytics.php');
         } else if ($curr_tab == 'posts') {
 
             if (isset($_POST['critic-feeds-nonce'])) {
@@ -2116,7 +2131,7 @@ class CriticMaticAdmin {
                     print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
                 }
             }
-            $ss = $this->cm->get_settings();
+            $ss = $this->cm->get_settings(false);
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/settings_posts.php');
         } else if ($curr_tab == 'sync') {
@@ -2131,7 +2146,7 @@ class CriticMaticAdmin {
                     print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
                 }
             }
-            $ss = $this->cm->get_settings();
+            $ss = $this->cm->get_settings(false);
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/settings_sync.php');
         }

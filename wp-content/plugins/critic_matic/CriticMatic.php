@@ -14,6 +14,7 @@ class CriticMatic extends AbstractDB {
     private $cp;
     private $cs;
     private $ts;
+    private $af;
 
     /*
      * Posts
@@ -223,6 +224,7 @@ class CriticMatic extends AbstractDB {
             ),
             'audience_cron_path' => '',
             'sync_status' => 1,
+            'an_weightid' => 0,
         );
 
         $settings = $this->get_settings();
@@ -268,6 +270,18 @@ class CriticMatic extends AbstractDB {
             $this->ts = new CriticMaticTrans($this->cm);
         }
         return $this->ts;
+    }
+
+    public function get_af() {
+        if (!$this->af) {
+            //init 
+            if (!class_exists('AnalyticsFront')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'AnalyticsSearch.php' );
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'AnalyticsFront.php' );
+            }
+            $this->af = new AnalyticsFront($this->cm);
+        }
+        return $this->af;
     }
 
     function admin_bar_render($wp_admin_bar) {
@@ -2954,7 +2968,7 @@ class CriticMatic extends AbstractDB {
         $ss = $this->get_settings();
         if ($ss['parser_proxy']) {
             $proxy_text = base64_decode($ss['parser_proxy']);
-            
+
             if ($proxy_text) {
                 if (strstr($proxy_text, "\n")) {
                     $proxy_arr = explode("\n", $proxy_text);

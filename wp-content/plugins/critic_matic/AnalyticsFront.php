@@ -616,6 +616,14 @@ class AnalyticsFront extends SearchFacets {
             }
         }
 
+        if (!$mode_key) {
+            // Get from settings
+            $ss = $this->cm->get_settings(false);
+            if (isset($ss['an_weightid']) && $ss['an_weightid'] > 0) {
+                $mode_key = $ss['an_weightid'];
+            }
+        }
+
         $priority = $this->race_weight_priority;
         if ($mode_key > 0 && $this->is_int($mode_key)) {
             $ma = $this->get_ma();
@@ -4430,10 +4438,10 @@ class AnalyticsFront extends SearchFacets {
                 }
             }
         }
-        if ($type_calc==0 && $result_summ) {
+        if ($type_calc == 0 && $result_summ) {
             arsort($result_summ);
             $race_code_ret = array_key_first($result_summ);
-        } else if ($type_calc==1 && $result_top) {
+        } else if ($type_calc == 1 && $result_top) {
             arsort($result_top);
             $calc_id = array_key_first($result_top);
             $race_code_ret = $debug[$calc_id]['race'];
@@ -5888,6 +5896,43 @@ class AnalyticsFront extends SearchFacets {
         $ma = $this->get_ma();
         $rules_id = $ma->get_or_create_race_rule_id($rules);
         return $rules_id;
+    }
+
+    public function show_table_weight_priority($priority = array()) {
+        $filter_titles = array();
+        $filter_races = array();
+        foreach ($this->race_data_setup as $k => $v) {
+            $filter_titles[$k] = $v['title'];
+        }
+        foreach ($this->race_small as $k => $v) {
+            $filter_races[$v['key']] = $v['title'];
+        }
+        $cbody = '';
+        $chead = '<th colspan="2">DataSet / Verdict</th>';
+        $head_ex = false;
+
+        foreach ($priority as $i => $v) {
+            if ($i == 't') {
+                continue;
+            }
+            $cbody .= '<tr id="' . $i . '">';
+
+            $cbody .= '<td colspan="2">' . $filter_titles[$i] . '</td>';
+            foreach ($v as $j => $val) {
+                if (!$head_ex) {
+                    $chead .= '<th>' . $filter_races[$j] . '</th>';
+                }
+                $cbody .= '<td class="col">' . $val . '</td>';
+            }
+            $head_ex = true;
+            $cbody .= '</tr>';
+        }
+
+        $ctable = '<table class="wp-list-table widefat striped table-view-list"><thead><tr>' . $chead . '</tr></thead><tbody>' . $cbody . '</tbody></table>';
+
+        $ptype = $this->race_type_calc[$priority['t']];
+        print '<p><b>' . $ptype['title'] . '</b> - Calculate type</p>';
+        print $ctable;
     }
 
 }
