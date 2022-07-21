@@ -395,10 +395,10 @@ class CriticAudience extends AbstractDb {
                 if (!$aid) {
                     // Get remote aid for a new author
                     $new_author = true;
-                    $status = 1;
+                    $author_status = 1;
                     $author_type = 2;
                     $options = array('audience' => $unic_id);
-                    $aid = $this->cm->create_author_by_name($author_name, $author_type, $status, $options);
+                    $aid = $this->cm->create_author_by_name($author_name, $author_type, $author_status, $options);
                 }
             }
         }
