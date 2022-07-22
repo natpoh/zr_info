@@ -850,15 +850,15 @@ critic_search.submit = function (inc = '', target = '') {
 
 
 critic_search.ajax = function (data, cb) {
-    var $ = jQuery;
+    var $ = jQuery;    
     return $.ajax({
         type: "GET",
         url: '/wp-content/themes/custom_twentysixteen/template/ajax/search.php',
         data: data,
-        success: function (rtn) {
-            return cb(rtn);
+        success: function (rtn) {                        
+            return cb(rtn);            
         },
-        error: function (rtn) {
+        error: function (rtn) {                  
             return cb(rtn);
         }
     });

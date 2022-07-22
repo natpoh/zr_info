@@ -1007,9 +1007,9 @@ search_extend.change_sort = function (id) {
         //remove old filter and add new
         critic_search.remove_filter(type, from);
     }
-    var name_pre = 'Verdict ';
-    var title = 'Priority ' + result;
-    var key = 'p' + result;
+    var name_pre = 'Priority ';
+    var title = result;
+    var key = result;
 
     critic_search.add_filter(type, key, title, ftype, '', name_pre);
 
@@ -1052,6 +1052,7 @@ search_extend.click_to_graph = function (key, data_type) {
 }
 
 search_extend.init_facet = function (v) {
+    var $ = jQuery;
     v.find('select.facet-select').change(function () {
         search_extend.hide_use_axises();
         var $this = $(this);
@@ -1077,6 +1078,184 @@ search_extend.init_facet = function (v) {
     v.find('select.facet-select').each(function () {
         search_extend.hide_use_axises();
     });
+
+    // Face popup
+    v.find('.more-popup').click(function () {
+        // Table logic
+        if (typeof filter_mode === 'undefined') {
+            return false;
+        }
+        // Close menu
+        var w = $('body').width();
+        if (w <= 990) {
+            $('#secondary .close').click();
+        }
+
+        var cbody = '';
+        var chead = '<th colspan="2">DataSet / Verdict</th>';
+        var head_ex = false;
+
+        for (var i in filter_mode) {
+            if (i == 't') {
+                continue;
+            }
+            cbody += '<tr id="' + i + '">';
+
+            cbody += '<td colspan="2">' + filter_titles[i] + '</td>';
+            for (var j in filter_mode[i]) {
+                if (!head_ex) {
+                    chead += '<th>' + filter_races[j] + '</th>';
+                }
+                cbody += '<td class="col">';
+                cbody += '<input type="text" name="' + j + '" value="' + filter_mode[i][j] + '">';
+                cbody += '</td>';
+            }
+            head_ex = true;
+            cbody += '</tr>';
+        }
+
+        var buttons = '<div><button id="save-mode" class="save-btn">Save settings</button> <button id="cancel-mode" class="btn-second ">Cancel</button></div><br />';
+        var ctable = '<table id="fm_data"><thead><tr>' + chead + '</tr></thead><tbody>' + cbody + '</tbody></table>';
+
+        // Select type logic
+        var type_calc = '<div><select id="calc-type" autocomplete="off" name="t">';
+        var type_calc_arr = {0: "Summ*", 1: "Top**"};
+        for (var i in type_calc_arr) {
+            var checked = "";
+            if (i == filter_mode['t']) {
+                checked = "selected";
+            }
+            type_calc += '<option value="' + i + '" ' + checked + '>' + type_calc_arr[i] + '</option>';
+        }
+        type_calc += '</select> Calculate type.</div><br />';
+       
+        var type_desc = '<div>*Summ - add up all results of the "datasets" and choose the one with the highest score.<br />\n\
+**Top - find the best score over a "dataset".</div>';
+
+        // Select mode logic
+        var mode_select = '';
+        var last_select = localStorage.getItem('an_werdict_weight');
+        var curr_filter = $('li.filter[data-type="weight"]').attr('data-id');
+        if (typeof curr_filter === "undefined") {
+            curr_filter = 0;
+        }
+        if (last_select !== null) {
+            mode_select += '<div><select id="mode-select" autocomplete="off" name="m">';
+            var sdata = JSON.parse(last_select);
+            var tdata = {};
+            var keys = [];
+            for (var i in sdata) {
+                var sdate = sdata[i][0];
+                keys.push(sdate);
+                tdata[sdate] = [i, sdata[i][1]];
+            }
+            keys.sort();
+            var len = keys.length;
+            for (var i = 0; i < len; i++) {
+                var k = keys[i];
+                var date = new Date(parseInt(k));
+                var checked ='';
+                if (curr_filter==tdata[k][0]){
+                    checked ="selected";
+                }
+                mode_select += '<option value="' + tdata[k][0] + '" '+checked+'>Weigth id: ' + tdata[k][0] + '; from ' + date.toLocaleString() + '</option>';
+            }
+            mode_select += '</select> Last saved settings</div><br />';
+        }
+
+        // Popup logic
+        add_popup();
+        $('.popup-content').html('<div id="more-popup" class="default_popup"><h2>Race verdict weight settings</h2>' + mode_select + '\n\
+Choose the number of points for each type of verdict.<br />' + ctable + type_calc + buttons + type_desc+'</div>');
+
+        // Select click
+        $('#mode-select').click(function () {
+            var sval = $(this).val();
+            var fm = sdata[sval][1];
+            if (sval in sdata) {
+                for (var i in fm) {
+                    if (i == 't') {
+                        continue;
+                    }
+                    for (var j in fm[i]) {
+                        $('#fm_data #' + i + ' input[name="' + j + '"]').val(fm[i][j]);
+                    }
+                }
+            }
+        });
+
+
+        // Popup actions
+        $('#save-mode').click(function () {
+            var vdata = {};
+            var table = $('#more-popup table');
+            table.find('tbody tr').each(function () {
+                var tr = $(this);
+                var tr_id = tr.attr('id');
+                tr.find('td.col input').each(function () {
+                    var td = $(this);
+                    var td_id = td.attr('name');
+                    var value = td.val();
+                    if (typeof vdata[tr_id] === "undefined") {
+                        vdata[tr_id] = {};
+                    }
+                    vdata[tr_id][td_id] = value;
+                });
+            });
+            vdata['t'] = $('select#calc-type').val();
+
+            // Send ajax data
+            var data = {
+                search_extend: 'ajax',
+                type: 'verdict',
+                data: vdata,
+            };
+            critic_search.ajax(data, function (rtn) {
+                var mode_id = parseInt(rtn);
+                var type = 'weight';
+                // filter logic
+                var filter = $('#search-filters [data-type="' + type + '"]');
+                //Filter exist?
+                if (filter.length) {
+                    var fid = filter.attr('id');
+                    var ids = fid.split('-');
+                    var from = ids[1];
+                    //remove old filter and add new
+                    critic_search.remove_filter(type, from);
+                }
+
+                // Add new filter
+                var title = 'Weight id ';
+                var ftype = $('#facet-verdict').attr('data-type');
+                critic_search.add_filter(type, mode_id, mode_id, ftype, title, title);
+                critic_search.submit();
+
+                // TODO add history of the settings to user meta and cookies
+                var currentdate = "" + new Date().getTime();
+                var sdata = {};
+                if (last_select !== null) {
+                    var sdata = JSON.parse(last_select);
+                }
+                if (!(mode_id in sdata)) {
+                    sdata[mode_id] = [currentdate, vdata];
+                    var sdata_str = JSON.stringify(sdata);
+                    localStorage.setItem('an_werdict_weight', sdata_str);          
+                } 
+                $('.popup-close').click();
+            });
+
+            return false;
+        });
+
+        $('#cancel-mode').click(function () {
+            $('.popup-close').click();
+            return false;
+        });
+
+        $('input[id="action-popup"]').click();
+        return false;
+    });
+
 
 }
 
