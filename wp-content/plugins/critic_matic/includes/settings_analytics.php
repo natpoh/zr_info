@@ -15,7 +15,8 @@
             <div class="desc">The weight id from analytics settings.</div>
 
             <?php
-            $priority = $this->race_weight_priority;
+            $af = $this->cm->get_af();
+            $priority = $af->race_weight_priority;
             if ($ss['an_weightid'] > 0) {
                 $ma = $this->get_ma();
                 $rule = $ma->get_race_rule_by_id($ss['an_weightid']);
@@ -24,7 +25,7 @@
                 }
             }
 
-            $af = $this->cm->get_af();
+
             $af->show_table_weight_priority($priority);
             ?>
 
