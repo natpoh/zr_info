@@ -15,17 +15,17 @@
             <div class="desc">The weight id from analytics settings.</div>
 
             <?php
+            $priority = $this->race_weight_priority;
             if ($ss['an_weightid'] > 0) {
                 $ma = $this->get_ma();
                 $rule = $ma->get_race_rule_by_id($ss['an_weightid']);
                 if ($rule) {
                     $priority = json_decode($rule->rule, true);
-                    if ($priority) {
-                        $af = $this->cm->get_af();
-                        $af->show_table_weight_priority($priority);
-                    }
                 }
             }
+
+            $af = $this->cm->get_af();
+            $af->show_table_weight_priority($priority);
             ?>
 
             <?php wp_nonce_field('critic-feeds-options', 'critic-feeds-nonce'); ?>
