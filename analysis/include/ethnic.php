@@ -50,9 +50,8 @@ class Ethinc
 
     public static function update_verdict_meta($id='')
     {
-        $sql1 = "UPDATE `data_actors_meta` SET `ethnic` = '' ";
-        Pdo_an::db_query($sql1);
 
+        self::check_verdict();
 
         $array_min = array('Asian' => 'EA', 'White' => 'W', 'Latino' => 'H', 'Black' => 'B', 'Arab' => 'M', 'Dark Asian' => 'I', 'Jewish' => 'JW', 'Other' => 'MIX', 'Mixed / Other' => 'MIX', 'Indigenous' => 'IND', 'Not a Jew' => 'NJW', 'Sadly, not' => 'NJW');
 
@@ -74,8 +73,10 @@ class Ethinc
             {
                 //echo $verdict.'=>'.$verdict_result.' '.PHP_EOL;
 
-                $sql1 = "UPDATE `data_actors_meta` SET `ethnic` = '" . $verdict_result . "'  ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $actor_id . "'";
+                $sql1 = "UPDATE `data_actors_meta` SET `ethnic` = '" . $verdict_result . "' , n_ethnic ='".self::intconvert($verdict_result)."' ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $actor_id . "'";
                 Pdo_an::db_query($sql1);
+
+                update_actors_verdict($actor_id);
             }
             else
             {
@@ -84,6 +85,37 @@ class Ethinc
 
         }
 
+    }
+    public static function intconvert($data)
+    {
+        $result=0;
+
+        $array_int_convert = array('W'=>1,'EA'=>2,'H'=>3,'B'=>4,'I'=>5,'M'=>6,'MIX'=>7,'JW'=>8,'NJW'=>9,'IND'=>10);
+
+        if ($array_int_convert[$data])
+        {
+            $result = $array_int_convert[$data];
+        }
+
+        return $result;
+    }
+    public static function check_verdict($id='')
+    {
+        if ($id)
+        {
+            $where = " and actor_id = {$id} ";
+        }
+
+        $sql = "select id, ethnic_decode from data_actors_ethnic where ethnic_decode IS NOT NULL and verdict = '' ".$where." ";
+        $array_movie = Pdo_an::db_results_array($sql);
+
+        foreach ($array_movie as $movie_data) {
+
+            $rid = $movie_data['id'];
+            $data = $movie_data['ethnic_decode'];
+            Ethinc::addverdict($rid,json_decode($data,1));
+
+        }
     }
 
 
@@ -136,6 +168,7 @@ class Ethinc
        if ($verdict)
        {
            $sql = "UPDATE `data_actors_ethnic` SET `verdict` = ? WHERE `data_actors_ethnic`.`id` ={$id} ";
+
            Pdo_an::db_results_array($sql, array($verdict));
 
        }

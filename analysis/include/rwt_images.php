@@ -43,7 +43,7 @@ $sql = "SELECT `last_update` FROM `data_actors_meta` WHERE `actor_id`=".intval($
     public static function get_simple_image_link($id='',$w=640,$las_update='',$image ='')
     {
 
-        $current_site  ='https://rightwingtomatoes.com';
+        $current_site  ='https://info.antiwoketomatoes.com';
         $cache_site  ='https://img.rightwingtomatoes.com';
 
         if ($image)
@@ -63,7 +63,7 @@ $sql = "SELECT `last_update` FROM `data_actors_meta` WHERE `actor_id`=".intval($
     {
 
 
-        $current_site  ='https://rightwingtomatoes.com';
+        $current_site  ='https://info.antiwoketomatoes.com';
         $cache_site  ='https://img.rightwingtomatoes.com';
 
         if ($image)

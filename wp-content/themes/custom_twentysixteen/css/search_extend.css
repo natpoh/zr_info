@@ -272,5 +272,18 @@ and (max-device-width: 1024px)  {
         display: flex;        
 
     }   
+    
+    .popup-content, .popup-content select {
+        font-family: 'Encode Sans Condensed',Lato;
+    }
+    .popup-content table td, 
+    .popup-content table th {
+        padding: 0.2rem;
+        overflow: hidden;
+    }
+    
+    .popup-content table input {
+        padding: 0;
+    }
 
 }

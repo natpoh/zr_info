@@ -1,6 +1,6 @@
 jQuery(document).ready(function () {
     //Ajax loading
-    jQuery("body").append('<div id="loading">Loading</div>');
+    jQuery("body").append('<div id="loading">Loading</div>');        
     jQuery(document).ajaxSend(function () {
         jQuery('#loading').show();
     });

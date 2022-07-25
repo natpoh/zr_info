@@ -2441,14 +2441,16 @@ body.theme_dark .advanced_search_head_close {
 .facet-content li, .ac-result li {
     list-style: none;    
 }
-.facet .more {
+.facet .more, 
+.facet .more-popup {
     background: #c7c7c7;
     text-align: center;
     padding: 3px 10px;
     text-align: center;
     cursor: pointer;
 }
-body.theme_dark .facet .more {
+body.theme_dark .facet .more,
+body.theme_dark .facet .more-popup{
     background: #656565;;
 }
 #search-filters {
@@ -5079,6 +5081,15 @@ button, input[type="submit"] {
 
 button.in_process {
     background-color: #999;
+}
+
+button.btn-second {
+    background-color: #4a4a4a;
+    border-color: #2a2a2a    
+}
+
+button.btn-second:hover{
+    background-color: #111;
 }
 
 #secondary .mailpoet_form p.mailpoet_paragraph {

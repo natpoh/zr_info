@@ -155,6 +155,10 @@ if (isset($_GET['search_type']) && $_GET['search_type'] == 'ajax') {
     } else if ($type == 'movie') {
         $movie = $_GET['code'];
         $search_front->get_movie($movie);
+    }else if ($type == 'verdict') {
+        $rules = $_GET['data'];
+        $rules_id = $search_front->get_id_by_rules($rules);
+        print $rules_id;
     }
 }
 exit;

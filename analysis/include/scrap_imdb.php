@@ -1315,34 +1315,36 @@ function check_last_actors()
     ///
 
 
-//    $sql = "SELECT data_actors_ethnic.*  FROM `data_actors_ethnic` LEFT JOIN data_actors_meta ON data_actors_ethnic.actor_id=data_actors_meta.actor_id
-//        WHERE data_actors_meta.ethnic IS NULL and data_actors_ethnic.verdict IS NOT NULL limit 300";
-//    $result= Pdo_an::db_results_array($sql);
-//    foreach ($result as $r) {
-//
-//
-//        $actor_id=  $r['actor_id'];
-//        $verdict=  $r['verdict'];
-//        if ($verdict)
-//        {
-//            $verdict_result = $array_min[$verdict];
-//
-//        }
-//
-//        if ($verdict_result)
-//        {
-//            //echo $verdict.'=>'.$verdict_result.' '.PHP_EOL;
-//
-//            $sql1 = "UPDATE `data_actors_meta` SET `ethnic` = '" . $verdict_result . "' WHERE `data_actors_meta`.`actor_id` = '" . $actor_id . "'";
-//            Pdo_an::db_query($sql1);
-//            $i++;
-//
-//            update_actors_verdict($actor_id);
-//        }
-//
-//    }
-//    echo 'check actor ethnic (' . $i . ')' . PHP_EOL;
-//    $i = 0;
+    $sql = "SELECT data_actors_ethnic.*  FROM `data_actors_ethnic` LEFT JOIN data_actors_meta ON data_actors_ethnic.actor_id=data_actors_meta.actor_id
+        WHERE data_actors_meta.ethnic IS NULL and data_actors_ethnic.verdict !='' limit 300";
+    $result= Pdo_an::db_results_array($sql);
+    foreach ($result as $r) {
+
+
+        $actor_id=  $r['actor_id'];
+        $verdict=  $r['verdict'];
+        if ($verdict)
+        {
+            $verdict_result = $array_min[$verdict];
+
+        }
+
+        if ($verdict_result)
+        {
+            //echo $verdict.'=>'.$verdict_result.' '.PHP_EOL;
+
+            $sql1 = "UPDATE `data_actors_meta` SET `ethnic` = '" . $verdict_result . "', n_ethnic ='".intconvert($kairos) ."'  WHERE `data_actors_meta`.`actor_id` = '" . $actor_id . "'";
+            Pdo_an::db_query($sql1);
+            $i++;
+
+            update_actors_verdict($actor_id);
+
+            $commit_actors[$r['actor_id']]=1;
+        }
+
+    }
+    echo 'check actor ethnic (' . $i . ')' . PHP_EOL;
+    $i = 0;
 
 
 
@@ -1642,7 +1644,14 @@ function set_actors_ethnic($id)
         Ethinc::set_actors_ethnic($id);
     }
 }
+function set_actors_ethnic_vedict($id)
+{
+    !class_exists('Ethinc') ? include ABSPATH . "analysis/include/ethnic.php" : '';
 
+        Ethinc::check_verdict($id);
+
+
+}
 
 
 function add_gender_rating_for_new_movies()
@@ -2582,6 +2591,11 @@ if (isset($_GET['update_audience_rating'])) {
 
 if (isset($_GET['set_actors_ethnic'])) {
     set_actors_ethnic($_GET['set_actors_ethnic']);
+
+    return;
+}
+if (isset($_GET['set_actors_ethnic_vedict'])) {
+    set_actors_ethnic_vedict($_GET['set_actors_ethnic_vedict']);
     return;
 }
 if (isset($_GET['update_actors_verdict'])) {

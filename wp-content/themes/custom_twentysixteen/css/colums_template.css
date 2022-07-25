@@ -1001,7 +1001,6 @@ body.theme_dark .full_review {
     box-shadow: inset 0px 0px 45px #cab9a7;
     border-radius: 3px;
     margin: 0 auto;
-    background-blend-mode: color;
 }
 body.theme_dark .default_popup {
     background: #363535;
