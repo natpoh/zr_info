@@ -64,7 +64,8 @@ class CriticTransit extends AbstractDB {
             //Staff db
             'staff_posts' => DB_PREFIX_STF . 'posts',
             'staff_postmeta' => DB_PREFIX_STF . 'postmeta',
-            'staff_users' => DB_PREFIX_STF . 'users'
+            'staff_users' => DB_PREFIX_STF . 'users',
+            'actors_meta' => 'data_actors_meta',
         );
     }
 
@@ -78,6 +79,112 @@ class CriticTransit extends AbstractDB {
             $this->ma = new MoviesAn($this->cm);
         }
         return $this->ma;
+    }
+
+    /*
+     * Actors meta
+     */
+
+    public function get_actors_meta($count = 10, $debug = false, $force = false) {
+        $option_name = 'actors_meta_last_id';
+        $last_id = get_option($option_name, 0);
+        if ($force) {
+            $last_id = 0;
+        }
+
+        $sql = sprintf("SELECT * FROM {$this->db['actors_meta']} WHERE id>%d ORDER BY id ASC limit %d", (int) $last_id, (int) $count);
+        $results = $this->db_results($sql);
+        if ($results) {
+
+            $array_int_convert = array(1 => 'W', 2 => 'EA', 3 => 'H', 4 => 'B', 5 => 'I', 6 => 'M', 7 => 'MIX', 8 => 'JW', 9 => 'NJW', 10 => 'IND');
+
+            $last = end($results);
+            if ($debug) {
+                print 'last id: ' . $last->id . "\n";
+            }
+            update_option($option_name, $last->id);
+
+
+            // Get from settings
+            $ss = $this->cm->get_settings(false);
+            if (isset($ss['an_weightid']) && $ss['an_weightid'] > 0) {
+                $mode_key = $ss['an_weightid'];
+            }
+
+            $af = $this->cm->get_af();
+            $filter_weights = $af->race_weight_priority;
+            if ($mode_key > 0) {
+                $ma = $this->get_ma();
+                $rule = $ma->get_race_rule_by_id($mode_key);
+                if ($rule) {
+                    $filter_weights = json_decode($rule->rule, true);
+                }
+            }
+            if ($debug) {
+                print_r(array($mode_key, $filter_weights));
+            }
+
+            foreach ($results as $item) {
+                if ($debug) {
+                    print_r($item);
+                }
+
+                $actor_id = $this->get_actor_id_by_data($item);
+                if ($debug) {
+                    print "Actor code id: " . $actor_id . "\n";
+                }
+
+                $n_verdict = $af->custom_weight_race_code($actor_id, $filter_weights);
+                $s_verdict = '';
+                if ($n_verdict > 0) {
+                    $s_verdict = $array_int_convert[$n_verdict];
+                }
+
+                if ($debug) {
+                    print "Race verdict: " . $n_verdict . "; " . $s_verdict . "\n";
+                }
+
+                // Update verdict
+                $data = array(
+                    'last_update' => $this->curr_time(),
+                    'verdict' => $s_verdict,
+                    'n_verdict' => $n_verdict
+                );
+                $this->sync_update_data($data, $item->id, $this->db['actors_meta'], true, 15);
+            }
+        }
+    }
+
+    public function get_actor_id_by_data($item) {
+        $gender = $item->gender;
+        if ($gender > 2) {
+            $gender = 2;
+        }
+        $type = 1;
+        $n_verdict = $item->n_verdict > 8 ? 7 : $item->n_verdict;
+        $n_crowdsource = $item->n_crowdsource > 8 ? 7 : $item->n_crowdsource;
+        $n_surname = $item->n_surname > 8 ? 7 : $item->n_surname;
+        $n_bettaface = $item->n_bettaface > 8 ? 7 : $item->n_bettaface;
+        $n_kairos = $item->n_kairos > 8 ? 7 : $item->n_kairos;
+        $n_jew = $item->n_jew > 8 ? 7 : $item->n_jew;
+        $n_ethnic = $item->n_ethnic > 8 ? 7 : $item->n_ethnic;
+        $n_familysearch = $item->n_familysearch > 8 ? 7 : $item->n_familysearch;
+        $n_forebears = $item->n_forebears > 8 ? 7 : $item->n_forebears;
+        $n_aid = substr($item->actor_id, -4);
+
+        $actor_int = ($gender * 10000000000 +
+                $type * 1000000000 +
+                $n_verdict * 100000000 +
+                $n_crowdsource * 10000000 +
+                $n_surname * 1000000 +
+                $n_bettaface * 100000 +
+                $n_kairos * 10000 +
+                $n_jew * 1000 +
+                $n_ethnic * 100 +
+                $n_familysearch * 10 +
+                $n_forebears) * 10000 + $n_aid;
+
+        return $actor_int;
     }
 
     public function critic_view_type($count = 100, $debug = false, $force = false) {
