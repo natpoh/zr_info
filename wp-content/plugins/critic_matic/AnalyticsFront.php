@@ -5935,4 +5935,80 @@ class AnalyticsFront extends SearchFacets {
         print $ctable;
     }
 
+    public function get_movies_race_data($movies = array(), $showcast = array(1, 2), $ver_weight = false, $priority = array(), $debug = false) {
+        // 1. Get movies list
+        $m_list = $this->cs->get_movie_races($movies);
+        if ($debug) {
+            print_r($m_list);
+        }
+        // 2. Calculate actor race
+        if (!$mode_key) {
+            // Get from settings
+            $ss = $this->cm->get_settings(false);
+            if (isset($ss['an_weightid']) && $ss['an_weightid'] > 0) {
+                $mode_key = $ss['an_weightid'];
+            }
+        }
+
+
+        $ret = array();
+        if ($m_list) {
+            $show_cast_valid = $this->get_show_cast_valid($showcast);
+            foreach ($m_list as $key => $movie) {
+                $races = explode(',', $movie->raceu);
+                $draces = explode(',', $movie->draceu);
+                $races_all = array_merge($races, $draces);
+
+                $ret[$key]['m'] = $movie;
+                if ($races_all) {
+                    $ret[$key]['races'] = $this->get_race_by_priority($races, $show_cast_valid, $priority, $ver_weight);
+                }
+            }
+        }
+        return $ret;
+    }
+
+    public function get_race_by_priority($races = array(), $show_cast_valid = array(), $priority = array(), $ver_weight = false) {
+        $ret = array();
+        if (!$races) {
+            return $ret;
+        }
+        foreach ($races as $race) {
+            if ($race == 0) {
+                continue;
+            }
+            // Actor type
+            $actor_type_code = substr($race, 1, 1);
+            if (!$this->validate_show_cast($actor_type_code, $show_cast_valid)) {
+                continue;
+            }
+            //Gender
+            $actor_gender = substr($race, 0, 1);
+
+            $race_code = 0;
+            if (!$priority) {
+                // Default race code
+                if ($ver_weight) {
+                    // Todo werweight data
+                    $race_code = (int) substr($race, 2, 1);
+                } else {
+                    $race_code = (int) substr($race, 2, 1);
+                }
+            } else {
+                // Custom priority logic
+                if ($ver_weight) {
+                    // Weight logic
+                    $race_code = $this->custom_weight_race_code($race, $priority);
+                } else {
+                    // Priority logic
+                    $race_code = $this->custom_priority_race_code($race, $priority);
+                }
+            }
+            if ($race_code) {
+                $ret[$race] = array('verdict' => $race_code, 'type' => $actor_type_code, 'gender' => $actor_gender);
+            }
+        }
+        return $ret;
+    }
+
 }

@@ -2553,7 +2553,7 @@ class CriticSearch extends AbstractDB {
         }
         return $ret;
     }
-
+   
     //Abstract DB
     public function sdb_query($sql) {
         $this->connect();

@@ -427,6 +427,18 @@ class AnalyticsSearch extends CriticSearch {
         return $ret;
     }
 
+    public function get_movie_races($ids) {
+        $sql = sprintf("SELECT id, title, year_int as year, raceu, draceu FROM movie_an WHERE id IN (%s) LIMIT 1000", implode(',', $ids));
+        $result = $this->sdb_results($sql);
+        $ret = array();
+        if ($result) {
+            foreach ($result as $m) {
+                $ret[$m->id] = $m;
+            }
+        }
+        return $ret;
+    }
+
     public function get_select_and($axis = '', $filters_enabled = array()) {
         $select = '';
         $filters = '';
