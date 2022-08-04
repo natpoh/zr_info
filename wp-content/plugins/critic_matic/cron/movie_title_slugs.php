@@ -32,6 +32,11 @@ if ($_GET['force']) {
     $force = true;
 }
 
+$t = 1;
+if ($_GET['t']) {
+    $t = (int) $_GET['t'];
+}
+
 $cm = new CriticMatic();
 
 //One time transit data
@@ -39,8 +44,9 @@ require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticTransit.php' );
 $cr = new CriticTransit($cm);
 
 //$ids = array(68852,68853);
-
-$cr->movie_title_slugs($count,$debug,$force, $ids);
-// $cr->movie_set_new_slugs($count,$debug,$force);
-
+if ($t == 1) {
+    $cr->movie_title_slugs($count, $debug, $force, $ids);
+} else {
+    $cr->movie_set_new_slugs($count, $debug, $force);
+}
 //$cr->movie_duble_slugs($count,$debug,$force);
