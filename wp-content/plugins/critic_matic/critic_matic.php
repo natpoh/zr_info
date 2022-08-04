@@ -1050,4 +1050,5 @@ WHERE
  * 
  *  *  * 
  * SELECT post_name, count(*) FROM `data_movie_imdb` GROUP by post_name having count(*) > 1;
+ * SELECT newslug, count(*) FROM `data_movie_title_slugs` GROUP by newslug having count(*) > 1;
  */

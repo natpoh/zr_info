@@ -312,12 +312,15 @@ class CriticTransit extends AbstractDB {
             print_r($results);
         }
 
-        $last = end($results);
-        if (!$ids) {
+        
+        if (!$ids && $results) {
+            $last = end($results);
             if ($debug) {
                 print 'last id: ' . $last->id . "\n";
             }
-            update_option($option_name, $last->id);
+            if ($last) {
+                update_option($option_name, $last->id);
+            }
         }
         // 2. Create slug
         $ma = $this->get_ma();

@@ -38,7 +38,7 @@ $cm = new CriticMatic();
 require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticTransit.php' );
 $cr = new CriticTransit($cm);
 
-//$ids = array(10952,13331,33201,36510);
+//$ids = array(68852,68853);
 
 $cr->movie_title_slugs($count,$debug,$force, $ids);
 // $cr->movie_set_new_slugs($count,$debug,$force);
