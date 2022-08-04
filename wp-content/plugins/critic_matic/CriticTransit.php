@@ -355,41 +355,41 @@ class CriticTransit extends AbstractDB {
                     }
                 }
 
-                if ($last_post_name != $new_post_name) {
-                    // 3. Compare slugs
-                    if ($debug) {
-                        print_r(array($id, $title_decode, $last_post_name, $new_post_name));
-                    }
-                    // 4. Insert data to db
-                    $sql = sprintf("SELECT id, newslug FROM {$this->db['title_slugs']} WHERE mid=%d limit 1", $id);
-                    $in_db = $this->db_fetch_row($sql);
+                //if ($last_post_name != $new_post_name) {
+                // 3. Compare slugs
+                if ($debug) {
+                    print_r(array($id, $title_decode, $last_post_name, $new_post_name));
+                }
+                // 4. Insert data to db
+                $sql = sprintf("SELECT id, newslug FROM {$this->db['title_slugs']} WHERE mid=%d limit 1", $id);
+                $in_db = $this->db_fetch_row($sql);
 
-                    $data = array(
-                        'mid' => $id,
-                        'oldslug' => $last_post_name,
-                        'newslug' => $new_post_name,
-                    );
-                    $priority = 10;
-                    if (!$in_db) {
-                        $this->cm->sync_insert_data($data, $this->db['title_slugs'], $this->cm->sync_client, $this->cm->sync_data, $priority);
+                $data = array(
+                    'mid' => $id,
+                    'oldslug' => $last_post_name,
+                    'newslug' => $new_post_name,
+                );
+                $priority = 10;
+                if (!$in_db) {
+                    if ($debug) {
+                        print "Insert\n";
+                    }
+                    $this->cm->sync_insert_data($data, $this->db['title_slugs'], $this->cm->sync_client, $this->cm->sync_data, $priority);
+                } else {
+                    if ($new_post_name == $in_db->newslug) {
+                        // continue
                         if ($debug) {
-                            print "Insert\n";
+                            print_r($in_db);
+                            print "Continue\n";
                         }
                     } else {
-                        if ($new_post_name == $in_db->newslug) {
-                            // continue
-                            if ($debug) {
-                                print_r($in_db);
-                                print "Continue\n";
-                            }
-                        } else {
-                            if ($debug) {
-                                print "Update\n";
-                            }
-                            $this->cm->sync_update_data($data, $in_db->id, $this->db['title_slugs'], $this->cm->sync_client, $priority);
+                        if ($debug) {
+                            print "Update\n";
                         }
+                        $this->cm->sync_update_data($data, $in_db->id, $this->db['title_slugs'], $this->cm->sync_client, $priority);
                     }
                 }
+                //}
             }
         }
     }
@@ -402,7 +402,7 @@ class CriticTransit extends AbstractDB {
         $ma = $this->get_ma();
         $exist = $ma->get_post_by_slug($new_post_name, $item->type);
         if ($debug) {
-           // print_r($exist);
+            // print_r($exist);
         }
 
         if ($exist) {
@@ -416,7 +416,7 @@ class CriticTransit extends AbstractDB {
         // Slug logic
         $in_db = $this->slug_in_db($new_post_name, $item->type);
         if ($debug) {
-           // print_r($in_db);
+            // print_r($in_db);
         }
         if ($in_db) {
             if ($in_db->mid != $item->id) {
@@ -426,7 +426,6 @@ class CriticTransit extends AbstractDB {
 
         return $slugs;
     }
-
 
     public function slug_in_db($slug, $type = 'Movie') {
         //SELECT s.newslug, count(*) FROM `data_movie_title_slugs` s INNER JOIN `data_movie_imdb` m ON m.id = s.mid WHERE m.type="Movie" GROUP by s.newslug having count(*) > 1;
