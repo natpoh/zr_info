@@ -301,6 +301,10 @@ class CriticTransit extends AbstractDB {
         // 1. Get movies
         $option_name = 'movie_title_slugs_unique_id';
         $last_id = get_option($option_name, 0);
+        
+        if ($force){
+            $last_id=0;
+        }
 
         $sql = sprintf("SELECT id, title, post_name, type, year FROM {$this->db['movie_imdb']} WHERE id>%d ORDER BY id ASC limit %d", (int) $last_id, (int) $count);
         if ($ids) {
