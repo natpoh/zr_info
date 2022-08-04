@@ -43,6 +43,22 @@ $cm = new CriticMatic();
 require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticTransit.php' );
 $cr = new CriticTransit($cm);
 
+$ids = array();
+if ($_GET['ids']) {
+    $ids_str = $_GET['ids'];
+    if (strstr($ids_str, ',')) {
+        $ids_r = explode(',', $ids_str);
+        foreach ($ids_r as $value) {
+            if ($value) {
+                $ids[] = (int) $value;
+            }
+        }
+    } else {
+        $ids = (int) $ids_str;
+    }
+}
+
+
 //$ids = array(68852,68853);
 if ($t == 1) {
     $cr->movie_title_slugs($count, $debug, $force, $ids);
