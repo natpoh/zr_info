@@ -312,7 +312,7 @@ class CriticTransit extends AbstractDB {
             print_r($results);
         }
 
-        
+
         if (!$ids && $results) {
             $last = end($results);
             if ($debug) {
@@ -337,23 +337,20 @@ class CriticTransit extends AbstractDB {
                     $new_post_name = $id;
                 }
                 if ($debug) {
-                    print "new_post_name1 $new_post_name\n";
+                    print "new_post_name_1: $new_post_name\n";
                 }
                 // Post name exist?
-                $exist = $ma->get_post_by_slug($new_post_name, $item->type);
-                if ($debug) {
-                    // print_r($exist);
-                }
-                if ($exist && $exist->id != $id) {
+                $valid = $this->validate_exist_post_name($new_post_name, $item, $debug);
+                if (!$valid) {
                     $new_post_name = $new_post_name . '-' . $item->year;
                     if ($debug) {
-                        print "new_post_name2 $new_post_name\n";
+                        print "new_post_name_2: $new_post_name\n";
                     }
-                    $exist2 = $ma->get_post_by_slug($new_post_name, $item->type);
-                    if ($exist2 && $exist2->id != $id) {
+                    $valid2 = $this->validate_exist_post_name($new_post_name, $item, $debug);
+                    if (!$valid2) {
                         $new_post_name = $new_post_name . '-' . $id;
                         if ($debug) {
-                            print "new_post_name3 $new_post_name\n";
+                            print "new_post_name_3: $new_post_name\n";
                         }
                     }
                 }
@@ -366,19 +363,6 @@ class CriticTransit extends AbstractDB {
                     // 4. Insert data to db
                     $sql = sprintf("SELECT id, newslug FROM {$this->db['title_slugs']} WHERE mid=%d limit 1", $id);
                     $in_db = $this->db_fetch_row($sql);
-                    if ($in_db) {
-                        if ($debug) {
-                            print_r($in_db);
-                        }
-                        if ($in_db->newslug == $new_post_name) {
-                            // Not update
-                            if ($debug) {
-                                print "Not update\n";
-                            }
-                            continue;
-                        }
-                    }
-
 
                     $data = array(
                         'mid' => $id,
@@ -392,14 +376,63 @@ class CriticTransit extends AbstractDB {
                             print "Insert\n";
                         }
                     } else {
-                        if ($debug) {
-                            print "Update\n";
+                        if ($new_post_name == $in_db->newslug) {
+                            // continue
+                            if ($debug) {
+                                print_r($in_db);
+                                print "Continue\n";
+                            }
+                        } else {
+                            if ($debug) {
+                                print "Update\n";
+                            }
+                            $this->cm->sync_update_data($data, $in_db->id, $this->db['title_slugs'], $this->cm->sync_client, $priority);
                         }
-                        $this->cm->sync_update_data($data, $in_db->id, $this->db['title_slugs'], $this->cm->sync_client, $priority);
                     }
                 }
             }
         }
+    }
+
+    private function validate_exist_post_name($new_post_name = '', $item = '', $debug = false) {
+        $post = true;
+        $slugs = true;
+
+        // Post logic
+        $ma = $this->get_ma();
+        $exist = $ma->get_post_by_slug($new_post_name, $item->type);
+        if ($debug) {
+           // print_r($exist);
+        }
+
+        if ($exist) {
+            if ($exist->id != $item->id) {
+                $post = false;
+            }
+        }
+        if (!$post) {
+            return false;
+        }
+        // Slug logic
+        $in_db = $this->slug_in_db($new_post_name, $item->type);
+        if ($debug) {
+           // print_r($in_db);
+        }
+        if ($in_db) {
+            if ($in_db->mid != $item->id) {
+                $slugs = false;
+            }
+        }
+
+        return $slugs;
+    }
+
+
+    public function slug_in_db($slug, $type = 'Movie') {
+        //SELECT s.newslug, count(*) FROM `data_movie_title_slugs` s INNER JOIN `data_movie_imdb` m ON m.id = s.mid WHERE m.type="Movie" GROUP by s.newslug having count(*) > 1;
+        $sql = sprintf("SELECT s.id, s.mid FROM {$this->db['title_slugs']} s INNER JOIN {$this->db['movie_imdb']} m ON m.id = s.mid "
+                . "WHERE s.newslug='%s' AND m.type='%s' ORDER BY s.id ASC limit 1", $slug, $type);
+        return $this->db_fetch_row($sql);
     }
 
     public function transit_video_cron($count = 100, $debug = false, $force = false) {
