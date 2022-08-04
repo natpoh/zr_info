@@ -1049,4 +1049,5 @@ WHERE
  * 
  * 
  *  *  * 
+ * SELECT post_name, count(*) FROM `data_movie_imdb` GROUP by post_name having count(*) > 1;
  */

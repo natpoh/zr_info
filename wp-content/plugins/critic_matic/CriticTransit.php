@@ -205,6 +205,50 @@ class CriticTransit extends AbstractDB {
         $this->cm->db_query($sql);
     }
 
+    public function movie_duble_slugs($count = 100, $debug = false, $force = false) {
+
+        // 1. Get slugs
+        $sql = sprintf("SELECT post_name, count(*) FROM `data_movie_imdb` WHERE post_name!='' GROUP by post_name having count(*) > 1 limit %d", (int) $count);
+        $results = $this->db_results($sql);
+        if ($results) {
+            if ($debug) {
+                print_r($results);
+            }
+
+            // 2. Update slugs 
+            foreach ($results as $item) {
+
+                $post_name = $item->post_name;
+
+                // Get post
+                $sqlm = sprintf("SELECT id, post_name FROM {$this->db['movie_imdb']} WHERE post_name='%s'", $post_name);
+                $result = $this->db_results($sqlm);
+                print_r($result);
+                continue;
+                if ($result) {
+                    $data = array(
+                        'add_time' => $this->curr_time()
+                    );
+                    if ($result->post_name != $item->newslug) {
+                        $data = array(
+                            'post_name' => $item->newslug,
+                            'add_time' => $this->curr_time()
+                        );
+
+                        if ($debug) {
+                            print_r(array('Update post', $result->post_name, $item->newslug));
+                        }
+                    } else {
+                        if ($debug) {
+                            print_r(array('Continue', $result->post_name, $item->newslug));
+                        }
+                    }
+                    $this->sync_update_data($data, $mid, $this->db['movie_imdb'], true, 5);
+                }
+            }
+        }
+    }
+
     public function movie_set_new_slugs($count = 100, $debug = false, $force = false) {
         $option_name = 'movie_set_ne_slugs_unique_id';
         $last_id = get_option($option_name, 0);
@@ -253,36 +297,61 @@ class CriticTransit extends AbstractDB {
         }
     }
 
-    public function movie_title_slugs($count = 100, $debug = false, $force = false) {
+    public function movie_title_slugs($count = 100, $debug = false, $force = false, $ids = array()) {
         // 1. Get movies
         $option_name = 'movie_title_slugs_unique_id';
         $last_id = get_option($option_name, 0);
 
         $sql = sprintf("SELECT id, title, post_name, type, year FROM {$this->db['movie_imdb']} WHERE id>%d ORDER BY id ASC limit %d", (int) $last_id, (int) $count);
-        $results = $this->db_results($sql);
-        $last = end($results);
-        if ($debug) {
-            print 'last id: ' . $last->id . "\n";
+        if ($ids) {
+            $sql = sprintf("SELECT id, title, post_name, type, year FROM {$this->db['movie_imdb']} WHERE id IN (" . implode(',', $ids) . ") ORDER BY id ASC");
         }
-        update_option($option_name, $last->id);
+
+        $results = $this->db_results($sql);
+        if ($debug) {
+            print_r($results);
+        }
+
+        $last = end($results);
+        if (!$ids) {
+            if ($debug) {
+                print 'last id: ' . $last->id . "\n";
+            }
+            update_option($option_name, $last->id);
+        }
         // 2. Create slug
         $ma = $this->get_ma();
         if ($results) {
             foreach ($results as $item) {
                 $id = $item->id;
                 $last_post_name = $item->post_name;
+                if ($debug) {
+                    print "last_post_name $last_post_name\n";
+                }
                 $title_decode = htmlspecialchars_decode($item->title);
                 $new_post_name = $ma->create_slug($title_decode);
                 if (!$new_post_name) {
                     $new_post_name = $id;
                 }
+                if ($debug) {
+                    print "new_post_name1 $new_post_name\n";
+                }
                 // Post name exist?
                 $exist = $ma->get_post_by_slug($new_post_name, $item->type);
+                if ($debug) {
+                    // print_r($exist);
+                }
                 if ($exist && $exist->id != $id) {
                     $new_post_name = $new_post_name . '-' . $item->year;
+                    if ($debug) {
+                        print "new_post_name2 $new_post_name\n";
+                    }
                     $exist2 = $ma->get_post_by_slug($new_post_name, $item->type);
                     if ($exist2 && $exist2->id != $id) {
                         $new_post_name = $new_post_name . '-' . $id;
+                        if ($debug) {
+                            print "new_post_name3 $new_post_name\n";
+                        }
                     }
                 }
 
@@ -292,16 +361,38 @@ class CriticTransit extends AbstractDB {
                         print_r(array($id, $title_decode, $last_post_name, $new_post_name));
                     }
                     // 4. Insert data to db
-                    $sql = sprintf("SELECT id FROM {$this->db['title_slugs']} WHERE mid=%d limit 1", $id);
-                    $in_db = $this->db_get_var($sql);
+                    $sql = sprintf("SELECT id, newslug FROM {$this->db['title_slugs']} WHERE mid=%d limit 1", $id);
+                    $in_db = $this->db_fetch_row($sql);
+                    if ($in_db) {
+                        if ($debug) {
+                            print_r($in_db);
+                        }
+                        if ($in_db->newslug == $new_post_name) {
+                            // Not update
+                            if ($debug) {
+                                print "Not update\n";
+                            }
+                            continue;
+                        }
+                    }
+
+
+                    $data = array(
+                        'mid' => $id,
+                        'oldslug' => $last_post_name,
+                        'newslug' => $new_post_name,
+                    );
+                    $priority = 10;
                     if (!$in_db) {
-                        $data = array(
-                            'mid' => $id,
-                            'oldslug' => $last_post_name,
-                            'newslug' => $new_post_name,
-                        );
-                        $priority = 10;
                         $this->cm->sync_insert_data($data, $this->db['title_slugs'], $this->cm->sync_client, $this->cm->sync_data, $priority);
+                        if ($debug) {
+                            print "Insert\n";
+                        }
+                    } else {
+                        if ($debug) {
+                            print "Update\n";
+                        }
+                        $this->cm->sync_update_data($data, $in_db->id, $this->db['title_slugs'], $this->cm->sync_client, $priority);
                     }
                 }
             }

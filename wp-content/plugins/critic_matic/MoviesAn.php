@@ -134,7 +134,7 @@ class MoviesAn extends AbstractDBAn {
     }
 
     public function get_post_by_slug($slug = '', $type = 'Movie') {
-        $sql = sprintf("SELECT * FROM {$this->db['movie_imdb']} WHERE type='%s' AND post_name='%s'", $this->escape($type), $this->escape($slug));
+        $sql = sprintf("SELECT * FROM {$this->db['movie_imdb']} WHERE type='%s' AND post_name='%s' ORDER BY id ASC LIMIT 1", $this->escape($type), $this->escape($slug));
         $result = $this->db_fetch_row($sql);
         return $result;
     }
