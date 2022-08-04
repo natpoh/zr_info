@@ -301,9 +301,9 @@ class CriticTransit extends AbstractDB {
         // 1. Get movies
         $option_name = 'movie_title_slugs_unique_id';
         $last_id = get_option($option_name, 0);
-        
-        if ($force){
-            $last_id=0;
+
+        if ($force) {
+            $last_id = 0;
         }
 
         $sql = sprintf("SELECT id, title, post_name, type, year FROM {$this->db['movie_imdb']} WHERE id>%d ORDER BY id ASC limit %d", (int) $last_id, (int) $count);
@@ -359,41 +359,41 @@ class CriticTransit extends AbstractDB {
                     }
                 }
 
-                //if ($last_post_name != $new_post_name) {
-                // 3. Compare slugs
-                if ($debug) {
-                    print_r(array($id, $title_decode, $last_post_name, $new_post_name));
-                }
-                // 4. Insert data to db
-                $sql = sprintf("SELECT id, newslug FROM {$this->db['title_slugs']} WHERE mid=%d limit 1", $id);
-                $in_db = $this->db_fetch_row($sql);
-
-                $data = array(
-                    'mid' => $id,
-                    'oldslug' => $last_post_name,
-                    'newslug' => $new_post_name,
-                );
-                $priority = 10;
-                if (!$in_db) {
+                if ($last_post_name != $new_post_name) {
+                    // 3. Compare slugs
                     if ($debug) {
-                        print "Insert\n";
+                        print_r(array($id, $title_decode, $last_post_name, $new_post_name));
                     }
-                    $this->cm->sync_insert_data($data, $this->db['title_slugs'], $this->cm->sync_client, $this->cm->sync_data, $priority);
-                } else {
-                    if ($new_post_name == $in_db->newslug) {
-                        // continue
+                    // 4. Insert data to db
+                    $sql = sprintf("SELECT id, newslug FROM {$this->db['title_slugs']} WHERE mid=%d limit 1", $id);
+                    $in_db = $this->db_fetch_row($sql);
+
+                    $data = array(
+                        'mid' => $id,
+                        'oldslug' => $last_post_name,
+                        'newslug' => $new_post_name,
+                    );
+                    $priority = 10;
+                    if (!$in_db) {
                         if ($debug) {
-                            print_r($in_db);
-                            print "Continue\n";
+                            print "Insert\n";
                         }
+                        $this->cm->sync_insert_data($data, $this->db['title_slugs'], $this->cm->sync_client, $this->cm->sync_data, $priority);
                     } else {
-                        if ($debug) {
-                            print "Update\n";
+                        if ($new_post_name == $in_db->newslug) {
+                            // continue
+                            if ($debug) {
+                                print_r($in_db);
+                                print "Continue\n";
+                            }
+                        } else {
+                            if ($debug) {
+                                print "Update\n";
+                            }
+                            $this->cm->sync_update_data($data, $in_db->id, $this->db['title_slugs'], $this->cm->sync_client, $priority);
                         }
-                        $this->cm->sync_update_data($data, $in_db->id, $this->db['title_slugs'], $this->cm->sync_client, $priority);
                     }
                 }
-                //}
             }
         }
     }
