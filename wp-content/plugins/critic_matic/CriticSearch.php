@@ -238,7 +238,7 @@ class CriticSearch extends AbstractDB {
         if ($debug) {
             print_r($movie);
         }
-        $critics_search = $this->search_critics($movie,$debug,$ids);
+        $critics_search = $this->search_critics($movie, $debug, $ids);
 
         // Get old movie meta
         $old_meta = array();
@@ -1228,11 +1228,11 @@ class CriticSearch extends AbstractDB {
         return array('result' => $result, 'total' => $total);
     }
 
-    public function front_search_critics_multi($keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = false, $show_meta = true, $widlcard = false) {
+    public function front_search_critics_multi($keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = false, $show_meta = true, $widlcard = false, $fields = array()) {
 
         //Sort logic
         $order = $this->get_order_query_critics($sort);
-
+        
         // Movie weight logic        
 
         if (isset($sort['sort']) && $sort['sort'] == 'mw') {
@@ -1261,8 +1261,13 @@ class CriticSearch extends AbstractDB {
             $snippet = ', SNIPPET(title, QUERY()) t, SNIPPET(content, QUERY()) c, SNIPPET(mtitle, QUERY()) mt';
         }
 
+        $custom_fields = '';
+        if ($fields) {
+            $custom_fields = ', ' . implode(', ', $fields) . ' ';
+        }
+
         // Main sql
-        $sql = sprintf("SELECT id, date_add, weight() w, author_type" . $snippet . $order['select']
+        $sql = sprintf("SELECT id, date_add, weight() w, author_type" . $snippet . $custom_fields . $order['select']
                 . " FROM critic WHERE top_movie>0" . $filters_and . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
 
         //Get result
@@ -1905,9 +1910,9 @@ class CriticSearch extends AbstractDB {
                     } else if ($key == 'from') {
                         // From author
                         $value = is_array($value) ? $value : array($value);
-                        $ids = array();                                               
+                        $ids = array();
                         $authors = $this->cm->get_authors_by_ids($value);
-                        
+
                         foreach ($value as $slug) {
                             // Todo get author by slug
                             $this->search_filters[$key][$slug] = array('key' => $slug, 'title' => $authors[$slug]->name);
@@ -2412,17 +2417,17 @@ class CriticSearch extends AbstractDB {
     }
 
     public function get_last_critics($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tag_id = 0, $meta_type = array(), $min_rating = 0, $vote = 0) {
-     
-        $filters_and ='';
-        
+
+        $filters_and = '';
+
         if ($a_type != -1) {
             $filters_and .= sprintf(' AND author_type = %d', $a_type);
         }
 
-        if ($movie_id > 0) {            
+        if ($movie_id > 0) {
             $filters_and .= $this->filter_multi_value('movies', $movie_id, true);
         }
-        
+
         if ($min_rating) {
             // TODO meta raring
         }
@@ -2433,23 +2438,23 @@ class CriticSearch extends AbstractDB {
 
         // Odrer by rating desc
         if ($movie_id > 0) {
-           
+            
         }
 
         // Tag logic
         if ($tag_id > 0) {
-            $filters_and .= $this->filter_multi_value('tags', $tag_id, true);            
+            $filters_and .= $this->filter_multi_value('tags', $tag_id, true);
         }
 
         // Vote logic
         if ($vote > 0) {
             $filters_and .= sprintf(" AND auvote=%d", $vote);
         }
-        
-        $order = " ORDER BY post_date DESC";        
+
+        $order = " ORDER BY post_date DESC";
         $sql = sprintf("SELECT id, date_add, top_movie FROM critic WHERE top_movie>0" . $filters_and . $order . " LIMIT %d,%d", $start, $limit);
-        
-        $results = $this->sdb_results($sql);     
+
+        $results = $this->sdb_results($sql);
 
         return $results;
     }
@@ -2553,7 +2558,7 @@ class CriticSearch extends AbstractDB {
         }
         return $ret;
     }
-   
+
     //Abstract DB
     public function sdb_query($sql) {
         $this->connect();

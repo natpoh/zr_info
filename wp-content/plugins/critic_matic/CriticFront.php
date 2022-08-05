@@ -434,7 +434,7 @@ class CriticFront extends SearchFacets {
             }
             // $content = preg_replace('/<div class="transcriptions">.*<\/div>/Us', '', $content);
             // Remove the content from posts witch transcriptions
-            $content = '';            
+            $content = '';
         }
         // }
         // Get meta state
@@ -476,11 +476,11 @@ class CriticFront extends SearchFacets {
                 $content = preg_replace($regv, '', $content);
             }
         }
-        
-        if ($desc_results){
-            $content= '<p>'.implode('</p><p>', $desc_results).'</p>';
+
+        if ($desc_results) {
+            $content = '<p>' . implode('</p><p>', $desc_results) . '</p>';
         }
-        
+
         // Author image
         $author = $this->cm->get_author($critic->aid);
         $author_options = unserialize($author->options);
@@ -671,7 +671,7 @@ class CriticFront extends SearchFacets {
                         if (preg_match_all($reg_desc, $desc, $match)) {
                             for ($i = 0; $i < sizeof($match[0]); $i++) {
                                 $result = $match[0][$i];
-                                $desc_results[] = str_replace($value, '<b>'.$value.'</b>', $result);
+                                $desc_results[] = str_replace($value, '<b>' . $value . '</b>', $result);
                             }
                         }
                     }
@@ -1926,6 +1926,52 @@ class CriticFront extends SearchFacets {
             return json_encode($content);
         }
         return '';
+    }
+
+    public function search_last_critics($mid=0,$count=10) {
+
+        $keyword = '';
+        $limit = 10;
+        $start = 0;
+        $sort = array(
+            'sort' => 'date',
+            'type' => 'desc'
+        );
+        $filters = array(
+            'movie' => $mid
+        );
+
+        $facets = false;
+        $show_meta = false;
+        $widlcard = false;
+        $fields = array(
+            'title',
+            'content',
+            'author_name',
+            'aurating',
+        );
+
+        $critic_data = $this->cs->front_search_critics_multi($keyword, $limit, $start, $sort, $filters, $facets, $show_meta, $widlcard, $fields);
+        $results = array();
+        if ($critic_data) {
+            foreach ($critic_data as $item) {
+                $id = $item->id;
+                $content = $this->format_content($item->content, 400);
+                $post = new stdClass();
+                $post->author_type = $item->author_type;
+                $post->author_name = trim(strip_tags($item->author_name));
+                $post->title = trim(strip_tags($item->title));
+                $url = $this->get_critic_url($post);
+                
+                $results[$id]['title'] = $post->title;
+                $results[$id]['content'] = $content;
+                $results[$id]['url'] = $url;
+                $results[$id]['author_name'] = $post->author_name;
+                $results[$id]['author_type'] = $post->author_type;
+                $results[$id]['rating'] = $item->aurating;
+            }
+        }
+        return $results;
     }
 
     /*

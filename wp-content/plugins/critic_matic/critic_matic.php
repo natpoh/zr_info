@@ -1049,6 +1049,8 @@ WHERE
  * 
  * 
  *  *  * 
- * SELECT post_name, count(*) FROM `data_movie_imdb` GROUP by post_name having count(*) > 1;
+ * SELECT post_name, count(*) FROM `data_movie_imdb` WHERE type="Movie" GROUP by post_name having count(*) > 1;
  * SELECT s.newslug, count(*) FROM `data_movie_title_slugs` s INNER JOIN `data_movie_imdb` m ON m.id = s.mid WHERE m.type="Movie" GROUP by s.newslug having count(*) > 1;
+ * SELECT s.newslug, count(*) FROM `data_movie_title_slugs` s INNER JOIN `data_movie_imdb` m ON m.id = s.mid WHERE m.type="TVSeries" GROUP by s.newslug having count(*) > 1;
+ * SELECT id,oldslug,newslug FROM `data_movie_title_slugs` WHERE oldslug=newslug;
  */
