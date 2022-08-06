@@ -155,7 +155,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
     }
 
     public function get_actors_by_name($name = '') {
-        $sql = sprintf("SELECT id, id as aid, name, birth_name, burn_date FROM {$this->db['actors_imdb']} WHERE name='%s' ORDER BY a.id ASC", $this->escape($name));
+        $sql = sprintf("SELECT id, id as aid, name, birth_name, burn_date FROM {$this->db['actors_imdb']} WHERE name='%s' ORDER BY id ASC", $this->escape($name));
         $results = $this->db_results($sql);
         return $results;
     }
