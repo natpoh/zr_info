@@ -2343,12 +2343,14 @@ class MoviesParser extends MoviesAbstractDB {
                         $results[$actor->aid]['total']['rating'] += $full_rule['ra'];
 
                         if ($post_burn_name) {
-                            $results[$actor->aid]['burnname']['data'] = $actor->birth_name;
-                            $results[$actor->aid]['burnname']['match'] = 1;
-                            $results[$actor->aid]['burnname']['rating'] = $burn_name_rule['ra'];
+                            if ($actor->birth_name == $post_burn_name) {
+                                $results[$actor->aid]['burnname']['data'] = $actor->birth_name;
+                                $results[$actor->aid]['burnname']['match'] = 1;
+                                $results[$actor->aid]['burnname']['rating'] = $burn_name_rule['ra'];
 
-                            $results[$actor->aid]['total']['match'] += 1;
-                            $results[$actor->aid]['total']['rating'] += $burn_name_rule['ra'];
+                                $results[$actor->aid]['total']['match'] += 1;
+                                $results[$actor->aid]['total']['rating'] += $burn_name_rule['ra'];
+                            }
                         }
                     }
                 }
