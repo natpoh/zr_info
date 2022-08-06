@@ -2352,6 +2352,18 @@ class MoviesParser extends MoviesAbstractDB {
                                 $results[$actor->aid]['total']['rating'] += $burn_name_rule['ra'];
                             }
                         }
+
+                        if ($post_year) {
+                            $actor_year = preg_replace('/^.*([0-9]{4}).*$/', "$1", $actor->burn_date);
+                            $content_year = preg_replace('/^.*([0-9]{4}).*$/', "$1", $post_year);
+                            if ($actor_year && $actor_year == $content_year) {
+                                $results[$actor->aid]['year']['data'] = $actor_year;
+                                $results[$actor->aid]['year']['match'] = 1;
+                                $results[$actor->aid]['year']['rating'] = $year_rule['ra'];
+                                $results[$actor->aid]['total']['match'] += 1;
+                                $results[$actor->aid]['total']['rating'] += $year_rule['ra'];
+                            }
+                        }
                     }
                 }
             } else {
