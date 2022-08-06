@@ -87,11 +87,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
 
             ////commit
             !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-            Import::create_commit('', 'update', 'data_movie_rating', array('movie_id' => $mid), 'movie_rating',11,['skip'=>['id']]);
-
-
-
-
+            Import::create_commit('', 'update', 'data_movie_rating', array('movie_id' => $mid), 'movie_rating', 11, ['skip' => ['id']]);
         }
     }
 
@@ -155,6 +151,12 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             $sql = sprintf("SELECT a.id, a.aid, a.firstname, a.lastname FROM {$this->db['actors_normalize']} a WHERE a.id>0" . $and_first . $and_last . " ORDER BY a.id ASC");
             $results = $this->db_results($sql);
         }
+        return $results;
+    }
+
+    public function get_actors_by_name($name = '') {
+        $sql = sprintf("SELECT id, id as aid, name, birth_name, burn_date FROM {$this->db['actors_imdb']} WHERE name='%s' ORDER BY a.id ASC", $this->escape($name));
+        $results = $this->db_results($sql);
         return $results;
     }
 

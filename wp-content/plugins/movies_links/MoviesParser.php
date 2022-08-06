@@ -180,6 +180,8 @@ class MoviesParser extends MoviesAbstractDB {
     public $links_rules_actor_fields = array(
         'f' => 'Firstname',
         'l' => 'Lastname',
+        'n' => 'Full name',
+        'y' => 'Burn year',
         'e' => 'Exist'
     );
     public $links_match_type = array(
@@ -2224,6 +2226,35 @@ class MoviesParser extends MoviesAbstractDB {
             }
 
 
+            // Get full name
+            $post_full_name = '';
+            $full_rule = '';
+            if ($active_rules['n']) {
+                foreach ($active_rules['n'] as $item) {
+                    if ($item['content']) {
+                        $post_full_name = $item['content'];
+                        $full_rule = $item;
+                        break;
+                    }
+                }
+                $search_fields['full'] = $post_full_name;
+            }
+
+            // Get burn year
+            $post_year = '';
+            $year_rule = '';
+            if ($active_rules['y']) {
+                foreach ($active_rules['y'] as $item) {
+                    if ($item['content']) {
+                        $post_year = $item['content'];
+                        $year_rule = $item;
+                        break;
+                    }
+                }
+                $search_fields['year'] = $post_year;
+            }
+
+
             // Get exist
             $post_exist_name = '';
             $exist_rule = '';
@@ -2247,9 +2278,9 @@ class MoviesParser extends MoviesAbstractDB {
                 $actors = $ma->get_actors_normalize_by_name($post_first_name, '');
             } else if ($post_last_name) {
                 $actors = $ma->get_actors_normalize_by_name('', $post_last_name);
+            } else if ($post_full_name) {
+                $actors = $ma->get_actors_by_name($post_full_name);
             }
-
-
 
             if ($actors) {
                 /*
@@ -2285,6 +2316,16 @@ class MoviesParser extends MoviesAbstractDB {
 
                         $results[$actor->aid]['total']['match'] += 1;
                         $results[$actor->aid]['total']['rating'] += $exist_rule['ra'];
+                    }
+                    
+                    // Full name
+                    if ($post_full_name) {
+                        $results[$actor->aid]['fullname']['data'] = $actor->name;
+                        $results[$actor->aid]['fullname']['match'] = 1;
+                        $results[$actor->aid]['fullname']['rating'] = $full_rule['ra'];
+
+                        $results[$actor->aid]['total']['match'] += 1;
+                        $results[$actor->aid]['total']['rating'] += $full_rule['ra'];
                     }
                 }
             } else {
