@@ -181,6 +181,7 @@ class MoviesParser extends MoviesAbstractDB {
         'f' => 'Firstname',
         'l' => 'Lastname',
         'n' => 'Full name',
+        'b' => 'Burn name',
         'y' => 'Burn year',
         'e' => 'Exist'
     );
@@ -2237,7 +2238,21 @@ class MoviesParser extends MoviesAbstractDB {
                         break;
                     }
                 }
-                $search_fields['full'] = $post_full_name;
+                $search_fields['fullname'] = $post_full_name;
+            }
+
+            // Get burn name
+            $post_burn_name = '';
+            $burn_name_rule = '';
+            if ($active_rules['b']) {
+                foreach ($active_rules['b'] as $item) {
+                    if ($item['content']) {
+                        $post_burn_name = $item['content'];
+                        $burn_name_rule = $item;
+                        break;
+                    }
+                }
+                $search_fields['burnname'] = $post_burn_name;
             }
 
             // Get burn year
@@ -2317,7 +2332,7 @@ class MoviesParser extends MoviesAbstractDB {
                         $results[$actor->aid]['total']['match'] += 1;
                         $results[$actor->aid]['total']['rating'] += $exist_rule['ra'];
                     }
-                    
+
                     // Full name
                     if ($post_full_name) {
                         $results[$actor->aid]['fullname']['data'] = $actor->name;
@@ -2326,6 +2341,15 @@ class MoviesParser extends MoviesAbstractDB {
 
                         $results[$actor->aid]['total']['match'] += 1;
                         $results[$actor->aid]['total']['rating'] += $full_rule['ra'];
+
+                        if ($post_burn_name) {
+                            $results[$actor->aid]['burnname']['data'] = $actor->birth_name;
+                            $results[$actor->aid]['burnname']['match'] = 1;
+                            $results[$actor->aid]['burnname']['rating'] = $burn_name_rule['ra'];
+
+                            $results[$actor->aid]['total']['match'] += 1;
+                            $results[$actor->aid]['total']['rating'] += $burn_name_rule['ra'];
+                        }
                     }
                 }
             } else {
