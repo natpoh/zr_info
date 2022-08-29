@@ -120,7 +120,13 @@ class Cronjob
         {
             if ( $array_jobs[$val['task']])
             {
-                $array_result[$val['task']] = (time() - $val['time'])/60 - $array_jobs[$val['task']];
+                $last_time = intval($val['time']);
+                if ($last_time>time())
+                {
+                    $last_time=  0;
+                }
+
+                $array_result[$val['task']] = ( time() - $last_time )/60 - $array_jobs[$val['task']];
             }
 
 
@@ -220,7 +226,7 @@ class Cronjob
 
             foreach ($jobs_data as $i=> $r)
             {
-                echo $i. ' '.round($r,0).' min<br>';
+                echo $i. ' '.round($r,0).' min ('.$array_jobs[$i].')<br>';
             }
 
 ///get last task
