@@ -237,18 +237,53 @@ class Cronjob
         $row = Pdo_an::db_results_array($sql);
 
 
-
+        $last_run=[];
         foreach ($row as $r)
         {
 
-            echo  date('H:i:s d.m.Y',$r['time']).' '.$r['task'].'<br>';
+            if ($array_jobs[$r['task']])
+            {
 
+                $last_run[$r['task']]['end']=$r['time'];
 
+            }
+            else if (strpos($r['task'],' started'))
+            {
+               $rdata =trim( substr($r['task'],0,strpos($r['task'],' started')));
+                $last_run[$rdata]['start']=$r['time'];
+
+            }
+            else{
+                $last_run[$r['task']]['start']=$r['time'];
+            }
 
         }
+      //  var_dump($last_run);
+            $content='';
+        foreach ($last_run as $i=> $v)
+            {
+                $ddata='';
+                $sdata='';
+                $edata='';
+                $vtotal='';
+
+                if ($v['start']) $ddata  = date('d.m.Y',$v['start']);
+               if ($v['start']) $sdata  = date('H:i:s',$v['start']);
+                if ($v['end']) $edata  = date('H:i:s',$v['end']);
+
+                if ($v['start'] && $v['end'])
+                {
+                    $vtotal  = $v['end']-$v['start'];
+                }
+
+                $content.= '<tr><td>'.$i.'</td><td>'.$ddata.'</td><td>'.$sdata.'</td><td>'.$edata.'</td><td>'.$vtotal.'</td></tr>';
 
 
+            }
 
+            $content = '<br><br><table border="1" cellspacing="0"><tr><th>Job</th><th>Day</th><th>Start</th><th>End</th><th>Total</th></tr>'.$content.'</table>';
+
+        echo $content;
         }
 
 
