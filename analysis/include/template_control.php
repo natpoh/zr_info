@@ -22,6 +22,8 @@ $data_Set ='
         <p>4th.)</p>
         <p>5th.)</p>
         <p>6th.)</p>
+        <p>7th.)</p>
+        <p>8th.)</p>
     </div>
 
     <div id="Ethnycity_container" class="sort_Container">
@@ -29,7 +31,9 @@ $data_Set ='
         <div id="ethnic" class="sortable ethnycity_select">Ethnicelebs</div>
         <div id="jew" class="sortable ethnycity_select">JewOrNotJew</div>
         <div id="face" class="sortable ethnycity_select">Facial Recognition by Kairos</div>
-        <div id="face2" class="sortable ethnycity_select">Facial Recognition by Betaface</div>
+        <div id="face2" class="sortable ethnycity_select">Facial Recognition by Betaface</div>           
+        <div id="forebears" class="sortable ethnycity_select">ForeBears</div>
+        <div id="familysearch" class="sortable ethnycity_select">FamilySearch</div>        
         <div id="surname" class="sortable ethnycity_select">Surname Analysis</div>
     </div>
 

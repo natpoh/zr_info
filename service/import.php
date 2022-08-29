@@ -18,6 +18,8 @@ else
 if (!defined('ABSPATH'))
     define('ABSPATH',$root . '/');
 
+
+
 //DB config
 !defined('DB_HOST_AN') ? include ABSPATH . 'analysis/db_config.php' : '';
 //Abstract DB

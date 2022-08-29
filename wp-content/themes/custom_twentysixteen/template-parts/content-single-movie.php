@@ -26,7 +26,7 @@ $rwt_id = $post_an->rwt_id;
 
 
 global $site_url;
-if (!$site_url)$site_url ='https://'.$_SERVER['HTTP_HOST'].'/';
+if (!$site_url)$site_url =WP_SITEURL.'/';
 
 ?>
 <script type="text/javascript">
@@ -34,6 +34,19 @@ if (!$site_url)$site_url ='https://'.$_SERVER['HTTP_HOST'].'/';
 
 </script>
 
+<?php
+!class_exists('STRUCTURELIST') ? include ABSPATH . "analysis/include/structurelist.php" : '';
+
+//$movie_list  =STRUCTURELIST::single_movie_to_json($post_id);
+$movie_list = get_cache_single_list($post_id);
+if ($movie_list)
+{
+   echo '<!--json_data-->'.PHP_EOL;
+    echo $movie_list;
+}
+
+
+?>
 
 <article id="post-<?php echo $post_id; ?>" class="post-<?php echo $post_id; ?> type-<?php echo $post_type; ?> status-publish hentry">
 
@@ -68,7 +81,7 @@ if (!$site_url)$site_url ='https://'.$_SERVER['HTTP_HOST'].'/';
             $post_type='movies';
         }
 
-        $link = 'https://' . $_SERVER['HTTP_HOST'] . '/' . $post_type . '/' . $post_name . '/';
+        $link = WP_SITEURL . '/' . $post_type . '/' . $post_name . '/';
         $pg_idnt = $post_id . ' ' . $link;
         $comments_account = get_option('disqus_forum_url');
 

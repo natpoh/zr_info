@@ -387,7 +387,7 @@ if (!function_exists('get_audience_templ')) {
 
         if ($avatar_user) {
 
-            $actorsdata = '<div class="a_img_container_audience" style="background: url(https://' . $_SERVER['HTTP_HOST'] . '/wp-content/uploads/avatars/custom/' . $avatar_user . '); background-size: cover;"></div>';
+            $actorsdata = '<div class="a_img_container_audience" style="background: url(' .WP_SITEURL . '/wp-content/uploads/avatars/custom/' . $avatar_user . '); background-size: cover;"></div>';
         } else {
             $actorsdata = '<span></span>';
         }
@@ -1009,7 +1009,7 @@ background-size: cover;"></div>';
 
         //////get link
         if ($post_name) {
-            $link = 'https://' . $_SERVER['HTTP_HOST'] . '/reviews/' . $post_name;
+            $link =  WP_SITEURL . '/reviews/' . $post_name;
             if ($pid) {
                 $link = $link . '/?' . $pid;
             }

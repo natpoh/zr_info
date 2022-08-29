@@ -65,7 +65,7 @@ class PgRatingCalculate {
             self::debug_table('s');
 
         if ($debug)
-            self::debug_table('RWT Rating');
+            self::debug_table('ZR Rating');
 
 
 
@@ -140,7 +140,7 @@ class PgRatingCalculate {
         }
 
         if ($debug)
-            self::debug_table('Calculate the proportion of each rating using the RWT correction coefficients', '', 'gray');
+            self::debug_table('Calculate the proportion of each rating using the ZR correction coefficients', '', 'gray');
         if ($debug)
             self::debug_table('Array ratings weight', $rwt_array, 'red');
 
@@ -199,7 +199,7 @@ class PgRatingCalculate {
                 $comment_converted_summ = substr($comment_converted_summ, 3) . '  = ' . $total_rating;
             }
             self::debug_table('Add them to each other: ', $comment_converted_summ);
-            self::debug_table('Total RWT Rating: ', $total_rating, 'green');
+            self::debug_table('Total ZR Rating: ', $total_rating, 'green');
         }
 
         if ($debug)
@@ -324,7 +324,7 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
         if ($croudsurce['imdb_rating']) {
 
-            $content .= self::debug_table('<h3>RWT Crowdsource</h3>');
+            $content .= self::debug_table('<h3>ZR Crowdsource</h3>');
             $content .= self::rating_to_comment($croudsurce['imdb_rating'], $croudsurce['imdb_rating_desc']);
         }
 
@@ -607,15 +607,15 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
 
             if ($debug)
-                self::debug_table('<b>RWT Crowdsource</b>');
+                self::debug_table('<b>ZR Crowdsource</b>');
             if ($debug)
-                self::debug_table('RWT rating array', $family_rating_croud['imdb_rating'])['imdb_rating'];
+                self::debug_table('ZR rating array', $family_rating_croud['imdb_rating'])['imdb_rating'];
             if ($debug)
-                self::debug_table('RWT rating weight', $array_rwt_rating_weight, 'red');
+                self::debug_table('ZR rating weight', $array_rwt_rating_weight, 'red');
 
 
             $rating_count++;
-            $total_rwt_croud_rating = self::site_rating($family_rating_croud['imdb_rating'], $array_rwt_rating_type, $array_rwt_rating_weight, $debug, $name = 'RWT Crowdsource', $imdb_id);
+            $total_rwt_croud_rating = self::site_rating($family_rating_croud['imdb_rating'], $array_rwt_rating_type, $array_rwt_rating_weight, $debug, $name = 'ZR Crowdsource', $imdb_id);
 
             $array_family['crowd'] = $family_rating_croud['imdb_rating_desc'];
         }
@@ -654,13 +654,13 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
             ///  var_dump($total_count_array);
             ///
             if ($debug)
-                self::debug_table('IMDb RWT rating convert', $array_rating_convert, 'red');
+                self::debug_table('IMDb ZR rating convert', $array_rating_convert, 'red');
             if ($debug)
                 self::debug_table('Multiply IMDb rating on an array of conversion and get the average data for each type from 0 to 5', '', 'gray');
             if ($debug)
                 self::debug_table('IMDb array rating total: ', $total_count_array);
             if ($debug)
-                self::debug_table('IMDb RWT rating weight', $array_rating_weight, 'red');
+                self::debug_table('IMDb ZR rating weight', $array_rating_weight, 'red');
 
 
             $array_rating_temp = [];
@@ -681,7 +681,7 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
                 }
             }
             if ($debug)
-                self::debug_table('Recalling data taking into account the correctional coefficient of RWT', '', 'gray');
+                self::debug_table('Recalling data taking into account the correctional coefficient of ZR', '', 'gray');
             if ($debug)
                 self::debug_table('IMDb array rating total', $array_rating_temp);
             if ($debug)
@@ -782,7 +782,7 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
             $k_s = $array_Audience_Staff['staff_rating'] / ($array_Audience_Staff['audience_rating'] + $array_Audience_Staff['staff_rating']);
             $total_positive_rwt = $audience_rating * $k_a + $staff_rating * $k_s;
             if ($debug)
-                self::debug_table('Total positive RWT calculate', ' (' . $audience_rating . '*' . $k_a . '+' . $staff_rating . '*' . $k_s . ') = ' . $total_positive_rwt);
+                self::debug_table('Total positive ZR calculate', ' (' . $audience_rating . '*' . $k_a . '+' . $staff_rating . '*' . $k_s . ') = ' . $total_positive_rwt);
         } else if ($audience_rating) {
             $total_positive_rwt = $audience_rating;
         } else if ($staff_rating) {
@@ -791,12 +791,12 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
 
         if ($debug && $total_positive_rwt)
-            self::debug_table('Total positive RWT', $total_positive_rwt, 'green');
+            self::debug_table('Total positive ZR', $total_positive_rwt, 'green');
 
 
         if ($total_positive_rwt && $total_imdb_rating) {
             if ($debug)
-                self::debug_table('Array IMDb RWT weight', $array_Imdb_Rwt, 'red');
+                self::debug_table('Array IMDb ZR weight', $array_Imdb_Rwt, 'red');
 
             $array_Imdb_Rwt = $rating_array['Imdb_Rwt'];
 

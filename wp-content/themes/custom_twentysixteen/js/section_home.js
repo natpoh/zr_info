@@ -2,7 +2,13 @@ var disqus_config = function () {
 };
 var lastload = '';
 var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
-var crowdsource_url = "/wp-content/themes/custom_twentysixteen/template/ajax/crowdsource.php"
+var   crowdsource_url=  window.location.protocol+"/service/crowdsource.php"
+
+if (window.location.host=='zeitgeistreviews.com')
+{
+    crowdsource_url=  'https://service.'+window.location.host+"/crowdsource.php";
+}
+//crowdsource_url=  'https://service.zeitgeistreviews.com/crowdsource.php';
 
 
 function attachScroller(distance, scroller, hasScrolled, scrollLeft) {
@@ -311,7 +317,7 @@ function create_context_rating(obj, hollywood)
     let content_rating = '';
 
     //if (hollywood)
-    //  content_rating += '<div><span>RWT BS Score:</span>' + create_rating_star(hollywood, 'hollywood') + '</div>';
+    //  content_rating += '<div><span>ZR BS Score:</span>' + create_rating_star(hollywood, 'hollywood') + '</div>';
     if (obj.vote)
         content_rating += '<div><span>Boycott Suggestion:</span>' + create_rating_star(obj.vote, 'vote') + '</div>';
     if (obj.patriotism)
@@ -332,7 +338,7 @@ function create_context_rating(obj, hollywood)
 function create_gender_desc(value)
 {
 
-    let fcontent = '<div class="gray_comment">We love women at RWT!<br>' +
+    let fcontent = '<div class="gray_comment">We love women at ZR!<br>' +
             'We just grow tired of feminist quotas. The \"<a href="https://en.wikipedia.org/wiki/F-rating" target="_blank"><u>F rated</u></a>\" label is a good proxy for that, and the <a href="https://en.wikipedia.org/wiki/Bechdel_test" target="_blank"><u>Bechdel Test</u></a> sometimes can be. But both are scarcely applied. Thus, a scan of the cast\'s gender is more ubiquitous.</div>';
     let hcontent = popup_cusomize('popup_header', value + '% of the Stars & Main Cast are Female.');
 
@@ -357,7 +363,7 @@ function create_diversity(diversity_data, value)
             diversity_data_content += popup_cusomize('row_inner', b.r, b.c + '%');
 
         });
-        diversity_data_content += '<p class="gray_comment">We love all demographics at RWT!<br>We just grow tired of forced "<a href="https://www.facebook.com/868164246578472/posts/the-cast-of-black-panther-is-hella-diverse/1236999296361630/" target="_blank:"><u>diversity</u></a>". Like Blackwashing superheroes and writing Europeans out of their own history. Unfortunately, we can\'t automatically scan for forced diversity, only analyze the entire cast. On the bright side, you can use these percentages to help support <a href="https://rightwingtomatoes.com/analytics/tab_ethnicity/budget_12000-500000/minus-genre_animation/release_1984-2022/type_movies/showcast_2_1/stacking_percent/vis_regression/xaxis_release/yaxis_simpson/setup_noclasters_inflation" target="_blank"><u>truly diverse</u></a> media as well!</p>';
+        diversity_data_content += '<p class="gray_comment">We love all demographics at ZR!<br>We just grow tired of forced "<a href="https://www.facebook.com/868164246578472/posts/the-cast-of-black-panther-is-hella-diverse/1236999296361630/" target="_blank:"><u>diversity</u></a>". Like Blackwashing superheroes and writing Europeans out of their own history. Unfortunately, we can\'t automatically scan for forced diversity, only analyze the entire cast. On the bright side, you can use these percentages to help support <a href="https://zeitgeistreviews.com/analytics/tab_ethnicity/budget_12000-500000/minus-genre_animation/release_1984-2022/type_movies/showcast_2_1/stacking_percent/vis_regression/xaxis_release/yaxis_simpson/setup_noclasters_inflation" target="_blank"><u>truly diverse</u></a> media as well!</p>';
 
     }
 
@@ -436,7 +442,7 @@ function create_rating_content(object, m_id)
 
                 lgbt_class = ' lgbt ';
 
-                lgbt_warning_text = popup_cusomize('row_text_head', 'LGBT content included: <a target="_blank" href="https://rightwingtomatoes.com/faq/" class="link_info">i</a>') + popup_cusomize('row_text', ltext);
+                lgbt_warning_text = popup_cusomize('row_text_head', 'LGBT content included: <a target="_blank" href="https://zeitgeistreviews.com/faq/" class="link_info">i</a>') + popup_cusomize('row_text', ltext);
             }
             woke_warning_text = '';
 
@@ -447,7 +453,7 @@ function create_rating_content(object, m_id)
                     woketext = '<span class="bg_woke">' + object['woke_text'] + '</span>';
                 }
                 woke_class = ' woke ';
-                woke_warning_text = popup_cusomize('row_text_head', 'Possibly woke elements: <a target="_blank" href="https://rightwingtomatoes.com/faq/" class="link_info">i</a>') + popup_cusomize('row_text', woketext);
+                woke_warning_text = popup_cusomize('row_text_head', 'Possibly woke elements: <a target="_blank" href="https://zeitgeistreviews.com/faq/" class="link_info">i</a>') + popup_cusomize('row_text', woketext);
             }
 
 
@@ -521,7 +527,7 @@ function create_rating_content(object, m_id)
 
             var content_rating_adata = create_total_rating(object.total_rating, '') + rating_link_t;
 
-            var rdata = '<div class="rwt_stars" title="RWT Rating">' + total_rating_star + '</div>';
+            var rdata = '<div class="rwt_stars" title="ZR Rating">' + total_rating_star + '</div>';
             content += add_rating_block('rwt_stars', rdata, content_rating_adata, 'rwt_rt', true);
 
         }
@@ -546,6 +552,7 @@ function create_rating_content(object, m_id)
 }
 
 function set_video_scroll(data, block_id, append = '') {
+
 
     if (data) {
         data = JSON.parse(data);
@@ -704,7 +711,11 @@ function set_video_scroll(data, block_id, append = '') {
                 }
             }
         } else {
+
+
+
             if (!append) {
+
                 let prnt = jQuery('div[id="' + block_id + '"]').parents('section.inner_content');
                 prnt.remove();
                 var tmpl_type = data['type'];
@@ -713,15 +724,29 @@ function set_video_scroll(data, block_id, append = '') {
                 {
                     //  jQuery('.actor_details>div').html('  Sorry. No actor data available yet. Stay tuned.').addClass('dmg_content');
                 }
+
             }
         }
     } else
     {
-        if (!append) {
+        if (block_id == 'review_scroll')
+        {
             let prnt = jQuery('div[id="' + block_id + '"]').parents('section.inner_content');
-            prnt.remove();
+            prnt.css('height','200px');
+
+
+            var block = jQuery('div[id="' + block_id + '"]');
+            block.html('<p class="big_desc">Sorry, no reviews yet. Help us out and add some links?</p>').show();
+            return ;
         }
-}
+
+            if (!append) {
+                let prnt = jQuery('div[id="' + block_id + '"]').parents('section.inner_content');
+                prnt.remove();
+            }
+
+
+    }
 }
 
 function  add_rating_row(title, content, id, content_text)
@@ -866,7 +891,7 @@ function add_movie_rating(block_id, data)
                     {
                         ltext = '<span class="bg_rainbow">' + obj.family.lgbt_text + '</span>';
                     }
-                    lgbt_text = popup_cusomize('row_text_head', 'LGBT content included: <a target="_blank" href="https://rightwingtomatoes.com/faq/" class="link_info">i</a>') + popup_cusomize('row_text', ltext);
+                    lgbt_text = popup_cusomize('row_text_head', 'LGBT content included: <a target="_blank" href="https://zeitgeistreviews.com/faq/" class="link_info">i</a>') + popup_cusomize('row_text', ltext);
 
                 }
                 if (obj.family.woke == 1) {
@@ -875,7 +900,7 @@ function add_movie_rating(block_id, data)
                     {
                         woketext = '<span class="bg_woke">' + obj.family.woke_text + '</span>';
                     }
-                    woke_warning_text = popup_cusomize('row_text_head', 'Possibly woke elements: <a target="_blank" href="https://rightwingtomatoes.com/faq/" class="link_info">i</a>') + popup_cusomize('row_text', woketext);
+                    woke_warning_text = popup_cusomize('row_text_head', 'Possibly woke elements: <a target="_blank" href="https://zeitgeistreviews.com/faq/" class="link_info">i</a>') + popup_cusomize('row_text', woketext);
 
                 }
 
@@ -906,7 +931,7 @@ function add_movie_rating(block_id, data)
                     family_data = JSON.parse(family_data);
                     family_data_result = family_rating(family_data);
 
-                    rating_link += popup_cusomize('row_link', '<a target="_blank" href="https://rightwingtomatoes.com/family-friendly-movie-review-sites/">Family Friendly review sites</a>');
+                    rating_link += popup_cusomize('row_link', '<a target="_blank" href="https://zeitgeistreviews.com/family-friendly-movie-review-sites/">Family Friendly review sites</a>');
                     family_data_result += rating_link;
                 }
 
@@ -945,7 +970,7 @@ function add_movie_rating(block_id, data)
 
         if (obj.total_rating) {
             if (obj.total_rating.total_rating > 0) {
-                title = 'RWT Rating:';
+                title = 'ZR Rating:';
                 let total_rating_star = create_rating_star(obj.total_rating.total_rating, '');
 
                 var content_rating_adata = create_total_rating((obj.total_rating), '') + '<br><a href="#" class="how_calculate_rwt_rating">Methodology</a>';
@@ -1027,7 +1052,7 @@ function add_movie_rating(block_id, data)
         // console.log(obj_overal);
         // console.log(hollywood);
 //         if (hollywood) {
-//             title = 'RWT BS Score:';
+//             title = 'ZR BS Score:';
 //             hollywood = create_rating_star(hollywood, 'hollywood');
 //
 //             content_rating = '';
@@ -1155,6 +1180,7 @@ function load_ajax_block(block_id) {
     } else if (block_id == 'review_scroll') {
         if (typeof review_scroll_data !== 'undefined') {
             scroll_data = review_scroll_data;
+
             local_sroll = true;
         }
     } else if (block_id == 'stuff_scroll') {
@@ -1217,7 +1243,8 @@ function load_ajax_block(block_id) {
                         }
                     }
                 }
-            } else if (block_id == 'twitter_scroll') {
+            }
+            else if (block_id == 'twitter_scroll') {
                 if (data) {
                     jQuery('div.column_header_main').prepend(data);
 
@@ -1226,7 +1253,8 @@ function load_ajax_block(block_id) {
                         ctf_init();
                     }
                 }
-            } else if (block_id == 'chan_scroll') {
+            }
+            else if (block_id == 'chan_scroll') {
                 if (data) {
                     try {
                         var Object_data = JSON.parse(data);
@@ -1246,11 +1274,13 @@ function load_ajax_block(block_id) {
 
                 }
 
-            } else if (block_id == 'movie_rating') {
+            }
+            else if (block_id == 'movie_rating') {
                 add_movie_rating(block_id, data);
             } else if (block_id == 'last_donations') {
                 jQuery('div[id="' + block_id + '"]').html(data);
-            } else if (block_id == 'mailpoet_form') {
+            }
+            else if (block_id == 'mailpoet_form') {
                 jQuery('div[id="' + block_id + '"]').html(data);
             } else if (block_id == 'disqus_last_comments') {
                 jQuery('div[id="' + block_id + '"]').html(data);
@@ -1298,7 +1328,7 @@ function load_ajax_block(block_id) {
 
 
                     var d = document, s = d.createElement('script');
-                    s.src = window.location.protocol + '//' + window.location.host + '/wp-content/plugins/critic_matic/js/reviews.js';
+                    s.src = window.location.protocol + '//' + window.location.host + '/wp-content/plugins/critic_matic/js/reviews.js?v=1.1';
                     (d.head || d.body).appendChild(s);
                     s.onload = function () {
                         wpcr3a.init();
@@ -2549,16 +2579,25 @@ jQuery(document).ready(function () {
         button.attr('disabled', true);
 
         var movie = button.attr('id');
-        if (jQuery(this).has('check_imdb_movie'))
-        {
-            let pr = jQuery(this).parents('.container_for_add_movies');
-            movie = pr.find('input.addmoviesfrom_id').val();
-            if (!movie)
-            {
-                return false;
-            }
 
-        }
+
+            let pr = jQuery(this).parents('tr.container_for_add_movies');
+
+            if (pr.html())
+            {
+
+                movie = pr.find('input.addmoviesfrom_id');
+
+
+                movie=movie.val();
+
+                if (!movie)
+                {
+                    button.attr('disabled', false);
+                    return false;
+                }
+
+            }
 
 
         jQuery.ajax({
@@ -2603,7 +2642,7 @@ jQuery(document).ready(function () {
 
             let cls = jQuery(this).attr('data-id');
             let data = jQuery(this).val();
-            console.log(cls+' '+jQuery(this).attr('class'));
+            //console.log(cls+' '+jQuery(this).attr('class'));
             if (jQuery(this).attr('type') == 'checkbox')
             {
                 if (jQuery(this).is(":checked"))
@@ -2808,7 +2847,7 @@ jQuery(document).ready(function () {
             success: function (html) {
 
                 add_popup();
-                jQuery('.popup-content').html('<div id="' + id + '" class="default_popup"><h2>Add Critic Review:</h2><p>Please help improve RWT, add a critic review link</p>' + html + '</div>');
+                jQuery('.popup-content').html('<div id="' + id + '" class="default_popup"><h2>Add Critic Review:</h2><p>Please help improve ZR, add a critic review link</p>' + html + '</div>');
                 jQuery('input[id="action-popup"]').click();
 
             }
@@ -2843,7 +2882,7 @@ jQuery(document).ready(function () {
             success: function (html) {
 
                 add_popup();
-                jQuery('.popup-content').html('<div id="' + id + '" class="default_popup"><h2>Edit Family Friendly Rating</h2><p>Please help improve RWT, add a Family Friendly Rating and leave your comment(s).</p>' + html + '</div>');
+                jQuery('.popup-content').html('<div id="' + id + '" class="default_popup"><h2>Edit Family Friendly Rating</h2><p>Please help improve ZR, add a Family Friendly Rating and leave your comment(s).</p>' + html + '</div>');
                 jQuery('input[id="action-popup"]').click();
 
             }
@@ -2926,7 +2965,7 @@ jQuery(document).ready(function () {
                             jQuery('.popup-content').html('<div id="' + id + '" class="default_popup">' + html + '</div>');
                         } else
                         {
-                            jQuery('.popup-content').html('<div id="' + id + '" class="default_popup"><h2>Edit Actor Data</h2><p class="center">Please help improve RWT by correcting & adding data.</p><h1>' + aname + '</h1>' + html + '</div>');
+                            jQuery('.popup-content').html('<div id="' + id + '" class="default_popup"><h2>Edit Actor Data</h2><p class="center">Please help improve ZR by correcting & adding data.</p><h1>' + aname + '</h1>' + html + '</div>');
                         }
 
 

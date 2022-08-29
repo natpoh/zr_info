@@ -132,7 +132,7 @@ class CustomRating
 
         echo '<p style="margin: 20px;"><input type="submit" name="submit" id="submit" class="button button-primary rwt_rating_save" value="Save Changes">
 <span style=" padding-left: 10px; padding-right: 10px;  font-style: italic;" class="rating_save_result"></span>
-<input type="button" class="button button-primary rwt_rating_update" value="Update all RWT rating"></p>';
+<input type="button" class="button button-primary rwt_rating_update" value="Update all ZR rating"></p>';
         echo '<h4>Rating table</h4>';
 
         echo '<table id="jqGrid"></table><div id="jqGridPager"></div>';
@@ -238,7 +238,7 @@ class CustomRating
 
 
         echo '<h1>PG Rating</h1>
-<table class="wp-list-table widefat fixed striped posts"><thead><tr><th>Total IMDB</th><th>Total Commonsensemedia</th><th>Total Dove</th><th>Total RWT audience</th><th>Total RWT staff</th><th>Total RWT PG</th></tr></thead>
+<table class="wp-list-table widefat fixed striped posts"><thead><tr><th>Total IMDB</th><th>Total Commonsensemedia</th><th>Total Dove</th><th>Total ZR audience</th><th>Total ZR staff</th><th>Total ZR PG</th></tr></thead>
 <tbody>
 <tr><td>' . $total_imdb . '</td><td>' . $total_cms . '</td><td>' . $total_dove . '</td><td>' . $total_audience_filled . '</td><td>' . $total_staff_filled . '</td><td>' . $total_post_pg_rating . '</td></tr>
 
@@ -253,7 +253,7 @@ class CustomRating
         echo self::rating_to_table('convert', $rating_data['convert']);
         echo '<h4>Relative Weight Rating data. The more weight of one data regarding the other, the more it will affect the rating</h4>';
 
-        echo '<h4>RWT Crowdsource</h4>';
+        echo '<h4>ZR Crowdsource</h4>';
         echo self::rating_to_table('rwt', $rating_data['rwt']);
         echo '<h4>IMDB</h4>';
         echo self::rating_to_table('Imdb', $rating_data['Imdb']);
@@ -267,7 +267,7 @@ class CustomRating
         echo '<h4>Total Audience and Staff weight</h4>';
         echo self::rating_to_table('Audience_Staff', $rating_data['Audience_Staff']);
 
-        echo '<h4>Total Imdb and RWT weight</h4>';
+        echo '<h4>Total Imdb and ZR weight</h4>';
         echo self::rating_to_table('Imdb_Rwt', $rating_data['Imdb_Rwt']);
 
 

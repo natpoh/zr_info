@@ -497,11 +497,11 @@ var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
                         break;
                     case "vote":
                         if (rating == 3) {
-                            image_path = "https://rightwingtomatoes.com/wp-content/uploads/2017/02/slider_green_pay_drk.png";
+                            image_path = "https://zeitgeistreviews.com/wp-content/uploads/2017/02/slider_green_pay_drk.png";
                         } else if (rating == 2) {
-                            image_path = "https://rightwingtomatoes.com/wp-content/uploads/2017/01/slider_orange_free.png";
+                            image_path = "https://zeitgeistreviews.com/wp-content/uploads/2017/01/slider_orange_free.png";
                         } else {
-                            image_path = "https://rightwingtomatoes.com/wp-content/uploads/2017/02/slider_red_skip_drk.png";
+                            image_path = "https://zeitgeistreviews.com/wp-content/uploads/2017/02/slider_red_skip_drk.png";
                         }
 
                         break;

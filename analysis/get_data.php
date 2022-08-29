@@ -1269,7 +1269,7 @@ else if ($_POST['oper'] === 'get_actordata') {
 
     if (!$data) {
 
-        $data = ('{"movie_type":[],"movie_genre":[],"inflation":null,"actor_type":["star","main"],"diversity_select":"default","display_select":"date_range_international","country_movie_select":[],"ethnycity":{"1":{"crowd":1},"2":{"ethnic":1},"3":{"jew":1},"4":{"face":1},"5":{"face2":1},"6":{"surname":1}}} ');
+        $data = ('{"movie_type":[],"movie_genre":[],"inflation":null,"actor_type":["star","main"],"diversity_select":"default","display_select":"date_range_international","country_movie_select":[],"ethnycity":{"1":{"crowd":1},"2":{"ethnic":1},"3":{"jew":1},"4":{"face":1},"5":{"face2":1},"6":{"forebears":1},"7":{"familysearch":1},"8":{"surname":1}}} ');
 
     }
 
@@ -1318,6 +1318,9 @@ else if ($_POST['oper'] === 'get_actordata') {
         $etn = $array_movie_result['all_data']['request']['ethnic'];
         $jew = $array_movie_result['all_data']['request']['jew'];
         $crowd = $array_movie_result['all_data']['request']['crowd'];
+        $forebears = $array_movie_result['all_data']['request']['forebears'];
+        $familysearch = $array_movie_result['all_data']['request']['familysearch'];
+
 
 ///var_dump($ethnycity);
 ///
@@ -1328,6 +1331,30 @@ else if ($_POST['oper'] === 'get_actordata') {
         }
         foreach ($ethnycity as $order => $data) {
             foreach ($data as $type => $enable) {
+
+                if ($type == 'forebears') {
+                    echo '<p class="in_hdr">Forebears Surname Analysis:</p>';
+                    if ($forebears) {
+
+                        $key = array_keys($forebears);
+
+
+                            echo '<p class="verdict">Verdict: ' . $key[0]. '</p>';
+                            echo '<a class="source_link"  target="_blank" href="https://forebears.io/surnames">Source: https://forebears.io/surnames</a>';
+                        }
+                    else echo '<p class="verdict">N/A</p>';
+                    }
+                if ($type == 'familysearch') {
+                    echo '<p class="in_hdr">FamilySearch Surname Analysis:</p>';
+                    if ($familysearch) {
+                        $key = array_keys($familysearch);
+
+                        echo '<p class="verdict">Verdict: ' . $key[0]. '</p>';
+                        echo '<a class="source_link"  target="_blank" href="https://www.familysearch.org/en/surname">Source: https://www.familysearch.org/en/surname</a>';
+                    }
+                    else echo '<p class="verdict">N/A</p>';
+                }
+
                 if ($type == 'surname') {
                     echo '<p class="in_hdr">Surname Analysis:</p>';
                     if ($surname) {
@@ -1575,7 +1602,7 @@ else if ($_POST['oper'] === 'get_actordata') {
 
                     }
 
-                    echo   '<div class="actor_crowdsource_container" ><p>Please help improve RWT by correcting & adding data.</p>
+                    echo   '<div class="actor_crowdsource_container" ><p>Please help improve ZR by correcting & adding data.</p>
                     <a id="op" data-value="'.$id.'" class="actor_crowdsource" href="#">Edit Actor Data</a>
                     <div class="crowd_data"></div></div>';
 

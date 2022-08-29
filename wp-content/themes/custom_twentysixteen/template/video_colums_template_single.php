@@ -43,15 +43,18 @@ gmi('scroll before');
 $scrpts[] = '<script  type="text/javascript" >';
 foreach ($array_list as $value) {
     $scoll_id = $value['id'];
-    //if ($scoll_id == 'audience_scroll') {
+
         $data = $cfront->get_scroll($scoll_id, $movie_id, $vote_scroll);
         if ($data) {
             $data = '"' . addslashes($data) . '"';
         } else {
-            $data = 'null';
+
+
+               $data = 'null';
+
         }
         $scrpts[] = 'var ' . $scoll_id . '_data = ' . $data . '; ';
-    //}
+
 }
 gmi('scroll after');
 $scrpts[] = '</script>';

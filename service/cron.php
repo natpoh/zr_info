@@ -111,6 +111,32 @@ class Cronjob
     }
 
 
+    private function get_all_options($array_jobs)
+    {
+        $array_result = [];
+        $sql = "SELECT *  FROM `cron`";
+        $r = Pdo_an::db_results_array($sql);
+        foreach ($r as $val)
+        {
+            if ( $array_jobs[$val['task']])
+            {
+                $array_result[$val['task']] = (time() - $val['time'])/60 - $array_jobs[$val['task']];
+            }
+
+
+
+        }
+
+        foreach ($array_jobs as $jobs => $period) {
+            if (!$array_result[$jobs]) {
+                $array_result[$jobs] = 1;
+            }
+        }
+
+        arsort($array_result);
+        return $array_result;
+
+    }
 
     private  function get_options($id)
     {
@@ -151,6 +177,15 @@ class Cronjob
 
         echo 'Last run :'.date('H:i:s d.m.Y',$run_cron).'<br>' . PHP_EOL;
 
+///////check last run
+        $jobs_data =  self::get_all_options($array_jobs);
+
+
+
+
+        //var_dump($jobs_data);
+
+
         if ($run_cron < time()-3600/2) {
 
             $this->set_option('run_cron', time());
@@ -160,11 +195,11 @@ class Cronjob
             $i = 1;
             $count = count($array_jobs);
 
-            foreach ($array_jobs as $jobs => $period) {
-
+            foreach ($jobs_data as $jobs => $last_update) {
+                $period=$array_jobs[$jobs];
 
                 if ($this->timer_stop() < $this->max_time) {
-                    echo 'run ' . $i . ' from ' . $count . '<br>' . PHP_EOL;
+                    echo 'run ' . $i . ' from ' . $count . ' lastrun: '.$last_update.'<br>' . PHP_EOL;
                     self::run_function($jobs, $period);
                 } else {
                     echo '<br>Ended max time > ' . max_time . '<br>' . PHP_EOL;
@@ -182,10 +217,20 @@ class Cronjob
         else
         {
             echo '<br>cron is runned <br> last task:<br>' . PHP_EOL;
+
+            foreach ($jobs_data as $i=> $r)
+            {
+                echo $i. ' '.round($r,0).' min<br>';
+            }
+
 ///get last task
 /// task	time
+
         $sql = "SELECT * FROM `cron` order by time desc";
         $row = Pdo_an::db_results_array($sql);
+
+
+
         foreach ($row as $r)
         {
 

@@ -99,7 +99,7 @@ if (!function_exists('template_single_movie')) {
             if (function_exists('site_url')) {
                 $site_url = site_url();
             } else {
-                $site_url = 'https://' . $_SERVER['HTTP_HOST'];
+                $site_url = WP_SITEURL;
             }
             $movie_t = strtolower($post_an->type);
             if ($movie_t == 'movie') {

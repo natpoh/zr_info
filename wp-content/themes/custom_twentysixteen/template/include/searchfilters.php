@@ -435,7 +435,7 @@ if (isset($_POST['filters'])) {
 
             // Redirect for old api
             if (in_array('group_staff', $filters->critics) && in_array('group_pro', $filters->critics) && in_array('group_audience', $filters->critics)) {
-                $url = 'https://' . $_SERVER['HTTP_HOST'] . '/critics/all/';
+                $url = WP_SITEURL . '/critics/all/';
                 wp_redirect($url, 301);
                 exit();
             }

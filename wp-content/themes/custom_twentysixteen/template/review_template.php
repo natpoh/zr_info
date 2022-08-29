@@ -59,7 +59,7 @@ function get_content_review() {
             $key = $_GET['id'];
             $link = $key;
         } else {
-            $key = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+            $key = WP_SITEURL . $_SERVER['REQUEST_URI'];
             $link = $key;
         }
 

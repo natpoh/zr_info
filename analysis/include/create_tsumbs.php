@@ -52,7 +52,7 @@ class CreateTsumbs{
         if (!$array_result[0]) {
             foreach ($array_request as $i=>$v)
             {
-                $array_result[]='https://' . $_SERVER['HTTP_HOST'] . '/wp-content/themes/custom_twentysixteen/images/empty_image.svg';
+                $array_result[]=WP_SITEURL . '/wp-content/themes/custom_twentysixteen/images/empty_image.svg';
             }
             }
         return $array_result;
@@ -69,7 +69,7 @@ class CreateTsumbs{
         }
         else if ($type=='http')
         {
-            $homeLink = 'https://' . $_SERVER['HTTP_HOST'] . '/';
+            $homeLink = WP_SITEURL . '/';
         }
         else{
             $homeLink='';
@@ -135,8 +135,8 @@ class CreateTsumbs{
             $arr = explode("/", $path);
 
             $path = '';
-            if ($_SERVER['DOCUMENT_ROOT']) {
-                $path = $_SERVER['DOCUMENT_ROOT'] . '/';
+            if (ABSPATH) {
+                $path = ABSPATH;
             }
             foreach ($arr as $a) {
                 if ($a) {
@@ -153,8 +153,8 @@ class CreateTsumbs{
         $small = false;
         $typeCut = 1;
 
-        //chdir($_SERVER['DOCUMENT_ROOT']);
-        $homeLink = 'https://' . $_SERVER['HTTP_HOST'] . '/';
+        //chdir(ABSPATH);
+        $homeLink = WP_SITEURL . '/';
         $thumbsDir = "/wp-content/uploads/thumbs/";
         if ($tsumb_name)
         {
@@ -191,7 +191,7 @@ class CreateTsumbs{
 
 
         $thumbName = $thumbDir . "/" . $name;
-        $thumbNamePath = $_SERVER['DOCUMENT_ROOT'] . $thumbName;
+        $thumbNamePath = ABSPATH. $thumbName;
 
         if (!file_exists($thumbNamePath)) {
             self::check_and_create_dir_custom($thumbDir);

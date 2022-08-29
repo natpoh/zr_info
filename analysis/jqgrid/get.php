@@ -9,6 +9,37 @@ if (!defined('ABSPATH'))
 
 include ($_SERVER['DOCUMENT_ROOT'].'/wp-config.php');
 
+
+
+function get_flag($ip)
+{
+    // Critic matic
+    if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
+        define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
+        require_once(CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php');
+    }
+
+    if ($ip) {
+        global $cm;
+        if (!$cm)
+        {
+            $cm = new  CriticMatic();
+        }
+        $country_data  =$cm->get_geo_flag_by_ip($ip);
+
+        if ($country_data['path']) {
+            $country_name = $country_data['name'];
+            $ip_img = '<span title="' . $country_name . '"><img src="' . $country_data['path'] . '" /></span> ';
+        }
+
+
+
+    }
+    return $ip_img;
+
+}
+
+
 if (function_exists('current_user_can'))
 {
     $curent_user =current_user_can("administrator") ;
@@ -117,6 +148,16 @@ AND table_schema='imdbvisualization'";
                     $array[$i] = $v;
                 }
 
+                if ($i=='ip')
+                {
+                    if (strstr($v,'span'))
+                    {
+                        $pos = strpos($v,'</span>');
+                        $v = trim(substr($v,$pos+7));
+                        $array[$i] = $v;
+                    }
+                }
+
 
             }
 
@@ -200,7 +241,8 @@ AND table_schema='imdbvisualization'";
                 $sql = "UPDATE `" . $table_data . "` SET " . $qres . "  WHERE `id` = '" . $array['parent'] . "'";
                 //echo $sql;
                // print_r($arrayrequest);
-
+                //echo $sql;
+               // var_dump($arrayrequest);
 
                 $result = Pdo_an::db_results_array($sql, $arrayrequest);
 
@@ -234,7 +276,7 @@ AND table_schema='imdbvisualization'";
                 ///$qres = implode(',',$arrayrequest);
 
                 $sql = "INSERT INTO  `" . $table_data . "` (" . $array_index . ") values ( " . $qres . " ) ";
-                //echo $sql;
+
                 $result = Pdo_an::db_results_array($sql, $arrayrequest);
                 $res_id=Pdo_an::last_id();
 
@@ -432,6 +474,11 @@ AND table_schema='imdbvisualization'";
             if ($row['last_update']){$row['last_update'] = date('H:i d:m:Y',$row['last_update']);}
             if ($row['lastupdate']){$row['lastupdate'] = date('H:i d:m:Y',$row['lastupdate']);}
             if ($row['add_time']){$row['add_time'] = date('H:i d:m:Y',$row['add_time']);}
+
+            if ($row['ip']){$row['ip'] = get_flag($row['ip']).$row['ip'];}
+
+
+
 
             $responce->rows[$i]['id'] = $row[0];
             $responce->rows[$i]['cell'] = $row;

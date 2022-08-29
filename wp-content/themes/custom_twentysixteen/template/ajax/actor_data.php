@@ -31,6 +31,7 @@ function get_actors_data()
                 $actor_type[] = 'writer';
                 $actor_type[] = 'cast_director';
                 $actor_type[] = 'producer';
+
             }
         if (!$actor_type) {
             $actor_type = array('star', 'main', 'extra', 'directors', 'writer', 'cast_director', 'producer');

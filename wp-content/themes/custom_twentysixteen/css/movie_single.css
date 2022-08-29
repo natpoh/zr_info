@@ -411,6 +411,20 @@ body  a.open_demographic {
     border-top: 2px solid #b0b0b0;
     right: 7px;
 }
+.crowd_rwt{
+    background-color: #fff;
+    color: #000;
+}
+body.theme_dark  .crowd_rwt{
+    background-color: #191919;
+    color: #818181;
+}
+body.theme_dark .r_content .note .note_show::after{
+    background-color: #040404;
+    border-right: 2px solid #333;
+    border-top: 2px solid #333;
+}
+
 .row_demograpic{
     display: none;
 }
@@ -620,6 +634,11 @@ a.open_ul {
     width: 280px;
 
 }
+.big_desc
+{
+    margin-top: 18px;
+}
+
 a#cl.open_ul:hover {
     background: url("../images/arrows2.png") no-repeat scroll left 0 top -40px transparent;
 }

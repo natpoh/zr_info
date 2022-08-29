@@ -144,7 +144,7 @@ class MOVIE_DATA
     public static function get_array_convert_type()
     {
 
-        $array_convert_type = array('crowd' => 'crowd', 'ethnic' => 'ethnic', 'jew' => 'jew', 'face' => 'kairos', 'face2' => 'bettaface', 'surname' => 'surname');
+        $array_convert_type = array('crowd' => 'crowd', 'ethnic' => 'ethnic', 'jew' => 'jew', 'face' => 'kairos', 'face2' => 'bettaface', 'surname' => 'surname','familysearch'=>'familysearch','forebears'=>'forebears');
 
         return $array_convert_type;
     }
@@ -211,6 +211,8 @@ class MOVIE_DATA
                 if ($r['ethnic']) $ethnic['ethnic'][$r['actor_id']] = $r['ethnic'];
                 if ($r['kairos']) $ethnic['kairos'][$r['actor_id']] = $r['kairos'];
                 if ($r['crowdsource']) $ethnic['crowd'][$r['actor_id']] = $r['crowdsource'];
+                if ($r['forebears']) $ethnic['forebears'][$r['actor_id']] = $r['forebears'];
+                if ($r['familysearch']) $ethnic['familysearch'][$r['actor_id']] = $r['familysearch'];
             }
         }
 
@@ -564,6 +566,8 @@ class MOVIE_DATA
         $summ = 0;
         $content = '<div id="container_main_movie_graph" class="section_chart section_ethnic"></div>
 <table class="tablesorter-blackice"><tr><th class="t_header">Race</th>';
+
+        if (!$arrayneed_compare){return ;}
 
         foreach ($arrayneed_compare as $race => $count) {
             $content .= '<th>' . ucfirst($race) . '</th>';

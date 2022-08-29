@@ -157,14 +157,14 @@ foreach ($array_country as $country => $enable) {
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <!-- Tablesorter: required -->
 
-    <link rel="stylesheet" href="<?php echo 'https://'.$_SERVER['HTTP_HOST'].'/wp-content/themes/custom_twentysixteen/css/movie_single.css?'.LASTVERSION ?>">
-    <link rel="stylesheet" href="<?php echo 'https://'.$_SERVER['HTTP_HOST'].'/wp-content/themes/custom_twentysixteen/css/colums_template.css?'.LASTVERSION ?>">
+    <link rel="stylesheet" href="<?php echo WP_SITEURL.'/wp-content/themes/custom_twentysixteen/css/movie_single.css?'.LASTVERSION ?>">
+    <link rel="stylesheet" href="<?php echo WP_SITEURL.'/wp-content/themes/custom_twentysixteen/css/colums_template.css?'.LASTVERSION ?>">
     <link rel="stylesheet" href="/analysis/tablesorter/css/theme.blackice.min.css">
-    <script src="<?php echo 'https://'.$_SERVER['HTTP_HOST']; ?>/analysis/tablesorter/js/jquery.tablesorter.js"></script>
-    <script src="<?php echo 'https://'.$_SERVER['HTTP_HOST']; ?>/analysis/tablesorter/js/jquery.tablesorter.widgets.js"></script>
+    <script src="<?php echo WP_SITEURL; ?>/analysis/tablesorter/js/jquery.tablesorter.js"></script>
+    <script src="<?php echo WP_SITEURL; ?>/analysis/tablesorter/js/jquery.tablesorter.widgets.js"></script>
 
     <!-- Tablesorter: optional -->
-    <link rel="stylesheet" href="<?php echo 'https://'.$_SERVER['HTTP_HOST']; ?>/analysis/tablesorter/addons/pager/jquery.tablesorter.pager.css">
+    <link rel="stylesheet" href="<?php echo WP_SITEURL; ?>/analysis/tablesorter/addons/pager/jquery.tablesorter.pager.css">
     <style>
         .left {
             float: left;
@@ -194,7 +194,7 @@ foreach ($array_country as $country => $enable) {
     <script src="/analysis/tablesorter/addons/pager/jquery.tablesorter.pager.js"></script>
     <script src="/analysis/tablesorter/beta-testing/pager-custom-controls.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
-    <script src="<?php echo 'https://'.$_SERVER['HTTP_HOST'].'/wp-content/themes/custom_twentysixteen/js/section_home.js?'.LASTVERSION ?>"></script>
+    <script src="<?php echo WP_SITEURL.'/wp-content/themes/custom_twentysixteen/js/section_home.js?'.LASTVERSION ?>"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet"/>
 
     <link href="/analysis/graph.css?<?php echo $version ?>" rel="stylesheet"/>

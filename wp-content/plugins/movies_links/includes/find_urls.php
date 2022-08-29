@@ -327,7 +327,7 @@ if ($cid) {
     <?php endif; ?>
     <br />
     <hr />
-    <h2>Generate URLs from RWT database</h2>
+    <h2>Generate URLs from ZR database</h2>
 
     <form accept-charset="UTF-8" method="post" id="generate_urls">
 
