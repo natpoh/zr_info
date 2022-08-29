@@ -1,6 +1,6 @@
 <?php
 
-$url = 'https://rightwingtomatoes.com/critics/126655-Staff-Neo-Feudalist-How_Am_I_Not_Myself/';
+$url = 'https://zeitgeistreviews.com/critics/126655-Staff-Neo-Feudalist-How_Am_I_Not_Myself/';
 if ($_GET['url']) {
     $url = $_GET['url'];
 }

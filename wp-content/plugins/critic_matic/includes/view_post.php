@@ -80,7 +80,7 @@ if ($pid) {
                     <td><?php print $post->link_hash ?></td>
                 </tr>
                 <tr>
-                    <td><?php print __('RWT URL') ?></td>
+                    <td><?php print __('ZR URL') ?></td>
                     <td><a href="/critics/<?php print $pid ?>">/critics/<?php print $pid ?></td>
                 </tr>                
             <?php endif; ?>

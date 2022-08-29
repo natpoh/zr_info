@@ -82,6 +82,34 @@ class CriticTransit extends AbstractDB {
     }
 
     /*
+     * Remove unused critic meta type 2
+     */
+
+    public function remove_unused_meta($count = 10, $debug = false) {
+        $sql = sprintf("SELECT * FROM {$this->db['meta']} WHERE type=3 ORDER BY id ASC limit %d", $count);
+        $result = $this->db_results($sql);
+        if ($debug) {
+            print_r(sizeof($result));
+            print_r($result);
+        }
+        /*
+          [id] => 120
+          [fid] => 10833
+          [type] => 3
+          [state] => 1
+          [cid] => 173
+          [rating] => 58
+         */
+        foreach ($result as $item) {
+            $this->cm->remove_post_meta($item->cid, $item->fid);
+            if ($debug){
+                print "Removed: ".$item->id." \n";
+            }
+        }
+        
+    }
+
+    /*
      * Actors meta
      */
 
@@ -1120,7 +1148,7 @@ class CriticTransit extends AbstractDB {
 
                       [post_grid_post_settings] => Array
                       (
-                      [0] => a:10:{s:9:"post_skin";s:4:"flat";s:19:"custom_thumb_source";s:101:"https://rightwingtomatoes.com/wp-content/plugins/post-grid/assets/frontend/css/images/placeholder.png";s:17:"font_awesome_icon";s:0:"";s:23:"font_awesome_icon_color";s:7:"#737272";s:22:"font_awesome_icon_size";s:4:"50px";s:17:"custom_youtube_id";s:0:"";s:15:"custom_vimeo_id";s:0:"";s:21:"custom_dailymotion_id";s:0:"";s:14:"custom_mp3_url";s:0:"";s:20:"custom_soundcloud_id";s:0:"";}
+                      [0] => a:10:{s:9:"post_skin";s:4:"flat";s:19:"custom_thumb_source";s:101:"https://zeitgeistreviews.com/wp-content/plugins/post-grid/assets/frontend/css/images/placeholder.png";s:17:"font_awesome_icon";s:0:"";s:23:"font_awesome_icon_color";s:7:"#737272";s:22:"font_awesome_icon_size";s:4:"50px";s:17:"custom_youtube_id";s:0:"";s:15:"custom_vimeo_id";s:0:"";s:21:"custom_dailymotion_id";s:0:"";s:14:"custom_mp3_url";s:0:"";s:20:"custom_soundcloud_id";s:0:"";}
                       )
 
                       [lazyload_thumbnail_quality] => Array
@@ -1591,11 +1619,11 @@ class CriticTransit extends AbstractDB {
                 $unames[$name] = $name;
             }
 
-            //http://rightwingtomatoes.com:8008/?names=ilya,katz&p=ds1bfgFe_23_KJDS-F
+            //http://zeitgeistreviews.com:8008/?names=ilya,katz&p=ds1bfgFe_23_KJDS-F
             $qnames = implode(',', $unames);
 
             $p = 'ds1bfgFe_23_KJDS-F';
-            //$domain = 'http://rightwingtomatoes.com:8008/';
+            //$domain = 'http://zeitgeistreviews.com:8008/';
             $domain = 'http://148.251.54.53:8008/';
             $url = $domain . '?p=' . $p . '&names=' . $qnames;
             if ($debug) {

@@ -96,7 +96,7 @@ class MoviesAn extends AbstractDBAn {
     );
 
     public function __construct($cm = '') {
-        $this->cm = $cm;
+        $this->cm = $cm ? $cm : new CriticMatic();
         $this->db = array(
             'movie_imdb' => 'data_movie_imdb',
             'actors_all' => 'data_actors_all',

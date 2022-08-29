@@ -86,18 +86,18 @@ function listen_click(box, e) {
 
     if (box.classList.contains('rating'))
     {
-        let rb= 2;
+        let rb = 2;
 
-        if (rz>=2)
+        if (rz >= 2)
         {
-            rb= 3;
+            rb = 3;
         }
-        if (rz>=4)
+        if (rz >= 4)
         {
-            rb= 1;
+            rb = 1;
         }
 
-        let bs_block = document.querySelector('li.s'+rb);
+        let bs_block = document.querySelector('li.s' + rb);
 
         bs_block.click();
 
@@ -112,17 +112,17 @@ function listen_click(box, e) {
 
     if (box.classList.contains('selected') && rz == inner_input.value && !e.changedTouches) {
         inner_input.value = '';
-        number_block.textContent =0;
+        number_block.textContent = 0;
         inner_blok.style.width = '0px';
         inner_blok.style.backgroundSize = '0%';
-        number_block.classList.remove("number_rate_0", "number_rate_1","number_rate_2","number_rate_3","number_rate_4","number_rate_5");
+        number_block.classList.remove("number_rate_0", "number_rate_1", "number_rate_2", "number_rate_3", "number_rate_4", "number_rate_5");
         number_block.classList.add('number_rate_0');
         box.classList.remove("selected");
         return false;
     }
-    number_block.textContent =rz;
-    number_block.classList.remove("number_rate_0", "number_rate_1","number_rate_2","number_rate_3","number_rate_4","number_rate_5");
-    number_block.classList.add('number_rate_'+rz);
+    number_block.textContent = rz;
+    number_block.classList.remove("number_rate_0", "number_rate_1", "number_rate_2", "number_rate_3", "number_rate_4", "number_rate_5");
+    number_block.classList.add('number_rate_' + rz);
 
     inner_input.value = rz;
     box.classList.add("selected");
@@ -167,9 +167,9 @@ function init_select() {
             }).appendTo($list);
         }
 
-        let vl = 3;
-        $this.val(vl);
-        $list.find('.s' + vl).addClass('selected');
+        // let vl = 3;
+        // $this.val(vl);
+        // $list.find('.s' + vl).addClass('selected');
 
         // Cache the list items
         var $listItems = $list.children('li');
@@ -182,7 +182,7 @@ function init_select() {
             $listItems.removeClass('selected')
             jQuery(this).addClass('selected');
             /* alert($this.val()); Uncomment this for demonstration! */
-        });        
+        });
 
     });
 
@@ -230,9 +230,14 @@ wpcr3a.keypress_need = 5;
 wpcr3a.captchaResponse = "";
 
 wpcr3a.ajaxPost = function (parent, data, cb) {
+    var host = window.location.host;
+    var url = '/service/audience.php';
+    if (host == "zeitgeistreviews.com") {
+        var url = 'https://service.zeitgeistreviews.com/audience.php';
+    }
     return jQuery.ajax({
         type: "POST",
-        url: '/wp-content/themes/custom_twentysixteen/template/ajax/audience_form.php',
+        url: url,
         data: data,
         dataType: "json",
         success: function (rtn) {
@@ -307,7 +312,7 @@ wpcr3a.submit = function (e) {
         }
         ajaxData[v.attr('name')] = val;
     });
-
+    
     wpcr3a.ajaxPost(parent, ajaxData, function (err, rtn) {
         if (err) {
             return;
@@ -335,9 +340,9 @@ wpcr3a.enableSubmit = function () {
 
 wpcr3a.init = function () {
     var $ = jQuery;
-    wpcr3a.showVoteForm();
+    wpcr3a.showVoteForm();    
     init_select();
-
+    
     var evt_1 = 'mousemove.wpcr3 touchmove.wpcr3';
     $(document).bind(evt_1, function () {
         wpcr3a.mousemove_total++;
@@ -380,7 +385,7 @@ wpcr3a.init = function () {
             css_dash: '/wp-includes/css/dashicons.min.css',
             css_editor: '/wp-includes/css/editor.min.css'
         }
-        
+
         add_css_list(css_list);
 
         tinyMCEPreInit = {
@@ -451,8 +456,8 @@ wpcr3a.init = function () {
 
     var div2 = $('.wpcr3_div_2'), submit = div2.find('.wpcr3_submit_btn');
     submit.click(wpcr3a.submit);
-
-    wpcr3a.clearFields();
+    
+    // wpcr3a.clearFields();
 };
 
 wpcr3a.showVoteForm = function () {

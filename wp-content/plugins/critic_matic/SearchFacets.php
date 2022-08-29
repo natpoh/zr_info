@@ -42,7 +42,7 @@ class SearchFacets extends AbstractDB {
     // Facets
     public $facets = array(
         'movies' => array('release', 'budget', 'type', 'genre', 'provider', 'providerfree', 'auratings', 'ratings', 'price', 'race', 'dirrace', 'actor', 'country', 'lgbt', 'woke', 'rf'),
-        'critics' => array('release', 'type', 'author', 'state', 'movie', 'genre', 'auratings', 'tags', 'from')
+        'critics' => array('release', 'type', 'author', 'state', 'related', 'movie', 'genre', 'auratings', 'tags', 'from')
     );
     public $facets_no_data = array('ratings', 'auratings');
     public $hide_facets = array('actor', 'country', 'dirrace');
@@ -700,7 +700,7 @@ class SearchFacets extends AbstractDB {
                     $name = isset($this->cs->search_filters[$key][$slug]['title']) ? $this->cs->search_filters[$key][$slug]['title'] : $slug;
                     $tags[] = array('name' => $name, 'type' => $key, 'id' => $slug, 'tab' => 'critics', 'minus' => $minus);
                 }
-            }else if ($key == 'from') {
+            } else if ($key == 'from') {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
                     $name = isset($this->cs->search_filters[$key][$slug]['title']) ? $this->cs->search_filters[$key][$slug]['title'] : $slug;
@@ -1080,7 +1080,8 @@ class SearchFacets extends AbstractDB {
                 }
                 $data = $value['data'];
                 $count = sizeof($data);
-                if (!$count) {
+                $zero_count = array('state');
+                if (!$count && !in_array($key, $zero_count)) {
                     continue;
                 }
 
@@ -1127,8 +1128,8 @@ class SearchFacets extends AbstractDB {
                     $this->show_tags_facet($data, $view_more);
                 } else if ($key == 'from') {
                     $this->show_from_author_facet($data, $view_more);
-                } else if ($key == 'state') {
-                    $this->show_state_facet($data, $view_more);
+                } else if ($key == 'state' || $key == 'related') {
+                    $this->show_state_facet($facets_data);
                 } else if ($key == 'movie') {
                     $this->show_movie_facet($data, $view_more, $count, $total);
                 }
@@ -1922,22 +1923,31 @@ class SearchFacets extends AbstractDB {
         $this->theme_facet_multi($filter, $dates, $title, $more, $ftype);
     }
 
-    public function show_state_facet($data) {
+    public function show_state_facet($facets_data) {
 
-//Get state
+        // Get state
         $dates = array();
-        foreach ($data as $value) {
-            $id = trim($value->id);
-            $cnt = $value->cnt;
-            if ($id) {
-                foreach ($this->cs->search_filters['state'] as $key => $item) {
-                    if ($item['key'] == $id) {
-                        $dates[$key] = array('title' => $item['title'], 'count' => $cnt);
+        $data = isset($facets_data['state']['data']) ? $facets_data['state']['data'] : array();
+        $other_cnt = isset($facets_data['related']['data'][0]->cnt) ? $facets_data['related']['data'][0]->cnt : 0;
+
+        if ($data) {
+            foreach ($data as $value) {
+                $id = trim($value->id);
+                $cnt = $value->cnt;
+                if ($id) {
+                    foreach ($this->cs->search_filters['state'] as $key => $item) {
+                        if ($item['key'] == $id) {
+                            $dates[$key] = array('title' => $item['title'], 'count' => $cnt);
+                        }
                     }
                 }
             }
         }
 
+        if ($other_cnt) {
+            $other_item = $this->cs->search_filters['state']['related'];
+            $dates['related'] = array('title' => $other_item['title'], 'count' => $other_cnt);
+        }
         $filter = 'state';
         $title = 'Review type';
         $this->theme_facet_multi($filter, $dates, $title);
@@ -2235,7 +2245,7 @@ class SearchFacets extends AbstractDB {
         <?php
     }
 
-    public function theme_facet_select($filter, $data, $title, $ftype = 'all', $name_pre = '', $tabs = '', $icon = '', $footer='') {
+    public function theme_facet_select($filter, $data, $title, $ftype = 'all', $name_pre = '', $tabs = '', $icon = '', $footer = '') {
         ?>
         <div id="facet-<?php print $filter ?>" class="facet ajload" data-type="<?php print $ftype ?>">
             <div class="facet-title">

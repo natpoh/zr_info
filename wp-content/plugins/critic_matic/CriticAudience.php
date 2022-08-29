@@ -81,6 +81,12 @@ class CriticAudience extends AbstractDb {
         1 => 'Done',
     );
     public $sort_pages = array('id', 'date', 'critic_name');
+    public $audience_post_edit = array(
+        0 => 'Never',
+        10 => '10 Min.',
+        30 => '30 Min.',
+        60 => '1 Hour',
+    );
 
     public function __construct($cm = '') {
         $this->cm = $cm ? $cm : new CriticMatic();
@@ -97,6 +103,7 @@ class CriticAudience extends AbstractDb {
             //CA
             'author_key' => $table_prefix . 'meta_critic_author_key',
             'audience' => $table_prefix . 'critic_matic_audience',
+            'audience_rev' => $table_prefix . 'critic_matic_audience_rev',
         );
     }
 
@@ -131,6 +138,7 @@ class CriticAudience extends AbstractDb {
         header("Cache-Control: post-check=0, pre-check=0", false);
         header("Pragma: no-cache");
         header('Content-type: application/json');
+        header('Access-Control-Allow-Origin: *');
 
         // make P variables object
         $this->make_p_obj();
@@ -173,7 +181,19 @@ class CriticAudience extends AbstractDb {
                 $rtn->err[] = 'You have failed the spambot check. Code 1';
             }
 
-            if (!$posted->fname) {
+            $unic_id = $this->unic_id();
+
+            $is_edit = false;
+            if ($posted->unic_id) {
+                $last_unic_id = $posted->unic_id;
+                if ($last_unic_id != $unic_id) {
+                    $rtn->err[] = 'Edit eror. Code 2';
+                }
+                $is_edit = true;
+            }
+
+
+            if (!$posted->fname && !$is_edit) {
                 $rtn->err[] = 'Critic Name is required.';
             }
 
@@ -199,9 +219,6 @@ class CriticAudience extends AbstractDb {
             if (!$title) {
                 $title = $this->cm->crop_text(strip_tags($content), 30);
             }
-
-            $unic_id = $this->unic_id();
-
 
             // Calculate rating
 
@@ -254,8 +271,14 @@ class CriticAudience extends AbstractDb {
                 'content' => $content,
             );
 
-            $this->add_audience($add_arr);
-            $this->run_cron_hook();
+            if ($is_edit) {
+                $this->update_audience($add_arr);
+            } else {
+                // Add to temp db
+                $this->add_audience($add_arr);
+                // Update data
+                $this->run_cron_hook();
+            }
         } else if ($posted->ajaxAct === 'editor') {
             ob_start();
             $quicktags_settings = array('buttons' => 'strong,em,link,block,del,ins,img,ul,ol,li,code,close');
@@ -291,6 +314,86 @@ class CriticAudience extends AbstractDb {
             $cp = $this->cm->get_cp();
             $cp->send_curl_no_responce($ss['audience_cron_path']);
         }
+    }
+
+    public function update_audience($arr) {
+        // Already vote
+        $a_voted = $this->already_voted($arr['top_movie']);
+        if ($a_voted['ret'] == 2) {
+            // Is edit
+            $au_data = (array) $a_voted['au_data'];
+
+            $data_upd = array(
+                'date' => $this->curr_time(),
+                'rating' => $this->get_rating_by_audata('rating', $arr, $au_data),
+                'hollywood' => $this->get_rating_by_audata('hollywood', $arr, $au_data),
+                'patriotism' => $this->get_rating_by_audata('patriotism', $arr, $au_data),
+                'misandry' => $this->get_rating_by_audata('misandry', $arr, $au_data),
+                'affirmative' => $this->get_rating_by_audata('affirmative', $arr, $au_data),
+                'lgbtq' => $this->get_rating_by_audata('lgbtq', $arr, $au_data),
+                'god' => $this->get_rating_by_audata('god', $arr, $au_data),
+                'vote' => $this->get_rating_by_audata('vote', $arr, $au_data),
+                'title' => $arr['title'],
+                'content' => $arr['content']
+            );
+
+            // Get post audience
+            if ($au_data['pid']) {
+                // Need add revision? Add.
+                $this->add_revision($au_data, $data_upd, $au_data['pid']);
+                // Update post
+                $data = array(
+                    'title' => $arr['title'],
+                    'content' => $arr['content'],
+                );
+                $this->cm->update_post_fields($au_data['pid'], $data);
+
+                // Update rating
+                $rating = array(
+                    'r' => $this->get_rating_by_audata('rating', $arr, $au_data),
+                    'h' => $this->get_rating_by_audata('hollywood', $arr, $au_data),
+                    'p' => $this->get_rating_by_audata('patriotism', $arr, $au_data),
+                    'm' => $this->get_rating_by_audata('misandry', $arr, $au_data),
+                    'a' => $this->get_rating_by_audata('affirmative', $arr, $au_data),
+                    'l' => $this->get_rating_by_audata('lgbtq', $arr, $au_data),
+                    'g' => $this->get_rating_by_audata('god', $arr, $au_data),
+                    'v' => $this->get_rating_by_audata('vote', $arr, $au_data),
+                );
+                $this->cm->update_post_rating($au_data['pid'], $rating);
+            } else if ($au_data['id']) {
+                // If not post get temp
+                // Update temp
+                $this->db_update($data_upd, $this->db['audience'], $au_data['id']);
+
+                $this->run_cron_hook();
+            }
+        }
+    }
+
+    private function add_revision($au_data, $data_upd, $cid) {
+        $add = false;
+        $data_to_add = array();
+        foreach ($data_upd as $key => $value) {
+            if ($au_data[$key]) {
+                $data_to_add[$key] = $au_data[$key];
+            }
+            if ($key == 'date') {
+                continue;
+            }
+            if ($value != $au_data[$key]) {
+                $add = true;
+            }
+        }
+
+        if ($add) {
+            $data_to_add['cid'] = $cid;
+            $this->db_insert($data_to_add, $this->db['audience_rev']);
+        }
+    }
+
+    public function get_rating_by_audata($name, $arr, $au_arr) {
+        $arr_val = $arr[$name] ? $arr[$name] : $au_arr[$name];
+        return $arr_val;
     }
 
     public function run_cron($count = 100, $debug = false, $force = false) {
@@ -431,7 +534,7 @@ class CriticAudience extends AbstractDb {
         $type = 2;
         $link = '';
 
-        $pid = $this->cm->add_post($date, $type, $link, $title, $content, $top_movie, $status,0, 0, true);
+        $pid = $this->cm->add_post($date, $type, $link, $title, $content, $top_movie, $status, 0, 0, true);
 
         if ($pid) {
             // Add post author
@@ -457,7 +560,7 @@ class CriticAudience extends AbstractDb {
 
             // Update post rating
             $this->cm->hook_update_post($pid);
-            
+
             // Reset cron
             $this->cm->critic_delta_cron();
         }
@@ -515,22 +618,102 @@ class CriticAudience extends AbstractDb {
         <?php
     }
 
+    /*
+     * return: 
+     * 0 - no vote
+     * 1 - voted
+     * 2 - can edit
+     */
+
     public function already_voted($post_id) {
         $unic_id = $this->unic_id();
-        $ret = false;
-        //Author is voted?
-        if ($this->get_author_post_count_movie($unic_id, $post_id)) {
-            $ret = true;
-        }
+        $voted = false;
+        $queue_id = 0;
+        $cid = 0;
 
-        if (!$ret) {
-            // Queue vote
-            if ($this->get_author_post_queue($unic_id, $post_id)) {
-                $ret = true;
+        // Queue vote
+        $queue_id = $this->get_author_post_queue($unic_id, $post_id);
+        if ($queue_id) {
+            $voted = true;
+            $post_queue = $this->get_post_queue($queue_id);
+            // Post exist?
+            if ($post_queue->status == 1) {
+                $author_name = $post_queue->critic_name;
+
+                // Author is voted?
+                $cid = $this->get_author_post_id_movie($author_name, $post_id);                
             }
         }
 
-        return $ret;
+         
+        $ret = 0;
+        $au_data = new stdClass();
+        $au_data->status = 0;
+        if ($voted) {
+            $ret = 1;
+
+            // User allow edit post
+            $ss = $this->cm->get_settings();
+            if ($ss['audience_post_edit']) {
+                $time_to_edit = $ss['audience_post_edit'];
+                $date_add = 0;
+
+                if ($cid) {
+                    $post = $this->cm->get_post($cid);
+
+                    if ($post) {
+                        $date_add = $post->date_add;
+                        $au_data = $this->get_audata_post($post);
+                        $au_data->unic_id = $unic_id;
+                        if ($post->status == 1) {
+                            $au_data->status = 1;
+                        }
+                    }
+                } else {
+                    $date_add = $post_queue->date;
+                    $au_data = $post_queue;
+                }
+                if ($date_add) {
+                    $time = $this->curr_time();
+                    if ($time < ($date_add + ($time_to_edit * 60))) {
+                        // Edit mode
+                        $ret = 2;
+                        // Get search post date
+                        if ($au_data->status == 1 && $cid) {
+                            $cs = $this->cm->get_cs();
+                            $search_add = $cs->get_critic_last_upd($cid);
+                            if (!$search_add || $search_add != $date_add) {
+                                $au_data->status = 0;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return array('ret' => $ret, 'au_data' => $au_data);
+    }
+
+    private function get_audata_post($post) {
+
+        $au_data = new stdClass();
+        $au_data->pid = $post->id;
+        $au_data->status = $post->status;
+        $au_data->title = $post->title;
+        $au_data->content = $post->content;
+
+        // [r] => 2 [h] => 1 [p] => 1 [m] => 1 [a] => 1 [l] => 1 [g] => 1 [v] => 2 [ip] => 127.0.0.1 
+        $rating = $this->cm->get_post_rating($post->id);
+        $au_data->rating = $rating['r'];
+        $au_data->hollywood = $rating['h'];
+        $au_data->patriotism = $rating['p'];
+        $au_data->misandry = $rating['m'];
+        $au_data->affirmative = $rating['a'];
+        $au_data->lgbtq = $rating['l'];
+        $au_data->god = $rating['g'];
+        $au_data->vote = $rating['v'];
+
+        return $au_data;
     }
 
     public function get_queue($status = -1, $page = 1, $per_page = 20, $orderby = '', $order = 'ASC') {
@@ -603,17 +786,23 @@ class CriticAudience extends AbstractDb {
         return $result;
     }
 
-    public function get_author_post_count_movie($unic_id, $fid) {
-        $query = sprintf("SELECT COUNT(k.id) FROM {$this->db['author_key']} k "
-                . "INNER JOIN {$this->db['authors_meta']} am ON am.aid=k.aid "
+    public function get_author_post_id_movie($author_name, $fid) {
+        $query = sprintf("SELECT am.cid FROM {$this->db['authors']} a "
+                . "INNER JOIN {$this->db['authors_meta']} am ON am.aid=a.id "
                 . "INNER JOIN {$this->db['meta']} m ON m.cid=am.cid "
-                . "WHERE m.fid=%d AND k.name = '%s'", (int) $fid, $this->escape($unic_id));
-        $result = $this->db_get_var($query);
+                . "WHERE m.fid=%d AND a.name = '%s'", (int) $fid, $this->escape($author_name));
+        $result = $this->db_get_var($query);        
+        return $result;
+    }
+
+    public function get_post_queue($id) {
+        $query = sprintf("SELECT * FROM {$this->db['audience']} WHERE id=%d", (int) $id);
+        $result = $this->db_fetch_row($query);
         return $result;
     }
 
     public function get_author_post_queue($unic_id, $fid) {
-        $query = sprintf("SELECT COUNT(id) FROM {$this->db['audience']} WHERE top_movie=%d AND unic_id = '%s'", (int) $fid, $this->escape($unic_id));
+        $query = sprintf("SELECT id FROM {$this->db['audience']} WHERE top_movie=%d AND unic_id = '%s'", (int) $fid, $this->escape($unic_id));
         $result = $this->db_get_var($query);
         return $result;
     }
@@ -650,7 +839,12 @@ class CriticAudience extends AbstractDb {
         <?php
     }
 
-    public function audience_form($post_id) {
+    public function audience_form($post_id, $au_data = array()) {
+        header('Access-Control-Allow-Origin: *');
+        $submit_text = "Submit your review:";
+        if ($au_data) {
+            $submit_text = "Edit your review:";
+        }
         ?>
         <div class="wpcr3_respond_2">
             <div class="wpcr3_div_2">
@@ -658,74 +852,109 @@ class CriticAudience extends AbstractDb {
                     <tbody>
                         <tr>
                             <td colspan="2">
-                                <h3 class="column_header">Submit your review:</h3>
+                                <h3 class="column_header"><?php print $submit_text ?></h3>
                             </td>
-                        </tr>
+                        </tr>                        
                         <?php
-                        foreach ($this->vote_fields as $key => $value):
-                            $title = $value['title'];
-                            $required = '';
-                            if ($value['required']) {
-                                $required = ' wpcr3_required';
-                            }
-                            ?>
-                            <tr class="wpcr3_review_form_text_field">
-                                <td>
-                                    <label for="wpcr3_f<?php print $key ?>" class="comment-field"><?php print $title ?>: </label>
-                                </td>
-                                <td>
-                                    <input maxlength="150" class="text-input<?php print $required ?>" type="text" id="wpcr3_f<?php print $key ?>" name="wpcr3_f<?php print $key ?>" value="" />
-                                </td>
-                            </tr>
-                        <?php endforeach; ?> 
+                        if ($au_data) {
+                            if ($au_data->status != 1) {
+                                ?>
+                            <p class="redtext">Your review is awaiting an anti-troll check.</p>
+                        <?php } ?>
+                        <input id="unic_id" type="hidden" name="unic_id" value="<?php print $au_data->unic_id ?>" />
                         <?php
-                        $rating_order = array('rating', 'vote', 'patriotism', 'misandry', 'affirmative', 'lgbtq', 'god');
-
-                        $cfront = new CriticFront($this->cm);
-
-                        $ss = $this->cm->get_settings();
-                        $audience_desc = $ss['audience_desc'];
-
-                        foreach ($rating_order as $key) {
-
-                            $vote_data = isset($audience_desc[$key]) ? $audience_desc[$key] : '';
-                            $desc = $cfront->get_nte('i', '<div class="nte_cnt_toltip">' . stripslashes($vote_data) . '</div>');
-
-                            if ($key == 'vote') {
-                                $this->audience_revew_form_boycott($desc);
-                            } else {
-                                $this->audience_revew_form_item($key, $desc);
+                    }
+                    foreach ($this->vote_fields as $key => $value):
+                        if ($au_data) {
+                            if ($key == 'name') {
+                                continue;
                             }
                         }
-                        ?>                         
-                        <tr id="review-text" class="wpcr3_review_form_review_field_textarea">
-                            <td colspan="2">
-                                <label for="id_wpcr3_ftext" class="comment-field">Review text: </label>
-                                <div id="wp-id_wpcr3_ftext-wrap" class="wp-core-ui wp-editor-wrap tmce-active">                                    
-                                    <div id="wp-id_wpcr3_ftext-editor-tools" class="wp-editor-tools hide-if-no-js">
-                                        <div class="wp-editor-tabs">
-                                            <button type="button" id="id_wpcr3_ftext-tmce" class="wp-switch-editor switch-tmce" data-wp-editor-id="id_wpcr3_ftext">Visual</button>
-                                            <button type="button" id="id_wpcr3_ftext-html" class="wp-switch-editor switch-html" data-wp-editor-id="id_wpcr3_ftext">Text</button>
-                                        </div>
-                                    </div>
-                                    <div id="wp-id_wpcr3_ftext-editor-container" class="wp-editor-container">
-                                        <div id="qt_id_wpcr3_ftext_toolbar" class="quicktags-toolbar"></div>
-                                        <textarea class="wp-editor-area wpcr3_required" rows="20" autocomplete="off" cols="40" name="wpcr3_ftext" id="id_wpcr3_ftext"></textarea>
+                        $title = $value['title'];
+                        $required = '';
+                        if ($value['required']) {
+                            $required = ' wpcr3_required';
+                        }
+                        ?>
+                        <tr class="wpcr3_review_form_text_field">
+                            <td>
+                                <label for="wpcr3_f<?php print $key ?>" class="comment-field"><?php print $title ?>: </label>
+                            </td>
+                            <td>
+                                <input maxlength="150" class="text-input<?php print $required ?>" type="text" id="wpcr3_f<?php print $key ?>" name="wpcr3_f<?php print $key ?>" value="<?php
+                                if ($au_data) {
+                                    if ($key == 'title') {
+                                        print htmlspecialchars($au_data->title);
+                                    }
+                                }
+                                ?>" />
+                            </td>
+                        </tr>
+                    <?php endforeach; ?> 
+                    <?php
+                    $rating_order = array('rating', 'vote', 'patriotism', 'misandry', 'affirmative', 'lgbtq', 'god');
+
+                    $cfront = new CriticFront($this->cm);
+
+                    $ss = $this->cm->get_settings();
+                    $audience_desc = $ss['audience_desc'];
+
+                    foreach ($rating_order as $key) {
+
+                        $vote_data = isset($audience_desc[$key]) ? $audience_desc[$key] : '';
+                        $desc = $cfront->get_nte('i', '<div class="nte_cnt_toltip">' . stripslashes($vote_data) . '</div>');
+
+                        if ($key == 'vote') {
+                            $rating_val = 3;
+                            if ($au_data) {
+                                if ($au_data->$key) {
+                                    $rating_val = $au_data->$key;
+                                }
+                            }
+                            $this->audience_revew_form_boycott($desc, $rating_val);
+                        } else {
+                            $rating_val = 0;
+                            if ($au_data) {
+                                if ($au_data->$key) {
+                                    $rating_val = $au_data->$key;
+                                }
+                            }
+                            $this->audience_revew_form_item($key, $desc, $rating_val);
+                        }
+                    }
+                    ?>                         
+                    <tr id="review-text" class="wpcr3_review_form_review_field_textarea">
+                        <td colspan="2">
+                            <label for="id_wpcr3_ftext" class="comment-field">Review text: </label>
+                            <div id="wp-id_wpcr3_ftext-wrap" class="wp-core-ui wp-editor-wrap tmce-active">                                    
+                                <div id="wp-id_wpcr3_ftext-editor-tools" class="wp-editor-tools hide-if-no-js">
+                                    <div class="wp-editor-tabs">
+                                        <button type="button" id="id_wpcr3_ftext-tmce" class="wp-switch-editor switch-tmce" data-wp-editor-id="id_wpcr3_ftext">Visual</button>
+                                        <button type="button" id="id_wpcr3_ftext-html" class="wp-switch-editor switch-html" data-wp-editor-id="id_wpcr3_ftext">Text</button>
                                     </div>
                                 </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2" class="wpcr3_check_confirm">
-                                <div class="wpcr3_clear"></div>
-                                <input type="hidden" name="wpcr3_postid" value="<?php print $post_id ?>" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">
-                                <div class="wpcr3_button_1 wpcr3_submit_btn" href="#">Submit</div>
-                            </td>
-                        </tr>
+                                <div id="wp-id_wpcr3_ftext-editor-container" class="wp-editor-container">
+                                    <div id="qt_id_wpcr3_ftext_toolbar" class="quicktags-toolbar"></div>
+                                    <textarea class="wp-editor-area wpcr3_required" rows="20" autocomplete="off" cols="40" name="wpcr3_ftext" id="id_wpcr3_ftext"><?php
+                                        if ($au_data) {
+                                            print htmlspecialchars($au_data->content);
+                                        }
+                                        ?></textarea>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="wpcr3_check_confirm">
+                            <div class="wpcr3_clear"></div>
+                            <input type="hidden" name="wpcr3_postid" value="<?php print $post_id ?>" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <div class="wpcr3_button_1 wpcr3_submit_btn" href="#">Submit</div>
+                        </td>
+                    </tr>
                     </tbody>
                 </table>
             </div>
@@ -734,7 +963,7 @@ class CriticAudience extends AbstractDb {
         <?php
     }
 
-    public function audience_revew_form_boycott($desc) {
+    public function audience_revew_form_boycott($desc, $rating_val = 3) {
         $vote_order = array(2, 3, 1);
         $title = $this->vote_data['vote']['title'];
         $vote_data = $this->vote_data['vote']['options'];
@@ -749,8 +978,12 @@ class CriticAudience extends AbstractDb {
                         <?php
                         foreach ($vote_order as $value) {
                             if (isset($vote_data[$value])) {
+                                $selected = '';
+                                if ($rating_val == $value) {
+                                    $selected = ' selected';
+                                }
                                 ?>
-                                <option class="s<?php print $value ?>" value="<?php print $value ?>"><?php print $vote_data[$value]['title'] ?></option>
+                                <option class="s<?php print $value ?><?php print $selected ?>" value="<?php print $value ?>"><?php print $vote_data[$value]['title'] ?></option>
                                 <?php
                             }
                         }
@@ -762,8 +995,16 @@ class CriticAudience extends AbstractDb {
         <?php
     }
 
-    public function audience_revew_form_item($key, $desc) {
+    public function audience_revew_form_item($key, $desc, $value = 0) {
         $vote_data = $this->vote_data[$key];
+
+        // width: 60%; background-size: 33.3333%;
+        $span_style = 'width: 0;';
+        if ($value) {
+            $width = $value * 20;
+            $sizes = array(0, 100, 50, 33.3333, 25, 20);
+            $span_style = "width: " . $width . "%; background-size: " . $sizes[$value] . "%;";
+        }
         ?>
         <tr class="wpcr3_review_form_rating_field">
             <td>
@@ -772,8 +1013,8 @@ class CriticAudience extends AbstractDb {
             <td class="<?php print $vote_data['class'] ?> rating_input">
 
                 <div class="rating_container"><span class="rating_result <?php echo $key ?>">
-                        <span style="width: 0;" class="rating_result_total" ></span>
-                    </span><span class="rating_number rating_num<?php echo $key ?>"><span class="rating_number_rate number_rate_0">0</span></span>
+                        <span style="<?php print $span_style ?>" class="rating_result_total" ></span>
+                    </span><span class="rating_number rating_num<?php echo $key ?>"><span class="rating_number_rate number_rate_<?php print $value ?>"><?php print $value ?></span></span>
                     <input style="display:none;" type="hidden" class="wpcr3_frating" id="id_wpcr3_f<?php print $key ?>" name="wpcr3_frating_<?php print $key ?>" />
                 </div></td>
         </tr>

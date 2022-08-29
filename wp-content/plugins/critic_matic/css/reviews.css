@@ -209,7 +209,9 @@ div.wpcr3_rating_style1_score div.wpcr3_rating_style1_score5 {width:100%; z-inde
 	padding: 20px;
         justify-content: center;
 }
-
+body.theme_dark .succes_send {
+	background-color: #233623;
+}
 #audience_form .nte {
 	display: inline-block;
 }
