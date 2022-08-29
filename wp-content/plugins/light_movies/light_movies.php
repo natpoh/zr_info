@@ -24,6 +24,8 @@ class LightMovies{
         add_submenu_page($this->parrent_slug, __('Actors info'), __('Actors info'), $this->access_level, $this->parrent_slug. '_actors_info', array($this, 'actors_info'));
         add_submenu_page($this->parrent_slug, __('Custom options'), __('Custom options'), $this->access_level, $this->parrent_slug. '_custom_options', array($this, 'option'));
         add_submenu_page($this->parrent_slug, __('Logs'), __('Logs'), $this->access_level, $this->parrent_slug. '_movie_logs', array($this, 'movie_logs'));
+         add_submenu_page($this->parrent_slug, __('Cron info'), __('Cron info'), $this->access_level, $this->parrent_slug. '_cron_info', array($this, 'cron_info'));
+
     }
 
 
@@ -454,6 +456,24 @@ display: none;
 
 
     }
+
+
+
+     public function cron_info()
+    {
+        echo '<h1>Cron info</h1>';
+
+
+        include (ABSPATH.'service/cron.php');
+       global $array_jobs;
+
+        $cron = new Cronjob;
+        $cron->run($array_jobs,1);
+
+
+
+    }
+
     public function add_movies()
     {
         echo '<h1>Add Movies, TV, Games</h1>';

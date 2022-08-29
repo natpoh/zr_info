@@ -8,6 +8,7 @@ if (!defined('ABSPATH'))
 //Abstract DB
 !class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
 
+global $array_jobs;
 
 $array_jobs = array(
 
@@ -63,7 +64,7 @@ $array_jobs = array(
 
 global $included;
 $included =1;
-include ABSPATH .'analysis/include/scrap_imdb.php';
+require_once ABSPATH .'analysis/include/scrap_imdb.php';
 
 
 class Cronjob
@@ -173,7 +174,7 @@ class Cronjob
         }
     }
 
-    public   function run($array_jobs)
+    public   function run($array_jobs,$only_info = 0)
     {
 
 
@@ -181,7 +182,7 @@ class Cronjob
 
         $run_cron = $this->get_options('run_cron');
 
-        echo 'Last run :'.date('H:i:s d.m.Y',$run_cron).'<br>' . PHP_EOL;
+        echo '<p>Last run :'.date('H:i:s d.m.Y',$run_cron).'</p>' . PHP_EOL;
 
 ///////check last run
         $jobs_data =  self::get_all_options($array_jobs);
@@ -192,7 +193,7 @@ class Cronjob
         //var_dump($jobs_data);
 
 
-        if ($run_cron < time()-3600/2) {
+        if (($run_cron < time()-3600/2) && !$only_info) {
 
             $this->set_option('run_cron', time());
             $this->set_option('cron started', time());
@@ -224,7 +225,13 @@ class Cronjob
         }
         else
         {
-            echo '<br>cron is runned <br>' . PHP_EOL;
+            if (!$only_info)
+            {
+                echo '<br>cron is runned <br>' . PHP_EOL;
+            }
+
+
+
             $content='';
             foreach ($jobs_data as $i=> $r)
             {
@@ -236,7 +243,7 @@ class Cronjob
 
             }
 
-            $content = ' <br>Order of tasks:<br><table border="1" cellspacing="0"><tr><th>Job</th><th>Order</th><th>Default  (min)</th><th>Need to update</th></tr>'.$content.'</table>';
+            $content = ' <br>Tasks:<br><table border="1" cellspacing="0"><tr><th>Job</th><th>Order</th><th>Default  (min)</th><th>Need to update</th></tr>'.$content.'</table>';
 
             echo $content;
 
@@ -348,7 +355,16 @@ $sql_result = "CREATE TABLE  IF NOT EXISTS `cron` (
 }
 
 
-$cron = new Cronjob;
 
-$cron->run($array_jobs);
+
+    if (isset($_GET['runcron']))
+    {
+        if ($_GET['runcron']==1)
+        {
+            $cron = new Cronjob;
+            $cron->run($array_jobs);
+        }
+
+    }
+
 
