@@ -263,6 +263,9 @@ class Cronjob
                 $last_run[$rdata]['start']=$r['time'];
 
             }
+            else if ($r['task'] =='cron'){
+                $last_run[$r['task']]['end']=$r['time'];
+            }
             else{
                 $last_run[$r['task']]['start']=$r['time'];
             }
