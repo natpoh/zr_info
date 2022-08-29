@@ -208,7 +208,8 @@ class Cronjob
                     echo 'run ' . $i . ' from ' . $count . ' lastrun: '.$last_update.'<br>' . PHP_EOL;
                     self::run_function($jobs, $period);
                 } else {
-                    echo '<br>Ended max time > ' . max_time . '<br>' . PHP_EOL;
+                    echo '<br>Ended max time > ' . $this->max_time . '<br>' . PHP_EOL;
+                    $this->set_option('cron_ended', $this->max_time);
                     $this->set_option('run_cron', 1);
 
                     break;
