@@ -447,7 +447,7 @@ class CriticMaticAdmin {
             $page_url = $page_url . '&s=' . urlencode($s);
 
             if ($total) {
-                $pager = $this->themePager(-1, $page, $page_url, $total, $per_page, $orderby, $order);
+                $pager = $this->themePager( $page, $page_url, $total, $per_page, $orderby, $order);
             }
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_search.php');
@@ -541,11 +541,11 @@ class CriticMaticAdmin {
             $query = $query_adb->get_query();
             $page_url = $filters_tabs['p'];
             $count = $filters_tabs['c'];
-
+           
             $per_page = $this->cm->perpage;
-            $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+            $pager = $this->themePager( $page, $page_url, $count, $per_page, $orderby, $order);
             $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order);
-
+           
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_overview.php');
         } else if ($curr_tab == 'details') {
@@ -570,7 +570,7 @@ class CriticMaticAdmin {
             $count = $filters_tabs['c'];
 
             $per_page = $this->cm->perpage;
-            $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+            $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
             $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order);
 
 
@@ -609,7 +609,7 @@ class CriticMaticAdmin {
             }
 
             $per_page = $this->cm->perpage;
-            $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+            $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
             $meta = $this->cm->get_meta($status, $page, $type, $meta_rating, $orderby, $order);
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_meta.php');
         } else if ($curr_tab == 'log') {
@@ -740,7 +740,7 @@ class CriticMaticAdmin {
             $count = $filters_tabs['c'];
 
             $per_page = $this->cm->perpage;
-            $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+            $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
             $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order);
 
 
@@ -762,7 +762,7 @@ class CriticMaticAdmin {
             }
 
             $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
-            $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+            $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
             $posts = $ca->get_queue($status, $page, $per_page, $orderby, $order);
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_queue_audience.php');
@@ -778,7 +778,7 @@ class CriticMaticAdmin {
 
             $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
 
-            $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+            $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
             $posts = $this->cm->get_ips($status, $page, $orderby, $order);
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_ip_audience.php');
@@ -901,7 +901,7 @@ class CriticMaticAdmin {
 
             $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
 
-            $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+            $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
 
             $authors = $this->cm->get_authors($status, $page, 0, $author_type, $orderby, $order);
             $author_status = $this->cm->author_status;
@@ -1023,7 +1023,7 @@ class CriticMaticAdmin {
 
         if (!$curr_tab) {
             // Authors          
-            $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+            $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
             $tags = $this->cm->get_tags($status, $page, $orderby, $order);
             $tag_status = $this->cm->tag_status;
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_tags.php');
@@ -1145,7 +1145,7 @@ class CriticMaticAdmin {
         if (!$curr_tab) {
             // Get          
 
-            $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+            $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
 
             $genres = $ma->get_genres($status, $page, $orderby, $order);
             $genre_status = $ma->genre_status;
@@ -1268,7 +1268,7 @@ class CriticMaticAdmin {
         if (!$curr_tab) {
             // Get          
 
-            $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+            $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
 
             $countries = $ma->get_countries($status, $page, $orderby, $order);
             $country_status = $ma->country_status;
@@ -1400,7 +1400,7 @@ class CriticMaticAdmin {
 
         if (!$curr_tab) {
             // Get          
-            $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+            $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
             $providers = $ma->get_providers($status, $page, $orderby, $order, $free);
             $provider_status = $ma->provider_status;
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_providers.php');
@@ -1458,7 +1458,7 @@ class CriticMaticAdmin {
         $count = $filters_tabs['c'];
 
         $per_page = $this->cm->perpage;
-        $pager = $this->themePager(-1, $page, $page_url, $count, $per_page, $orderby, $order);
+        $pager = $this->themePager( $page, $page_url, $count, $per_page, $orderby, $order);
         $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order);
 
         include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_transcriptions.php');
@@ -1508,7 +1508,7 @@ class CriticMaticAdmin {
             $page_url = $page_url . '&s=' . urlencode($s);
 
             if ($count) {
-                $pager = $this->themePager(-1, $page, $page_url, $count, $per_page, $orderby, $order);
+                $pager = $this->themePager( $page, $page_url, $count, $per_page, $orderby, $order);
             }
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_movies_search.php');
@@ -1558,7 +1558,7 @@ class CriticMaticAdmin {
         }
 
         $per_page = $ma->perpage;
-        $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+        $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
         $movies = $ma->get_posts($page, $type, $orderby, $order);
         include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_movies.php');
     }
@@ -2188,7 +2188,7 @@ class CriticMaticAdmin {
         //Pager
         $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
 
-        $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+        $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
 
         $feeds = $this->cf->get_feeds($status, $page, $aid, $orderby, $order);
         if ($aid) {
@@ -2254,7 +2254,7 @@ class CriticMaticAdmin {
         $count = $filters_tabs['c'];
 
         $per_page = $this->cm->perpage;
-        $pager = $this->themePager(-1, $page, $page_url, $count, $per_page, $orderby, $order);
+        $pager = $this->themePager( $page, $page_url, $count, $per_page, $orderby, $order);
         $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order);
 
 
@@ -2320,7 +2320,7 @@ class CriticMaticAdmin {
 
         //Pager
         $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
-        $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+        $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
         $campaigns = $this->cp->get_parsers($type, $status, $page, $aid, $parser_status, $orderby, $order);
 
         include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_parsers_critic.php');
@@ -2368,7 +2368,7 @@ class CriticMaticAdmin {
             $count = isset($filter_meta_type_arr[$meta_type]['count']) ? $filter_meta_type_arr[$meta_type]['count'] : 0;
         }
 
-        $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+        $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
         $posts = $this->cp->get_urls($status, $page, $cid, $meta_type, $orderby, $order);
 
         include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_urls.php');
@@ -2401,7 +2401,7 @@ class CriticMaticAdmin {
 
         $log = $this->cf->get_log($page, $cid);
         $status = -1;
-        $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+        $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
 
         include(CRITIC_MATIC_PLUGIN_DIR . 'includes/feed_log.php');
     }
@@ -2431,7 +2431,7 @@ class CriticMaticAdmin {
 
         $log = $this->cs->get_log($page);
         $status = -1;
-        $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+        $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
         include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_log_meta.php');
     }
 
@@ -2467,20 +2467,20 @@ class CriticMaticAdmin {
         }
 
         $log = $this->cp->get_log($page, $cid, 0, $status, $type, $per_page);
-        $pager = $this->themePager(-1, $page, $page_url, $count, $per_page, $orderby, $order);
+        $pager = $this->themePager( $page, $page_url, $count, $per_page, $orderby, $order);
         include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_log_parser.php');
     }
 
-    public function themePager($status = -1, $page = 1, $url = '/', $count = 1, $per_page = 100, $orderby = '', $order = '', $pg = 'p', $active_class = 'disabled') {
+    public function themePager($page = 1, $url = '/', $count = 1, $per_page = 100, $orderby = '', $order = '', $pg = 'p', $active_class = 'disabled') {
         $ret = '';
-        $pager = $this->getPager($status, $page, $url, $count, $per_page, $orderby, $order);
+        $pager = $this->getPager($page, $url, $count, $per_page, $orderby, $order);
         if ($pager) {
             $ret = '<div class="tablenav cmnav"><div class="tablenav-pages" style="float:none;"><div class="pagination-links">' . $pager . '</div></div></div>';
         }
         return $ret;
     }
 
-    public function getPager($status = -1, $page = 1, $url = '/', $count = 1, $per_page = 100, $orderby = '', $order = '', $pg = 'p', $active_class = 'disabled') {
+    public function getPager($page = 1, $url = '/', $count = 1, $per_page = 100, $orderby = '', $order = '', $pg = 'p', $active_class = 'disabled') {
         $paged = $page;
         $max_page = 1;
         if ($per_page > 0) {

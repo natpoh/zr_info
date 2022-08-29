@@ -52,7 +52,7 @@ class CriticSearch extends AbstractDB {
     public $facets = array(
         'movies' => array('release', 'type', 'genre', 'provider', 'providerfree', 'actor', 'rating', 'country', 'race', 'dirrace', 'lgbt', 'woke',
             'race_cast', 'race_dir', 'gender_cast', 'gender_dir'),
-        'critics' => array('release', 'type', 'movie', 'genre', 'author', 'state', 'tags', 'from')
+        'critics' => array('release', 'type', 'movie', 'genre', 'author', 'state', 'related', 'tags', 'from')
     );
     public $audience_facets = array(
         'auvote' => array('title' => 'SUGGESTION', 'name_pre' => 'AU ', 'filter_pre' => 'Audience SUGGESTION ', 'icon' => 'vote'),
@@ -65,7 +65,7 @@ class CriticSearch extends AbstractDB {
         'auneo' => array('title' => 'NEO-MARXISM', 'name_pre' => 'AU NEO-MARXISM ', 'filter_pre' => 'Audience NEO-MARXISM ', 'icon' => 'patriotism')
     );
     public $rating_facets = array(
-        'rrwt' => array('title' => 'RWT', 'name_pre' => 'RWT ', 'filter_pre' => 'RWT Rating ', 'max_count' => 60, 'multipler' => 10, 'main' => 1),
+        'rrwt' => array('title' => 'ZR', 'name_pre' => 'ZR ', 'filter_pre' => 'ZR Rating ', 'max_count' => 60, 'multipler' => 10, 'main' => 1),
         'rating' => array('title' => 'Family Friendly Score', 'name_pre' => 'FFS ', 'filter_pre' => 'Family Friendly Score ', 'max_count' => 60, 'multipler' => 10),
         'rimdb' => array('title' => 'IMDB', 'name_pre' => 'IMDB ', 'filter_pre' => 'IMDB Rating ', 'max_count' => 110, 'multipler' => 10),
         'rrt' => array('title' => 'Rotten Tomatoes', 'name_pre' => 'RT ', 'filter_pre' => 'Rotten Tomatoes ', 'max_count' => 110),
@@ -122,7 +122,7 @@ class CriticSearch extends AbstractDB {
         'state' => array(
             'proper' => array('key' => 1, 'title' => 'Proper Review'),
             'contains' => array('key' => 2, 'title' => 'Contains Mention'),
-            'related' => array('key' => 3, 'title' => 'Related Article'),
+            'related' => array('key' => 3, 'title' => 'Related Article'),            
         ),
         'price' => array(
             'free' => array('key' => 1, 'title' => 'Watch free'),
@@ -1232,7 +1232,7 @@ class CriticSearch extends AbstractDB {
 
         //Sort logic
         $order = $this->get_order_query_critics($sort);
-        
+
         // Movie weight logic        
 
         if (isset($sort['sort']) && $sort['sort'] == 'mw') {
@@ -1268,8 +1268,11 @@ class CriticSearch extends AbstractDB {
 
         // Main sql
         $sql = sprintf("SELECT id, date_add, weight() w, author_type" . $snippet . $custom_fields . $order['select']
-                . " FROM critic WHERE top_movie>0" . $filters_and . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
+                . " FROM critic WHERE status=1" . $filters_and . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
 
+        //print_r($sql);
+        //exit;
+        
         //Get result
         $ret = $this->movie_results($sql, $match, $search_query);
 
@@ -1404,52 +1407,63 @@ class CriticSearch extends AbstractDB {
         foreach ($facet_list as $facet) {
             if ($facet == 'release') {
                 $filters_and = $this->get_filters_query($filters, $facet, $query_type);
-                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM critic WHERE year_int>0" . $filters_and . $match
+                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM critic WHERE status=1 AND year_int>0" . $filters_and . $match
                         . " GROUP BY year_int ORDER BY year_int ASC LIMIT 0,200";
                 $sql_arr[] = "SHOW META";
             } else if ($facet == 'author') {
                 $filters_and = $this->get_filters_query($filters, 'author', $query_type);
-                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM critic WHERE top_movie>0" . $filters_and . $match
+                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM critic WHERE status=1" . $filters_and . $match
                         . " GROUP BY author_type ORDER BY cnt DESC LIMIT 0,10";
                 $sql_arr[] = "SHOW META";
             } else if ($facet == 'tags') {
                 $limit = $expand == 'tags' ? $this->facet_max_limit : $this->facet_limit;
                 $filters_and = $this->get_filters_query($filters, 'tags', $query_type);
-                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM critic WHERE top_movie>0" . $filters_and . $match
+                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM critic WHERE status=1" . $filters_and . $match
                         . " GROUP BY tags ORDER BY cnt DESC LIMIT 0,$limit";
                 $sql_arr[] = "SHOW META";
             } else if ($facet == 'from') {
                 $limit = $expand == 'from' ? $this->facet_max_limit : $this->facet_limit;
                 $filters_and = $this->get_filters_query($filters, 'from', $query_type);
-                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM critic WHERE top_movie>0 AND author_type!=2" . $filters_and . $match
+                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM critic WHERE status=1 AND author_type!=2" . $filters_and . $match
                         . " GROUP BY aid ORDER BY cnt DESC LIMIT 0,$limit";
                 $sql_arr[] = "SHOW META";
             } else if ($facet == 'genre') {
                 $limit = $expand == 'genre' ? $this->facet_max_limit : $this->facet_limit;
                 $filters_and = $this->get_filters_query($filters, 'genre', $query_type);
-                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM critic WHERE top_movie>0" . $filters_and . $match
+                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM critic WHERE status=1" . $filters_and . $match
                         . " GROUP BY genre ORDER BY cnt DESC LIMIT 0,$limit";
                 $sql_arr[] = "SHOW META";
             } else if ($facet == 'type') {
                 $filters_and = $this->get_filters_query($filters, 'type', $query_type);
-                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM critic WHERE top_movie>0" . $filters_and . $match
+                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM critic WHERE status=1" . $filters_and . $match
                         . " GROUP BY type ORDER BY cnt DESC LIMIT 0,10";
                 $sql_arr[] = "SHOW META";
             } else if ($facet == 'state') {
-                $filters_and = $this->get_filters_query($filters, 'state', $query_type);
-                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM critic WHERE top_movie>0" . $filters_and . $match
+                $filters_facet = $filters;
+                unset($filters_facet['state']);
+                $filters_and = $this->get_filters_query($filters_facet, '', $query_type);
+
+                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM critic WHERE status=1" . $filters_and . $match
                         . " GROUP BY state ORDER BY cnt DESC LIMIT 0,10";
                 $sql_arr[] = "SHOW META";
             } else if (in_array($facet, $audience_facets)) {
                 $filters_and = $this->get_filters_query($filters, $facet, $query_type);
-                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM critic WHERE id>0" . $filters_and . $match
+                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM critic WHERE status=1" . $filters_and . $match
                         . " GROUP BY " . $facet . " ORDER BY " . $facet . " ASC LIMIT 0,6";
                 $sql_arr[] = "SHOW META";
             } else if ($facet == 'movie') {
                 $filters_and = $this->get_filters_query($filters, $facet, $query_type);
                 $sql_arr[] = "SELECT GROUPBY() AS id, COUNT(*) as cnt, mtitle AS title, year_int as year FROM critic"
-                        . " WHERE top_movie>0" . $filters_and . $match
+                        . " WHERE status=1" . $filters_and . $match
                         . "  GROUP BY top_movie ORDER BY year_int DESC LIMIT 0,100";
+                $sql_arr[] = "SHOW META";
+            } else if ($facet == 'related') {
+                $filters_facet = $filters;
+                $filters_facet['state'] = 'related';
+                $filters_and = $this->get_filters_query($filters_facet, '', $query_type);
+
+                $sql_arr[] = "SELECT COUNT(*) as cnt FROM critic WHERE status=1 AND top_movie=0" . $filters_and . $match;
+
                 $sql_arr[] = "SHOW META";
             }
         }
@@ -1770,6 +1784,52 @@ class CriticSearch extends AbstractDB {
             $release = date('Y', time());
             $filters['release'] = '0-' . ($release + 1);
         }
+
+        if ($query_type == 'critics') {
+            $top_movie_sql = " AND top_movie>0";
+
+            if (isset($filters['state'])) {
+                if (is_array($filters['state']) && sizeof($filters['state'])==1) {
+                    $filters['state'] = $filters['state'][0];
+                }
+                
+                if (is_array($filters['state'])) {
+                    if (in_array('related', $filters['state'])) {
+                        unset($filters['state'][array_search('related', $filters['state'])]);
+                        // $filters_and .= $this->filter_multi_value('state', $filters['state']);
+                        /*
+                          'state' => array(
+                          'proper' => array('key' => 1, 'title' => 'Proper Review'),
+                          'contains' => array('key' => 2, 'title' => 'Contains Mention'),
+                          'related' => array('key' => 3, 'title' => 'Related Article'),                          
+                          ), */
+
+                        $not = array();
+                        foreach ($this->search_filters['state'] as $key => $value) {
+                            if ($key == 'related') {
+                                //continue;
+                            }
+                            if (!in_array($key, $filters['state'])) {
+                                $not[] = $value['key'];
+                            }
+                        }
+
+                        $top_movie_sql = " AND state NOT IN (" . implode(',', $not) . ")";
+                    } else {
+                        $filters_and .= $this->filter_multi_value('state', $filters['state']);
+                    }
+                } else {
+                    if ($filters['state'] == 'related') {
+                        unset($filters['state']);
+                        $top_movie_sql = " AND top_movie=0";
+                    } else {
+                        $filters_and .= $this->filter_multi_value('state', $filters['state']);
+                    }
+                }
+            }
+            $filters_and .= $top_movie_sql;
+        }
+
         if (sizeof($filters)) {
             foreach ($filters as $key => $value) {
                 if (is_array($exlude)) {
@@ -1928,7 +1988,7 @@ class CriticSearch extends AbstractDB {
                         $filters_and .= $this->filter_multi_value($key, $value, true);
                     } else if ($key == 'state') {
                         // Type
-                        $filters_and .= $this->filter_multi_value('state', $value);
+                        // $filters_and .= $this->filter_multi_value('state', $value);
                     } else if ($key == 'movie') {
                         // Movie                 
                         $value = is_array($value) ? $value : array($value);
@@ -2312,6 +2372,17 @@ class CriticSearch extends AbstractDB {
         return $ret;
     }
 
+    public function get_critic_last_upd($id) {
+        $sql = sprintf("SELECT date_add FROM critic WHERE id = %d", $id);
+
+        $result = $this->sdb_results($sql);
+        $ret = 0;
+        if (isset($result[0]->date_add)) {
+            $ret = $result[0]->date_add;
+        }
+        return $ret;
+    }
+
     function timer_start() {
         global $timestart;
         $timestart = microtime(1);
@@ -2452,7 +2523,7 @@ class CriticSearch extends AbstractDB {
         }
 
         $order = " ORDER BY post_date DESC";
-        $sql = sprintf("SELECT id, date_add, top_movie FROM critic WHERE top_movie>0" . $filters_and . $order . " LIMIT %d,%d", $start, $limit);
+        $sql = sprintf("SELECT id, date_add, top_movie, author_name FROM critic WHERE status=1 AND top_movie>0" . $filters_and . $order . " LIMIT %d,%d", $start, $limit);
 
         $results = $this->sdb_results($sql);
 

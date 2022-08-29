@@ -12,19 +12,9 @@
 
 /*
  * TODO
- * Critic matic:
- * - critic list
- * - manage all submodules
- * - one time parsing old data to new scheme
- * 
- * Critic feeds
- * - manage rss feeds
- * 
- * Critic parser
- * - manage source sites and get its content 
- * 
- * Critic search
- * - creating a connecting between critics and films
+ * 1. Single critic no top_movie view
+ * 2. Remove meta for related articles: Remove meta type 2, calculate top movie. 
+ * 3. Move other articles to related
  */
 
 if (!function_exists('add_action')) {
@@ -34,7 +24,7 @@ if (!function_exists('add_action')) {
 define('CRITIC_MATIC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CRITIC_MATIC_PLUGIN_URL', plugin_dir_url(__FILE__));
 
-$version = '1.0.76';
+$version = '1.0.80';
 if (defined('LASTVERSION')) {
     define('CRITIC_MATIC_VERSION', $version . LASTVERSION);
 } else {
@@ -190,7 +180,7 @@ function critic_matic_plugin_activation() {
                                 `status` int(11) NOT NULL DEFAULT '1', 
                                 `last_update` int(11) NOT NULL DEFAULT '0',
                                 `update_interval` int(11) NOT NULL DEFAULT '60',
-                                `author` int(11) NOT NULL DEFAULT '0',                                                                		
+                                `author` int(11) NOT NULL DEFAULT '0',                          		
                                 `title` varchar(255) NOT NULL default '',
                                 `feed_hash` varchar(255) NOT NULL default '',           
                                 `feed` text default NULL,
@@ -236,10 +226,10 @@ function critic_matic_plugin_activation() {
                                 `status` int(11) NOT NULL DEFAULT '1', 
                                 `last_update` int(11) NOT NULL DEFAULT '0',
                                 `update_interval` int(11) NOT NULL DEFAULT '60',
-                                `author` int(11) NOT NULL DEFAULT '0',                                                                		
+                                `author` int(11) NOT NULL DEFAULT '0',                          		
                                 `parser_status` int(11) NOT NULL DEFAULT '0',
                                 `type` int(11) NOT NULL DEFAULT '0',
-                                `title` varchar(255) NOT NULL default '',                                                                
+                                `title` varchar(255) NOT NULL default '',                          
                                 `site` text default NULL,                                
                                 `options` text default NULL,
 				PRIMARY KEY  (`id`)				
@@ -486,6 +476,17 @@ function critic_matic_plugin_activation() {
     critic_matic_create_index_an(array('aid', 'cid'), $table_prefix . "critic_matic_authors_meta");
 
 
+    // Tumbs
+    $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_matic_thumbs`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `cid` int(11) NOT NULL DEFAULT '0', 
+                                `date` int(11) NOT NULL DEFAULT '0', 
+                                `url` text default NULL,                                
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('cid'), $table_prefix . "critic_matic_tumbs");
+    
     /*
      * Critics audience temp      
      */
@@ -514,6 +515,30 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'status', 'critic_name', 'unic_id'), $table_prefix . "critic_matic_audience");
 
+     /*
+     * Critics audience revisions      
+     */
+
+    $table_prefix = DB_PREFIX_WP_AN;
+    $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_matic_audience_rev`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `cid` int(11) NOT NULL DEFAULT '0',
+                                `date` int(11) NOT NULL DEFAULT '0',
+                                `rating` int(11) NOT NULL DEFAULT '0', 
+                                `hollywood` int(11) NOT NULL DEFAULT '0', 
+                                `patriotism` int(11) NOT NULL DEFAULT '0', 
+                                `misandry` int(11) NOT NULL DEFAULT '0', 
+                                `affirmative` int(11) NOT NULL DEFAULT '0', 
+                                `lgbtq` int(11) NOT NULL DEFAULT '0', 
+                                `god` int(11) NOT NULL DEFAULT '0', 
+                                `vote` int(11) NOT NULL DEFAULT '0',                                 
+                                `title` text default NULL,
+                                `content` text default NULL,    
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('date_upd', 'cid'), $table_prefix . "critic_matic_audience_rev");
+    
     /*
       //Add columns UNUSED
 
@@ -530,7 +555,7 @@ function critic_matic_plugin_activation() {
     $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_feed_meta`(
 				`id` int(11) unsigned NOT NULL auto_increment,
                                 `cid` int(11) NOT NULL DEFAULT '0', 
-                                `pid` int(11) NOT NULL DEFAULT '0',                                        
+                                `pid` int(11) NOT NULL DEFAULT '0',  
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
@@ -540,7 +565,7 @@ function critic_matic_plugin_activation() {
     $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_movies_meta`(
 				`id` int(11) unsigned NOT NULL auto_increment,
                                 `mid` int(11) NOT NULL DEFAULT '0', 
-                                `date` int(11) NOT NULL DEFAULT '0',                                        
+                                `date` int(11) NOT NULL DEFAULT '0',  
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     //dbDelta($sql);
@@ -555,7 +580,7 @@ function critic_matic_plugin_activation() {
     // Critic rating
     $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_matic_rating`(
 				`id` int(11) unsigned NOT NULL auto_increment,
-                                `cid` int(11) NOT NULL DEFAULT '0',                                             
+                                `cid` int(11) NOT NULL DEFAULT '0',       
                                 `options` text default NULL,
                                 `rating` int(11) NOT NULL DEFAULT '0', 
                                 `hollywood` int(11) NOT NULL DEFAULT '0', 
@@ -666,7 +691,7 @@ function critic_matic_plugin_activation() {
     $sql = "CREATE TABLE IF NOT EXISTS  `search_movies_meta`(
 				`id` int(11) unsigned NOT NULL auto_increment,
                                 `mid` int(11) NOT NULL DEFAULT '0', 
-                                `date` int(11) NOT NULL DEFAULT '0',                                        
+                                `date` int(11) NOT NULL DEFAULT '0',  
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
 
@@ -701,7 +726,7 @@ function critic_matic_plugin_activation() {
     $sql = "CREATE TABLE IF NOT EXISTS  `meta_movie_genre`(
 				`id` int(11) unsigned NOT NULL auto_increment,
                                 `mid` int(11) NOT NULL DEFAULT '0', 
-                                `gid` int(11) NOT NULL DEFAULT '0',                                        
+                                `gid` int(11) NOT NULL DEFAULT '0',  
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
 
@@ -757,7 +782,7 @@ function critic_matic_plugin_activation() {
     $sql = "CREATE TABLE IF NOT EXISTS  `meta_movie_actor`(
 				`id` int(11) unsigned NOT NULL auto_increment,
                                 `mid` int(11) NOT NULL DEFAULT '0', 
-                                `aid` int(11) NOT NULL DEFAULT '0',                                        
+                                `aid` int(11) NOT NULL DEFAULT '0',  
                                 `pos` int(11) NOT NULL DEFAULT '0', 
                                 `type` int(11) NOT NULL DEFAULT '0', 
 				PRIMARY KEY  (`id`)				
@@ -772,9 +797,9 @@ function critic_matic_plugin_activation() {
     $sql = "CREATE TABLE IF NOT EXISTS  `meta_movie_director`(
 				`id` int(11) unsigned NOT NULL auto_increment,
                                 `mid` int(11) NOT NULL DEFAULT '0', 
-                                `aid` int(11) NOT NULL DEFAULT '0',                                        
+                                `aid` int(11) NOT NULL DEFAULT '0',  
                                 `pos` int(11) NOT NULL DEFAULT '0', 
-                                `type` int(11) NOT NULL DEFAULT '0',                                                                         
+                                `type` int(11) NOT NULL DEFAULT '0',                                   
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
@@ -798,7 +823,7 @@ function critic_matic_plugin_activation() {
     $sql = "CREATE TABLE IF NOT EXISTS  `meta_movie_country`(
 				`id` int(11) unsigned NOT NULL auto_increment,
                                 `mid` int(11) NOT NULL DEFAULT '0', 
-                                `cid` int(11) NOT NULL DEFAULT '0',                                        
+                                `cid` int(11) NOT NULL DEFAULT '0',  
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
 
@@ -826,7 +851,7 @@ function critic_matic_plugin_activation() {
     $sql = "CREATE TABLE IF NOT EXISTS  `data_actor_gender_auto`(
 				`id` int(11) unsigned NOT NULL auto_increment,
                                 `actor_id` int(11) NOT NULL DEFAULT '0', 
-                                `gender` int(11) NOT NULL DEFAULT '0',                                                                        
+                                `gender` int(11) NOT NULL DEFAULT '0',                                  
                                 `k` int(11) NOT NULL DEFAULT '0', 
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
@@ -853,7 +878,7 @@ function critic_matic_plugin_activation() {
     $sql = "CREATE TABLE IF NOT EXISTS  `data_cpi`(
 				`id` int(11) unsigned NOT NULL auto_increment,
                                 `type` int(11) NOT NULL DEFAULT '0', 
-                                `year` int(11) NOT NULL DEFAULT '0',                                                                        
+                                `year` int(11) NOT NULL DEFAULT '0',                                  
                                 `cpi` float(24) NOT NULL DEFAULT '0', 
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
@@ -867,7 +892,7 @@ function critic_matic_plugin_activation() {
     $sql = "CREATE TABLE IF NOT EXISTS  `data_actors_ethnicolr`(
 				`id` int(11) unsigned NOT NULL auto_increment,
                                 `aid` int(11) NOT NULL DEFAULT '0', 
-                                `date_upd` int(11) NOT NULL DEFAULT '0',                                                                        
+                                `date_upd` int(11) NOT NULL DEFAULT '0',                                  
                                 `firstname` varchar(255) NOT NULL default '',  
                                 `lastname` varchar(255) NOT NULL default '',  
                                 `verdict` varchar(10) NOT NULL default '',    
@@ -884,8 +909,8 @@ function critic_matic_plugin_activation() {
     $sql = "CREATE TABLE IF NOT EXISTS  `data_movie_title_slugs`(
 				`id` int(11) unsigned NOT NULL auto_increment,
                                 `mid` int(11) NOT NULL DEFAULT '0',                                 
-                                `oldslug` varchar(255) NOT NULL default '',                                                                      
-                                `newslug` varchar(255) NOT NULL default '',                                                                      
+                                `oldslug` varchar(255) NOT NULL default '',                                
+                                `newslug` varchar(255) NOT NULL default '',                                
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
@@ -897,8 +922,8 @@ function critic_matic_plugin_activation() {
      */
     $sql = "CREATE TABLE IF NOT EXISTS  `data_an_race_rule`(
 				`id` int(11) unsigned NOT NULL auto_increment,                                
-                                `rule_hash` varchar(255) NOT NULL default '',                                                                      
-                                `rule` text default NULL,                                                                     
+                                `rule_hash` varchar(255) NOT NULL default '',                                
+                                `rule` text default NULL,                               
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);

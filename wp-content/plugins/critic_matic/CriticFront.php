@@ -76,11 +76,35 @@ class CriticFront extends SearchFacets {
      */
 
     public function theme_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tag_id = 0, $meta_type = array(), $min_rating = 0, $vote = 0, $search = false) {
-        if ($search) {
-            $posts = $this->cs->get_last_critics($a_type, $limit, $movie_id, $start, $tag_id, $meta_type, $min_rating, $vote);
+
+        if ($movie_id) {
+            if ($search) {
+                $posts = $this->cs->get_last_critics($a_type, $limit, $movie_id, $start, $tag_id, $meta_type, $min_rating, $vote);
+            } else {
+                $posts = $this->get_last_posts($a_type, $limit, $movie_id, $start, $tag_id, $meta_type, $min_rating, $vote);
+            }
         } else {
-            $posts = $this->get_last_posts($a_type, $limit, $movie_id, $start, $tag_id, $meta_type, $min_rating, $vote);
+            // Get unique authors
+            $unique_limit = 100;
+            if ($search) {
+                $posts = $this->cs->get_last_critics($a_type, $unique_limit, $movie_id, $start, $tag_id, $meta_type, $min_rating, $vote);
+            } else {
+                $posts = $this->get_last_posts($a_type, $unique_limit, $movie_id, $start, $tag_id, $meta_type, $min_rating, $vote);
+            }
+            if ($posts) {
+                $unique_authors = array();
+                foreach ($posts as $item) {
+                    if (!$unique_authors[$item->author_name]) {
+                        $unique_authors[$item->author_name] = $item;
+                    }
+                    if (sizeof($unique_authors) >= $limit) {
+                        break;
+                    }
+                }
+                $posts = $unique_authors;
+            }
         }
+
         $items = array();
         if (sizeof($posts)) {
             foreach ($posts as $item) {
@@ -152,7 +176,7 @@ class CriticFront extends SearchFacets {
             $vote_and = sprintf(" AND r.vote=%d", $vote);
         }
 
-        $sql = sprintf("SELECT p.id, p.date_add, p.top_movie FROM {$this->db['posts']} p"
+        $sql = sprintf("SELECT p.id, p.date_add, p.top_movie, a.name AS author_name FROM {$this->db['posts']} p"
                 . " INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
                 . " INNER JOIN {$this->db['authors']} a ON a.id = am.aid" . $movie_inner . $tag_inner . $vote_inner
                 . " WHERE p.top_movie > 0 AND p.status=1" . $and_author . $movie_and . $tag_and . $min_rating_and . $meta_type_and . $vote_and . " ORDER BY" . $custom_order . " p.date DESC LIMIT %d, %d", (int) $start, (int) $limit);
@@ -256,7 +280,7 @@ class CriticFront extends SearchFacets {
         return serialize($this->get_top_movie_critic($arg['critic_id'], $arg['date_add'], $arg['movie_id']));
     }
 
-    public function get_top_movie_critic($critic_id, $date_add, $movie_id = 0) {
+    public function get_top_movie_critic($critic_id, $date_add = 0, $movie_id = 0) {
         // Get critic post
         $critic = $this->cm->get_post_and_author($critic_id);
         /* Post data
@@ -301,35 +325,28 @@ class CriticFront extends SearchFacets {
             $top_movie = $critic->top_movie;
             // $top_movie = $this->cm->get_top_movie($critic->id);
         }
-        if (!$top_movie) {
-            return '';
+
+        if ($top_movie) {
+
+            $ma = $this->get_ma();
+            $movie = $ma->get_post($top_movie);
+
+            $poster_link_90 = $this->get_thumb_path_full(90, 120, $top_movie);
+            $poster_link_small = $this->get_thumb_path_full(220, 330, $top_movie);
+            $poster_link_big = $this->get_thumb_path_full(440, 660, $top_movie);
+
+            // Cast
+            $cast_obj = json_decode($movie->actors);
+            $cast = $this->get_cast_string($cast_obj, 50);
+
+            // Title
+            $title = $movie->title;
+
+            // Post name
+            $post_name = $this->get_or_create_ma_post_name($top_movie, $top_movie, $title, $movie->type);
+            $slug = $ma->get_post_slug($movie->type);
+            $url = '/' . $slug . '/' . $post_name;
         }
-        // New logic 26.08.2021. Get movie from an db
-        $ma = $this->get_ma();
-        // $ma_id = $ma->get_post_id_by_rwt_id($top_movie);
-        $ma_id = $top_movie;
-        if (!$ma_id) {
-            return '';
-        }
-        $movie = $ma->get_post($ma_id);
-        // print_r($movie);
-
-        $poster_link_90 = $this->get_thumb_path_full(90, 120, $ma_id);
-        $poster_link_small = $this->get_thumb_path_full(220, 330, $ma_id);
-        $poster_link_big = $this->get_thumb_path_full(440, 660, $ma_id);
-
-        // Cast
-        $cast_obj = json_decode($movie->actors);
-        $cast = $this->get_cast_string($cast_obj, 50);
-
-        // Title
-        $title = $movie->title;
-
-        // Post name
-        $post_name = $this->get_or_create_ma_post_name($ma_id, $top_movie, $title, $movie->type);
-        $slug = $ma->get_post_slug($movie->type);
-        $url = '/' . $slug . '/' . $post_name;
-
         // $content = '';
         /*
          * $critic - critic object
@@ -343,19 +360,24 @@ class CriticFront extends SearchFacets {
 
         $ret = array(
             'pid' => $critic_id,
-            'link' => $url,
-            'title' => $title,
-            'genre' => $movie->genre,
-            'release' => $movie->release,
-            'cast' => $cast,
-            'poster_link_small' => $poster_link_small,
-            'poster_link_big' => $poster_link_big,
-            'poster_link_90' => $poster_link_90,
             'content_pro' => $content,
             'date' => $critic->date,
-            'm_id' => $ma_id,
-            'type' => $slug,
+            'm_id' => 0,
         );
+
+        if ($top_movie) {
+            $ret['cast'] = $cast;
+            $ret['link'] = $url;
+            $ret['title'] = $title;
+            $ret['genre'] = $movie->genre;
+            $ret['release'] = $movie->release;
+            $ret['poster_link_small'] = $poster_link_small;
+            $ret['poster_link_big'] = $poster_link_big;
+            $ret['poster_link_90'] = $poster_link_90;
+            $ret['m_id'] = $top_movie;
+            $ret['type'] = $slug;
+        }
+
         return $ret;
     }
 
@@ -426,21 +448,29 @@ class CriticFront extends SearchFacets {
         $time_codes = array();
         $desc_results = array();
         // if ($critic->type == 4) {
-        if (strstr($content, '<div class="transcriptions">')) {
-            if ($fullsize) {
-                $codes_arr = $this->find_transcriptions($top_movie, $critic->id, $content);
-                $time_codes = $codes_arr['time_codes'];
-                $desc_results = $codes_arr['desc_results'];
+        if ($top_movie) {
+            if (strstr($content, '<div class="transcriptions">')) {
+                if ($fullsize) {
+                    $codes_arr = $this->find_transcriptions($top_movie, $critic->id, $content);
+                    $time_codes = $codes_arr['time_codes'];
+                    $desc_results = $codes_arr['desc_results'];
+                }
+                // $content = preg_replace('/<div class="transcriptions">.*<\/div>/Us', '', $content);
+                // Remove the content from posts witch transcriptions
+                $content = '';
             }
-            // $content = preg_replace('/<div class="transcriptions">.*<\/div>/Us', '', $content);
-            // Remove the content from posts witch transcriptions
-            $content = '';
         }
         // }
         // Get meta state
-        $meta_state = $this->cm->get_critic_meta_state($critic->id, $top_movie);
-        $critic->meta_state = isset($meta_state->state) ? $meta_state->state : 0;
-        $critic->meta_type = isset($meta_state->type) ? $meta_state->type : 0;
+
+        $info_link = '';
+        $meta_type = '';
+
+        if ($top_movie) {
+            $meta_state = $this->cm->get_critic_meta_state($critic->id, $top_movie);
+            $info_link = $this->get_info_link($critic->id, $top_movie, $meta_state->state);
+            $meta_type = $this->cm->get_post_category_name($meta_state->type);
+        }
 
         $wp_core = '';
         // Get the content for full size post from third db for all staff posts
@@ -485,11 +515,16 @@ class CriticFront extends SearchFacets {
         $author = $this->cm->get_author($critic->aid);
         $author_options = unserialize($author->options);
         $author_img = $author_options['image'];
-
+        $actorsdata = '';
         if ($author_img) {
-            $image = $this->get_local_thumb(100, 100, $author_img);
-            $actorsdata = '<div class="a_img_container" style="background: url(' . $image . '); background-size: cover;"></div>';
-        } else {
+            try {
+                $image = $this->get_local_thumb(100, 100, $author_img);
+                $actorsdata = '<div class="a_img_container" style="background: url(' . $image . '); background-size: cover;"></div>';
+            } catch (Exception $exc) {
+                
+            }
+        }
+        if (!$actorsdata) {
             // Empty image
             $actorsdata = '<div class="a_img_def"></div>';
         }
@@ -535,11 +570,11 @@ class CriticFront extends SearchFacets {
             $title_str = '<strong class="review-title">' . $title . '</strong>';
         }
 
-        $info_link = $this->get_info_link($critic->id, $top_movie, $critic->meta_state);
-        $review_bottom = '<div class="review_bottom"><div class="r_type">' . $this->cm->get_post_category_name($critic->meta_type) . '</div><div class="r_right"><div class="r_date">' . $critic_addtime . '</div>' . $info_link . '</div></div>';
+
+        $review_bottom = '<div class="review_bottom"><div class="r_type">' . $meta_type . '</div><div class="r_right"><div class="r_date">' . $critic_addtime . '</div>' . $info_link . '</div></div>';
 
         // Find video link
-        $video_link = $this->find_video_link($permalink, $critic->content);
+        $video_link = $this->find_video_link($permalink, $critic->content, $critic->id);
 
         if ($fullsize) {
 
@@ -703,18 +738,16 @@ class CriticFront extends SearchFacets {
         return $link;
     }
 
-    public function find_video_link($link, $content = '') {
+    public function find_video_link($link, $content = '', $cid = 0) {
         $ret = array();
         // https://www.bitchute.com/embed/kntoSwUiKY4T/
         if (preg_match('/bitchute\.com\/(?:embed|video)\/([a-zA-Z0-9\-_]+)/', $link, $match)) {
             if (count($match) > 1) {
-                $embed = 'https://www.bitchute.com/embed/' . $match[1];
+                $code = $match[1];
+                $embed = 'https://www.bitchute.com/embed/' . $code;
                 $ret['video'] = $this->embed_video($embed);
-                $ret['img'] = '';
+                $ret['img'] = $this->get_bitchute_img($code, $cid);
                 $ret['type'] = 'bitchute';
-                /* if (preg_match('/https\:\/\/www\.bitchute\.com\/channel\/([^\/]+)\//', $content, $cm)) {
-                  $ret['img'] = 'https://static-3.bitchute.com/live/cover_images/' . $cm[1] . '/' . $match[1] . '_320x180.jpg';
-                  } */
             }
         } else if ((strstr($link, 'youtube') || strstr($link, 'youtu.be'))) {
             if (preg_match('#//www\.youtube\.com/embed/([a-zA-Z0-9\-_]+)#', $link, $match) ||
@@ -727,9 +760,100 @@ class CriticFront extends SearchFacets {
                     $ret['type'] = 'youtube';
                 }
             }
+        } else if (strstr($link, 'https://odysee.com/')) {
+            // https://odysee.com/@Blackpilled:b/onlypands:9
+            // "https://odysee.com/$/embed/onlypands/957cb76fa7b324ba528effbe18412dd2c7b68712?r=7SxiDSy5WmXCoYKTUH3nDhJax2LtpNEq"
+
+
+            $ret_arr = $this->get_odysee($link, $cid);
+            if ($ret_arr) {
+                $ret['video'] = $this->embed_video($ret_arr['embed']);
+                $ret['img'] = $ret_arr['img'];
+                $ret['type'] = 'odysee';
+            }
         }
 
+        // cache_img
+        /* if ($ret['img']) {
+          $ret['img'] = $this->cache_img($ret['img']);
+          } */
+
         return $ret;
+    }
+
+    public function get_odysee($link, $cid) {
+        $ret = array();
+        if ($cid > 0) {
+            // Get from db
+            $db_data = $this->cm->get_thumb($cid);
+            if ($db_data) {
+                $ret = json_decode($db_data, true);
+            }
+        }
+        if (!$ret) {
+            // Parse data
+            $cp = $this->cm->get_cp();
+            //$proxy = '107.152.153.239:9942';
+            $proxy = '';
+            $data = $cp->get_proxy($link, $proxy, $headers);
+
+            if ($data) {
+                // Embed
+                $embed = '';
+                if (preg_match('/"embedUrl": "([^"]+)"/', $data, $match)) {
+                    $embed = $match[1];
+                }
+                $img = '';
+
+                if (preg_match('/"url": "(https:\/\/thumbnails\.odycdn\.com\/[^"]+)"/', $data, $match)) {
+                    $img = $match[1];
+                }
+
+                if ($img && $embed) {
+                    $ret = array(
+                        'img' => $img,
+                        'embed' => $embed
+                    );
+                    if ($cid > 0) {
+                        // Save to db
+                        $to_db = json_encode($ret);
+                        $this->cm->add_thumb($cid, $to_db);
+                    }
+                }
+            }
+        }
+        return $ret;
+    }
+
+    public function get_bitchute_img($code = '', $cid = 0) {
+
+        $img = '';
+
+        if ($cid > 0) {
+            // Get from db
+            $img = $this->cm->get_thumb($cid);
+        }
+
+        if (!$img) {
+            // Parse thumb
+            $cp = $this->cm->get_cp();
+            //$proxy = '107.152.153.239:9942';
+            $proxy = '';
+            $b_link = 'https://www.bitchute.com/video/' . $code . '/';
+            $data = $cp->get_proxy($b_link, $proxy, $headers);
+
+            if ($data) {
+                if (preg_match('/<meta property="og:image" content="([^"]+)"/', $data, $match)) {
+                    $img = $match[1];
+                }
+            }
+
+            if ($img && $cid > 0) {
+                // Save to db
+                $this->cm->add_thumb($cid, $img);
+            }
+        }
+        return $img;
     }
 
     public function embed_video($link) {
@@ -854,7 +978,7 @@ class CriticFront extends SearchFacets {
         }
 
         if ($avatar_user) {
-            $actorsdata = '<div class="a_img_container_audience" style="background: url(https://' . $_SERVER['HTTP_HOST'] . '/wp-content/uploads/avatars/custom/' . $avatar_user . '); background-size: cover;"></div>';
+            $actorsdata = '<div class="a_img_container_audience" style="background: url(' . WP_SITEURL . '/wp-content/uploads/avatars/custom/' . $avatar_user . '); background-size: cover;"></div>';
         } else {
             $actorsdata = '<span></span>';
         }
@@ -1020,7 +1144,7 @@ class CriticFront extends SearchFacets {
 
     public function get_critic_url($post) {
         $slug = $this->get_critic_slug($post);
-        $link = 'https://' . $_SERVER['HTTP_HOST'] . '/critics/' . $slug . '/';
+        $link = WP_SITEURL . '/critics/' . $slug . '/';
         return $link;
     }
 
@@ -1712,7 +1836,7 @@ class CriticFront extends SearchFacets {
         $tag_id = 0;
         global $site_url;
         if (!$site_url)
-            $site_url = 'https://' . $_SERVER['HTTP_HOST'] . '/';
+            $site_url = WP_SITEURL . '/';
 
         // Get settings
         $ss = $this->cm->get_settings();
@@ -1782,7 +1906,7 @@ class CriticFront extends SearchFacets {
     public function get_stuff_scroll_data($movie_id = 0) {
         global $site_url;
         if (!$site_url) {
-            $site_url = 'https://' . $_SERVER['HTTP_HOST'] . '/';
+            $site_url = WP_SITEURL . '/';
         }
 
 
@@ -1855,7 +1979,7 @@ class CriticFront extends SearchFacets {
     public function get_audience_scroll_data($movie_id = 0, $vote = 1, $search = false) {
         global $site_url;
         if (!$site_url)
-            $site_url = 'https://' . $_SERVER['HTTP_HOST'] . '/';
+            $site_url = WP_SITEURL . '/';
 
         /* Author type
           0 => 'Staff',
@@ -1928,17 +2052,18 @@ class CriticFront extends SearchFacets {
         return '';
     }
 
-    public function search_last_critics($mid=0,$count=10) {
+    public function search_last_critics($mid = 0, $count = 10) {
 
         $keyword = '';
-        $limit = 10;
+        $limit = $count;
         $start = 0;
         $sort = array(
             'sort' => 'date',
             'type' => 'desc'
         );
         $filters = array(
-            'movie' => $mid
+            'movie' => $mid,
+                /// 'author'=> 2
         );
 
         $facets = false;
@@ -1961,14 +2086,15 @@ class CriticFront extends SearchFacets {
                 $post->author_type = $item->author_type;
                 $post->author_name = trim(strip_tags($item->author_name));
                 $post->title = trim(strip_tags($item->title));
-                $url = $this->get_critic_url($post);
-                
+                // $url = $this->get_critic_url($post);
+
                 $results[$id]['title'] = $post->title;
                 $results[$id]['content'] = $content;
-                $results[$id]['url'] = $url;
+                // $results[$id]['url'] = $url;
                 $results[$id]['author_name'] = $post->author_name;
-                $results[$id]['author_type'] = $post->author_type;
+                // $results[$id]['author_type'] = $post->author_type;
                 $results[$id]['rating'] = $item->aurating;
+                // $results[$id]['date'] = $item->date_add;
             }
         }
         return $results;
@@ -1977,6 +2103,14 @@ class CriticFront extends SearchFacets {
     /*
      * External fucntions 
      */
+
+    public function cache_img($url) {
+        $cache_site = 'https://img.rightwingtomatoes.com/';
+        if (!strstr($url, $cache_site)) {
+            $url = $cache_site . $url;
+        }
+        return $url;
+    }
 
     public function rating_images($type, $rating, $subrating = 0) {
         $ca = $this->get_ca();

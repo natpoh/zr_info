@@ -106,9 +106,9 @@ class AnalyticsFront extends SearchFacets {
         /* 'dvddom' => array('title' => 'DVD Sales Domestic'), */
         'release' => array('name' => 'date', 'title' => 'Movie release date', 'atitle' => 'Movies', 'type' => 'datetime', 'format' => 'date', 'min' => -1),
         'actors' => array('name' => 'actors', 'title' => 'Actors count', 'atitle' => 'Actors', 'races' => 1),
-        'rrwt' => array('name' => 'rrwt', 'title' => 'Rating RWT', 'atitle' => 'Rating RWT'),
+        'rrwt' => array('name' => 'rrwt', 'title' => 'Rating ZR', 'atitle' => 'Rating ZR'),
         'rating' => array('name' => 'rating', 'title' => 'Rating Family Friendly Score', 'atitle' => 'Rating FFS'),
-        'aurating' => array('name' => 'aurating', 'title' => 'RWT Audience Score', 'atitle' => 'Rating WORTHWHILE'),
+        'aurating' => array('name' => 'aurating', 'title' => 'ZR Audience Score', 'atitle' => 'Rating WORTHWHILE'),
         'rimdb' => array('name' => 'rimdb', 'title' => 'Rating IMDB', 'atitle' => 'Rating IMDB'),
         'rrt' => array('name' => 'rrt', 'title' => 'Rating Rotten Tomatoes', 'atitle' => 'Rating RT'),
         'rrta' => array('name' => 'rrta', 'title' => 'Rating Rotten Tomatoes Audience', 'atitle' => 'Rating RTA'),
@@ -162,9 +162,9 @@ class AnalyticsFront extends SearchFacets {
         'simpson' => array('color' => '#2b908f', 'title' => 'Simpson\'s Index'),
         'diversity' => array('color' => '#90ee7e', 'title' => 'Simpson\'s Diversity Index'),
         // Ratings
-        'rrwt' => array('title' => 'Rating RWT', 'color' => '#2b908f'),
+        'rrwt' => array('title' => 'Rating ZR', 'color' => '#2b908f'),
         'rating' => array('title' => 'Rating Family Friendly Score', 'color' => '#2b908f'),
-        'aurating' => array('title' => 'RWT Audience Score', 'color' => '#2b908f'),
+        'aurating' => array('title' => 'ZR Audience Score', 'color' => '#2b908f'),
         'rimdb' => array('title' => 'Rating IMDB', 'color' => '#2b908f'),
         'rrt' => array('title' => 'Rating Rotten Tomatoes', 'color' => '#2b908f'),
         'rrta' => array('title' => 'Rating Rotten Tomatoes Audience', 'color' => '#2b908f'),
@@ -4531,8 +4531,8 @@ class AnalyticsFront extends SearchFacets {
     }
 
     public function get_image_link($id = '', $last_update = '', $resolution = 540) {
-        $current_site = 'https://rightwingtomatoes.com';
-        $cache_site = 'https://img.rightwingtomatoes.com';
+        $current_site = 'https://zeitgeistreviews.com';
+        $cache_site = 'https://img.zeitgeistreviews.com';
 
         $result = $cache_site . '/webp/' . $resolution . '/' . $current_site . '/analysis/create_image/m_' . $id . '_v' . $last_update . '.jpg.webp';
         return $result;

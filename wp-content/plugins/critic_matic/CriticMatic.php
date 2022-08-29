@@ -180,6 +180,7 @@ class CriticMatic extends AbstractDB {
             'authors_meta' => $table_prefix . 'critic_matic_authors_meta',
             'movies_meta' => $table_prefix . 'critic_movies_meta',
             'ip' => $table_prefix . 'critic_matic_ip',
+            'thumbs' => $table_prefix . 'critic_matic_thumbs',
             // CF
             'feed_meta' => $table_prefix . 'critic_feed_meta',
             // TS
@@ -213,16 +214,17 @@ class CriticMatic extends AbstractDB {
             'posts_type_3' => 0,
             'posts_rating' => 0,
             'audience_desc' => array(
-                'vote' => "<strong>「&quot;Boycott Or Support&quot;」</strong> lets people know if they should avoid watching the film even if it's free, if they should <a class=&quot;window_open&quot; href=&quot;#https://rightwingtomatoes.com/culture_warrior/&quot; target=&quot;_blank&quot; title=&quot;How to torrent films.&quot;>torrent</a> the film, or if they should spend money watching it to support the creators.",
+                'vote' => "<strong>「&quot;Boycott Or Support&quot;」</strong> lets people know if they should avoid watching the film even if it's free, if they should <a class=&quot;window_open&quot; href=&quot;#https://zeitgeistreviews.com/culture_warrior/&quot; target=&quot;_blank&quot; title=&quot;How to torrent films.&quot;>torrent</a> the film, or if they should spend money watching it to support the creators.",
                 'rating' => "<strong>「&quot;Worthwhile Content&quot;」</strong> rates the redeeming aspects of the film.",
                 'hollywood' => 'Overall Hollywood BS',
                 'patriotism' => "<strong>「&quot;Neo-Marxism&quot;」</strong>, (sometimes referred to as <a class=&quot;window_open&quot; href=&quot;#https://infogalactic.com/info/Cultural_Marxism&quot; title=&quot;Link to the Vox Day wikipedia alternative site explaining what cultural marxism is.&quot; target=&quot;_blank&quot;>&quot;Cultural Marxism&quot;</a>), rates&nbsp;the&nbsp;amount&nbsp;of fanatic egalitarianism in a film. Particularly in regard to criticism of<a title=&quot;30 second YouTube clip that shows the not-so-suble criticism of America in James Cameron's 'Avatar'&quot; class=&quot;window_open&quot; href=&quot;#https://www.youtube.com/watch?v=5d5WArztDgo&amp;amp;feature=youtu.be&amp;amp;t=4m49s&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;> nationalism</a> and<a title=&quot;IB Times article about a short Fox News clip criticizing 'The Lego Movie.'&quot; class=&quot;window_open&quot; href=&quot;#http://www.ibtimes.co.uk/fox-news-takes-aim-lego-movie-being-anti-capitalist-video-1435808&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;> capitalism</a>.",
                 'misandry' => "<strong>「&quot;Misandry&quot;」</strong>&nbsp;rates&nbsp;the&nbsp;amount&nbsp; of feminism in a film. Particularly when <a title=&quot;YouTube video of Gavin Mcinnes giving examples of 'cuck-mercials.'&quot; class=&quot;window_open&quot; href=&quot;#https://www.youtube.com/watch?v=5PaRn2-YfTI&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>manhood is disparaged</a>, rather than simply having strong female characters.",
                 'affirmative' => "<strong>「&quot;Affirmative Action&quot;」</strong>&nbsp;rates&nbsp;how much &quot;<a title=&quot;Steven Crowder article about how even the African American cast of 'Blackish' are getting sick and tired of the redundant questions about diversity they get all the time.&quot; class=&quot;window_open&quot; href=&quot;#http://www.louderwithcrowder.com/black-ish-creator-im-tired-of-talking-about-diversity/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>diversity</a>&quot; is being pushed. ( Not true diversity, but the <a class=&quot;window_open&quot; href=&quot;#https://archive.li/DPrE1&quot; target=&quot;_blank&quot; title=&quot;Hella diverse cast of black panther.&quot; >anti-White</a> checklist kind.)",
-                'lgbtq' => "<strong>「&quot;LGBTQrstuvwxyz&quot;」</strong>&nbsp;rates&nbsp;the&nbsp;amount&nbsp;of <a title=&quot;Buzzfeed article celebrating the transgender character thrown into the 'Mr. Robot' script to complete their diversity bingo chart.&quot; class=&quot;window_open&quot; href=&quot;#http://www.buzzfeed.com/arianelange/mr-robot-diversity&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>non-tradional&nbsp;sexuality</a>&nbsp;depicted. Whether this is positive or negative is up to the user. For example, <a class=&quot;window_open&quot; href=&quot;#https://rightwingtomatoes.com/critics/1671/&quot; target=&quot;_blank&quot; title=&quot;Link to reviews by Armond, in our database.&quot;>Armond White</a> is an openly gay conservative critic filled throughout our database.",
+                'lgbtq' => "<strong>「&quot;LGBTQrstuvwxyz&quot;」</strong>&nbsp;rates&nbsp;the&nbsp;amount&nbsp;of <a title=&quot;Buzzfeed article celebrating the transgender character thrown into the 'Mr. Robot' script to complete their diversity bingo chart.&quot; class=&quot;window_open&quot; href=&quot;#http://www.buzzfeed.com/arianelange/mr-robot-diversity&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>non-tradional&nbsp;sexuality</a>&nbsp;depicted. Whether this is positive or negative is up to the user. For example, <a class=&quot;window_open&quot; href=&quot;#https://zeitgeistreviews.com/critics/1671/&quot; target=&quot;_blank&quot; title=&quot;Link to reviews by Armond, in our database.&quot;>Armond White</a> is an openly gay conservative critic filled throughout our database.",
                 'god' => "<strong>「&quot;Anti-God Themes&quot;」</strong>&nbsp;rates&nbsp;the&nbsp;amount&nbsp;of slander towards God and/or <a title=&quot;Hollywood Reporter article about Pat Boone explaining why he boycotts SNL, and thinks they're cowards for not criticizing Islam as they do with 'God's Not Dead 2.'&quot; class=&quot;window_open&quot; href=&quot;#http://www.hollywoodreporter.com/news/pat-boone-accuses-snl-anti-885253&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>Christian</a> ethics. As with all these ratings, whether this is positive or negative is up to the reviewer. If you're a Pagan Alt Righter or Atheist Anarcho Capitalist, this may be good in your eyes."
             ),
             'audience_cron_path' => '',
+            'audience_post_edit' => 0,
             'sync_status' => 1,
             'an_weightid' => 0,
         );
@@ -242,8 +244,6 @@ class CriticMatic extends AbstractDB {
                 }
                 require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticParser.php' );
             }
-
-
 
             $this->cp = new CriticParser($this->cp);
         }
@@ -445,7 +445,7 @@ class CriticMatic extends AbstractDB {
         $q = array();
         foreach ($q_def as $key => $value) {
             $q[$key] = isset($q_req[$key]) ? $q_req[$key] : $value;
-        }
+        }        
 
         // Custom status
         $status_trash = 2;
@@ -1030,10 +1030,13 @@ class CriticMatic extends AbstractDB {
             // To trash
             $id = $form_state['id'];
 
-            $data = array('status' => $status);
+            $data = array(
+                'date_add' => $this->curr_time(),
+                'status' => $status
+            );
             $this->db_update($data, $this->db['posts'], $id);
-
-            $this->hook_update_post($id);
+            $this->hook_update_post($id);            
+            $this->critic_delta_cron();
 
             $result = $id;
         }
@@ -1043,10 +1046,13 @@ class CriticMatic extends AbstractDB {
     public function trash_post_by_id($id) {
         // To trash
         $data = array(
-            'status' => 2,
+            'date_add' => $this->curr_time(),
+            'status' => $status
         );
         $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
         $this->hook_update_post($id);
+        $this->critic_delta_cron();
+        
         return true;
     }
 
@@ -1056,10 +1062,13 @@ class CriticMatic extends AbstractDB {
         $old_status = $this->db_get_var($sql);
         if ($old_status != $status) {
             $data = array(
-                'status' => $status,
+                'date_add' => $this->curr_time(),
+                'status' => $status
             );
             $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
             $this->hook_update_post($id);
+            $this->critic_delta_cron();
+            
             return true;
         }
         return false;
@@ -2014,6 +2023,25 @@ class CriticMatic extends AbstractDB {
             $result = $id;
         }
         return $result;
+    }
+
+    /*
+     * Thumbs
+     */
+
+    public function get_thumb($cid) {
+        $sql = sprintf("SELECT url FROM {$this->db['thumbs']} WHERE cid=%d", (int) $cid);
+        $result = $this->db_get_var($sql);
+        return $result;
+    }
+
+    public function add_thumb($cid = 0, $url = '') {
+        $data = array(
+            'cid' => $cid,
+            'url' => $url,
+            'date' => $this->curr_time()
+        );
+        $this->db_insert($data, $this->db['thumbs']);
     }
 
     /*
