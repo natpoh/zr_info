@@ -13,7 +13,7 @@ global $array_jobs;
 $array_jobs = array(
 
 'add_tmdb_without_id'=>10,///add imdb id to tmdb database
-'check_last_actors'=>10,
+'check_last_actors'=>20,
 'check_kairos'=>5,///add kairos images
 ///'check_face'=>10,///add bettaface verdict
 
