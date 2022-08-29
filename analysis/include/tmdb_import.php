@@ -836,7 +836,9 @@ class TMDBIMPORT
             require_once( CRITIC_MATIC_PLUGIN_DIR . 'db/AbstractFunctions.php' );
             require_once( CRITIC_MATIC_PLUGIN_DIR . 'db/AbstractDBAn.php' );
             require_once( CRITIC_MATIC_PLUGIN_DIR . 'MoviesAn.php' );
-            $ma = new MoviesAn();
+            $cm = new CriticMatic();
+            $ma = $cm->get_ma();
+
         }
 
 
