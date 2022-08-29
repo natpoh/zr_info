@@ -224,12 +224,21 @@ class Cronjob
         }
         else
         {
-            echo '<br>cron is runned <br> last task:<br>' . PHP_EOL;
-
+            echo '<br>cron is runned <br>' . PHP_EOL;
+            $content='';
             foreach ($jobs_data as $i=> $r)
             {
-                echo $i. ' '.round($r,0).' min ('.$array_jobs[$i].')<br>';
+                $n='no';
+                if ($r>0)$n='yes';
+
+
+                $content.= '<tr><td>'.$i.'</td><td>'.round($r,0).'</td><td>'.$array_jobs[$i].'</td><td>'.$n.'</td></tr>';
+
             }
+
+            $content = ' <br>Order of tasks:<br><table border="1" cellspacing="0"><tr><th>Job</th><th>Order</th><th>Default  (min)</th><th>Need to update</th></tr>'.$content.'</table>';
+
+            echo $content;
 
 ///get last task
 /// task	time
@@ -282,7 +291,7 @@ class Cronjob
 
             }
 
-            $content = '<br><br><table border="1" cellspacing="0"><tr><th>Job</th><th>Day</th><th>Start</th><th>End</th><th>Total</th></tr>'.$content.'</table>';
+            $content = ' <br>last tasks:<br><table border="1" cellspacing="0"><tr><th>Job</th><th>Day</th><th>Start</th><th>End</th><th>Total</th></tr>'.$content.'</table>';
 
         echo $content;
         }
