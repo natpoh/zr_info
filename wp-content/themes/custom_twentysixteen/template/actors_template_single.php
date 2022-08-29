@@ -55,7 +55,7 @@ $content = '<div class="movie_total_rating not_load" id="movie_rating" data-valu
 <div><div class="desc"> <b>NOTE:</b> For the largest &amp; most objective database possible, these verdicts are automated. To check our sources and/or submit a manual correction, click the image of the cast member. 
 <br>
 <br>
-We are constantly expanding and improving our algorithms. But it is time consuming &amp; expensive, so please consider <u><a href="https://cointr.ee/rightwingtomato" target="_blank">donating</a></u> or helping us crowdsource. For suggestions, check <u><a href="https://rightwingtomatoes.com/feedback" target="_blank">our feedback page</a></u> to see if we are already planning on it.
+We are constantly expanding and improving our algorithms. But it is time consuming &amp; expensive, so please consider <u><a href="https://cointr.ee/rightwingtomato" target="_blank">donating</a></u> or helping us crowdsource. For suggestions, check <u><a href="https://zeitgeistreviews.com/feedback" target="_blank">our feedback page</a></u> to see if we are already planning on it.
 <br>
 <br>
 Thank you!</div>'.$content.'</div>

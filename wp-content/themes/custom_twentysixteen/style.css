@@ -645,7 +645,9 @@ td {
     font-family: Courier, "Helvetica Neue", Courier;
 }
 
-
+.redtext{
+    color: #ef3030;
+}
 /**
  * 5.0 - Forms
  */
@@ -3338,7 +3340,7 @@ blockquote:after,
 
 .site_theme_switch .box .ball::after {
 
-content: "";
+    content: "";
     background: url("images/sun.svg");
     height: 24px;
     width: 24px;
@@ -8605,7 +8607,7 @@ hr {
 }
 
 div.card.style_1 div.image  {
-    box-shadow: 3px 3px 4.5px rgba(0, 0, 0, 0.48);
+    box-shadow: 3px 3px 5.5px rgba(0, 0, 0, 0.48);
 }
 
 
@@ -8779,7 +8781,7 @@ div.card.style_1 div.image  {
 /* Audience Staff Disclaimer Responsive */
 
 .audience_review .column_header::after {
-    content: 'RWT does not condone or endorse the views expressed below, nor do our advertisers or any critics featured. We simply are strong supporters of the First Amendment and understand many of the reviews are satirical and sarcastic in nature.';
+    content: 'ZR does not condone or endorse the views expressed below, nor do our advertisers or any critics featured. We simply are strong supporters of the First Amendment and understand many of the reviews are satirical and sarcastic in nature.';
     opacity: .1469;
     position: relative;
     margin-top: 10px;
@@ -8791,7 +8793,7 @@ div.card.style_1 div.image  {
 }
 
 .audience_review .column_header:hover:after {
-    content: 'RWT does not condone or endorse the views expressed below, nor do our advertisers or any critics featured. We simply are strong supporters of the First Amendment and understand many of the reviews are satirical and sarcastic in nature.';
+    content: 'ZR does not condone or endorse the views expressed below, nor do our advertisers or any critics featured. We simply are strong supporters of the First Amendment and understand many of the reviews are satirical and sarcastic in nature.';
     opacity: .8;
     position: relative;
     margin-top: 10px;
@@ -8927,7 +8929,7 @@ section.inner_content.no_pad div.column_header {
 
 /*
 .search-no-results .content-full {
-    background-image: linear-gradient(rgba(255, 255, 255, 0.93), rgba(255, 255, 255, 0.93)), url("https://rightwingtomatoes.com/wp-content/uploads/2021/04/RWT_texture_.jpg");
+    background-image: linear-gradient(rgba(255, 255, 255, 0.93), rgba(255, 255, 255, 0.93)), url("https://zeitgeistreviews.com/wp-content/uploads/2021/04/RWT_texture_.jpg");
 }
 
 .search-no-results .search_review {
@@ -8953,7 +8955,7 @@ section.inner_content.no_pad div.column_header {
 
 
 .flex_content_block .content-full {
-    background-image: linear-gradient(rgba(255, 255, 255, 0.93), rgba(255, 255, 255, 0.93)), url("https://rightwingtomatoes.com/wp-content/uploads/2021/04/RWT_texture_.jpg");
+    background-image: linear-gradient(rgba(255, 255, 255, 0.93), rgba(255, 255, 255, 0.93)), url("https://zeitgeistreviews.com/wp-content/uploads/2021/04/RWT_texture_.jpg");
 }
 
 .flex_content_block .search_review {
@@ -9226,7 +9228,7 @@ section.inner_content.no_pad div.column_header {
 
 .synved-social-provider-reddit {
 
-    background-image: url("https://rightwingtomatoes.com/wp-content/uploads/2021/05/reddit_moment_icon_RWT_.png");
+    background-image: url("https://zeitgeistreviews.com/wp-content/uploads/2021/05/reddit_moment_icon_RWT_.png");
     background-size: contain;
 }
 
@@ -9368,4 +9370,1023 @@ strong {
 }
 /* title on help page looked bad*/
 
+
+
+/* temporary fix for the lgbt content to stand out more and be legible */
+
+
+.note_show .bg_rainbow
+{
+    -webkit-text-stroke-width: .01em;
+    -webkit-text-stroke-color: black;
+    text-shadow: .05em .05em rgba(0,0,0,0.1488);
+    mix-blend-mode:difference;
+
+}
+
+
+
+
+
+/* temporary fix to remove the category text on the mobile drop down menu */
+
+.main_page_desc {
+    display:none;
+}
+
+
+/* temporary fix to make sign up form submit button symmetrical */
+
+.mailpoet_submit {
+    margin-right:-2.2em;
+}
+
+
+
+
+
+
+
+/* footer hover css stuff */
+
+.shekelz img { cursor: url('https://oc.rightwingtomatoes.com/wp-content/uploads/2018/11/mastercard_cursor.png'), auto !important;
+}
+
+
+.shekelz img:hover{
+    filter: hue-rotate(180deg);
+    -webkit-filter: hue-rotate(60deg);
+}
+
+.textwidget p img {
+    mix-blend-mode: luminosity;
+}
+
+.textwidget p img:hover {
+    mix-blend-mode: normal;
+}
+
+.txtshek {
+    margin:1.488em;
+    display:inline;
+    opacity:.5;
+}
+
+.txtshek:hover {
+    opacity:1;
+}
+
+
+
+/* staff reviews emoji reacts are now popping up in the wrong spot because of the content max width this is a temporary fix to the symptom of that fix */
+
+.type-Movie .stuff_review .user-reactions-box {
+    left:12em;
+}
+
+
+
+.search-results .search_review .user-reactions-box {
+    left:7em;
+}
+
+/* important permanent fix for the line breaks users and staff type in their reviews */
+
+.full_review p {
+    line-height:1.4;
+}
+
+.full_review br {
+    line-height:1.4;
+}
+
+.vote_main {
+    white-space:pre-wrap;
+}
+
+
+
+
+/* important permanent fix for long audience names overlapping the icons and for the ugly looking long rectangle shaped audience reviews. now they are all compact and aesthetic squares with no overlap */
+
+
+.mbp_f .icntn{
+    overflow-y: scroll;
+}
+
+
+.type-Movie .vote_main {
+    max-height: 300px;
+
+}
+
+.type-Movie .audience_review .review_autor_name {
+    padding-right:2.8em;
+}
+
+
+
+
+
+
+/* temporary fix for the youtube icon in pro reviews not being centered */
+
+.icntn .video {
+    padding:4em;
+}
+
+.icntn .video {
+    padding:4em;
+}
+
+.icntn .video_img {
+    margin-top:-1.88em;
+}
+
+
+
+
+
+/* permanent change, will add to syle css file later. But it's to make the advanced filters button noticeable to new users. Especially on mobile when the filter bar isn't always visible */
+
+
+@media only screen and (max-width: 990px) {
+
+    .search-results .customsearch_container__advanced-search-button {
+        opacity:.777;
+        border-radius: 88%;
+        box-shadow: 0 0 0 0 rgba(90, 153, 212, 0.777);
+        animation: pulse 1.5s infinite;
+        animation-iteration-count: 7;
+        animation-timing-function: ease-in-out;
+        animation-delay: 1s;
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(0.9);
+        }
+        70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 50px rgba(90, 153, 212, 0);
+        }
+        100% {
+            transform: scale(0.9);
+            box-shadow: 0 0 0 0 rgba(90, 153, 212, 0);
+        }
+    }
+
+    .search-results .customsearch_container__advanced-search-button:hover {
+        animation: none;
+        animation-fill-mode: forwards;
+    }
+
+}
+
+
+
+
+
+
+.home .customsearch_container__advanced-search-button {
+    opacity:.777;
+    border-radius: 88%;
+    box-shadow: 0 0 0 0 rgba(90, 153, 212, 0.777);
+    animation: pulse 1.5s infinite;
+    animation-iteration-count: 7;
+    animation-timing-function: ease-in-out;
+    animation-delay: 1s;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.9);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 50px rgba(90, 153, 212, 0);
+    }
+    100% {
+        transform: scale(0.9);
+        box-shadow: 0 0 0 0 rgba(90, 153, 212, 0);
+    }
+}
+
+.home .customsearch_container__advanced-search-button:hover {
+    animation: none;
+    animation-fill-mode: forwards;
+    opacity:1;
+}
+
+
+.customsearch_component__button {
+    opacity:.777;
+}
+
+.customsearch_component__button:hover {
+    opacity:1;
+}
+
+
+
+/*ecelebs page had funky featured image way too big and disqus comments messed up */
+
+.post-487961 .post-thumbnail {
+    max-width:50%;
+    margin-left:25%;
+}
+
+.post-487961 .entry-content iframe {
+    max-width:90%!important;
+    margin-left:5%!important;
+}
+
+.post-487961 #disqus_thread {
+    padding-right:4em;
+    margin-left:-3em;
+}
+
+
+/*temporary fix for genres on frontpage of poster broke in bad spots */
+
+.discover .content  p {
+    overflow-wrap: normal;
+}
+
+
+
+/* temporary fix for disqus comments and the shortcode ultimate spoilers. just making a css target it on the pages with spoilers. this is the gwgb page */
+
+.post-487682 #disqus_thread {
+    padding-right:4em;
+    margin-left:-3em;
+}
+
+
+
+/* temporary fix to the audience review with the REEEEEE text */
+
+.search-results .vote_content p{
+    overflow-wrap: anywhere!important;
+}
+
+
+/* temporary fix to make emoji reactions centered on view more pro pages & movie pages */
+
+.search-results .user-reactions-box {
+    margin-left:-2em;
+}
+
+
+
+.type-Movie .mbp_f .user-reactions-box {
+    margin-left:0em;
+}
+
+/* temporary fix for the front page audience names being too long and overlapping onto the comment and emoji react icons */
+
+.audience_review .review_autor_name {
+    padding-right:2em!important;
+    margin:-.7em!important;
+}
+
+
+
+
+
+.type-Movie .audience_review .review_autor_name {
+    padding-right:4em!important;
+    margin:-.7em!important;
+}
+
+
+
+.search .emotions_count {
+    margin:0;
+}
+
+
+
+/* temporary fix adding @ symbol to comments so users know it's not an audience review itself. Also minor touch ups to style of audience comments */
+
+
+.disqus_content_bottom {
+    padding-top:1.488%;
+}
+
+
+.disqus_view {
+    padding-left:1.488%;
+    opacity:.5;
+}
+
+.disqus_view:hover {
+    opacity:1.9;
+}
+
+.disqus_reply {
+    opacity:.5;
+}
+
+.disqus_reply:hover {
+    opacity:1.9;
+}
+
+
+@media only screen and (min-width: 990px) {
+
+    .big_block_comment {
+        max-width:80%;
+        margin-left:10%;
+    }
+
+}
+
+
+
+
+/* temp fix to center the newsletter forum */
+
+
+@media only screen and (max-width: 990px) {
+
+    #mailpoet_form_1 .mailpoet_submit {
+        margin-left: 4.6em!important;
+    }
+
+
+
+
+}
+
+
+.widget-title  {
+    font-family:courier!important;
+    margin-left:1.4em!important;
+}
+
+
+/* temp fix to make audience bubble reviews less obnoxious and more aesthetic and more symmetrical and more compact */
+
+
+.a_msg .icntn {
+    max-height:20em!important;
+    overflow-y:scroll;
+}
+
+
+/* temporary fix for actor image so it looks more aesthetic. The gif change to the smaller one made subtle changes so the luminosity looks better but now the verdict color doesn't show yellow. oh well. better this way for now
+
+*/
+
+
+.actor_image {
+    mix-blend-mode: luminosity;
+}
+
+
+/* just adding space between crowdsource verdict and others */
+
+.actor_crowdsource_container {
+    margin-top:2em;
+}
+
+
+
+
+
+/* temporary fix to make facial recognition pop ups fun and aesthetic but not too crazy and hard to read */
+
+.actor_image_container {
+    background:url(https://zeitgeistreviews.com/wp-content/themes/custom_twentysixteen/images/matrix.gif)!important;
+    background-position: center!important;
+    width:73%!important;
+    margin-left:13%;
+    background-size:110%!important;
+}
+
+
+
+
+
+@media only screen and (max-width: 990px) {
+
+    .actor_image_container {
+        width:79%!important;
+    }
+
+}
+
+
+
+
+/* temp fix on making speech bubbles compact but still keeping the empty spaces in the pop up full review */
+
+
+
+
+.popup-inner .vote_content p {
+
+    white-space:pre-wrap;
+
+}
+
+
+.vote_content p {
+
+    white-space:normal;
+
+}
+
+
+/* temporary fix to hide the BS score. it's not relevant anymore.
+just the audience average and maybe the staff average too.
+custom ratings can be used in the advanced search feature and using the audience average is an equal proxy for bs as well so it's redundant and the stars can be used for a sort feature */
+
+#bs {
+    display:none;
+}
+
+
+
+
+
+/* temp fix for centered text in speech bubbles. align left looks best */
+
+.vote_content p{
+    text-align:left!important;
+}
+
+
+
+
+
+/* temporary css fix for spoiler text not creating separate lines. I think it's a conflict due to the p tag white space css not  sure */
+
+.spoiler_default {
+    display:inline;
+}
+
+
+/* temp fix to override previous css and make speech bubbbles align left, it looks better than centered */
+
+.icntn p{
+    text-align:left!important;
+}
+
+.review-title {
+    margin-bottom:.8em!important;
+}
+
+
+.full_review p:nth-of-type(1) {
+    margin-top:1em;
+}
+
+
+
+/* temp fix to make the support us icon yellow until hover making it green. once the iframe embed for donations is implemented the left footer widget needs to be made compact so the support button will be removed for symmetry */
+
+.shekelz {
+    -webkit-filter: grayscale(0%)!important; /* Ch 23+, Saf 6.0+, BB 10.0+ */
+    filter: grayscale(0%)!important; /* FF 35+ */
+}
+
+
+
+/* the audience review names were touching the avatars and it was bugging me. this adds a slight buffer */
+
+.a_img_container_audience {
+    margin-right:.3em!important;
+}
+
+
+
+
+/* keeping nice spacing for br and p tags on disqus comments */
+
+.disqus_message p {
+    margin-top:.7em;
+}
+
+.disqus_message br {
+    content: "";
+    margin: 2em;
+    display: block;
+    font-size: 24%;
+}
+
+
+
+
+/* the audience tomato avatars that were not a 1:1 aspect ratio were cut off often. this makes them look good */
+
+.a_img_container_audience {
+    background-position:center!important;
+    background-size: contain!important;
+    -webkit-background-size: contain;
+    -moz-background-size: contain;
+    -o-background-size: contain;
+    background-repeat:no-repeat!important;
+}
+
+
+
+
+
+
+/* temp fix to stop obnoxious audience name overlap with the disqus icons when users give really long names */
+
+.review_autor_name {
+    width: min-intrinsic;
+    width: -webkit-min-content;
+    width: -moz-min-content;
+    width: min-content;
+    display: table-caption;
+    display: -ms-grid;
+    -ms-grid-columns: min-content;
+}
+
+
+
+
+
+.search-results .movie_button_action {
+    padding:.1em;
+}
+
+.search-results .watch_buttom {
+    padding:.9em!important;
+}
+
+
+
+
+/* watch now padding to give the stars space on search results pages */
+
+
+
+
+.search .watch_buttom {
+    padding:.69em!important;
+}
+
+
+
+
+/* adding space between tooltip disclaimer */
+
+.gray {
+    margin-top:1em;
+}
+
+
+
+
+/* top of diversity tooltip didn't show */
+
+.note_show {
+    padding:.6em!important;
+}
+
+
+
+
+
+
+/* making hover effects on the bubble tooltips without messing up the tooltips via the brightness feature */
+
+
+
+
+.diversity:not(.note_show):hover {
+    background-color: rgba(95, 98, 125, 0.9);
+}
+
+
+.family_friendly.green:not(.note_show):hover {
+    background-color: rgba(32, 215, 0, 0.88)!important;
+}
+
+
+.family_friendly.red:not(.note_show):hover {
+    background-color: rgba(210, 18, 0, 0.95)!important;
+}
+
+
+.family_friendly.orange:not(.note_show):hover {
+    background-color: rgba(214, 129, 0, 0.95)!important;
+}
+
+
+.edit:not(.note_show):hover {
+    background-color: rgba(168, 168, 168, 0.89);
+}
+
+
+
+
+
+
+
+
+
+
+/* the stars on mobile search results were aligned right. this centers them */
+
+
+@media only screen and (max-width: 550px) {
+    .search .rwt_stars {
+        margin-right:1.8em;
+        margin-top:1.12em;
+    }
+
+}
+
+
+
+
+
+
+
+/* making the audience avatars less harsh on the eyes when they are on a white background which is movie pages and search results */
+
+
+.search .a_img_container_audience {
+
+    filter: saturate(88%);
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* hiding the gallery title from the shortcodes ultimate*/
+
+.mfp-title {
+    display:none;
+}
+
+
+
+
+
+
+/* disclaimers only need to be there for first time users, but easily ignored or they will be annoying. This makes picking out the unique percentages easier at a glance. */
+
+.gray_comment {
+    opacity:.6;
+}
+
+
+
+
+/* making the hover for the membership icons in the footer */
+
+.memberz img:hover{
+    filter:brightness(148%);
+}
+
+
+/*memembership icons too big on mobile, this makes them smaller */
+
+@media only screen and (max-width: 768px) {
+
+    .memberz .su-column .su-column-inner  {
+        max-width:30%!important;
+        margin-left:33%;
+    }
+
+}
+
+
+
+
+
+
+
+
+
+/* new tooltip css */
+
+
+
+.row_head {
+    margin-top:1.4em!important;
+    font-size:17px;
+    -webkit-text-stroke-width: .3px;
+    -webkit-text-stroke-color: black;
+
+}
+
+
+
+
+
+
+.nte_in .row_main:nth-of-type(1n) .pp_rl:after {
+    content: ":";
+
+}
+
+.nte_in .row_main:nth-of-type(2n) .pp_rl:after {
+    content: ":";
+
+}
+
+
+.nte_in .row_main:nth-of-type(3n) .pp_rl {
+    font-size:18px;
+    -webkit-text-stroke-width: .3px;
+    -webkit-text-stroke-color: black;
+}
+
+.nte_in .row_main:nth-of-type(3n) .pp_rl:after {
+    content: ":";
+
+}
+
+
+
+
+.bg_rainbow
+{
+    -webkit-text-stroke-width: .01em;
+    -webkit-text-stroke-color: black;
+    text-shadow: .05em .05em rgba(0,0,0,0.1488);
+    mix-blend-mode:difference;
+
+}
+
+
+
+
+.popup_header {
+    margin-bottom:1em!important;
+}
+
+.gray_comment {
+    margin-top:1.488em!important;
+}
+
+
+
+
+.row_main:nth-of-type(1n) {
+    margin-top:1em!important;
+}
+
+
+.family_friendly .popup_header:after {
+    content: ".";
+    margin-left:-0.7em;
+}
+
+
+
+.row_inner:last-of-type {
+    margin-bottom:2em!important;
+}
+
+
+
+
+/* intro page slider aesthetic for the video tutorial spoilers & the screenshot image compact */
+
+.vidtut {
+    width:60%;
+    margin-left:20%;
+}
+
+
+.slideshiz {
+    max-width:70%!important;
+    margin-left:15%;
+}
+
+
+/* just making the disclaimers more subtle because the site has way too many and we want users to be able to easily train their eyes to ignore them. more aesthetic this way */
+
+.content_warning {
+    opacity:.4;
+}
+
+
+
+
+
+
+/* making the internet zeitgeist section beautiful */
+
+
+.s_container_load {
+    background-color:transparent!important;
+
+}
+
+.s_container_smoth{
+    background-color:transparent!important;
+}
+
+
+.s_container  {
+    box-shadow: .01em .01em .01em #888888;
+    margin:.8em!important;
+    padding:.2em;
+
+}
+
+
+
+.column_header_main {
+
+}
+
+.smoched:hover {
+    opacity:0.5;
+}
+
+
+
+/*writers wanted link */
+
+.title_desc:hover {
+    text-decoration: underline;
+}
+
+
+
+/* temp fix to add spacing to the verdicts on facial recognition pop ups */
+
+.in_hdr {
+    margin-top:2.6em!important;
+}
+
+
+
+
+/* temp override for hyperlinks in facial recog disclaimer */
+
+
+.desc a {
+    opacity:1!important;
+}
+
+
+
+
+
+
+
+/* info link hover slight change in clr for lgbt and woke */
+
+
+
+.link_info:hover {
+    filter:brightness(.4)!important;
+    filter: drop-shadow(1px 1px 1px #4444dd);
+
+}
+
+
+/* makes the user friendly color coded numbers more subtle on audience review forms */
+
+.rating_number {
+    opacity:.8;
+    text-shadow: 0px 1px 1px rgba(0,0,0,0.5);
+    filter: brightness(80%);
+}
+
+
+
+
+/* hide the automatic featured image of the feedback page because it duplicates the email */
+.post-487977 .post-thumbnail {
+    display:none;
+}
+
+
+
+
+
+
+
+/* making audience reviews have paper texture for navigation and aesthetics */
+
+.wpcr3_table_2 .column_header {
+    margin:1.1em!important;
+}
+
+body.theme_white .wpcr3_div_2  {
+    box-shadow: .09em .1em .4em #888888;
+    background-size: 100%!important;
+    background-image: url("https://zeitgeistreviews.com/wp-content/uploads/2022/06/paper_texture_RWT_.jpg")!important;
+}
+
+
+
+
+
+
+
+
+/* chan square hover like the twitter one */
+
+.chan_scroll:hover {
+    opacity:.6;
+}
+
+
+
+/* background white for comments */
+
+.big_block_comment {
+    background-color:white;
+}
+
+
+
+
+
+/* footer tweak */
+
+body.theme_dark .footer_main_right iframe {
+    width:80%;
+    height:300px;
+    margin-top:2em;
+    margin-bottom:2em;
+}
+
+
+
+
+body.theme_white .footer_main_right iframe {
+    width:80%;
+    height:300px;
+    margin-top:2em;
+    margin-bottom:2em;
+
+}
+
+
+
+
+/* hiding staff review widget until the fancy word algorithm feature is added and the global consensus feature is added to replace it */
+
+body.theme_white .inner_content.no_pad.stuff_review.widthed.loaded {
+    display:none;
+}
+
+body.theme_dark
+.inner_content.no_pad.stuff_review.widthed.loaded {
+    display:none;
+}
+
+
+
+.inner_content.no_pad.stuff_review.widthed.loaded {
+    display:none;
+}
+
+
+
+
+
+/* making the view button match the reply button shades*/
+
+.disqus_view {
+    opacity:.88;
+}
+
+.disqus_view:hover {
+    opacity:.58;
+    color:black!important;
+}
+
+
+/* the NOTE bold text was invisible for some reason */
+
+.theme_white .actor_details .desc b {
+    color:black!important;
+}
+
+.theme_dark .actor_details .desc b {
+    color:white!important;
+}
+
+.theme_white .actor_details .desc a {
+    color:grey!important;
+}
+
+.theme_white .actor_details .desc a:hover {
+    color:black!important;
+}
 

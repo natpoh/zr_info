@@ -51,7 +51,7 @@ if (!function_exists('get_template_critics_custom'))
 
                             }
 
-                        $link_data = 'https://'.$_SERVER['HTTP_HOST'].'/audience/'.$review_title.'/';
+                        $link_data = WP_SITEURL.'/audience/'.$review_title.'/';
 
 
                         $inner_content = get_audience_templ('', $link_data, $pid, '', 0);

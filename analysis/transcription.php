@@ -5,18 +5,15 @@ global $WP_include;
 
 if (!defined('ABSPATH'))
     define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
-$pr='http';
-if ($_SERVER['HTTPS'])
-{
-    $pr='https';
-}
-$home_url = $pr.'://'.$_SERVER['HTTP_HOST'].'/';
+
+
 
 //DB config
 !defined('DB_HOST_AN') ? include ABSPATH . 'analysis/db_config.php' : '';
 //Abstract DB
 !class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
 
+$home_url = WP_SITEURL.'/';
 
 $datatype= $_GET['table'];
 if (!$datatype)$datatype='youtube';

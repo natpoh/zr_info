@@ -17,11 +17,7 @@ if (function_exists('current_user_can')) {
 if ($curent_user) {
 
 
-    $pr = 'https';
-    if ($_SERVER['HTTPS']) {
-        $pr = 'https';
-    }
-    $home_url = $pr . '://' . $_SERVER['HTTP_HOST'] . '/';
+    $home_url = WP_SITEURL. '/';
 
 //DB config
     !defined('DB_HOST_AN') ? include ABSPATH . 'analysis/db_config.php' : '';

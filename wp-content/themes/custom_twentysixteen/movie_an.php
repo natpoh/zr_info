@@ -46,7 +46,7 @@ get_header();
 <div id="primary" class="content-area">
     <main id="main" class="site-main" role="main">
         <?php
-        // RWT post
+        // ZR post
         global $post;
         global $post_an;
         global $ma;

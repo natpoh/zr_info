@@ -1151,6 +1151,7 @@ search_extend.init_facet = function (v) {
             }
             keys.sort();
             var len = keys.length;
+            mode_select += '<option value="" >Select settings</option>';
             for (var i = 0; i < len; i++) {
                 var k = keys[i];
                 var date = new Date(parseInt(k));
@@ -1171,6 +1172,9 @@ Choose the number of points for each type of verdict.<br />' + ctable + type_cal
         // Select click
         $('#mode-select').click(function () {
             var sval = $(this).val();
+            if (sval===''){
+                return false;
+            }
             var fm = sdata[sval][1];
             if (sval in sdata) {
                 for (var i in fm) {

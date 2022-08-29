@@ -23,7 +23,7 @@ if (!defined('ABSPATH'))
 
 global $site_url;
 if (!$site_url)
-    $site_url = 'https://' . $_SERVER['HTTP_HOST'] . '/';
+    $site_url = WP_SITEURL. '/';
 
 if (!function_exists('video_scroll')) {
 

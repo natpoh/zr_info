@@ -178,9 +178,9 @@ Vote to increase its priority.</p>';
 
         if ($result_data)
         {
-            $content= $content.'<div style="width: 100%; background-color: #fff; color: #000; padding: 10px; margin-top: 20px"><b style="text-align: center;display: block;">Please help us crowdsource the RWT database.
+            $content= $content.'<div class="crowd_rwt" style="width: 100%;  padding: 10px; margin-top: 20px"><b style="text-align: center;display: block;">Please help us crowdsource the ZR database.
 <br>
-If what you\'re looking for isn\'t on RWT yet, try finding it below.</b>
+If what you\'re looking for isn\'t on ZR yet, try finding it below.</b>
 
 <table >'.$result_data.'</table>
 <b style="text-align: center;display: block;">If the movie or show you\'re looking for isn\'t shown above, try entering an IMDb ID or url here:</b>
@@ -204,16 +204,11 @@ If what you\'re looking for isn\'t on RWT yet, try finding it below.</b>
 
     }
 
-    private static function set_option($id,$option)
+    private static function set_option($id,$option,$name = '',$coomit =0)
     {
-        if ($option && $id)
-        {
+        !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+        OptionData::set_option($id,$option,$name,$coomit);
 
-            $sql = "DELETE FROM `options` WHERE `options`.`id` = ".$id;
-            Pdo_an::db_query($sql);
-            $sql = "INSERT INTO `options`  VALUES ('".$id."',?)";
-            Pdo_an::db_results_array($sql,array($option));
-        }
 
     }
 
@@ -231,9 +226,8 @@ If what you\'re looking for isn\'t on RWT yet, try finding it below.</b>
                 unset($movie_list[$movie_id]);
             }
 
-                self::set_option(16,json_encode($movie_list));
-                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', 'options', array('id' => 16), 'options',7);
+                self::set_option(16,json_encode($movie_list),'movie_list',1);
+
         }
 
     }
@@ -259,10 +253,8 @@ If what you\'re looking for isn\'t on RWT yet, try finding it below.</b>
         }
         if ($movie_list)
         {
-            self::set_option(16,json_encode($movie_list));
+            self::set_option(16,json_encode($movie_list),'movie_list',1);
 
-            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-            Import::create_commit('', 'update', 'options', array('id' => 16), 'options',7);
         }
 
     }

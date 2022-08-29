@@ -40,7 +40,7 @@
             $post_title = $post->post_title;
             $post_id = $post->ID;
 
-            $link = 'https://' . $_SERVER['HTTP_HOST'] . '/' . $post_name . '/';
+            $link = WP_SITEURL . '/' . $post_name . '/';
             $pg_idnt = $post_id . ' ' . $link;
             $comments_account = get_option('disqus_forum_url');
 

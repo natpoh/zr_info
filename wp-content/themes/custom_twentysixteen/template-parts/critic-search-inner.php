@@ -29,29 +29,33 @@
                                 <?php
                                 if (sizeof($results['critics']['list'])):
                                     foreach ($results['critics']['list'] as $post):
+
                                         $post_arr = $search_front->get_top_movie_critic($post->id, $post->date_add);
                                         if (!$post_arr) {
                                             continue;
                                         }
 
-                                        $title = $post_arr['title'];
+                                        $mid = $post_arr['m_id'];
 
-                                        $cast = $post_arr['cast'];
-                                        if ($cast) {
-                                            $cast = $search_front->cm->crop_text($cast, 50);
-                                        }
+                                        if ($mid) {
+                                            $title = $post_arr['title'];
 
-                                        $release = $post_arr['release'];
-                                        if ($release) {
-                                            $release = strtotime($release);
-                                            $release = date('Y', $release);
-                                            if (strstr($title, $release)) {
-                                                $release = '';
-                                            } else {
-                                                $release = ' (' . $release . ')';
+                                            $cast = $post_arr['cast'];
+                                            if ($cast) {
+                                                $cast = $search_front->cm->crop_text($cast, 50);
+                                            }
+
+                                            $release = $post_arr['release'];
+                                            if ($release) {
+                                                $release = strtotime($release);
+                                                $release = date('Y', $release);
+                                                if (strstr($title, $release)) {
+                                                    $release = '';
+                                                } else {
+                                                    $release = ' (' . $release . ')';
+                                                }
                                             }
                                         }
-
                                         $post_content = $post_arr['content_pro'];
                                         if ($keywords) {
                                             if (preg_match('/<div class="vote_content">(.*)<\/div>/Us', $post_content, $match) ||
@@ -66,20 +70,24 @@
                                                 $post_content = $search_front->check_spoiler($post_content);
                                             }
 
-                                            $movie_title = str_replace('<b>', '<u>', $post->mt);
-                                            $movie_title = str_replace('</b>', '</u>', $movie_title);
-                                            $title = $movie_title;
+                                            if ($mid) {
+                                                $movie_title = str_replace('<b>', '<u>', $post->mt);
+                                                $movie_title = str_replace('</b>', '</u>', $movie_title);
+                                                $title = $movie_title;
+                                            }
                                         }
                                         ?><div class="card search_review">
-                                            <div class="full_review_movie">
-                                                <a href="<?php print $post_arr['link'] ?>" class="movie_link" >
-                                                    <img src="<?php print $post_arr['poster_link_90'] ?>">
-                                                    <div class="movie_link_desc">
-                                                        <span class="itm_hdr"><?php print $title . $release ?></span>
-                                                        <span><?php print $cast ?></span>
-                                                    </div>
-                                                </a>
-                                            </div>
+                                        <?php if ($mid) { ?>
+                                                <div class="full_review_movie">
+                                                    <a href="<?php print $post_arr['link'] ?>" class="movie_link" >
+                                                        <img src="<?php print $post_arr['poster_link_90'] ?>">
+                                                        <div class="movie_link_desc">
+                                                            <span class="itm_hdr"><?php print $title . $release ?></span>
+                                                            <span><?php print $cast ?></span>
+                                                        </div>
+                                                    </a>
+                                                </div>
+                                            <?php } ?>
                                             <?php print $post_content ?>
                                         </div><?php endforeach; ?>
 

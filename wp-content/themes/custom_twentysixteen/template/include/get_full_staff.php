@@ -1,6 +1,6 @@
 <?php
 
-if (strstr($_SERVER['HTTP_HOST'],'just.test1'))
+if (strstr(WP_SITEURL,'just.test1'))
 {
     define('DB_NAME2', 'please');
     define('DB_USER2', 'root');

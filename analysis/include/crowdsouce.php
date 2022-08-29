@@ -6,11 +6,21 @@ if (!defined('ABSPATH'))
 //Abstract DB
 !class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
 
+if (!defined('CROWDSOURCEURL')) {
+
+    global $site_url;
+    //define('CROWDSOURCEURL', 'https://service.'.$_SERVER['HTTP_HOST'].'/crowdsource.php');
+    define('CROWDSOURCEURL', $site_url.'service/crowdsource.php');
+}
 
 
 
 class Crowdsource
 {
+
+
+
+
     public static  function crop_text($text = '', $length = 10, $tchk = true) {
         if (strlen($text) > $length) {
             $pos = strpos($text, ' ', $length);
@@ -214,7 +224,7 @@ return $result;
 
 //            ///delete image cache
 //
-//                 $filename_ex  = $_SERVER['DOCUMENT_ROOT'].'/analysis/img_result/'.$id.'_*.jpg';
+//                 $filename_ex  = ABSPATH.'analysis/img_result/'.$id.'_*.jpg';
 //                 array_map("unlink", glob($filename_ex));
 
         }
@@ -622,6 +632,10 @@ public static function prepare_array($options,$addsplash='')
     }
     return $array_rs;
 }
+
+
+
+
 public static function Show_admin_table($datatype,$array_rows,$WP_include,$custom_table='',$refresh_rating='',$no_status='',$no_subgrid='')
 {
     $subgrid = 1;
@@ -701,6 +715,8 @@ public static function Show_admin_table($datatype,$array_rows,$WP_include,$custo
                         ".$edittipe."
 
                     },";
+
+
     }
 
 
@@ -850,7 +866,7 @@ var first_run = 0;
 
             jQuery.ajax({
                 type: "POST",
-                url: "<?php echo $home_url ?>wp-content/themes/custom_twentysixteen/template/ajax/crowdsource.php",
+                url: "<?php echo CROWDSOURCEURL ?>",
 
                 data: ({
                     oper: 'crowd_submit',
@@ -885,7 +901,7 @@ var first_run = 0;
 
             jQuery.ajax({
                 type: "POST",
-                url: "<?php echo $home_url ?>wp-content/themes/custom_twentysixteen/template/ajax/crowdsource.php",
+                url: "<?php echo CROWDSOURCEURL ?>",
 
                 data: ({
                     oper: 'review_crowd',

@@ -1,24 +1,15 @@
 <?php
 
 set_time_limit(0);
+if (!defined('ABSPATH'))
+    define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
 
 include  ('get_data.php');
+
 function set_option($id,$option)
 {
-    global $pdo;
-
-    $sql = "DELETE FROM `options` WHERE `options`.`id` = ".$id;
-    $q = $pdo->prepare($sql);
-    $q->execute();
-
-
-
-    $sql = "INSERT INTO `options`  VALUES ('".$id."',?,'')";
-
-
-    $q = $pdo->prepare($sql);
-    $q->execute(array($option));
-//print_r($q->errorInfo());
+    !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+    OptionData::set_option($id,$option,'','');
 
 }
 global $pdo;

@@ -62,7 +62,7 @@ function update_providers($array)
 }
 function provider_img($id)
 {
-   $patch = 'https://'.$_SERVER['HTTP_HOST'] .'/wp-content/uploads/thumbs/providers_img/100x100/'.$id.'.jpg';
+   $patch = WP_SITEURL .'/wp-content/uploads/thumbs/providers_img/100x100/'.$id.'.jpg';
   return $patch;
 }
 function get_providers_table()

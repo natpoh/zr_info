@@ -46,7 +46,7 @@ class GETTWITTER{
         echo $content;
 
         ?>
-<link rel='stylesheet' type="text/css" src="https://rightwingtomatoes.com/wp-content/plugins/custom-twitter-feeds-pro/css/ctf-styles.min.css"/>
+<link rel='stylesheet' type="text/css" src="<?php echo WP_SITEURL;?>/wp-content/plugins/custom-twitter-feeds-pro/css/ctf-styles.min.css"/>
 
 <?php
 
