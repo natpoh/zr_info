@@ -220,7 +220,7 @@ if (isset($_POST['filters'])) {
         }
 
         // Post not found. 404
-        if ($critic_id > 0 && (!$post || !$post->top_movie)) {
+        if ($critic_id > 0 && !$post) {
             global $wp_query;
             $wp_query->set_404();
             status_header(404);

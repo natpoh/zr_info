@@ -207,7 +207,7 @@ class CreateTsumbs{
 
             } catch (Exception $ex) {
 
-                 var_dump($ex);
+                 //var_dump($ex);
 
                 return null;
             }
@@ -246,7 +246,7 @@ class CreateTsumbs{
             }
         } else {
 
-            // файл, который мы проверяем
+            // пїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             stream_context_set_default([
                 'ssl' => [
                     'verify_peer' => false,
@@ -257,7 +257,7 @@ class CreateTsumbs{
             //var_dump(get_headers($src_file));
 
             $Headers = get_headers($src_file);
-            // проверяем ли ответ от сервера с кодом 200 - ОК
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ 200 - пїЅпїЅ
             if (preg_match("|200|", $Headers[0])) {
                 $fileway = 1;
             } else {
@@ -290,7 +290,7 @@ class CreateTsumbs{
         }
         //   throw new Exception('Failed to obtain source image properties.');
 
-        // Если картика меньше рамок
+        // пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
         if (($src_w < $max_w) && ($src_h < $max_h) && ($small == true)) {
 
 
@@ -324,7 +324,7 @@ class CreateTsumbs{
         }
 
 
-        // Проверяем поддерживается ли тип изображения
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         list($create_callback, $write_callback) = $mime_types[$src_type];
         if (empty($mime_types[$src_type])
             || (!function_exists($create_callback))
@@ -332,10 +332,10 @@ class CreateTsumbs{
         )
             throw new Exception("Source image type '{$src_type}' is not supported.");
         if ($type == 0) {
-            //Загоняем картинку в нужные рамки, с сохранением целостности
-            //Вариант умещения в рамки $max_w $max_h
+            //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+            //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ $max_w $max_h
             if (($max_w > 0) && ($max_h > 0)) {
-                // Расчитываем новый размер
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
                 $dst_w = $max_w;
                 $dst_h = $max_h;
                 //
@@ -343,37 +343,37 @@ class CreateTsumbs{
                     $dst_h = (int)(($max_w / $src_w) * $src_h);
                 else
                     $dst_w = (int)(($max_h / $src_h) * $src_w);
-            } //Вариант умещения в рамки $max_w
+            } //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ $max_w
             else if (($max_w > 0) && ($max_h == 0)) {
-                // вычисление пропорций
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                 $ratio = $src_w / $max_w;
                 $dst_w = round($src_w / $ratio);
                 $dst_h = round($src_h / $ratio);
             } else {
-                // вычисление пропорций
+                // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                 $ratio = $src_h / $max_h;
                 $dst_w = round($src_w / $ratio);
                 $dst_h = round($src_h / $ratio);
             }
-            //Сохраняем новые размеры в массив
+            //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
             $image_info = array($dst_w, $dst_h, $src_type);
 
         } else {
-            //Загоняем в рамки и обрезаем края
+            //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
             $dst_w = $max_w;
             $dst_h = $max_h;
             $image_info = array($dst_w, $dst_h, $src_type);
         }
-        // Создаем картинку, и заодно определяем количество цветов в ней
-        // Извлекаем контент
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         $src_img = call_user_func($create_callback, $src_file);
         if (empty($src_img))
             throw new Exception("Failed to create source image with {$create_callback}().");
 
-        // Записываем количество цветов
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         $src_colors = imagecolorstotal($src_img);
 
-        // Создаем подложку
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         if ($src_colors > 0 && $src_colors <= 256)
             $dst_img = imagecreate($dst_w, $dst_h);
         else
@@ -381,7 +381,7 @@ class CreateTsumbs{
         if (empty($dst_img))
             throw new Exception("Failed to create blank destination image.");
 
-        // Реализуем поддержку прозрачности (если она была в картинке)
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
 
         $transparent_index = imagecolortransparent($src_img);
         if ($transparent_index >= 0) {
@@ -394,7 +394,7 @@ class CreateTsumbs{
             imagecolortransparent($dst_img, $transparent_index);
         }
 
-        // или сохраняем альфа прозрачность для png
+        // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ png
         if ('image/png' === $src_type) {
             if (!imagealphablending($dst_img, false))
                 throw new Exception('Failed to set alpha blending for PNG image.');
@@ -408,13 +408,13 @@ class CreateTsumbs{
         }
 
         if ($type == 0) {
-            // пережимаем изображение с новыми размерами
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             if (!imagecopyresampled($dst_img, $src_img, 0, 0, 0, 0, $dst_w, $dst_h, $src_w, $src_h))
                 throw new Exception('Failed to resample image.');
         } else {
             $k = $dst_w / $dst_h;
             $k2 = $src_w / $src_h;
-            // вырезаем серединку по x, если фото горизонтальное
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ x, пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             if ($k < $k2)
                 imagecopyresampled($dst_img, $src_img, 0, 0,
                     round((max($src_w, $src_h * $k) - min($src_w, $src_h * $k)) / 2),
@@ -426,7 +426,7 @@ class CreateTsumbs{
                 $dst_w, $dst_h, $src_w, $src_h);
         }
 
-        // пересчтываем quality для png
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ quality пїЅпїЅпїЅ png
         if ('image/png' === $src_type) {
             $quality = round(($quality / 100) * 10);
             if ($quality < 1)
@@ -436,11 +436,11 @@ class CreateTsumbs{
             $quality = 10 - $quality;
         }
 
-        // пишим изображение в файл или в буфер
+        // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ
         if (null === $dst_file)
             ob_start();
         if (!call_user_func($write_callback, $dst_img, $dst_file, $quality)) {
-            // Чистим буфер
+            // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
             if (null === $dst_file)
                 ob_end_clean();
             throw new Exception('Failed to write destination image.');
