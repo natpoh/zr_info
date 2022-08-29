@@ -52,7 +52,7 @@ $array_jobs = array(
 
     'sync_tables'=>30, ///sync all remote tables
     'get_family'=>10, //family to actors meta
-    'get_forebears'=>10, //forebears to actors meta
+    'get_forebears'=>15, //forebears to actors meta
     'set_tmdb_actors_for_movies'=>30,////update tmdb actors from japan anime
 
 
