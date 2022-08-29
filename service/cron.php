@@ -195,6 +195,7 @@ class Cronjob
         if ($run_cron < time()-3600/2) {
 
             $this->set_option('run_cron', time());
+            $this->set_option('cron started', time());
 
             $this->timer_start();
 
@@ -209,7 +210,7 @@ class Cronjob
                     self::run_function($jobs, $period);
                 } else {
                     echo '<br>Ended max time > ' . $this->max_time . '<br>' . PHP_EOL;
-                    $this->set_option('cron_ended', $this->max_time);
+                    $this->set_option('cron', time());
                     $this->set_option('run_cron', 1);
 
                     break;
