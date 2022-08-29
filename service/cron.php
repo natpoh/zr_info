@@ -219,7 +219,7 @@ class Cronjob
 
                 $i++;
             }
-
+            $this->set_option('cron', time());
             $this->set_option('run_cron', 1);
         }
         else
