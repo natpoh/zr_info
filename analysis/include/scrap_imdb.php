@@ -27,8 +27,14 @@ function set_verdict_weight($id)
     {
        $count =  $_GET['count'];
     }
+    $force=false;
 
-    ActorWeight::update_actor_weight($id, $_GET['debug'],0,$count);
+    if (isset($_GET['force']))
+    {
+        $force =  1;
+    }
+
+    ActorWeight::update_actor_weight($id, $_GET['debug'],0,$count,$force);
     !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
     $last_id = OptionData::get_options('','actors_meta_last_id');
     echo 'last_id='.$last_id;

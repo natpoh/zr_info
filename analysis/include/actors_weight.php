@@ -26,10 +26,10 @@ public static function check_cr()
     return $cr;
 }
 
-public static function update_actor_weight($actor_id,$debug=0,$sinch = 1,$count = 100)
+public static function update_actor_weight($actor_id,$debug=0,$sinch = 1,$count = 100, $force=false)
 {
     $cr  =self::check_cr();
-    $cr->get_actors_meta($count, $debug , 0,$actor_id,$sinch);
+    $cr->get_actors_meta($count, $debug , $force,$actor_id,$sinch);
 }
 
 

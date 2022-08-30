@@ -29,6 +29,15 @@ class LightMovies{
     }
 
 
+public function get_option($id='',$type='')
+{
+            !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+            $data =  OptionData::get_options($id,$type);
+
+                $data =  str_replace('\\','',$data);
+
+            return $data;
+}
 
 public function set_option($id,$option,$type='')
 {
@@ -104,54 +113,17 @@ $this->set_option(1,$_POST['option_1'],'Ads');
 $this->set_option(3,$_POST['option_3'],'Ethnic array');
 $this->set_option(4,$_POST['option_4'],'Ethnic array fast');
 $this->set_option(6,$_POST['option_6'],'Color array');
+$this->set_option('',$_POST['verdict_method'],'verdict_method');
         }
 
-
-
-    $options=array();
-    $sql = "SELECT * FROM `options` ";
-    $rows = Pdo_an::db_results_array($sql);
-
-    foreach ($rows as $r)
-    {
-       $options[ $r['id']] =  str_replace('\\','',$r['val']);
-    }
 
     ?>
     <div class="content">
 <h1>Option</h1>
 
 <div class="options_data">
- <h2>Clear cache</h2>
+
 <?php
-
-if (isset($_GET['clear_imgcahe']))
-    {
-
-          $dir =  ABSPATH."analysis/img_result";
-
-    $path = $dir . '/*.jpg';
-
-    foreach (glob($path) as $file){
-        @unlink($file);
-    }
-
-
-    }
-
-if (isset($_GET['clear_reqcahe']))
-    {
-
-          $dir =  ABSPATH."analysis/cache_request";
-
-    $path = $dir . '/*.html';
-
-    foreach (glob($path) as $file){
-        @unlink($file);
-    }
-
-
-    }
 
 $dir = ABSPATH."analysis/img_result";
 $fi = new FilesystemIterator($dir, FilesystemIterator::SKIP_DOTS);
@@ -170,17 +142,32 @@ $fileCount = iterator_count($fi);
 
 </div>
 
+<?php
 
+
+$verdict_method =$this->get_option('','verdict_method');
+if ($verdict_method==0 || !$verdict_method)
+    {
+        $option ='<option value="0" selected>Default</option><option value="1">Weight</option>';
+    }
+else if ($verdict_method==1)
+    {
+        $option ='<option value="0">Default</option><option value="1" selected>Weight</option>';
+    }
+?>
 <form action="admin.php?page=light_movies_custom_options" method="post">
     <div class="options_data">
+         <h2>Verdicts method</h2>
+        <select name="verdict_method"><?php echo $option; ?></select>
         <h2>Ads</h2>
-        <textarea name="option_1" style="width: 600px; height: 300px"><?php echo $options[1]; ?></textarea>
+        <textarea name="option_1" style="width: 600px; height: 300px"><?php echo $this->get_option(1); ?></textarea>
                 <h2>Ethnic array</h2>
-        <textarea name="option_3" style="width: 600px; height: 500px"><?php echo $options[3]; ?></textarea>
+        <textarea name="option_3" style="width: 600px; height: 500px"><?php echo $this->get_option(3); ?></textarea>
                 <h2>Ethnic array fast</h2>
-        <textarea name="option_4" style="width: 600px; height: 500px"><?php echo $options[4]; ?></textarea>
+        <textarea name="option_4" style="width: 600px; height: 500px"><?php echo $this->get_option(4); ?></textarea>
         <h2>Color array</h2>
-        <textarea name="option_6" style="width: 600px; height: 300px"><?php echo $options[6]; ?></textarea>
+        <textarea name="option_6" style="width: 600px; height: 300px"><?php echo $this->get_option(6); ?></textarea>
+
 
     <div class="options_data"><button type="submit" class="button button-primary save_option">Save</button></div>
 
