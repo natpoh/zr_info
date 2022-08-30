@@ -18,6 +18,22 @@ if (!defined('ABSPATH'))
 !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : ''; 
 
 
+
+function set_verdict_weight($id)
+{
+    !class_exists('ActorWeight') ? include ABSPATH . "analysis/include/actors_weight.php" : '';
+    $count=100;
+    if (isset($_GET['count']))
+    {
+       $count =  $_GET['count'];
+    }
+
+    ActorWeight::update_actor_weight($id, $_GET['debug'],0,$count);
+    !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+    $last_id = OptionData::get_options('','actors_meta_last_id');
+    echo 'last_id='.$last_id;
+}
+
 function get_similar($id)
 {
     !class_exists('SimilarMovies') ? include ABSPATH . "analysis/include/similar_movies.php" : '';
@@ -198,10 +214,12 @@ function check_actors_meta()
     }
 }
 
-function update_actors_verdict($id='',$force='')
+function update_actors_verdict($id='',$force='',$sync = 1 )
 {
     !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
     set_time_limit(0);
+
+
 if ($id)
 {
   $where ="where actor_id = ".$id." ";
@@ -212,7 +230,7 @@ else
 }
 
 $sql = "select * from data_actors_meta ".$where." ";
-///echo $sql;
+//echo $sql;
 
     $rows = Pdo_an::db_results_array($sql);
     ///echo 'count = '.count($rows).'<br>';
@@ -220,6 +238,8 @@ $sql = "select * from data_actors_meta ".$where." ";
     $array_exclude = array('NJW');
     foreach ($rows as $row)
     {
+        $sync_data =0;
+
       // print_r($row);
         foreach ($array_verdict as $val)
         {
@@ -240,10 +260,9 @@ $sql = "select * from data_actors_meta ".$where." ";
                {
                    $sql = "update `data_actors_meta` set verdict =?, n_verdict =?  where id = ".$row['id']." ";
                    Pdo_an::db_results_array($sql,array($verdict,intconvert($verdict)));
+                   $sync_data=1;
 
-                   !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                   Import::create_commit('', 'update', 'data_actors_meta', array('id' => $row['id']), 'actor_meta',9);
-               }
+                }
 
                /// ACTIONLOG::update_actor_log('verdict');
                 break;
@@ -251,7 +270,32 @@ $sql = "select * from data_actors_meta ".$where." ";
 
         }
 
+        ///check grid verdict
+
+        !class_exists('ActorWeight') ? include ABSPATH . "analysis/include/actors_weight.php" : '';
+
+        if ($sync_data)
+        {
+            $sync_grid = 0;
+        }
+
+        ActorWeight::update_actor_weight($row['actor_id'],0,$sync_grid);
+
+
+        if ($sync_data && $sync)
+        {
+            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+            Import::create_commit('', 'update', 'data_actors_meta', array('id' => $row['id']), 'actor_meta',9);
+
+        }
+
+
     }
+
+
+
+
+
 
 }
 
@@ -2828,6 +2872,12 @@ if (isset($_GET['get_similar'])) {
 
     return;
 }
+if (isset($_GET['set_verdict_weight'])) {
 
+
+    set_verdict_weight($_GET['set_verdict_weight']);
+
+    return;
+}
 echo 'ok';
 
