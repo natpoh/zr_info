@@ -159,8 +159,9 @@ $verdict_type =  OptionData::get_options('','verdict_method');
         {
             $verdict = $r['verdict_weight'];
         }
-        else
+        if ($verdict_type==0 || !$verdict)
         {
+
             $verdict = $r['verdict'];
         }
 
