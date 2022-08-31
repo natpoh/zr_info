@@ -121,26 +121,6 @@ $this->set_option('',$_POST['verdict_method'],'verdict_method');
     <div class="content">
 <h1>Option</h1>
 
-<div class="options_data">
-
-<?php
-
-$dir = ABSPATH."analysis/img_result";
-$fi = new FilesystemIterator($dir, FilesystemIterator::SKIP_DOTS);
-$fileimgCount = iterator_count($fi);
-
-
-$dir = ABSPATH."analysis/cache_request";
-$fi = new FilesystemIterator($dir, FilesystemIterator::SKIP_DOTS);
-$fileCount = iterator_count($fi);
-
-?>
-
-<!--<form action="admin.php?page=light_movies_custom_options&clear_reqcahe" method="post">-->
-<!--Total request cache: --><?php //echo $fileCount; ?><!-- <button type="submit" class="button">Clear all request cache</button>-->
-<!--</form>-->
-
-</div>
 
 <?php
 
