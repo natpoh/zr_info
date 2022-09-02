@@ -102,35 +102,47 @@ class CriticTransit extends AbstractDB {
          */
         foreach ($result as $item) {
             $this->cm->remove_post_meta($item->cid, $item->fid);
-            if ($debug){
-                print "Removed: ".$item->id." \n";
+            if ($debug) {
+                print "Removed: " . $item->id . " \n";
             }
         }
-        
     }
 
     /*
      * Actors meta
      */
 
-    public function get_actors_meta($count = 10, $debug = false, $force = false) {
-        $option_name = 'actors_meta_last_id';
-        $last_id = get_option($option_name, 0);
-        if ($force) {
-            $last_id = 0;
+    public function get_actors_meta($count = 1000, $debug = false, $force = false, $actor_id = false, $sinch = true) {
+
+        if ($actor_id) {
+            $sql = sprintf("SELECT * FROM {$this->db['actors_meta']} WHERE actor_id = %d ", (int) $actor_id);
+        } else {
+//            $option_name = 'actors_meta_last_id';
+//            $last_id = get_option($option_name, 0);
+            !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+            $last_id = OptionData::get_options('', 'actors_meta_last_id');
+
+            if ($force) {
+                $last_id = 0;
+            }
+
+            $sql = sprintf("SELECT * FROM {$this->db['actors_meta']} WHERE id>%d ORDER BY id ASC limit %d", (int) $last_id, (int) $count);
         }
 
-        $sql = sprintf("SELECT * FROM {$this->db['actors_meta']} WHERE id>%d ORDER BY id ASC limit %d", (int) $last_id, (int) $count);
         $results = $this->db_results($sql);
         if ($results) {
 
             $array_int_convert = array(1 => 'W', 2 => 'EA', 3 => 'H', 4 => 'B', 5 => 'I', 6 => 'M', 7 => 'MIX', 8 => 'JW', 9 => 'NJW', 10 => 'IND');
 
-            $last = end($results);
-            if ($debug) {
-                print 'last id: ' . $last->id . "\n";
+            if (!$actor_id) {
+                $last = end($results);
+                if ($debug) {
+                    print 'last id: ' . $last->id . "\n";
+                }
+                !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+                OptionData::set_option('', $last->id, 'actors_meta_last_id', 0);
+                //update_option($option_name, $last->id);
             }
-            update_option($option_name, $last->id);
 
 
             // Get from settings
@@ -173,12 +185,19 @@ class CriticTransit extends AbstractDB {
                 }
 
                 // Update verdict
-                $data = array(
-                    'last_update' => $this->curr_time(),
-                    'verdict' => $s_verdict,
-                    'n_verdict' => $n_verdict
-                );
-                $this->sync_update_data($data, $item->id, $this->db['actors_meta'], true, 15);
+
+                if ($item->verdict_weight != $s_verdict && $item->n_verdict_weight != $n_verdict) {
+                    $data = array(
+                        'last_update' => $this->curr_time(),
+                        'verdict_weight' => $s_verdict,
+                        'n_verdict_weight' => $n_verdict
+                    );
+                    $this->sync_update_data($data, $item->id, $this->db['actors_meta'], $sinch, 15);
+                } else {
+                    if ($debug) {
+                        print "Skip update \n";
+                    }
+                }
             }
         }
     }
@@ -279,7 +298,7 @@ class CriticTransit extends AbstractDB {
 
     public function movie_set_new_slugs($count = 100, $debug = false, $force = false) {
         $option_name = 'movie_set_ne_slugs_unique_id';
-        $last_id = get_option($option_name, 0);
+        $last_id = $this->get_option($option_name, 0);
         if ($force) {
             $last_id = 0;
         }
@@ -292,7 +311,7 @@ class CriticTransit extends AbstractDB {
                 print 'last id: ' . $last->id . "\n";
                 print_r($results);
             }
-            update_option($option_name, $last->id);
+            $this->update_option($option_name, $last->id);
 
             // 2. Update slugs 
             foreach ($results as $item) {
@@ -328,7 +347,7 @@ class CriticTransit extends AbstractDB {
     public function movie_title_slugs($count = 100, $debug = false, $force = false, $ids = array()) {
         // 1. Get movies
         $option_name = 'movie_title_slugs_unique_id';
-        $last_id = get_option($option_name, 0);
+        $last_id = $this->get_option($option_name, 0);
 
         if ($force) {
             $last_id = 0;
@@ -351,7 +370,7 @@ class CriticTransit extends AbstractDB {
                 print 'last id: ' . $last->id . "\n";
             }
             if ($last) {
-                update_option($option_name, $last->id);
+                $this->update_option($option_name, $last->id);
             }
         }
         // 2. Create slug
@@ -1023,7 +1042,7 @@ class CriticTransit extends AbstractDB {
                     }
                 }
 
-                update_option('last_transit_staff_id', $last_id);
+                $this->update_option('last_transit_staff_id', $last_id);
             }
         }
     }
@@ -1688,7 +1707,7 @@ class CriticTransit extends AbstractDB {
 
     public function actor_transit_first_name($count = 10, $debug = false, $force = false) {
         $option_name = 'name_unique_id';
-        $last_id = get_option($option_name, 0);
+        $last_id = $this->get_option($option_name, 0);
 
         $sql = sprintf("SELECT id, primaryName, gender FROM {$this->db['actors']} WHERE id>%d AND gender is not null ORDER BY id ASC limit %d", (int) $last_id, (int) $count);
         $results = $this->db_results($sql);
@@ -1702,7 +1721,7 @@ class CriticTransit extends AbstractDB {
         }
 
 
-        update_option($option_name, $last->id);
+        $this->update_option($option_name, $last->id);
 
         $ma = $this->get_ma();
         if (sizeof($results)) {

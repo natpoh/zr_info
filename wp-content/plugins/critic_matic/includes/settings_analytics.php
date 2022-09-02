@@ -31,6 +31,8 @@
 
             <?php wp_nonce_field('critic-feeds-options', 'critic-feeds-nonce'); ?>
             <br />
+            <p><a href="<?php global $site_url; echo $site_url; ?>/analysis/include/scrap_imdb.php?set_verdict_weight&force=1&count=1">Recalculate verdicts</a></p>
+            <br />
             <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save') ?>" class="button-primary"> 
 
         </fieldset>

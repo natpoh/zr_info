@@ -2346,7 +2346,7 @@ class CriticSearch extends AbstractDB {
             }
         }
         $this->search_settings = $ss;
-        update_option('critic_search_settings', serialize($ss));
+        $this->update_option('critic_search_settings', serialize($ss));
     }
 
     public function get_actor_names($ids) {
@@ -2436,7 +2436,7 @@ class CriticSearch extends AbstractDB {
 
     private function update_search_ids($ids) {
         $ids_str = serialize($ids);
-        update_option('feed_matic_search_ids', $ids_str);
+        $this->update_option('feed_matic_search_ids', $ids_str);
     }
 
     private function search_critic_posts_in_index($debug = false) {

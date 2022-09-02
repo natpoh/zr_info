@@ -1135,7 +1135,7 @@ class CriticParser extends AbstractDBWp {
             }
         }
         $this->parser_settings = $ss;
-        update_option('critic_parser_settings', serialize($ss));
+        $this->update_option('critic_parser_settings', serialize($ss));
     }
 
     public function get_parsers($type, $status = -1, $page = 1, $aid = 0, $parser_status = -1, $orderby = '', $order = 'ASC') {
@@ -2855,7 +2855,7 @@ class CriticParser extends AbstractDBWp {
             }
             if ($ret) {
                 $ids_str = serialize($opt_ids);
-                update_option($opt_key, $ids_str);
+                $this->update_option($opt_key, $ids_str);
             }
         }
 
@@ -2873,7 +2873,7 @@ class CriticParser extends AbstractDBWp {
         if (!in_array($id, $ids)) {
             $ids[] = $id;
             $ids_str = serialize($ids);
-            update_option($opt_key, $ids_str);
+            $this->update_option($opt_key, $ids_str);
         }
     }
 

@@ -2985,7 +2985,7 @@ class CriticMatic extends AbstractDB {
         }
 
         // Update options        
-        update_option('critic_matic_settings', serialize($ss));
+        $this->update_option('critic_matic_settings', serialize($ss));
 
         // Update settings
         $this->settings = $this->get_settings();

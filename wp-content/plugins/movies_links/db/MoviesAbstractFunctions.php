@@ -12,7 +12,7 @@
 class MoviesAbstractFunctions {
 
     public function link_hash($link) {
-        $link = preg_replace('/^http(?:s|)\:\/\//', '', $link);        
+        $link = preg_replace('/^http(?:s|)\:\/\//', '', $link);
         return sha1($link);
     }
 
@@ -22,7 +22,106 @@ class MoviesAbstractFunctions {
         return $ret;
     }
 
-    function get_option($option, $cache = true) {
+    public function fieldExist($field, $id, $from) {
+        $sql = "SELECT $field FROM $from WHERE $field=$id limit 1";
+        $ret = $this->db_get_var($sql);
+        return $ret;
+    }
+
+    public function sync_insert_data($data, $db, $sync_client = true, $sync_data = true, $priority = 5) {
+        $update = false;
+        $id = 0;
+
+        if ($sync_client) {
+            // Client mode
+            // Get id
+            $id = $this->get_remote_id($db);
+            if (!$id) {
+                $ex_msg = 'Can not get id from the Server. Table:' . $db;
+                throw new Exception($ex_msg);
+                exit;
+            }
+            // Field exist
+            if ($this->fieldExist('id', $id, $db)) {
+                $update = true;
+                $this->db_update($data, $db, $id);
+            }
+            $data['id'] = (int) $id;
+        }
+
+        if (!$update) {
+            $last_id = $this->getInsertId('id', $db);
+            $this->db_insert($data, $db);
+            $id = $this->getInsertId('id', $db);
+            if ($id == $last_id) {
+                // Insert error
+                $id = 0;
+            }
+        }
+
+        if ($id && $sync_data) {
+            $this->create_commit_update($id, $db, $priority);
+        }
+
+        return $id;
+    }
+
+    public function sync_update_data($data, $id, $db, $sync_data = true, $priority = 5) {
+
+        $this->db_update($data, $db, $id);
+
+        if ($sync_data) {
+            $this->create_commit_update($id, $db, $priority);
+        }
+
+        return $id;
+    }
+
+    public function sync_delete_data($id, $db, $sync_data = true, $priority = 5) {
+
+        $sql = sprintf("DELETE FROM {$db} WHERE id = %d", (int) $id);
+        $this->db_query($sql);
+
+        if ($sync_data) {
+            $this->create_commit_update($id, $db, $priority);
+        }
+
+        return $id;
+    }
+
+    // Sync
+    public function get_remote_id($db = '') {
+
+        if (!class_exists('Import')) {
+            include ABSPATH . "analysis/export/import_db.php";
+        }
+
+        $array = array('table' => $db, 'column' => 'id');
+        $id_array = Import::get_remote_id($array);
+        $rid = $id_array['id'];
+
+        return $rid;
+    }
+
+    public function create_commit_update($id = 0, $db = '', $priority = 6) {
+        if (!class_exists('Import')) {
+            include ABSPATH . "analysis/export/import_db.php";
+        }
+        $request = array('id' => $id);
+        $commit_id = Import::create_commit($commit_id, 'update', $db, $request, $db, $priority);
+        return $commit_id;
+    }
+
+    public function create_commit_delete($id = 0, $db = '', $priority = 6) {
+        if (!class_exists('Import')) {
+            include ABSPATH . "analysis/export/import_db.php";
+        }
+        $request = array('id' => $id);
+        $commit_id = Import::create_commit($commit_id, 'delete', $db, $request, $db, $priority);
+        return $commit_id;
+    }
+
+    public function get_option($option, $cache = true) {
         if ($cache) {
             static $dict;
             if (is_null($dict)) {
@@ -36,25 +135,106 @@ class MoviesAbstractFunctions {
 
         $data = '';
 
-        if (function_exists('get_option')) {
-            // Wp get option
-            $data = get_option($option);
+        // New api 02.09.2022
+        $sql = sprintf("SELECT val FROM options WHERE type = '%s'", $option);
+        $data = Pdo_an::db_get_var($sql);
+        if ($data) {
+            if ($this->is_serialized($data)) { // Don't attempt to unserialize data that wasn't serialized going in.
+                $data = unserialize(trim($data));
+            }
         } else {
-            // Front get option
-            global $table_prefix;
-
-            $sql = sprintf("SELECT option_value FROM {$table_prefix}options WHERE option_name = '%s'", $option);
-            $data = Pdo_wp::db_get_var($sql);
-            if ($data) {
-                if ($this->is_serialized($data)) { // Don't attempt to unserialize data that wasn't serialized going in.
-                    $data = unserialize(trim($data));
+            // Old api
+            if (function_exists('get_option')) {
+                // Wp get option
+                $data = get_option($option);
+            } else {
+                // Front get option
+                $sql = sprintf("SELECT option_value FROM " . DB_PREFIX_WP . "options WHERE option_name = '%s'", $option);
+                $data = Pdo_wp::db_get_var($sql);
+                if ($data) {
+                    if ($this->is_serialized($data)) { // Don't attempt to unserialize data that wasn't serialized going in.
+                        $data = unserialize(trim($data));
+                    }
                 }
+            }
+            if ($data) {
+                // Add to new api
+                $this->update_option($option, $data);
             }
         }
 
         if ($cache) {
             $dict[$option] = $data;
         }
+        return $data;
+    }
+
+    public function update_option($option, $value, $autoload = null) {
+        // New api 02.09.2022
+        $sql = sprintf("SELECT id FROM options WHERE type = '%s'", $option);
+        $option_id = Pdo_an::db_get_var($sql);
+        $serialized_value = $this->maybe_serialize($value);
+
+        $data = array(
+            'type' => $option,
+            'val' => $serialized_value,
+        );
+
+        if ($option_id) {
+            Pdo_an::db_update($data, "options", $option_id);
+        } else {
+            Pdo_an::db_insert($data, "options");
+        }
+
+        // Old api
+        $update_old_db = false;
+
+        if ($update_old_db) {
+            if (function_exists('update_option')) {
+                // Wp update option
+                update_option($option, $value, $autoload);
+            } else {
+
+                $sql = sprintf("SELECT option_id FROM " . DB_PREFIX_WP . "options WHERE option_name = '%s'", $option);
+                $option_id = Pdo_wp::db_get_var($sql);
+                $serialized_value = $this->maybe_serialize($value);
+
+                $data = array(
+                    'option_name' => $option,
+                    'option_value' => $serialized_value,
+                );
+
+                if ($option_id) {
+                    Pdo_wp::db_update($data, DB_PREFIX_WP . "options", $option_id, "option_id");
+                } else {
+                    Pdo_wp::db_insert($data, DB_PREFIX_WP . "options");
+                }
+            }
+        }
+    }
+
+    /**
+     * Serialize data, if needed.
+     *
+     * @since 2.0.5
+     *
+     * @param string|array|object $data Data that might be serialized.
+     * @return mixed A scalar data.
+     */
+    function maybe_serialize($data) {
+        if (is_array($data) || is_object($data)) {
+            return serialize($data);
+        }
+
+        /*
+         * Double serialization is required for backward compatibility.
+         * See https://core.trac.wordpress.org/ticket/12930
+         * Also the world will end. See WP 3.6.1.
+         */
+        if ($this->is_serialized($data, false)) {
+            return serialize($data);
+        }
+
         return $data;
     }
 

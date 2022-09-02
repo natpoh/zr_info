@@ -203,7 +203,7 @@ class MoviesLinks extends MoviesAbstractDB {
 
         $this->settings = $ss;
         if (function_exists('update_option')) {
-            update_option('movies_links_settings', serialize($ss));
+            $this->update_option('movies_links_settings', serialize($ss));
         }
     }
 

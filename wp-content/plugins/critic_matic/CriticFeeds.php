@@ -145,9 +145,9 @@ class CriticFeeds extends AbstractDBWp {
         $count = 0;
 
         if ($currtime > $next_run) {
-            update_option($cron_option, $currtime);
+            $this->update_option($cron_option, $currtime);
             $count = $this->process_all();
-            update_option($cron_option, 0);
+            $this->update_option($cron_option, 0);
         }
         return $count;
     }
@@ -464,7 +464,7 @@ class CriticFeeds extends AbstractDBWp {
         do_action_ref_array('wp_feed_options', array(&$feed, $url));
 
         $feed->init();
-        $feed->set_output_encoding(get_option('blog_charset'));
+        $feed->set_output_encoding($this->get_option('blog_charset'));
 
         if ($feed->error()) {
             return new WP_Error('simplepie-error', $feed->error());
@@ -633,7 +633,7 @@ class CriticFeeds extends AbstractDBWp {
         if (!in_array($id, $ids)) {
             $ids[] = $id;
             $ids_str = serialize($ids);
-            update_option($opt_key, $ids_str);
+            $this->update_option($opt_key, $ids_str);
         }
     }
 
@@ -1424,7 +1424,7 @@ class CriticFeeds extends AbstractDBWp {
                     }
                 }
                 $this->feed_settings = $ss;
-                update_option('critic_feed_settings', serialize($ss));
+                $this->update_option('critic_feed_settings', serialize($ss));
             }
 
             public function find_movies_queue($ids) {
@@ -1446,7 +1446,7 @@ class CriticFeeds extends AbstractDBWp {
                     }
                     if ($ret) {
                         $ids_str = serialize($opt_ids);
-                        update_option($opt_key, $ids_str);
+                        $this->update_option($opt_key, $ids_str);
                     }
                 }
 
