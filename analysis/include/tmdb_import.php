@@ -434,6 +434,8 @@ class TMDBIMPORT
         if (!class_exists('MoviesAn')) {
             require_once( CRITIC_MATIC_PLUGIN_DIR . 'db/AbstractFunctions.php' );
             require_once( CRITIC_MATIC_PLUGIN_DIR . 'db/AbstractDBAn.php' );
+            require_once( CRITIC_MATIC_PLUGIN_DIR . 'db/AbstractDB.php' );
+            require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticMatic.php' );
             require_once( CRITIC_MATIC_PLUGIN_DIR . 'MoviesAn.php' );
             global $ma;
             $ma = new MoviesAn();
@@ -835,6 +837,8 @@ class TMDBIMPORT
 
             require_once( CRITIC_MATIC_PLUGIN_DIR . 'db/AbstractFunctions.php' );
             require_once( CRITIC_MATIC_PLUGIN_DIR . 'db/AbstractDBAn.php' );
+            require_once( CRITIC_MATIC_PLUGIN_DIR . 'db/AbstractDB.php' );
+            require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticMatic.php' );
             require_once( CRITIC_MATIC_PLUGIN_DIR . 'MoviesAn.php' );
             $ma = new MoviesAn();
         }

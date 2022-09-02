@@ -8,11 +8,12 @@ if (!defined('ABSPATH'))
 //Abstract DB
 !class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
 
+global $array_jobs;
 
 $array_jobs = array(
 
 'add_tmdb_without_id'=>10,///add imdb id to tmdb database
-'check_last_actors'=>10,
+'check_last_actors'=>20,
 'check_kairos'=>5,///add kairos images
 ///'check_face'=>10,///add bettaface verdict
 
@@ -51,7 +52,7 @@ $array_jobs = array(
 
     'sync_tables'=>30, ///sync all remote tables
     'get_family'=>10, //family to actors meta
-    'get_forebears'=>10, //forebears to actors meta
+    'get_forebears'=>15, //forebears to actors meta
     'set_tmdb_actors_for_movies'=>30,////update tmdb actors from japan anime
 
 
@@ -63,7 +64,7 @@ $array_jobs = array(
 
 global $included;
 $included =1;
-include ABSPATH .'analysis/include/scrap_imdb.php';
+require_once ABSPATH .'analysis/include/scrap_imdb.php';
 
 
 class Cronjob
@@ -173,7 +174,7 @@ class Cronjob
         }
     }
 
-    public   function run($array_jobs)
+    public   function run($array_jobs,$only_info = 0)
     {
 
 
@@ -181,7 +182,7 @@ class Cronjob
 
         $run_cron = $this->get_options('run_cron');
 
-        echo 'Last run :'.date('H:i:s d.m.Y',$run_cron).'<br>' . PHP_EOL;
+        echo '<p>Last run :'.date('H:i:s d.m.Y',$run_cron).'</p>' . PHP_EOL;
 
 ///////check last run
         $jobs_data =  self::get_all_options($array_jobs);
@@ -192,9 +193,10 @@ class Cronjob
         //var_dump($jobs_data);
 
 
-        if ($run_cron < time()-3600/2) {
+        if (($run_cron < time()-3600/2) && !$only_info) {
 
             $this->set_option('run_cron', time());
+            $this->set_option('cron started', time());
 
             $this->timer_start();
 
@@ -208,7 +210,8 @@ class Cronjob
                     echo 'run ' . $i . ' from ' . $count . ' lastrun: '.$last_update.'<br>' . PHP_EOL;
                     self::run_function($jobs, $period);
                 } else {
-                    echo '<br>Ended max time > ' . max_time . '<br>' . PHP_EOL;
+                    echo '<br>Ended max time > ' . $this->max_time . '<br>' . PHP_EOL;
+                    $this->set_option('cron', time());
                     $this->set_option('run_cron', 1);
 
                     break;
@@ -217,17 +220,32 @@ class Cronjob
 
                 $i++;
             }
-
+            $this->set_option('cron', time());
             $this->set_option('run_cron', 1);
         }
         else
         {
-            echo '<br>cron is runned <br> last task:<br>' . PHP_EOL;
+            if (!$only_info)
+            {
+                echo '<br>cron is runned <br>' . PHP_EOL;
+            }
 
+
+
+            $content='';
             foreach ($jobs_data as $i=> $r)
             {
-                echo $i. ' '.round($r,0).' min ('.$array_jobs[$i].')<br>';
+                $n='no';
+                if ($r>0)$n='yes';
+
+
+                $content.= '<tr><td>'.$i.'</td><td>'.round($r,0).'</td><td>'.$array_jobs[$i].'</td><td>'.$n.'</td></tr>';
+
             }
+
+            $content = ' <br>Tasks:<br><table border="1" cellspacing="0"><tr><th>Job</th><th>Order</th><th>Default  (min)</th><th>Need to update</th></tr>'.$content.'</table>';
+
+            echo $content;
 
 ///get last task
 /// task	time
@@ -236,18 +254,56 @@ class Cronjob
         $row = Pdo_an::db_results_array($sql);
 
 
-
+        $last_run=[];
         foreach ($row as $r)
         {
 
-            echo  date('H:i:s d.m.Y',$r['time']).' '.$r['task'].'<br>';
+            if ($array_jobs[$r['task']])
+            {
 
+                $last_run[$r['task']]['end']=$r['time'];
 
+            }
+            else if (strpos($r['task'],' started'))
+            {
+               $rdata =trim( substr($r['task'],0,strpos($r['task'],' started')));
+                $last_run[$rdata]['start']=$r['time'];
+
+            }
+            else if ($r['task'] =='cron'){
+                $last_run[$r['task']]['end']=$r['time'];
+            }
+            else{
+                $last_run[$r['task']]['start']=$r['time'];
+            }
 
         }
+      //  var_dump($last_run);
+            $content='';
+        foreach ($last_run as $i=> $v)
+            {
+                $ddata='';
+                $sdata='';
+                $edata='';
+                $vtotal='';
+
+                if ($v['start']) $ddata  = date('d.m.Y',$v['start']);
+               if ($v['start']) $sdata  = date('H:i:s',$v['start']);
+                if ($v['end']) $edata  = date('H:i:s',$v['end']);
+
+                if ($v['start'] && $v['end'])
+                {
+                    $vtotal  = $v['end']-$v['start'];
+                }
+
+                $content.= '<tr><td>'.$i.'</td><td>'.$ddata.'</td><td>'.$sdata.'</td><td>'.$edata.'</td><td>'.$vtotal.'</td></tr>';
 
 
+            }
 
+            $content = ' <br>last tasks:<br><table border="1" cellspacing="0"><tr><th>Job</th><th>Day</th><th>Start</th><th>End</th><th>Total</th></tr>'.$content.'</table>';
+
+        echo $content;
         }
 
 
@@ -299,7 +355,16 @@ $sql_result = "CREATE TABLE  IF NOT EXISTS `cron` (
 }
 
 
-$cron = new Cronjob;
 
-$cron->run($array_jobs);
+
+    if (isset($_GET['runcron']))
+    {
+        if ($_GET['runcron']==1)
+        {
+            $cron = new Cronjob;
+            $cron->run($array_jobs);
+        }
+
+    }
+
 

@@ -129,6 +129,8 @@ class CriticTransit extends AbstractDB {
             $sql = sprintf("SELECT * FROM {$this->db['actors_meta']} WHERE id>%d ORDER BY id ASC limit %d", (int) $last_id, (int) $count);
         }
 
+
+
         $results = $this->db_results($sql);
         if ($results) {
 
@@ -140,6 +142,7 @@ class CriticTransit extends AbstractDB {
                     print 'last id: ' . $last->id . "\n";
                 }
                 !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+
                 OptionData::set_option('', $last->id, 'actors_meta_last_id', 0);
                 //update_option($option_name, $last->id);
             }
@@ -194,6 +197,7 @@ class CriticTransit extends AbstractDB {
                     );
                     $this->sync_update_data($data, $item->id, $this->db['actors_meta'], $sinch, 15);
                 } else {
+
                     if ($debug) {
                         print "Skip update \n";
                     }
