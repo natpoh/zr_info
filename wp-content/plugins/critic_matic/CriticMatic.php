@@ -229,10 +229,10 @@ class CriticMatic extends AbstractDB {
             'an_weightid' => 0,
         );
 
-        $settings = $this->get_settings();
-        $this->sync_status = $settings['sync_status'];
-        $this->sync_client = $settings['sync_status'] == 2 ? true : false;
-        $this->sync_server = $settings['sync_status'] == 1 ? true : false;
+        $this->sync_data = DB_SYNC_DATA == 1 ? true : false;
+        $this->sync_status = DB_SYNC_MODE;
+        $this->sync_client = DB_SYNC_MODE == 2 ? true : false;
+        $this->sync_server = DB_SYNC_MODE == 1 ? true : false;
     }
 
     public function get_cp() {
@@ -445,7 +445,7 @@ class CriticMatic extends AbstractDB {
         $q = array();
         foreach ($q_def as $key => $value) {
             $q[$key] = isset($q_req[$key]) ? $q_req[$key] : $value;
-        }        
+        }
 
         // Custom status
         $status_trash = 2;
@@ -1035,7 +1035,7 @@ class CriticMatic extends AbstractDB {
                 'status' => $status
             );
             $this->db_update($data, $this->db['posts'], $id);
-            $this->hook_update_post($id);            
+            $this->hook_update_post($id);
             $this->critic_delta_cron();
 
             $result = $id;
@@ -1052,7 +1052,7 @@ class CriticMatic extends AbstractDB {
         $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
         $this->hook_update_post($id);
         $this->critic_delta_cron();
-        
+
         return true;
     }
 
@@ -1068,7 +1068,7 @@ class CriticMatic extends AbstractDB {
             $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
             $this->hook_update_post($id);
             $this->critic_delta_cron();
-            
+
             return true;
         }
         return false;
