@@ -227,6 +227,7 @@ class CriticMatic extends AbstractDB {
             'audience_post_edit' => 0,
             'sync_status' => 1,
             'an_weightid' => 0,
+            'an_verdict_type' => 'p',
         );
 
         $this->sync_data = DB_SYNC_DATA == 1 ? true : false;
@@ -709,17 +710,21 @@ class CriticMatic extends AbstractDB {
         // Validate values        
         if ($fid > 0 && $cid > 0) {
             //Get post meta
-            $data = array(
-                'fid' => $fid,
-                'type' => $type,
-                'state' => $state,
-                'cid' => $cid,
-                'rating' => $rating,
-            );
+            $sql = sprintf("SELECT id FROM {$this->db['meta']} WHERE fid='%d' AND cid='%d'", $fid, $cid);
+            $id = $this->db_get_var($sql);
+            if (!$id) {
+                $data = array(
+                    'fid' => $fid,
+                    'type' => $type,
+                    'state' => $state,
+                    'cid' => $cid,
+                    'rating' => $rating,
+                );
 
-            $id = $this->sync_insert_data($data, $this->db['meta'], $this->sync_client, $this->sync_data);
-            if ($update_top_movie) {
-                $this->update_critic_top_movie($cid);
+                $id = $this->sync_insert_data($data, $this->db['meta'], $this->sync_client, $this->sync_data);
+                if ($update_top_movie) {
+                    $this->update_critic_top_movie($cid);
+                }
             }
             return $id;
         }

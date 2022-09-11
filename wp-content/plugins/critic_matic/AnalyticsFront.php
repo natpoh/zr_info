@@ -194,7 +194,7 @@ class AnalyticsFront extends SearchFacets {
         's' => array('title' => 'Surname', 'titlehover' => 'Surname Analysis'),
     );
     public $verdict_mode = array(
-        'def' => array('title' => 'Get race by priority'),
+        'p' => array('title' => 'Get race by priority'),
         'w' => array('title' => 'Get race by weight'),
     );
     public $race_weight_priority = array(
@@ -755,10 +755,23 @@ class AnalyticsFront extends SearchFacets {
 
 
         // Race priority               
+        $check_default = '';
         $verdict = $this->get_filter_multi('verdict');
-
-        $ver_weight = false;
         if (in_array('w', $verdict)) {
+            // Custom vedrict weight
+            $verdict_mode = 'w';
+        } else if (in_array('p', $verdict)) {
+            // Custom vedrict priority
+            $verdict_mode = 'p';
+        } else {
+            // Default verdict
+            $ss = $this->cm->get_settings();
+            $verdict_mode = $ss['an_verdict_type'];
+        }
+        $check_default = $verdict_mode;
+        
+        $ver_weight = false;
+        if ($verdict_mode == 'w') {
             $ver_weight = true;
         }
 
@@ -774,9 +787,7 @@ class AnalyticsFront extends SearchFacets {
         $ftype = 'all';
 
 
-
-
-        $this->theme_facet_select($filter, $dates, $title, $ftype, $name_pre, '', '', $priority_content);
+        $this->theme_facet_select($filter, $dates, $title, $ftype, $name_pre, '', '', $priority_content, $check_default);
 
         $content = ob_get_contents();
         ob_end_clean();
@@ -1091,7 +1102,7 @@ class AnalyticsFront extends SearchFacets {
                         </div>
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $first_item ?>">
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $max_item ?>">
-                        <?php //unset($items[count($items) - 1]);                                 ?>
+                        <?php //unset($items[count($items) - 1]);                                  ?>
                         <script type="text/javascript">var <?php print $type ?>_arr =<?php print json_encode($items) ?></script>
                     </div>  
                 </div>
@@ -3063,12 +3074,26 @@ class AnalyticsFront extends SearchFacets {
         $show_cast_valid = $this->get_show_cast_valid($showcast);
 
 
+        // Priority                       
+        $verdict = $this->get_filter_multi('verdict');
+        if (in_array('w', $verdict)) {
+            // Custom vedrict weight
+            $verdict_mode = 'w';
+        } else if (in_array('p', $verdict)) {
+            // Custom vedrict priority
+            $verdict_mode = 'p';
+        } else {
+            // Default verdict
+            $ss = $this->cm->get_settings();
+            $verdict_mode = $ss['an_verdict_type'];
+        }
+
         // Custom priority
         $priority = '';
         $filter_weights = '';
-        $verdict = $this->get_filter_multi('verdict');
+
         $ver_weight = false;
-        if (in_array('w', $verdict)) {
+        if ($verdict_mode == 'w') {
             // Weights logic
             $ver_weight = true;
             $filter_weights = $this->get_filter_mode();

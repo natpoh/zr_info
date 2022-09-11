@@ -5,6 +5,25 @@
     <div class="cm-edit inline-edit-row">
         <fieldset> 
             <input type="hidden" name="posts" value="1">
+            <h3>Verdict type</h3>
+            <label class="inline-edit-interval">                       
+                <?php
+                $verdict_type = $ss['an_verdict_type'];
+                $verdict_types = array('w' => 'Weight', 'p' => 'Priority');
+                ?>
+                <select name="an_verdict_type" class="">
+                    <?php
+                    foreach ($verdict_types as $key => $name) {
+                        $selected = ($key == $verdict_type) ? 'selected' : '';
+                        ?>
+                        <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                        <?php
+                    }
+                    ?>                          
+                </select>                     
+                <span class="inline-edit"><?php print __('Get race by vedrict') ?></span> 
+            </label>
+        
             <h3>Verdict weight</h3>
             <label>
                 <span class="title"><?php print __('Weight id') ?></span>
@@ -13,7 +32,6 @@
                 </span>
             </label>
             <div class="desc">The weight id from analytics settings.</div>
-
             <?php
             $af = $this->cm->get_af();
             $priority = $af->race_weight_priority;
@@ -25,13 +43,13 @@
                 }
             }
 
-
             $af->show_table_weight_priority($priority);
             ?>
-
             <?php wp_nonce_field('critic-feeds-options', 'critic-feeds-nonce'); ?>
             <br />
-            <p><a href="<?php global $site_url; echo $site_url; ?>/analysis/include/scrap_imdb.php?set_verdict_weight&force=1&count=1">Recalculate verdicts</a></p>
+            <p><a href="<?php global $site_url;
+            echo $site_url;
+            ?>/analysis/include/scrap_imdb.php?set_verdict_weight&force=1&count=1">Recalculate verdicts</a></p>
             <br />
             <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save') ?>" class="button-primary"> 
 
