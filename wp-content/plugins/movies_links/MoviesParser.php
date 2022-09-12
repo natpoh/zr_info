@@ -1150,8 +1150,6 @@ class MoviesParser extends MoviesAbstractDB {
 
         $gzcontent = file_get_contents($full_path);
 
-
-
         $content = '';
         if ($gzcontent) {
             $content = gzdecode($gzcontent);
