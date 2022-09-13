@@ -555,13 +555,14 @@ class AnalyticsFront extends SearchFacets {
         return $filter;
     }
 
-    public function get_filter_priority() {
-        $verdict = $this->get_filter_multi('priority');
-        $priority_string = '';
-        if ($verdict) {
-            foreach ($verdict as $id => $slug) {
-                $priority_string = $slug;
-                break;
+    public function get_filter_priority($priority_string = '') {
+        if (!$priority_string) {
+            $verdict = $this->get_filter_multi('priority');
+            if ($verdict) {
+                foreach ($verdict as $id => $slug) {
+                    $priority_string = $slug;
+                    break;
+                }
             }
         }
 
@@ -606,25 +607,34 @@ class AnalyticsFront extends SearchFacets {
         return array('custom' => $custom, 'priority' => $priority);
     }
 
-    public function get_filter_mode() {
-        $verdict = $this->get_filter_multi('weight');
-        $mode_key = 0;
-        if ($verdict) {
-            foreach ($verdict as $id => $slug) {
-                $mode_key = (int) $slug;
-                break;
+    /*
+     * Retrun priority or array if defaut
+     */
+
+    public function get_filter_mode($mode_key = 0) {
+        $custom = true;
+        $priority = $this->race_weight_priority;
+
+        if (!$mode_key) {
+            // Get mode key from filter
+            $verdict = $this->get_filter_multi('weight');
+            if ($verdict) {
+                foreach ($verdict as $id => $slug) {
+                    $mode_key = (int) $slug;
+                    break;
+                }
             }
         }
 
         if (!$mode_key) {
-            // Get from settings
-            $ss = $this->cm->get_settings(false);
+            $custom = false;
+            // Get filter from settings
+            $ss = $this->cm->get_settings(true);
             if (isset($ss['an_weightid']) && $ss['an_weightid'] > 0) {
-                $mode_key = $ss['an_weightid'];
+                $mode_key = $ss['an_weightid'];                
             }
         }
 
-        $priority = $this->race_weight_priority;
         if ($mode_key > 0 && $this->is_int($mode_key)) {
             $ma = $this->get_ma();
             $rule = $ma->get_race_rule_by_id($mode_key);
@@ -632,7 +642,7 @@ class AnalyticsFront extends SearchFacets {
                 $priority = json_decode($rule->rule, true);
             }
         }
-        return $priority;
+        return array('priority' => $priority, 'custom' => $custom);
     }
 
     public function search_tabs($results = array()) {
@@ -769,7 +779,7 @@ class AnalyticsFront extends SearchFacets {
             $verdict_mode = $ss['an_verdict_type'];
         }
         $check_default = $verdict_mode;
-        
+
         $ver_weight = false;
         if ($verdict_mode == 'w') {
             $ver_weight = true;
@@ -885,7 +895,9 @@ class AnalyticsFront extends SearchFacets {
             <?php else: ?>
                 <?php
                 $filter = 'weight';
-                $filter_mode = $this->get_filter_mode();
+                $filter_mode_arr = $this->get_filter_mode();
+                $filter_mode = $filter_mode_arr['priority'];
+
                 $filter_titles = array();
                 $filter_races = array();
                 foreach ($this->race_data_setup as $k => $v) {
@@ -1522,7 +1534,7 @@ class AnalyticsFront extends SearchFacets {
         $vis = '';
         ?>
         <script type="text/javascript">
-                            var search_extend_data = [<?php echo $result_data; ?>];
+                        var search_extend_data = [<?php echo $result_data; ?>];
         </script>
         <div id="chart_div" 
              data-tab="<?php print $tab_key ?>" 
@@ -3090,13 +3102,15 @@ class AnalyticsFront extends SearchFacets {
 
         // Custom priority
         $priority = '';
-        $filter_weights = '';
 
         $ver_weight = false;
         if ($verdict_mode == 'w') {
             // Weights logic
             $ver_weight = true;
-            $filter_weights = $this->get_filter_mode();
+            $weights_arr = $this->get_filter_mode();
+            if ($weights_arr['custom']) {
+                $priority = $weights_arr['priority'];
+            }
         } else {
             // Priority logic
             $priority_arr = $this->get_filter_priority();
@@ -3190,14 +3204,24 @@ class AnalyticsFront extends SearchFacets {
                      * r.gender*100000000
                      * )*10000000000+m.aid \
                      */
+
                     // Verdict
-                    $race_code = (int) substr($race, 2, 1);
-                    if ($ver_weight) {
-                        // Weight logic
-                        $race_code = $this->custom_weight_race_code($race, $filter_weights);
-                    } else {
-                        if ($priority) {
+                    if ($priority) {
+                        // Custom rules
+                        if ($ver_weight) {
+                            // Weight logic
+                            $race_code = $this->custom_weight_race_code($race, $priority);
+                        } else {
+                            // Priority logic
                             $race_code = $this->custom_priority_race_code($race, $priority);
+                        }
+                    } else {
+                        if ($ver_weight) {
+                            // Weight logic
+                            $race_code = (int) substr($race, 3, 1);
+                        } else {
+                            // Priority logic
+                            $race_code = (int) substr($race, 2, 1);
                         }
                     }
 
@@ -4479,21 +4503,21 @@ class AnalyticsFront extends SearchFacets {
         $race_code = 0;
         //print $race."\n";
         if ($key == 'c') {
-            $race_code = (int) substr($race, 3, 1);
-        } else if ($key == 's') {
             $race_code = (int) substr($race, 4, 1);
-        } else if ($key == 'b') {
+        } else if ($key == 's') {
             $race_code = (int) substr($race, 5, 1);
-        } else if ($key == 'k') {
+        } else if ($key == 'b') {
             $race_code = (int) substr($race, 6, 1);
-        } else if ($key == 'j') {
+        } else if ($key == 'k') {
             $race_code = (int) substr($race, 7, 1);
-        } else if ($key == 'e') {
+        } else if ($key == 'j') {
             $race_code = (int) substr($race, 8, 1);
-        } else if ($key == 'f') {
+        } else if ($key == 'e') {
             $race_code = (int) substr($race, 9, 1);
-        } else if ($key == 'i') {
+        } else if ($key == 'f') {
             $race_code = (int) substr($race, 10, 1);
+        } else if ($key == 'i') {
+            $race_code = (int) substr($race, 11, 1);
         }
 
         return $race_code;
@@ -6011,22 +6035,23 @@ class AnalyticsFront extends SearchFacets {
             $actor_gender = substr($race, 0, 1);
 
             $race_code = 0;
-            if (!$priority) {
-                // Default race code
-                if ($ver_weight) {
-                    // Todo werweight data
-                    $race_code = (int) substr($race, 2, 1);
-                } else {
-                    $race_code = (int) substr($race, 2, 1);
-                }
-            } else {
-                // Custom priority logic
+            // Verdict
+            if ($priority) {
+                // Custom rules
                 if ($ver_weight) {
                     // Weight logic
                     $race_code = $this->custom_weight_race_code($race, $priority);
                 } else {
                     // Priority logic
                     $race_code = $this->custom_priority_race_code($race, $priority);
+                }
+            } else {
+                if ($ver_weight) {
+                    // Weight logic
+                    $race_code = (int) substr($race, 3, 1);
+                } else {
+                    // Priority logic
+                    $race_code = (int) substr($race, 2, 1);
                 }
             }
             if ($race_code) {
