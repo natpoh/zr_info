@@ -67,7 +67,7 @@ function fix_actors_stars($movie_id)
             $movies_updated+=update_actor_stars($movie_id);
             OptionData::set_option('',$movie_id,'actor_stars_last_id',false);
 
-            if ($movies_updated> 10)
+            if ($movies_updated> 100)
             {
                 break;
             }
