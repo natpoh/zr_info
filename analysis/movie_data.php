@@ -10,6 +10,83 @@ if (!defined('ABSPATH'))
 class MOVIE_DATA
 {
 
+    private static $debug=0;
+
+
+    public static function get_actor_meta($id)
+    {
+        $q = "SELECT * FROM `data_actors_meta`  where actor_id = ".intval($id);
+        $r = Pdo_an::db_results_array($q);
+        return $r[0];
+    }
+
+
+    public static function get_movies_data($movie_id,$actor_type=array("star","main"),$priority_string='')
+    {
+
+        if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
+            define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
+            require_once( CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php' );
+        }
+
+        $movies = array($movie_id);
+
+        $debug = false;
+        if (self::$debug) {
+            $debug = true;
+        }
+
+        $cm = new CriticMatic();
+        $af = $cm->get_af();
+        $ss = $cm->get_settings(false);
+        if (isset($ss['an_weightid']) && $ss['an_weightid'] > 0) {
+            $mode_key = $ss['an_weightid'];
+        }
+        if (!$mode_key) $mode_key = 0;
+
+        if ($debug) {echo 'mode_key='.$mode_key.'<br>';}
+
+        !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+        $verdict_method =  OptionData::get_options('','verdict_method');
+
+
+
+      $array_actor_conver = array("star"=>1,"main"=>2,"extra"=>3,"directors"=>4);
+
+      foreach ($actor_type as $v)
+      {
+          $showcast[]=  $array_actor_conver[$v];
+      }
+        //$showcast = array(1, 2);
+        /*  $showcast:
+          1 = 'Stars'
+          2 = 'Supporting'
+          3 = 'Other'
+          4 = 'Production'
+         */
+
+// Custom priority
+        $priority = '';
+
+        $ver_weight = false;
+        if ($verdict_method ==1) {
+            // Weights logic
+            $ver_weight = true;
+            $weights_arr = $af->get_filter_mode($mode_key);
+            if ($weights_arr['custom']) {
+                $priority = $weights_arr['priority'];
+            }
+        } else {
+            // Priority logic
+            $priority_arr = $af->get_filter_priority($priority_string);
+            if ($priority_arr['custom']) {
+                $priority = $priority_arr['priority'];
+            }
+        }
+
+        $race_data = $af->get_movies_race_data($movies, $showcast, $ver_weight, $priority, $debug);
+       return $race_data;
+    }
 
     public static function get_actor_name($id)
     {
@@ -103,6 +180,7 @@ class MOVIE_DATA
         }
         if ($id) {
 
+
             if ($actor_type) {
                 foreach ($actor_type as $val) {
                     if ($val && ($val != 'director' && $val != 'writer' && $val != 'cast_director' && $val != 'producer')) {
@@ -152,8 +230,14 @@ class MOVIE_DATA
     public static function get_movie_data_from_db($id = '', $a_sql = '', $only_etnic = 0, $actor_type = [], $actors_array = [], $diversity_select = "default", $ethnycity = [], $all_data = '')
     {
 
+        if (!$ethnycity)
+        {
+            $ethnycity = json_decode('{"1":{"crowd":1},"2":{"ethnic":1},"3":{"jew":1},"4":{"face":1},"5":{"face2":1},"6":{"forebears":1},"7":{"familysearch":1},"8":{"surname":1}}',true);
 
+        }
 
+        !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+        $verdict_method = OptionData::get_options('','verdict_method');
 
 
         $i = $i0 = $i_j = 0;
@@ -188,6 +272,8 @@ class MOVIE_DATA
         }
 
         $array_convert = array('2' => 'Male', '1' => 'Female', '0' => 'NA');
+
+        $verdict_data=[];
         foreach ($all_actors as $id => $enable) {
             $sql = "SELECT * FROM `data_actors_meta` where actor_id =" . $id . " ";
             $rows = Pdo_an::db_results_array($sql);
@@ -213,6 +299,25 @@ class MOVIE_DATA
                 if ($r['crowdsource']) $ethnic['crowd'][$r['actor_id']] = $r['crowdsource'];
                 if ($r['forebears']) $ethnic['forebears'][$r['actor_id']] = $r['forebears'];
                 if ($r['familysearch']) $ethnic['familysearch'][$r['actor_id']] = $r['familysearch'];
+
+                if ($verdict_method)
+                {
+                    if ($r['verdict_weight'])
+                    {
+                        $verdict_data[$r['actor_id']] =$r['verdict_weight'];
+                    }
+                    else
+                    {
+                        $verdict_data[$r['actor_id']] =$r['verdict'];
+                    }
+
+                }
+                else
+                {
+                    $verdict_data[$r['actor_id']] =$r['verdict'];
+                }
+
+
             }
         }
 
@@ -231,22 +336,28 @@ class MOVIE_DATA
             }
 
 
-            foreach ($ethnycity as $order => $data) {
-                foreach ($data as $typeb => $enable) {
-                    if ($enable) {
-                        $ethnic_sort[$array_convert_type[$typeb]] = [];
+            if ($ethnycity) {
+                foreach ($ethnycity as $order => $data) {
+                    foreach ($data as $typeb => $enable) {
+                        if ($enable) {
+                            $ethnic_sort[$array_convert_type[$typeb]] = [];
+                        }
                     }
                 }
+                foreach ($ethnic_sort as $key => $value) {
+                    $result[$key] = $ethnic[$key];
+                }
             }
-            foreach ($ethnic_sort as $key => $value) {
-                $result[$key] = $ethnic[$key];
-            }
+
         }
+
+
 
         if (!$a_sql) {
             $ethnic = $result;
             if ($diversity_select != 'wj_nw') $diversity_select = '';
         }
+
 
         $arrayneed_compare = [];
         $request_type = [];
@@ -254,7 +365,11 @@ class MOVIE_DATA
         $total_data_result = [];
 
 
-        $ethnic_array = self::get_echnic_custom($total_actors_data, $ethnic, $diversity_select, $arrayneed_compare, $request_type, $array_request, 1);
+        $ethnic_array = self::get_echnic_custom($total_actors_data, $ethnic, $diversity_select, $arrayneed_compare, $request_type, $array_request, 1 ,$verdict_data);
+
+
+       // var_dump($ethnic_array);
+
         $data = $ethnic_array['result'];
 
 //var_dump($ethnic_array);
@@ -269,7 +384,6 @@ class MOVIE_DATA
         if (count($data)) {
             $array_movie_result['movie_id'] = $id;
             $array_movie_result['data'] = $data;
-
         }
 
         ///var_dump($all_data['request']);
@@ -291,7 +405,7 @@ class MOVIE_DATA
             $total = self::get_summary_request($all_data['actors_data'], $all_data['result'], $all_data['type'], $all_data['request'], $ethnycity, 1);
         }
 
-        return array('data' => $data, 'all_data' => $all_data, 'current' => $current, 'total' => $total, 'diversity' => $diversity, 'default_data' => $ethnic_array['array_default']);
+        return array('data' => $data, 'all_data' => $all_data, 'current' => $current, 'total' => $total, 'diversity' => $diversity, 'default_data' => $ethnic_array['array_default'],'verdict_data'=>$verdict_data);
 
 
     }
@@ -358,11 +472,13 @@ class MOVIE_DATA
         return $actors_array;
     }
 
-    public static function get_echnic_custom($array_actors, $ethnic, $diversity_select, $arrayneed_compare, $request_type, $array_request, $all_data = '')
+    public static function get_echnic_custom($array_actors, $ethnic, $diversity_select, $arrayneed_compare, $request_type, $array_request, $all_data = '',$verdict_data =[])
     {
 
         $array_compare_cache = array('Sadly, not' => 'N/A', '1' => 'N/A', '2' => 'N/A', 'NJW' => 'N/A', 'W' => 'White', 'B' => 'Black', 'EA' => 'Asian', 'H' => 'Latino', 'JW' => 'Jewish', 'I' => 'Indian', 'M' => 'Arab', 'MIX' => 'Mixed / Other', 'IND' => 'Indigenous');
 
+        !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+        $verdict_method = OptionData::get_options('','verdict_method');
 
         global $array_compare;
         $array_default = [];
@@ -386,6 +502,13 @@ class MOVIE_DATA
                         } else if ($array_compare[$data]) {
                             $data = $array_compare[$data];
                         }
+
+                            $ethnic_data = $data;
+
+                        if ($verdict_method)
+                        {
+                            $data =  $array_compare_cache[$verdict_data[$id]];
+                        }
                         //echo '$data =' .$data.' <bR>';
 
                         if ($diversity_select == 'wj_nw') {//////White (+ Jews ) v.s. non-White
@@ -400,7 +523,9 @@ class MOVIE_DATA
                             $array_result[$data]++;
                             $array_type[$type]++;
                             break;
-                        } else if ($diversity_select == 'w_j_nwj') {///////White (- Jews ) v.s. non-White (+ Jews)
+                        }
+                        else if ($diversity_select == 'w_j_nwj')
+                        {///////White (- Jews ) v.s. non-White (+ Jews)
 
                             if ($data == 'White') {
                                 $data = 'White (- Jews )';
@@ -415,7 +540,8 @@ class MOVIE_DATA
 
                             $array_type[$type]++;
                             break;
-                        } else if ($diversity_select == 'wmj_nwm') {
+                        }
+                        else if ($diversity_select == 'wmj_nwm') {
                             if ($type != 'gender') {
                                 //////White Male (+ Jews ) v.s. non-Whites ( + Female Whites )
                                 $gender = $ethnic['gender'][$id];
@@ -437,7 +563,8 @@ class MOVIE_DATA
 
                                 break;
                             }
-                        } else if ($diversity_select == 'wm_j_nwmj') {
+                        }
+                        else if ($diversity_select == 'wm_j_nwmj') {
                             if ($type != 'gender') {
                                 //////White Male (- Jews ) v.s. non-White Males (+ Jews + Female Whites)
                                 $gender = $ethnic['gender'][$id];
@@ -459,38 +586,48 @@ class MOVIE_DATA
 
                                 break;
                             }
-                        } else {
+                        }
+                        else {
 
+                            if ($ethnic_data==$data) {
+                                if ($a == 0) {
 
-                            if ($a == 0) {
-                                $array_result[$data]++;
-                                $request_type[$type]++;
-                                $array_request[$type][$data]++;
-                                $arrayneed_compare[$data]++;
-                                $all_data_request['actors_data'][$data][$type][] = $id;
-                                //echo 'result  '.$type.' - '.$data.'<br>';
-                            }
-                            $a++;
-                            if (!$all_data) {
-
-                                break;
-
-                            } else {
-
-                                $all_data_request['result'][$data]++;
-                                $all_data_request['type'][$type]++;
-                                $all_data_request['request'][$type][$data]++;
-
-
-                                $array_enable = $all_data_request['actors_data'][$data][$type];
-                                if (!$array_enable) $array_enable = [];
-                                if (!in_array($id, $array_enable)) {
+                                    $array_result[$data]++;
+                                    $request_type[$type]++;
+                                    $array_request[$type][$data]++;
+                                    $arrayneed_compare[$data]++;
 
                                     $all_data_request['actors_data'][$data][$type][] = $id;
+
+                                    if (!$all_data) {
+
+                                        break;
+
+                                    }
                                 }
+                                //echo 'result  '.$type.' - '.$data.'<br>';
 
-
+                                $a++;
                             }
+
+//                            else {
+//
+//                                $all_data_request['result'][$data]++;
+//                                $all_data_request['type'][$type]++;
+//                                $all_data_request['request'][$type][$data]++;
+//
+//
+//                                $array_enable = $all_data_request['actors_data'][$data][$type];
+//                                if (!$array_enable) $array_enable = [];
+//                                if (!in_array($id, $array_enable)) {
+//
+//                                    $all_data_request['actors_data'][$data][$type][] = $id;
+//
+//
+//                                }
+//
+//
+//                            }
 
                         }
                     }
@@ -560,6 +697,7 @@ class MOVIE_DATA
 
     public static function get_summary_request($array_request_actors, $arrayneed_compare, $request_type, $array_request, $enable_ethnycity = '', $enable_actors_link = '', $enable_demograpic = '')
     {
+
 
         $array_desc = self::get_population_array('ethnic_desc');
 

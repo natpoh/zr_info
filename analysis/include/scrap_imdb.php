@@ -17,6 +17,71 @@ if (!defined('ABSPATH'))
 ///add option
 !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : ''; 
 
+function update_actor_stars($movie_id)
+{
+    $q ="SELECT * FROM `meta_movie_actor` where mid =".$movie_id;
+    $rows = Pdo_an::db_results_array($q);
+    $types = [];
+    $array=[];
+    foreach ($rows as $v)
+    {
+        $types[$v['type']][]=$v['aid'];
+        $array[$v['aid']] = $v['type'];
+    }
+    if ($types[1])
+    {
+       // echo $movie_id.' skip<br>';
+        return 0;
+    }
+    else
+    {
+        ////update movie
+        $array_movie =  TMDB::get_content_imdb($movie_id,0,1,1);
+        $add =  TMDB::addto_db_imdb($movie_id, $array_movie);
+        return 1;
+        echo $movie_id.' updated<br>';
+
+    }
+}
+
+function fix_actors_stars($movie_id)
+{
+    !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+    $last_id = OptionData::get_options('','actor_stars_last_id');
+    echo 'last_id='.$last_id.'<br>';
+
+    if (!$last_id)
+    {
+        $last_id=0;
+    }
+
+    if (!$movie_id)
+    {
+        $movies_updated = 0;
+
+        $q= "SELECT id FROM `data_movie_imdb` where id > ".$last_id."  order by id asc limit 10000";
+        $r = Pdo_an::db_results_array($q);
+        foreach ($r as $row)
+        {
+            $movie_id =  $row['id'];
+            $movies_updated+=update_actor_stars($movie_id);
+            OptionData::set_option('',$movie_id,'actor_stars_last_id',false);
+
+            if ($movies_updated> 30)
+            {
+                break;
+            }
+        }
+
+
+    }
+    else
+    {
+        update_actor_stars($movie_id);
+    }
+
+
+}
 
 
 function set_verdict_weight($id)
@@ -46,9 +111,17 @@ function get_similar($id)
     echo SimilarMovies::get_movies($id);
 }
 
-function sync_tables()
+function sync_tables($table='')
 {
-$array_tables = array('data_familysearch_verdict', 'data_forebears_verdict');
+    if ($table)
+    {
+        $array_tables= array($table);
+    }
+    else
+    {
+        $array_tables = array('data_familysearch_verdict', 'data_forebears_verdict');
+    }
+
 
 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
 
@@ -2528,11 +2601,19 @@ if (isset($_GET['update_actors_stars_data'])) {
 
 }
 if (isset($_GET['get_imdb_movie_id'])) {
+
+    global $debug;
+    if (isset($_GET['debug']))
+    {
+        $debug=1;
+    }
+
         $id = intval($_GET['get_imdb_movie_id']);
 
         $array_movie =  TMDB::get_content_imdb($id);
 
 
+       // if ($debug){var_dump($array_movie);}
 
         $add =  TMDB::addto_db_imdb($id, $array_movie);
 
@@ -2866,7 +2947,7 @@ if (isset($_GET['check_sync'])) {
 if (isset($_GET['sync_tables'])) {
 
 
-  sync_tables();
+  sync_tables($_GET['sync_tables']);
 
     return;
 }
@@ -2885,5 +2966,15 @@ if (isset($_GET['set_verdict_weight'])) {
 
     return;
 }
+
+if (isset($_GET['fix_actors_stars'])) {
+
+
+    fix_actors_stars($_GET['fix_actors_stars']);
+
+    return;
+}
+
+
 echo 'ok';
 

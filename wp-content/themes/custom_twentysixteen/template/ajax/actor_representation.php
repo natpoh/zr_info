@@ -4,8 +4,12 @@ if (!defined('ABSPATH'))
     define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
 
 
+
+
 function get_actors_full_representation()
 {
+
+
 
     !class_exists('MOVIE_DATA') ? include ABSPATH . "analysis/movie_data.php" : '';
 
@@ -24,29 +28,54 @@ function get_actors_full_representation()
     $ethnycity =  $ethnic_array['ethnycity'];
 
 
-    if ((in_array('directors', $actor_type)) || !$actor_type) {
 
-        if (!$actor_type)
-        {
+    if ( !$actor_type) {
+
+
             $actor_type[] = 'star';
             $actor_type[] = 'main';
             $actor_type[] = 'extra';
-        }
 
-        $actor_type[] = 'director';
-        $actor_type[] = 'writer';
-        $actor_type[] = 'cast_director';
-        $actor_type[] = 'producer';
-        unset($actor_type[array_search('directors',$actor_type)]);
+            $actor_type[] = 'director';
+            $actor_type[] = 'writer';
+            $actor_type[] = 'cast_director';
+            $actor_type[] = 'producer';
 
 
     }
+    else
+    {
+        if  (in_array('directors', $actor_type)  )
+        {
+            $actor_type[] = 'writer';
+            $actor_type[] = 'cast_director';
+            $actor_type[] = 'producer';
 
-    $actors_array=  MOVIE_DATA::get_actors_from_movie($movie_id,'',$actor_type);
+            unset($actor_type[array_search('directors',$actor_type)]);
+        }
+    }
 
-    $array_movie_result = MOVIE_DATA::get_movie_data_from_db($movie_id, '', 0, $actor_type , $actors_array, "default", $ethnycity, 1 );
 
-    echo $array_movie_result['current'];
+
+
+        $actors_array=  MOVIE_DATA::get_actors_from_movie($movie_id,'',$actor_type);
+
+
+        $array_movie_result = MOVIE_DATA::get_movie_data_from_db($movie_id, '', 0, $actor_type , $actors_array, "default", $ethnycity, 1 );
+        echo $array_movie_result['current'];
+
+
+//    else
+//    {
+//        $data = MOVIE_DATA::get_movies_data($movie_id,$actor_type);
+//
+//       var_dump($data);
+//
+//    }
+
+
+
+
 
    /// single_movie($ethnic_array,1);
 
@@ -70,10 +99,26 @@ if (isset($_GET['id'])) {
 
 <div class="r_header">
     <div class="r_row">
+
+<?php
+///check search type
+!class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+$verdict_method =  OptionData::get_options('','verdict_method');
+
+
+if (!$verdict_method)
+{
+?>
+
 <details class="dark actor_details">
     <summary>Setup</summary>
-    <div ><?php  include ABSPATH.'analysis/include/template_control.php';  echo $data_Set; ?></div>
+    <div ><?php global $data_Set; include ABSPATH.'analysis/include/template_control.php';  echo $data_Set; ?></div>
 </details>
+<?php
+}
+
+    ?>
+
     </div>
             <div class="r_row">
 
@@ -99,13 +144,6 @@ if (isset($_GET['id'])) {
 
 </div>
 <?php
-
-            include ABSPATH.'analysis/include/template_control.php';
-
-
-
-
-
 
 
         }
