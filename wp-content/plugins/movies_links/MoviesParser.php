@@ -1666,7 +1666,7 @@ class MoviesParser extends MoviesAbstractDB {
 
     public function check_link_post($o, $post, $movie_id = 0) {
         $rules = $o['rules'];
-
+        
         $min_match = $o['match'];
         $min_rating = $o['rating'];
         $movie_type = $this->movie_type[$o['type']];
@@ -1798,7 +1798,7 @@ class MoviesParser extends MoviesAbstractDB {
 
             $ms = $this->ml->get_ms();
             $facets = array();
-            if ($movie_id) {
+            if ($movie_id>0) {
                 $movies = $ms->search_movies_by_id($movie_id);
                 $movies_title = $ms->search_movies_by_title($post_title_name, $title_rule['e'], $post_year_name, 20, $movie_type);
 
@@ -1807,6 +1807,10 @@ class MoviesParser extends MoviesAbstractDB {
                         $post_title_name = '';
                     }
                 }
+            } else if ($movie_id == -1) {
+                $movie = new stdClass();
+                $movie->id=-1;
+                $movies = array($movie);
             } else {
                 $movies_posts = array();
                 if ($post_mid) {
@@ -2508,7 +2512,9 @@ class MoviesParser extends MoviesAbstractDB {
                         if ($debug) {
                             print_r($post);
                         }
-                        $results = $this->check_link_post($o, $post, $url->pid);
+                        
+                        $url_pid = $url->pid?$url->pid:-1;                        
+                        $results = $this->check_link_post($o, $post, $url_pid);
                         $results['post'] = $post;
                         $ret[$uid][] = $results;
                     }
