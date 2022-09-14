@@ -38,9 +38,9 @@ function update_actor_stars($movie_id)
         ////update movie
         $array_movie =  TMDB::get_content_imdb($movie_id,0,1,1);
         $add =  TMDB::addto_db_imdb($movie_id, $array_movie);
-        return 1;
-        echo $movie_id.' updated<br>';
 
+        echo $movie_id.' updated<br>';
+        return 1;
     }
 }
 
@@ -67,7 +67,7 @@ function fix_actors_stars($movie_id)
             $movies_updated+=update_actor_stars($movie_id);
             OptionData::set_option('',$movie_id,'actor_stars_last_id',false);
 
-            if ($movies_updated> 30)
+            if ($movies_updated> 10)
             {
                 break;
             }
