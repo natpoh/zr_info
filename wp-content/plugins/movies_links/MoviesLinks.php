@@ -128,10 +128,29 @@ class MoviesLinks extends MoviesAbstractDB {
         return array();
     }
 
-    public function get_posts_by_movie_id($id) {
-        $sql = sprintf("SELECT * FROM {$this->db['posts']} WHERE top_movie = %d", (int) $id);
+    public function get_posts_by_movie_id($mid) {
+        $sql = sprintf("SELECT * FROM {$this->db['posts']} WHERE top_movie = %d", (int) $mid);
         $result = $this->db_results($sql);
         return $result;
+    }
+
+    public function get_post_by_movie_id_and_cid($mid, $cid) {
+        $sql = sprintf("SELECT p.*, u.cid FROM {$this->db['posts']} p INNER JOIN {$this->db['url']} u ON u.id=p.uid WHERE p.top_movie = %d AND u.cid=%d", (int) $mid, (int) $cid);
+        $result = $this->db_fetch_row($sql);
+        return $result;
+    }
+
+    public function get_post_data($mid, $cid) {
+        $post = $this->get_post_by_movie_id_and_cid($mid, $cid);
+        $unserialise = array();
+        if ($post) {            
+            $options = unserialize($post->options);
+            foreach ($options as $key => $value) {
+                $unserialise[$key] = base64_decode($value);
+            }  
+            $post->opt_fields = $unserialise;
+        }
+        return $post;
     }
 
     public function get_post_options($mid = 0, $fields = array()) {
@@ -164,7 +183,7 @@ class MoviesLinks extends MoviesAbstractDB {
             return $this->settings;
         }
         // Get settings from options
-            $settings = unserialize($this->get_option('movies_links_settings'));
+        $settings = unserialize($this->get_option('movies_links_settings'));
         if ($settings && sizeof($settings)) {
             foreach ($this->settings_def as $key => $value) {
                 if (!isset($settings[$key])) {
@@ -203,7 +222,7 @@ class MoviesLinks extends MoviesAbstractDB {
 
         $this->settings = $ss;
         if (function_exists('update_option')) {
-            update_option('movies_links_settings', serialize($ss));
+            $this->update_option('movies_links_settings', serialize($ss));
         }
     }
 

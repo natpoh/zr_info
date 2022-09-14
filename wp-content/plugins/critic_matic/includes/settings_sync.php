@@ -3,27 +3,17 @@
 
 <form accept-charset="UTF-8" method="post" id="tag">
     <div class="cm-edit inline-edit-row">
-        <fieldset>    
-            <label class="inline-edit-author">
-                <span class="title"><?php print __('Sync status') ?></span>
-                <select name="sync_status" class="">
-                    <?php
 
-                    foreach ($this->cm->sync_status_types as $key => $status) {
-                        $selected = ($key == $ss['sync_status']) ? 'selected' : '';
-                        ?>
-                        <option value="<?php print $key ?>" <?php print $selected ?> >
-                            <?php print $status ?>
-                        </option>                                
-                        <?php
-                    }
-                    ?>                       
-                </select>
-            </label>
-            <?php wp_nonce_field('critic-feeds-options', 'critic-feeds-nonce'); ?>
-            <br />
-            <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save') ?>" class="button-primary">  
+        <p><?php print __('Sync data') ?>: 
+            <b><?php
+                print DB_SYNC_DATA == 1 ? "True" : "False";
+                ?></b></p>
+        <p><?php print __('Sync status') ?>:
 
-        </fieldset>
+            <b><?php
+                print $this->cm->sync_status_types[DB_SYNC_MODE];
+                ?></b>                       
+        </p>
+
     </div>
 </form>

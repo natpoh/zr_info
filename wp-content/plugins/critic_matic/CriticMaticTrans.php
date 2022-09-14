@@ -148,13 +148,13 @@ class CriticMaticTrans extends AbstractDB {
 
     public function find_transcriptions_youtube($count = 10, $debug = false, $force = false) {
         $cron_option = 'find_transcriptions_last_run';
-        $last_run = get_option($cron_option, 0);
+        $last_run = $this->get_option($cron_option, 0);
         $currtime = $this->curr_time();
         $max_wait = $last_run + 10 * 60; // 10 min
 
         if ($currtime > $max_wait || $force) {
             // Set curr time to option
-            update_option($cron_option, $currtime);
+            $this->update_option($cron_option, $currtime);
 
             // Find transcripts from posts from three days ago. We need a lot of time to create transcripts for new YouTube videos.
             $min_date = $currtime - 86400 * 1; // 1 day
@@ -171,7 +171,7 @@ class CriticMaticTrans extends AbstractDB {
                 }
             }
             // Remove last run time
-            update_option($cron_option, 0);
+            $this->update_option($cron_option, 0);
         }
     }
 

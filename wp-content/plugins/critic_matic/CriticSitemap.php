@@ -54,9 +54,9 @@ class CriticSitemap extends AbstractDB {
             'actors' => 'data_actors_all',
         );
 
-        $this->map_data = get_option($this->current_map, array());
+        $this->map_data = $this->get_option($this->current_map, array());
 
-        $site_url = get_option('siteurl');
+        $site_url = $this->get_option('siteurl');
         //Force SSL
         $site_url = str_replace('http://', 'https://', $site_url);
         $this->site_url = $site_url;
@@ -99,7 +99,7 @@ class CriticSitemap extends AbstractDB {
             }
         }
         if ($update) {
-            update_option($this->current_map, $this->map_data);
+            $this->update_option($this->current_map, $this->map_data);
         }
     }
 
@@ -469,7 +469,7 @@ class CriticSitemap extends AbstractDB {
             }
 
             //Обновляем опции
-            update_option($this->current_map, $this->map_data);
+            $this->update_option($this->current_map, $this->map_data);
 
             //Перекомпилируем файл ссылок на карты с новыми данными
             $this->compileMap();

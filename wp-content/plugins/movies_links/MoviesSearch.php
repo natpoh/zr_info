@@ -117,7 +117,10 @@ class MoviesSearch extends MoviesAbstractDB {
         return $ret;
     }
 
-    public function get_movie_facets($mid) {
+    public function get_movie_facets($mid=0) {
+        if ($mid<=0){
+            return array();
+        }
         // Facets logic
         $sql_arr = array();
         $facets_arr = array();

@@ -491,7 +491,7 @@ class CriticTranscriptions extends AbstractDBTC {
                 }
             }
 
-            update_option('last_transit_youtube_id', $last_id);
+            $this->update_option('last_transit_youtube_id', $last_id);
         }
     }
 
@@ -512,7 +512,7 @@ class CriticTranscriptions extends AbstractDBTC {
         if (!in_array($id, $ids)) {
             $ids[] = $id;
             $ids_str = serialize($ids);
-            update_option($opt_key, $ids_str);
+            $this->update_option($opt_key, $ids_str);
         }
     }
 

@@ -1509,7 +1509,9 @@ class MoviesAn extends AbstractDBAn {
             'rule' => $rule_str,
             'rule_hash' => $rule_hash,
         );
-        $id = $this->sync_insert_data($data, $this->db['race_rule'], false, false);
+        $is_client = false;
+        $sync = true;
+        $id = $this->sync_insert_data($data, $this->db['race_rule'], $is_client, $sync, 5);
         return $id;
     }
 

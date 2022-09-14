@@ -24,7 +24,7 @@ if (!function_exists('add_action')) {
 define('CRITIC_MATIC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CRITIC_MATIC_PLUGIN_URL', plugin_dir_url(__FILE__));
 
-$version = '1.0.80';
+$version = '1.0.81';
 if (defined('LASTVERSION')) {
     define('CRITIC_MATIC_VERSION', $version . LASTVERSION);
 } else {
@@ -988,7 +988,13 @@ WHERE
     m.id < s.id AND 
     m.mid = s.mid;
  * 
- * 
+ * Rating
+  SELECT cid, count(*) FROM `wp_bcw98b_critic_matic_rating` GROUP by cid having count(*) > 1;
+ * DELETE m FROM `wp_bcw98b_critic_matic_rating` m
+INNER JOIN `wp_bcw98b_critic_matic_rating` s
+WHERE 
+    m.id < s.id AND 
+    m.cid = s.cid;
  * //Author meta
  * 
  *  SELECT cid, count(*) FROM `wp_bcw98b_critic_matic_authors_meta` GROUP by cid having count(*) > 1;

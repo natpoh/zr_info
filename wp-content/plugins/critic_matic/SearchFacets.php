@@ -2245,7 +2245,7 @@ class SearchFacets extends AbstractDB {
         <?php
     }
 
-    public function theme_facet_select($filter, $data, $title, $ftype = 'all', $name_pre = '', $tabs = '', $icon = '', $footer = '') {
+    public function theme_facet_select($filter, $data, $title, $ftype = 'all', $name_pre = '', $tabs = '', $icon = '', $footer = '', $check_default = '') {
         ?>
         <div id="facet-<?php print $filter ?>" class="facet ajload" data-type="<?php print $ftype ?>">
             <div class="facet-title">
@@ -2269,7 +2269,14 @@ class SearchFacets extends AbstractDB {
 
                         <?php foreach ($data as $key => $item): ?>
                             <?php
-                            $checked = $this->facet_checked($filter, $key);
+                            $checked = false;
+                            if ($check_default) {
+                                if ($check_default == $key) {
+                                    $checked = true;
+                                }
+                            } else {
+                                $checked = $this->facet_checked($filter, $key);
+                            }
                             ?>
                             <option value="<?php print $key ?>" data-title="<?php print $item['title'] ?>" <?php print $checked ? 'selected' : ''  ?>><?php print $item['title'] ?></option>
                         <?php endforeach; ?> 

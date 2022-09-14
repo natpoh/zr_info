@@ -398,13 +398,13 @@ class CriticAudience extends AbstractDb {
 
     public function run_cron($count = 100, $debug = false, $force = false) {
         $cron_option = 'audience_cron_last_run';
-        $last_run = get_option($cron_option, 0);
+        $last_run = $this->get_option($cron_option, 0);
         $currtime = $this->curr_time();
         $max_wait = $last_run + 5 * 60; // 5 min
 
         if ($currtime > $max_wait || $force) {
             // Set curr time to option
-            update_option($cron_option, $currtime);
+            $this->update_option($cron_option, $currtime);
 
             // Add queue posts to critics
             // 1. Get posts
@@ -420,7 +420,7 @@ class CriticAudience extends AbstractDb {
                 }
             }
             // Remove last run time
-            update_option($cron_option, 0);
+            $this->update_option($cron_option, 0);
         } else {
             if ($debug) {
                 print "Cron already run: $currtime < $max_wait";

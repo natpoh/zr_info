@@ -315,64 +315,68 @@ class MoviesParserCron extends MoviesAbstractDB {
 
                     if (!$post_exist || $force) {
                         $url = $this->mp->get_url($uid);
-                        $movie_id = $url->pid;
-                        $movie_data = $ms->search_movies_by_id($movie_id);
                         $movie = array();
-                        if ($movie_data && $movie_data[$movie_id]) {
-                            $movie = $movie_data[$url->pid];
-                        }
+                        $movie_id = $url->pid ? $url->pid : 0;
 
-                        if ($debug) {
-                            print_r($movie);
-                        }
-
-                        $title = '';
-                        $year = '';
-                        $release = '';
                         $post_options = array();
 
                         $status = 0;
 
-                        if ($movie) {
 
-                            $title = $movie->title;
-                            $year = $movie->year;
-                            $release = $movie->release;
 
-                            // Add urls
-                            $add_urls = array();
+                        // Add urls
+                        $add_urls = array();
 
-                            if ($found) {
+                        if ($found) {
 
-                                foreach ($found as $item) {
-                                    if ($item['results'] && sizeof($item['results']) > 0) {
-                                        $first_result = array_pop($item['results']);
-                                        if ($first_result && $first_result['total']['valid'] && $first_result['total']['valid'] == 1) {
-                                            // Add link
-                                            if ($item['post']->url) {
-                                                $add_urls[] = $item['post']->url;
-                                                $count += 1;
-                                            }
+                            foreach ($found as $item) {
+                                if ($item['results'] && sizeof($item['results']) > 0) {
+                                    $first_result = array_pop($item['results']);
+                                    if ($first_result && $first_result['total']['valid'] && $first_result['total']['valid'] == 1) {
+                                        // Add link
+                                        if ($item['post']->url) {
+                                            $add_urls[] = $item['post']->url;
+                                            $count += 1;
                                         }
                                     }
                                 }
                             }
+                        }
 
+                        if ($debug) {
+                            print_r($add_urls);
+                        }
+
+                        if ($add_urls) {
+                            // Add urls
+                            foreach ($add_urls as $to_add) {
+                                $this->mp->add_url($cid_dst, $to_add, $movie_id, $new_url_weight);
+                            }
+                            // Parsed done
+                            $status = 1;
+                            foreach ($add_urls as $key => $value) {
+                                $post_options[$key] = base64_encode($value);
+                            }
+                        }
+
+                        $title = 'no title';
+                        $year = '';
+                        $release = '';
+                        if ($movie_id) {
+                            $movie_data = $ms->search_movies_by_id($movie_id);
+
+                            if ($movie_data && $movie_data[$movie_id]) {
+                                $movie = $movie_data[$url->pid];
+                            }
+                        }
+
+                        if ($movie) {
                             if ($debug) {
-                                print_r($add_urls);
+                                print_r($movie);
                             }
-
-                            if ($add_urls) {
-                                // Add urls
-                                foreach ($add_urls as $to_add) {
-                                    $this->mp->add_url($cid_dst, $to_add, $movie_id, $new_url_weight);
-                                }
-                                // Parsed done
-                                $status = 1;
-                                foreach ($add_urls as $key => $value) {
-                                    $post_options[$key] = base64_encode($value);
-                                }
-                            }
+                            $title = $movie->title;
+                            $year = $movie->year;
+                            $release = $movie->release;
                         }
 
                         // Add post

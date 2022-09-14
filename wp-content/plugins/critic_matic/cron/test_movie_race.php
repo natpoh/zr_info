@@ -33,15 +33,38 @@ if ($_GET['debug']) {
 $cm = new CriticMatic();
 $af = $cm->get_af();
 
-$ver_weight = false;
-$priority = array();
+// User data
+$verdict_mode = 'w';
+$mode_key = 9;
+$priority_string = '';
+
 $showcast = array(1, 2);
 /*  $showcast:
   1 = 'Stars'
   2 = 'Supporting'
   3 = 'Other'
-  4 = 'Production' 
+  4 = 'Production'
  */
+
+// Custom priority
+$priority = '';
+
+$ver_weight = false;
+if ($verdict_mode == 'w') {
+    // Weights logic
+    $ver_weight = true;
+    $weights_arr = $af->get_filter_mode($mode_key);
+    if ($weights_arr['custom']) {
+        $priority = $weights_arr['priority'];
+    }
+} else {
+    // Priority logic
+    $priority_arr = $af->get_filter_priority($priority_string);
+    if ($priority_arr['custom']) {
+        $priority = $priority_arr['priority'];
+    }
+}
+
 $race_data = $af->get_movies_race_data($movies, $showcast, $ver_weight, $priority, $debug);
 print '<pre>';
 print_r($race_data);

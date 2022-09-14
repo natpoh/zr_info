@@ -227,12 +227,13 @@ class CriticMatic extends AbstractDB {
             'audience_post_edit' => 0,
             'sync_status' => 1,
             'an_weightid' => 0,
+            'an_verdict_type' => 'p',
         );
 
-        $settings = $this->get_settings();
-        $this->sync_status = $settings['sync_status'];
-        $this->sync_client = $settings['sync_status'] == 2 ? true : false;
-        $this->sync_server = $settings['sync_status'] == 1 ? true : false;
+        $this->sync_data = DB_SYNC_DATA == 1 ? true : false;
+        $this->sync_status = DB_SYNC_MODE;
+        $this->sync_client = DB_SYNC_MODE == 2 ? true : false;
+        $this->sync_server = DB_SYNC_MODE == 1 ? true : false;
     }
 
     public function get_cp() {
@@ -445,7 +446,7 @@ class CriticMatic extends AbstractDB {
         $q = array();
         foreach ($q_def as $key => $value) {
             $q[$key] = isset($q_req[$key]) ? $q_req[$key] : $value;
-        }        
+        }
 
         // Custom status
         $status_trash = 2;
@@ -709,17 +710,21 @@ class CriticMatic extends AbstractDB {
         // Validate values        
         if ($fid > 0 && $cid > 0) {
             //Get post meta
-            $data = array(
-                'fid' => $fid,
-                'type' => $type,
-                'state' => $state,
-                'cid' => $cid,
-                'rating' => $rating,
-            );
+            $sql = sprintf("SELECT id FROM {$this->db['meta']} WHERE fid='%d' AND cid='%d'", $fid, $cid);
+            $id = $this->db_get_var($sql);
+            if (!$id) {
+                $data = array(
+                    'fid' => $fid,
+                    'type' => $type,
+                    'state' => $state,
+                    'cid' => $cid,
+                    'rating' => $rating,
+                );
 
-            $id = $this->sync_insert_data($data, $this->db['meta'], $this->sync_client, $this->sync_data);
-            if ($update_top_movie) {
-                $this->update_critic_top_movie($cid);
+                $id = $this->sync_insert_data($data, $this->db['meta'], $this->sync_client, $this->sync_data);
+                if ($update_top_movie) {
+                    $this->update_critic_top_movie($cid);
+                }
             }
             return $id;
         }
@@ -1035,7 +1040,7 @@ class CriticMatic extends AbstractDB {
                 'status' => $status
             );
             $this->db_update($data, $this->db['posts'], $id);
-            $this->hook_update_post($id);            
+            $this->hook_update_post($id);
             $this->critic_delta_cron();
 
             $result = $id;
@@ -1052,7 +1057,7 @@ class CriticMatic extends AbstractDB {
         $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
         $this->hook_update_post($id);
         $this->critic_delta_cron();
-        
+
         return true;
     }
 
@@ -1068,7 +1073,7 @@ class CriticMatic extends AbstractDB {
             $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
             $this->hook_update_post($id);
             $this->critic_delta_cron();
-            
+
             return true;
         }
         return false;
@@ -2985,7 +2990,7 @@ class CriticMatic extends AbstractDB {
         }
 
         // Update options        
-        update_option('critic_matic_settings', serialize($ss));
+        $this->update_option('critic_matic_settings', serialize($ss));
 
         // Update settings
         $this->settings = $this->get_settings();
