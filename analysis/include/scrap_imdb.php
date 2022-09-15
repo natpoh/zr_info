@@ -17,9 +17,9 @@ if (!defined('ABSPATH'))
 ///add option
 !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : ''; 
 
-function update_actor_stars($movie_id)
+function update_actor_stars($id,$movie_id)
 {
-    $q ="SELECT * FROM `meta_movie_actor` where mid =".$movie_id;
+    $q ="SELECT * FROM `meta_movie_actor` where mid =".$id;
     $rows = Pdo_an::db_results_array($q);
     $types = [];
     $array=[];
@@ -39,7 +39,7 @@ function update_actor_stars($movie_id)
         $array_movie =  TMDB::get_content_imdb($movie_id,0,1,1);
         $add =  TMDB::addto_db_imdb($movie_id, $array_movie);
 
-        echo $movie_id.' updated<br>';
+        echo $id.' updated<br>';
         return 1;
     }
 }
@@ -59,13 +59,15 @@ function fix_actors_stars($movie_id)
     {
         $movies_updated = 0;
 
-        $q= "SELECT id FROM `data_movie_imdb` where id > ".$last_id."  order by id asc limit 10000";
+        $q= "SELECT id, movie_id FROM `data_movie_imdb` where id > ".$last_id."  order by id asc limit 10000";
         $r = Pdo_an::db_results_array($q);
         foreach ($r as $row)
         {
-            $movie_id =  $row['id'];
-            $movies_updated+=update_actor_stars($movie_id);
-            OptionData::set_option('',$movie_id,'actor_stars_last_id',false);
+
+            $id =  $row['id'];
+            $movie_id =  $row['movie_id'];
+            $movies_updated+=update_actor_stars($id,$movie_id);
+            OptionData::set_option('',$id,'actor_stars_last_id',false);
 
             if ($movies_updated> 100)
             {

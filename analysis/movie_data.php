@@ -47,7 +47,8 @@ class MOVIE_DATA
         if ($debug) {echo 'mode_key='.$mode_key.'<br>';}
 
         !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-        $verdict_method =  OptionData::get_options('','verdict_method');
+        $vd_data = unserialize(unserialize(OptionData::get_options('','critic_matic_settings')));
+        $verdict_method=0; if ($vd_data["an_verdict_type"]=='w'){$verdict_method=1;}
 
 
 
@@ -237,7 +238,8 @@ class MOVIE_DATA
         }
 
         !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-        $verdict_method = OptionData::get_options('','verdict_method');
+        $vd_data = unserialize(unserialize(OptionData::get_options('','critic_matic_settings')));
+        $verdict_method=0; if ($vd_data["an_verdict_type"]=='w'){$verdict_method=1;}
 
 
         $i = $i0 = $i_j = 0;
@@ -478,7 +480,8 @@ class MOVIE_DATA
         $array_compare_cache = array('Sadly, not' => 'N/A', '1' => 'N/A', '2' => 'N/A', 'NJW' => 'N/A', 'W' => 'White', 'B' => 'Black', 'EA' => 'Asian', 'H' => 'Latino', 'JW' => 'Jewish', 'I' => 'Indian', 'M' => 'Arab', 'MIX' => 'Mixed / Other', 'IND' => 'Indigenous');
 
         !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-        $verdict_method = OptionData::get_options('','verdict_method');
+        $vd_data = unserialize(unserialize(OptionData::get_options('','critic_matic_settings')));
+        $verdict_method=0; if ($vd_data["an_verdict_type"]=='w'){$verdict_method=1;}
 
         global $array_compare;
         $array_default = [];

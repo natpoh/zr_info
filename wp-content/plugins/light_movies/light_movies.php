@@ -113,7 +113,7 @@ $this->set_option(1,$_POST['option_1'],'Ads');
 $this->set_option(3,$_POST['option_3'],'Ethnic array');
 $this->set_option(4,$_POST['option_4'],'Ethnic array fast');
 $this->set_option(6,$_POST['option_6'],'Color array');
-$this->set_option('',$_POST['verdict_method'],'verdict_method');
+//$this->set_option('',$_POST['verdict_method'],'verdict_method');
         }
 
 
@@ -125,20 +125,20 @@ $this->set_option('',$_POST['verdict_method'],'verdict_method');
 <?php
 
 
-$verdict_method =$this->get_option('','verdict_method');
-if ($verdict_method==0 || !$verdict_method)
-    {
-        $option ='<option value="0" selected>Default</option><option value="1">Weight</option>';
-    }
-else if ($verdict_method==1)
-    {
-        $option ='<option value="0">Default</option><option value="1" selected>Weight</option>';
-    }
+//$verdict_method =$this->get_option('','verdict_method');
+//if ($verdict_method==0 || !$verdict_method)
+//    {
+//        $option ='<option value="0" selected>Default</option><option value="1">Weight</option>';
+//    }
+//else if ($verdict_method==1)
+//    {
+//        $option ='<option value="0">Default</option><option value="1" selected>Weight</option>';
+//    }
 ?>
 <form action="admin.php?page=light_movies_custom_options" method="post">
     <div class="options_data">
-         <h2>Verdicts method</h2>
-        <select name="verdict_method"><?php echo $option; ?></select>
+<!--         <h2>Verdicts method</h2>-->
+<!--        <select name="verdict_method">--><?php //echo $option; ?><!--</select>-->
         <h2>Ads</h2>
         <textarea name="option_1" style="width: 600px; height: 300px"><?php echo $this->get_option(1); ?></textarea>
                 <h2>Ethnic array</h2>

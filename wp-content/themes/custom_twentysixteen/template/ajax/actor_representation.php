@@ -103,7 +103,9 @@ if (isset($_GET['id'])) {
 <?php
 ///check search type
 !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-$verdict_method =  OptionData::get_options('','verdict_method');
+$vd_data = unserialize(unserialize(OptionData::get_options('','critic_matic_settings')));
+$verdict_method=0; if ($vd_data["an_verdict_type"]=='w'){$verdict_method=1;}
+
 
 
 if (!$verdict_method)
