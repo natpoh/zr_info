@@ -2978,7 +2978,7 @@ if (isset($_GET['fix_actors_stars'])) {
 }
 
 if (isset($_GET['delete_movie'])) {
-
+return;
     if (isset($_GET['sync']))
     {
         $sync = 1;
@@ -3013,9 +3013,42 @@ if (isset($_GET['delete_new_movies'])) {
 
     }
 
-
+return;
 }
+if (isset($_GET['check_dublicate_movies'])) {
+    !class_exists('DeleteMovie') ? include ABSPATH . "analysis/include/delete_movie.php" : '';
 
+    global $debug;
+    $debug  =1;
 
+    $q = "SELECT movie_id, count(movie_id) FROM data_movie_imdb GROUP by movie_id having count(movie_id) > 1 ORDER BY count(movie_id) DESC;";
+    $r = Pdo_an::db_results_array($q);
+    if ($r)
+    {
+        foreach ($r as $i)
+        {
+            $mid = $i['movie_id'];
+            if ($mid)
+            {
+                $array_result=[];
+
+                $q1 = "SELECT id, movie_id  FROM `data_movie_imdb` where movie_id = ".$mid." order by id asc";
+                $s = Pdo_an::db_results_array($q1);
+                foreach ($s as $sv)
+                {
+                    $array_result[]=$sv['id'];
+
+                }
+                unset($array_result[0]);
+                foreach ($array_result as $md)
+                {
+                    DeleteMovie::delete_movie($md, 1);
+                }
+            }
+        }
+    }
+
+return;
+}
 echo 'ok';
 
