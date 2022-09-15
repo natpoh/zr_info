@@ -2977,6 +2977,45 @@ if (isset($_GET['fix_actors_stars'])) {
     return;
 }
 
+if (isset($_GET['delete_movie'])) {
+
+    if (isset($_GET['sync']))
+    {
+        $sync = 1;
+    }
+
+    global $debug;
+    $debug  =1;
+
+    !class_exists('DeleteMovie') ? include ABSPATH . "analysis/include/delete_movie.php" : '';
+    DeleteMovie::delete_movie($_GET['delete_movie'], $sync);
+
+    return;
+
+}
+if (isset($_GET['delete_new_movies'])) {
+    !class_exists('DeleteMovie') ? include ABSPATH . "analysis/include/delete_movie.php" : '';
+    $start_time = time()-86400*2;
+    $end_time = time()-3600*4;
+
+   // $q = "SELECT * FROM `movies_log` where `name` ='add movies'  and  last_update > ".$start_time." and last_update < ".$end_time;
+    global $debug;
+    $debug  =1;
+    $q ="SELECT * FROM `movies_log` where `name` ='add movies' and last_update > 1663076609 and last_update < 1663235009";
+    $r = Pdo_an::db_results_array($q);
+    foreach ($r as $row)
+    {
+        $mid = $row['rwt_id'];
+        if ($mid)
+        {
+            DeleteMovie::delete_movie($mid, 1);
+        }
+
+    }
+
+
+}
+
 
 echo 'ok';
 

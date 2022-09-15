@@ -119,11 +119,27 @@ AND table_schema='imdbvisualization'";
 
         if ($_POST['oper'] == 'del') {
 
-            $sql = "DELETE FROM  `" . $table_data . "`   WHERE `id` = '" . intval($_POST['parent']) . "'";
-            Pdo_an::db_query($sql);
 
-            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-            Import::create_commit('', 'delete', $table_data, array('id' => intval($_POST['parent'])), 'user_'.$table_data,6);
+
+            if ($table_data=='data_movie_imdb')
+            {
+
+                !class_exists('DeleteMovie') ? include ABSPATH . "analysis/include/delete_movie.php" : '';
+                DeleteMovie::delete_movie($_POST['parent'],1);
+            }
+            else
+            {
+                $sql = "DELETE FROM  `" . $table_data . "`   WHERE `id` = '" . intval($_POST['parent']) . "'";
+                Pdo_an::db_query($sql);
+
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                Import::create_commit('', 'delete', $table_data, array('id' => intval($_POST['parent'])), 'user_'.$table_data,6);
+
+
+            }
+
+
+
 
 
         } else if (($_POST['oper'] == 'edit') || ($_POST['oper'] == 'add')) {
