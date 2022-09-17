@@ -134,8 +134,8 @@ $array_type=array(
 $id =intval($id);
 
 
-$verdict_type =  OptionData::get_options('','verdict_method');
-
+$vd_data = unserialize(unserialize(OptionData::get_options('','critic_matic_settings')));
+$verdict_method=0; if ($vd_data["an_verdict_type"]=='w'){$verdict_method=1;}
 
     $sql = "SELECT * FROM `data_actors_meta` where actor_id =" . $id . " ";
     $row = Pdo_an::db_results_array($sql);
@@ -155,11 +155,11 @@ $verdict_type =  OptionData::get_options('','verdict_method');
         if ($r['crowdsource']) $result['crowd'] = $r['crowdsource'];
 
 
-        if ($verdict_type==1)
+        if ($verdict_method==1)
         {
             $verdict = $r['verdict_weight'];
         }
-        if ($verdict_type==0 || !$verdict)
+        if ($verdict_method==0 || !$verdict)
         {
 
             $verdict = $r['verdict'];

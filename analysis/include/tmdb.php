@@ -24,6 +24,7 @@ class TMDB
 
 
 
+
     public static function add_tmdb_without_id($tmdb_id_input='')
     {
 
@@ -707,8 +708,12 @@ public static function addto_db_imdb($movie_id, $array_movie, $rwt_id = 0, $tmdb
     $array_string = json_encode($array_movie);
     $post_name='';
 
-    $array_request = array($movie_id, $rwt_id, $tmdb_id, $title,$post_name, $type, $genre, $relise, $year, $country, $language, $production,
-        '', '', '', '', '', $box_usa, $box_world, $productionBudget, $keywords, $description, $array_string, $contentRating, $Rating, time(), $runtime);
+
+
+    $array_request = array($movie_id, $rwt_id, $tmdb_id, $title,$post_name, $type, $genre, $relise, $year, $country, $language,
+        $production,
+        '', '', '', '', '', $box_usa, $box_world, $productionBudget, $keywords, $description, $array_string, $contentRating,
+        $Rating, time(), $runtime);
 
     ///  var_dump($array_request);
 
@@ -723,11 +728,12 @@ public static function addto_db_imdb($movie_id, $array_movie, $rwt_id = 0, $tmdb
 
 
 
-
    if (!$result_imdb)
     {
         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
         $table_access = Import::get_table_access('data_movie_imdb');
+
+
 
         if ( $table_access['export']==2 )
         {
@@ -741,8 +747,13 @@ public static function addto_db_imdb($movie_id, $array_movie, $rwt_id = 0, $tmdb
             if ($mid)
             {
 
-                $sql = "INSERT INTO `data_movie_imdb`
-            VALUES ('".$mid."', ?, ?, ?, ?, ?, ?,? ,?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)";
+                $sql= "INSERT INTO `data_movie_imdb` VALUES ('".$mid."' ";
+                foreach ($array_request as $val)
+                {
+                    $sql.= ",? ";
+                }
+                $sql.= ")";
+
                  Pdo_an::db_results_array($sql,$array_request);
 
             }
@@ -750,11 +761,16 @@ public static function addto_db_imdb($movie_id, $array_movie, $rwt_id = 0, $tmdb
         }
         else
         {
-    $sql = "INSERT INTO `data_movie_imdb`
-VALUES (NULL, ?, ?, ?, ?, ?, ?,? ,?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)";
+            $sql= "INSERT INTO `data_movie_imdb` VALUES (NULL ";
+            foreach ($array_request as $val)
+            {
+                $sql.= ",? ";
+            }
+            $sql.= ")";
             Pdo_an::db_results_array($sql,$array_request);
             $mid = Pdo_an::last_id();
         }
+
 
         $comment =$title.' ('.$type.') added';
         self::add_log('',$movie_id,'add movies',$comment,1);
@@ -775,6 +791,9 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
 
 
         Pdo_an::db_results_array($sql,$array_request);
+
+
+
 
         $comment =$title.' ('.$type.') updated';
         self::add_log('',$movie_id,'update movies',$comment,1);
@@ -1039,6 +1058,7 @@ public static  function check_imdb_id($movie_id, $movie_tmdb_id = '', $rwt_id = 
 
         $sql = "SELECT *  FROM `data_movie_imdb`  WHERE `movie_id` = '" . $movie_id . "'";
         $r = Pdo_an::db_fetch_row($sql);
+
 
         if ($r->id > 0) {
 
@@ -1447,6 +1467,27 @@ if($array_meta["countriesOfOrigin"]["countries"])
             }
         }
     }
+    if (count($actor['s'])<3)
+    {
+        $counts_star=0;
+        foreach ($actor['m'] as $ai => $a)
+        {
+            if ($counts_star>2)break;
+
+            if (!$actor["s"][$ai])
+            {
+                $actor["s"][$ai]=$a;
+                unset( $actor['m'][$ai]);
+                $counts_star++;
+            }
+        }
+    }
+    global $debug;
+    if ($debug)
+    {
+     //  var_dump($actor);
+    }
+
     $array_count = count($actor['m'])+count($actor['s']);
 
     if ($counts!=$array_count)

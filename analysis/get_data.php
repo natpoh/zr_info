@@ -1249,6 +1249,10 @@ if ($_POST['oper'] === 'get_movie_cast_data_main') {
 
 }
 else if ($_POST['oper'] === 'get_actordata') {
+
+    $array_compare_cache = array('Sadly, not' => 'N/A', '1' => 'N/A', '2' => 'N/A', 'NJW' => 'N/A', 'W' => 'White', 'B' => 'Black', 'EA' => 'Asian', 'H' => 'Latino', 'JW' => 'Jewish', 'I' => 'Indian', 'M' => 'Arab', 'MIX' => 'Mixed / Other', 'IND' => 'Indigenous');
+
+
     !class_exists('RWTimages') ? include ABSPATH . "analysis/include/rwt_images.php" : '';
     global $debug;
     if ($debug) {
@@ -1305,21 +1309,42 @@ else if ($_POST['oper'] === 'get_actordata') {
 
 ////////get actor data
 
+        !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+        $vd_data = unserialize(unserialize(OptionData::get_options('','critic_matic_settings')));
+        $verdict_method=0; if ($vd_data["an_verdict_type"]=='w'){$verdict_method=1;}
 
         $a_sql = "actor_id ='" . $id . "' ";
 
         ///$array_movie_result = get_movie_data_from_db('', $a_sql, '');
-        $array_movie_result  = MOVIE_DATA::get_movie_data_from_db($id, $a_sql,'');
+        ///$array_movie_result  = MOVIE_DATA::get_movie_data_from_db($id, $a_sql,'');
+
+        $av = MOVIE_DATA::get_actor_meta($id);
+
+///	tmdb_id	gender	ethnic	jew	kairos	bettaface	placebirth	surname	familysearch	forebears	crowdsource	verdict	verdict_weight	n_ethnic	n_jew	n_kairos	n_bettaface	n_surname	n_familysearch	n_forebears	n_crowdsource	n_verdict	n_verdict_weight	img	tmdb_img	last_update
+
+        $face2 = $av['bettaface'];
+        $face = $av['kairos'];
+        $surname = $av['surname'];
+        $etn = $av['ethnic'];
+        $jew = $av['jew'];
+        $crowd = $av['crowd'];
+        $forebears = $av['forebears'];
+        $familysearch = $av['familysearch'];
+
+        $verdict = $av['verdict'];
+
+        if ($verdict_method==1)
+        {
+            $verdict = $av['verdict_weight'];
+            if (!$verdict)
+            {
+                $verdict = $av['verdict'];
+            }
+        }
 
 
-        $face2 = $array_movie_result['all_data']['request']['bettaface'];
-        $face = $array_movie_result['all_data']['request']['kairos'];
-        $surname = $array_movie_result['all_data']['request']['surname'];
-        $etn = $array_movie_result['all_data']['request']['ethnic'];
-        $jew = $array_movie_result['all_data']['request']['jew'];
-        $crowd = $array_movie_result['all_data']['request']['crowd'];
-        $forebears = $array_movie_result['all_data']['request']['forebears'];
-        $familysearch = $array_movie_result['all_data']['request']['familysearch'];
+
+
 
 
 ///var_dump($ethnycity);
@@ -1336,10 +1361,8 @@ else if ($_POST['oper'] === 'get_actordata') {
                     echo '<p class="in_hdr">Forebears Surname Analysis:</p>';
                     if ($forebears) {
 
-                        $key = array_keys($forebears);
 
-
-                            echo '<p class="verdict">Verdict: ' . $key[0]. '</p>';
+                            echo '<p class="verdict">Verdict: ' . $array_compare_cache[$forebears]. '</p>';
                             echo '<a class="source_link"  target="_blank" href="https://forebears.io/surnames">Source: https://forebears.io/surnames</a>';
                         }
                     else echo '<p class="verdict">N/A</p>';
@@ -1347,9 +1370,9 @@ else if ($_POST['oper'] === 'get_actordata') {
                 if ($type == 'familysearch') {
                     echo '<p class="in_hdr">FamilySearch Surname Analysis:</p>';
                     if ($familysearch) {
-                        $key = array_keys($familysearch);
 
-                        echo '<p class="verdict">Verdict: ' . $key[0]. '</p>';
+
+                        echo '<p class="verdict">Verdict: ' . $array_compare_cache[$familysearch]. '</p>';
                         echo '<a class="source_link"  target="_blank" href="https://www.familysearch.org/en/surname">Source: https://www.familysearch.org/en/surname</a>';
                     }
                     else echo '<p class="verdict">N/A</p>';
@@ -1397,7 +1420,7 @@ else if ($_POST['oper'] === 'get_actordata') {
 
 
                             if ($surname) {
-                                $surname = strtoupper($surname);
+                                $surname = ucfirst($surname);
                             } else {
                                 $surname = 'N/A';
                             }
@@ -1412,7 +1435,7 @@ else if ($_POST['oper'] === 'get_actordata') {
                             $key = array_keys($actor_data);
 
 
-                            echo '<p class="verdict">Verdict: ' . $array_compare[$key[0]] . '</p>';
+                            echo '<p class="verdict">Verdict: ' .  $surname . '</p>';
                             echo '<a class="source_link"  target="_blank" href="https://pypi.org/project/ethnicolr/">Source: https://pypi.org/project/ethnicolr/</a>';
                         } else echo '<p class="verdict">N/A</p>';
                     } else echo '<p class="verdict">N/A</p>';
@@ -1484,8 +1507,8 @@ else if ($_POST['oper'] === 'get_actordata') {
                         }
                         echo '</div>';
 
-                        $key = array_keys($face);
-                        echo '<p class="verdict">Verdict: ' . $array_compare[$key[0]] . '</p>';
+
+                        echo '<p class="verdict">Verdict: ' . $array_compare_cache[$face] . '</p>';
 
                         echo '<a class="source_link" target="_blank" href="https://kairos.com/">Source: https://kairos.com/</a>';
 
@@ -1498,11 +1521,24 @@ else if ($_POST['oper'] === 'get_actordata') {
 
                     echo '<p class="in_hdr">Facial Recognition by Betaface:</p>';
                     if ($face2) {
-                        $face2 = normalise_array($face2);
-                        arsort($face2);
 
-                        $key = array_keys($face2);
-                        echo '<p class="verdict">Verdict: ' . $array_compare[$key[0]] . '</p>';
+
+                        $sql = "SELECT  *  FROM data_actors_face where actor_id =" . $id . " LIMIT 1";
+                        $fr = Pdo_an::db_results_array($sql);
+                        $brace = $fr[0]['race'];
+                        $prcnt = $fr[0]['percent'];
+
+                        if ($brace && $prcnt)
+                        {
+                            echo '<div class="small_desc">';
+
+                            echo ucfirst($brace) . ': ' . $prcnt*100 . '%<br>';
+
+                            echo '</div>';
+                        }
+
+
+                        echo '<p class="verdict">Verdict: ' . $array_compare_cache[$face2] . '</p>';
 
 
                         echo '<a class="source_link" target="_blank" href="https://www.betafaceapi.com/demo_old.html">Source: https://www.betafaceapi.com/</a>';
@@ -1540,10 +1576,10 @@ else if ($_POST['oper'] === 'get_actordata') {
                             }
 
                         }
-                        $key = array_keys($etn);
-                        $ethnic_result = ucfirst($key[0]);
-                        if ($array_compare[$ethnic_result]) {
-                            echo '<p class="verdict">Verdict: ' . $array_compare[$ethnic_result] . '</p>';
+
+                        $ethnic_result = $etn;
+                        if ($array_compare_cache[$ethnic_result]) {
+                            echo '<p class="verdict">Verdict: ' . $array_compare_cache[$ethnic_result] . '</p>';
                         } else {
                             echo '<p class="verdict">Verdict: ' . $ethnic_result . '</p>';
                         }
@@ -1613,6 +1649,11 @@ else if ($_POST['oper'] === 'get_actordata') {
                 }
             }
         }
+
+         if ($verdict)
+         {
+             echo '<p style="font-size: 20px; margin: 20px 0px; text-transform: uppercase" class="verdict">Verdict:  '.$array_compare_cache[$verdict].'</p>';
+         }
 
 
         if ($debug) {
