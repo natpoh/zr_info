@@ -51,6 +51,18 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         $result = $this->db_results($sql);
         return $result;
     }
+    
+    public function get_post_ids_by_weight($min_weight=0){
+        $ret = array();
+        $sql = sprintf("SELECT id FROM {$this->db['movie_imdb']} WHERE weight>%d ORDER BY weight DESC",$min_weight);        
+        $result = $this->db_results($sql);
+        if ($result){
+            foreach ($result as $value) {
+                $ret[]=$value->id;
+            }
+        }
+        return $ret;
+    }
 
     private function validate_keys($get_keys) {
         $valid_keys = array();

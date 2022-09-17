@@ -32,8 +32,12 @@ class MoviesParserAdmin extends ItemAdmin {
         20160 => 'Two weeks',
         43200 => 'Mounth',
     );
+    public $parsing_type = array(
+        0 => 'Movie weight',
+        1 => 'Random',
+    );
     public $parse_number = array(1 => 1, 2 => 2, 3 => 3, 5 => 5, 7 => 7, 10 => 10, 20 => 20, 35 => 35, 50 => 50, 75 => 75, 100 => 100, 200 => 200, 500 => 500, 1000 => 1000);
-    public $gen_urls_number = array(10 => 10, 100 => 100, 500 => 500, 1000 => 1000);
+    public $gen_urls_number = array(10 => 10, 100 => 100, 500 => 500, 1000 => 1000);    
     public $camp_state = array(
         1 => array('title' => 'Active'),
         4 => array('title' => 'Done'),

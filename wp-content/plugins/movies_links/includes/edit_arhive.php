@@ -133,17 +133,24 @@ if ($cid) {
                     </select>                     
                     <span class="inline-edit"><?php print __('Number of URLs parsing from one IP at one day') ?></span> 
                 </label>
-
-
-                <label class="inline-edit-status">                
+               
+                 <label class="inline-edit-interval"> 
+                    <span class="title"><?php print __('Get URLs') ?></span>         
                     <?php
-                    $checked = '';
-                    if ($ao['random'] == 1) {
-                        $checked = 'checked="checked"';
-                    }
+                    $parsing_type = $ao['random'];
                     ?>
-                    <input type="checkbox" name="random" value="1" <?php print $checked ?> >
-                    <span class="checkbox-title"><?php print __('Random URLs parsing') ?></span>
+
+                    <select name="random" class="tor_d">
+                        <?php
+                        foreach ($this->parsing_type as $key => $name) {
+                            $selected = ($key == $parsing_type) ? 'selected' : '';
+                            ?>
+                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                            <?php
+                        }
+                        ?>                          
+                    </select>                     
+                    <span class="inline-edit"><?php print __('Logic for getting URL for parsing') ?></span> 
                 </label>
 
                 <label class="inline-edit-status">                
