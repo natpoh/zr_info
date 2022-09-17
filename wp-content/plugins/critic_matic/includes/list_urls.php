@@ -67,7 +67,7 @@ if (sizeof($posts) > 0) {
                         $post = $this->cm->get_post_by_link_hash($link_hash);
                     }
                     if ($post) {
-                        $post_url = $this->admin_page . $this->parrent_slug . '&pid=' . $item->pid;
+                        $post_url = $this->admin_page . $this->parrent_slug . '&pid=' . $post->id;
 
                         //Author
                         $author = $this->cm->get_author($post->aid);
