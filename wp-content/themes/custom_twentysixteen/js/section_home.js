@@ -2447,6 +2447,36 @@ jQuery(document).ready(function () {
     }
     );
 
+    jQuery('.primary-menu a[href="#add_movie"],' +
+        ' .primary-menu a[href="#add_review"]').click( function () {
+
+        let href  =jQuery(this).attr('href');
+
+
+        jQuery.ajax({
+            type: 'post',
+            data: {
+                'oper': 'add_custom',
+                'type':href
+            },
+            url: crowdsource_url,
+            success: function (html) {
+                add_popup();
+
+
+                jQuery('.popup-content').html('<div class="default_popup custom_crowd">' + html + '</div>');
+
+                jQuery('input[id="action-popup"]').click();
+
+            }
+        });
+
+        return false;
+
+    });
+
+
+
     jQuery('body').on('click', '.a_info', function () {
 
         var id = jQuery(this).attr('data-value');

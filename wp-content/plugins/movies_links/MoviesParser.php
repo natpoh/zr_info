@@ -684,10 +684,7 @@ class MoviesParser extends MoviesAbstractDB {
             $cid_and = sprintf(" AND cid=%d", (int) $cid);
         }
         $result = '';
-        if ($random == 0) {
-            $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " ORDER BY id DESC LIMIT %d", $count);
-            $result = $this->db_results($query);
-        } else {
+        if ($random == 1) {
             // Get all urls
             $query = "SELECT id FROM {$this->db['url']}" . $status_query . $cid_and;
             $items = $this->db_results($query);
@@ -708,6 +705,63 @@ class MoviesParser extends MoviesAbstractDB {
                 }
                 // Get random urls
                 $query = "SELECT * FROM {$this->db['url']} WHERE id IN(" . implode(",", $random_ids) . ")";
+                $result = $this->db_results($query);
+            }
+        } else {
+            // Pid exists
+            $query = "SELECT COUNT(id) FROM {$this->db['url']} WHERE pid>0" . $cid_and;
+            $pid_exists = $this->db_get_var($query);
+            if ($pid_exists > 0) {
+                // Get by weight
+
+                $result = array();
+                // 1. Weight>20
+                $ma = $this->ml->get_ma();
+                $ids = $ma->get_post_ids_by_weight(20);
+                if ($ids) {
+                    $query = sprintf("SELECT * FROM {$this->db['url']} WHERE pid IN(" . implode(",", $ids) . ") ORDER BY id DESC LIMIT %d", $count);
+                    $result = (array) $this->db_results($query);
+                }
+                if (count($result) < $count) {
+                    // 2. Weight>10
+                    $ids = $ma->get_post_ids_by_weight(10);
+                    if ($ids) {
+                        $query = sprintf("SELECT * FROM {$this->db['url']} WHERE pid IN(" . implode(",", $ids) . ") ORDER BY id DESC LIMIT %d", $count);
+                        $result_10 = (array) $this->db_results($query);
+                        if ($result_10) {
+                            if ($result) {
+                                $result = array_merge($result, $result_10);
+                            } else {
+                                $result = $result_10;
+                            }
+                        }
+                    }
+                }
+
+                if (count($result) < $count) {
+                    // 2. Weight>0
+                    $ids = $ma->get_post_ids_by_weight(0);
+                    if ($ids) {
+                        $query = sprintf("SELECT * FROM {$this->db['url']} WHERE pid IN(" . implode(",", $ids) . ") ORDER BY id DESC LIMIT %d", $count);
+                        $result_0 = (array) $this->db_results($query);
+                        if ($result_0) {
+                            if ($result) {
+                                $result = array_merge($result, $result_0);
+                            } else {
+                                $result = $result_0;
+                            }
+                        }
+                    }
+                }
+
+                if (!count($result)) {
+                    // Get by id
+                    $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " ORDER BY id DESC LIMIT %d", $count);
+                    $result = $this->db_results($query);
+                }
+            } else {
+                // Get by id
+                $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " ORDER BY id DESC LIMIT %d", $count);
                 $result = $this->db_results($query);
             }
         }
@@ -1666,7 +1720,7 @@ class MoviesParser extends MoviesAbstractDB {
 
     public function check_link_post($o, $post, $movie_id = 0) {
         $rules = $o['rules'];
-        
+
         $min_match = $o['match'];
         $min_rating = $o['rating'];
         $movie_type = $this->movie_type[$o['type']];
@@ -1798,7 +1852,7 @@ class MoviesParser extends MoviesAbstractDB {
 
             $ms = $this->ml->get_ms();
             $facets = array();
-            if ($movie_id>0) {
+            if ($movie_id > 0) {
                 $movies = $ms->search_movies_by_id($movie_id);
                 $movies_title = $ms->search_movies_by_title($post_title_name, $title_rule['e'], $post_year_name, 20, $movie_type);
 
@@ -1809,7 +1863,7 @@ class MoviesParser extends MoviesAbstractDB {
                 }
             } else if ($movie_id == -1) {
                 $movie = new stdClass();
-                $movie->id=-1;
+                $movie->id = -1;
                 $movies = array($movie);
             } else {
                 $movies_posts = array();
@@ -2512,8 +2566,8 @@ class MoviesParser extends MoviesAbstractDB {
                         if ($debug) {
                             print_r($post);
                         }
-                        
-                        $url_pid = $url->pid?$url->pid:-1;                        
+
+                        $url_pid = $url->pid ? $url->pid : -1;
                         $results = $this->check_link_post($o, $post, $url_pid);
                         $results['post'] = $post;
                         $ret[$uid][] = $results;

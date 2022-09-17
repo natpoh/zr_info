@@ -1,0 +1,5 @@
+1.0.82 - 16.09.2022
+Add movie weights
+
+1.0.81 - 16.09.2022
+Start changelog

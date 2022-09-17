@@ -15,6 +15,7 @@ class CriticMatic extends AbstractDB {
     private $cs;
     private $ts;
     private $af;
+    private $ma;
 
     /*
      * Posts
@@ -283,6 +284,18 @@ class CriticMatic extends AbstractDB {
             $this->af = new AnalyticsFront($this->cm);
         }
         return $this->af;
+    }
+
+    public function get_ma() {
+        // Get criti
+        if (!$this->ma) {
+            // init cma
+            if (!class_exists('MoviesAn')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'MoviesAn.php' );
+            }
+            $this->ma = new MoviesAn($this->cm);
+        }
+        return $this->ma;
     }
 
     function admin_bar_render($wp_admin_bar) {
