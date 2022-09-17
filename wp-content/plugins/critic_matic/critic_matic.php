@@ -6,7 +6,7 @@
   Description: This plugin manages the posts of critics
   Author: Brahman  <fb@emelianovip.ru>
   Author URI: https://emelianovip.ru
-  Version: 1.0.7
+  Version: 1.0.82
   License: GPLv2
  */
 
@@ -486,7 +486,7 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('cid'), $table_prefix . "critic_matic_tumbs");
-    
+
     /*
      * Critics audience temp      
      */
@@ -515,7 +515,7 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'status', 'critic_name', 'unic_id'), $table_prefix . "critic_matic_audience");
 
-     /*
+    /*
      * Critics audience revisions      
      */
 
@@ -538,7 +538,7 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date_upd', 'cid'), $table_prefix . "critic_matic_audience_rev");
-    
+
     /*
       //Add columns UNUSED
 
@@ -915,9 +915,9 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('mid', 'oldslug', 'newslug'), "data_movie_title_slugs");
-    
-    
-     /*
+
+
+    /*
      * Analytics verdict user mode
      */
     $sql = "CREATE TABLE IF NOT EXISTS  `data_an_race_rule`(
@@ -928,6 +928,15 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('rule_hash'), "data_an_race_rule");
+
+    /*
+     * Movie weights
+     */
+    $sql = "ALTER TABLE `data_movie_imdb` ADD `weight` int(11) NOT NULL DEFAULT '0'";    
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_imdb` ADD `weight_upd` int(11) NOT NULL DEFAULT '0'";    
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('weight','weight_upd'), "data_movie_imdb");
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {
@@ -1005,6 +1014,18 @@ WHERE
     m.id > s.id AND 
     m.cid = s.cid;
  * 
+ * //URLS
+ * 
+ *  SELECT link_hash, count(*) FROM `wp_bcw98b_critic_parser_url` GROUP by link_hash having count(*) > 1;
+ * 
+DELETE m FROM `wp_bcw98b_critic_parser_url` m
+INNER JOIN `wp_bcw98b_critic_parser_url` s
+WHERE 
+    m.id > s.id AND 
+    m.link_hash = s.link_hash;
+ * 
+ SELECT p.* FROM `wp_bcw98b_critic_matic_posts` p LEFT JOIN `wp_bcw98b_critic_parser_url` u ON u.pid=p.id WHERE p.type=3 AND u.id IS NULL;
+ * 
  * SELECT pid, count(*) FROM `wp_bcw98b_critic_parser_url` WHERE pid>0 GROUP by pid having count(*) > 1;
  * 
  * UPDATE `wp_bcw98b_critic_parser_url` m SET m.`status`=0, m.`pid`=0 WHERE m.`pid` =109970;
@@ -1070,7 +1091,7 @@ UPDATE wp_bcw98b_critic_matic_posts SET content = REPLACE(content, '<!--Taboola:
 UPDATE wp_bcw98b_critic_matic_posts SET content = REPLACE(content, '(\'tbl_ic\');}</div>', '(\'tbl_ic\');}</script></div>')
 
 
-SELECT link_hash, count(*) FROM `movies_links_url` WHERE cid=13 GROUP by link_hash having count(*) > 1;
+SELECT link_hash, count(*) FROM `movies_links_url` WHERE cid=27 GROUP by link_hash having count(*) > 1;
 
 DELETE m FROM `movies_links_url` m
 INNER JOIN `movies_links_url` s

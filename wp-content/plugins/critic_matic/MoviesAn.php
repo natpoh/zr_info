@@ -13,6 +13,7 @@ class MoviesAn extends AbstractDBAn {
     /*
      * Movies
      */
+    public $movies_weight_upd_interval = 7;
     public $perpage = 30;
     public $movie_state = array(
         1 => 'Approved',
@@ -1519,6 +1520,88 @@ class MoviesAn extends AbstractDBAn {
         $data_str = json_encode($data);
         $hash = md5($data_str);
         return $hash;
+    }
+
+    /* Movies weight */
+
+    public function update_movies_weight($debug = false) {
+        $date = $this->curr_time();
+        $upd_interval = $this->movies_weight_upd_interval;
+        $weight_upd = $date - ($upd_interval * 86400);
+        // 1. Update w50. Last 30 days (30)       
+        $w = 50;
+        $curr_ym = date("Y-m", $date);
+        $releases = array();
+        for ($i == 1; $i < 32; $i++) {
+            $j = $i;
+            if ($i < 10) {
+                $j = "0" . $i;
+            }
+            $releases[] = "'" . $curr_ym . '-' . $j . "'";
+        }
+
+        $sql_select = sprintf("SELECT * FROM {$this->db['movie_imdb']} WHERE weight_upd<%d AND `release` IN(" . implode(',', $releases) . ")", $weight_upd);
+        $sql = sprintf("UPDATE {$this->db['movie_imdb']} SET weight=%d, weight_upd=%d WHERE weight_upd<%d AND `release` IN(" . implode(',', $releases) . ")", $w, $date, $weight_upd);
+        if ($debug) {
+            print $sql_select . "<br />";
+            print $sql . "<br />";
+        }
+        $this->db_query($sql);
+
+        // 2. Last year and rating 3-5 (250)
+        $w = 40;
+        $curr_y = date("Y", $date);
+        $sql_select = sprintf("SELECT p.* FROM {$this->db['movie_imdb']} p INNER JOIN data_pg_rating r ON r.movie_id = p.movie_id WHERE p.weight_upd<%d AND p.year>=%d AND r.rwt_pg_result>2", $weight_upd, $curr_y);
+        $sql = sprintf("UPDATE {$this->db['movie_imdb']} p INNER JOIN data_pg_rating r ON r.movie_id = p.movie_id SET p.weight=%d, p.weight_upd=%d WHERE p.weight_upd<%d AND p.year>=%d AND r.rwt_pg_result>2", $w, $date, $weight_upd, $curr_y);
+        if ($debug) {
+            print $sql_select . "<br />";
+            print $sql . "<br />";
+        }
+        $this->db_query($sql);
+
+        // 3. Last 3 year and rating 4-5 (200)
+        $w = 30;
+        $years = array();
+        for ($i = 0; $i < 3; $i++) {
+            $years[] = $curr_y - $i;
+        }
+        $sql_select = sprintf("SELECT p.* FROM {$this->db['movie_imdb']} p INNER JOIN data_pg_rating r ON r.movie_id = p.movie_id WHERE p.weight_upd<%d AND p.year IN(" . implode(',', $years) . ") AND r.rwt_pg_result>3", $weight_upd);
+        $sql = sprintf("UPDATE {$this->db['movie_imdb']} p INNER JOIN data_pg_rating r ON r.movie_id = p.movie_id SET p.weight=%d, p.weight_upd=%d WHERE p.weight_upd<%d AND p.year IN(" . implode(',', $years) . ") AND r.rwt_pg_result>3", $w, $date, $weight_upd);
+        if ($debug) {
+            print $sql_select . "<br />";
+            print $sql . "<br />";
+        }
+        $this->db_query($sql);
+
+        // 4. All time and rating 4-5 (3500)
+        $w = 20;
+        $sql_select = sprintf("SELECT p.* FROM {$this->db['movie_imdb']} p INNER JOIN data_pg_rating r ON r.movie_id = p.movie_id WHERE p.weight_upd<%d AND r.rwt_pg_result>3", $weight_upd);
+        $sql = sprintf("UPDATE {$this->db['movie_imdb']} p INNER JOIN data_pg_rating r ON r.movie_id = p.movie_id SET p.weight=%d, p.weight_upd=%d WHERE p.weight_upd<%d AND r.rwt_pg_result>3", $w, $date, $weight_upd);
+        if ($debug) {
+            print $sql_select . "<br />";
+            print $sql . "<br />";
+        }
+        $this->db_query($sql);
+
+        // 5. Last 3 year (4000)
+        $w = 10;
+        $sql_select = sprintf("SELECT p.* FROM {$this->db['movie_imdb']} p WHERE p.weight_upd<%d AND p.year IN(" . implode(',', $years) . ")", $weight_upd);
+        $sql = sprintf("UPDATE {$this->db['movie_imdb']} p SET p.weight=%d, p.weight_upd=%d WHERE p.weight_upd<%d AND p.year IN(" . implode(',', $years) . ")", $w, $date, $weight_upd);
+        if ($debug) {
+            print $sql_select . "<br />";
+            print $sql . "<br />";
+        }
+        $this->db_query($sql);
+
+        // 6. Other (27000)
+        $w = 0;
+        $sql_select = sprintf("SELECT p.* FROM {$this->db['movie_imdb']} p WHERE p.weight_upd<%d", $weight_upd);
+        $sql = sprintf("UPDATE {$this->db['movie_imdb']} p SET p.weight=%d, p.weight_upd=%d WHERE p.weight_upd<%d", $w, $date, $weight_upd);
+        if ($debug) {
+            print $sql_select . "<br />";
+            print $sql . "<br />";
+        }
+        $this->db_query($sql);
     }
 
 }
