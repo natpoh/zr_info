@@ -13,7 +13,7 @@ class MoviesAn extends AbstractDBAn {
     /*
      * Movies
      */
-    public $movies_weight_upd_interval = 7;
+    public $movies_weight_upd_interval = 1;
     public $perpage = 30;
     public $movie_state = array(
         1 => 'Approved',
