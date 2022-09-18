@@ -1884,6 +1884,8 @@ if (!function_exists('wpclearpostcache')) {
 
     function wpclearpostcache() {
         echo '<h1>Clear all page cache</h1>';
+
+        echo '<p><a href="'.WP_SITEURL.'/wp-content/plugins/critic_matic/cron/clear_cache.php?p=sdf23_ds-f23DS&mode=all">Clear critics cache</a></p>';
         $i = 0;
 
         $dir = WP_CONTENT_DIR . "/uploads/longcache";
@@ -1945,6 +1947,8 @@ if (!function_exists('wpclearpostcache')) {
 
 
     }
+
+    ///clear audeience cache
 
 
 

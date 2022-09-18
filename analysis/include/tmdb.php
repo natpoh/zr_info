@@ -713,7 +713,7 @@ public static function addto_db_imdb($movie_id, $array_movie, $rwt_id = 0, $tmdb
     $array_request = array($movie_id, $rwt_id, $tmdb_id, $title,$post_name, $type, $genre, $relise, $year, $country, $language,
         $production,
         '', '', '', '', '', $box_usa, $box_world, $productionBudget, $keywords, $description, $array_string, $contentRating,
-        $Rating, time(), $runtime);
+        $Rating, time(), $runtime,0,0);
 
     ///  var_dump($array_request);
 
