@@ -44,7 +44,7 @@ class SearchFacets extends AbstractDB {
         'movies' => array('release', 'budget', 'type', 'genre', 'provider', 'providerfree', 'auratings', 'ratings', 'price', 'race', 'dirrace', 'actor', 'country', 'lgbt', 'woke', 'rf'),
         'critics' => array('release', 'type', 'author', 'state', 'related', 'movie', 'genre', 'auratings', 'tags', 'from')
     );
-    public $facets_no_data = array('ratings', 'auratings');
+    public $facets_no_data = array('ratings', 'auratings', 'state');
     public $hide_facets = array('actor', 'country', 'dirrace');
     public $facet_filters = array();
     // Search filters    
@@ -1058,11 +1058,11 @@ class SearchFacets extends AbstractDB {
         if (sizeof($facets_data) && isset($this->facets[$tab_key])) {
             $items = array();
             foreach ($this->facets[$tab_key] as $key) {
-                if (isset($facets_data[$key])) {
-                    $items[$key] = $facets_data[$key];
-                } else if (in_array($key, $this->facets_no_data)) {
+                 if (in_array($key, $this->facets_no_data)) {
                     $items[$key] = 1;
-                }
+                } else if (isset($facets_data[$key])) {
+                    $items[$key] = $facets_data[$key];
+                } 
             }
 
             foreach ($items as $key => $value) {
@@ -1072,6 +1072,8 @@ class SearchFacets extends AbstractDB {
                         $this->show_rating_facet($facets_data);
                     } else if ($key == 'auratings') {
                         $this->show_audience_facet($facets_data);
+                    } else if ($key == 'state') {
+                        $this->show_state_facet($facets_data);
                     }
                     continue;
                 }
@@ -1080,11 +1082,10 @@ class SearchFacets extends AbstractDB {
                 }
                 $data = $value['data'];
                 $count = sizeof($data);
-                $zero_count = array('state');
-                if (!$count && !in_array($key, $zero_count)) {
+                if (!$count) {
                     continue;
                 }
-
+                
                 $meta = $value['meta'];
                 $meta_map = array();
                 foreach ($meta as $m) {
@@ -1128,8 +1129,6 @@ class SearchFacets extends AbstractDB {
                     $this->show_tags_facet($data, $view_more);
                 } else if ($key == 'from') {
                     $this->show_from_author_facet($data, $view_more);
-                } else if ($key == 'state' || $key == 'related') {
-                    $this->show_state_facet($facets_data);
                 } else if ($key == 'movie') {
                     $this->show_movie_facet($data, $view_more, $count, $total);
                 }
