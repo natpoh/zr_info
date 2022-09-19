@@ -694,11 +694,11 @@ class MoviesParser extends MoviesAbstractDB {
                     $ids[] = $item->id;
                 }
                 shuffle($ids);
-                $i = 0;
+                $i = 1;
                 $random_ids = array();
                 foreach ($ids as $id) {
                     $random_ids[] = $id;
-                    if ($i > $count) {
+                    if ($i >= $count) {
                         break;
                     }
                     $i += 1;
@@ -765,7 +765,6 @@ class MoviesParser extends MoviesAbstractDB {
                 $result = $this->db_results($query);
             }
         }
-
 
         return $result;
     }
@@ -893,7 +892,7 @@ class MoviesParser extends MoviesAbstractDB {
         $last_id = $o['last_id'];
         $settings = $this->ml->get_settings();
         $ret = $this->generate_urls($campaign, $options, $settings, $last_id, false, $debug);
-
+        
         $this->find_urls_update_progress($campaign);
 
         $count = $ret['total'];
