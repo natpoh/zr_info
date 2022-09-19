@@ -671,7 +671,7 @@ class MoviesParser extends MoviesAbstractDB {
         return $result;
     }
 
-    public function get_last_urls($count = 10, $status = -1, $cid = 0, $random = 0) {
+    public function get_last_urls($count = 10, $status = -1, $cid = 0, $random = 0, $debug = false) {
         $status_trash = 2;
         $status_query = " WHERE status != " . $status_trash;
         if ($status != -1) {
@@ -685,6 +685,9 @@ class MoviesParser extends MoviesAbstractDB {
         }
         $result = '';
         if ($random == 1) {
+            if ($debug) {
+                print "Random URLs\n";
+            }
             // Get all urls
             $query = "SELECT id FROM {$this->db['url']}" . $status_query . $cid_and;
             $items = $this->db_results($query);
@@ -708,6 +711,9 @@ class MoviesParser extends MoviesAbstractDB {
                 $result = $this->db_results($query);
             }
         } else {
+            if ($debug) {
+                print "Weight URLs\n";
+            }
             // Pid exists
             $query = "SELECT COUNT(id) FROM {$this->db['url']} WHERE pid>0" . $cid_and;
             $pid_exists = $this->db_get_var($query);
@@ -719,14 +725,18 @@ class MoviesParser extends MoviesAbstractDB {
                 $ma = $this->ml->get_ma();
                 $ids = $ma->get_post_ids_by_weight(20);
                 if ($ids) {
-                    $query = sprintf("SELECT * FROM {$this->db['url']} WHERE pid IN(" . implode(",", $ids) . ") ORDER BY id DESC LIMIT %d", $count);
+                    $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " AND pid IN(" . implode(",", $ids) . ") ORDER BY id DESC LIMIT %d", $count);
                     $result = (array) $this->db_results($query);
                 }
+                if ($debug) {
+                    print "Weight>20: $count\n";
+                }
+
                 if (count($result) < $count) {
                     // 2. Weight>10
                     $ids = $ma->get_post_ids_by_weight(10);
                     if ($ids) {
-                        $query = sprintf("SELECT * FROM {$this->db['url']} WHERE pid IN(" . implode(",", $ids) . ") ORDER BY id DESC LIMIT %d", $count);
+                        $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " AND pid IN(" . implode(",", $ids) . ") ORDER BY id DESC LIMIT %d", $count);
                         $result_10 = (array) $this->db_results($query);
                         if ($result_10) {
                             if ($result) {
@@ -736,13 +746,16 @@ class MoviesParser extends MoviesAbstractDB {
                             }
                         }
                     }
+                    if ($debug) {
+                        print "Weight>10: $count\n";
+                    }
                 }
 
                 if (count($result) < $count) {
                     // 2. Weight>0
                     $ids = $ma->get_post_ids_by_weight(0);
                     if ($ids) {
-                        $query = sprintf("SELECT * FROM {$this->db['url']} WHERE pid IN(" . implode(",", $ids) . ") ORDER BY id DESC LIMIT %d", $count);
+                        $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " AND pid IN(" . implode(",", $ids) . ") ORDER BY id DESC LIMIT %d", $count);
                         $result_0 = (array) $this->db_results($query);
                         if ($result_0) {
                             if ($result) {
@@ -752,10 +765,19 @@ class MoviesParser extends MoviesAbstractDB {
                             }
                         }
                     }
+
+                    if ($debug) {
+                        print "Weight>0: $count\n";
+                    }
                 }
+
 
                 if (!count($result)) {
                     // Get by id
+
+                    if ($debug) {
+                        print "Get by id\n";
+                    }
                     $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " ORDER BY id DESC LIMIT %d", $count);
                     $result = $this->db_results($query);
                 }
@@ -764,6 +786,10 @@ class MoviesParser extends MoviesAbstractDB {
                 $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " ORDER BY id DESC LIMIT %d", $count);
                 $result = $this->db_results($query);
             }
+        }
+
+        if ($debug) {
+            print_r($result);
         }
 
         return $result;
@@ -892,7 +918,7 @@ class MoviesParser extends MoviesAbstractDB {
         $last_id = $o['last_id'];
         $settings = $this->ml->get_settings();
         $ret = $this->generate_urls($campaign, $options, $settings, $last_id, false, $debug);
-        
+
         $this->find_urls_update_progress($campaign);
 
         $count = $ret['total'];
