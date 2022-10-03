@@ -75,21 +75,21 @@ class CriticFront extends SearchFacets {
      * Critic functions
      */
 
-    public function theme_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tag_id = 0, $meta_type = array(), $min_rating = 0, $vote = 0, $search = false) {
+    public function theme_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tags = array(), $meta_type = array(), $min_rating = 0, $vote = 0, $search = false) {
 
         if ($movie_id) {
             if ($search) {
-                $posts = $this->cs->get_last_critics($a_type, $limit, $movie_id, $start, $tag_id, $meta_type, $min_rating, $vote);
+                $posts = $this->cs->get_last_critics($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote);
             } else {
-                $posts = $this->get_last_posts($a_type, $limit, $movie_id, $start, $tag_id, $meta_type, $min_rating, $vote);
+                $posts = $this->get_last_posts($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote);
             }
         } else {
             // Get unique authors
             $unique_limit = 100;
             if ($search) {
-                $posts = $this->cs->get_last_critics($a_type, $unique_limit, $movie_id, $start, $tag_id, $meta_type, $min_rating, $vote);
+                $posts = $this->cs->get_last_critics($a_type, $unique_limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote);
             } else {
-                $posts = $this->get_last_posts($a_type, $unique_limit, $movie_id, $start, $tag_id, $meta_type, $min_rating, $vote);
+                $posts = $this->get_last_posts($a_type, $unique_limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote);
             }
             if ($posts) {
                 $unique_authors = array();
@@ -127,7 +127,7 @@ class CriticFront extends SearchFacets {
         return $items;
     }
 
-    public function get_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tag_id = 0, $meta_type = array(), $min_rating = 0, $vote = 0) {
+    public function get_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tags = array(), $meta_type = array(), $min_rating = 0, $vote = 0) {
         $and_author = '';
         if ($a_type != -1) {
             $and_author = sprintf(' AND a.type = %d', $a_type);
@@ -163,9 +163,13 @@ class CriticFront extends SearchFacets {
         // Tag logic
         $tag_inner = '';
         $tag_and = '';
-        if ($tag_id > 0) {
+        if ($tags) {
             $tag_inner = " INNER JOIN {$this->db['tag_meta']} t ON t.cid = a.id";
-            $tag_and = sprintf(" AND t.tid=%d", (int) $tag_id);
+            if (is_array($tags)) {
+               $tag_and = " AND t.tid IN (". implode(',', $tags).")";                
+            } else {
+                $tag_and = sprintf(" AND t.tid=%d", (int) $tags);
+            }
         }
 
         // Vote logic
@@ -1829,11 +1833,11 @@ class CriticFront extends SearchFacets {
         return $content;
     }
 
-    public function get_review_scroll_data($movie_id = 0) {
+    public function get_review_scroll_data($movie_id = 0, $tags = array()) {
         $a_type = 1;
         $limit = 10;
         $start = 0;
-        $tag_id = 0;
+
         global $site_url;
         if (!$site_url)
             $site_url = WP_SITEURL . '/';
@@ -1852,7 +1856,7 @@ class CriticFront extends SearchFacets {
             $meta_type[] = 3;
         }
 
-        $posts = $this->theme_last_posts($a_type, $limit, $movie_id, $start, $tag_id, $meta_type, $min_rating);
+        $posts = $this->theme_last_posts($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, 0, true);
         $count = $this->get_post_count($a_type, $movie_id);
         $content = array();
 
@@ -1885,10 +1889,10 @@ class CriticFront extends SearchFacets {
                 $content['result']['0_0'] = array('link' => $link, 'title' => $title, 'genre' => 'load_more', 'poster_link_small' => '', 'poster_link_big' => '', 'content_pro' => '');
             }
 
-
             if (!class_exists('RWT_RATING')) {
                 require ABSPATH . "wp-content/themes/custom_twentysixteen/template/include/movie_rating.php";
             }
+
             $RWT_RATING = new RWT_RATING();
             $rating = $RWT_RATING->get_rating_data($array_movies, 0);
 

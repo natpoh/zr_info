@@ -129,8 +129,6 @@ class CriticTransit extends AbstractDB {
             $sql = sprintf("SELECT * FROM {$this->db['actors_meta']} WHERE id>%d ORDER BY id ASC limit %d", (int) $last_id, (int) $count);
         }
 
-
-
         $results = $this->db_results($sql);
         if ($results) {
 
@@ -142,7 +140,6 @@ class CriticTransit extends AbstractDB {
                     print 'last id: ' . $last->id . "\n";
                 }
                 !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-
                 OptionData::set_option('', $last->id, 'actors_meta_last_id', 0);
                 //update_option($option_name, $last->id);
             }
@@ -197,7 +194,6 @@ class CriticTransit extends AbstractDB {
                     );
                     $this->sync_update_data($data, $item->id, $this->db['actors_meta'], $sinch, 15);
                 } else {
-
                     if ($debug) {
                         print "Skip update \n";
                     }
@@ -213,6 +209,7 @@ class CriticTransit extends AbstractDB {
         }
         $type = 1;
         $n_verdict = $item->n_verdict > 8 ? 7 : $item->n_verdict;
+        $n_verdict_weight = $item->n_verdict_weight > 8 ? 7 : $item->n_verdict_weight;
         $n_crowdsource = $item->n_crowdsource > 8 ? 7 : $item->n_crowdsource;
         $n_surname = $item->n_surname > 8 ? 7 : $item->n_surname;
         $n_bettaface = $item->n_bettaface > 8 ? 7 : $item->n_bettaface;
@@ -221,11 +218,12 @@ class CriticTransit extends AbstractDB {
         $n_ethnic = $item->n_ethnic > 8 ? 7 : $item->n_ethnic;
         $n_familysearch = $item->n_familysearch > 8 ? 7 : $item->n_familysearch;
         $n_forebears = $item->n_forebears > 8 ? 7 : $item->n_forebears;
-        $n_aid = substr($item->actor_id, -4);
+        $n_aid = substr($item->actor_id, -3);
 
-        $actor_int = ($gender * 10000000000 +
-                $type * 1000000000 +
-                $n_verdict * 100000000 +
+        $actor_int = ($gender * 100000000000 +
+                $type * 10000000000 +
+                $n_verdict * 1000000000 +
+                $n_verdict_weight * 100000000 +
                 $n_crowdsource * 10000000 +
                 $n_surname * 1000000 +
                 $n_bettaface * 100000 +
@@ -233,7 +231,7 @@ class CriticTransit extends AbstractDB {
                 $n_jew * 1000 +
                 $n_ethnic * 100 +
                 $n_familysearch * 10 +
-                $n_forebears) * 10000 + $n_aid;
+                $n_forebears) * 1000 + $n_aid;
 
         return $actor_int;
     }

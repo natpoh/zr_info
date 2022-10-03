@@ -1015,9 +1015,7 @@ class CriticMatic extends AbstractDB {
             $options = array();
             foreach ($this->def_rating as $key => $value) {
                 if (isset($rating[$key])) {
-                    if ($rating[$key] > 0) {
-                        $options[$key] = $rating[$key];
-                    }
+                    $options[$key] = trim($rating[$key]);
                 } else {
                     // IP and email fields
                     if (isset($rating_old[$key])) {

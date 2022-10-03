@@ -40,7 +40,7 @@ class CriticAudience extends AbstractDb {
         'rating' => array(
             'img' => '01_star',
             'class' => 'WORTHWHILE',
-            'title' => 'Worthwhile Content'),
+            'title' => 'Overall Rating'),
         'hollywood' => array(
             'img' => '02_poop',
             'class' => 'hollywood',
@@ -52,7 +52,7 @@ class CriticAudience extends AbstractDb {
         'misandry' => array(
             'img' => '04_CNT',
             'class' => 'MISANDRY',
-            'title' => 'Misandry'),
+            'title' => 'Feminism'),
         'affirmative' => array(
             'img' => '05_profit_muhammad',
             'class' => 'AFFIRMATIVE',
@@ -60,11 +60,11 @@ class CriticAudience extends AbstractDb {
         'lgbtq' => array(
             'img' => '06_queer',
             'class' => 'LGBTQ',
-            'title' => 'LGBTQ rstuvwxyz'),
+            'title' => 'Gay S**t'),
         'god' => array(
             'img' => '07_cliche_not_brave',
             'class' => 'GOD',
-            'title' => 'Anti-God Themes')
+            'title' => 'Fedora Tipping')
     );
     public $rating_form = array(
         'r' => 'rating',
@@ -641,11 +641,11 @@ class CriticAudience extends AbstractDb {
                 $author_name = $post_queue->critic_name;
 
                 // Author is voted?
-                $cid = $this->get_author_post_id_movie($author_name, $post_id);                
+                $cid = $this->get_author_post_id_movie($author_name, $post_id);
             }
         }
 
-         
+
         $ret = 0;
         $au_data = new stdClass();
         $au_data->status = 0;
@@ -791,7 +791,7 @@ class CriticAudience extends AbstractDb {
                 . "INNER JOIN {$this->db['authors_meta']} am ON am.aid=a.id "
                 . "INNER JOIN {$this->db['meta']} m ON m.cid=am.cid "
                 . "WHERE m.fid=%d AND a.name = '%s'", (int) $fid, $this->escape($author_name));
-        $result = $this->db_get_var($query);        
+        $result = $this->db_get_var($query);
         return $result;
     }
 

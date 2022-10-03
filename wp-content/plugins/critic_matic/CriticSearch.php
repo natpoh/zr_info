@@ -50,18 +50,20 @@ class CriticSearch extends AbstractDB {
     );
     // Facets
     public $facets = array(
-        'movies' => array('release', 'type', 'genre', 'provider', 'providerfree', 'actor', 'rating', 'country', 'race', 'dirrace', 'lgbt', 'woke',
+        'movies' => array('release', 'type', 'genre', 'provider', 'providerfree',
+            'actors', 'dirs',
+            'rating', 'country', 'race', 'dirrace', 'lgbt', 'woke',
             'race_cast', 'race_dir', 'gender_cast', 'gender_dir'),
         'critics' => array('release', 'type', 'movie', 'genre', 'author', 'state', 'related', 'tags', 'from')
     );
     public $audience_facets = array(
         'auvote' => array('title' => 'SUGGESTION', 'name_pre' => 'AU ', 'filter_pre' => 'Audience SUGGESTION ', 'icon' => 'vote'),
-        'aurating' => array('title' => 'WORTHWHILE', 'name_pre' => 'AU WORTHWHILE ', 'filter_pre' => 'Audience WORTHWHILE ', 'icon' => 'rating'),
+        'aurating' => array('title' => 'OVERALL', 'name_pre' => 'AU WORTHWHILE ', 'filter_pre' => 'Audience WORTHWHILE ', 'icon' => 'rating'),
         'auaffirmative' => array('title' => 'AFFIRMATIVE', 'name_pre' => 'AU AFFIRMATIVE ', 'filter_pre' => 'Audience AFFIRMATIVE ', 'icon' => 'affirmative'),
-        'augod' => array('title' => 'ANTI-GOD', 'name_pre' => 'AU ANTI-GOD ', 'filter_pre' => 'Audience ANTI-GOD ', 'icon' => 'god'),
+        'augod' => array('title' => 'FEDORA', 'name_pre' => 'AU ANTI-GOD ', 'filter_pre' => 'Audience ANTI-GOD ', 'icon' => 'god'),
         /* 'auhollywood' => array('title' => 'HOLLYWOOD BS', 'name_pre' => 'AU HOLLYWOOD BS ', 'filter_pre' => 'Audience HOLLYWOOD BS ', 'icon' => 'hollywood'), */
-        'aulgbtq' => array('title' => 'LGBTQ', 'name_pre' => 'AU LGBTQ ', 'filter_pre' => 'Audience LGBTQ ', 'icon' => 'lgbtq'),
-        'aumisandry' => array('title' => 'MISANDRY', 'name_pre' => 'AU MISANDRY ', 'filter_pre' => 'Audience MISANDRY ', 'icon' => 'misandry'),
+        'aulgbtq' => array('title' => 'GAY S**T', 'name_pre' => 'AU LGBTQ ', 'filter_pre' => 'Audience LGBTQ ', 'icon' => 'lgbtq'),
+        'aumisandry' => array('title' => 'FEMINISM', 'name_pre' => 'AU MISANDRY ', 'filter_pre' => 'Audience MISANDRY ', 'icon' => 'misandry'),
         'auneo' => array('title' => 'NEO-MARXISM', 'name_pre' => 'AU NEO-MARXISM ', 'filter_pre' => 'Audience NEO-MARXISM ', 'icon' => 'patriotism')
     );
     public $rating_facets = array(
@@ -73,9 +75,14 @@ class CriticSearch extends AbstractDB {
         'rrtg' => array('title' => 'Rotten Tomatoes Gap', 'name_pre' => 'RTG ', 'filter_pre' => 'Rotten Tomatoes Gap ', 'max_count' => 220, 'shift' => -100, 'sort' => 'asc')
     );
     public $facets_race_cast = array(
-        'race' => array('title' => 'Cast race', 'name_pre' => 'Cast '),
-        'starrace' => array('title' => 'Star race', 'name_pre' => 'Star '),
-        'mainrace' => array('title' => 'Main race', 'name_pre' => 'Main ')
+        'race' => array('filter' => 'actor', 'name' => 'actor_all', 'title' => 'Cast race', 'name_pre' => 'Cast '),
+        'starrace' => array('filter' => 'actorstar', 'name' => 'actor_star', 'title' => 'Star race', 'name_pre' => 'Star '),
+        'mainrace' => array('filter' => 'actormain', 'name' => 'actor_main', 'title' => 'Main race', 'name_pre' => 'Main ')
+    );
+    public $actor_filters = array(
+        'actor' => array('filter' => 'actor_all', 'title' => 'Actor', 'name_pre' => '', 'placeholder' => ''),
+        'actorstar' => array('filter' => 'actor_star', 'title' => 'Actor star', 'name_pre' => 'Star: ', 'placeholder' => 'star'),
+        'actormain' => array('filter' => 'actor_main', 'title' => 'Actor main', 'name_pre' => 'Main: ', 'placeholder' => 'main'),
     );
     public $facets_gender = array(
         'gender' => array('title' => 'Cast gender', 'name_pre' => 'Cast '),
@@ -88,11 +95,18 @@ class CriticSearch extends AbstractDB {
         'mainrace' => 'maingender'
     );
     public $facets_race_directors = array(
-        'dirrace' => array('title' => 'All Production race', 'name_pre' => 'All Production '),
-        'dirsrace' => array('title' => 'Directors race', 'name_pre' => 'Directors '),
-        'writersrace' => array('title' => 'Writers race', 'name_pre' => 'Writers '),
-        'castdirrace' => array('title' => 'Casting Directors race', 'name_pre' => 'Casting Directors '),
-        'producerrace' => array('title' => 'Producers race', 'name_pre' => 'Producers ')
+        'dirrace' => array('filter' => 'dirall', 'name' => 'director_all', 'title' => 'All Production race', 'name_pre' => 'All Production '),
+        'dirsrace' => array('filter' => 'dir', 'name' => 'director_dir', 'title' => 'Directors race', 'name_pre' => 'Directors '),
+        'writersrace' => array('filter' => 'dirwrite', 'name' => 'director_write', 'title' => 'Writers race', 'name_pre' => 'Writers '),
+        'castdirrace' => array('filter' => 'dircast', 'name' => 'director_cast', 'title' => 'Casting Directors race', 'name_pre' => 'Casting Directors '),
+        'producerrace' => array('filter' => 'dirprod', 'name' => 'director_prod', 'title' => 'Producers race', 'name_pre' => 'Producers ')
+    );
+    public $director_filters = array(
+        'dirall' => array('filter' => 'director_all', 'title' => 'Production', 'name_pre' => 'Production ', 'placeholder' => 'all'),
+        'dir' => array('filter' => 'director_dir', 'title' => 'Director', 'name_pre' => 'Director: ', 'placeholder' => 'director'),
+        'dirwrite' => array('filter' => 'director_write', 'title' => 'Writer', 'name_pre' => 'Writer: ', 'placeholder' => 'writer'),
+        'dircast' => array('filter' => 'director_cast', 'title' => 'Casting director', 'name_pre' => 'Casting dir: ', 'placeholder' => 'casting'),
+        'dirprod' => array('filter' => 'director_prod', 'title' => 'Producer', 'name_pre' => 'Producer: ', 'placeholder' => 'producer'),
     );
     public $race_gender_dir = array(
         'dirrace' => 'dirgender',
@@ -122,7 +136,7 @@ class CriticSearch extends AbstractDB {
         'state' => array(
             'proper' => array('key' => 1, 'title' => 'Proper Review'),
             'contains' => array('key' => 2, 'title' => 'Contains Mention'),
-            'related' => array('key' => 3, 'title' => 'Related Article'),            
+            'related' => array('key' => 3, 'title' => 'Related Article'),
         ),
         'price' => array(
             'free' => array('key' => 1, 'title' => 'Watch free'),
@@ -256,8 +270,6 @@ class CriticSearch extends AbstractDB {
         if ($debug) {
             print_r($critics_search);
         }
-
-
 
         $search_valid = $critics_search['valid'];
         if ($bulk) {
@@ -1272,7 +1284,6 @@ class CriticSearch extends AbstractDB {
 
         //print_r($sql);
         //exit;
-        
         //Get result
         $ret = $this->movie_results($sql, $match, $search_query);
 
@@ -1327,7 +1338,7 @@ class CriticSearch extends AbstractDB {
         // Facets logic
         $facets_arr = array();
         if ($facets) {
-            $facets_arr = $this->movies_facets($filters, $match, $search_query);
+            $facets_arr = $this->movies_facets($filters, $match, $search_query, $facets);
         }
 
         $ret['facets'] = $facets_arr;
@@ -1471,9 +1482,13 @@ class CriticSearch extends AbstractDB {
         return array('sql_arr' => $sql_arr, 'skip' => $skip);
     }
 
-    public function movies_facets($filters, $match, $search_query) {
+    public function movies_facets($filters, $match, $search_query, $facets) {
         // All facets
         $facet_list = $this->facets['movies'];
+        if ($facets && is_array($facets)) {
+            $facet_list = $facets;
+        }
+
         $sql_arr = $this->movies_facets_sql($facet_list, $filters, $match);
         $facets_arr = $this->movies_facets_get($facet_list, $sql_arr, $match, $search_query);
         return $facets_arr;
@@ -1508,12 +1523,35 @@ class CriticSearch extends AbstractDB {
                 $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
                         . " GROUP BY genre ORDER BY cnt DESC LIMIT 0,$limit";
                 $sql_arr[] = "SHOW META";
-            } else if ($facet == 'actor') {
-                $limit = $expand == 'actor' ? $this->facet_max_limit : $this->facet_limit;
-                $filters_and = $this->get_filters_query($filters, 'actor');
-                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $this->filter_actor_and . $match
-                        . " GROUP BY actor ORDER BY cnt DESC LIMIT 0,$limit";
-                $sql_arr[] = "SHOW META";
+            } else if ($facet == 'actors') {
+                // Cast actor logic
+                $facet_active = $this->get_active_race_facet($filters);
+
+                if (isset($this->facets_race_cast[$facet_active])) {
+                    $race_name = $this->facets_race_cast[$facet_active]['name'];
+                    $limit = $expand == $this->facets_race_cast[$facet_active]['filter'] ? $this->facet_max_limit : $this->facet_limit;
+                    $filters_and = $this->get_filters_query($filters, $this->facets_race_cast[$facet_active]['filter']);
+                    $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $this->filter_actor_and . $match
+                            . " GROUP BY " . $race_name . " ORDER BY cnt DESC LIMIT 0,$limit";
+                    $sql_arr[] = "SHOW META";
+                } else {
+                    $skip[] = $facet;
+                }
+            } else if ($facet == 'dirs') {
+                // Directors logic
+                $facet_active = $this->get_active_director_facet($filters);
+                
+                if (isset($this->facets_race_directors[$facet_active])) {
+                    $race_name = $this->facets_race_directors[$facet_active]['name'];
+                    $limit = $expand == $this->facets_race_directors[$facet_active]['filter'] ? $this->facet_max_limit : $this->facet_limit;
+                    $filters_and = $this->get_filters_query($filters, $this->facets_race_directors[$facet_active]['filter']);
+                    $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $this->filter_actor_and  . $match
+                            . " GROUP BY " . $race_name . " ORDER BY cnt DESC LIMIT 0,$limit";
+                    $sql_arr[] = "SHOW META";
+                } else {
+                    $skip[] = $facet;
+                }
+                
             } else if ($facet == 'provider') {
                 $limit = $this->facet_max_limit;
                 $filters_and = $this->get_filters_query($filters, array('provider', 'price'));
@@ -1580,7 +1618,7 @@ class CriticSearch extends AbstractDB {
                     $skip[] = $facet;
                 }
             } else if ($facet == 'gender_dir') {
-                // Gender actor logic
+                // Gender director logic
                 $facet_active = $this->get_active_gender_dir_facet($filters);
 
                 if (isset($this->facets_gender_dir[$facet_active])) {
@@ -1657,6 +1695,7 @@ class CriticSearch extends AbstractDB {
     }
 
     public function movies_facet_single_get($sql, $search_query) {
+        $this->connect();
         $stmt = $this->sps->prepare($sql);
         $stmt->bindValue(':match', $search_query, PDO::PARAM_STR);
         $stmt->execute();
@@ -1666,13 +1705,17 @@ class CriticSearch extends AbstractDB {
         return array('data' => $value, 'meta' => $meta);
     }
 
-    public function find_actors($keyword, $ids = array()) {
+    public function find_actors($keyword, $ids = array(), $cast = '') {
         $search_keywords = $this->wildcards_maybe_query($keyword, true, ' ');
         $ids_and = '';
         if (sizeof($ids)) {
             $ids_and = " AND actor_id IN (" . implode(',', $ids) . ")";
         }
-        $sql = sprintf("SELECT actor_id, name FROM actor WHERE MATCH('%s')" . $ids_and . ' LIMIT 1000', $search_keywords);
+        $actor_db = 'actor_star';
+        if ($cast == 'all' || $cast == 'main') {
+            $actor_db = 'actor_' . $cast;
+        }
+        $sql = sprintf("SELECT actor_id, name FROM " . $actor_db . " WHERE MATCH('%s')" . $ids_and . ' LIMIT 1000', $search_keywords);
         $result = $this->sdb_results($sql);
         $results = array();
         if (sizeof($result)) {
@@ -1789,10 +1832,10 @@ class CriticSearch extends AbstractDB {
             $top_movie_sql = " AND top_movie>0";
 
             if (isset($filters['state'])) {
-                if (is_array($filters['state']) && sizeof($filters['state'])==1) {
+                if (is_array($filters['state']) && sizeof($filters['state']) == 1) {
                     $filters['state'] = $filters['state'][0];
                 }
-                
+
                 if (is_array($filters['state'])) {
                     if (in_array('related', $filters['state'])) {
                         unset($filters['state'][array_search('related', $filters['state'])]);
@@ -1801,7 +1844,7 @@ class CriticSearch extends AbstractDB {
                           'state' => array(
                           'proper' => array('key' => 1, 'title' => 'Proper Review'),
                           'contains' => array('key' => 2, 'title' => 'Contains Mention'),
-                          'related' => array('key' => 3, 'title' => 'Related Article'),                          
+                          'related' => array('key' => 3, 'title' => 'Related Article'),
                           ), */
 
                         $not = array();
@@ -1902,14 +1945,24 @@ class CriticSearch extends AbstractDB {
                         $pay_type = 1;
                         $list = $ma->get_providers_by_type($pay_type);
                         $filters_and .= $this->filter_multi_value('provider', $list, true);
-                    } else if ($key == 'actor') {
-                        // Actor                 
+                    } else if ($key == 'actor' || $key == 'actorstar' || $key == 'actormain') {
+                        // Actor       
                         $value = is_array($value) ? $value : array($value);
                         $names = $this->get_actor_names($value);
                         foreach ($value as $id) {
                             $this->search_filters[$key][$id] = array('key' => $id, 'title' => $names[$id]);
                         }
-                        $filters_and .= $this->filter_multi_value('actor', $value);
+                        $actor_filter = $this->actor_filters[$key]['filter'];
+                        $filters_and .= $this->filter_multi_value($actor_filter, $value);
+                    } else if ($key == 'dirall' || $key == 'dir' || $key == 'dirwrite' || $key == 'dircast' || $key == 'dirprod') {
+                        // Director  
+                        $value = is_array($value) ? $value : array($value);
+                        $names = $this->get_actor_names($value);
+                        foreach ($value as $id) {
+                            $this->search_filters[$key][$id] = array('key' => $id, 'title' => $names[$id]);
+                        }
+                        $actor_filter = $this->director_filters[$key]['filter'];
+                        $filters_and .= $this->filter_multi_value($actor_filter, $value);
                     } else if ($key == 'rating') {
                         // Rating
                         $dates = explode('-', $value);
@@ -2349,8 +2402,19 @@ class CriticSearch extends AbstractDB {
         $this->update_option('critic_search_settings', serialize($ss));
     }
 
-    public function get_actor_names($ids) {
-        $sql = sprintf("SELECT actor_id, name FROM actor WHERE actor_id IN (%s) LIMIT 1000", implode(',', $ids));
+    public function get_actor_names($ids, $cache = true) {
+        $key = md5(implode(',', $ids));
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$key])) {
+                return $dict[$key];
+            }
+        }
+        $sql = sprintf("SELECT actor_id, name FROM actor_all WHERE actor_id IN (%s) LIMIT 1000", implode(',', $ids));
         $result = $this->sdb_results($sql);
         $ret = array();
         if ($result) {
@@ -2358,6 +2422,9 @@ class CriticSearch extends AbstractDB {
                 $ret[$actor->actor_id] = $actor->name;
             }
         }
+
+        $dict[$key] = $ret;
+
         return $ret;
     }
 
@@ -2487,7 +2554,7 @@ class CriticSearch extends AbstractDB {
         }
     }
 
-    public function get_last_critics($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tag_id = 0, $meta_type = array(), $min_rating = 0, $vote = 0) {
+    public function get_last_critics($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tags = array(), $meta_type = array(), $min_rating = 0, $vote = 0) {
 
         $filters_and = '';
 
@@ -2513,8 +2580,8 @@ class CriticSearch extends AbstractDB {
         }
 
         // Tag logic
-        if ($tag_id > 0) {
-            $filters_and .= $this->filter_multi_value('tags', $tag_id, true);
+        if ($tags) {
+            $filters_and .= $this->filter_multi_value('tags', $tags, true);
         }
 
         // Vote logic
