@@ -92,7 +92,7 @@ class CriticFeeds extends AbstractDBWp {
         );
 
         $this->feed_settings_def = array(
-            'critic_feeds_max_feed_error' => 10,
+            'critic_feeds_max_feed_error' => 100,
             'update_interval' => 60,
             'post_status' => 1,
             'rss_date' => 1,
