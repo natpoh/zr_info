@@ -250,9 +250,9 @@ class CriticFeeds extends AbstractDBWp {
                 $max_errors = $this->get_option('critic_feeds_max_feed_error', $this->def_options['critic_feeds_max_feed_error']);
                 if ($feed_invalid >= $max_errors) {
                     //Stop the campaign
-                    $status = 3;
-                    $this->update_campaign_status($cid, $status);
-                    $this->log_auto_stop('Error count: ' . $feed_invalid, $cid);
+                    //$status = 3;
+                    //$this->update_campaign_status($cid, $status);
+                    //$this->log_auto_stop('Error count: ' . $feed_invalid, $cid);
                 }
             }
 
