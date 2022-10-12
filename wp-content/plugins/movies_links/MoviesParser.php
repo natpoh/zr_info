@@ -901,7 +901,7 @@ class MoviesParser extends MoviesAbstractDB {
             $this->log_info($message, $campaign->id, 0, 1);
         }
 
-        $this->fund_urls_update_progress($campaign);
+        $this->find_urls_update_progress($campaign);
 
         return $count;
     }
