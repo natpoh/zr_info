@@ -1792,17 +1792,24 @@ class MoviesParser extends MoviesAbstractDB {
             }
 
             //Get title
-            $post_title_name = '';
-            $title_rule = '';
+            $post_title_name = array();
+            $title_rule = array();
             if ($active_rules['t']) {
-                foreach ($active_rules['t'] as $item) {
-                    if ($item['content']) {
-                        $post_title_name = $item['content'];
-                        $title_rule = $item;
-                        break;
+                foreach ($active_rules['t'] as $key => $item) {
+
+                    $field = 'title';
+                    if ($key > 0) {
+                        $field = $field . '-' . $key;
                     }
+
+                    $post_name = '';
+                    if ($item['content']) {
+                        $post_name = trim($item['content']);
+                        $post_title_name[$key] = $post_name;
+                        $title_rule[$key] = $item;
+                    }
+                    $search_fields[$field] = $post_name;
                 }
-                $search_fields['title'] = $post_title_name;
             }
 
             //Get year
@@ -1879,11 +1886,13 @@ class MoviesParser extends MoviesAbstractDB {
             $facets = array();
             if ($movie_id > 0) {
                 $movies = $ms->search_movies_by_id($movie_id);
-                $movies_title = $ms->search_movies_by_title($post_title_name, $title_rule['e'], $post_year_name, 20, $movie_type);
+                foreach ($post_title_name as $key => $name) {
+                    $movies_title = $ms->search_movies_by_title($name, $title_rule[$key]['e'], $post_year_name, 20, $movie_type);
 
-                if (!isset($movies_title[$movie_id])) {
-                    if ($movies[$movie_id]->title != $post_title_name) {
-                        $post_title_name = '';
+                    if (!isset($movies_title[$movie_id])) {
+                        if ($movies[$movie_id]->title != $name) {
+                            $post_title_name[$key] = '';
+                        }
                     }
                 }
             } else if ($movie_id == -1) {
@@ -1908,13 +1917,13 @@ class MoviesParser extends MoviesAbstractDB {
                     $movies_tmdb = $ms->search_movies_by_tmdb($post_tmdb);
                 }
 
-                $movies_title = array();
                 if ($post_title_name) {
                     // Find movies by title and year
-                    $movies_title = $ms->search_movies_by_title($post_title_name, $title_rule['e'], $post_year_name, 20, $movie_type);
+                    foreach ($post_title_name as $key => $name) {
+                        $movies_title = $ms->search_movies_by_title($name, $title_rule[$key]['e'], $post_year_name, 20, $movie_type);
+                        $movies = array_merge($movies_imdb, $movies_title);
+                    }
                 }
-
-                $movies = array_merge($movies_imdb, $movies_title);
 
                 if ($movies_tmdb) {
                     $movies = array_merge($movies, $movies_tmdb);
@@ -1938,12 +1947,18 @@ class MoviesParser extends MoviesAbstractDB {
                 foreach ($movies as $movie) {
                     //Movie              
                     if ($post_title_name) {
-                        $results[$movie->id]['title']['data'] = $movie->title;
-                        $results[$movie->id]['title']['match'] = 1;
-                        $results[$movie->id]['title']['rating'] = $title_rule['ra'];
+                        foreach ($post_title_name as $key => $name) {
+                            $field = 'title';
+                            if ($key > 0) {
+                                $field = $field . '-' . $key;
+                            }
+                            $results[$movie->id][$field]['data'] = $movie->title;
+                            $results[$movie->id][$field]['match'] = 1;
+                            $results[$movie->id][$field]['rating'] = $title_rule[$key]['ra'];
 
-                        $results[$movie->id]['total']['match'] += 1;
-                        $results[$movie->id]['total']['rating'] += $title_rule['ra'];
+                            $results[$movie->id]['total']['match'] += 1;
+                            $results[$movie->id]['total']['rating'] += $title_rule[$key]['ra'];
+                        }
                     }
 
                     if ($post_year_name) {
@@ -2221,13 +2236,13 @@ class MoviesParser extends MoviesAbstractDB {
         if ($max_rating_id) {
             $results[$max_rating_id]['total']['top'] = 1;
         }
-        /*
+     /*
           print '<pre>';
           print_r($post);
           print_r($search_fields);
           print_r($results);
           print '</pre>';
-         */
+      */
 
         return array('fields' => $search_fields, 'results' => $results);
     }
