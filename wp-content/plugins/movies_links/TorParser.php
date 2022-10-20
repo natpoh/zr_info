@@ -90,7 +90,7 @@ class TorParser extends MoviesAbstractDB {
         }
     }
 
-    public function get_url_content($url = '', &$header='', $ip_limit = array(), $curl = false, $tor_mode = 0, $is_post = false, $post_vars = array(), $header_array = array(), $debug = false) {
+    public function get_url_content($url = '', &$header = '', $ip_limit = array(), $curl = false, $tor_mode = 0, $is_post = false, $post_vars = array(), $header_array = array(), $debug = false) {
         $content = '';
         $get_url_data = $this->get_tor_url($url, $ip_limit, $log_data, $tor_mode, $debug);
         $get_url = $get_url_data['url'];
@@ -203,6 +203,7 @@ class TorParser extends MoviesAbstractDB {
 
                     // Get last hour count
                     $q_req = array(
+                        'url' => $site_id,
                         'status' => 1,
                         'type' => 2,
                         'ip' => $ip_id,
@@ -210,6 +211,10 @@ class TorParser extends MoviesAbstractDB {
                     );
 
                     $ip_error_last_hour_count = $this->get_logs($q_req, 1, 0, 'date', 'DESC', true);
+                    if ($debug) {
+                        print_r($q_req);                    
+                        print_r($ip_error_last_hour_count);
+                    }
                     if ($ip_error_last_hour_count) {
                         // Get last error ips
                         $message = 'Last parsing error: ' . $ip_error_last_hour_count;
@@ -1179,9 +1184,9 @@ class TorParser extends MoviesAbstractDB {
             curl_setopt($ch, CURLOPT_POST, 1);
             if ($post_vars) {
                 $post_vars_str = $post_vars;
-                if (is_array($post_vars)){
+                if (is_array($post_vars)) {
                     $post_vars_str = http_build_query($post_vars);
-                } 
+                }
                 curl_setopt($ch, CURLOPT_POSTFIELDS, $post_vars_str);
             }
         }
