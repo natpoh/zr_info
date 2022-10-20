@@ -79,7 +79,7 @@ class CriticAvatars extends AbstractDB {
             }
 
             $filename = $time . $allowed_mime_types[$src_type];
-            print_r($filename);
+            
 
             // Check md5 hash
             $img_hash = md5($file_content);
