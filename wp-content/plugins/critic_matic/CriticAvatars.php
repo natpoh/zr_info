@@ -47,7 +47,7 @@ class CriticAvatars extends AbstractDB {
                 print "ML parser\n";
             }
             $tp = new TorParser();
-            $file_content = $tp->get_url_content($url, $headers, $ip_limit, true, $tor_mode);
+            $file_content = $tp->get_url_content($url, $headers, $ip_limit, true, $tor_mode,  false, array(), array(),$debug);
         } else {
             // 2. Get cm parser
             $cp = $this->cm->get_cp();
