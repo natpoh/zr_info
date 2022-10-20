@@ -1010,6 +1010,7 @@ class TorParser extends MoviesAbstractDB {
             'ip' => -1,
             'date_gt' => -1,
             'date_lt' => -1,
+            'url' => -1,
         );
 
         $q = array();
@@ -1018,6 +1019,13 @@ class TorParser extends MoviesAbstractDB {
             $q[$key] = isset($q_req[$key]) ? $q_req[$key] : $value;
         }
 
+        // URL
+        $and_url = '';
+        if ($q['url'] != -1) {
+            $and_url = " AND l.url = " . (int) $q['url'];
+        }
+        
+        
         // Type
         $and_type = '';
         if ($q['type'] != -1) {
@@ -1082,7 +1090,7 @@ class TorParser extends MoviesAbstractDB {
 
         $sql = "SELECT" . $select
                 . " FROM {$this->db['log']} l"
-                . " WHERE l.id>0" . $and_type . $and_status . $and_ip . $and_driver . $and_date_gt . $and_date_lt . $and_orderby . $limit;
+                . " WHERE l.id>0" . $and_type . $and_url. $and_status . $and_ip . $and_driver . $and_date_gt . $and_date_lt . $and_orderby . $limit;
 
 
         if (!$count) {
