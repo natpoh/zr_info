@@ -33,6 +33,7 @@ class CriticAvatars extends AbstractDB {
         $time = $this->curr_time();
         $url = 'https://thispersondoesnotexist.com/image';
         $ip_limit = array('h' => 20, 'd' => 200);
+        $tor_mode = 2;
         $file_content = '';
         if ($this->cm->sync_server) {
             if (!class_exists('MoviesLinks')) {
@@ -46,7 +47,7 @@ class CriticAvatars extends AbstractDB {
                 print "ML parser\n";
             }
             $tp = new TorParser();
-            $file_content = $tp->get_url_content($url, $headers, $ip_limit, true, 0);
+            $file_content = $tp->get_url_content($url, $headers, $ip_limit, true, $tor_mode);
         } else {
             // 2. Get cm parser
             $cp = $this->cm->get_cp();
