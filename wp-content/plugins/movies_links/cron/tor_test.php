@@ -61,3 +61,6 @@ $post_vars = array(
 
 
 $content = $tp->get_url_content($url_test, $header, array(), $curl, $tor_mode, $is_post, $post_vars, true);
+
+
+print_r($content);
