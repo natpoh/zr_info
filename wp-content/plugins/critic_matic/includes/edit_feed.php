@@ -97,6 +97,15 @@ if ($cid) {
                     </select>                     
                     <span class="inline-edit"><?php print __('Default status for all new posts') ?></span> 
                 </label>
+
+                <label>
+                    <span class="title"><?php print __('Min body') ?></span>
+                    <?php
+                    $body_len = isset($options['body_len']) ? $options['body_len'] : $def_options['options']['body_len'];
+                    ?>
+                    <span class="input-text-wrap"><input type="text" name="body_len" value="<?php print $body_len ?>"></span>
+                    <span class="inline-edit"><?php print __('Minimal valid length of the body for non-video posts.') ?></span> 
+                </label>
                 <br />
                 <label class="inline-edit-status">                
                     <?php
@@ -123,6 +132,7 @@ if ($cid) {
                 </label>
 
 
+
                 <label class="inline-edit-global_rules">                
                     <?php
                     $checked = '';
@@ -141,7 +151,7 @@ if ($cid) {
                 <?php wp_nonce_field('critic-feeds-options', 'critic-feeds-nonce'); ?>
                 <br />
                 <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save') ?>" class="button-primary">  
-<br /><br />
+                <br /><br />
             </fieldset>
         </div>
     </form>

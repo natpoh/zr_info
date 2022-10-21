@@ -49,7 +49,16 @@ $update_interval = $this->cf->update_interval;
                 </select>                     
                 <span class="inline-edit"><?php print __('Status for all new posts') ?></span> 
             </label>
-            <br />            
+            <br />  
+            <label>
+                <span class="title"><?php print __('Min body') ?></span>
+                <?php
+                $body_len = $settings['body_len'];
+                ?>
+                <span class="input-text-wrap"><input type="text" name="body_len" value="<?php print $body_len ?>"></span>
+                <span class="inline-edit"><?php print __('Minimal valid length of the body for non-video posts.') ?></span> 
+            </label>  
+            <br />
             <label class="inline-edit-rss_date">                
                 <?php
                 $checked = '';
@@ -62,7 +71,7 @@ $update_interval = $this->cf->update_interval;
                 <span class="checkbox-title"><?php print __('Get the post date from RSS') ?></span>
             </label>
 
-             <label class="inline-edit-rules">                
+            <label class="inline-edit-rules">                
                 <?php
                 $checked = '';
                 $use_global_rules = $settings['use_global_rules'];
@@ -73,6 +82,9 @@ $update_interval = $this->cf->update_interval;
                 <input type="checkbox" name="use_global_rules" value="1" <?php print $checked ?> >
                 <span class="checkbox-title"><?php print __('Use global rules') ?></span>
             </label>
+
+
+
             <?php
             $rules = $settings['rules'];
 
