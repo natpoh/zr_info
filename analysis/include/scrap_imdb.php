@@ -84,7 +84,40 @@ function fix_actors_stars($movie_id)
 
 
 }
+function fix_actors_verdict($actor_id='')
+{
+    !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+    $last_id = OptionData::get_options('','actor_verdict_last_id');
+    echo 'last_id='.$last_id.'<br>';
 
+    if (!$last_id)
+    {
+        $last_id=0;
+    }
+
+    if (!$actor_id)
+    {
+        $movies_updated = 0;
+
+        $q= "SELECT id, actor_id FROM `data_actors_meta` where id > ".$last_id."  order by id asc limit 100000";
+        $r = Pdo_an::db_results_array($q);
+        foreach ($r as $row)
+        {
+
+            $id =  $row['id'];
+            $actor_id =  $row['actor_id'];
+            update_actors_verdict($actor_id,1,0);
+
+            OptionData::set_option('',$id,'actor_verdict_last_id',false);
+
+        }
+    }
+    else
+    {
+        update_actors_verdict($actor_id,1,1);
+    }
+
+}
 
 function set_verdict_weight($id)
 {
@@ -241,6 +274,7 @@ function check_tmdb_actors($id)
 }
 
 
+
 function check_actors_meta()
 {
 
@@ -300,6 +334,7 @@ function update_actors_verdict($id='',$force='',$sync = 1 )
     !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
     set_time_limit(0);
 
+    !class_exists('ActorWeight') ? include ABSPATH . "analysis/include/actors_weight.php" : '';
 
 if ($id)
 {
@@ -307,7 +342,7 @@ if ($id)
 }
 else
 {
-   $where ="where verdict IS NULL limit 100000";
+   $where ="where (verdict IS NULL OR verdict_weight IS NULL) limit 100000";
 }
 
 $sql = "select * from data_actors_meta ".$where." ";
@@ -353,9 +388,9 @@ $sql = "select * from data_actors_meta ".$where." ";
 
         ///check grid verdict
 
-        !class_exists('ActorWeight') ? include ABSPATH . "analysis/include/actors_weight.php" : '';
 
-        if ($sync_data)
+
+        if ($sync_data || !$sync)
         {
             $sync_grid = 0;
         }
@@ -2185,17 +2220,27 @@ function add_rating()
 
 function update_all_gender_cache($pid)
 {
+    global $debug;
+    if (isset($_GET['debug']))
+    {
+        $debug=1;
+    }
 
     !class_exists('RWT_RATING') ? include ABSPATH . "wp-content/themes/custom_twentysixteen/template/include/movie_rating.php" : '';
     $where='';
     if ($pid)
     {
-        $where = " where movie_id=".intval($pid);
+        $where = " where id=".intval($pid);
+    }
+    if (isset($_GET['start']))
+    {
+        $where = " where id>".intval($_GET['start']);
     }
     global $table_prefix;
     $data = new RWT_RATING;
 
-    $sql = "SELECT id FROM `data_movie_imdb` ".$where;
+    $sql = "SELECT id, movie_id FROM `data_movie_imdb` ".$where."order by id asc";
+
 
     $rows = Pdo_an::db_results_array($sql);
     $count = count($rows);
@@ -2204,7 +2249,10 @@ function update_all_gender_cache($pid)
     {
         $i++;
         $id = $r2['id'];
-        $data->gender_and_diversity_rating($id,'',1);
+        $movie_id = $r2['movie_id'];
+
+
+        $data->gender_and_diversity_rating($id,$movie_id,1,$debug);
         echo $i.' of '.$count.' id='.$id.'<br>'.PHP_EOL;
     }
 }
@@ -2973,6 +3021,15 @@ if (isset($_GET['fix_actors_stars'])) {
 
 
     fix_actors_stars($_GET['fix_actors_stars']);
+
+    return;
+}
+
+
+if (isset($_GET['fix_actors_verdict'])) {
+
+
+    fix_actors_verdict($_GET['fix_actors_verdict']);
 
     return;
 }
