@@ -375,7 +375,7 @@ class MoviesParser extends MoviesAbstractDB {
             $aid_and = sprintf(" AND author = %d", $aid);
         }
 
-        $query = "SELECT COUNT(*) FROM {$this->db['campaign']}" . $status_query . $type_query . $aid_and;
+        $query = "SELECT COUNT(id) FROM {$this->db['campaign']}" . $status_query . $type_query . $aid_and;
         $result = $this->db_get_var($query);
         return $result;
     }
@@ -655,7 +655,7 @@ class MoviesParser extends MoviesAbstractDB {
             $link_type_and = sprintf(" AND p.status_links=%d", $link_type);
         }
 
-        $query = "SELECT COUNT(*) FROM {$this->db['url']} u"
+        $query = "SELECT COUNT(id) FROM {$this->db['url']} u"
                 . " LEFT JOIN {$this->db['arhive']} a ON u.id = a.uid"
                 . " LEFT JOIN {$this->db['posts']} p ON u.id = p.uid"
                 . " WHERE u.id>0"
@@ -2914,7 +2914,7 @@ class MoviesParser extends MoviesAbstractDB {
             $and_type = sprintf(" AND type=%d", (int) $type);
         }
 
-        $query = "SELECT COUNT(*) FROM {$this->db['log']} WHERE id>0" . $and_cid . $and_status . $and_type;
+        $query = "SELECT COUNT(id) FROM {$this->db['log']} WHERE id>0" . $and_cid . $and_status . $and_type;
 
         $result = $this->db_get_var($query);
         return $result;

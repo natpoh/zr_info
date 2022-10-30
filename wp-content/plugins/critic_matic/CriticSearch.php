@@ -127,6 +127,7 @@ class CriticSearch extends AbstractDB {
         'type' => array(
             'movies' => array('key' => 'Movie', 'title' => 'Movies'),
             'tv' => array('key' => 'TVSeries', 'title' => 'TV Series'),
+            'videogame' => array('key' => 'VideoGame', 'title' => 'Video Game'),
         ),
         'author_type' => array(
             'staff' => array('key' => 0, 'title' => 'Staff'),
@@ -1103,7 +1104,7 @@ class CriticSearch extends AbstractDB {
             $title_query = implode('|', $title_query_arr);
         }
 
-        $allow_types = array("'Movie'", "'TVseries'");
+        $allow_types = array("'Movie'", "'TVseries'", "'VideoGame'");
         $type_and = ""; // " AND type IN(" . implode(',', $allow_types) . ")";
         if ($type) {
             $type_and = sprintf(' AND type="%s"', $type);
@@ -1218,7 +1219,7 @@ class CriticSearch extends AbstractDB {
         $title = addslashes($title);
         $match_query = $this->wildcards_maybe_query($title);
 
-        $allow_types = array("'Movie'", "'TVseries'");
+        $allow_types = array("'Movie'", "'TVseries'", "'VideoGame'");
         $type_and = " AND type IN(" . implode(',', $allow_types) . ")";
 
 
@@ -1473,7 +1474,7 @@ class CriticSearch extends AbstractDB {
                 $filters_facet['state'] = 'related';
                 $filters_and = $this->get_filters_query($filters_facet, '', $query_type);
 
-                $sql_arr[] = "SELECT COUNT(*) as cnt FROM critic WHERE status=1 AND top_movie=0" . $filters_and . $match;
+                $sql_arr[] = "SELECT COUNT(id) as cnt FROM critic WHERE status=1 AND top_movie=0" . $filters_and . $match;
 
                 $sql_arr[] = "SHOW META";
             }
@@ -2625,7 +2626,7 @@ class CriticSearch extends AbstractDB {
 
     public function get_log_count() {
         $this->get_wpdb();
-        $query = "SELECT COUNT(*) FROM {$this->db['log']}";
+        $query = "SELECT COUNT(id) FROM {$this->db['log']}";
         $result = $this->wpdb->db_get_var($query);
         return $result;
     }

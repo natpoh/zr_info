@@ -1,3 +1,6 @@
+1.0.86 - 24.10.2022
+VideoGames in search
+
 1.0.85 - 20.10.2022
 User avatars
 

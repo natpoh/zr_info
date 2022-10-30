@@ -24,10 +24,7 @@ class CriticAudience extends AbstractDb {
     private $cm = '';
     private $p = '';
     //Audience
-    public $vote_fields = array(
-        'name' => array('title' => 'Critic Name', 'required' => 1),
-        'title' => array('title' => 'Review Title', 'required' => 0),
-    );
+
     public $vote_data = array(
         'vote' => array(
             'title' => 'Boycott Suggestion',
@@ -862,9 +859,37 @@ class CriticAudience extends AbstractDb {
                             <p class="redtext">Your review is awaiting an anti-troll check.</p>
                         <?php } ?>
                         <input id="unic_id" type="hidden" name="unic_id" value="<?php print $au_data->unic_id ?>" />
-                        <?php
+                    <?php } ?>
+                    <?php
+                    // Check user login
+                    $user = wp_get_current_user();
+                    $user_identity = $user->exists() ? $user->display_name : '';
+                    // print_r($user_identity);
+                    $commenter = wp_get_current_commenter();
+                    /*
+                     * Array ( [comment_author] => [comment_author_email] => [comment_author_url] => )
+                     * print_r($commenter);
+                     */
+
+                    $post_link = '';
+
+                    if ($user_identity) {
+                        ?><tr><td colspan="2"><?php
+                                $logged_in_as = '<p class="logged-in-as">' .
+                                        sprintf(__('Вы вошли как <a href="%1$s">%2$s</a>. <a href="%3$s" title="Выйти из данного аккаунта">Выйти?</a>'), admin_url('profile.php'), $user_identity, wp_logout_url($post_link)) . '</p>';
+                                print apply_filters('comment_form_logged_in', $logged_in_as, $commenter, $user_identity);
+                                do_action('comment_form_logged_in_after', $commenter, $user_identity);
+                                ?></td></tr><?php
                     }
-                    foreach ($this->vote_fields as $key => $value):
+                    //do_action('comment_form', $post_id); 
+                    
+                    $vote_fields = array(
+                        'name' => array('title' => 'Critic Name', 'required' => 1),
+                        'email' => array('title' => 'Critic Email', 'required' => 1),
+                        'title' => array('title' => 'Review Title', 'required' => 0),
+                    );
+
+                    foreach ($vote_fields as $key => $value):
                         if ($au_data) {
                             if ($key == 'name') {
                                 continue;
@@ -952,7 +977,7 @@ class CriticAudience extends AbstractDb {
                     </tr>
                     <tr>
                         <td colspan="2">
-                            <div class="wpcr3_button_1 wpcr3_submit_btn" href="#">Submit</div>
+                            <div class="wpcr3_button_1 wpcr3_submit_btn" href="#">Submit</div>                     
                         </td>
                     </tr>
                     </tbody>

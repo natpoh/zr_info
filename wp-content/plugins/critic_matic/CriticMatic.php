@@ -124,7 +124,8 @@ class CriticMatic extends AbstractDB {
     );
     public $movie_type = array(
         'movie' => 'Movie',
-        'tvseries' => 'TV'
+        'tvseries' => 'TV',
+        'videogame' => 'VideoGame'
     );
     public $movie_tabs = array(
         'home' => 'View'
@@ -812,7 +813,7 @@ class CriticMatic extends AbstractDB {
     }
 
     public function get_feed_count($id) {
-        $query = sprintf("SELECT COUNT(*) FROM {$this->db['feed_meta']} WHERE  cid=%d", $id);
+        $query = sprintf("SELECT COUNT(id) FROM {$this->db['feed_meta']} WHERE  cid=%d", $id);
         $result = $this->db_get_var($query);
         return $result;
     }
@@ -1531,7 +1532,7 @@ class CriticMatic extends AbstractDB {
     }
 
     public function get_author_post_count($aid) {
-        $query = sprintf("SELECT COUNT(*) FROM {$this->db['authors_meta']} WHERE aid = %d", (int) $aid);
+        $query = sprintf("SELECT COUNT(id) FROM {$this->db['authors_meta']} WHERE aid = %d", (int) $aid);
         $result = $this->db_get_var($query);
         return $result;
     }
@@ -1878,7 +1879,7 @@ class CriticMatic extends AbstractDB {
             $status_query = " WHERE status = " . (int) $status;
         }
 
-        $query = "SELECT COUNT(*) FROM {$this->db['tags']} " . $status_query;
+        $query = "SELECT COUNT(id) FROM {$this->db['tags']} " . $status_query;
         $result = $this->db_get_var($query);
         return $result;
     }
@@ -2800,7 +2801,7 @@ class CriticMatic extends AbstractDB {
             $status_query = " WHERE type = " . (int) $status;
         }
 
-        $query = "SELECT COUNT(*) FROM {$this->db['ip']}" . $status_query;
+        $query = "SELECT COUNT(id) FROM {$this->db['ip']}" . $status_query;
 
         $result = $this->db_get_var($query);
         return $result;

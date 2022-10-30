@@ -64,11 +64,11 @@ if (sizeof($authors) > 0) {
 
                   $critic_count = 0;
                   if ($pid){
-                  $sql = sprintf("SELECT COUNT(*) FROM $wpdb->postmeta m "
+                  $sql = sprintf("SELECT COUNT(id) FROM $wpdb->postmeta m "
                   . "WHERE m.meta_key = 'wprss_feed_id' AND m.meta_value=%d", $pid);
                   $critic_count = $wpdb->get_var($sql);
                   }
-                  //$sql = sprintf("SELECT COUNT(*) FROM $wpdb->posts p INNER JOIN $wpdb->postmeta m "
+                  //$sql = sprintf("SELECT COUNT(id) FROM $wpdb->posts p INNER JOIN $wpdb->postmeta m "
                   //        . "WHERE p.post_title = '%s' AND m.meta_key = 'wprss_feed_id' AND m.meta_value=p.ID", $posttitle);
 
                  */

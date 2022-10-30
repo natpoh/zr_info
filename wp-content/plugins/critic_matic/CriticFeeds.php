@@ -779,7 +779,7 @@ class CriticFeeds extends AbstractDBWp {
             $aid_and = sprintf(" AND author = %d", $aid);
         }
 
-        $query = "SELECT COUNT(*) FROM {$this->db['campaign']}" . $type_query . $aid_and;
+        $query = "SELECT COUNT(id) FROM {$this->db['campaign']}" . $type_query . $aid_and;
         $result = $this->db_get_var($query);
         return $result;
     }
@@ -1266,7 +1266,7 @@ class CriticFeeds extends AbstractDBWp {
             $where = sprintf(" WHERE cid=%d", (int) $cid);
         }
 
-        $query = "SELECT COUNT(*) FROM {$this->db['log']}" . $where;
+        $query = "SELECT COUNT(id) FROM {$this->db['log']}" . $where;
 
         $result = $this->db_get_var($query);
         return $result;
