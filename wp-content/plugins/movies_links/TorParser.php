@@ -469,7 +469,7 @@ class TorParser extends MoviesAbstractDB {
 
             $select = " p.*";
         } else {
-            $select = " COUNT(*)";
+            $select = " COUNT(p.id)";
         }
 
         $sql = "SELECT" . $select
@@ -658,7 +658,7 @@ class TorParser extends MoviesAbstractDB {
 
             $select = " p.id, p.user_agent, ip.ip, m.date";
         } else {
-            $select = " COUNT(*)";
+            $select = " COUNT(p.id)";
         }
 
         $sql = "SELECT" . $select
@@ -799,7 +799,7 @@ class TorParser extends MoviesAbstractDB {
 
             $select = " ip.id, ip.ip, p.user_agent, m.date";
         } else {
-            $select = " COUNT(*)";
+            $select = " COUNT(ip.id)";
         }
 
         $sql = "SELECT" . $select
@@ -1085,7 +1085,7 @@ class TorParser extends MoviesAbstractDB {
 
             $select = " l.*";
         } else {
-            $select = " COUNT(*)";
+            $select = " COUNT(l.id)";
         }
 
         $sql = "SELECT" . $select
