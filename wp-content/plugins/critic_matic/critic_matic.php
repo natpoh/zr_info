@@ -6,7 +6,7 @@
   Description: This plugin manages the posts of critics
   Author: Brahman  <fb@emelianovip.ru>
   Author URI: https://emelianovip.ru
-  Version: 1.0.82
+  Version: 1.0.
   License: GPLv2
  */
 
@@ -24,7 +24,7 @@ if (!function_exists('add_action')) {
 define('CRITIC_MATIC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CRITIC_MATIC_PLUGIN_URL', plugin_dir_url(__FILE__));
 
-$version = '1.0.81';
+$version = '1.0.84';
 if (defined('LASTVERSION')) {
     define('CRITIC_MATIC_VERSION', $version . LASTVERSION);
 } else {
@@ -698,7 +698,8 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
 
     // Add fields
-    $names = array('movies_an', 'critic', 'actor', 'director');
+    $names = array('movies_an', 'critic', 'actor_all', 'actor_star', 'actor_main', 'actor_extra',
+        'director_all', 'director_dir', 'director_write', 'director_cast', 'director_prod');
     foreach ($names as $name) {
         $sql = sprintf("SELECT name FROM sph_counter WHERE name='%s'", $name);
         $n = Pdo_an::db_get_var($sql);
@@ -932,11 +933,26 @@ function critic_matic_plugin_activation() {
     /*
      * Movie weights
      */
-    $sql = "ALTER TABLE `data_movie_imdb` ADD `weight` int(11) NOT NULL DEFAULT '0'";    
+    $sql = "ALTER TABLE `data_movie_imdb` ADD `weight` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    $sql = "ALTER TABLE `data_movie_imdb` ADD `weight_upd` int(11) NOT NULL DEFAULT '0'";    
+    $sql = "ALTER TABLE `data_movie_imdb` ADD `weight_upd` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('weight','weight_upd'), "data_movie_imdb");
+    critic_matic_create_index_an(array('weight', 'weight_upd'), "data_movie_imdb");
+
+
+    // User avatars
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_user_avatars`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `date` int(11) NOT NULL DEFAULT '0',                                                                 
+                                `uid` int(11) NOT NULL DEFAULT '0',                                
+                                `sketch` int(11) NOT NULL DEFAULT '0',                               
+                                `img` varchar(255) NOT NULL default '', 
+                                `img_hash` varchar(255) NOT NULL default '',                                                         
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('date', 'img', 'uid', 'sketch', 'img_hash'), "data_user_avatars");
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {
@@ -975,6 +991,16 @@ function critic_matic_create_index_an($names = array(), $table_name = '') {
             }
         }
     }
+}
+
+if (!function_exists('p_r')) {
+
+    function p_r($text) {
+        print '<pre>';
+        print_r($text);
+        print '</pre>';
+    }
+
 }
 
 /*

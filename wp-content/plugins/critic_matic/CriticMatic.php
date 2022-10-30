@@ -11,6 +11,7 @@ class CriticMatic extends AbstractDB {
     private $db = array();
     public $user_can;
     public $new_audience_count = 0;
+    private $ca;
     private $cp;
     private $cs;
     private $ts;
@@ -237,6 +238,21 @@ class CriticMatic extends AbstractDB {
         $this->sync_server = DB_SYNC_MODE == 1 ? true : false;
     }
 
+    public function get_ca() {
+        // Get CriticAvatars
+        if (!$this->ca) {
+            if (!class_exists('CriticAvatars')) {
+                if (!class_exists('AbstractDBWp')) {
+                    require_once( CRITIC_MATIC_PLUGIN_DIR . 'db/AbstractDBWp.php' );
+                }
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticAvatars.php' );
+            }
+
+            $this->ca = new CriticAvatars($this);
+        }
+        return $this->ca;
+    }
+
     public function get_cp() {
         // Get CriticParser
         if (!$this->cp) {
@@ -247,7 +263,7 @@ class CriticMatic extends AbstractDB {
                 require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticParser.php' );
             }
 
-            $this->cp = new CriticParser($this->cp);
+            $this->cp = new CriticParser($this);
         }
         return $this->cp;
     }
@@ -269,7 +285,7 @@ class CriticMatic extends AbstractDB {
             if (!class_exists('CriticMaticTrans')) {
                 require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticMaticTrans.php' );
             }
-            $this->ts = new CriticMaticTrans($this->cm);
+            $this->ts = new CriticMaticTrans($this);
         }
         return $this->ts;
     }
@@ -281,7 +297,7 @@ class CriticMatic extends AbstractDB {
                 require_once( CRITIC_MATIC_PLUGIN_DIR . 'AnalyticsSearch.php' );
                 require_once( CRITIC_MATIC_PLUGIN_DIR . 'AnalyticsFront.php' );
             }
-            $this->af = new AnalyticsFront($this->cm);
+            $this->af = new AnalyticsFront($this);
         }
         return $this->af;
     }
@@ -293,7 +309,7 @@ class CriticMatic extends AbstractDB {
             if (!class_exists('MoviesAn')) {
                 require_once( CRITIC_MATIC_PLUGIN_DIR . 'MoviesAn.php' );
             }
-            $this->ma = new MoviesAn($this->cm);
+            $this->ma = new MoviesAn($this);
         }
         return $this->ma;
     }
@@ -1015,9 +1031,7 @@ class CriticMatic extends AbstractDB {
             $options = array();
             foreach ($this->def_rating as $key => $value) {
                 if (isset($rating[$key])) {
-                    if ($rating[$key] > 0) {
-                        $options[$key] = $rating[$key];
-                    }
+                    $options[$key] = trim($rating[$key]);
                 } else {
                     // IP and email fields
                     if (isset($rating_old[$key])) {

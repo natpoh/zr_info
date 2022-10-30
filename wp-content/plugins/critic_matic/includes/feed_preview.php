@@ -44,9 +44,19 @@ if ($cid) {
                                 }
                             } else {
                                 print "<b>No changes</b>. ";
-                                print $this->cf->rules_actions[$status].".";
-                                
+                                print $this->cf->rules_actions[$status] . ".";
                             }
+                            ?></td>                 
+                    </tr> 
+                    <tr>
+                        <td><?php print __('Post len') ?></td>
+                        <td><?php
+                            $len = $item['len'];
+                            $publish= $item['publish'];
+                            
+                            print "Post len: ".$len."; Status:";
+                            print  $publish?'<b>Valid</b>':'<b>Invalid</b>';
+                  
                             ?></td>                 
                     </tr> 
                 </tbody>

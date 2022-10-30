@@ -55,9 +55,12 @@ $tp = new TorParser();
 
 // Example post vars
 $post_vars = array(
-    'id'=>1,
-    'string'=>'test'    
+    'id' => 1,
+    'string' => 'test'
 );
 
 
-$content = $tp->get_url_content($url_test, $header, array(), $curl, $tor_mode, $is_post, $post_vars, true);
+$content = $tp->get_url_content($url_test, $header, array(), $curl, $tor_mode, $is_post, $post_vars, array(), true);
+
+
+print_r($content);

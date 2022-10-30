@@ -240,6 +240,12 @@ if ($pid) {
                 }
                 ?>
 
+                <label>
+                    <span class="title"><?php print __('Ip') ?></span>
+                    <span class="input-text-wrap"><input type="text" name="rating_ip" value="<?php print $rating['ip'] ?>"></span>
+                </label>
+                <br />
+                
                 <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save') ?>" class="button-primary">  
 
             </fieldset>

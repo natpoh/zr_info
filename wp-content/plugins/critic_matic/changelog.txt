@@ -1,3 +1,13 @@
+1.0.85 - 20.10.2022
+User avatars
+
+1.0.84 - 26.09.2022
+Actors tabs
+
+1.0.83 - 21.09.2022
+Add Critic home tags
+Edit Audience IP
+
 1.0.82 - 16.09.2022
 Add movie weights
 

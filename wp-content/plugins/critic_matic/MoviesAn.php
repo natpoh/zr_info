@@ -1074,7 +1074,17 @@ class MoviesAn extends AbstractDBAn {
         return $result;
     }
 
-    public function get_providers_by_type($type = 0) {
+    public function get_providers_by_type($type = 0, $cache=true) {
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$type])) {
+                return $dict[$type];
+            }
+        }
         $sql = sprintf("SELECT pid FROM {$this->db['data_provider']} WHERE free=%d AND status=1", $type);
         $result = $this->db_results($sql);
         $ret = array();
@@ -1083,6 +1093,8 @@ class MoviesAn extends AbstractDBAn {
                 $ret[] = $value->pid;
             }
         }
+        $dict[$type] = $ret;
+        
         return $ret;
     }
 
