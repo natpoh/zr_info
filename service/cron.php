@@ -15,7 +15,7 @@ $array_jobs = array(
 'add_tmdb_without_id'=>10,///add imdb id to tmdb database
 'check_last_actors'=>20,
 'check_kairos'=>5,///add kairos images
-///'check_face'=>10,///add bettaface verdict
+
 
 'update_tmdb_actors'=>10, //update tmdb id and images
 
@@ -31,6 +31,7 @@ $array_jobs = array(
 'download_crowd_images'=>60,///load image to server from crowdsource status 1
 'update_actors_verdict'=>30,///update verdict actors
 
+'check_face'=>120,///add bettaface verdict
 
 'update_all_rwt_rating'=>60,////update all rating
 'check_tv_series_imdb'=>120, ///add tvseries from list
