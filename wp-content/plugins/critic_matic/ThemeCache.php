@@ -12,7 +12,7 @@ class ThemeCache {
         'def' => array(
             'folder' => 'def',
             'cache' => array(
-                 'scroll-' => 60, // 1 hour
+                'scroll-' => 60, // 1 hour
             )
         ),
         'critics' => array(
@@ -26,7 +26,16 @@ class ThemeCache {
             'cache' => array(
                 'p-' => 129600, // 3 mounth        
             )
-        )
+        ),
+        'user' => array(
+            'folder' => 'user',
+            'cache' => array(
+                'carmaTrend' => 43200,
+                'getCarmaPowerCache' => 1440,
+                'postCacheWidget' => 1440,
+                'activityCache' => 1440,
+            )
+        ),
     );
 
     public static function cache($name = null, $echo = false, $filename = null, $path_tag = null, $class = null, $arg = null) {

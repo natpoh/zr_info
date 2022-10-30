@@ -24,7 +24,7 @@ if (!function_exists('add_action')) {
 define('CRITIC_MATIC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CRITIC_MATIC_PLUGIN_URL', plugin_dir_url(__FILE__));
 
-$version = '1.0.84';
+$version = '1.0.86';
 if (defined('LASTVERSION')) {
     define('CRITIC_MATIC_VERSION', $version . LASTVERSION);
 } else {
@@ -959,7 +959,7 @@ function critic_matic_create_index($names = array(), $table_name = '') {
 
     if ($names && $table_name) {
         foreach ($names as $name) {
-            $index_sql = "SELECT COUNT(*)        
+            $index_sql = "SELECT COUNT(id)        
     FROM `INFORMATION_SCHEMA`.`STATISTICS`
     WHERE `TABLE_SCHEMA` = '" . DB_NAME_WP . "' 
     AND `TABLE_NAME` = '$table_name'
@@ -978,7 +978,7 @@ function critic_matic_create_index_an($names = array(), $table_name = '') {
 
     if ($names && $table_name) {
         foreach ($names as $name) {
-            $index_sql = "SELECT COUNT(*)        
+            $index_sql = "SELECT COUNT(id)        
     FROM `INFORMATION_SCHEMA`.`STATISTICS`
     WHERE `TABLE_SCHEMA` = '" . DB_NAME_AN . "' 
     AND `TABLE_NAME` = '$table_name'

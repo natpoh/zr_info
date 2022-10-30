@@ -1216,7 +1216,7 @@ class CriticParser extends AbstractDBWp {
             $type_query = " AND type = " . (int) $type;
         }
 
-        $query = "SELECT COUNT(*) FROM {$this->db['campaign']} WHERE id>0" . $type_query . $status_query . $parser_query . $aid_and;
+        $query = "SELECT COUNT(id) FROM {$this->db['campaign']} WHERE id>0" . $type_query . $status_query . $parser_query . $aid_and;
         $result = $this->db_get_var($query);
         return $result;
     }
@@ -2141,7 +2141,7 @@ class CriticParser extends AbstractDBWp {
             $linked_and = ' AND p.top_movie>0';
         }
 
-        $query = "SELECT COUNT(*) FROM {$this->db['url']} u" . $linked_inner . $status_query . $meta_type_and . $linked_and . $cid_and;
+        $query = "SELECT COUNT(id) FROM {$this->db['url']} u" . $linked_inner . $status_query . $meta_type_and . $linked_and . $cid_and;
 
         $result = $this->cm->db_get_var($query);
         return $result;
@@ -2993,7 +2993,7 @@ class CriticParser extends AbstractDBWp {
             $and_type = sprintf(" AND type=%d", (int) $type);
         }
 
-        $query = "SELECT COUNT(*) FROM {$this->db['log']} WHERE id>0" . $and_cid . $and_status . $and_type;
+        $query = "SELECT COUNT(id) FROM {$this->db['log']} WHERE id>0" . $and_cid . $and_status . $and_type;
 
         $result = $this->db_get_var($query);
         return $result;
