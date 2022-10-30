@@ -655,7 +655,7 @@ class MoviesParser extends MoviesAbstractDB {
             $link_type_and = sprintf(" AND p.status_links=%d", $link_type);
         }
 
-        $query = "SELECT COUNT(id) FROM {$this->db['url']} u"
+        $query = "SELECT COUNT(u.id) FROM {$this->db['url']} u"
                 . " LEFT JOIN {$this->db['arhive']} a ON u.id = a.uid"
                 . " LEFT JOIN {$this->db['posts']} p ON u.id = p.uid"
                 . " WHERE u.id>0"
