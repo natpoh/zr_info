@@ -97,9 +97,8 @@ function fix_actors_verdict($actor_id='')
 
     if (!$actor_id)
     {
-        $movies_updated = 0;
 
-        $q= "SELECT id, actor_id FROM `data_actors_meta` where id > ".$last_id."  order by id asc limit 100000";
+        $q= "SELECT id, actor_id FROM `data_actors_meta` where id > ".$last_id."  order by id asc limit 10000";
         $r = Pdo_an::db_results_array($q);
         foreach ($r as $row)
         {
@@ -108,9 +107,10 @@ function fix_actors_verdict($actor_id='')
             $actor_id =  $row['actor_id'];
             update_actors_verdict($actor_id,1,0);
 
-            OptionData::set_option('',$id,'actor_verdict_last_id',false);
+            $last_id=$id;
 
         }
+        OptionData::set_option('',$id,'actor_verdict_last_id',false);
     }
     else
     {
@@ -2238,8 +2238,13 @@ function update_all_gender_cache($pid)
     global $table_prefix;
     $data = new RWT_RATING;
 
-    $sql = "SELECT id, movie_id FROM `data_movie_imdb` ".$where."order by id asc";
+    $sql = "SELECT id, movie_id FROM `data_movie_imdb` ".$where." order by id asc";
 
+
+    if ($debug)
+    {
+        echo $sql.'<br>';
+    }
 
     $rows = Pdo_an::db_results_array($sql);
     $count = count($rows);
