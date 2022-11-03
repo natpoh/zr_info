@@ -13,6 +13,7 @@ if (sizeof($authors) > 0) {
             <tr>
                 <th ><?php print __('Img') ?></th> 
                 <?php $this->sorted_head('id', 'id', $orderby, $order, $page_url) ?>                                
+                <?php $this->sorted_head('wp_uid', 'WP Uid', $orderby, $order, $page_url) ?> 
                 <?php $this->sorted_head('name', 'Author', $orderby, $order, $page_url) ?> 
                 <?php $this->sorted_head('type', 'From', $orderby, $order, $page_url) ?>
                 <?php $this->sorted_head('status', 'Status', $orderby, $order, $page_url) ?>
@@ -25,6 +26,8 @@ if (sizeof($authors) > 0) {
         </thead>
         <tbody>
             <?php
+            $cav = $this->cm->get_cav();
+
             foreach ($authors as $author) {
                 $author_name = $author->name;
                 $author_type = $this->cm->get_author_type($author->type);
@@ -54,6 +57,19 @@ if (sizeof($authors) > 0) {
                 if ($options['image']) {
                     $image = '<img src="' . $options['image'] . '" width="50"  height="50">';
                 }
+
+                $wp_uid = $author->wp_uid;
+                
+          
+                if (!$image && $author->type==2) {
+                    if ($wp_uid) {
+                        // User            
+                        $image = $cav->get_or_create_user_avatar($wp_uid, 0, 64);
+                    } else {
+                        $image = $cav->get_or_create_user_avatar(0, $author->id, 64);
+                    }
+                }
+
                 /*
                   //Critic posts (TEST ONLY. UNUSED)
                   global $wpdb;
@@ -76,10 +92,13 @@ if (sizeof($authors) > 0) {
                 <tr>
                     <td ><?php print $image ?></td>  
                     <td><?php print $author->id ?></td>     
+                    <td><?php print $wp_uid ?></td>
                     <td><a href="<?php print $author_url ?>"><?php print $author_name ?></a>
-                    <?php if ($author->type==2&&isset($options['audience'])){
-                        print '<br />Key: '.$options['audience'];
-                    }?>
+                        <?php
+                        if ($author->type == 2 && isset($options['audience'])) {
+                            print '<br />Key: ' . $options['audience'];
+                        }
+                        ?>
                     </td>
                     <td><?php print $author_type ?></td>
                     <td><?php print $author_status ?></td>

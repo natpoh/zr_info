@@ -28,7 +28,7 @@ class CriticEmotions extends AbstractDB {
     public function get_user_reactions($post_id) {
         $user_class = '';
 
-        $disquss_count_array =$this->get_comments_count([$post_id]);
+        $disquss_count_array = $this->get_comments_count([$post_id]);
 
         $disquss_count = $disquss_count_array[$post_id];
         $disquss_title = '';
@@ -59,15 +59,14 @@ class CriticEmotions extends AbstractDB {
             $reaction_count = '';
         }
 
-        $disquss_count_text=' ';
-        $disquss_class='';
-        if ($disquss_count)
-        {
-            $disquss_class  =' comment_count';
-            $disquss_count_text='<span  class="disquss_coment_count">' . $disquss_count . '</span>';
+        $disquss_count_text = ' ';
+        $disquss_class = '';
+        if ($disquss_count) {
+            $disquss_class = ' comment_count';
+            $disquss_count_text = '<span  class="disquss_coment_count">' . $disquss_count . '</span>';
         }
 
-        $reaction_data = '<div class="review_comment_data" id="' . $post_id . '"><a  href="#" data_title="' . $disquss_title . '" class="disquss_coment'.$disquss_class.'">'.$disquss_count_text.'</a>
+        $reaction_data = '<div class="review_comment_data" id="' . $post_id . '"><a  href="#" data_title="' . $disquss_title . '" class="disquss_coment' . $disquss_class . '">' . $disquss_count_text . '</a>
                 <a href="#"   class="emotions  ' . $user_class . '  "><span class="emotions_count">' . $reaction_count . '</span></a></div>';
 
         return $reaction_data;
@@ -90,8 +89,16 @@ class CriticEmotions extends AbstractDB {
     }
 
     public function get_emotions($post_id, $single = '') {
+        // Get wp user
+        $wp_uid = 0;
+        if (function_exists('wp_get_current_user')) {
+            $user = wp_get_current_user();
+            if ($user->exists()) {
+                $wp_uid = $user->ID;
+            }
+        }
 
-        $user_vote = $this->get_current_user_post_reaction($post_id);
+        $user_vote = $this->get_current_user_post_reaction($post_id, $wp_uid);
 
         $type = 'unvote';
         if ($user_vote) {
@@ -120,9 +127,8 @@ class CriticEmotions extends AbstractDB {
         return $content;
     }
 
-    public  function get_comments_count($post_ids)
-    {
-        $result=[];
+    public function get_comments_count($post_ids) {
+        $result = [];
 
         foreach ($post_ids as $post_id) {
             ///get comment count
@@ -131,15 +137,12 @@ class CriticEmotions extends AbstractDB {
             if ($r1) {
                 $count = $r1->count;
 
-                if ($count)
-                {
-                    $result[$post_id]=$count;
+                if ($count) {
+                    $result[$post_id] = $count;
                 }
-
             }
         }
         return $result;
-
     }
 
     public function get_emotions_counts_all($post_ids = array()) {
@@ -178,10 +181,9 @@ class CriticEmotions extends AbstractDB {
             }
         }
 
-        $comments =  $this->get_comments_count($post_ids);
-        if ($comments)
-        {
-            $result['comments']=   $comments;
+        $comments = $this->get_comments_count($post_ids);
+        if ($comments) {
+            $result['comments'] = $comments;
         }
 
 
@@ -222,6 +224,15 @@ class CriticEmotions extends AbstractDB {
 
         $update_vote = true;
 
+        // Get wp user
+        $wp_uid = 0;
+        if (function_exists('wp_get_current_user')) {
+            $user = wp_get_current_user();
+            if ($user->exists()) {
+                $wp_uid = $user->ID;
+            }
+        }
+
         $unic_id = $this->unic_id();
         if ($unic_id != $_POST['nonce']) {
             $update_vote = false;
@@ -238,13 +249,16 @@ class CriticEmotions extends AbstractDB {
 
         if ($update_vote) {
             // Get user id
-            $aid = $this->get_or_create_author_by_name($unic_id);
+            $aid = 0;
+            if (!$wp_uid) {
+                $aid = $this->get_or_create_author_by_name($unic_id);
+            }
             if ('unvote' == $vote_type) {
                 // Remove vote if need
-                $this->remove_vote($post_id, $aid);
+                $this->remove_vote($post_id, $aid, $wp_uid);
             } else {
                 // Add or update vote
-                $this->add_or_update_vote($post_id, $aid, $type);
+                $this->add_or_update_vote($post_id, $aid, $wp_uid, $type);
             }
         }
 
@@ -277,14 +291,18 @@ class CriticEmotions extends AbstractDB {
         return $aid;
     }
 
-    public function get_current_user_post_reaction($post_id) {
+    public function get_current_user_post_reaction($post_id, $wp_uid = 0) {
 
-        $aid = $this->get_current_user();
-        if (!$aid) {
-            return '';
+        if ($wp_uid) {
+            $vote = $this->get_post_vote_by_author_wp($post_id, $wp_uid);
+        } else {
+            $aid = $this->get_current_user();
+            if (!$aid) {
+                return '';
+            }
+            $vote = $this->get_post_vote_by_author($post_id, $aid);
         }
 
-        $vote = $this->get_post_vote_by_author($post_id, $aid);
         $reaction = '';
         if ($vote) {
             $reaction = $this->get_reaction_name($vote);
@@ -313,9 +331,13 @@ class CriticEmotions extends AbstractDB {
         return $id;
     }
 
-    private function add_or_update_vote($post_id = 0, $aid = 0, $type = 0) {
+    private function add_or_update_vote($post_id = 0, $aid = 0, $wp_uid = 0, $type = 0) {
         //Get vote id        
-        $vote = $this->get_post_vote_by_author($post_id, $aid);
+        if ($aid) {
+            $vote = $this->get_post_vote_by_author($post_id, $aid);
+        } else if ($wp_uid) {
+            $vote = $this->get_post_vote_by_author_wp($post_id, $wp_uid);
+        }
         $date = $this->curr_time();
         $update_vote = false;
 
@@ -323,15 +345,28 @@ class CriticEmotions extends AbstractDB {
             // Vote exists
             if ($vote != $type) {
                 // Update vote
-                $sql = sprintf("UPDATE {$this->db['emotions']} SET date=%d, vote=%d WHERE pid=%d AND aid=%d", $date, $type, $post_id, $aid);
+                $and = sprintf(" AND aid=%d", $aid);
+                if ($wp_uid) {
+                    $and = sprintf(" AND wp_uid=%d", $wp_uid);
+                }
+                $sql = sprintf("UPDATE {$this->db['emotions']} SET date=%d, vote=%d WHERE pid=%d" . $and, $date, $type, $post_id);
                 $this->db_query($sql);
                 $update_vote = true;
             }
         } else {
             // Add vote            
-            $sql = sprintf("INSERT INTO {$this->db['emotions']} (date,pid,aid,vote) VALUES (%d,%d,%d,%d)", $date, $post_id, $aid, $type);
+            $sql = sprintf("INSERT INTO {$this->db['emotions']} (date,pid,aid,vote,wp_uid) VALUES (%d,%d,%d,%d,%d)", $date, $post_id, $aid, $type, $wp_uid);
             $this->db_query($sql);
             $update_vote = true;
+
+            // Add rating
+            $post_wp_author = $this->cm->get_post_wp_author($post_id);
+            if ($post_wp_author) {
+                if ($wp_uid != $post_wp_author) {
+                    $uc = $this->cm->get_uc();
+                    $uc->emotions_rating($post_wp_author, 1);
+                }
+            }
         }
 
         if ($update_vote) {
@@ -340,13 +375,29 @@ class CriticEmotions extends AbstractDB {
         }
     }
 
-    private function remove_vote($post_id = 0, $aid = 0) {
-        $sql = sprintf("DELETE FROM {$this->db['emotions']} WHERE pid=%d AND aid=%d", (int) $post_id, (int) $aid);
-        $this->db_query($sql);
-
+    private function remove_vote($post_id = 0, $aid = 0, $wp_uid = 0) {
+        $sql = '';
+        if ($aid > 0) {
+            $sql = sprintf("DELETE FROM {$this->db['emotions']} WHERE pid=%d AND aid=%d", (int) $post_id, (int) $aid);
+        } else if ($wp_uid > 0) {
+            $sql = sprintf("DELETE FROM {$this->db['emotions']} WHERE pid=%d AND wp_uid=%d", (int) $post_id, (int) $wp_uid);
+        }
+        if ($sql) {
+            $this->db_query($sql);
+        }
         //Remove author if he not posts
-        if (!$this->get_author_posts_count($aid)) {
-            $this->remove_author($aid);
+        if ($aid) {
+            if (!$this->get_author_posts_count($aid)) {
+                $this->remove_author($aid);
+            }
+        }
+        // Remove author rating
+        $post_wp_author = $this->cm->get_post_wp_author($post_id);
+        if ($post_wp_author) {
+            if ($wp_uid != $post_wp_author) {
+                $uc = $this->cm->get_uc();
+                $uc->emotions_rating($post_wp_author, 1, true);
+            }
         }
 
         // Update critic post
@@ -386,6 +437,11 @@ class CriticEmotions extends AbstractDB {
 
     private function get_post_vote_by_author($post_id, $aid) {
         $sql = sprintf("SELECT vote FROM {$this->db['emotions']} WHERE pid=%d AND aid=%d", (int) $post_id, (int) $aid);
+        return $this->db_get_var($sql);
+    }
+
+    private function get_post_vote_by_author_wp($post_id, $wp_uid) {
+        $sql = sprintf("SELECT vote FROM {$this->db['emotions']} WHERE pid=%d AND wp_uid=%d", (int) $post_id, (int) $wp_uid);
         return $this->db_get_var($sql);
     }
 

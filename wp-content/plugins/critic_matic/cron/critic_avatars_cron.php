@@ -29,7 +29,7 @@ if ($_GET['force']) {
 }
 
 $cm = new CriticMatic();
-$ca = $cm->get_ca();
+$cav = $cm->get_cav();
 
 
-$ca->run_cron($cron_type, $force, $debug);
+$cav->run_cron($cron_type, $force, $debug);

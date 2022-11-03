@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Critic matic front class
  */
@@ -166,7 +165,7 @@ class CriticFront extends SearchFacets {
         if ($tags) {
             $tag_inner = " INNER JOIN {$this->db['tag_meta']} t ON t.cid = a.id";
             if (is_array($tags)) {
-               $tag_and = " AND t.tid IN (". implode(',', $tags).")";                
+                $tag_and = " AND t.tid IN (" . implode(',', $tags) . ")";
             } else {
                 $tag_and = sprintf(" AND t.tid=%d", (int) $tags);
             }
@@ -868,9 +867,7 @@ class CriticFront extends SearchFacets {
     }
 
     public function get_audience_templ($critic = array(), $avatars = '', $fullsize = false) {
-        if (!$avatars) {
-            $avatars = $this->get_avatars();
-        }
+
 
         $title = $critic->title;
 
@@ -882,12 +879,44 @@ class CriticFront extends SearchFacets {
             $content = $title;
         }
 
-        $author = $this->cm->get_author($critic->aid);
+        $aid = $critic->aid;
+        $author = $this->cm->get_author($aid);
 
         // Author name
         $author_title = $author->name;
         $author_title = $this->pccf_filter($author_title);
-        $author_link = '/search/tab_critics/from_' . $author->id;
+
+        // WP avatar
+        $wp_avatar = '';
+        $wp_uid = $author->wp_uid;
+        $cav = $this->cm->get_cav();
+        if ($wp_uid) {
+            // User            
+            $wp_avatar = $cav->get_or_create_user_avatar($wp_uid, 0, 64);
+        } else {
+            $wp_avatar = $cav->get_or_create_user_avatar(0, $aid, 64);
+        }
+
+        if (!$avatars && !$wp_avatar) {
+            $avatars = $this->get_avatars();
+        }
+
+        $umeta = '';
+        if ($wp_uid) {
+            // User profile link
+            $uc = $this->cm->get_uc();
+            $wp_user = $uc->getUserById($wp_uid);
+
+            $author_link = $uc->get_user_profile_link($wp_user->url);
+            $ucarma_class = ($wp_user->carma < 0) ? " minus" : " plus";
+            $umeta = '<div class="umeta' . $ucarma_class . '">
+                    <span class="urating" ><i class="icon-star"></i>' . (int) $wp_user->rating . '</span>
+                    <span class="ucarma" ><i class="icon-emo-squint"></i>' . (int) $wp_user->carma . '</span>
+                </div>';
+        } else {
+            // Search 
+            $author_link = '/search/tab_critics/from_' . $author->id;
+        }
         $author_title_link = '<a href="' . $author_link . '">' . $author_title . '</a>';
 
         // Tags
@@ -897,6 +926,10 @@ class CriticFront extends SearchFacets {
             foreach ($tags as $tag) {
                 $catdata .= $this->get_tag_link($tag->slug, $tag->name);
             }
+        }
+
+        if ($catdata) {
+            $catdata = '<div class="a_cat">' . $catdata . '</div>';
         }
 
         // Time
@@ -974,16 +1007,25 @@ class CriticFront extends SearchFacets {
         if ($rating) {
             $stars_data = $rating['r'];
         }
-        $array_avatars = $avatars[$stars_data];
 
-        if (is_array($array_avatars)) {
-            $rand_keys = array_rand($array_avatars, 1);
-            $avatar_user = $array_avatars[$rand_keys];
+        $actorsdata = '';
+
+        if ($wp_avatar) {
+            $actorsdata = $wp_avatar;
+        } else if ($avatars) {
+
+            $array_avatars = $avatars[$stars_data];
+
+            if (is_array($array_avatars)) {
+                $rand_keys = array_rand($array_avatars, 1);
+                $avatar_user = $array_avatars[$rand_keys];
+            }
+            if ($avatar_user) {
+                $actorsdata = '<div class="a_img_container_audience" style="background: url(' . WP_SITEURL . '/wp-content/uploads/avatars/custom/' . $avatar_user . '); background-size: cover;"></div>';
+            }
         }
 
-        if ($avatar_user) {
-            $actorsdata = '<div class="a_img_container_audience" style="background: url(' . WP_SITEURL . '/wp-content/uploads/avatars/custom/' . $avatar_user . '); background-size: cover;"></div>';
-        } else {
+        if (!$actorsdata) {
             $actorsdata = '<span></span>';
         }
 
@@ -998,7 +1040,7 @@ class CriticFront extends SearchFacets {
 
             $actorsresult = '
 ' . $content . $review_bottom . '<div class="amsg_aut">' . $actorsdata_link . '
-        <div class="review_autor_name">' . $author_title_link . '<div class="a_cat">' . $catdata . '</div></div>
+        <div class="review_autor_name">' . $author_title_link . $umeta . $catdata . '</div>
        
     </div>';
         } else {
@@ -1011,9 +1053,7 @@ class CriticFront extends SearchFacets {
         
         <div class="amsg_aut">
             ' . $actorsdata_link . '
-            <div class="review_autor_name">' . $author_title_link . '
-                <div class="a_cat">' . $catdata . '</div>
-            </div>
+            <div class="review_autor_name">' . $author_title_link . $umeta . $catdata . '</div>
             ' . $reaction_data . '
         </div>
 </div>';
@@ -2102,6 +2142,128 @@ class CriticFront extends SearchFacets {
             }
         }
         return $results;
+    }
+
+    /*
+     * User widgets
+     */
+
+    public function get_posts_widget_by_wpuid($wp_uid = 0, $perpage = 10) {
+        $posts = $this->get_last_posts_by_wpuid($wp_uid);
+        $content = '';
+        if ($posts) {
+            /*
+             * Array ( [0] => stdClass Object ( [id] => 144712 [date] => 1667222826 [date_add] => 1667238777 [status] => 1 [type] => 2 [link_hash] => [link] => [title] => 11223dsdd 3333 [content] => ddfdf 3333 [top_movie] => 69796 [blur] => 0 [view_type] => 0 [aid] => 1023 ) )
+             */
+            ob_start();
+            ?>
+            <div class="simple">
+                <div class="items">
+                    <?php
+                    foreach ($posts as $post) {
+
+                        $critic = $this->cm->get_post_and_author($post->id);
+
+                        $permalink = $critic->link;
+                        if (!$permalink) {
+                            // Create local permalink
+                            $permalink = $this->get_critic_url($critic);
+                        }
+                        $title = $critic->title;
+                        $top_movie = $critic->top_movie;
+
+                        if ($top_movie) {
+                            $meta_state = $this->cm->get_critic_meta_state($critic->id, $top_movie);
+                            $info_link = $this->get_info_link($critic->id, $top_movie, $meta_state->state);
+                            $meta_type = $this->cm->get_post_category_name($meta_state->type);
+                        }
+
+
+                        // Link to full post
+                        $link = $this->get_critic_url($critic);
+
+                        // Time
+                        $ptime = $critic->date;
+                        $critic_addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+
+                        // Title
+                        $title_str = '';
+                        $title = strip_tags($title);
+                        $title = $this->pccf_filter($title);
+
+
+                        // Movie
+                        $ma = $this->get_ma();
+                        if ($top_movie) {
+                            $movie = $ma->get_post($top_movie);
+
+                            // Title
+                            $mtitle = $movie->title;
+
+                            $slug = $ma->get_post_slug($movie->type);
+
+                            // release
+                            $release = $movie->release;
+                            if ($release) {
+                                $release = strtotime($release);
+                                $release = date('Y', $release);
+                                if (strstr($mtitle, $release)) {
+                                    $release = '';
+                                } else {
+                                    $release = ' (' . $release . ')';
+                                }
+                            }
+
+                            $poster_link_90 = $this->get_thumb_path_full(90, 120, $top_movie);
+                        }
+                        ?>
+                        <div class="item">
+                            <a href="<?php print $link ?>" title="<?php print $title ?>" >
+                                <img srcset="<?php print $poster_link_90 ?>" alt="<?php print $mtitle ?>">
+                                <div class="desc">
+                                    <h5><?php print $title ?></h5>                         
+                                    <p>For: <?php print $mtitle . $release ?></p>
+                                </div>
+                            </a>
+                        </div>
+                    <?php } ?>
+                </div>
+            </div>
+            <?php
+            $content = ob_get_contents();
+            ob_end_clean();
+        }
+        return $content;
+    }
+
+    public function get_last_posts_by_wpuid($wp_uid = 0, $perpage = 10) {
+        $author = $this->cm->get_author_by_wp_uid($wp_uid, true);
+        $posts = array();
+        if ($author) {
+            $order = 'DESC';
+            $orderby = '';
+            $page = 1;
+            $q_req = array(
+                'status' => 1,
+                'aid' => $author->id,
+            );
+            $posts = $this->cm->get_posts($q_req, $page, $perpage, $orderby, $order);
+        }
+        return $posts;
+    }
+
+    public function get_reviews_count_by_wpuser($wp_uid = 0) {
+        $author = $this->cm->get_author_by_wp_uid($wp_uid, true);
+        $count = 0;
+        if ($author) {
+            $q_req = array(
+                'status' => 1,
+                'aid' => $author->id,
+            );
+            $count = $this->cm->get_posts($q_req, 1, 0, '', 'ASC', true);
+        }
+
+        return $count;
     }
 
     /*

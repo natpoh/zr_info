@@ -23,8 +23,6 @@ class CriticAudience extends AbstractDb {
     public $prefix = 'wpcr3';
     private $cm = '';
     private $p = '';
-    //Audience
-
     public $vote_data = array(
         'vote' => array(
             'title' => 'Boycott Suggestion',
@@ -162,6 +160,7 @@ class CriticAudience extends AbstractDb {
         $rtn = new stdClass();
         $rtn->err = array();
         $rtn->success = false;
+        $rtn->needlogin = false;
 
         $posted = new stdClass();
         foreach ($this->p as $k => $v) {
@@ -173,11 +172,24 @@ class CriticAudience extends AbstractDb {
             }
         }
 
+
         if ($posted->ajaxAct === 'form') {
             if ($posted->checkid != $posted->postid) {
                 $rtn->err[] = 'You have failed the spambot check. Code 1';
             }
+            
+   
+            // Anon review
+            $anon_review = $posted->fanon_review ? true : false;
 
+            $uid = 0;
+            if (!$anon_review) {
+                // Check login
+                $user = wp_get_current_user();
+                $uid = $user->exists() ? $user->ID : 0;
+            }
+
+            // Unique id post ip and user agent hash
             $unic_id = $this->unic_id();
 
             $is_edit = false;
@@ -190,13 +202,91 @@ class CriticAudience extends AbstractDb {
             }
 
 
-            if (!$posted->fname && !$is_edit) {
-                $rtn->err[] = 'Critic Name is required.';
+            //print_r($user);
+            /*
+             * [data] => stdClass Object
+              (
+              [ID] => 42
+              [user_login] => sergemel
+              [user_pass] => $P$BUHDkAfHMZqfRP5Qg.UPjEfvC8G7eS1
+              [user_nicename] => sergemel
+              [user_email] => stfuhollywood.com@gmail.com
+              [user_url] =>
+              [user_registered] => 2018-12-13 20:10:05
+              [user_activation_key] =>
+              [user_status] => 0
+              [display_name] => sergemel sergemel
+              )
+
+             */
+
+
+            if ($uid) {
+                $posted->fname = $user->data->display_name;
+                $posted->femail = $user->data->user_email;
             }
 
             if (!$posted->ftext) {
                 $rtn->err[] = 'Review Text is required.';
             }
+
+            $author_name = 'Anon';
+            $email = '';
+            if (!$anon_review) {
+                if (!$posted->fname && !$is_edit) {
+                    $rtn->err[] = 'Critic Name is required.';
+                }
+
+                if (!$posted->femail && !$is_edit) {
+                    $rtn->err[] = 'Email is required.';
+                }
+
+                if ($posted->fname) {
+                    $author_name = trim($posted->fname);
+                    if (strlen($author_name) > 250) {
+                        $author_name = substr($author_name, 0, 250);
+                    }
+                }
+
+
+                if ($posted->femail) {
+                    $email = trim($posted->femail);
+                }
+                // Allow login user
+                if (!$uid && $author_name && $email) {
+
+                    if (class_exists('GuestLogin')) {
+                        $gl = new GuestLogin();
+                        $protected_data = $gl->protected_user_email($email);
+                        if ($protected_data['protected']) {
+                            $rtn->err[] = 'Mailing address ' . $email . ' is password protected. Log in to post a review.';
+                        } else {
+
+                            // Set user data to comment cookeis
+                            $comment = new stdClass();
+                            $comment->comment_author = $author_name;
+                            $comment->comment_author_email = $email;
+                            $comment->comment_author_url = '';
+                            wp_set_comment_cookies($comment, $user);
+
+                            if (!$protected_data['user']) {
+                                // New user
+                                $uid = $gl->create_new_user($email, $author_name);
+                            } else {
+                                // Exist user
+                                $uid = $protected_data['user']->ID;
+                            }
+
+                            if ($uid) {
+                                // Login
+                                $gl->wp_login_user($uid);
+                                $rtn->needlogin = true;
+                            }
+                        }
+                    }
+                }
+            }
+
 
             //Comment to disable spambot check
             if (count($rtn->err)) {
@@ -206,10 +296,7 @@ class CriticAudience extends AbstractDb {
 
             // insert a new staff post
             $date = $this->cm->curr_time();
-            $author_name = trim($posted->fname);
-            if (strlen($author_name) > 250) {
-                $author_name = substr($author_name, 0, 250);
-            }
+
             $content = html_entity_decode($posted->ftext);
             $title = $posted->ftitle;
             $top_movie = $posted->postid;
@@ -252,17 +339,18 @@ class CriticAudience extends AbstractDb {
             $add_arr = array(
                 'date' => $date,
                 'status' => 0,
-                'top_movie' => $top_movie,
-                'rating' => $posted->frating_rating,
-                'hollywood' => $posted->frating_hollywood,
-                'patriotism' => $posted->frating_patriotism,
-                'misandry' => $posted->frating_misandry,
-                'affirmative' => $posted->frating_affirmative,
-                'lgbtq' => $posted->frating_lgbtq,
-                'god' => $posted->frating_god,
-                'vote' => $posted->review_form_rating_field_vote,
+                'top_movie' => (int) $top_movie,
+                'rating' => (int) $posted->frating_rating,
+                'hollywood' => (int) $posted->frating_hollywood,
+                'patriotism' => (int) $posted->frating_patriotism,
+                'misandry' => (int) $posted->frating_misandry,
+                'affirmative' => (int) $posted->frating_affirmative,
+                'lgbtq' => (int) $posted->frating_lgbtq,
+                'god' => (int) $posted->frating_god,
+                'vote' => (int) $posted->review_form_rating_field_vote,
                 'ip' => $ip,
                 'critic_name' => $author_name,
+                'wp_uid' => (int) $uid,
                 'unic_id' => $unic_id,
                 'title' => $title,
                 'content' => $content,
@@ -290,17 +378,16 @@ class CriticAudience extends AbstractDb {
 
     public function add_audience($arr = array()) {
 
-        $sql = sprintf("INSERT INTO {$this->db['audience']} "
-                . "(date,status,top_movie,rating,hollywood,patriotism,misandry,affirmative,lgbtq,god,vote,ip,critic_name,unic_id,title,content) "
-                . "VALUES ('%d','%d','%d','%d','%d','%d','%d','%d','%d','%d','%d','%s','%s','%s','%s','%s')", $arr['date'], $arr['status'], $arr['top_movie'], $arr['rating'], $arr['hollywood'], $arr['patriotism'], $arr['misandry'], $arr['affirmative'], $arr['lgbtq'], $arr['god'], $arr['vote'], $this->escape($arr['ip']), $this->escape($arr['critic_name']), $this->escape($arr['unic_id']), $this->escape($arr['title']), $this->escape($arr['content'])
-        );
+        $fields = array('date', 'status', 'top_movie', 'rating', 'hollywood', 'patriotism', 'misandry', 'affirmative', 'lgbtq', 'god', 'vote', 'ip', 'critic_name', 'unic_id', 'title', 'content', 'wp_uid');
 
-        // print_r($sql);
-        //print $sql;
-        $this->db_query($sql);
+        $data = array();
+        foreach ($fields as $key) {
+            if (isset($arr[$key])) {
+                $data[$key] = $arr[$key];
+            }
+        }
 
-        //Return id
-        $id = $this->getInsertId('id', $this->db['audience']);
+        $id = $this->db_insert($data, $this->db['audience']);
         return $id;
     }
 
@@ -457,6 +544,8 @@ class CriticAudience extends AbstractDb {
         $title = $item->title;
         $top_movie = $item->top_movie;
 
+        $wp_uid = $item->wp_uid;
+
         // Default status publish
         $ss = $this->cm->get_settings();
         $status = $ss['audience_post_status'];
@@ -484,23 +573,23 @@ class CriticAudience extends AbstractDb {
         $new_author = false;
         if ($author_name) {
             // Staff content
-            $aid = $this->cm->get_author_id_by_secret_key($author_name, $author_type);
-            if ($aid) {
-                $status = 1;
-                $is_staff = true;
-            } else {
-                // Audience
-                $aid = $this->get_author_audience($author_name, $unic_id);
+            /* $aid = $this->cm->get_author_id_by_secret_key($author_name, $author_type);
+              if ($aid) {
+              $status = 1;
+              $is_staff = true;
+              } else { */
+            // Audience
+            $aid = $this->get_author_audience($author_name, $unic_id, $wp_uid);
 
-                if (!$aid) {
-                    // Get remote aid for a new author
-                    $new_author = true;
-                    $author_status = 1;
-                    $author_type = 2;
-                    $options = array('audience' => $unic_id);
-                    $aid = $this->cm->create_author_by_name($author_name, $author_type, $author_status, $options);
-                }
+            if (!$aid) {
+                // Get remote aid for a new author
+                $new_author = true;
+                $author_status = 1;
+                $author_type = 2;
+                $options = array('audience' => $unic_id);
+                $aid = $this->cm->create_author_by_name($author_name, $author_type, $author_status, $options, $wp_uid);
             }
+            /* } */
         }
 
         if ($aid) {
@@ -628,8 +717,17 @@ class CriticAudience extends AbstractDb {
         $queue_id = 0;
         $cid = 0;
 
+        // Queue user
+        $user = wp_get_current_user();
+        $wp_uid = $user->exists() ? $user->ID : 0;
+
         // Queue vote
-        $queue_id = $this->get_author_post_queue($unic_id, $post_id);
+        if ($wp_uid) {
+            $queue_id = $this->get_author_post_queue_by_wpuid($wp_uid, $post_id);
+        } else {
+            $queue_id = $this->get_author_post_queue($unic_id, $post_id);
+        }
+
         if ($queue_id) {
             $voted = true;
             $post_queue = $this->get_post_queue($queue_id);
@@ -641,7 +739,6 @@ class CriticAudience extends AbstractDb {
                 $cid = $this->get_author_post_id_movie($author_name, $post_id);
             }
         }
-
 
         $ret = 0;
         $au_data = new stdClass();
@@ -804,6 +901,12 @@ class CriticAudience extends AbstractDb {
         return $result;
     }
 
+    public function get_author_post_queue_by_wpuid($wp_uid, $fid) {
+        $query = sprintf("SELECT id FROM {$this->db['audience']} WHERE top_movie=%d AND wp_uid = '%d'", (int) $fid, $wp_uid);
+        $result = $this->db_get_var($query);
+        return $result;
+    }
+
     public function add_author_key($aid) {
         $unic_id = $this->unic_id();
         $aid_db = $this->get_author_by_key($unic_id);
@@ -837,7 +940,13 @@ class CriticAudience extends AbstractDb {
     }
 
     public function audience_form($post_id, $au_data = array()) {
-        header('Access-Control-Allow-Origin: *');
+
+        if ($post_id)
+        {
+            header('Access-Control-Allow-Origin: *');
+        }
+
+
         $submit_text = "Submit your review:";
         if ($au_data) {
             $submit_text = "Edit your review:";
@@ -845,7 +954,7 @@ class CriticAudience extends AbstractDb {
         ?>
         <div class="wpcr3_respond_2">
             <div class="wpcr3_div_2">
-                <table class="wpcr3_table_2">
+                <table class="wpcr3_table_2" id="audience_respond">
                     <tbody>
                         <tr>
                             <td colspan="2">
@@ -861,37 +970,62 @@ class CriticAudience extends AbstractDb {
                         <input id="unic_id" type="hidden" name="unic_id" value="<?php print $au_data->unic_id ?>" />
                     <?php } ?>
                     <?php
+                    $ma = $this->cm->get_ma();
+                    $movie = $ma->get_post($post_id);
+                    $post_link = $ma->get_post_link($movie);
+
+
+                    $user_identity = '';
+                    $commenter = array();
                     // Check user login
-                    $user = wp_get_current_user();
-                    $user_identity = $user->exists() ? $user->display_name : '';
-                    // print_r($user_identity);
-                    $commenter = wp_get_current_commenter();
+                    if (function_exists('wp_get_current_user')) {
+                        $user = wp_get_current_user();
+
+                        $user_identity = $user->exists() ? $user->display_name : '';
+                        // print_r($user_identity);
+                        $commenter = wp_get_current_commenter();
+                    }
                     /*
                      * Array ( [comment_author] => [comment_author_email] => [comment_author_url] => )
                      * print_r($commenter);
                      */
 
-                    $post_link = '';
-
                     if ($user_identity) {
                         ?><tr><td colspan="2"><?php
                                 $logged_in_as = '<p class="logged-in-as">' .
-                                        sprintf(__('Вы вошли как <a href="%1$s">%2$s</a>. <a href="%3$s" title="Выйти из данного аккаунта">Выйти?</a>'), admin_url('profile.php'), $user_identity, wp_logout_url($post_link)) . '</p>';
+                                        sprintf(__('You are logged in as <a href="%1$s">%2$s</a>. <a href="%3$s" title="Sign out of this account">Sign out?</a>'), admin_url('profile.php'), $user_identity, wp_logout_url($post_link)) . '</p>';
                                 print apply_filters('comment_form_logged_in', $logged_in_as, $commenter, $user_identity);
                                 do_action('comment_form_logged_in_after', $commenter, $user_identity);
                                 ?></td></tr><?php
+                    } else {
+                        if (!$au_data) {
+                            ?>
+                            <tr><td colspan="2">
+                                    <div class="big_checkbox">
+                                        <input type="checkbox" name="wpcr3_fanon_review" value="on" class="review_type" id="anon_review">
+                                        <label for="anon_review">Send review anonymously</label>
+                                    </div>
+                                </td></tr>
+                            <?php
+                        }
                     }
                     //do_action('comment_form', $post_id); 
-                    
+
                     $vote_fields = array(
-                        'name' => array('title' => 'Critic Name', 'required' => 1),
-                        'email' => array('title' => 'Critic Email', 'required' => 1),
-                        'title' => array('title' => 'Review Title', 'required' => 0),
+                        'name' => array('title' => 'Critic Name', 'required' => 1, 'class' => ' noanon'),
+                        'email' => array('title' => 'Critic Email', 'required' => 1, 'class' => ' noanon'),
+                        'title' => array('title' => 'Review Title', 'required' => 0, 'class' => ''),
                     );
 
                     foreach ($vote_fields as $key => $value):
                         if ($au_data) {
-                            if ($key == 'name') {
+                            if ($key == 'name' || $key == 'email') {
+                                continue;
+                            }
+                        }
+                        if ($user_identity) {
+                            // No name data for users
+                            if ($key == 'name' || $key == 'email') {
                                 continue;
                             }
                         }
@@ -901,7 +1035,7 @@ class CriticAudience extends AbstractDb {
                             $required = ' wpcr3_required';
                         }
                         ?>
-                        <tr class="wpcr3_review_form_text_field">
+                        <tr class="wpcr3_review_form_text_field<?php print $value['class'] ?>">
                             <td>
                                 <label for="wpcr3_f<?php print $key ?>" class="comment-field"><?php print $title ?>: </label>
                             </td>
@@ -911,6 +1045,11 @@ class CriticAudience extends AbstractDb {
                                     if ($key == 'title') {
                                         print htmlspecialchars($au_data->title);
                                     }
+                                }
+                                if ($key == 'name' && isset($commenter['comment_author'])) {
+                                    print htmlspecialchars($commenter['comment_author']);
+                                } else if ($key == 'email' && isset($commenter['comment_author_email'])) {
+                                    print htmlspecialchars($commenter['comment_author_email']);
                                 }
                                 ?>" />
                             </td>
@@ -1096,20 +1235,42 @@ class CriticAudience extends AbstractDb {
         <?php
     }
 
-    public function get_author_audience($author_name, $unic_id) {
+    public function get_author_audience($author_name, $unic_id, $wp_uid = 0) {
         $author_type = 2;
-        $authors = $this->cm->get_author_by_name($author_name, true, $author_type, true);
-        $aid = 0;
-        if (sizeof($authors)) {
-            foreach ($authors as $author) {
-                $options = unserialize($author->options);
-                if (isset($options['audience']) && $options['audience'] == $unic_id) {
-                    $aid = $author->id;
-                    break;
+
+        if ($wp_uid) {
+
+            $author = $this->cm->get_author_by_wp_uid($wp_uid, true);
+            if ($author) {
+                $aid = $author->id;
+            } else {
+                // Check old authors
+                $authors = $this->cm->get_author_by_name($author_name, true, $author_type, true, 0);
+                if (sizeof($authors)) {
+                    foreach ($authors as $author) {
+                        $options = unserialize($author->options);
+                        if (isset($options['audience']) && $options['audience'] == $unic_id) {
+                            $this->cm->update_author_wp_uid($author->id, $wp_uid);
+                            $aid = $author->id;
+                            break;
+                        }
+                    }
+                }
+            }
+        } else {
+
+            $authors = $this->cm->get_author_by_name($author_name, true, $author_type, true);
+            $aid = 0;
+            if (sizeof($authors)) {
+                foreach ($authors as $author) {
+                    $options = unserialize($author->options);
+                    if (isset($options['audience']) && $options['audience'] == $unic_id) {
+                        $aid = $author->id;
+                        break;
+                    }
                 }
             }
         }
-
         return $aid;
     }
 

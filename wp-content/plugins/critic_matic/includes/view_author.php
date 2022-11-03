@@ -42,7 +42,22 @@ if ($aid) {
     if ($options['image']) {
         $image = '<img src="' . $options['image'] . '" width="150"  height="150">';
     }
+
+    $wp_uid = $author->wp_uid;
+
+
+    if (!$image && $author->type == 2) {
+        $cav = $this->cm->get_cav();
+        if ($wp_uid) {
+            // User            
+            $image = $cav->get_or_create_user_avatar($wp_uid, 0, 150);
+        } else {
+            $image = $cav->get_or_create_user_avatar(0, $author->id, 150);
+        }
+    }
+
     print $image;
+    
     ?>
     <br />
     <table class="wp-list-table widefat striped table-view-list">
@@ -77,6 +92,10 @@ if ($aid) {
             <tr>
                 <td><?php print __('Status') ?></td>
                 <td><?php print $author_status[$author->status] ?></td>
+            </tr>
+            <tr>
+                <td><?php print __('WP Account') ?></td>
+                <td><?php print $author->wp_uid ?></td>
             </tr>
             <tr>
                 <td><?php print __('Autoblur') ?></td>

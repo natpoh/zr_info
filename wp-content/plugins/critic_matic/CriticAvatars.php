@@ -11,14 +11,176 @@ class CriticAvatars extends AbstractDB {
     private $cm;
     public $source_dir = "ca/source";
     public $cketch_dir = "ca/sketch";
+    public $img_service = 'https://info.antiwoketomatoes.com/';
+    public $thumb_service = 'https://img.zeitgeistreviews.com/';
 
     public function __construct($cm = '') {
         $this->cm = $cm ? $cm : new CriticMatic();
-        $table_prefix = DB_PREFIX_WP;
+        // $table_prefix = DB_PREFIX_WP;
         $this->db = array(
             'user_avatars' => 'data_user_avatars',
         );
     }
+
+    function add_actions() {
+        if (function_exists('add_filter')) {
+            add_filter('get_avatar', array($this, 'get_avatar'), 9, 4);
+        }
+    }
+
+    function add_default_avatar_option($avatars) {
+        $avatars['neuro'] = __('Neuro');
+        return $avatars;
+    }
+
+    function get_avatar($avatar, $user, $size, $default) {
+
+        $email = '';
+        $user_id = 0;
+        if ($default == "neuro") {
+            if (is_int($user)) {
+                // User id
+                $user_id = $user;
+            } else if (is_string($user)) {
+                // User email
+                $email = $user;
+            } else if (is_object($user)) {
+                // Comment object
+                if (isset($user->comment_author_email)) {
+                    $email = $user->comment_author_email;
+                }
+            }
+            if (!$user_id && $email) {
+                // Get user
+                if (function_exists('getUserByEmail')) {
+                    $user_obj = getUserByEmail($email);
+                    $user_id = $user_obj->id ? $user_obj->id : 0;
+                }
+            }
+            // Get avatar by code     
+            $avatar = $this->get_or_create_user_avatar($user_id, 0, $size);
+        }
+        return $avatar;
+    }
+
+    public function get_or_create_user_avatar($user_id = 0, $aid = 0, $size = 64) {
+        $img_path = '/wp-content/themes/custom_twentysixteen/images/antomface-150.jpg';
+
+        if ($user_id) {
+            $avatar_data = $this->get_avatar_by_uid($user_id);
+        } else {
+            $avatar_data = $this->get_avatar_by_aid($aid);
+        }
+
+        if (!$avatar_data) {
+            // Create avatar link
+            $avatar_data = $this->set_avatar_by_uid($user_id, $aid);
+        }
+
+        if ($avatar_data) {
+            $img = $avatar_data->date . '.png';
+            $img_path = $this->img_service . 'wp-content/uploads/' . $this->cketch_dir . '/' . $img;
+
+            $img_path = $this->get_avatar_thumb($img_path, $size);
+        }
+
+
+        $avatar = '<img class="neuro avatar" srcset="' . $img_path . '" width="' . $size . '" height="' . $size . '" />';
+        return $avatar;
+    }
+
+    public function get_avatar_thumb($img_path = '', $w = 150) {
+        $result = $this->thumb_service . 'webp/' . $w . '/' . $img_path . '.webp';
+        return $result;
+    }
+
+    function md5_hex_to_dec($hex_str) {
+        $arr = str_split($hex_str, 4);
+        foreach ($arr as $grp) {
+            $dec[] = str_pad(hexdec($grp), 5, '0', STR_PAD_LEFT);
+        }
+        return implode('', $dec);
+    }
+
+    function smallHashCode($s) {
+        $md = md5($s);
+
+        $dec = $this->md5_hex_to_dec($md);
+        $str = "" . $dec;
+        $dec_arr = array();
+
+        while ($str) {
+            $first = substr($str . "", 0, 12);
+            $dec_arr[] = $first;
+            $str = str_replace($first, '', $str);
+        }
+        $ret = 0;
+        if (count($dec_arr)) {
+            foreach ($dec_arr as $value) {
+                $ret += $value;
+            }
+        }
+
+        if (strlen("" . $ret) > 12) {
+            $ret = (int) substr("" . $ret . "", 0, 12);
+        }
+
+        return $ret;
+    }
+
+    public function ajax_random_avatar() {
+        header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+        header("Cache-Control: post-check=0, pre-check=0", false);
+        header("Pragma: no-cache");
+        header('Content-type: application/json');
+        header('Access-Control-Allow-Origin: *');
+
+        $rtn = new stdClass();
+        $rtn->success = false;
+
+        $user = wp_get_current_user();
+        $user_id = $user->exists() ? $user->ID : 0;
+        $avatar = '';
+        if ($user_id) {
+            $size = 150;
+            $img_path = '/wp-content/themes/custom_twentysixteen/images/antomface-150.jpg';
+
+            // Get last data
+            $last_avatar_data = $this->get_avatar_by_uid($user_id);
+
+            // Get random avatar
+            $sql = "SELECT id, date FROM {$this->db['user_avatars']} WHERE uid=0 AND aid=0 AND sketch = 1 ORDER BY id ASC limit 1000";
+            $results = $this->db_results($sql);
+            if ($results) {
+                shuffle($results);
+                $avatar_data = array_pop($results);
+                if ($avatar_data) {
+                    // Create avatar link
+                    $data = array('uid' => $user_id);
+                    $this->sync_update_data($data, $avatar_data->id, $this->db['user_avatars'], true);
+                }
+
+                // Clear last data
+                $this->clear_avatar_uid($last_avatar_data->id);
+            }
+
+            if ($avatar_data) {
+                $img = $avatar_data->date . '.png';
+                $img_path = $this->img_service . 'wp-content/uploads/' . $this->cketch_dir . '/' . $img;
+                $img_path = $this->get_avatar_thumb($img_path, $size);
+            }
+
+            $avatar = $img_path;
+            $rtn->success = true;
+        }
+
+        $rtn->avatar = $avatar;
+        die(json_encode($rtn));
+    }
+
+    /*
+     * Cron 
+     */
 
     public function run_cron($cron_type = 1, $force = false, $debug = false) {
 
@@ -145,7 +307,7 @@ class CriticAvatars extends AbstractDB {
 
             // Check sketch content
             foreach ($lasts_sk as $item) {
-                $filename = $item->date.'.png';
+                $filename = $item->date . '.png';
                 $img_path = $sketch_dir . "/" . $filename;
                 if (file_exists($img_path)) {
                     // Add sketch exist type
@@ -185,16 +347,16 @@ class CriticAvatars extends AbstractDB {
                 );
                 $this->db_update($data, $this->db['user_avatars'], $item->id);
             }
-            
+
             $ids = '';
-            if (sizeof($upd_names)>1){
+            if (sizeof($upd_names) > 1) {
                 $ids = "&ids=" . implode(',', $upd_names);
             } else {
                 $ids = "&id=" . $upd_names[0];
             }
 
-            $url = "http://172.17.0.1:8331?p=ds1bfgFe_23_KJD".$ids;
-            
+            $url = "http://172.17.0.1:8331?p=ds1bfgFe_23_KJD" . $ids;
+
             if ($debug) {
                 p_r($url);
             }
@@ -202,6 +364,41 @@ class CriticAvatars extends AbstractDB {
             $cp = $this->cm->get_cp();
             $cp->send_curl_no_responce($url);
         }
+    }
+
+    public function get_avatar_by_uid($uid) {
+        $sql = sprintf("SELECT * FROM {$this->db['user_avatars']} WHERE uid = %d", $uid);
+        $result = $this->db_fetch_row($sql);
+        return $result;
+    }
+
+    public function get_avatar_by_aid($aid) {
+        $sql = sprintf("SELECT * FROM {$this->db['user_avatars']} WHERE aid = %d", $aid);
+        $result = $this->db_fetch_row($sql);
+        return $result;
+    }
+
+    public function set_avatar_by_uid($uid = 0, $aid = 0) {
+        if (!$uid && !$aid) {
+            return array();
+        }
+        $sql = "SELECT * FROM {$this->db['user_avatars']} WHERE uid=0 AND aid=0 AND sketch = 1";
+        $result = $this->db_fetch_row($sql);
+        if ($result) {
+            $data = array();
+            if ($uid) {
+                $data['uid'] = $uid;
+            } else {
+                $data['aid'] = $aid;
+            }
+            $this->sync_update_data($data, $result->id, $this->db['user_avatars'], true);
+        }
+        return $result;
+    }
+
+    public function clear_avatar_uid($data_id = 0) {
+        $data = array('uid' => 0);
+        $this->sync_update_data($data, $data_id, $this->db['user_avatars'], true);
     }
 
     public function get_avatars_by_sketch($sketch = 2, $count = 0) {

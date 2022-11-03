@@ -19,6 +19,7 @@ if (sizeof($posts) > 0) {
                 <th><?php print __('Movie') ?></th>
                 <th><?php print __('Rating') ?></th>
                 <th><?php print __('Author') ?></th>  
+                <th><?php print __('WP Uid') ?></th> 
                 <th><?php print __('IP') ?></th>     
                 <th><?php print __('IP list') ?></th>
             </tr>
@@ -67,6 +68,7 @@ if (sizeof($posts) > 0) {
                         ?></td> 
                     <td><?php print $cfront->theme_rating($rating_data); ?></td>
                     <td><?php print $author_name ?></td>    
+                    <td><?php print $item->wp_uid; ?></td> 
                     <td><?php print $ip ?></td> 
                     <td><?php print $ip_type_name ?></td>
                 </tr> 
