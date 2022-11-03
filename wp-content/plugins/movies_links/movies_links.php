@@ -214,6 +214,7 @@ function movies_links_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
+    movies_links_create_index(array('ip'), 'tor_ip');
 
     $sql = "CREATE TABLE IF NOT EXISTS  `tor_dst_url`(
 				`id` int(11) unsigned NOT NULL auto_increment,                                                               

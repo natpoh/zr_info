@@ -1474,7 +1474,7 @@ class CriticSearch extends AbstractDB {
                 $filters_facet['state'] = 'related';
                 $filters_and = $this->get_filters_query($filters_facet, '', $query_type);
 
-                $sql_arr[] = "SELECT COUNT(id) as cnt FROM critic WHERE status=1 AND top_movie=0" . $filters_and . $match;
+                $sql_arr[] = "SELECT COUNT(*) as cnt FROM critic WHERE status=1 AND top_movie=0" . $filters_and . $match;
 
                 $sql_arr[] = "SHOW META";
             }

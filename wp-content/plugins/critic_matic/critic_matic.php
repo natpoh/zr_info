@@ -24,7 +24,7 @@ if (!function_exists('add_action')) {
 define('CRITIC_MATIC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CRITIC_MATIC_PLUGIN_URL', plugin_dir_url(__FILE__));
 
-$version = '1.0.86';
+$version = '1.0.87';
 if (defined('LASTVERSION')) {
     define('CRITIC_MATIC_VERSION', $version . LASTVERSION);
 } else {
@@ -54,6 +54,10 @@ function critic_matic_init() {
     $cm = new CriticMatic();
     $cs = new CriticSearch($cm);
 
+    // User avatars
+    $cav = $cm->get_cav();
+    $cav->add_actions();
+
     if (is_admin()) {
         // Admin pages
         // Critic feeds
@@ -78,10 +82,17 @@ function critic_matic_init() {
             $cm->update_post_rating_options();
         }
 
+        if (isset($_GET['cm_set_author_names']) && $_GET['cm_set_author_names'] == 1) {
+            $uc = $cm->get_uc();
+            $uc->set_author_names();
+        }
+
         // Force activation
         if (isset($_GET['cm_activation']) && $_GET['cm_activation'] == 1) {
             critic_matic_plugin_activation();
         }
+
+        add_filter('avatar_defaults', array($cav, 'add_default_avatar_option'));
     } else {
         // Front pages
         global $cfront, $cm_new_api;
@@ -260,6 +271,44 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     dbDelta($sql);
     critic_matic_create_index(array('date', 'cid', 'uid', 'type', 'status'), $table_prefix . "critic_parser_log");
+
+    /* User Carma */
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "carma`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+				`uid` int(11) NOT NULL DEFAULT '0',						
+                                `rating` int(11) NOT NULL DEFAULT '0',
+				`carma` int(11) NOT NULL DEFAULT '0',
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8_general_ci;";
+    dbDelta($sql);
+    critic_matic_create_index(array('uid'), $table_prefix . "carma");
+
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "carma_trend`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+				`uid` int(11) NOT NULL DEFAULT '0',					
+                                `rating` int(11) NOT NULL DEFAULT '0',
+				`carma` int(11) NOT NULL DEFAULT '0',
+                                `date_added` int(11) NOT NULL DEFAULT '0', 
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8_general_ci;";
+    dbDelta($sql);
+    critic_matic_create_index(array('uid', 'date_added'), $table_prefix . "carma_trend");
+
+    /* User Names */
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "user_names`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+				`uid` int(11) NOT NULL DEFAULT '0',						
+                                `date` int(11) NOT NULL DEFAULT '0',
+				`name` varchar(255) NOT NULL default '',  
+                                `name_hash` varchar(255) NOT NULL default '',  
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8_general_ci;";
+    dbDelta($sql);
+    critic_matic_create_index(array('uid', 'name_hash'), $table_prefix . "user_names");
+
 
     /*
      * Indexes: 
@@ -465,6 +514,12 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('status', 'type', 'name'), $table_prefix . "critic_matic_authors");
 
+    // Add wp user id
+    $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_authors` ADD `wp_uid` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('wp_uid'), $table_prefix . "critic_matic_authors");
+
+
     // Authors meta
     $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_matic_authors_meta`(
 				`id` int(11) unsigned NOT NULL auto_increment,
@@ -514,6 +569,10 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'status', 'critic_name', 'unic_id'), $table_prefix . "critic_matic_audience");
+
+    // Add wpuid
+    $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_audience` ADD `wp_uid` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
 
     /*
      * Critics audience revisions      
@@ -648,6 +707,12 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'pid', 'aid', 'vote'), $table_prefix . "critic_emotions");
+
+
+    // 1.11.2022 Wp user id
+    $sql = "ALTER TABLE `" . $table_prefix . "critic_emotions` ADD `wp_uid` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('wp_uid'), $table_prefix . "critic_emotions");
 
     $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_emotions_authors`(
 				`id` int(11) unsigned NOT NULL auto_increment, 
@@ -953,13 +1018,21 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'img', 'uid', 'sketch', 'img_hash'), "data_user_avatars");
+
+    $sql = "ALTER TABLE `data_user_avatars` ADD `aid` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('aid'), "data_user_avatars");
+
+    $sql = "ALTER TABLE `data_user_avatars` ADD `tomato` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('tomato'), "data_user_avatars");
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {
 
     if ($names && $table_name) {
         foreach ($names as $name) {
-            $index_sql = "SELECT COUNT(id)        
+            $index_sql = "SELECT COUNT(*)        
     FROM `INFORMATION_SCHEMA`.`STATISTICS`
     WHERE `TABLE_SCHEMA` = '" . DB_NAME_WP . "' 
     AND `TABLE_NAME` = '$table_name'
@@ -978,7 +1051,7 @@ function critic_matic_create_index_an($names = array(), $table_name = '') {
 
     if ($names && $table_name) {
         foreach ($names as $name) {
-            $index_sql = "SELECT COUNT(id)        
+            $index_sql = "SELECT COUNT(*)        
     FROM `INFORMATION_SCHEMA`.`STATISTICS`
     WHERE `TABLE_SCHEMA` = '" . DB_NAME_AN . "' 
     AND `TABLE_NAME` = '$table_name'

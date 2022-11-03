@@ -230,11 +230,11 @@ wpcr3a.keypress_need = 5;
 wpcr3a.captchaResponse = "";
 
 wpcr3a.ajaxPost = function (parent, data, cb) {
-    var host = window.location.host;
+    //var host = window.location.host;
     var url = '/service/audience.php';
-    if (host == "zeitgeistreviews.com") {
-        var url = 'https://service.zeitgeistreviews.com/audience.php';
-    }
+    //if (host == "zeitgeistreviews.com") {
+    //    var url = 'https://service.zeitgeistreviews.com/audience.php';
+    //}
     return jQuery.ajax({
         type: "POST",
         url: url,
@@ -248,6 +248,12 @@ wpcr3a.ajaxPost = function (parent, data, cb) {
                 wpcr3a.enableSubmit();
                 return cb(rtn.err);
             }
+            if (rtn.needlogin) {
+                // load login
+                var user_bar = '.site-header-main .user-bar';
+                jQuery(user_bar).load(location.href + " " + user_bar);
+            }
+
             return cb(null, rtn);
         },
         error: function (rtn) {
@@ -312,7 +318,7 @@ wpcr3a.submit = function (e) {
         }
         ajaxData[v.attr('name')] = val;
     });
-    
+
     wpcr3a.ajaxPost(parent, ajaxData, function (err, rtn) {
         if (err) {
             return;
@@ -340,9 +346,9 @@ wpcr3a.enableSubmit = function () {
 
 wpcr3a.init = function () {
     var $ = jQuery;
-    wpcr3a.showVoteForm();    
+    wpcr3a.showVoteForm();
     init_select();
-    
+
     var evt_1 = 'mousemove.wpcr3 touchmove.wpcr3';
     $(document).bind(evt_1, function () {
         wpcr3a.mousemove_total++;
@@ -376,6 +382,19 @@ wpcr3a.init = function () {
         //   $tr_field.find(".wpcr3_rating_stars").unbind("mouseover.wpcr3").bind("click.wpcr3", wpcr3a.set_hover);
 
         return false;
+    });
+
+    $("input#anon_review").click(function (e) {
+        var $this = $(this);
+        if ($this.is(":checked")) {
+            $('#audience_respond').addClass('anon');            
+            $('#wpcr3_fname').removeClass('wpcr3_required');
+            $('#wpcr3_femail').removeClass('wpcr3_required');                       
+        } else {
+            $('#audience_respond').removeClass('anon');
+            $('#wpcr3_fname').addClass('wpcr3_required');
+            $('#wpcr3_femail').addClass('wpcr3_required');           
+        }        
     });
 
     $("#wp-id_wpcr3_ftext-wrap:not(.init)").each(function () {
@@ -456,7 +475,7 @@ wpcr3a.init = function () {
 
     var div2 = $('.wpcr3_div_2'), submit = div2.find('.wpcr3_submit_btn');
     submit.click(wpcr3a.submit);
-    
+
     // wpcr3a.clearFields();
 };
 

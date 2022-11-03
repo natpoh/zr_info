@@ -42,6 +42,7 @@ if (sizeof($posts) > 0) {
                     <?php $this->sorted_head('title', 'Title / Link', $orderby, $order, $page_url) ?>                
                     <th><?php print __('Content') ?></th>                 
                     <th><?php print __('Author') ?></th>                                       
+                    <th><?php print __('WP uid') ?></th>
                     <th><?php print __('From') ?></th>   
                     <?php if ($author_type == 0 || $author_type == 2) { ?>
                         <th><?php print __('Rating') ?></th> 
@@ -61,10 +62,11 @@ if (sizeof($posts) > 0) {
                     //$post_type = $this->cm->get_post_status($item->status);
                     //Author
                     $author = $this->cm->get_author($item->aid);
+                    $wp_uid = $author->wp_uid;
                     $author_name = $author->name;
                     $a_type = $this->cm->get_author_type($author->type);
                     //Author link
-                    $author_link = $this->theme_author_link($item->aid, $author_name);
+                    $author_link = $this->theme_author_link($item->aid, $author_name. ' ['.$item->aid.']');
 
                     //Tags
                     $tags = $this->cm->get_author_tags($item->aid);
@@ -94,6 +96,7 @@ if (sizeof($posts) > 0) {
                         </td>
                         <td><?php print $this->cm->crop_text(strip_tags($item->content), 100) ?></td>                    
                         <td><?php print $author_link ?></td> 
+                        <td><?php print $wp_uid ?></td> 
                         <td><?php print $a_type ?></td> 
                         <?php if ($author_type == 0 || $author_type == 2) { ?>
                             <td><?php

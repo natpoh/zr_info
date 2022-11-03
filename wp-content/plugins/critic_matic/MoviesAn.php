@@ -27,12 +27,14 @@ class MoviesAn extends AbstractDBAn {
     public $movie_type = array(
         'Movie' => 'Movie',
         'TVseries' => 'TV',
-        'VideoGame' => 'VideoGame',
+        'PodcastSeries' => 'Podcast',
+        'VideoGame' => 'Game',
     );
     public $movie_slug = array(
         'Movie' => 'movies',
         'TVSeries' => 'tvseries',
-        'VideoGame' => 'videogame',
+        'PodcastSeries' => 'podcastseries',
+        'VideoGame' => 'videogame'
     );
     public $movie_tabs = array(
         'home' => 'View'
@@ -180,7 +182,7 @@ class MoviesAn extends AbstractDBAn {
 
     public function get_expired_movies($limit = 10, $expire = 30) {
 
-        $post_and = " AND p.type IN('Movie','TVseries','VideoGame')";
+        $post_and = " AND p.type IN('Movie','TVseries','VideoGame','PodcastSeries')";
 
         $expire_sec = $expire * 86400;
         $date_expire = time() - $expire_sec;
@@ -1366,7 +1368,7 @@ class MoviesAn extends AbstractDBAn {
      */
 
     public function get_post_count($post_type = '') {
-        $post_and = " AND type IN('Movie','TVseries','VideoGame')";
+        $post_and = " AND type IN('Movie','TVseries','VideoGame','PodcastSeries')";
         if ($post_type && $post_type != 'all') {
             $post_and = sprintf(" AND type='%s'", $post_type);
         }
@@ -1384,7 +1386,7 @@ class MoviesAn extends AbstractDBAn {
             $limit = " LIMIT $start, " . $this->perpage;
         }
 
-        $post_and = " AND type IN('Movie','TVseries','VideoGame')";
+        $post_and = " AND type IN('Movie','TVseries','VideoGame','PodcastSeries')";
         if ($post_type && $post_type != 'all') {
             $post_and = sprintf(" AND type='%s'", $post_type);
         }

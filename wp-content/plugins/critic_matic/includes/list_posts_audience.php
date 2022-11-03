@@ -34,6 +34,7 @@ if (sizeof($posts) > 0) {
                     <th><?php print __('Movie') ?></th>
                     <th><?php print __('Rating') ?></th>
                     <th><?php print __('Author') ?></th>  
+                    <th><?php print __('WP Uid') ?></th>  
                     <th><?php print __('Flag') ?></th>
                     <th><?php print __('IP') ?></th>
                     <th><?php print __('IP list') ?></th>
@@ -42,15 +43,16 @@ if (sizeof($posts) > 0) {
             </thead>
             <tbody>
                 <?php
-                foreach ($posts as $item) {
+                foreach ($posts as $item) {          
                     //Post
                     //$post_type = $this->cm->get_post_status($item->status);
                     //Author
                     $author = $this->cm->get_author($item->aid);
+                    $wp_uid = $author->wp_uid;
                     $author_name = $author->name;
                     $author_type = $this->cm->get_author_type($author->type);
                     //Author link
-                    $author_link = $this->theme_author_link($item->aid, $author_name);
+                    $author_link = $this->theme_author_link($item->aid, $author_name.' ['.$item->aid.']');
                     //Post links         
                     $post_actions = $this->cm->post_actions();
                     $post_url = $this->admin_page . $this->audience_url . '&pid=' . $item->id;
@@ -104,6 +106,7 @@ if (sizeof($posts) > 0) {
                             ?></td> 
                         <td><?php print $cfront->theme_rating($rating_data); ?></td>
                         <td><?php print $author_link ?></td>    
+                        <td><?php print $wp_uid ?></td>  
                         <td><?php print $ip_img ?></td> 
                         <td><?php print $ip ?></td> 
                         <td><?php print $ip_type_name ?></td>

@@ -11,12 +11,13 @@ class CriticMatic extends AbstractDB {
     private $db = array();
     public $user_can;
     public $new_audience_count = 0;
-    private $ca;
+    private $cav;
     private $cp;
     private $cs;
     private $ts;
     private $af;
     private $ma;
+    private $uc;
 
     /*
      * Posts
@@ -64,7 +65,7 @@ class CriticMatic extends AbstractDB {
         7 => 'Last week',
         30 => 'Last Mounth',
     );
-    public $sort_pages = array('author_name', 'free', 'id', 'ip', 'date', 'date_add', 'title', 'last_update', 'update_interval', 'name', 'pid', 'slug', 'status', 'type', 'weight');
+    public $sort_pages = array('author_name', 'free', 'id', 'ip', 'date', 'date_add', 'title', 'last_update', 'update_interval', 'name', 'pid', 'slug', 'status', 'type', 'weight', 'wp_uid');
 
     /*
      * Authors
@@ -224,7 +225,8 @@ class CriticMatic extends AbstractDB {
                 'misandry' => "<strong>「&quot;Misandry&quot;」</strong>&nbsp;rates&nbsp;the&nbsp;amount&nbsp; of feminism in a film. Particularly when <a title=&quot;YouTube video of Gavin Mcinnes giving examples of 'cuck-mercials.'&quot; class=&quot;window_open&quot; href=&quot;#https://www.youtube.com/watch?v=5PaRn2-YfTI&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>manhood is disparaged</a>, rather than simply having strong female characters.",
                 'affirmative' => "<strong>「&quot;Affirmative Action&quot;」</strong>&nbsp;rates&nbsp;how much &quot;<a title=&quot;Steven Crowder article about how even the African American cast of 'Blackish' are getting sick and tired of the redundant questions about diversity they get all the time.&quot; class=&quot;window_open&quot; href=&quot;#http://www.louderwithcrowder.com/black-ish-creator-im-tired-of-talking-about-diversity/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>diversity</a>&quot; is being pushed. ( Not true diversity, but the <a class=&quot;window_open&quot; href=&quot;#https://archive.li/DPrE1&quot; target=&quot;_blank&quot; title=&quot;Hella diverse cast of black panther.&quot; >anti-White</a> checklist kind.)",
                 'lgbtq' => "<strong>「&quot;LGBTQrstuvwxyz&quot;」</strong>&nbsp;rates&nbsp;the&nbsp;amount&nbsp;of <a title=&quot;Buzzfeed article celebrating the transgender character thrown into the 'Mr. Robot' script to complete their diversity bingo chart.&quot; class=&quot;window_open&quot; href=&quot;#http://www.buzzfeed.com/arianelange/mr-robot-diversity&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>non-tradional&nbsp;sexuality</a>&nbsp;depicted. Whether this is positive or negative is up to the user. For example, <a class=&quot;window_open&quot; href=&quot;#https://zeitgeistreviews.com/critics/1671/&quot; target=&quot;_blank&quot; title=&quot;Link to reviews by Armond, in our database.&quot;>Armond White</a> is an openly gay conservative critic filled throughout our database.",
-                'god' => "<strong>「&quot;Anti-God Themes&quot;」</strong>&nbsp;rates&nbsp;the&nbsp;amount&nbsp;of slander towards God and/or <a title=&quot;Hollywood Reporter article about Pat Boone explaining why he boycotts SNL, and thinks they're cowards for not criticizing Islam as they do with 'God's Not Dead 2.'&quot; class=&quot;window_open&quot; href=&quot;#http://www.hollywoodreporter.com/news/pat-boone-accuses-snl-anti-885253&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>Christian</a> ethics. As with all these ratings, whether this is positive or negative is up to the reviewer. If you're a Pagan Alt Righter or Atheist Anarcho Capitalist, this may be good in your eyes."
+                'god' => "<strong>「&quot;Anti-God Themes&quot;」</strong>&nbsp;rates&nbsp;the&nbsp;amount&nbsp;of slander towards God and/or <a title=&quot;Hollywood Reporter article about Pat Boone explaining why he boycotts SNL, and thinks they're cowards for not criticizing Islam as they do with 'God's Not Dead 2.'&quot; class=&quot;window_open&quot; href=&quot;#http://www.hollywoodreporter.com/news/pat-boone-accuses-snl-anti-885253&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>Christian</a> ethics. As with all these ratings, whether this is positive or negative is up to the reviewer. If you're a Pagan Alt Righter or Atheist Anarcho Capitalist, this may be good in your eyes.",
+                'email' => "Email may not be real, but must be unique."
             ),
             'audience_cron_path' => '',
             'audience_post_edit' => 0,
@@ -239,9 +241,24 @@ class CriticMatic extends AbstractDB {
         $this->sync_server = DB_SYNC_MODE == 1 ? true : false;
     }
 
-    public function get_ca() {
+    public function get_uc() {
+        // Get UserCarma
+        if (!$this->uc) {
+            if (!class_exists('UserCarma')) {
+                if (!class_exists('AbstractDBWp')) {
+                    require_once( CRITIC_MATIC_PLUGIN_DIR . 'db/AbstractDBWp.php' );
+                }
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'UserCarma.php' );
+            }
+
+            $this->uc = new UserCarma($this);
+        }
+        return $this->uc;
+    }
+
+    public function get_cav() {
         // Get CriticAvatars
-        if (!$this->ca) {
+        if (!$this->cav) {
             if (!class_exists('CriticAvatars')) {
                 if (!class_exists('AbstractDBWp')) {
                     require_once( CRITIC_MATIC_PLUGIN_DIR . 'db/AbstractDBWp.php' );
@@ -249,9 +266,9 @@ class CriticMatic extends AbstractDB {
                 require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticAvatars.php' );
             }
 
-            $this->ca = new CriticAvatars($this);
+            $this->cav = new CriticAvatars($this);
         }
-        return $this->ca;
+        return $this->cav;
     }
 
     public function get_cp() {
@@ -462,7 +479,7 @@ class CriticMatic extends AbstractDB {
     public function get_posts($q_req = array(), $page = 1, $perpage = 20, $orderby = '', $order = 'ASC', $count = false) {
         $q_def = array(
             'status' => -1,
-            'cid' => 0,
+            'cid' => -1,
             'type' => -1,
             'aid' => 0,
             'meta_type' => -1,
@@ -500,12 +517,15 @@ class CriticMatic extends AbstractDB {
         }
 
         // Feed company id
-        $cid_inner = $cid_and = '';
-        if ($q['cid'] > 0) {
-            $cid_inner = " INNER JOIN {$this->db['feed_meta']} fm ON fm.pid = p.id";
-            $cid_and = sprintf(" AND fm.cid=%d", (int) $q['cid']);
-        } else {
-            $cid_inner = " LEFT JOIN {$this->db['feed_meta']} fm ON fm.pid = p.id";
+        $cid_inner = $cid_and = $cid_get = '';
+        if ($q['cid'] != -1) {
+            $cid_get = ", fm.cid AS fmcid";
+            if ($q['cid'] > 0) {
+                $cid_inner = " INNER JOIN {$this->db['feed_meta']} fm ON fm.pid = p.id";
+                $cid_and = sprintf(" AND fm.cid=%d", (int) $q['cid']);
+            } else {
+                $cid_inner = " LEFT JOIN {$this->db['feed_meta']} fm ON fm.pid = p.id";
+            }
         }
 
         // Author filter
@@ -580,7 +600,7 @@ class CriticMatic extends AbstractDB {
                 $limit = " LIMIT $start, " . $perpage;
             }
 
-            $select = " p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, p.view_type, am.aid, fm.cid AS fmcid" . $ts_get;
+            $select = " p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, p.view_type, am.aid" . $cid_get . $ts_get;
         } else {
             $select = " COUNT(*)";
         }
@@ -1305,7 +1325,7 @@ class CriticMatic extends AbstractDB {
             }
         }
         //Get author id
-        $sql = sprintf("SELECT id, name, type, status, options FROM {$this->db['authors']} WHERE id=%d", (int) $id);
+        $sql = sprintf("SELECT id, name, type, status, options, wp_uid FROM {$this->db['authors']} WHERE id=%d", (int) $id);
         $author = $this->db_fetch_row($sql);
 
         if ($cache) {
@@ -1320,7 +1340,7 @@ class CriticMatic extends AbstractDB {
         return $result;
     }
 
-    public function get_author_by_name($name, $cache = false, $type = -1, $multi = false) {
+    public function get_author_by_name($name, $cache = false, $type = -1, $multi = false, $wp_uid = -1) {
         if ($cache) {
             static $dict;
             if (is_null($dict)) {
@@ -1338,8 +1358,14 @@ class CriticMatic extends AbstractDB {
             $type_and = sprintf(" AND type = %d", (int) $type);
         }
 
+        //Custom wp_id
+        $wpuid_and = '';
+        if ($wp_uid != -1) {
+            $wpuid_and = sprintf(" AND wp_uid = %d", (int) $wp_uid);
+        }
+
         //Get author id
-        $sql = sprintf("SELECT id, name, type, status, options FROM {$this->db['authors']} WHERE name='%s'" . $type_and, $this->escape($name));
+        $sql = sprintf("SELECT id, name, type, status, options FROM {$this->db['authors']} WHERE name='%s'" . $type_and . $wpuid_and, $this->escape($name));
 
         if ($multi) {
             $author = $this->db_results($sql);
@@ -1352,8 +1378,54 @@ class CriticMatic extends AbstractDB {
         return $author;
     }
 
+    public function get_author_by_wp_uid($id, $cache = false) {
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$id])) {
+                return $dict[$id];
+            }
+        }
+        //Get author id
+        $sql = sprintf("SELECT id, name, type, status, options FROM {$this->db['authors']} WHERE wp_uid=%d", (int) $id);
+        $author = $this->db_fetch_row($sql);
+
+        if ($cache) {
+            $dict[$id] = $author;
+        }
+        return $author;
+    }
+
+    public function get_post_wp_author($post_id, $cache = true) {
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$post_id])) {
+                return $dict[$post_id];
+            }
+        }
+        //Get author id
+        $sql = sprintf("SELECT a.wp_uid"
+                . " FROM {$this->db['posts']} p"
+                . " INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
+                . " INNER JOIN {$this->db['authors']} a ON a.id = am.aid "
+                . " WHERE p.id=%d", (int) $post_id);
+        $author = $this->db_get_var($sql);
+
+        if ($cache) {
+            $dict[$post_id] = $author;
+        }
+        return $author;
+    }
+
     public function get_authors_by_ids($ids) {
-        $sql = sprintf("SELECT id, name, type, status, options FROM {$this->db['authors']} WHERE id IN(%s)", implode(',', $ids));
+        $sql = sprintf("SELECT id, name, type, status, options, wp_uid FROM {$this->db['authors']} WHERE id IN(%s)", implode(',', $ids));
         $result = $this->db_results($sql);
         $arr = array();
         if (sizeof($result)) {
@@ -1368,10 +1440,10 @@ class CriticMatic extends AbstractDB {
         $name_or_id = strip_tags($name_or_id);
         $name_or_id = preg_replace('/[^\w\d ]+/', '', $name_or_id);
 
-        $and_id = ' AND';
+        $and_id = " AND name LIKE '{$name_or_id}%'";
         if (preg_match('/([0-9]+)/', $name_or_id, $match)) {
             $id = $match[1];
-            $and_id = 'AND id=' . $id . ' OR';
+            $and_id = " AND (id=" . $id . " OR name LIKE '{$name_or_id}%')";
         }
 
         $and_type = '';
@@ -1390,9 +1462,8 @@ class CriticMatic extends AbstractDB {
             $and_limit = sprintf(' LIMIT %d', $limit);
         }
 
-        $sql = "SELECT id, name, type FROM {$this->db['authors']} WHERE id>0 " . $and_type . $and_status . $and_id . " name LIKE '{$name_or_id}%'" . $and_limit;
-
-        $results = $this->db_results($sql);
+        $sql = "SELECT id, name, type FROM {$this->db['authors']} WHERE id>0 " . $and_type . $and_status . $and_id . $and_limit;
+        $results = $this->db_results($sql);        
         return $results;
     }
 
@@ -1481,7 +1552,7 @@ class CriticMatic extends AbstractDB {
             $limit = " LIMIT $start, " . $this->perpage;
         }
 
-        $sql = "SELECT a.id, a.status, a.type, a.name, a.options FROM {$this->db['authors']} a" . $tags_inner . $status_query . $tags_and . $type_and . $and_orderby . $limit;
+        $sql = "SELECT a.id, a.status, a.type, a.name, a.options, a.wp_uid FROM {$this->db['authors']} a" . $tags_inner . $status_query . $tags_and . $type_and . $and_orderby . $limit;
 
         $result = $this->db_results($sql);
 
@@ -1631,7 +1702,7 @@ class CriticMatic extends AbstractDB {
         return $id;
     }
 
-    public function create_author_by_name($name, $author_type = 0, $status = 1, $options = array()) {
+    public function create_author_by_name($name, $author_type = 0, $status = 1, $options = array(), $wp_uid = 0) {
         $opt_str = serialize($options);
         // Create the author
         $data = array(
@@ -1639,6 +1710,7 @@ class CriticMatic extends AbstractDB {
             'type' => $author_type,
             'name' => $name,
             'options' => $opt_str,
+            'wp_uid' => $wp_uid,
         );
 
         $id = $this->sync_insert_data($data, $this->db['authors'], $this->sync_client, $this->sync_data);
@@ -1754,6 +1826,14 @@ class CriticMatic extends AbstractDB {
         );
 
         $this->sync_update_data($data, $author->id, $this->db['authors'], $this->sync_data);
+    }
+
+    public function update_author_wp_uid($id = 0, $wp_uid = 0) {
+        $data = array(
+            'wp_uid' => $wp_uid,
+        );
+
+        $this->sync_update_data($data, $id, $this->db['authors'], $this->sync_data);
     }
 
     public function trash_author($form_state) {
