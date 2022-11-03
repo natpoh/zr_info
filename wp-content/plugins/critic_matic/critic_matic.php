@@ -82,6 +82,11 @@ function critic_matic_init() {
             $cm->update_post_rating_options();
         }
 
+        if (isset($_GET['cm_set_author_names']) && $_GET['cm_set_author_names'] == 1) {
+            $uc = $cm->get_uc();
+            $uc->set_author_names();
+        }
+
         // Force activation
         if (isset($_GET['cm_activation']) && $_GET['cm_activation'] == 1) {
             critic_matic_plugin_activation();
@@ -290,6 +295,20 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8_general_ci;";
     dbDelta($sql);
     critic_matic_create_index(array('uid', 'date_added'), $table_prefix . "carma_trend");
+
+    /* User Names */
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "user_names`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+				`uid` int(11) NOT NULL DEFAULT '0',						
+                                `date` int(11) NOT NULL DEFAULT '0',
+				`name` varchar(255) NOT NULL default '',  
+                                `name_hash` varchar(255) NOT NULL default '',  
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8_general_ci;";
+    dbDelta($sql);
+    critic_matic_create_index(array('uid', 'name_hash'), $table_prefix . "user_names");
+
 
     /*
      * Indexes: 
@@ -999,10 +1018,14 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'img', 'uid', 'sketch', 'img_hash'), "data_user_avatars");
-    
+
     $sql = "ALTER TABLE `data_user_avatars` ADD `aid` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('aid'), "data_user_avatars");
+
+    $sql = "ALTER TABLE `data_user_avatars` ADD `tomato` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('tomato'), "data_user_avatars");
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {

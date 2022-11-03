@@ -894,7 +894,7 @@ class CriticFront extends SearchFacets {
             // User            
             $wp_avatar = $cav->get_or_create_user_avatar($wp_uid, 0, 64);
         } else {
-            $wp_avatar = $cav->get_or_create_user_avatar(0, $aid, 64);
+            // $wp_avatar = $cav->get_or_create_user_avatar(0, $aid, 64);
         }
 
         if (!$avatars && !$wp_avatar) {

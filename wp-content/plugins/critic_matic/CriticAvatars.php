@@ -11,6 +11,7 @@ class CriticAvatars extends AbstractDB {
     private $cm;
     public $source_dir = "ca/source";
     public $cketch_dir = "ca/sketch";
+    public $tomato_dir = "ca/tomato";
     public $img_service = 'https://info.antiwoketomatoes.com/';
     public $thumb_service = 'https://img.zeitgeistreviews.com/';
 
@@ -187,9 +188,12 @@ class CriticAvatars extends AbstractDB {
         if ($cron_type == 1) {
             // Parse avatar
             $this->parse_avatar($force, $debug);
-        } else {
+        } else if ($cron_type == 2) {
             // Get sketch
             $this->get_sketch($force, $debug);
+        } else if ($cron_type == 3) {
+            // Get tomatoe
+            $this->get_tomato($force, $debug);
         }
     }
 
@@ -363,6 +367,38 @@ class CriticAvatars extends AbstractDB {
 
             $cp = $this->cm->get_cp();
             $cp->send_curl_no_responce($url);
+        }
+    }
+
+    public function get_tomato($force = false, $debug = false) {
+        $limit = 10;
+        $sql = "SELECT * FROM {$this->db['user_avatars']} WHERE sketch = 1 AND tomato = 0 ORDER BY id ASC limit " . (int) $limit;
+        $results = $this->db_results($sql);
+        if ($debug) {
+            p_r($results);
+        }
+        if ($results) {
+            foreach ($results as $item) {
+                $img = $item->date . '.png';
+                $img_path = $this->img_service . 'wp-content/uploads/' . $this->cketch_dir . '/' . $img;
+
+                // TODO get img and create tomatoe
+                $tomatoe_data = '';
+
+                if ($tomatoe_data) {
+                    // Set data
+                    $tomato_dir = WP_CONTENT_DIR . '/uploads/' . $this->tomato_dir;
+                    if (class_exists('ThemeCache')) {
+                        ThemeCache::check_and_create_dir($tomato_dir);
+                    }
+                    // TODO write data to dir
+                    // Update DB
+                    $data = array(
+                        'tomato' => 1
+                    );
+                    $this->db_update($data, $this->db['user_avatars'], $item->id);
+                }
+            }
         }
     }
 

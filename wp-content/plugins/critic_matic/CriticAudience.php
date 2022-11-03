@@ -230,24 +230,24 @@ class CriticAudience extends AbstractDb {
                 $rtn->err[] = 'Review Text is required.';
             }
 
-            $author_name = 'Anon';
+            if (!$posted->fname && !$is_edit) {
+                $rtn->err[] = 'Critic Name is required.';
+            }
+
+            $author_name = '';
+            if ($posted->fname) {
+                $author_name = trim($posted->fname);
+                if (strlen($author_name) > 250) {
+                    $author_name = substr($author_name, 0, 250);
+                }
+            }
+
             $email = '';
             if (!$anon_review) {
-                if (!$posted->fname && !$is_edit) {
-                    $rtn->err[] = 'Critic Name is required.';
-                }
 
                 if (!$posted->femail && !$is_edit) {
-                    $rtn->err[] = 'Email is required.';
+                    $rtn->err[] = 'Email or Password is required.';
                 }
-
-                if ($posted->fname) {
-                    $author_name = trim($posted->fname);
-                    if (strlen($author_name) > 250) {
-                        $author_name = substr($author_name, 0, 250);
-                    }
-                }
-
 
                 if ($posted->femail) {
                     $email = trim($posted->femail);
@@ -257,28 +257,41 @@ class CriticAudience extends AbstractDb {
 
                     if (class_exists('GuestLogin')) {
                         $gl = new GuestLogin();
-                        $protected_data = $gl->protected_user_email($email);
+                        $valid_email = $email;
+                        if (!strstr($email, '@')) {
+                            $valid_email = md5($email) . '@zeitgeistreviews.com';
+                        }
+
+                        $protected_data = $gl->protected_user_email($valid_email);
                         if ($protected_data['protected']) {
-                            $rtn->err[] = 'Mailing address ' . $email . ' is password protected. Log in to post a review.';
+                            $rtn->err[] = 'Mailing address ' . $valid_email . ' is password protected. Log in to post a review.';
                         } else {
 
                             // Set user data to comment cookeis
                             $comment = new stdClass();
                             $comment->comment_author = $author_name;
-                            $comment->comment_author_email = $email;
-                            $comment->comment_author_url = '';
-                            wp_set_comment_cookies($comment, $user);
+                            $comment->comment_author_pass = base64_encode($email);                            
+                            $this->wp_set_comment_cookies($comment, $user);
 
+                            $uc = $this->cm->get_uc();
+                            
                             if (!$protected_data['user']) {
                                 // New user
-                                $uid = $gl->create_new_user($email, $author_name);
+                                                     
+                                // Check author name
+                                if ($uc->wp_author_name_used($author_name)){
+                                    $rtn->err[] = 'This name "' . $author_name . '" already used. Enter another name';
+                                } else {                                     
+                                    $uid = $gl->create_new_user($valid_email, $author_name);                                                                    
+                                    $uc->wp_author_add_name($author_name, $uid);
+                                }
                             } else {
                                 // Exist user
                                 $uid = $protected_data['user']->ID;
                             }
 
                             if ($uid) {
-                                // Login
+                                // Login                                
                                 $gl->wp_login_user($uid);
                                 $rtn->needlogin = true;
                             }
@@ -986,7 +999,8 @@ class CriticAudience extends AbstractDb {
 
                         $user_identity = $user->exists() ? $user->display_name : '';
                         // print_r($user_identity);
-                        $commenter = wp_get_current_commenter();
+                        $commenter =  $this->wp_get_current_commenter();
+               
                     }
                     /*
                      * Array ( [comment_author] => [comment_author_email] => [comment_author_url] => )
@@ -994,9 +1008,10 @@ class CriticAudience extends AbstractDb {
                      */
 
                     if ($user_identity) {
+                        $user_profile = get_author_posts_url($user->ID, $user->user_nicename);
                         ?><tr><td colspan="2"><?php
                                 $logged_in_as = '<p class="logged-in-as">' .
-                                        sprintf(__('You are logged in as <a href="%1$s">%2$s</a>. <a href="%3$s" title="Sign out of this account">Sign out?</a>'), admin_url('profile.php'), $user_identity, wp_logout_url($post_link)) . '</p>';
+                                        sprintf(__('You are logged in as <a href="%1$s">%2$s</a>. <a href="%3$s" title="Sign out of this account">Sign out?</a>'), $user_profile, $user_identity, wp_logout_url($post_link)) . '</p>';
                                 print apply_filters('comment_form_logged_in', $logged_in_as, $commenter, $user_identity);
                                 do_action('comment_form_logged_in_after', $commenter, $user_identity);
                                 ?></td></tr><?php
@@ -1015,8 +1030,8 @@ class CriticAudience extends AbstractDb {
                     //do_action('comment_form', $post_id); 
 
                     $vote_fields = array(
-                        'name' => array('title' => 'Critic Name', 'required' => 1, 'class' => ' noanon'),
-                        'email' => array('title' => 'Critic Email', 'required' => 1, 'class' => ' noanon'),
+                        'name' => array('title' => 'Critic Name', 'required' => 1, 'class' => ''),
+                        'email' => array('title' => 'Email or Password', 'required' => 1, 'class' => ' noanon'),
                         'title' => array('title' => 'Review Title', 'required' => 0, 'class' => ''),
                     );
 
@@ -1057,8 +1072,8 @@ class CriticAudience extends AbstractDb {
                                 }
                                 if ($key == 'name' && isset($commenter['comment_author'])) {
                                     print htmlspecialchars($commenter['comment_author']);
-                                } else if ($key == 'email' && isset($commenter['comment_author_email'])) {
-                                    print htmlspecialchars($commenter['comment_author_email']);
+                                } else if ($key == 'email' && isset($commenter['comment_author_pass'])) {
+                                    print htmlspecialchars(base64_decode($commenter['comment_author_pass']));
                                 }
                                 ?>" />
                             </td>
@@ -1324,6 +1339,42 @@ class CriticAudience extends AbstractDb {
         $pass_allowed_protocols = $allowed_protocols;
 
         return preg_replace_callback('%(<!--.*?(-->|$))|(<[^>]*(>|$)|>)%', '_wp_kses_split_callback', $string);
+    }
+
+    
+    function wp_get_current_commenter() {
+        // Cookies should already be sanitized.
+
+        $comment_author = '';
+        if (isset($_COOKIE['comment_author_' . COOKIEHASH])) {
+            $comment_author = $_COOKIE['comment_author_' . COOKIEHASH];
+        }
+
+        $comment_author_pass = '';
+        if (isset($_COOKIE['comment_author_pass_' . COOKIEHASH])) {
+            $comment_author_pass = $_COOKIE['comment_author_pass_' . COOKIEHASH];
+        }
+        return compact('comment_author', 'comment_author_pass');
+    }
+
+    function wp_set_comment_cookies($comment, $user) {
+        // If the user already exists, or the user opted out of cookies, don't set cookies.
+        if ($user->exists()) {
+            return;
+        }
+        /**
+         * Filters the lifetime of the comment cookie in seconds.
+         *
+         * @since 2.8.0
+         *
+         * @param int $seconds Comment cookie lifetime. Default 30000000.
+         */
+        $comment_cookie_lifetime = time() + apply_filters('comment_cookie_lifetime', 30000000);
+
+        $secure = ( 'https' === parse_url(home_url(), PHP_URL_SCHEME) );
+
+        setcookie('comment_author_' . COOKIEHASH, $comment->comment_author, $comment_cookie_lifetime, COOKIEPATH, COOKIE_DOMAIN, $secure);
+        setcookie('comment_author_pass_' . COOKIEHASH, $comment->comment_author_pass, $comment_cookie_lifetime, COOKIEPATH, COOKIE_DOMAIN, $secure);        
     }
 
 }

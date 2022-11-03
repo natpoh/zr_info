@@ -65,6 +65,7 @@ class UserCarma extends AbstractDBWp {
             'users' => $table_prefix . 'users',
             'carma' => $table_prefix . 'carma',
             'carma_trend' => $table_prefix . 'carma_trend',
+            'user_names' => $table_prefix . 'user_names',
         );
     }
 
@@ -256,9 +257,9 @@ class UserCarma extends AbstractDBWp {
 
         return array('users' => $users, 'proxy' => $proxy, 'loc' => $locations, 'iplist' => $iplist);
     }
-    
-    function get_user_profile_link($link){
-        return '/author/'.$link;
+
+    function get_user_profile_link($link) {
+        return '/author/' . $link;
     }
 
     function getUserById($id) {
@@ -279,6 +280,48 @@ class UserCarma extends AbstractDBWp {
 
         $result = $this->db_fetch_row($sql);
         return $result;
+    }
+
+    public function wp_author_name_used($name = '') {
+        if (!$name) {
+            return '';
+        }
+        $name_hash = sha1($name);
+        $sql = sprintf("SELECT id FROM {$this->db['user_names']} WHERE name_hash = %d", $name_hash);
+        $result = $this->db_get_var($sql);
+        return $result;
+    }
+
+    public function wp_author_add_name($name = '', $uid = 0) {
+        if (!$name || !$uid) {
+            return '';
+        }
+        if ($this->wp_author_name_used($name)) {
+            return '';
+        }
+
+        $name_hash = sha1($name);
+        $data = array(
+            'uid' => $uid,
+            'date' => $this->curr_time(),
+            'name' => $name,
+            'name_hash' => $name_hash,
+        );
+        $this->db_insert($data, $this->db['user_names']);
+    }
+
+    public function set_author_names() {
+        // Get users and names. Set names
+        $sql = "SELECT u.ID AS id, u.display_name AS name, u.user_nicename AS url, c.rating AS rating, c.carma AS carma "
+                . "FROM {$this->db['users']} u "
+                . "LEFT JOIN {$this->db['carma']} c ON c.uid = u.ID ";
+
+        $result = $this->db_results($sql);
+        if ($result) {
+            foreach ($result as $user) {
+               $this->wp_author_add_name($user->name, $user->id); 
+            }
+        }
     }
 
 }
