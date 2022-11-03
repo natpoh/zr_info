@@ -177,8 +177,8 @@ class CriticAudience extends AbstractDb {
             if ($posted->checkid != $posted->postid) {
                 $rtn->err[] = 'You have failed the spambot check. Code 1';
             }
-            
-   
+
+
             // Anon review
             $anon_review = $posted->fanon_review ? true : false;
 
@@ -941,8 +941,7 @@ class CriticAudience extends AbstractDb {
 
     public function audience_form($post_id, $au_data = array()) {
 
-        if ($post_id)
-        {
+        if ($post_id) {
             header('Access-Control-Allow-Origin: *');
         }
 
@@ -974,6 +973,10 @@ class CriticAudience extends AbstractDb {
                     $movie = $ma->get_post($post_id);
                     $post_link = $ma->get_post_link($movie);
 
+                    // Audience desc
+                    $cfront = new CriticFront($this->cm);
+                    $ss = $this->cm->get_settings();
+                    $audience_desc = $ss['audience_desc'];
 
                     $user_identity = '';
                     $commenter = array();
@@ -1034,10 +1037,16 @@ class CriticAudience extends AbstractDb {
                         if ($value['required']) {
                             $required = ' wpcr3_required';
                         }
+
+                        $desc = '';
+                        $vote_data = isset($audience_desc[$key]) ? $audience_desc[$key] : '';
+                        if ($vote_data) {
+                            $desc = $cfront->get_nte('i', '<div class="nte_cnt_toltip">' . stripslashes($vote_data) . '</div>');
+                        }
                         ?>
                         <tr class="wpcr3_review_form_text_field<?php print $value['class'] ?>">
                             <td>
-                                <label for="wpcr3_f<?php print $key ?>" class="comment-field"><?php print $title ?>: </label>
+                                <label for="wpcr3_f<?php print $key ?>" class="comment-field"><?php print $title ?>: <?php print $desc ?></label>
                             </td>
                             <td>
                                 <input maxlength="150" class="text-input<?php print $required ?>" type="text" id="wpcr3_f<?php print $key ?>" name="wpcr3_f<?php print $key ?>" value="<?php
@@ -1058,10 +1067,7 @@ class CriticAudience extends AbstractDb {
                     <?php
                     $rating_order = array('rating', 'vote', 'patriotism', 'misandry', 'affirmative', 'lgbtq', 'god');
 
-                    $cfront = new CriticFront($this->cm);
 
-                    $ss = $this->cm->get_settings();
-                    $audience_desc = $ss['audience_desc'];
 
                     foreach ($rating_order as $key) {
 

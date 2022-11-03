@@ -230,11 +230,11 @@ wpcr3a.keypress_need = 5;
 wpcr3a.captchaResponse = "";
 
 wpcr3a.ajaxPost = function (parent, data, cb) {
-    var host = window.location.host;
+    //var host = window.location.host;
     var url = '/service/audience.php';
-    if (host == "zeitgeistreviews.com") {
-        var url = 'https://service.zeitgeistreviews.com/audience.php';
-    }
+    //if (host == "zeitgeistreviews.com") {
+    //    var url = 'https://service.zeitgeistreviews.com/audience.php';
+    //}
     return jQuery.ajax({
         type: "POST",
         url: url,
