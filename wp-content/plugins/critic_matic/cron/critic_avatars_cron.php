@@ -18,6 +18,11 @@ if ($_GET['t']) {
     $cron_type = (int) $_GET['t'];
 }
 
+$count = 10;
+if ($_GET['c']) {
+    $count = (int) $_GET['c'];
+}
+
 $debug = false;
 if ($_GET['debug']) {
     $debug = true;
@@ -32,4 +37,4 @@ $cm = new CriticMatic();
 $cav = $cm->get_cav();
 
 
-$cav->run_cron($cron_type, $force, $debug);
+$cav->run_cron($cron_type, $force, $debug, $count);
