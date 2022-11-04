@@ -21,7 +21,7 @@ class TorParser extends MoviesAbstractDB {
         'h' => 30,
         'd' => 1000,
     );
-    public $sort_pages = array('date', 'id', 'ip', 'drivers', 'dst_url', 'user_agents', 'url_meta', 'last_upd', 'last_reboot', 'status');
+    public $sort_pages = array('date', 'id', 'ip', 'drivers', 'dst_url', 'user_agents', 'url_meta', 'last_upd', 'last_reboot', 'status', 'type');
 
     public function __construct($ml = '') {
         $this->ml = $ml ? $ml : new MoviesLinks();
@@ -212,7 +212,7 @@ class TorParser extends MoviesAbstractDB {
 
                     $ip_error_last_hour_count = $this->get_logs($q_req, 1, 0, 'date', 'DESC', true);
                     if ($debug) {
-                        print_r($q_req);                    
+                        print_r($q_req);
                         print_r($ip_error_last_hour_count);
                     }
                     if ($ip_error_last_hour_count) {
@@ -998,6 +998,38 @@ class TorParser extends MoviesAbstractDB {
         return $site;
     }
 
+    public function import_services($import_services_list) {
+        if ($import_services_list) {
+
+            $rows = array($import_services_list);
+            if (strstr($import_services_list, "\n")) {
+                $rows = explode("\n", $import_services_list);
+            }
+            if ($rows) {
+                $urls = array();
+                $services = $this->get_services(array(), 1, 0, $orderby = 'type', 'ASC');
+                if ($services) {
+                    foreach ($services as $item) {
+                        $urls[$item->url] = 1;
+                    }
+                }
+
+                foreach ($rows as $row) {
+                    $col = explode('|', $row);
+                    if (sizeof($col) == 3) {
+                        $type = (int) $col[0];
+                        $url = trim($col[1]);
+                        $name = trim($col[2]);
+                        $status = 1;
+                        if (!isset($urls[$url])) {
+                            $this->add_service($status, $name, $url, $type);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /*
      * Log
      */
@@ -1024,8 +1056,8 @@ class TorParser extends MoviesAbstractDB {
         if ($q['url'] != -1) {
             $and_url = " AND l.url = " . (int) $q['url'];
         }
-        
-        
+
+
         // Type
         $and_type = '';
         if ($q['type'] != -1) {
@@ -1090,7 +1122,7 @@ class TorParser extends MoviesAbstractDB {
 
         $sql = "SELECT" . $select
                 . " FROM {$this->db['log']} l"
-                . " WHERE l.id>0" . $and_type . $and_url. $and_status . $and_ip . $and_driver . $and_date_gt . $and_date_lt . $and_orderby . $limit;
+                . " WHERE l.id>0" . $and_type . $and_url . $and_status . $and_ip . $and_driver . $and_date_gt . $and_date_lt . $and_orderby . $limit;
 
 
         if (!$count) {
