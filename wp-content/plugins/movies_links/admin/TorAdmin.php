@@ -255,6 +255,7 @@ class TorAdmin extends ItemAdmin {
             }
 
             if ($b && sizeof($ids)) {
+            
                 $active_arr = array('tor_active', 'tor_inactive', 'tor_trash');
                 if (in_array($b, $active_arr)) {
                     // Change service status
@@ -276,7 +277,7 @@ class TorAdmin extends ItemAdmin {
                     print "<div class=\"updated\"><p><strong>Updated</strong></p></div>";
                 } else if ($b == 'tor_getip') {
                     foreach ($ids as $id) {
-                        $this->tp->update_service_ip($id, 'Manual', 4);
+                        $this->tp->update_service_ip($id, 'Manual', 4);                       
                     }
                 } else if ($b == 'tor_reboot') {
                     foreach ($ids as $id) {

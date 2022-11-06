@@ -29,6 +29,26 @@ class MoviesLinksSettings extends ItemAdmin {
         $tabs_arr = $this->settings_tabs;
         $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab);
 
+        if ($_GET['export_services']) {
+            $tp = $this->ml->get_tp();
+            $services = $tp->get_services(array(),1,0, $orderby = 'type',  'ASC');
+            $result = array();
+            if ($services){
+                foreach ($services as $item) {
+                    $cols = array();
+                    $cols[]=$item->type;
+                    $cols[]=$item->url;
+                    $cols[]=$item->name;
+                    $row = implode('|', $cols);
+                    $result[]=$row;
+                }
+            }
+            print '<h2>Export services</h2>';
+            print '<textarea style="width:90%; height:500px">' . implode("\n", $result) . '</textarea>';
+
+            exit;
+        }
+
         if ($curr_tab == 'parser') {
 
             if (isset($_POST['ml-nonce'])) {
@@ -50,6 +70,10 @@ class MoviesLinksSettings extends ItemAdmin {
                 $valid = $this->nonce_validate($_POST);
                 if ($valid === true) {
                     $this->ml->update_settings($_POST);
+                    if ($_POST['import_services_list']){
+                        $tp = $this->ml->get_tp();
+                        $tp->import_services($_POST['import_services_list']);
+                    }
                     $result = __('Updated');
                     print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
                 } else {

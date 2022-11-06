@@ -28,6 +28,27 @@
             <input type="text" name="tor_ip_d" class="title" value="<?php print $ss['tor_ip_d'] ?>" style="width:90%">
             <br /><br />
 
+            <label class="inline-edit-interval">
+                <span class="title"><?php print __('Tor agent') ?></span>
+                <select name="tor_agent" class="interval">
+                    <?php
+                    $current = $ss['tor_agent'];
+                    foreach ($this->tor_agent as $key => $name) {
+                        $selected = ($key == $current) ? 'selected' : '';
+                        ?>
+                        <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                        <?php
+                    }
+                    ?>                          
+                </select>                                        
+            </label>
+
+            <p><b>Export</b> services to <a target="_blank" href="<?php print $url ?>&export_services=1">list</a>.</p>
+            <p><b>Import</b> URLs from list. Example: TYPE|IP|NAME</p>
+
+            <fieldset>              
+                <textarea name="import_services_list" style="width:100%" rows="3"></textarea>           
+            </fieldset>
 
             <?php wp_nonce_field('ml-nonce', 'ml-nonce'); ?>
             <br />

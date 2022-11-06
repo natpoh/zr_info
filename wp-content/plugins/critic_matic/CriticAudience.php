@@ -1031,7 +1031,7 @@ class CriticAudience extends AbstractDb {
 
                     $vote_fields = array(
                         'name' => array('title' => 'Critic Name', 'required' => 1, 'class' => ''),
-                        'email' => array('title' => 'Email or Password', 'required' => 1, 'class' => ' noanon'),
+                        'email' => array('title' => 'Password', 'required' => 1, 'class' => ' noanon'),
                         'title' => array('title' => 'Review Title', 'required' => 0, 'class' => ''),
                     );
 

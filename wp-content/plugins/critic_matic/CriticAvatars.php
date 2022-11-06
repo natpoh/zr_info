@@ -73,20 +73,30 @@ class CriticAvatars extends AbstractDB {
             $avatar_data = $this->get_avatar_by_aid($aid);
         }
 
+        // Tomato avatars
+        $tomato = 1;
+
         if (!$avatar_data) {
             // Create avatar link
-            $avatar_data = $this->set_avatar_by_uid($user_id, $aid);
+            $avatar_data = $this->set_avatar_by_uid($user_id, $aid, $tomato);
+        }
+
+        $av_dir = $this->cketch_dir;
+        $tomato_class = '';
+        if ($tomato) {
+            $av_dir = $this->tomato_dir;
+            $tomato_class = ' tomato';
         }
 
         if ($avatar_data) {
             $img = $avatar_data->date . '.png';
-            $img_path = $this->img_service . 'wp-content/uploads/' . $this->cketch_dir . '/' . $img;
+            $img_path = $this->img_service . 'wp-content/uploads/' . $av_dir . '/' . $img;
 
             $img_path = $this->get_avatar_thumb($img_path, $size);
         }
 
 
-        $avatar = '<img class="neuro avatar" srcset="' . $img_path . '" width="' . $size . '" height="' . $size . '" />';
+        $avatar = '<img class="neuro avatar' . $tomato_class . '" srcset="' . $img_path . '" width="' . $size . '" height="' . $size . '" />';
         return $avatar;
     }
 
@@ -149,8 +159,14 @@ class CriticAvatars extends AbstractDB {
             // Get last data
             $last_avatar_data = $this->get_avatar_by_uid($user_id);
 
+            $tomato = 1;
+            $and_type = ' AND sketch=1';
+            if ($tomato) {
+                $and_type = ' AND tomato=1';
+            }
+
             // Get random avatar
-            $sql = "SELECT id, date FROM {$this->db['user_avatars']} WHERE uid=0 AND aid=0 AND sketch = 1 ORDER BY id ASC limit 1000";
+            $sql = "SELECT id, date FROM {$this->db['user_avatars']} WHERE uid=0 AND aid=0" . $and_type . " ORDER BY id ASC limit 1000";
             $results = $this->db_results($sql);
             if ($results) {
                 shuffle($results);
@@ -166,8 +182,14 @@ class CriticAvatars extends AbstractDB {
             }
 
             if ($avatar_data) {
+
+                $av_dir = $this->cketch_dir;               
+                if ($tomato) {
+                    $av_dir = $this->tomato_dir;                  
+                }
+
                 $img = $avatar_data->date . '.png';
-                $img_path = $this->img_service . 'wp-content/uploads/' . $this->cketch_dir . '/' . $img;
+                $img_path = $this->img_service . 'wp-content/uploads/' . $av_dir . '/' . $img;
                 $img_path = $this->get_avatar_thumb($img_path, $size);
             }
 
@@ -183,8 +205,7 @@ class CriticAvatars extends AbstractDB {
      * Cron 
      */
 
-    public function run_cron($cron_type = 1, $force = false, $debug = false) {
-
+    public function run_cron($cron_type = 1, $force = false, $debug = false, $count = 10) {
         if ($cron_type == 1) {
             // Parse avatar
             $this->parse_avatar($force, $debug);
@@ -193,7 +214,7 @@ class CriticAvatars extends AbstractDB {
             $this->get_sketch($force, $debug);
         } else if ($cron_type == 3) {
             // Get tomatoe
-            $this->get_tomato($force, $debug);
+            $this->get_tomato($force, $debug, $count);
         }
     }
 
@@ -370,33 +391,116 @@ class CriticAvatars extends AbstractDB {
         }
     }
 
-    public function get_tomato($force = false, $debug = false) {
-        $limit = 10;
-        $sql = "SELECT * FROM {$this->db['user_avatars']} WHERE sketch = 1 AND tomato = 0 ORDER BY id ASC limit " . (int) $limit;
+    public function get_random_tomato($debug = false) {
+        $dir = ABSPATH . 'analysis/imgtotomato/tomato_source/';
+        $file_array = [];
+        if ($handle = opendir($dir)) {
+            while (false !== ($file = readdir($handle))) {
+                if ($file != "." && $file != "..") {
+                    $file_array[] = $file;
+                }
+            }
+        }
+
+        $count = count($file_array);
+        $num = random_int(1, $count);
+        $tomato = $dir . $file_array[$num];
+        if ($debug) {
+            p_r($tomato);
+        }
+        return $tomato;
+    }
+
+    public function create_tomato_image($img_path, $dst_path, $debug = false) {
+
+        $watermark = ABSPATH . "analysis/imgtotomato/mask.png";
+        $tomato = $this->get_random_tomato($debug);
+
+        $img = imagecreatefrompng($img_path); //создаем исходное изображение
+
+        $water_img = imagecreatefrompng($watermark); //создаем водный знак
+        $tomato_img = imagecreatefrompng($tomato);
+
+        imagecopy($img, $water_img, 0, 0, 0, 0, 1024, 1024); //накладываем водный знак на изображение по заданным координатам.
+        imagetruecolortopalette($img, false, 2);
+        $rgb = imagecolorat($img, 10, 10);
+        // Получаем массив значений RGB
+        $colors = imagecolorsforindex($img, $rgb);
+        imagealphablending($img, true);
+        imagesavealpha($img, false);
+
+        $white = imagecolorexact($img, $colors["red"], $colors ["green"], $colors["blue"]);
+        imagecolortransparent($img, $white);
+
+        /// to tomato
+        imagealphablending($tomato_img, true);
+        imagesavealpha($tomato_img, true);
+        imagecopy($tomato_img, $img, 0, 0, 0, 0, 1024, 1024); //накладываем водный знак на изображение по заданным координатам.
+        imagesavealpha($img, true);
+
+        // imagepng($tomato_img, 'result.png');
+        // Set data
+        imagepng($tomato_img, $dst_path);
+        return 1;
+    }
+
+    public function get_tomato($force = false, $debug = false, $count = 10) {
+
+        $sql = "SELECT * FROM {$this->db['user_avatars']} WHERE sketch = 1 AND tomato = 0 ORDER BY id ASC limit " . (int) $count;
         $results = $this->db_results($sql);
         if ($debug) {
             p_r($results);
         }
         if ($results) {
             foreach ($results as $item) {
-                $img = $item->date . '.png';
-                $img_path = $this->img_service . 'wp-content/uploads/' . $this->cketch_dir . '/' . $img;
+                $img_name = $item->date . '.png';
 
-                // TODO get img and create tomatoe
-                $tomatoe_data = '';
+                // Source path
 
-                if ($tomatoe_data) {
-                    // Set data
-                    $tomato_dir = WP_CONTENT_DIR . '/uploads/' . $this->tomato_dir;
-                    if (class_exists('ThemeCache')) {
-                        ThemeCache::check_and_create_dir($tomato_dir);
+                $img_path = WP_CONTENT_DIR . '/uploads/' . $this->cketch_dir . '/' . $img_name;
+                if (!file_exists($img_path)) {
+                    $img_dst = $this->img_service . 'wp-content/uploads/' . $this->cketch_dir . '/' . $img_name;
+                    if ($debug) {
+                        p_r(array('Get dst file', $img_dst));
                     }
-                    // TODO write data to dir
+                    $content = file_get_contents($img_dst);
+                    if ($content) {
+                        file_put_contents($img_path, $content);
+                    }
+                    if (!file_exists($img_path)) {
+                        if ($debug) {
+                            p_r(array('File not found', $img_path));
+                        }
+                        continue;
+                    }
+                }
+
+                // Dst path
+                $tomato_dir = WP_CONTENT_DIR . '/uploads/' . $this->tomato_dir;
+                if (class_exists('ThemeCache')) {
+                    ThemeCache::check_and_create_dir($tomato_dir);
+                }
+                $dst_path = $tomato_dir . '/' . $img_name;
+
+                if ($debug) {
+                    p_r(array($img_path, $dst_path));
+                }
+
+                $this->create_tomato_image($img_path, $dst_path, $debug);
+
+                if (file_exists($dst_path)) {
+                    if ($debug) {
+                        p_r('Success');
+                    }
                     // Update DB
                     $data = array(
                         'tomato' => 1
                     );
                     $this->db_update($data, $this->db['user_avatars'], $item->id);
+                } else {
+                    if ($debug) {
+                        p_r('Error');
+                    }
                 }
             }
         }
@@ -414,11 +518,16 @@ class CriticAvatars extends AbstractDB {
         return $result;
     }
 
-    public function set_avatar_by_uid($uid = 0, $aid = 0) {
+    public function set_avatar_by_uid($uid = 0, $aid = 0, $tomato = 0) {
         if (!$uid && !$aid) {
             return array();
         }
-        $sql = "SELECT * FROM {$this->db['user_avatars']} WHERE uid=0 AND aid=0 AND sketch = 1";
+        $and_type = ' AND sketch = 1';
+        if ($tomato) {
+            $and_type = ' AND tomato = 1';
+        }
+
+        $sql = "SELECT * FROM {$this->db['user_avatars']} WHERE uid=0 AND aid=0" . $and_type;
         $result = $this->db_fetch_row($sql);
         if ($result) {
             $data = array();

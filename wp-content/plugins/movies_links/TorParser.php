@@ -21,7 +21,7 @@ class TorParser extends MoviesAbstractDB {
         'h' => 30,
         'd' => 1000,
     );
-    public $sort_pages = array('date', 'id', 'ip', 'drivers', 'dst_url', 'user_agents', 'url_meta', 'last_upd', 'last_reboot', 'status');
+    public $sort_pages = array('date', 'id', 'ip', 'drivers', 'dst_url', 'user_agents', 'url_meta', 'last_upd', 'last_reboot', 'status', 'type');
 
     public function __construct($ml = '') {
         $this->ml = $ml ? $ml : new MoviesLinks();
@@ -90,7 +90,7 @@ class TorParser extends MoviesAbstractDB {
         }
     }
 
-    public function get_url_content($url = '', &$header = '', $ip_limit = array(), $curl = false, $tor_mode = 0, $is_post = false, $post_vars = array(), $header_array = array(), $debug = false) {
+    public function get_url_content($url = '', &$header = '', $ip_limit = array(), $curl = false, $tor_mode = 0, $tor_agent = 0, $is_post = false, $post_vars = array(), $header_array = array(), $debug = false) {
         $content = '';
         $get_url_data = $this->get_tor_url($url, $ip_limit, $log_data, $tor_mode, $debug);
         $get_url = $get_url_data['url'];
@@ -109,6 +109,10 @@ class TorParser extends MoviesAbstractDB {
                 $data = $this->curl($get_url, $header);
             } else {
                 $user_agent = $get_url_data['agent'];
+                if ($tor_agent == 1) {
+                    $user_agent = $this->generate_ranome_user_agent();
+                }
+
                 $proxy = $get_url_data['proxy'];
                 if ($debug) {
                     print_r(array($url, $header, $user_agent, $proxy, $is_post, $post_vars, $header_array));
@@ -148,6 +152,17 @@ class TorParser extends MoviesAbstractDB {
             }
         }
         return $content;
+    }
+
+    public function generate_ranome_user_agent() {
+        // Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36
+        # Random agent
+        $v1 = rand(70, 101);
+        $v2 = rand(2000, 4900);
+        $v3 = rand(1, 99);
+
+        $agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/' . $v1 . '.0.' . $v2 . '.' . $v3 . ' Safari/537.36';
+        return $agent;
     }
 
     private function get_tor_url($url = '', $ip_limit = array(), &$log_data = array(), $tor_mode = 0, $debug = false) {
@@ -212,7 +227,7 @@ class TorParser extends MoviesAbstractDB {
 
                     $ip_error_last_hour_count = $this->get_logs($q_req, 1, 0, 'date', 'DESC', true);
                     if ($debug) {
-                        print_r($q_req);                    
+                        print_r($q_req);
                         print_r($ip_error_last_hour_count);
                     }
                     if ($ip_error_last_hour_count) {
@@ -680,9 +695,10 @@ class TorParser extends MoviesAbstractDB {
         return $this->get_agents($q_req, $page = 1, 1, '', '', true);
     }
 
-    private function create_agent_id($name) {
+    private function create_agent_id($name, $type = 0) {
         $data = array(
             'user_agent' => $name,
+            'type' => $type,
         );
         $this->db_insert($data, $this->db['user_agents']);
         $id = $this->getInsertId('id', $this->db['user_agents']);
@@ -695,11 +711,11 @@ class TorParser extends MoviesAbstractDB {
         return $id;
     }
 
-    public function add_agent_id($name) {
+    public function add_agent_id($name, $type = 0) {
         $id = 0;
 
         if (!$this->get_agent_id_by_name($name)) {
-            $id = $this->create_agent_id($name);
+            $id = $this->create_agent_id($name, $type);
         }
         return $id;
     }
@@ -711,15 +727,29 @@ class TorParser extends MoviesAbstractDB {
             // Agent exist
             return $agent_id;
         }
-        // 1. Get empty agents
-        $q_req = array(
-            'ip' => 0,
-            'random' => 1
-        );
-        $agents = $this->get_agents($q_req, 1, 1);
-        if ($agents) {
-            $item = current($agents);
-            $agent_id = $item->id;
+
+        $agent_id = 0;
+        $ss = $this->ml->get_settings();
+        $tor_agent = $ss['tor_agent'];
+
+        if ($tor_agent == 1) {
+            $agent_name = $this->generate_ranome_user_agent();
+            $agent_id = $this->add_agent_id($agent_name, 1);
+        } else {
+
+            // 1. Get empty agents
+            $q_req = array(
+                'ip' => 0,
+                'random' => 1
+            );
+            $agents = $this->get_agents($q_req, 1, 1);
+
+            if ($agents) {
+                $item = current($agents);
+                $agent_id = $item->id;
+            }
+        }
+        if ($agent_id) {
             $this->add_agent_ip_id($agent_id, $ip_id);
 
             // Log
@@ -733,11 +763,14 @@ class TorParser extends MoviesAbstractDB {
             return $agent_id;
         } else {
             // Remove old agents                                    
-            $message = 'Need more agents. Remove old';
-            $this->log_warn($message);
+            $message = 'Need more agents. Generate new';
+            $this->log_warn($message, $q_arr);
 
             $this->remove_old_agents(10);
-            $agent_id = $this->get_or_create_ip_agent($ip_id);
+            
+            // Generate agent
+            $agent_name = $this->generate_ranome_user_agent();
+            $agent_id = $this->add_agent_id($agent_name, 1);
             return $agent_id;
         }
     }
@@ -911,13 +944,13 @@ class TorParser extends MoviesAbstractDB {
 
     public function get_tor_ip($id) {
         $service = $this->get_service($id, true);
-        $proxy = $service->url;
-        $get_url = 'http://' . $this->web_driver . '/?p=ds1bfgFe_23_KJDS-F&nodriver=1&proxy=' . $proxy . '&url=http://' . $this->get_ip_url . '/?getip=1';
-        $content = file_get_contents($get_url);
-        $ip = '';
-        if (preg_match('/([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/', $content, $match)) {
-            $ip = $match[1];
-        }
+            $proxy = $service->url;
+            $get_url = 'http://' . $this->web_driver . '/?p=ds1bfgFe_23_KJDS-F&nodriver=1&proxy=' . $proxy . '&url=http://' . $this->get_ip_url . '/?getip=1';
+            $content = file_get_contents($get_url);
+            $ip = '';
+            if (preg_match('/([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/', $content, $match)) {
+                $ip = $match[1];
+            }
         return $ip;
     }
 
@@ -998,6 +1031,38 @@ class TorParser extends MoviesAbstractDB {
         return $site;
     }
 
+    public function import_services($import_services_list) {
+        if ($import_services_list) {
+
+            $rows = array($import_services_list);
+            if (strstr($import_services_list, "\n")) {
+                $rows = explode("\n", $import_services_list);
+            }
+            if ($rows) {
+                $urls = array();
+                $services = $this->get_services(array(), 1, 0, $orderby = 'type', 'ASC');
+                if ($services) {
+                    foreach ($services as $item) {
+                        $urls[$item->url] = 1;
+                    }
+                }
+
+                foreach ($rows as $row) {
+                    $col = explode('|', $row);
+                    if (sizeof($col) == 3) {
+                        $type = (int) $col[0];
+                        $url = trim($col[1]);
+                        $name = trim($col[2]);
+                        $status = 1;
+                        if (!isset($urls[$url])) {
+                            $this->add_service($status, $name, $url, $type);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /*
      * Log
      */
@@ -1024,8 +1089,8 @@ class TorParser extends MoviesAbstractDB {
         if ($q['url'] != -1) {
             $and_url = " AND l.url = " . (int) $q['url'];
         }
-        
-        
+
+
         // Type
         $and_type = '';
         if ($q['type'] != -1) {
@@ -1090,7 +1155,7 @@ class TorParser extends MoviesAbstractDB {
 
         $sql = "SELECT" . $select
                 . " FROM {$this->db['log']} l"
-                . " WHERE l.id>0" . $and_type . $and_url. $and_status . $and_ip . $and_driver . $and_date_gt . $and_date_lt . $and_orderby . $limit;
+                . " WHERE l.id>0" . $and_type . $and_url . $and_status . $and_ip . $and_driver . $and_date_gt . $and_date_lt . $and_orderby . $limit;
 
 
         if (!$count) {

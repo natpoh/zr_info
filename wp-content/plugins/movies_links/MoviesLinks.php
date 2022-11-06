@@ -27,6 +27,7 @@ class MoviesLinks extends MoviesAbstractDB {
             'tor_get_ip_driver' => '148.251.54.53:8110',
             'tor_ip_h' => 100,
             'tor_ip_d' => 1000,
+            'tor_agent' => 0,
         );
 
         $this->db = array(
@@ -143,11 +144,11 @@ class MoviesLinks extends MoviesAbstractDB {
     public function get_post_data($mid, $cid) {
         $post = $this->get_post_by_movie_id_and_cid($mid, $cid);
         $unserialise = array();
-        if ($post) {            
+        if ($post) {
             $options = unserialize($post->options);
             foreach ($options as $key => $value) {
                 $unserialise[$key] = base64_decode($value);
-            }  
+            }
             $post->opt_fields = $unserialise;
         }
         return $post;
