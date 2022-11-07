@@ -33,16 +33,19 @@ button.btn-small.active {
     background: #979797;
 }
 
-.neuro.avatar {
+.neuro.avatar.sketch {
     border-radius: 50%;
     border: 1px solid #5e5e5e;
 }
 
-.amsg_aut .avatar {      
-    width: 50px;
-    height: 50px;
-    border-radius: 50px;
-    overflow: hidden;
+.neuro.avatar {
+
+}
+
+.amsg_aut .avatar.tomato {      
+    width: 64px;
+    height: 64px;
+    max-width: 64px;
 }
 
 article.main {
@@ -51,7 +54,7 @@ article.main {
 }
 
 .main .avatar, .popover .avatar {
-    box-shadow: 1px 1px 3px #aeaeae;
+
 }
 
 /*nav*/

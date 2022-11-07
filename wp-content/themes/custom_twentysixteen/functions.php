@@ -24,6 +24,28 @@
  * @subpackage Twenty_Sixteen
  * @since Twenty Sixteen 1.0
  */
+global $themepath;
+$themepath = '/wp-content/themes/custom_twentysixteen';
+
+require_once (STYLESHEETPATH . '/app/CtgMultiRating.php');
+require_once (STYLESHEETPATH . '/app/FileService.php');
+require_once (STYLESHEETPATH . '/app/ImgService.php');
+require_once (STYLESHEETPATH . '/app/PandoraAdmin.php');
+require_once (STYLESHEETPATH . '/app/PandoraBlocks.php');
+require_once (STYLESHEETPATH . '/app/PandoraComments.php');
+require_once (STYLESHEETPATH . '/app/PandoraMembers.php');
+require_once (STYLESHEETPATH . '/app/PandoraMenu.php');
+require_once (STYLESHEETPATH . '/app/PandoraScripts.php');
+require_once (STYLESHEETPATH . '/app/PandoraStyles.php');
+require_once (STYLESHEETPATH . '/app/TextOp.php');
+
+
+# Long cookies for authors
+
+$version = '1.0';
+if (defined('LASTVERSION')) {
+    $version = LASTVERSION;
+}
 /**
  * Twenty Sixteen only works in WordPress 4.4 or later.
  */
@@ -33,11 +55,27 @@ if (version_compare($GLOBALS['wp_version'], '4.4-alpha', '<')) {
 
 require get_template_directory() . '/template/include/create_tsumb.php';
 
+// hide admin bar
+add_filter('show_admin_bar', '__return_false');
+
+// Scripts
+wp_enqueue_script('transition', $themepath . '/js/bs3/transition.js', array('jquery'), false, true);
+wp_enqueue_script('bs3', $themepath . '/js/bs3/bootstrap.min.js', array('jquery'), false, true);
+
+if (function_exists('isAuthorPage')) {
+    if (isAuthorPage()) {
+        wp_enqueue_script('author', $themepath . '/js/author_1.js', array('jquery'), $version, true);
+    }
+}
+
+// Styles
 add_action('wp_print_styles', 'custom_styles', 100);
+wp_enqueue_style('users-style', get_template_directory_uri() . '/css/users.css', array(), $version);
+wp_enqueue_style('fontello', $themepath . '/fontello/css/fontello.css', array(), $version);
 
 function custom_styles() {
     wp_deregister_style('twentysixteen-style');
-    $version = '1.2.26';
+    $version = '1.2.27';
     if (defined('LASTVERSION')) {
         $version = $version . LASTVERSION;
     }
@@ -1885,7 +1923,7 @@ if (!function_exists('wpclearpostcache')) {
     function wpclearpostcache() {
         echo '<h1>Clear all page cache</h1>';
 
-        echo '<p><a href="'.WP_SITEURL.'/wp-content/plugins/critic_matic/cron/clear_cache.php?p=sdf23_ds-f23DS&mode=all">Clear critics cache</a></p>';
+        echo '<p><a href="' . WP_SITEURL . '/wp-content/plugins/critic_matic/cron/clear_cache.php?p=sdf23_ds-f23DS&mode=all">Clear critics cache</a></p>';
         $i = 0;
 
         $dir = WP_CONTENT_DIR . "/uploads/longcache";
@@ -1942,17 +1980,9 @@ if (!function_exists('wpclearpostcache')) {
 
         ThemeCache::clearCacheAll('critics');
         ThemeCache::clearCacheAll('movies');
-
-
-
-
     }
 
     ///clear audeience cache
-
-
-
-
 }
 if (!function_exists('custom_wprss_pagination')) {
 
@@ -2081,7 +2111,6 @@ if (current_user_can('administrator')) {
 
 
 add_filter('transition_post_status', 'check_delete_post_cache', 10, 3);
-
 
 function list_hooked_functions($tag = false) {
     global $wp_filter;
