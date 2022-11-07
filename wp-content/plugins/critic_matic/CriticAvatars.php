@@ -73,20 +73,30 @@ class CriticAvatars extends AbstractDB {
             $avatar_data = $this->get_avatar_by_aid($aid);
         }
 
+        // Tomato avatars
+        $tomato = 1;
+
         if (!$avatar_data) {
             // Create avatar link
-            $avatar_data = $this->set_avatar_by_uid($user_id, $aid);
+            $avatar_data = $this->set_avatar_by_uid($user_id, $aid, $tomato);
+        }
+
+        $av_dir = $this->cketch_dir;
+        $tomato_class = '';
+        if ($tomato) {
+            $av_dir = $this->tomato_dir;
+            $tomato_class = ' tomato';
         }
 
         if ($avatar_data) {
             $img = $avatar_data->date . '.png';
-            $img_path = $this->img_service . 'wp-content/uploads/' . $this->cketch_dir . '/' . $img;
+            $img_path = $this->img_service . 'wp-content/uploads/' . $av_dir . '/' . $img;
 
             $img_path = $this->get_avatar_thumb($img_path, $size);
         }
 
 
-        $avatar = '<img class="neuro avatar" srcset="' . $img_path . '" width="' . $size . '" height="' . $size . '" />';
+        $avatar = '<img class="neuro avatar' . $tomato_class . '" srcset="' . $img_path . '" width="' . $size . '" height="' . $size . '" />';
         return $avatar;
     }
 
@@ -149,8 +159,14 @@ class CriticAvatars extends AbstractDB {
             // Get last data
             $last_avatar_data = $this->get_avatar_by_uid($user_id);
 
+            $tomato = 1;
+            $and_type = ' AND sketch=1';
+            if ($tomato) {
+                $and_type = ' AND tomato=1';
+            }
+
             // Get random avatar
-            $sql = "SELECT id, date FROM {$this->db['user_avatars']} WHERE uid=0 AND aid=0 AND sketch = 1 ORDER BY id ASC limit 1000";
+            $sql = "SELECT id, date FROM {$this->db['user_avatars']} WHERE uid=0 AND aid=0" . $and_type . " ORDER BY id ASC limit 1000";
             $results = $this->db_results($sql);
             if ($results) {
                 shuffle($results);
@@ -166,8 +182,14 @@ class CriticAvatars extends AbstractDB {
             }
 
             if ($avatar_data) {
+
+                $av_dir = $this->cketch_dir;               
+                if ($tomato) {
+                    $av_dir = $this->tomato_dir;                  
+                }
+
                 $img = $avatar_data->date . '.png';
-                $img_path = $this->img_service . 'wp-content/uploads/' . $this->cketch_dir . '/' . $img;
+                $img_path = $this->img_service . 'wp-content/uploads/' . $av_dir . '/' . $img;
                 $img_path = $this->get_avatar_thumb($img_path, $size);
             }
 
@@ -183,8 +205,7 @@ class CriticAvatars extends AbstractDB {
      * Cron 
      */
 
-    public function run_cron($cron_type = 1, $force = false, $debug = false, $count=10) {
-
+    public function run_cron($cron_type = 1, $force = false, $debug = false, $count = 10) {
         if ($cron_type == 1) {
             // Parse avatar
             $this->parse_avatar($force, $debug);
@@ -425,7 +446,7 @@ class CriticAvatars extends AbstractDB {
 
     public function get_tomato($force = false, $debug = false, $count = 10) {
 
-        $sql = "SELECT * FROM {$this->db['user_avatars']} WHERE sketch = 1 AND tomato = 0 ORDER BY id ASC limit " . (int) $count;
+        $sql = "SELECT * FROM {$this->db['user_avatars']} WHERE sketch = 1 AND tomato < 2 ORDER BY id ASC limit " . (int) $count;
         $results = $this->db_results($sql);
         if ($debug) {
             p_r($results);
@@ -473,7 +494,7 @@ class CriticAvatars extends AbstractDB {
                     }
                     // Update DB
                     $data = array(
-                        'tomato' => 1
+                        'tomato' => 2
                     );
                     $this->db_update($data, $this->db['user_avatars'], $item->id);
                 } else {
@@ -497,11 +518,16 @@ class CriticAvatars extends AbstractDB {
         return $result;
     }
 
-    public function set_avatar_by_uid($uid = 0, $aid = 0) {
+    public function set_avatar_by_uid($uid = 0, $aid = 0, $tomato = 0) {
         if (!$uid && !$aid) {
             return array();
         }
-        $sql = "SELECT * FROM {$this->db['user_avatars']} WHERE uid=0 AND aid=0 AND sketch = 1";
+        $and_type = ' AND sketch = 1';
+        if ($tomato) {
+            $and_type = ' AND tomato = 1';
+        }
+
+        $sql = "SELECT * FROM {$this->db['user_avatars']} WHERE uid=0 AND aid=0" . $and_type;
         $result = $this->db_fetch_row($sql);
         if ($result) {
             $data = array();
