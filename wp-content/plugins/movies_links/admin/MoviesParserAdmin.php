@@ -174,7 +174,11 @@ class MoviesParserAdmin extends ItemAdmin {
         1 => 'Tor',
         2 => 'Proxy',
     );
-
+    public $tor_agent = array(
+        0 => 'List agents',
+        1 => 'Generate',
+    );
+    
     /* Generate urls */
     public $rwt_movie_type = array(
         'a' => 'All',
