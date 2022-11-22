@@ -244,7 +244,7 @@ wpcr3a.ajaxPost = function (parent, data, cb) {
             // console.log(rtn);
             if (rtn.err.length) {
                 rtn.err = rtn.err.join('\n');
-                alert(rtn.err);
+                wpcr3a.msg(rtn.err);
                 wpcr3a.enableSubmit();
                 return cb(rtn.err);
             }
@@ -257,11 +257,28 @@ wpcr3a.ajaxPost = function (parent, data, cb) {
             return cb(null, rtn);
         },
         error: function (rtn) {
-            alert('An unknown error has occurred.');
+            wpcr3a.msg('An unknown error has occurred.');
             wpcr3a.enableSubmit();
         }
     });
 };
+
+wpcr3a.msg = function (t, type = 'error') {
+    var $ = jQuery;
+    $('.msg-data').html('<div class="msg ' + type + '">' + t + '</div>');
+    var msg_holder = $('.msg-holder');
+    msg_holder.show();
+    msg_holder.addClass('active');
+    $('.popup-inner').scrollTop(0);
+
+    $("#audience_respond .text-input").on("change keyup paste", function () {
+        var msg_holder = $('.msg-holder');
+        if (msg_holder.hasClass('active')) {
+            msg_holder.removeClass('active');
+            msg_holder.hide();
+        }
+    });
+}
 
 wpcr3a.submit = function (e) {
     var $ = jQuery;
@@ -286,9 +303,9 @@ wpcr3a.submit = function (e) {
     $.each(fields, function (i, v) {
         v = $(v);
         if (v.hasClass('wpcr3_required') && $.trim(v.val()).length === 0) {
-            var label = div2.find('label[for="' + v.attr('id') + '"]'), err = '';
+            var label = div2.find('label[for="' + v.attr('id') + '"] .rtitle'), err = '';
             if (label.length) {
-                err = $.trim(label.text().replace(':', '')) + ' is required.';
+                err = $.trim(label.text().replace(':', '')) + ' is required.<br />';
             } else {
                 err = 'A required field has not been filled out.';
             }
@@ -298,7 +315,7 @@ wpcr3a.submit = function (e) {
 
     if (req.length > 0) {
         req = req.join("\n");
-        alert(req);
+        wpcr3a.msg(req);
         return false;
     }
 
@@ -384,18 +401,19 @@ wpcr3a.init = function () {
         return false;
     });
 
-    $("input#anon_review").click(function (e) {
-        var $this = $(this);
-        if ($this.is(":checked")) {
-            $('#audience_respond').addClass('anon');            
-            $('#wpcr3_fname').removeClass('wpcr3_required');
-            $('#wpcr3_femail').removeClass('wpcr3_required');                       
-        } else {
+    $("body").on("input", "#wpcr3_fname", function () {
+        var v = $(this);
+        var keyword = v.val();
+        if (keyword.length > 0) {
             $('#audience_respond').removeClass('anon');
-            $('#wpcr3_fname').addClass('wpcr3_required');
-            $('#wpcr3_femail').addClass('wpcr3_required');           
-        }        
+            $('#wpcr3_femail').addClass('wpcr3_required');
+        } else {
+            $('#audience_respond').addClass('anon');
+            $('#wpcr3_femail').removeClass('wpcr3_required');            
+        }
+        return false;
     });
+
 
     $("#wp-id_wpcr3_ftext-wrap:not(.init)").each(function () {
         $(this).addClass('.init');

@@ -65,12 +65,14 @@ class UserCarma extends AbstractDBWp {
             'users' => $table_prefix . 'users',
             'carma' => $table_prefix . 'carma',
             'carma_trend' => $table_prefix . 'carma_trend',
+            'carma_log' => $table_prefix . 'carma_log',
+            'ips' => $table_prefix . 'ips',
             'user_names' => $table_prefix . 'user_names',
         );
     }
 
     function getCarma($id) {
-        $sql = sprintf("SELECT rating, carma FROM {$this->db['carma']} carma WHERE uid = %d", (int) $id);
+        $sql = sprintf("SELECT rating, carma FROM {$this->db['carma']} WHERE uid = %d", (int) $id);
         $result = $this->db_fetch_row($sql);
 
         if ($result)
@@ -78,18 +80,42 @@ class UserCarma extends AbstractDBWp {
         else
             return array(0, 0);
     }
+    
+    
+    function getCarmaTrend($id, $limit=100) {
+        $sql = sprintf("SELECT id, rating, carma, date_added FROM {$this->db['carma_trend']} WHERE uid = %d ORDER BY date_added DESC LIMIT %d", (int) $id, $limit);
+        $result = $this->db_results($sql);
+        return $result;
+    }
 
-    function emotions_rating($wp_uid = 0, $vote_value = 1, $ratingback = false) {
+    public function getCarmaLog($id, $limit=100) {
+                $sql = sprintf("SELECT * FROM {$this->db['carma_log']} WHERE uid = %d ORDER BY date_added DESC LIMIT %d", (int) $id, $limit);
+        $result = $this->db_results($sql);
+        return $result;
+    }
+    
+    function emotions_rating($wp_uid = 0, $vote_value = 1, $post_id=0, $ratingback = false) {
 
         $data = $this->getUserById($wp_uid);
         $rating = $data->rating + abs($vote_value);
         $carma = $data->carma;
+        
+        
+        $vote_log_value = abs($vote_value);
         if ($ratingback) {
             $rating = $data->rating - abs($vote_value);
+            $vote_log_value = - abs($vote_value);
         }
 
-        //update rating
+        // Update rating
         $this->updateUserRating($wp_uid, $rating, $carma);
+
+        // Add log
+        if ($ratingback) {
+            $vote_value = - abs($vote_value);
+        }
+
+        $this->add_rating_log($wp_uid, $vote_log_value, 0, 1, $post_id, $ratingback);
     }
 
     function updateUserRating($uid, $rating = 0, $carma = 0) {
@@ -122,7 +148,41 @@ class UserCarma extends AbstractDBWp {
             'uid' => (int) $uid,
             'date_added' => (int) $date_added
         );
-        $this->db_insert($data, $this->db['carma']);
+        $this->db_insert($data, $this->db['carma_trend']);
+    }
+
+    public function add_rating_log($uid, $rating = 0, $carma = 0, $type = 0, $post_id = 0, $ratingback = false) {
+        // Dst user
+        $user_id = 0;
+        if (function_exists('wp_get_current_user')) {
+            $user = wp_get_current_user();
+            $user_id = $user->exists() ? $user->ID : 0;
+        }
+
+        // Dst ip
+        $ip_id = 0;
+        $ip = $this->cm->get_remote_ip();
+        if ($ip) {
+            $ip_item = $this->cm->get_or_create_ip($ip);
+            if ($ip_item) {
+                $ip_id = $ip_item->id;
+            }
+        }
+
+        // Add to log
+        $date_added = $this->curr_time();
+        $data = array(
+            'uid' => (int) $uid,
+            'rating' => (int) $rating,
+            'carma' => (int) $carma,
+            'date_added' => (int) $date_added,
+            'type' => (int) $type,
+            'dst_uid' => (int) $user_id,
+            'dst_ip' => (int) $ip_id,
+            'rating_back' => $ratingback ? 1 : 0,
+            'post_id' => (int) $post_id,
+        );
+        $this->db_insert($data, $this->db['carma_log']);
     }
 
     function getUsersByCookie($email) {
@@ -319,7 +379,7 @@ class UserCarma extends AbstractDBWp {
         $result = $this->db_results($sql);
         if ($result) {
             foreach ($result as $user) {
-               $this->wp_author_add_name($user->name, $user->id); 
+                $this->wp_author_add_name($user->name, $user->id);
             }
         }
     }

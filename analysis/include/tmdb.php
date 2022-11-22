@@ -1855,14 +1855,110 @@ if (strpos($content, $pos)) {
 return $array_result;
 }
 
-public static  function get_data($key,$type)
+
+private static function search_data_to_object($data,$debug)
+{
+    $object=[];
+
+    $pos = strpos($data,'<script id="__NEXT_DATA__" type="application/json">');
+    if ($pos) {
+        $data = substr($data, $pos);
+        $pos2 = strpos($data, ',"nextCursor"');
+        $data = substr($data, 51, $pos2 - 51);
+        $data = $data . '}}}}';
+        $data = mb_convert_encoding($data, 'utf-8', mb_detect_encoding($data));
+        $object = json_decode($data, 1);
+
+        if ($debug) {
+
+            switch (json_last_error()) {
+                case JSON_ERROR_NONE:
+                    $error = '';
+                    break;
+                case JSON_ERROR_DEPTH:
+                    $error = 'Maximum stack depth exceeded';
+                    break;
+                case JSON_ERROR_STATE_MISMATCH:
+                    $error = 'Underflow or the modes mismatch';
+                    break;
+                case JSON_ERROR_CTRL_CHAR:
+                    $error = 'Unexpected control character found';
+                    break;
+                case JSON_ERROR_SYNTAX:
+                    $error = 'Syntax error, malformed JSON';
+                    break;
+                case JSON_ERROR_UTF8:
+                    $error = 'Malformed UTF-8 characters, possibly incorrectly encoded';
+                    break;
+                case JSON_ERROR_RECURSION:
+                    $error = 'One or more recursive references in the value to be encoded';
+                    break;
+                case JSON_ERROR_INF_OR_NAN:
+                    $error = 'One or more NAN or INF values in the value to be encoded';
+                    break;
+                case JSON_ERROR_UNSUPPORTED_TYPE:
+                    $error = 'A value of a type that cannot be encoded was given';
+                default:
+                    $error = 'Unknown error';
+                    break;
+            }
+            if ($error) {
+                echo $error;
+            }
+        }
+
+
+    }
+    else
     {
-        $key = urlencode($key);
-        $url ='https://www.imdb.com/find?q='.$key.'&s=tt&ttype='.$type;
+        if ($debug) {
+            echo 'cant find pos0<br>';
+        }
+    }
+    return $object;
+}
+
+public static  function get_data($key,$type,$debug=0)
+    {
 
         $result_data=[];
+        $key = urlencode($key);
+        $url ='https://www.imdb.com/find?q='.$key.'&s=tt&ttype='.$type;
         $data = GETCURL::getCurlCookie($url);
+       //$data=file_get_contents(ABSPATH.'wp-content/uploads/test.html');
+        if ($debug)
+        {
+           // print_r($data);
+        }
+
+        $object = self::search_data_to_object($data,$debug);
+
+        if ($object)
+        {
+            $results = $object["props"]["pageProps"]["titleResults"]["results"];
+
+
+
+            foreach ($results as $val)
+            {
+                $mid = intval( substr($val['id'],2));
+              $result_data[$mid] = $val;
+            }
+
+            if ($debug)
+            {
+              //  print_r($result_data);
+            }
+        }
+        else
+            {
+
+
+
+       // $elements = self::get_dom("//table[@class='findList']",  $data);
         // print_r($data['body']);
+
+
         $regv = '#\<tr[^\>]+\>[^\>]+\>[^\"]+\"([^\"]+)\"[^\<]+\<img src\=\"([^\"]+)\"[^\>]+\>[^\>]+\>[^\>]+\>[^\>]+\>[^\>]+\>([^\<]+)(\<\/a>([^\<]+))*#';
         if (preg_match_all($regv,$data,$mach)) {
             foreach ($mach[0] as $index => $data2) {
@@ -1871,9 +1967,46 @@ public static  function get_data($key,$type)
                     $movie_id = $mresult[1];
                     $movie_id = intval($movie_id);
                 }
-                $result_data[$movie_id] = array($mach[1][$index], $mach[2][$index], $mach[3][$index], $mach[5][$index]);
+              //  $result_data[$movie_id] = array($mach[1][$index], $mach[2][$index], $mach[3][$index], $mach[5][$index]);
+
+                $poster='';
+                if (strstr($mach[2][$index],'._V1_'))
+                {
+                    $poster = substr($mach[2][$index],0,strpos($mach[2][$index],'._V1_')).'._V1_.jpg';
+                    $result_data[$movie_id]['titlePosterImageModel']['url'] =$poster;
+                }
+
+
+                $result_data[$movie_id]['titleNameText']= $mach[3][$index];
+
+                $result_data[$movie_id]['titleReleaseText'] =($mach[5][$index]);
+                $result_data[$movie_id]['id']= 'tt'.sprintf('%07d', $movie_id);
+
             }
-        }
+            }
+            }
+
+
+//        [118767] => Array
+//    (
+//        [0] => /title/tt0118767/?ref_=fn_tt_tt_1
+//        [1] => https://m.media-amazon.com/images/M/MV5BOTMyMmIyYjUtYzZkZS00NTIxLTk4ODItNWI4ZWUzNDA5MWY4XkEyXkFqcGdeQXVyMTAzMDg2MjMx._V1_UX32_CR0,0,32,44_AL_.jpg
+//        [2] => Брат
+//          [3] =>  (1997)
+//        )
+//        $poster =  $data['titlePosterImageModel']['url'];
+//        $postersmall = str_replace('_V1_.jpg','_V1_QL75_UY330_CR1,0,220,330_.jpg',$poster);
+//        $posterbig = str_replace('_V1_.jpg','_V1_QL75_UY660_CR1,0,440,660_.jpg',$poster);
+//
+//        $array_not_enable[$movie_id]=array('link'=>'https://www.imdb.com/title/' . $data['id'] ,
+//            'title'=> $data['titleNameText'],
+//            'poster'=>$postersmall,
+//            'posterbig'=>$posterbig,
+//            'desc'=>$data['titleReleaseText'],
+//            'cast'=>$data['topCredits'],
+//            'type'=>$data['imageType']
+//        );
+
             return $result_data;
     }
 

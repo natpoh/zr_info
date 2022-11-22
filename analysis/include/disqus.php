@@ -102,12 +102,16 @@ class DISQUS_DATA
         }
 
 
+       // var_dump($media);
+
         if ($media) {
             foreach ($media as $mdata) {
 
-                if ($mdata->html && $mdata->mediaType == 3) {
-                    //  $content.=  $mdata->html;
-                }
+//                if ($mdata->html && $mdata->mediaType == 3) {
+//                  // $content.=  $mdata->html;
+//                    $message = str_replace($array_replace[$mdata->resolvedUrl], $mdata->html, $message);
+//
+//                }
                 if ($mdata->url && ($mdata->mediaType == 1 || $mdata->mediaType == 2)) {
 
                     if ($array_replace[$mdata->url]) {
@@ -120,7 +124,28 @@ class DISQUS_DATA
         if (!function_exists('pccf_filter')) {
             include(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/include/pccf_filter.php');
         }
+        $reg_v = '#youtu(\.)*be(\.com)*\/(watch\?v\=)*([a-zA-Z0-9_-]+)#';
+        $regv_2 = '#\<a href.+(m\.)*youtu(\.)*be(\.com)*\/(watch\?v\=)*([a-zA-Z0-9_-]{11}+).+\<\/a\>#Uis';
+        if (preg_match_all($regv_2, $message, $match)) {
 
+           //var_dump($match);
+
+            $r=0;
+            foreach ($match[0] as $i=> $val)
+            {
+                $r++;
+
+               // $link = 'https://www.youtube.com/watch?v=' . $match[5][$i];
+                $linkdata ='<div class="media full"><div class="iframe youtube"><iframe id="player" allowfullscreen="1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"  src="https://www.youtube.com/embed/'.$match[5][$i].'?wmode=opaque&amp;enablejsapi=1&amp;origin=http%3A%2F%2Fcdn.embedly.com&amp;widgetid=1" width="640" height="360" frameborder="0"></iframe></div></div>';
+
+
+              $message = str_replace($val,$linkdata,$message);
+            }
+
+
+        }
+
+        //
         if (function_exists('pccf_filter')) {
             $message = pccf_filter($message);
         }
@@ -183,7 +208,7 @@ class DISQUS_DATA
 
         if ($parent_name)
         {
-            $movie_parents= '@ '.$parent_name.'\'s ';
+            $movie_parents= ''; //@ '.$parent_name.'\'s ';
         }
 
         if ($comment_type == 'movie') {
@@ -252,11 +277,11 @@ class DISQUS_DATA
 
             if (!$movie_parents)
             {
-                $movie_parents=  '@ '.$a_name.'\'s ';
+              //  $movie_parents=  '@ '.$a_name.'\'s ';
             }
 
 
-            $movie_block = '<div class="review_block review_' . $array_type[$critic_type] . '">' . $movie_parents. '"' . $movie_block . '" '.$array_type[$critic_type].' Review</div>';
+            $movie_block = '<div class="review_block review_' . $array_type[$critic_type] . '">' . $movie_block . '</div>';
         }
 
 

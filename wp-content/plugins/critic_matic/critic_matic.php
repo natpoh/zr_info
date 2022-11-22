@@ -24,7 +24,7 @@ if (!function_exists('add_action')) {
 define('CRITIC_MATIC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CRITIC_MATIC_PLUGIN_URL', plugin_dir_url(__FILE__));
 
-$version = '1.0.87';
+$version = '1.0.88';
 if (defined('LASTVERSION')) {
     define('CRITIC_MATIC_VERSION', $version . LASTVERSION);
 } else {
@@ -295,6 +295,32 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8_general_ci;";
     dbDelta($sql);
     critic_matic_create_index(array('uid', 'date_added'), $table_prefix . "carma_trend");
+
+
+    /*
+     * Carma log
+     * Type 1 - emotions
+     */
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "carma_log`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+				`uid` int(11) NOT NULL DEFAULT '0',					
+                                `rating` int(11) NOT NULL DEFAULT '0',
+				`carma` int(11) NOT NULL DEFAULT '0',
+                                `date_added` int(11) NOT NULL DEFAULT '0', 
+                                `type` int(11) NOT NULL DEFAULT '0',                                
+                                `rating_back` int(11) NOT NULL DEFAULT '0',
+                                `post_id` int(11) NOT NULL DEFAULT '0',
+                                `dst_uid` int(11) NOT NULL DEFAULT '0',
+                                `dst_ip` int(11) NOT NULL DEFAULT '0',
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8_general_ci;";
+    dbDelta($sql);
+
+    critic_matic_create_index(array('uid', 'date_added', 'type', 'dst_uid', 'dst_ip', 'post_id'), $table_prefix . "carma_log");
+
+
+
 
     /* User Names */
 
@@ -1026,6 +1052,20 @@ function critic_matic_plugin_activation() {
     $sql = "ALTER TABLE `data_user_avatars` ADD `tomato` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('tomato'), "data_user_avatars");
+
+
+    // Critic crowd Logs
+    $sql = "CREATE TABLE IF NOT EXISTS  `critic_crowd_log`(
+				`id` int(11) unsigned NOT NULL auto_increment,				
+                                `date` int(11) NOT NULL DEFAULT '0',
+                                `cid` int(11) NOT NULL DEFAULT '0',
+                                `type` int(11) NOT NULL DEFAULT '0',
+                                `status` int(11) NOT NULL DEFAULT '0',
+				`message` varchar(255) NOT NULL default '',				
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('date', 'cid', 'type', 'status'), "critic_crowd_log");
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {

@@ -45,7 +45,9 @@ class Pdoa {
     public static function last_id() {
         return static::$pdo->lastInsertId();
     }
-
+    public static function last_error() {
+        return static::$pdo->errorInfo();
+    }
     public static function db_results($sql, $array = []) {
         static::connect();
         $sth = static::$pdo->prepare($sql);
@@ -78,24 +80,25 @@ class Pdoa {
             $values[] = $value;
             $val_str[] = "?";
         }
-        $sql = "INSERT INTO {$table} (" . implode(",", $keys) . ") VALUES (" . implode(",", $val_str) . ")";
-        //print_r($data);
-        //print_r($sql);
+        $sql = "INSERT INTO {$table} (" . implode(",", $keys) . ") VALUES (" . implode(",", $val_str) . ")";        
+        // print_r($data);
+        // print_r($sql);
         static::connect();
         $sth = static::$pdo->prepare($sql);
         $sth->execute($values);
         // $arr = $sth->errorInfo();
         // print_r($arr);
+        // exit;
     }
 
-    public static function db_update($data, $table, $id) {
+    public static function db_update($data, $table, $id, $id_name = "id") {
         $update = array();
         $values = array();
         foreach ($data as $key => $value) {
             $update[] = $key . "=?";
             $values[] = $value;
         }
-        $sql = "UPDATE {$table} SET " . implode(',', $update) . " WHERE id = " . $id;
+        $sql = "UPDATE {$table} SET " . implode(',', $update) . " WHERE " . $id_name . " = " . $id;
 
         static::connect();
         $sth = static::$pdo->prepare($sql);

@@ -212,21 +212,6 @@ div.wpcr3_rating_style1_score div.wpcr3_rating_style1_score5 {width:100%; z-inde
 body.theme_dark .succes_send {
 	background-color: #233623;
 }
-#audience_form .nte {
-	display: inline-block;
-}
-
-#audience_form .nte .btn {
-	cursor: pointer;
-	border: 1px solid #8f8f8f;
-	border-radius: 50%;
-	width: 18px;
-	height: 18px;
-	text-align: center;
-	line-height: 18px;
-	font-size: 15px;
-	color: #8f8f8f;
-}
 .wpcr3_respond_2 .wpcr3_div_2{
 	overflow: hidden;
 	height: 377px;

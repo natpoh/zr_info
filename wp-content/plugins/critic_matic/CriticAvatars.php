@@ -64,7 +64,7 @@ class CriticAvatars extends AbstractDB {
         return $avatar;
     }
 
-    public function get_or_create_user_avatar($user_id = 0, $aid = 0, $size = 64) {
+    public function get_or_create_user_avatar($user_id = 0, $aid = 0, $size = 64, $type = 'tomato') {
         $img_path = '/wp-content/themes/custom_twentysixteen/images/antomface-150.jpg';
 
         if ($user_id) {
@@ -81,17 +81,21 @@ class CriticAvatars extends AbstractDB {
             $avatar_data = $this->set_avatar_by_uid($user_id, $aid, $tomato);
         }
 
-        $av_dir = $this->cketch_dir;
-        $tomato_class = '';
-        if ($tomato) {
-            $av_dir = $this->tomato_dir;
-            $tomato_class = ' tomato';
-        }
-
         if ($avatar_data) {
+            $av_dir = $this->cketch_dir;
+            $tomato_class = ' sketch';
             $img = $avatar_data->date . '.png';
-            $img_path = $this->img_service . 'wp-content/uploads/' . $av_dir . '/' . $img;
 
+            if ($type == 'tomato') {
+                $av_dir = $this->tomato_dir;
+                $tomato_class = ' tomato';
+            } else if ($type == 'photo') {
+                $av_dir = $this->source_dir;
+                $tomato_class = ' photo';
+                $img = $avatar_data->date . '.jpg';
+            }
+
+            $img_path = $this->img_service . 'wp-content/uploads/' . $av_dir . '/' . $img;
             $img_path = $this->get_avatar_thumb($img_path, $size);
         }
 
@@ -183,9 +187,9 @@ class CriticAvatars extends AbstractDB {
 
             if ($avatar_data) {
 
-                $av_dir = $this->cketch_dir;               
+                $av_dir = $this->cketch_dir;
                 if ($tomato) {
-                    $av_dir = $this->tomato_dir;                  
+                    $av_dir = $this->tomato_dir;
                 }
 
                 $img = $avatar_data->date . '.png';

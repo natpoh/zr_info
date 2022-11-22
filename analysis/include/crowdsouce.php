@@ -18,7 +18,16 @@ if (!defined('CROWDSOURCEURL')) {
 class Crowdsource
 {
 
+public static function get_search_block($content_input,$movie_block='',$class='')
+{
+    $content= '<div class="check_container_main">'.$movie_block.'</div>
+' . $content_input . '<div class="crowd_items_search"><div class="advanced_search_menu crowd_items '.$class.'" style="display: none;">
+                        <div class="advanced_search_first"></div>
+                        <div class="advanced_search_data advanced_search_hidden"></div>
+                    </div></div>';
 
+    return $content;
+}
 
 
     public static  function crop_text($text = '', $length = 10, $tchk = true) {
@@ -79,14 +88,44 @@ class Crowdsource
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
                 Import::create_commit('', 'delete', "data_" . $table, array('id' => $id), 'crowsource',5);
 
-            }
-            else
+            } else if (strstr ($request, 'critic_status_'))
             {
-                $sql ="update data_".$table." set status =".intval($request)." where id=".$id;
+                $new_status =  str_replace('critic_status_', '', $request);
+                $sql ="update data_".$table." set critic_status =".intval($new_status)." where id=".$id;
 
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
                 Import::create_commit('', 'update', "data_" . $table, array('id' => $id), 'crowsource',5);
 
+            }
+            else
+            {
+                $new_status = intval($request);
+                // Change post status to trash
+                if ($new_status==2){
+                    
+                    $sql = sprintf("SELECT review_id FROM data_".$table." WHERE id=%d", $id);
+                    $review_id = Pdo_an::db_get_var($sql);
+                    
+                    if ($review_id){
+                        if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
+                            define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
+                            require_once( CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php' );
+                        }                        
+                        $cm = new CriticMatic();
+                        $cm->trash_post_by_id($review_id);
+                    }
+                } else if ($new_status==1){
+                    $sql ="update data_".$table." set critic_status =0 where id=".$id;
+                    Pdo_an::db_query($sql);
+                }
+                
+                
+                $sql ="update data_".$table." set status =".$new_status." where id=".$id;
+
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                Import::create_commit('', 'update', "data_" . $table, array('id' => $id), 'crowsource',5);
+
+                
             }
 
             Pdo_an::db_query($sql);
@@ -101,7 +140,14 @@ class Crowdsource
         }
 
     }
+    public static function get_movie_template_small($ma_id,$cfront=[])
+    {
 
+        $ma = $cfront->get_ma();
+        $movie = $ma->get_post($ma_id);
+        $movie_templ = $cfront->get_small_movie_templ($movie,1);
+        return '<div class="custom_crowd_movie" data-value="'.$ma_id.'">'.$movie_templ.'</div>';
+    }
     public static function get_movie_template($id,$ma_id,$cfront=[],$main='',$mstat='')
     {
         $ma = $cfront->get_ma();
@@ -1222,6 +1268,7 @@ var first_run = 0;
             <option value="1">Approved</option>
             <option value="0">Waiting to check</option>
             <option value="2">Rejected</option>
+            <option value="critic_status_0">Waiting critic_status</option>
             <option value="trash">Delete</option>
                 <option value="wl">IP to White list</option>
                 <option value="gl">IP to Gray list</option>

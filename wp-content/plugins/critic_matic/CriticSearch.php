@@ -160,8 +160,8 @@ class CriticSearch extends AbstractDB {
         ),
         'auvote' => array(
             'skip' => array('key' => 2, 'title' => 'Skip It'),
-            'free' => array('key' => 3, 'title' => 'Watch If Free'),
-            'pay' => array('key' => 1, 'title' => 'Pay To Watch'),
+            'free' => array('key' => 3, 'title' => 'Consume If Free'),
+            'pay' => array('key' => 1, 'title' => 'Pay To Consume'),
         ),
         'movie' => array('key' => 'id', 'name_pre' => 'Movie ', 'filter_pre' => 'Movie'),
         'rf' => array(
@@ -1541,18 +1541,17 @@ class CriticSearch extends AbstractDB {
             } else if ($facet == 'dirs') {
                 // Directors logic
                 $facet_active = $this->get_active_director_facet($filters);
-                
+
                 if (isset($this->facets_race_directors[$facet_active])) {
                     $race_name = $this->facets_race_directors[$facet_active]['name'];
                     $limit = $expand == $this->facets_race_directors[$facet_active]['filter'] ? $this->facet_max_limit : $this->facet_limit;
                     $filters_and = $this->get_filters_query($filters, $this->facets_race_directors[$facet_active]['filter']);
-                    $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $this->filter_actor_and  . $match
+                    $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $this->filter_actor_and . $match
                             . " GROUP BY " . $race_name . " ORDER BY cnt DESC LIMIT 0,$limit";
                     $sql_arr[] = "SHOW META";
                 } else {
                     $skip[] = $facet;
                 }
-                
             } else if ($facet == 'provider') {
                 $limit = $this->facet_max_limit;
                 $filters_and = $this->get_filters_query($filters, array('provider', 'price'));
@@ -2555,7 +2554,7 @@ class CriticSearch extends AbstractDB {
         }
     }
 
-    public function get_last_critics($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tags = array(), $meta_type = array(), $min_rating = 0, $vote = 0) {
+    public function get_last_critics($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tags = array(), $meta_type = array(), $min_rating = 0, $vote = 0, $min_au = 0, $max_au = 0) {
 
         $filters_and = '';
 
@@ -2568,7 +2567,15 @@ class CriticSearch extends AbstractDB {
         }
 
         if ($min_rating) {
-            // TODO meta raring
+            // TODO min rating
+        }
+
+        if ($min_au) {
+            $filters_and .= sprintf(" AND aurating>%d", $min_au);
+        }
+
+        if ($max_au) {
+            $filters_and .= sprintf(" AND aurating<=%d", $max_au);
         }
 
         if ($meta_type) {
