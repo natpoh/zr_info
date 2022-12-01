@@ -1830,8 +1830,13 @@ class CriticSearch extends AbstractDB {
 
         if ($query_type == 'critics') {
             $top_movie_sql = " AND top_movie>0";
-
+            
+            if (!isset($filters['state'])){
+                $filters['state'] = array('related','contains','proper');
+            }
+                        
             if (isset($filters['state'])) {
+                
                 if (is_array($filters['state']) && sizeof($filters['state']) == 1) {
                     $filters['state'] = $filters['state'][0];
                 }
