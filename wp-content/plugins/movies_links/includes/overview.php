@@ -66,11 +66,20 @@ if (sizeof($campaigns) > 0) {
                                 }
 
                                 if ($module == 'arhive' || $module == 'cron_urls') {
+                                    $interval = $this->update_interval[$item['interval']];
                                     if ($module == 'cron_urls') {
                                         $item = $options['service_urls'];
                                     }
                                     // Get parser type
                                     print '<br /> — ' . $this->parse_mode[$item['webdrivers']];
+                                    
+                                    if ($module == 'arhive') {
+                                        $count = $item['num'];
+                                        
+                                        print '<br /> — ' . $count . ' / ' . $interval;
+                                    } else {
+                                        print '<br /> — ' . $interval;
+                                    }
                                 }
                                 ?></td><?php
                         }
