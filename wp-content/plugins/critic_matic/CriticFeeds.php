@@ -405,7 +405,7 @@ class CriticFeeds extends AbstractDBWp {
         }
 
         if ($count == 0) {
-            $this->log_no_new_post('', $cid);
+            // $this->log_no_new_post('', $cid);
         }
 
         //Update campaign lasthash

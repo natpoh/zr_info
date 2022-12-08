@@ -127,7 +127,7 @@ class CriticSearch extends AbstractDB {
         'type' => array(
             'movies' => array('key' => 'Movie', 'title' => 'Movies'),
             'tv' => array('key' => 'TVSeries', 'title' => 'TV Series'),
-            'videogame' => array('key' => 'VideoGame', 'title' => 'Video Game'),
+            'videogame' => array('key' => 'VideoGame', 'title' => 'Video Games'),
         ),
         'author_type' => array(
             'staff' => array('key' => 0, 'title' => 'Staff'),
@@ -1748,7 +1748,7 @@ class CriticSearch extends AbstractDB {
                 $order = ' ORDER BY w ' . $sort_type;
             } else if ($sort_key == 'mw') {
                 $order = ' ORDER BY id DESC';
-            } else if (in_array($sort_key, $audience_facets)) {
+            } else if (in_array($sort_key, $audience_facets) || $sort_key == 'pop') {
                 if ($sort_type == 'DESC') {
                     $order = ' ORDER BY ' . $sort_key . ' DESC';
                 } else {
@@ -1805,7 +1805,7 @@ class CriticSearch extends AbstractDB {
                     $order = ' ORDER BY female_valid ASC';
                     $select = ', IF(female>0, female, 999) as female_valid';
                 }
-            } else if (in_array($sort_key, $rating_facets) || in_array($sort_key, $audience_facets)) {
+            } else if (in_array($sort_key, $rating_facets) || in_array($sort_key, $audience_facets) || $sort_key == 'pop') {
                 if ($sort_type == 'DESC') {
                     $order = ' ORDER BY ' . $sort_key . ' DESC';
                 } else {
@@ -1830,13 +1830,13 @@ class CriticSearch extends AbstractDB {
 
         if ($query_type == 'critics') {
             $top_movie_sql = " AND top_movie>0";
-            
-            if (!isset($filters['state'])){
-                $filters['state'] = array('related','contains','proper');
+
+            if (!isset($filters['state'])) {
+                $filters['state'] = array('related', 'contains', 'proper');
             }
-                        
+
             if (isset($filters['state'])) {
-                
+
                 if (is_array($filters['state']) && sizeof($filters['state']) == 1) {
                     $filters['state'] = $filters['state'][0];
                 }
@@ -2608,6 +2608,147 @@ class CriticSearch extends AbstractDB {
         $results = $this->sdb_results($sql);
 
         return $results;
+    }
+
+    /*
+     * Find povtor
+     */
+
+    function find_post_povtor($content = '', &$info = '', $pid = '', $debug = false) {
+
+        $info = '';
+        $povtor = false;
+        $length = 200;
+        $min_precent = 90;
+        $min_words_count = 5;
+
+        if ($content) {
+            $text = strip_tags($content);
+            $text = preg_replace('|&[a-zA-Z]+;|', ' ', $text);
+            if (strlen($text) > $length) {
+                $pos = strpos($text, ' ', $length);
+                if ($pos != null) {
+                    $text = substr($text, 0, $pos);
+                }
+            }
+            $text = str_replace('  ', ' ', $text);
+            $text = str_replace("\t", '', $text);
+            $text = str_replace("\n", '', $text);
+
+
+            $povtor = $this->findPovtor($info, $text, $min_precent, $min_words_count, $pid, $debug);
+        }
+
+        return $povtor;
+    }
+
+    function findPovtor(&$info = '', $words = '', $min_precent = 80, $min_words_count = 5, $pid = '', $debug = false) {
+        $wordsArr = $this->getUniqueWords($words);
+        if ($debug) {
+            p_r(array($words, $wordsArr, $pid));
+        }
+        if (sizeof($wordsArr) >= $min_words_count) {
+            $povtor = $this->findBySphinx($words, $pid, $debug);
+
+            if ($povtor) {
+                $povtorUrl = "Адрес страницы: <a target=\"_blank\" href=\"" . $povtor->url . "\">" . $povtor->title . "</a>";
+                $precent = $this->compareResults($povtor, $wordsArr);
+
+                if ($precent >= $min_precent) {
+                    $info = "Обнаружен <b>повтор</b>, совпадение " . round($precent, 2) . "%
+                <br />$povtorUrl
+                <br />Текст повтора: " . $povtor->content;
+                    return $povtor;
+                } else {
+                    $info = "$povtorUrl. Слишком мал процент совпадений. ($precent%)";
+                }
+            } else {
+                $info = "В поиске нет совпадений";
+            }
+        } else {
+            $info = "Слишком мало слов для определения повтора";
+        }
+        return false;
+    }
+
+    function compareResults($povtor, $wordsArr) {
+        $searchArr = $this->getUniqueWords(strip_tags($povtor->title . " " . $povtor->content));
+        $count = sizeof($wordsArr);
+        $find = 0;
+        foreach ($wordsArr as $word) {
+            if (in_array($word, $searchArr)) {
+                $find++;
+            } else {
+                // echo " <b>$word</b>, ";
+            }
+        }
+        $precent = ($find > 0) ? 100 * $find / $count : 0;
+        return $precent;
+    }
+
+    function findBySphinx($query, $pid, $debug=false) {
+
+        $ret = '';
+        $limit = 3;
+
+        $author_type = 2;
+
+        $snippet = ', SNIPPET(title, QUERY()) t, SNIPPET(content, QUERY()) c';
+
+
+        $sql = sprintf("SELECT id, title, weight() w" . $snippet . " FROM critic "
+                . "WHERE MATCH('@(title,content)=\"%s\"') AND author_type!=%d LIMIT %d "
+                . "OPTION ranker=expr('sum(user_weight)'), "
+                . "field_weights=(title=10, content=1) ", $query, $author_type, $limit);
+
+        $result = $this->sdb_results($sql);
+        if ($debug){
+            p_r(array($sql, $result));
+        }
+        
+                
+        return array();
+
+        if ($result->search_results['total'] > 0) {
+            foreach ($result->search_results['matches'] as $current) {
+
+
+                if (isset($current) && $current['attrs']['post_id'] > 0) {
+
+                    if ($pid && $current['attrs']['post_id'] == $pid) {
+                        continue;
+                    }
+
+                    $ppid = $current['attrs']['post_id'];
+
+
+
+                    $title = $post->post_title;
+
+
+                    //$titlea = $defaultObjectSphinxSearch->frontend->get_excerpt(array($post->ID => $title), true);
+                    //$title = $titlea[$post->ID];
+
+                    $povtor = new stdClass();
+                    $povtor->title = $title;
+                    $povtor->url = get_permalink($ppid);
+                    $povtor->content = $desc;
+                    $povtor->pid = $ppid;
+
+
+                    $ret = $povtor;
+                    break;
+                }
+            }
+        }
+        return $ret;
+    }
+
+    function getUniqueWords($words) {
+        if (preg_match_all("#([\p{L}0-9]+)#uis", $words, $matchesarray)) {
+            $wordsArr = array_unique($matchesarray[0]);
+            return $wordsArr;
+        }
     }
 
     /*

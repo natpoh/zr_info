@@ -27,9 +27,9 @@ class CriticAudience extends AbstractDb {
         'vote' => array(
             'title' => 'Boycott Suggestion',
             'options' => array(
-                1 => array('title' => 'Pay To Watch', 'img' => "slider_green_pay_drk.png", 'verdict' => 'pay_to_watch'),
+                1 => array('title' => 'Pay To Consume', 'img' => "slider_green_pay_drk.png", 'verdict' => 'pay_to_watch'),
                 2 => array('title' => 'Skip It', 'img' => 'slider_red_skip_drk.png', 'verdict' => 'skip_it'),
-                3 => array('title' => 'Watch If Free', 'img' => 'slider_orange_free.png', 'verdict' => 'watch_if_free')
+                3 => array('title' => 'Consume If Free', 'img' => 'slider_orange_free.png', 'verdict' => 'watch_if_free')
             )
         ),
         'rating' => array(

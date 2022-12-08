@@ -452,7 +452,7 @@ class CriticCrowd extends AbstractDB {
             if ($result) {
                 $channelId = $result->channelId;
                 if ($result->description) {
-                    $date = strtotime($result->publishedAt);
+                    // $date = strtotime($result->publishedAt);
                     $content = str_replace("\n", '<br />', $result->description);
                 }
             }
