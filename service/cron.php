@@ -165,18 +165,14 @@ class Cronjob
 
                 $sql = "UPDATE `cron` SET  `time` = ? WHERE `task` = ?" ;
 
-                if (isset($_GET['debug']))
-                {
-                    echo $sql;
-                }
 
-                Pdo_an::db_results($sql,array($option,$id));
+                Pdo_an::db_results_array($sql,array($option,$id));
             }
             else
             {
                 ///insert
                 $sql = "INSERT INTO `cron`  VALUES (NULL,?,?)";
-                Pdo_an::db_results($sql,array($id,$option));
+                Pdo_an::db_results_array($sql,array($id,$option));
             }
 
         }
