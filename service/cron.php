@@ -155,6 +155,8 @@ class Cronjob
 
 
         $r = Pdo_an::db_results_array($sql);
+        var_dump($r);
+        
         $time = $r[0]['time'];
         if (!$time) $time = 0;
         return $time;
