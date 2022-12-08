@@ -93,7 +93,7 @@ class TorParser extends MoviesAbstractDB {
     public function get_url_content($url = '', &$header = '', $ip_limit = array(), $curl = false, $tor_mode = 0, $tor_agent = 0, $is_post = false, $post_vars = array(), $header_array = array(), $debug = false) {
         $content = '';
         $get_url_data = $this->get_tor_url($url, $ip_limit, $log_data, $tor_mode, $debug);
-        $get_url = $get_url_data['url'];
+        $get_url = isset($get_url_data['url']) ? $get_url_data['url'] : '';
         if ($get_url) {
 
             $service_id = $log_data['driver'];
@@ -767,7 +767,7 @@ class TorParser extends MoviesAbstractDB {
             $this->log_warn($message, $q_arr);
 
             $this->remove_old_agents(10);
-            
+
             // Generate agent
             $agent_name = $this->generate_ranome_user_agent();
             $agent_id = $this->add_agent_id($agent_name, 1);
@@ -944,13 +944,19 @@ class TorParser extends MoviesAbstractDB {
 
     public function get_tor_ip($id) {
         $service = $this->get_service($id, true);
-            $proxy = $service->url;
-            $get_url = 'http://' . $this->web_driver . '/?p=ds1bfgFe_23_KJDS-F&nodriver=1&proxy=' . $proxy . '&url=http://' . $this->get_ip_url . '/?getip=1';
+        $proxy = $service->url;
+        $get_url = 'http://' . $this->web_driver . '/?p=ds1bfgFe_23_KJDS-F&nodriver=1&proxy=' . $proxy . '&url=http://' . $this->get_ip_url . '/?getip=1';
+        $content = '';
+        try {
             $content = file_get_contents($get_url);
-            $ip = '';
-            if (preg_match('/([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/', $content, $match)) {
-                $ip = $match[1];
-            }
+        } catch (Exception $exc) {
+            // no content
+        }
+
+        $ip = '';
+        if ($content && preg_match('/([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/', $content, $match)) {
+            $ip = $match[1];
+        }
         return $ip;
     }
 
