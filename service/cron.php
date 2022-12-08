@@ -225,8 +225,10 @@ class Cronjob
                     echo '<br>rslt='.$rslt.'<br>';
                     if ($rslt)
                     {
-                        self::set_option($jobs,time());
+                        
+                        $this->set_option($jobs,time());
                         echo '<br>Ended  '.$jobs.'  '. self::timer_stop().'<br><br>'.PHP_EOL.PHP_EOL;
+
                     }
 
                 } else {
