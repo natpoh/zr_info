@@ -162,7 +162,14 @@ class Cronjob
             if ($enable)
             {
                 ///update
+
                 $sql = "UPDATE `cron` SET  `time` = ? WHERE `task` = ?" ;
+
+                if (isset($_GET['debug']))
+                {
+                    echo $sql;
+                }
+
                 Pdo_an::db_results($sql,array($option,$id));
             }
             else
