@@ -150,12 +150,12 @@ class Cronjob
         global $cron_debug;
         if ($cron_debug)
         {
-            echo $sql.'<br>';
+            echo '<br>'.$sql.'<br>';
         }
 
 
-        $r = Pdo_an::db_fetch_row($sql);
-        $time = $r->time;
+        $r = Pdo_an::db_results_array($sql);
+        $time = $r[0]['time'];
         if (!$time) $time = 0;
         return $time;
     }
