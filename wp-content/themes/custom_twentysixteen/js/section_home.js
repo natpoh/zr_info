@@ -2,11 +2,11 @@ var disqus_config = function () {
 };
 var lastload = '';
 var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
-var   crowdsource_url=  window.location.protocol+"/service/crowdsource.php"
+var crowdsource_url = window.location.protocol + "/service/crowdsource.php"
 
-if (window.location.host=='zeitgeistreviews.com')
+if (window.location.host == 'zeitgeistreviews.com')
 {
-    crowdsource_url=  'https://service.'+window.location.host+"/crowdsource.php";
+    crowdsource_url = 'https://service.' + window.location.host + "/crowdsource.php";
 }
 //crowdsource_url=  'https://service.zeitgeistreviews.com/crowdsource.php';
 
@@ -323,13 +323,13 @@ function create_context_rating(obj, hollywood)
     if (obj.patriotism)
         content_rating += '<div><span>Neo-Marxism:</span>' + create_rating_star(obj.patriotism, 'patriotism') + '</div>';
     if (obj.misandry)
-        content_rating += '<div><span>Misandry:</span>' + create_rating_star(obj.misandry, 'misandry') + '</div>';
+        content_rating += '<div><span>Feminism:</span>' + create_rating_star(obj.misandry, 'misandry') + '</div>';
     if (obj.affirmative)
         content_rating += '<div><span>Affirmative Action:</span>' + create_rating_star(obj.affirmative, 'affirmative') + '</div>';
     if (obj.lgbtq)
-        content_rating += '<div><span>LGBTQ rstuvwxyz:</span>' + create_rating_star(obj.lgbtq, 'lgbtq') + '</div>';
+        content_rating += '<div><span>Gay S**t:</span>' + create_rating_star(obj.lgbtq, 'lgbtq') + '</div>';
     if (obj.god)
-        content_rating += '<div><span>Anti-God Themes:</span>' + create_rating_star(obj.god, 'god') + '</div>';
+        content_rating += '<div><span>Fedora Tipping:</span>' + create_rating_star(obj.god, 'god') + '</div>';
 
     return content_rating;
 }
@@ -363,7 +363,7 @@ function create_diversity(diversity_data, value)
             diversity_data_content += popup_cusomize('row_inner', b.r, b.c + '%');
 
         });
-        diversity_data_content += '<p class="gray_comment">We love all demographics at ZR!<br>We just grow tired of forced "<a href="https://www.facebook.com/868164246578472/posts/the-cast-of-black-panther-is-hella-diverse/1236999296361630/" target="_blank:"><u>diversity</u></a>". Like Blackwashing superheroes and writing Europeans out of their own history. Unfortunately, we can\'t automatically scan for forced diversity, only analyze the entire cast. On the bright side, you can use these percentages to help support <a href="https://zeitgeistreviews.com/analytics/tab_ethnicity/budget_12000-500000/minus-genre_animation/release_1984-2022/type_movies/showcast_2_1/stacking_percent/vis_regression/xaxis_release/yaxis_simpson/setup_noclasters_inflation" target="_blank"><u>truly diverse</u></a> media as well!</p>';
+        diversity_data_content += '<p class="gray_comment">We love all demographics at ZR!<br>We just grow tired of forced "<a href="https://www.facebook.com/868164246578472/posts/the-cast-of-black-panther-is-hella-diverse/1236999296361630/" target="_blank:"><u>diversity.</u></a>" Like Blackwashing superheroes and writing Europeans out of their own history. Unfortunately, we can\'t automatically scan for forced diversity, only analyze the entire cast. On the bright side, you can use these percentages to help support <a href="https://zeitgeistreviews.com/analytics/tab_ethnicity/budget_12000-500000/minus-genre_animation/release_1984-2022/type_movies/showcast_2_1/stacking_percent/vis_regression/xaxis_release/yaxis_simpson/setup_noclasters_inflation" target="_blank"><u>truly diverse</u></a> media as well!</p>';
 
     }
 
@@ -484,8 +484,9 @@ function create_rating_content(object, m_id)
         block_class = 'diversity';
         let value = Number(object['diversity']);
         value = value.toFixed(0);
+        if (!value)value=0;
 
-        if (value > 0) {
+        if (value > 0 || object['diversity_data']) {
             var diversity_data = object['diversity_data'];
 
             let  diversity_data_content = create_diversity(diversity_data, value);
@@ -555,7 +556,9 @@ function set_video_scroll(data, block_id, append = '') {
 
 
     if (data) {
+
         data = JSON.parse(data);
+
 
         if (data['count'] > 0 && data['tmpl']) {
             if (!append) {
@@ -569,6 +572,8 @@ function set_video_scroll(data, block_id, append = '') {
 
                 if (data['result'])
                 {
+
+
                     jQuery.each(data['result'], function (a, b) {
 
                         if (b)
@@ -589,7 +594,8 @@ function set_video_scroll(data, block_id, append = '') {
                     // let title = head.html();
                     // head.html('<div class="i_head">'+title+data['html']+'</div>')
                 }
-            } else {
+            }
+            else {
                 for (var i = 1; i <= Number(data['count']); i++) {
                     content += tmpl.replace('{id}', i);
                 }
@@ -607,8 +613,23 @@ function set_video_scroll(data, block_id, append = '') {
                 }
 
                 if (data['result']) {
-                    var i = 1;
+
+                    array_movie = [];
                     jQuery.each(data['result'], function (a, b) {
+
+                        b.mid = a;
+                        array_movie.push(b);
+
+                    });
+                    if (block_id== 'video_scroll')
+                    {
+                        array_movie.sort((a, b) => a.release < b.release ? 1 : -1);
+                    }
+
+
+                    var i = 1;
+                    jQuery.each(array_movie, function (mi, b) {
+                        var a = b.mid;
                         var block = jQuery('div[id="' + block_id + '"] .column_content' + append + ' .loading[id="' + i + '"]');
 
                         if (b.genre == 'load_more') {
@@ -732,21 +753,21 @@ function set_video_scroll(data, block_id, append = '') {
         if (block_id == 'review_scroll')
         {
             let prnt = jQuery('div[id="' + block_id + '"]').parents('section.inner_content');
-            prnt.css('height','200px');
+            prnt.css('height', '200px');
 
 
             var block = jQuery('div[id="' + block_id + '"]');
             block.html('<p class="big_desc">Sorry, no reviews yet. Help us out and add some links?</p>').show();
-            return ;
+            return;
         }
 
-            if (!append) {
-                let prnt = jQuery('div[id="' + block_id + '"]').parents('section.inner_content');
-                prnt.remove();
-            }
+        if (!append) {
+            let prnt = jQuery('div[id="' + block_id + '"]').parents('section.inner_content');
+            prnt.remove();
+        }
 
 
-    }
+}
 }
 
 function  add_rating_row(title, content, id, content_text)
@@ -786,7 +807,7 @@ function create_rating_star(rating, type)
 
     } else if (type == 'vote')
     {
-        let array = {1: ['pay_to_watch', 'Pay To Watch'], 2: ['skip_it', 'Skip It'], 3: ['watch_if_free', 'Watch If Free']};
+        let array = {1: ['pay_to_watch', 'Pay To Consume'], 2: ['skip_it', 'Skip It'], 3: ['watch_if_free', 'Consume If Free']};
 
         return  '<span title="' + array[rating][1] + '" style="background-size: 30%" class="rating_result ' + array[rating][0] + '"><span class="verdict_text">' + array[rating][1] + '</span></span>';
     } else
@@ -820,10 +841,11 @@ function add_movie_rating(block_id, data)
         ///  var content =  create_rating_content(obj);
 
         if (obj.gender) {
-            if (obj.gender.diversity) {
+            if (obj.gender.diversity || obj.gender.diversity_data) {
                 title = 'Diversity Ratio:';
 
                 let diversity = Number(obj.gender.diversity);
+                if (!diversity){diversity=0;}
                 diversity = diversity.toFixed(0);
 
 
@@ -1180,7 +1202,6 @@ function load_ajax_block(block_id) {
     } else if (block_id == 'review_scroll') {
         if (typeof review_scroll_data !== 'undefined') {
             scroll_data = review_scroll_data;
-
             local_sroll = true;
         }
     } else if (block_id == 'stuff_scroll') {
@@ -1201,6 +1222,7 @@ function load_ajax_block(block_id) {
         set_video_scroll(scroll_data, block_id);
         initializeScroller(0, 'div[id="' + block_id + '"]');
         init_nte();
+        init_tags();
         return true;
     }
 
@@ -1225,7 +1247,7 @@ function load_ajax_block(block_id) {
                         if (obj.content)
                         {
                             jQuery('div[id="' + block_id + '"]').html('<div class="column_header">\n' +
-                                    '                    <h2>Related Movies and TV:</h2>\n' +
+                                    '                    <h2>Similar Shows:</h2>\n' +
                                     '                </div><div class="movie_scroller scroller_wrap"><div class="column_content flex scroller flex_movies_block">' + obj.content + '</div></div>');
 
                             if (obj['rating'])
@@ -1243,8 +1265,7 @@ function load_ajax_block(block_id) {
                         }
                     }
                 }
-            }
-            else if (block_id == 'twitter_scroll') {
+            } else if (block_id == 'twitter_scroll') {
                 if (data) {
                     jQuery('div.column_header_main').prepend(data);
 
@@ -1253,8 +1274,7 @@ function load_ajax_block(block_id) {
                         ctf_init();
                     }
                 }
-            }
-            else if (block_id == 'chan_scroll') {
+            } else if (block_id == 'chan_scroll') {
                 if (data) {
                     try {
                         var Object_data = JSON.parse(data);
@@ -1274,13 +1294,11 @@ function load_ajax_block(block_id) {
 
                 }
 
-            }
-            else if (block_id == 'movie_rating') {
+            } else if (block_id == 'movie_rating') {
                 add_movie_rating(block_id, data);
             } else if (block_id == 'last_donations') {
                 jQuery('div[id="' + block_id + '"]').html(data);
-            }
-            else if (block_id == 'mailpoet_form') {
+            } else if (block_id == 'mailpoet_form') {
                 jQuery('div[id="' + block_id + '"]').html(data);
             } else if (block_id == 'disqus_last_comments') {
                 jQuery('div[id="' + block_id + '"]').html(data);
@@ -1328,7 +1346,7 @@ function load_ajax_block(block_id) {
 
 
                     var d = document, s = d.createElement('script');
-                    s.src = window.location.protocol + '//' + window.location.host + '/wp-content/plugins/critic_matic/js/reviews.js?v=1.1';
+                    s.src = window.location.protocol + '//' + window.location.host + '/wp-content/plugins/critic_matic/js/reviews.js?v=1.8';
                     (d.head || d.body).appendChild(s);
                     s.onload = function () {
                         wpcr3a.init();
@@ -1779,7 +1797,83 @@ function generate_watch_content(data, title, year, type) {
 
 
 }
+function create_Highcharts_colomn_single(data, block)
+{
 
+
+
+    if (typeof Highcharts !== 'undefined')
+    {
+
+
+        if (data)
+        {
+            data = JSON.parse(data);
+            var data_series = data['series'];
+            var prefix = data['prefix'];
+
+        }
+
+        if (data)
+        {
+            Highcharts.chart('container_' + block, {
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false,
+                    type: 'column'
+                },
+                title: {
+                    text: data['name']
+                },
+                legend: {
+                    enabled: false
+                },
+                tooltip: {
+                    shared: true,
+                    headerFormat: '<span style="font-size: 16px">{point.point.name}</span><br/>',
+                    pointFormat: '<span style="color:{point.color}">\u25CF</span> {series.name}: <b>{point.y} %</b><br/>'
+                },
+                xAxis: {
+                    type: 'category',
+                    // max: 4,
+                    labels: {
+                        animate: true,
+                    }
+                },
+                yAxis: [{
+                    title: {
+                        text: 'Percentage'
+                    },
+                    showFirstLabel: false
+                }],
+                series: [{
+                    name: data['name'],
+                    colorByPoint: true,
+                    dataSorting: {
+                        enabled: true,
+                        matchByName: true
+                    },
+                    dataLabels: [{
+                        enabled: true,
+                        inside: true,
+                        style: {
+                            fontSize: '14px'
+                        }
+                    }],
+                    data: data_series
+                }]
+            });
+        } else
+        {
+            console.log('data error');
+            console.log(data);
+        }
+    } else
+    {
+        console.log('cant load Highcharts');
+    }
+}
 function create_Highcharts_columns(data, block)
 {
 
@@ -1883,6 +1977,8 @@ function set_point_format(series, point, block, prefix)
     return data;
 
 }
+
+
 function create_Highcharts(data, block)
 {
 
@@ -1973,7 +2069,7 @@ jQuery(document).ready(function () {
         check_load_block();
     });
 
-
+    jQuery('body').upScrollButton();
 
     init_spoilers();
 
@@ -2341,7 +2437,7 @@ jQuery(document).ready(function () {
 
     });
 
-    jQuery('body').on('click', 'a.actor_info, a.actors_link', function () {
+    jQuery('body').on('click', '.actor_info, a.actors_link', function () {
         var actor_id = jQuery(this).attr('data-id');
 
         add_popup();
@@ -2447,26 +2543,57 @@ jQuery(document).ready(function () {
     }
     );
 
-    jQuery('.primary-menu a[href="#add_movie"],' +
-        ' .primary-menu a[href="#add_review"]').click( function () {
+    jQuery('.ajaxlogin').click(function () {
 
-        let href  =jQuery(this).attr('href');
+
+        jQuery.ajax({
+            type: 'post',
+
+            url: template_path+'loginajax.php',
+            success: function (html) {
+                add_popup();
+                jQuery('.popup-content').html('<div class="default_popup login_popup">' + html + '</div>');
+                jQuery('input[id="action-popup"]').click();
+
+
+
+                var third_scripts = {login_ajax: 'wp-content/plugins/login-with-ajax/templates/login-with-ajax.min.js'};
+                use_ext_js('', third_scripts);
+
+
+
+
+            }
+        });
+
+        return false;
+
+    });
+
+    jQuery('.primary-menu a[href="#add_movie"],' +
+            ' .primary-menu a[href="#add_review"], .primary-menu a[href="#add_audience_review"]').click(function () {
+
+        let href = jQuery(this).attr('href');
 
 
         jQuery.ajax({
             type: 'post',
             data: {
                 'oper': 'add_custom',
-                'type':href
+                'type': href
             },
             url: crowdsource_url,
             success: function (html) {
                 add_popup();
+                let hclass = href.substr(1);
 
 
-                jQuery('.popup-content').html('<div class="default_popup custom_crowd">' + html + '</div>');
+
+                jQuery('.popup-content').html('<div class="default_popup custom_crowd '+hclass+'">' + html + '</div>');
 
                 jQuery('input[id="action-popup"]').click();
+
+                jQuery('span.close_header_nav').click();
 
             }
         });
@@ -2540,6 +2667,15 @@ jQuery(document).ready(function () {
     jQuery('body').on('click', '.movie_touch', function () {
         var id = jQuery(this).attr('id');
         var r_id = jQuery('.review_crowd').attr('id');
+        var only_movie = 0;
+        let prnt = jQuery(this).parents('.crowd_items');
+        if (prnt.hasClass('crowd_select_movie'))
+        {
+            var only_movie = 1;
+        }
+        let bigprnt = jQuery(this).parents('.custom_crowd');
+
+
 
         jQuery('.advanced_search_first').html('').hide();
 
@@ -2547,14 +2683,33 @@ jQuery(document).ready(function () {
             type: 'post',
             data: {'oper': 'get_search_movie',
                 'id': id,
-                'r_id': r_id
+                'r_id': r_id,
+                'only_movie': only_movie
             },
             url: crowdsource_url,
             success: function (html) {
 
-                if (!jQuery('.check_inner_container[id="' + id + '"]').html())
+                if (only_movie)
                 {
-                    jQuery('.check_container_main').append(html);
+                    jQuery('.check_container_main').html(html);
+
+                    if (bigprnt.hasClass('add_audience_review'))
+                    {
+                        let mid = jQuery('div.custom_crowd_movie').attr('data-value');
+
+                        jQuery('input[name="wpcr3_postid"]').val(mid);
+                        jQuery('div.wpcr3_respond_1').attr('data-value',mid).attr('data-postid',mid);
+                        load_ajax_block('audience_form');
+
+                    }
+                } else
+
+                {
+                    if (!jQuery('.check_inner_container[id="' + id + '"]').html())
+                    {
+                        jQuery('.check_container_main').append(html);
+                    }
+
                 }
 
 
@@ -2611,23 +2766,23 @@ jQuery(document).ready(function () {
         var movie = button.attr('id');
 
 
-            let pr = jQuery(this).parents('tr.container_for_add_movies');
+        let pr = jQuery(this).parents('tr.container_for_add_movies');
 
-            if (pr.html())
+        if (pr.html())
+        {
+
+            movie = pr.find('input.addmoviesfrom_id');
+
+
+            movie = movie.val();
+
+            if (!movie)
             {
-
-                movie = pr.find('input.addmoviesfrom_id');
-
-
-                movie=movie.val();
-
-                if (!movie)
-                {
-                    button.attr('disabled', false);
-                    return false;
-                }
-
+                button.attr('disabled', false);
+                return false;
             }
+
+        }
 
 
         jQuery.ajax({
@@ -2637,7 +2792,7 @@ jQuery(document).ready(function () {
             success: function (html) {
                 if (html == 1)
                 {
-                    button.after('Successfully added to the queue. Check back soon!');
+                    button.after('<div class="add_succ">Successfully added to the queue. Check back soon!</div>');
                 }
                 button.remove();
             }
@@ -2862,7 +3017,7 @@ jQuery(document).ready(function () {
             var id = prnt.attr('id');
         } else
         {
-            var id =  jQuery(this).attr('id-data');
+            var id = jQuery(this).attr('id-data');
         }
 
 
@@ -2912,7 +3067,7 @@ jQuery(document).ready(function () {
             success: function (html) {
 
                 add_popup();
-                jQuery('.popup-content').html('<div id="' + id + '" class="default_popup"><h2>Edit Family Friendly Rating</h2><p>Please help improve ZR, add a Family Friendly Rating and leave your comment(s).</p>' + html + '</div>');
+                jQuery('.popup-content').html('<div id="' + id + '" class="default_popup pg_popup"><h2>Edit Family Friendly Rating</h2><p>Please help improve ZR, add a Family Friendly Rating and leave your comment(s).</p>' + html + '</div>');
                 jQuery('input[id="action-popup"]').click();
 
             }
@@ -3047,8 +3202,6 @@ jQuery(document).ready(function () {
     });
 
 
-
-
     jQuery('body').on('click', '.how_calculate_rating, .read_more_rating, .how_calculate_rwt_rating', function () {
 
         let movie_id = jQuery(this).parents('.movie_total_rating').attr('data-value');
@@ -3092,6 +3245,73 @@ jQuery(document).ready(function () {
 
                 jQuery('.popup-content').html('<div class="white_popup">' + html + '<label style="margin-top: -22px;margin-right: 15px;" for="action-popup" class="popup-close-btn">Close</label></div>');
                 jQuery('input[id="action-popup"]').click();
+            }
+        });
+
+
+
+        return false;
+    });
+
+    jQuery('body').on('click', '.how_calculate_rating, .read_more_rating, .how_calculate_rwt_rating, .calculate_actor_data', function () {
+
+
+
+        var post = {};
+
+
+
+        if (jQuery(this).hasClass('calculate_actor_data'))
+        {
+            var a_id = jQuery(this).attr('data-actor');
+
+
+            post = {
+              'calculate_actor_data': a_id
+            }
+        }
+        else {
+
+            let movie_id = jQuery(this).parents('.movie_total_rating').attr('data-value');
+            var rwt_id = jQuery(this).parents('.rating_block').attr('id');
+
+            if (jQuery(this).hasClass('how_calculate_rwt_rating')) {
+
+
+                post = {
+                    'refresh_rwt_rating': 1,
+                    'rwt_id': rwt_id,
+                    'movie_id': movie_id
+                }
+            }
+
+
+            if (jQuery(this).hasClass('how_calculate_rating')) {
+                post = {
+                    'refresh_rating': 1,
+                    'movie_id': movie_id,
+                    'rwt_id': rwt_id
+                }
+            } else if (jQuery(this).hasClass('read_more_rating')) {
+                post = {
+                    'read_more_rating': 1,
+                    'movie_id': movie_id,
+                    'rwt_id': rwt_id
+                }
+            }
+        }
+
+
+        jQuery.ajax({
+            type: 'post',
+            data: (post),
+            url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/template/ajax/search_ajax.php",
+            success: function (html) {
+
+                add_popup();
+
+                jQuery('.popup-content').html('<div class="white_popup">' + html + '<label style="margin-top: -22px;margin-right: 15px;" for="action-popup" class="popup-close-btn">Close</label></div>');
+                jQuery('input[id="action-popup"]:not(:checked)').click();
             }
         });
 
@@ -3202,7 +3422,16 @@ jQuery(document).ready(function () {
                     big_parent.after('<tr class="graph_block"><td colspan="' + count_col + '"><div class="section_chart_big section_chart section_ethnic" id="container_' + id + '"></div></td></tr>');
 
                     create_Highcharts_columns(data, id);
-                } else
+                }
+                else if (jQuery(this).hasClass('ethnic_graph_column_single'))
+                {
+                    big_parent.after('<tr class="graph_block"><td colspan="' + count_col + '"><div class="section_chart_main section_chart section_ethnic" id="container_' + id + '"></div></td></tr>');
+
+                    create_Highcharts_colomn_single(data, id);
+                }
+
+
+                else
                 {
                     big_parent.after('<tr class="graph_block"><td colspan="' + count_col + '"><div class="section_chart section_ethnic" id="container_' + id + '"></div></td></tr>');
 
@@ -3342,12 +3571,12 @@ function author_autocomplete(form_class = '') {
             $crowd_items_search.removeClass('show');
             return false;
         });
-       
+
         cname_form.keyup(function (e) {
             var $results = $this.find('.search_results').first();
             aid_form.val(0);
             cname_form.removeClass('valid');
-            
+
             var keyword = cname_form.val();
             if (keyword.length >= 2) {
                 $.ajax({
@@ -3392,6 +3621,55 @@ function author_autocomplete(form_class = '') {
 }
 }
 
+function init_tags() {
+    var block_id = "review_scroll";
+    var review_scroll = jQuery('#review_scroll');
+    if (review_scroll.length && !review_scroll.hasClass('init_tags')) {
+        review_scroll.addClass('init_tags');
+        if (typeof review_scroll_tags !== 'undefined') {
+            // console.log(review_scroll_tags);
+            review_scroll.before('<div id="r_tags" class="search-sort"><ul class="sort-wrapper"><li class="nav-tab">Tags:</li></ul></div>');
+            var r_tags = jQuery('#r_tags .sort-wrapper');
+            for (var i in review_scroll_tags) {
+                r_tags.append('<li class="nav-tab"><a href="/search/tab_critics/author_critic/tags_' + review_scroll_tags[i]['slug'] + '" data-id="' + review_scroll_tags[i]['id'] + '">' + review_scroll_tags[i]['name'] + '</a></li>');
+            }
+
+            r_tags.find('a').click(function () {
+                var $this = jQuery(this);
+                if ($this.hasClass('active')) {
+                    $this.removeClass('active');
+                } else {
+                    $this.addClass('active');
+                }
+
+                var data = {};
+                var type = 'tags[]';
+                data[type] = [];
+                jQuery('#r_tags li a.active').each(function (i, v) {
+                    var v = jQuery(v), id = v.attr('data-id');
+                    data[type].push(id);
+                });
+
+                jQuery.ajax({
+                    type: "GET",
+                    url: '/wp-content/themes/custom_twentysixteen/template/ajax/review_scroll.php',
+                    data: data,
+                    success: function (rtn) {
+                        set_video_scroll(rtn, block_id);
+                        initializeScroller(0, 'div[id="' + block_id + '"]');
+                        init_nte();
+                    },
+                    error: function (rtn) {
+
+                    }
+                });
+
+                return false;
+            });
+        }
+    }
+}
+
 function loadScript($url, success = '') {
     jQuery.ajax({
         url: $url,
@@ -3418,7 +3696,12 @@ function use_ext_js(f, third_scripts) {
             return;
         }
     }
-    f();
+    console.log(typeof f);
+    if (typeof f == 'function')
+    {
+        f();
+    }
+
 }
 
 function add_css_list(css_list) {
@@ -3430,5 +3713,36 @@ function add_css_list(css_list) {
             jQuery("head").append("<link rel='stylesheet' id='dashicons-css'  href='" + css_list[n] + "' type='text/css' media='all' />");
         }
     }
+
+}
+
+jQuery.fn.upScrollButton = function (options) {
+    var $ = jQuery;
+    var options = $.extend({
+        heightForButtonAppear: 20,
+        heightForScrollUpTo: 0,
+        scrollTopTime: 800,
+        upScrollButtonId: 'move_up',
+        upScrollButtonText: 'Move up',
+        upScrollButtonFadeInTime: 0,
+        upScrollButtonFadeOutTime: 300
+
+    }, options);
+    return this.each(function ( ) {
+
+        $('body').append('<a id="' + options.upScrollButtonId + '" href="#">' + options.upScrollButtonText + '</a>');
+        $(window).scroll(function () {
+            if ($(this).scrollTop() > options.heightForButtonAppear)
+                $('a#' + options.upScrollButtonId).fadeIn(options.upScrollButtonFadeInTime);
+            else
+                $('a#' + options.upScrollButtonId).fadeOut(options.upScrollButtonFadeOutTime);
+        });
+        $('a#' + options.upScrollButtonId).click(function ( ) {
+            $('body,html').animate({
+                scrollTop: options.heightForScrollUpTo
+            }, options.scrollTopTime);
+            return false;
+        });
+    });
 
 }

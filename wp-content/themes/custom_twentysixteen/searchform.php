@@ -11,7 +11,7 @@
 <div class="customsearch_container">
     <div class="customsearch_component__inner">
         <input type="text" class="customsearch_input"  placeholder="Search Movies, TV,  Reviews" autocomplete="off" >
-        <a class="customsearch_container__advanced-search-button" href="#" title="Advanced Search"></a>
+        <a class="customsearch_container__advanced-search-button search-filters-btn" href="#" title="Advanced Search"></a>
         <a class="customsearch_component__button" href="#" type="button" title="Search"></a>
         <div class="advanced_search_ajaxload"></div>
 

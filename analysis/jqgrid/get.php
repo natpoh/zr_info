@@ -1,7 +1,7 @@
 <?php
 error_reporting(E_ERROR );
 ini_set('memory_limit', '4096M');
-
+include  ABSPATH.'an_config.php';
 
 if (!defined('ABSPATH'))
     define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
@@ -87,7 +87,7 @@ if ( $curent_user) {
         $sql = "SELECT *
 FROM information_schema.tables
 WHERE table_type='BASE TABLE'
-AND table_schema='imdbvisualization'";
+AND table_schema='".DB_NAME_AN."'";
 
         $rows = Pdo_an::db_results_array($sql);
 
@@ -179,7 +179,7 @@ AND table_schema='imdbvisualization'";
 
             $countval = count($array);
 
-            $sql = "SELECT *  FROM `INFORMATION_SCHEMA`.`COLUMNS`  WHERE `TABLE_SCHEMA`='imdbvisualization' AND `TABLE_NAME`='" . $table_data . "'   ORDER BY `COLUMNS`.`ORDINAL_POSITION` ASC";
+            $sql = "SELECT *  FROM `INFORMATION_SCHEMA`.`COLUMNS`  WHERE `TABLE_SCHEMA`='".DB_NAME_AN."' AND `TABLE_NAME`='" . $table_data . "'   ORDER BY `COLUMNS`.`ORDINAL_POSITION` ASC";
             $rows = Pdo_an::db_results_array($sql);
             foreach ($rows as $r) {
 

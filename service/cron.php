@@ -43,7 +43,7 @@ $array_jobs = array(
 'get_new_tv'=>(60*12),///add new tv from tmdb
 
 'add_pg_rating_for_new_movies'=>(60*12),///add pg rating to new movies
-'add_gender_rating_for_new_movies'=>(60*12),///add gender rating to new movies
+//'add_gender_rating_for_new_movies'=>(60*12),///add gender rating to new movies
 
 'update_all_audience_and_staff'=>(60*12),///recreate cache audience and staff
 'get_coins_data'=>60*24,////get data donations
@@ -177,8 +177,6 @@ class Cronjob
 
     public   function run($array_jobs,$only_info = 0)
     {
-
-
 
 
         $run_cron = $this->get_options('run_cron');

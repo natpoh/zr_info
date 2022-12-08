@@ -227,6 +227,13 @@ class MOVIE_DATA
 
         return $array_convert_type;
     }
+    public static function get_movie_year($mid)
+    {
+        $q="SELECT `year` FROM `data_movie_imdb` WHERE `id` = ".$mid;
+        $r =Pdo_an::db_fetch_row($q);
+        return $r->year;
+
+    }
 
     public static function get_movie_data_from_db($id = '', $a_sql = '', $only_etnic = 0, $actor_type = [], $actors_array = [], $diversity_select = "default", $ethnycity = [], $all_data = '')
     {
@@ -236,6 +243,7 @@ class MOVIE_DATA
             $ethnycity = json_decode('{"1":{"crowd":1},"2":{"ethnic":1},"3":{"jew":1},"4":{"face":1},"5":{"face2":1},"6":{"forebears":1},"7":{"familysearch":1},"8":{"surname":1}}',true);
 
         }
+        $year = self::get_movie_year($id);
 
         !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
         $vd_data = unserialize(unserialize(OptionData::get_options('','critic_matic_settings')));
@@ -331,8 +339,16 @@ class MOVIE_DATA
         $result = [];
 
         if ($diversity_select == 'm_f' && !$a_sql) {
-            $result['gender'] = $ethnic['gender'];
-        } else {
+            $gender_data = $ethnic['gender'];
+
+            $gd_result=[];
+           foreach ($gender_data as $aid=>$gd)
+           {
+               $gd_result[$gd]++;
+           }
+           return $gd_result;
+        }
+        else {
             if ($diversity_select == 'wmj_nwm' || $diversity_select == 'wm_j_nwmj') {
                 $ethnic_sort['gender'] = [];
             }
@@ -368,8 +384,27 @@ class MOVIE_DATA
 
 
         $ethnic_array = self::get_echnic_custom($total_actors_data, $ethnic, $diversity_select, $arrayneed_compare, $request_type, $array_request, 1 ,$verdict_data);
+        if ($diversity_select == 'wj_nw') {//////White (+ Jews ) v.s. non-White
+            $array_result=[];
+            $array_result['default_data'] = $ethnic_array['result'] ;
+            foreach ($ethnic_array['result'] as $data=>$v)
+            {
+
+                if ($data == 'White' || $data == 'Jewish') {
+                    $data = 'White (+ Jews )';
+
+                } else {
+                    $data = 'non-White';
+                }
+                $array_result['diversity'][$data]+=$v;
 
 
+            }
+            $array_result['diversity'] = self::normalise_array($array_result['diversity']);
+            $array_result['default_data'] = self::normalise_array($array_result['default_data']);
+        return $array_result;
+
+        }
        // var_dump($ethnic_array);
 
         $data = $ethnic_array['result'];
@@ -403,8 +438,8 @@ class MOVIE_DATA
 
         if (!$a_sql) {
 
-            $current = self::get_summary_request($all_data['actors_data'], $arrayneed_compare, $request_type, $array_request, 0, 1, 1);
-            $total = self::get_summary_request($all_data['actors_data'], $all_data['result'], $all_data['type'], $all_data['request'], $ethnycity, 1);
+            $current = self::get_summary_request($all_data['actors_data'], $arrayneed_compare, $request_type, $array_request, 0, 1, 1,$year);
+            $total = self::get_summary_request($all_data['actors_data'], $all_data['result'], $all_data['type'], $all_data['request'], $ethnycity, 1,$year);
         }
 
         return array('data' => $data, 'all_data' => $all_data, 'current' => $current, 'total' => $total, 'diversity' => $diversity, 'default_data' => $ethnic_array['array_default'],'verdict_data'=>$verdict_data);
@@ -513,7 +548,7 @@ class MOVIE_DATA
                             $data =  $array_compare_cache[$verdict_data[$id]];
                         }
                         //echo '$data =' .$data.' <bR>';
-
+/*
                         if ($diversity_select == 'wj_nw') {//////White (+ Jews ) v.s. non-White
 
                             $array_default[$data]++;
@@ -590,7 +625,8 @@ class MOVIE_DATA
                                 break;
                             }
                         }
-                        else {
+                        else */
+                            {
 
                             if ($ethnic_data==$data) {
                                 if ($a == 0) {
@@ -698,7 +734,7 @@ class MOVIE_DATA
 
     }
 
-    public static function get_summary_request($array_request_actors, $arrayneed_compare, $request_type, $array_request, $enable_ethnycity = '', $enable_actors_link = '', $enable_demograpic = '')
+    public static function get_summary_request($array_request_actors, $arrayneed_compare, $request_type, $array_request, $enable_ethnycity = '', $enable_actors_link = '', $enable_demograpic = '',$year='')
     {
 
 
@@ -789,7 +825,7 @@ class MOVIE_DATA
                 $actors_all_data = '';
                 if ($enable_actors_link) {
                     foreach ($array_request_actors[$race] as $ai => $af) {
-                        $actors_all_data .= ',' . implode($af, ',');
+                        $actors_all_data .= ',' . implode(',',$af);
                     }
                     if ($actors_all_data) {
                         $actors_all_data = substr($actors_all_data, 1);
@@ -831,7 +867,7 @@ class MOVIE_DATA
 
             if ($enable_demograpic) {
 
-                $actor_content = self::set_table_ethnic($arrayneed_compare,'');
+                $actor_content = self::set_table_ethnic($arrayneed_compare,$year);
 
                 $content .= $actor_content ;
 
@@ -847,7 +883,7 @@ class MOVIE_DATA
         return $content;
     }
 
-    public static function get_populaton_countries($index,$year, $type, $array_population, $population_prefix, $countries,$prefix)
+    public static function get_populaton_countries($index,$year, $type, $array_population, $population_prefix, $countries,$prefix,$only_population='')
     {
 
 
@@ -865,7 +901,8 @@ class MOVIE_DATA
 
                 $sql = "SELECT *   FROM `data_buying_power`, data_population_country where data_buying_power.cca2=data_population_country.cca2 and  data_population_country.`country_name` = '" . $innercountry . "' limit 1";
 
-            } else {
+            }
+            else {
                 $sql = "SELECT populatin_by_year, ethnic_array_result  FROM data_population_country  WHERE `country_name` = '" . $innercountry . "' limit 1";
             }
             $r = Pdo_an::db_fetch_row($sql, [], 'array');
@@ -898,6 +935,10 @@ class MOVIE_DATA
                         }
                     }
                     $current_population = $population_array->{$current_year};
+                }
+                if ($only_population)
+                {
+                    return $current_population;
                 }
 
                 if ($current_year)
@@ -1018,7 +1059,7 @@ class MOVIE_DATA
     }
 
 
-    public static function get_populaton_custom($index,$year, $type, $array_population,$prefix='')
+    public static function get_populaton_custom($index,$year, $type, $array_population,$prefix='',$total_population=1)
     {
 
 
@@ -1083,13 +1124,13 @@ class MOVIE_DATA
 
                $population =  $array_population['us']['data'][$eth];
 
-                $at[$eth] = round($number*$population,0);
+                $at[$eth] = round($number*$population*$total_population/100,0);
 
 
             }
             else
             {
-                $at[$eth] =  round($number,0);
+                $at[$eth] =  round($number,2);
             }
 
 
@@ -1107,12 +1148,21 @@ class MOVIE_DATA
 
 
 
+        if ($index=='us')
+        {
+            $percerted = $at;
+        }
+        else
+        {
+            $percerted=self::normalise_array($at);
+        }
+
 
         $comment = $comment_array[0]['Notes'];
         $array_population[$index] = array(
             'name'=>$custon_name . ' (' . $current_year . ')',
             'data' => $at,
-            'percent'=>self::normalise_array($at),
+            'percent'=>$percerted,
             'comment'=>$comment,
             'prefix'=>$prefix
         );
@@ -1299,6 +1349,30 @@ class MOVIE_DATA
 
         return $ethnic_graph_data;
     }
+    public static function create_column_single($p_name,$data_graph,$prefix='')
+    {
+
+        $array_ethnic_color =  self::get_ethnic_color();
+
+        $data_series=[];
+
+        foreach ($data_graph as $race => $count) {
+            if (!$count) $count = 0;
+
+
+            $data_series[] =[
+                'name'=> $race ,
+                'y' =>  floatval($count) ,
+                'color'=> $array_ethnic_color[$race] ,
+            ];
+
+        }
+
+        $ethnic_graph_data = json_encode(array('name'=>$p_name,'series'=>$data_series,'prefix'=>$prefix));
+
+        return $ethnic_graph_data;
+    }
+
     public static function create_column($p_name,$data_graph,$data_ethnic)
     {
 
@@ -1381,13 +1455,18 @@ class MOVIE_DATA
 ///get custom data
 
        $array_population = self::get_populaton_custom('us',$year,'',$array_population,'');
+
        $array_population = self::get_populaton_custom('us_bp',$year,'buying_power',$array_population,'$');
-        $array_population = self::get_populaton_custom('us_income',$year,'income',$array_population,'$');
+
+
+        $array_population_us = self::get_populaton_countries('cntr',$year,'',$array_population,' Population ',['USA'],'',1);
+        $array_population = self::get_populaton_custom('us_income',$year,'income',$array_population,'$',$array_population_us);
 
         ////get world population
 
        $array_population = self::get_populaton_world('w',$year,'',$array_population,'population ');
        $array_population = self::get_populaton_world('w_bp',$year,'buying_power',$array_population,'','$');
+
 
 
         if ($countries) {
@@ -1466,6 +1545,7 @@ class MOVIE_DATA
                 $prefix = $array_population[$index]['prefix'];
                 $data_graph_percent = $array_population[$index]['percent'];
 
+
                 if ($array_year[$p_name]) {
 
                     $p_name = $p_name . ' (' . $array_year[$p_name] . ' )';
@@ -1509,8 +1589,18 @@ class MOVIE_DATA
                 }
 
 
-                $ethnic_graph_data = self::create_pie($p_name, $data_graph, $prefix);
-                $ethnic_graph_column = self::create_column($p_name, $data_graph_percent, $data);
+
+
+                if($index=='us')
+                {
+                    $ethnic_graph_data = self::create_column_single($p_name, $data_graph, $prefix);
+                }
+                else
+                {
+                    $ethnic_graph_data = self::create_pie($p_name, $data_graph, $prefix);
+                }
+
+                   $ethnic_graph_column = self::create_column($p_name, $data_graph_percent, $data);
 
 
                 if ($comment) {
@@ -1519,7 +1609,16 @@ class MOVIE_DATA
                     $comment_graph = '';
                 }
 
-                $source_graph = '<td ><span class="t_graph ethnic_graph"></span><div style="display: none" class="ethnic_graph_data">' . $ethnic_graph_data . '</div></td><td class="o_viz">' . $comment_graph . '</td></tr>';
+                if($index=='us')
+                {
+                    $source_graph = '<td ><span class="t_column ethnic_graph ethnic_graph_column_single"></span><div style="display: none" class="ethnic_graph_data">' . $ethnic_graph_data . '</div></td><td class="o_viz">' . $comment_graph . '</td></tr>';
+
+                }
+                else
+                {
+                    $source_graph = '<td ><span class="t_graph ethnic_graph"></span><div style="display: none" class="ethnic_graph_data">' . $ethnic_graph_data . '</div></td><td class="o_viz">' . $comment_graph . '</td></tr>';
+
+                }
 
                 $source_column = '<td ><span class="t_column ethnic_graph ethnic_graph_column"></span><div style="display: none" class="ethnic_graph_data">' . $ethnic_graph_column . '</div></td><td></td></tr>';
 

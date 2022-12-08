@@ -47,6 +47,15 @@ function get_imdb_data_search()
 
 class custom_imdb_search
 {
+public static function calculate_actor_data($a_id)
+{
+    !class_exists('ActorWeight') ? include ABSPATH . "analysis/include/actors_weight.php" : '';
+    ActorWeight::update_actor_weight($a_id,1,0,1,0,1);
+
+
+
+
+}
     public static  function check_in_db($movie_id)
     {
 
@@ -61,7 +70,7 @@ class custom_imdb_search
 
     }
 
-    public static function search_result($key, $type,$exclude=[])
+    public static function search_result($key, $type,$exclude=[],$debug =0,$force=0)
     {
         //print_r($exclude);
         $array_enable=[];
@@ -71,15 +80,19 @@ class custom_imdb_search
         $name  ='p-0_get_imdb_data_search_1_'.urlencode($keycode);
         $cache=   wp_custom_cache($name,'file_cache', 3600*4);
 
-        if ($cache)
+        if ($cache && !$force)
         {
             $result_data_array = json_decode($cache,1);
         }
        else
        {
-           $result_data_array = TMDB::get_data($key, $type);
+           $result_data_array = TMDB::get_data($key, $type,$debug);
        }
 
+       if ($debug)
+       {
+           print_r($result_data_array);
+       }
 
         foreach ($result_data_array as $movie_id => $data) {
 
@@ -99,16 +112,43 @@ class custom_imdb_search
             }
             if (!$enable_on_db) {
 
-                if (!strstr($data[3],'(TV Episode)'))
+                if ($data['imageType']!='tvEpisode')
                 {
-                    $array_not_enable[$movie_id]=array('link'=>'https://www.imdb.com' . $data[0] ,'title'=> $data[2],'poster'=>$data[1] ,'desc'=>$data[3]);
+
+                $poster =  $data['titlePosterImageModel']['url'];
+
+                if ($poster) {
+                    $postersmall = str_replace('_V1_.jpg', '_V1_QL75_UY330_CR1,0,220,330_.jpg', $poster);
+                    $posterbig = str_replace('_V1_.jpg', '_V1_QL75_UY660_CR1,0,440,660_.jpg', $poster);
+                }
+                else
+                {
+
+                    $postersmall =   WP_SITEURL . '/wp-content/themes/custom_twentysixteen/images/empty_image.svg';
+                    $posterbig = $postersmall;
+                }
+
+                    $desc = $data['titleReleaseText'];
+
+                    if (!strstr($desc,'('))
+                    {
+                        $desc='('.$desc.')';
+                    }
+                    $array_not_enable[$movie_id]=array('link'=>'https://www.imdb.com/title/' . $data['id'] ,
+                        'title'=> $data['titleNameText'],
+                        'poster'=>$postersmall,
+                        'posterbig'=>$posterbig,
+                        'desc'=>$desc,
+                        'cast'=>$data['topCredits'],
+                        'type'=>$data['imageType']
+                    );
 
                 }
 
             }
             else {
 
-                $array_enable[$movie_id] =array('imdb_id'=>$movie_id,'link'=>'' ,'title'=> $data[2]);
+                $array_enable[$movie_id] =array('imdb_id'=>$movie_id,'link'=>'' ,'title'=> $data['titleNameText']);
 
             }
 
@@ -171,25 +211,61 @@ Vote to increase its priority.</p>';
                 }
 
 
-                $result_data.= '<tr class="click_open" id="'.$movie_id.'"><td><img src="'.$data['poster'].'" /><span style="padding:0px 10px;display:inline-block;">'.$data['title'].' '.$data['desc'].'</span><a target="_blank" style="padding:0px 10px;display:inline-block;" href="'.$data['link'].'">Open in IMDB</a></td><td>'.$button.$comment.'</td></tr>';
+               // $result_data.= '<tr class="click_open" id="'.$movie_id.'"><td><img src="'.$data['poster'].'" /><span style="padding:0px 10px;display:inline-block;">'.$data['title'].' ('.$data['desc'].') <span class="item_type">'.$data['type'].'</span></span><a target="_blank" style="padding:0px 10px;display:inline-block;" href="'.$data['link'].'">Open in IMDB</a></td><td>'.$button.$comment.'</td></tr>';
+                if ($data['type'] == 'movie') {
+                    $movie_link_desc = 'class="card_movie_type ctype_movies" title="Movie"';
+                } else if ($data['type'] == 'tvSeries') {
+                    $movie_link_desc = 'class="card_movie_type ctype_tvseries" title="TV Show"';
+                } else if ($data['type'] == 'VideoGame') {
+                    $movie_link_desc = 'class="card_movie_type ctype_videogame" title="Game"';
+                }
+
+                if ($data['cast'])
+                {
+                    $summary ='<div class="block block_summary"><span></span>Actors:  '.implode($data['cast'],', ').'</div>';
+                }
+
+                $result_data.= '<div  class="movie_container">
+            <div class="movie_poster">
+            <a target="_blank"  href="'.$data['link'].'">
+                <div class="image">
+                    <div class="wrapper" style="min-width: 220px;min-height: 330px;">
+                        <span '.$movie_link_desc.'></span>
+                        <img loading="lazy" class="poster"  srcset="'.$data['poster'].' 1x, '.$data['posterbig'].' 2x">
+                    </div>
+                </div>
+            </a>
+                <div class="movie_button_action">'.$button.'</div>
+            </div>
+            <div class="movie_description">
+                <div class="header_title">
+                    <h1 class="entry-title">'.$data['title'].' '.$data['desc'].'</h1>
+                </div>
+                <div class="movie_description_container">
+                    <div class="movie_summary">
+                    '.$summary.'
+                    </div>
+                </div>
+            </div>
+        </div>';
 
             }
         }
 
         if ($result_data)
         {
-            $content= $content.'<div class="crowd_rwt" style="width: 100%;  padding: 10px; margin-top: 20px"><b style="text-align: center;display: block;">Please help us crowdsource the ZR database.
+            $content= $content.'<div class="crowd_rwt" style="width: 100%;  padding: 12px 0; margin-top: 20px"><b style="text-align: center;display: block;">Please help us crowdsource the ZR database.
 <br>
 If what you\'re looking for isn\'t on ZR yet, try finding it below.</b>
 
-<table >'.$result_data.'</table>
-<b style="text-align: center;display: block;">If the movie or show you\'re looking for isn\'t shown above, try entering an IMDb ID or url here:</b>
-<table><tr class="container_for_add_movies"><td><input autocomplete="off" placeholder="IMDb ID or Link" class="addmoviesfrom_id" /></td><td><button  id="'.$movie_id.'" class="button button-primary add_movie_todb check_imdb_movie">Add to database</button></td></tr></table>
-</div>';
+<div class="flex_movies_block" >'.$result_data.'</div>';
+
 
         }
 
-
+        $content.='<b style="text-align: center;display: block;">If the movie or show you\'re looking for isn\'t shown above, try entering an IMDb ID or url here:</b>
+<table><tr class="container_for_add_movies"><td><input autocomplete="off" placeholder="IMDb ID or Link" class="addmoviesfrom_id" /></td><td><button  id="'.$movie_id.'" style="border-radius: 4px;" class="button button-primary add_movie_todb check_imdb_movie">Add to database</button></td></tr></table>
+</div>';
 
 
         if ($content_result['result']) {
@@ -264,6 +340,19 @@ If what you\'re looking for isn\'t on ZR yet, try finding it below.</b>
 
 
 
+if (isset($_POST['calculate_actor_data'])){
+    $a_id = $_POST['calculate_actor_data'];
+    if ($a_id)
+    {
+        $a_id=intval($a_id);
+        $result = custom_imdb_search::calculate_actor_data($a_id);
+
+    }
+
+    echo $result;
+    return;
+}
+
 if (isset($_POST['remove_movie']))
 {
 
@@ -278,8 +367,6 @@ if (isset($_POST['remove_movie']))
     echo 1;
     return;
 }
-
-
 if (isset($_POST['read_more_rating']))
 {
 
@@ -298,9 +385,6 @@ if (isset($_POST['read_more_rating']))
     }
 return;
 }
-
-
-
 if (isset($_POST['refresh_rwt_rating']))
 {
 
@@ -349,8 +433,6 @@ if (isset($_POST['refresh_rating']))
     }
 
 }
-
-
 if (isset($_POST['add_movie']))
 {
 
@@ -376,12 +458,12 @@ if (isset($_POST['add_movie']))
     echo 1;
     return;
 }
-
-
 if (isset($_GET['id']))
 {
     $key=$_GET['id'];
     $type='';
+    $debug = $_GET['debug'];
+    $force = $_GET['force'];
 
     $key = urldecode($key);
     $key_array = unserialize($key);
@@ -393,7 +475,7 @@ if (isset($_GET['id']))
 
 if ($type=='movies')$type='ft';
 
-   echo custom_imdb_search::search_result($key,$type,$exclude);
+   echo custom_imdb_search::search_result($key,$type,$exclude,$debug,$force);
 
 }
 

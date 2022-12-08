@@ -4435,7 +4435,7 @@ class AnalyticsFront extends SearchFacets {
         return $race_code;
     }
 
-    public function custom_weight_race_code($race = 0, $race_weight = array()) {
+    public function custom_weight_race_code($race = 0, $race_weight = array(),$onlydata=0) {
 
         /*
           // Other codes
@@ -4494,6 +4494,10 @@ class AnalyticsFront extends SearchFacets {
             arsort($result_top);
             $calc_id = array_key_first($result_top);
             $race_code_ret = $debug[$calc_id]['race'];
+        }
+        if ($onlydata)
+        {
+            return array($result_summ,$result_top,$race_code_ret);
         }
 
         return $race_code_ret;

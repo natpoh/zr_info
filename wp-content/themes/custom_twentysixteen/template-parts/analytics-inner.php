@@ -12,6 +12,9 @@
                     </div>
                     <input type="submit" id="submit" class="btn" value="find">        
                 </div>
+                <div class="filters_btn">
+                    <a id="fiters-btn" class="search-filters-btn" href="#filters" title="Advanced search filters"><span class="filters-icon"></span> Search filters</a>                    
+                </div>
                 <?php $search_front->theme_search_url($search_url, $search_text, $inc); ?>
                 <?php
                 if ($show_content):
@@ -20,15 +23,15 @@
                     print $fiters;
                     ?>
                     <div id="page-facet">
-                        <?php 
-                        $search_front->page_facet($results,$tab_key); 
+                        <?php
+                        $search_front->page_facet($results, $tab_key);
                         gmi('page_facet');
                         ?>
                     </div>
                     <?php print $sort; ?>
                     <div id="page-content" class="ajload">
-                        <?php 
-                        $search_front->page_content($results,$tab_key); 
+                        <?php
+                        $search_front->page_content($results, $tab_key);
                         gmi('page_content');
                         ?>                        
                     </div>
@@ -60,7 +63,11 @@
         </div>
     </div>
 </form>
-<?php if (defined("DEBUG_GMI")){
+<?php
+if (defined("DEBUG_GMI")) {
     global $gmi;
-    print '<pre>'; print_r($gmi); print '</pre>';
-} ?>
+    print '<pre>';
+    print_r($gmi);
+    print '</pre>';
+}
+?>

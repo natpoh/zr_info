@@ -12,6 +12,9 @@
                     </div>
                     <input type="submit" id="submit" class="btn" value="find">        
                 </div>
+                <div class="filters_btn">
+                    <a id="fiters-btn" class="search-filters-btn" href="#filters" title="Advanced search filters"><span class="filters-icon"></span> Search filters</a>                    
+                </div>
                 <?php $search_front->theme_search_url($search_url, $search_text, $inc); ?>
                 <?php
                 if ($show_content):
@@ -120,7 +123,7 @@
                                         $name = $search_front->get_or_create_ma_post_name($ids);
                                         $post_type = strtolower($movie->type);
 
-                                        if ($post_type == 'movie' || $post_type == 'tvseries') {
+                                        if ($post_type == 'movie' || $post_type == 'tvseries' || $post_type == 'videogame') {
                                             if (function_exists('template_single_movie')) {
                                                 template_single_movie($ids, $title, $name);
                                                 $content_result[$ids] = $ids;

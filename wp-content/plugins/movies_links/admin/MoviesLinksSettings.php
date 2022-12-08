@@ -9,7 +9,11 @@ class MoviesLinksSettings extends ItemAdmin {
         'parser' => 'Parser',
         'tor' => 'Tor',
     );
-
+    public $tor_agent = array(
+        0 => 'List agents',
+        1 => 'Generate',
+    );
+    
     public function __construct($mla = '') {
         $this->mla = $mla;
         $this->ml = $mla->ml;

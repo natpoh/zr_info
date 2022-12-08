@@ -364,7 +364,7 @@ class CriticEmotions extends AbstractDB {
             if ($post_wp_author) {
                 if ($wp_uid != $post_wp_author) {
                     $uc = $this->cm->get_uc();
-                    $uc->emotions_rating($post_wp_author, 1);
+                    $uc->emotions_rating($post_wp_author, 1, $post_id);
                 }
             }
         }
@@ -396,7 +396,7 @@ class CriticEmotions extends AbstractDB {
         if ($post_wp_author) {
             if ($wp_uid != $post_wp_author) {
                 $uc = $this->cm->get_uc();
-                $uc->emotions_rating($post_wp_author, 1, true);
+                $uc->emotions_rating($post_wp_author, 1,$post_id, true);
             }
         }
 

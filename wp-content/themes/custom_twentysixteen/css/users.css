@@ -8,6 +8,20 @@ and open the template in the editor.
     Author     : brahman
 */
 
+.clearfix::after, .clearfloat::after {
+    display: block;
+    clear: both;
+    content: "";
+}
+
+.green {
+    color: green;
+}
+
+.red {
+    color: red;
+}
+
 .collapsing {
     position: relative;
     height: 0;
@@ -16,12 +30,43 @@ and open the template in the editor.
     transition: height .35s ease;
 }
 
-
-html body #wp-admin-bar-top-secondary #wp-admin-bar-my-account{
-    display: none;
+.user-page-content {
+    padding: 15px 15px 30px 15px;
 }
-html body.wp-admin #wp-admin-bar-top-secondary #wp-admin-bar-my-account{
+
+/*jGrowl*/
+.msg.warning {
+    color: #884400;
+    background: #ffee66;
+    border-color: #eedd55;
+}
+
+.msg.error {
+    color: white;
+    background: #ee6633;
+    border-color: #dd5522;
+}
+
+.msg.error a {
+    color: white;
+}
+
+.msg.status {
+    color: #336600;
+    background-color: #b8e6bf;
+    border-color: #68de7c;
+}
+
+.msg {
+    font-size: 1rem;
+    padding: 10px;
     display: block;
+    margin: 0 0 1rem 0;
+    background: #eee;
+}
+
+.msg-holder{
+    display: none;
 }
 
 button.btn-small{
@@ -33,9 +78,19 @@ button.btn-small.active {
     background: #979797;
 }
 
-.neuro.avatar.sketch {
+.neuro.avatar.sketch,
+.neuro.avatar.photo{
     border-radius: 50%;
     border: 1px solid #5e5e5e;
+}
+
+.avatar-type {
+    display: flex;
+}
+
+.avatar-type .s-item {
+    display: block;
+    margin: 3px;
 }
 
 .neuro.avatar {
@@ -364,7 +419,7 @@ article.main {
 }
 
 .user-widgets .chart {
-    margin: -20px -10px 0 -10px;
+
 }
 
 .chartholder {    
@@ -847,7 +902,7 @@ body.user .hide-user {
 
 
 .simple .item {
-    height: 120px;
+    height: 60px;
     overflow: hidden;
     position: relative;
     border-top: 1px solid #dbdbdb;
@@ -857,15 +912,9 @@ body.user .hide-user {
     display: flex;
 }
 
-.simple .img {
-    width: 90px;
-    height: 120px;
-    display: flex;
-    flex: 1
-}
 
 .simple .desc {
-    margin: 10px 6px 0 15px;
+    margin: 3px 6px 0 10px;
 }
 
 
@@ -875,6 +924,8 @@ body.user .hide-user {
 }
 
 .simple .item img {
+    width: 40px;
+    height: 60px;
     margin: 0;
     padding: 0;
     border: none;
@@ -888,7 +939,7 @@ body.user .hide-user {
     white-space: normal;
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 1;
     color: #333;
 }
 
@@ -911,19 +962,73 @@ body .ucarma {
     display: none;
 }
 
+
+body.theme_dark .simple .item,
+body.theme_dark .simple .items{
+    border-color: #666;
+}
+
+.flextable {
+    margin-bottom: 30px;
+}
+.flexrow {
+    margin-bottom: 10px;
+}
+
+
+.flexcol {
+    padding: 5px;     
+}
+
+.flexcol.first {
+    font-weight: bold;
+}
+
+#audience_form .nte,
+#settings_form .nte{
+	display: inline-block;
+}
+
+#audience_form .nte .btn,
+#settings_form .nte .btn {
+	cursor: pointer;
+	border: 1px solid #8f8f8f;
+	border-radius: 50%;
+	width: 18px;
+	height: 18px;
+	text-align: center;
+	line-height: 18px;
+	font-size: 15px;
+	color: #8f8f8f;
+}
+
 @media (min-width: 720px) {
 
-
-    #top-widgets  .two-columns {
+    .flexrow {
         display: flex;
     }
 
-
-    #top-widgets .two-columns .column-left{
-        flex: 1; 
+    .flexcol {
+        flex: 1;           
     }
-    #top-widgets .two-columns .column-right {
-        flex: 1; 
+
+    .flexcol.first {
+        flex: auto; 
+        max-width: 200px;
+    }
+
+    .two-columns {
+
+    }
+
+
+    .two-columns .column-left{
+        width: 50%;
+        float: left;
+    }
+    .two-columns .column-right {
+        width: 50%;
+        float: right;
     }
 
     .uw-title {

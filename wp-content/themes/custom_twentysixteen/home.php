@@ -45,7 +45,4 @@ if (is_active_sidebar('sidebar-4')) {
 }
 ?>
 
-</div><!-- .content-area -->
-
-
 <?php get_footer(); ?>

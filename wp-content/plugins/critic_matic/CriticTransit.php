@@ -112,7 +112,7 @@ class CriticTransit extends AbstractDB {
      * Actors meta
      */
 
-    public function get_actors_meta($count = 1000, $debug = false, $force = false, $actor_id = false, $sinch = true) {
+    public function get_actors_meta($count = 1000, $debug = false, $force = false, $actor_id = false, $sinch = true,$onlydata=0) {
 
         if ($actor_id) {
             $sql = sprintf("SELECT * FROM {$this->db['actors_meta']} WHERE actor_id = %d ", (int) $actor_id);
@@ -174,7 +174,19 @@ class CriticTransit extends AbstractDB {
                     print "Actor code id: " . $actor_id . "\n";
                 }
 
-                $n_verdict = $af->custom_weight_race_code($actor_id, $filter_weights);
+
+
+                $n_verdict = $af->custom_weight_race_code($actor_id, $filter_weights,$onlydata);
+                if ($onlydata)
+                {
+                    if ($debug) {
+                        print "Actor verdict";
+                        print_r($n_verdict);
+                    }
+
+
+                    return;
+                }
                 $s_verdict = '';
                 if ($n_verdict > 0) {
                     $s_verdict = $array_int_convert[$n_verdict];

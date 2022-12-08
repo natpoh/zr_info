@@ -42,9 +42,11 @@
 
                         <div class="site-branding">
                             <?php
-                            if (function_exists('get_custom_logo')) {
-                                $logo = get_custom_logo();
-                            }
+//                            if (function_exists('get_custom_logo')) {
+//                                $logo = get_custom_logo();
+//                            }
+
+                            $logo ='<a class="zr_logo" href="'.esc_url(home_url('/')).'" ><div class="zr_logo_img"><span class="zr_logo_description">What\'s the world <i>really</i> think?</span></div><span class="zr_logo_site_name">Zeitgeist<span class="zr_logo_ws">Reviews</span></span></a>';
                             if ($logo) {
                                 echo $logo;
                             } else {
@@ -66,34 +68,19 @@
                             ?>
 
                         </div><!-- .site-branding -->
-
-
-                        <div class="search">
-                            <?php
-                            global $cfront, $cm_new_api;
-                            if ($cm_new_api) {
-                                $cfront->search_form();
-                            } else {
-                                get_search_form();
-                            }
-                            ?>
-                        </div>
-
-
                         <?php
+
                         if (has_nav_menu('primary')) :
                             ?>
-
-
                             <div id="site-header-menu" class="site-header-menu"><span class="close_header_nav"></span>
                                 <?php if (has_nav_menu('primary')) : ?>
                                     <nav id="site-navigation" class="main-navigation" role="navigation" aria-label="<?php esc_attr_e('Primary Menu', 'twentysixteen'); ?>">
                                         <?php
                                         wp_nav_menu(
-                                                array(
-                                                    'theme_location' => 'primary',
-                                                    'menu_class' => 'primary-menu',
-                                                )
+                                            array(
+                                                'theme_location' => 'primary',
+                                                'menu_class' => 'primary-menu',
+                                            )
                                         );
                                         ?>
                                         <div class="site_theme_switch" title="Color theme">
@@ -109,7 +96,108 @@
                             </div><!-- .site-header-menu -->
                         <?php endif; ?>
 
+                        <div class="search">
+                            <?php
+                            global $cfront, $cm_new_api;
+                            if ($cm_new_api) {
+                                $cfront->search_form();
+                            } else {
+                                get_search_form();
+                            }
+                            ?>
+                        </div>
 
+                       <?php
+
+                        if (has_nav_menu('second')) :
+                        ?>
+                        <div id="site-header-menu" class="site-header-menu-right">
+                            <?php if (has_nav_menu('second')) : ?>
+                                <nav id="site-navigation" class="main-navigation" role="navigation" aria-label="<?php esc_attr_e('Header Menu', 'twentysixteen'); ?>">
+                                    <?php
+                                    wp_nav_menu(
+                                        array(
+                                            'theme_location' => 'second',
+                                            'menu_class' => 'primary-menu',
+                                        )
+                                    );
+                                    ?>
+                                </nav><!-- .main-navigation -->
+                            <?php endif; ?>
+
+                        </div><!-- .site-header-menu -->
+                        <?php endif; ?>
+
+                        <?php // TODO Unotify  ?>
+                        <div class="user-bar">
+                            <?php if (is_user_logged_in()) { 
+                                // User button
+                                // $uid = 0;                                
+                                $wpUser = wp_get_current_user();
+                                $uid = $wpUser->ID;
+                                $title = "Sign in";
+                                if ($uid):
+                                    $title = "My account";
+
+
+                                    ?>
+                                <?php endif ?>
+                            <?php } ?>
+                                <div title="<?php print $title ?>" id="user-btn" class="btn btn-mob collapsed" data-toggle="collapse" data-target="#ucnt" aria-expanded="false" aria-controls="ucnt">
+                                    <?php
+                                    if ($uid):
+                                        ?>
+
+                                        <i class="icon-user icon-user-online"></i>
+
+                                    <?php
+                                    else:
+                                        ?>
+                                        <i class="icon-user icon-user-offline"></i>
+                                    <?php
+                                    endif;
+                                    ?>
+                                    <i class="icon-cancel close"></i>
+                                </div>
+
+                                <?php
+                                // User links
+
+
+                                $uname = 'Anon';
+                                if ($uid) {
+                                    $uname = $wpUser->display_name;
+                                }
+                                ?>
+
+                                <div id="ucnt" class="collapse">
+                                    <ul class="userlinks dropdown-menu">
+                                        <li class="uname">
+                                            <?php if ($uid) { ?>
+                                            <span class="open" style="margin-left: 10px;"><?php print get_avatar($uid, 40); ?></span>
+                                            <?php } ?>
+                                            <b><?php print $uname ?></b></li>
+                                        <li class="divider uname"></li>                
+                                        <?php if ($uid) : ?>             
+                                            <li class="sep"><a href="<?php echo get_author_posts_url($wpUser->ID, $wpUser->user_nicename) ?>" title="Public profile">Profile</a></li>
+                                            <?php if (user_can($wpUser, 'administrator')){ ?>
+                                              <li class="sep"><a href="/wp-admin/profile.php"  title="Account settings">Settings</a></li>
+                                            <?php } ?>
+                                            <li><a href="<?php
+                                                $logout = wp_logout_url('/');
+                                                //$logout = apply_filters( 'loginout', $logout );
+                                                $logout = str_replace('wp-login.php', 'login', $logout);
+                                                print $logout;
+                                                ?>" title="Log out">Log out</a></li>
+                                            <?php else: ?>  
+                                            <li><a class="sep ajaxlogin" href="/login">Log in</a></li>
+                                            <?php /* ?><li><a href="/login?action=register">Register</a></li><?php */ ?>
+                                        <?php endif; ?>                
+
+                                    </ul>
+                                </div>
+
+                        </div>
 
                     </div><!-- .site-header-main -->
 
@@ -135,22 +223,20 @@
 
                 </header><!-- .site-header -->
             </div>
-<script type="text/javascript">
-    var site_theme = localStorage.getItem('site_theme');
-    if (site_theme =='theme_dark')
-    {
-        document.querySelector('body').classList.add('theme_dark');
-    }
-    else
-    {
-        document.querySelector('body').classList.add('theme_white');
-    }
-
-</script>
+            <script type="text/javascript">
+                var site_theme = localStorage.getItem('site_theme');
+                if (site_theme == 'theme_dark')
+                {
+                    document.querySelector('body').classList.add('theme_dark');
+                } else
+                {
+                    document.querySelector('body').classList.add('theme_white');
+                }
+            </script>
             <?php
         }
 
-        if (function_exists('wp_theme_cache')) {
+        if (function_exists('wp_theme_cache') && !is_user_logged_in()) {
             echo wp_theme_cache('get_header_data');
         } else {
             get_header_data();
@@ -161,14 +247,8 @@
         }
         ?>
 
-
-
-
-
         <div id="page" class="site">
-
             <div id="content" class="site-content">
-
                 <?php
                 if (is_active_sidebar('sidebar-5')) {
                     echo '<div class="top_adheader">';

@@ -18,8 +18,23 @@ class CriticCrowd extends AbstractDB {
     private $db;
     public $critic_status = array(
         0 => 'New',
-        1 => 'Waiting',
-        2 => 'Done'
+        1 => 'Processed',
+        2 => 'Done',
+        3 => 'Error'
+    );
+    public $status = array(
+        0 => 'Waiting',
+        1 => 'Approved',
+        2 => 'Rejected'
+    );
+    private $log_type = array(
+        0 => 'Info',
+        1 => 'Warning',
+        2 => 'Error',
+    );
+    private $log_status = array(
+        0 => 'Cron',
+        1 => 'Admin',
     );
 
     public function __construct($cm = '') {
@@ -29,20 +44,118 @@ class CriticCrowd extends AbstractDB {
             'posts' => $table_prefix . 'critic_matic_posts',
             'meta' => $table_prefix . 'critic_matic_posts_meta',
             'critic_crowd' => 'data_critic_crowd',
+            'log' => 'critic_crowd_log',
             'movie_imdb' => 'data_movie_imdb',
             'transcriptions' => $table_prefix . 'critic_transcritpions',
         );
     }
 
     public function run_cron($count = 100, $debug = false) {
-        // 1. Get new crowd and create posts
-        $this->get_new_crowd($count, $debug);
 
-        // 2. Calculate rating
-        $this->calculate_posts($count, $debug);
+        $this->publish_new_crowd($count, $debug);
+        /*
+          // 1. Get new crowd and create posts
+          $this->get_new_crowd($count, $debug);
 
-        // 3. Get admin approved posts
-        $this->get_approved_posts($count, $debug);
+          // 2. Calculate rating
+          $this->calculate_posts($count, $debug);
+
+          // 3. Get admin approved posts
+          $this->get_approved_posts($count, $debug);
+         */
+    }
+
+    private function publish_new_crowd($count = 100, $debug = false) {
+        $sql = sprintf("SELECT * FROM {$this->db['critic_crowd']} WHERE critic_status=0 ORDER BY id ASC LIMIT %d", $count);
+        $results = $this->db_results($sql);
+        if ($debug) {
+            print_r($results);
+        }
+
+        // Log status cron
+        $log_status = 0;
+
+        if ($results) {
+            foreach ($results as $item) {
+                $msg = '';
+                $id = $item->id;
+                $cid = $item->review_id;
+                $link = $item->link;
+
+                // Post exist?
+                $link_hash = $this->link_hash($link);
+                $post_exist = $this->cm->get_post_by_link_hash($link_hash);
+                $movie_id = $item->rwt_id;
+
+                $error = array();
+
+                if ($cid > 0) {
+                    // Post exist
+                    if ($post_exist) {
+                        if ($post_exist->id == $cid) {
+                            // Update critic
+                            $msg = "Critic already exist. Update critic";
+                            $this->log_info($msg, $id, $log_status);
+                            $data = $this->update_post($post_exist, $item, $log_status, $debug);
+                        } else {
+                            $msg = "Wrong post exist " . $post_exist->id . " != $cid";
+                            $error[] = $msg;
+                        }
+                    } else {
+                        $msg = "Link post not exist";
+                        $error[] = $msg;
+                    }
+                } else {
+                    if (!$post_exist) {
+                        // Add a new critic
+                        $msg = "Add a new critic";
+                        $this->log_info($msg, $id, $log_status);
+                        $data = $this->add_post($item, $log_status, $debug);
+                        if ($data['review_id']) {
+                            $cid = $data['review_id'];
+                        } else {
+                            $msg = 'No rewiew id';
+                            $error[] = $msg;
+                        }
+                    } else {
+                        $msg = "Wrong critic id";
+                        $error[] = $msg;
+                    }
+                }
+
+                if ($error) {
+                    foreach ($error as $msg) {
+                        if ($debug) {
+                            print $msg . "\n";
+                        }
+                        $this->log_error($msg, $id, $log_status);
+                    }
+
+                    $data['critic_status'] = 3;
+                    $data['status'] = 2;
+                    $this->update_crowd($item->id, $data);
+                } else {
+                    // Update crowd
+                    $data['critic_status'] = 2;
+                    $data['status'] = 1;
+                    $this->update_crowd($id, $data);
+
+                    //Get meta
+                    $movie_exist = $this->cm->get_movies_data($cid, $movie_id);
+                    if (!$movie_exist) {
+                        // Need add a new movie to post
+                        // Type: 1 => 'Proper Review',
+                        $type = 1;
+                        // State: 1 => 'Approved',
+                        $state = 1;
+                        // Add meta
+                        $this->cm->add_post_meta($movie_id, $type, $state, $cid);
+                        $msg = "Add movie $movie_id to post $cid";
+                        $this->log_info($msg, $id, $log_status);
+                    }
+                }
+            }
+        }
     }
 
     private function get_new_crowd($count = 100, $debug = false) {
@@ -51,6 +164,9 @@ class CriticCrowd extends AbstractDB {
         if ($debug) {
             print_r($results);
         }
+
+        // Log status cron
+        $log_status = 0;
 
         if ($results) {
             foreach ($results as $item) {
@@ -67,23 +183,31 @@ class CriticCrowd extends AbstractDB {
                     if ($post_exist) {
                         if ($post_exist->id == $cid) {
                             // Update critic
-                            $msg = "Info. Critic already exist. Update critic\n";
-                            $data = $this->update_post($post_exist, $item, $debug);
+                            $msg = "Critic already exist. Update critic";
+                            $this->log_info($msg, $id, $log_status);
+
+                            $data = $this->update_post($post_exist, $item, $log_status, $debug);
                             $this->update_crowd($id, $data);
                         } else {
-                            $msg = "Error $id. Wrong post exist\n";
+                            $msg = "Wrong post exist " . $post_exist->id . " != $cid";
+                            $this->log_error($msg, $id, $log_status);
                         }
                     } else {
-                        $msg = "Error $id. Link post not exist\n";
+                        $msg = "Link post not exist";
+                        $this->log_error($msg, $id, $log_status);
                     }
                 } else {
                     if (!$post_exist) {
                         // Add a new critic
-                        $msg = "Info $id. Add a new critic\n";
-                        $data = $this->add_post($item, $debug);
+                        $msg = "Add a new critic";
+                        $this->log_info($msg, $id, $log_status);
+
+                        $data = $this->add_post($item, $log_status, $debug);
                         $this->update_crowd($id, $data);
                     } else {
-                        $msg = "Error $id. Wrong critic id\n";
+                        $msg = "Wrong critic id";
+                        $this->log_error($msg, $id, $log_status);
+
                         $crowd_status = 2;
                         $data = array('status' => $crowd_status);
                         $this->update_crowd($item->id, $data);
@@ -105,21 +229,25 @@ class CriticCrowd extends AbstractDB {
             print_r($results);
         }
         $cs = $this->cm->get_cs();
+        $log_status = 0;
 
         if ($results) {
             foreach ($results as $item) {
                 $msg = '';
                 $id = $item->id;
                 $cid = $item->review_id;
-                // Post in index?
-                $in_index = $cs->critic_in_index($cid);
-                $msg = "Post $cid index:" . ($in_index ? "true" : "false") . "\n";
-                if ($debug) {
-                    print $msg;
-                }
-                if (!$in_index) {
-                    continue;
-                }
+
+                /*
+                  // Post in index?
+                  $in_index = $cs->critic_in_index($cid);
+                  $msg = "Post $cid index:" . ($in_index ? "true" : "false") . "\n";
+                  if ($debug) {
+                  print $msg;
+                  }
+                  if (!$in_index) {
+                  continue;
+                  }
+                 */
 
                 $link = $item->link;
                 // Is youtube
@@ -146,7 +274,7 @@ class CriticCrowd extends AbstractDB {
                             $ts_updated = true;
                         }
                     } else {
-                        $msg = "Info $cid. No ts status\n";
+                        $msg = "Info $cid. Waiting ts status\n";
                     }
                     if ($debug) {
                         print $msg;
@@ -158,38 +286,34 @@ class CriticCrowd extends AbstractDB {
 
                 // Calculate rating
                 $movie_id = $item->rwt_id;
-                $movie = $this->get_movie_by_id($movie_id, true);
+                // $movie = $this->get_movie_by_id($movie_id, true);
 
-                $bulk = true;
-                $ids = array($cid);
-                $cs->update_movie($movie, $debug, $bulk, $ids);
-
+                /*
+                  $bulk = true;
+                  $ids = array($cid);
+                  $cs->update_movie($movie, $debug, $bulk, $ids);
+                 */
                 // Update crowd                
-                $critic_status = 2;
-                $data = array('critic_status' => $critic_status);
+
+                $data = array();
+                $data['critic_status'] = 2;
+                $data['status'] = 2;
 
                 //Get meta
                 $movie_exist = $this->cm->get_movies_data($cid, $movie_id);
-                if ($debug) {
-                    print_r($movie_exist);
+
+                if (!$movie_exist) {
+                    // Need add a new movie to post
+                    // Type: 1 => 'Proper Review',
+                    $type = 1;
+                    // State: 1 => 'Approved',
+                    $state = 1;
+                    // Add meta
+                    $this->cm->add_post_meta($movie_id, $type, $state, $cid);
+                    $msg = "Add movie $movie_id to post $cid";
+                    $this->log_info($msg, $id, $log_status);
                 }
-                if ($movie_exist) {
-                    $movie_exist_meta = $movie_exist[0];
-                    $data['weight'] = $movie_exist_meta->rating;
-                    // Update post status
-                    $data['status'] = 1;
-                    // Update meta state to Approved
-                    $meta_data = array('state' => 1);
-                    $this->sync_update_data($meta_data, $movie_exist_meta->id, $this->db['meta'], $this->cm->sync_data, 5);
-                    $msg = "Info: Add meta $cid\n";
-                } else {
-                    // Can not find meta
-                    $data['status'] = 2;
-                    $msg = "Error: Can not find meta $cid\n";
-                }
-                if ($debug) {
-                    print $msg;
-                }
+
                 $this->update_crowd($item->id, $data);
             }
         }
@@ -201,7 +325,7 @@ class CriticCrowd extends AbstractDB {
         if ($debug) {
             print_r($results);
         }
-
+        $log_status = 0;
         if ($results) {
             foreach ($results as $item) {
                 $msg = '';
@@ -216,7 +340,8 @@ class CriticCrowd extends AbstractDB {
 
                 if ($post_exist) {
                     // Update exist critic
-                    $msg .= "Info. Critic already exist. Update critic\n";
+                    $msg = "Critic already exist. Update critic";
+                    $this->log_info($msg, $id, $log_status);
 
                     // Publish post
                     if ($post_exist->status != 1) {
@@ -224,7 +349,8 @@ class CriticCrowd extends AbstractDB {
                             'status' => 1,
                         );
                         $this->cm->update_post_fields($cid, $post_data);
-                        $msg .= "Info $id. Publish post $cid\n";
+                        $msg = "Publish post $cid";
+                        $this->log_info($msg, $id, $log_status);
                     }
 
                     // 2. Get post movie meta
@@ -238,7 +364,8 @@ class CriticCrowd extends AbstractDB {
                         $state = 1;
                         // Add meta
                         $this->cm->add_post_meta($movie_id, $type, $state, $cid);
-                        $msg .= "Info. Add movie $movie_id to post $cid\n";
+                        $msg = "Add movie $movie_id to post $cid";
+                        $this->log_info($msg, $id, $log_status);
                     }
                     $data = array();
                     // Success
@@ -247,8 +374,10 @@ class CriticCrowd extends AbstractDB {
                     $this->update_crowd($id, $data);
                 } else {
                     // Add a new critic
-                    $msg = "Info $id. Add a new critic\n";
-                    $data = $this->add_post($item, $debug);
+                    $msg = "Add a new critic";
+                    $this->log_info($msg, $id, $log_status);
+
+                    $data = $this->add_post($item, $log_status, $debug);
                     if ($debug) {
                         print_r($data);
                     }
@@ -262,7 +391,8 @@ class CriticCrowd extends AbstractDB {
                         $state = 1;
                         // Add meta
                         $this->cm->add_post_meta($movie_id, $type, $state, $post_id);
-                        $msg .= "Info. Add movie $movie_id to post $post_id\n";
+                        $msg = "Add movie $movie_id to post $post_id";
+                        $this->log_info($msg, $id, $log_status);
                     }
 
                     $this->update_crowd($id, $data);
@@ -280,7 +410,7 @@ class CriticCrowd extends AbstractDB {
         $this->sync_update_data($data, $id, $this->db['critic_crowd'], $this->cm->sync_data, 10);
     }
 
-    private function add_post($crowd_item, $debug = false) {
+    private function add_post($crowd_item, $log_status = 0, $debug = false) {
         // TODO Validate bad words
         $data = array();
         $curr_time = $this->curr_time();
@@ -297,11 +427,13 @@ class CriticCrowd extends AbstractDB {
         $view_type = 0;
 
         if (!$author_name) {
-            $msg = "Error $id. The author name is empty\n";
+            $msg = "The author name is empty";
+            $this->log_error($msg, $id, $log_status);
             if ($debug) {
                 print $msg;
             }
             $data['status'] = 2;
+            $data['critic_status'] = 3;
             return $data;
         }
 
@@ -320,7 +452,7 @@ class CriticCrowd extends AbstractDB {
             if ($result) {
                 $channelId = $result->channelId;
                 if ($result->description) {
-                    $date = strtotime($result->publishedAt);
+                    // $date = strtotime($result->publishedAt);
                     $content = str_replace("\n", '<br />', $result->description);
                 }
             }
@@ -331,11 +463,13 @@ class CriticCrowd extends AbstractDB {
                 $content = $result['content'];
             }
             if (!$content) {
-                $msg = "Error $id. Can not get the data from URL\n";
+                $msg = "Can not get the data from URL";
+                $this->log_error($msg, $id, $log_status);
                 if ($debug) {
                     print $msg;
                 }
                 $data['status'] = 2;
+                $data['critic_status'] = 3;
                 return $data;
             }
         }
@@ -373,7 +507,12 @@ class CriticCrowd extends AbstractDB {
 
         if ($post_id > 0) {
             $ret = $post_id;
-            $msg .= "Info $id: Add post $post_id\n";
+            $msg = "Add post $post_id";
+            $this->log_info($msg, $id, $log_status);
+            if ($debug) {
+                print $msg;
+            }
+
             if ($debug) {
                 print_r($post_data);
             }
@@ -394,8 +533,8 @@ class CriticCrowd extends AbstractDB {
                         $channel_info = $cp->youtube_get_channel_info($channelId);
                         if ($channel_info->items[0]->snippet->thumbnails->medium->url) {
                             $avatar = $channel_info->items[0]->snippet->thumbnails->medium->url;
-                            if ($avatar){
-                                $options['image']=$avatar;
+                            if ($avatar) {
+                                $options['image'] = $avatar;
                                 $author_ob->options = $options;
                                 // Publish author
                                 $author_ob->status = 1;
@@ -407,7 +546,11 @@ class CriticCrowd extends AbstractDB {
             }
             $this->cm->add_post_author($post_id, $author_id);
 
-            $msg .= "Info $id: Add post author $author_id\n";
+            $msg = "Add post author $author_id";
+            $this->log_info($msg, $id, $log_status);
+            if ($debug) {
+                print $msg;
+            }
 
             // Success
             $data['critic_status'] = 1;
@@ -416,16 +559,18 @@ class CriticCrowd extends AbstractDB {
         } else {
             // Error
             $data['status'] = 2;
-            $msg .= "Error $id: Can not add the post\n";
-        }
-        if ($debug && $msg) {
-            print $msg;
+            $data['critic_status'] = 3;
+            $msg = "Can not add the post";
+            $this->log_error($msg, $id, $log_status);
+            if ($debug) {
+                print $msg;
+            }
         }
 
         return $data;
     }
 
-    private function update_post($post_exist, $crowd_item, $debug = false) {
+    private function update_post($post_exist, $crowd_item, $log_status = 0, $debug = false) {
         $data = array();
 
         // 1. Get post status
@@ -445,9 +590,11 @@ class CriticCrowd extends AbstractDB {
 
         if ($post_publish && $movie_exist) {
             // Post pulbish already linked            
+            $msg = "The post already exist and linked";
             if ($debug) {
-                $msg = "Error $id. The post already exist\n";
+                print $msg;
             }
+            $this->log_info($msg, $id, $log_status);
             $data['status'] = 2;
         } else {
             // Crowd status wait
@@ -458,7 +605,11 @@ class CriticCrowd extends AbstractDB {
                     'status' => 1,
                 );
                 $this->cm->update_post_fields($cid, $post_data);
-                $msg = "Info $id. Publish post $cid\n";
+                $msg = "Publish post $cid";
+                $this->log_info($msg, $id, $log_status);
+                if ($debug) {
+                    print $msg;
+                }
             }
             /* if (!$movie_exist) {
               // Need add a new movie to post
@@ -471,12 +622,6 @@ class CriticCrowd extends AbstractDB {
               $msg .= "Info. Add movie $movie_id to post $cid\n";
               } */
         }
-        if ($debug) {
-            if ($msg) {
-                print $msg . "\n";
-            }
-        }
-
         return $data;
     }
 
@@ -502,6 +647,167 @@ class CriticCrowd extends AbstractDB {
         $sql = sprintf("SELECT id, status FROM {$this->db['transcriptions']} WHERE pid=%d limit 1", (int) $pid);
         $result = $this->db_fetch_row($sql);
         return $result;
+    }
+
+    /*
+     * Log
+     * message - string
+     * cid - campaign id
+     * type:
+      0 => 'Info',
+      1 => 'Warning',
+      2 => 'Error'
+
+      status:
+      0 => 'Ignore post',
+      1 => 'Add post',
+      2 => 'Error',
+      3 => 'Auto stop',
+      4 => 'Done',
+      5 => 'Add URLs',
+     */
+
+    public function log($message, $cid = 0, $type = 0, $status = 0) {
+        $time = $this->curr_time();
+        $this->db_query(sprintf("INSERT INTO {$this->db['log']} (date, cid, type, status, message) VALUES (%d, %d, %d, %d, '%s')", $time, $cid, $type, $status, $this->escape($message)));
+    }
+
+    public function get_log($page = 1, $cid = 0, $status = -1, $type = -1, $perpage = 30) {
+        $page -= 1;
+        $start = $page * $perpage;
+
+        $limit = '';
+        if ($perpage > 0) {
+            $limit = " LIMIT $start, " . $perpage;
+        }
+        $and_cid = '';
+        if ($cid) {
+            $and_cid = sprintf(" AND cid=%d", (int) $cid);
+        }
+
+        $and_status = '';
+        if ($status != -1) {
+            $and_status = sprintf(" AND status=%d", (int) $status);
+        }
+
+        $and_type = '';
+        if ($type != -1) {
+            $and_type = sprintf(" AND type=%d", (int) $type);
+        }
+
+        $order = " ORDER BY id DESC";
+        $sql = sprintf("SELECT id, date, cid, type, status, message FROM {$this->db['log']} WHERE id>0" . $and_cid . $and_status . $and_type . $order . $limit);
+
+        $result = $this->db_results($sql);
+
+        return $result;
+    }
+
+    public function get_log_count($cid = 0, $status = -1, $type = -1) {
+
+        $and_cid = '';
+        if ($cid) {
+            $and_cid = sprintf(" AND cid=%d", (int) $cid);
+        }
+
+        $and_status = '';
+        if ($status != -1) {
+            $and_status = sprintf(" AND status=%d", (int) $status);
+        }
+
+        $and_type = '';
+        if ($type != -1) {
+            $and_type = sprintf(" AND type=%d", (int) $type);
+        }
+
+        $query = "SELECT COUNT(id) FROM {$this->db['log']} WHERE id>0" . $and_cid . $and_status . $and_type;
+
+        $result = $this->db_get_var($query);
+        return $result;
+    }
+
+    public function get_last_log($cid = 0) {
+
+        $and_cid = '';
+        if ($cid > 0) {
+            $and_cid = sprintf(' AND cid=%d', $cid);
+        }
+
+        $query = "SELECT type, status, message FROM {$this->db['log']} WHERE id>0" . $and_cid . " ORDER BY id DESC";
+        $result = $this->db_fetch_row($query);
+        $str = '';
+        if ($result) {
+            $str = $this->get_log_type($result->type) . ': ' . $this->get_log_status($result->status);
+            if ($result->message) {
+                $str = $str . ' | ' . $result->message;
+            }
+        }
+        return $str;
+    }
+
+    /*
+      0 => 'Other',
+      1 => 'Find URLs',
+      3 => 'Parsing',
+     */
+
+    public function log_info($message, $cid, $status) {
+        $this->log($message, $cid, 0, $status);
+    }
+
+    public function log_warn($message, $cid, $status) {
+        $this->log($message, $cid, 1, $status);
+    }
+
+    public function log_error($message, $cid, $status) {
+        $this->log($message, $cid, 2, $status);
+    }
+
+    public function get_log_type($type) {
+        return isset($this->log_type[$type]) ? $this->log_type[$type] : 'None';
+    }
+
+    public function get_log_status($type) {
+        return isset($this->log_status[$type]) ? $this->log_status[$type] : 'None';
+    }
+
+    public function get_post_log_status($cid = 0) {
+
+        $count = $this->get_log_count($cid);
+        $states = array(
+            '-1' => array(
+                'title' => 'All',
+                'count' => $count
+            )
+        );
+        foreach ($this->log_status as $key => $value) {
+            $states[$key] = array(
+                'title' => $value,
+                'count' => $this->get_log_count($cid, $key));
+        }
+        return $states;
+    }
+
+    public function get_post_log_types($cid = 0, $status = -1) {
+
+        $count = $this->get_log_count($cid, $status);
+        $states = array(
+            '-1' => array(
+                'title' => 'All',
+                'count' => $count
+            )
+        );
+        foreach ($this->log_type as $key => $value) {
+            $states[$key] = array(
+                'title' => $value,
+                'count' => $this->get_log_count($cid, $status, $key));
+        }
+        return $states;
+    }
+
+    public function clear_all_logs() {
+        $sql = "DELETE FROM {$this->db['log']} WHERE id>0";
+        $this->db_query($sql);
     }
 
 }

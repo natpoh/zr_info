@@ -15,8 +15,9 @@ class CriticFront extends SearchFacets {
     public $cs;
     // Critic emotions
     public $ce;
-    // Movies an
+    // Movies an    
     private $ma = '';
+    public $ca;
     public $thumb_class;
     private $db = array();
     // Show hollywood bs rating
@@ -74,21 +75,22 @@ class CriticFront extends SearchFacets {
      * Critic functions
      */
 
-    public function theme_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tags = array(), $meta_type = array(), $min_rating = 0, $vote = 0, $search = false) {
+    public function theme_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tags = array(), $meta_type = array(), $min_rating = 0, $vote = 0, $search = false, $min_au=0, $max_au=0, $unique = 0) {
 
-        if ($movie_id) {
+        if ($movie_id || $unique == 0) {
+            // If vote = 0 - last post, show all posts
             if ($search) {
-                $posts = $this->cs->get_last_critics($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote);
+                $posts = $this->cs->get_last_critics($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au);
             } else {
-                $posts = $this->get_last_posts($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote);
+                $posts = $this->get_last_posts($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au);
             }
         } else {
             // Get unique authors
             $unique_limit = 100;
             if ($search) {
-                $posts = $this->cs->get_last_critics($a_type, $unique_limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote);
+                $posts = $this->cs->get_last_critics($a_type, $unique_limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au);
             } else {
-                $posts = $this->get_last_posts($a_type, $unique_limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote);
+                $posts = $this->get_last_posts($a_type, $unique_limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au);
             }
             if ($posts) {
                 $unique_authors = array();
@@ -126,7 +128,7 @@ class CriticFront extends SearchFacets {
         return $items;
     }
 
-    public function get_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tags = array(), $meta_type = array(), $min_rating = 0, $vote = 0) {
+    public function get_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tags = array(), $meta_type = array(), $min_rating = 0, $vote = 0, $min_au=0, $max_au = 0) {
         $and_author = '';
         if ($a_type != -1) {
             $and_author = sprintf(' AND a.type = %d', $a_type);
@@ -134,12 +136,12 @@ class CriticFront extends SearchFacets {
 
         $movie_inner = '';
         $movie_and = '';
-        if ($movie_id > 0 || $meta_type || $min_rating) {
+        if ($movie_id > 0 || $meta_type || $min_rating || $max_rating) {
             $movie_inner = " INNER JOIN {$this->db['meta']} m ON m.cid = p.id";
         }
         if ($movie_id > 0) {
             $movie_and = sprintf(" AND m.fid=%d AND m.state!=0", (int) $movie_id);
-        } else if ($meta_type || $min_rating) {
+        } else if ($meta_type || $min_rating || $max_rating) {
             $movie_and = sprintf(" AND m.fid=p.top_movie AND m.state!=0", (int) $movie_id);
         }
 
@@ -147,6 +149,9 @@ class CriticFront extends SearchFacets {
         if ($min_rating) {
             $min_rating_and = sprintf(' AND m.rating>=%d', $min_rating);
         }
+
+        // TODO min max au
+
 
         $meta_type_and = '';
         if ($meta_type) {
@@ -182,14 +187,14 @@ class CriticFront extends SearchFacets {
         $sql = sprintf("SELECT p.id, p.date_add, p.top_movie, a.name AS author_name FROM {$this->db['posts']} p"
                 . " INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
                 . " INNER JOIN {$this->db['authors']} a ON a.id = am.aid" . $movie_inner . $tag_inner . $vote_inner
-                . " WHERE p.top_movie > 0 AND p.status=1" . $and_author . $movie_and . $tag_and . $min_rating_and . $meta_type_and . $vote_and . " ORDER BY" . $custom_order . " p.date DESC LIMIT %d, %d", (int) $start, (int) $limit);
+                . " WHERE p.top_movie > 0 AND p.status=1" . $and_author . $movie_and . $tag_and . $min_rating_and . $max_rating_and . $meta_type_and . $vote_and . " ORDER BY" . $custom_order . " p.date DESC LIMIT %d, %d", (int) $start, (int) $limit);
 
         $results = $this->db_results($sql);
 
         return $results;
     }
 
-    public function get_post_count($a_type, $movie_id = 0, $tag_id = 0, $vote = 0) {
+    public function get_post_count($a_type, $movie_id = 0, $tag_id = 0, $vote = 0, $min_rating = 0, $min_au = 0, $max_au = 0) {
         $and_author = '';
         if ($a_type != -1) {
             $and_author = sprintf(' AND a.type = %d', $a_type);
@@ -197,7 +202,7 @@ class CriticFront extends SearchFacets {
 
         $movie_inner = '';
         $movie_and = '';
-        if ($movie_id > 0) {
+        if ($movie_id > 0 || $min_rating) {
             $movie_inner = " INNER JOIN {$this->db['meta']} m ON m.cid = p.id";
             $movie_and = sprintf(" AND m.fid=%d AND m.state!=0", (int) $movie_id);
         }
@@ -218,10 +223,25 @@ class CriticFront extends SearchFacets {
             $vote_and = sprintf(" AND r.vote=%d", $vote);
         }
 
+        $min_rating_and = '';
+        if ($min_rating) {
+            $min_rating_and = sprintf(' AND m.rating>=%d', $min_rating);
+        }
+
+        $min_au_and = '';
+        if ($min_au) {
+            $min_au_and = sprintf(' AND m.rating<=%d', $min_au);
+        }
+
+        $man_au_and = '';
+        if ($max_au) {
+            $man_au_and = sprintf(' AND m.rating<=%d', $max_au);
+        }
+
         $sql = "SELECT COUNT(p.id) FROM {$this->db['posts']} p"
                 . " INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
                 . " INNER JOIN {$this->db['authors']} a ON a.id = am.aid" . $movie_inner . $tag_inner . $vote_inner
-                . " WHERE p.top_movie > 0 AND p.status=1" . $and_author . $movie_and . $tag_and . $vote_and;
+                . " WHERE p.top_movie > 0 AND p.status=1" . $and_author . $movie_and . $min_rating_and . $tag_and . $vote_and;
 
         $results = $this->db_get_var($sql);
         return $results;
@@ -1770,6 +1790,7 @@ class CriticFront extends SearchFacets {
      */
 
     public function get_scroll($type = '', $movie_id = 0, $vote = 1, $search = false) {
+
         static $last_posts_id = '';
         static $last_movies_id = '';
 
@@ -2034,8 +2055,27 @@ class CriticFront extends SearchFacets {
         $a_type = 2;
         $limit = 10;
 
-        $posts = $this->theme_last_posts($a_type, $limit, $movie_id, 0, 0, array(), 0, $vote, $search);
-        $count = $this->get_post_count($a_type, $movie_id, 0, $vote);
+
+        // Vote to rating
+        $min_au = 0;
+        $max_au = 0;
+        $unique = 0;
+        if ($vote == 1) {
+            // pay
+            $min_au = 3;
+            $vote = 0;
+            $unique = 1;
+        } else if ($vote == 2) {
+            // skip
+            $max_au = 2;
+            $vote = 0;
+            $unique = 1;
+        }
+
+        $min_rating = 0;
+
+        $posts = $this->theme_last_posts($a_type, $limit, $movie_id, 0, 0, array(), $min_rating, $vote, $search, $min_au, $max_au, $unique);
+        $count = $this->get_post_count($a_type, $movie_id, 0, $vote, $min_rating, $min_au, $max_au);
         //print_r($vote);
         $content = array();
 

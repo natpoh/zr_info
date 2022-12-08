@@ -226,7 +226,8 @@ class CriticMatic extends AbstractDB {
                 'affirmative' => "<strong>「&quot;Affirmative Action&quot;」</strong>&nbsp;rates&nbsp;how much &quot;<a title=&quot;Steven Crowder article about how even the African American cast of 'Blackish' are getting sick and tired of the redundant questions about diversity they get all the time.&quot; class=&quot;window_open&quot; href=&quot;#http://www.louderwithcrowder.com/black-ish-creator-im-tired-of-talking-about-diversity/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>diversity</a>&quot; is being pushed. ( Not true diversity, but the <a class=&quot;window_open&quot; href=&quot;#https://archive.li/DPrE1&quot; target=&quot;_blank&quot; title=&quot;Hella diverse cast of black panther.&quot; >anti-White</a> checklist kind.)",
                 'lgbtq' => "<strong>「&quot;LGBTQrstuvwxyz&quot;」</strong>&nbsp;rates&nbsp;the&nbsp;amount&nbsp;of <a title=&quot;Buzzfeed article celebrating the transgender character thrown into the 'Mr. Robot' script to complete their diversity bingo chart.&quot; class=&quot;window_open&quot; href=&quot;#http://www.buzzfeed.com/arianelange/mr-robot-diversity&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>non-tradional&nbsp;sexuality</a>&nbsp;depicted. Whether this is positive or negative is up to the user. For example, <a class=&quot;window_open&quot; href=&quot;#https://zeitgeistreviews.com/critics/1671/&quot; target=&quot;_blank&quot; title=&quot;Link to reviews by Armond, in our database.&quot;>Armond White</a> is an openly gay conservative critic filled throughout our database.",
                 'god' => "<strong>「&quot;Anti-God Themes&quot;」</strong>&nbsp;rates&nbsp;the&nbsp;amount&nbsp;of slander towards God and/or <a title=&quot;Hollywood Reporter article about Pat Boone explaining why he boycotts SNL, and thinks they're cowards for not criticizing Islam as they do with 'God's Not Dead 2.'&quot; class=&quot;window_open&quot; href=&quot;#http://www.hollywoodreporter.com/news/pat-boone-accuses-snl-anti-885253&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>Christian</a> ethics. As with all these ratings, whether this is positive or negative is up to the reviewer. If you're a Pagan Alt Righter or Atheist Anarcho Capitalist, this may be good in your eyes.",
-                'email' => "Email may not be real, but must be unique."
+                'email' => "Create a password or enter an existing one.",
+                'name' => "Enter your name or leave the field blank."
             ),
             'audience_cron_path' => '',
             'audience_post_edit' => 0,
@@ -1100,7 +1101,7 @@ class CriticMatic extends AbstractDB {
         // To trash
         $data = array(
             'date_add' => $this->curr_time(),
-            'status' => $status
+            'status' => 2
         );
         $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
         $this->hook_update_post($id);
@@ -1463,7 +1464,7 @@ class CriticMatic extends AbstractDB {
         }
 
         $sql = "SELECT id, name, type FROM {$this->db['authors']} WHERE id>0 " . $and_type . $and_status . $and_id . $and_limit;
-        $results = $this->db_results($sql);        
+        $results = $this->db_results($sql);
         return $results;
     }
 
@@ -2828,6 +2829,21 @@ class CriticMatic extends AbstractDB {
     public function add_ip($ip, $type) {
         $sql = sprintf("INSERT INTO {$this->db['ip']} (type, ip) VALUES ('%d', '%s')", (int) $type, $ip);
         $this->db_query($sql);
+    }
+
+    public function get_or_create_ip($ip = '', $type = 0) {
+        if (!$ip) {
+            return 0;
+        }
+        $ip_data = $this->get_ip($ip);
+        if ($ip_data) {
+            return $ip_data;
+        }
+
+        $this->add_ip($ip, $type);
+        $id = $this->getInsertId('id', $this->db['ip']);
+        $ip_data = $this->get_ip($ip);
+        return $ip_data;
     }
 
     public function update_ip_type_by_id($id, $type = 0) {

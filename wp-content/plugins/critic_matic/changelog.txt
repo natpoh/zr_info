@@ -1,3 +1,6 @@
+1.0.88 - 12.11.2022
+Carma log
+
 1.0.87 - 3.11.2022
 User registration
 

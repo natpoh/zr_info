@@ -10,12 +10,15 @@ wp_enqueue_script('section_home', get_template_directory_uri() . '/js/section_ho
 global $cfront;
 
 $array_list = array(
-    'Video' => array('title' => 'New Movies:', 'id' => 'video_scroll', 'class' => ''),
-    'TV' => array('title' => 'Popular Shows Streaming:', 'id' => 'tv_scroll', 'class' => ''),
-    'Pro' => array('title' => 'Latest Critic Reviews:', 'id' => 'review_scroll', 'class' => 'pro_review widthed secton_gray'),
-  //  'Staff' => array('title' => 'Latest Staff Reviews:', 'id' => 'stuff_scroll', 'class' => 'stuff_review widthed', 'title_desc' => '<a class="title_desc" href="https://zeitgeistreviews.com/writers-wanted/" target="_blank">Writers Wanted</a>'),
     'Audience' => array('title' => 'Latest Audience Reviews:', 'id' => 'audience_scroll', 'class' => 'audience_review widthed ',
-        'tabs' => array('p' => 'Positive', 'n' => 'Negative', 'a' => 'All')),
+       'tabs' => array('p' => 'Positive', 'n' => 'Negative', 'a' => 'Latest')),
+        'Pro' => array('title' => 'Latest Critic Reviews:', 'id' => 'review_scroll', 'class' => 'pro_review widthed secton_gray'),
+
+
+        'Video' => array('title' => 'New Movies:', 'id' => 'video_scroll', 'class' => ''),
+    'TV' => array('title' => 'Popular Shows Streaming:', 'id' => 'tv_scroll', 'class' => ''),
+      //  'Staff' => array('title' => 'Latest Staff Reviews:', 'id' => 'stuff_scroll', 'class' => 'stuff_review widthed', 'title_desc' => '<a class="title_desc" href="https://zeitgeistreviews.com/writers-wanted/" target="_blank">Writers Wanted</a>'),
+
 );
 // add scripts
 $scrpts = array();
@@ -30,6 +33,11 @@ foreach ($array_list as $value) {
         $data = 'null';
     }
     $scrpts[] = 'var ' . $scoll_id . '_data = ' . $data . '; ';
+    // Pro tags
+    if ($scoll_id=='review_scroll'){
+        $tags = json_encode($cfront->cm->get_tags(1));
+        $scrpts[] = 'var ' . $scoll_id . '_tags = '.$tags.'; ';
+    }
 }
 gmi('scroll after');
 $scrpts[] = '</script>';
@@ -48,14 +56,14 @@ foreach ($array_list as $value) {
         if ($id == 'tabs') {
             // Tabs logic
             $name_arr = $name;
-            $t = '<ul class="tab-wrapper home-tabs">';
+            $t = '<ul class="tab-wrapper home-tabs audience-tab">';
             $i = 0;
             foreach ($name_arr as $k => $v) {
                 $active = '';
                 if ($i == 0) {
                     $active = ' active';
                 }
-                $t .= '<li class="nav-tab' . $active . '"><a href="#tab-' . $k . '" data-id="tab-' . $k . '">' . $v . '</a></li>';
+                $t .= '<li class="nav-tab' . $active . ' tab-' . $k . '"><a href="#tab-' . $k . '" data-id="tab-' . $k . '">' . $v . '</a></li>';
                 $i++;
             }
             $t .= '</ul>';
