@@ -2408,7 +2408,7 @@ function add_imdb_data_to_options()
     echo 'count:' . count($array_year) . '<br>';
 
     $array_year = implode($array_year, ',');
-    print_r($array_year);
+   // print_r($array_year);
 
     set_option(9, $array_year);
     set_option(10, 0);
@@ -2449,7 +2449,7 @@ if (isset($_GET['check_last_actors'])) {
 }
 if (isset($_GET['add_imdb_data_to_options'])) {
 
-
+    add_imdb_data_to_options();
     return;
 }
 if (isset($_GET['check_imdb'])) {
