@@ -155,8 +155,10 @@ class Cronjob
 
 
         $r = Pdo_an::db_results_array($sql);
-        var_dump($r);
 
+        if ($cron_debug) {
+            var_dump($r);
+        }
         $time = $r[0]['time'];
         if (!$time) $time = 0;
         return $time;
@@ -165,11 +167,8 @@ class Cronjob
     private function set_cron_option($id, $option,$enable='')
     {
         if ($option && $id) {
-            if (!$enable)
-            {
-                $enable=$this->get_cron_options($id);
-            }
 
+           $enable=$this->get_cron_options($id);
 
             if ($enable)
             {
