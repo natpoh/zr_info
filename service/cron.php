@@ -128,11 +128,8 @@ class Cronjob
                     $last_time=  0;
                 }
 
-                $array_result[$val['task']] = ( time() - $last_time )/60 - $array_jobs[$val['task']];
+                $array_result[$val['task']] = intval(( time() - $last_time )/60 - $array_jobs[$val['task']]);
             }
-
-
-
         }
 
         foreach ($array_jobs as $jobs => $period) {
@@ -195,7 +192,7 @@ class Cronjob
         echo '<p>Last run :'.date('H:i:s d.m.Y',$run_cron).'</p>' . PHP_EOL;
 
 ///////check last run
-        $jobs_data =  self::get_all_options($array_jobs);
+        $jobs_data =  $this->get_all_options($array_jobs);
 
 
         if (isset($_GET['force']))
@@ -203,7 +200,7 @@ class Cronjob
             $force  = $_GET['force'];
         }
 
-        //var_dump($jobs_data);
+        var_dump($jobs_data);
 
 
         if ((($run_cron < time()-3600/2) || $force==1) && !$only_info) {
@@ -221,16 +218,10 @@ class Cronjob
 
                 if ($this->timer_stop() < $this->max_time) {
                     echo 'run ' . $i . ' from ' . $count . ' lastrun: '.$last_update.'<br>' . PHP_EOL;
-                    $rslt  =self::run_function($jobs, $period);
-                    echo '<br>rslt='.$rslt.'<br>';
-                    if ($rslt)
-                    {
-                        
-                        $this->set_option($jobs,time());
-                        echo '<br>Ended  '.$jobs.'  '. self::timer_stop().'<br><br>'.PHP_EOL.PHP_EOL;
+                    $this->run_function($jobs, $period);
 
-                    }
-
+                    $this->set_option($jobs,time());
+                    echo '<br>Ended  '.$jobs.'  '. $this->timer_stop().'<br><br>'.PHP_EOL.PHP_EOL;
                 } else {
                     echo '<br>Ended max time > ' . $this->max_time . '<br>' . PHP_EOL;
                     $this->set_option('cron', time());
@@ -339,14 +330,14 @@ class Cronjob
         $fname =trim($name);
 
 
-      echo 'Function '.$fname.' checked '. self::timer_stop().'<br>'.PHP_EOL;
-      $last_time =   self::get_options($fname);
+      echo 'Function '.$fname.' checked '. $this->timer_stop().'<br>'.PHP_EOL;
+      $last_time =   $this->get_options($fname);
       echo 'Last updated '.date('H:i:s d.m.Y',$last_time).'<br>'.PHP_EOL;
 
       if (time()>$last_time+$period*60)
       {
           $this->set_option($fname." started",time());
-       echo 'Started '. self::timer_stop().'<br>'.PHP_EOL;
+       echo 'Started '. $this->timer_stop().'<br>'.PHP_EOL;
 
           /////run function
 
@@ -355,12 +346,11 @@ class Cronjob
             $name();
             }
 
-        return 1;
+
       }
       else
         {
-            return 0;
-           // self::set_option($name.' skipped',time());
+           // $this->set_option($name.' skipped',time());
             echo 'skipped  '.date('H:i:s d.m.Y',time()).'<'.date('H:i:s d.m.Y',($last_time+$period*60)).'<br><br>'.PHP_EOL.PHP_EOL;
         }
 
