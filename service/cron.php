@@ -147,8 +147,8 @@ class Cronjob
     {
         $sql = "SELECT `time`  FROM `cron` where task = '".$id."'";
 
-
-        if (isset($_GET['debug']))
+        global $cron_debug;
+        if ($cron_debug)
         {
             echo $sql.'<br>';
         }
@@ -169,7 +169,8 @@ class Cronjob
                 ///update
 
                 $sql = "UPDATE `cron` SET  `time` = '".$option."' WHERE `task` = '".$id."'" ;
-                if (isset($_GET['debug']))
+                global $cron_debug;
+                if ($cron_debug)
                 {
                     echo $sql.'<br>';
                 }
@@ -381,6 +382,14 @@ $sql_result = "CREATE TABLE  IF NOT EXISTS `cron` (
 
     if (isset($_GET['runcron']))
     {
+
+        if (isset($_GET['debug']))
+        {
+
+            global $cron_debug;
+            $cron_debug=1;
+        }
+
         if ($_GET['runcron']==1)
         {
             $cron = new Cronjob;
