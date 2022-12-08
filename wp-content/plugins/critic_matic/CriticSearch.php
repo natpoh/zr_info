@@ -127,7 +127,7 @@ class CriticSearch extends AbstractDB {
         'type' => array(
             'movies' => array('key' => 'Movie', 'title' => 'Movies'),
             'tv' => array('key' => 'TVSeries', 'title' => 'TV Series'),
-            'videogame' => array('key' => 'VideoGame', 'title' => 'Video Games'),
+            'videogame' => array('key' => 'VideoGame', 'title' => 'Video Game'),
         ),
         'author_type' => array(
             'staff' => array('key' => 0, 'title' => 'Staff'),
@@ -1748,7 +1748,7 @@ class CriticSearch extends AbstractDB {
                 $order = ' ORDER BY w ' . $sort_type;
             } else if ($sort_key == 'mw') {
                 $order = ' ORDER BY id DESC';
-            } else if (in_array($sort_key, $audience_facets) || $sort_key == 'pop') {
+            } else if (in_array($sort_key, $audience_facets)) {
                 if ($sort_type == 'DESC') {
                     $order = ' ORDER BY ' . $sort_key . ' DESC';
                 } else {
@@ -1805,7 +1805,7 @@ class CriticSearch extends AbstractDB {
                     $order = ' ORDER BY female_valid ASC';
                     $select = ', IF(female>0, female, 999) as female_valid';
                 }
-            } else if (in_array($sort_key, $rating_facets) || in_array($sort_key, $audience_facets)||$sort_key=='pop') {
+            } else if (in_array($sort_key, $rating_facets) || in_array($sort_key, $audience_facets)) {
                 if ($sort_type == 'DESC') {
                     $order = ' ORDER BY ' . $sort_key . ' DESC';
                 } else {
@@ -1830,13 +1830,13 @@ class CriticSearch extends AbstractDB {
 
         if ($query_type == 'critics') {
             $top_movie_sql = " AND top_movie>0";
-
-            if (!isset($filters['state'])) {
-                $filters['state'] = array('related', 'contains', 'proper');
+            
+            if (!isset($filters['state'])){
+                $filters['state'] = array('related','contains','proper');
             }
-
+                        
             if (isset($filters['state'])) {
-
+                
                 if (is_array($filters['state']) && sizeof($filters['state']) == 1) {
                     $filters['state'] = $filters['state'][0];
                 }

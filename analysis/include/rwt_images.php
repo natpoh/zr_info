@@ -34,8 +34,6 @@ $sql = "SELECT `last_update` FROM `data_actors_meta` WHERE `actor_id`=".intval($
         $sql = "UPDATE `data_actors_meta` SET `last_update` = ".$Time."  WHERE `actor_id`=".intval($id)." ";
         Pdo_an::db_query($sql);
 
-
-
     }
         return  $Time;
 

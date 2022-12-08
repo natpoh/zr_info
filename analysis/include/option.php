@@ -14,9 +14,9 @@ class OptionData {
 
     public static function set_option($id=null, $option,$type=null,$create_comit='')
     {
-        if ($option && ($id || $type)) {
+        if (($option || $option==0) && ($id || $type)) {
 
-            if (self::get_options($id,$type))
+            if (self::get_options($id,$type,1))
             {
                 if ($id)
                 {
@@ -69,20 +69,27 @@ class OptionData {
         return $data;
     }
 
-    public static function get_options($id=null,$type=null)
+    public static function get_options($id=null,$type=null,$cheach_enable=null)
     {
         if ($id) {
 
             $sql = "SELECT val FROM `options` where id = " . $id;
 
         }
-        else if ($type) {
+        else if ($type ) {
 
         $sql = "SELECT val FROM `options` where `type` = '{$type}'";
 
         }
 
         $rows = Pdo_an::db_fetch_row($sql);
+        if ($cheach_enable)
+        {
+            if ($rows)
+            {
+                return  1;
+            }
+        }
         $data = $rows->val;
         return $data;
     }

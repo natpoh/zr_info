@@ -50,13 +50,6 @@
                 <textarea name="import_services_list" style="width:100%" rows="3"></textarea>           
             </fieldset>
 
-            <p><b>Export</b> services to <a target="_blank" href="<?php print $url ?>&export_services=1">list</a>.</p>
-            <p><b>Import</b> URLs from list. Example: TYPE|IP|NAME</p>
-
-            <fieldset>              
-                <textarea name="import_services_list" style="width:100%" rows="3"></textarea>           
-            </fieldset>
-
             <?php wp_nonce_field('ml-nonce', 'ml-nonce'); ?>
             <br />
             <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save') ?>" class="button-primary">  

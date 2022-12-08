@@ -8,7 +8,7 @@ class CriticFront extends SearchFacets {
     public $new_api = true;
     public $movies_an = true;
     public $cache_results = true;
-    public $enable_reactions = true;
+    public $enable_reactions = false;
     // Critic matic
     public $cm;
     // Critic search

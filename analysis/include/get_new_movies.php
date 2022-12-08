@@ -283,7 +283,7 @@ class GETNEWMOVIES{
         $i=0;
         if (is_array($array_movie_id))
         {
-         foreach ($array_movie_id as $imdb_id=>$title)
+         foreach ($array_movie_id as $imdb_id=>$movie_object)
          {
 
              $data = TMDB::get_content_imdb($imdb_id,'','');
