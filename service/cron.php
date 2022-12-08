@@ -145,8 +145,16 @@ class Cronjob
 
     private  function get_cron_options($id)
     {
-        $sql = "SELECT time  FROM `cron` where task = ?";
-        $r = Pdo_an::db_fetch_row($sql,array($id));
+        $sql = "SELECT `time`  FROM `cron` where task = '".$id."'";
+
+
+        if (isset($_GET['debug']))
+        {
+            echo $sql.'<br>';
+        }
+
+
+        $r = Pdo_an::db_fetch_row($sql);
         $time = $r->time;
         if (!$time) $time = 0;
         return $time;
