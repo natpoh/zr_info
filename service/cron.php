@@ -163,10 +163,14 @@ class Cronjob
             {
                 ///update
 
-                $sql = "UPDATE `cron` SET  `time` = ? WHERE `task` = ?" ;
+                $sql = "UPDATE `cron` SET  `time` = '".$option."' WHERE `task` = '".$id."'" ;
+                if (isset($_GET['debug']))
+                {
+                    echo $sql.'<br>';
+                }
 
 
-                Pdo_an::db_results_array($sql,array($option,$id));
+                Pdo_an::db_results($sql);
             }
             else
             {
