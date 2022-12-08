@@ -221,7 +221,14 @@ class Cronjob
 
                 if ($this->timer_stop() < $this->max_time) {
                     echo 'run ' . $i . ' from ' . $count . ' lastrun: '.$last_update.'<br>' . PHP_EOL;
-                    self::run_function($jobs, $period);
+                    $rslt  =self::run_function($jobs, $period);
+                    echo '<br>rslt='.$rslt.'<br>';
+                    if ($rslt)
+                    {
+                        self::set_option($jobs,time());
+                        echo '<br>Ended  '.$jobs.'  '. self::timer_stop().'<br><br>'.PHP_EOL.PHP_EOL;
+                    }
+
                 } else {
                     echo '<br>Ended max time > ' . $this->max_time . '<br>' . PHP_EOL;
                     $this->set_option('cron', time());
@@ -346,11 +353,11 @@ class Cronjob
             $name();
             }
 
-        self::set_option($fname,time());
-        echo '<br>Ended  '.$fname.'  '. self::timer_stop().'<br><br>'.PHP_EOL.PHP_EOL;
+        return 1;
       }
       else
         {
+            return 0;
            // self::set_option($name.' skipped',time());
             echo 'skipped  '.date('H:i:s d.m.Y',time()).'<'.date('H:i:s d.m.Y',($last_time+$period*60)).'<br><br>'.PHP_EOL.PHP_EOL;
         }
