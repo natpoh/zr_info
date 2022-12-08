@@ -345,7 +345,7 @@ class Cronjob
 
       if (time()>$last_time+$period*60)
       {
-       self::set_option($fname." started",time());
+          $this->set_option($fname." started",time());
        echo 'Started '. self::timer_stop().'<br>'.PHP_EOL;
 
           /////run function
