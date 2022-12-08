@@ -170,7 +170,7 @@ class GETCOINS
         }
         if ($array_result)
         {
-         //  var_dump($array_result);
+
 
             self::check_results($array_result);
         }

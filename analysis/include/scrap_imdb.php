@@ -808,7 +808,6 @@ function get_coins_data()
 
     GETCOINS::get_request();
 
-
 }
 
 function update_all_rwt_rating($force='')
