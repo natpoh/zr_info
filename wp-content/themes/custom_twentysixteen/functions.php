@@ -64,13 +64,16 @@ wp_enqueue_script('bs3', $themepath . '/js/bs3/bootstrap.min.js', array('jquery'
 
 if (function_exists('isAuthorPage')) {
     if (isAuthorPage()) {
-        wp_enqueue_script('author', $themepath . '/js/author_1.js', array('jquery'), $version, true);
+        wp_enqueue_script('author', $themepath . '/js/author_12.js', array('jquery'), $version, true);
+        wp_enqueue_style('users-profile', get_template_directory_uri() . '/css/user-profile.css?', array('dashicons'), $version);
+        //wp_enqueue_style( 'dashicons-profile', get_stylesheet_uri(), array( 'dashicons' ), $version);
+
     }
 }
 
 // Styles
 add_action('wp_print_styles', 'custom_styles', 100);
-wp_enqueue_style('users-style', get_template_directory_uri() . '/css/users.css', array(), $version);
+wp_enqueue_style('users-style', get_template_directory_uri() . '/css/users.css?', array(), $version);
 wp_enqueue_style('fontello', $themepath . '/fontello/css/fontello.css', array(), $version);
 
 function custom_styles() {
@@ -141,6 +144,7 @@ if (!function_exists('twentysixteen_setup')) :
                 array(
                     'primary' => __('Primary Menu', 'twentysixteen'),
                     'social' => __('Social Links Menu', 'twentysixteen'),
+                    'second' => __('Header Right Menu', 'twentysixteen'),
                 )
         );
 

@@ -39,13 +39,16 @@ if (isset($_GET['search_type']) && $_GET['search_type'] == 'ajax') {
             $inc = '';
         }
     }
-    
-    $analytics = ($_GET['analytics'] && $_GET['analytics'])?true:false;
 
-    if ($autocomplite_type == 'actor'){
+    $actors_facets = array('actor', 'actorstar', 'actormain');
+    $dirs_facets = array('dirall', 'dir', 'dirwrite', 'dircast', 'dirprod');
+
+    $analytics = ($_GET['analytics'] && $_GET['analytics']) ? true : false;
+
+    if (in_array($autocomplite_type, $actors_facets) || in_array($autocomplite_type, $dirs_facets)) {
         $analytics = false;
     }
-    
+
     if ($analytics) {
         if (!class_exists('AnalyticsFront')) {
             require_once( CRITIC_MATIC_PLUGIN_DIR . 'AnalyticsFront.php' );
@@ -74,8 +77,12 @@ if (isset($_GET['search_type']) && $_GET['search_type'] == 'ajax') {
         $keyword = $_GET['facet_keyword'];
         $count = (int) $_GET['facet_count'];
 
-        if ($autocomplite_type == 'actor') {
-            $search_front->actor_autocomplite($keyword, $count);
+
+
+        if (in_array($autocomplite_type, $actors_facets)) {
+            $search_front->actor_autocomplite($keyword, $count, 'actor');
+        } else if (in_array($autocomplite_type, $dirs_facets)) {            
+            $search_front->actor_autocomplite($keyword, $count, 'dir');
         } else if ($autocomplite_type == 'movie') {
             $search_front->movie_autocomplite($keyword, $count);
         }
@@ -85,11 +92,11 @@ if (isset($_GET['search_type']) && $_GET['search_type'] == 'ajax') {
     // Title
     global $search_text;
     $keywords = $search_front->get_search_keywords();
-    $search_title = 'Search';    
+    $search_title = 'Search';
     if ($analytics) {
         $search_title = 'Analytics';
     }
-    $blog_title = 'Right Wing Tomatoes';
+    $blog_title = 'Zeitgeist Reviews';
 
     $search_text = $search_title . '. ' . $blog_title;
 
@@ -102,7 +109,7 @@ if (isset($_GET['search_type']) && $_GET['search_type'] == 'ajax') {
             $search_text = 'Search Results for: ' . $keywords . '. ' . $blog_title;
         }
     }
-    
+
     // Only new URL
     if ($inc == 'none') {
         print '<div>';
@@ -155,7 +162,7 @@ if (isset($_GET['search_type']) && $_GET['search_type'] == 'ajax') {
     } else if ($type == 'movie') {
         $movie = $_GET['code'];
         $search_front->get_movie($movie);
-    }else if ($type == 'verdict') {
+    } else if ($type == 'verdict') {
         $rules = $_GET['data'];
         $rules_id = $search_front->get_id_by_rules($rules);
         print $rules_id;

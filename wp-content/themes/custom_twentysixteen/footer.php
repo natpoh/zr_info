@@ -13,10 +13,6 @@
 </div><!-- .site-content -->
 
 <footer id="colophon" class="site-footer" role="contentinfo">
-
-
-
-
     <?php
     include(get_template_directory() . '/template/plugins/mailpoet_widgets.php');
 
@@ -32,9 +28,9 @@
         dynamic_sidebar('sidebar-3');
         echo '</div>';
     }
+    
+    echo '</div>';    
     ?>
-</div>
-
 </footer><!-- .site-footer -->
 <?php
 wp_footer();
@@ -64,7 +60,6 @@ wp_footer();
 
     gtag('config', 'UA-124487298-2');
 </script>
-</div><!-- .site-inner -->
 </div><!-- .site -->
 <?php
 /*

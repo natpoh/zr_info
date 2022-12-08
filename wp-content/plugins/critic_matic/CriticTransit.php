@@ -149,7 +149,7 @@ class CriticTransit extends AbstractDB {
      * Actors meta
      */
 
-    public function get_actors_meta($count = 1000, $debug = false, $force = false, $actor_id = false, $sinch = true, $onlydata = 0) {
+    public function get_actors_meta($count = 1000, $debug = false, $force = false, $actor_id = false, $sinch = true, $onlydata=0) {
 
         if ($actor_id) {
             $sql = sprintf("SELECT * FROM {$this->db['actors_meta']} WHERE actor_id = %d ", (int) $actor_id);

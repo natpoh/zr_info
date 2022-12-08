@@ -3,6 +3,7 @@ error_reporting(E_ERROR);
 
 if (!defined('ABSPATH'))
     define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
+include  ABSPATH.'an_config.php';
 
 global $WP_include;
 
@@ -36,7 +37,7 @@ if ($curent_user) {
     $sql = "SELECT *
 FROM information_schema.tables
 WHERE table_type='BASE TABLE'
-AND table_schema='imdbvisualization'";
+AND table_schema='".DB_NAME_AN."'";
 
     $rows = Pdo_an::db_results_array($sql);
 

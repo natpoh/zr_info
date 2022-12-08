@@ -10,11 +10,13 @@ wp_enqueue_style('colums_template', get_template_directory_uri() . '/css/colums_
 wp_enqueue_script('spoiler-min', get_template_directory_uri() . '/js/spoiler.min.js', array('jquery'));
 wp_enqueue_script('section_home', get_template_directory_uri() . '/js/section_home.js', array('jquery'), LASTVERSION);
 
+global $post_id;
 $array_list = array(
-    'Pro' => array('title' => 'Critic Reviews: <a href="#" id-data="'.$post_id.'" class="add_critic" >+add</a>', 'id' => 'review_scroll', 'class' => 'single pro_review'),
-    'Staff' => array('title' => 'Staff Reviews:', 'id' => 'stuff_scroll', 'class' => 'single stuff_review widthed secton_gray'),
     'Audience' => array('title' => 'Audience Reviews:', 'id' => 'audience_scroll', 'class' => 'single audience_review',
         'tabs' => array('p' => 'Positive', 'n' => 'Negative', 'a' => 'All')),
+    'Pro' => array('title' => 'Critic Reviews: <a href="#" id-data="'.$post_id.'" class="add_critic" >+add</a>', 'id' => 'review_scroll', 'class' => 'single pro_review'),
+    'Staff' => array('title' => 'Staff Reviews:', 'id' => 'stuff_scroll', 'class' => 'single stuff_review widthed secton_gray'),
+
         //'4chan' => array('title' => '4chan:', 'id' => 'chan_scroll', 'class' => '4chan_review')
 );
 
@@ -33,8 +35,8 @@ $post_count = $cfront->get_audience_post_count($movie_id);
 $active_key = 'a';
 $vote_scroll = 0;
 if ($post_count['p']) {
-    $active_key = 'p';
-    $vote_scroll = 1;
+  //  $active_key = 'p';
+   // $vote_scroll = 1;
 }
 
 // add scripts

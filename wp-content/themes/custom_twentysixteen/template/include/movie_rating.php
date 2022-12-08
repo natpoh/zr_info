@@ -130,9 +130,11 @@ class RWT_RATING
 
 
     }
-    public function gender_and_diversity_rating($movie_id, $movie_imdb = '', $update = '')
+    public function gender_and_diversity_rating($movie_id, $movie_imdb = '', $update = '',$debug='')
     {
         //////new api
+
+
 
         if (!$update) {
             $array_db = $this->get_gender_rating_in_movie($movie_id);
@@ -160,16 +162,22 @@ class RWT_RATING
 
             $data_actors = MOVIE_DATA::get_movie_data_from_db($movie_id, '', 0, array("star", "main"), [], "wj_nw", $ethnic);
 
-            $diversity =$data_actors['data'] ['non-White'];
+
+
+            $diversity =$data_actors['diversity']['non-White'];
             $diversity_data = $data_actors['default_data'];
 
+            if ($debug) print_r([$diversity,$diversity_data]);
 
             $data_actors = MOVIE_DATA::get_movie_data_from_db($movie_id, '', 0, array("star", "main"), [], "m_f", $ethnic);
 
-           // if ($update) print_r($data_actors);
+            if ($debug) print_r($data_actors);
 
-            $male = $data_actors["data"]["Male"];
-            $female = $data_actors["data"]["Female"];
+
+            $data_actors =MOVIE_DATA::normalise_array($data_actors);
+            if ($debug) print_r($data_actors);
+            $male = $data_actors["Male"];
+            $female = $data_actors["Female"];
 
             $diversity_data = json_encode($diversity_data);
 

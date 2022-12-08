@@ -26,10 +26,31 @@ public static function check_cr()
     return $cr;
 }
 
-public static function update_actor_weight($actor_id,$debug=0,$sinch = 1,$count = 100, $force=false)
+
+public static function check_actor_weight()
+{
+//    $cr  =self::check_cr();
+//    $af = $cr->cm->get_af();
+//    $priority = $af->race_weight_priority;
+//    if ($ss['an_weightid'] > 0) {
+//        $ma = $cr->cm->get_ma();
+//        $rule = $ma->get_race_rule_by_id($ss['an_weightid']);
+//        if ($rule) {
+//            $priority = json_decode($rule->rule, true);
+//        }
+//    }
+//
+//    $af->show_table_weight_priority($priority);
+//
+
+}
+
+
+public static function update_actor_weight($actor_id,$debug=0,$sinch = 1,$count = 100, $force=false,$onlydata=0)
 {
     $cr  =self::check_cr();
-    $cr->get_actors_meta($count, $debug , $force,$actor_id,$sinch);
+    $result = $cr->get_actors_meta($count, $debug , $force,$actor_id,$sinch,$onlydata);
+    return $result;
 }
 
 

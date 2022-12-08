@@ -32,7 +32,7 @@ jQuery(function ($) {
             critic_search.menu();
         }
 
-        $('.customsearch_container__advanced-search-button').click(function () {
+        $('.search-filters-btn').click(function () {
             var w = $('body').width();
             if (w <= 990) {
                 if ($("#search-facets").length == 0) {
@@ -55,6 +55,15 @@ jQuery(function ($) {
             return false;
         });
 
+        $(window).scroll(function () {
+            if ($(this).scrollTop() > 300){
+                $('#fiters-btn').addClass('fixed');
+            }else{
+                $('#fiters-btn').removeClass('fixed');
+            }
+        });
+
+        critic_search.add_clear_all();
     });
 });
 
@@ -143,6 +152,7 @@ critic_search.init_facet = function (v) {
             var label = $this.closest('label');
             var type_title = label.attr('data-type');
             var ftype = v.attr('data-type');
+            // console.log(v);
             critic_search.add_filter(type, id, title, ftype, type_title, title_pre);
             //Plus logic
             var plus = $this.hasClass('plus');
@@ -224,9 +234,12 @@ critic_search.init = function ($custom_id = '') {
             } else {
                 if (v.hasClass('active')) {
                     v.removeClass('active');
-                    v.closest('.facet').find('.ac-holder').removeClass('active').html('');
+                    var acholder = v.closest('.facet').find('.ac-holder');
+                    acholder.removeClass('active');
+                    //acholder.html('');
                 }
             }
+            return false;
         });
 
     });
@@ -396,12 +409,35 @@ critic_search.init = function ($custom_id = '') {
         init_spoilers();
     }
 
-    // init notes filters
+    // Init notes filters
     init_nte();
 
     if ($('#search-form').hasClass('analytics')) {
         if (typeof search_extend !== 'undefined') {
             search_extend.init();
+        }
+    }
+
+    // Init related
+    if ($('#search-tabs li.active a').attr('data-tab') == 'critics') {
+        if (!$('#search-filters li#state-related').length) {
+            var count = $('#search-tabs li.active a span.count').text();
+            if (count == '(0)') {
+                if ($('#facet-state li input[value="related"]').length) {
+                    var related = $('#facet-state li input[value="related"]');
+                    var fr = related.closest('.flex-row');
+                    var text = fr.find('span.cnt').first().text()
+                    var articles = 'articles';
+                    if (text == '(1)') {
+                        articles = 'article';
+                    }
+                    $('#page-content').html('<div class="msg-content">We found ' + text + ' <a href="#" id="rel_click">related ' + articles + '.</a></div>');
+                    $('#rel_click').click(function () {
+                        related.click();
+                        return false;
+                    });
+                }
+            }
         }
 }
 }
@@ -595,20 +631,20 @@ critic_search.add_filter = function (type, id, title, ftype, type_title = '', ti
     if ($("#search-filters").length == 0) {
         $('#search-tabs').after('<div id="search-filters"><span>Filters: </span><ul class="filters-wrapper"></ul></div>');
     }
-    var clear_all = false;
+
     if ($(".filters-wrapper .clear-all").length !== 0) {
-        clear_all = true;
         $(".filters-wrapper .clear-all").before(filter);
     } else {
         $('.filters-wrapper').append(filter);
     }
+    critic_search.add_clear_all();
 
-    if ($('.filters-wrapper .filter').length >= 3) {
-
-        if (!clear_all) {
-            $('.filters-wrapper').append('<li class="filter clear-all" title="Clear filters"><a href="/search">Clear <span class="close"></span></a></li>');
-        }
 }
+
+critic_search.add_clear_all = function () {
+    if ($('.filters-wrapper .filter').length >= 3 && !$(".filters-wrapper .clear-all").length) {
+        $('.filters-wrapper').append('<li class="filter clear-all" title="Clear filters"><a href="/search">Clear <span class="close"></span></a></li>');
+    }
 }
 
 critic_search.remove_filter = function (type, id) {
@@ -681,7 +717,7 @@ critic_search.submit = function (inc = '', target = '') {
     if (!critic_search.enable_submit) {
         return false;
     }
-    
+
     var $ = jQuery;
     var kw = $('#sbar').val();
 
@@ -850,15 +886,15 @@ critic_search.submit = function (inc = '', target = '') {
 
 
 critic_search.ajax = function (data, cb) {
-    var $ = jQuery;    
+    var $ = jQuery;
     return $.ajax({
         type: "GET",
         url: '/wp-content/themes/custom_twentysixteen/template/ajax/search.php',
         data: data,
-        success: function (rtn) {                        
-            return cb(rtn);            
+        success: function (rtn) {
+            return cb(rtn);
         },
-        error: function (rtn) {                  
+        error: function (rtn) {
             return cb(rtn);
         }
     });

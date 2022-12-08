@@ -43,7 +43,7 @@ $array_jobs = array(
 'get_new_tv'=>(60*12),///add new tv from tmdb
 
 'add_pg_rating_for_new_movies'=>(60*12),///add pg rating to new movies
-'add_gender_rating_for_new_movies'=>(60*12),///add gender rating to new movies
+//'add_gender_rating_for_new_movies'=>(60*12),///add gender rating to new movies
 
 'update_all_audience_and_staff'=>(60*12),///recreate cache audience and staff
 'get_coins_data'=>60*24,////get data donations
@@ -162,7 +162,14 @@ class Cronjob
             if ($enable)
             {
                 ///update
+
                 $sql = "UPDATE `cron` SET  `time` = ? WHERE `task` = ?" ;
+
+                if (isset($_GET['debug']))
+                {
+                    echo $sql;
+                }
+
                 Pdo_an::db_results($sql,array($option,$id));
             }
             else
@@ -179,8 +186,6 @@ class Cronjob
     {
 
 
-
-
         $run_cron = $this->get_options('run_cron');
 
         echo '<p>Last run :'.date('H:i:s d.m.Y',$run_cron).'</p>' . PHP_EOL;
@@ -189,12 +194,15 @@ class Cronjob
         $jobs_data =  self::get_all_options($array_jobs);
 
 
-
+        if (isset($_GET['force']))
+        {
+            $force  = $_GET['force'];
+        }
 
         //var_dump($jobs_data);
 
 
-        if (($run_cron < time()-3600/2) && !$only_info) {
+        if ((($run_cron < time()-3600/2) || $force==1) && !$only_info) {
 
             $this->set_option('run_cron', time());
             $this->set_option('cron started', time());

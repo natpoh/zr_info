@@ -1011,7 +1011,7 @@ body .actor_popup, body.theme_dark .actor_popup {
     background: #000 url(../images/matrix.gif) repeat;
 
     padding: 25px;
-    background-size: auto 34%;
+    background-size: auto 100vh;
     box-shadow: inset 0px 0px 60px #000;
     border-radius: 3px;
     margin: 0 auto;
@@ -1022,7 +1022,8 @@ body .actor_popup, body.theme_dark .actor_popup {
     font-size: 14px;
 }
 .actor_popup .actor_image{
-opacity: 0.8;
+opacity: 0.68;
+    mix-blend-mode: plus-lighter;
  }
  .actor_popup   .actor_crowdsource{
 margin-top: 15px;
@@ -1508,8 +1509,13 @@ body.theme_dark  .img_tooltip a{
 
 }
 
-
-
+p.w50
+{
+    width: 100%;
+    text-align: center;
+    min-height: 50vh;
+    padding-top: 20vh;
+}
 .white_popup {
     box-sizing: border-box;
     padding: 15px;
@@ -1734,7 +1740,10 @@ body.theme_dark .disqus_reply, .disqus_view {
     border-width: 1px 0;
     padding: 5px 0;
 }
-
+.style_1 .user-reactions {
+    right: 307px;
+    position: absolute;
+}
 .user-reactions:before,
 .user-reactions:after {
     content: " ";
@@ -2004,6 +2013,43 @@ body .user-reactions-single .user-reactions-button.reaction-show .user-reactions
 
 
 
+body .audience-tab.tab-wrapper .nav-tab.tab-n a, body .audience-tab.tab-wrapper .nav-tab.tab-p a{
+    display: inline-block;
+    padding-right: 48px;
+    position: relative;
+}
+body .audience-tab .tab-a a{
+    display: inline-block;
+    padding-right: 44px;
+    position: relative;
+}
+
+body .audience-tab .tab-n a::after, .audience-tab .tab-p a::after {
+    content: "";
+    display: block;
+    position: absolute;
+    width: 36px;
+    height: 25px;
+    background: url('../images/filter_random.svg') no-repeat;
+    right: 5px;
+    top: 5px;
+    background-size: contain;
+}
+body .audience-tab .tab-a a::after {
+    content: "";
+    display: block;
+    position: absolute;
+    width: 31px;
+    height: 24px;
+    background: url('../images/filter_last.svg') no-repeat;
+    right: 5px;
+    top: 6px;
+    background-size: contain;
+}
+
+body .audience-tab.tab-wrapper .nav-tab.active a::after {
+filter: invert();
+}
 
 .rating_block {
     position: absolute;
@@ -2954,7 +3000,7 @@ background-color: rgba(0, 0, 0, 0.45);
 
 .sug_buttons_wrapper .s1::before {
 
-    content: "Pay to watch! ";
+    content: "Pay to Consume! ";
     left: calc(50% - 38px);
     top: -1.2em;
     position: absolute;
@@ -2978,9 +3024,9 @@ background-color: rgba(0, 0, 0, 0.45);
 
 }
 .sug_buttons_wrapper .s3::before {
-    content: "Watch if free. ";
+    content: "Consume if free. ";
     top: -1.2em;
-    left: calc(50% - 38px);
+    left: calc(50% - 44px);
     position: absolute;
     color: orange;
     font-size: 14px;
@@ -3517,5 +3563,18 @@ body.theme_dark .highcharts-legend-title tspan{
     p.center{
         text-align: center;
     }
-
+    ul.audience-tab.tab-wrapper {
+        display: flex;
+        flex-wrap: unset;
+        justify-content: center;
+        font-family: 'Encode Sans Condensed',Lato;
+        margin: 0 6px;
+    }
+    .audience-tab.tab-wrapper li.nav-tab {
+        flex: max-content;
+    }
+    .audience-tab.tab-wrapper li.nav-tab a {
+        display: block;
+        width: 100%;
+    }
 }

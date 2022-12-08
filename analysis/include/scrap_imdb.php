@@ -1988,17 +1988,6 @@ function check_bettaface($actor_id)
 function check_imdb($last_id = 0)
 {
 
-
-    global $pdo;
-
-    if (!$pdo) {
-        include '../db_config.php';
-        pdoconnect_db();
-    }
-
-    $pdo->query('use imdbvisualization');
-
-
     $array_movie = get_last_options(9);
 
     //// echo $array_movie;
@@ -2077,13 +2066,6 @@ function check_imdb($last_id = 0)
 }
 function check_tv_series_imdb($last_id = 0)
 {
-
-    global $pdo;
-    if (!$pdo) {
-        include '../db_config.php';
-        pdoconnect_db();
-    }
-    $pdo->query('use imdbvisualization');
     $array_movie = get_last_options(11);
     //// echo $array_movie;
 
@@ -2137,10 +2119,6 @@ function check_actor_image($actor_id)
 }
 function add_tv_shows_to_options()
 {
-    include '../db_config.php';
-    global $pdo;
-    pdoconnect_db();
-    $pdo->query('use imdbvisualization');
 
     $array_year = [];
     $year_end = date('Y', time());
@@ -2256,7 +2234,7 @@ function update_all_gender_cache($pid)
         $movie_id = $r2['movie_id'];
 
 
-        $data->gender_and_diversity_rating($id,$movie_id,1,$debug);
+        $data->gender_and_diversity_rating($id,$movie_id,1,$debug); ///update_all_gender_cache
         echo $i.' of '.$count.' id='.$id.'<br>'.PHP_EOL;
     }
 }
@@ -2399,10 +2377,6 @@ foreach ($rows as $r)
 
 function add_imdb_data_to_options()
 {
-    include '../db_config.php';
-    global $pdo;
-    pdoconnect_db();
-    $pdo->query('use imdbvisualization');
 
     $array_year = [];
     $year_end = date('Y', time());
@@ -2434,7 +2408,7 @@ function add_imdb_data_to_options()
     echo 'count:' . count($array_year) . '<br>';
 
     $array_year = implode($array_year, ',');
-    print_r($array_year);
+   // print_r($array_year);
 
     set_option(9, $array_year);
     set_option(10, 0);
@@ -2475,7 +2449,7 @@ if (isset($_GET['check_last_actors'])) {
 }
 if (isset($_GET['add_imdb_data_to_options'])) {
 
-
+    add_imdb_data_to_options();
     return;
 }
 if (isset($_GET['check_imdb'])) {
