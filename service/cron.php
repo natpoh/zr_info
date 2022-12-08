@@ -156,16 +156,21 @@ class Cronjob
 
         $r = Pdo_an::db_results_array($sql);
         var_dump($r);
-        
+
         $time = $r[0]['time'];
         if (!$time) $time = 0;
         return $time;
     }
 
-    private function set_cron_option($id, $option)
+    private function set_cron_option($id, $option,$enable='')
     {
         if ($option && $id) {
-            $enable=$this->get_cron_options($id);
+            if (!$enable)
+            {
+                $enable=$this->get_cron_options($id);
+            }
+
+
             if ($enable)
             {
                 ///update
@@ -356,7 +361,7 @@ class Cronjob
             $name();
             }
 
-          $this->set_cron_option($fname,time());
+          $this->set_cron_option($fname,time(),$last_time);
           echo '<br>Ended  '.$fname.'  '. $this->timer_stop().'<br><br>'.PHP_EOL.PHP_EOL;
       }
       else
