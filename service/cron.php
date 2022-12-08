@@ -208,7 +208,7 @@ class Cronjob
             $force  = $_GET['force'];
         }
 
-        var_dump($jobs_data);
+        //var_dump($jobs_data);
 
 
         if ((($run_cron < time()-3600/2) || $force==1) && !$only_info) {
