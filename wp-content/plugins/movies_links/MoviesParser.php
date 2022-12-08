@@ -1226,9 +1226,10 @@ class MoviesParser extends MoviesAbstractDB {
         $cid_path = $arhive_path . $cid . '/';
         $first_letter_path = $cid_path . $first_letter . '/';
         $full_path = $first_letter_path . $link_hash;
-
-        $gzcontent = file_get_contents($full_path);
-
+        $gzcontent = '';
+        if (file_exists($full_path)) {
+            $gzcontent = file_get_contents($full_path);
+        }
         $content = '';
         if ($gzcontent) {
             $content = gzdecode($gzcontent);
@@ -2236,13 +2237,13 @@ class MoviesParser extends MoviesAbstractDB {
         if ($max_rating_id) {
             $results[$max_rating_id]['total']['top'] = 1;
         }
-     /*
+        /*
           print '<pre>';
           print_r($post);
           print_r($search_fields);
           print_r($results);
           print '</pre>';
-      */
+         */
 
         return array('fields' => $search_fields, 'results' => $results);
     }

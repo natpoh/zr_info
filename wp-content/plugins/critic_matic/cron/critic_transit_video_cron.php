@@ -1,6 +1,6 @@
 <?php
 
-if ($_GET['test_google']) {
+if (isset($_GET['test_google']) && $_GET['test_google']) {
 
     if (!defined('ABSPATH'))
         define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
@@ -25,7 +25,7 @@ set_time_limit(0);
  * Transit critcs wp_posts to critic_matic posts
  */
 $debug = false;
-if ($_GET['debug']) {
+if (isset($_GET['debug'])) {
     $debug = true;
     error_reporting('E_ALL');
     ini_set('display_errors', 'On');
@@ -46,12 +46,12 @@ if ($_GET['p'] != $p) {
 }
 
 $count = 10;
-if ($_GET['c']) {
+if (isset($_GET['c'])) {
     $count = (int) $_GET['c'];
 }
 
 $force = false;
-if ($_GET['force']) {
+if (isset($_GET['force'])) {
     $force = true;
 }
 
@@ -61,12 +61,12 @@ $cm = new CriticMatic();
 require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticTranscriptions.php' );
 $ct = new CriticTranscriptions($cm);
 
-if ($_GET['install']) {
+if (isset($_GET['install'])) {
     $ct->install();
     exit();
 }
 
-$ct->transit_youtube_ts($count, $debug, $force);
+//$ct->transit_youtube_ts($count, $debug, $force);
 //$ct->transit_youtube($count, $debug, $force);
 //$ct->transit_bitchute($count, $debug, $force);
 //$ct->transit_therightstuff($count, $debug, $force);

@@ -82,6 +82,43 @@ class CriticTransit extends AbstractDB {
     }
 
     /*
+     * Find dublicates critic posts
+     */
+
+    public function find_dublicates_post($count = 10, $debug = false, $force = false) {
+        $option_name = 'find_dublicates_post_unique_id';
+        $last_id = $this->get_option($option_name, 0);
+        if ($force) {
+            $last_id = 0;
+        }
+
+        // 1. Get posts
+        $sql = sprintf("SELECT * FROM {$this->db['posts']} WHERE id>%d ORDER BY id ASC limit %d", $last_id, $count);
+        $results = $this->db_results($sql);
+
+        if ($results) {
+            $last = end($results);
+            if ($debug) {
+                print 'last id: ' . $last->id . "\n";
+            }
+
+            if ($last) {
+                $this->update_option($option_name, $last->id);
+            }
+            // 2. Find dulicates
+            $cs = $this->cm->get_cs();
+            foreach ($results as $item) {
+                $words = $item->title;
+                $cs->find_post_povtor($words, $info, $item->id,$debug);
+               
+            }
+            // 3. Validate posts
+            // 4. Trash dublicates
+            // 5. Add dublicates info to log
+        }
+    }
+
+    /*
      * Remove unused critic meta type 2
      */
 
@@ -112,7 +149,7 @@ class CriticTransit extends AbstractDB {
      * Actors meta
      */
 
-    public function get_actors_meta($count = 1000, $debug = false, $force = false, $actor_id = false, $sinch = true,$onlydata=0) {
+    public function get_actors_meta($count = 1000, $debug = false, $force = false, $actor_id = false, $sinch = true, $onlydata=0) {
 
         if ($actor_id) {
             $sql = sprintf("SELECT * FROM {$this->db['actors_meta']} WHERE actor_id = %d ", (int) $actor_id);
@@ -176,9 +213,8 @@ class CriticTransit extends AbstractDB {
 
 
 
-                $n_verdict = $af->custom_weight_race_code($actor_id, $filter_weights,$onlydata);
-                if ($onlydata)
-                {
+                $n_verdict = $af->custom_weight_race_code($actor_id, $filter_weights, $onlydata);
+                if ($onlydata) {
                     if ($debug) {
                         print "Actor verdict";
                         print_r($n_verdict);
