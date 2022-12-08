@@ -229,8 +229,7 @@ class Cronjob
                     echo 'run ' . $i . ' from ' . $count . ' lastrun: '.$last_update.'<br>' . PHP_EOL;
                     $this->run_function($jobs, $period);
 
-                    $this->set_cron_option($jobs,time());
-                    echo '<br>Ended  '.$jobs.'  '. $this->timer_stop().'<br><br>'.PHP_EOL.PHP_EOL;
+
                 } else {
                     echo '<br>Ended max time > ' . $this->max_time . '<br>' . PHP_EOL;
                     $this->set_cron_option('cron', time());
@@ -355,7 +354,8 @@ class Cronjob
             $name();
             }
 
-
+          $this->set_cron_option($fname,time());
+          echo '<br>Ended  '.$fname.'  '. $this->timer_stop().'<br><br>'.PHP_EOL.PHP_EOL;
       }
       else
         {
@@ -376,19 +376,26 @@ $sql_result = "CREATE TABLE  IF NOT EXISTS `cron` (
         Pdo_an::db_query($sql_result);
     }
 }
+if (isset($_GET['debug']))
+{
+
+    global $cron_debug;
+    $cron_debug=1;
+}
 
 
 
+
+if (isset($_GET['runjob']))
+{
+
+    $cron = new Cronjob;
+    $cron->run_function($_GET['runjob'], 1);
+}
 
     if (isset($_GET['runcron']))
     {
 
-        if (isset($_GET['debug']))
-        {
-
-            global $cron_debug;
-            $cron_debug=1;
-        }
 
         if ($_GET['runcron']==1)
         {
