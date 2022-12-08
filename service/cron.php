@@ -1,4 +1,5 @@
 <?php
+ini_set('memory_limit', '4096M');
 
 if (!defined('ABSPATH'))
     define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
@@ -7,6 +8,8 @@ if (!defined('ABSPATH'))
 !defined('DB_HOST_AN') ? include ABSPATH . 'analysis/db_config.php' : '';
 //Abstract DB
 !class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
+
+
 
 global $array_jobs;
 
@@ -178,7 +181,7 @@ class Cronjob
                 global $cron_debug;
                 if ($cron_debug)
                 {
-                    echo $sql.'<br>';
+                    echo '<br>'.$sql.'<br>';
                 }
 
 
