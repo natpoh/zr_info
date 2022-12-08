@@ -180,6 +180,10 @@ class Cronjob
             }
 
         }
+        else
+        {
+            echo 'set_option error: not id and options '.$id.' '.$option.' <br>';
+        }
     }
 
     public   function run($array_jobs,$only_info = 0)
@@ -323,14 +327,16 @@ class Cronjob
     public   function run_function($name,$period)
     {
 
+        $fname =trim($name);
 
-      echo 'Function '.$name.' checked '. self::timer_stop().'<br>'.PHP_EOL;
-      $last_time =   self::get_options($name);
+
+      echo 'Function '.$fname.' checked '. self::timer_stop().'<br>'.PHP_EOL;
+      $last_time =   self::get_options($fname);
       echo 'Last updated '.date('H:i:s d.m.Y',$last_time).'<br>'.PHP_EOL;
 
       if (time()>$last_time+$period*60)
       {
-       self::set_option($name." started",time());
+       self::set_option($fname." started",time());
        echo 'Started '. self::timer_stop().'<br>'.PHP_EOL;
 
           /////run function
@@ -340,8 +346,8 @@ class Cronjob
             $name();
             }
 
-        self::set_option($name,time());
-        echo '<br>Ended  '.$name.'  '. self::timer_stop().'<br><br>'.PHP_EOL.PHP_EOL;
+        self::set_option($fname,time());
+        echo '<br>Ended  '.$fname.'  '. self::timer_stop().'<br><br>'.PHP_EOL.PHP_EOL;
       }
       else
         {
