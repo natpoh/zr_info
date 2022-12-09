@@ -1940,10 +1940,10 @@ class CriticFront extends SearchFacets {
 
             // Link more
             if ($count > $limit) {
-                $link = '/search/tab_critics/author_critic';
+                $link = '/search/tab_critics/author_critic/state_proper_contains';
 
                 if ($movie_id) {
-                    $link = '/search/tab_critics/author_critic/movie_' . $movie_id;
+                    $link .= '/movie_' . $movie_id;
                 }
 
                 $title = 'Load more<br>Critic Reviews';

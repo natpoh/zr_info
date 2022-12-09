@@ -714,7 +714,7 @@ class SearchFacets extends AbstractDB {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
                     $name = isset($this->cs->search_filters['state'][$slug]['title']) ? $this->cs->search_filters['state'][$slug]['title'] : $slug;
-                    $tags[] = array('name' => $name, 'state' => $key, 'id' => $slug, 'tab' => 'critics', 'minus' => $minus);
+                    $tags[] = array('name' => $name, 'type' => $key, 'id' => $slug, 'tab' => 'critics', 'minus' => $minus);
                 }
             } else if ($key == 'movie') {
                 $value = is_array($value) ? $value : array($value);
@@ -2150,7 +2150,7 @@ class SearchFacets extends AbstractDB {
             $dates['related'] = array('title' => $other_item['title'], 'count' => $other_cnt);
         }
         $filter = 'state';
-        $title = 'Review type';
+        $title = 'Relevance';
         $this->theme_facet_multi($filter, $dates, $title);
     }
 

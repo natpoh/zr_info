@@ -48,6 +48,8 @@ class CriticTransit extends AbstractDB {
         $table_prefix = DB_PREFIX_WP_AN;
         $this->db = array(
             'posts' => $table_prefix . 'critic_matic_posts',
+            'authors' => $table_prefix . 'critic_matic_authors',
+            'authors_meta' => $table_prefix . 'critic_matic_authors_meta',
             'movie_imdb' => 'data_movie_imdb',
             'title_slugs' => 'data_movie_title_slugs',
             'rwt_meta' => $table_prefix . 'critic_matic_meta',
@@ -90,10 +92,13 @@ class CriticTransit extends AbstractDB {
         $last_id = $this->get_option($option_name, 0);
         if ($force) {
             $last_id = 0;
-        }
-
+        }       
+  
         // 1. Get posts
-        $sql = sprintf("SELECT * FROM {$this->db['posts']} WHERE id>%d ORDER BY id ASC limit %d", $last_id, $count);
+        $sql = sprintf("SELECT p.*, am.aid as aid FROM {$this->db['posts']} p"
+                . " INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id "
+                . " INNER JOIN {$this->db['authors']} a ON a.id = am.aid "
+                . " WHERE p.id>%d AND p.status!=2 AND a.type!=2 ORDER BY p.id ASC limit %d", $last_id, $count);
         $results = $this->db_results($sql);
 
         if ($results) {
@@ -101,20 +106,80 @@ class CriticTransit extends AbstractDB {
             if ($debug) {
                 print 'last id: ' . $last->id . "\n";
             }
-
             if ($last) {
                 $this->update_option($option_name, $last->id);
             }
             // 2. Find dulicates
             $cs = $this->cm->get_cs();
             foreach ($results as $item) {
-                $words = $item->title;
-                $cs->find_post_povtor($words, $info, $item->id,$debug);
-               
+
+                $povtors = $cs->find_post_povtor($item->title, $item->id, $item->aid, $debug);
+
+
+                if ($povtors) {
+                    // 3. Validate posts    
+                    $items = array();
+                    
+                    foreach ($povtors as $pid => $post) {
+                        $povtor_data = $this->cm->get_post($pid);
+                        if ($povtor_data->status==2){
+                            // Ignore trahs
+                            continue;
+                        }
+                        $items[$pid] = $povtor_data->link;                        
+                    }
+                    
+                    if (!$items){
+                        // All results already trash
+                        continue;
+                    }
+                    
+                    $items[$item->id] = $item->link;
+                    
+                    /*
+                      [144576] => https://www.youtube.com/watch?v=IRdPKAVXcFs
+                      [144343] => https://www.bitchute.com/embed/IRdPKAVXcFs/
+                     */
+                    if ($debug) {
+                        p_r($items);
+                    }
+                    $main = 0;
+                    $min_key = 0;
+                    foreach ($items as $key => $value) {
+                        if ($min_key == 0) {
+                            $min_key = $key;
+                        } else if ($min_key > $key) {
+                            $min_key = $key;
+                        }
+
+
+                        if (!$main && strstr($value, 'youtube.com')) {
+                            $main = $key;
+                        }
+                        if (!$main && strstr($value, 'odysee.com')) {
+                            $main = $key;
+                        }
+                    }
+                    if (!$main) {
+                        $main = $min_key;
+                    }
+
+                    if ($debug) {
+                        p_r($main);
+                    }
+                    
+                    // 4. Trash dublicates
+                    foreach ($items as $key => $value) {
+                       if($key==$main){
+                           continue;
+                       } 
+                       $this->cm->trash_post_by_id($key);                       
+                       // 5. Add dublicates info to log
+                        $message = 'Source id: '.$main;
+                        $cs->log_trash_dublicate($message, $pid);
+                    }
+                }
             }
-            // 3. Validate posts
-            // 4. Trash dublicates
-            // 5. Add dublicates info to log
         }
     }
 
@@ -149,7 +214,7 @@ class CriticTransit extends AbstractDB {
      * Actors meta
      */
 
-    public function get_actors_meta($count = 1000, $debug = false, $force = false, $actor_id = false, $sinch = true, $onlydata=0) {
+    public function get_actors_meta($count = 1000, $debug = false, $force = false, $actor_id = false, $sinch = true, $onlydata = 0) {
 
         if ($actor_id) {
             $sql = sprintf("SELECT * FROM {$this->db['actors_meta']} WHERE actor_id = %d ", (int) $actor_id);
