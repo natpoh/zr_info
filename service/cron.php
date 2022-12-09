@@ -1,4 +1,5 @@
 <?php
+ini_set('memory_limit', '4096M');
 
 if (!defined('ABSPATH'))
     define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
@@ -7,6 +8,8 @@ if (!defined('ABSPATH'))
 !defined('DB_HOST_AN') ? include ABSPATH . 'analysis/db_config.php' : '';
 //Abstract DB
 !class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
+
+
 
 global $array_jobs;
 
@@ -94,7 +97,7 @@ class Cronjob
     }
     private function reset()
     {
-        $this->set_option('run_cron', 1);
+        $this->set_cron_option('run_cron', 1);
     }
 
     public function timer_start()
@@ -128,11 +131,8 @@ class Cronjob
                     $last_time=  0;
                 }
 
-                $array_result[$val['task']] = ( time() - $last_time )/60 - $array_jobs[$val['task']];
+                $array_result[$val['task']] = intval(( time() - $last_time )/60 - $array_jobs[$val['task']]);
             }
-
-
-
         }
 
         foreach ($array_jobs as $jobs => $period) {
@@ -146,39 +146,58 @@ class Cronjob
 
     }
 
-    private  function get_options($id)
+    private  function get_cron_options($id)
     {
-        $sql = "SELECT time  FROM `cron` where task = ?";
-        $r = Pdo_an::db_fetch_row($sql,array($id));
-        $time = $r->time;
+        $sql = "SELECT `time`  FROM `cron` where task = '".$id."'";
+
+        global $cron_debug;
+        if ($cron_debug)
+        {
+            echo '<br>'.$sql.'<br>';
+        }
+
+
+        $r = Pdo_an::db_results_array($sql);
+
+        if ($cron_debug) {
+            var_dump($r);
+        }
+        $time = $r[0]['time'];
         if (!$time) $time = 0;
         return $time;
     }
 
-    private function set_option($id, $option)
+    private function set_cron_option($id, $option,$enable='')
     {
         if ($option && $id) {
-            $enable=$this->get_options($id);
+
+           $enable=$this->get_cron_options($id);
+
             if ($enable)
             {
                 ///update
 
-                $sql = "UPDATE `cron` SET  `time` = ? WHERE `task` = ?" ;
-
-                if (isset($_GET['debug']))
+                $sql = "UPDATE `cron` SET  `time` = '".$option."' WHERE `task` = '".$id."'" ;
+                global $cron_debug;
+                if ($cron_debug)
                 {
-                    echo $sql;
+                    echo '<br>'.$sql.'<br>';
                 }
 
-                Pdo_an::db_results($sql,array($option,$id));
+
+                Pdo_an::db_results($sql);
             }
             else
             {
                 ///insert
                 $sql = "INSERT INTO `cron`  VALUES (NULL,?,?)";
-                Pdo_an::db_results($sql,array($id,$option));
+                Pdo_an::db_results_array($sql,array($id,$option));
             }
 
+        }
+        else
+        {
+            echo 'set_cron_option error: not id and options '.$id.' '.$option.' <br>';
         }
     }
 
@@ -186,12 +205,12 @@ class Cronjob
     {
 
 
-        $run_cron = $this->get_options('run_cron');
+        $run_cron = $this->get_cron_options('run_cron');
 
         echo '<p>Last run :'.date('H:i:s d.m.Y',$run_cron).'</p>' . PHP_EOL;
 
 ///////check last run
-        $jobs_data =  self::get_all_options($array_jobs);
+        $jobs_data =  $this->get_all_options($array_jobs);
 
 
         if (isset($_GET['force']))
@@ -204,8 +223,8 @@ class Cronjob
 
         if ((($run_cron < time()-3600/2) || $force==1) && !$only_info) {
 
-            $this->set_option('run_cron', time());
-            $this->set_option('cron started', time());
+            $this->set_cron_option('run_cron', time());
+            $this->set_cron_option('cron started', time());
 
             $this->timer_start();
 
@@ -217,11 +236,13 @@ class Cronjob
 
                 if ($this->timer_stop() < $this->max_time) {
                     echo 'run ' . $i . ' from ' . $count . ' lastrun: '.$last_update.'<br>' . PHP_EOL;
-                    self::run_function($jobs, $period);
+                    $this->run_function($jobs, $period);
+
+
                 } else {
                     echo '<br>Ended max time > ' . $this->max_time . '<br>' . PHP_EOL;
-                    $this->set_option('cron', time());
-                    $this->set_option('run_cron', 1);
+                    $this->set_cron_option('cron', time());
+                    $this->set_cron_option('run_cron', 1);
 
                     break;
 
@@ -229,8 +250,8 @@ class Cronjob
 
                 $i++;
             }
-            $this->set_option('cron', time());
-            $this->set_option('run_cron', 1);
+            $this->set_cron_option('cron', time());
+            $this->set_cron_option('run_cron', 1);
         }
         else
         {
@@ -283,7 +304,7 @@ class Cronjob
                 $last_run[$r['task']]['end']=$r['time'];
             }
             else{
-                $last_run[$r['task']]['start']=$r['time'];
+                $last_run[$r['task']]['end']=$r['time'];
             }
 
         }
@@ -323,15 +344,17 @@ class Cronjob
     public   function run_function($name,$period)
     {
 
+        $fname =trim($name);
 
-      echo 'Function '.$name.' checked '. self::timer_stop().'<br>'.PHP_EOL;
-      $last_time =   self::get_options($name);
+
+      echo 'Function '.$fname.' checked '. $this->timer_stop().'<br>'.PHP_EOL;
+      $last_time =   $this->get_cron_options($fname);
       echo 'Last updated '.date('H:i:s d.m.Y',$last_time).'<br>'.PHP_EOL;
 
       if (time()>$last_time+$period*60)
       {
-       self::set_option($name." started",time());
-       echo 'Started '. self::timer_stop().'<br>'.PHP_EOL;
+          $this->set_cron_option($fname." started",time());
+       echo 'Started '. $this->timer_stop().'<br>'.PHP_EOL;
 
           /////run function
 
@@ -340,12 +363,12 @@ class Cronjob
             $name();
             }
 
-        self::set_option($name,time());
-        echo '<br>Ended  '.$name.'  '. self::timer_stop().'<br><br>'.PHP_EOL.PHP_EOL;
+          $this->set_cron_option($fname,time(),$last_time);
+          echo '<br>Ended  '.$fname.'  '. $this->timer_stop().'<br><br>'.PHP_EOL.PHP_EOL;
       }
       else
         {
-           // self::set_option($name.' skipped',time());
+           // $this->set_cron_option($name.' skipped',time());
             echo 'skipped  '.date('H:i:s d.m.Y',time()).'<'.date('H:i:s d.m.Y',($last_time+$period*60)).'<br><br>'.PHP_EOL.PHP_EOL;
         }
 
@@ -365,9 +388,25 @@ $sql_result = "CREATE TABLE  IF NOT EXISTS `cron` (
 
 
 
+if (isset($_GET['debug']))
+{
 
+    global $cron_debug;
+    $cron_debug=1;
+}
+
+
+
+
+if (isset($_GET['runjob']))
+{
+
+    $cron = new Cronjob;
+    $cron->run_function($_GET['runjob'], 1);
+}
     if (isset($_GET['runcron']))
     {
+
         if ($_GET['runcron']==1)
         {
             $cron = new Cronjob;

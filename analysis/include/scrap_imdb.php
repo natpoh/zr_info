@@ -808,7 +808,6 @@ function get_coins_data()
 
     GETCOINS::get_request();
 
-
 }
 
 function update_all_rwt_rating($force='')
@@ -1878,7 +1877,7 @@ function add_pgrating($imdb_id='')
 
 
 
-function check_face($data)
+function check_face($data='')
 {
     if (!class_exists('BETTAFACE')){include(ABSPATH.'analysis/include/bettaface.php');}
     BETTAFACE::Prepare($data);
