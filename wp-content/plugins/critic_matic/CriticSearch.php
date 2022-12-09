@@ -391,7 +391,7 @@ class CriticSearch extends AbstractDB {
         }
 
         if (!$bulk) {
-            $remove_old_meta = false;            
+            $remove_old_meta = false;
             if ($remove_old_meta && sizeof($old_meta)) {
                 // Remove old meta that not found
                 foreach ($old_meta as $cid => $item) {
@@ -2472,7 +2472,6 @@ class CriticSearch extends AbstractDB {
         return $r;
     }
 
-    
     /*
      * Search new posts ids from critic matic
      */
@@ -2599,7 +2598,8 @@ class CriticSearch extends AbstractDB {
         $povtor = false;
         $length = 200;
         $min_precent = 90;
-      
+
+
 
         $title = $this->clear_text($title, $length, false);
 
@@ -2609,23 +2609,32 @@ class CriticSearch extends AbstractDB {
         }
 
         $povtors = $this->find_by_sphinx($title, $pid, $aid, $debug);
-        
+
         $valid_povtors = array();
         if ($povtors) {
             foreach ($povtors as $key => $povtor) {
-                
-                $precent = $this->compareResults($povtor, $wordsArr);
+                $searchArr = $this->getUniqueWords(strip_tags($povtor->title));
+                $precent_first = $this->compareResults($searchArr, $wordsArr);
+                $precent_sec = $this->compareResults($wordsArr, $searchArr);
+                $precent = $precent_first;
+                if ($precent_sec < $precent_first) {
+                    $precent = $precent_sec;
+                }
+                $precent = round($precent, 2);
+                if ($debug) {
+                    p_r(array($key,$precent));
+                }
                 if ($precent >= $min_precent) {
-                    $povtor->percent = round($precent, 2);
-                    $valid_povtors[$key]=$povtor;
+                    $povtor->percent = $precent;
+                    $valid_povtors[$key] = $povtor;
                 }
             }
         }
 
-        if ($debug){
+        if ($debug) {
             p_r($valid_povtors);
         }
-   
+
 
         return $valid_povtors;
     }
@@ -2655,8 +2664,8 @@ class CriticSearch extends AbstractDB {
         return $text;
     }
 
-    function compareResults($povtor, $wordsArr) {
-        $searchArr = $this->getUniqueWords(strip_tags($povtor->title));
+    function compareResults($searchArr, $wordsArr) {
+
         $count = sizeof($wordsArr);
         $find = 0;
         foreach ($wordsArr as $word) {
@@ -2732,8 +2741,6 @@ class CriticSearch extends AbstractDB {
 
      */
 
-
-
     public function get_log_type($type) {
         return isset($this->log_type[$type]) ? $this->log_type[$type] : 'None';
     }
@@ -2754,14 +2761,14 @@ class CriticSearch extends AbstractDB {
         $this->log($message, $cid, $mid, 0, 2);
     }
 
-    public function log_trash_dublicate($message, $cid, $mid=0) {
+    public function log_trash_dublicate($message, $cid, $mid = 0) {
         $this->log($message, $cid, $mid, 0, 3);
     }
-    
-    public function log_ignore_dublicate($message, $cid, $mid=0) {
+
+    public function log_ignore_dublicate($message, $cid, $mid = 0) {
         $this->log($message, $cid, $mid, 0, 4);
     }
-    
+
     public function log($message, $cid = 0, $mid = 0, $type = 0, $status = 0) {
         $this->get_wpdb();
         $time = $this->curr_time();

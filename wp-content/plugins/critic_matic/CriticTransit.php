@@ -92,10 +92,10 @@ class CriticTransit extends AbstractDB {
         $last_id = $this->get_option($option_name, 0);
         if ($force) {
             $last_id = 0;
-        }       
-  
+        }
+
         // 1. Get posts
-        $sql = sprintf("SELECT p.*, am.aid as aid FROM {$this->db['posts']} p"
+        $sql = sprintf("SELECT p.title, p.id, p.link, p.status, am.aid as aid FROM {$this->db['posts']} p"
                 . " INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id "
                 . " INNER JOIN {$this->db['authors']} a ON a.id = am.aid "
                 . " WHERE p.id>%d AND p.status!=2 AND a.type!=2 ORDER BY p.id ASC limit %d", $last_id, $count);
@@ -111,7 +111,13 @@ class CriticTransit extends AbstractDB {
             }
             // 2. Find dulicates
             $cs = $this->cm->get_cs();
+
+            $trash_posts = array();
+
             foreach ($results as $item) {
+                if (in_array($item->id, $trash_posts)) {
+                    continue;
+                }
 
                 $povtors = $cs->find_post_povtor($item->title, $item->id, $item->aid, $debug);
 
@@ -119,23 +125,32 @@ class CriticTransit extends AbstractDB {
                 if ($povtors) {
                     // 3. Validate posts    
                     $items = array();
-                    
+
                     foreach ($povtors as $pid => $post) {
                         $povtor_data = $this->cm->get_post($pid);
-                        if ($povtor_data->status==2){
-                            // Ignore trahs
+                        if ($povtor_data->status == 2) {
+                            // Ignore trash
                             continue;
                         }
-                        $items[$pid] = $povtor_data->link;                        
+
+                        $items[$pid] = array(
+                            'title' => $povtor_data->title,
+                            'link' => $povtor_data->link,
+                            'percent' => $post->percent
+                        );
                     }
-                    
-                    if (!$items){
+
+                    if (!$items) {
                         // All results already trash
                         continue;
                     }
-                    
-                    $items[$item->id] = $item->link;
-                    
+
+                    $items[$item->id] = array(
+                        'title' => $item->title,
+                        'link' => $item->link,
+                        'percent' => 0
+                    );
+
                     /*
                       [144576] => https://www.youtube.com/watch?v=IRdPKAVXcFs
                       [144343] => https://www.bitchute.com/embed/IRdPKAVXcFs/
@@ -151,12 +166,12 @@ class CriticTransit extends AbstractDB {
                         } else if ($min_key > $key) {
                             $min_key = $key;
                         }
+                        $link = $value['link'];
 
-
-                        if (!$main && strstr($value, 'youtube.com')) {
+                        if (!$main && strstr($link, 'youtube.com')) {
                             $main = $key;
                         }
-                        if (!$main && strstr($value, 'odysee.com')) {
+                        if (!$main && strstr($link, 'odysee.com')) {
                             $main = $key;
                         }
                     }
@@ -167,16 +182,23 @@ class CriticTransit extends AbstractDB {
                     if ($debug) {
                         p_r($main);
                     }
-                    
+
                     // 4. Trash dublicates
                     foreach ($items as $key => $value) {
-                       if($key==$main){
-                           continue;
-                       } 
-                       $this->cm->trash_post_by_id($key);                       
-                       // 5. Add dublicates info to log
-                        $message = 'Source id: '.$main;
-                        $cs->log_trash_dublicate($message, $pid);
+                        if ($key == $main) {
+                            continue;
+                        }
+                        $title = $items[$main]['title'];
+                        $percent = $items[$main]['percent'];
+                        if (!$percent) {
+                            $percent = $items[$key]['percent'];
+                        }
+                        $this->cm->trash_post_by_id($key);
+
+                        // 5. Add dublicates info to log
+                        $message = '[' . $key . ']. Percent: ' . $percent.'%. Source: [' . $main . '] "' . $title . '".';
+                        $cs->log_trash_dublicate($message, $key);
+                        $trash_posts[] = $key;
                     }
                 }
             }
