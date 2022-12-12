@@ -2599,9 +2599,7 @@ class CriticSearch extends AbstractDB {
         $length = 200;
         $min_precent = 90;
 
-
-
-        $title = $this->clear_text($title, $length, false);
+        $title = $this->clear_text($title, $length);
 
         $wordsArr = $this->getUniqueWords($title);
         if ($debug) {
@@ -2645,10 +2643,8 @@ class CriticSearch extends AbstractDB {
             $text = html_entity_decode($text);
             $text = preg_replace("/<[^>]*>/", ' ', $text);
             $text = strip_tags($text);
-            if ($filter) {
-
-                $text = preg_replace('/[^\w\d -\']+/', ' ', $text);
-
+            if ($filter) {                
+                $text = preg_replace('/[^a-zA-Z0-9\']+/', ' ', $text);                               
                 $text = preg_replace('/[ ]+/', ' ', $text);
                 $text = str_replace("\t", '', $text);
                 $text = str_replace("\n", '', $text);

@@ -2426,7 +2426,6 @@ class CriticMaticAdmin {
 
         $page_url = $url;
         $page_url .= '&tab=log';
-
         
         // Filter by status
         $home_log_status = -1;
