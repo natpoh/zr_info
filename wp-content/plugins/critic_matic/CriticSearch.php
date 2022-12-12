@@ -2622,7 +2622,7 @@ class CriticSearch extends AbstractDB {
                 }
                 $precent = round($precent, 2);
                 if ($debug) {
-                    p_r(array($key,$precent));
+                    p_r(array($key, $precent));
                 }
                 if ($precent >= $min_precent) {
                     $povtor->percent = $precent;
@@ -2779,14 +2779,25 @@ class CriticSearch extends AbstractDB {
      * Post meta log
      */
 
-    public function get_log_count() {
+    public function get_log_count($status = -1, $type = -1) {
         $this->get_wpdb();
-        $query = "SELECT COUNT(id) FROM {$this->db['log']}";
+
+        $and_status = '';
+        if ($status != -1) {
+            $and_status = sprintf(" AND status=%d", (int) $status);
+        }
+
+        $and_type = '';
+        if ($type != -1) {
+            $and_type = sprintf(" AND type=%d", (int) $type);
+        }
+
+        $query = "SELECT COUNT(id) FROM {$this->db['log']} WHERE id>0" . $and_status . $and_type;
         $result = $this->wpdb->db_get_var($query);
         return $result;
     }
 
-    public function get_log($page = 1, $mid = 0, $cid = 0, $count = 0) {
+    public function get_log($page = 1, $mid = 0, $cid = 0, $count = 0, $status = -1, $type = -1) {
         $this->get_wpdb();
         $page -= 1;
         $start = $page * $this->perpage;
@@ -2810,12 +2821,55 @@ class CriticSearch extends AbstractDB {
             $cid_and = sprintf(' AND cid=%d', $cid);
         }
 
+        $and_status = '';
+        if ($status != -1) {
+            $and_status = sprintf(" AND status=%d", (int) $status);
+        }
+
+        $and_type = '';
+        if ($type != -1) {
+            $and_type = sprintf(" AND type=%d", (int) $type);
+        }
+
         $order = " ORDER BY id DESC";
-        $sql = sprintf("SELECT id, date, cid, mid, type, status, message FROM {$this->db['log']} WHERE id>0" . $mid_and . $cid_and . $order . $limit);
+        $sql = sprintf("SELECT id, date, cid, mid, type, status, message FROM {$this->db['log']} WHERE id>0" . $and_status . $and_type . $mid_and . $cid_and . $order . $limit);
 
         $result = $this->wpdb->db_results($sql);
 
         return $result;
+    }
+
+    public function get_count_log_status() {
+
+        $count = $this->get_log_count();
+        $states = array(
+            '-1' => array(
+                'title' => 'All',
+                'count' => $count
+            )
+        );
+        foreach ($this->log_status as $key => $value) {
+            $states[$key] = array(
+                'title' => $value,
+                'count' => $this->get_log_count($key));
+        }
+        return $states;
+    }
+
+    public function get_count_log_type($status = -1) {
+        $count = $this->get_log_count($status);
+        $states = array(
+            '-1' => array(
+                'title' => 'All',
+                'count' => $count
+            )
+        );
+        foreach ($this->log_type as $key => $value) {
+            $states[$key] = array(
+                'title' => $value,
+                'count' => $this->get_log_count($status, $key));
+        }
+        return $states;
     }
 
     public function get_settings_range($param) {

@@ -2427,10 +2427,28 @@ class CriticMaticAdmin {
         $page_url = $url;
         $page_url .= '&tab=log';
 
-        $count = $this->cs->get_log_count();
+        
+        // Filter by status
+        $home_log_status = -1;
+        $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_log_status;
+        $filter_log_status_arr = $this->cs->get_count_log_status();
+        $filters_log_status = $this->get_filters($filter_log_status_arr, $page_url, $status, '', 'status');
 
-        $log = $this->cs->get_log($page);
-        $status = -1;
+        $page_url = $page_url . '&log_status=' . $status;
+        $count = isset($filter_log_status_arr[$status]['count']) ? $filter_log_status_arr[$status]['count'] : 0;
+
+        // Log type
+        $home_type = -1;
+        $type = isset($_GET['type']) ? (int) $_GET['type'] : $home_type;
+        $filter_type_arr = $this->cs->get_count_log_type($status);
+        $filters_type = $this->get_filters($filter_type_arr, $page_url, $type, '', 'type');
+        if ($type != $home_type) {
+            $page_url = $page_url . '&type=' . $type;
+            $count = isset($filter_type_arr[$type]['count']) ? $filter_type_arr[$type]['count'] : 0;
+        }
+            
+        $log = $this->cs->get_log($page, 0, 0, $per_page, $status, $type);
+       
         $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
         include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_log_meta.php');
     }
