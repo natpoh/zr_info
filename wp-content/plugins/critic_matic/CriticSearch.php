@@ -2623,21 +2623,27 @@ class CriticSearch extends AbstractDB {
                     if ($precent != 100) {
                         // Get content
                         $post_cache = $this->cm->get_post_cache($pid);
-                        $post_content = $this->getUniqueWords(strip_tags($post_cache->content));
+                        $post_domain = $this->cm->get_domain_by_url($post_cache->link);
                         $post_cache2 = $this->cm->get_post_cache($key);
-                        $post_content2 = $this->getUniqueWords(strip_tags($post_cache2->content));
-
+                        $post_domain2 = $this->cm->get_domain_by_url($post_cache2->link);
                         $precent_c = 0;
-                        if ($post_content || $post_content2) {
-                            $precent_c = $this->get_min_percent($post_content, $post_content2);
-                        }
                         if ($debug) {
-                            p_r(array('Content percent', $key, $precent_c));
-                        }
+                                p_r(array('Domains', $post_domain, $post_domain2));
+                            }
+                        if ($post_domain != $post_domain2) {
+                            $post_content = $this->getUniqueWords(strip_tags($post_cache->content));
+                            $post_content2 = $this->getUniqueWords(strip_tags($post_cache2->content));
+                            if ($post_content || $post_content2) {
+                                $precent_c = $this->get_min_percent($post_content, $post_content2);
+                            }
+                            if ($debug) {
+                                p_r(array('Content percent', $key, $precent_c));
+                            }
 
-                        if ($precent_c >= $min_precent) {
-                            $povtor->percent = array($precent, $precent_c);
-                            $valid_povtors[$key] = $povtor;
+                            if ($precent_c >= $min_precent) {
+                                $povtor->percent = array($precent, $precent_c);
+                                $valid_povtors[$key] = $povtor;
+                            }
                         }
                     } else {
                         $povtor->percent = $precent;

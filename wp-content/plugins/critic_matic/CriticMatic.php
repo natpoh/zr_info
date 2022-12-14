@@ -3722,4 +3722,8 @@ class CriticMatic extends AbstractDB {
             return $code;
     }
 
+    public function get_domain_by_url($url=''){
+         $domain = preg_replace('#^([a-z]+\:\/\/[^\/]+)(\/|\?|\#).*#', '$1', $url. '/');
+         return $domain;
+    }
 }
