@@ -136,7 +136,7 @@ class CriticTransit extends AbstractDB {
                             // Ignore trash
                             continue;
                         }
-
+                        
                         $items[$pid] = array(
                             'title' => $povtor_data->title,
                             'link' => $povtor_data->link,
@@ -200,7 +200,11 @@ class CriticTransit extends AbstractDB {
                         $this->cm->trash_post_by_id($key);
 
                         // 5. Add dublicates info to log
-                        $message = '[' . $key . ']. Percent: ' . $percent.'%. Source: [' . $main . '] "' . $title . '".';
+                        $percent_text = $percent;
+                        if (is_array($percent)){
+                            $percent_text = implode('%, ', $percent);
+                        }
+                        $message = '[' . $key . ']. Percent: ' . $percent_text.'%. Source: [' . $main . '] "' . $title . '".';
                         $cs->log_trash_dublicate($message, $key);
                         $trash_posts[] = $key;
                     }

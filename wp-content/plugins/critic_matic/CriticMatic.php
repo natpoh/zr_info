@@ -422,6 +422,29 @@ class CriticMatic extends AbstractDB {
         }
         return $result;
     }
+    
+    
+    public function get_post_cache($id, $cache = true) {
+        //Get from cache
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$id])) {
+                return $dict[$id];
+            }
+        }
+
+        $sql = sprintf("SELECT * FROM {$this->db['posts']} WHERE id=%d", (int) $id);
+        $result = $this->db_fetch_row($sql);
+
+        if ($cache) {
+            $dict[$id] = $result;
+        }
+        return $result;
+    }
 
     public function get_post_and_author($id) {
         $sql = sprintf("SELECT p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, "

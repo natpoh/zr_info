@@ -2612,19 +2612,37 @@ class CriticSearch extends AbstractDB {
         if ($povtors) {
             foreach ($povtors as $key => $povtor) {
                 $searchArr = $this->getUniqueWords(strip_tags($povtor->title));
-                $precent_first = $this->compareResults($searchArr, $wordsArr);
-                $precent_sec = $this->compareResults($wordsArr, $searchArr);
-                $precent = $precent_first;
-                if ($precent_sec < $precent_first) {
-                    $precent = $precent_sec;
-                }
-                $precent = round($precent, 2);
+                $precent = $this->get_min_percent($searchArr, $wordsArr);
+
                 if ($debug) {
-                    p_r(array($key, $precent));
+                    p_r(array('Title percent', $key, $precent));
                 }
                 if ($precent >= $min_precent) {
-                    $povtor->percent = $precent;
-                    $valid_povtors[$key] = $povtor;
+
+                    // Validate percent content
+                    if ($precent != 100) {
+                        // Get content
+                        $post_cache = $this->cm->get_post_cache($pid);
+                        $post_content = $this->getUniqueWords(strip_tags($post_cache->content));
+                        $post_cache2 = $this->cm->get_post_cache($key);
+                        $post_content2 = $this->getUniqueWords(strip_tags($post_cache2->content));
+
+                        $precent_c = 0;
+                        if ($post_content || $post_content2) {
+                            $precent_c = $this->get_min_percent($post_content, $post_content2);
+                        }
+                        if ($debug) {
+                            p_r(array('Content percent', $key, $precent_c));
+                        }
+
+                        if ($precent_c >= $min_precent) {
+                            $povtor->percent = array($precent, $precent_c);
+                            $valid_povtors[$key] = $povtor;
+                        }
+                    } else {
+                        $povtor->percent = $precent;
+                        $valid_povtors[$key] = $povtor;
+                    }
                 }
             }
         }
@@ -2637,14 +2655,25 @@ class CriticSearch extends AbstractDB {
         return $valid_povtors;
     }
 
+    public function get_min_percent($first = array(), $sec = array()) {
+        $precent_first = $this->compareResults($first, $sec);
+        $precent_sec = $this->compareResults($sec, $first);
+        $precent = $precent_first;
+        if ($precent_sec < $precent_first) {
+            $precent = $precent_sec;
+        }
+        $precent = round($precent, 2);
+        return $precent;
+    }
+
     public function clear_text($text = '', $length = 10, $filter = true) {
 
         if ($text) {
             $text = html_entity_decode($text);
             $text = preg_replace("/<[^>]*>/", ' ', $text);
             $text = strip_tags($text);
-            if ($filter) {                
-                $text = preg_replace('/[^a-zA-Z0-9\']+/', ' ', $text);                               
+            if ($filter) {
+                $text = preg_replace('/[^a-zA-Z0-9\']+/', ' ', $text);
                 $text = preg_replace('/[ ]+/', ' ', $text);
                 $text = str_replace("\t", '', $text);
                 $text = str_replace("\n", '', $text);
