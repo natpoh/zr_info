@@ -160,6 +160,7 @@ if ($cid) {
                         <span class="title"><?php print __('Next page') ?></span>
                         <span class="input-text-wrap"><input type="text" name="page" placeholder="Example: https://example.com/AutorName/page/$1" value="<?php print htmlspecialchars(base64_decode($find_urls['page'])) ?>"></span>
                     </label>
+                    
 
                     <label>
                         <span class="title"><?php print __('Page from') ?></span>
@@ -172,8 +173,22 @@ if ($cid) {
                     </label>
 
                     <label>
+                        <span class="title"><?php print __('Step') ?></span>
+                        <span class="input-text-wrap"><input type="text" name="step" placeholder="Default 1" value="<?php print $find_urls['step'] ?>"></span>
+                    </label>
+                    
+                    <label>
                         <span class="title"><?php print __('Match reg') ?></span>
                         <span class="input-text-wrap"><input type="text" name="match" placeholder="<?php print htmlspecialchars('Example: /<a[^>]+href="([^"]+)"[^>]*>Read More<\/a>/'); ?>" value="<?php print htmlspecialchars(base64_decode($find_urls['match'])) ?>"></span>
+                    </label>
+
+                    <label>
+                        <span class="title"><?php print __('New URL') ?></span>
+                        <span class="input-text-wrap"><input type="text" name="new_url" placeholder="Example: https://example.com/$1/review" value="<?php
+                            if ($find_urls['new_url']) {
+                                print htmlspecialchars(base64_decode($find_urls['new_url']));
+                            }
+                            ?>"></span>
                     </label>
 
                     <label class="inline-edit-interval">

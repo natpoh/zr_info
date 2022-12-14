@@ -46,10 +46,12 @@ class MoviesParser extends MoviesAbstractDB {
                 'find_urls' => array(
                     'first' => '',
                     'page' => '',
+                    'new_url' => '',
                     'from' => 2,
                     'to' => 3,
                     'match' => '',
-                    'wait' => 1
+                    'step' => 1,
+                    'wait' => 1,
                 ),
                 'cron_urls' => array(
                     'page' => '',
@@ -826,6 +828,10 @@ class MoviesParser extends MoviesAbstractDB {
 
         $from = isset($find_urls['from']) ? (int) $find_urls['from'] : 2;
         $to = isset($find_urls['to']) ? (int) $find_urls['to'] : 3;
+        $step = isset($find_urls['step']) ? (int) $find_urls['step'] : 1;
+        if ($step){
+            $to = $to*$step;
+        }
 
         if (isset($find_urls['page'])) {
             $page = htmlspecialchars(base64_decode($find_urls['page']));
@@ -838,12 +844,16 @@ class MoviesParser extends MoviesAbstractDB {
                 $page_sec = isset($page_arr[1]) ? $page_arr[1] : '';
             }
 
-            for ($i = $from; $i <= $to; $i++) {
+            for ($i = $from; $i <= $to; $i+=$step) {
                 $urls[] = $page_first . $i . $page_sec;
             }
         }
+     
         $reg = isset($find_urls['match']) ? base64_decode($find_urls['match']) : '';
         $wait = isset($find_urls['wait']) ? (int) $find_urls['wait'] : 1;
+
+        $new_url = isset($find_urls['new_url']) ? base64_decode($find_urls['new_url']) : '';
+
 
         $cid = $campaign->id;
         $ret = array();
@@ -856,10 +866,16 @@ class MoviesParser extends MoviesAbstractDB {
 
                 if ($code && preg_match_all($reg, $code, $match)) {
                     foreach ($match[1] as $u) {
-                        if (preg_match('#^/#', $u)) {
-                            //Short links
-                            $domain = preg_replace('#^([^\/]+\:\/\/[^\/]+)(\/|\?|\#).*#', '$1', $url . '/');
-                            $u = $domain . $u;
+
+                        if ($new_url) {
+                            // Regexp new url
+                            $u = str_replace('$1', $u, $new_url);
+                        } else {
+                            if (preg_match('#^/#', $u)) {
+                                //Short links
+                                $domain = preg_replace('#^([^\/]+\:\/\/[^\/]+)(\/|\?|\#).*#', '$1', $url . '/');
+                                $u = $domain . $u;
+                            }
                         }
 
                         if (!$preview) {

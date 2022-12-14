@@ -2337,7 +2337,7 @@ class MoviesParserAdmin extends ItemAdmin {
                 $find_urls = array();
                 foreach ($find_urls_prev as $key => $value) {
                     if (isset($form_state[$key])) {
-                        if ($key == 'first' || $key == 'page' || $key == 'match') {
+                        if ($key == 'first' || $key == 'page' || $key == 'match' || $key == 'new_url') {
                             $find_urls[$key] = base64_encode(stripslashes($form_state[$key]));
                         } else {
                             $find_urls[$key] = $form_state[$key];
