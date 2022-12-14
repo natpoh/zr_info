@@ -93,7 +93,7 @@ class CriticTransit extends AbstractDB {
         if ($force) {
             $last_id = 0;
         }
-              
+                              
         if ($debug){
             p_r(array('last_id',$last_id));
         }

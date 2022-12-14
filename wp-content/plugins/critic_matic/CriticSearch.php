@@ -2682,7 +2682,7 @@ class CriticSearch extends AbstractDB {
 
         $t = $this->wildcards_maybe_query($title, false);
 
-        $search_query = sprintf("'@(title) (%s)'", $title);
+        $search_query = sprintf("'@(title) (%s)'", $t);
         $match = " AND MATCH(:match)";
 
         $snippet = ', SNIPPET(title, QUERY()) t, SNIPPET(content, QUERY()) c';
