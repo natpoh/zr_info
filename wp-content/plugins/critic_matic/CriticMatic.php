@@ -422,8 +422,7 @@ class CriticMatic extends AbstractDB {
         }
         return $result;
     }
-    
-    
+
     public function get_post_cache($id, $cache = true) {
         //Get from cache
         if ($cache) {
@@ -500,7 +499,7 @@ class CriticMatic extends AbstractDB {
         return $name;
     }
 
-    public function get_posts($q_req = array(), $page = 1, $perpage = 20, $orderby = '', $order = 'ASC', $count = false) {
+    public function get_posts($q_req = array(), $page = 1, $perpage = 20, $orderby = '', $order = 'ASC', $count = false, $content_after = false) {
         $q_def = array(
             'status' => -1,
             'cid' => -1,
@@ -624,9 +623,13 @@ class CriticMatic extends AbstractDB {
                 $limit = " LIMIT $start, " . $perpage;
             }
 
-            $select = " p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, p.view_type, am.aid" . $cid_get . $ts_get;
+            if (!$content_after) {
+                $select = " p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, p.view_type, am.aid" . $cid_get . $ts_get;
+            } else {
+                $select = " p.id, am.aid" . $cid_get . $ts_get;
+            }
         } else {
-            $select = " COUNT(*)";
+            $select = " COUNT(p.id)";
         }
 
         $sql = "SELECT" . $select
@@ -638,6 +641,26 @@ class CriticMatic extends AbstractDB {
         if (!$count) {
             //  print $sql;
             $result = $this->db_results($sql);
+            $total = array();
+            if ($content_after && $result) {
+                $items = array();
+                foreach ($result as $item) {
+                    $items[$item->id]=$item;
+                }
+                $ids = array_keys($items);
+                $select = " p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, p.view_type";
+                $sql = "SELECT" . $select . " FROM {$this->db['posts']} p WHERE id IN(". implode(",", $ids).")";
+        
+                $content = $this->db_results($sql);
+                
+                foreach ($content as $item) {
+                    foreach ($items[$item->id] as $key => $value) {
+                        $item->$key=$value;
+                    }
+                    $total[]=$item;
+                }
+                $result = $total;
+            }
         } else {
             $result = $this->db_get_var($sql);
         }
@@ -3722,8 +3745,9 @@ class CriticMatic extends AbstractDB {
             return $code;
     }
 
-    public function get_domain_by_url($url=''){
-         $domain = preg_replace('#^([a-z]+\:\/\/[^\/]+)(\/|\?|\#).*#', '$1', $url. '/');
-         return $domain;
+    public function get_domain_by_url($url = '') {
+        $domain = preg_replace('#^([a-z]+\:\/\/[^\/]+)(\/|\?|\#).*#', '$1', $url . '/');
+        return $domain;
     }
+
 }

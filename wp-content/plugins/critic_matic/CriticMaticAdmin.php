@@ -544,7 +544,7 @@ class CriticMaticAdmin {
            
             $per_page = $this->cm->perpage;
             $pager = $this->themePager( $page, $page_url, $count, $per_page, $orderby, $order);
-            $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order);
+            $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order, false, true);
            
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_overview.php');
@@ -571,7 +571,7 @@ class CriticMaticAdmin {
 
             $per_page = $this->cm->perpage;
             $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
-            $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order);
+            $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order, false, true);
 
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_details.php');
@@ -741,7 +741,7 @@ class CriticMaticAdmin {
 
             $per_page = $this->cm->perpage;
             $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
-            $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order);
+            $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order, false, true);
 
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_audience.php');
@@ -1459,7 +1459,7 @@ class CriticMaticAdmin {
 
         $per_page = $this->cm->perpage;
         $pager = $this->themePager( $page, $page_url, $count, $per_page, $orderby, $order);
-        $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order);
+        $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order, false, true);
 
         include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_transcriptions.php');
     }
@@ -2255,7 +2255,7 @@ class CriticMaticAdmin {
 
         $per_page = $this->cm->perpage;
         $pager = $this->themePager( $page, $page_url, $count, $per_page, $orderby, $order);
-        $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order);
+        $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order, false, true);
 
 
         if ($aid) {

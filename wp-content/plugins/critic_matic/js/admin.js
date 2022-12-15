@@ -80,9 +80,9 @@ jQuery(function ($) {
             if (button.hasClass('disabled')) {
                 return false;
             }
-            
+
             $('#campaign').removeClass('yt_channel_valid');
-            
+
             button.addClass('disabled');
 
             $.ajax({
@@ -96,8 +96,8 @@ jQuery(function ($) {
                         $('#campaign').addClass('yt_channel_valid');
                         $('#yt_page').val(response.channel);
                         $('#title').val(response.title);
-                        $('#site').val('https://www.youtube.com/channel/'+response.channel);
-                        $('#total_found').text(response.total);                        
+                        $('#site').val('https://www.youtube.com/channel/' + response.channel);
+                        $('#total_found').text(response.total);
                         $('#error').text('');
 
                     } else {
@@ -109,6 +109,24 @@ jQuery(function ($) {
                 }
             });
 
+            return false;
+        });
+
+        // Filter author
+        $('#filter_author').keyup(function () {
+            var a = $(this).val();
+            if (a.length > 2) {                
+                // this finds all links in the list that contain the input,
+                // and hide the ones not containing the input while showing the ones that do
+                var containing = $('#overview tr.row').filter(function () {
+                    var regex = new RegExp('\\b' + a, 'i');
+                    var data_author = $(this).attr('data-author');                   
+                    return regex.test(data_author);
+                }).slideDown();
+                $('#overview tr.row').not(containing).slideUp();
+            } else {
+                $('#overview tr.row').slideDown();
+            }
             return false;
         });
 

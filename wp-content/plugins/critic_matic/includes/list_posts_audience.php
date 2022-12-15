@@ -83,7 +83,9 @@ if (sizeof($posts) > 0) {
                         <td class="mob-hide"><?php print $this->cm->curr_date($item->date) ?></td>                                           
                         <td>
                             <b><?php print stripslashes($item->title) ?></b><br />        
-                            <?php print $item->content ?>
+                            <textarea style="width:100%" rows="10">
+                                <?php print htmlspecialchars($item->content) ?>
+                            </textarea>
                             <a href="<?php print $item->link ?>" target="_blank" title="<?php print $item->link ?>"><?php print substr($item->link, 0, 70) ?></a><br />
                             <?php print $post_links ?>
                         </td> 

@@ -21,6 +21,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             'lastnames' => 'data_lastnames',
             'fs_country' => 'data_familysearch_country',
             'meta_fs' => 'meta_familysearch',
+            'pg_rating' => 'data_pg_rating',
         );
     }
 
@@ -171,5 +172,26 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         $results = $this->db_results($sql);
         return $results;
     }
-
+    
+    public function update_pg_rating($data=array(), $movie_id=0){
+        $pg_rating_id = $this->get_or_create_pg_rating($movie_id);
+        $this->sync_update_data($data, $pg_rating_id, $this->db['pg_rating'], true);
+    }
+    
+    public function get_or_create_pg_rating($movie_id) {
+        $sql = sprintf("SELECT movie_id FROM {$this->db['movie_imdb']} WHERE id=%d", $movie_id);
+        $pg_id = $this->db_get_var($sql);
+        
+        $sql = sprintf("SELECT id FROM {$this->db['pg_rating']} WHERE movie_id=%d", $pg_id);
+        $id = $this->db_get_var($sql);
+        if ($id){
+            return $id;
+        }
+        $data = array(
+            'movie_id'=>$pg_id
+        );        
+        $id = $this->sync_insert_data($data, $this->db['pg_rating'], false, false);
+        
+        return $id;
+    }
 }
