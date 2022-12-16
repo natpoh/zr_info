@@ -215,8 +215,9 @@ class MoviesParserCron extends MoviesAbstractDB {
                                 $multi=1;
                             }
                         }
+                    } else {
+                        $this->parsing_post_add($item, $cid, $uid, $force);
                     }
-                    $this->parsing_post_add($item, $cid, $uid, $force);
                     $count += 1;
                 } else {
                     $message = 'Can not parse post data';
