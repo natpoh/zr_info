@@ -36,8 +36,12 @@ class MoviesParserAdmin extends ItemAdmin {
         0 => 'Movie weight',
         1 => 'Random',
     );
+    public $multi_rule_type = array(
+        0 => 'Regexp',
+        1 => 'Xpath',
+    );
     public $parse_number = array(1 => 1, 2 => 2, 3 => 3, 5 => 5, 7 => 7, 10 => 10, 20 => 20, 35 => 35, 50 => 50, 75 => 75, 100 => 100, 200 => 200, 500 => 500, 1000 => 1000);
-    public $gen_urls_number = array(10 => 10, 100 => 100, 500 => 500, 1000 => 1000);    
+    public $gen_urls_number = array(10 => 10, 100 => 100, 500 => 500, 1000 => 1000);
     public $camp_state = array(
         1 => array('title' => 'Active'),
         4 => array('title' => 'Done'),
@@ -178,7 +182,7 @@ class MoviesParserAdmin extends ItemAdmin {
         0 => 'List agents',
         1 => 'Generate',
     );
-    
+
     /* Generate urls */
     public $rwt_movie_type = array(
         'a' => 'All',
@@ -407,6 +411,8 @@ class MoviesParserAdmin extends ItemAdmin {
                     $preivew_data = $this->preview_parsing($campaign, 'row_rules');
                 } else if (isset($_POST['preview_links'])) {
                     $preivew_data = $this->preview_parser_links($campaign);
+                } else if (isset($_POST['preview_multi'])) {
+                    $preivew_data = $this->preview_parsing($campaign, 'multi');
                 }
                 include(MOVIES_LINKS_PLUGIN_DIR . 'includes/edit_parsing_data.php');
             } else if ($curr_tab == 'links') {
@@ -909,6 +915,7 @@ class MoviesParserAdmin extends ItemAdmin {
 
             if ($form_state['edit_parsing_options']) {
                 $add_result['status'] = isset($form_state['status']) ? $form_state['status'] : 0;
+                $add_result['multi_parsing'] = isset($form_state['multi_parsing']) ? $form_state['multi_parsing'] : 0;
             } else if ($form_state['edit_parsing_data']) {
                 // Rules logic
                 $add_result['rules'] = $this->parser_rules_form($form_state);
@@ -928,6 +935,9 @@ class MoviesParserAdmin extends ItemAdmin {
                     }
                 }
                 $add_result['row_status'] = isset($form_state['row_status']) ? $form_state['row_status'] : 0;
+            } else if ($form_state['multi_parsing_data']) {
+                $add_result['multi_rule_type'] = isset($form_state['multi_rule_type']) ? $form_state['multi_rule_type'] : 0;
+                $add_result['multi_rule'] = base64_encode(stripslashes($form_state['multi_rule']));
             }
 
             $opt_upd = array();
@@ -1093,7 +1103,7 @@ class MoviesParserAdmin extends ItemAdmin {
     /*
      * Rules parser
      */
-
+ 
     public function preview_parsing($campaign, $rules_name = 'rules') {
         $options = $this->mp->get_options($campaign);
         $o = $options['parsing'];

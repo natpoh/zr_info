@@ -90,6 +90,9 @@ class MoviesParser extends MoviesAbstractDB {
                     'rules' => '',
                     'row_rules' => '',
                     'row_status' => 0,
+                    'multi_parsing' => 0,
+                    'multi_rule' => '',
+                    'multi_rule_type' => 0,
                 ),
                 'links' => array(
                     'last_update' => 0,
@@ -572,12 +575,12 @@ class MoviesParser extends MoviesAbstractDB {
         }
 
         // Parser type filter
-        $parser_type_and = '';
+        $parser_type_and = ' AND (p.id is NULL OR p.multi=0)';
         if ($parser_type != -1) {
             if ($parser_type == 1) {
-                $parser_type_and = " AND p.id !=0 AND p.status=1";
+                $parser_type_and = " AND p.id !=0 AND p.status=1 AND p.multi=0";
             } else if ($parser_type == 2) {
-                $parser_type_and = " AND p.id !=0 AND p.status=0";
+                $parser_type_and = " AND p.id !=0 AND p.status=0 AND p.multi=0";
             } else {
                 $parser_type_and = " AND p.id is NULL";
             }
@@ -632,7 +635,9 @@ class MoviesParser extends MoviesAbstractDB {
 
         // Arhive type filter
         $arhive_type_and = '';
+        $arhive_join = '';
         if ($arhive_type != -1) {
+            $arhive_join = " LEFT JOIN {$this->db['arhive']} a ON u.id = a.uid";
             if ($arhive_type == 1) {
                 $arhive_type_and = " AND a.id !=0 ";
             } else {
@@ -642,11 +647,14 @@ class MoviesParser extends MoviesAbstractDB {
 
         // Parser type filter
         $parser_type_and = '';
+        $parser_join = '';
         if ($parser_type != -1) {
+
+            $parser_join = " LEFT JOIN {$this->db['posts']} p ON u.id = p.uid";
             if ($parser_type == 1) {
-                $parser_type_and = " AND p.id !=0 AND p.status=1";
+                $parser_type_and = " AND p.id !=0 AND p.status=1 AND p.multi=0";
             } else if ($parser_type == 2) {
-                $parser_type_and = " AND p.id !=0 AND p.status=0";
+                $parser_type_and = " AND p.id !=0 AND p.status=0 AND p.multi=0";
             } else {
                 $parser_type_and = " AND p.id is NULL";
             }
@@ -658,8 +666,7 @@ class MoviesParser extends MoviesAbstractDB {
         }
 
         $query = "SELECT COUNT(u.id) FROM {$this->db['url']} u"
-                . " LEFT JOIN {$this->db['arhive']} a ON u.id = a.uid"
-                . " LEFT JOIN {$this->db['posts']} p ON u.id = p.uid"
+                . $arhive_join . $parser_join
                 . " WHERE u.id>0"
                 . $status_query . $arhive_type_and . $parser_type_and . $link_type_and . $cid_and;
 
@@ -829,8 +836,8 @@ class MoviesParser extends MoviesAbstractDB {
         $from = isset($find_urls['from']) ? (int) $find_urls['from'] : 2;
         $to = isset($find_urls['to']) ? (int) $find_urls['to'] : 3;
         $step = isset($find_urls['step']) ? (int) $find_urls['step'] : 1;
-        if ($step){
-            $to = $to*$step;
+        if ($step) {
+            $to = $to * $step;
         }
 
         if (isset($find_urls['page'])) {
@@ -844,11 +851,11 @@ class MoviesParser extends MoviesAbstractDB {
                 $page_sec = isset($page_arr[1]) ? $page_arr[1] : '';
             }
 
-            for ($i = $from; $i <= $to; $i+=$step) {
+            for ($i = $from; $i <= $to; $i += $step) {
                 $urls[] = $page_first . $i . $page_sec;
             }
         }
-     
+
         $reg = isset($find_urls['match']) ? base64_decode($find_urls['match']) : '';
         $wait = isset($find_urls['wait']) ? (int) $find_urls['wait'] : 1;
 
@@ -1374,16 +1381,49 @@ class MoviesParser extends MoviesAbstractDB {
                             $rules_fields = $this->parser_urls_rules_fields;
                             $result = $this->check_reg_post($o, 'rules', $row_content, $rules_fields);
                         }
+                    } else if ($rules_name == 'multi') {
+                        // Multi rules
+                        $result = $this->use_multi_rules($o, $code);
                     } else {
                         $rules_fields = array();
                         if ($campaign->type == 2) {
                             $rules_fields = $this->parser_urls_rules_fields;
                         }
-                        $result = $this->check_reg_post($o, $rules_name, $code, $rules_fields);
+
+                        // Is Multi?
+                        if ($o['multi_parsing'] == 1) {
+                            $rows = $this->use_multi_rules($o, $code);
+                            $result_arr = array();
+                            if ($rows) {
+                                foreach ($rows as $row) {
+                                    $result_arr[] = $this->check_reg_post($o, $rules_name, $row, $rules_fields);
+                                }
+                            }
+                            $result = $result_arr;
+                        } else {
+                            $result = $this->check_reg_post($o, $rules_name, $code, $rules_fields);
+                        }
                     }
                 }
                 $ret[$item->uid] = $result;
             }
+        }
+        return $ret;
+    }
+
+    private function use_multi_rules($o, $code) {
+        $type = $o['multi_rule_type'];
+        $reg = base64_decode($o['multi_rule']);
+        $ret = array();
+        $match_str = '';
+        // Regexp
+        if ($type == 0) {
+            if (preg_match_all($reg, $code, $match_all)) {
+                $ret = $match_all[0];
+            }
+        } else {
+            // Xpath
+            $ret = $this->get_dom($reg, $match_str, $code, true, false);
         }
         return $ret;
     }
@@ -2671,7 +2711,7 @@ class MoviesParser extends MoviesAbstractDB {
      * Posts
      */
 
-    public function add_post($uid, $status, $title, $release, $year, $options, $top_movie, $rating) {
+    public function add_post($uid, $status, $title, $release, $year, $options, $top_movie, $rating, $multi = 0) {
         /*
          * `id` int(11) unsigned NOT NULL auto_increment,
           `date` int(11) NOT NULL DEFAULT '0',
@@ -2699,8 +2739,8 @@ class MoviesParser extends MoviesAbstractDB {
         }
 
 
-        $sql = sprintf("INSERT INTO {$this->db['posts']} (date,last_upd,uid,top_movie,rating,status,year,title,rel,options)"
-                . " VALUES (%d,%d,%d,%d,%d,%d,%d,'%s','%s','%s')", (int) $date, (int) $date, (int) $uid, (int) $top_movie, (int) $rating, (int) $status, (int) $year, $this->escape($title), $this->escape($release), $opt_str);
+        $sql = sprintf("INSERT INTO {$this->db['posts']} (date,last_upd,uid,top_movie,rating,status,year,multi,title,rel,options)"
+                . " VALUES (%d,%d,%d,%d,%d,%d,%d,%d,'%s','%s','%s')", (int) $date, (int) $date, (int) $uid, (int) $top_movie, (int) $rating, (int) $status, (int) $year, (int) $multi, $this->escape($title), $this->escape($release), $opt_str);
 
         $this->db_query($sql);
     }
@@ -2750,8 +2790,14 @@ class MoviesParser extends MoviesAbstractDB {
     }
 
     public function get_post_by_uid($uid) {
-        $sql = sprintf("SELECT * FROM {$this->db['posts']} WHERE uid = %d", (int) $uid);
+        $sql = sprintf("SELECT * FROM {$this->db['posts']} WHERE uid = %d AND multi=0", (int) $uid);
         $result = $this->db_fetch_row($sql);
+        return $result;
+    }
+
+    public function get_multi_posts_by_uid($uid) {
+        $sql = sprintf("SELECT * FROM {$this->db['posts']} WHERE uid = %d AND multi=1", (int) $uid);
+        $result = $this->db_results($sql);
         return $result;
     }
 

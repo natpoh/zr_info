@@ -150,22 +150,22 @@ if ($uid) {
                         }
                         ?></td>
                 </tr>
-                <?php /*if ($campaign->type == 1) { ?>
-                    <tr>
-                        <td><?php print __('Actors meta') ?></td>
-                        <td><?php
-                            $meta = $this->mp->get_post_actor_meta(0, $post->id, $campaign->id);
-                            if ($meta){
-                                $actors=array();
-                                foreach ($meta as $item) {
-                                    $actors[]=$item->aid;
-                                }
-                                print implode(',', $actors);
-                            }
-                            ?>
-                        </td>
-                    </tr>
-                <?php } */?>
+                <?php /* if ($campaign->type == 1) { ?>
+                  <tr>
+                  <td><?php print __('Actors meta') ?></td>
+                  <td><?php
+                  $meta = $this->mp->get_post_actor_meta(0, $post->id, $campaign->id);
+                  if ($meta){
+                  $actors=array();
+                  foreach ($meta as $item) {
+                  $actors[]=$item->aid;
+                  }
+                  print implode(',', $actors);
+                  }
+                  ?>
+                  </td>
+                  </tr>
+                  <?php } */ ?>
                 <tr>
                     <td><?php print __('Rating') ?></td>
                     <td><?php print $post->rating ?></td>
@@ -180,6 +180,49 @@ if ($uid) {
         ?>
 
     <?php } ?>
+
+    <?php
+    $multi = $this->mp->get_multi_posts_by_uid($uid);
+    if ($multi) {
+        ?> <h2>Multi posts:</h2><?php
+        foreach ($multi as $post) {
+            ?>           
+
+            <table class="wp-list-table widefat striped table-view-list">
+                <thead>
+                    <tr>
+                        <th><?php print __('Name') ?></th>                
+                        <th><?php print __('Value') ?></th>    
+                    </tr>
+                </thead>
+
+                <tbody>  
+                    <tr>
+                        <td><?php print __('Title') ?></td>
+                        <td><?php print $post->title ?></td>
+                    </tr>
+                   
+                    <?php
+                    $po = $this->mp->get_post_options($post);
+
+                    if ($po) {
+                        ?>
+                        <?php foreach ($po as $key => $value) { ?>
+                            <tr>
+                                <td><?php print $key ?></td>
+                                <td><?php print $value ?></td>
+                            </tr>
+                        <?php } ?>
+                        <?php
+                    }
+                    ?>     
+                </tbody>        
+            </table>
+        <br />
+            <?php
+        }
+    }
+    ?>
 
     <?php
     $log = $this->mp->get_log(1, 0, $uid, -1, -1, 300);
