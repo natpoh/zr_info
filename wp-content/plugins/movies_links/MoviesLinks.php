@@ -16,6 +16,7 @@ class MoviesLinks extends MoviesAbstractDB {
         'forebears.io' => 'forebears'
     );
     public $arhive_path = ABSPATH . 'wp-content/uploads/movies_links/arhive/';
+    public $export_path = ABSPATH . 'wp-content/uploads/movies_links/export/';
 
     public function __construct() {
         //Settings

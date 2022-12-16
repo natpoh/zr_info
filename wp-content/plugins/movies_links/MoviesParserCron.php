@@ -671,7 +671,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         $full_path = $first_letter_path . $link_hash;
 
 
-        $this->check_and_create_dir($first_letter_path);
+        $this->mp->check_and_create_dir($first_letter_path);
 
         if (file_exists($full_path)) {
             unlink($full_path);
@@ -697,37 +697,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         $this->mp->change_url_state($item->id, $status, true);
     }
 
-    private function check_and_create_dir($dst_path) {
-        $path = '';
-        if (ABSPATH) {
-            $path = ABSPATH;
-        }
-        $dst_path = str_replace($path, '', $dst_path);
 
-        # Создать дирикторию
-        $arr = explode("/", $dst_path);
-
-        foreach ($arr as $a) {
-            if (isset($a)) {
-                $path = $path . $a . '/';
-                $this->fileman($path);
-            }
-        }
-        return null;
-    }
-
-    private function fileman($way) {
-        //Проверка наличия и создание директории
-        // string $way - путь к дириктории
-        $ret = true;
-        if (!file_exists($way)) {
-            if (!mkdir("$way", 0777)) {
-                $ret = false;
-                throw new Exception('Can not create dir: ' . $way . ', check cmod');
-            }
-        }
-        return $ret;
-    }
 
     /*
      * Cron async

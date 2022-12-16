@@ -2789,6 +2789,12 @@ class MoviesParser extends MoviesAbstractDB {
         $this->db_query($sql);
     }
 
+    public function get_post_by_id($id) {
+        $sql = sprintf("SELECT * FROM {$this->db['posts']} WHERE id = %d", (int) $id);
+        $result = $this->db_fetch_row($sql);
+        return $result;
+    }
+
     public function get_post_by_uid($uid) {
         $sql = sprintf("SELECT * FROM {$this->db['posts']} WHERE uid = %d AND multi=0", (int) $uid);
         $result = $this->db_fetch_row($sql);
@@ -2799,6 +2805,66 @@ class MoviesParser extends MoviesAbstractDB {
         $sql = sprintf("SELECT * FROM {$this->db['posts']} WHERE uid = %d AND multi=1", (int) $uid);
         $result = $this->db_results($sql);
         return $result;
+    }
+
+    public function get_posts_count($cid) {
+        $sql = sprintf("SELECT COUNT(p.id) FROM {$this->db['posts']} p INNER JOIN {$this->db['url']} u ON u.id=p.uid WHERE u.cid=%d", $cid);
+        $result = $this->db_get_var($sql);
+        return $result;
+    }
+
+    public function save_all_posts($cid) {
+        $sql = sprintf("SELECT p.id FROM {$this->db['posts']} p INNER JOIN {$this->db['url']} u ON u.id=p.uid WHERE u.cid=%d", $cid);
+        $ids = $this->db_results($sql);
+        print_r(count((array) $ids));
+        if ($ids) {
+
+            $full_path = $this->get_full_export_path($cid);
+
+            if (file_exists($full_path)) {
+                unlink($full_path);
+            }                       
+            
+            $min_words = 6;
+            $max_words = 10;
+
+            foreach ($ids as $item) {
+                $post = $this->get_post_by_id($item->id);
+
+                $title = $post->title;
+                $options = unserialize($post->options);
+
+                if (isset($options['content'])) {
+                    $content = base64_decode($options['content']);
+                    $content = $title . PHP_EOL . $content;
+                    if ($content) {
+                        $content = preg_replace('/(\.|;|\?|\!|\-)/', "\n", $content);
+                        $content_arr = explode("\n", $content);
+                        $to_add = '';
+                        foreach ($content_arr as $pred) {
+                            $pred = preg_replace('/[^a-zA-Z0-9]+/', ' ', $pred);
+                            $pred = preg_replace('/  /', ' ', $pred);
+                            $words = explode(" ", $pred);                            
+                            $pred = trim($pred);
+                            if ($pred) {
+                                $new_lines .= $pred . PHP_EOL;
+                            }
+                        }
+                    }
+                }
+
+                file_put_contents($full_path, $new_lines, FILE_APPEND | LOCK_EX);
+            }
+        }
+    }
+
+    public function get_full_export_path($cid) {
+        $export_path = $this->ml->export_path;
+        $cid_path = $export_path . $cid . '/';
+        $this->check_and_create_dir($cid_path);
+        $full_path = $cid_path . 'posts.csv';
+
+        return $full_path;
     }
 
     public function get_post_options($post) {
@@ -3175,6 +3241,38 @@ class MoviesParser extends MoviesAbstractDB {
             }
         }
         return $content;
+    }
+
+    private function check_and_create_dir($dst_path) {
+        $path = '';
+        if (ABSPATH) {
+            $path = ABSPATH;
+        }
+        $dst_path = str_replace($path, '', $dst_path);
+
+        # Создать дирикторию
+        $arr = explode("/", $dst_path);
+
+        foreach ($arr as $a) {
+            if (isset($a)) {
+                $path = $path . $a . '/';
+                $this->fileman($path);
+            }
+        }
+        return null;
+    }
+
+    private function fileman($way) {
+        //Проверка наличия и создание директории
+        // string $way - путь к дириктории
+        $ret = true;
+        if (!file_exists($way)) {
+            if (!mkdir("$way", 0777)) {
+                $ret = false;
+                throw new Exception('Can not create dir: ' . $way . ', check cmod');
+            }
+        }
+        return $ret;
     }
 
 }

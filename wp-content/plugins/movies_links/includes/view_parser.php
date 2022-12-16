@@ -57,6 +57,25 @@ if ($cid) {
                     <?php } ?></td>
             </tr>
             <tr>
+                <td><?php print __('Posts count') ?></td>
+                <td><?php
+                    $count = $this->mp->get_posts_count($cid);
+                    print $count;
+                    ?>. <?php if ($count > 0) { ?> 
+                        <a target="_blank" href="<?php print $url ?>&cid=<?php print $cid ?>&export_posts=1">Export posts</a>.
+                        <?php
+                        $mp = $this->ml->get_mp();
+                        $export_path = $mp->get_full_export_path($cid);
+                        if (file_exists($export_path)) {
+                            $get_path = str_replace(ABSPATH, '/', $export_path);
+                            ?> 
+                            <a target="_blank" href="<?php print $get_path ?>">Downoad file</a>.
+                            <?php
+                        }
+                        ?>
+                    <?php } ?></td>
+            </tr>
+            <tr>
                 <td><?php print __('Last log') ?></td>
                 <td><?php print $this->get_last_log(0, $cid) ?></td>
             </tr>

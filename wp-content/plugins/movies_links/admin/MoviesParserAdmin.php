@@ -276,6 +276,10 @@ class MoviesParserAdmin extends ItemAdmin {
                             print '<textarea style="width:90%; height:500px">' . implode("\n", $items) . '</textarea>';
                         }
                         exit;
+                    }else if ($_GET['export_posts']) {
+                        print '<h2>Export campaign posts</h2>';
+                        $posts = $this->mp->save_all_posts($cid);
+                        exit;
                     } else if ($_GET['export_rules']) {
                         $options = $this->mp->get_options($campaign);
                         $parser_rules = $options['parsing']['rules'];
