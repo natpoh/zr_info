@@ -603,17 +603,18 @@ body.theme_dark .review_autor_name ,body.theme_dark  .review_autor_name a  {
 }
 
 body.theme_dark .inner_content {
-    background: #0d1011;
+    background: #1c1c1c;
     color: #c4c4c4;
+    padding: 30px 0 20px 0;
+    margin-bottom: 20px;
 }
-
 
 body.theme_dark .inner_content.secton_gray {
     background-color: #232426;
 }
 
 .column_header h2 {
-    font-size: 40px;
+    font-size: 30px;
     text-align: center;
 }
 
@@ -3000,7 +3001,7 @@ background-color: rgba(0, 0, 0, 0.45);
 
 .sug_buttons_wrapper .s1::before {
 
-    content: "Pay to Consume! ";
+    content: "Pay to consume! ";
     left: calc(50% - 38px);
     top: -1.2em;
     position: absolute;
@@ -3457,10 +3458,7 @@ body.theme_dark .highcharts-legend-title tspan{
 
 
 .max_with   .s_container {
-        height: calc(100vh - 60px);
-        min-height: 450px;
-        box-shadow: 2px 2px 20px #000;
-        margin-bottom: 25px;
+        min-height: 250px;
     }
 
     .search .rwt_stars {

@@ -464,8 +464,7 @@ function add_to_db_from_userlist()
     //userlist
     OptionData::set_option(16,json_encode($movie_list),'userlist');
     
-    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-    Import::create_commit('', 'update', 'options', array('id' => 16), 'options',7);
+
 
 }
 

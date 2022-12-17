@@ -3332,6 +3332,10 @@ jQuery(document).ready(function () {
 
     });
 
+    jQuery('body').on('click', '.column_inner_content.max_with .popup-close', function () {
+        jQuery('.column_inner_content').removeClass('max_with');
+        jQuery('.column_inner_content .s_container').addClass('smoched');
+    });
 
     jQuery('body').on('click', '.s_container_smoth', function () {
         jQuery('.column_inner_content').removeClass('max_with');
@@ -3723,14 +3727,14 @@ jQuery.fn.upScrollButton = function (options) {
         heightForScrollUpTo: 0,
         scrollTopTime: 800,
         upScrollButtonId: 'move_up',
-        upScrollButtonText: 'Move up',
+        upScrollButtonText: '',
         upScrollButtonFadeInTime: 0,
         upScrollButtonFadeOutTime: 300
 
     }, options);
     return this.each(function ( ) {
 
-        $('body').append('<a id="' + options.upScrollButtonId + '" href="#">' + options.upScrollButtonText + '</a>');
+        $('body').append('<a id="' + options.upScrollButtonId + '" href="#"></a>');
         $(window).scroll(function () {
             if ($(this).scrollTop() > options.heightForButtonAppear)
                 $('a#' + options.upScrollButtonId).fadeIn(options.upScrollButtonFadeInTime);
