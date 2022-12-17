@@ -1,3 +1,6 @@
+1.0.89 - 15.12.2022
+Join audience and staff
+
 1.0.88 - 12.11.2022
 Carma log
 

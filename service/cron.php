@@ -1,5 +1,4 @@
 <?php
-ini_set('memory_limit', '4096M');
 
 if (!defined('ABSPATH'))
     define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');

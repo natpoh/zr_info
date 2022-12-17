@@ -36,7 +36,7 @@ if (isset($_GET['id'])) {
     {
 
         $content_verifed=  '<div class="column_inner_content twitter_content">
-
+<div class="popup-close"></div>
             <h3 class="column_header">Blue Check Twitter:</h3>
 
             <div class="s_container smoched">
@@ -62,7 +62,7 @@ if (isset($_GET['id'])) {
     else {
 
         $content = '<div class="column_inner_content twitter_content">
-
+<div class="popup-close"></div>
             <h3 class="column_header">Unverified Twitter:</h3>
 
             <div class="s_container smoched">

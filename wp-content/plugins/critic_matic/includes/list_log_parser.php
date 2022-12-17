@@ -4,12 +4,14 @@
     <h3><?php print __('Campaign') ?>: [<?php print $cid ?>] <?php print stripslashes($campaign->title) ?></h3>
     <?php
 }
+
+print $tabs;
 ?>
 <?php print $filters_log_status ?>
 <?php print $filters_type ?> 
 <p><a href="<?php print $url ?>&clear_logs=1">Clear</a> all logs.</p>
 <?php
-print $tabs;
+
 
 if (sizeof($log) > 0) {
     ?>

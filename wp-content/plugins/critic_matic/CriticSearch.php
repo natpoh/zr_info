@@ -47,6 +47,8 @@ class CriticSearch extends AbstractDB {
         0 => 'Add meta',
         1 => 'Update meta',
         2 => 'Remove meta',
+        3 => 'Trash dublicate',
+        4 => 'Ignore dublicate',
     );
     // Facets
     public $facets = array(
@@ -389,7 +391,8 @@ class CriticSearch extends AbstractDB {
         }
 
         if (!$bulk) {
-            if (sizeof($old_meta)) {
+            $remove_old_meta = false;
+            if ($remove_old_meta && sizeof($old_meta)) {
                 // Remove old meta that not found
                 foreach ($old_meta as $cid => $item) {
                     if ($item['found'] != 1) {
@@ -2470,30 +2473,6 @@ class CriticSearch extends AbstractDB {
     }
 
     /*
-     * Log
-     */
-
-    public function get_log_type($type) {
-        return isset($this->log_type[$type]) ? $this->log_type[$type] : 'None';
-    }
-
-    public function get_log_status($type) {
-        return isset($this->log_status[$type]) ? $this->log_status[$type] : 'None';
-    }
-
-    public function log_add_meta($message, $cid, $mid) {
-        $this->log($message, $cid, $mid, 0, 0);
-    }
-
-    public function log_update_meta($message, $cid, $mid) {
-        $this->log($message, $cid, $mid, 0, 1);
-    }
-
-    public function log_remove_meta($message, $cid, $mid) {
-        $this->log($message, $cid, $mid, 0, 2);
-    }
-
-    /*
      * Search new posts ids from critic matic
      */
 
@@ -2614,65 +2593,110 @@ class CriticSearch extends AbstractDB {
      * Find povtor
      */
 
-    function find_post_povtor($content = '', &$info = '', $pid = '', $debug = false) {
+    function find_post_povtor($title = '', $pid = 0, $aid = 0, $debug = false) {
 
-        $info = '';
         $povtor = false;
         $length = 200;
         $min_precent = 90;
-        $min_words_count = 5;
 
-        if ($content) {
-            $text = strip_tags($content);
-            $text = preg_replace('|&[a-zA-Z]+;|', ' ', $text);
+        $title = $this->clear_text($title, $length);
+
+        $wordsArr = $this->getUniqueWords($title);
+        if ($debug) {
+            p_r(array($title, $wordsArr, $pid));
+        }
+
+        $povtors = $this->find_by_sphinx($title, $pid, $aid, $debug);
+
+        $valid_povtors = array();
+        if ($povtors) {
+            foreach ($povtors as $key => $povtor) {
+                $searchArr = $this->getUniqueWords(strip_tags($povtor->title));
+                $precent = $this->get_min_percent($searchArr, $wordsArr);
+
+                if ($debug) {
+                    p_r(array('Title percent', $key, $precent));
+                }
+                if ($precent >= $min_precent) {
+
+                    // Validate percent content
+                    if ($precent != 100) {
+                        // Get content
+                        $post_cache = $this->cm->get_post_cache($pid);
+                        $post_domain = $this->cm->get_domain_by_url($post_cache->link);
+                        $post_cache2 = $this->cm->get_post_cache($key);
+                        $post_domain2 = $this->cm->get_domain_by_url($post_cache2->link);
+                        $precent_c = 0;
+                        if ($debug) {
+                                p_r(array('Domains', $post_domain, $post_domain2));
+                            }
+                        if ($post_domain != $post_domain2) {
+                            $post_content = $this->getUniqueWords(strip_tags($post_cache->content));
+                            $post_content2 = $this->getUniqueWords(strip_tags($post_cache2->content));
+                            if ($post_content || $post_content2) {
+                                $precent_c = $this->get_min_percent($post_content, $post_content2);
+                            }
+                            if ($debug) {
+                                p_r(array('Content percent', $key, $precent_c));
+                            }
+
+                            if ($precent_c >= $min_precent) {
+                                $povtor->percent = array($precent, $precent_c);
+                                $valid_povtors[$key] = $povtor;
+                            }
+                        }
+                    } else {
+                        $povtor->percent = $precent;
+                        $valid_povtors[$key] = $povtor;
+                    }
+                }
+            }
+        }
+
+        if ($debug) {
+            p_r($valid_povtors);
+        }
+
+
+        return $valid_povtors;
+    }
+
+    public function get_min_percent($first = array(), $sec = array()) {
+        $precent_first = $this->compareResults($first, $sec);
+        $precent_sec = $this->compareResults($sec, $first);
+        $precent = $precent_first;
+        if ($precent_sec < $precent_first) {
+            $precent = $precent_sec;
+        }
+        $precent = round($precent, 2);
+        return $precent;
+    }
+
+    public function clear_text($text = '', $length = 10, $filter = true) {
+
+        if ($text) {
+            $text = html_entity_decode($text);
+            $text = preg_replace("/<[^>]*>/", ' ', $text);
+            $text = strip_tags($text);
+            if ($filter) {
+                $text = preg_replace('/[^a-zA-Z0-9\']+/', ' ', $text);
+                $text = preg_replace('/[ ]+/', ' ', $text);
+                $text = str_replace("\t", '', $text);
+                $text = str_replace("\n", '', $text);
+            }
+
             if (strlen($text) > $length) {
                 $pos = strpos($text, ' ', $length);
                 if ($pos != null) {
                     $text = substr($text, 0, $pos);
                 }
             }
-            $text = str_replace('  ', ' ', $text);
-            $text = str_replace("\t", '', $text);
-            $text = str_replace("\n", '', $text);
-
-
-            $povtor = $this->findPovtor($info, $text, $min_precent, $min_words_count, $pid, $debug);
         }
-
-        return $povtor;
+        return $text;
     }
 
-    function findPovtor(&$info = '', $words = '', $min_precent = 80, $min_words_count = 5, $pid = '', $debug = false) {
-        $wordsArr = $this->getUniqueWords($words);
-        if ($debug) {
-            p_r(array($words, $wordsArr, $pid));
-        }
-        if (sizeof($wordsArr) >= $min_words_count) {
-            $povtor = $this->findBySphinx($words, $pid, $debug);
+    function compareResults($searchArr, $wordsArr) {
 
-            if ($povtor) {
-                $povtorUrl = "Адрес страницы: <a target=\"_blank\" href=\"" . $povtor->url . "\">" . $povtor->title . "</a>";
-                $precent = $this->compareResults($povtor, $wordsArr);
-
-                if ($precent >= $min_precent) {
-                    $info = "Обнаружен <b>повтор</b>, совпадение " . round($precent, 2) . "%
-                <br />$povtorUrl
-                <br />Текст повтора: " . $povtor->content;
-                    return $povtor;
-                } else {
-                    $info = "$povtorUrl. Слишком мал процент совпадений. ($precent%)";
-                }
-            } else {
-                $info = "В поиске нет совпадений";
-            }
-        } else {
-            $info = "Слишком мало слов для определения повтора";
-        }
-        return false;
-    }
-
-    function compareResults($povtor, $wordsArr) {
-        $searchArr = $this->getUniqueWords(strip_tags($povtor->title . " " . $povtor->content));
         $count = sizeof($wordsArr);
         $find = 0;
         foreach ($wordsArr as $word) {
@@ -2686,62 +2710,40 @@ class CriticSearch extends AbstractDB {
         return $precent;
     }
 
-    function findBySphinx($query, $pid, $debug=false) {
+    function find_by_sphinx($title, $pid, $aid, $debug = false) {
 
         $ret = '';
-        $limit = 3;
+        $limit = 5;
 
-        $author_type = 2;
+        $t = $this->wildcards_maybe_query($title, false);
+
+        $search_query = sprintf("'@(title) (%s)'", $t);
+        $match = " AND MATCH(:match)";
 
         $snippet = ', SNIPPET(title, QUERY()) t, SNIPPET(content, QUERY()) c';
 
 
-        $sql = sprintf("SELECT id, title, weight() w" . $snippet . " FROM critic "
-                . "WHERE MATCH('@(title,content)=\"%s\"') AND author_type!=%d LIMIT %d "
-                . "OPTION ranker=expr('sum(user_weight)'), "
-                . "field_weights=(title=10, content=1) ", $query, $author_type, $limit);
+        $sql = sprintf("SELECT id, title, aid, weight() w" . $snippet . " FROM critic "
+                . "WHERE author_type!=2 AND aid=%d AND id!=%d" . $match . " LIMIT %d", $aid, $pid, $limit);
 
-        $result = $this->sdb_results($sql);
-        if ($debug){
-            p_r(array($sql, $result));
+        $this->connect();
+        $result = $this->movie_results($sql, $match, $search_query);
+        if ($debug) {
+            p_r(array($sql, $search_query, $result));
         }
-        
-                
-        return array();
-
-        if ($result->search_results['total'] > 0) {
-            foreach ($result->search_results['matches'] as $current) {
 
 
-                if (isset($current) && $current['attrs']['post_id'] > 0) {
-
-                    if ($pid && $current['attrs']['post_id'] == $pid) {
-                        continue;
-                    }
-
-                    $ppid = $current['attrs']['post_id'];
-
-
-
-                    $title = $post->post_title;
-
-
-                    //$titlea = $defaultObjectSphinxSearch->frontend->get_excerpt(array($post->ID => $title), true);
-                    //$title = $titlea[$post->ID];
-
-                    $povtor = new stdClass();
-                    $povtor->title = $title;
-                    $povtor->url = get_permalink($ppid);
-                    $povtor->content = $desc;
-                    $povtor->pid = $ppid;
-
-
-                    $ret = $povtor;
-                    break;
-                }
+        $povtors = array();
+        if ($result['count'] > 0) {
+            foreach ($result['list'] as $item) {
+                $povtor = new stdClass();
+                $povtor->title = $item->t;
+                $povtor->content = $item->c;
+                $povtor->pid = $item->id;
+                $povtors[$item->id] = $povtor;
             }
         }
-        return $ret;
+        return $povtors;
     }
 
     function getUniqueWords($words) {
@@ -2754,7 +2756,8 @@ class CriticSearch extends AbstractDB {
     /*
      * Log
      * message - string
-     * cid - campaign id
+     * cid - critic id
+     * mid - movie id
      * type:
       0 => 'Info',
       1 => 'Warning',
@@ -2764,8 +2767,38 @@ class CriticSearch extends AbstractDB {
       0 => 'Add meta',
       1 => 'Update meta',
       2 => 'Remove meta',
+      3 => 'Trash dublicate post',
+      4 => 'Ignore dublicate post',
 
      */
+
+    public function get_log_type($type) {
+        return isset($this->log_type[$type]) ? $this->log_type[$type] : 'None';
+    }
+
+    public function get_log_status($type) {
+        return isset($this->log_status[$type]) ? $this->log_status[$type] : 'None';
+    }
+
+    public function log_add_meta($message, $cid, $mid) {
+        $this->log($message, $cid, $mid, 0, 0);
+    }
+
+    public function log_update_meta($message, $cid, $mid) {
+        $this->log($message, $cid, $mid, 0, 1);
+    }
+
+    public function log_remove_meta($message, $cid, $mid) {
+        $this->log($message, $cid, $mid, 0, 2);
+    }
+
+    public function log_trash_dublicate($message, $cid, $mid = 0) {
+        $this->log($message, $cid, $mid, 0, 3);
+    }
+
+    public function log_ignore_dublicate($message, $cid, $mid = 0) {
+        $this->log($message, $cid, $mid, 0, 4);
+    }
 
     public function log($message, $cid = 0, $mid = 0, $type = 0, $status = 0) {
         $this->get_wpdb();
@@ -2777,14 +2810,25 @@ class CriticSearch extends AbstractDB {
      * Post meta log
      */
 
-    public function get_log_count() {
+    public function get_log_count($status = -1, $type = -1) {
         $this->get_wpdb();
-        $query = "SELECT COUNT(id) FROM {$this->db['log']}";
+
+        $and_status = '';
+        if ($status != -1) {
+            $and_status = sprintf(" AND status=%d", (int) $status);
+        }
+
+        $and_type = '';
+        if ($type != -1) {
+            $and_type = sprintf(" AND type=%d", (int) $type);
+        }
+
+        $query = "SELECT COUNT(id) FROM {$this->db['log']} WHERE id>0" . $and_status . $and_type;
         $result = $this->wpdb->db_get_var($query);
         return $result;
     }
 
-    public function get_log($page = 1, $mid = 0, $cid = 0, $count = 0) {
+    public function get_log($page = 1, $mid = 0, $cid = 0, $count = 0, $status = -1, $type = -1) {
         $this->get_wpdb();
         $page -= 1;
         $start = $page * $this->perpage;
@@ -2808,12 +2852,55 @@ class CriticSearch extends AbstractDB {
             $cid_and = sprintf(' AND cid=%d', $cid);
         }
 
+        $and_status = '';
+        if ($status != -1) {
+            $and_status = sprintf(" AND status=%d", (int) $status);
+        }
+
+        $and_type = '';
+        if ($type != -1) {
+            $and_type = sprintf(" AND type=%d", (int) $type);
+        }
+
         $order = " ORDER BY id DESC";
-        $sql = sprintf("SELECT id, date, cid, mid, type, status, message FROM {$this->db['log']} WHERE id>0" . $mid_and . $cid_and . $order . $limit);
+        $sql = sprintf("SELECT id, date, cid, mid, type, status, message FROM {$this->db['log']} WHERE id>0" . $and_status . $and_type . $mid_and . $cid_and . $order . $limit);
 
         $result = $this->wpdb->db_results($sql);
 
         return $result;
+    }
+
+    public function get_count_log_status() {
+
+        $count = $this->get_log_count();
+        $states = array(
+            '-1' => array(
+                'title' => 'All',
+                'count' => $count
+            )
+        );
+        foreach ($this->log_status as $key => $value) {
+            $states[$key] = array(
+                'title' => $value,
+                'count' => $this->get_log_count($key));
+        }
+        return $states;
+    }
+
+    public function get_count_log_type($status = -1) {
+        $count = $this->get_log_count($status);
+        $states = array(
+            '-1' => array(
+                'title' => 'All',
+                'count' => $count
+            )
+        );
+        foreach ($this->log_type as $key => $value) {
+            $states[$key] = array(
+                'title' => $value,
+                'count' => $this->get_log_count($status, $key));
+        }
+        return $states;
     }
 
     public function get_settings_range($param) {

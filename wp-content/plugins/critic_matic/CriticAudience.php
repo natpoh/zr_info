@@ -582,24 +582,24 @@ class CriticAudience extends AbstractDb {
 
         // Staff        
         $aid = 0;
-        $author_type = 0;
+        $author_type = 2;
         $is_staff = false;
         $new_author = false;
         if ($author_name) {
-            // Staff content
-            /* $aid = $this->cm->get_author_id_by_secret_key($author_name, $author_type);
-              if ($aid) {
-              $status = 1;
-              $is_staff = true;
-              } else { */
-            // Audience
-            $aid = $this->get_author_audience($author_name, $unic_id, $wp_uid);
 
+            // Audience
+            if ($author_name == 'Anon') {
+                $first_author = $this->cm->get_author_by_name($author_name, true, $author_type);
+                if ($first_author) {
+                    $aid = $first_author->id;
+                }
+            } else {
+                $aid = $this->get_author_audience($author_name, $unic_id, $wp_uid);
+            }
             if (!$aid) {
                 // Get remote aid for a new author
                 $new_author = true;
                 $author_status = 1;
-                $author_type = 2;
                 $options = array('audience' => $unic_id);
                 $aid = $this->cm->create_author_by_name($author_name, $author_type, $author_status, $options, $wp_uid);
             }

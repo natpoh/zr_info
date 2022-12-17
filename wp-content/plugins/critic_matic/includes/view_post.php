@@ -305,10 +305,28 @@ if ($pid) {
 
     <?php
     // Transcriptions
-    if ($post->tstatus == 1||$post->tstatus == 2) {?>
-     <h2><?php print __('Transcriptions') ?></h2>
-         <textarea style="width: 90%; height: 300px;"><?php print $post->tcontent ?></textarea>    
-    <?php }
-    ?>
+    if ($post->tstatus == 1 || $post->tstatus == 2) {
+        ?>
+        <h2><?php print __('Transcriptions') ?></h2>
+        <textarea style="width: 90%; height: 300px;"><?php print $post->tcontent ?></textarea>    
+    <?php
+    }
+    if ($autor_type == 1) {
+        ?>
+        <h2>Find dublicates</h2>
+        <textarea style="width: 90%; height: 600px;">
+            <?php
+            // Find dublicates
+            $povtors = $this->cs->find_post_povtor($post->title, $post->id, $post->aid, true);            
+            ?>
+        </textarea>
+        <?php
+        if ($povtors){
+            print '<h3>Dublicates found:</h3>';
+            p_r($povtors);
+            
+        }
+        ?>
+    <?php } ?>
 
 <?php } ?>

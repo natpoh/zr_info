@@ -52,18 +52,33 @@ $content.=  '</div></details>';
 $content = '<div class="movie_total_rating not_load" id="movie_rating" data-value="'.$post_id.'"></div>
 <details  class="dark actor_details" >
    <summary>Cast Demographics</summary>
-<div><div class="desc"> <b>NOTE:</b> For the largest &amp; most objective database possible, these verdicts are automated. To check our sources and/or submit a manual correction, click the image of the cast member. 
+<div>
+<div class="desc"> 
+<b>NOTE:</b> 
+For the largest &amp; most objective database possible, these verdicts are automated. To check our sources and/or submit a manual correction, click the image of the cast member. 
 <br>
 <br>
-We are constantly expanding and improving our algorithms. But it is time consuming &amp; expensive, so please consider <u><a href="https://cointr.ee/rightwingtomato" target="_blank">donating</a></u> or helping us crowdsource. For suggestions, check <u><a href="https://zeitgeistreviews.com/feedback" target="_blank">our feedback page</a></u> to see if we are already planning on it.
+We are constantly expanding and improving our algorithms. But it is time consuming &amp; expensive, so please consider subscribing to our <a href="https://www.patreon.com/ZeitgeistReviews" target="_blank">Patreon</a> or helping us crowdsource. <br>
 <br>
-<br>
-Thank you!</div>'.$content.'</div>
+Thank you!</div>
+
+'.$content.'</div>
 </details>
 <details class="dark actor_details" >
    <summary>Representation</summary>
 <div class="dmg_content" id="actor_data_dop" ><div id="actor_representation"  data-value="'.$post_id.'" class="not_load"></div></div>
-</details>';
+</details>
+
+
+
+<details class="dark actor_details" >
+   <summary>Similar Shows</summary>
+<section class="dmg_content inner_content" id="actor_data_dop" >
+        <div  id="similar_movies" data-value="'.$post_id.'" class="not_load"></div>
+</section>
+</details>
+
+';
 
 echo $content;
 

@@ -331,6 +331,9 @@ If what you\'re looking for isn\'t on ZR yet, try finding it below.</b>
         {
             self::set_option(16,json_encode($movie_list),'movie_list',1);
 
+
+            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+            Import::create_commit('', 'update', 'options', array('id' => 16), 'options',7);
         }
 
     }

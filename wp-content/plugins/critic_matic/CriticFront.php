@@ -75,7 +75,7 @@ class CriticFront extends SearchFacets {
      * Critic functions
      */
 
-    public function theme_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tags = array(), $meta_type = array(), $min_rating = 0, $vote = 0, $search = false, $min_au=0, $max_au=0, $unique = 0) {
+    public function theme_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tags = array(), $meta_type = array(), $min_rating = 0, $vote = 0, $search = false, $min_au = 0, $max_au = 0, $unique = 0) {
 
         if ($movie_id || $unique == 0) {
             // If vote = 0 - last post, show all posts
@@ -128,7 +128,7 @@ class CriticFront extends SearchFacets {
         return $items;
     }
 
-    public function get_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tags = array(), $meta_type = array(), $min_rating = 0, $vote = 0, $min_au=0, $max_au = 0) {
+    public function get_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tags = array(), $meta_type = array(), $min_rating = 0, $vote = 0, $min_au = 0, $max_au = 0) {
         $and_author = '';
         if ($a_type != -1) {
             $and_author = sprintf(' AND a.type = %d', $a_type);
@@ -916,9 +916,27 @@ class CriticFront extends SearchFacets {
         } else {
             // $wp_avatar = $cav->get_or_create_user_avatar(0, $aid, 64);
         }
-
+        
+        $author_admin_img = '';
+ 
         if (!$avatars && !$wp_avatar) {
-            $avatars = $this->get_avatars();
+            // Author image
+            $author = $this->cm->get_author($critic->aid);
+            $author_options = unserialize($author->options);
+            $author_img = $author_options['image'];
+           
+            if ($author_img) {
+                try {
+                    $image = $this->get_local_thumb(100, 100, $author_img);
+                    $author_admin_img = '<div class="a_img_container" style="background: url(' . $image . '); background-size: cover;"></div>';
+                } catch (Exception $exc) {
+                    
+                }
+            }
+            if (!$author_admin_img) {
+                // Empty image
+                $avatars = $this->get_avatars();
+            }            
         }
 
         $umeta = '';
@@ -1032,8 +1050,9 @@ class CriticFront extends SearchFacets {
 
         if ($wp_avatar) {
             $actorsdata = $wp_avatar;
+        }else if ($author_admin_img){    
+            $actorsdata =  $author_admin_img;            
         } else if ($avatars) {
-
             $array_avatars = $avatars[$stars_data];
 
             if (is_array($array_avatars)) {
@@ -1940,10 +1959,10 @@ class CriticFront extends SearchFacets {
 
             // Link more
             if ($count > $limit) {
-                $link = '/search/tab_critics/author_critic';
+                $link = '/search/tab_critics/author_critic/state_proper_contains';
 
                 if ($movie_id) {
-                    $link = '/search/tab_critics/author_critic/movie_' . $movie_id;
+                    $link .= '/movie_' . $movie_id;
                 }
 
                 $title = 'Load more<br>Critic Reviews';

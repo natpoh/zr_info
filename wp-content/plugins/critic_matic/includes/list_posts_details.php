@@ -41,7 +41,7 @@ if (sizeof($posts) > 0) {
                     <?php $this->sorted_head('date_add', 'Last update', $orderby, $order, $page_url) ?>  
                     <?php $this->sorted_head('title', 'Title / Link', $orderby, $order, $page_url) ?>                
                     <th><?php print __('Content') ?></th>                 
-                    <th><?php print __('Author') ?></th>                                       
+                    <th><?php print __('Author') ?><br /><input type="text" placeholder="filter" value="" id="filter_author"></th>                                       
                     <th><?php print __('WP uid') ?></th>
                     <th><?php print __('From') ?></th>   
                     <?php if ($author_type == 0 || $author_type == 2) { ?>
@@ -82,7 +82,7 @@ if (sizeof($posts) > 0) {
                     //$movies_search_arr = $this->cs->search_movies($item->title, $item->content);
                     // $movies_search = $movies_search_arr['movies'];
                     ?>
-                    <tr>
+                <tr class="row" data-author="<?php print $author_name ?>">
                         <th  class="check-column" ><input type="checkbox" name="bulk-<?php print $item->id ?>"></th>
                         <td><?php print $item->id ?></td>     
                         <td><?php print $this->cm->curr_date($item->date) ?></td> 

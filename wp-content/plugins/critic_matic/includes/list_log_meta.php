@@ -2,6 +2,8 @@
 
 <?php
 print $tabs;
+print $filters_log_status;
+print $filters_type;
 
 if (sizeof($log) > 0) {
     ?>

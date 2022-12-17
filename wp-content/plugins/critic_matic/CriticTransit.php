@@ -48,6 +48,8 @@ class CriticTransit extends AbstractDB {
         $table_prefix = DB_PREFIX_WP_AN;
         $this->db = array(
             'posts' => $table_prefix . 'critic_matic_posts',
+            'authors' => $table_prefix . 'critic_matic_authors',
+            'authors_meta' => $table_prefix . 'critic_matic_authors_meta',
             'movie_imdb' => 'data_movie_imdb',
             'title_slugs' => 'data_movie_title_slugs',
             'rwt_meta' => $table_prefix . 'critic_matic_meta',
@@ -91,9 +93,16 @@ class CriticTransit extends AbstractDB {
         if ($force) {
             $last_id = 0;
         }
+                              
+        if ($debug){
+            p_r(array('last_id',$last_id));
+        }
 
         // 1. Get posts
-        $sql = sprintf("SELECT * FROM {$this->db['posts']} WHERE id>%d ORDER BY id ASC limit %d", $last_id, $count);
+        $sql = sprintf("SELECT p.title, p.id, p.link, p.status, am.aid as aid FROM {$this->db['posts']} p"
+                . " INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id "
+                . " INNER JOIN {$this->db['authors']} a ON a.id = am.aid "
+                . " WHERE p.id>%d AND p.status!=2 AND a.type!=2 ORDER BY p.id ASC limit %d", $last_id, $count);
         $results = $this->db_results($sql);
 
         if ($results) {
@@ -101,20 +110,106 @@ class CriticTransit extends AbstractDB {
             if ($debug) {
                 print 'last id: ' . $last->id . "\n";
             }
-
             if ($last) {
                 $this->update_option($option_name, $last->id);
             }
             // 2. Find dulicates
             $cs = $this->cm->get_cs();
+
+            $trash_posts = array();
+
             foreach ($results as $item) {
-                $words = $item->title;
-                $cs->find_post_povtor($words, $info, $item->id,$debug);
-               
+                if (in_array($item->id, $trash_posts)) {
+                    continue;
+                }
+
+                $povtors = $cs->find_post_povtor($item->title, $item->id, $item->aid, $debug);
+
+
+                if ($povtors) {
+                    // 3. Validate posts    
+                    $items = array();
+
+                    foreach ($povtors as $pid => $post) {
+                        $povtor_data = $this->cm->get_post($pid);
+                        if ($povtor_data->status == 2) {
+                            // Ignore trash
+                            continue;
+                        }
+                        
+                        $items[$pid] = array(
+                            'title' => $povtor_data->title,
+                            'link' => $povtor_data->link,
+                            'percent' => $post->percent
+                        );
+                    }
+
+                    if (!$items) {
+                        // All results already trash
+                        continue;
+                    }
+
+                    $items[$item->id] = array(
+                        'title' => $item->title,
+                        'link' => $item->link,
+                        'percent' => 0
+                    );
+
+                    /*
+                      [144576] => https://www.youtube.com/watch?v=IRdPKAVXcFs
+                      [144343] => https://www.bitchute.com/embed/IRdPKAVXcFs/
+                     */
+                    if ($debug) {
+                        p_r($items);
+                    }
+                    $main = 0;
+                    $min_key = 0;
+                    foreach ($items as $key => $value) {
+                        if ($min_key == 0) {
+                            $min_key = $key;
+                        } else if ($min_key > $key) {
+                            $min_key = $key;
+                        }
+                        $link = $value['link'];
+
+                        if (!$main && strstr($link, 'youtube.com')) {
+                            $main = $key;
+                        }
+                        if (!$main && strstr($link, 'odysee.com')) {
+                            $main = $key;
+                        }
+                    }
+                    if (!$main) {
+                        $main = $min_key;
+                    }
+
+                    if ($debug) {
+                        p_r($main);
+                    }
+
+                    // 4. Trash dublicates
+                    foreach ($items as $key => $value) {
+                        if ($key == $main) {
+                            continue;
+                        }
+                        $title = $items[$main]['title'];
+                        $percent = $items[$main]['percent'];
+                        if (!$percent) {
+                            $percent = $items[$key]['percent'];
+                        }
+                        $this->cm->trash_post_by_id($key);
+
+                        // 5. Add dublicates info to log
+                        $percent_text = $percent;
+                        if (is_array($percent)){
+                            $percent_text = implode('%, ', $percent);
+                        }
+                        $message = '[' . $key . ']. Percent: ' . $percent_text.'%. Source: [' . $main . '] "' . $title . '".';
+                        $cs->log_trash_dublicate($message, $key);
+                        $trash_posts[] = $key;
+                    }
+                }
             }
-            // 3. Validate posts
-            // 4. Trash dublicates
-            // 5. Add dublicates info to log
         }
     }
 
@@ -149,7 +244,7 @@ class CriticTransit extends AbstractDB {
      * Actors meta
      */
 
-    public function get_actors_meta($count = 1000, $debug = false, $force = false, $actor_id = false, $sinch = true, $onlydata=0) {
+    public function get_actors_meta($count = 1000, $debug = false, $force = false, $actor_id = false, $sinch = true, $onlydata = 0) {
 
         if ($actor_id) {
             $sql = sprintf("SELECT * FROM {$this->db['actors_meta']} WHERE actor_id = %d ", (int) $actor_id);
