@@ -1347,6 +1347,8 @@ class MoviesParser extends MoviesAbstractDB {
         $np_and = '';
         if ($no_posts) {
             $np_and = ' AND p.uid is NULL';
+        } else {
+            $np_and = ' AND (p.uid is NULL or p.multi=0)';
         }
 
         $query = sprintf("SELECT a.uid, a.arhive_hash, u.cid FROM {$this->db['arhive']} a"
