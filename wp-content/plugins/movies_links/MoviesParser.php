@@ -2835,34 +2835,76 @@ class MoviesParser extends MoviesAbstractDB {
             }
 
             $min_words = 6;
-            $max_words = 10;
+            $max_words = 18;
 
             foreach ($ids as $item) {
                 $post = $this->get_post_by_id($item->id);
 
-                $title = $post->title;
-                $options = unserialize($post->options);
 
+                $options = unserialize($post->options);
+                $content = '';
                 if (isset($options['content'])) {
                     $content = base64_decode($options['content']);
-                    $content = $title . PHP_EOL . $content;
                     if ($content) {
-                        $content = preg_replace('/(\.|;|\?|\!|\-)/', "\n", $content);
+                        $content = strip_tags($content);
+                        $content = str_replace("...", " ", $content);
+                        $content = str_replace("\n", " ", $content);
+                        $content = preg_replace('/(\.|;|\?|\!)/', "\n", $content);
                         $content_arr = explode("\n", $content);
-                        $to_add = '';
+                        $new_lines = '';
+                        $append = '';
                         foreach ($content_arr as $pred) {
-                            $pred = preg_replace('/[^a-zA-Z0-9]+/', ' ', $pred);
+                            $pred = preg_replace('/[^a-zA-Z\']+/', ' ', $pred);
                             $pred = preg_replace('/  /', ' ', $pred);
-                            $words = explode(" ", $pred);
                             $pred = trim($pred);
                             if ($pred) {
-                                $new_lines .= $pred . PHP_EOL;
+                                // Min words
+                                $append .= ' ' . $pred;
+                            }
+                            $append = trim($append);
+                            $words = explode(" ", $append);
+                            $len = sizeof($words);
+                            if ($len > $min_words) {
+
+                                if ($len > $max_words) {
+                                    // Max words
+                                    $delim = $len;
+                                    $k = 2;
+                                    while ($delim > $max_words) {
+                                        $delim = ceil($delim / $k);
+                                        $k += 1;
+                                    }
+
+                                    $app = '';
+                                    $i = 0;
+                                    $append = '';
+                                    foreach ($words as $w) {
+                                        $i += 1;
+                                        $append .= ' ' . $w;
+
+                                        if ($i > $delim) {
+                                            $append=trim($append);
+                                            if ($append) {
+                                                $new_lines .= $append . PHP_EOL;
+                                            }
+                                            $append = '';
+                                            $i = 0;
+                                        }
+                                    }
+                                    $append = '';
+                                } else {
+                                    $new_lines .= $append . PHP_EOL;
+                                    $append = '';
+                                }
                             }
                         }
+                        $content = $new_lines;
                     }
                 }
-
-                file_put_contents($full_path, $new_lines, FILE_APPEND | LOCK_EX);
+               
+                if ($content) {
+                    file_put_contents($full_path, $content, FILE_APPEND | LOCK_EX);
+                }
             }
         }
     }
