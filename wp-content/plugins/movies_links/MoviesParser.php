@@ -531,6 +531,11 @@ class MoviesParser extends MoviesAbstractDB {
         return $result;
     }
 
+    public function update_urls_status($id, $status) {
+        $sql = sprintf("UPDATE {$this->db['url']} SET status=%d WHERE id = %d", (int) $status, (int) $id);
+        $this->db_query($sql);
+    }
+
     public function get_urls($status = -1, $page = 1, $cid = 0, $arhive_type = -1, $parser_type = -1, $links_type = -1, $orderby = '', $order = 'ASC', $perpage = 30, $date = '') {
         $status_trash = 2;
         $status_query = " WHERE u.status != " . $status_trash;
@@ -2827,8 +2832,8 @@ class MoviesParser extends MoviesAbstractDB {
 
             if (file_exists($full_path)) {
                 unlink($full_path);
-            }                       
-            
+            }
+
             $min_words = 6;
             $max_words = 10;
 
@@ -2848,7 +2853,7 @@ class MoviesParser extends MoviesAbstractDB {
                         foreach ($content_arr as $pred) {
                             $pred = preg_replace('/[^a-zA-Z0-9]+/', ' ', $pred);
                             $pred = preg_replace('/  /', ' ', $pred);
-                            $words = explode(" ", $pred);                            
+                            $words = explode(" ", $pred);
                             $pred = trim($pred);
                             if ($pred) {
                                 $new_lines .= $pred . PHP_EOL;

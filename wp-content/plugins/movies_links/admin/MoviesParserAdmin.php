@@ -135,6 +135,7 @@ class MoviesParserAdmin extends ItemAdmin {
     );
     public $bulk_actions = array(
         'post_status_new' => 'Post status New',
+        'url_status_exist' => 'URL status exist',
         'validate_arhive' => 'Validate Arhive len',
         'delete_url' => 'Delete URL',
         'delete_post' => 'Delete Post',
@@ -832,6 +833,12 @@ class MoviesParserAdmin extends ItemAdmin {
                     // Change post status
                     foreach ($ids as $id) {
                         $this->mp->update_post_status($id, 0);
+                    }
+                    print "<div class=\"updated\"><p><strong>Updated</strong></p></div>";
+                }else if ($b == 'url_status_exist') {
+                    // Change post status
+                    foreach ($ids as $id) {
+                        $this->mp->update_urls_status($id, 1);
                     }
                     print "<div class=\"updated\"><p><strong>Updated</strong></p></div>";
                 } else if ($b == 'validate_arhive') {
