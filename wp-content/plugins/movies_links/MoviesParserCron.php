@@ -140,7 +140,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         $status = 0;
         $urls = $this->mp->get_last_urls($urls_count, $status, $campaign->id, $random_urls);
 
-        $count = count((array)$urls);
+        $count = count((array) $urls);
         if ($count) {
             $this->get_async_cron($campaign, $type_name);
             // $this->arhive_urls($campaign, $options, $urls);
@@ -190,6 +190,9 @@ class MoviesParserCron extends MoviesAbstractDB {
     }
 
     private function proccess_parsing($campaign, $options, $force = false) {
+        ini_set('max_execution_time', '300'); //300 seconds = 5 minutes
+        set_time_limit(300);
+
         $type_name = 'parsing';
         $cid = $campaign->id;
         $type_opt = $options[$type_name];
@@ -205,60 +208,33 @@ class MoviesParserCron extends MoviesAbstractDB {
             $items = $this->mp->parse_arhives($last_posts, $campaign);
             foreach ($items as $uid => $item) {
                 if ($item) {
-                    // Add post
-                    $post_exist = $this->mp->get_post_by_uid($uid);
-                    if (!$post_exist || $force) {
-                        $title = '';
-                        $year = '';
-                        $release = '';
-                        $post_options = array();
+
+                    if ($type_opt['multi_parsing'] == 1) {
+                        // Multi post parsing
+                        $content = '';
                         foreach ($item as $key => $value) {
-                            if ($key == 't') {
-                                $title = $value;
-                            } else if ($key == 'y') {
-                                $year = $value;
-                            } else if ($key == 'r') {
-                                $release = $value;
-                            } else {
-                                $post_options[$key] = base64_encode($value);
+                            $row = '<div id="' . $key . '">'."\n";
+                            foreach ($value as $row_key => $row_value) {
+                                $row .= '<p class="' . $row_key . '">' . trim($row_value) . "</p>\n";
                             }
+                            $row .= "</div>\n";
+                            $content .= $row;
                         }
-
-                        // Status publish
-                        $status = 1;
-                        if (!$title) {
-                            // Can't find title
-                            $status = 0;
-                        }
-
-                        if (!$post_exist) {
-
-                            $top_movie = 0;
-                            $rating = 0;
-                            $this->mp->add_post($uid, $status, $title, $release, $year, $post_options, $top_movie, $rating);
-
-                            if ($title) {
-                                $message = 'Add post: ' . $title;
-                                $this->mp->log_info($message, $cid, $uid, 3);
-                            } else {
-                                $message = 'Can not parse the Title';
-                                $this->mp->log_error($message, $cid, $uid, 3);
-                            }
-                        } else {
-                            //Force update post
-                            $top_movie = $post_exist->top_movie;
-                            $rating = $post_exist->rating;
-                            $this->mp->update_post($uid, $status, $title, $release, $year, $post_options, $top_movie, $rating);
-                        }
-
-                        $count += 1;
-                    } else {
-                        $message = 'Post already exist';
-                        $this->mp->log_warn($message, $cid, $uid, 3);
+                        $item = array(
+                            't' => 'Multi ' . $uid,
+                            'content' => $content
+                        );
                     }
+                    
+                    $this->parsing_post_add($item, $cid, $uid, $force);
+
+                    $count += 1;
                 } else {
                     $message = 'Can not parse post data';
                     $this->mp->log_error($message, $cid, $uid, 3);
+                    // Status error
+                    $status = 4;
+                    $this->mp->change_url_state($uid, $status, true);
                 }
             }
             // Unpaused links            
@@ -273,6 +249,60 @@ class MoviesParserCron extends MoviesAbstractDB {
             $this->mp->log_info($message, $campaign->id, 0, 3);
         }
         return $count;
+    }
+
+    private function parsing_post_add($item, $cid, $uid, $force) {
+        // Add post
+        
+        $post_exist = $this->mp->get_post_by_uid($uid);
+        
+        if (!$post_exist || $force) {
+            $title = '';
+            $year = '';
+            $release = '';
+            $post_options = array();
+            foreach ($item as $key => $value) {
+                if ($key == 't') {
+                    $title = $value;
+                } else if ($key == 'y') {
+                    $year = $value;
+                } else if ($key == 'r') {
+                    $release = $value;
+                } else {
+                    $post_options[$key] = base64_encode($value);
+                }
+            }
+
+            // Status publish
+            $status = 1;
+            if (!$title) {
+                // Can't find title
+                $status = 0;
+            }
+
+            if (!$post_exist) {
+
+                $top_movie = 0;
+                $rating = 0;
+                $this->mp->add_post($uid, $status, $title, $release, $year, $post_options, $top_movie, $rating);
+
+                if ($title) {
+                    $message = 'Add post: ' . $title;
+                    $this->mp->log_info($message, $cid, $uid, 3);
+                } else {
+                    $message = 'Can not parse the Title';
+                    $this->mp->log_error($message, $cid, $uid, 3);
+                }
+            } else {
+                //Force update post
+                $top_movie = $post_exist->top_movie;
+                $rating = $post_exist->rating;
+                $this->mp->update_post($uid, $status, $title, $release, $year, $post_options, $top_movie, $rating);
+            }
+        } else {
+            $message = 'Post already exist';
+            $this->mp->log_warn($message, $cid, $uid, 3);
+        }
     }
 
     private function proccess_parsing_create_urls($campaign, $options, $force = false, $debug = false) {
@@ -654,7 +684,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         $full_path = $first_letter_path . $link_hash;
 
 
-        $this->check_and_create_dir($first_letter_path);
+        $this->mp->check_and_create_dir($first_letter_path);
 
         if (file_exists($full_path)) {
             unlink($full_path);
@@ -680,38 +710,6 @@ class MoviesParserCron extends MoviesAbstractDB {
         $this->mp->change_url_state($item->id, $status, true);
     }
 
-    private function check_and_create_dir($dst_path) {
-        $path = '';
-        if (ABSPATH) {
-            $path = ABSPATH;
-        }
-        $dst_path = str_replace($path, '', $dst_path);
-
-        # Создать дирикторию
-        $arr = explode("/", $dst_path);
-
-        foreach ($arr as $a) {
-            if (isset($a)) {
-                $path = $path . $a . '/';
-                $this->fileman($path);
-            }
-        }
-        return null;
-    }
-
-    private function fileman($way) {
-        //Проверка наличия и создание директории
-        // string $way - путь к дириктории
-        $ret = true;
-        if (!file_exists($way)) {
-            if (!mkdir("$way", 0777)) {
-                $ret = false;
-                throw new Exception('Can not create dir: ' . $way . ', check cmod');
-            }
-        }
-        return $ret;
-    }
-
     /*
      * Cron async
      */
@@ -726,7 +724,7 @@ class MoviesParserCron extends MoviesAbstractDB {
             $campaign = $this->mp->get_campaign($cid);
             $options = $this->mp->get_options($campaign);
             $type_opt = $options[$type_name];
-            $urls_count = $type_opt['num'];            
+            $urls_count = $type_opt['num'];
 
             // Get last urls
             $status = 0;
@@ -735,7 +733,7 @@ class MoviesParserCron extends MoviesAbstractDB {
             $random_urls = $type_opt['random'];
             $urls = $this->mp->get_last_urls($urls_count, $status, $campaign->id, $random_urls, $debug);
 
-            $count = count((array)$urls);
+            $count = count((array) $urls);
             if ($debug) {
                 print_r(array('Arhive count', $count));
             }

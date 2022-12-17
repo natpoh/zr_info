@@ -60,6 +60,18 @@ if ($cid) {
                     <input type="checkbox" name="status" value="1" <?php print $checked ?> >
                     <span class="checkbox-title"><?php print __('Parser is active') ?></span>
                 </label>
+
+
+                <label class="inline-edit-status">                
+                    <?php
+                    $checked = '';
+                    if ($o['multi_parsing'] == 1) {
+                        $checked = 'checked="checked"';
+                    }
+                    ?>
+                    <input type="checkbox" name="multi_parsing" value="1" <?php print $checked ?> >
+                    <span class="checkbox-title"><?php print __('Multi posts paring') ?></span>
+                </label>
                 <br />
                 <?php wp_nonce_field('ml-nonce', 'ml-nonce'); ?>
                 <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save') ?>" class="button-primary">  
@@ -177,6 +189,72 @@ if ($cid) {
         <hr />
     <?php endif; ?>
 
+    <?php if ($o['multi_parsing'] == 1) { ?>
+        <form accept-charset="UTF-8" method="post" id="campaign">
+            <div class="cm-edit inline-edit-row">
+                <fieldset>
+                    <input type="hidden" name="multi_parsing_data" value="1">
+                    <input type="hidden" name="id" class="id" value="<?php print $campaign->id ?>">
+                    <h2>Multi parsing rules</h2>
+                    <label>  
+                        <span class="title"><?php print __('Rule type') ?></span> 
+                        <select name="multi_rule_type" class="interval">
+                            <?php
+                            foreach ($this->multi_rule_type as $key => $name) {
+                                $selected = ($key == $o['multi_rule_type']) ? 'selected' : '';
+                                ?>
+                                <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                                <?php
+                            }
+                            ?>                          
+                        </select>   
+
+                    </label>
+                    <label>
+                        <span class="title"><?php print __('Rule') ?></span>
+                        <span class="input-text-wrap"><input type="text" name="multi_rule" placeholder="" value="<?php print htmlspecialchars(base64_decode($o['multi_rule'])) ?>"></span>
+                    </label>
+
+                    <label class="inline-edit-status">                
+                        <input type="checkbox" name="preview_multi" value="1" checked="checked">
+                        <span class="checkbox-title"><?php print __('Preview') ?></span>
+                    </label>
+                    <label class="inline-edit-interval">                    
+                        <select name="pr_num" class="interval">
+                            <?php
+                            foreach ($this->parse_number as $key => $name) {
+                                $selected = ($key == $o['pr_num']) ? 'selected' : '';
+                                ?>
+                                <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                                <?php
+                            }
+                            ?>                          
+                        </select>                     
+                        <span class="inline-edit"><?php print __('Number of previews') ?></span> 
+                    </label>
+                    <br />
+                    <?php wp_nonce_field('ml-nonce', 'ml-nonce'); ?>
+                    <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save') ?>" class="button-primary">  
+                </fieldset>
+            </div>
+        </form>
+
+        <?php
+        if (isset($_POST['preview_multi'])) {
+            if ($preivew_data) {
+                ?>
+                <h3>Parsing result:</h3>                
+                <textarea style="width: 90%; height: 300px;">
+                    <?php
+                    p_r($preivew_data);
+                    ?>
+                </textarea>
+                <?php
+            }
+        }
+        ?>
+    <?php } ?>
+
     <form accept-charset="UTF-8" method="post" id="campaign">
         <div class="cm-edit inline-edit-row">
             <fieldset>
@@ -224,49 +302,62 @@ if ($cid) {
 
     <?php
     if (isset($_POST['preview'])) {
-
+        ?>
+        <h3>Parsing result:</h3>        
+        <?php
         if ($preivew_data == -1) {
             print '<p>No arhives found</p>';
         } else if ($preivew_data) {
-            ?>
-            <h3>Parsing result:</h3>
-            <?php foreach ($preivew_data as $id => $item) { ?>
-                <table class="wp-list-table widefat striped table-view-list">
-                    <thead>
-                        <tr>
-                            <th><?php print __('Name') ?></th>                
-                            <th><?php print __('Value') ?></th>    
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Uid</td>
-                            <td><?php print $this->mla->theme_parser_url_link($id, $id); ?></td>
-                        </tr> 
-                        <?php
-                        foreach ($item as $name => $value) {
+            foreach ($preivew_data as $id => $items) {
+                $rows = array($items);
+                if ($o['multi_parsing'] == 1) {
+                    $rows = $items;
+                    ?>
+                    <h3>Row data: <?php print $this->mla->theme_parser_url_link($id, $id); ?></h3>
+                    <?php
+                }
 
-
-                            $show_name = isset($this->parser_rules_names[$name]) ? $this->parser_rules_names[$name] : $name;
-                            ?>
+                foreach ($rows as $item) {
+                    ?>
+                    <table class="wp-list-table widefat striped table-view-list">
+                        <thead>
                             <tr>
-                                <td><?php print $show_name ?></td>
-                                <td><?php
-                                    if (is_array($value)) {
-                                        foreach ($value as $k => $v) {
-                                            print "[$k] $v<br />";
-                                        }
-                                    } else {
-                                        print $value;
-                                    }
-                                    ?></td>
+                                <th><?php print __('Name') ?></th>                
+                                <th><?php print __('Value') ?></th>    
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Uid</td>
+                                <td><?php print $this->mla->theme_parser_url_link($id, $id); ?></td>
                             </tr> 
-                        <?php } ?>
-                    </tbody>        
-                </table>
-                <br />
-            <?php } ?>
-        <?php } else { ?>
+                            <?php
+                            foreach ($item as $name => $value) {
+
+
+                                $show_name = isset($this->parser_rules_names[$name]) ? $this->parser_rules_names[$name] : $name;
+                                ?>
+                                <tr>
+                                    <td><?php print $show_name ?></td>
+                                    <td><?php
+                                        if (is_array($value)) {
+                                            foreach ($value as $k => $v) {
+                                                print "[$k] $v<br />";
+                                            }
+                                        } else {
+                                            print $value;
+                                        }
+                                        ?></td>
+                                </tr> 
+                            <?php } ?>
+                        </tbody>        
+                    </table>
+                    <br />
+                <?php } ?>
+                <?php
+            }
+        } else {
+            ?>
             <h3>Parsing error</h3>
             <p>Check regexp rules.</p>
             <?php

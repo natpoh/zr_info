@@ -90,6 +90,9 @@ class MoviesParser extends MoviesAbstractDB {
                     'rules' => '',
                     'row_rules' => '',
                     'row_status' => 0,
+                    'multi_parsing' => 0,
+                    'multi_rule' => '',
+                    'multi_rule_type' => 0,
                 ),
                 'links' => array(
                     'last_update' => 0,
@@ -528,6 +531,11 @@ class MoviesParser extends MoviesAbstractDB {
         return $result;
     }
 
+    public function update_urls_status($id, $status) {
+        $sql = sprintf("UPDATE {$this->db['url']} SET status=%d WHERE id = %d", (int) $status, (int) $id);
+        $this->db_query($sql);
+    }
+
     public function get_urls($status = -1, $page = 1, $cid = 0, $arhive_type = -1, $parser_type = -1, $links_type = -1, $orderby = '', $order = 'ASC', $perpage = 30, $date = '') {
         $status_trash = 2;
         $status_query = " WHERE u.status != " . $status_trash;
@@ -572,12 +580,12 @@ class MoviesParser extends MoviesAbstractDB {
         }
 
         // Parser type filter
-        $parser_type_and = '';
+        $parser_type_and = ' AND (p.id is NULL OR p.multi=0)';
         if ($parser_type != -1) {
             if ($parser_type == 1) {
-                $parser_type_and = " AND p.id !=0 AND p.status=1";
+                $parser_type_and = " AND p.id !=0 AND p.status=1 AND p.multi=0";
             } else if ($parser_type == 2) {
-                $parser_type_and = " AND p.id !=0 AND p.status=0";
+                $parser_type_and = " AND p.id !=0 AND p.status=0 AND p.multi=0";
             } else {
                 $parser_type_and = " AND p.id is NULL";
             }
@@ -632,7 +640,9 @@ class MoviesParser extends MoviesAbstractDB {
 
         // Arhive type filter
         $arhive_type_and = '';
+        $arhive_join = '';
         if ($arhive_type != -1) {
+            $arhive_join = " LEFT JOIN {$this->db['arhive']} a ON u.id = a.uid";
             if ($arhive_type == 1) {
                 $arhive_type_and = " AND a.id !=0 ";
             } else {
@@ -642,11 +652,14 @@ class MoviesParser extends MoviesAbstractDB {
 
         // Parser type filter
         $parser_type_and = '';
+        $parser_join = '';
         if ($parser_type != -1) {
+
+            $parser_join = " LEFT JOIN {$this->db['posts']} p ON u.id = p.uid";
             if ($parser_type == 1) {
-                $parser_type_and = " AND p.id !=0 AND p.status=1";
+                $parser_type_and = " AND p.id !=0 AND p.status=1 AND p.multi=0";
             } else if ($parser_type == 2) {
-                $parser_type_and = " AND p.id !=0 AND p.status=0";
+                $parser_type_and = " AND p.id !=0 AND p.status=0 AND p.multi=0";
             } else {
                 $parser_type_and = " AND p.id is NULL";
             }
@@ -658,8 +671,7 @@ class MoviesParser extends MoviesAbstractDB {
         }
 
         $query = "SELECT COUNT(u.id) FROM {$this->db['url']} u"
-                . " LEFT JOIN {$this->db['arhive']} a ON u.id = a.uid"
-                . " LEFT JOIN {$this->db['posts']} p ON u.id = p.uid"
+                . $arhive_join . $parser_join
                 . " WHERE u.id>0"
                 . $status_query . $arhive_type_and . $parser_type_and . $link_type_and . $cid_and;
 
@@ -829,8 +841,8 @@ class MoviesParser extends MoviesAbstractDB {
         $from = isset($find_urls['from']) ? (int) $find_urls['from'] : 2;
         $to = isset($find_urls['to']) ? (int) $find_urls['to'] : 3;
         $step = isset($find_urls['step']) ? (int) $find_urls['step'] : 1;
-        if ($step){
-            $to = $to*$step;
+        if ($step) {
+            $to = $to * $step;
         }
 
         if (isset($find_urls['page'])) {
@@ -844,11 +856,11 @@ class MoviesParser extends MoviesAbstractDB {
                 $page_sec = isset($page_arr[1]) ? $page_arr[1] : '';
             }
 
-            for ($i = $from; $i <= $to; $i+=$step) {
+            for ($i = $from; $i <= $to; $i += $step) {
                 $urls[] = $page_first . $i . $page_sec;
             }
         }
-     
+
         $reg = isset($find_urls['match']) ? base64_decode($find_urls['match']) : '';
         $wait = isset($find_urls['wait']) ? (int) $find_urls['wait'] : 1;
 
@@ -1340,12 +1352,14 @@ class MoviesParser extends MoviesAbstractDB {
         $np_and = '';
         if ($no_posts) {
             $np_and = ' AND p.uid is NULL';
+        } else {
+            $np_and = ' AND (p.uid is NULL or p.multi=0)';
         }
 
         $query = sprintf("SELECT a.uid, a.arhive_hash, u.cid FROM {$this->db['arhive']} a"
                 . " INNER JOIN {$this->db['url']} u ON u.id = a.uid"
                 . " LEFT JOIN {$this->db['posts']} p ON p.uid = a.uid"
-                . " WHERE a.id>0 " . $np_and . $cid_and
+                . " WHERE a.id>0 AND u.status!=4" . $np_and . $cid_and
                 . " ORDER BY a.id DESC LIMIT %d", (int) $count);
 
         $result = $this->db_results($query);
@@ -1354,6 +1368,8 @@ class MoviesParser extends MoviesAbstractDB {
     }
 
     public function parse_arhives($items, $campaign, $rules_name = 'rules') {
+        ini_set('max_execution_time', '300'); //300 seconds = 5 minutes
+        set_time_limit(300);
         $ret = array();
         if ($items) {
             $cid = $campaign->id;
@@ -1374,16 +1390,49 @@ class MoviesParser extends MoviesAbstractDB {
                             $rules_fields = $this->parser_urls_rules_fields;
                             $result = $this->check_reg_post($o, 'rules', $row_content, $rules_fields);
                         }
+                    } else if ($rules_name == 'multi') {
+                        // Multi rules
+                        $result = $this->use_multi_rules($o, $code);
                     } else {
                         $rules_fields = array();
                         if ($campaign->type == 2) {
                             $rules_fields = $this->parser_urls_rules_fields;
                         }
-                        $result = $this->check_reg_post($o, $rules_name, $code, $rules_fields);
+
+                        // Is Multi?
+                        if ($o['multi_parsing'] == 1) {
+                            $rows = $this->use_multi_rules($o, $code);
+                            $result_arr = array();
+                            if ($rows) {
+                                foreach ($rows as $row) {
+                                    $result_arr[] = $this->check_reg_post($o, $rules_name, $row, $rules_fields);
+                                }
+                            }
+                            $result = $result_arr;
+                        } else {
+                            $result = $this->check_reg_post($o, $rules_name, $code, $rules_fields);
+                        }
                     }
                 }
                 $ret[$item->uid] = $result;
             }
+        }
+        return $ret;
+    }
+
+    private function use_multi_rules($o, $code) {
+        $type = $o['multi_rule_type'];
+        $reg = base64_decode($o['multi_rule']);
+        $ret = array();
+        $match_str = '';
+        // Regexp
+        if ($type == 0) {
+            if (preg_match_all($reg, $code, $match_all)) {
+                $ret = $match_all[0];
+            }
+        } else {
+            // Xpath
+            $ret = $this->get_dom($reg, $match_str, $code, true, false);
         }
         return $ret;
     }
@@ -2671,7 +2720,7 @@ class MoviesParser extends MoviesAbstractDB {
      * Posts
      */
 
-    public function add_post($uid, $status, $title, $release, $year, $options, $top_movie, $rating) {
+    public function add_post($uid, $status, $title, $release, $year, $options, $top_movie, $rating, $multi = 0) {
         /*
          * `id` int(11) unsigned NOT NULL auto_increment,
           `date` int(11) NOT NULL DEFAULT '0',
@@ -2699,8 +2748,8 @@ class MoviesParser extends MoviesAbstractDB {
         }
 
 
-        $sql = sprintf("INSERT INTO {$this->db['posts']} (date,last_upd,uid,top_movie,rating,status,year,title,rel,options)"
-                . " VALUES (%d,%d,%d,%d,%d,%d,%d,'%s','%s','%s')", (int) $date, (int) $date, (int) $uid, (int) $top_movie, (int) $rating, (int) $status, (int) $year, $this->escape($title), $this->escape($release), $opt_str);
+        $sql = sprintf("INSERT INTO {$this->db['posts']} (date,last_upd,uid,top_movie,rating,status,year,multi,title,rel,options)"
+                . " VALUES (%d,%d,%d,%d,%d,%d,%d,%d,'%s','%s','%s')", (int) $date, (int) $date, (int) $uid, (int) $top_movie, (int) $rating, (int) $status, (int) $year, (int) $multi, $this->escape($title), $this->escape($release), $opt_str);
 
         $this->db_query($sql);
     }
@@ -2749,10 +2798,82 @@ class MoviesParser extends MoviesAbstractDB {
         $this->db_query($sql);
     }
 
-    public function get_post_by_uid($uid) {
-        $sql = sprintf("SELECT * FROM {$this->db['posts']} WHERE uid = %d", (int) $uid);
+    public function get_post_by_id($id) {
+        $sql = sprintf("SELECT * FROM {$this->db['posts']} WHERE id = %d", (int) $id);
         $result = $this->db_fetch_row($sql);
         return $result;
+    }
+
+    public function get_post_by_uid($uid) {
+        $sql = sprintf("SELECT * FROM {$this->db['posts']} WHERE uid = %d AND multi=0", (int) $uid);
+        $result = $this->db_fetch_row($sql);
+        return $result;
+    }
+
+    public function get_multi_posts_by_uid($uid) {
+        $sql = sprintf("SELECT * FROM {$this->db['posts']} WHERE uid = %d AND multi=1", (int) $uid);
+        $result = $this->db_results($sql);
+        return $result;
+    }
+
+    public function get_posts_count($cid) {
+        $sql = sprintf("SELECT COUNT(p.id) FROM {$this->db['posts']} p INNER JOIN {$this->db['url']} u ON u.id=p.uid WHERE u.cid=%d", $cid);
+        $result = $this->db_get_var($sql);
+        return $result;
+    }
+
+    public function save_all_posts($cid) {
+        $sql = sprintf("SELECT p.id FROM {$this->db['posts']} p INNER JOIN {$this->db['url']} u ON u.id=p.uid WHERE u.cid=%d", $cid);
+        $ids = $this->db_results($sql);
+        print_r(count((array) $ids));
+        if ($ids) {
+
+            $full_path = $this->get_full_export_path($cid);
+
+            if (file_exists($full_path)) {
+                unlink($full_path);
+            }
+
+            $min_words = 6;
+            $max_words = 10;
+
+            foreach ($ids as $item) {
+                $post = $this->get_post_by_id($item->id);
+
+                $title = $post->title;
+                $options = unserialize($post->options);
+
+                if (isset($options['content'])) {
+                    $content = base64_decode($options['content']);
+                    $content = $title . PHP_EOL . $content;
+                    if ($content) {
+                        $content = preg_replace('/(\.|;|\?|\!|\-)/', "\n", $content);
+                        $content_arr = explode("\n", $content);
+                        $to_add = '';
+                        foreach ($content_arr as $pred) {
+                            $pred = preg_replace('/[^a-zA-Z0-9]+/', ' ', $pred);
+                            $pred = preg_replace('/  /', ' ', $pred);
+                            $words = explode(" ", $pred);
+                            $pred = trim($pred);
+                            if ($pred) {
+                                $new_lines .= $pred . PHP_EOL;
+                            }
+                        }
+                    }
+                }
+
+                file_put_contents($full_path, $new_lines, FILE_APPEND | LOCK_EX);
+            }
+        }
+    }
+
+    public function get_full_export_path($cid) {
+        $export_path = $this->ml->export_path;
+        $cid_path = $export_path . $cid . '/';
+        $this->check_and_create_dir($cid_path);
+        $full_path = $cid_path . 'posts.csv';
+
+        return $full_path;
     }
 
     public function get_post_options($post) {
@@ -3129,6 +3250,38 @@ class MoviesParser extends MoviesAbstractDB {
             }
         }
         return $content;
+    }
+
+    public function check_and_create_dir($dst_path) {
+        $path = '';
+        if (ABSPATH) {
+            $path = ABSPATH;
+        }
+        $dst_path = str_replace($path, '', $dst_path);
+
+        # Создать дирикторию
+        $arr = explode("/", $dst_path);
+
+        foreach ($arr as $a) {
+            if (isset($a)) {
+                $path = $path . $a . '/';
+                $this->fileman($path);
+            }
+        }
+        return null;
+    }
+
+    public function fileman($way) {
+        //Проверка наличия и создание директории
+        // string $way - путь к дириктории
+        $ret = true;
+        if (!file_exists($way)) {
+            if (!mkdir("$way", 0777)) {
+                $ret = false;
+                throw new Exception('Can not create dir: ' . $way . ', check cmod');
+            }
+        }
+        return $ret;
     }
 
 }

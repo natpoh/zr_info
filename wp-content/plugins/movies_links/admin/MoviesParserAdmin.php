@@ -36,8 +36,12 @@ class MoviesParserAdmin extends ItemAdmin {
         0 => 'Movie weight',
         1 => 'Random',
     );
+    public $multi_rule_type = array(
+        0 => 'Regexp',
+        1 => 'Xpath',
+    );
     public $parse_number = array(1 => 1, 2 => 2, 3 => 3, 5 => 5, 7 => 7, 10 => 10, 20 => 20, 35 => 35, 50 => 50, 75 => 75, 100 => 100, 200 => 200, 500 => 500, 1000 => 1000);
-    public $gen_urls_number = array(10 => 10, 100 => 100, 500 => 500, 1000 => 1000);    
+    public $gen_urls_number = array(10 => 10, 100 => 100, 500 => 500, 1000 => 1000);
     public $camp_state = array(
         1 => array('title' => 'Active'),
         4 => array('title' => 'Done'),
@@ -131,6 +135,7 @@ class MoviesParserAdmin extends ItemAdmin {
     );
     public $bulk_actions = array(
         'post_status_new' => 'Post status New',
+        'url_status_exist' => 'URL status exist',
         'validate_arhive' => 'Validate Arhive len',
         'delete_url' => 'Delete URL',
         'delete_post' => 'Delete Post',
@@ -178,7 +183,7 @@ class MoviesParserAdmin extends ItemAdmin {
         0 => 'List agents',
         1 => 'Generate',
     );
-    
+
     /* Generate urls */
     public $rwt_movie_type = array(
         'a' => 'All',
@@ -271,6 +276,10 @@ class MoviesParserAdmin extends ItemAdmin {
                             }
                             print '<textarea style="width:90%; height:500px">' . implode("\n", $items) . '</textarea>';
                         }
+                        exit;
+                    }else if ($_GET['export_posts']) {
+                        print '<h2>Export campaign posts</h2>';
+                        $posts = $this->mp->save_all_posts($cid);
                         exit;
                     } else if ($_GET['export_rules']) {
                         $options = $this->mp->get_options($campaign);
@@ -407,6 +416,8 @@ class MoviesParserAdmin extends ItemAdmin {
                     $preivew_data = $this->preview_parsing($campaign, 'row_rules');
                 } else if (isset($_POST['preview_links'])) {
                     $preivew_data = $this->preview_parser_links($campaign);
+                } else if (isset($_POST['preview_multi'])) {
+                    $preivew_data = $this->preview_parsing($campaign, 'multi');
                 }
                 include(MOVIES_LINKS_PLUGIN_DIR . 'includes/edit_parsing_data.php');
             } else if ($curr_tab == 'links') {
@@ -824,6 +835,12 @@ class MoviesParserAdmin extends ItemAdmin {
                         $this->mp->update_post_status($id, 0);
                     }
                     print "<div class=\"updated\"><p><strong>Updated</strong></p></div>";
+                }else if ($b == 'url_status_exist') {
+                    // Change post status
+                    foreach ($ids as $id) {
+                        $this->mp->update_urls_status($id, 1);
+                    }
+                    print "<div class=\"updated\"><p><strong>Updated</strong></p></div>";
                 } else if ($b == 'validate_arhive') {
                     // Validate arhive
                     foreach ($ids as $id) {
@@ -909,6 +926,7 @@ class MoviesParserAdmin extends ItemAdmin {
 
             if ($form_state['edit_parsing_options']) {
                 $add_result['status'] = isset($form_state['status']) ? $form_state['status'] : 0;
+                $add_result['multi_parsing'] = isset($form_state['multi_parsing']) ? $form_state['multi_parsing'] : 0;
             } else if ($form_state['edit_parsing_data']) {
                 // Rules logic
                 $add_result['rules'] = $this->parser_rules_form($form_state);
@@ -928,6 +946,9 @@ class MoviesParserAdmin extends ItemAdmin {
                     }
                 }
                 $add_result['row_status'] = isset($form_state['row_status']) ? $form_state['row_status'] : 0;
+            } else if ($form_state['multi_parsing_data']) {
+                $add_result['multi_rule_type'] = isset($form_state['multi_rule_type']) ? $form_state['multi_rule_type'] : 0;
+                $add_result['multi_rule'] = base64_encode(stripslashes($form_state['multi_rule']));
             }
 
             $opt_upd = array();
@@ -1093,7 +1114,7 @@ class MoviesParserAdmin extends ItemAdmin {
     /*
      * Rules parser
      */
-
+ 
     public function preview_parsing($campaign, $rules_name = 'rules') {
         $options = $this->mp->get_options($campaign);
         $o = $options['parsing'];
