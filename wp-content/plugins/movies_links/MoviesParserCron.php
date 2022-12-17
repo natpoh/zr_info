@@ -192,7 +192,7 @@ class MoviesParserCron extends MoviesAbstractDB {
     private function proccess_parsing($campaign, $options, $force = false) {
         ini_set('max_execution_time', '300'); //300 seconds = 5 minutes
         set_time_limit(300);
-        
+
         $type_name = 'parsing';
         $cid = $campaign->id;
         $type_opt = $options[$type_name];
@@ -208,19 +208,26 @@ class MoviesParserCron extends MoviesAbstractDB {
             $items = $this->mp->parse_arhives($last_posts, $campaign);
             foreach ($items as $uid => $item) {
                 if ($item) {
+
                     if ($type_opt['multi_parsing'] == 1) {
                         // Multi post parsing
-                        $multi = 0;
-                        foreach ($item as $value) {
-                            $this->parsing_post_add($value, $cid, $uid, $force, $multi);
-                            if ($multi==0){
-                                // Zero for first post only
-                                $multi=1;
+                        $content = '';
+                        foreach ($item as $key => $value) {
+                            $row = '<div id="' . $key . '">'."\n";
+                            foreach ($value as $row_key => $row_value) {
+                                $row .= '<p class="' . $row_key . '">' . trim($row_value) . "</p>\n";
                             }
+                            $row .= "</div>\n";
+                            $content .= $row;
                         }
-                    } else {
-                        $this->parsing_post_add($item, $cid, $uid, $force);
+                        $item = array(
+                            't' => 'Multi ' . $uid,
+                            'content' => $content
+                        );
                     }
+                    
+                    $this->parsing_post_add($item, $cid, $uid, $force);
+
                     $count += 1;
                 } else {
                     $message = 'Can not parse post data';
@@ -244,11 +251,11 @@ class MoviesParserCron extends MoviesAbstractDB {
         return $count;
     }
 
-    private function parsing_post_add($item, $cid, $uid, $force, $multi=0) {
+    private function parsing_post_add($item, $cid, $uid, $force) {
         // Add post
-        if ($multi==0){
-            $post_exist = $this->mp->get_post_by_uid($uid);
-        }
+        
+        $post_exist = $this->mp->get_post_by_uid($uid);
+        
         if (!$post_exist || $force) {
             $title = '';
             $year = '';
@@ -277,7 +284,7 @@ class MoviesParserCron extends MoviesAbstractDB {
 
                 $top_movie = 0;
                 $rating = 0;
-                $this->mp->add_post($uid, $status, $title, $release, $year, $post_options, $top_movie, $rating, $multi);
+                $this->mp->add_post($uid, $status, $title, $release, $year, $post_options, $top_movie, $rating);
 
                 if ($title) {
                     $message = 'Add post: ' . $title;
@@ -702,8 +709,6 @@ class MoviesParserCron extends MoviesAbstractDB {
         $status = 1;
         $this->mp->change_url_state($item->id, $status, true);
     }
-
-
 
     /*
      * Cron async
