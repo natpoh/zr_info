@@ -1011,7 +1011,7 @@ class Import
         $site_id = self::generate_id();
 
 
-        $sql = "UPDATE `commit` SET `status` = 0 , `complete` = NULL  where (`status` = 1 OR `status` = 2 OR `status` = 3 OR `status` = 4 ) and site_id='".$site_id."' and `last_update` < ".(time()-3600);
+        $sql = "UPDATE `commit` SET `status` = 0 , `complete` = NULL  where (`status` = 1 OR `status` = 2 OR `status` = 3 OR `status` = 4 OR `status` = 6 ) and site_id='".$site_id."' and `last_update` < ".(time()-3600);
 
         Pdo_an::db_query($sql);
 
@@ -1198,7 +1198,7 @@ class Import
 
         if ($action == 'sync') { ////curl sinc
 
-            self::service();///delete and change staus for old commit
+            self::service();///delete and change status for old commit
 
 
             $result['sync'] = self::sync($data);             ///sync - send data to remote server and change status to 1
