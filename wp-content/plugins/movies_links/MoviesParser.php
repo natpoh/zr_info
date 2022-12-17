@@ -1352,7 +1352,7 @@ class MoviesParser extends MoviesAbstractDB {
         $query = sprintf("SELECT a.uid, a.arhive_hash, u.cid FROM {$this->db['arhive']} a"
                 . " INNER JOIN {$this->db['url']} u ON u.id = a.uid"
                 . " LEFT JOIN {$this->db['posts']} p ON p.uid = a.uid"
-                . " WHERE a.id>0 " . $np_and . $cid_and
+                . " WHERE a.id>0 AND u.status!=4" . $np_and . $cid_and
                 . " ORDER BY a.id DESC LIMIT %d", (int) $count);
 
         $result = $this->db_results($query);
