@@ -190,6 +190,9 @@ class MoviesParserCron extends MoviesAbstractDB {
     }
 
     private function proccess_parsing($campaign, $options, $force = false) {
+        ini_set('max_execution_time', '300'); //300 seconds = 5 minutes
+        set_time_limit(300);
+        
         $type_name = 'parsing';
         $cid = $campaign->id;
         $type_opt = $options[$type_name];

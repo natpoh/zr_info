@@ -1361,6 +1361,8 @@ class MoviesParser extends MoviesAbstractDB {
     }
 
     public function parse_arhives($items, $campaign, $rules_name = 'rules') {
+        ini_set('max_execution_time', '300'); //300 seconds = 5 minutes
+        set_time_limit(300);
         $ret = array();
         if ($items) {
             $cid = $campaign->id;
