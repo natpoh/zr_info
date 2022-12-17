@@ -3247,7 +3247,7 @@ class MoviesParser extends MoviesAbstractDB {
         return $content;
     }
 
-    private function check_and_create_dir($dst_path) {
+    public function check_and_create_dir($dst_path) {
         $path = '';
         if (ABSPATH) {
             $path = ABSPATH;
@@ -3266,7 +3266,7 @@ class MoviesParser extends MoviesAbstractDB {
         return null;
     }
 
-    private function fileman($way) {
+    public function fileman($way) {
         //Проверка наличия и создание директории
         // string $way - путь к дириктории
         $ret = true;
