@@ -2395,11 +2395,12 @@ class CriticFront extends SearchFacets {
                                 ?>
                             </span>
                         </div>
-                    </div>
-                    <?php if ($total_count > $view_rows) { ?>
-                <h3 class="ns_all"><a href="<?php print $ns_link ?>">Show all related posts: <?php print $total_count ?></a></h3>
-                        <?php
-                    }
+                    </div><?php
+                }
+                ?>
+                <?php if ($total_count > $view_rows) { ?>
+                    <h3 class="ns_all"><a href="<?php print $ns_link ?>">Show all related posts: <?php print $total_count ?></a></h3>
+                    <?php
                 }
                 ?>
 
