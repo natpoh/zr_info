@@ -2628,8 +2628,8 @@ class CriticSearch extends AbstractDB {
                         $post_domain2 = $this->cm->get_domain_by_url($post_cache2->link);
                         $precent_c = 0;
                         if ($debug) {
-                                p_r(array('Domains', $post_domain, $post_domain2));
-                            }
+                            p_r(array('Domains', $post_domain, $post_domain2));
+                        }
                         if ($post_domain != $post_domain2) {
                             $post_content = $this->getUniqueWords(strip_tags($post_cache->content));
                             $post_content2 = $this->getUniqueWords(strip_tags($post_cache2->content));
@@ -2751,6 +2751,28 @@ class CriticSearch extends AbstractDB {
             $wordsArr = array_unique($matchesarray[0]);
             return $wordsArr;
         }
+    }
+
+    /* Newsfilter */
+
+    public function find_in_newsfilter($search_text = '', $limit = 5, $debug = false) {
+        $search_query = sprintf("'@(title,content) (%s)'", $search_text);
+        $match = " AND MATCH(:match)";
+        $start = 0;
+
+
+        $order = ' ORDER BY w DESC';
+        $snippet = ', SNIPPET(title, QUERY()) t, SNIPPET(content, QUERY()) c';
+
+        $sql = sprintf("SELECT id, cid, last_parsing as pdate, date, link, site, type, bias, biastag, description" . $snippet . ", weight() w"
+                . " FROM sites_links WHERE type=0 " . $match . $order . " LIMIT %d,%d ", $start, $limit);
+
+        $this->connect();
+        $result = $this->movie_results($sql, $match, $search_query);
+        if ($debug) {
+            p_r(array($sql, $search_query, $result));
+        }
+        return $result;
     }
 
     /*

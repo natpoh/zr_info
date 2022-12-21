@@ -1,3 +1,6 @@
+1.0.90 - 17.12.2022
+Search scroll to current filter in mob devices
+
 1.0.89 - 15.12.2022
 Join audience and staff
 

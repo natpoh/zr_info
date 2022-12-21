@@ -1418,6 +1418,12 @@ class MoviesAn extends AbstractDBAn {
     public function get_post_link($post) {
         return '/' . $this->get_post_slug($post->type) . '/' . $post->post_name;
     }
+    
+    public function get_movie($id) {
+        $sql = sprintf("SELECT * FROM {$this->db['movie_imdb']} WHERE ID=%d", (int) $id);
+        $result = $this->db_fetch_row($sql);        
+        return $result;
+    }
 
     public function get_movie_name_by_id($id) {
         $sql = sprintf("SELECT title, year FROM {$this->db['movie_imdb']} WHERE ID=%d", (int) $id);
