@@ -568,7 +568,7 @@ class CriticSearch extends AbstractDB {
         $ma = $this->get_ma();
 
         // Search Director
-        $max_directors = 5;
+        $max_directors = 10;
         $director_id = $post->director;
         $director_arr = array($director_id);
         if (strstr($director_id, ',')) {
@@ -636,7 +636,7 @@ class CriticSearch extends AbstractDB {
 
         //Search Cast
         $cast_search = array();
-        $max_actors = 5;
+        $max_actors = 10;
         if ($post->actors) {
             $cast_obj = json_decode($post->actors);
             if (isset($cast_obj->s) && sizeof((array) $cast_obj->s)) {
@@ -658,7 +658,7 @@ class CriticSearch extends AbstractDB {
             $actors = $ma->get_actors($post->id);
 
             if ($actors) {
-                $max_actors = 3;
+             
                 foreach ($actors as $actor) {
                     $name = $actor->name;
                     $i = 0;
