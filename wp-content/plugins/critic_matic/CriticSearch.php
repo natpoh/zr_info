@@ -565,20 +565,48 @@ class CriticSearch extends AbstractDB {
             }
         }
 
+        $ma = $this->get_ma();
+
         // Search Director
+        $max_directors = 5;
         $director_id = $post->director;
         $director_arr = array($director_id);
         if (strstr($director_id, ',')) {
             $director_arr = explode(',', $director_id);
         }
-        $ma = $this->get_ma();
+
         $director_names = array();
+        $i = 0;
         foreach ($director_arr as $director_id) {
             $name_found = $ma->get_actor($director_id);
             if ($name_found) {
-                $director_names[] = $name_found;
+                if ($i > $max_directors) {
+                    break;
+                }
+                $director_names[$name_found] = $this->filter_text($name_found);
+                $i += 1;
             }
         }
+
+        // New metod
+        if (!$director_names) {
+            $directors = $ma->get_directors($post->id);
+            if ($directors) {
+
+                foreach ($directors as $director) {
+                    $name = $director->name;
+                    $i = 0;
+                    if ($name) {
+                        if ($i > $max_directors) {
+                            break;
+                        }
+                        $director_names[$name] = $this->filter_text($name);
+                        $i += 1;
+                    }
+                }
+            }
+        }
+
 
         if ($director_names) {
             $director_str = implode(' ', $director_names);
@@ -607,41 +635,64 @@ class CriticSearch extends AbstractDB {
         }
 
         //Search Cast
-
+        $cast_search = array();
+        $max_actors = 5;
         if ($post->actors) {
-
             $cast_obj = json_decode($post->actors);
-            $cast_search = array();
-
             if (isset($cast_obj->s) && sizeof((array) $cast_obj->s)) {
+                $i = 0;
                 foreach ($cast_obj->s as $value) {
                     $name = trim(strip_tags($value));
+                    if ($i > $max_actors) {
+                        break;
+                    }
                     if ($name) {
-                        $cast_search[] = $name;
+                        $cast_search[$name] = $this->filter_text($name);
+                    }
+                    $i += 1;
+                }
+            }
+        }
+
+        if (!$cast_search) {
+            $actors = $ma->get_actors($post->id);
+
+            if ($actors) {
+                $max_actors = 3;
+                foreach ($actors as $actor) {
+                    $name = $actor->name;
+                    $i = 0;
+                    if ($name) {
+                        if ($i > $max_actors) {
+                            break;
+                        }
+                        $cast_search[$name] = $this->filter_text($name);
+                        $i += 1;
                     }
                 }
             }
+        }
 
-            if ($cast_search) {
 
-                if ($debug) {
-                    $debug_data['cast'] = implode(', ', $cast_search);
-                }
+        if ($cast_search) {
 
-                $cast_found = $this->search_in_ids($ids, $cast_search, $debug);
+            if ($debug) {
+                $debug_data['cast'] = implode(', ', $cast_search);
+            }
 
-                if (sizeof($cast_found)) {
-                    foreach ($cast_found as $item) {
-                        $w = (int) $item->w;
-                        $ret[$item->id]['total'] += $ss['cast_point'];
-                        $ret[$item->id]['score']['cast'] = $ss['cast_point'];
-                        if ($debug) {
-                            if ($w >= 10) {
-                                $ret[$item->id]['debug']['cast title'] = $item->t;
-                            }
-                            if ($w != 10) {
-                                $ret[$item->id]['debug']['cast content'] = $item->c;
-                            }
+            $cast_found = $this->search_in_ids($ids, $cast_search, $debug);
+
+            if (sizeof($cast_found)) {
+                foreach ($cast_found as $item) {
+                    $w = (int) $item->w;
+                    $ret[$item->id]['total'] += $ss['cast_point'];
+                    $ret[$item->id]['score']['cast'] = $ss['cast_point'];
+                    if ($debug) {
+                        if ($w >= 10) {
+                            $ret[$item->id]['debug']['cast title'] = $item->t;
+                        }
+                        if ($w != 10) {
+                            $ret[$item->id]['debug']['cast content'] = $item->c;
                         }
                     }
                 }
@@ -2859,7 +2910,7 @@ class CriticSearch extends AbstractDB {
                     if ($i > $max_prod) {
                         break;
                     }
-                    $filelds[$p] = '"' .$this->filter_text($p).'"';
+                    $filelds[$p] = '"' . $this->filter_text($p) . '"';
                     $i += 1;
                 }
             }
