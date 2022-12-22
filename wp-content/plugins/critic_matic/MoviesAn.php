@@ -104,7 +104,6 @@ class MoviesAn extends AbstractDBAn {
         $this->cm = $cm ? $cm : new CriticMatic();
         $this->db = array(
             'movie_imdb' => 'data_movie_imdb',
-            'actors_all' => 'data_actors_all',
             'movies_meta' => 'search_movies_meta',
             'options' => 'options',
             'data_genre' => 'data_movie_genre',
@@ -114,7 +113,7 @@ class MoviesAn extends AbstractDBAn {
             'data_provider' => 'data_movie_provider',
             'meta_actor' => 'meta_movie_actor',
             'meta_director' => 'meta_movie_director',
-            'actors' => 'data_actors_all',
+            'actors' => 'data_actors',
             'population' => 'data_population_country',
             'power' => 'data_buying_power',
             'options' => 'options',
@@ -175,7 +174,7 @@ class MoviesAn extends AbstractDBAn {
     }
 
     public function get_actor($id) {
-        $sql = sprintf("SELECT primaryName FROM {$this->db['actors_all']} WHERE actor_id=%d", (int) $id);
+        $sql = sprintf("SELECT primaryName FROM {$this->db['actors']} WHERE actor_id=%d", (int) $id);
         $result = $this->db_get_var($sql);
         return $result;
     }
@@ -908,6 +907,14 @@ class MoviesAn extends AbstractDBAn {
      * Actors
      */
 
+    public function get_actors($movie_id = 0, $type = 1) {
+        $sql = sprintf("SELECT * FROM {$this->db['actors']} a "
+                . "INNER JOIN {$this->db['meta_actor']} m ON m.aid = a.actor_id "
+                . "WHERE m.mid=%d AND m.type=%d", $movie_id, $type);
+        $results = $this->db_results($sql);
+        return $results;
+    }
+
     public function get_movies_no_actors_meta($count) {
         $sql = sprintf("SELECT p.id, p.actors FROM {$this->db['movie_imdb']} p "
                 . "LEFT JOIN {$this->db['meta_actor']} m ON p.id = m.mid "
@@ -970,6 +977,20 @@ class MoviesAn extends AbstractDBAn {
     /*
      * Directors
      */
+
+    public function get_directors($movie_id = 0, $type = -1) {
+        
+        $and_type = '';
+        if ($type!=-1){
+            $and_type = " AND m.type=".(int)$type;
+        }
+        
+        $sql = sprintf("SELECT * FROM {$this->db['actors']} a "
+                . "INNER JOIN {$this->db['meta_director']} m ON m.aid = a.actor_id "
+                . "WHERE m.mid=%d".$and_type, $movie_id);
+        $results = $this->db_results($sql);
+        return $results;
+    }
 
     public function get_movies_no_director_meta($count) {
         $sql = sprintf("SELECT * FROM {$this->db['movie_imdb']}  limit %d", (int) $count);
@@ -1078,7 +1099,7 @@ class MoviesAn extends AbstractDBAn {
         return $result;
     }
 
-    public function get_providers_by_type($type = 0, $cache=true) {
+    public function get_providers_by_type($type = 0, $cache = true) {
         if ($cache) {
             static $dict;
             if (is_null($dict)) {
@@ -1098,7 +1119,7 @@ class MoviesAn extends AbstractDBAn {
             }
         }
         $dict[$type] = $ret;
-        
+
         return $ret;
     }
 
@@ -1418,10 +1439,10 @@ class MoviesAn extends AbstractDBAn {
     public function get_post_link($post) {
         return '/' . $this->get_post_slug($post->type) . '/' . $post->post_name;
     }
-    
+
     public function get_movie($id) {
         $sql = sprintf("SELECT * FROM {$this->db['movie_imdb']} WHERE ID=%d", (int) $id);
-        $result = $this->db_fetch_row($sql);        
+        $result = $this->db_fetch_row($sql);
         return $result;
     }
 

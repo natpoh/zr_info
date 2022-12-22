@@ -2792,64 +2792,81 @@ class CriticSearch extends AbstractDB {
           [weight_upd] => 0
           )
          */
+        if ($debug) {
+            print_r($post);
+        }
         $keywords = '';
 
-        $title = '"' . $this->filter_text($post->title). '"';
+        $title = '"' . $this->filter_text($post->title) . '"';
         //$title = $this->filter_text($post->title);
 
-        $keywords =$title;
+        $keywords = $title;
 
-        
+
         $filelds = array('review');
         // Year
         $year = (int) $post->year;
         if ($year) {
-            $filelds[] = $year;
+            $filelds[$year] = $year;
         }
 
+        $ma = $this->get_ma();
 
         // Search Director
-        $director_id = $post->director;
-        $director_arr = array($director_id);
-        if (strstr($director_id, ',')) {
-            $director_arr = explode(',', $director_id);
-        }
-        $ma = $this->get_ma();
-        foreach ($director_arr as $director_id) {
-            $name_found = $ma->get_actor($director_id);
-            if ($name_found) {
-                $filelds[] = $this->filter_text($name_found);
+        $directors = $ma->get_directors($post->id);
+        if ($directors) {
+            $max_directors = 3;
+            foreach ($directors as $director) {
+                $name = $director->Name;
+                $i = 0;
+                if ($name) {
+                    if ($i > $max_directors) {
+                        break;
+                    }
+                    $filelds[$name] = $this->filter_text($name);
+                    $i += 1;
+                }
             }
         }
 
 
         // Actors
-        if ($post->actors) {
-            $cast_obj = json_decode($post->actors);
-            if (isset($cast_obj->s) && sizeof((array) $cast_obj->s)) {
-                foreach ($cast_obj->s as $value) {
-                    $name = trim(strip_tags($value));
-                    if ($name) {
-                        $filelds[] = $this->filter_text($name);
+        $actors = $ma->get_actors($post->id);
+
+        if ($actors) {
+            $max_actors = 3;
+            foreach ($actors as $actor) {
+                $name = $actor->Name;
+                $i = 0;
+                if ($name) {
+                    if ($i > $max_actors) {
+                        break;
                     }
+                    $filelds[$name] = $this->filter_text($name);
+                    $i += 1;
                 }
             }
         }
 
-        // Production
 
         $production = array();
         if ($post->production) {
             $p_obj = json_decode($post->production);
             if ($p_obj) {
+                $i = 0;
+                $max_prod = 3;
                 foreach ($p_obj as $p) {
-                    $filelds[] = $this->filter_text($p);
+                    if ($i > $max_prod) {
+                        break;
+                    }
+                    $filelds[$p] = $this->filter_text($p);
+                    $i += 1;
                 }
             }
         }
 
         if ($filelds) {
-            $keywords .= ' MAYBE (' . implode('|', $filelds).')';
+            $keywords .= ' MAYBE (' . implode('|', $filelds) . ')';
         }
 
 
