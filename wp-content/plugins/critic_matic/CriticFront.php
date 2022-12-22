@@ -2333,7 +2333,7 @@ class CriticFront extends SearchFacets {
         $results = '';
         if ($movie_data) {           
             $search_text = '"' . $movie_data->title . '"';
-            $results = $this->cs->find_in_newsfilter($movie_data, $view_rows, true);
+            $results = $this->cs->find_in_newsfilter($movie_data, $view_rows);
         }
 
         $ns_link = "https://newsfilter.biz/search/" . urlencode($search_text);
