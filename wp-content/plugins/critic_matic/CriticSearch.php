@@ -2755,8 +2755,105 @@ class CriticSearch extends AbstractDB {
 
     /* Newsfilter */
 
-    public function find_in_newsfilter($search_text = '', $limit = 5, $debug = false) {
-        $search_query = sprintf("'@(title,content) (%s)'", $search_text);
+    public function find_in_newsfilter($post = '', $limit = 5, $debug = false) {
+
+        /*
+         * stdClass Object
+          (
+          [id] => 72749
+          [movie_id] => 12530246
+          [rwt_id] => 0
+          [tmdb_id] => 715931
+          [title] => Emancipation
+          [post_name] => emancipation
+          [type] => Movie
+          [genre] => Action,Thriller
+          [release] => 2022-12-09
+          [year] => 2022
+          [country] => United States
+          [language] => English
+          [production] => {"co0546168":"Apple TV+","co0719257":"CAA Media Finance","co0035535":"Escape Artists"}
+          [actors] =>
+          [producers] =>
+          [director] =>
+          [cast_director] =>
+          [writer] =>
+          [box_usa] =>
+          [box_world] =>
+          [productionBudget] => 120000000
+          [keywords] => psychological thriller,killed,freedom
+          [description] => A runaway slave forges through the swamps of Louisiana on a tortuous journey to escape plantation owners that nearly killed him.
+          [data] => {"imdb_title":"Emancipation (2022)","image":"https:\/\/m.media-amazon.com\/images\/M\/MV5BN2RiY2RmMjItMDc1My00ZmViLWJkM2YtZjExNDI5MGM2ZWNiXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_.jpg","year":2022,"creator":{"Organization":"546168,719257,35535,","Person":"171651,"}}
+          [contentrating] => R
+          [rating] => 5.4
+          [add_time] => 1670774410
+          [runtime] => 7920
+          [weight] => 0
+          [weight_upd] => 0
+          )
+         */
+        $keywords = '';
+
+        $title = '"' . $this->filter_text($post->title). '"';
+        //$title = $this->filter_text($post->title);
+
+        $keywords =$title;
+
+        
+        $filelds = array('review');
+        // Year
+        $year = (int) $post->year;
+        if ($year) {
+            $filelds[] = $year;
+        }
+
+
+        // Search Director
+        $director_id = $post->director;
+        $director_arr = array($director_id);
+        if (strstr($director_id, ',')) {
+            $director_arr = explode(',', $director_id);
+        }
+        $ma = $this->get_ma();
+        foreach ($director_arr as $director_id) {
+            $name_found = $ma->get_actor($director_id);
+            if ($name_found) {
+                $filelds[] = $this->filter_text($name_found);
+            }
+        }
+
+
+        // Actors
+        if ($post->actors) {
+            $cast_obj = json_decode($post->actors);
+            if (isset($cast_obj->s) && sizeof((array) $cast_obj->s)) {
+                foreach ($cast_obj->s as $value) {
+                    $name = trim(strip_tags($value));
+                    if ($name) {
+                        $filelds[] = $this->filter_text($name);
+                    }
+                }
+            }
+        }
+
+        // Production
+
+        $production = array();
+        if ($post->production) {
+            $p_obj = json_decode($post->production);
+            if ($p_obj) {
+                foreach ($p_obj as $p) {
+                    $filelds[] = $this->filter_text($p);
+                }
+            }
+        }
+
+        if ($filelds) {
+            $keywords .= ' MAYBE (' . implode('|', $filelds).')';
+        }
+
+
+        $search_query = sprintf("'@(title,content) %s'", $keywords);
         $match = " AND MATCH(:match)";
         $start = 0;
 
@@ -2770,9 +2867,16 @@ class CriticSearch extends AbstractDB {
         $this->connect();
         $result = $this->movie_results($sql, $match, $search_query);
         if ($debug) {
-            p_r(array($sql, $search_query, $result));
+            print_r(array($sql, $search_query, $result));
         }
         return $result;
+    }
+
+    public function filter_text($text = '') {
+        $text = strip_tags($text);
+        $text = preg_replace('/[^a-zA-Z0-9\']+/', ' ', $text);
+        $text = preg_replace('/  /', ' ', $text);
+        return $text;
     }
 
     /*
