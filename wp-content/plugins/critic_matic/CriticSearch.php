@@ -2817,7 +2817,7 @@ class CriticSearch extends AbstractDB {
         if ($directors) {
             $max_directors = 3;
             foreach ($directors as $director) {
-                $name = $director->Name;
+                $name = $director->name;
                 $i = 0;
                 if ($name) {
                     if ($i > $max_directors) {
@@ -2836,7 +2836,7 @@ class CriticSearch extends AbstractDB {
         if ($actors) {
             $max_actors = 3;
             foreach ($actors as $actor) {
-                $name = $actor->Name;
+                $name = $actor->name;
                 $i = 0;
                 if ($name) {
                     if ($i > $max_actors) {
@@ -2859,7 +2859,7 @@ class CriticSearch extends AbstractDB {
                     if ($i > $max_prod) {
                         break;
                     }
-                    $filelds[$p] = $this->filter_text($p);
+                    $filelds[$p] = '"' .$this->filter_text($p).'"';
                     $i += 1;
                 }
             }
@@ -2892,7 +2892,7 @@ class CriticSearch extends AbstractDB {
     public function filter_text($text = '') {
         $text = strip_tags($text);
         $text = preg_replace('/[^a-zA-Z0-9\']+/', ' ', $text);
-        $text = preg_replace('/  /', ' ', $text);
+        $text = trim(preg_replace('/  /', ' ', $text));
         return $text;
     }
 
