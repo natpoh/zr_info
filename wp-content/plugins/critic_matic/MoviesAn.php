@@ -104,6 +104,7 @@ class MoviesAn extends AbstractDBAn {
         $this->cm = $cm ? $cm : new CriticMatic();
         $this->db = array(
             'movie_imdb' => 'data_movie_imdb',
+            'actors_imdb' => 'data_actors_imdb',
             'movies_meta' => 'search_movies_meta',
             'options' => 'options',
             'data_genre' => 'data_movie_genre',
@@ -113,7 +114,7 @@ class MoviesAn extends AbstractDBAn {
             'data_provider' => 'data_movie_provider',
             'meta_actor' => 'meta_movie_actor',
             'meta_director' => 'meta_movie_director',
-            'actors' => 'data_actors',
+            'actors' => 'data_actors_all',
             'population' => 'data_population_country',
             'power' => 'data_buying_power',
             'options' => 'options',
@@ -908,10 +909,11 @@ class MoviesAn extends AbstractDBAn {
      */
 
     public function get_actors($movie_id = 0, $type = 1) {
-        $sql = sprintf("SELECT * FROM {$this->db['actors']} a "
-                . "INNER JOIN {$this->db['meta_actor']} m ON m.aid = a.actor_id "
+        $sql = sprintf("SELECT name FROM {$this->db['actors_imdb']} a "
+                . "INNER JOIN {$this->db['meta_actor']} m ON m.aid = a.id "
                 . "WHERE m.mid=%d AND m.type=%d", $movie_id, $type);
         $results = $this->db_results($sql);
+
         return $results;
     }
 
@@ -985,8 +987,8 @@ class MoviesAn extends AbstractDBAn {
             $and_type = " AND m.type=".(int)$type;
         }
         
-        $sql = sprintf("SELECT * FROM {$this->db['actors']} a "
-                . "INNER JOIN {$this->db['meta_director']} m ON m.aid = a.actor_id "
+        $sql = sprintf("SELECT name FROM {$this->db['actors_imdb']} a "
+                . "INNER JOIN {$this->db['meta_director']} m ON m.aid = a.id "
                 . "WHERE m.mid=%d".$and_type, $movie_id);
         $results = $this->db_results($sql);
         return $results;
