@@ -2325,7 +2325,7 @@ class CriticFront extends SearchFacets {
         return $count;
     }
 
-    public function related_newsfilter_movies($movie_id) {
+    public function related_newsfilter_movies($movie_id, $debug=false) {
         $ma = $this->get_ma();        
         $movie_data = $ma->get_post($movie_id);
 
@@ -2333,7 +2333,7 @@ class CriticFront extends SearchFacets {
         $results = '';
         if ($movie_data) {           
             $search_text = '"' . $movie_data->title . '"';
-            $results = $this->cs->find_in_newsfilter($movie_data, $view_rows);
+            $results = $this->cs->find_in_newsfilter($movie_data, $view_rows, $debug);
         }
 
         $ns_link = "https://newsfilter.biz/search/" . urlencode($search_text);

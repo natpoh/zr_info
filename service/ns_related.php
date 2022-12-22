@@ -29,6 +29,9 @@ $cfront = new CriticFront();
 
 $post_id = (int) $_GET['pid'];
 
+
+$debug = (int) $_GET['debug'];
+
 if ($post_id) {
-    $cfront->related_newsfilter_movies($post_id);
+    $cfront->related_newsfilter_movies($post_id, $debug);
 }
