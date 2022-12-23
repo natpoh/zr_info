@@ -50,6 +50,13 @@ class CriticMatic extends AbstractDB {
     public $post_view_type = array(
         0 => 'Default',
         1 => 'Youtube',
+        2 => 'Odysee',
+        3 => 'Bitchute'
+    );
+    public $post_view_type_url = array(
+        'www.youtube.com' => 1,
+        'odysee.com' => 2,
+        'www.bitchute.com' => 3
     );
     public $post_meta_status = array(
         1 => 'With meta',
@@ -645,19 +652,19 @@ class CriticMatic extends AbstractDB {
             if ($content_after && $result) {
                 $items = array();
                 foreach ($result as $item) {
-                    $items[$item->id]=$item;
+                    $items[$item->id] = $item;
                 }
                 $ids = array_keys($items);
                 $select = " p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, p.view_type";
-                $sql = "SELECT" . $select . " FROM {$this->db['posts']} p WHERE id IN(". implode(",", $ids).")";
-        
+                $sql = "SELECT" . $select . " FROM {$this->db['posts']} p WHERE id IN(" . implode(",", $ids) . ")";
+
                 $content = $this->db_results($sql);
-                
+
                 foreach ($content as $item) {
                     foreach ($items[$item->id] as $key => $value) {
-                        $item->$key=$value;
+                        $item->$key = $value;
                     }
-                    $total[]=$item;
+                    $total[] = $item;
                 }
                 $result = $total;
             }
@@ -3246,6 +3253,17 @@ class CriticMatic extends AbstractDB {
         if (file_exists($ts_dir)) {
             unlink($ts_dir);
         }
+    }
+
+    public function get_post_view_type($url = '') {
+        $view_type = 0;
+        foreach ($this->post_view_type_url as $str => $val) {
+            if (strstr($url, $str)) {                
+                $view_type = $val;
+                break;
+            }
+        }
+        return $view_type;
     }
 
     /*

@@ -390,6 +390,12 @@ function critic_matic_plugin_activation() {
       0 => 'Draft',
       2 => 'Trash'
       );
+     * 
+     * view_type 
+        0 => 'Default',
+        1 => 'Youtube',
+        2 => 'Odysee',
+        3 => 'Bitchute' 
      */
 
     $table_prefix = DB_PREFIX_WP_AN;
@@ -408,13 +414,12 @@ function critic_matic_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('date', 'date_add', 'status', 'type', 'link_hash', 'top_movie'), $table_prefix . "critic_matic_posts");
-
 
     // Add category
     $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_posts` ADD `view_type` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('view_type'), $table_prefix . "critic_matic_posts");
+    
+    critic_matic_create_index_an(array('date', 'date_add', 'status', 'type', 'link_hash', 'top_movie','view_type'), $table_prefix . "critic_matic_posts");
     //
     // Add options
     //$sql = "ALTER TABLE `" . $table_prefix . "critic_parser_log` ADD `uid` int(11) NOT NULL DEFAULT '0'";

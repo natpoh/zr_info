@@ -424,7 +424,6 @@ class CriticCrowd extends AbstractDB {
         $title = $crowd_item->title;
         $author_name = $crowd_item->critic_name;
         $author_id = $crowd_item->critic_id;
-        $view_type = 0;
 
         if (!$author_name) {
             $msg = "The author name is empty";
@@ -437,11 +436,12 @@ class CriticCrowd extends AbstractDB {
             return $data;
         }
 
+        $view_type = $this->cm->get_post_view_type($link);
+        
         // Is youtube
         $youtube = false;
-        if (strstr($link, 'https://www.youtube.com/watch?v=')) {
+        if ($view_type==1) {
             $youtube = true;
-            $view_type = 1;
         }
 
         $cp = $this->cm->get_cp();
