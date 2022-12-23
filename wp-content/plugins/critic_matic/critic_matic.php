@@ -1071,6 +1071,36 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'cid', 'type', 'status'), "critic_crowd_log");
+    
+    // Reviews rating meta
+    /*
+     * cid - critic id
+     * type - meta type
+     * 
+     * status:
+     * 0-new
+     * 1-done
+     * 
+     * percent 0-100
+     * 0 - negative
+     * 100 - positive
+     * 
+     * k - predict accuary 0-1
+     * 
+     * result - rating: 1-5 
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `meta_reviews_rating`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `cid` int(11) NOT NULL DEFAULT '0', 
+                                `type` int(11) NOT NULL DEFAULT '0',  
+                                `status` int(11) NOT NULL DEFAULT '0', 
+                                `percent` int(11) NOT NULL DEFAULT '0', 
+                                `result` int(11) NOT NULL DEFAULT '0',
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('cid', 'type', 'status', 'result'), "meta_reviews_rating");
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {
@@ -1249,4 +1279,15 @@ WHERE
  * SELECT s.newslug, count(*) FROM `data_movie_title_slugs` s INNER JOIN `data_movie_imdb` m ON m.id = s.mid WHERE m.type="Movie" GROUP by s.newslug having count(*) > 1;
  * SELECT s.newslug, count(*) FROM `data_movie_title_slugs` s INNER JOIN `data_movie_imdb` m ON m.id = s.mid WHERE m.type="TVSeries" GROUP by s.newslug having count(*) > 1;
  * SELECT id,oldslug,newslug FROM `data_movie_title_slugs` WHERE oldslug=newslug;
+ * 
+ * 
+ * 
+ * view type
+ * 
+ * SELECT * FROM `wp_bcw98b_critic_matic_posts` WHERE `link` LIKE '%odysee.com%'
+   UPDATE wp_bcw98b_critic_matic_posts SET view_type=2 WHERE `link` LIKE '%odysee.com%'
+   
+ * SELECT * FROM `wp_bcw98b_critic_matic_posts` WHERE `link` LIKE '%www.bitchute.com%'
+   UPDATE wp_bcw98b_critic_matic_posts SET view_type=3 WHERE `link` LIKE '%www.bitchute.com%'    
+ * 
  */
