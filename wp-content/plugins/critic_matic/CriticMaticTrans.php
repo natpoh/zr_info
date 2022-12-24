@@ -245,6 +245,7 @@ class CriticMaticTrans extends AbstractDB {
         $data = array(
             'pid' => $id,
             'date_add' => $date_add,
+            'last_upd' =>  $date_add,
             'status' => $status,
             'content' => $content,
         );
