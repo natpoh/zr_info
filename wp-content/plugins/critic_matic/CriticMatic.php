@@ -3173,7 +3173,18 @@ class CriticMatic extends AbstractDB {
         $this->settings = $this->get_settings();
     }
 
-    public function get_parser_proxy() {
+    public function get_parser_proxy($cache = true) {
+        $id = 1;
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$id])) {
+                return $dict[$id];
+            }
+        }
         $proxy_arr = array();
         $ss = $this->get_settings();
         if ($ss['parser_proxy']) {
@@ -3186,6 +3197,9 @@ class CriticMatic extends AbstractDB {
                     $proxy_arr = array($proxy_text);
                 }
             }
+        }
+        if ($cache) {
+            $dict[$id] = $proxy_arr;
         }
         return $proxy_arr;
     }
@@ -3258,7 +3272,7 @@ class CriticMatic extends AbstractDB {
     public function get_post_view_type($url = '') {
         $view_type = 0;
         foreach ($this->post_view_type_url as $str => $val) {
-            if (strstr($url, $str)) {                
+            if (strstr($url, $str)) {
                 $view_type = $val;
                 break;
             }
