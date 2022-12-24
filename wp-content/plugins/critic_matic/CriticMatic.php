@@ -373,6 +373,11 @@ class CriticMatic extends AbstractDB {
                     PgRatingCalculate::add_movie_rating($meta->fid);
                 }
             }
+        } else {
+            // Find movies from critic
+            if ($pa->top_movie==0 && $this->sync_server){                
+                $this->cs->find_movies_and_reset_meta($id);
+            }
         }
     }
 
