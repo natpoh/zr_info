@@ -196,6 +196,7 @@ class CriticMatic extends AbstractDB {
             'feed_meta' => $table_prefix . 'critic_feed_meta',
             // TS
             'transcriptions' => $table_prefix . 'critic_transcritpions',
+            'reviews_rating'=>'meta_reviews_rating',
         );
         $this->timer_start();
 
@@ -3284,6 +3285,12 @@ class CriticMatic extends AbstractDB {
             }
         }
         return $view_type;
+    }
+    
+    public function get_critic_verdict($pid) {
+        $sql = sprintf("SELECT * FROM {$this->db['reviews_rating']} WHERE cid=%d", (int) $pid);
+        $result = $this->db_fetch_row($sql);
+        return $result;
     }
 
     /*
