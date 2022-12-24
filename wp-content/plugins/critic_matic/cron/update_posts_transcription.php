@@ -44,6 +44,7 @@ $cmt = new CriticMaticTrans($cm);
 if ($t == 1) {
     $cmt->update_posts_transcription($count, $debug, $force);
 } else if ($t == 2) {
+    // One time task unused
     $cmt->update_youtube_urls($count, $debug, $force);
 }
 

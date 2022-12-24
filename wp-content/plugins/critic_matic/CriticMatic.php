@@ -376,7 +376,8 @@ class CriticMatic extends AbstractDB {
         } else {
             // Find movies from critic
             if ($pa->top_movie==0 && $pa->status==1 && $this->sync_server){                
-                $this->cs->find_movies_and_reset_meta($id);
+                $cs = $this->get_cs();
+                $cs->find_movies_and_reset_meta($id);
             }
         }
     }

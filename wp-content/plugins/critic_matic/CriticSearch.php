@@ -2570,7 +2570,7 @@ class CriticSearch extends AbstractDB {
         }
     }
 
-    private function find_movies_and_reset_meta($id, $debug = false) {
+    public function find_movies_and_reset_meta($id, $debug = false) {
         $item = $this->cm->get_post($id);
         $movies_search = $this->search_movies($item->title, $item->content);
         if ($debug) {
