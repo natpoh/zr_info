@@ -154,7 +154,7 @@ function sync_tables($table='')
     }
     else
     {
-        $array_tables = array('data_familysearch_verdict', 'data_forebears_verdict');
+        $array_tables = array('data_familysearch_verdict', 'data_forebears_verdict','meta_reviews_rating');
     }
 
 
