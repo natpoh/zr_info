@@ -232,7 +232,7 @@ class CriticAudience extends AbstractDb {
                 $rtn->err[] = 'Review Text is required.';
             } else {
                 $min_len = 50;
-                $clear_text = $author_name = trim(preg_replace("/[^A-Za-z0-9 ]/", '', strip_tags($posted->ftext)));
+                $clear_text = trim(preg_replace("/[^A-Za-z0-9 ]/", '', strip_tags($posted->ftext)));
                 if (strlen($clear_text) < $min_len) {
                     $rtn->err[] = 'Review Text is too small.';
                 }

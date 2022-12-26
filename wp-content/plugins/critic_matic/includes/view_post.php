@@ -82,14 +82,25 @@ if ($pid) {
                 <tr>
                     <td><?php print __('ZR URL') ?></td>
                     <td><a href="/critics/<?php print $pid ?>">/critics/<?php print $pid ?></td>
-                </tr>                
-            <?php endif; ?>
+                </tr>  
+                <?php
+                $verdict = $this->cm->get_critic_verdict($pid);
+
+                if ($verdict) {
+                    ?>
+                    <tr>
+                        <td><?php print __('Verdict') ?></td>
+                        <td>Percent: <?php print $verdict->percent ?>%. Rating: <?php print $verdict->result ?></td>
+                    </tr>  
+                <?php }
+                ?>
+    <?php endif; ?>
             <tr>
                 <td><?php print __('Author') ?></td>
                 <td>
                     <?php if ($post->aid) { ?>
                         <a href="<?php print $author_url ?>"><?php print $author_name ?></a>
-                    <?php } ?>
+    <?php } ?>
 
                 </td>
             </tr>  
@@ -191,7 +202,7 @@ if ($pid) {
                                 <td><?php print $this->cm->get_movie_state_name($item->state) ?></td>                          
                                 <td><?php print $item->rating ?></td>
                             </tr> 
-                        <?php } ?>
+                <?php } ?>
                     </tbody>
                 </table>    
 
@@ -232,7 +243,7 @@ if ($pid) {
                     <td><?php print $this->theme_post_link($item->cid, $this->cm->get_post_name_by_id($item->cid)) ?></td> 
                     <td><?php print $this->theme_movie_link($item->mid, $this->get_movie_name_by_id($item->mid)) ?></td>  
                 </tr> 
-            <?php } ?>
+        <?php } ?>
         </tbody>
         </table>    
     <?php } ?>
@@ -276,7 +287,7 @@ if ($pid) {
                                     ?></td>                        
                                 <td><?php print $item->w ?></td>                        
                             </tr> 
-                        <?php } ?>
+                <?php } ?>
                     </tbody>
                 </table>    
 
@@ -309,7 +320,7 @@ if ($pid) {
         ?>
         <h2><?php print __('Transcriptions') ?></h2>
         <textarea style="width: 90%; height: 300px;"><?php print $post->tcontent ?></textarea>    
-    <?php
+        <?php
     }
     if ($autor_type == 1) {
         ?>
@@ -317,14 +328,13 @@ if ($pid) {
         <textarea style="width: 90%; height: 600px;">
             <?php
             // Find dublicates
-            $povtors = $this->cs->find_post_povtor($post->title, $post->id, $post->aid, true);            
+            $povtors = $this->cs->find_post_povtor($post->title, $post->id, $post->aid, true);
             ?>
         </textarea>
         <?php
-        if ($povtors){
+        if ($povtors) {
             print '<h3>Dublicates found:</h3>';
             p_r($povtors);
-            
         }
         ?>
     <?php } ?>

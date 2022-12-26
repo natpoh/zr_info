@@ -916,15 +916,15 @@ class CriticFront extends SearchFacets {
         } else {
             // $wp_avatar = $cav->get_or_create_user_avatar(0, $aid, 64);
         }
-        
+
         $author_admin_img = '';
- 
+
         if (!$avatars && !$wp_avatar) {
             // Author image
             $author = $this->cm->get_author($critic->aid);
             $author_options = unserialize($author->options);
             $author_img = $author_options['image'];
-           
+
             if ($author_img) {
                 try {
                     $image = $this->get_local_thumb(100, 100, $author_img);
@@ -936,7 +936,7 @@ class CriticFront extends SearchFacets {
             if (!$author_admin_img) {
                 // Empty image
                 $avatars = $this->get_avatars();
-            }            
+            }
         }
 
         $umeta = '';
@@ -1050,8 +1050,8 @@ class CriticFront extends SearchFacets {
 
         if ($wp_avatar) {
             $actorsdata = $wp_avatar;
-        }else if ($author_admin_img){    
-            $actorsdata =  $author_admin_img;            
+        } else if ($author_admin_img) {
+            $actorsdata = $author_admin_img;
         } else if ($avatars) {
             $array_avatars = $avatars[$stars_data];
 
@@ -2323,6 +2323,160 @@ class CriticFront extends SearchFacets {
         }
 
         return $count;
+    }
+
+    public function related_newsfilter_movies($movie_id, $debug=false) {
+        $ma = $this->get_ma();        
+        $movie_data = $ma->get_post($movie_id);
+
+        $view_rows = 5;
+        $results = '';
+        if ($movie_data) {           
+            $search_text = '"' . $movie_data->title . '"';
+            $results = $this->cs->find_in_newsfilter($movie_data, $view_rows, $debug);
+        }
+
+        $ns_link = "https://newsfilter.biz/search/" . urlencode($search_text);
+
+        /*
+         *                         (
+          [id] => 297208
+          [cid] => 1375
+          [pdate] => 1669692781
+          [date] => 1669687263
+          [link] => /evening-news/
+          [site] => https://www.cbsnews.com/
+          [type] => 0
+          [bias] => 4
+          [biastag] => 0
+          [description] =>
+          [t] => CBS Evening News - Full episodes, interviews, breaking news, videos and online stream - CBS News
+          [c] =>  ...  risk" of lava flows to review their preparation measures. Houston closes ...  him in his newest film, "Emancipation," so soon after the infamous ...
+          [w] => 1602
+         */
+
+        if ($results['list']) {
+            $total_count = $results['count'];
+            ?>
+            <div class="ns_related">
+                <div class="column_header">
+                    <h2>Related posts on Newsfilter: <a href="<?php print $ns_link ?>"> all posts</a></h2>
+                </div>        
+                <?php
+                foreach ($results['list'] as $item) {
+                    $theme_url = $this->theme_item_url($item);
+
+                    $cats_arr = array('bias', 'biastag');
+
+                    $cats_arr = array(
+                        'bias' => array('title' => 0),
+                        'biastag' => array('title' => 0, 'show_tags' => 1),
+                    );
+
+                    $tags = $this->theme_search_tags($item, $cats_arr, $ns_link);
+                    ?>
+                    <div class="ns_item">
+                        <h3 class="tile"><?php print $item->t ?></h3>
+                        <div class="url">
+                            <?php print $theme_url ?>
+                        </div>  
+                        <p class="content"><?php print $item->c ?></p>  
+                        <div class="meta">
+                            <span class="p-date block">
+                                <time><?php
+                                    print date('d.m.Y H:i', $item->date);
+                                    ?></time>
+                            </span>
+
+                            <span class="p-cat block">
+                                <?php
+                                if ($tags) {
+                                    print implode(' ', $tags);
+                                }
+                                ?>
+                            </span>
+                        </div>
+                    </div><?php
+                }
+                ?>
+                <?php if ($total_count > $view_rows) { ?>
+                    <h3 class="ns_all"><a href="<?php print $ns_link ?>">Show all related posts: <?php print $total_count ?></a></h3>
+                    <?php
+                }
+                ?>
+
+            </div>
+            <?php
+        }
+    }
+
+    public function theme_search_tags($item, $cats_arr, $link = '') {
+        $tags = array();
+        $facet_data = array(
+            'bias' => array(
+                'title' => 'Bias rating',
+                'facet_titles' => array(
+                    0 => 'Not rated',
+                    1 => 'Extreme left',
+                    2 => 'Far left',
+                    3 => 'Left',
+                    4 => 'Left-center',
+                    5 => 'Least biased',
+                    6 => 'Right-center',
+                    7 => 'Right',
+                    8 => 'Far right',
+                    9 => 'Extreme right'
+                )
+            ),
+            'biastag' => array(
+                'title' => 'Bias tags',
+                'facet_titles' => array(
+                    1 => 'Conpiracy-pseudoscience',
+                    2 => 'Pro-science',
+                    3 => 'Satire',
+                ),
+            ),);
+
+        foreach ($cats_arr as $tag => $tag_data) {
+            if ($item->$tag >= 0) {
+                $tag_tile = '';
+                if ($tag_data['title']) {
+                    $tag_tile = $facet_data[$tag]['title'];
+                    $tag_tile .= ': ';
+                }
+
+                $title = $item->$tag;
+                if (isset($facet_data[$tag]['facet_titles'][$item->$tag])) {
+                    $title = $facet_data[$tag]['facet_titles'][$item->$tag];
+                } else {
+                    if ($tag_data['show_tags']) {
+                        $title = null;
+                    }
+                }
+
+                if (isset($title)) {
+                    $theme_tag = '<a href="' . $link . '/' . $tag . '_' . $item->$tag . '" rel="category tag">#' . $title . '</a>';
+                    $tags[] = $theme_tag;
+                }
+            }
+        }
+        return $tags;
+    }
+
+    public function theme_item_url($item) {
+        $url = $item->link;
+        if ($item->type == 0) {
+            $url = $item->site . substr($item->link, 1);
+        }
+        $text_url = $url;
+        $domain = $url;
+        if (preg_match('#(http[s]*://)([^/]+)/#', $url, $match)) {
+            $text_url = str_replace($match[2], '<b>' . $match[2] . '</b>', $text_url);
+            $domain = $match[1] . $match[2];
+        }
+        $icon = 'https://www.google.com/s2/favicons?domain=' . $domain;
+        $theme_url = '<img srcset="' . $icon . '" width="16" height="16"> <a target="_blank" href="' . $url . '">' . $text_url . '</a>';
+        return $theme_url;
     }
 
     /*

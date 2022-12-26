@@ -565,20 +565,48 @@ class CriticSearch extends AbstractDB {
             }
         }
 
+        $ma = $this->get_ma();
+
         // Search Director
+        $max_directors = 10;
         $director_id = $post->director;
         $director_arr = array($director_id);
         if (strstr($director_id, ',')) {
             $director_arr = explode(',', $director_id);
         }
-        $ma = $this->get_ma();
+
         $director_names = array();
+        $i = 0;
         foreach ($director_arr as $director_id) {
             $name_found = $ma->get_actor($director_id);
             if ($name_found) {
-                $director_names[] = $name_found;
+                if ($i > $max_directors) {
+                    break;
+                }
+                $director_names[$name_found] = $this->filter_text($name_found);
+                $i += 1;
             }
         }
+
+        // New metod
+        if (!$director_names) {
+            $directors = $ma->get_directors($post->id);
+            if ($directors) {
+
+                foreach ($directors as $director) {
+                    $name = $director->name;
+                    $i = 0;
+                    if ($name) {
+                        if ($i > $max_directors) {
+                            break;
+                        }
+                        $director_names[$name] = $this->filter_text($name);
+                        $i += 1;
+                    }
+                }
+            }
+        }
+
 
         if ($director_names) {
             $director_str = implode(' ', $director_names);
@@ -607,41 +635,64 @@ class CriticSearch extends AbstractDB {
         }
 
         //Search Cast
-
+        $cast_search = array();
+        $max_actors = 10;
         if ($post->actors) {
-
             $cast_obj = json_decode($post->actors);
-            $cast_search = array();
-
             if (isset($cast_obj->s) && sizeof((array) $cast_obj->s)) {
+                $i = 0;
                 foreach ($cast_obj->s as $value) {
                     $name = trim(strip_tags($value));
+                    if ($i > $max_actors) {
+                        break;
+                    }
                     if ($name) {
-                        $cast_search[] = $name;
+                        $cast_search[$name] = $this->filter_text($name);
+                    }
+                    $i += 1;
+                }
+            }
+        }
+
+        if (!$cast_search) {
+            $actors = $ma->get_actors($post->id);
+
+            if ($actors) {
+             
+                foreach ($actors as $actor) {
+                    $name = $actor->name;
+                    $i = 0;
+                    if ($name) {
+                        if ($i > $max_actors) {
+                            break;
+                        }
+                        $cast_search[$name] = $this->filter_text($name);
+                        $i += 1;
                     }
                 }
             }
+        }
 
-            if ($cast_search) {
 
-                if ($debug) {
-                    $debug_data['cast'] = implode(', ', $cast_search);
-                }
+        if ($cast_search) {
 
-                $cast_found = $this->search_in_ids($ids, $cast_search, $debug);
+            if ($debug) {
+                $debug_data['cast'] = implode(', ', $cast_search);
+            }
 
-                if (sizeof($cast_found)) {
-                    foreach ($cast_found as $item) {
-                        $w = (int) $item->w;
-                        $ret[$item->id]['total'] += $ss['cast_point'];
-                        $ret[$item->id]['score']['cast'] = $ss['cast_point'];
-                        if ($debug) {
-                            if ($w >= 10) {
-                                $ret[$item->id]['debug']['cast title'] = $item->t;
-                            }
-                            if ($w != 10) {
-                                $ret[$item->id]['debug']['cast content'] = $item->c;
-                            }
+            $cast_found = $this->search_in_ids($ids, $cast_search, $debug);
+
+            if (sizeof($cast_found)) {
+                foreach ($cast_found as $item) {
+                    $w = (int) $item->w;
+                    $ret[$item->id]['total'] += $ss['cast_point'];
+                    $ret[$item->id]['score']['cast'] = $ss['cast_point'];
+                    if ($debug) {
+                        if ($w >= 10) {
+                            $ret[$item->id]['debug']['cast title'] = $item->t;
+                        }
+                        if ($w != 10) {
+                            $ret[$item->id]['debug']['cast content'] = $item->c;
                         }
                     }
                 }
@@ -2519,7 +2570,7 @@ class CriticSearch extends AbstractDB {
         }
     }
 
-    private function find_movies_and_reset_meta($id, $debug = false) {
+    public function find_movies_and_reset_meta($id, $debug = false) {
         $item = $this->cm->get_post($id);
         $movies_search = $this->search_movies($item->title, $item->content);
         if ($debug) {
@@ -2628,8 +2679,8 @@ class CriticSearch extends AbstractDB {
                         $post_domain2 = $this->cm->get_domain_by_url($post_cache2->link);
                         $precent_c = 0;
                         if ($debug) {
-                                p_r(array('Domains', $post_domain, $post_domain2));
-                            }
+                            p_r(array('Domains', $post_domain, $post_domain2));
+                        }
                         if ($post_domain != $post_domain2) {
                             $post_content = $this->getUniqueWords(strip_tags($post_cache->content));
                             $post_content2 = $this->getUniqueWords(strip_tags($post_cache2->content));
@@ -2751,6 +2802,149 @@ class CriticSearch extends AbstractDB {
             $wordsArr = array_unique($matchesarray[0]);
             return $wordsArr;
         }
+    }
+
+    /* Newsfilter */
+
+    public function find_in_newsfilter($post = '', $limit = 5, $debug = false) {
+
+        /*
+         * stdClass Object
+          (
+          [id] => 72749
+          [movie_id] => 12530246
+          [rwt_id] => 0
+          [tmdb_id] => 715931
+          [title] => Emancipation
+          [post_name] => emancipation
+          [type] => Movie
+          [genre] => Action,Thriller
+          [release] => 2022-12-09
+          [year] => 2022
+          [country] => United States
+          [language] => English
+          [production] => {"co0546168":"Apple TV+","co0719257":"CAA Media Finance","co0035535":"Escape Artists"}
+          [actors] =>
+          [producers] =>
+          [director] =>
+          [cast_director] =>
+          [writer] =>
+          [box_usa] =>
+          [box_world] =>
+          [productionBudget] => 120000000
+          [keywords] => psychological thriller,killed,freedom
+          [description] => A runaway slave forges through the swamps of Louisiana on a tortuous journey to escape plantation owners that nearly killed him.
+          [data] => {"imdb_title":"Emancipation (2022)","image":"https:\/\/m.media-amazon.com\/images\/M\/MV5BN2RiY2RmMjItMDc1My00ZmViLWJkM2YtZjExNDI5MGM2ZWNiXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_.jpg","year":2022,"creator":{"Organization":"546168,719257,35535,","Person":"171651,"}}
+          [contentrating] => R
+          [rating] => 5.4
+          [add_time] => 1670774410
+          [runtime] => 7920
+          [weight] => 0
+          [weight_upd] => 0
+          )
+         */
+        if ($debug) {
+            print_r($post);
+        }
+        $keywords = '';
+
+        $title = '"' . $this->filter_text($post->title) . '"';
+        //$title = $this->filter_text($post->title);
+
+        $keywords = $title;
+
+
+        $filelds = array('review');
+        // Year
+        $year = (int) $post->year;
+        if ($year) {
+            $filelds[$year] = $year;
+        }
+
+        $ma = $this->get_ma();
+
+        // Search Director
+        $directors = $ma->get_directors($post->id);
+        if ($directors) {
+            $max_directors = 3;
+            foreach ($directors as $director) {
+                $name = $director->name;
+                $i = 0;
+                if ($name) {
+                    if ($i > $max_directors) {
+                        break;
+                    }
+                    $filelds[$name] = $this->filter_text($name);
+                    $i += 1;
+                }
+            }
+        }
+
+
+        // Actors
+        $actors = $ma->get_actors($post->id);
+
+        if ($actors) {
+            $max_actors = 3;
+            foreach ($actors as $actor) {
+                $name = $actor->name;
+                $i = 0;
+                if ($name) {
+                    if ($i > $max_actors) {
+                        break;
+                    }
+                    $filelds[$name] = $this->filter_text($name);
+                    $i += 1;
+                }
+            }
+        }
+
+
+        $production = array();
+        if ($post->production) {
+            $p_obj = json_decode($post->production);
+            if ($p_obj) {
+                $i = 0;
+                $max_prod = 3;
+                foreach ($p_obj as $p) {
+                    if ($i > $max_prod) {
+                        break;
+                    }
+                    $filelds[$p] = '"' . $this->filter_text($p) . '"';
+                    $i += 1;
+                }
+            }
+        }
+
+        if ($filelds) {
+            $keywords .= ' MAYBE (' . implode('|', $filelds) . ')';
+        }
+
+
+        $search_query = sprintf("'@(title,content) %s'", $keywords);
+        $match = " AND MATCH(:match)";
+        $start = 0;
+
+
+        $order = ' ORDER BY w DESC';
+        $snippet = ', SNIPPET(title, QUERY()) t, SNIPPET(content, QUERY()) c';
+
+        $sql = sprintf("SELECT id, cid, last_parsing as pdate, date, link, site, type, bias, biastag, description" . $snippet . ", weight() w"
+                . " FROM sites_links WHERE type=0 " . $match . $order . " LIMIT %d,%d ", $start, $limit);
+
+        $this->connect();
+        $result = $this->movie_results($sql, $match, $search_query);
+        if ($debug) {
+            print_r(array($sql, $search_query, $result));
+        }
+        return $result;
+    }
+
+    public function filter_text($text = '') {
+        $text = strip_tags($text);
+        $text = preg_replace('/[^a-zA-Z0-9\']+/', ' ', $text);
+        $text = trim(preg_replace('/  /', ' ', $text));
+        return $text;
     }
 
     /*

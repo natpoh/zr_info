@@ -390,6 +390,12 @@ function critic_matic_plugin_activation() {
       0 => 'Draft',
       2 => 'Trash'
       );
+     * 
+     * view_type 
+        0 => 'Default',
+        1 => 'Youtube',
+        2 => 'Odysee',
+        3 => 'Bitchute' 
      */
 
     $table_prefix = DB_PREFIX_WP_AN;
@@ -408,13 +414,12 @@ function critic_matic_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('date', 'date_add', 'status', 'type', 'link_hash', 'top_movie'), $table_prefix . "critic_matic_posts");
-
 
     // Add category
     $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_posts` ADD `view_type` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('view_type'), $table_prefix . "critic_matic_posts");
+    
+    critic_matic_create_index_an(array('date', 'date_add', 'status', 'type', 'link_hash', 'top_movie','view_type'), $table_prefix . "critic_matic_posts");
     //
     // Add options
     //$sql = "ALTER TABLE `" . $table_prefix . "critic_parser_log` ADD `uid` int(11) NOT NULL DEFAULT '0'";
@@ -432,17 +437,23 @@ function critic_matic_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('pid', 'date_add'), $table_prefix . "critic_transcritpions");
+    
 
     // Add status
-    $sql = "ALTER TABLE `" . $table_prefix . "critic_transcritpions` ADD `status` int(11) NOT NULL DEFAULT '0'";
+    $sql = "ALTER TABLE `" . $table_prefix . "critic_transcritpions` ADD `status` int(11) NOT NULL DEFAULT '0'";    
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('status'), $table_prefix . "critic_transcritpions");
-
     // Add type
     $sql = "ALTER TABLE `" . $table_prefix . "critic_transcritpions` ADD `type` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('type'), $table_prefix . "critic_transcritpions");
+    // Interval
+    $sql = "ALTER TABLE `" . $table_prefix . "critic_transcritpions` ADD `update_interval` int(11) NOT NULL DEFAULT '1'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `" . $table_prefix . "critic_transcritpions` ADD `count_err` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `" . $table_prefix . "critic_transcritpions` ADD `last_upd` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);    
+    
+    critic_matic_create_index_an(array('pid', 'date_add','status','type','update_interval','count_err','last_upd'), $table_prefix . "critic_transcritpions");
 
     /*
      * cid - campaign id
@@ -1066,6 +1077,36 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'cid', 'type', 'status'), "critic_crowd_log");
+    
+    // Reviews rating meta
+    /*
+     * cid - critic id
+     * type - meta type
+     * 
+     * status:
+     * 0-new
+     * 1-done
+     * 
+     * percent 0-100
+     * 0 - negative
+     * 100 - positive
+     * 
+     * k - predict accuary 0-1
+     * 
+     * result - rating: 1-5 
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `meta_reviews_rating`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `cid` int(11) NOT NULL DEFAULT '0', 
+                                `type` int(11) NOT NULL DEFAULT '0',  
+                                `status` int(11) NOT NULL DEFAULT '0', 
+                                `percent` int(11) NOT NULL DEFAULT '0', 
+                                `result` int(11) NOT NULL DEFAULT '0',
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('cid', 'type', 'status', 'result'), "meta_reviews_rating");
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {
@@ -1244,4 +1285,15 @@ WHERE
  * SELECT s.newslug, count(*) FROM `data_movie_title_slugs` s INNER JOIN `data_movie_imdb` m ON m.id = s.mid WHERE m.type="Movie" GROUP by s.newslug having count(*) > 1;
  * SELECT s.newslug, count(*) FROM `data_movie_title_slugs` s INNER JOIN `data_movie_imdb` m ON m.id = s.mid WHERE m.type="TVSeries" GROUP by s.newslug having count(*) > 1;
  * SELECT id,oldslug,newslug FROM `data_movie_title_slugs` WHERE oldslug=newslug;
+ * 
+ * 
+ * 
+ * view type
+ * 
+ * SELECT * FROM `wp_bcw98b_critic_matic_posts` WHERE `link` LIKE '%odysee.com%'
+   UPDATE wp_bcw98b_critic_matic_posts SET view_type=2 WHERE `link` LIKE '%odysee.com%'
+   
+ * SELECT * FROM `wp_bcw98b_critic_matic_posts` WHERE `link` LIKE '%www.bitchute.com%'
+   UPDATE wp_bcw98b_critic_matic_posts SET view_type=3 WHERE `link` LIKE '%www.bitchute.com%'    
+ * 
  */

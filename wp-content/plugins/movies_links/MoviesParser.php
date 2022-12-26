@@ -2834,74 +2834,32 @@ class MoviesParser extends MoviesAbstractDB {
                 unlink($full_path);
             }
 
-            $min_words = 6;
-            $max_words = 18;
+
 
             foreach ($ids as $item) {
                 $post = $this->get_post_by_id($item->id);
-
-
                 $options = unserialize($post->options);
                 $content = '';
                 if (isset($options['content'])) {
                     $content = base64_decode($options['content']);
                     if ($content) {
-                        $content = strip_tags($content);
-                        $content = str_replace("...", " ", $content);
-                        $content = str_replace("\n", " ", $content);
-                        $content = preg_replace('/(\.|;|\?|\!)/', "\n", $content);
-                        $content_arr = explode("\n", $content);
-                        $new_lines = '';
-                        $append = '';
-                        foreach ($content_arr as $pred) {
-                            $pred = preg_replace('/[^a-zA-Z\']+/', ' ', $pred);
-                            $pred = preg_replace('/  /', ' ', $pred);
-                            $pred = trim($pred);
-                            if ($pred) {
-                                // Min words
-                                $append .= ' ' . $pred;
-                            }
-                            $append = trim($append);
-                            $words = explode(" ", $append);
-                            $len = sizeof($words);
-                            if ($len > $min_words) {
 
-                                if ($len > $max_words) {
-                                    // Max words
-                                    $delim = $len;
-                                    $k = 2;
-                                    while ($delim > $max_words) {
-                                        $delim = ceil($delim / $k);
-                                        $k += 1;
-                                    }
-
-                                    $app = '';
-                                    $i = 0;
-                                    $append = '';
-                                    foreach ($words as $w) {
-                                        $i += 1;
-                                        $append .= ' ' . $w;
-
-                                        if ($i > $delim) {
-                                            $append=trim($append);
-                                            if ($append) {
-                                                $new_lines .= $append . PHP_EOL;
-                                            }
-                                            $append = '';
-                                            $i = 0;
-                                        }
-                                    }
-                                    $append = '';
-                                } else {
-                                    $new_lines .= $append . PHP_EOL;
-                                    $append = '';
-                                }
+                        $content_arr = array();
+                        if (preg_match_all('/<div[^>]+>.*<\/div>/Us', $content, $matches)) {
+                            foreach ($matches[0] as $row) {
+                                $row = strip_tags($row);
+                                $row = str_replace("\n", " ", $row);
+                                $row = preg_replace('/[^a-zA-Z\']+/', ' ', $row);
+                                $row = preg_replace('/  /', ' ', $row);
+                                $count = count(explode(' ', $row));
+                                $content_arr[] = $row;
                             }
                         }
-                        $content = $new_lines;
+
+                        $content = implode(PHP_EOL, $content_arr);
                     }
                 }
-               
+
                 if ($content) {
                     file_put_contents($full_path, $content, FILE_APPEND | LOCK_EX);
                 }
@@ -2909,11 +2867,70 @@ class MoviesParser extends MoviesAbstractDB {
         }
     }
 
+    private function strip_content_lines($content) {
+        $min_words = 6;
+        $max_words = 18;
+        $content = strip_tags($content);
+        $content = str_replace("...", " ", $content);
+        $content = str_replace("\n", " ", $content);
+        $content = preg_replace('/(\.|;|\?|\!)/', "\n", $content);
+        $content_arr = explode("\n", $content);
+        $new_lines = '';
+        $append = '';
+        foreach ($content_arr as $pred) {
+            $pred = preg_replace('/[^a-zA-Z\']+/', ' ', $pred);
+            $pred = preg_replace('/  /', ' ', $pred);
+            $pred = trim($pred);
+            if ($pred) {
+                // Min words
+                $append .= ' ' . $pred;
+            }
+            $append = trim($append);
+            $words = explode(" ", $append);
+            $len = sizeof($words);
+            if ($len > $min_words) {
+
+                if ($len > $max_words) {
+                    // Max words
+                    $delim = $len;
+                    $k = 2;
+                    while ($delim > $max_words) {
+                        $delim = ceil($delim / $k);
+                        $k += 1;
+                    }
+
+                    $app = '';
+                    $i = 0;
+                    $append = '';
+                    foreach ($words as $w) {
+                        $i += 1;
+                        $append .= ' ' . $w;
+
+                        if ($i > $delim) {
+                            $append = trim($append);
+                            if ($append) {
+                                $new_lines .= $append . PHP_EOL;
+                            }
+                            $append = '';
+                            $i = 0;
+                        }
+                    }
+                    $append = '';
+                } else {
+                    $new_lines .= $append . PHP_EOL;
+                    $append = '';
+                }
+            }
+        }
+        $content = $new_lines;
+        return $content;
+    }
+
     public function get_full_export_path($cid) {
         $export_path = $this->ml->export_path;
         $cid_path = $export_path . $cid . '/';
         $this->check_and_create_dir($cid_path);
-        $full_path = $cid_path . 'posts.csv';
+        $full_path = $cid_path . 'posts.txt';
 
         return $full_path;
     }

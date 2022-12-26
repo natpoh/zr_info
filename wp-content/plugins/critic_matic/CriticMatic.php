@@ -50,6 +50,13 @@ class CriticMatic extends AbstractDB {
     public $post_view_type = array(
         0 => 'Default',
         1 => 'Youtube',
+        2 => 'Odysee',
+        3 => 'Bitchute'
+    );
+    public $post_view_type_url = array(
+        'www.youtube.com' => 1,
+        'odysee.com' => 2,
+        'www.bitchute.com' => 3
     );
     public $post_meta_status = array(
         1 => 'With meta',
@@ -189,6 +196,7 @@ class CriticMatic extends AbstractDB {
             'feed_meta' => $table_prefix . 'critic_feed_meta',
             // TS
             'transcriptions' => $table_prefix . 'critic_transcritpions',
+            'reviews_rating'=>'meta_reviews_rating',
         );
         $this->timer_start();
 
@@ -365,6 +373,12 @@ class CriticMatic extends AbstractDB {
                     PgRatingCalculate::CalculateRating('', $meta->fid, 0, 1);
                     PgRatingCalculate::add_movie_rating($meta->fid);
                 }
+            }
+        } else {
+            // Find movies from critic
+            if ($pa->top_movie==0 && $pa->status==1 && $this->sync_server){                
+                $cs = $this->get_cs();
+                $cs->find_movies_and_reset_meta($id);
             }
         }
     }
@@ -645,19 +659,19 @@ class CriticMatic extends AbstractDB {
             if ($content_after && $result) {
                 $items = array();
                 foreach ($result as $item) {
-                    $items[$item->id]=$item;
+                    $items[$item->id] = $item;
                 }
                 $ids = array_keys($items);
                 $select = " p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, p.view_type";
-                $sql = "SELECT" . $select . " FROM {$this->db['posts']} p WHERE id IN(". implode(",", $ids).")";
-        
+                $sql = "SELECT" . $select . " FROM {$this->db['posts']} p WHERE id IN(" . implode(",", $ids) . ")";
+
                 $content = $this->db_results($sql);
-                
+
                 foreach ($content as $item) {
                     foreach ($items[$item->id] as $key => $value) {
-                        $item->$key=$value;
+                        $item->$key = $value;
                     }
-                    $total[]=$item;
+                    $total[] = $item;
                 }
                 $result = $total;
             }
@@ -3166,7 +3180,18 @@ class CriticMatic extends AbstractDB {
         $this->settings = $this->get_settings();
     }
 
-    public function get_parser_proxy() {
+    public function get_parser_proxy($cache = true) {
+        $id = 1;
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$id])) {
+                return $dict[$id];
+            }
+        }
         $proxy_arr = array();
         $ss = $this->get_settings();
         if ($ss['parser_proxy']) {
@@ -3179,6 +3204,9 @@ class CriticMatic extends AbstractDB {
                     $proxy_arr = array($proxy_text);
                 }
             }
+        }
+        if ($cache) {
+            $dict[$id] = $proxy_arr;
         }
         return $proxy_arr;
     }
@@ -3246,6 +3274,23 @@ class CriticMatic extends AbstractDB {
         if (file_exists($ts_dir)) {
             unlink($ts_dir);
         }
+    }
+
+    public function get_post_view_type($url = '') {
+        $view_type = 0;
+        foreach ($this->post_view_type_url as $str => $val) {
+            if (strstr($url, $str)) {
+                $view_type = $val;
+                break;
+            }
+        }
+        return $view_type;
+    }
+    
+    public function get_critic_verdict($pid) {
+        $sql = sprintf("SELECT * FROM {$this->db['reviews_rating']} WHERE cid=%d", (int) $pid);
+        $result = $this->db_fetch_row($sql);
+        return $result;
     }
 
     /*

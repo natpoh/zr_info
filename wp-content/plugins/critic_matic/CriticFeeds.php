@@ -284,12 +284,8 @@ class CriticFeeds extends AbstractDBWp {
             $title = $this->escape_title($item->get_title());
             $content = $item->get_content();
 
-            $view_type = 0;
+            $view_type = $this->cm->get_post_view_type($permalink);
 
-            // Youtube view type
-            if (strstr($permalink, 'www.youtube.com')) {
-                $view_type = 1;
-            }
 
             if ($view_type == 0) {
                 // Validate body len
@@ -552,12 +548,7 @@ class CriticFeeds extends AbstractDBWp {
             $content = $item->get_content();
 
 
-            $view_type = 0;
-
-            // Youtube view type
-            if (strstr($permalink, 'www.youtube.com')) {
-                $view_type = 1;
-            }
+            $view_type = $this->cm->get_post_view_type($permalink);
 
             $code = strip_tags($content);
             $curr_len = strlen($code);
