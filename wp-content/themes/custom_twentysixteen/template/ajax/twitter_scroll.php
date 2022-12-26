@@ -23,36 +23,9 @@ if (isset($_GET['id'])) {
     $year = $r->year;
 //filter:verified
 
-    $verifed='filter:verified';
 
-    $atts =array('search'=> '"'.$movie_title.'" '.$verifed.' lang:en');
-    $content_verifed= ctf_init( $atts );
 
-    if (strstr($content_verifed,'Unable to load Tweets'))
-    {
-        $content_verifed='<!--'.$content_verifed.'-->';
-    }
-    else
-    {
-
-        $content_verifed=  '<div class="column_inner_content twitter_content">
-<div class="popup-close"></div>
-            <h3 class="column_header">Blue Check Twitter:</h3>
-
-            <div class="s_container smoched">
-                <div class="column_inner_content_data">
-                    <div  id="twitter_scroll" class="s_container_inner">'.$content_verifed.'</div>
-                    <div class="s_container_load blue_check"></div>
-                </div>
-            </div>
-        </div>';
-
-    }
-
-    
-    $verifed ='-filter:verified';
-
-    $atts =array('search'=> '"'.$movie_title.'" '.$verifed.' lang:en');
+    $atts =array('search'=> '"'.$movie_title.'"  lang:en');
     $content= ctf_init( $atts );
 
     if (strstr($content,'Unable to load Tweets'))
@@ -63,7 +36,7 @@ if (isset($_GET['id'])) {
 
         $content = '<div class="column_inner_content twitter_content">
 <div class="popup-close"></div>
-            <h3 class="column_header">Unverified Twitter:</h3>
+            <h3 class="column_header">Twitter:</h3>
 
             <div class="s_container smoched">
                 <div class="column_inner_content_data">
@@ -74,7 +47,7 @@ if (isset($_GET['id'])) {
         </div>';
     }
 
-    echo $content_verifed.$content;
+    echo $content;
 
 }
 

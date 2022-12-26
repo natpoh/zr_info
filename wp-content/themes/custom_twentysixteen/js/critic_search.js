@@ -30,6 +30,30 @@ jQuery(function ($) {
 
         if (window.location.hash == '#filters') {
             critic_search.menu();
+            var w = $('body').width();
+            if (w <= 990) {
+                $('#search-facets .facet').each(function (i, v) {
+                    var id = $(v).attr('id')
+                    id = id.replace('facet-', '');
+                    if ($("#search-filters li[data-type='" + id + "']").length||$("#search-filters li[data-type='minus-" + id + "']").length) {
+                        
+                        var scroll_to = '#facet-'+id;
+                        var boxTo = $(scroll_to);
+                       
+                        jQuery('#search-facets').animate({
+                            scrollTop: (boxTo.offset().top - 10)
+                        }, {
+                            queue: false,                           
+                            duration: 1000,
+                            complete: function () {                               
+                            }
+                        });
+                        return false;
+                    }
+
+                });
+
+            }
         }
 
         $('.search-filters-btn').click(function () {
@@ -56,9 +80,9 @@ jQuery(function ($) {
         });
 
         $(window).scroll(function () {
-            if ($(this).scrollTop() > 300){
+            if ($(this).scrollTop() > 300) {
                 $('#fiters-btn').addClass('fixed');
-            }else{
+            } else {
                 $('#fiters-btn').removeClass('fixed');
             }
         });

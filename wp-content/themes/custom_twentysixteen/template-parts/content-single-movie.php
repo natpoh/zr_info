@@ -62,36 +62,22 @@ if ($movie_list)
 
     <?php
 ////get reviews
-    require get_template_directory() . '/template/video_colums_template_single.php';
-    require get_template_directory() . '/template/include/emotiondata.php';
+
+
     ?>
     <div class="entry-content">
         <?php
         global $cfront, $review_api;
         if ($review_api == 2) {
+
             $ca = $cfront->get_ca();
             $ca->audience_form_code($post_id);
         }
         ///the_content();
-        ///
-        $post_type = strtolower($post_type);
 
-        if ($post_type=='movie')
-        {
-            $post_type='movies';
-        }
-
-        $link = WP_SITEURL . '/' . $post_type . '/' . $post_name . '/';
-        $pg_idnt = $post_id . ' ' . $link;
-        $comments_account = get_option('disqus_forum_url');
-
-        echo '<div style="text-align: center"><h3 class="column_header">Comments:</h3></div>
-        <div class="not_load" id="disquss_container" data_comments="' . $comments_account . '"  data_title="' . $post_title . '" data_link="' . $link . '" data_idn="' . $pg_idnt . '"></div>';
-
-
-
-        ?>
-        <div id="disqus_recommendations"></div>
+        require get_template_directory() . '/template/video_colums_template_single.php';
+        require get_template_directory() . '/template/include/emotiondata.php';
+?>
 
 
 <div  id="twitter_scroll" data-value="<?php echo  $post_id ?>" class="not_load"></div>
@@ -103,7 +89,7 @@ if ($movie_list)
 <div class="column_header_main">
 
     <div class="column_inner_content 4chan_review">
-            <h3 class="column_header">4Chan Archives:</h3>
+            <h3 class="column_header">4Chan:</h3>
         <div class="s_container smoched">
             <div id="chan_scroll" data-value="<?php echo  $post_id ?>" class="not_load"></div>
             <div class="s_container_smoth">
@@ -119,12 +105,31 @@ if ($movie_list)
 
 
 
+<?php
+$post_type = strtolower($post_type);
+
+if ($post_type=='movie')
+{
+    $post_type='movies';
+}
+
+$link = WP_SITEURL . '/' . $post_type . '/' . $post_name . '/';
+$pg_idnt = $post_id . ' ' . $link;
+$comments_account = get_option('disqus_forum_url');
+
+echo '<div class="column_header" style="text-align: center; margin-top: 35px"><h2>Comments:</h2></div>
+        <div class="not_load" id="disquss_container" data_comments="' . $comments_account . '"  data_title="' . $post_title . '" data_link="' . $link . '" data_idn="' . $pg_idnt . '"></div>';
+
+
+
+?>
+        <div id="disqus_recommendations"></div>
 
 
     </div><!-- .entry-content -->
-    <section class="inner_content">
-        <div  id="similar_movies" data-value="<?php echo  $post_id ?>" class="not_load"></div>
-    </section>
+<!--    <section class="inner_content">-->
+<!--        <div  id="similar_movies" data-value="--><?php //echo  $post_id ?><!--" class="not_load"></div>-->
+<!--    </section>-->
     <footer class="entry-footer">
     </footer><!-- .entry-footer -->
 </article>
