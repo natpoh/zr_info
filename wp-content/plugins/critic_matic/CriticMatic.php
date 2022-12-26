@@ -651,6 +651,7 @@ class CriticMatic extends AbstractDB {
                 . " LEFT JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
                 . $atype_inner . $cid_inner . $ts_inner . $status_query . $cid_and . $and_date_add . $and_date . $aid_and . $type_and . $view_type_and . $ts_and . $meta_type_and . $atype_and . $and_orderby . $limit;
 
+        
 
         if (!$count) {
             //  print $sql;

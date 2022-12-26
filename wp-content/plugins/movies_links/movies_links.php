@@ -12,15 +12,8 @@
 
 /*
  * TODO
- * 1. Campaings admin page
- * 2. Campaign settings:
- * - add urls map
- * - parse url
- * - parse page and find attributes
- * - link pages to movies
  * 
- * Dove mlr class
- * 
+
  */
 
 define('MOVIES_LINKS_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/movies_links/');
@@ -122,7 +115,15 @@ function movies_links_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
-    movies_links_create_index(array('cid', 'pid', 'status', 'link_hash'), 'movies_links_url');
+
+    $sql = "ALTER TABLE `movies_links_url` ADD `date` int(11) NOT NULL DEFAULT '0'";
+    Pdo_ml::db_query($sql);
+
+    $sql = "ALTER TABLE `movies_links_url` ADD `last_upd` int(11) NOT NULL DEFAULT '0'";
+    Pdo_ml::db_query($sql);
+
+
+    movies_links_create_index(array('cid', 'pid', 'status', 'link_hash', 'date', 'last_upd'), 'movies_links_url');
 
     /*
      * uid - url id

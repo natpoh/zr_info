@@ -704,32 +704,36 @@ class CriticFront extends SearchFacets {
                 if (preg_match_all('/<b>([^<]+)<\/b>/', $results, $match)) {
                     $unique_words = array();
                     foreach ($match[1] as $value) {
-                        $unique_words[$value] = $value;
+                        if (strlen($value) > 2) {
+                            $unique_words[$value] = $value;
+                        }
                     }
 
                     $desc = preg_replace('/<div class="transcriptions">.*<\/div>/Us', '', $content);
                     $desc = preg_replace('/<br[^>]*>/', "\n", $desc);
                     $desc = strip_tags($desc);
 
-                    foreach ($unique_words as $key => $value) {
-                        $w_arr = explode(' ', $key);
-                        $reg = '/<span data-time="([0-9]+\:[0-9]+\:[0-9]+)[^"]*">([^<]*)(' . implode('(?: |<[\/]*span[^>]*>)', $w_arr) . ')([^<]*)/';
-                        if (preg_match_all($reg, $content, $match)) {
-                            for ($i = 0; $i < sizeof($match[0]); $i++) {
-                                $time_str = $match[1][$i];
-                                $time_sec = strtotime($time_str) - strtotime('TODAY');
+                    if ($unique_words) {
+                        foreach ($unique_words as $key => $value) {
+                            $w_arr = explode(' ', $key);
+                            $reg = '/<span data-time="([0-9]+\:[0-9]+\:[0-9]+)[^"]*">([^<]*)(' . implode('(?: |<[\/]*span[^>]*>)', $w_arr) . ')([^<]*)/';
+                            if (preg_match_all($reg, $content, $match)) {
+                                for ($i = 0; $i < sizeof($match[0]); $i++) {
+                                    $time_str = $match[1][$i];
+                                    $time_sec = strtotime($time_str) - strtotime('TODAY');
 
-                                $time_str_small = preg_replace('/^00\:/', '', $time_str);
+                                    $time_str_small = preg_replace('/^00\:/', '', $time_str);
 
-                                $timecodes[$time_sec] = $time_str_small . ' "... ' . $match[2][$i] . ' <b>' . $match[3][$i] . '</b> ' . $match[4][$i] . ' ..."';
+                                    $timecodes[$time_sec] = $time_str_small . ' "... ' . $match[2][$i] . ' <b>' . $match[3][$i] . '</b> ' . $match[4][$i] . ' ..."';
+                                }
                             }
-                        }
 
-                        $reg_desc = '/.*' . $value . '.*/';
-                        if (preg_match_all($reg_desc, $desc, $match)) {
-                            for ($i = 0; $i < sizeof($match[0]); $i++) {
-                                $result = $match[0][$i];
-                                $desc_results[] = str_replace($value, '<b>' . $value . '</b>', $result);
+                            $reg_desc = '/.*' . $value . '.*/';
+                            if (preg_match_all($reg_desc, $desc, $match)) {
+                                for ($i = 0; $i < sizeof($match[0]); $i++) {
+                                    $result = $match[0][$i];
+                                    $desc_results[] = str_replace($value, '<b>' . $value . '</b>', $result);
+                                }
                             }
                         }
                     }
@@ -2325,13 +2329,13 @@ class CriticFront extends SearchFacets {
         return $count;
     }
 
-    public function related_newsfilter_movies($movie_id, $debug=false) {
-        $ma = $this->get_ma();        
+    public function related_newsfilter_movies($movie_id, $debug = false) {
+        $ma = $this->get_ma();
         $movie_data = $ma->get_post($movie_id);
 
         $view_rows = 5;
         $results = '';
-        if ($movie_data) {           
+        if ($movie_data) {
             $search_text = '"' . $movie_data->title . '"';
             $results = $this->cs->find_in_newsfilter($movie_data, $view_rows, $debug);
         }

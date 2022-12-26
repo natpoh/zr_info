@@ -477,10 +477,11 @@ class MoviesParser extends MoviesAbstractDB {
 
         // Status 'NEW'
         $status = 0;
+        
+        $date = $this->curr_time();
 
-
-        $sql = sprintf("INSERT INTO {$this->db['url']} (cid,pid,status,link_hash,link) "
-                . "VALUES ('%d','%d','%d','%s','%s')", (int) $cid, (int) $pid, (int) $status, $link_hash, $this->escape($link));
+        $sql = sprintf("INSERT INTO {$this->db['url']} (cid,pid,status,date,link_hash,link) "
+                . "VALUES ('%d','%d','%d','%d','%s','%s')", (int) $cid, (int) $pid, (int) $status, (int) $date, $link_hash, $this->escape($link));
 
         $this->db_query($sql);
 
