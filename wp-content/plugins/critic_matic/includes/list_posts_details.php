@@ -8,10 +8,9 @@
     <input type="hidden" name="page" value="critic_matic">
 </form>
 <?php
-
 print $tabs;
 
-if (isset($filters_tabs['filters'])){
+if (isset($filters_tabs['filters'])) {
     print implode("\n", array_values($filters_tabs['filters']));
 }
 
@@ -57,6 +56,9 @@ if (sizeof($posts) > 0) {
             </thead>
             <tbody>
                 <?php
+                if ($author_type == 2) {
+                    $ca = $this->get_ca();
+                }
                 foreach ($posts as $item) {
                     //Post
                     //$post_type = $this->cm->get_post_status($item->status);
@@ -66,7 +68,13 @@ if (sizeof($posts) > 0) {
                     $author_name = $author->name;
                     $a_type = $this->cm->get_author_type($author->type);
                     //Author link
-                    $author_link = $this->theme_author_link($item->aid, $author_name. ' ['.$item->aid.']');
+                    $author_link = $this->theme_author_link($item->aid, $author_name . ' [' . $item->aid . ']');
+
+                    $queue = '';
+                    if ($author_type == 2) {
+                        // Get unic id from post queue
+                        $queue = $ca->get_post_queue_by_date($item->date);                        
+                    }
 
                     //Tags
                     $tags = $this->cm->get_author_tags($item->aid);
@@ -82,7 +90,7 @@ if (sizeof($posts) > 0) {
                     //$movies_search_arr = $this->cs->search_movies($item->title, $item->content);
                     // $movies_search = $movies_search_arr['movies'];
                     ?>
-                <tr class="row" data-author="<?php print $author_name ?>">
+                    <tr class="row" data-author="<?php print $author_name ?>">
                         <th  class="check-column" ><input type="checkbox" name="bulk-<?php print $item->id ?>"></th>
                         <td><?php print $item->id ?></td>     
                         <td><?php print $this->cm->curr_date($item->date) ?></td> 
@@ -95,10 +103,17 @@ if (sizeof($posts) > 0) {
                             <?php print $post_links ?>
                         </td>
                         <td><?php print $this->cm->crop_text(strip_tags($item->content), 100) ?></td>                    
-                        <td><?php print $author_link ?></td> 
+                        <td>
+                            <?php print $author_link ?>
+                            <?php
+                            if ($queue) {
+                                print "<br />" . $queue->unic_id;
+                            }
+                            ?>
+                        </td> 
                         <td><?php print $wp_uid ?></td> 
                         <td><?php print $a_type ?></td> 
-                        <?php if ($author_type == 0 || $author_type == 2) { ?>
+                            <?php if ($author_type == 0 || $author_type == 2) { ?>
                             <td><?php
                                 if ($author_type == 0) {
                                     if ($_GET['transit_rating']) {
@@ -116,7 +131,7 @@ if (sizeof($posts) > 0) {
                                 }
                                 ?>
                             </td> 
-                        <?php } ?>
+        <?php } ?>
                         <td><?php print implode(', ', $tag_arr) ?></td>  
                         <td><?php
                             if ($item->top_movie) {
@@ -136,7 +151,6 @@ if (sizeof($posts) > 0) {
                         <td><?php
                             $item_type = $this->cm->get_post_type($item->type);
                             print $item_type;
-                         
                             ?></td>
                         <td><?php
                             print $this->cs->critic_in_index($item->id) ? 'Index' : 'Not';
@@ -145,7 +159,7 @@ if (sizeof($posts) > 0) {
                             }
                             ?></td>
                     </tr> 
-                <?php } ?>
+    <?php } ?>
             </tbody>
         </table>    
     </form>

@@ -47,7 +47,7 @@ if (sizeof($posts) > 0) {
                     //Post
                     //$post_type = $this->cm->get_post_status($item->status);
                     //Author
-                    $author = $this->cm->get_author($item->aid);
+                    $author = $this->cm->get_author($item->aid);                    
                     $wp_uid = $author->wp_uid;
                     $author_name = $author->name;
                     $author_type = $this->cm->get_author_type($author->type);

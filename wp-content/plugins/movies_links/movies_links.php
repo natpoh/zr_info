@@ -122,7 +122,6 @@ function movies_links_plugin_activation() {
     $sql = "ALTER TABLE `movies_links_url` ADD `last_upd` int(11) NOT NULL DEFAULT '0'";
     Pdo_ml::db_query($sql);
 
-
     movies_links_create_index(array('cid', 'pid', 'status', 'link_hash', 'date', 'last_upd'), 'movies_links_url');
 
     /*
@@ -384,6 +383,38 @@ function movies_links_plugin_activation() {
     if (function_exists('critic_matic_create_index_an')) {
         critic_matic_create_index_an(array('last_upd', 'verdict', 'lastname'), 'data_forebears_verdict');
     }
+
+    /*
+     * fchan
+     * date - parsing date
+     * fdate - fchan post date
+     * fpid - fchan post id
+     * fblink - post back link
+     * ftype 0-open, 1-reply
+     * uid - url id
+     * mid - movie id     
+     * rating - auto rating 0-100
+     * result - rating result 1-5
+     * 
+     */
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_fchan_posts`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `date` int(11) NOT NULL DEFAULT '0',
+                                `fdate` int(11) NOT NULL DEFAULT '0',
+                                `fpid` int(11) NOT NULL DEFAULT '0',
+                                `ftype` int(11) NOT NULL DEFAULT '0',
+                                `fblink` int(11) NOT NULL DEFAULT '0',
+                                `status` int(11) NOT NULL DEFAULT '0',
+                                `uid` int(11) NOT NULL DEFAULT '0',
+                                `mid` int(11) NOT NULL DEFAULT '0',
+                                `rating` int(11) NOT NULL DEFAULT '0',
+                                `result` int(11) NOT NULL DEFAULT '0',                                                                
+                                `content` text default NULL,                                      
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_ml::db_query($sql);
+    movies_links_create_index(array('date', 'fdate', 'fpid', 'ftype', 'fblink', 'rating', 'result', 'uid', 'mid', 'status'), 'data_fchan_posts');
 }
 
 function movies_links_create_index($names = array(), $table_name = '') {

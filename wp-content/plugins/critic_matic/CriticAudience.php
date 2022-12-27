@@ -178,15 +178,15 @@ class CriticAudience extends AbstractDb {
                 $rtn->err[] = 'You have failed the spambot check. Code 1';
             }
 
-
+            $user = wp_get_current_user();
+            $uid = $user->exists() ? $user->ID : 0;
+                        
             // Anon review            
             $anon_review = $posted->fname ? false : true;
 
-            $uid = 0;
-            if (!$anon_review) {
-                // Check login
-                $user = wp_get_current_user();
-                $uid = $user->exists() ? $user->ID : 0;
+            
+            if ($uid) {
+                $anon_review=false;                
             }
 
             // Unique id post ip and user agent hash
@@ -905,6 +905,12 @@ class CriticAudience extends AbstractDb {
 
     public function get_post_queue($id) {
         $query = sprintf("SELECT * FROM {$this->db['audience']} WHERE id=%d", (int) $id);
+        $result = $this->db_fetch_row($query);
+        return $result;
+    }
+    
+    public function get_post_queue_by_date($date) {
+        $query = sprintf("SELECT * FROM {$this->db['audience']} WHERE date=%d", (int) $date);
         $result = $this->db_fetch_row($query);
         return $result;
     }

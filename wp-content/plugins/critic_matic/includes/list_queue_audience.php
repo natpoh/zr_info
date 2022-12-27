@@ -22,6 +22,7 @@ if (sizeof($posts) > 0) {
                 <th><?php print __('WP Uid') ?></th> 
                 <th><?php print __('IP') ?></th>     
                 <th><?php print __('IP list') ?></th>
+                <th><?php print __('Unic id') ?></th> 
             </tr>
         </thead>
         <tbody>
@@ -71,6 +72,7 @@ if (sizeof($posts) > 0) {
                     <td><?php print $item->wp_uid; ?></td> 
                     <td><?php print $ip ?></td> 
                     <td><?php print $ip_type_name ?></td>
+                    <td><?php print $item->unic_id; ?></td>                     
                 </tr> 
             <?php } ?>
         </tbody>

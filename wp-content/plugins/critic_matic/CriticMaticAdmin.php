@@ -572,7 +572,8 @@ class CriticMaticAdmin {
             $per_page = $this->cm->perpage;
             $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
             $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order, false, false);
-
+            
+            $author_type = isset($_GET['author_type']) ? (int) $_GET['author_type'] : -1;
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_details.php');
         } else if ($curr_tab == 'meta') {
