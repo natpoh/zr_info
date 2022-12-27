@@ -477,7 +477,7 @@ class MoviesParser extends MoviesAbstractDB {
 
         // Status 'NEW'
         $status = 0;
-        
+
         $date = $this->curr_time();
 
         $sql = sprintf("INSERT INTO {$this->db['url']} (cid,pid,status,date,link_hash,link) "
@@ -1129,8 +1129,10 @@ class MoviesParser extends MoviesAbstractDB {
         }
 
 
-        $message = 'Urls generated: ' . $total_gen;
-        $this->log_info($message, $cid, 0, 1);
+        if ($total_gen > 0) {
+            $message = 'Urls generated: ' . $total_gen;
+            $this->log_info($message, $cid, 0, 1);
+        }
 
         return $ret;
     }
