@@ -415,6 +415,24 @@ function movies_links_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
     movies_links_create_index(array('date', 'fdate', 'fpid', 'ftype', 'fblink', 'rating', 'result', 'uid', 'mid', 'status'), 'data_fchan_posts');
+    
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_fchan_log`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                
+                                `date` int(11) NOT NULL DEFAULT '0',
+                                `uid` int(11) NOT NULL DEFAULT '0',
+                                `type` int(11) NOT NULL DEFAULT '0',
+                                `status` int(11) NOT NULL DEFAULT '0',
+                                `time_total` int(11) NOT NULL DEFAULT '0',
+                                `posts` int(11) NOT NULL DEFAULT '0',
+                                `pages` int(11) NOT NULL DEFAULT '0',
+                                `posts_found` int(11) NOT NULL DEFAULT '0',
+                                `proxy` int(11) NOT NULL DEFAULT '0',
+				`message` varchar(255) NOT NULL default '',                         
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_ml::db_query($sql);
+    movies_links_create_index(array('date','uid', 'type', 'status'), 'data_fchan_log');
+    
 }
 
 function movies_links_create_index($names = array(), $table_name = '') {
