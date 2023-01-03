@@ -203,9 +203,7 @@ class CriticSearch extends AbstractDB {
     }
 
     public function get_ma() {
-        // Get criti
         if (!$this->ma) {
-            //init cma
             if (!class_exists('MoviesAn')) {
                 require_once( CRITIC_MATIC_PLUGIN_DIR . 'MoviesAn.php' );
             }
@@ -658,7 +656,7 @@ class CriticSearch extends AbstractDB {
             $actors = $ma->get_actors($post->id);
 
             if ($actors) {
-             
+
                 foreach ($actors as $actor) {
                     $name = $actor->name;
                     $i = 0;
@@ -2807,8 +2805,35 @@ class CriticSearch extends AbstractDB {
     /* Newsfilter */
 
     public function find_in_newsfilter($post = '', $limit = 5, $debug = false) {
+        $ma = $this->get_ma();
+        $db_keywords = $ma->get_nf_keywords($post->id);
+        if ($db_keywords){
+            $keywords = $db_keywords;
+        } else {            
+            $keywords = $this->get_nf_keywords($post, $debug);
+            $ma->add_nf_keywords($keywords, $post->id);
+        }
+        $search_query = sprintf("'@(title,content) %s'", $keywords);
+        $match = " AND MATCH(:match)";
+        $start = 0;
 
-        /*
+
+        $order = ' ORDER BY w DESC';
+        $snippet = ', SNIPPET(title, QUERY()) t, SNIPPET(content, QUERY()) c';
+
+        $sql = sprintf("SELECT id, cid, last_parsing as pdate, date, link, site, type, bias, biastag, description" . $snippet . ", weight() w"
+                . " FROM sites_links WHERE type=0 " . $match . $order . " LIMIT %d,%d ", $start, $limit);
+
+        $this->connect();
+        $result = $this->movie_results($sql, $match, $search_query);
+        if ($debug) {
+            print_r(array($sql, $search_query, $result));
+        }
+        return $result;
+    }
+
+    public function get_nf_keywords($post, $debug) {
+                /*
          * stdClass Object
           (
           [id] => 72749
@@ -2852,7 +2877,6 @@ class CriticSearch extends AbstractDB {
         //$title = $this->filter_text($post->title);
 
         $keywords = $title;
-
 
         $filelds = array('review');
         // Year
@@ -2919,25 +2943,8 @@ class CriticSearch extends AbstractDB {
         if ($filelds) {
             $keywords .= ' MAYBE (' . implode('|', $filelds) . ')';
         }
-
-
-        $search_query = sprintf("'@(title,content) %s'", $keywords);
-        $match = " AND MATCH(:match)";
-        $start = 0;
-
-
-        $order = ' ORDER BY w DESC';
-        $snippet = ', SNIPPET(title, QUERY()) t, SNIPPET(content, QUERY()) c';
-
-        $sql = sprintf("SELECT id, cid, last_parsing as pdate, date, link, site, type, bias, biastag, description" . $snippet . ", weight() w"
-                . " FROM sites_links WHERE type=0 " . $match . $order . " LIMIT %d,%d ", $start, $limit);
-
-        $this->connect();
-        $result = $this->movie_results($sql, $match, $search_query);
-        if ($debug) {
-            print_r(array($sql, $search_query, $result));
-        }
-        return $result;
+        
+        return $keywords;
     }
 
     public function filter_text($text = '') {

@@ -121,6 +121,7 @@ class MoviesAn extends AbstractDBAn {
             'cpi' => 'data_cpi',
             'title_slugs' => 'data_movie_title_slugs',
             'race_rule' => 'data_an_race_rule',
+            'cache_nf_keywords'=>'cache_nf_keywords',
         );
         $this->timer_start();
         $this->get_perpage();
@@ -1648,5 +1649,40 @@ class MoviesAn extends AbstractDBAn {
         }
         $this->db_query($sql);
     }
+    
+    /* Nf kewords */
+    public function get_nf_keywords($mid) {
+        $sql = sprintf("SELECT date, keywords FROM {$this->db['cache_nf_keywords']} WHERE mid=%d", $mid);
+        $result = $this->db_fetch_row($sql);
+                
+        if ($result){
+            $live_time = 86400*30;
+            $curr_time = $this->curr_time();
+            $max_date = $curr_time-$live_time;
+            $date = $result->date;
+            if ($date>$max_date){
+                $keywords = $result->keywords;                
+                return $keywords;
+            }
+        }
+        
+        return '';
+    }
 
+    public function add_nf_keywords($keywords, $mid) {
+        $sql = sprintf("SELECT id FROM {$this->db['cache_nf_keywords']} WHERE mid=%d", $mid);
+        $exist_id = $this->db_get_var($sql);
+        $curr_time = $this->curr_time();
+        $data = array(
+            "date"=>$curr_time,
+            "keywords"=>$keywords,
+        );
+        if ($exist_id){
+            $this->db_update($data, $this->db['cache_nf_keywords'], $exist_id);
+        } else {
+            $data['mid']=$mid;
+            $this->db_insert($data, $this->db['cache_nf_keywords']);
+        }
+    }
+    
 }
