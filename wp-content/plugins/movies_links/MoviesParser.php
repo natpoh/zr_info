@@ -1777,16 +1777,33 @@ class MoviesParser extends MoviesAbstractDB {
         if ($order == "ASC") {
             $and_order = $order;
         }
-
-        $query = sprintf("SELECT p.*, u.pid FROM {$this->db['posts']} p"
+        
+        $query = sprintf("SELECT p.id, u.pid FROM {$this->db['posts']} p"
                 . " INNER JOIN {$this->db['url']} u ON p.uid = u.id"
                 . " WHERE p.id>%d" . $cid_and . $status_and . $status_links_and
                 . " ORDER BY p.id $and_order LIMIT %d", (int) $min_pid, (int) $count);
 
-
         $result = $this->db_results($query);
+        $ret = array();
+        if ($result){
+            $ulrs=array();
+            $ids = array();
+            foreach ($result as $item) {
+                $ids[]=$item->id;
+                $ulrs[$item->id]=$item->pid;
+            }
+            $query = "SELECT * FROM {$this->db['posts']} WHERE id IN(". implode(',', $ids).")";
+            $contents = $this->db_results($query);
+            if ($contents){
+                foreach ($contents as $item) {
+                    $ret_item = $item;
+                    $ret_item->pid=$ulrs[$ret_item->id];
+                    $ret[]=$ret_item;
+                }
+            }
+        }
 
-        return $result;
+        return $ret;
     }
 
     public function get_last_arhives($cid = 0, $start = 0, $count = 10, $top_movie = 0) {
