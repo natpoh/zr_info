@@ -1,15 +1,15 @@
 <?php
 
 /*
- * Get rating from kinopoisk and save it to meta
+ * Get rating from douban and save it to meta
  */
 
-class Kinopoisk extends MoviesAbstractDBAn {
+class Douban extends MoviesAbstractDBAn {
 
     private $ma;
     private $ml;
     private $mp;    
-    private $cid = 24;
+    private $cid = 22;
 
     public function __construct($ml) {
         $this->ml = $ml ? $ml : new MoviesLinks();
@@ -17,17 +17,17 @@ class Kinopoisk extends MoviesAbstractDBAn {
         $this->ma = $this->ml->get_ma();
     }
 
-    public function kinop_cron_meta($count = 10, $force = false, $debug = false) {
+    public function douban_cron_meta($count = 10, $force = false, $debug = false) {
         /*
          * TODO
          * 1. Get ml posts by last_upd
          * 2. Get calculate rating
          * 3. Update or create rating meta
-         *  `kinop_rating` int(11) NOT NULL DEFAULT '0',
-          `kinop_result` int(11) NOT NULL DEFAULT '0',
-          `kinop_date` int(11) NOT NULL DEFAULT '0',
+          `douban_rating` int(11) NOT NULL DEFAULT '0',
+          `douban_result` int(11) NOT NULL DEFAULT '0',
+          `douban_date` int(11) NOT NULL DEFAULT '0',
          */
-        $cron_key = 'kp_cron_rating';
+        $cron_key = 'douban_cron_rating';
 
         $last_id = $this->get_option($cron_key, 0);
         if ($force) {
@@ -47,7 +47,7 @@ class Kinopoisk extends MoviesAbstractDBAn {
                 $options = unserialize($post->options);
 
                 $score_opt = array(
-                    'ratingKinopoisk',
+                    'rating',
                 );
 
                 $rating_update = 0;
@@ -72,9 +72,9 @@ class Kinopoisk extends MoviesAbstractDBAn {
                 // Update rating
                 $data = array(
                     'last_upd' => $time,
-                    'kinop_rating' => $rating_update,
-                    'kinop_result' => $rating_result,
-                    'kinop_date' => $time,
+                    'douban_rating' => $rating_update,
+                    'douban_result' => $rating_result,
+                    'douban_date' => $time,
                     'total_rating'=>$rating_result,
                 );
 

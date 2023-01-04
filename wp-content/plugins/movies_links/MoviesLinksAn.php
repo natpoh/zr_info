@@ -205,17 +205,25 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         $sql = sprintf("SELECT * FROM {$this->db['erating']} WHERE movie_id = %d", (int) $mid);
         $exist = $this->db_results($sql);
         if ($exist) {
-            // Calculate total
+            // Calculate total rating
+            $rating_names = array('kinop_result','douban_result','fchan_result','reviews_result');
+            foreach ($rating_names as $rn) {
+                if (isset($data[$rn])){
+                    $exist->$rn=$data[$rn];
+                }
+            }
             $total = $this->calculate_total($exist);
             $data['total_rating'] = $total;            
+            p_r($exist);
+            p_r($data);
             // Update post            
             $this->sync_update_data($data, $exist->id, $this->db['erating'], true, 10);
             
         } else {            
             // Add post            
             $data['movie_id'] = $mid;
-            $data['date'] = $data['last_upd'];            
-            $data['total_rating'] = $data['kinop_result'];                         
+            $data['date'] = $data['last_upd'];                        
+            p_r($data);
             $this->sync_insert_data($data, $this->db['erating'], false, true, 10);
         }        
     }
