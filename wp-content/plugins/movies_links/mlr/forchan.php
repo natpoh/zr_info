@@ -8,7 +8,7 @@ class Forchan extends MoviesAbstractDBAn {
 
     private $ma;
     private $ml;
-    private $mp;    
+    private $mp;
     private $cid = 30;
 
     public function __construct($ml) {
@@ -36,46 +36,55 @@ class Forchan extends MoviesAbstractDBAn {
 
         $cid = $this->cid;
         $status = 1;
-        $last_posts = $this->mp->get_last_posts($count, $cid, -1, $status, $last_id, "ASC");
+        $last_posts = $this->mp->get_last_upd_urls($cid, $status, $last_id, $count);
+        
+        if ($debug){
+            p_r($last_posts);
+        }
 
         if ($last_posts) {
             $last = end($last_posts);
-            $last_id = $last->id;
+            $last_id = $last->last_upd;
 
             // Get rating            
-            foreach ($last_posts as $post) {
-                $options = unserialize($post->options);
-
-                $score_opt = array(
-                    'rating',
-                );
-
+            foreach ($last_posts as $url) {
+                // Get fchan posts
+                $ratings = $this->mp->get_fchan_posts($url->id);
+                p_r($ratings);
+                $rating_count = 0;
                 $rating_update = 0;
-                foreach ($score_opt as $post_key) {
-                    if (isset($options[$post_key])) {
-                        $field_value = base64_decode($options[$post_key]);
-                        $rating_update = (int) ($field_value * 10);
+                
+                if ($ratings) {                   
+
+                    foreach ($ratings as $item) {
+                        $rating = $item->rating;
+                        $rating_update += $rating;
+                        $rating_count += 1;
+                    }
+                    if ($rating_count) {
+                        $rating_update = $rating_update / $rating_count;
                     }
                 }
-                
-                if ($rating_update==0){
+
+                if ($rating_count == 0) {
                     continue;
                 }
-                
-                $pid = $post->pid;
+
+                $pid = $url->pid;
                 if ($debug) {
                     p_r(array($pid, $rating_update));
                 }
                 $time = $this->curr_time();
-
                 $rating_result = (int) round((($rating_update + 25) / 25), 0);
+
                 // Update rating
                 $data = array(
                     'last_upd' => $time,
-                    'douban_rating' => $rating_update,
-                    'douban_result' => $rating_result,
-                    'douban_date' => $time,
-                    'total_rating'=>$rating_result,
+                    'fchan_rating' => $rating_update,
+                    'fchan_result' => $rating_result,
+                    'fchan_posts' => $rating_count,
+                    'fchan_date' => $time,
+                    'total_rating' => $rating_result,
                 );
 
                 if ($debug) {
@@ -88,6 +97,5 @@ class Forchan extends MoviesAbstractDBAn {
             $this->update_option($cron_key, $last_id);
         }
     }
-
 
 }

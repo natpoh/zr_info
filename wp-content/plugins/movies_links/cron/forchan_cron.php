@@ -41,4 +41,4 @@ $campaign->title = 'archive.4plebs.org';
 
 $fs = $ml->get_campaing_mlr($campaign);
 
-//$fs->forchan_cron_meta($count,$force, $debug);
+$fs->forchan_cron_meta($count, $force, $debug);
