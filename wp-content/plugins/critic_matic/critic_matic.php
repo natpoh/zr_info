@@ -1122,6 +1122,41 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'mid'), "cache_nf_keywords");
+
+    /*
+     * kinop_rating: 0-100
+     * kinop_result: 1-5
+     * douban_rating: 0-100
+     * douban_result: 1-5
+     * fchan_rating: 0-100
+     * fchan_result: 1-5
+     * total_rating: 1-5
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_movie_erating`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `movie_id` int(11) NOT NULL DEFAULT '0', 
+                                `date` int(11) NOT NULL DEFAULT '0',  
+                                `last_upd` int(11) NOT NULL DEFAULT '0', 
+                                `kinop_rating` int(11) NOT NULL DEFAULT '0',
+                                `kinop_result` int(11) NOT NULL DEFAULT '0',
+                                `kinop_date` int(11) NOT NULL DEFAULT '0',
+                                `douban_rating` int(11) NOT NULL DEFAULT '0', 
+                                `douban_result` int(11) NOT NULL DEFAULT '0', 
+                                `douban_date` int(11) NOT NULL DEFAULT '0', 
+                                `fchan_rating` int(11) NOT NULL DEFAULT '0', 
+                                `fchan_result` int(11) NOT NULL DEFAULT '0', 
+                                `fchan_posts` int(11) NOT NULL DEFAULT '0', 
+                                `fchan_date` int(11) NOT NULL DEFAULT '0', 
+                                `reviews_rating` int(11) NOT NULL DEFAULT '0', 
+                                `reviews_result` int(11) NOT NULL DEFAULT '0', 
+                                `reviews_posts` int(11) NOT NULL DEFAULT '0', 
+                                `reviews_date` int(11) NOT NULL DEFAULT '0', 
+                                `total_rating` int(11) NOT NULL DEFAULT '0', 
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('movie_id', 'date', 'last_upd', 'total_rating'), "data_movie_erating");
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {

@@ -22,7 +22,8 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             'fs_country' => 'data_familysearch_country',
             'meta_fs' => 'meta_familysearch',
             'pg_rating' => 'data_pg_rating',
-        );
+            'erating' => 'data_movie_erating',
+            );        
     }
 
     public function get_posts($type = 'a', $get_keys = array(), $limit = 1, $last_id = 0) {
@@ -193,5 +194,61 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         $id = $this->sync_insert_data($data, $this->db['pg_rating'], false, false);
         
         return $id;
+    }
+    
+    /*
+     * ERating
+     */    
+    
+    public function update_erating($mid = 0, $data = array()) {
+        // Get rating      
+        $sql = sprintf("SELECT * FROM {$this->db['erating']} WHERE movie_id = %d", (int) $mid);
+        $exist = $this->db_results($sql);
+        if ($exist) {
+            // Calculate total
+            $total = $this->calculate_total($exist);
+            $data['total_rating'] = $total;            
+            // Update post            
+            $this->sync_update_data($data, $exist->id, $this->db['erating'], true, 10);
+            
+        } else {            
+            // Add post            
+            $data['movie_id'] = $mid;
+            $data['date'] = $data['last_upd'];            
+            $data['total_rating'] = $data['kinop_result'];                         
+            $this->sync_insert_data($data, $this->db['erating'], false, true, 10);
+        }        
+    }
+    
+    public function calculate_total($post) {
+        /* 
+         * kinop_result
+         * douban_result
+         * fchan_result
+         * reviews_result
+         * total_rating
+         * 
+         */
+        $total = 0;
+        $i = 0;
+        if ($post->kinop_result){
+            $total+=$post->kinop_result;
+            $i+=1;
+        }
+        if ($post->douban_result){
+            $total+=$post->douban_result;
+            $i+=1;
+        }
+        if ($post->fchan_result){
+            $total+=$post->fchan_result;
+            $i+=1;
+        }
+        if ($post->reviews_result){
+            $total+=$post->reviews_result;
+            $i+=1;
+        }
+        $total_result = (int) round($total/$i, 0);
+        
+        return $total_result;
     }
 }
