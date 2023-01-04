@@ -215,15 +215,14 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             }
             $total = $this->calculate_total($exist);
             $data['total_rating'] = $total;
-            p_r($exist);
-            p_r($data);
+
             // Update post            
             $this->sync_update_data($data, $exist->id, $this->db['erating'], true, 10);
         } else {
             // Add post            
             $data['movie_id'] = $mid;
             $data['date'] = $data['last_upd'];
-            p_r($data);
+ 
             $this->sync_insert_data($data, $this->db['erating'], false, true, 10);
         }
     }
