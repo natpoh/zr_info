@@ -9,7 +9,6 @@ class Forchan extends MoviesAbstractDBAn {
     private $ma;
     private $ml;
     private $mp;
-    private $cid = 30;
 
     public function __construct($ml) {
         $this->ml = $ml ? $ml : new MoviesLinks();
@@ -34,46 +33,59 @@ class Forchan extends MoviesAbstractDBAn {
             $last_id = 0;
         }
 
-        $cid = $this->cid;
-        $status = 1;
-        $last_posts = $this->mp->get_last_upd_urls($cid, $status, $last_id, $count);
-        
-        if ($debug){
-            p_r($last_posts);
+        // id, uid, mid, rating, result
+        $last_mids = $this->mp->get_fchan_posts_rating($last_id, $count);
+        $uids = array();
+        if ($last_mids) {
+            foreach ($last_mids as $item) {
+                $uids[$item->uid] = 1;
+            }
+        }
+        if ($debug) {
+            p_r($uids);
+            p_r(array('last_id', $last_id));
         }
 
-        if ($last_posts) {
-            $last = end($last_posts);
-            $last_id = $last->last_upd;
+        if ($uids) {
+            $last_posts = array_keys($uids);
+            $last = end($last_mids);
+            $last_id = $last->id;
 
-            // Get rating            
-            foreach ($last_posts as $url) {
-                // Get fchan posts
-                $ratings = $this->mp->get_fchan_posts($url->id);
-                p_r($ratings);
-                $rating_count = 0;
-                $rating_update = 0;
-                
-                if ($ratings) {                   
-
-                    foreach ($ratings as $item) {
-                        $rating = $item->rating;
-                        $rating_update += $rating;
-                        $rating_count += 1;
-                    }
-                    if ($rating_count) {
-                        $rating_update = $rating_update / $rating_count;
+            if ($debug) {
+                p_r($last_posts);
+            }
+            $ratings = array();
+            foreach ($last_posts as $uid) {
+                $last_mids = $this->mp->get_fchan_posts($uid);
+                foreach ($last_mids as $post) {
+                    if ($ratings[$uid]['rating']) {
+                        $ratings[$uid]['rating'] += $post->rating;
+                        $ratings[$uid]['total'] += 1;
+                    } else {
+                        $ratings[$uid]['rating'] = $post->rating;
+                        $ratings[$uid]['total'] = 1;
                     }
                 }
+            }
+
+            if ($debug) {
+                p_r($ratings);
+            }
+
+            foreach ($ratings as $pid => $post) {
+                // Get fchan posts
+
+                $rating_count = $post['total'];
+                $rating_update = (int) round($post['rating'] / $rating_count, 0);
 
                 if ($rating_count == 0) {
                     continue;
                 }
 
-                $pid = $url->pid;
                 if ($debug) {
                     p_r(array($pid, $rating_update));
                 }
+
                 $time = $this->curr_time();
                 $rating_result = (int) round((($rating_update + 25) / 25), 0);
 
