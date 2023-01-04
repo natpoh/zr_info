@@ -45,7 +45,7 @@ if (sizeof($campaigns) > 0) {
                             <?php print $parser->title ?><br />                    
                             <?php
                             $parser_actions = $this->parser_actions($parser);
-                            $parser_url = $parser_url . '&cid=' . $parser->id;
+                            $parser_url = $url . '&cid=' . $parser->id;
                             $action_links = $this->get_filters($parser_actions, $parser_url, $curr_tab = 'none', $front_slug = 'home', $name = 'tab', '', false);
                             print $action_links;
                             ?>
