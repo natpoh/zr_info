@@ -3070,14 +3070,14 @@ class MoviesParser extends MoviesAbstractDB {
      */
     
     public function get_fchan_posts_rating($id = 0, $count = 10) {
-        $sql = sprintf("SELECT id, uid FROM {$this->db['fchan_posts']}"
+        $sql = sprintf("SELECT id, mid FROM {$this->db['fchan_posts']}"
         . " WHERE id>%d AND status=1 ORDER BY id ASC LIMIT %d", $id, $count);
         $results = $this->db_results($sql);        
         return $results;
     }
     
     public function get_fchan_posts($uid = 0) {
-        $sql = sprintf("SELECT rating FROM {$this->db['fchan_posts']} WHERE uid=%d AND status=1", $uid);
+        $sql = sprintf("SELECT rating FROM {$this->db['fchan_posts']} WHERE mid=%d AND status=1", $uid);
         $results = $this->db_results($sql);
         return $results;
     }

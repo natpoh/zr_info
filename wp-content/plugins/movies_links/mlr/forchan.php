@@ -35,19 +35,19 @@ class Forchan extends MoviesAbstractDBAn {
 
         // id, uid, mid, rating, result
         $last_mids = $this->mp->get_fchan_posts_rating($last_id, $count);
-        $uids = array();
+        $mids = array();
         if ($last_mids) {
             foreach ($last_mids as $item) {
-                $uids[$item->uid] = 1;
+                $mids[$item->mid] = 1;
             }
         }
         if ($debug) {
-            p_r($uids);
+            p_r($mids);
             p_r(array('last_id', $last_id));
         }
 
-        if ($uids) {
-            $last_posts = array_keys($uids);
+        if ($mids) {
+            $last_posts = array_keys($mids);
             $last = end($last_mids);
             $last_id = $last->id;
 
@@ -55,15 +55,15 @@ class Forchan extends MoviesAbstractDBAn {
                 p_r($last_posts);
             }
             $ratings = array();
-            foreach ($last_posts as $uid) {
-                $last_mids = $this->mp->get_fchan_posts($uid);
+            foreach ($last_posts as $mid) {
+                $last_mids = $this->mp->get_fchan_posts($mid);
                 foreach ($last_mids as $post) {
-                    if ($ratings[$uid]['rating']) {
-                        $ratings[$uid]['rating'] += $post->rating;
-                        $ratings[$uid]['total'] += 1;
+                    if ($ratings[$mid]['rating']) {
+                        $ratings[$mid]['rating'] += $post->rating;
+                        $ratings[$mid]['total'] += 1;
                     } else {
-                        $ratings[$uid]['rating'] = $post->rating;
-                        $ratings[$uid]['total'] = 1;
+                        $ratings[$mid]['rating'] = $post->rating;
+                        $ratings[$mid]['total'] = 1;
                     }
                 }
             }
