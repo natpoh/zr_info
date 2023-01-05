@@ -204,7 +204,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
     public function update_erating($mid = 0, $data = array()) {
         // Get rating      
         $sql = sprintf("SELECT * FROM {$this->db['erating']} WHERE movie_id = %d", (int) $mid);
-        $exist = $this->db_results($sql);
+        $exist = $this->db_fetch_row($sql);
         if ($exist) {
             // Calculate total rating
             $rating_names = array('kinop_result', 'douban_result', 'fchan_result', 'reviews_result');
