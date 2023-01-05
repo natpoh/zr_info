@@ -3,6 +3,7 @@
 class MoviesLinksAn extends MoviesAbstractDBAn {
 
     public function __construct() {
+        $table_prefix = DB_PREFIX_WP_AN;
         $this->db = array(
             'movie_imdb' => 'data_movie_imdb',
             'actors_all' => 'data_actors_all',
@@ -24,6 +25,8 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             'pg_rating' => 'data_pg_rating',
             'erating' => 'data_movie_erating',
             'fchan_posts'=>'data_fchan_posts',
+            'reviews_rating'=>'meta_reviews_rating',
+            'critic_matic_meta'=>$table_prefix.'critic_matic_posts_meta',
         );
     }
 
@@ -258,4 +261,20 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
 
         return $total_result;
     }
+    
+    public function get_rating_movies($last_id=0, $count=0) {
+        // Get last movie ids
+        $sql = sprintf("SELECT r.id, m.fid FROM {$this->db['reviews_rating']} r"
+        . " INNER JOIN {$this->db['critic_matic_meta']} m ON m.cid=r.cid WHERE r.id>%d ORDER BY r.id ASC LIMIT %d", $last_id, $count);
+        return $this->db_results($sql);
+    }
+    
+    public function get_review_rating_posts($mid) {
+        // Get rating from movies id
+         $sql = sprintf("SELECT r.percent as rating FROM {$this->db['reviews_rating']} r"
+        . " INNER JOIN {$this->db['critic_matic_meta']} m ON m.cid=r.cid WHERE m.fid=%d", $mid);
+        return $this->db_results($sql);
+        
+    }
+    
 }
