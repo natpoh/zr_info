@@ -419,7 +419,7 @@ $sql = "select * from data_actors_meta ".$where." ";
 
 
 
-function movie_keywords($id)
+function movie_keywords($id='')
 {
 
     !class_exists('Movie_Keywords') ? include ABSPATH . "analysis/include/keywords.php" : '';
