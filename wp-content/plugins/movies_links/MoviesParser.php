@@ -17,7 +17,6 @@ class MoviesParser extends MoviesAbstractDB {
             'posts' => 'movies_links_posts',
             'url' => 'movies_links_url',
             'actors_meta' => 'actors_meta',
-            'fchan_posts' => 'data_fchan_posts',
         );
 
         // Init settings
@@ -614,14 +613,6 @@ class MoviesParser extends MoviesAbstractDB {
                 . " LEFT JOIN {$this->db['posts']} p ON u.id = p.uid"
                 . $status_query . $cid_and . $arhive_type_and . $parser_type_and . $links_type_and . $and_date . $and_orderby . $limit;
 
-
-        $result = $this->db_results($query);
-        return $result;
-    }
-
-    public function get_last_upd_urls($cid = 0, $status = 1, $last_upd = 0, $count = 0) {
-        $query = sprintf("SELECT id, cid, pid, last_upd, status, link, link_hash FROM {$this->db['url']}"
-                . " WHERE cid=%d AND status=%d AND last_upd>%d ORDER BY last_upd ASC limit %d", $cid, $status, $last_upd, $count);
 
         $result = $this->db_results($query);
         return $result;
@@ -1786,7 +1777,7 @@ class MoviesParser extends MoviesAbstractDB {
         if ($order == "ASC") {
             $and_order = $order;
         }
-
+        
         $query = sprintf("SELECT p.id, u.pid FROM {$this->db['posts']} p"
                 . " INNER JOIN {$this->db['url']} u ON p.uid = u.id"
                 . " WHERE p.id>%d" . $cid_and . $status_and . $status_links_and
@@ -1794,20 +1785,20 @@ class MoviesParser extends MoviesAbstractDB {
 
         $result = $this->db_results($query);
         $ret = array();
-        if ($result) {
-            $ulrs = array();
+        if ($result){
+            $ulrs=array();
             $ids = array();
             foreach ($result as $item) {
-                $ids[] = $item->id;
-                $ulrs[$item->id] = $item->pid;
+                $ids[]=$item->id;
+                $ulrs[$item->id]=$item->pid;
             }
-            $query = "SELECT * FROM {$this->db['posts']} WHERE id IN(" . implode(',', $ids) . ")";
+            $query = "SELECT * FROM {$this->db['posts']} WHERE id IN(". implode(',', $ids).")";
             $contents = $this->db_results($query);
-            if ($contents) {
+            if ($contents){
                 foreach ($contents as $item) {
                     $ret_item = $item;
-                    $ret_item->pid = $ulrs[$ret_item->id];
-                    $ret[] = $ret_item;
+                    $ret_item->pid=$ulrs[$ret_item->id];
+                    $ret[]=$ret_item;
                 }
             }
         }
@@ -3063,23 +3054,6 @@ class MoviesParser extends MoviesAbstractDB {
             $result = $this->db_results($sql);
         }
         return $result;
-    }
-
-    /*
-     * Fchan posts
-     */
-    
-    public function get_fchan_posts_rating($id = 0, $count = 10) {
-        $sql = sprintf("SELECT id, mid FROM {$this->db['fchan_posts']}"
-        . " WHERE id>%d AND status=1 ORDER BY id ASC LIMIT %d", $id, $count);
-        $results = $this->db_results($sql);        
-        return $results;
-    }
-    
-    public function get_fchan_posts($uid = 0) {
-        $sql = sprintf("SELECT rating FROM {$this->db['fchan_posts']} WHERE mid=%d AND status=1", $uid);
-        $results = $this->db_results($sql);
-        return $results;
     }
 
     /*

@@ -721,6 +721,17 @@ class TMDBIMPORT
 
 
     }
+    function get_data_from_archive($id,$movie_id)
+    {
+        $data = self::get_archive($id,$movie_id);
+
+        ///var_dump($data);
+        if ($data) {
+            $key = array_keys($data);
+            $data_file = $data[$key[0]];
+        }
+        return $data_file;
+    }
 
     public static function get_tmbdb_parse_data($movie_id)
     {
@@ -800,6 +811,7 @@ class TMDBIMPORT
         //var_dump([$company_id,$start,$count,$top_movie]);
 
         $arhives = $mp->get_last_arhives($company_id,$start,$count,$top_movie);
+
 
         ///var_dump($arhives);
 
