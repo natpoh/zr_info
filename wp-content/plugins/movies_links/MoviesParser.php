@@ -1806,7 +1806,7 @@ class MoviesParser extends MoviesAbstractDB {
         return $ret;
     }
 
-    public function get_last_arhives($cid = 0, $start = 0, $count = 10, $top_movie = 0) {
+    public function get_last_arhives($cid = 0, $start = 0, $count = 10, $top_movie = 0,$last_update =0) {
         if ($cid > 0) {
             $cid_and = sprintf(" AND u.cid=%d", (int) $cid);
         }
@@ -1815,11 +1815,16 @@ class MoviesParser extends MoviesAbstractDB {
         if ($top_movie > 0) {
             $and_top_movie = sprintf(' AND p.top_movie=%d', $top_movie);
         }
+        $and_last_update='';
+        if ($last_update)
+        {
+            $and_last_update = ' AND p.last_upd > '.$last_update.' ';
+        }
 
         $query = sprintf("SELECT p.top_movie, a.arhive_hash FROM {$this->db['posts']} p"
                 . " INNER JOIN {$this->db['url']} u ON p.uid = u.id"
                 . " INNER JOIN {$this->db['arhive']} a ON a.uid = u.id"
-                . " WHERE p.id>0" . $and_top_movie . $cid_and
+                . " WHERE p.id>0" . $and_top_movie . $cid_and.$and_last_update
                 . " ORDER BY p.id DESC LIMIT %d,%d", (int) $start, $count);
 
         $result = $this->db_results($query);

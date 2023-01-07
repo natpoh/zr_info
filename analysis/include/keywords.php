@@ -92,9 +92,24 @@ class Movie_Keywords {
     private function update_movie_meta($mid)
     {
 
-    $q="INSERT INTO `meta_movie_keywords_update`(`id`, `mid`, `last_update`) VALUES (NULL,{$mid},".time().")";
-    $r = Pdo_an::db_results_array($q);
-    echo ' updated <br>';
+    $q="SELECT `id` FROM `meta_movie_keywords_update` WHERE `mid` ={$mid}";
+    if (!Pdo_an::db_results_array($q))
+    {
+        $q="INSERT INTO `meta_movie_keywords_update`(`id`, `mid`, `last_update`) VALUES (NULL,{$mid},".time().")";
+        $r = Pdo_an::db_results_array($q);
+        echo ' inserted <br>';
+    }
+    else
+    {
+        $q="UPDATE `meta_movie_keywords_update` SET `last_update`= ".time()." WHERE `mid` = {$mid}";
+        $r = Pdo_an::db_results_array($q);
+
+        echo ' updated <br>';
+    }
+
+
+
+
 
     }
 
@@ -126,7 +141,7 @@ class Movie_Keywords {
         }
 
 ////get movie list
-        $sql ="SELECT `data_movie_imdb`.`id` FROM `data_movie_imdb` left join `meta_movie_keywords_update` 
+        $sql ="SELECT `data_movie_imdb`.`id`, `meta_movie_keywords_update`.last_update FROM `data_movie_imdb` left join `meta_movie_keywords_update` 
        ON `data_movie_imdb`.`id`= meta_movie_keywords_update.mid
         WHERE     ".$where." order by `data_movie_imdb`.`weight` desc LIMIT 1000";
 
@@ -135,10 +150,12 @@ class Movie_Keywords {
         {
             $mid  =$r['id'];
             ///get keyword data
+            $last_update=$r['last_update'];
 
-            echo 'try get '.$mid.'<br>';
 
-            $content =  TMDBIMPORT::get_data_from_archive(17,$mid);
+            echo 'try get '.$mid. ' last_update '.date('H:i Y.m.d',$last_update).'<br>';
+
+            $content =  TMDBIMPORT::get_data_from_archive(17,$mid,$last_update);
             if ($content)
             {
             $this->fill_keys($content,$mid);
@@ -146,7 +163,6 @@ class Movie_Keywords {
            // echo $content;
             ///update movie meta
             $this->update_movie_meta($mid);
-
         }
 
     }

@@ -721,9 +721,9 @@ class TMDBIMPORT
 
 
     }
-    function get_data_from_archive($id,$movie_id)
+    function get_data_from_archive($id,$movie_id,$last_update)
     {
-        $data = self::get_archive($id,$movie_id);
+        $data = self::get_archive($id,$movie_id,$last_update);
 
         ///var_dump($data);
         if ($data) {
@@ -780,7 +780,7 @@ class TMDBIMPORT
         return array('countries'=>$countries,'poster'=>$poster,'title'=>$tmdb_title,'cast'=>$cast,'crew'=>$crew);
 
     }
-    public static function get_archive($company_id=12,$top_movie=0)
+    public static function get_archive($company_id=12,$top_movie=0,$last_update=0)
     {
         $result = [];
 
@@ -810,7 +810,7 @@ class TMDBIMPORT
 
         //var_dump([$company_id,$start,$count,$top_movie]);
 
-        $arhives = $mp->get_last_arhives($company_id,$start,$count,$top_movie);
+        $arhives = $mp->get_last_arhives($company_id,$start,$count,$top_movie,$last_update);
 
 
         ///var_dump($arhives);
@@ -823,7 +823,6 @@ class TMDBIMPORT
                 $result[$item->arhive_hash]=$file;
             }
         }
-
 
         return $result;
     }
