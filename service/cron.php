@@ -8,7 +8,7 @@ if (!defined('ABSPATH'))
 //Abstract DB
 !class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
 
-
+!class_exists('CPULOAD') ? include ABSPATH . "service/cpu_load.php" : '';
 
 global $array_jobs;
 
@@ -410,8 +410,27 @@ if (isset($_GET['runjob']))
 
         if ($_GET['runcron']==1)
         {
+            ///check cpu load
+
+            $load = CPULOAD::check_load();
+
+            global $cron_debug;
+            if ($cron_debug)
+                {
+                    var_dump($load);
+                }
+
+            if ($load['loaded'])
+            {
+                return;
+            }
+
             $cron = new Cronjob;
             $cron->run($array_jobs);
+
+
+
+
         }
 
     }
