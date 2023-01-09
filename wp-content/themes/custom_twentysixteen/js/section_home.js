@@ -484,7 +484,8 @@ function create_rating_content(object, m_id)
         block_class = 'diversity';
         let value = Number(object['diversity']);
         value = value.toFixed(0);
-        if (!value)value=0;
+        if (!value)
+            value = 0;
 
         if (value > 0 || object['diversity_data']) {
             var diversity_data = object['diversity_data'];
@@ -594,8 +595,7 @@ function set_video_scroll(data, block_id, append = '') {
                     // let title = head.html();
                     // head.html('<div class="i_head">'+title+data['html']+'</div>')
                 }
-            }
-            else {
+            } else {
                 for (var i = 1; i <= Number(data['count']); i++) {
                     content += tmpl.replace('{id}', i);
                 }
@@ -621,7 +621,7 @@ function set_video_scroll(data, block_id, append = '') {
                         array_movie.push(b);
 
                     });
-                    if (block_id== 'video_scroll')
+                    if (block_id == 'video_scroll')
                     {
                         array_movie.sort((a, b) => a.release < b.release ? 1 : -1);
                     }
@@ -845,7 +845,9 @@ function add_movie_rating(block_id, data)
                 title = 'Diversity Ratio:';
 
                 let diversity = Number(obj.gender.diversity);
-                if (!diversity){diversity=0;}
+                if (!diversity) {
+                    diversity = 0;
+                }
                 diversity = diversity.toFixed(0);
 
 
@@ -1235,6 +1237,10 @@ function load_ajax_block(block_id) {
         url = window.location.protocol + template_path + block_id_sub + ".php" + request + '&' + request_block;
     }
 
+    if (block_id == 'ns_related_scroll') {
+        url = 'https://info.antiwoketomatoes.com/service/ns_related.php?pid='+parent_id;
+    }
+
     jQuery.ajax({
         type: "GET",
         url: url,
@@ -1294,6 +1300,10 @@ function load_ajax_block(block_id) {
 
                 }
 
+            } else if (block_id == 'ns_related_scroll') {
+                if (data) {
+                    jQuery('#'+block_id).html(data);
+                }
             } else if (block_id == 'movie_rating') {
                 add_movie_rating(block_id, data);
             } else if (block_id == 'last_donations') {
@@ -1842,27 +1852,27 @@ function create_Highcharts_colomn_single(data, block)
                     }
                 },
                 yAxis: [{
-                    title: {
-                        text: 'Percentage'
-                    },
-                    showFirstLabel: false
-                }],
-                series: [{
-                    name: data['name'],
-                    colorByPoint: true,
-                    dataSorting: {
-                        enabled: true,
-                        matchByName: true
-                    },
-                    dataLabels: [{
-                        enabled: true,
-                        inside: true,
-                        style: {
-                            fontSize: '14px'
-                        }
+                        title: {
+                            text: 'Percentage'
+                        },
+                        showFirstLabel: false
                     }],
-                    data: data_series
-                }]
+                series: [{
+                        name: data['name'],
+                        colorByPoint: true,
+                        dataSorting: {
+                            enabled: true,
+                            matchByName: true
+                        },
+                        dataLabels: [{
+                                enabled: true,
+                                inside: true,
+                                style: {
+                                    fontSize: '14px'
+                                }
+                            }],
+                        data: data_series
+                    }]
             });
         } else
         {
@@ -2549,7 +2559,7 @@ jQuery(document).ready(function () {
         jQuery.ajax({
             type: 'post',
 
-            url: template_path+'loginajax.php',
+            url: template_path + 'loginajax.php',
             success: function (html) {
                 add_popup();
                 jQuery('.popup-content').html('<div class="default_popup login_popup">' + html + '</div>');
@@ -2589,7 +2599,7 @@ jQuery(document).ready(function () {
 
 
 
-                jQuery('.popup-content').html('<div class="default_popup custom_crowd '+hclass+'">' + html + '</div>');
+                jQuery('.popup-content').html('<div class="default_popup custom_crowd ' + hclass + '">' + html + '</div>');
 
                 jQuery('input[id="action-popup"]').click();
 
@@ -2698,7 +2708,7 @@ jQuery(document).ready(function () {
                         let mid = jQuery('div.custom_crowd_movie').attr('data-value');
 
                         jQuery('input[name="wpcr3_postid"]').val(mid);
-                        jQuery('div.wpcr3_respond_1').attr('data-value',mid).attr('data-postid',mid);
+                        jQuery('div.wpcr3_respond_1').attr('data-value', mid).attr('data-postid', mid);
                         load_ajax_block('audience_form');
 
                     }
@@ -3267,10 +3277,9 @@ jQuery(document).ready(function () {
 
 
             post = {
-              'calculate_actor_data': a_id
+                'calculate_actor_data': a_id
             }
-        }
-        else {
+        } else {
 
             let movie_id = jQuery(this).parents('.movie_total_rating').attr('data-value');
             var rwt_id = jQuery(this).parents('.rating_block').attr('id');
@@ -3426,16 +3435,12 @@ jQuery(document).ready(function () {
                     big_parent.after('<tr class="graph_block"><td colspan="' + count_col + '"><div class="section_chart_big section_chart section_ethnic" id="container_' + id + '"></div></td></tr>');
 
                     create_Highcharts_columns(data, id);
-                }
-                else if (jQuery(this).hasClass('ethnic_graph_column_single'))
+                } else if (jQuery(this).hasClass('ethnic_graph_column_single'))
                 {
                     big_parent.after('<tr class="graph_block"><td colspan="' + count_col + '"><div class="section_chart_main section_chart section_ethnic" id="container_' + id + '"></div></td></tr>');
 
                     create_Highcharts_colomn_single(data, id);
-                }
-
-
-                else
+                } else
                 {
                     big_parent.after('<tr class="graph_block"><td colspan="' + count_col + '"><div class="section_chart section_ethnic" id="container_' + id + '"></div></td></tr>');
 

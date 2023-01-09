@@ -27,6 +27,7 @@ if (!defined('ABSPATH'))
 //Curl
 !class_exists('GETCURL') ? include ABSPATH . "analysis/include/get_curl.php" : '';
 
+!class_exists('CPULOAD') ? include ABSPATH . "service/cpu_load.php" : '';
 
 
 require_once(ABSPATH . 'analysis/export/import_db.php');
@@ -47,6 +48,18 @@ if (isset($_REQUEST['key'])) {
     if ($_REQUEST['key']!=$key)
     {
         echo 'false key';
+        return;
+    }
+
+
+    $load = CPULOAD::check_load();
+
+    if ($load['loaded'])
+    {
+        $result_json =  json_encode($load);
+        header('Content-Type: application/json');
+        echo $result_json;
+
         return;
     }
 

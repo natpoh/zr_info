@@ -277,3 +277,18 @@ class Pdo_ml extends Pdoa {
     public static $db_charset = DB_CHARSET_ML;
 
 }
+
+/*
+ * Pdo from cpu info
+ */
+
+class Pdo_cpuinfo extends Pdoa {
+
+    public static $pdo = false;
+    public static $db_host = DB_HOST_CPUINFO;
+    public static $db_name = DB_NAME_CPUINFO;
+    public static $db_user = DB_USER_CPUINFO;
+    public static $db_pass = DB_PASSWORD_CPUINFO;
+    public static $db_charset = DB_CHARSET_CPUINFO;
+
+}

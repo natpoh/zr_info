@@ -154,7 +154,7 @@ function sync_tables($table='')
     }
     else
     {
-        $array_tables = array('data_familysearch_verdict', 'data_forebears_verdict','meta_reviews_rating');
+        $array_tables = array('data_familysearch_verdict', 'data_forebears_verdict','meta_reviews_rating','meta_keywords','meta_movie_keywords');
     }
 
 
@@ -415,6 +415,20 @@ $sql = "select * from data_actors_meta ".$where." ";
 }
 
 
+
+
+
+
+function movie_keywords($id='')
+{
+
+    !class_exists('Movie_Keywords') ? include ABSPATH . "analysis/include/keywords.php" : '';
+
+    $keywords = new Movie_Keywords;
+
+    $keywords->get_movies_keyword($id);
+
+}
 function get_last_options($id)
 {
 
@@ -2148,7 +2162,7 @@ function add_tv_shows_to_options()
 
     echo 'count:' . count($array_year) . '<br>';
 
-    $array_year = implode($array_year, ',');
+    $array_year = implode(',',$array_year );
     print_r($array_year);
 
     set_option(11, $array_year);
@@ -2405,7 +2419,7 @@ function add_imdb_data_to_options()
 
     echo 'count:' . count($array_year) . '<br>';
 
-    $array_year = implode($array_year, ',');
+    $array_year = implode(',',$array_year );
    // print_r($array_year);
 
     set_option(9, $array_year);
@@ -3083,5 +3097,14 @@ if (isset($_GET['check_dublicate_movies'])) {
 
 return;
 }
+
+
+if (isset($_GET['movie_keywords'])) {
+
+    movie_keywords($_GET['movie_keywords'])  ;
+
+    return;
+}
+
 echo 'ok';
 

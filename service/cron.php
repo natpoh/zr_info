@@ -8,7 +8,7 @@ if (!defined('ABSPATH'))
 //Abstract DB
 !class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
 
-
+!class_exists('CPULOAD') ? include ABSPATH . "service/cpu_load.php" : '';
 
 global $array_jobs;
 
@@ -32,6 +32,8 @@ $array_jobs = array(
 
 'download_crowd_images'=>60,///load image to server from crowdsource status 1
 'update_actors_verdict'=>30,///update verdict actors
+
+ 'movie_keywords'=>60,///upadate movies keywords
 
 'check_face'=>120,///add bettaface verdict
 
@@ -408,8 +410,27 @@ if (isset($_GET['runjob']))
 
         if ($_GET['runcron']==1)
         {
+            ///check cpu load
+
+            $load = CPULOAD::check_load();
+
+            global $cron_debug;
+            if ($cron_debug)
+                {
+                    var_dump($load);
+                }
+
+            if ($load['loaded'])
+            {
+                return;
+            }
+
             $cron = new Cronjob;
             $cron->run($array_jobs);
+
+
+
+
         }
 
     }

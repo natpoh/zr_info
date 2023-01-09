@@ -3422,6 +3422,69 @@ blockquote:after,
     margin-bottom: 0;
 }
 
+.ns_related {
+    margin: 30px 0 50px 0;
+}
+
+.ns_related .ns_all {
+    text-align: center;        
+    margin: 0;
+    padding: 0;
+}
+
+.ns_item {
+    border: 2px solid #222;
+    box-shadow: 3px 3px 2px rgb(0 0 0 / 30%);
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.ns_item .tile {
+    font-weight: normal;
+    padding: 1rem 0 1rem 0;
+    margin: 0;
+}
+
+.ns_item .url {
+    margin: 0 0 1rem 0;
+    overflow: hidden;
+    position: relative;
+    height: 1rem;
+    line-height: 1rem;
+}
+
+.ns_item .url img {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.ns_item .url a {
+    margin-left: 26px;
+}
+
+.ns_item .meta {
+    margin: 10px -10px -10px -10px;
+    padding: 10px 10px 0 10px;
+    border-top: 1px solid black;
+}
+
+
+.ns_item .meta .block {
+    display: inline-block;
+    margin: 0 20px 10px 0;
+}
+
+body.theme_dark .ns_item {
+    border: 2px solid #4a4a4a;
+    color: #c4c4c4;
+    background-color: #2b2b2b;
+}
+
+body.theme_dark .ns_item .meta{
+    border-top: 1px solid #4a4a4a;    
+}
 
 /**
  * 11.1 - Header
@@ -8128,6 +8191,13 @@ body.theme_dark.search .content-full {
     .filters_btn {
         display: none;
     }
+
+    .ns_item {
+        padding: 20px;
+    }
+    .ns_item .meta {
+        margin: 20px -20px -20px -20px;
+    }
 }
 
 @media screen and (max-width: 1540px) and (min-width: 990px)  {
@@ -10150,7 +10220,7 @@ strong {
     .actor_image_container {
         width:79%!important;
     }
-    
+
     .entry-content #audience_form {
         margin-left: -20px;
         margin-right: -20px;

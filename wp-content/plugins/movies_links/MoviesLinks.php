@@ -15,9 +15,6 @@ class MoviesLinks extends MoviesAbstractDB {
         'familysearch.org' => 'familysearch',
         'forebears.io' => 'forebears',
         'kinopoiskapiunofficial.tech'=>'kinopoisk',
-        'douban.com'=>'douban',
-        'archive.4plebs.org'=>'forchan',
-        'reviews_cron'=>'reviews',
     );
     public $arhive_path = ABSPATH . 'wp-content/uploads/movies_links/arhive/';
     public $export_path = ABSPATH . 'wp-content/uploads/movies_links/export/';
