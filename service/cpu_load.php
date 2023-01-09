@@ -132,6 +132,6 @@ if (isset($_GET['check_load']))
     }
 
 
-    $load = CPULOAD::check_load();
+    $load = CPULOAD::check_load($_GET['p'],$_GET['m']);
     var_dump($load);
 }
