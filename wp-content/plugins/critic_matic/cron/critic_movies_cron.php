@@ -29,6 +29,16 @@ if ($_GET['e']) {
     $expire = (int) $_GET['e'];
 }
 
+// Check server load
+!class_exists('CPULOAD') ? include ABSPATH . "service/cpu_load.php" : '';
+$load = CPULOAD::check_load();
+if ($load['loaded']) {
+    if ($debug) {
+        p_r($load);
+    }
+    exit();
+}
+
 $cm = new CriticMatic();
 $cs = new CriticSearch($cm);
 $cs->run_cron($count, $debug, $expire);

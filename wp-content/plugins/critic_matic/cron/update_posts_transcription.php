@@ -38,6 +38,16 @@ if (!class_exists('CriticMaticTrans')) {
     require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticMaticTrans.php' );
 }
 
+// Check server load
+!class_exists('CPULOAD') ? include ABSPATH . "service/cpu_load.php" : '';
+$load = CPULOAD::check_load();
+if ($load['loaded']) {
+    if ($debug) {
+        p_r($load);
+    }
+    exit();
+}
+
 $cm = new CriticMatic();
 $cmt = new CriticMaticTrans($cm);
 

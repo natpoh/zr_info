@@ -22,6 +22,16 @@ if (!class_exists('CriticParser')) {
     require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticParser.php' );
 }
 
+// Check server load
+!class_exists('CPULOAD') ? include ABSPATH . "service/cpu_load.php" : '';
+$load = CPULOAD::check_load();
+if ($load['loaded']) {
+    if ($debug) {
+        p_r($load);
+    }
+    exit();
+}
+
 class CpiParser {
 
     private $cm;

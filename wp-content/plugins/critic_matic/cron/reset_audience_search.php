@@ -14,6 +14,16 @@ if ($_GET['p'] != $p) {
     return;
 }
 
+// Check server load
+!class_exists('CPULOAD') ? include ABSPATH . "service/cpu_load.php" : '';
+$load = CPULOAD::check_load();
+if ($load['loaded']) {
+    if ($debug) {
+        p_r($load);
+    }
+    exit();
+}
+
 $cm = new CriticMatic();
 
 $cm->critic_delta_cron();

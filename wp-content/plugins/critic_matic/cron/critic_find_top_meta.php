@@ -31,6 +31,16 @@ if ($_GET['c']) {
     $count = (int) $_GET['c'];
 }
 
+// Check server load
+!class_exists('CPULOAD') ? include ABSPATH . "service/cpu_load.php" : '';
+$load = CPULOAD::check_load();
+if ($load['loaded']) {
+    if ($debug) {
+        p_r($load);
+    }
+    exit();
+}
+
 // One time transit data
 require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticTransit.php' );
 $cm = new CriticMatic();

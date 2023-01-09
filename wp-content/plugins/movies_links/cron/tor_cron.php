@@ -36,5 +36,15 @@ if (!class_exists('MoviesLinks')) {
     require_once( MOVIES_LINKS_PLUGIN_DIR . 'TorParser.php' );
 }
 
+// Check server load
+!class_exists('CPULOAD') ? include ABSPATH . "service/cpu_load.php" : '';
+$load = CPULOAD::check_load();
+if ($load['loaded']) {
+    if ($debug) {
+        p_r($load);
+    }
+    exit();
+}
+
 $tp = new TorParser();
 $tp->run_cron($type, $debug, $force);

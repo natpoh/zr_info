@@ -35,6 +35,16 @@ if (isset($_GET['debug'])) {
     define('WP_DEBUG_DISPLAY', false);
 }
 
+// Check server load
+!class_exists('CPULOAD') ? include ABSPATH . "service/cpu_load.php" : '';
+$load = CPULOAD::check_load();
+if ($load['loaded']) {
+    if ($debug) {
+        p_r($load);
+    }
+    exit();
+}
+
 if (!class_exists('CriticMatic')) {
     return;
 }
