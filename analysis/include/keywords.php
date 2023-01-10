@@ -143,7 +143,7 @@ class Movie_Keywords {
 ////get movie list
         $sql ="SELECT `data_movie_imdb`.`id`, `meta_movie_keywords_update`.last_update FROM `data_movie_imdb` left join `meta_movie_keywords_update` 
        ON `data_movie_imdb`.`id`= meta_movie_keywords_update.mid
-        WHERE     ".$where." order by `data_movie_imdb`.`weight` desc LIMIT 1000";
+        WHERE     ".$where." order by `data_movie_imdb`.`weight` desc LIMIT 200";
 
         $array_request =Pdo_an::db_results_array($sql);
         foreach ($array_request as $r)
@@ -151,7 +151,6 @@ class Movie_Keywords {
             $mid  =$r['id'];
             ///get keyword data
             $last_update=$r['last_update'];
-
 
             echo 'try get '.$mid. ' last_update '.date('H:i Y.m.d',$last_update).'<br>';
 
