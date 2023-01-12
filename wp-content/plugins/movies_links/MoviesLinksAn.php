@@ -3,6 +3,7 @@
 class MoviesLinksAn extends MoviesAbstractDBAn {
 
     public function __construct() {
+        $table_prefix = DB_PREFIX_WP_AN;
         $this->db = array(
             'movie_imdb' => 'data_movie_imdb',
             'actors_all' => 'data_actors_all',
@@ -23,7 +24,10 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             'meta_fs' => 'meta_familysearch',
             'pg_rating' => 'data_pg_rating',
             'erating' => 'data_movie_erating',
-            );        
+            'fchan_posts' => 'data_fchan_posts',
+            'reviews_rating' => 'meta_reviews_rating',
+            'critic_matic_meta' => $table_prefix . 'critic_matic_posts_meta',
+        );
     }
 
     public function get_posts($type = 'a', $get_keys = array(), $limit = 1, $last_id = 0) {
@@ -53,14 +57,26 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         $result = $this->db_results($sql);
         return $result;
     }
-    
-    public function get_post_ids_by_weight($min_weight=0){
-        $ret = array();
-        $sql = sprintf("SELECT id FROM {$this->db['movie_imdb']} WHERE weight>%d ORDER BY weight DESC",$min_weight);        
+
+    public function get_post_ids_by_weight($min_weight = 0, $max_weight = 0) {
+        $ret = array();        
+        $sql = sprintf("SELECT id, weight FROM {$this->db['movie_imdb']} WHERE weight>=%d AND weight<%d", $min_weight, $max_weight);
         $result = $this->db_results($sql);
-        if ($result){
+        if ($result) {
             foreach ($result as $value) {
-                $ret[]=$value->id;
+                $ret[$value->id] = $value->weight;
+            }
+        }
+        return $ret;
+    }
+
+    public function get_post_ids_by_min_weight($min_weight = 0) {
+        $ret = array();
+        $sql = sprintf("SELECT id FROM {$this->db['movie_imdb']} WHERE weight>%d ORDER BY weight DESC", $min_weight);
+        $result = $this->db_results($sql);
+        if ($result) {
+            foreach ($result as $value) {
+                $ret[] = $value->id;
             }
         }
         return $ret;
@@ -173,55 +189,61 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         $results = $this->db_results($sql);
         return $results;
     }
-    
-    public function update_pg_rating($data=array(), $movie_id=0){
+
+    public function update_pg_rating($data = array(), $movie_id = 0) {
         $pg_rating_id = $this->get_or_create_pg_rating($movie_id);
         $this->sync_update_data($data, $pg_rating_id, $this->db['pg_rating'], true);
     }
-    
+
     public function get_or_create_pg_rating($movie_id) {
         $sql = sprintf("SELECT movie_id FROM {$this->db['movie_imdb']} WHERE id=%d", $movie_id);
         $pg_id = $this->db_get_var($sql);
-        
+
         $sql = sprintf("SELECT id FROM {$this->db['pg_rating']} WHERE movie_id=%d", $pg_id);
         $id = $this->db_get_var($sql);
-        if ($id){
+        if ($id) {
             return $id;
         }
         $data = array(
-            'movie_id'=>$pg_id
-        );        
+            'movie_id' => $pg_id
+        );
         $id = $this->sync_insert_data($data, $this->db['pg_rating'], false, false);
-        
+
         return $id;
     }
-    
+
     /*
      * ERating
-     */    
-    
+     */
+
     public function update_erating($mid = 0, $data = array()) {
         // Get rating      
         $sql = sprintf("SELECT * FROM {$this->db['erating']} WHERE movie_id = %d", (int) $mid);
-        $exist = $this->db_results($sql);
+        $exist = $this->db_fetch_row($sql);
         if ($exist) {
-            // Calculate total
+            // Calculate total rating
+            $rating_names = array('kinop_result', 'douban_result', 'fchan_result', 'reviews_result');
+            foreach ($rating_names as $rn) {
+                if (isset($data[$rn])) {
+                    $exist->$rn = $data[$rn];
+                }
+            }
             $total = $this->calculate_total($exist);
-            $data['total_rating'] = $total;            
+            $data['total_rating'] = $total;
+
             // Update post            
             $this->sync_update_data($data, $exist->id, $this->db['erating'], true, 10);
-            
-        } else {            
+        } else {
             // Add post            
             $data['movie_id'] = $mid;
-            $data['date'] = $data['last_upd'];            
-            $data['total_rating'] = $data['kinop_result'];                         
+            $data['date'] = $data['last_upd'];
+
             $this->sync_insert_data($data, $this->db['erating'], false, true, 10);
-        }        
+        }
     }
-    
+
     public function calculate_total($post) {
-        /* 
+        /*
          * kinop_result
          * douban_result
          * fchan_result
@@ -231,24 +253,39 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
          */
         $total = 0;
         $i = 0;
-        if ($post->kinop_result){
-            $total+=$post->kinop_result;
-            $i+=1;
+        if ($post->kinop_result) {
+            $total += $post->kinop_result;
+            $i += 1;
         }
-        if ($post->douban_result){
-            $total+=$post->douban_result;
-            $i+=1;
+        if ($post->douban_result) {
+            $total += $post->douban_result;
+            $i += 1;
         }
-        if ($post->fchan_result){
-            $total+=$post->fchan_result;
-            $i+=1;
+        if ($post->fchan_result) {
+            $total += $post->fchan_result;
+            $i += 1;
         }
-        if ($post->reviews_result){
-            $total+=$post->reviews_result;
-            $i+=1;
+        if ($post->reviews_result) {
+            $total += $post->reviews_result;
+            $i += 1;
         }
-        $total_result = (int) round($total/$i, 0);
-        
+        $total_result = (int) round($total / $i, 0);
+
         return $total_result;
     }
+
+    public function get_rating_movies($last_id = 0, $count = 0) {
+        // Get last movie ids
+        $sql = sprintf("SELECT r.id, m.fid FROM {$this->db['reviews_rating']} r"
+                . " INNER JOIN {$this->db['critic_matic_meta']} m ON m.cid=r.cid WHERE r.id>%d ORDER BY r.id ASC LIMIT %d", $last_id, $count);
+        return $this->db_results($sql);
+    }
+
+    public function get_review_rating_posts($mid) {
+        // Get rating from movies id
+        $sql = sprintf("SELECT r.percent as rating FROM {$this->db['reviews_rating']} r"
+                . " INNER JOIN {$this->db['critic_matic_meta']} m ON m.cid=r.cid WHERE m.fid=%d", $mid);
+        return $this->db_results($sql);
+    }
+
 }

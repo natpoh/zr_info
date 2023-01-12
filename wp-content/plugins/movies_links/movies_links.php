@@ -121,8 +121,20 @@ function movies_links_plugin_activation() {
 
     $sql = "ALTER TABLE `movies_links_url` ADD `last_upd` int(11) NOT NULL DEFAULT '0'";
     Pdo_ml::db_query($sql);
+    /*
+     * Expire status
+     * 0 - vaild
+     * 1 - expired
+     * 2 - arhived
+     * 3 - parsed
+     */
+    $sql = "ALTER TABLE `movies_links_url` ADD `exp_status` int(11) NOT NULL DEFAULT '0'";
+    Pdo_ml::db_query($sql);
+    
+    $sql = "ALTER TABLE `movies_links_url` ADD `upd_rating` int(11) NOT NULL DEFAULT '0'";
+    Pdo_ml::db_query($sql);
 
-    movies_links_create_index(array('cid', 'pid', 'status', 'link_hash', 'date', 'last_upd'), 'movies_links_url');
+    movies_links_create_index(array('cid', 'pid', 'status', 'link_hash', 'date', 'last_upd', 'exp_status', 'upd_rating'), 'movies_links_url');
 
     /*
      * uid - url id
@@ -463,3 +475,9 @@ function movies_links_create_index($names = array(), $table_name = '') {
         }
     }
 }
+
+
+/*
+ * set date to empty date urls
+ * UPDATE `movies_links_url` SET `date`=1670934940,`last_upd`=1670934940 WHERE `last_upd`= 0
+ */

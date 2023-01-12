@@ -126,7 +126,7 @@ class TorAdmin extends ItemAdmin {
                 $page_url = $filters_tabs['p'];
                 $count = $filters_tabs['c'];
 
-                $pager = $this->themePager(-1, $page, $page_url, $count, $per_page, $orderby, $order);
+                $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
                 $logs = $this->tp->get_logs($query, $page, $per_page, $orderby, $order);
 
                 include(MOVIES_LINKS_PLUGIN_DIR . 'includes/list_tor_logs.php');
@@ -154,7 +154,7 @@ class TorAdmin extends ItemAdmin {
             $page_url = $filters_tabs['p'];
             $count = $filters_tabs['c'];
 
-            $pager = $this->themePager(-1, $page, $page_url, $count, $per_page, $orderby, $order);
+            $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
             $services = $this->tp->get_services($query, $page, $per_page, $orderby, $order);
 
             include(MOVIES_LINKS_PLUGIN_DIR . 'includes/list_tor_services.php');
@@ -176,7 +176,7 @@ class TorAdmin extends ItemAdmin {
             $page_url = $filters_tabs['p'];
             $count = $filters_tabs['c'];
 
-            $pager = $this->themePager(-1, $page, $page_url, $count, $per_page, $orderby, $order);
+            $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
             $agents = $this->tp->get_agents($query, $page, $per_page, $orderby, $order);
 
             include(MOVIES_LINKS_PLUGIN_DIR . 'includes/list_tor_agents.php');
@@ -194,7 +194,7 @@ class TorAdmin extends ItemAdmin {
             $page_url = $filters_tabs['p'];
             $count = $filters_tabs['c'];
 
-            $pager = $this->themePager(-1, $page, $page_url, $count, $per_page, $orderby, $order);
+            $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
             $ips = $this->tp->get_ips($query, $page, $per_page, $orderby, $order);
 
             include(MOVIES_LINKS_PLUGIN_DIR . 'includes/list_tor_ips.php');
@@ -213,7 +213,7 @@ class TorAdmin extends ItemAdmin {
             $page_url = $filters_tabs['p'];
             $count = $filters_tabs['c'];
 
-            $pager = $this->themePager(-1, $page, $page_url, $count, $per_page, $orderby, $order);
+            $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
             $logs = $this->tp->get_logs($query, $page, $per_page, $orderby, $order);
 
             include(MOVIES_LINKS_PLUGIN_DIR . 'includes/list_tor_logs.php');

@@ -6,10 +6,10 @@
 }
 
 print $tabs;
-print $filters;
-print $filters_arhive_type;
-print $filters_parser_type;
-print $filters_links_type;
+
+if (isset($filters_tabs['filters'])) {
+    print implode("\n", array_values($filters_tabs['filters']));
+}
 
 /*
   `cid` int(11) NOT NULL DEFAULT '0',
@@ -38,14 +38,20 @@ if (sizeof($posts) > 0) {
             <thead>
             <td class="manage-column column-cb check-column" ><input type="checkbox" id="cb-select-all-1"></td>
             <?php $this->sorted_head('id', 'id', $orderby, $order, $page_url) ?>             
+            <?php $this->sorted_head('date', 'date', $orderby, $order, $page_url) ?>
+            <?php $this->sorted_head('last_upd', 'last_upd', $orderby, $order, $page_url) ?>
             <th><?php print __('Link') ?></th>                                
             <?php if ($campaign->type != 1) { ?>
-                <th><?php print __('Movie ID') ?></th>
+                <?php $this->sorted_head('pid', 'Movie ID', $orderby, $order, $page_url) ?>
             <?php } ?>
             <?php $this->sorted_head('status', 'Status', $orderby, $order, $page_url) ?>                                     
             <?php $this->sorted_head('adate', 'Arhive', $orderby, $order, $page_url) ?>            
             <?php $this->sorted_head('pdate', 'Post', $orderby, $order, $page_url) ?>                    
             <th><?php print __('Link') ?></th>
+            <?php if ($update_status) { ?>
+                <?php $this->sorted_head('exp_status', 'Expire', $orderby, $order, $page_url) ?>
+                <?php $this->sorted_head('upd_rating', 'Update rating', $orderby, $order, $page_url) ?>
+            <?php } ?>
             <th><?php print __('Campaign') ?></th> 
             <?php /* ?>
               <th><?php print __('Last log') ?></th>
@@ -69,6 +75,8 @@ if (sizeof($posts) > 0) {
                     <tr>           
                         <th  class="check-column" ><input type="checkbox" name="bulk-<?php print $item->id ?>"></th>
                         <td><?php print $item->id ?></td>                             
+                        <td><?php print $item->date ? $this->mp->curr_date($item->date) : 0  ?></td> 
+                        <td><?php print $item->last_upd ? $this->mp->curr_date($item->last_upd) : 0  ?></td> 
                         <td class="wrap">                            
                             <a href="<?php print $item->link ?>" target="_blank" title="<?php print $item->link ?>"><?php print $item->link ?></a>                                               
                         </td>
@@ -116,6 +124,10 @@ if (sizeof($posts) > 0) {
                             }
                             ?>
                         </td>
+                        <?php if ($update_status) { ?>
+                            <td><?php print $this->exp_status[$item->exp_status]; ?></td>
+                            <td><?php print $item->upd_rating; ?></td>
+                        <?php } ?>
                         <td>
                             <?php print $camp_title ?>
                         </td>
