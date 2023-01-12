@@ -1094,7 +1094,7 @@ class MoviesParser extends MoviesAbstractDB {
             }
         }
         if ($debug) {
-            p_r($count);
+            p_r(array('Total expired'=>$count));
         }
 
         return $count;

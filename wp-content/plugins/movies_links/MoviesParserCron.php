@@ -111,6 +111,9 @@ class MoviesParserCron extends MoviesAbstractDB {
             }
         } else if ($type_name == 'update') {
             $count = $this->mp->find_expired_urls($campaign, $options, $debug);
+            if ($count){
+                 $this->start_paused_module($campaign, 'arhive', $options);
+            }
         } else if ($type_name == 'delete_garbage') {
             
         }
