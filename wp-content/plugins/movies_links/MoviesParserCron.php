@@ -11,6 +11,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         3 => 'links',
         4 => 'cron_urls',
         5 => 'gen_urls',
+        6 => 'update',
     );
 
     public function __construct($ml = '') {
@@ -49,6 +50,16 @@ class MoviesParserCron extends MoviesAbstractDB {
             return $count;
         }
 
+
+        // Find expired logic
+        if ($type_name == 'update') {
+            // Expired is active? 
+            $ao = $options['update'];
+            if ($ao['status'] == 0) {
+                return $count;
+            }
+        }
+
         $type_opt = $options[$type_name];
         $active = $type_opt['status'];
         if ($active == 1) {
@@ -64,25 +75,25 @@ class MoviesParserCron extends MoviesAbstractDB {
                 $options_upd[$type_name]['last_update'] = $currtime;
                 $this->mp->update_campaign_options($campaign->id, $options_upd);
 
-                $count = $this->process_campaign($campaign, $options, $type_name, $debug);
+                $count = $this->process_campaign($campaign, $options, $type_name, $debug, $force);
             }
         }
         return $count;
     }
 
-    public function process_campaign($campaign, $options, $type_name, $debug = false) {
+    public function process_campaign($campaign, $options, $type_name, $debug = false, $force = false) {
 
         if ($debug) {
-            print_r($type_name);
+            print_r($type_name . "\n");
         }
 
         if ($type_name == 'arhive') {
-            $count = $this->proccess_arhive($campaign, $options);
+            $count = $this->proccess_arhive($campaign, $options, $debug, $force);
         } else if ($type_name == 'parsing') {
             if ($campaign->type == 2) {
                 $count = $this->proccess_parsing_create_urls($campaign, $options, false, $debug);
             } else {
-                $count = $this->proccess_parsing($campaign, $options);
+                $count = $this->proccess_parsing($campaign, $options, false, $debug);
             }
         } else if ($type_name == 'links') {
             $count = $this->proccess_links($campaign, $options);
@@ -98,6 +109,11 @@ class MoviesParserCron extends MoviesAbstractDB {
                 // Unpaused arhives            
                 $this->start_paused_module($campaign, 'arhive', $options);
             }
+        } else if ($type_name == 'update') {
+            $count = $this->mp->find_expired_urls($campaign, $options, $debug);
+            if ($count) {
+                $this->start_paused_module($campaign, 'arhive', $options);
+            }
         } else if ($type_name == 'delete_garbage') {
             
         }
@@ -107,18 +123,21 @@ class MoviesParserCron extends MoviesAbstractDB {
         return $count;
     }
 
-    private function proccess_arhive($campaign, $options) {
+    private function proccess_arhive($campaign, $options, $debug = false, $force = false) {
         $type_name = 'arhive';
         $type_opt = $options[$type_name];
 
         // Already progress
         $progress = isset($type_opt['progress']) ? $type_opt['progress'] : 0;
         $currtime = $this->curr_time();
-        if ($progress) {
+        if ($progress && !$force) {
             // Ignore old last update            
             $wait = 180; // 3 min
             if ($currtime < $progress + $wait) {
                 $message = 'Archiving is in progress already.';
+                if ($debug) {
+                    print $message;
+                }
                 $this->mp->log_warn($message, $campaign->id, 0, 2);
                 return 0;
             }
@@ -138,12 +157,23 @@ class MoviesParserCron extends MoviesAbstractDB {
 
         // Get last urls
         $status = 0;
-        $urls = $this->mp->get_last_urls($urls_count, $status, $campaign->id, $random_urls);
+        $count = $this->mp->get_urls_count($status, $campaign->id);
 
-        $count = count((array) $urls);
-        if ($count) {
+        $count_expired = 0;
+        if (!$count) {
+            // Get expired urls
+            $ao = $options['update'];
+            if ($ao['status'] == 1) {
+                $count_expired = $this->mp->get_urls_expired_count($campaign->id, 1);
+            }
+        }
+
+        if ($debug) {
+            print "Urls count: " . $count . ". Expired: $count_expired\n";
+        }
+
+        if ($count || $count_expired) {
             $this->get_async_cron($campaign, $type_name);
-            // $this->arhive_urls($campaign, $options, $urls);
         } else {
             // Campaign done
             // Status auto-stop
@@ -171,12 +201,12 @@ class MoviesParserCron extends MoviesAbstractDB {
         $this->mp->send_curl_no_responce($url);
     }
 
-    private function arhive_urls($campaign, $options, $urls = array()) {
+    private function arhive_urls($campaign, $options, $urls = array(), $expired = false) {
         $type_name = 'arhive';
         $type_opt = $options[$type_name];
         if ($urls) {
             foreach ($urls as $item) {
-                $this->arhive_url($item, $campaign, $type_opt);
+                $this->arhive_url($item, $campaign, $type_opt, $expired);
             }
         }
 
@@ -189,7 +219,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         $this->mp->update_campaign_options($campaign->id, $options_upd);
     }
 
-    private function proccess_parsing($campaign, $options, $force = false) {
+    private function proccess_parsing($campaign, $options, $force = false, $debug = false) {
         ini_set('max_execution_time', '300'); //300 seconds = 5 minutes
         set_time_limit(300);
 
@@ -203,59 +233,93 @@ class MoviesParserCron extends MoviesAbstractDB {
 
         // Get last posts
         $last_posts = $this->mp->get_last_arhives_no_posts($urls_count, $cid);
+        if ($debug) {
+            p_r(array('Last'=>$last_posts));
+        }
 
         if ($last_posts) {
-            $items = $this->mp->parse_arhives($last_posts, $campaign);
-            foreach ($items as $uid => $item) {
-                if ($item) {
-
-                    if ($type_opt['multi_parsing'] == 1) {
-                        // Multi post parsing
-                        $content = '';
-                        foreach ($item as $key => $value) {
-                            $row = '<div id="' . $key . '">'."\n";
-                            foreach ($value as $row_key => $row_value) {
-                                $row .= '<p class="' . $row_key . '">' . trim($row_value) . "</p>\n";
-                            }
-                            $row .= "</div>\n";
-                            $content .= $row;
-                        }
-                        $item = array(
-                            't' => 'Multi ' . $uid,
-                            'content' => $content
-                        );
-                    }
-                    
-                    $this->parsing_post_add($item, $cid, $uid, $force);
-
-                    $count += 1;
-                } else {
-                    $message = 'Can not parse post data';
-                    $this->mp->log_error($message, $cid, $uid, 3);
-                    // Status error
-                    $status = 4;
-                    $this->mp->change_url_state($uid, $status, true);
+            $this->parse_items($last_posts, $campaign, $type_opt, false, $force, $debug);
+        } else {
+            // Get expired urls
+            $ao = $options['update'];
+            if ($ao['status'] == 1) {
+                $last_posts = $this->mp->get_last_expired_urls_arhives($urls_count, $cid);
+                if ($debug) {
+                    p_r(array('Expired'=>$last_posts));
                 }
             }
-            // Unpaused links            
-            $this->start_paused_module($campaign, 'links', $options);
-        } else {
-            // Campaign done
-            // Status auto-stop
-            $options_upd = array();
-            $options_upd[$type_name]['status'] = 3;
-            $this->mp->update_campaign_options($campaign->id, $options_upd);
-            $message = 'All arhives parsed to posts';
-            $this->mp->log_info($message, $campaign->id, 0, 3);
+            if ($last_posts) {
+                // Update post content
+                $this->parse_items($last_posts, $campaign, $type_opt, true, $force, $debug);
+            } else {
+                // Campaign done
+                // Status auto-stop
+                $options_upd = array();
+                $options_upd[$type_name]['status'] = 3;
+                $this->mp->update_campaign_options($campaign->id, $options_upd);
+                $message = 'All arhives parsed to posts';
+                $this->mp->log_info($message, $campaign->id, 0, 3);
+            }
         }
         return $count;
     }
 
-    private function parsing_post_add($item, $cid, $uid, $force) {
+    private function parse_items($last_posts, $campaign, $type_opt, $expired = false, $force = false, $debug=false) {
+        $count = 0;
+        $cid = $campaign->id;
+        $items = $this->mp->parse_arhives($last_posts, $campaign);
+        foreach ($items as $uid => $item) {
+            if ($item) {
+                if ($type_opt['multi_parsing'] == 1) {
+                    // Multi post parsing
+                    $content = '';
+                    foreach ($item as $key => $value) {
+                        $row = '<div id="' . $key . '">' . "\n";
+                        foreach ($value as $row_key => $row_value) {
+                            $row .= '<p class="' . $row_key . '">' . trim($row_value) . "</p>\n";
+                        }
+                        $row .= "</div>\n";
+                        $content .= $row;
+                    }
+                    $item = array(
+                        't' => 'Multi ' . $uid,
+                        'content' => $content
+                    );
+                }
+
+                if ($debug){
+                    p_r($item);
+                }
+                if ($expired) {                    
+                    // Update post
+                    $this->parsing_post_add($item, $cid, $uid, true);
+                     // Status - exist
+                    $data = array('exp_status' => 3);
+                    $this->mp->update_url($data, $uid);
+                } else {
+                    $this->parsing_post_add($item, $cid, $uid, $force);                   
+                }
+
+                $count += 1;
+            } else {
+                $message = 'Can not parse post data';
+                $this->mp->log_error($message, $cid, $uid, 3);
+                // Status error
+                $status = 4;
+                $this->mp->change_url_state($uid, $status, true);
+            }
+        }
+        if ($count > 0) {
+            // Unpaused links            
+            $this->start_paused_module($campaign, 'links', $options);
+        }
+    }
+
+    private function parsing_post_add($item, $cid, $uid, $force = false) {
         // Add post
-        
+
         $post_exist = $this->mp->get_post_by_uid($uid);
-        
+
         if (!$post_exist || $force) {
             $title = '';
             $year = '';
@@ -280,19 +344,23 @@ class MoviesParserCron extends MoviesAbstractDB {
                 $status = 0;
             }
 
-            if (!$post_exist) {
+            $message = 'Add post: ';
+            if ($post_exist) {
+                $message = 'Update post: ';
+            }
 
+            if ($title) {
+                $message .= $title;
+                $this->mp->log_info($message, $cid, $uid, 3);
+            } else {
+                $message .= 'Can not parse the Title';
+                $this->mp->log_error($message, $cid, $uid, 3);
+            }
+
+            if (!$post_exist) {
                 $top_movie = 0;
                 $rating = 0;
                 $this->mp->add_post($uid, $status, $title, $release, $year, $post_options, $top_movie, $rating);
-
-                if ($title) {
-                    $message = 'Add post: ' . $title;
-                    $this->mp->log_info($message, $cid, $uid, 3);
-                } else {
-                    $message = 'Can not parse the Title';
-                    $this->mp->log_error($message, $cid, $uid, 3);
-                }
             } else {
                 //Force update post
                 $top_movie = $post_exist->top_movie;
@@ -590,7 +658,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         }
     }
 
-    private function arhive_url($item, $campaign, $type_opt, $force = false) {
+    private function arhive_url($item, $campaign, $type_opt, $expired = false) {
 
         /*
           [id] => 21
@@ -604,7 +672,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         //1. Url item exist?
         $arhive_exist = $this->mp->get_arhive_by_url_id($item->id);
 
-        if ($arhive_exist && !$force) {
+        if ($arhive_exist && !$expired) {
             return;
         }
 
@@ -695,19 +763,24 @@ class MoviesParserCron extends MoviesAbstractDB {
 
         file_put_contents($full_path, $gzdata);
 
+
+        $data = array(
+            'status' => 1
+        );
         // Add arhive db object
         if ($arhive_exist) {
             $this->mp->update_arhive($item);
-            $message = 'Update arhive';
+            $message = 'Update expired arhive';
             $this->mp->log_info($message, $item->cid, $item->id, 2);
+            // Update expire state
+            $data['exp_status'] = 2;
         } else {
             $message = 'Add arhive';
             $this->mp->add_arhive($item);
             $this->mp->log_info($message, $item->cid, $item->id, 2);
         }
         // Status - exist
-        $status = 1;
-        $this->mp->change_url_state($item->id, $status, true);
+        $this->mp->update_url($data, $item->id);
     }
 
     /*
@@ -726,7 +799,7 @@ class MoviesParserCron extends MoviesAbstractDB {
             $type_opt = $options[$type_name];
             $urls_count = $type_opt['num'];
 
-            // Get last urls
+            // Get last urls in status NEW
             $status = 0;
 
             // Random urls
@@ -734,11 +807,27 @@ class MoviesParserCron extends MoviesAbstractDB {
             $urls = $this->mp->get_last_urls($urls_count, $status, $campaign->id, $random_urls, $debug);
 
             $count = count((array) $urls);
-            if ($debug) {
-                print_r(array('Arhive count', $count));
+
+            $count_expired = 0;
+            if ($count < $urls_count) {
+                $need_expired = $urls_count - $count;
+                // Get expired urls
+                $ao = $options['update'];
+                if ($ao['status'] == 1) {
+                    $expired_urls = $this->mp->get_expired_urls($campaign->id, $need_expired, $debug);
+                    $count_expired = count((array) $expired_urls);
+                }
             }
+
+            if ($debug) {
+                print_r(array('Arhive count' => $count, 'Expire count' => $count_expired));
+            }
+
             if ($count) {
                 $this->arhive_urls($campaign, $options, $urls);
+            }
+            if ($count_expired > 0) {
+                $this->arhive_urls($campaign, $options, $expired_urls, true);
             }
 
             // Delete garbage

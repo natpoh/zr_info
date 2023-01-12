@@ -32,11 +32,10 @@ if ($cid) {
                 <label>
                     <span class="title"><?php print __('Type') ?></span>
                     <select id="add-campaing-type" name="type" class="type">
-                        
+
                         <?php
-                        
                         foreach ($this->parser_types as $key => $name) {
-                             $selected = ($key == $campaign->type) ? 'selected' : '';
+                            $selected = ($key == $campaign->type) ? 'selected' : '';
                             ?>
                             <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
                             <?php
@@ -56,9 +55,66 @@ if ($cid) {
                     <span class="checkbox-title"><?php print __('Campaign is active') ?></span>
                 </label>
 
+                <h3>Update options</h3>
+
+                <label class="inline-edit-status">                
+                    <?php
+                    $checked = '';
+
+                    $ao = $options['update'];
+
+                    if ($ao['status'] == 1) {
+                        $checked = 'checked="checked"';
+                    }
+                    ?>
+                    <input type="checkbox" name="update_status" value="1" <?php print $checked ?> >
+                    <span class="checkbox-title"><?php print __('Cron update urls is active') ?></span>
+                </label>
+
+                <?php if ($ao['status'] == 1) { ?>
+
+                    <label class="inline-edit-interval">
+                        <span class="title"><?php print __('Update') ?></span>
+                        <select name="update_interval" class="interval">
+                            <?php
+                            $inetrval = $ao['interval'];
+                            foreach ($this->update_interval as $key => $name) {
+                                $selected = ($key == $inetrval) ? 'selected' : '';
+                                ?>
+                                <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                                <?php
+                            }
+                            ?>                          
+                        </select> 
+                        <span class="inline-edit"><?php print __('The find expire URLs update interval') ?></span>                    
+                    </label>
+
+
+
+                    <label class="inline-edit-interval"> 
+                        <span class="title"><?php print __('Expire count') ?></span>         
+                        <?php
+                        $parse_num = $ao['num'];
+                        $previews_number = $this->parse_number;
+                        ?>
+
+                        <select name="update_num" class="interval">
+                            <?php
+                            foreach ($previews_number as $key => $name) {
+                                $selected = ($key == $parse_num) ? 'selected' : '';
+                                ?>
+                                <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                                <?php
+                            }
+                            ?>                          
+                        </select>                     
+                        <span class="inline-edit"><?php print __('Number of expired URLs for one find action') ?></span> 
+                    </label>
+                <?php } ?>
                 <br />
                 <?php wp_nonce_field('ml-nonce', 'ml-nonce'); ?>
                 <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save') ?>" class="button-primary">  
+
             </fieldset>
         </div>
     </form>

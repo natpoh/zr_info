@@ -511,7 +511,7 @@ class AnalyticsSearch extends CriticSearch {
         return array('select' => $select, 'filters' => $filters);
     }
 
-    public function movies_facets($filters, $match, $search_query) {
+    public function movies_facets($filters, $match, $search_query, $facets=array()) {
         // All facets
         $facet_list = $this->facets['movies'];
         $sql_arr_data = $this->movies_facets_sql($facet_list, $filters, $match);

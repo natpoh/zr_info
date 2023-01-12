@@ -5,7 +5,7 @@ class MoviesParser extends MoviesAbstractDB {
     private $ml = '';
     private $db = '';
     private $def_options = '';
-    public $sort_pages = array('id', 'date', 'adate', 'pdate', 'title', 'last_update', 'update_interval', 'name', 'pid', 'status', 'type', 'weight');
+    public $sort_pages = array('id', 'date', 'adate', 'exp_status', 'upd_rating', 'pdate', 'pid', 'title', 'last_update', 'last_upd', 'update_interval', 'name', 'pid', 'status', 'type', 'weight');
 
     public function __construct($ml = '') {
         $this->ml = $ml ? $ml : new MoviesLinks();
@@ -17,6 +17,7 @@ class MoviesParser extends MoviesAbstractDB {
             'posts' => 'movies_links_posts',
             'url' => 'movies_links_url',
             'actors_meta' => 'actors_meta',
+            'fchan_posts' => 'data_fchan_posts',
         );
 
         // Init settings
@@ -108,17 +109,25 @@ class MoviesParser extends MoviesAbstractDB {
                     'camp' => 0,
                     'weight' => 10,
                 ),
+                'update' => array(
+                    'status' => 0,
+                    'update_rules' => '',
+                    'last_update' => 0,
+                    'interval' => 60,
+                    'num' => 100,
+                ),
             ),
         );
     }
 
-    public $campaign_modules = array('cron_urls', 'gen_urls', 'arhive', 'parsing', 'links');
+    public $campaign_modules = array('cron_urls', 'gen_urls', 'arhive', 'parsing', 'links', 'update');
     public $log_modules = array(
         'cron_urls' => 1,
         'gen_urls' => 1,
         'arhive' => 2,
         'parsing' => 3,
         'links' => 4,
+        'update' => 5,
     );
     private $def_reg_rule = array(
         'f' => '',
@@ -216,6 +225,14 @@ class MoviesParser extends MoviesAbstractDB {
         'a' => '',
         'm' => 'Movie',
         't' => 'TVSeries'
+    );
+    public $rating_update = array(
+        7 => [50, 100],
+        30 => [40, 50],
+        60 => [30, 40],
+        90 => [20, 30],
+        360 => [10, 20],
+        1080 => [0, 10],
     );
 
     /*
@@ -537,7 +554,151 @@ class MoviesParser extends MoviesAbstractDB {
         $this->db_query($sql);
     }
 
+    public function get_urls_query($q_req = array(), $page = 1, $perpage = 30, $orderby = '', $order = 'ASC', $count = false) {
+        // New api
+        //$status = -1, $page = 1, $cid = 0, $arhive_type = -1, $parser_type = -1, $links_type = -1, $orderby = '', $order = 'ASC', $perpage = 30, $date = ''
+        $q_def = array(
+            'status' => -1,
+            'cid' => 0,
+            'arhive_type' => -1,
+            'parser_type' => -1,
+            'links_type' => -1,
+            'exp_status' => -1,
+            'date' => 0,
+        );
+
+
+        $q = array();
+        foreach ($q_def as $key => $value) {
+            $q[$key] = isset($q_req[$key]) ? $q_req[$key] : $value;
+        }
+
+        // Custom status
+        $status_trash = 2;
+        $status_query = " WHERE u.status != " . $status_trash;
+        if ($q['status'] != -1) {
+            $status_query = " WHERE u.status = " . (int) $q['status'];
+        }
+
+        // Company id
+        $cid_and = '';
+        if ($q['cid'] > 0) {
+            $cid_and = sprintf(" AND u.cid = %d", (int) $q['cid']);
+        }
+
+        // Post type filter
+        $arhive_type_and = '';
+        if ($q['arhive_type'] != -1) {
+            if ($q['arhive_type'] == 1) {
+                $arhive_type_and = " AND a.uid != 0";
+            } else {
+                $arhive_type_and = " AND a.uid is NULL";
+            }
+        }
+
+        // Parser type filter
+        $parser_type_and = ' AND (p.id is NULL OR p.multi=0)';
+        if ($q['parser_type'] != -1) {
+            if ($q['parser_type'] == 1) {
+                $parser_type_and = " AND p.id !=0 AND p.status=1 AND p.multi=0";
+            } else if ($q['parser_type'] == 2) {
+                $parser_type_and = " AND p.id !=0 AND p.status=0 AND p.multi=0";
+            } else {
+                $parser_type_and = " AND p.id is NULL";
+            }
+        }
+
+        // Links type filter
+        $links_type_and = '';
+        if ($q['links_type'] != -1) {
+            $links_type_and = sprintf(" AND p.status_links=%d", $q['links_type']);
+        }
+
+        // Expired status filter
+        $exp_status_and = '';
+        if ($q['exp_status'] != -1) {
+            $exp_status_and = sprintf(" AND u.exp_status=%d", $q['exp_status']);
+        }
+
+        // Date filter
+        $and_date = '';
+        if ($q['date'] > 0) {
+            $and_date = sprintf(' AND p.date < %d', $q['date']);
+        }
+
+
+
+        //Sort
+        $and_orderby = '';
+        $limit = '';
+        if (!$count) {
+            if ($orderby && in_array($orderby, $this->sort_pages)) {
+                $and_orderby = ' ORDER BY ' . $orderby;
+                if ($order) {
+                    $and_orderby .= ' ' . $order;
+                }
+            } else {
+                $and_orderby = " ORDER BY u.id DESC";
+            }
+
+            $page -= 1;
+            $start = $page * $perpage;
+
+            $limit = '';
+            if ($perpage > 0) {
+                $limit = " LIMIT $start, " . $perpage;
+            }
+
+            $select = "u.id, u.cid, u.pid, u.status, u.link_hash, u.link, u.date, u.last_upd, u.exp_status, u.upd_rating,"
+                    . " a.date as adate,"
+                    . " p.date as pdate, p.status as pstatus, p.title as ptitle, p.year as pyear,"
+                    . " p.top_movie as ptop_movie, p.status_links as pstatus_links, p.rating as prating";
+        } else {
+            $select = "COUNT(u.id)";
+        }
+
+        $query = "SELECT " . $select
+                . " FROM {$this->db['url']} u"
+                . " LEFT JOIN {$this->db['arhive']} a ON u.id = a.uid"
+                . " LEFT JOIN {$this->db['posts']} p ON u.id = p.uid"
+                . $status_query . $cid_and . $exp_status_and . $arhive_type_and . $parser_type_and . $links_type_and . $and_date . $and_orderby . $limit;
+
+        if (!$count) {
+            $result = $this->db_results($query);
+        } else {
+            $result = $this->db_get_var($query);
+        }
+
+        return $result;
+    }
+
+    public function get_urls_query_count($q_req = array()) {
+        return $this->get_urls_query($q_req, 1, 1, '', '', true);
+    }
+
+    public function get_urls_type_count($q_req = array(), $types = array(), $custom_type = '') {
+        $status = -1;
+        $count = $this->get_urls_query_count($q_req);
+        $states = array(
+            '-1' => array(
+                'title' => 'All',
+                'count' => $count
+            )
+        );
+        $q_req_custom = $q_req;
+
+        foreach ($types as $key => $value) {
+            $q_req_custom[$custom_type] = $key;
+            $states[$key] = array(
+                'title' => $value,
+                'count' => $this->get_urls_query_count($q_req_custom));
+        }
+        return $states;
+    }
+
     public function get_urls($status = -1, $page = 1, $cid = 0, $arhive_type = -1, $parser_type = -1, $links_type = -1, $orderby = '', $order = 'ASC', $perpage = 30, $date = '') {
+        // Old api
+
         $status_trash = 2;
         $status_query = " WHERE u.status != " . $status_trash;
         if ($status != -1) {
@@ -604,7 +765,7 @@ class MoviesParser extends MoviesAbstractDB {
             $and_date = sprintf(' AND p.date < %d', $date);
         }
 
-        $query = "SELECT u.id, u.cid, u.pid, u.status, u.link_hash, u.link,"
+        $query = "SELECT u.id, u.cid, u.pid, u.status, u.link_hash, u.link, u.date, u.last_upd, u.exp_status,"
                 . " a.date as adate,"
                 . " p.date as pdate, p.status as pstatus, p.title as ptitle, p.year as pyear,"
                 . " p.top_movie as ptop_movie, p.status_links as pstatus_links, p.rating as prating"
@@ -613,6 +774,14 @@ class MoviesParser extends MoviesAbstractDB {
                 . " LEFT JOIN {$this->db['posts']} p ON u.id = p.uid"
                 . $status_query . $cid_and . $arhive_type_and . $parser_type_and . $links_type_and . $and_date . $and_orderby . $limit;
 
+
+        $result = $this->db_results($query);
+        return $result;
+    }
+
+    public function get_last_upd_urls($cid = 0, $status = 1, $last_upd = 0, $count = 0) {
+        $query = sprintf("SELECT id, cid, pid, last_upd, status, link, link_hash FROM {$this->db['url']}"
+                . " WHERE cid=%d AND status=%d AND last_upd>%d ORDER BY last_upd ASC limit %d", $cid, $status, $last_upd, $count);
 
         $result = $this->db_results($query);
         return $result;
@@ -680,6 +849,17 @@ class MoviesParser extends MoviesAbstractDB {
         return $result;
     }
 
+    public function get_urls_expired_count($cid = 0, $exp_status = 1) {
+        // Company id
+        $cid_and = '';
+        if ($cid > 0) {
+            $cid_and = sprintf(" AND u.cid=%d", (int) $cid);
+        }
+        $query = sprintf("SELECT COUNT(u.id) FROM {$this->db['url']} u WHERE u.exp_status=%d" . $cid_and, (int) $exp_status);
+        $result = $this->db_get_var($query);
+        return $result;
+    }
+
     public function get_all_urls($cid) {
         $query = sprintf("SELECT * FROM {$this->db['url']} WHERE cid=%d AND status!=2", $cid);
         $result = $this->db_results($query);
@@ -738,7 +918,7 @@ class MoviesParser extends MoviesAbstractDB {
                 $result = array();
                 // 1. Weight>20
                 $ma = $this->ml->get_ma();
-                $ids = $ma->get_post_ids_by_weight(20);
+                $ids = $ma->get_post_ids_by_min_weight(20);
                 if ($ids) {
                     $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " AND pid IN(" . implode(",", $ids) . ") ORDER BY id DESC LIMIT %d", $count);
                     $result = (array) $this->db_results($query);
@@ -749,7 +929,7 @@ class MoviesParser extends MoviesAbstractDB {
 
                 if (count($result) < $count) {
                     // 2. Weight>10
-                    $ids = $ma->get_post_ids_by_weight(10);
+                    $ids = $ma->get_post_ids_by_min_weight(10);
                     if ($ids) {
                         $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " AND pid IN(" . implode(",", $ids) . ") ORDER BY id DESC LIMIT %d", $count);
                         $result_10 = (array) $this->db_results($query);
@@ -768,7 +948,7 @@ class MoviesParser extends MoviesAbstractDB {
 
                 if (count($result) < $count) {
                     // 2. Weight>0
-                    $ids = $ma->get_post_ids_by_weight(0);
+                    $ids = $ma->get_post_ids_by_min_weight(0);
                     if ($ids) {
                         $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " AND pid IN(" . implode(",", $ids) . ") ORDER BY id DESC LIMIT %d", $count);
                         $result_0 = (array) $this->db_results($query);
@@ -810,6 +990,20 @@ class MoviesParser extends MoviesAbstractDB {
         return $result;
     }
 
+    public function get_expired_urls($cid=0, $count=100, $debug = false) {
+        // Company id
+        $cid_and = '';
+        if ($cid > 0) {
+            $cid_and = sprintf(" AND cid=%d", (int) $cid);
+        }
+        $query = sprintf("SELECT * FROM {$this->db['url']} WHERE exp_status=1" . $cid_and . " ORDER BY upd_rating DESC, last_upd ASC LIMIT %d", $count);
+        if ($debug){
+            print_r($query);
+        }
+        $result = $this->db_results($query);
+        return $result;
+    }
+
     public function change_url_state($id, $status = 0, $force = false) {
         $update_status = false;
         if ($force) {
@@ -828,6 +1022,82 @@ class MoviesParser extends MoviesAbstractDB {
             return true;
         }
         return false;
+    }
+    
+    public function update_url($data, $uid) {
+        $data['last_upd']=$this->curr_time();
+        $this->db_update($data, $this->db['url'], $uid);
+    }
+
+    public function find_expired_urls($campaign = array(), $options = array(), $debug = false) {
+        /*
+          // 1.w50  Last 30 days (30)
+          // 2. w40 Last year  and rating 3-5 (250)
+          // 3. w30  Last 3 year and rating 4-5 (200)
+          //4. w20 All time and rating 4-5 (3500)
+          //5. w10 Last 3 year (4000)
+          //6. w0 Other (27000)
+         */
+
+
+        // Expired is active? 
+        $ao = $options['update'];
+        // Find expired URLs and change its status
+        $count = $ao['num'];
+
+        if ($debug) {
+            print "Find expired URLs\n";
+        }
+
+        $curr_time = $this->curr_time();
+
+
+        $cid = $campaign->id;
+        $ma = $this->ml->get_ma();
+
+        foreach ($this->rating_update as $days => $rating_arr) {
+            p_r(array($days, $rating_arr));
+            $min_rating = $rating_arr[0];
+            $max_rating = $rating_arr[1];
+            if ($min_rating != 0) {
+                $ids = $ma->get_post_ids_by_weight($min_rating, $max_rating);
+            }
+            if ($debug) {
+                p_r(count($ids));
+            }
+            if ($ids || $min_rating == 0) {
+                $keys = array_keys($ids);
+                $expire_date = $curr_time - ($days * 86400);
+                $and_lastupd = ' AND last_upd<' . $expire_date;
+                if ($min_rating == 0) {
+                    // All posts
+                    $query = sprintf("SELECT id FROM {$this->db['url']} WHERE status=1 AND cid=%d" . $and_lastupd . " ORDER BY id ASC LIMIT %d", $cid, $count);
+                } else {
+                    // Select ids posts
+                    $query = sprintf("SELECT id FROM {$this->db['url']} WHERE status=1 AND cid=%d" . $and_lastupd . " AND pid IN(" . implode(",", $keys) . ") ORDER BY id ASC LIMIT %d", $cid, $count);
+                }
+                $result = (array) $this->db_results($query);
+                if ($debug) {
+                    p_r($query);
+                    p_r($result);
+                }
+                if ($result) {
+                    $upd_ids = array();
+                    foreach ($result as $item) {
+                        $upd_ids[] = $item->id;
+                    }
+                    // Update expire urls and upd rating
+                    $sql = sprintf("UPDATE {$this->db['url']} SET exp_status=1, last_upd=%d, upd_rating=%d WHERE id IN (" . implode(",", $upd_ids) . ")", $curr_time, $min_rating);
+                    $this->db_query($sql);
+                    $count += sizeof($result);
+                }
+            }
+        }
+        if ($debug) {
+            p_r(array('Total expired'=>$count));
+        }
+
+        return $count;
     }
 
     public function find_urls($campaign, $options, $settings, $preview = true) {
@@ -1369,6 +1639,26 @@ class MoviesParser extends MoviesAbstractDB {
 
         return $result;
     }
+    
+    public function get_last_expired_urls_arhives($count = 10, $cid = 0) {
+
+        // Company id
+        $cid_and = '';
+        if ($cid > 0) {
+            $cid_and = sprintf(" AND u.cid=%d", (int) $cid);
+        }        
+
+        $query = sprintf("SELECT a.uid, a.arhive_hash, u.cid FROM {$this->db['arhive']} a"
+                . " INNER JOIN {$this->db['url']} u ON u.id = a.uid"
+                . " LEFT JOIN {$this->db['posts']} p ON p.uid = a.uid"
+                . " WHERE a.id>0 AND u.exp_status=2" .  $cid_and
+                . " ORDER BY u.upd_rating DESC LIMIT %d", (int) $count);
+
+        $result = $this->db_results($query);
+
+        return $result;
+    }
+    
 
     public function parse_arhives($items, $campaign, $rules_name = 'rules') {
         ini_set('max_execution_time', '300'); //300 seconds = 5 minutes
@@ -1777,7 +2067,7 @@ class MoviesParser extends MoviesAbstractDB {
         if ($order == "ASC") {
             $and_order = $order;
         }
-        
+
         $query = sprintf("SELECT p.id, u.pid FROM {$this->db['posts']} p"
                 . " INNER JOIN {$this->db['url']} u ON p.uid = u.id"
                 . " WHERE p.id>%d" . $cid_and . $status_and . $status_links_and
@@ -1785,20 +2075,20 @@ class MoviesParser extends MoviesAbstractDB {
 
         $result = $this->db_results($query);
         $ret = array();
-        if ($result){
-            $ulrs=array();
+        if ($result) {
+            $ulrs = array();
             $ids = array();
             foreach ($result as $item) {
-                $ids[]=$item->id;
-                $ulrs[$item->id]=$item->pid;
+                $ids[] = $item->id;
+                $ulrs[$item->id] = $item->pid;
             }
-            $query = "SELECT * FROM {$this->db['posts']} WHERE id IN(". implode(',', $ids).")";
+            $query = "SELECT * FROM {$this->db['posts']} WHERE id IN(" . implode(',', $ids) . ")";
             $contents = $this->db_results($query);
-            if ($contents){
+            if ($contents) {
                 foreach ($contents as $item) {
                     $ret_item = $item;
-                    $ret_item->pid=$ulrs[$ret_item->id];
-                    $ret[]=$ret_item;
+                    $ret_item->pid = $ulrs[$ret_item->id];
+                    $ret[] = $ret_item;
                 }
             }
         }
@@ -1806,7 +2096,7 @@ class MoviesParser extends MoviesAbstractDB {
         return $ret;
     }
 
-    public function get_last_arhives($cid = 0, $start = 0, $count = 10, $top_movie = 0,$last_update =0) {
+    public function get_last_arhives($cid = 0, $start = 0, $count = 10, $top_movie = 0, $last_update = 0) {
         if ($cid > 0) {
             $cid_and = sprintf(" AND u.cid=%d", (int) $cid);
         }
@@ -1815,16 +2105,15 @@ class MoviesParser extends MoviesAbstractDB {
         if ($top_movie > 0) {
             $and_top_movie = sprintf(' AND p.top_movie=%d', $top_movie);
         }
-        $and_last_update='';
-        if ($last_update)
-        {
-            $and_last_update = ' AND p.last_upd > '.$last_update.' ';
+        $and_last_update = '';
+        if ($last_update) {
+            $and_last_update = ' AND p.last_upd > ' . $last_update . ' ';
         }
 
         $query = sprintf("SELECT p.top_movie, a.arhive_hash FROM {$this->db['posts']} p"
                 . " INNER JOIN {$this->db['url']} u ON p.uid = u.id"
                 . " INNER JOIN {$this->db['arhive']} a ON a.uid = u.id"
-                . " WHERE p.id>0" . $and_top_movie . $cid_and.$and_last_update
+                . " WHERE p.id>0" . $and_top_movie . $cid_and . $and_last_update
                 . " ORDER BY p.id DESC LIMIT %d,%d", (int) $start, $count);
 
         $result = $this->db_results($query);
@@ -3059,6 +3348,23 @@ class MoviesParser extends MoviesAbstractDB {
             $result = $this->db_results($sql);
         }
         return $result;
+    }
+
+    /*
+     * Fchan posts
+     */
+
+    public function get_fchan_posts_rating($id = 0, $count = 10) {
+        $sql = sprintf("SELECT id, mid FROM {$this->db['fchan_posts']}"
+                . " WHERE id>%d AND status=1 ORDER BY id ASC LIMIT %d", $id, $count);
+        $results = $this->db_results($sql);
+        return $results;
+    }
+
+    public function get_fchan_posts($uid = 0) {
+        $sql = sprintf("SELECT rating FROM {$this->db['fchan_posts']} WHERE mid=%d AND status=1", $uid);
+        $results = $this->db_results($sql);
+        return $results;
     }
 
     /*

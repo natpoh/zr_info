@@ -157,14 +157,14 @@ class ItemAdmin {
 
     public function themePager($status = -1, $page = 1, $url = '/', $count = 1, $per_page = 100, $orderby = '', $order = '', $pg = 'p', $active_class = 'disabled') {
         $ret = '';
-        $pager = $this->getPager($status, $page, $url, $count, $per_page, $orderby, $order);
+        $pager = $this->getPager($page, $url, $count, $per_page, $orderby, $order);
         if ($pager) {
             $ret = '<div class="tablenav cmnav"><div class="tablenav-pages" style="float:none;"><div class="pagination-links">' . $pager . '</div></div></div>';
         }
         return $ret;
     }
 
-    public function getPager($status = -1, $page = 1, $url = '/', $count = 1, $per_page = 100, $orderby = '', $order = '', $pg = 'p', $active_class = 'disabled') {
+    public function getPager($page = 1, $url = '/', $count = 1, $per_page = 100, $orderby = '', $order = '', $pg = 'p', $active_class = 'disabled') {
         $paged = $page;
         $max_page = 1;
         if ($per_page > 0) {
