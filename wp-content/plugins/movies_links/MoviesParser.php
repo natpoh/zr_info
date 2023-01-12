@@ -231,8 +231,8 @@ class MoviesParser extends MoviesAbstractDB {
         30 => [40, 50],
         60 => [30, 40],
         90 => [20, 30],
-        180 => [10, 20],
-        360 => [0, 10],
+        360 => [10, 20],
+        1080 => [0, 10],
     );
 
     /*
@@ -1639,6 +1639,26 @@ class MoviesParser extends MoviesAbstractDB {
 
         return $result;
     }
+    
+    public function get_last_expired_urls_arhives($count = 10, $cid = 0) {
+
+        // Company id
+        $cid_and = '';
+        if ($cid > 0) {
+            $cid_and = sprintf(" AND u.cid=%d", (int) $cid);
+        }        
+
+        $query = sprintf("SELECT a.uid, a.arhive_hash, u.cid FROM {$this->db['arhive']} a"
+                . " INNER JOIN {$this->db['url']} u ON u.id = a.uid"
+                . " LEFT JOIN {$this->db['posts']} p ON p.uid = a.uid"
+                . " WHERE a.id>0 AND u.exp_status=2" .  $cid_and
+                . " ORDER BY u.upd_rating DESC LIMIT %d", (int) $count);
+
+        $result = $this->db_results($query);
+
+        return $result;
+    }
+    
 
     public function parse_arhives($items, $campaign, $rules_name = 'rules') {
         ini_set('max_execution_time', '300'); //300 seconds = 5 minutes
