@@ -119,6 +119,7 @@ class MoviesParserAdmin extends ItemAdmin {
         'gen_urls' => array('log' => 1, 'title' => 'Generate URLs'),
         'parsing' => array('log' => 3, 'title' => 'Parsing'),
         'links' => array('log' => 4, 'title' => 'Links'),
+        'update' => array('log' => 5, 'title' => 'Update'),
     );
     public $post_status = array(
         1 => 'Publish',
@@ -2323,6 +2324,7 @@ class MoviesParserAdmin extends ItemAdmin {
     }
 
     public function get_url_status_count($cid = 0, $aid = 0) {
+        // DEPRECATED
         $status = -1;
         $count = $this->mp->get_urls_count($status, $cid);
         $states = array(
@@ -2340,6 +2342,7 @@ class MoviesParserAdmin extends ItemAdmin {
     }
 
     public function get_post_arhive_types($cid = 0, $status = -1) {
+        // DEPRECATED
 
         $count = $this->mp->get_urls_count($status, $cid);
         $states = array(
@@ -2357,6 +2360,7 @@ class MoviesParserAdmin extends ItemAdmin {
     }
 
     public function get_post_parser_types($cid = 0, $status = -1, $arhive_type = -1) {
+        // DEPRECATED
 
         $count = $this->mp->get_urls_count($status, $cid, $arhive_type);
         $states = array(
@@ -2374,6 +2378,7 @@ class MoviesParserAdmin extends ItemAdmin {
     }
 
     public function get_post_links_types($cid = 0, $status = -1, $arhive_type = -1, $parser_type = -1) {
+         // DEPRECATED
 
         $count = $this->mp->get_urls_count($status, $cid, $arhive_type, $parser_type);
         $states = array(

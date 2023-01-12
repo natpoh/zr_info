@@ -120,13 +120,14 @@ class MoviesParser extends MoviesAbstractDB {
         );
     }
 
-    public $campaign_modules = array('cron_urls', 'gen_urls', 'arhive', 'parsing', 'links');
+    public $campaign_modules = array('cron_urls', 'gen_urls', 'arhive', 'parsing', 'links', 'update');
     public $log_modules = array(
         'cron_urls' => 1,
         'gen_urls' => 1,
         'arhive' => 2,
         'parsing' => 3,
         'links' => 4,
+        'update' => 5,
     );
     private $def_reg_rule = array(
         'f' => '',
@@ -660,7 +661,7 @@ class MoviesParser extends MoviesAbstractDB {
                 . " FROM {$this->db['url']} u"
                 . " LEFT JOIN {$this->db['arhive']} a ON u.id = a.uid"
                 . " LEFT JOIN {$this->db['posts']} p ON u.id = p.uid"
-                . $status_query . $cid_and . $exp_status_and. $arhive_type_and . $parser_type_and . $links_type_and . $and_date . $and_orderby . $limit;
+                . $status_query . $cid_and . $exp_status_and . $arhive_type_and . $parser_type_and . $links_type_and . $and_date . $and_orderby . $limit;
 
         if (!$count) {
             $result = $this->db_results($query);
@@ -989,6 +990,20 @@ class MoviesParser extends MoviesAbstractDB {
         return $result;
     }
 
+    public function get_expired_urls($cid=0, $count=100, $debug = false) {
+        // Company id
+        $cid_and = '';
+        if ($cid > 0) {
+            $cid_and = sprintf(" AND cid=%d", (int) $cid);
+        }
+        $query = sprintf("SELECT * FROM {$this->db['url']} WHERE exp_status=1" . $cid_and . " ORDER BY upd_rating DESC, last_upd ASC LIMIT %d", $count);
+        if ($debug){
+            print_r($query);
+        }
+        $result = $this->db_results($query);
+        return $result;
+    }
+
     public function change_url_state($id, $status = 0, $force = false) {
         $update_status = false;
         if ($force) {
@@ -1007,6 +1022,11 @@ class MoviesParser extends MoviesAbstractDB {
             return true;
         }
         return false;
+    }
+    
+    public function update_url($data, $uid) {
+        $data['last_upd']=$this->curr_time();
+        $this->db_update($data, $this->db['url'], $uid);
     }
 
     public function find_expired_urls($campaign = array(), $options = array(), $debug = false) {

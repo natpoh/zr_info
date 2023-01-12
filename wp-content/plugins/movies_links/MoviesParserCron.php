@@ -43,17 +43,17 @@ class MoviesParserCron extends MoviesAbstractDB {
     public function check_time_campaign($campaign, $cron_type, $debug = false, $force = false) {
         $count = 0;
         $options = $this->mp->get_options($campaign);
-        
+
         $type_name = isset($this->cron_types[$cron_type]) ? $this->cron_types[$cron_type] : '';
-     
+
         if (!$type_name || !isset($options[$type_name])) {
             return $count;
         }
-        
+
 
         // Find expired logic
-        if ($type_name=='update'){
-           // Expired is active? 
+        if ($type_name == 'update') {
+            // Expired is active? 
             $ao = $options['update'];
             if ($ao['status'] == 0) {
                 return $count;
@@ -75,20 +75,20 @@ class MoviesParserCron extends MoviesAbstractDB {
                 $options_upd[$type_name]['last_update'] = $currtime;
                 $this->mp->update_campaign_options($campaign->id, $options_upd);
 
-                $count = $this->process_campaign($campaign, $options, $type_name, $debug);
+                $count = $this->process_campaign($campaign, $options, $type_name, $debug, $force);
             }
         }
         return $count;
     }
 
-    public function process_campaign($campaign, $options, $type_name, $debug = false) {
+    public function process_campaign($campaign, $options, $type_name, $debug = false, $force = false) {
 
         if ($debug) {
-            print_r($type_name."\n");
+            print_r($type_name . "\n");
         }
 
         if ($type_name == 'arhive') {
-            $count = $this->proccess_arhive($campaign, $options);
+            $count = $this->proccess_arhive($campaign, $options, $debug, $force);
         } else if ($type_name == 'parsing') {
             if ($campaign->type == 2) {
                 $count = $this->proccess_parsing_create_urls($campaign, $options, false, $debug);
@@ -109,29 +109,32 @@ class MoviesParserCron extends MoviesAbstractDB {
                 // Unpaused arhives            
                 $this->start_paused_module($campaign, 'arhive', $options);
             }
-        } else if ($type_name=='update'){
+        } else if ($type_name == 'update') {
             $count = $this->mp->find_expired_urls($campaign, $options, $debug);
         } else if ($type_name == 'delete_garbage') {
             
-        } 
+        }
 
 
 
         return $count;
     }
 
-    private function proccess_arhive($campaign, $options, $debug = false) {
+    private function proccess_arhive($campaign, $options, $debug = false, $force = false) {
         $type_name = 'arhive';
         $type_opt = $options[$type_name];
 
         // Already progress
         $progress = isset($type_opt['progress']) ? $type_opt['progress'] : 0;
         $currtime = $this->curr_time();
-        if ($progress) {
+        if ($progress && !$force) {
             // Ignore old last update            
             $wait = 180; // 3 min
             if ($currtime < $progress + $wait) {
                 $message = 'Archiving is in progress already.';
+                if ($debug) {
+                    print $message;
+                }
                 $this->mp->log_warn($message, $campaign->id, 0, 2);
                 return 0;
             }
@@ -195,12 +198,12 @@ class MoviesParserCron extends MoviesAbstractDB {
         $this->mp->send_curl_no_responce($url);
     }
 
-    private function arhive_urls($campaign, $options, $urls = array()) {
+    private function arhive_urls($campaign, $options, $urls = array(), $expired = false) {
         $type_name = 'arhive';
         $type_opt = $options[$type_name];
         if ($urls) {
             foreach ($urls as $item) {
-                $this->arhive_url($item, $campaign, $type_opt);
+                $this->arhive_url($item, $campaign, $type_opt, $expired);
             }
         }
 
@@ -614,7 +617,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         }
     }
 
-    private function arhive_url($item, $campaign, $type_opt, $force = false) {
+    private function arhive_url($item, $campaign, $type_opt, $expired = false) {
 
         /*
           [id] => 21
@@ -628,7 +631,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         //1. Url item exist?
         $arhive_exist = $this->mp->get_arhive_by_url_id($item->id);
 
-        if ($arhive_exist && !$force) {
+        if ($arhive_exist && !$expired) {
             return;
         }
 
@@ -719,19 +722,24 @@ class MoviesParserCron extends MoviesAbstractDB {
 
         file_put_contents($full_path, $gzdata);
 
+
+        $data = array(
+            'status' => 1
+        );
         // Add arhive db object
         if ($arhive_exist) {
             $this->mp->update_arhive($item);
-            $message = 'Update arhive';
+            $message = 'Update expired arhive';
             $this->mp->log_info($message, $item->cid, $item->id, 2);
+            // Update expire state
+            $data['exp_status'] = 2;
         } else {
             $message = 'Add arhive';
             $this->mp->add_arhive($item);
             $this->mp->log_info($message, $item->cid, $item->id, 2);
         }
         // Status - exist
-        $status = 1;
-        $this->mp->change_url_state($item->id, $status, true);
+        $this->mp->update_url($data, $item->id);
     }
 
     /*
@@ -750,7 +758,7 @@ class MoviesParserCron extends MoviesAbstractDB {
             $type_opt = $options[$type_name];
             $urls_count = $type_opt['num'];
 
-            // Get last urls
+            // Get last urls in status NEW
             $status = 0;
 
             // Random urls
@@ -758,11 +766,27 @@ class MoviesParserCron extends MoviesAbstractDB {
             $urls = $this->mp->get_last_urls($urls_count, $status, $campaign->id, $random_urls, $debug);
 
             $count = count((array) $urls);
-            if ($debug) {
-                print_r(array('Arhive count', $count));
+          
+            $count_expired = 0;
+            if ($count < $urls_count) {
+                $need_expired = $urls_count - $count;
+                // Get expired urls
+                $ao = $options['update'];
+                if ($ao['status'] == 1) {
+                    $expired_urls = $this->mp->get_expired_urls($campaign->id, $need_expired, $debug);
+                    $count_expired = count((array) $expired_urls);
+                }
             }
+            
+            if ($debug) {
+                print_r(array('Arhive count'=> $count, 'Expire count'=> $count_expired));
+            }
+
             if ($count) {
                 $this->arhive_urls($campaign, $options, $urls);
+            }
+            if ($count_expired > 0) {
+                $this->arhive_urls($campaign, $options, $expired_urls, true);
             }
 
             // Delete garbage
