@@ -18,7 +18,7 @@ $array_jobs = array(
 'check_last_actors'=>20,
 'check_kairos'=>5,///add kairos images
 
-
+'movie_keywords'=>20,///upadate movies keywords
 'update_tmdb_actors'=>10, //update tmdb id and images
 
 'check_tmdb_data'=>15,///update country and poster from tmdb
@@ -32,8 +32,6 @@ $array_jobs = array(
 
 'download_crowd_images'=>60,///load image to server from crowdsource status 1
 'update_actors_verdict'=>30,///update verdict actors
-
- 'movie_keywords'=>60,///upadate movies keywords
 
 'check_face'=>120,///add bettaface verdict
 
