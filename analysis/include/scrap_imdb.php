@@ -15,7 +15,20 @@ if (!defined('ABSPATH'))
 !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
 /////////add rating
 ///add option
-!class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : ''; 
+!class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+
+
+function update_actor_directors($movie_id)
+{
+
+        ////update movie
+        $array_movie =  TMDB::get_content_imdb($movie_id,0,1,1);
+        $add =  TMDB::addto_db_imdb($movie_id, $array_movie);
+
+        echo $movie_id.' updated<br>';
+        return 1;
+
+}
 
 function update_actor_stars($id,$movie_id)
 {
@@ -43,7 +56,46 @@ function update_actor_stars($id,$movie_id)
         return 1;
     }
 }
+function fix_all_directors($movie_id=0)
+{
+    !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+    $last_id = OptionData::get_options('','directors_last_id');
+    echo 'last_id='.$last_id.'<br>';
 
+    if (!$last_id)
+    {
+        $last_id=0;
+    }
+
+    if (!$movie_id)
+    {
+        $movies_updated = 0;
+
+        $q= "SELECT id, movie_id FROM `data_movie_imdb` where id > ".$last_id."  order by id asc limit 10000";
+        $r = Pdo_an::db_results_array($q);
+        foreach ($r as $row)
+        {
+
+            $id =  $row['id'];
+            $movie_id =  $row['movie_id'];
+            $movies_updated+=update_actor_directors($id,$movie_id);
+            OptionData::set_option('',$id,'directors_last_id',false);
+
+            if ($movies_updated> 100)
+            {
+                break;
+            }
+        }
+
+
+    }
+    else
+    {
+        update_actor_directors($movie_id);
+    }
+
+
+}
 function fix_actors_stars($movie_id)
 {
     !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
@@ -3014,6 +3066,14 @@ if (isset($_GET['fix_actors_stars'])) {
 
     return;
 }
+if (isset($_GET['fix_all_directors'])) {
+
+
+    fix_all_directors($_GET['fix_all_directors']);
+
+    return;
+}
+
 
 
 if (isset($_GET['fix_actors_verdict'])) {

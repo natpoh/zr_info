@@ -855,9 +855,11 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
 
     }
 
+    $array_directors =  self::get_current_meta('meta_movie_director',$mid);
+
     if ($director || $writer || $cast_director || $producers) {
 
-        $array_directors =  self::get_current_meta('meta_movie_director',$mid);
+
         if ($director) {
             if (strstr($director, ',')) {
                 $director_array = explode(',', $director);
@@ -925,8 +927,11 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
         }
 
 
-        self::remove_actors($array_directors,'meta_movie_director');
+
     }
+
+    self::remove_actors($array_directors,'meta_movie_director');
+
 
 //    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
 //    Import::create_commit($commit_id,'update','meta_movie_director', array('mid'=>$mid),'movie_meta_actor',5);
@@ -935,6 +940,7 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
 
 return 1;
 }
+
 
 public static function  remove_actors($array_actors,$table)
     {
