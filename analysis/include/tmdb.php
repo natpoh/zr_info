@@ -855,10 +855,11 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
 
     }
 
-    $array_directors =  self::get_current_meta('meta_movie_director',$mid);
 
-    if ($director || $writer || $cast_director || $producers) {
+global $force;
 
+    if ($director || $writer || $cast_director || $producers || $force) {
+        $array_directors =  self::get_current_meta('meta_movie_director',$mid);
 
         if ($director) {
             if (strstr($director, ',')) {
@@ -927,10 +928,10 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
         }
 
 
-
+        self::remove_actors($array_directors,'meta_movie_director');
     }
 
-    self::remove_actors($array_directors,'meta_movie_director');
+
 
 
 //    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';

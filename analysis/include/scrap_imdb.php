@@ -20,7 +20,8 @@ if (!defined('ABSPATH'))
 
 function update_actor_directors($movie_id)
 {
-
+         global $force;
+         $force=1;
         ////update movie
         $array_movie =  TMDB::get_content_imdb($movie_id,0,1,1);
         $add =  TMDB::addto_db_imdb($movie_id, $array_movie);
