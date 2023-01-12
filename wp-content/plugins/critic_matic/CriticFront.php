@@ -79,9 +79,10 @@ class CriticFront extends SearchFacets {
 
         if ($movie_id || $unique == 0) {
             // If vote = 0 - last post, show all posts
-            if ($search) {
+            if ($search && !$movie_id) {
                 $posts = $this->cs->get_last_critics($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au);
             } else {
+                
                 $posts = $this->get_last_posts($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au);
             }
         } else {
@@ -128,7 +129,7 @@ class CriticFront extends SearchFacets {
         return $items;
     }
 
-    public function get_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tags = array(), $meta_type = array(), $min_rating = 0, $vote = 0, $min_au = 0, $max_au = 0) {
+    public function get_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tags = array(), $meta_type = array(), $min_rating = 0, $vote = 0, $min_au = 0, $max_au = 0, $mtype = 0) {
         $and_author = '';
         if ($a_type != -1) {
             $and_author = sprintf(' AND a.type = %d', $a_type);
@@ -161,7 +162,12 @@ class CriticFront extends SearchFacets {
         // Odrer by rating desc
         $custom_order = '';
         if ($movie_id > 0) {
-            $custom_order = ' m.rating DESC, ';
+             $custom_order = ' m.type ASC, ';
+        }
+
+        
+        if ($mtype) {
+            $mtype_and = sprintf(' AND m.type=%d', $mtype);
         }
 
         // Tag logic
@@ -187,8 +193,8 @@ class CriticFront extends SearchFacets {
         $sql = sprintf("SELECT p.id, p.date_add, p.top_movie, a.name AS author_name FROM {$this->db['posts']} p"
                 . " INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
                 . " INNER JOIN {$this->db['authors']} a ON a.id = am.aid" . $movie_inner . $tag_inner . $vote_inner
-                . " WHERE p.top_movie > 0 AND p.status=1" . $and_author . $movie_and . $tag_and . $min_rating_and . $max_rating_and . $meta_type_and . $vote_and . " ORDER BY" . $custom_order . " p.date DESC LIMIT %d, %d", (int) $start, (int) $limit);
-
+                . " WHERE p.top_movie > 0 AND p.status=1" . $mtype_and . $and_author . $movie_and . $tag_and . $min_rating_and . $meta_type_and . $vote_and . " ORDER BY" . $custom_order . " p.date DESC LIMIT %d, %d", (int) $start, (int) $limit);
+      
         $results = $this->db_results($sql);
 
         return $results;

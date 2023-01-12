@@ -183,6 +183,12 @@ class MoviesParserAdmin extends ItemAdmin {
         0 => 'List agents',
         1 => 'Generate',
     );
+    public $exp_status = array(
+        0 => 'Valid',
+        1 => 'Expire',
+        2 => 'Arhived',
+        3 => 'Parsed',
+    );
 
     /* Generate urls */
     public $rwt_movie_type = array(
@@ -277,7 +283,7 @@ class MoviesParserAdmin extends ItemAdmin {
                             print '<textarea style="width:90%; height:500px">' . implode("\n", $items) . '</textarea>';
                         }
                         exit;
-                    }else if ($_GET['export_posts']) {
+                    } else if ($_GET['export_posts']) {
                         print '<h2>Export campaign posts</h2>';
                         $posts = $this->mp->save_all_posts($cid);
                         exit;
@@ -519,7 +525,7 @@ class MoviesParserAdmin extends ItemAdmin {
                  */
                 $count = $mlr->get_posts_count();
                 $status = -1;
-                $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+                $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
 
                 $posts = $mlr->get_posts($page, $orderby, $order, $per_page);
 
@@ -563,7 +569,7 @@ class MoviesParserAdmin extends ItemAdmin {
             //Pager
             $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
 
-            $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+            $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
 
             $campaigns = $this->mp->get_campaigns($status, $type, $page, $orderby, $order, $per_page);
 
@@ -603,6 +609,36 @@ class MoviesParserAdmin extends ItemAdmin {
 
             include(MOVIES_LINKS_PLUGIN_DIR . 'includes/add_parser.php');
         }
+    }
+
+    public function get_filters_tabs($filters = array(), $p = '', $query_adb = '') {
+        if (!$query_adb) {
+            $query_adb = new MoviesQueryADB();
+        }
+        $count = 0;
+        $filters_tabs = array();
+
+        if ($filters) {
+            foreach ($filters as $key => $type_list) {
+                $home_type = -1;
+                $type = isset($_GET[$key]) ? (int) $_GET[$key] : $home_type;
+                $filter_type_arr = $this->mp->get_urls_type_count($query_adb->get_query(), $type_list, $key);
+                $filters_type = $this->get_filters($filter_type_arr, $p, $type, '', $key);
+                if ($type != $home_type) {
+                    $p = $p . '&' . $key . '=' . $type;
+                }
+                $query_adb->add_query($key, $type);
+                $filters_tabs['filters'][$key] = $filters_type;
+            }
+
+            $count = isset($filter_type_arr[$type]['count']) ? $filter_type_arr[$type]['count'] : 0;
+        }
+
+        $filters_tabs['query_adb'] = $query_adb;
+        $filters_tabs['p'] = $p;
+        $filters_tabs['c'] = $count;
+
+        return $filters_tabs;
     }
 
     public function overview() {
@@ -645,7 +681,7 @@ class MoviesParserAdmin extends ItemAdmin {
         //Pager
         $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
 
-        $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
+        $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
 
         $campaigns = $this->mp->get_campaigns($status, $type, $page, $orderby, $order, $per_page);
 
@@ -672,59 +708,86 @@ class MoviesParserAdmin extends ItemAdmin {
         $this->bulk_parser_submit();
 
         //Sort        
-
         $orderby = $this->get_orderby($this->sort_pages);
         $order = $this->get_order();
 
+
+        $query_adb = new MoviesQueryADB();
+
         // Campaign id
         $campaign = '';
+        $update_status = 0;
         if ($cid) {
             $campaign = $this->mp->get_campaign($cid);
+            $query_adb->add_query('cid', $cid);
             $page_url .= '&cid=' . $cid;
+
+            // Update status
+            $options = $this->mp->get_options($campaign);
+            $ao = $options['update'];
+            if ($ao['status'] == 1) {
+                $update_status = 1;
+            }
         }
 
-        // Filter by status
-        $home_status = -1;
-        $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_status;
-        $filter_arr = $this->get_url_status_count($cid);
-        $filters = $this->get_filters($filter_arr, $page_url, $status, '', 'status');
-        if ($status != $home_status) {
-            $page_url = $page_url . '&status=' . $status;
-        }
-        $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
+        // Filters
+        $filters = array(
+            'status' => $this->url_status,
+            'arhive_type' => $this->post_arhive_status,
+            'parser_type' => $this->post_parse_status_tab,
+            'links_type' => $this->post_link_status,
+            'exp_status' => $this->exp_status,
+        );
 
-        // Filter by arhive
-        $home_arhive_type = -1;
-        $arhive_type = isset($_GET['arhive_type']) ? (int) $_GET['arhive_type'] : $home_arhive_type;
-        $filter_arhive_type_arr = $this->get_post_arhive_types($cid, $status);
-        $filters_arhive_type = $this->get_filters($filter_arhive_type_arr, $page_url, $arhive_type, '', 'arhive_type');
-        if ($arhive_type != $home_arhive_type) {
-            $page_url = $page_url . '&arhive_type=' . $arhive_type;
-            $count = isset($filter_arhive_type_arr[$arhive_type]['count']) ? $filter_arhive_type_arr[$arhive_type]['count'] : 0;
-        }
+        $filters_tabs = $this->get_filters_tabs($filters, $page_url, $query_adb);
+        $query_adb = $filters_tabs['query_adb'];
+        $query = $query_adb->get_query();
+        $page_url = $filters_tabs['p'];
+        $count = $filters_tabs['c'];
 
-        // Filter by parser
-        $home_parser_type = -1;
-        $parser_type = isset($_GET['parser_type']) ? (int) $_GET['parser_type'] : $home_parser_type;
-        $filter_parser_type_arr = $this->get_post_parser_types($cid, $status, $arhive_type);
-        $filters_parser_type = $this->get_filters($filter_parser_type_arr, $page_url, $parser_type, '', 'parser_type');
-        if ($parser_type != $home_parser_type) {
-            $page_url = $page_url . '&parser_type=' . $parser_type;
-            $count = isset($filter_parser_type_arr[$parser_type]['count']) ? $filter_parser_type_arr[$parser_type]['count'] : 0;
-        }
+        /*
+          // Filter by status
+          $home_status = -1;
+          $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_status;
+          $filter_arr = $this->get_url_status_count($cid);
+          $filters = $this->get_filters($filter_arr, $page_url, $status, '', 'status');
+          if ($status != $home_status) {
+          $page_url = $page_url . '&status=' . $status;
+          }
+          $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
 
-        // Filter by links
-        $home_links_type = -1;
-        $links_type = isset($_GET['links_type']) ? (int) $_GET['links_type'] : $home_links_type;
-        $filter_links_type_arr = $this->get_post_links_types($cid, $status, $arhive_type, $parser_type);
-        $filters_links_type = $this->get_filters($filter_links_type_arr, $page_url, $links_type, '', 'links_type');
-        if ($links_type != $home_links_type) {
-            $page_url = $page_url . '&links_type=' . $links_type;
-            $count = isset($filter_links_type_arr[$links_type]['count']) ? $filter_links_type_arr[$links_type]['count'] : 0;
-        }
+          // Filter by arhive
+          $home_arhive_type = -1;
+          $arhive_type = isset($_GET['arhive_type']) ? (int) $_GET['arhive_type'] : $home_arhive_type;
+          $filter_arhive_type_arr = $this->get_post_arhive_types($cid, $status);
+          $filters_arhive_type = $this->get_filters($filter_arhive_type_arr, $page_url, $arhive_type, '', 'arhive_type');
+          if ($arhive_type != $home_arhive_type) {
+          $page_url = $page_url . '&arhive_type=' . $arhive_type;
+          $count = isset($filter_arhive_type_arr[$arhive_type]['count']) ? $filter_arhive_type_arr[$arhive_type]['count'] : 0;
+          }
 
-        $pager = $this->themePager($status, $page, $page_url, $count, $per_page, $orderby, $order);
-        $posts = $this->mp->get_urls($status, $page, $cid, $arhive_type, $parser_type, $links_type, $orderby, $order, $per_page);
+          // Filter by parser
+          $home_parser_type = -1;
+          $parser_type = isset($_GET['parser_type']) ? (int) $_GET['parser_type'] : $home_parser_type;
+          $filter_parser_type_arr = $this->get_post_parser_types($cid, $status, $arhive_type);
+          $filters_parser_type = $this->get_filters($filter_parser_type_arr, $page_url, $parser_type, '', 'parser_type');
+          if ($parser_type != $home_parser_type) {
+          $page_url = $page_url . '&parser_type=' . $parser_type;
+          $count = isset($filter_parser_type_arr[$parser_type]['count']) ? $filter_parser_type_arr[$parser_type]['count'] : 0;
+          }
+
+          // Filter by links
+          $home_links_type = -1;
+          $links_type = isset($_GET['links_type']) ? (int) $_GET['links_type'] : $home_links_type;
+          $filter_links_type_arr = $this->get_post_links_types($cid, $status, $arhive_type, $parser_type);
+          $filters_links_type = $this->get_filters($filter_links_type_arr, $page_url, $links_type, '', 'links_type');
+          if ($links_type != $home_links_type) {
+          $page_url = $page_url . '&links_type=' . $links_type;
+          $count = isset($filter_links_type_arr[$links_type]['count']) ? $filter_links_type_arr[$links_type]['count'] : 0;
+          } */
+
+        $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
+        $posts = $this->mp->get_urls_query($query, $page, $per_page, $orderby, $order);
 
         include(MOVIES_LINKS_PLUGIN_DIR . 'includes/list_urls.php');
     }
@@ -835,7 +898,7 @@ class MoviesParserAdmin extends ItemAdmin {
                         $this->mp->update_post_status($id, 0);
                     }
                     print "<div class=\"updated\"><p><strong>Updated</strong></p></div>";
-                }else if ($b == 'url_status_exist') {
+                } else if ($b == 'url_status_exist') {
                     // Change post status
                     foreach ($ids as $id) {
                         $this->mp->update_urls_status($id, 1);
@@ -1009,6 +1072,7 @@ class MoviesParserAdmin extends ItemAdmin {
 
         $status = isset($form_state['status']) ? $form_state['status'] : 0;
         $type = isset($form_state['type']) ? $form_state['type'] : 0;
+
         $title = $this->mp->escape($form_state['title']);
         $site = $this->mp->escape($form_state['site']);
 
@@ -1018,6 +1082,21 @@ class MoviesParserAdmin extends ItemAdmin {
             //EDIT
             $this->mp->update_campaign($status, $title, $site, $type, $id);
             $result = $id;
+
+            // Generage URLs
+            $campaign = $this->mp->get_campaign($id);
+            $opt_prev = $this->mp->get_options($campaign);
+
+            $upd_data = array();
+            $upd_data['status'] = isset($form_state['update_status']) ? $form_state['update_status'] : 0;
+            if (isset($form_state['update_interval'])) {
+                $upd_data['interval'] = isset($form_state['update_interval']) ? $form_state['update_interval'] : 0;
+                $upd_data['num'] = isset($form_state['update_num']) ? $form_state['update_num'] : 0;
+            }
+            $options = $opt_prev;
+            $options['update'] = $upd_data;
+
+            $this->mp->update_campaign_options($id, $options);
         } else {
             //ADD
             $result = $this->mp->add_campaing($status, $title, $site, $type);
@@ -1114,7 +1193,7 @@ class MoviesParserAdmin extends ItemAdmin {
     /*
      * Rules parser
      */
- 
+
     public function preview_parsing($campaign, $rules_name = 'rules') {
         $options = $this->mp->get_options($campaign);
         $o = $options['parsing'];

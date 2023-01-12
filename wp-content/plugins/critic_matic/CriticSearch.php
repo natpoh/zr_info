@@ -2616,8 +2616,9 @@ class CriticSearch extends AbstractDB {
         }
 
         // Odrer by rating desc
+        $order = " ORDER BY post_date DESC";
         if ($movie_id > 0) {
-            
+            $order = " ORDER BY post_date DESC";            
         }
 
         // Tag logic
@@ -2629,8 +2630,7 @@ class CriticSearch extends AbstractDB {
         if ($vote > 0) {
             $filters_and .= sprintf(" AND auvote=%d", $vote);
         }
-
-        $order = " ORDER BY post_date DESC";
+        
         $sql = sprintf("SELECT id, date_add, top_movie, author_name FROM critic WHERE status=1 AND top_movie>0" . $filters_and . $order . " LIMIT %d,%d", $start, $limit);
 
         $results = $this->sdb_results($sql);

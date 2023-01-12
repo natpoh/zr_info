@@ -11,6 +11,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         3 => 'links',
         4 => 'cron_urls',
         5 => 'gen_urls',
+        6 => 'update',
     );
 
     public function __construct($ml = '') {
@@ -42,11 +43,21 @@ class MoviesParserCron extends MoviesAbstractDB {
     public function check_time_campaign($campaign, $cron_type, $debug = false, $force = false) {
         $count = 0;
         $options = $this->mp->get_options($campaign);
-
+        
         $type_name = isset($this->cron_types[$cron_type]) ? $this->cron_types[$cron_type] : '';
-
+     
         if (!$type_name || !isset($options[$type_name])) {
             return $count;
+        }
+        
+
+        // Find expired logic
+        if ($type_name=='update'){
+           // Expired is active? 
+            $ao = $options['update'];
+            if ($ao['status'] == 0) {
+                return $count;
+            }
         }
 
         $type_opt = $options[$type_name];
@@ -73,7 +84,7 @@ class MoviesParserCron extends MoviesAbstractDB {
     public function process_campaign($campaign, $options, $type_name, $debug = false) {
 
         if ($debug) {
-            print_r($type_name);
+            print_r($type_name."\n");
         }
 
         if ($type_name == 'arhive') {
@@ -98,16 +109,18 @@ class MoviesParserCron extends MoviesAbstractDB {
                 // Unpaused arhives            
                 $this->start_paused_module($campaign, 'arhive', $options);
             }
+        } else if ($type_name=='update'){
+            $count = $this->mp->find_expired_urls($campaign, $options, $debug);
         } else if ($type_name == 'delete_garbage') {
             
-        }
+        } 
 
 
 
         return $count;
     }
 
-    private function proccess_arhive($campaign, $options) {
+    private function proccess_arhive($campaign, $options, $debug = false) {
         $type_name = 'arhive';
         $type_opt = $options[$type_name];
 
@@ -138,12 +151,23 @@ class MoviesParserCron extends MoviesAbstractDB {
 
         // Get last urls
         $status = 0;
-        $urls = $this->mp->get_last_urls($urls_count, $status, $campaign->id, $random_urls);
+        $count = $this->mp->get_urls_count($status, $campaign->id);
 
-        $count = count((array) $urls);
-        if ($count) {
+        $count_expired = 0;
+        if (!$count) {
+            // Get expired urls
+            $ao = $options['update'];
+            if ($ao['status'] == 1) {
+                $count_expired = $this->mp->get_urls_expired_count($campaign->id, 1);
+            }
+        }
+
+        if ($debug) {
+            print "Urls count: " . $count . ". Expired: $count_expired\n";
+        }
+
+        if ($count || $count_expired) {
             $this->get_async_cron($campaign, $type_name);
-            // $this->arhive_urls($campaign, $options, $urls);
         } else {
             // Campaign done
             // Status auto-stop
@@ -213,7 +237,7 @@ class MoviesParserCron extends MoviesAbstractDB {
                         // Multi post parsing
                         $content = '';
                         foreach ($item as $key => $value) {
-                            $row = '<div id="' . $key . '">'."\n";
+                            $row = '<div id="' . $key . '">' . "\n";
                             foreach ($value as $row_key => $row_value) {
                                 $row .= '<p class="' . $row_key . '">' . trim($row_value) . "</p>\n";
                             }
@@ -225,7 +249,7 @@ class MoviesParserCron extends MoviesAbstractDB {
                             'content' => $content
                         );
                     }
-                    
+
                     $this->parsing_post_add($item, $cid, $uid, $force);
 
                     $count += 1;
@@ -253,9 +277,9 @@ class MoviesParserCron extends MoviesAbstractDB {
 
     private function parsing_post_add($item, $cid, $uid, $force) {
         // Add post
-        
+
         $post_exist = $this->mp->get_post_by_uid($uid);
-        
+
         if (!$post_exist || $force) {
             $title = '';
             $year = '';

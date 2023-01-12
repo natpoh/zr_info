@@ -21,12 +21,12 @@ if ($_GET['t']) {
 
 $debug = false;
 if ($_GET['debug']) {
-    $debug=true;
+    $debug = true;
 }
 
 $force = false;
 if ($_GET['force']) {
-    $force=true;
+    $force = true;
 }
 
 if (!class_exists('MoviesLinks')) {
@@ -49,6 +49,15 @@ if ($load['loaded']) {
 }
 
 $mpc = new MoviesParserCron();
+/*
+ * $cron_type
+  1 => 'arhive',
+  2 => 'parsing',
+  3 => 'links',
+  4 => 'cron_urls',
+  5 => 'gen_urls',
+  6 => 'find_expired',
+ */
 $mpc->run_cron($cron_type, $debug, $force);
 
 
