@@ -2412,7 +2412,7 @@ class CriticFront extends SearchFacets {
                             
                             <?php if ($item->nresult) { ?>
                                 <span class="p-rating block">
-                                    Rating: <span class="rt_color-<?php print $item->nresult ?>"><?php print $item->nresult ?></span>
+                                    Rating: <span class="rt_color-<?php print $item->nresult ?>"><?php print $item->nresult ?>/5</span>
                                 </span>
                             <?php } ?>
                         </div>
@@ -2494,7 +2494,7 @@ class CriticFront extends SearchFacets {
                 $rating = $value['rating'] > 0 ? $value['rating'] : 'None';
                 $rows['title'][] = $value['title'];
                 $rows['result'][] = $value['count'];
-                $rows['rating'][] = '<span class="rt_color-'.$rating.'">'.$rating.'</span>';
+                $rows['rating'][] = '<span class="rt_color-'.$rating.'">'.$rating.'/5</span>';
             }
             ?>
             <?php
