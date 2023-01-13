@@ -38,8 +38,7 @@ $array_jobs = array(
 'update_all_rwt_rating'=>60,////update all rating
 'check_tv_series_imdb'=>120, ///add tvseries from list
 
-
-
+    'fix_all_directors'=>60,////temp started 12/01/2023
 
 'get_new_movies'=>(60*12),///add new movies from fandango
 'get_new_tv'=>(60*12),///add new tv from tmdb
