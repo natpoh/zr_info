@@ -55,6 +55,13 @@ if (strstr($id,'m_'))
         }
     }
 
+    function get_title_imdb($id){
+
+        $sql ="select * from `data_movie_imdb` where  id = ".intval($id)." limit 1";
+        $rows = Pdo_an::db_results_array($sql);
+            return $rows[0];
+
+    }
     function get_img_from_db($id){
 
     $sql ="select `data` from `data_movie_imdb` where  id = ".intval($id)." limit 1";
@@ -98,12 +105,118 @@ if (strstr($id,'m_'))
 
     if (!$result)
     {
-        //add empty image
 
-        $file = ABSPATH.'/wp-content/themes/custom_twentysixteen/images/empty.jpg';
-        $result = file_get_contents($file);
+        function split_string($string)
+        {
+            $maxlen= 0;
+            $array_result = [];
+            $len_widh=8;
+
+            if (strstr($string,' '))
+            {
+                $array = explode(' ',$string);
+
+
+            }
+            else
+            {
+                $array[0]=   $string;
+            }
+            $len=0;
+            $res_word='';
+            foreach ($array as $words)
+            {
+
+                if ($len+strlen($words) > $len_widh) {
+
+                    $array_result[]= trim($res_word);
+                    $res_word='';
+                    $len=0;
+
+                }
+                    $len+= strlen($words);
+                    $res_word.=' '.$words;
+
+
+
+                if ($len>$maxlen)
+                {
+                    $maxlen=$len;
+                }
+
+            }
+            $array_result[]= trim($res_word);
+
+
+            return ['max'=>$maxlen,'array'=>$array_result];
+
+
+        }
+
+        //add empty image
+       $obj =  get_title_imdb($id);
+        if ($obj){
+            $title = $obj['title'];
+            $year = $obj['year'];
+        }
+        if ($title) {
+
+
+            $y  =100;
+            $i_width  = 440;
+            $i_height = 660;
+
+            $string = $title;
+            $pointsize = 25;
+            $pointsize_year = 20;
+            $fontfile = $_SERVER['DOCUMENT_ROOT'].'/analysis/8-bit pusab.ttf';
+            $im = imagecreate($i_width, $i_height);
+            $black = imagecolorallocate ($im, 0, 0, 0);
+            $white = imagecolorallocate ($im, 255, 255, 255);
+
+            $array_title = split_string($title);
+
+            $y = 330-count($array_title['array'])*60;
+
+            foreach ($array_title['array'] as $words)
+            {
+                $y+=60;
+
+                $string_size = ImageFtBbox($pointsize, 0, $fontfile, $words, array("linespacing" => 1));
+                $s_width  = $string_size[4];
+                $s_height = $string_size[5];
+
+                ImageFtText($im, $pointsize, 0, $i_width/2 - $s_width/2 - 1,  $y , $white, $fontfile, $words, array("linespacing" => 1));
+
+
+            }
+            if ($y<600 && $year)
+            {
+                $string_size = ImageFtBbox($pointsize_year, 0, $fontfile, $year, array("linespacing" => 1));
+                $s_width  = $string_size[4];
+                $s_height = $string_size[5];
+                ImageFtText($im, $pointsize_year, 0, $i_width/2 - $s_width/2 - 1, 600, $white, $fontfile, $year, array("linespacing" => 1));
+
+            }
+
+
+
+
+            imagejpeg ($im);
+            ImageDestroy ($im);
+        return;
+        }
+        else
+        {
+
+            $file = ABSPATH.'/wp-content/themes/custom_twentysixteen/images/empty.jpg';
+            $result = file_get_contents($file);
+        }
+
+
 
     }
+
     if ($result)
     {
         if (!isset($_GET['debug']))echo $result;
