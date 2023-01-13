@@ -555,12 +555,12 @@ function update_imdb_data($from_archive=0)
     $rating_update = array( 50=> 86400*7, 40 =>86400*14, 30=> 86400*30 , 20=> 86400*60, 10=> 86400*120, 0=>86400*240);
 
 
-        $where='data_movie_imdb.add_time = 0';
+    $where='data_movie_imdb.add_time = 0';
 
-        foreach ($rating_update as $w =>$period){
-            $time = time()-$period;
-            $where.=" OR (`data_movie_imdb`.add_time < ".$time." and  `data_movie_imdb`.`weight` =".$w." ) ";
-        }
+    foreach ($rating_update as $w =>$period){
+        $time = time()-$period;
+        $where.=" OR (`data_movie_imdb`.add_time < ".$time." and  `data_movie_imdb`.`weight` =".$w." ) ";
+    }
 
 
 ////get movie list
@@ -572,14 +572,14 @@ function update_imdb_data($from_archive=0)
 
         $movie_id = $row->movie_id;
 
-            if ($movie_id) {
-                   // sleep(0.5);
-                    $array_movie =  TMDB::get_content_imdb($movie_id,'',1,$from_archive);
-                    $add =  TMDB::addto_db_imdb($movie_id, $array_movie);
-                    if ($add) {
-                        echo $movie_id . ' updated<br> ' . PHP_EOL;
-                    }
+        if ($movie_id) {
+            // sleep(0.5);
+            $array_movie =  TMDB::get_content_imdb($movie_id,'',1,$from_archive);
+            $add =  TMDB::addto_db_imdb($movie_id, $array_movie);
+            if ($add) {
+                echo $movie_id . ' updated<br> ' . PHP_EOL;
             }
+        }
 
     }
 
