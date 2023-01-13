@@ -753,7 +753,7 @@ function set_video_scroll(data, block_id, append = '') {
         if (block_id == 'review_scroll')
         {
             let prnt = jQuery('div[id="' + block_id + '"]').parents('section.inner_content');
-            prnt.css('height', '200px');
+            prnt.css('height', '260px');
 
 
             var block = jQuery('div[id="' + block_id + '"]');
@@ -1239,6 +1239,7 @@ function load_ajax_block(block_id) {
 
     if (block_id == 'ns_related_scroll') {
         url = 'https://info.antiwoketomatoes.com/service/ns_related.php?pid='+parent_id;
+        //url = 'https://rwt.4aoc.ru/service/ns_related.php?pid='+parent_id;
     }
 
     jQuery.ajax({
