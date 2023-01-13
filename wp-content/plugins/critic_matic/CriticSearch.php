@@ -2618,7 +2618,7 @@ class CriticSearch extends AbstractDB {
         // Odrer by rating desc
         $order = " ORDER BY post_date DESC";
         if ($movie_id > 0) {
-            $order = " ORDER BY post_date DESC";            
+            $order = " ORDER BY post_date DESC";
         }
 
         // Tag logic
@@ -2630,7 +2630,7 @@ class CriticSearch extends AbstractDB {
         if ($vote > 0) {
             $filters_and .= sprintf(" AND auvote=%d", $vote);
         }
-        
+
         $sql = sprintf("SELECT id, date_add, top_movie, author_name FROM critic WHERE status=1 AND top_movie>0" . $filters_and . $order . " LIMIT %d,%d", $start, $limit);
 
         $results = $this->sdb_results($sql);
@@ -2807,9 +2807,9 @@ class CriticSearch extends AbstractDB {
     public function find_in_newsfilter($post = '', $limit = 5, $debug = false) {
         $ma = $this->get_ma();
         $db_keywords = $ma->get_nf_keywords($post->id);
-        if ($db_keywords){
+        if ($db_keywords) {
             $keywords = $db_keywords;
-        } else {            
+        } else {
             $keywords = $this->get_nf_keywords($post, $debug);
             $ma->add_nf_keywords($keywords, $post->id);
         }
@@ -2821,7 +2821,7 @@ class CriticSearch extends AbstractDB {
         $order = ' ORDER BY w DESC';
         $snippet = ', SNIPPET(title, QUERY()) t, SNIPPET(content, QUERY()) c';
 
-        $sql = sprintf("SELECT id, cid, last_parsing as pdate, date, link, site, type, bias, biastag, description" . $snippet . ", weight() w"
+        $sql = sprintf("SELECT id, cid, last_parsing as pdate, date, link, site, type, bias, biastag, nresult, description" . $snippet . ", weight() w"
                 . " FROM sites_links WHERE type=0 " . $match . $order . " LIMIT %d,%d ", $start, $limit);
 
         $this->connect();
@@ -2829,11 +2829,43 @@ class CriticSearch extends AbstractDB {
         if ($debug) {
             print_r(array($sql, $search_query, $result));
         }
+
+        // Facets logic                
+        $facet_list = array('bias', 'biasrating');
+        $sql_arr = $this->nf_facets_sql($facet_list, $match);
+        $facets_arr = $this->movies_facets_get($facet_list, $sql_arr, $match, $search_query);
+        if ($debug) {
+            print_r($facets_arr);
+        }
+        $result['facets'] = $facets_arr;
+
         return $result;
     }
 
+    public function nf_facets_sql($facet_list, $match) {
+        $skip = array();
+        $sql_arr = array();
+        $limit = 100;
+        $search_db = 'sites_links';
+
+        foreach ($facet_list as $facet) {
+            
+            if ($facet == 'bias') {
+                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM " . $search_db . " WHERE id>0" . $match
+                        . " GROUP BY bias ORDER BY bias ASC LIMIT " . $limit;
+                $sql_arr[] = "SHOW META";
+            } else if ($facet == 'biasrating') {
+                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt, SUM(nresult) AS nresults"
+                        . " FROM " . $search_db . " WHERE nresult>0 " . $match
+                        . " GROUP BY bias ORDER BY bias ASC LIMIT " . $limit;
+                $sql_arr[] = "SHOW META";
+            } 
+        }
+        return array('sql_arr' => $sql_arr, 'skip' => $skip);
+    }
+
     public function get_nf_keywords($post, $debug) {
-                /*
+        /*
          * stdClass Object
           (
           [id] => 72749
@@ -2943,7 +2975,7 @@ class CriticSearch extends AbstractDB {
         if ($filelds) {
             $keywords .= ' MAYBE (' . implode('|', $filelds) . ')';
         }
-        
+
         return $keywords;
     }
 

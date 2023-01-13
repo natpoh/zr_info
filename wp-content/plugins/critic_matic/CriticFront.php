@@ -82,7 +82,7 @@ class CriticFront extends SearchFacets {
             if ($search && !$movie_id) {
                 $posts = $this->cs->get_last_critics($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au);
             } else {
-                
+
                 $posts = $this->get_last_posts($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au);
             }
         } else {
@@ -162,10 +162,10 @@ class CriticFront extends SearchFacets {
         // Odrer by rating desc
         $custom_order = '';
         if ($movie_id > 0) {
-             $custom_order = ' m.type ASC, ';
+            $custom_order = ' m.type ASC, ';
         }
 
-        
+
         if ($mtype) {
             $mtype_and = sprintf(' AND m.type=%d', $mtype);
         }
@@ -194,7 +194,7 @@ class CriticFront extends SearchFacets {
                 . " INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
                 . " INNER JOIN {$this->db['authors']} a ON a.id = am.aid" . $movie_inner . $tag_inner . $vote_inner
                 . " WHERE p.top_movie > 0 AND p.status=1" . $mtype_and . $and_author . $movie_and . $tag_and . $min_rating_and . $meta_type_and . $vote_and . " ORDER BY" . $custom_order . " p.date DESC LIMIT %d, %d", (int) $start, (int) $limit);
-      
+
         $results = $this->db_results($sql);
 
         return $results;
@@ -2370,9 +2370,13 @@ class CriticFront extends SearchFacets {
             ?>
             <div class="ns_related">
                 <div class="column_header">
-                    <h2>Related posts on Newsfilter: <a href="<?php print $ns_link ?>"> all posts</a></h2>
-                </div>        
+                    <h2><a href="<?php print $ns_link ?>">Related posts</a> on Newsfilter for: </h2>
+                    <h3>"<?php print $movie_data->title ?>"</h3>                    
+                </div>                        
                 <?php
+                // Bias facet
+                $this->show_bias_facet($results['facets']);
+
                 foreach ($results['list'] as $item) {
                     $theme_url = $this->theme_item_url($item);
 
@@ -2405,6 +2409,12 @@ class CriticFront extends SearchFacets {
                                 }
                                 ?>
                             </span>
+                            
+                            <?php if ($item->nresult) { ?>
+                                <span class="p-rating block">
+                                    Rating: <span class="rt_color-<?php print $item->nresult ?>"><?php print $item->nresult ?></span>
+                                </span>
+                            <?php } ?>
                         </div>
                     </div><?php
                 }
@@ -2418,6 +2428,94 @@ class CriticFront extends SearchFacets {
             </div>
             <?php
         }
+    }
+
+    public function show_bias_facet($facet_data = array()) {
+
+        // Rating data
+        $total_rating = array();
+        if ($facet_data['biasrating']['data']) {
+            foreach ($facet_data['biasrating']['data'] as $item) {
+                $total_rating[$item->id] = (int) round($item->nresults / $item->cnt, 0);
+            }
+        }
+
+        //Get types
+        $dates = array();
+
+        // Facet titles
+        $data = isset($facet_data['bias']['data']) ? $facet_data['bias']['data'] : array();
+
+        $facet_titles = array(
+            0 => 'Not rated',
+            1 => 'Extreme left',
+            2 => 'Far left',
+            3 => 'Left',
+            4 => 'Left-center',
+            5 => 'Least biased',
+            6 => 'Right-center',
+            7 => 'Right',
+            8 => 'Far right',
+            9 => 'Extreme right',
+        );
+        if ($data) {
+            foreach ($data as $value) {
+                $id = trim($value->id);
+                $cnt = $value->cnt;
+
+                if (!$facet_titles) {
+                    $dates[$id] = array('title' => $id, 'count' => $cnt);
+                } else if (is_array($facet_titles)) {
+                    if (isset($facet_titles[$id])) {
+                        $item_title = $facet_titles[$id];
+                        $rating_title = isset($total_rating[$id]) ? $total_rating[$id] : 0;
+                        $dates[$id] = array('title' => $item_title, 'rating' => $rating_title, 'count' => $cnt);
+                    }
+                }
+            }
+        }
+
+        $this->theme_bias_facet($dates);
+    }
+
+    public function theme_bias_facet($dates) {
+        if (!$dates) {
+            return false;
+        }
+        ?>
+        <div class="bias_info rspv-table">
+            <?php
+            $rows = array(
+                'title' => ['<b>Bias</b>'],
+                'result' => ['<b>Results</b>'],
+                'rating' => ['<b>Rating</b>'],
+            );
+            foreach ($dates as $key => $value) {
+                $rating = $value['rating'] > 0 ? $value['rating'] : 'None';
+                $rows['title'][] = $value['title'];
+                $rows['result'][] = $value['count'];
+                $rows['rating'][] = '<span class="rt_color-'.$rating.'">'.$rating.'</span>';
+            }
+            ?>
+            <?php
+            $ir = 1;
+            foreach ($rows as $row) {
+                $ic = 1;
+                ?>
+                <div class="rspv-row row-<?php print $ir ?>">
+                    <?php foreach ($row as $clmn) { ?>
+                        <div class="rspv-clm clm-<?php print $ic ?>"><?php print $clmn ?></div>
+                        <?php
+                        $ic++;
+                    }
+                    ?>
+                </div>                    
+                <?php
+                $ir++;
+            }
+            ?>
+        </div>
+        <?php
     }
 
     public function theme_search_tags($item, $cats_arr, $link = '') {
