@@ -539,31 +539,32 @@ function update_imdb_data($from_archive=0)
 {
 ////update all imdb movies
 
-    echo 'update_imdb_data only new movies<br>';
-
-    //$from_archive=1;
-
-    $time_min = time()-86400*7;
 
 
 
-    if ($from_archive)
-    {
-        $limit = 300;
-    }
-    else
-    {
-        $limit = 10;
-    }
+    echo 'update_imdb_data<br>';
 
 
-    $date_current = date('Y-m-d', time());
-    $date_main = date('Y-m-d', strtotime('-90 days', time()));
+// 1.w50  Last 30 days (30)
+// 2. w40 Last year  and rating 3-5 (250)
+// 3. w30  Last 3 year and rating 4-5 (200)
+//4. w20 All time and rating 4-5 (3500)
+//5. w10 Last 3 year (4000)
+//6. w0 Other (27000)
+
+    $rating_update = array( 50=> 86400*7, 40 =>86400*14, 30=> 86400*30 , 20=> 86400*60, 10=> 86400*120, 0=>86400*240);
 
 
-    $sql = "SELECT movie_id FROM `data_movie_imdb` where  (`release`  >=  '" . $date_main . "'  OR `release` IS NULL )   and  `add_time` < '".$time_min."'  order by add_time asc limit ".$limit;
+        $where='data_movie_imdb.add_time = 0';
 
-   // echo $sql;
+        foreach ($rating_update as $w =>$period){
+            $time = time()-$period;
+            $where.=" OR (`data_movie_imdb`.add_time < ".$time." and  `data_movie_imdb`.`weight` =".$w." ) ";
+        }
+
+
+////get movie list
+    $sql ="SELECT `data_movie_imdb`.`id` FROM `data_movie_imdb` WHERE  ".$where." order by `data_movie_imdb`.`weight` desc LIMIT 10";
 
     $result =Pdo_an::db_results($sql);
 
