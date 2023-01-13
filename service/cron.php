@@ -35,16 +35,23 @@ $array_jobs = array(
 
 'check_face'=>120,///add bettaface verdict
 
+
+
 'update_all_rwt_rating'=>60,////update all rating
+'add_pg_rating_for_new_movies'=>(60*12),///add pg rating to new movies
+    //'add_gender_rating_for_new_movies'=>(60*12),///add gender rating to new movies
+
+
+
 'check_tv_series_imdb'=>120, ///add tvseries from list
 
- 'fix_all_directors'=>60,////temp started 12/01/2023
+    'fix_all_directors'=>60,////temp started 12/01/2023
 
 'get_new_movies'=>(60*12),///add new movies from fandango
 'get_new_tv'=>(60*12),///add new tv from tmdb
 
-'add_pg_rating_for_new_movies'=>(60*12),///add pg rating to new movies
-//'add_gender_rating_for_new_movies'=>(60*12),///add gender rating to new movies
+
+
 
 'update_all_audience_and_staff'=>(60*12),///recreate cache audience and staff
 'get_coins_data'=>60*24,////get data donations
