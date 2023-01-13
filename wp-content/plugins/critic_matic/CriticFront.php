@@ -2485,10 +2485,7 @@ class CriticFront extends SearchFacets {
         ?>
         <div class="bias_info rspv-table">
             <?php
-            $rows = array(
-                'title' => ['<b>Bias</b>'],
-                'result' => ['<b>Results</b>'],
-                'rating' => ['<b>Rating</b>'],
+            $rows = array(               
             );
             foreach ($dates as $key => $value) {
                 $rating = $value['rating'];
@@ -2498,9 +2495,8 @@ class CriticFront extends SearchFacets {
                     $rating_text .= '/5';
                 }
 
-                $rows['title'][] = $value['title'];
-                $rows['result'][] = $value['count'];
-                $rows['rating'][] = '<span class="rt_color-' . $rating . '">' . $rating_text . '</span>';
+                $rows['title'][] = '<span class="title">'.$value['title'].'</span> <span class="cnt">('. $value['count'].')</span>';                
+                $rows['rating'][] = '<span class="rating rt_color-' . $rating . '">' . $rating_text . '</span>';
             }
             ?>
             <?php
