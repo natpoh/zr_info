@@ -2447,13 +2447,12 @@ class CriticFront extends SearchFacets {
         $data = isset($facet_data['bias']['data']) ? $facet_data['bias']['data'] : array();
 
         $facet_titles = array(
-            0 => 'Not rated',
             1 => 'Extreme left',
             2 => 'Far left',
             3 => 'Left',
-            4 => 'Left-center',
-            5 => 'Least biased',
-            6 => 'Right-center',
+            4 => 'Center Left',
+            5 => 'Neutral',
+            6 => 'Center Right',
             7 => 'Right',
             8 => 'Far right',
             9 => 'Extreme right',
@@ -2463,14 +2462,10 @@ class CriticFront extends SearchFacets {
                 $id = trim($value->id);
                 $cnt = $value->cnt;
 
-                if (!$facet_titles) {
-                    $dates[$id] = array('title' => $id, 'count' => $cnt);
-                } else if (is_array($facet_titles)) {
-                    if (isset($facet_titles[$id])) {
-                        $item_title = $facet_titles[$id];
-                        $rating_title = isset($total_rating[$id]) ? $total_rating[$id] : 0;
-                        $dates[$id] = array('title' => $item_title, 'rating' => $rating_title, 'count' => $cnt);
-                    }
+                if (isset($facet_titles[$id])) {
+                    $item_title = $facet_titles[$id];
+                    $rating_title = isset($total_rating[$id]) ? $total_rating[$id] : 0;
+                    $dates[$id] = array('title' => $item_title, 'rating' => $rating_title, 'count' => $cnt);
                 }
             }
         }
@@ -2485,19 +2480,19 @@ class CriticFront extends SearchFacets {
         ?>
         <div class="bias_info rspv-table">
             <?php
-            $rows = array(               
+            $rows = array(
             );
             foreach ($dates as $key => $value) {
                 $rating = $value['rating'];
                 $rating_text = $rating > 0 ? $rating : 'None';
 
-                $rating_after='';
+                $rating_after = '';
                 if ($rating > 0) {
                     $rating_after = '/5';
                 }
 
-                $rows['title'][] = '<span class="title">'.$value['title'].'</span> <span class="cnt">('. $value['count'].')</span>';                
-                $rows['rating'][] = '<span class="rating"><span class="rt_color-' . $rating . '">' . $rating_text . '</span>'.$rating_after.'</span>';
+                $rows['title'][] = '<span class="title">' . $value['title'] . '</span> <span class="cnt">(' . $value['count'] . ')</span>';
+                $rows['rating'][] = '<span class="rating"><span class="rt_color-' . $rating . '">' . $rating_text . '</span>' . $rating_after . '</span>';
             }
             ?>
             <?php
