@@ -2409,7 +2409,7 @@ class CriticFront extends SearchFacets {
                                 }
                                 ?>
                             </span>
-                            
+
                             <?php if ($item->nresult) { ?>
                                 <span class="p-rating block">
                                     Rating: <span class="rt_color-<?php print $item->nresult ?>"><?php print $item->nresult ?>/5</span>
@@ -2491,10 +2491,16 @@ class CriticFront extends SearchFacets {
                 'rating' => ['<b>Rating</b>'],
             );
             foreach ($dates as $key => $value) {
-                $rating = $value['rating'] > 0 ? $value['rating'] : 'None';
+                $rating = $value['rating'];
+                $rating_text = $rating > 0 ? $rating : 'None';
+
+                if ($rating > 0) {
+                    $rating_text .= '/5';
+                }
+
                 $rows['title'][] = $value['title'];
                 $rows['result'][] = $value['count'];
-                $rows['rating'][] = '<span class="rt_color-'.$rating.'">'.$rating.'/5</span>';
+                $rows['rating'][] = '<span class="rt_color-' . $rating . '">' . $rating_text . '</span>';
             }
             ?>
             <?php
