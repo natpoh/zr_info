@@ -45,8 +45,9 @@ class PgRatingCalculate {
         $title = self::get_data_in_movie('title', '', $id);
         $array_db = [];
         ////add rating
-        $audience = self::get_audience_rating_in_movie($id, 1);
-        $staff = self::get_audience_rating_in_movie($id, 2);
+        $audience = self::rwt_audience($id, 1,1);
+        ///$audience = self::get_audience_rating_in_movie($id, 1);
+        $staff =[];// self::get_audience_rating_in_movie($id, 2);
         $imdb = self::get_data_in_movie('rating', '', $id);
       
         $total_tomatoes = '';
@@ -230,7 +231,7 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
 
                 if ($r[0]['rwt_audience']!=$array_db["total_rwt_audience"]
-                    ||  $r[0]['rwt_staff']!=$array_db["total_rwt_staff"]
+
                     || $r[0]['imdb']!=$imdb
                     || $r[0]['total_rating']!=$total_rating
                     || $r[0]['rotten_tomatoes_gap']!=$total_tomatoes_gap  )
@@ -765,7 +766,7 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
         }
 
         $audience = self::rwt_audience($id, 1);
-        $staff = self::rwt_audience($id, 2);
+        $staff = [];//self::rwt_audience($id, 2);
 
 
         if ($debug && ($audience["rating"] || $staff["rating"]))
@@ -1030,8 +1031,23 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
         if ($update)
         {
 
-            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-            Import::create_commit('', 'update', 'data_pg_rating', array('movie_id' => $imdb_id), 'pg_rating',9,['skip'=>['id']]);
+            $array_family_updated = self::get_family_rating_in_movie($imdb_id);
+
+
+            if ($array_family['imdb_result']!=$array_family_updated['imdb_result']
+            ||  $array_family['cms_rating']!=$array_family_updated['cms_rating']
+                ||  $array_family['dove_result']!=$array_family_updated['dove_result']
+                ||  $array_family['rwt_audience']!=$array_family_updated['rwt_audience']
+                ||  $array_family['rwt_pg_result']!=$array_family_updated['rwt_pg_result']
+                ||  $array_family['lgbt_warning']!=$array_family_updated['lgbt_warning']
+                ||  $array_family['woke']!=$array_family_updated['woke']
+            )
+            {
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                Import::create_commit('', 'update', 'data_pg_rating', array('movie_id' => $imdb_id), 'pg_rating',9,['skip'=>['id']]);
+            }
+
+
 
 
         }

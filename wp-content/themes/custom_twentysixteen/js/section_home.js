@@ -561,7 +561,22 @@ function set_video_scroll(data, block_id, append = '') {
         data = JSON.parse(data);
 
 
-        if (data['count'] > 0 && data['tmpl']) {
+        if (data['other'])
+        {
+            if (block_id == 'review_scroll')
+            {
+                let prnt = jQuery('div[id="' + block_id + '"]').parents('section.inner_content');
+                prnt.css('height', '340px');
+
+                var block = jQuery('div[id="' + block_id + '"]');
+                block.html(data['other']).show();
+                return;
+            }
+
+        }
+
+
+        else if (data['count'] > 0 && data['tmpl']) {
             if (!append) {
                 jQuery('div[id="' + block_id + '"]').parents('section').addClass('loaded');
             }
@@ -750,16 +765,7 @@ function set_video_scroll(data, block_id, append = '') {
         }
     } else
     {
-        if (block_id == 'review_scroll')
-        {
-            let prnt = jQuery('div[id="' + block_id + '"]').parents('section.inner_content');
-            prnt.css('height', '260px');
 
-
-            var block = jQuery('div[id="' + block_id + '"]');
-            block.html('<p class="big_desc">Sorry, no reviews yet. Help us out and add some links?</p>').show();
-            return;
-        }
 
         if (!append) {
             let prnt = jQuery('div[id="' + block_id + '"]').parents('section.inner_content');

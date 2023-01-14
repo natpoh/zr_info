@@ -1937,26 +1937,21 @@ function add_pg_rating_for_new_movies()
 
     !class_exists('PgRating') ? include ABSPATH . "analysis/include/pg_rating.php" : '';
 
-    $sql = "SELECT * FROM `options` where id = 13 OR id = 14";
-    $rows = Pdo_an::db_results_array($sql);
-    foreach ($rows as $r)
-    {
-       $data =  $r['val'];
-       if ($data)
+    $rating_update = array( 50=> 86400*7, 40 =>86400*14, 30=> 86400*30 , 20=> 86400*60, 10=> 86400*120, 0=>86400*200);
+    $rows =get_weight_list('data_pg_rating','last_update',"rwt_id",10,$rating_update);
+
+       if ($rows)
        {
-           $array_movies = json_decode($data, 1);
-           //print_r($array_movies);
-           foreach ($array_movies as $movie_id=>$date)
+
+           foreach ($rows as $r)
            {
 
-               $imdb_id = TMDB::get_imdb_id_from_id($movie_id);
-               //echo $imdb_id.' ';
-               PgRating::add_pgrating($imdb_id,1);
+              /// $imdb_id = TMDB::get_imdb_id_from_id($r['id']);
+               echo $r['id'].' <br>';
+               PgRating::add_pgrating('',0,$r['id']);
 
            }
        }
-
-    }
 
 }
 

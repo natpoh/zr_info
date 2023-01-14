@@ -196,21 +196,27 @@ class PgRating
         return $array_result_data;
     }
 
-    public static function check_enable_pg($movie_id = '',$debug='')
+    public static function check_enable_pg($movie_id = '',$debug='',$mid='')
     {
 
-        if ($movie_id) {
-            $sql = "SELECT id  FROM `data_pg_rating` WHERE `movie_id` = {$movie_id} limit 1";
+        if (!$mid)
+        {
+            $sql = "SELECT id  FROM `data_movie_imdb` WHERE data_movie_imdb.movie_id ='{$movie_id}' limit 1";
+            $data = Pdo_an::db_fetch_row($sql);
+            $mid = $data->id;
+        }
+        if ($mid) {
+            $sql = "SELECT id  FROM `data_pg_rating` WHERE `rwt_id` = {$mid} limit 1";
             $row = Pdo_an::db_fetch_row($sql);
             if ($row->id) {
                 return $row->id;
             } else {
-                $sql = "SELECT id , title  FROM `data_movie_imdb` WHERE data_movie_imdb.movie_id ='{$movie_id}' limit 1";
+                $sql = "SELECT id , title, movie_id  FROM `data_movie_imdb` WHERE data_movie_imdb.id ='{$mid}' limit 1";
                 $data = Pdo_an::db_fetch_row($sql);
-                $rwt_id = $data->id;
+                $movie_id = $data->movie_id;
                 $title = $data->title;
                 $sql = "INSERT INTO `data_pg_rating` (`id`, `movie_id`, `rwt_id`,`movie_title`) VALUES (NULL, ?, ?, ?)";
-                Pdo_an::db_results_array($sql, array($movie_id, $rwt_id, $title));
+                Pdo_an::db_results_array($sql, array($movie_id, $mid, $title));
 
                 $sql = "SELECT id  FROM `data_pg_rating` WHERE `movie_id` = {$movie_id} limit 1";
                 $row = Pdo_an::db_fetch_row($sql);
@@ -219,13 +225,13 @@ class PgRating
                 }
             }
         } else {
-            $sql = "SELECT `data_movie_imdb`.*  FROM `data_movie_imdb` LEFT JOIN data_pg_rating ON data_pg_rating.movie_id=data_movie_imdb.movie_id
+            $sql = "SELECT `data_movie_imdb`.*  FROM `data_movie_imdb` LEFT JOIN data_pg_rating ON data_pg_rating.rwt_id=data_movie_imdb.id
         WHERE data_pg_rating.id IS NULL order by data_movie_imdb.id desc limit 100";
-            $rows = Pdo_an::db_results($sql);
+            $rows = Pdo_an::db_results_array($sql);
             foreach ($rows as $data) {
-                $rwt_id = $data->id;
-                $title = $data->title;
                 $movie_id = $data->movie_id;
+                $title = $data->title;
+                $rwt_id = $data->id;
                 $sql = "INSERT INTO `data_pg_rating` (`id`, `movie_id`, `rwt_id`,`movie_title`) VALUES (NULL, ?, ?, ?)";
                 Pdo_an::db_results_array($sql, array($movie_id, $rwt_id, $title));
                 if ($debug)echo 'adedded new row '.$movie_id.' '.$title.'<br>'.PHP_EOL;
@@ -234,16 +240,29 @@ class PgRating
         }
     }
 
-    public static function add_pgrating($imdb_id = '',$debug='')
+    public static function add_pgrating($imdb_id = '',$debug='',$mid='')
     {
-        self::check_enable_pg($imdb_id,$debug);
+        if (!$mid)
+        {
+            $sql = "SELECT id  FROM `data_movie_imdb` WHERE data_movie_imdb.movie_id ='{$imdb_id}' limit 1";
+            $data = Pdo_an::db_fetch_row($sql);
+            $mid = $data->id;
+        }
+        if (!$imdb_id)
+        {
+            $sql = "SELECT movie_id  FROM `data_movie_imdb` WHERE data_movie_imdb.id ='{$mid}' limit 1";
+            $data = Pdo_an::db_fetch_row($sql);
+            $imdb_id = $data->movie_id;
+        }
+
+        self::check_enable_pg($imdb_id,$debug,$mid);
 
         $array_result  = self::update_pg_rating_imdb($imdb_id,$debug);
         $array_result2 = self::update_pg_rating_cms($imdb_id,$debug);
         $result = array_merge($array_result, $array_result2);
         if ($imdb_id)
         {
-            PgRatingCalculate::CalculateRating($imdb_id);
+            PgRatingCalculate::CalculateRating($imdb_id,$mid,1);
         }
         else
         {
