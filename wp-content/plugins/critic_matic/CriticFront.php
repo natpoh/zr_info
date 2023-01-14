@@ -2467,31 +2467,62 @@ class CriticFront extends SearchFacets {
         // Facet titles
         $data = isset($facet_data['bias']['data']) ? $facet_data['bias']['data'] : array();
 
-        $facet_titles = array(
-            1 => 'Extreme left',
+        $facet_titles = array(           
             2 => 'Far left',
             3 => 'Left',
             4 => 'Center Left',
-            5 => 'Neutral',
+            5 => 'Center',
             6 => 'Center Right',
             7 => 'Right',
-            8 => 'Far right',
-            9 => 'Extreme right',
+            8 => 'Far right',           
         );
+
         if ($data) {
+            $ids = array();
             foreach ($data as $value) {
                 $id = trim($value->id);
                 $cnt = $value->cnt;
+                $ids[$id]['cnt'] = $cnt;
+                $ids[$id]['rating'] = isset($total_rating[$id]) ? $total_rating[$id] : 0;
+            }
 
-                if (isset($facet_titles[$id])) {
-                    $item_title = $facet_titles[$id];
-                    $rating_title = isset($total_rating[$id]) ? $total_rating[$id] : 0;
-                    $dates[$id] = array('title' => $item_title, 'rating' => $rating_title, 'count' => $cnt);
-                }
+            if ($ids[1]) {
+                $ids[2] = $this->merge_ids($ids[1], $ids[2]);
+            }
+
+            if ($ids[9]) {
+                $ids[8] = $this->merge_ids($ids[8], $ids[9]);
+            }
+
+            foreach ($facet_titles as $key => $value) {
+               
+                    $item_title = $value;
+                    $rating_title = isset($ids[$key])?$ids[$key]['rating']:0;
+                    $cnt = isset($ids[$key])?$ids[$key]['cnt']:0;
+                    $dates[$key] = array('title' => $item_title, 'rating' => $rating_title, 'count' => $cnt);
+                
             }
         }
 
         $this->theme_bias_facet($dates);
+    }
+
+    private function merge_ids($first, $second) {
+        $ret = array('cnt' => 0, 'rating' => 0);
+        $cnt_1 = isset($first['cnt']) ? $first['cnt'] : 0;
+        $cnt_2 = isset($second['cnt']) ? $second['cnt'] : 0;
+        $ret['cnt'] = $cnt_1 + $cnt_2;
+
+        $r_1 = isset($first['rating']) ? $first['rating'] : 0;
+        $r_2 = isset($second['rating']) ? $second['rating'] : 0;
+        if ($r_1 && $r_2) {
+            $ret['rating'] = ($r_1 + $r_2) / 2;
+        } else if ($r_1) {
+            $ret['rating'] = $r_1;
+        } else if ($r_2) {
+            $ret['rating'] = $r_2;
+        }
+        return $ret;
     }
 
     public function theme_bias_facet($dates) {
