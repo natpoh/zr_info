@@ -38,7 +38,7 @@ $array_jobs = array(
 
 
 'update_all_rwt_rating'=>30,////update all rating
-//'add_pgrating'=>30,////add pg rating
+'add_pgrating'=>60*2,////add pg rating
 //'add_gender_rating_for_new_movies'=>(60),///add gender rating to new movies
 
 'add_pg_rating_for_new_movies'=>(60),///add pg rating to new movies

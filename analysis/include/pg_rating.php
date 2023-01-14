@@ -26,26 +26,31 @@ class PgRating
     {
         $array_result_data = [];
 
+
+
+
         if ($imdb_id) {
             $sql = "SELECT *  FROM `data_movie_imdb` where movie_id='{$imdb_id}'";
-
+            $rows = Pdo_an::db_results_array($sql);
         } else {
-            $lastupdate = time() - 86400 * 60;
 
-            /////check imdb
-            $sql = "SELECT *  FROM `data_movie_imdb` LEFT JOIN data_pg_rating ON data_pg_rating.movie_id=data_movie_imdb.movie_id
-    WHERE  (data_pg_rating.cms_date  < " . $lastupdate . "  OR data_pg_rating.cms_date IS NULL )  and data_pg_rating.cms_result IS NULL ORDER BY `data_pg_rating`.`id` ASC  limit 10";
+
+            $rating_update = array( 50=> 86400*30, 40 =>86400*60, 30=> 86400*120 , 20=> 86400*240, 10=> 86400*360, 0=>86400*500);
+            $rows =get_weight_list('data_pg_rating','cms_date',"rwt_id",20,$rating_update);
+
         }
 
 
         //echo $sql;
-        $rows = Pdo_an::db_results_array($sql);
+
         $count = count($rows);
         $i = 0;
         foreach ($rows as $r) {
-            $movie_id = $r['movie_id'];
-            $title = $r['title'];
-            $type = $r['type'];
+
+            $rows_data =   self::get_movie_data($r['id']);
+            $movie_id = $rows_data['movie_id'];
+            $title = $rows_data['title'];
+            $type = $rows_data['type'];
 
 
             if ($debug){echo 'try get cms '.$title.' '.$movie_id.'<br>';}
@@ -89,18 +94,29 @@ class PgRating
 
         return $array_result_data;
     }
+    public static function get_movie_data($mid)
+    {
+        $sql = "SELECT movie_id, title  FROM `data_movie_imdb` WHERE data_movie_imdb.id ='{$mid}' limit 1";
+        $data = Pdo_an::db_results_array($sql);
+        return $data[0];
+
+    }
 
     public static function update_pg_rating_imdb($movie_id = '',$debug='')
     {
         $array_result_data=[];
 
-        if (!$movie_id) {
-            $last_update = time() - 86400*30 ; ///1 mount
 
-            $sql = "SELECT *  FROM `data_pg_rating` WHERE (imdb_date < '{$last_update}' OR imdb_date is NULL ) and movie_id>0 order by id desc  limit 100";
-                     $result = Pdo_an::db_results_array($sql);
-            foreach ($result as $r) {
-                $array_id[ $r['movie_id']] = $r['movie_title'];
+
+        if (!$movie_id) {
+
+            $rating_update = array( 50=> 86400*20, 40 =>86400*40, 30=> 86400*90 , 20=> 86400*180, 10=> 86400*240, 0=>86400*360);
+            $rows =get_weight_list('data_pg_rating','imdb_date',"rwt_id",20,$rating_update);
+
+            foreach ($rows as $r) {
+                $data =   self::get_movie_data($r['id']);
+
+                $array_id[ $data['movie_id']] = $data['movie_title'];
             }
         } else {
             $array_id[$movie_id] = 1;
@@ -226,7 +242,7 @@ class PgRating
             }
         } else {
             $sql = "SELECT `data_movie_imdb`.*  FROM `data_movie_imdb` LEFT JOIN data_pg_rating ON data_pg_rating.rwt_id=data_movie_imdb.id
-        WHERE data_pg_rating.id IS NULL order by data_movie_imdb.id desc limit 100";
+        WHERE data_pg_rating.id IS NULL order by data_movie_imdb.id desc limit 50";
             $rows = Pdo_an::db_results_array($sql);
             foreach ($rows as $data) {
                 $movie_id = $data->movie_id;
@@ -257,20 +273,22 @@ class PgRating
 
         self::check_enable_pg($imdb_id,$debug,$mid);
 
-        $array_result  = self::update_pg_rating_imdb($imdb_id,$debug);
-        $array_result2 = self::update_pg_rating_cms($imdb_id,$debug);
-        $result = array_merge($array_result, $array_result2);
-        if ($imdb_id)
-        {
-            PgRatingCalculate::CalculateRating($imdb_id,$mid,1);
-        }
-        else
-        {
+        if (!$imdb_id) {
+            $array_result = self::update_pg_rating_imdb($imdb_id, $debug);
+            $array_result2 = self::update_pg_rating_cms($imdb_id, $debug);
+
+            $result = array_merge($array_result, $array_result2);
+
             foreach ($result as $imdb_id)
             {
                 PgRatingCalculate::CalculateRating($imdb_id);
             }
         }
+        if ($imdb_id)
+        {
+            PgRatingCalculate::CalculateRating($imdb_id,$mid,$debug);
+        }
+
         return;
     }
 

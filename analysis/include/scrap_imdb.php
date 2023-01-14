@@ -1938,7 +1938,7 @@ function add_pg_rating_for_new_movies()
     !class_exists('PgRating') ? include ABSPATH . "analysis/include/pg_rating.php" : '';
 
     $rating_update = array( 50=> 86400*7, 40 =>86400*14, 30=> 86400*30 , 20=> 86400*60, 10=> 86400*120, 0=>86400*200);
-    $rows =get_weight_list('data_pg_rating','last_update',"rwt_id",10,$rating_update);
+    $rows =get_weight_list('data_pg_rating','last_update',"rwt_id",100,$rating_update);
 
        if ($rows)
        {
