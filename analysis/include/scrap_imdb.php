@@ -539,46 +539,47 @@ function update_imdb_data($from_archive=0)
 {
 ////update all imdb movies
 
-    echo 'update_imdb_data only new movies<br>';
-
-    //$from_archive=1;
-
-    $time_min = time()-86400*7;
 
 
 
-    if ($from_archive)
-    {
-        $limit = 300;
+    echo 'update_imdb_data<br>';
+
+
+// 1.w50  Last 30 days (30)
+// 2. w40 Last year  and rating 3-5 (250)
+// 3. w30  Last 3 year and rating 4-5 (200)
+//4. w20 All time and rating 4-5 (3500)
+//5. w10 Last 3 year (4000)
+//6. w0 Other (27000)
+
+    $rating_update = array( 50=> 86400*7, 40 =>86400*14, 30=> 86400*30 , 20=> 86400*60, 10=> 86400*120, 0=>86400*240);
+
+
+    $where='data_movie_imdb.add_time = 0';
+
+    foreach ($rating_update as $w =>$period){
+        $time = time()-$period;
+        $where.=" OR (`data_movie_imdb`.add_time < ".$time." and  `data_movie_imdb`.`weight` =".$w." ) ";
     }
-    else
-    {
-        $limit = 10;
-    }
 
 
-    $date_current = date('Y-m-d', time());
-    $date_main = date('Y-m-d', strtotime('-90 days', time()));
-
-
-    $sql = "SELECT movie_id FROM `data_movie_imdb` where  (`release`  >=  '" . $date_main . "'  OR `release` IS NULL )   and  `add_time` < '".$time_min."'  order by add_time asc limit ".$limit;
-
-   // echo $sql;
-
-    $result =Pdo_an::db_results($sql);
+////get movie list
+    $sql ="SELECT `data_movie_imdb`.`movie_id` FROM `data_movie_imdb` WHERE  ".$where." order by `data_movie_imdb`.`weight` desc LIMIT 10";
+echo $sql;
+    $result =Pdo_an::db_results_array($sql);
 
     foreach ($result as $row) {
 
-        $movie_id = $row->movie_id;
+        $movie_id = $row['movie_id'];
 
-            if ($movie_id) {
-                   // sleep(0.5);
-                    $array_movie =  TMDB::get_content_imdb($movie_id,'',1,$from_archive);
-                    $add =  TMDB::addto_db_imdb($movie_id, $array_movie);
-                    if ($add) {
-                        echo $movie_id . ' updated<br> ' . PHP_EOL;
-                    }
+        if ($movie_id) {
+            // sleep(0.5);
+            $array_movie =  TMDB::get_content_imdb($movie_id,'',1,$from_archive);
+            $add =  TMDB::addto_db_imdb($movie_id, $array_movie);
+            if ($add) {
+                echo $movie_id . ' updated<br> ' . PHP_EOL;
             }
+        }
 
     }
 
@@ -876,8 +877,49 @@ function get_coins_data()
 
 }
 
+function get_weight_list($table,$last_update='last_update',$table_mid="mid",$limit=100,$rating_update='')
+{
+
+
+// 1.w50  Last 30 days (30)
+// 2. w40 Last year  and rating 3-5 (250)
+// 3. w30  Last 3 year and rating 4-5 (200)
+//4. w20 All time and rating 4-5 (3500)
+//5. w10 Last 3 year (4000)
+//6. w0 Other (27000)
+
+if (!$rating_update)
+{
+    $rating_update = array( 50=> 86400*7, 40 =>86400*30, 30=> 86400*60 , 20=> 86400*90, 10=> 86400*180, 0=>86400*360);
+}
+
+        $where=$table.'.id IS NULL';
+
+        foreach ($rating_update as $w =>$period){
+            $time = time()-$period;
+            $where.=" OR (`{$table}`.`{$last_update}` < ".$time." and  `data_movie_imdb`.`weight` =".$w." ) ";
+        }
+
+
+////get movie list
+    $sql ="SELECT `data_movie_imdb`.`id`, `{$table}`.`{$last_update}` FROM `data_movie_imdb` left join `{$table}` 
+       ON `data_movie_imdb`.`id`= `{$table}`.`{$table_mid}`
+        WHERE     ".$where." order by `data_movie_imdb`.`weight` desc LIMIT {$limit}";
+        global $debug;
+        if ($debug){echo $sql;}
+    $rows = Pdo_an::db_results_array($sql);
+    return $rows;
+}
+
+
+
+
 function update_all_rwt_rating($force='')
 {
+
+
+
+
     !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
 
     ///get option
@@ -902,29 +944,17 @@ function update_all_rwt_rating($force='')
         if ($force)
         {
             $sql = "SELECT `data_movie_imdb`.id  FROM `data_movie_imdb`";
+            $rows = Pdo_an::db_results_array($sql);
         }
         else
         {
-            $last_update_min = time()-86400;
-            $last_update = time()-86400*30;
-
-            $sql = "SELECT `data_movie_imdb`.id  FROM `data_movie_imdb` LEFT JOIN data_movie_rating 
-    ON `data_movie_imdb`.id=data_movie_rating.movie_id
-        WHERE   (
-            data_movie_rating.id IS NULL 
-                OR (data_movie_rating.last_update < {$last_update} )
-                OR (`data_movie_imdb`.rating>0  AND data_movie_rating.imdb ='')
-            ) order by `data_movie_rating`.last_update desc  limit 1000";
-//echo $sql;
+global $debug;
+$debug=1;
+            $rating_update = array( 50=> 86400*3, 40 =>86400*7, 30=> 86400*30 , 20=> 86400*60, 10=> 86400*90, 0=>86400*120);
+            $rows =get_weight_list('data_movie_rating','last_update',"movie_id",1000,$rating_update);
         }
 
-
     }
-
-
-
-
-    $rows = Pdo_an::db_results_array($sql);
     $count = count($rows);
     $i=0;
     foreach ($rows as $r2)

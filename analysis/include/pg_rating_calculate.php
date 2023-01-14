@@ -208,25 +208,42 @@ class PgRatingCalculate {
         if ($update) {
             ///update
 
-            $sql = "SELECT id FROM `data_movie_rating` where `movie_id` = " . $id;
-            $r = Pdo_an::db_fetch_row($sql);
+            $sql = "SELECT * FROM `data_movie_rating` where `movie_id` = " . $id;
+            $r = Pdo_an::db_results_array($sql);
             if (!$r) {
                 $sql = "INSERT INTO `data_movie_rating`(`id`, `movie_id`,`title`, `rwt_audience`, `rwt_staff`, `imdb`, `rotten_tomatoes`,`rotten_tomatoes_audience`,
                                 `rotten_tomatoes_gap`,`metacritic`,`tmdb`, `total_rating`, `last_update`) 
 VALUES (NULL,'{$id}',?,?,?,'{$imdb}','{$total_tomatoes}','{$total_tomatoes_audience}','{$total_tomatoes_gap}','{$total_metacritic}','{$total_tmdb}','{$total_rating}'," . time() . ")";
                 Pdo_an::db_results_array($sql, array($title, $array_db["total_rwt_audience"], $array_db["total_rwt_staff"]));
+
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                Import::create_commit('', 'update', 'data_movie_rating', array('movie_id' => $id), 'movie_rating',11,['skip'=>['id']]);
             }
             else {
+
                 ////update
                 $sql = "UPDATE `data_movie_rating` 
 SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rating}',`rotten_tomatoes_gap`='{$total_tomatoes_gap}',
     
     `last_update`=" . time() . " WHERE `movie_id`={$id}";
                 Pdo_an::db_results_array($sql, array($array_db["total_rwt_audience"], $array_db["total_rwt_staff"]));
+
+
+                if ($r[0]['rwt_audience']!=$array_db["total_rwt_audience"]
+                    ||  $r[0]['rwt_staff']!=$array_db["total_rwt_staff"]
+                    || $r[0]['imdb']!=$imdb
+                    || $r[0]['total_rating']!=$total_rating
+                    || $r[0]['rotten_tomatoes_gap']!=$total_tomatoes_gap  )
+                {
+                   // echo 'updated data ';
+                    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                    Import::create_commit('', 'update', 'data_movie_rating', array('movie_id' => $id), 'movie_rating',11,['skip'=>['id']]);
+                }
+
             }
 
-            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-            Import::create_commit('', 'update', 'data_movie_rating', array('movie_id' => $id), 'movie_rating',11,['skip'=>['id']]);
+
+
 
         }
 
