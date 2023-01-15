@@ -42,7 +42,7 @@ $array_jobs = array(
 //'add_gender_rating_for_new_movies'=>(60),///add gender rating to new movies
 
 'add_pg_rating_for_new_movies'=>(60),///add pg rating to new movies
-    'add_gender_rating'=>15,///add new gender rating
+'add_gender_rating'=>60,///add new gender rating
 
 
 

@@ -977,18 +977,17 @@ function add_gender_rating()
     $data = new RWT_RATING;
 
 
-    $sql = "SELECT `data_movie_imdb`.id  FROM `data_movie_imdb` LEFT JOIN cache_rating 
-    ON `data_movie_imdb`.id=cache_rating.movie_id
-        WHERE   cache_rating.id IS NULL order by `data_movie_imdb`.id desc  limit 200";
-    ////  echo $sql;
-    $rows = Pdo_an::db_results_array($sql);
+
+    $rating_update = array( 50=> 86400*3, 40 =>86400*7, 30=> 86400*14 , 20=> 86400*30, 10=> 86400*60, 0=>86400*90);
+    $rows =get_weight_list('cache_rating','last_update',"movie_id",1000,$rating_update);
+
     $count = count($rows);
     $i=0;
     foreach ($rows as $r2)
     {
         $i++;
         $id = $r2['id'];
-        $data->gender_and_diversity_rating($id);
+        $data->gender_and_diversity_rating($id,'',1,0);
         echo $i.' of '.$count.' id='.$id.'<br>'.PHP_EOL;
     }
 }
