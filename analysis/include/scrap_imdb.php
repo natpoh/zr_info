@@ -979,7 +979,7 @@ function add_gender_rating()
 
 
     $rating_update = array( 50=> 86400*3, 40 =>86400*7, 30=> 86400*14 , 20=> 86400*30, 10=> 86400*60, 0=>86400*90);
-    $rows =get_weight_list('cache_rating','last_update',"movie_id",1000,$rating_update);
+    $rows =get_weight_list('cache_rating','last_update',"movie_id",100,$rating_update);
 
     $count = count($rows);
     $i=0;
