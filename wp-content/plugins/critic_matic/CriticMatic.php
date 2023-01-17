@@ -196,7 +196,7 @@ class CriticMatic extends AbstractDB {
             'feed_meta' => $table_prefix . 'critic_feed_meta',
             // TS
             'transcriptions' => $table_prefix . 'critic_transcritpions',
-            'reviews_rating'=>'meta_reviews_rating',
+            'reviews_rating' => 'meta_reviews_rating',
         );
         $this->timer_start();
 
@@ -376,7 +376,7 @@ class CriticMatic extends AbstractDB {
             }
         } else {
             // Find movies from critic
-            if ($pa->top_movie==0 && $pa->status==1 && $this->sync_server){                
+            if ($pa->top_movie == 0 && $pa->status == 1 && $this->sync_server) {
                 $cs = $this->get_cs();
                 $cs->find_movies_and_reset_meta($id);
             }
@@ -651,7 +651,7 @@ class CriticMatic extends AbstractDB {
                 . " LEFT JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
                 . $atype_inner . $cid_inner . $ts_inner . $status_query . $cid_and . $and_date_add . $and_date . $aid_and . $type_and . $view_type_and . $ts_and . $meta_type_and . $atype_and . $and_orderby . $limit;
 
-        
+
 
         if (!$count) {
             //  print $sql;
@@ -3212,6 +3212,50 @@ class CriticMatic extends AbstractDB {
         return $proxy_arr;
     }
 
+    public function cron_already_run($cron_name, $wait = 10, $debug = false, $force = false) {
+        if ($wait == 0) {
+            $wait = 10;
+        }
+        
+        $curr_time = $this->curr_time();
+
+        // Last run
+        $run_key = $this->get_cron_name($cron_name);
+
+        $last_run = (int) $this->get_option($run_key);
+        // Already progress
+        $progress = $last_run ? $last_run : 0;
+
+        if (!$force && $progress) {
+            // Ignore old last update            
+
+            $wait_sec = $wait * 60; // sec
+            if ($curr_time < ($progress + $wait_sec)) {
+                // Cron already progress;                    
+                if ($debug) {
+                    print "Cron " . $cron_name . " already progess.";
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function register_cron($cron_name) {
+        $curr_time = $this->curr_time();
+        $run_key = $this->get_cron_name($cron_name);
+        $this->update_option($run_key, $curr_time);
+    }
+
+    public function unregister_cron($cron_name) {
+        $run_key = $this->get_cron_name($cron_name);
+        $this->update_option($run_key, 0);
+    }
+
+    private function get_cron_name($cron_name) {
+        return 'cm_cron_' . $cron_name;
+    }
+
     /*
      * Other
      */
@@ -3287,7 +3331,7 @@ class CriticMatic extends AbstractDB {
         }
         return $view_type;
     }
-    
+
     public function get_critic_verdict($pid) {
         $sql = sprintf("SELECT * FROM {$this->db['reviews_rating']} WHERE cid=%d", (int) $pid);
         $result = $this->db_fetch_row($sql);

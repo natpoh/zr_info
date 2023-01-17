@@ -47,8 +47,8 @@ if ($load['loaded']) {
     }
     exit();
 }
+$ml = new MoviesLinks();
 
-$mpc = new MoviesParserCron();
 /*
  * $cron_type
   1 => 'arhive',
@@ -58,6 +58,14 @@ $mpc = new MoviesParserCron();
   5 => 'gen_urls',
   6 => 'find_expired',
  */
+$cron_name = 'arhive_cron_'.$cron_type;
+if ($ml->cron_already_run($cron_name, 10, $debug)) {
+    exit();
+}
+
+$ml->register_cron($cron_name);
+
+$mpc = new MoviesParserCron($ml);
 $mpc->run_cron($cron_type, $debug, $force);
 
-
+$ml->unregister_cron($cron_name);

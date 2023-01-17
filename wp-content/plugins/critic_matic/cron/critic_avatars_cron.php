@@ -46,5 +46,11 @@ if ($load['loaded']) {
 $cm = new CriticMatic();
 $cav = $cm->get_cav();
 
+$cron_name = 'critic_avatars';
+if ($cm->cron_already_run($cron_name, 10, $debug, $force)) {
+    exit();
+}
 
+$cm->register_cron($cron_name);
 $cav->run_cron($cron_type, $force, $debug, $count);
+$cm->unregister_cron($cron_name);

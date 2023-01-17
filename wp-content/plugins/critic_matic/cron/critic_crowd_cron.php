@@ -39,5 +39,16 @@ if (!class_exists('CriticCrowd')) {
     require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticCrowd.php' );
 }
 
-$cс = new CriticCrowd();
+$cm = new CriticMatic();
+
+$cron_name = 'critic_crowd';
+if ($cm->cron_already_run($cron_name, 10, $debug, $force)) {
+    exit();
+}
+
+$cm->register_cron($cron_name);
+
+$cс = new CriticCrowd($cm);
 $cс->run_cron($count, $debug);
+
+$cm->unregister_cron($cron_name);

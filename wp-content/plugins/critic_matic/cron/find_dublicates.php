@@ -46,5 +46,10 @@ if (!class_exists('CriticTransit')) {
 $cm = new CriticMatic();
 $cmt = new CriticTransit($cm);
 
-
+$cron_name = 'find_dublicates';
+if ($cm->cron_already_run($cron_name, 10, $debug, $force)) {
+    exit();
+}
+$cm->register_cron($cron_name);
 $cmt->find_dublicates_post($count, $debug, $force);
+$cm->unregister_cron($cron_name);

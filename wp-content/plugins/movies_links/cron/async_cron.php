@@ -35,5 +35,16 @@ if (!class_exists('MoviesLinks')) {
     require_once( MOVIES_LINKS_PLUGIN_DIR . 'MoviesParserCron.php' );
 }
 
-$mpc = new MoviesParserCron();
+$ml = new MoviesLinks();
+
+$cron_name = 'async_cron_'.$cid.'_'.$type;
+if ($ml->cron_already_run($cron_name, 10, $debug)) {
+    exit();
+}
+
+$ml->register_cron($cron_name);
+
+$mpc = new MoviesParserCron($ml);
 $mpc->run_cron_async($cid, $type, $debug);
+
+$ml->unregister_cron($cron_name);

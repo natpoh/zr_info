@@ -44,7 +44,7 @@ class SearchFacets extends AbstractDB {
     // Facets
     public $facets = array(
         'movies' => array('release', 'budget', 'type', 'genre', 'provider', 'providerfree', 'auratings', 'ratings', 'price', 'race', 'dirrace',
-            'actor', 'actorstar', 'actormain',
+            'actor', 'actorstar', 'actormain', 'mkw',
             'dirall', 'dir', 'dirwrite', 'dircast', 'dirprod',
             'country', 'lgbt', 'woke', 'rf'),
         'critics' => array('release', 'type', 'author', 'state', 'related', 'movie', 'genre', 'auratings', 'tags', 'from')
@@ -78,19 +78,16 @@ class SearchFacets extends AbstractDB {
         'director' => '',
         'country' => '',
         'from' => '',
-        'genre' => '',
-        'minus-genre' => '',
         'movie' => '',
         'provider' => '',
         'price' => '',
         'release' => '',
-        'rf' => '',
-        'minus-rf' => '',
         'state' => '',
         'type' => '',
         'tags' => '',
         'year' => ''
     );
+    private $minus_filters = array('genre', 'mkw', 'rf',);
 
     public function __construct($cm = '', $cs = '') {
         $this->cm = $cm ? $cm : new CriticMatic();
@@ -99,6 +96,12 @@ class SearchFacets extends AbstractDB {
     }
 
     public function init_search() {
+        // Add minus filters
+        foreach ($this->minus_filters as $name) {
+            $this->filters[$name] = '';
+            $this->filters['minus-' . $name] = '';
+        }
+
         // Add race filters
         foreach ($this->cs->facets_race_cast as $facet => $item) {
             $this->filters[$facet] = '';
@@ -692,6 +695,12 @@ class SearchFacets extends AbstractDB {
                     $name = isset($this->cs->search_filters['rf'][$slug]['title']) ? $this->cs->search_filters['rf'][$slug]['title'] : $slug;
                     $tags[] = array('name' => $name, 'type' => $key, 'type_title' => 'Rating filter', 'id' => $slug, 'tab' => 'movies', 'minus' => $minus);
                 }
+            } else if ($key == 'mkw') {
+                $value = is_array($value) ? $value : array($value);
+                foreach ($value as $slug) {
+                    $name = isset($this->cs->search_filters[$key][$slug]['title']) ? $this->cs->search_filters[$key][$slug]['title'] : $slug;
+                    $tags[] = array('name' => $name, 'type' => $key, 'type_title' => 'Keywords', 'id' => $slug, 'tab' => 'movies', 'minus' => $minus);
+                }
             }
             /*
              * Critics
@@ -1138,6 +1147,8 @@ class SearchFacets extends AbstractDB {
                     $this->show_country_facet($data, $view_more);
                 } else if ($key == 'budget') {
                     $this->show_slider_facet($data, $count, $key, 'movies', 'Budget', 'Budget ', '', '', 100);
+                } else if ($key == 'mkw') {
+                    $this->show_keyword_facet($data, $view_more, $key, 'movies', $facets_data);
                 }
 
                 // Critic facets
@@ -1330,7 +1341,7 @@ class SearchFacets extends AbstractDB {
                         </div>
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $first_item ?>">
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $max_item ?>">
-                        <?php //unset($items[count($items) - 1]);    ?>
+                        <?php //unset($items[count($items) - 1]);       ?>
                         <script type="text/javascript">var <?php print $type ?>_arr =<?php print json_encode($items) ?></script>
                     </div>  
                 </div>
@@ -1722,7 +1733,7 @@ class SearchFacets extends AbstractDB {
         $name_pre = isset($this->cs->facets_race_directors[$filter]) ? $this->cs->facets_race_directors[$filter]['name_pre'] : '';
 
         /*
-         $tabs_arr = array(
+          $tabs_arr = array(
           'all' => array('facet' => 'dirrace', 'title' => 'All'),
           'directors' => array('facet' => 'dirsrace', 'title' => 'Directors'),
           'writers' => array('facet' => 'writersrace', 'title' => 'Writers'),
@@ -1734,17 +1745,17 @@ class SearchFacets extends AbstractDB {
         $title = 'Production Demographic(s)';
         $search_title = 'Search production';
         foreach ($tabs_arr as $key => $value) {
-            if ($key=='all'){
+            if ($key == 'all') {
                 continue;
             }
-            if ($value['facet']==$filter){                
+            if ($value['facet'] == $filter) {
                 $title = $value['title'];
-                $title.=' Demographic(s)';
-                $search_title = 'Search '.strtolower($value['title']);
+                $title .= ' Demographic(s)';
+                $search_title = 'Search ' . strtolower($value['title']);
                 break;
             }
-        }            
-        
+        }
+
 
         foreach ($data as $value) {
             $id = (int) trim($value->id);
@@ -1831,7 +1842,7 @@ class SearchFacets extends AbstractDB {
                 $dates[$id] = array('title' => $name, 'count' => $cnt, 'name_pre' => $name_pre, 'type_title' => $type_title);
             }
 
-  
+
             $ftype = 'movies';
             $this->theme_facet_multi_search($filter, $dates, $search_title, $view_more, $ftype, 0, $filter_name);
         }
@@ -1859,6 +1870,30 @@ class SearchFacets extends AbstractDB {
             </div>
             <?php
         }
+    }
+
+    public function show_keyword_facet($data, $more, $filter = 'mkw', $ftype = 'movies', $facets_data = array()) {
+        $dates = array();
+        if ($data) {
+            $ids = array();
+            foreach ($data as $value) {
+                $ids[] = $value->id;
+            }
+            
+            $titles = $this->cs->get_keywords_titles($ids);
+      
+            foreach ($data as $value) {
+                $id = $value->id;
+                $name = isset($titles[$id]) ? $titles[$id] : $id;
+                $cnt = $value->cnt;
+                $dates[$id] = array('title' => $name, 'count' => $cnt);
+            }
+        }
+
+        $title = 'Keywords';
+        $ftype = 'movies';
+ 
+        $this->theme_facet_multi($filter, $dates, $title, $more, $ftype, true);
     }
 
     private function facet_tabs($tabs = array(), $active_facet = '', $def_tab = '', $filter_name = '', $filter_type = 'facet', $inactive = array(), $column = false) {
@@ -2252,9 +2287,12 @@ class SearchFacets extends AbstractDB {
         $this->theme_facet_autocomplite($ret, $filter);
     }
 
-    public function theme_facet_multi($filter, $data, $title, $more = 0, $ftype = 'all', $minus = false, $tabs = '', $icon = '', $show_count = true, $show_and = true) {
+    public function theme_facet_multi($filter, $data, $title, $more = 0, $ftype = 'all', $minus = false, $tabs = '', $icon = '', $show_count = true, $show_and = true, $max_count=0) {
         $expanded = (isset($this->filters['expand']) && $this->filters['expand'] == $filter) ? true : false;
         $collapsed = in_array($filter, $this->hide_facets) ? ' collapsed' : '';
+        if ($max_count == 0) {
+            $max_count = $this->cs->facet_max_limit;
+        }
         ?>
         <div id="facet-<?php print $filter ?>" class="facet ajload<?php print $collapsed ?>" data-type="<?php print $ftype ?>">
             <div class="facet-title">
@@ -2368,11 +2406,20 @@ class SearchFacets extends AbstractDB {
                             }
                             ?>
                     </ul>
+
                     <?php if ($expanded): ?>
                         <div class="more active" title="Collapse" data-id="<?php print $filter ?>">Collapse</div>
-                    <?php elseif ($more): ?>
-                        <div class="more" title="Show all <?php print $more ?> filters" data-id="<?php print $filter ?>">Expand all: <?php print $more ?></div>
+                        <?php
+                    elseif ($more):
+                        $expand_text = 'Expand all: ' . $more;
+                        if ($more > $max_count) {
+                            $expand_text = 'Expand first: ' . $max_count;
+                            print '<p>Total found: ' . $more . '</p>';
+                        }
+                        ?>
+                        <div class="more" title="Show <?php print $more ?> filters" data-id="<?php print $filter ?>"><?php print $expand_text ?></div>
                     <?php endif ?>
+
                 <?php else: ?>
                     <div class="facet-content">
                         <p>No data avaliable</p>

@@ -52,7 +52,7 @@ class CriticSearch extends AbstractDB {
     );
     // Facets
     public $facets = array(
-        'movies' => array('release', 'type', 'genre', 'provider', 'providerfree',
+        'movies' => array('release', 'type', 'genre', 'provider', 'providerfree', 'mkw',
             'actors', 'dirs',
             'rating', 'country', 'race', 'dirrace', 'lgbt', 'woke',
             'race_cast', 'race_dir', 'gender_cast', 'gender_dir'),
@@ -1581,7 +1581,13 @@ class CriticSearch extends AbstractDB {
                 $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
                         . " GROUP BY genre ORDER BY cnt DESC LIMIT 0,$limit";
                 $sql_arr[] = "SHOW META";
-            } else if ($facet == 'actors') {
+            } else if ($facet == 'mkw') {
+                $limit = $expand == 'mkw' ? $this->facet_max_limit : $this->facet_limit;
+                $filters_and = $this->get_filters_query($filters, array('mkw'));
+                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
+                        . " GROUP BY ".$facet." ORDER BY cnt DESC LIMIT 0,$limit";
+                $sql_arr[] = "SHOW META";
+            }  else if ($facet == 'actors') {
                 // Cast actor logic
                 $facet_active = $this->get_active_race_facet($filters);
 
@@ -2081,6 +2087,17 @@ class CriticSearch extends AbstractDB {
                                 $filters_and .= $this->filter_multi_value($slug, 1, false, $minus, true, true, false);
                             }
                         }
+                    } else if ($key == 'mkw') {
+                        // Movie Keywords
+                        $value = is_array($value) ? $value : array($value);
+                        $titles = $this->get_keywords_titles($value);
+                        if ($titles){
+                            foreach ($titles as $slug => $title) {
+                                 $this->search_filters[$key][$slug] = array('key' => $slug, 'title' =>$title);
+                            }
+                        }
+                       
+                        $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
                     }
                 } else if ($query_type == 'critics') {
                     if ($key == 'author') {
@@ -2516,6 +2533,19 @@ class CriticSearch extends AbstractDB {
         return $ret;
     }
 
+    public function get_keywords_titles($ids) {
+        $limit = count($ids);
+        $sql = "SELECT id, name FROM movie_keywords WHERE id IN(". implode(',', $ids).") LIMIT 0,".$limit;
+        $results = $this->sdb_results($sql);
+        $ret=array();
+        if ($results) {
+            foreach ($results as $item) {
+                $ret[$item->id]=$item->name;
+            }  
+        }
+        return $ret;
+    }
+    
     function timer_start() {
         global $timestart;
         $timestart = microtime(1);

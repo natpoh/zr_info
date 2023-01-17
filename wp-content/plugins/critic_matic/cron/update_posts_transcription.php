@@ -51,6 +51,13 @@ if ($load['loaded']) {
 $cm = new CriticMatic();
 $cmt = new CriticMaticTrans($cm);
 
+
+$cron_name = 'update_posts_transcription_' . $t;
+if ($cm->cron_already_run($cron_name, 10, $debug, $force)) {
+    exit();
+}
+$cm->register_cron($cron_name);
+
 if ($t == 1) {
     $cmt->update_posts_transcription($count, $debug, $force);
 } else if ($t == 2) {
@@ -58,4 +65,5 @@ if ($t == 1) {
     $cmt->update_youtube_urls($count, $debug, $force);
 }
 
+$cm->unregister_cron($cron_name);
 

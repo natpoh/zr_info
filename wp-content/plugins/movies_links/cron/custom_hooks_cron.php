@@ -59,5 +59,16 @@ if ($load['loaded']) {
  * Run custom hooks from campaigns
  */
 
-$ac = new MoviesCustomHooksCron();
+$ml = new MoviesLinks();
+
+$cron_name = 'custom_hooks';
+if ($ml->cron_already_run($cron_name, 10, $debug)) {
+    exit();
+}
+
+$ml->register_cron($cron_name);
+
+$ac = new MoviesCustomHooksCron($ml);
 $ac->run_cron($count, $cid, $debug, $force);
+
+$ml->unregister_cron($cron_name);

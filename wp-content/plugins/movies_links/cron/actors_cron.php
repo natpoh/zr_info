@@ -40,5 +40,15 @@ if (!class_exists('MoviesLinks')) {
     require_once( MOVIES_LINKS_PLUGIN_DIR . 'ActorsCron.php' );
 }
 
+$ml = new MoviesLinks();
+
+$cron_name = 'actors_cron';
+if ($ml->cron_already_run($cron_name, 10, $debug)) {
+    exit();
+}
+$ml->register_cron($cron_name);
+
 $ac = new ActorsCron();
 $ac->run_cron($count,$debug);
+
+$ml->unregister_cron($cron_name);

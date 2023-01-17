@@ -46,9 +46,17 @@ if ($load['loaded']) {
 
 $ml = new MoviesLinks();
 
+$cron_name = 'douban_cron';
+if ($ml->cron_already_run($cron_name, 10, $debug)) {
+    exit();
+}
+$ml->register_cron($cron_name);
+
 $campaign = new stdClass();
 $campaign->title = 'douban.com';
 
 $fs = $ml->get_campaing_mlr($campaign);
 
 $fs->douban_cron_meta($count,$force, $debug);
+
+$ml->unregister_cron($cron_name);
