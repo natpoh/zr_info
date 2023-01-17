@@ -106,7 +106,7 @@ class Import
     }
 
 
-    public static function sync_db($db)
+    public static function sync_db($db,$limit=200)
     {
 
         ////get last id
@@ -125,7 +125,7 @@ class Import
 
             ///add new id
 
-            $r = self::get_data_from_db($db,$remote_id);
+            $r = self::get_data_from_db($db,$remote_id,$limit);
 
             foreach ($r as $d)
             {

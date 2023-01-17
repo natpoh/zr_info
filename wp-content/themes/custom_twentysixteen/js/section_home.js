@@ -479,15 +479,16 @@ function create_rating_content(object, m_id)
         }
     }
 
-    if (object['diversity'] && object['diversity_data'])
+    if (object['diversity'] || object['diversity_data'])
     {
+
         block_class = 'diversity';
         let value = Number(object['diversity']);
         value = value.toFixed(0);
         if (!value)
             value = 0;
 
-        if (value > 0 || object['diversity_data']) {
+        if ( object['diversity_data'] ) {
             var diversity_data = object['diversity_data'];
 
             let  diversity_data_content = create_diversity(diversity_data, value);

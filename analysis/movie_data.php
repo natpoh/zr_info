@@ -103,11 +103,50 @@ class MOVIE_DATA
         return $name;
     }
 
+    public static function single_actor_template($id,$type='',$ethnycity_string='')
+    {
+        !class_exists('RWTimages') ? include ABSPATH . "analysis/include/rwt_images.php" : '';
+        $name = self::get_actor_name($id);
+        if ($id) {
+            $e = '';
+            if ($ethnycity_string) {
+                $e = '&e=' . $ethnycity_string;
+            }
+            if ($type == 'main') {
+                $type = 'supporting';
+            }
+
+            $filmolink= WP_SITEURL.'/search/actor_'.$id;
+
+
+            $dop_string = '<span class="a_data_n_d">' . str_replace('_', ' ', ucfirst($type)) . '</span>';
+
+            $image_link = RWTimages::get_image_link($id);
+            $actor_name_encoded =urlencode($name);
+
+            $actor_cntr = '<div class="card style_1 img_tooltip">
+                     <a  class="actor_info" data-id="' . $id . '"  href="#">
+                     <div class="a_data_n">' . $name . $dop_string . ' </div>
+                     <img loading="lazy" title="What ethnicity is ' . $name . '?" alt="' . $name . ' ethnicity" class="a_data_i" 
+                     src="' . $image_link . '" />
+                     </a>
+                     <span class="actor_b_link"><a href="'.$filmolink.'">Filmography</a>
+<a target="_blank" href="https://en.wikipedia.org/w/index.php?search='.$actor_name_encoded.'">Wikipedia</a></span>
+                     <span class="actor_edit actor_crowdsource_container"><a title="Edit Actor data" id="op" data-value="' . $id . '" class="actor_crowdsource button_edit" href="#"></a></span>
+                    </div>';
+
+
+
+        }
+        return $actor_cntr;
+
+    }
+
 
     public static function get_actors_template($movie_id, $actor_type, $ethnycity_string = '')
     {
 
-        !class_exists('RWTimages') ? include ABSPATH . "analysis/include/rwt_images.php" : '';
+
 
 
         $actors_array = self::get_actors_from_movie($movie_id, '', $actor_type);
@@ -122,32 +161,10 @@ class MOVIE_DATA
 
                 foreach ($actors_array[$actor_type_min[$type]] as $id => $enable) {
 
-                    $name = self::get_actor_name($id);
-                    if ($id) {
-                        $e = '';
-                        if ($ethnycity_string) {
-                            $e = '&e=' . $ethnycity_string;
-                        }
-                        if ($type == 'main') {
-                            $type = 'supporting';
-                        }
+                    $actor_cntr =self::single_actor_template($id,$type,$ethnycity_string);
 
-                        $dop_string = '<span class="a_data_n_d">' . str_replace('_', ' ', ucfirst($type)) . '</span>';
-
-                        $image_link = RWTimages::get_image_link($id);
-
-                        $actor_cntr = '<div class="card style_1 img_tooltip">
-                     <a  class="actor_info" data-id="' . $id . '"  href="#">
-                     <div class="a_data_n">' . $name . $dop_string . ' </div>
-                     <img loading="lazy" title="What ethnicity is ' . $name . '?" alt="' . $name . ' ethnicity" class="a_data_i" 
-                     src="' . $image_link . '" />
-                     </a><span class="actor_edit actor_crowdsource_container"><a title="Edit Actor data" id="op" data-value="' . $id . '" class="actor_crowdsource button_edit" href="#"></a></span>
-                    </div>';
-
-                        $addtime = time();
-                        $content_array[$addtime . '_' . $id] = array('pid' => $id, 'content_data' => $actor_cntr);
-
-                    }
+                    $addtime = time();
+                    $content_array[$addtime . '_' . $id] = array('pid' => $id, 'content_data' => $actor_cntr);
                 }
 
 

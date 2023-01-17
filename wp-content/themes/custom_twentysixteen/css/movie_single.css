@@ -703,6 +703,52 @@ span.actor_info:hover {
     text-align: center;
     margin-top: 18px;
 }
+.actor_b_link {
+    font-family: 'Encode Sans Condensed',Lato;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 3px;
+}
+.actor_b_link a{
+    display: inline-block;
+    margin-right: 15px;
+
+}
+
+.actor_link_block .nte{
+    display: inline-block;
+
+}
+.actor_link_block a.actor_info
+{
+    text-decoration: blink;
+    font-size: 20px;
+    text-align: center;
+    line-height: 40px;
+}
+.actor_link_block  .a_data_n_d{
+    margin-bottom: 10px;
+    font-weight: normal;
+
+}
+
+.actor_link_block .toggle_show{
+
+    background: url(../images/ar_u.svg) no-repeat scroll left -3px top -3px transparent;
+    display: inline-block;
+    height: 24px;
+    width: 24px;
+    background-size: 30px 30px;
+    position: relative;
+    margin-bottom: -5px;
+    cursor: pointer;
+    filter: none;
+}
+.actor_link_block .open .toggle_show{
+    background: url(../images/ar_d.svg) no-repeat scroll left -3px top -3px transparent;
+    background-size: 30px 30px;
+}
 
 
 a#op.open_ul {

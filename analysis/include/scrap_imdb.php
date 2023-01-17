@@ -207,17 +207,17 @@ function sync_tables($table='')
     }
     else
     {
-        $array_tables = array('data_familysearch_verdict', 'data_forebears_verdict','meta_reviews_rating','meta_keywords','meta_movie_keywords');
+        $array_tables = array('data_familysearch_verdict'=>400, 'data_forebears_verdict'=>400,'meta_reviews_rating'=>200,'meta_keywords'=>1000,'meta_movie_keywords'=>1000);
     }
 
 
 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
 
 
-foreach ($array_tables as $table)
+foreach ($array_tables as $table=>$limit)
 {
 
-    Import::sync_db($table);
+    Import::sync_db($table,$limit);
 }
 
 

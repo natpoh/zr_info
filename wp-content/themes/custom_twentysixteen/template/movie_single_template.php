@@ -22,6 +22,72 @@ if (!function_exists('format_movie_runtime')) {
     }
 
 }
+class MovieSingle
+{
+
+    private static function get_actor_name($aid)
+    {
+        $q = "SELECT `name` FROM `data_actors_imdb` where id =".$aid;
+        $r = Pdo_an::db_fetch_row($q);
+        return $r->name;
+
+    }
+
+    public static function director_template($id)
+    {
+
+        $content_release = '';
+
+
+        $director_result = [];
+        ////get movie director
+        $director_types = array('Director' => 1, 'Writer' => 2, 'Cast director' => 3);
+        $sql = "SELECT * FROM meta_movie_director WHERE mid={$id}  and (`type` = 1 OR `type` = 2)";
+        $r = Pdo_an::db_results_array($sql);
+        foreach ($r as $row) {
+            $director_result[$row['type']][$row['aid']] = 1;
+        }
+
+        !class_exists('MOVIE_DATA') ? include ABSPATH . "analysis/movie_data.php" : '';
+        if ($director_result) {
+            foreach ($director_types as $name => $type) {
+                if ($director_result[$type]) {
+
+                    $actors='';
+
+                    foreach ($director_result[$type] as $aid=>$enable) {
+                        $actor_name = self::get_actor_name($aid);
+
+
+                       $pupup_data =  MOVIE_DATA::single_actor_template($aid,$name);
+
+
+                        $actors.=', <span class="actor_link_block">
+<a target="_blank" href="'.WP_SITEURL.'/search/dirall_'.$aid.'">'.$actor_name.'</a> 
+<div class="note nte "><div class="btn toggle_show"></div>
+                 <div class="nte_show dwn"><div class="nte_in"><div class="nte_cnt"><div class="note_show_content_adata" >'.$pupup_data.'</div></div></div></div>
+                 </div>
+</span>';
+
+                    }
+                    if ($actors)
+                    {
+                        $actors = substr($actors,2);
+                    }
+
+                    $content_release.= '<div class="block"><span>' . $name . ': </span>' . $actors . '</div>';
+                }
+
+
+            }
+        }
+        return $content_release;
+
+    }
+
+}
+
+
 
 if (!function_exists('template_single_movie')) {
 
@@ -83,6 +149,9 @@ if (!function_exists('template_single_movie')) {
             $movie_meta['budget'] = number_format($post_an->productionBudget);
         }
 
+
+
+
         $thumbs = array([220, 330], [440, 660]);
         $array_tsumb = array();
         global $cfront;
@@ -109,14 +178,19 @@ if (!function_exists('template_single_movie')) {
             $movie_details = 'Movie Details & Credits';
             if ($movie_t == 'movies') {
                 $movie_link_desc = 'class="card_movie_type ctype_movies" title="Movie"';
+                $tmd ='Movie';
 
                 $movie_details = 'Movie Details & Credits';
             } else if ($movie_t == 'tvseries') {
                 $movie_link_desc = 'class="card_movie_type ctype_tvseries" title="TV Show"';
                 $movie_details = 'TV Series Details & Credits';
-            } else if ($movie_t == 'VideoGame') {
+
+                $tmd ='TV Series';
+            } else if ($movie_t == 'videogame') {
                 $movie_link_desc = 'class="card_movie_type ctype_videogame" title="Game"';
                 $movie_details = 'Game Details & Credits';
+
+                $tmd ='Game';
             }
 
             if ($name) {
@@ -129,7 +203,7 @@ if (!function_exists('template_single_movie')) {
         }
 
 
-        $content = '';
+        $content_release = '';
 
         $_wpmoly_movie_release_date = $movie_meta['release_date'];
 
@@ -139,13 +213,18 @@ if (!function_exists('template_single_movie')) {
 
             $date = date('F d, Y', strtotime($_wpmoly_movie_release_date));
 
-            $content .= '<span>Release Date: ' . $date . ' </span>';
+            $content_release .= '<span>Release Date:</span> ' . $date . ' ';
         }
 
         $_wpmoly_movie_production_companies = $movie_meta['production_companies'];
 
         if ($_wpmoly_movie_production_companies) {
-            $content .= '<span>| ' . $_wpmoly_movie_production_companies . '</span>';
+            $content_release .= '| ' . $_wpmoly_movie_production_companies . ' ';
+        }
+
+        if ($content_release)
+        {
+            $content_release ='<div class="block block_main">' . $content_release . '</div>';
         }
 
         $_wpmoly_movie_overview = '<div class="block block_summary"><span>Summary: </span>' . $movie_meta['overview'] . '</div>';
@@ -167,9 +246,13 @@ if (!function_exists('template_single_movie')) {
             $_wpmoly_movie_genres = '<div class="block"><span>Genres: </span>' . $genre_string . '</div>';
         }
 
-        $_wpmoly_movie_director = $movie_meta['director'];
-        if ($_wpmoly_movie_director) {
-            $_wpmoly_movie_director = '<div class="block"><span>Director: </span>' . $_wpmoly_movie_director . '</div>';
+        $director_result =MovieSingle::director_template($id);
+
+        if ($director_result) {
+
+
+            $_wpmoly_movie_director = '<div class="single_flex">' . $director_result . '</div>';
+
         }
 
         $_wpmoly_movie_runtime = $movie_meta['runtime'];
@@ -194,7 +277,22 @@ if (!function_exists('template_single_movie')) {
         }
         $_wpmoly_movie_budget = $movie_meta['budget'];
         if ($_wpmoly_movie_budget) {
-            $_wpmoly_movie_budget = '<div class="block"><span>Movie budget: </span> $ ' . $_wpmoly_movie_budget . '</div>';
+            $_wpmoly_movie_budget = '<div class="block"><span>'.$tmd.' budget: </span> $ ' . $_wpmoly_movie_budget . '</div>';
+        }
+
+        if ($post_an->box_usa) {
+            $_box_usa = '<div class="block"><span>Domestic: </span> $ ' .number_format( $post_an->box_usa) . '</div>';
+        }
+        if ($post_an->box_world) {
+            if ($post_an->box_usa) {
+
+                $bi = intval($post_an->box_world) - intval($post_an->box_usa);
+                if ($bi >0 )
+                {
+                    $_box_international= '<div class="block"><span>International: </span> $ ' . number_format($bi). '</div>';
+                }
+
+            }
         }
 
         $_wpmoly_buttom = '';
@@ -202,15 +300,19 @@ if (!function_exists('template_single_movie')) {
         ////get wach
         $sql = "SELECT * FROM `just_wach`  where rwt_id='{$id}' and addtime>0";
         $wach_data = Pdo_an::db_fetch_row($sql);
-        if ($wach_data->data || strtotime($_wpmoly_movie_release_date) < time() + 86400 * 30) {
-            $year_string = '';
-            if ($post_an->year) {
 
-                $year_string = ' data-year="' . ($post_an->year) . '" ';
-            }
 
-            $_wpmoly_buttom = '<button style="font-size: 18px;" class="watch_buttom" id="' . $id . '" ' . $year_string . ' data-title="' . ($post_an->title) . '" data-type="' . ($post_an->type) . '">Watch Now</button>';
-        }
+       if ($movie_t != 'videogame') {
+           if ($wach_data->data || strtotime($_wpmoly_movie_release_date) < time() + 86400 * 30) {
+               $year_string = '';
+               if ($post_an->year) {
+
+                   $year_string = ' data-year="' . ($post_an->year) . '" ';
+               }
+
+               $_wpmoly_buttom = '<button style="font-size: 18px;" class="watch_buttom" id="' . $id . '" ' . $year_string . ' data-title="' . ($post_an->title) . '" data-type="' . ($post_an->type) . '">Watch Now</button>';
+           }
+       }
 
 
         if ($single) {
@@ -275,13 +377,19 @@ if (!function_exists('template_single_movie')) {
                     <h1 class="entry-title"><?php echo $link_before . $title . $ilin_after; ?></h1><div <?php echo $class_dop; ?> class="play_trailer <?php echo $class ?>" id="<?php echo $id ?>"><?php echo $button; ?></div>
                 </div>
                 <div class="movie_description_container">
-                    <div class="movie_credits_bloc">
-                        <div class="mcb_title"><?php echo $movie_details ?></div>
-                        <div class="mcb_content"><?php echo $content ?></div>
 
-                    </div>
+
                     <div class="movie_summary">
-        <?php echo $_wpmoly_movie_overview . $_wpmoly_movie_director . $_wpmoly_movie_genres . $_wpmoly_movie_runtime . $_wpmoly_movie_country . $_wpmoly_movie_budget ?>
+        <?php echo $_wpmoly_movie_overview . $_wpmoly_movie_director . $content_release.
+         '<div class="single_grid">'.
+
+            $_wpmoly_movie_genres . $_wpmoly_movie_runtime . $_wpmoly_movie_country .
+            '</div>'.
+
+            '<div class="single_flex">'. $_wpmoly_movie_budget.$_box_usa.$_box_international. '</div>';
+
+
+        ?>
                     </div>
                 </div>
             </div>
