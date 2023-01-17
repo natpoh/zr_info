@@ -167,9 +167,9 @@ if (strstr($id,'m_'))
             $i_height = 660;
 
             $string = $title;
-            $pointsize = 25;
-            $pointsize_year = 20;
-            $fontfile = $_SERVER['DOCUMENT_ROOT'].'/analysis/8-bit pusab.ttf';
+            $pointsize = 34;
+            $pointsize_year = 25;
+            $fontfile = $_SERVER['DOCUMENT_ROOT'].'/analysis/HOLLYWOODSTARFIRE.ttf';
             $im = imagecreate($i_width, $i_height);
             $black = imagecolorallocate ($im, 0, 0, 0);
             $white = imagecolorallocate ($im, 255, 255, 255);
