@@ -700,6 +700,7 @@ span.actor_info:hover {
 }
 .big_desc
 {
+    text-align: center;
     margin-top: 18px;
 }
 
@@ -788,8 +789,16 @@ body.theme_dark .imdb_rating, body.theme_dark .rotten_tomatoes_score  {
     background: url("../images/tomato_popcorn_green.svg") no-repeat left 0 top 0 transparent;
     background-size: contain;
 }
-
-
+.ext_links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 15px;
+    margin-top: 10px;
+    justify-content: center;
+}
+.ext_links a{
+    display: inline-block;
+}
 
 .note_show a {
     text-decoration: underline;

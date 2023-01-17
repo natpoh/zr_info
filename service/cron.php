@@ -22,9 +22,9 @@ $array_jobs = array(
 'update_tmdb_actors'=>10, //update tmdb id and images
 
 'check_tmdb_data'=>15,///update country and poster from tmdb
-'add_gender_rating'=>15,///add new gender rating
 
-'add_pgrating'=>30,////add pg rating
+
+
 'add_to_db_from_userlist'=>60,///add new movies from user vote list //// !not sync
 'add_providers'=>30,
 'update_imdb_data'=>30,//update movies
@@ -37,9 +37,12 @@ $array_jobs = array(
 
 
 
-'update_all_rwt_rating'=>60,////update all rating
-'add_pg_rating_for_new_movies'=>(60*12),///add pg rating to new movies
-    //'add_gender_rating_for_new_movies'=>(60*12),///add gender rating to new movies
+'update_all_rwt_rating'=>30,////update all rating
+'add_pgrating'=>60*2,////add pg rating
+//'add_gender_rating_for_new_movies'=>(60),///add gender rating to new movies
+
+'add_pg_rating_for_new_movies'=>(60),///add pg rating to new movies
+'add_gender_rating'=>60,///add new gender rating
 
 
 

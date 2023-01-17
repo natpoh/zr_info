@@ -97,30 +97,39 @@ class RWT_RATING
 
         $r_data = $this->get_gender_rating_in_movie($movie_id);
 
+        global $debug;
         if ($r_data) {
             //update
 
             ///check
             if ($r_data['diversity'] ==$diversity && $r_data['male'] ==$male && $r_data['female'] ==$female )
             {
-                //skip
+                $sql = "UPDATE `cache_rating` SET `last_update` =?  WHERE `movie_id` = {$movie_id}  ";
+                Pdo_an::db_results_array($sql, array(time()));
+
+                if ($debug)echo 'skip '.$sql.'<br>';
             }
             else {
+//                echo 'origonal'.PHP_EOL;
+//                var_dump($r_data);
+//                echo 'modifed'.PHP_EOL;
+//                var_dump(array($diversity, $diversity_data, $male, $female));
+
 
                 $sql = "UPDATE `cache_rating` SET
-                              `diversity` = ?,   `diversity_data` = ?,    `male` = ?,   `female` = ?
+                              `diversity` = ?,   `diversity_data` = ?,    `male` = ?,   `female` = ? ,`last_update` =?
                 WHERE `movie_id` = {$movie_id}  ";
-                Pdo_an::db_results_array($sql, array($diversity, $diversity_data, $male, $female));
+                Pdo_an::db_results_array($sql, array($diversity, $diversity_data, $male, $female,time()));
+                if ($debug)echo 'update '.$sql.'<br>';
 
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
                 Import::create_commit('', 'update', 'cache_rating', array('movie_id' => $movie_id), 'cache_rating',9,['skip'=>['id']]);
-
             }
         }
         else {
-            $sql = "INSERT INTO `cache_rating` (`id`, `movie_id`, `imdb_id`, `diversity`, `diversity_data`, `male`, `female`) 
-                    VALUES (NULL, ?, ?, ?, ?, ?, ?);";
-            Pdo_an::db_results_array($sql, array($movie_id, $movie_imdb, $diversity, $diversity_data, $male, $female));
+            $sql = "INSERT INTO `cache_rating` (`id`, `movie_id`, `imdb_id`, `diversity`, `diversity_data`, `male`, `female`,`last_update`) 
+                    VALUES (NULL, ?, ?, ?, ?, ?, ?, ? );";
+            Pdo_an::db_results_array($sql, array($movie_id, $movie_imdb, $diversity, $diversity_data, $male, $female,time()));
 
             !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
             Import::create_commit('', 'update', 'cache_rating', array('movie_id' => $movie_id), 'cache_rating',9,['skip'=>['id']]);
