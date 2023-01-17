@@ -234,7 +234,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         // Get last posts
         $last_posts = $this->mp->get_last_arhives_no_posts($urls_count, $cid);
         if ($debug) {
-            p_r(array('Last'=>$last_posts));
+            p_r(array('Last' => $last_posts));
         }
 
         if ($last_posts) {
@@ -245,7 +245,7 @@ class MoviesParserCron extends MoviesAbstractDB {
             if ($ao['status'] == 1) {
                 $last_posts = $this->mp->get_last_expired_urls_arhives($urls_count, $cid);
                 if ($debug) {
-                    p_r(array('Expired'=>$last_posts));
+                    p_r(array('Expired' => $last_posts));
                 }
             }
             if ($last_posts) {
@@ -264,7 +264,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         return $count;
     }
 
-    private function parse_items($last_posts, $campaign, $type_opt, $expired = false, $force = false, $debug=false) {
+    private function parse_items($last_posts, $campaign, $type_opt, $expired = false, $force = false, $debug = false) {
         $count = 0;
         $cid = $campaign->id;
         $items = $this->mp->parse_arhives($last_posts, $campaign);
@@ -287,17 +287,17 @@ class MoviesParserCron extends MoviesAbstractDB {
                     );
                 }
 
-                if ($debug){
+                if ($debug) {
                     p_r($item);
                 }
-                if ($expired) {                    
+                if ($expired) {
                     // Update post
-                    $this->parsing_post_add($item, $cid, $uid, true);
-                     // Status - exist
+                    $this->parsing_post_add($item, $cid, $uid, true, true, $campaign);
+                    // Status - exist
                     $data = array('exp_status' => 3);
                     $this->mp->update_url($data, $uid);
                 } else {
-                    $this->parsing_post_add($item, $cid, $uid, $force);                   
+                    $this->parsing_post_add($item, $cid, $uid, $force);
                 }
 
                 $count += 1;
@@ -315,7 +315,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         }
     }
 
-    private function parsing_post_add($item, $cid, $uid, $force = false) {
+    private function parsing_post_add($item, $cid, $uid, $force = false, $expired = false, $campaign = array()) {
         // Add post
 
         $post_exist = $this->mp->get_post_by_uid($uid);
@@ -345,8 +345,11 @@ class MoviesParserCron extends MoviesAbstractDB {
             }
 
             $message = 'Add post: ';
-            if ($post_exist) {
+            if ($post_exist) {                
                 $message = 'Update post: ';
+                if ($expired){
+                    $message = 'Update expired: ';
+                }
             }
 
             if ($title) {
@@ -366,6 +369,12 @@ class MoviesParserCron extends MoviesAbstractDB {
                 $top_movie = $post_exist->top_movie;
                 $rating = $post_exist->rating;
                 $this->mp->update_post($uid, $status, $title, $release, $year, $post_options, $top_movie, $rating);
+                if ($expired) {         
+                    $post_exist_update = $this->mp->get_post_by_uid($uid);
+                    //Movies custom hook
+                    $mch = $this->ml->get_mch();
+                    $mch->add_post($campaign, $post_exist_update);
+                }
             }
         } else {
             $message = 'Post already exist';

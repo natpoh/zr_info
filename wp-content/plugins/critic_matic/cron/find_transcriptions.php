@@ -46,5 +46,10 @@ if (!class_exists('CriticMaticTrans')) {
 $cm = new CriticMatic();
 $cmt = new CriticMaticTrans($cm);
 
-
+$cron_name = 'find_transcriptions';
+if ($cm->cron_already_run($cron_name, 10, $debug, $force)) {
+    exit();
+}
+$cm->register_cron($cron_name);
 $cmt->find_transcriptions_youtube($count, $debug, $force);
+$cm->unregister_cron($cron_name);

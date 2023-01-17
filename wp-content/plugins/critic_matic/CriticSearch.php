@@ -52,7 +52,7 @@ class CriticSearch extends AbstractDB {
     );
     // Facets
     public $facets = array(
-        'movies' => array('release', 'type', 'genre', 'provider', 'providerfree',
+        'movies' => array('release', 'type', 'genre', 'provider', 'providerfree', 'mkw',
             'actors', 'dirs',
             'rating', 'country', 'race', 'dirrace', 'lgbt', 'woke',
             'race_cast', 'race_dir', 'gender_cast', 'gender_dir'),
@@ -74,7 +74,12 @@ class CriticSearch extends AbstractDB {
         'rimdb' => array('title' => 'IMDB', 'name_pre' => 'IMDB ', 'filter_pre' => 'IMDB Rating ', 'max_count' => 110, 'multipler' => 10),
         'rrt' => array('title' => 'Rotten Tomatoes', 'name_pre' => 'RT ', 'filter_pre' => 'Rotten Tomatoes ', 'max_count' => 110),
         'rrta' => array('title' => 'Rotten Tomatoes Audience', 'name_pre' => 'RTA ', 'filter_pre' => 'Rotten Tomatoes Audience ', 'max_count' => 110),
-        'rrtg' => array('title' => 'Rotten Tomatoes Gap', 'name_pre' => 'RTG ', 'filter_pre' => 'Rotten Tomatoes Gap ', 'max_count' => 220, 'shift' => -100, 'sort' => 'asc')
+        'rrtg' => array('title' => 'Rotten Tomatoes Gap', 'name_pre' => 'RTG ', 'filter_pre' => 'Rotten Tomatoes Gap ', 'max_count' => 220, 'shift' => -100, 'sort' => 'asc'),
+        'rkp' => array('title' => 'Kinopoisk', 'name_pre' => 'KP ', 'filter_pre' => 'Kinopoisk ', 'max_count' => 110, 'multipler' => 10),
+        'rdb' => array('title' => 'Douban', 'name_pre' => 'DB ', 'filter_pre' => 'Douban ', 'max_count' => 110, 'multipler' => 10),
+        'rfn' => array('title' => '4chan', 'name_pre' => '4chan ', 'filter_pre' => '4chan '),
+        'rrev' => array('title' => 'Reviews', 'name_pre' => 'RV ', 'filter_pre' => 'Reviews '),
+        'rtotal' => array('title' => 'Total rating', 'name_pre' => 'Total ', 'filter_pre' => 'Total rating '),
     );
     public $facets_race_cast = array(
         'race' => array('filter' => 'actor', 'name' => 'actor_all', 'title' => 'Cast race', 'name_pre' => 'Cast '),
@@ -1576,7 +1581,13 @@ class CriticSearch extends AbstractDB {
                 $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
                         . " GROUP BY genre ORDER BY cnt DESC LIMIT 0,$limit";
                 $sql_arr[] = "SHOW META";
-            } else if ($facet == 'actors') {
+            } else if ($facet == 'mkw') {
+                $limit = $expand == 'mkw' ? $this->facet_max_limit : $this->facet_limit;
+                $filters_and = $this->get_filters_query($filters, array('mkw'));
+                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
+                        . " GROUP BY ".$facet." ORDER BY cnt DESC LIMIT 0,$limit";
+                $sql_arr[] = "SHOW META";
+            }  else if ($facet == 'actors') {
                 // Cast actor logic
                 $facet_active = $this->get_active_race_facet($filters);
 
@@ -1930,6 +1941,10 @@ class CriticSearch extends AbstractDB {
             $filters_and .= $top_movie_sql;
         }
 
+        if ($query_type == 'movies') {
+            $filters_and .= " AND title!=''";
+        }
+
         if (sizeof($filters)) {
             foreach ($filters as $key => $value) {
                 if (is_array($exlude)) {
@@ -2072,6 +2087,17 @@ class CriticSearch extends AbstractDB {
                                 $filters_and .= $this->filter_multi_value($slug, 1, false, $minus, true, true, false);
                             }
                         }
+                    } else if ($key == 'mkw') {
+                        // Movie Keywords
+                        $value = is_array($value) ? $value : array($value);
+                        $titles = $this->get_keywords_titles($value);
+                        if ($titles){
+                            foreach ($titles as $slug => $title) {
+                                 $this->search_filters[$key][$slug] = array('key' => $slug, 'title' =>$title);
+                            }
+                        }
+                       
+                        $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
                     }
                 } else if ($query_type == 'critics') {
                     if ($key == 'author') {
@@ -2507,6 +2533,19 @@ class CriticSearch extends AbstractDB {
         return $ret;
     }
 
+    public function get_keywords_titles($ids) {
+        $limit = count($ids);
+        $sql = "SELECT id, name FROM movie_keywords WHERE id IN(". implode(',', $ids).") LIMIT 0,".$limit;
+        $results = $this->sdb_results($sql);
+        $ret=array();
+        if ($results) {
+            foreach ($results as $item) {
+                $ret[$item->id]=$item->name;
+            }  
+        }
+        return $ret;
+    }
+    
     function timer_start() {
         global $timestart;
         $timestart = microtime(1);
@@ -2849,7 +2888,7 @@ class CriticSearch extends AbstractDB {
         $search_db = 'sites_links';
 
         foreach ($facet_list as $facet) {
-            
+
             if ($facet == 'bias') {
                 $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM " . $search_db . " WHERE id>0" . $match
                         . " GROUP BY bias ORDER BY bias ASC LIMIT " . $limit;
@@ -2859,7 +2898,7 @@ class CriticSearch extends AbstractDB {
                         . " FROM " . $search_db . " WHERE nresult>0 " . $match
                         . " GROUP BY bias ORDER BY bias ASC LIMIT " . $limit;
                 $sql_arr[] = "SHOW META";
-            } 
+            }
         }
         return array('sql_arr' => $sql_arr, 'skip' => $skip);
     }
