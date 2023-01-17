@@ -14,7 +14,10 @@ class MoviesLinks extends MoviesAbstractDB {
     private $campaings_mlr = array(
         'familysearch.org' => 'familysearch',
         'forebears.io' => 'forebears',
-        'kinopoiskapiunofficial.tech'=>'kinopoisk',
+        'kinopoiskapiunofficial.tech' => 'kinopoisk',
+        'douban.com' => 'douban',
+        'archive.4plebs.org' => 'forchan',
+        'reviews_cron' => 'reviews',
     );
     public $arhive_path = ABSPATH . 'wp-content/uploads/movies_links/arhive/';
     public $export_path = ABSPATH . 'wp-content/uploads/movies_links/export/';
@@ -175,6 +178,50 @@ class MoviesLinks extends MoviesAbstractDB {
             $ret[$field] = $field_value;
         }
         return $ret;
+    }
+
+    public function cron_already_run($cron_name, $wait = 10, $debug = false, $force = false) {
+        if ($wait == 0) {
+            $wait = 10;
+        }
+
+        $curr_time = $this->curr_time();
+
+        // Last run
+        $run_key = $this->get_cron_name($cron_name);
+
+        $last_run = (int) $this->get_option($run_key);
+        // Already progress
+        $progress = $last_run ? $last_run : 0;
+
+        if (!$force && $progress) {
+            // Ignore old last update            
+
+            $wait_sec = $wait * 60; // sec
+            if ($curr_time < ($progress + $wait_sec)) {
+                // Cron already progress;                    
+                if ($debug) {
+                    print "Cron " . $cron_name . " already progess.";
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function register_cron($cron_name) {
+        $curr_time = $this->curr_time();
+        $run_key = $this->get_cron_name($cron_name);
+        $this->update_option($run_key, $curr_time);
+    }
+
+    public function unregister_cron($cron_name) {
+        $run_key = $this->get_cron_name($cron_name);
+        $this->update_option($run_key, 0);
+    }
+
+    private function get_cron_name($cron_name) {
+        return 'ml_cron_' . $cron_name;
     }
 
     /*

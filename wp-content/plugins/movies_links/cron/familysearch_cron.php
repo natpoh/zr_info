@@ -41,6 +41,12 @@ if ($load['loaded']) {
 
 $ml = new MoviesLinks();
 
+$cron_name = 'familysearch';
+if ($ml->cron_already_run($cron_name, 10, $debug)) {
+    exit();
+}
+$ml->register_cron($cron_name);
+
 $campaign = new stdClass();
 $campaign->title = 'familysearch.org';
 
@@ -48,3 +54,5 @@ $fs = $ml->get_campaing_mlr($campaign);
 
 $simpson = true;
 $fs->cron_actor_verdict($count,$simpson,$debug);
+
+$ml->unregister_cron($cron_name);

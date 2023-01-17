@@ -46,5 +46,15 @@ if ($load['loaded']) {
     exit();
 }
 
-$tp = new TorParser();
+$ml = new MoviesLinks();
+
+$cron_name = 'tor_cron';
+if ($ml->cron_already_run($cron_name, 10, $debug)) {
+    exit();
+}
+$ml->register_cron($cron_name);
+
+$tp = new TorParser($ml);
 $tp->run_cron($type, $debug, $force);
+
+$ml->unregister_cron($cron_name);
