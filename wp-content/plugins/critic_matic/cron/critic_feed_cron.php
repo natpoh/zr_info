@@ -29,5 +29,15 @@ if (!class_exists('CriticFeeds')) {
 }
 
 $cm = new CriticMatic();
+
+$cron_name = 'critic_feed';
+if ($cm->cron_already_run($cron_name, 10, $debug)) {
+    exit();
+}
+
+$cm->register_cron($cron_name);
+
 $cf = new CriticFeeds($cm);
 $cf->run_cron();
+
+$cm->unregister_cron($cron_name);

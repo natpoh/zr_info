@@ -44,7 +44,17 @@ if (!class_exists('CriticParser')) {
 }
 
 $cm = new CriticMatic();
+
+
+
+$cron_name = 'critic_parser_' . $cron_type;
+if ($cm->cron_already_run($cron_name, 10, $debug, $force)) {
+    exit();
+}
+
+$cm->register_cron($cron_name);
+
 $cp = new CriticParser($cm);
-
-
 $cp->run_cron($cron_type, $force, $debug);
+
+$cm->unregister_cron($cron_name);
