@@ -1876,12 +1876,13 @@ class SearchFacets extends AbstractDB {
         $dates = array();
         if ($data) {
             $ids = array();
+            
             foreach ($data as $value) {
                 $ids[] = $value->id;
             }
-            
+
             $titles = $this->cs->get_keywords_titles($ids);
-      
+
             foreach ($data as $value) {
                 $id = $value->id;
                 $name = isset($titles[$id]) ? $titles[$id] : $id;
@@ -1891,9 +1892,9 @@ class SearchFacets extends AbstractDB {
         }
 
         $title = 'Keywords';
-        $ftype = 'movies';
- 
-        $this->theme_facet_multi($filter, $dates, $title, $more, $ftype, true);
+   
+        $quick_find = true;
+        $this->theme_facet_multi($filter, $dates, $title, $more, $ftype, true, '', '', true, true, 0, $quick_find);
     }
 
     private function facet_tabs($tabs = array(), $active_facet = '', $def_tab = '', $filter_name = '', $filter_type = 'facet', $inactive = array(), $column = false) {
@@ -2287,7 +2288,7 @@ class SearchFacets extends AbstractDB {
         $this->theme_facet_autocomplite($ret, $filter);
     }
 
-    public function theme_facet_multi($filter, $data, $title, $more = 0, $ftype = 'all', $minus = false, $tabs = '', $icon = '', $show_count = true, $show_and = true, $max_count=0) {
+    public function theme_facet_multi($filter, $data, $title, $more = 0, $ftype = 'all', $minus = false, $tabs = '', $icon = '', $show_count = true, $show_and = true, $max_count = 0, $quick_find = false) {
         $expanded = (isset($this->filters['expand']) && $this->filters['expand'] == $filter) ? true : false;
         $collapsed = in_array($filter, $this->hide_facets) ? ' collapsed' : '';
         if ($max_count == 0) {
@@ -2305,6 +2306,11 @@ class SearchFacets extends AbstractDB {
                     <div class="chevronup"></div>
                 </div>
             </div>
+            <?php if ($quick_find) { ?>
+                <div class="facet-quickfind">
+                    <input type="search" class="autocomplite" data-type="<?php print $filter ?>" data-count="<?php print $more ?>" value="" placeholder="Quick find" ac-type="qf">                    
+                </div>          
+            <?php } ?>
             <div class="facet-ch">
                 <?php
                 if ($tabs) {
@@ -2412,7 +2418,10 @@ class SearchFacets extends AbstractDB {
                         <?php
                     elseif ($more):
                         $expand_text = 'Expand all: ' . $more;
-                        if ($more > $max_count) {
+                        if ($more == -1) {
+                            $expand_text = 'Expand';
+                            $more='more';
+                        } else if ($more > $max_count) {
                             $expand_text = 'Expand first: ' . $max_count;
                             print '<p>Total found: ' . $more . '</p>';
                         }
@@ -2452,7 +2461,7 @@ class SearchFacets extends AbstractDB {
             </div>
             <div class="facet-ch">
                 <div class="facet-ac">
-                    <input type="search" class="autocomplite" data-type="<?php print $filter ?>" data-count="<?php print $more ?>" value="" placeholder="Search <?php print $filter_name ?>">
+                    <input type="search" class="autocomplite" data-type="<?php print $filter ?>" data-count="<?php print $more ?>" value="" placeholder="Search <?php print $filter_name ?>" ac-type="ac">
                     <div class="ac-holder" data-type="<?php print $ftype ?>"></div>
                 </div>
                 <ul class="facet-content">
@@ -2594,9 +2603,64 @@ class SearchFacets extends AbstractDB {
         endif;
     }
 
+    public function movie_quickfilter($keyword = '', $count = 0, $filter = '') {
+        // Get facet witch keyword
+
+        if ($filter == 'mkw') {
+            // Mkw quick filter logic
+            $names = $this->cs->find_keywords_ids($keyword);
+
+            $expand = isset($this->filters['expand']) ? $this->filters['expand'] : '';
+            $limit = $expand == $filter ? $this->cs->facet_max_limit : $this->cs->facet_limit;
+
+
+            if ($names) {
+                $facets = array($filter);
+                $filters = $this->get_search_filters();
+
+                $keys = array_keys($names);
+
+                $last_limit = $this->cs->facet_limit;
+                $last_max_limit = $this->cs->facet_max_limit;
+                $this->cs->facet_limit = 10000;
+                $this->cs->facet_max_limit = 10000;
+
+                $this->cs->filter_custom_and[$filter] = " AND ANY(mkw) IN(" . implode(',', $keys) . ")";
+                $result = $this->cs->front_search_movies_multi($this->keywords, $facets, 0, array(), $filters, $facets, true, true, false);
+
+                $this->cs->facet_limit = $last_limit;
+                $this->cs->facet_max_limit = $last_max_limit;
+
+                if (isset($result['facets'][$filter]['data'])) {
+                    $data = array();
+                    if (sizeof($result['facets'][$filter]['data'])) {
+
+                        $i = 0;
+                        foreach ($result['facets'][$filter]['data'] as $item) {
+
+                            if (isset($names[$item->id])) {
+                                $data[] = $item;
+                                $i += 1;
+                            }
+
+                            if ($i >= $limit) {
+                                break;
+                            }
+                        }
+                    }
+
+                    // Total
+                    $total = $this->get_meta_total_found($result['facets'][$filter]['meta']);
+
+                    $view_more = (count($data) < $last_limit) ? 0 : -1;
+
+                    $this->show_keyword_facet($data, $view_more, $filter, 'movies', $result['facets']);
+                }
+            }
+        }
+    }
+
     public function actor_autocomplite($keyword, $count, $type = 'actor') {
-
-
 
         $filters = $this->get_search_filters();
         if ($type == 'actor') {
@@ -2653,9 +2717,9 @@ class SearchFacets extends AbstractDB {
                 $this->cs->facet_limit = 100;
                 $this->cs->facet_max_limit = 100;
 
-
-                $this->cs->filter_actor_and = " AND " . $race_name . " IN(" . implode(',', $keys) . ")";
+                $this->cs->filter_actor_and = " AND ANY(" . $race_name . ") IN(" . implode(',', $keys) . ")";
                 $result = $this->cs->front_search_movies_multi($this->keywords, $facets, 0, array(), $filters, $facets, true, true, false);
+
                 $ret = array();
                 if (isset($result['facets'][$actor_facet]['data'])) {
                     if (sizeof($result['facets'][$actor_facet]['data'])) {

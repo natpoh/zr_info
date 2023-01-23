@@ -35,17 +35,17 @@ jQuery(function ($) {
                 $('#search-facets .facet').each(function (i, v) {
                     var id = $(v).attr('id')
                     id = id.replace('facet-', '');
-                    if ($("#search-filters li[data-type='" + id + "']").length||$("#search-filters li[data-type='minus-" + id + "']").length) {
-                        
-                        var scroll_to = '#facet-'+id;
+                    if ($("#search-filters li[data-type='" + id + "']").length || $("#search-filters li[data-type='minus-" + id + "']").length) {
+
+                        var scroll_to = '#facet-' + id;
                         var boxTo = $(scroll_to);
-                       
+
                         jQuery('#search-facets').animate({
                             scrollTop: (boxTo.offset().top - 10)
                         }, {
-                            queue: false,                           
+                            queue: false,
                             duration: 1000,
-                            complete: function () {                               
+                            complete: function () {
                             }
                         });
                         return false;
@@ -95,6 +95,7 @@ critic_search.collapse = [];
 critic_search.autocomplite = [];
 critic_search.no_submit_filters = [];
 critic_search.enable_submit = true;
+critic_search.default_facet = {};
 
 critic_search.remove_collapse = function (id) {
     const index = critic_search.collapse.indexOf(id);
@@ -234,21 +235,22 @@ critic_search.init = function ($custom_id = '') {
         critic_search.init_facet(v);
 
         // more
-        v.find('.more').click(function () {
-            var $this = $(this);
-            if ($this.hasClass('active')) {
-                $this.removeClass('active');
-            } else {
-                $('#search-facets .more.active').removeClass('active');
-                $this.addClass('active');
-            }
-            critic_search.submit('facets');
-        });
+        critic_search.init_more(v);
 
         // Facet search
         $("body").on("input", "#" + id + " .autocomplite", function () {
             var v = $(this);
             var keyword = v.val();
+            var at = v.attr('ac-type');
+            var data_type = v.attr('data-type');
+            if (at == 'qf') {
+                var facet_name = '#facet-' + data_type + ' .facet-ch';
+
+                if (data_type in critic_search.default_facet === false) {
+                    critic_search.default_facet[data_type] = $(facet_name).first().html();
+                }
+            }
+
             if (keyword.length > 2) {
                 v.addClass('active');
                 if (!v.hasClass('process')) {
@@ -258,9 +260,25 @@ critic_search.init = function ($custom_id = '') {
             } else {
                 if (v.hasClass('active')) {
                     v.removeClass('active');
-                    var acholder = v.closest('.facet').find('.ac-holder');
-                    acholder.removeClass('active');
-                    //acholder.html('');
+                    if (at == 'ac') {
+                        // ac logic
+                        var acholder = v.closest('.facet').find('.ac-holder');
+                        acholder.removeClass('active');
+                    }
+                }
+                if (at == 'qf') {
+                    //quick find                         
+                    if (keyword.length === 0) {
+                        if ($(facet_name).hasClass('custom')) {
+                            $(facet_name).removeClass('custom');
+
+                            var holder = $(facet_name).first();
+                            holder.addClass('custom');
+                            holder.html(critic_search.default_facet[data_type]);
+                            critic_search.init_facet(holder.closest('.facet'));
+                            critic_search.init_more(holder);                            
+                        }
+                    }
                 }
             }
             return false;
@@ -464,6 +482,20 @@ critic_search.init = function ($custom_id = '') {
             }
         }
 }
+}
+
+critic_search.init_more = function (v) {
+    // more
+    v.find('.more').click(function () {
+        var $this = $(this);
+        if ($this.hasClass('active')) {
+            $this.removeClass('active');
+        } else {
+            $('#search-facets .more.active').removeClass('active');
+            $this.addClass('active');
+        }
+        critic_search.submit('facets');
+    });
 }
 
 critic_search.init_collapse = function (id, v) {
@@ -822,6 +854,7 @@ critic_search.submit = function (inc = '', target = '') {
             data['facet_type'] = v.attr('data-type');
             data['facet_keyword'] = v.val();
             data['facet_count'] = v.attr('data-count');
+            data['facet_ac_type'] = v.attr('ac-type');
             return;
         } else {
             v.removeClass('active');
@@ -840,12 +873,23 @@ critic_search.submit = function (inc = '', target = '') {
 
         if (ac_facet) {
             ac_facet.removeClass('process');
+            var ac_type = ac_facet.attr('ac-type');
             if ($rtn.length !== 0) {
                 var facet = ac_facet.closest('.facet');
-                var hr = facet.find('.ac-holder').first();
-                hr.html($rtn);
-                hr.addClass('active');
-                critic_search.init_facet(hr);
+                if (ac_type == 'ac') {
+                    // ac logic
+                    var hr = facet.find('.ac-holder').first();
+                    hr.html($rtn);
+                    hr.addClass('active');
+                    critic_search.init_facet(hr);
+                } else if (ac_type == 'qf') {
+                    // quick filter
+                    var holder = facet.find('.facet-ch').first();
+                    holder.addClass('custom');
+                    holder.html($rtn.find('.facet-ch').html());
+                    critic_search.init_facet(holder.closest('.facet'));
+                    critic_search.init_more(holder);
+                }
             }
             return false;
         }

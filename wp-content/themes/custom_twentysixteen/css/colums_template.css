@@ -2359,6 +2359,30 @@ body.theme_dark  .rating_block .imdb_rating {
     background-size: contain;
 }
 
+.rating_block .kinopoisk_rating , .rating_block .douban_rating {
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    color: #9f9f9f;
+}
+
+.rating_block .kinopoisk_rating::before, .rating_block .douban_rating::before {
+    content: "";
+    background: url(../images/flags/4x3/ru.svg) no-repeat left 0 top 0 transparent;
+    display: inline-block;
+    width: 37px;
+    height: 28px;
+    box-shadow: 0 0 2px 2px rgb(0 0 0 / 9%);
+    background-size: contain;
+    margin-right: 10px;
+}
+
+.rating_block .douban_rating::before {
+    background: url("../images/flags/4x3/cn.svg") no-repeat left 0 top 0 transparent;
+    background-size: contain;
+}
+
+
 
 .rating_block .rotten_tomatoes_score {
     font-size: 18px;

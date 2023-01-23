@@ -11,13 +11,23 @@ class PgRatingCalculate {
 
     public static function rwt_total_rating($id) {
 
+        $data=[];
 
         $sql = "SELECT rwt_audience,	rwt_staff,	imdb,	rotten_tomatoes,	rotten_tomatoes_audience , rotten_tomatoes_gap,metacritic , tmdb	,total_rating,  	last_update	FROM `data_movie_rating` where `movie_id` = " . $id . " limit 1";
         //echo $sql;
         $r = Pdo_an::db_results_array($sql);
         if ($r) {
-            return $r[0];
+            $data = $r[0];
         }
+
+        $sql = "SELECT * FROM `data_movie_erating`  where `movie_id` = " . $id . " limit 1";
+        //echo $sql;
+        $r = Pdo_an::db_results_array($sql);
+        if ($r) {
+            $data['kinop_rating']  =   $r[0]['kinop_rating'];
+            $data['douban_rating']  =   $r[0]['douban_rating'];
+        }
+return $data;
     }
 
     public static function add_movie_rating($id, $rwt_array = '', $debug = '', $update = 1) {
@@ -39,8 +49,11 @@ class PgRatingCalculate {
         $main_data = Pdo_an::db_fetch_row($sql);
 
 
+        $sql = "SELECT * FROM `data_movie_erating` where `movie_id` = " . $id;
+        $main_data_ext = Pdo_an::db_fetch_row($sql);
 
-        $array_convert = array('total_rwt_staff' => 1, 'total_rwt_audience' => 1, 'total_imdb' => 0.5, 'total_tomatoes_audience' => 0.05, 'total_tomatoes' => 0.05, 'total_tmdb' => 0.05);
+        $array_convert = array('total_rwt_staff' => 1, 'total_rwt_audience' => 1, 'total_imdb' => 0.5, 'total_tomatoes_audience' => 0.05, 'total_tomatoes' => 0.05, 'total_tmdb' => 0.05,
+            'total_kinopoisk'=>0.05,	'total_douban'=>0.05);
 
         $title = self::get_data_in_movie('title', '', $id);
         $array_db = [];
@@ -54,12 +67,18 @@ class PgRatingCalculate {
         $total_tomatoes_audience = '';        
         $total_tmdb = '';
         $total_metacritic='';
-
+        $total_kinopoisk='';
+        $total_douban='';
         if ($main_data)
         {
             $total_tomatoes= $main_data->rotten_tomatoes;
             $total_tomatoes_audience= $main_data->rotten_tomatoes_audience;
             $total_tmdb= $main_data->tmdb;
+        }
+        if($main_data_ext)
+        {
+            $total_kinopoisk=$main_data_ext->kinop_rating;
+            $total_douban=$main_data_ext->douban_rating;
         }
 
         if ($debug)
@@ -94,8 +113,12 @@ class PgRatingCalculate {
         {
             $total_tomatoes_gap = $total_tomatoes_audience - $total_tomatoes;
         }
-
-
+        if ($total_kinopoisk) {
+            $array_db["total_kinopoisk"] = $total_kinopoisk;
+        }
+        if ($total_douban) {
+            $array_db["total_douban"] = $total_douban;
+        }
 
 
 

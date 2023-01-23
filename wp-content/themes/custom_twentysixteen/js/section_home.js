@@ -305,6 +305,12 @@ function create_total_rating(obj, only_tomatoes)
         if (Number(obj.tmdb) > 0) {
             content_rating += '<div><span>TMDb Ratig:</span>' + create_rating_star(obj.tmdb, 'tmdb') + '</div>';
         }
+
+
+        if (obj.kinop_rating>0)
+            content_rating += '<div><span>Kinopoisk (Russia):</span>' + create_rating_star(obj.kinop_rating, 'kinopoisk') + '</div>';
+        if (obj.douban_rating>0)
+            content_rating += '<div><span>Douban (China):</span>' + create_rating_star(obj.douban_rating, 'douban') + '</div>';
     }
 
 
@@ -800,6 +806,23 @@ function  add_rating_row(title, content, id, content_text)
 }
 function create_rating_star(rating, type)
 {
+    if (type == 'kinopoisk') {
+        if (rating)
+        {
+            rating = Number(rating)/10;
+
+            return '<span class="kinopoisk_rating"><strong>' + rating + '</strong>/10</span>';
+        }
+
+
+    }
+    if (type == 'douban') {
+
+        if (rating) {
+            rating = Number(rating);
+            return '<span class="douban_rating"><strong>' + rating + '</strong>/100</span>';
+        }
+    }
     if (type == 'imdb') {
         rating = Number(rating);
         return '<span class="imdb_rating"><strong>' + rating + '</strong>/10</span>';

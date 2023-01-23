@@ -914,10 +914,11 @@ if (!$rating_update)
 
 
 
-function update_all_rwt_rating($force='')
+function update_all_rwt_rating()
 {
 
 
+    $force = intval($_GET['force']);
 
 
     !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
@@ -943,6 +944,8 @@ function update_all_rwt_rating($force='')
     {
         if ($force)
         {
+            set_time_limit(0);
+
             $sql = "SELECT `data_movie_imdb`.id  FROM `data_movie_imdb`";
             $rows = Pdo_an::db_results_array($sql);
         }
@@ -2858,7 +2861,7 @@ if (isset($_GET['check_actors_meta'])) {
 
 if (isset($_GET['update_all_rwt_rating'])) {
 
-    update_all_rwt_rating($_GET['update_all_rwt_rating']);
+    update_all_rwt_rating();
     return;
 }
 

@@ -1,3 +1,6 @@
+1.0.91 - 18.01.2022
+Keywords filters. New ratings
+
 1.0.90 - 17.12.2022
 Search scroll to current filter in mob devices
 
