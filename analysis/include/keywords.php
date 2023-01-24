@@ -72,7 +72,18 @@ class Movie_Keywords {
         //echo $kid.' ';
         $this->insert_key_to_movie($kid,$mid);
     }
+	private function fill_main_keys($array,$mid)
+	{
 
+		foreach ($array as $keys)
+		{
+			// echo $keys.' ';
+
+			$this->add_keys_to_movie($keys,$mid);
+		}
+
+
+	}
     private function fill_keys($content,$mid)
     {
         $regv='/data-item-keyword="([^"]+)"/';
@@ -141,7 +152,7 @@ class Movie_Keywords {
         }
 
 ////get movie list
-        $sql ="SELECT `data_movie_imdb`.`id`, `meta_movie_keywords_update`.last_update FROM `data_movie_imdb` left join `meta_movie_keywords_update` 
+	    $sql ="SELECT `data_movie_imdb`.`id`,`data_movie_imdb`.`keywords`, `meta_movie_keywords_update`.last_update FROM `data_movie_imdb` left join `meta_movie_keywords_update` 
        ON `data_movie_imdb`.`id`= meta_movie_keywords_update.mid
         WHERE     ".$where." order by `data_movie_imdb`.`weight` desc LIMIT 200";
 
@@ -151,7 +162,20 @@ class Movie_Keywords {
             $mid  =$r['id'];
             ///get keyword data
             $last_update=$r['last_update'];
+	        $keywords =$r['keywords'];
+	        if ($keywords)
+	        {
+		        if (strstr($keywords,','))
+		        {
+			        $keywords_array=explode(',',$keywords);
+		        }
+		        else
+		        {
+			        $keywords_array[]=$keywords;
+		        }
 
+
+	        }
             echo 'try get '.$mid. ' last_update '.date('H:i Y.m.d',$last_update).'<br>';
 
             $content =  TMDBIMPORT::get_data_from_archive(17,$mid,$last_update);
@@ -159,6 +183,11 @@ class Movie_Keywords {
             {
             $this->fill_keys($content,$mid);
             }
+	        if ($keywords_array)
+	        {
+		        $this->fill_main_keys($keywords_array,$mid);
+	        }
+
            // echo $content;
             ///update movie meta
             $this->update_movie_meta($mid);

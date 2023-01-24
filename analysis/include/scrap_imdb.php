@@ -207,17 +207,17 @@ function sync_tables($table='')
     }
     else
     {
-        $array_tables = array('data_familysearch_verdict', 'data_forebears_verdict','meta_reviews_rating','meta_keywords','meta_movie_keywords');
+        $array_tables = array('data_familysearch_verdict'=>400, 'data_forebears_verdict'=>400,'meta_reviews_rating'=>200,'meta_keywords'=>1000,'meta_movie_keywords'=>1000);
     }
 
 
 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
 
 
-foreach ($array_tables as $table)
+foreach ($array_tables as $table=>$limit)
 {
 
-    Import::sync_db($table);
+    Import::sync_db($table,$limit);
 }
 
 
@@ -914,10 +914,11 @@ if (!$rating_update)
 
 
 
-function update_all_rwt_rating($force='')
+function update_all_rwt_rating()
 {
 
 
+    $force = intval($_GET['force']);
 
 
     !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
@@ -943,6 +944,8 @@ function update_all_rwt_rating($force='')
     {
         if ($force)
         {
+            set_time_limit(0);
+
             $sql = "SELECT `data_movie_imdb`.id  FROM `data_movie_imdb`";
             $rows = Pdo_an::db_results_array($sql);
         }
@@ -2858,7 +2861,7 @@ if (isset($_GET['check_actors_meta'])) {
 
 if (isset($_GET['update_all_rwt_rating'])) {
 
-    update_all_rwt_rating($_GET['update_all_rwt_rating']);
+    update_all_rwt_rating();
     return;
 }
 

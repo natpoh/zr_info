@@ -76,15 +76,18 @@ if (isset($_GET['search_type']) && $_GET['search_type'] == 'ajax') {
     if ($autocomplite) {
         $keyword = $_GET['facet_keyword'];
         $count = (int) $_GET['facet_count'];
+        $facet_ac_type = $_GET['facet_ac_type'];
 
-
-
-        if (in_array($autocomplite_type, $actors_facets)) {
-            $search_front->actor_autocomplite($keyword, $count, 'actor');
-        } else if (in_array($autocomplite_type, $dirs_facets)) {            
-            $search_front->actor_autocomplite($keyword, $count, 'dir');
-        } else if ($autocomplite_type == 'movie') {
-            $search_front->movie_autocomplite($keyword, $count);
+        if ($facet_ac_type == 'ac') {
+            if (in_array($autocomplite_type, $actors_facets)) {
+                $search_front->actor_autocomplite($keyword, $count, 'actor');
+            } else if (in_array($autocomplite_type, $dirs_facets)) {
+                $search_front->actor_autocomplite($keyword, $count, 'dir');
+            } else if ($autocomplite_type == 'movie') {
+                $search_front->movie_autocomplite($keyword, $count);
+            }
+        } else if ($facet_ac_type == 'qf') {
+            $search_front->movie_quickfilter($keyword, $count, $autocomplite_type);
         }
         exit;
     }
