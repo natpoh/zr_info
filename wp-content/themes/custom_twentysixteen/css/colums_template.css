@@ -2382,7 +2382,9 @@ body.theme_dark  .rating_block .imdb_rating {
     background-size: contain;
 }
 
-
+.exlink{
+    cursor: pointer;
+}
 
 .rating_block .rotten_tomatoes_score {
     font-size: 18px;
