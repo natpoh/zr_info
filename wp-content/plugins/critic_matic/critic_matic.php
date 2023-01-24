@@ -24,7 +24,7 @@ if (!function_exists('add_action')) {
 define('CRITIC_MATIC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CRITIC_MATIC_PLUGIN_URL', plugin_dir_url(__FILE__));
 
-$version = '1.0.90';
+$version = '1.0.91';
 if (defined('LASTVERSION')) {
     define('CRITIC_MATIC_VERSION', $version . LASTVERSION);
 } else {
@@ -1123,6 +1123,20 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'mid'), "cache_nf_keywords");
 
+    
+    /*
+     * Word weight
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_words_weight`(
+				`id` int(11) unsigned NOT NULL auto_increment,                               
+                                `weight` int(11) NOT NULL DEFAULT '0',
+                                `name` varchar(255) NOT NULL default '',
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('weight','name'), "data_words_weight");
+    
     /*
      * kinop_rating: 0-100
      * kinop_result: 1-5

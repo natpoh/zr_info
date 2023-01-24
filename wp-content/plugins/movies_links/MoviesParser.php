@@ -548,6 +548,12 @@ class MoviesParser extends MoviesAbstractDB {
         $result = $this->db_fetch_row($sql);
         return $result;
     }
+    
+    public function get_url_by_mid($mid=0, $cid=0) {
+        $sql = sprintf("SELECT * FROM {$this->db['url']} WHERE pid = %d and cid = %d", (int) $mid, (int) $cid);
+        $result = $this->db_fetch_row($sql);
+        return $result;
+    }
 
     public function update_urls_status($id, $status) {
         $sql = sprintf("UPDATE {$this->db['url']} SET status=%d WHERE id = %d", (int) $status, (int) $id);

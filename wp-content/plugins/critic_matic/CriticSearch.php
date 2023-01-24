@@ -25,6 +25,7 @@ class CriticSearch extends AbstractDB {
     public $facet_limit = 10;
     public $facet_max_limit = 200;
     public $filter_actor_and = '';
+    public $filter_custom_and = array();
     public $default_search_settings = array(
         'limit' => 100,
         'name_point_title' => 20,
@@ -1583,11 +1584,15 @@ class CriticSearch extends AbstractDB {
                 $sql_arr[] = "SHOW META";
             } else if ($facet == 'mkw') {
                 $limit = $expand == 'mkw' ? $this->facet_max_limit : $this->facet_limit;
-                $filters_and = $this->get_filters_query($filters, array('mkw'));
+                $filters_and = $this->get_filters_query($filters, array('mkw'), 'movies', $facet);
+                $max_option = '';
+                if ($limit > 1000) {
+                    $max_option = ' OPTION max_matches=' . $limit;
+                }
                 $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
-                        . " GROUP BY ".$facet." ORDER BY cnt DESC LIMIT 0,$limit";
+                        . " GROUP BY " . $facet . " ORDER BY cnt DESC LIMIT 0,$limit" . $max_option;
                 $sql_arr[] = "SHOW META";
-            }  else if ($facet == 'actors') {
+            } else if ($facet == 'actors') {
                 // Cast actor logic
                 $facet_active = $this->get_active_race_facet($filters);
 
@@ -1883,7 +1888,7 @@ class CriticSearch extends AbstractDB {
         return array('order' => $order, 'select' => $select);
     }
 
-    public function get_filters_query($filters = array(), $exlude = array(), $query_type = 'movies') {
+    public function get_filters_query($filters = array(), $exlude = array(), $query_type = 'movies', $curr_filter = '') {
         // Filters logic
         $filters_and = '';
         if (!isset($filters['release'])) {
@@ -1947,6 +1952,89 @@ class CriticSearch extends AbstractDB {
 
         if (sizeof($filters)) {
             foreach ($filters as $key => $value) {
+                $minus = false;
+                if (strstr($key, 'minus-')) {
+                    $key = str_replace('minus-', '', $key);
+                    $minus = true;
+                }
+
+                // Get titles
+                if ($key == 'mkw') {
+                    $value = is_array($value) ? $value : array($value);
+
+                    $titles = $this->get_keywords_titles($value);
+                    if ($titles) {
+                        foreach ($titles as $slug => $title) {
+                            $this->search_filters[$key][$slug] = array('key' => $slug, 'title' => $title);
+                        }
+                    }
+                } else if ($key == 'genre') {
+                    // Genre
+                    $ma = $this->get_ma();
+                    $value = is_array($value) ? $value : array($value);
+                    foreach ($value as $slug) {
+                        $genre = $ma->get_genre_by_slug($slug, true);
+                        $this->search_filters[$key][$slug] = array('key' => $genre->id, 'title' => $genre->name);
+                    }
+                } else if ($key == 'provider') {
+                    // Provider
+                    $ma = $this->get_ma();
+                    $value = is_array($value) ? $value : array($value);
+                    foreach ($value as $slug) {
+                        $prov = $ma->get_provider_by_slug($slug, true);
+                        $this->search_filters[$key][$slug] = array('key' => $prov->pid, 'title' => $prov->name);
+                    }
+                } else if ($key == 'actor' || $key == 'actorstar' || $key == 'actormain') {
+                    // Actor       
+                    $value = is_array($value) ? $value : array($value);
+                    $names = $this->get_actor_names($value);
+                    foreach ($value as $id) {
+                        $this->search_filters[$key][$id] = array('key' => $id, 'title' => $names[$id]);
+                    }
+                    $actor_filter = $this->actor_filters[$key]['filter'];
+                } else if ($key == 'dirall' || $key == 'dir' || $key == 'dirwrite' || $key == 'dircast' || $key == 'dirprod') {
+                    // Director  
+                    $value = is_array($value) ? $value : array($value);
+                    $names = $this->get_actor_names($value);
+                    foreach ($value as $id) {
+                        $this->search_filters[$key][$id] = array('key' => $id, 'title' => $names[$id]);
+                    }
+                    $actor_filter = $this->director_filters[$key]['filter'];
+                } else if ($key == 'country') {
+                    // Country
+                    $ma = $this->get_ma();
+                    $value = is_array($value) ? $value : array($value);
+                    foreach ($value as $slug) {
+                        $country = $ma->get_country_by_slug($slug, true);
+                        $this->search_filters[$key][$slug] = array('key' => $country->id, 'title' => $country->name);
+                    }
+                } else if ($key == 'from') {
+                    // From author
+                    $value = is_array($value) ? $value : array($value);
+                    $authors = $this->cm->get_authors_by_ids($value);
+                    foreach ($value as $slug) {
+                        // Todo get author by slug
+                        $this->search_filters[$key][$slug] = array('key' => $slug, 'title' => $authors[$slug]->name);
+                    }
+                } else if ($key == 'tags') {
+                    // Tags                       
+                    $value = is_array($value) ? $value : array($value);
+                    foreach ($value as $slug) {
+                        $tag = $this->cm->get_tag_by_slug($slug);
+                        $this->search_filters[$key][$slug] = array('key' => $tag->id, 'title' => $tag->name);
+                    }
+                } else if ($key == 'movie') {
+                    // Movie                 
+                    $value = is_array($value) ? $value : array($value);
+                    $names = $this->get_movie_names($value);
+
+                    foreach ($value as $id) {
+                        $this->search_filters[$key][$id] = array('key' => $id, 'title' => $names[$id]);
+                    }
+                }
+
+
+                // Exclude filter
                 if (is_array($exlude)) {
                     if (in_array($key, $exlude)) {
                         continue;
@@ -1955,21 +2043,10 @@ class CriticSearch extends AbstractDB {
                     continue;
                 }
 
-                $minus = false;
-                if (strstr($key, 'minus-')) {
-                    $key = str_replace('minus-', '', $key);
-                    $minus = true;
-                }
 
                 if ($query_type == 'movies' || $query_type == 'critics') {
                     if ($key == 'genre') {
                         // Genre
-                        $ma = $this->get_ma();
-                        $value = is_array($value) ? $value : array($value);
-                        foreach ($value as $slug) {
-                            $genre = $ma->get_genre_by_slug($slug, true);
-                            $this->search_filters[$key][$slug] = array('key' => $genre->id, 'title' => $genre->name);
-                        }
                         $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
                     } else if ($key == 'type') {
                         // Type
@@ -2004,12 +2081,6 @@ class CriticSearch extends AbstractDB {
                 if ($query_type == 'movies') {
                     if ($key == 'provider') {
                         // Provider
-                        $ma = $this->get_ma();
-                        $value = is_array($value) ? $value : array($value);
-                        foreach ($value as $slug) {
-                            $prov = $ma->get_provider_by_slug($slug, true);
-                            $this->search_filters[$key][$slug] = array('key' => $prov->pid, 'title' => $prov->name);
-                        }
                         $filters_and .= $this->filter_multi_value($key, $value, true);
                     } else if ($key == 'price') {
                         // Provider price
@@ -2019,21 +2090,9 @@ class CriticSearch extends AbstractDB {
                         $filters_and .= $this->filter_multi_value('provider', $list, true);
                     } else if ($key == 'actor' || $key == 'actorstar' || $key == 'actormain') {
                         // Actor       
-                        $value = is_array($value) ? $value : array($value);
-                        $names = $this->get_actor_names($value);
-                        foreach ($value as $id) {
-                            $this->search_filters[$key][$id] = array('key' => $id, 'title' => $names[$id]);
-                        }
-                        $actor_filter = $this->actor_filters[$key]['filter'];
                         $filters_and .= $this->filter_multi_value($actor_filter, $value);
                     } else if ($key == 'dirall' || $key == 'dir' || $key == 'dirwrite' || $key == 'dircast' || $key == 'dirprod') {
                         // Director  
-                        $value = is_array($value) ? $value : array($value);
-                        $names = $this->get_actor_names($value);
-                        foreach ($value as $id) {
-                            $this->search_filters[$key][$id] = array('key' => $id, 'title' => $names[$id]);
-                        }
-                        $actor_filter = $this->director_filters[$key]['filter'];
                         $filters_and .= $this->filter_multi_value($actor_filter, $value);
                     } else if ($key == 'rating') {
                         // Rating
@@ -2047,12 +2106,6 @@ class CriticSearch extends AbstractDB {
                         }
                     } else if ($key == 'country') {
                         // Country
-                        $ma = $this->get_ma();
-                        $value = is_array($value) ? $value : array($value);
-                        foreach ($value as $slug) {
-                            $country = $ma->get_country_by_slug($slug, true);
-                            $this->search_filters[$key][$slug] = array('key' => $country->id, 'title' => $country->name);
-                        }
                         $filters_and .= $this->filter_multi_value($key, $value, true);
                     } else if ($key == 'race' || isset($this->facets_race_cast[$key])) {
                         // Race 
@@ -2089,14 +2142,6 @@ class CriticSearch extends AbstractDB {
                         }
                     } else if ($key == 'mkw') {
                         // Movie Keywords
-                        $value = is_array($value) ? $value : array($value);
-                        $titles = $this->get_keywords_titles($value);
-                        if ($titles){
-                            foreach ($titles as $slug => $title) {
-                                 $this->search_filters[$key][$slug] = array('key' => $slug, 'title' =>$title);
-                            }
-                        }
-                       
                         $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
                     }
                 } else if ($query_type == 'critics') {
@@ -2105,39 +2150,26 @@ class CriticSearch extends AbstractDB {
                         $filters_and .= $this->filter_multi_value('author_type', $value);
                     } else if ($key == 'from') {
                         // From author
-                        $value = is_array($value) ? $value : array($value);
-                        $ids = array();
-                        $authors = $this->cm->get_authors_by_ids($value);
-
-                        foreach ($value as $slug) {
-                            // Todo get author by slug
-                            $this->search_filters[$key][$slug] = array('key' => $slug, 'title' => $authors[$slug]->name);
-                        }
                         $filters_and .= $this->filter_multi_value('aid', $value, true);
                     } else if ($key == 'tags') {
                         // Tags                       
-                        $value = is_array($value) ? $value : array($value);
-                        foreach ($value as $slug) {
-                            $tag = $this->cm->get_tag_by_slug($slug);
-                            $this->search_filters[$key][$slug] = array('key' => $tag->id, 'title' => $tag->name);
-                        }
                         $filters_and .= $this->filter_multi_value($key, $value, true);
                     } else if ($key == 'state') {
                         // Type
                         // $filters_and .= $this->filter_multi_value('state', $value);
                     } else if ($key == 'movie') {
                         // Movie                 
-                        $value = is_array($value) ? $value : array($value);
-                        $names = $this->get_movie_names($value);
-
-                        foreach ($value as $id) {
-                            $this->search_filters[$key][$id] = array('key' => $id, 'title' => $names[$id]);
-                        }
                         $filters_and .= $this->filter_multi_value('movies', $value, true);
                     }
                 }
             }
         }
+
+
+        if ($curr_filter && isset($this->filter_custom_and[$curr_filter])) {
+            $filters_and .= $this->filter_custom_and[$curr_filter];
+        }
+
         return $filters_and;
     }
 
@@ -2533,19 +2565,37 @@ class CriticSearch extends AbstractDB {
         return $ret;
     }
 
+    /*
+     * Keywords logic
+     */
+
     public function get_keywords_titles($ids) {
         $limit = count($ids);
-        $sql = "SELECT id, name FROM movie_keywords WHERE id IN(". implode(',', $ids).") LIMIT 0,".$limit;
+        $sql = "SELECT id, name FROM movie_keywords WHERE id IN(" . implode(',', $ids) . ") LIMIT 0," . $limit;
         $results = $this->sdb_results($sql);
-        $ret=array();
+        $ret = array();
         if ($results) {
             foreach ($results as $item) {
-                $ret[$item->id]=$item->name;
-            }  
+                $ret[$item->id] = $item->name;
+            }
         }
         return $ret;
     }
-    
+
+    public function find_keywords_ids($keyword) {
+        $search_keywords = $this->wildcards_maybe_query($keyword, true, ' ');
+
+        $sql = sprintf("SELECT id, name FROM movie_keywords WHERE MATCH('((^%s)|(^%s*))') LIMIT 1000", $keyword, $keyword);
+        $result = $this->sdb_results($sql);
+        $results = array();
+        if (sizeof($result)) {
+            foreach ($result as $item) {
+                $results[$item->id] = $item->name;
+            }
+        }
+        return $results;
+    }
+
     function timer_start() {
         global $timestart;
         $timestart = microtime(1);
@@ -2877,6 +2927,31 @@ class CriticSearch extends AbstractDB {
             print_r($facets_arr);
         }
         $result['facets'] = $facets_arr;
+
+        return $result;
+    }
+
+    public function find_in_newsfilter_raw($keywords = '', $limit = 5, $debug = false) {
+        
+                
+        //$search_query = sprintf("'@(title,content) %s'", $keywords);
+        $search_query = sprintf("'@(title) \"%s\"'", $keywords);
+        $match = " AND MATCH(:match)";
+        $start = 0;
+
+
+        $order = ' ORDER BY w DESC';
+        //$snippet = ', SNIPPET(title, QUERY()) t, SNIPPET(content, QUERY()) c';
+        $snippet = ', SNIPPET(title, QUERY()) t';
+
+        $sql = sprintf("SELECT id" . $snippet . ", weight() w"
+                . " FROM sites_links_raw WHERE id>0 " . $match . $order . " LIMIT %d,%d ", $start, $limit);
+
+        $this->connect();
+        $result = $this->movie_results($sql, $match, $search_query);
+        if ($debug) {
+            p_r(array($sql, $search_query, $result));
+        }
 
         return $result;
     }
