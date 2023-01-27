@@ -9,6 +9,99 @@ if (!defined('ABSPATH'))
 
 class PgRatingCalculate {
 
+    public static function get_rating_from_bd($mid,$type)
+    {
+
+        $array =[];
+        if ($type)
+        {
+            $q="SELECT `link` FROM `cache_rating_links` WHERE `mid` ={$mid} and  `type` = '{$type}'";
+            $r =Pdo_an::db_results_array($q);
+            $array[$type]  =$r[0]['link'];
+        }
+        else
+        {
+
+            $q="SELECT `link`,  `type`  FROM `cache_rating_links` WHERE `mid` ={$mid}";
+            $r =Pdo_an::db_results_array($q);
+            foreach ($r as $row)
+            {
+                $array[$row['type']]  =$row['link'];
+            }
+
+        }
+return $array;
+
+    }
+    public static function get_curl_rating($mid,$type)
+    {
+        $array_cid = array( 'thenumbers'=>1,'rotten_mv' =>20,'rotten_tv' =>21, 'douban'=>22,'metacritic'=>23,'kinop'=>24,'myanimelist'=>27);
+
+        //Curl
+        !class_exists('GETCURL') ? include ABSPATH . "analysis/include/get_curl.php" : '';
+
+        $link='https://info.antiwoketomatoes.com/wp-content/plugins/movies_links/cron/get_url_by_mid.php?p=8ggD_23_2D0DSF-F&cid='.$array_cid[$type].'&mid='.$mid;
+        $result = GETCURL::getCurlCookie($link);
+        return $result;
+
+    }
+
+    public static function get_rating_url($mid,$rating_type='')
+    {
+
+
+        if ($rating_type=='imdb')
+        {
+            !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+            $movie_id = TMDB::get_imdb_id_from_id($mid);
+            $final_value = sprintf('%07d', $movie_id);
+            $url = "https://www.imdb.com/title/tt" . $final_value . '/';
+
+            return ['url'=>$url];
+        }
+        else if   ($rating_type=='tmdb') {
+
+            $array_type = array('Movie' => 'movie', 'TVSeries' => 'tv', 'TVEpisode' => 'tv');
+
+            !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+            $movie_type =TMDB::get_movie_type_from_id($mid);
+            $tvtype= $array_type[$movie_type];
+
+            $tmdbid = TMDB::get_tmdbid_from_id($mid);
+
+            $url='https://www.themoviedb.org/'.$tvtype.'/'.$tmdbid;
+            return ['url'=>$url];
+
+        }
+        else {
+
+               $arating = self::get_rating_from_bd($mid,$rating_type);
+               if (!$arating[$rating_type])
+               {
+                   $result  = self::get_curl_rating($mid,$rating_type);
+                   self::prepare_resuts($rating_type,$result);
+
+
+               }
+        }
+
+
+
+
+
+    }
+
+    private static function prepare_resuts($rating_type,$result)
+    {
+        if ($result)
+        {
+            $result=json_decode($result);
+        }
+        var_dump($result);
+
+
+    }
+
     public static function rwt_total_rating($id) {
 
         $data=[];

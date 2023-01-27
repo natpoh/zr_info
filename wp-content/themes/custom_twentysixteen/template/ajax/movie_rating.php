@@ -41,7 +41,21 @@ function get_movie_rating()
 //        return;
 
 
+if (isset($_POST['action'])) {
 
+    if ($_POST['action']=='get_link')
+    {
+        $mid  =intval($_POST['id']);
+        $type  =$_POST['type'];
+        !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
+
+        $data = PgRatingCalculate::get_rating_url($mid,$type);
+        echo json_encode($data);
+
+
+    }
+
+}
 
 if (isset($_GET['id'])) {
 

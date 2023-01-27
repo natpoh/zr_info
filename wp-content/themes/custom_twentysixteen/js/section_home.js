@@ -249,7 +249,7 @@ function create_total_rating(obj, only_tomatoes)
         if (obj.rwt_staff > 0)
             content_rating += '<div><span>Staff Rating:</span>' + create_rating_star(obj.rwt_staff, '') + '</div>';
         if (obj.imdb)
-            content_rating += '<div><span>IMDb:</span>' + create_rating_star(obj.imdb, 'imdb') + '</div>';
+            content_rating += '<div><span class="exlink" id="imdb">IMDb:</span>' + create_rating_star(obj.imdb, 'imdb') + '</div>';
     }
 
 
@@ -272,7 +272,7 @@ function create_total_rating(obj, only_tomatoes)
             content_rating += '<div><div class="rotten_tomatoes_score">';
         } else
         {
-            content_rating += '<div><span>Rotten Tomatoes:</span><div class="rotten_tomatoes_score">';
+            content_rating += '<div><span class="exlink" id="rt">Rotten Tomatoes:</span><div class="rotten_tomatoes_score">';
 
         }
 
@@ -303,14 +303,14 @@ function create_total_rating(obj, only_tomatoes)
 
     if (!only_tomatoes) {
         if (Number(obj.tmdb) > 0) {
-            content_rating += '<div><span>TMDb Ratig:</span>' + create_rating_star(obj.tmdb, 'tmdb') + '</div>';
+            content_rating += '<div><span class="exlink" id="tmdb">TMDb Ratig:</span>' + create_rating_star(obj.tmdb, 'tmdb') + '</div>';
         }
 
 
         if (obj.kinop_rating>0)
-            content_rating += '<div><span>Kinopoisk (Russia):</span>' + create_rating_star(obj.kinop_rating, 'kinopoisk') + '</div>';
+            content_rating += '<div><span class="exlink" id="kinop">Kinopoisk (Russia):</span>' + create_rating_star(obj.kinop_rating, 'kinopoisk') + '</div>';
         if (obj.douban_rating>0)
-            content_rating += '<div><span>Douban (China):</span>' + create_rating_star(obj.douban_rating, 'douban') + '</div>';
+            content_rating += '<div><span class="exlink" id="douban">Douban (China):</span>' + create_rating_star(obj.douban_rating, 'douban') + '</div>';
     }
 
 
@@ -3294,6 +3294,27 @@ jQuery(document).ready(function () {
         return false;
     });
 
+
+    jQuery('body').on('click', '.exlink', function () {
+
+        let type =jQuery(this).attr('id');
+        let id =jQuery(this).parents('.rating_block').attr('id');
+
+        jQuery.ajax({
+            type: 'POST',
+            ///context: this,
+            url: window.location.protocol + template_path + "movie_rating.php",
+            data: {"action": "get_link", "type": type, "id":id },
+            success: function (data) {
+               console.log(data);
+            }
+        });
+
+
+
+
+        return false;
+    });
     jQuery('body').on('click', '.how_calculate_rating, .read_more_rating, .how_calculate_rwt_rating, .calculate_actor_data', function () {
 
 
