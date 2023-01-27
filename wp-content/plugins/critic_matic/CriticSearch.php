@@ -1548,7 +1548,7 @@ class CriticSearch extends AbstractDB {
             $facet_list = $facets;
         }
 
-        $sql_arr = $this->movies_facets_sql($facet_list, $filters, $match);
+        $sql_arr = $this->movies_facets_sql($facet_list, $filters, $match);        
         $facets_arr = $this->movies_facets_get($facet_list, $sql_arr, $match, $search_query);
         return $facets_arr;
     }
@@ -2932,8 +2932,8 @@ class CriticSearch extends AbstractDB {
     }
 
     public function find_in_newsfilter_raw($keywords = '', $limit = 5, $debug = false) {
-        
-                
+
+
         //$search_query = sprintf("'@(title,content) %s'", $keywords);
         $search_query = sprintf("'@(title) \"%s\"'", $keywords);
         $match = " AND MATCH(:match)";
@@ -3283,6 +3283,13 @@ class CriticSearch extends AbstractDB {
             }
         }
         return $ret;
+    }
+    
+    public function get_movie_by_id($id=0) {
+        $sql = sprintf("SELECT * FROM movie_an WHERE id=%d LIMIT 1",(int)$id);
+        $result = $this->sdb_results($sql);  
+        $result = array_pop($result);
+        return $result;
     }
 
     //Abstract DB
