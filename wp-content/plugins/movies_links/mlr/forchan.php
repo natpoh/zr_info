@@ -38,7 +38,7 @@ class Forchan extends MoviesAbstractDBAn {
         $mids = array();
         if ($last_mids) {
             foreach ($last_mids as $item) {
-                $mids[$item->mid] = 1;
+                $mids[$item->mid] = $item->uid;
             }
         }
         if ($debug) {
@@ -87,16 +87,24 @@ class Forchan extends MoviesAbstractDBAn {
                 }
 
                 $time = $this->curr_time();
-                $rating_result = (int) round((($rating_update + 25) / 25), 0);
+
+                // Get fchan_posts_found
+                $uid = $mids[$pid];
+                $fchan_posts_found = $this->mp->get_fchan_posts_found($uid);
+                if (!$fchan_posts_found){
+                    $fchan_posts_found = $rating_count;
+                }
+                
 
                 // Update rating
                 $data = array(
                     'last_upd' => $time,
                     'fchan_rating' => $rating_update,
-                    'fchan_result' => $rating_result,
+                    'fchan_posts_found' => $fchan_posts_found,
                     'fchan_posts' => $rating_count,
                     'fchan_date' => $time,
-                    'total_rating' => $rating_result,
+                    'total_rating' => $rating_update,
+                    'total_count' => $fchan_posts_found,
                 );
 
                 if ($debug) {

@@ -18,6 +18,7 @@ class MoviesParser extends MoviesAbstractDB {
             'url' => 'movies_links_url',
             'actors_meta' => 'actors_meta',
             'fchan_posts' => 'data_fchan_posts',
+            'fchan_log' => 'data_fchan_log',
         );
 
         // Init settings
@@ -3364,7 +3365,7 @@ class MoviesParser extends MoviesAbstractDB {
      */
 
     public function get_fchan_posts_rating($id = 0, $count = 10) {
-        $sql = sprintf("SELECT id, mid FROM {$this->db['fchan_posts']}"
+        $sql = sprintf("SELECT id, mid, uid FROM {$this->db['fchan_posts']}"
                 . " WHERE id>%d AND status=1 ORDER BY id ASC LIMIT %d", $id, $count);
         $results = $this->db_results($sql);
         return $results;
@@ -3374,6 +3375,12 @@ class MoviesParser extends MoviesAbstractDB {
         $sql = sprintf("SELECT rating FROM {$this->db['fchan_posts']} WHERE mid=%d AND status=1", $uid);
         $results = $this->db_results($sql);
         return $results;
+    }
+    
+    public function get_fchan_posts_found($uid = 0) {
+        $sql = sprintf("SELECT posts_found FROM {$this->db['fchan_log']} WHERE uid=%d", $uid);        
+        $result = $this->db_get_var($sql);
+        return $result;
     }
 
     /*
