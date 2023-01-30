@@ -79,7 +79,7 @@ class MoviesCustomHooks {
             );
         } else if ($campaign->id == 20) {
             // rt
-            $curr_camp = 'animelist';
+            $curr_camp = 'rt';
             $score_opt = array(
                 'tomatometerScore' => 'rating',
                 'tomatometerCount' => 'count',
@@ -114,7 +114,7 @@ class MoviesCustomHooks {
                 if ($data['total_count'] > 0 || $data['total_rating'] > 0) {
                     $update_rating = true;
                 }
-            } else if ($curr_camp == 20) {
+            } else if ($curr_camp == 'rt') {
                 // Rotten tomatoes
                 $data['rt_rating'] = (int) $to_update['rating'];
                 $data['rt_count'] = (int) $to_update['count'];
