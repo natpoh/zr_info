@@ -19,7 +19,7 @@ class MoviesCustomHooks {
         $options = unserialize($post->options);
 
         // Erating logic
-        if ($post->top_movie>0){
+        if ($post->top_movie > 0) {
             $this->update_erating($post, $options, $campaign, $debug);
         }
         // Tomatoes logic
@@ -52,6 +52,13 @@ class MoviesCustomHooks {
                 'ratingKinopoisk' => 'rating',
                 'ratingKinopoiskVoteCount' => 'count'
             );
+        } else if ($campaign->id == 22) {
+            // douban
+            $curr_camp = 'douban';
+            $score_opt = array(
+                'rating' => 'rating',
+                'ratingCount' => 'count'
+            );
         }
 
         $to_update = array();
@@ -66,16 +73,17 @@ class MoviesCustomHooks {
 
             $data = array();
 
-            if ($curr_camp == 'kinop') {
+            if ($curr_camp == 'kinop' || $curr_camp == 'douban') {
                 // Update rating            
-                $data['kinop_rating'] = (int) ($to_update['rating'] * 10);
-                $data['kinop_count'] = (int) $to_update['count'];
-                $data['kinop_date'] = $this->mp->curr_time();
+                $data[$curr_camp.'_rating'] = (int) ($to_update['rating'] * 10);
+                $data[$curr_camp.'_count'] = (int) $to_update['count'];
+                $data[$curr_camp.'_date'] = $this->mp->curr_time();
                 // Total
-                $data['total_count'] = $data['kinop_count'];
-                $data['total_rating'] = $data['kinop_rating'];
-            }
-            
+                $data['total_count'] = $data[$curr_camp.'_count'];
+                $data['total_rating'] = $data[$curr_camp.'_rating'];
+                
+            } 
+
             if ($debug) {
                 p_r($data);
             }
