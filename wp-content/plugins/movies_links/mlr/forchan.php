@@ -103,7 +103,7 @@ class Forchan extends MoviesAbstractDBAn {
                     'fchan_posts_found' => $fchan_posts_found,
                     'fchan_posts' => $rating_count,
                     'fchan_date' => $time,
-                    'total_rating' => $rating_update,
+                    'total_rating' => 0,
                     'total_count' => $fchan_posts_found,
                 );
 
