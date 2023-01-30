@@ -340,7 +340,8 @@ class MoviesParserCron extends MoviesAbstractDB {
         }
         if ($count > 0) {
             // Unpaused links            
-            $this->start_paused_module($campaign, 'links', $options);
+            
+            $this->start_paused_module($campaign, 'links');
         }
     }
 
@@ -725,8 +726,11 @@ class MoviesParserCron extends MoviesAbstractDB {
         return $count;
     }
 
-    private function start_paused_module($campaign, $module, $options) {
+    private function start_paused_module($campaign, $module, $options=array()) {
         $options_upd = array();
+        if (!$options){
+            $options = $this->mp->get_options($campaign);
+        }
         if (isset($options[$module])) {
             $status = $options[$module]['status'];
             // Update status
