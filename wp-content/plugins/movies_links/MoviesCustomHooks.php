@@ -77,8 +77,8 @@ class MoviesCustomHooks {
                 'score' => 'rating',
                 'count' => 'count'
             );
-        } else if ($campaign->id == 20) {
-            // rt
+        } else if ($campaign->id == 20||$campaign->id == 21) {
+            // rt movies (20) and tv (21)
             $curr_camp = 'rt';
             $score_opt = array(
                 'tomatometerScore' => 'rating',
