@@ -2288,7 +2288,7 @@ class MoviesParser extends MoviesAbstractDB {
             $ms = $this->ml->get_ms();
             $facets = array();
             if ($movie_id > 0) {
-                $movies = $ms->search_movies_by_id($movie_id);
+                $movies = $ms->search_movies_by_id($movie_id);       
                 foreach ($post_title_name as $key => $name) {
                     $movies_title = $ms->search_movies_by_title($name, $title_rule[$key]['e'], $post_year_name, 20, $movie_type);
 
@@ -2309,9 +2309,9 @@ class MoviesParser extends MoviesAbstractDB {
                 }
 
                 $movies_imdb = array();
-                if ($post_imdb) {
+                if ($post_imdb) {                    
                     // Find movies by IMDB            
-                    $movies_imdb = $ms->search_movies_by_imdb($post_imdb);
+                    $movies_imdb = $ms->search_movies_by_imdb($post_imdb);                   
                 }
 
                 $movies_tmdb = array();
@@ -2323,10 +2323,19 @@ class MoviesParser extends MoviesAbstractDB {
                 if ($post_title_name) {
                     // Find movies by title and year
                     foreach ($post_title_name as $key => $name) {
-                        $movies_title = $ms->search_movies_by_title($name, $title_rule[$key]['e'], $post_year_name, 20, $movie_type);
-                        $movies = array_merge($movies_imdb, $movies_title);
+                        $movies_title = $ms->search_movies_by_title($name, $title_rule[$key]['e'], $post_year_name, 20, $movie_type);                        
                     }
                 }
+                
+                $movies = array();
+                                
+                if ($movies_title) {
+                    $movies = array_merge($movies, $movies_title);
+                } 
+                
+                if ($movies_imdb) {
+                    $movies = array_merge($movies, $movies_imdb);
+                }  
 
                 if ($movies_tmdb) {
                     $movies = array_merge($movies, $movies_tmdb);
@@ -2335,8 +2344,8 @@ class MoviesParser extends MoviesAbstractDB {
                 if ($movies_posts) {
                     $movies = array_merge($movies, $movies_posts);
                 }
-            }
-
+            }            
+            
             if ($movies) {
                 /*
                   (
@@ -2430,6 +2439,7 @@ class MoviesParser extends MoviesAbstractDB {
                         $results[$movie->id]['total']['match'] += 1;
                         $results[$movie->id]['total']['rating'] += $exist_rule['ra'];
                     }
+                  
                     //Facets
                     $facets[$movie->id] = $ms->get_movie_facets($movie->id);
                 }
