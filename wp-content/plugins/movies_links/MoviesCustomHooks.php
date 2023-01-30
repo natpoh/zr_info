@@ -44,6 +44,9 @@ class MoviesCustomHooks {
     }
 
     private function update_erating($post, $options, $campaign, $debug = false) {
+
+        $simple_camps = array('kinop', 'douban', 'imdb');
+
         // Kinopoisk
         $curr_camp = '';
         if ($campaign->id == 24) {
@@ -59,7 +62,16 @@ class MoviesCustomHooks {
                 'rating' => 'rating',
                 'ratingCount' => 'count'
             );
+        } else if ($campaign->id == 18) {
+            // douban
+            $curr_camp = 'imdb';
+            $score_opt = array(
+                'rating' => 'rating',
+                'count' => 'count'
+            );
         }
+
+
 
         $to_update = array();
         foreach ($score_opt as $post_key => $db_key) {
@@ -73,16 +85,15 @@ class MoviesCustomHooks {
 
             $data = array();
 
-            if ($curr_camp == 'kinop' || $curr_camp == 'douban') {
+            if (in_array($curr_camp, $simple_camps)) {
                 // Update rating            
-                $data[$curr_camp.'_rating'] = (int) ($to_update['rating'] * 10);
-                $data[$curr_camp.'_count'] = (int) $to_update['count'];
-                $data[$curr_camp.'_date'] = $this->mp->curr_time();
+                $data[$curr_camp . '_rating'] = (int) ($to_update['rating'] * 10);
+                $data[$curr_camp . '_count'] = (int) str_replace(',', '', $to_update['count']);
+                $data[$curr_camp . '_date'] = $this->mp->curr_time();
                 // Total
-                $data['total_count'] = $data[$curr_camp.'_count'];
-                $data['total_rating'] = $data[$curr_camp.'_rating'];
-                
-            } 
+                $data['total_count'] = $data[$curr_camp . '_count'];
+                $data['total_rating'] = $data[$curr_camp . '_rating'];
+            }
 
             if ($debug) {
                 p_r($data);
