@@ -23,7 +23,8 @@ class MoviesCustomHooks {
             $this->update_erating($post, $options, $campaign, $debug);
         }
         // Tomatoes logic
-        $this->update_rotten_tomatoes($post, $options);
+        // UNUSED DEPRECATED
+        // $this->update_rotten_tomatoes($post, $options);
 
         // Dove.org
         if ($campaign->id == 3) {
