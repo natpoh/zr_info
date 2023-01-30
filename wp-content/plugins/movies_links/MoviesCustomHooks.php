@@ -71,6 +71,9 @@ class MoviesCustomHooks {
                 $data['kinop_rating'] = (int) ($to_update['rating'] * 10);
                 $data['kinop_count'] = (int) $to_update['count'];
                 $data['kinop_date'] = $this->mp->curr_time();
+                // Total
+                $data['total_count'] = $data['kinop_count'];
+                $data['total_rating'] = $data['kinop_rating'];
             }
             
             if ($debug) {
