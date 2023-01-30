@@ -58,7 +58,7 @@ if ($cid) {
                 <label class="inline-edit-status">                
                     <?php
                     $checked = '';
-                    if ($o['status'] == 1) {
+                    if ($o['status'] == 1 || $o['status'] == 3) {
                         $checked = 'checked="checked"';
                     }
                     ?>
@@ -99,9 +99,9 @@ if ($cid) {
 
                 <h2>Links rules</h2>
                 <?php
-                $rules = $o['rules'];                
-                $data_fields = $this->mp->get_parser_fields($options);                
-                $data_fields['m']='URL Movie ID';                                               
+                $rules = $o['rules'];
+                $data_fields = $this->mp->get_parser_fields($options);
+                $data_fields['m'] = 'URL Movie ID';
                 $this->show_links_rules($rules, $data_fields, $campaign->type);
                 ?>
                 <p><b>Export</b> Rules to <a target="_blank" href="<?php print $url ?>&cid=<?php print $cid ?>&export_links_rules=1">JSON array</a>.</p>

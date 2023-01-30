@@ -68,7 +68,7 @@ if ($cid) {
                 <label class="inline-edit-status">                
                     <?php
                     $checked = '';
-                    if ($o['status'] == 1) {
+                    if ($o['status'] == 1 || $o['status'] == 3) {
                         $checked = 'checked="checked"';
                     }
                     ?>
