@@ -351,6 +351,17 @@ class MoviesParser extends MoviesAbstractDB {
         return $result;
     }
 
+    
+    
+    public function remove_all_campaign_error_posts($form_state) {
+        if ($form_state['id']) {
+            // To trash
+            $id = $form_state['id'];
+            $sql = sprintf("DELETE p FROM {$this->db['posts']} p INNER JOIN {$this->db['url']} u ON p.uid = u.id WHERE u.cid=%d AND p.status_links=2", (int) $id);
+            $this->db_query($sql);
+        }
+    }
+    
     public function remove_all_campaign_posts($form_state) {
         if ($form_state['id']) {
             // To trash

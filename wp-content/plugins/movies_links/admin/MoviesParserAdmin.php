@@ -468,6 +468,9 @@ class MoviesParserAdmin extends ItemAdmin {
                             } else {
                                 $result = __('Campaign') . ' [' . $result_id . '] ' . __('untrashed');
                             }
+                        } else if ($_POST['remove_all_error_posts'] == 1) {
+                            $this->mp->remove_all_campaign_error_posts($_POST);
+                            $result = 'Removed';
                         } else if ($_POST['remove_all_posts'] == 1) {
                             $this->mp->remove_all_campaign_posts($_POST);
                             $result = 'Removed';
