@@ -41,7 +41,7 @@ class MoviesParserAdmin extends ItemAdmin {
         1 => 'Xpath',
     );
     public $parse_number = array(1 => 1, 2 => 2, 3 => 3, 5 => 5, 7 => 7, 10 => 10, 20 => 20, 35 => 35, 50 => 50, 75 => 75, 100 => 100, 200 => 200, 500 => 500, 1000 => 1000);
-    public $version_number = array(0,1,2,3,4,5,6,7,8,9,10);
+    public $version_number = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
     public $gen_urls_number = array(10 => 10, 100 => 100, 500 => 500, 1000 => 1000);
     public $camp_state = array(
         1 => array('title' => 'Active'),
@@ -495,6 +495,11 @@ class MoviesParserAdmin extends ItemAdmin {
                 include(MOVIES_LINKS_PLUGIN_DIR . 'includes/edit_parser.php');
             } else if ($curr_tab == 'mlr') {
                 // Movies links custom results
+                $mlr_tpl = MOVIES_LINKS_PLUGIN_DIR . 'includes/mlr/' . $mlr_name . '_results.php';
+
+                if (!file_exists($mlr_tpl)) {
+                    return;
+                }
 
                 $mlr = $this->ml->get_campaing_mlr($campaign);
                 if (!$mlr) {
@@ -531,7 +536,7 @@ class MoviesParserAdmin extends ItemAdmin {
 
                 $posts = $mlr->get_posts($page, $orderby, $order, $per_page);
 
-                include(MOVIES_LINKS_PLUGIN_DIR . 'includes/mlr/' . $mlr_name . '_results.php');
+                include($mlr_tpl);
             }
             return;
         }
@@ -987,8 +992,8 @@ class MoviesParserAdmin extends ItemAdmin {
                 if (isset($form_state[$key])) {
                     $add_result[$key] = $form_state[$key];
                 }
-            }           
-      
+            }
+
             if ($form_state['edit_parsing_options']) {
                 $add_result['status'] = isset($form_state['status']) ? $form_state['status'] : 0;
                 $add_result['multi_parsing'] = isset($form_state['multi_parsing']) ? $form_state['multi_parsing'] : 0;
@@ -2380,7 +2385,7 @@ class MoviesParserAdmin extends ItemAdmin {
     }
 
     public function get_post_links_types($cid = 0, $status = -1, $arhive_type = -1, $parser_type = -1) {
-         // DEPRECATED
+        // DEPRECATED
 
         $count = $this->mp->get_urls_count($status, $cid, $arhive_type, $parser_type);
         $states = array(
