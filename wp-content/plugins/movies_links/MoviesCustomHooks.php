@@ -45,7 +45,7 @@ class MoviesCustomHooks {
 
     private function update_erating($post, $options, $campaign, $debug = false) {
 
-        $simple_camps = array('kinop', 'douban', 'imdb');
+        $simple_camps = array('kinop', 'douban', 'imdb', 'animelist');
 
         // Kinopoisk
         $curr_camp = '';
@@ -69,9 +69,23 @@ class MoviesCustomHooks {
                 'rating' => 'rating',
                 'count' => 'count'
             );
+        } else if ($campaign->id == 27) {
+            // animelist
+            $curr_camp = 'animelist';
+            $score_opt = array(
+                'score' => 'rating',
+                'count' => 'count'
+            );
+        } else if ($campaign->id == 20) {
+            // rt
+            $curr_camp = 'animelist';
+            $score_opt = array(
+                'tomatometerScore' => 'rating',
+                'tomatometerCount' => 'count',
+                'audienceScore' => 'aurating',
+                'audienceCount' => 'aucount',
+            );
         }
-
-
 
         $to_update = array();
         foreach ($score_opt as $post_key => $db_key) {
@@ -83,6 +97,8 @@ class MoviesCustomHooks {
 
         if ($to_update) {
 
+            $update_rating = false;
+
             $data = array();
 
             if (in_array($curr_camp, $simple_camps)) {
@@ -93,14 +109,48 @@ class MoviesCustomHooks {
                 // Total
                 $data['total_count'] = $data[$curr_camp . '_count'];
                 $data['total_rating'] = $data[$curr_camp . '_rating'];
+
+                if ($data['total_count'] > 0 || $data['total_rating'] > 0) {
+                    $update_rating = true;
+                }
+            } else if ($curr_camp == 20) {
+                // Rotten tomatoes
+                $data['rt_rating'] = (int) $to_update['rating'];
+                $data['rt_count'] = (int) $to_update['count'];
+                $data['rt_aurating'] = (int) $to_update['aurating'];
+                $data['rt_aucount'] = (int) $to_update['aucount'];
+                $data['rt_date'] = $this->mp->curr_time();
+
+                // Total count
+                $data['total_count'] = $data['rt_count'] + $data['rt_aucount'];
+                
+                // Gap: audience - pro
+                $data['rt_gap'] = $data['rt_aurating'] - $data['rt_rating'];
+
+                // Total rating
+                $data['total_rating'] = 0;
+
+                if ($data['rt_rating'] && $data['rt_aurating']) {
+                    $data['total_rating'] = ($data['rt_rating'] + $data['rt_aurating']) / 2;
+                } else if ($data['rt_rating']) {
+                    $data['total_rating'] = $data['rt_rating'];
+                } else if ($data['rt_aurating']) {
+                    $data['total_rating'] = $data['rt_aurating'];
+                }
+
+                if ($data['total_count'] > 0 || $data['total_rating'] > 0) {
+                    $update_rating = true;
+                }
             }
 
             if ($debug) {
                 p_r($data);
             }
 
-            $ma = $this->ml->get_ma();
-            $ma->update_erating($post->top_movie, $data);
+            if ($update_rating) {
+                $ma = $this->ml->get_ma();
+                $ma->update_erating($post->top_movie, $data);
+            }
         }
     }
 
