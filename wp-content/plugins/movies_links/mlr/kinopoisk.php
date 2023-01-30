@@ -36,7 +36,7 @@ class Kinopoisk extends MoviesAbstractDBAn {
 
         $cid = $this->cid;
         $status = 1;
-        $last_posts = $this->mp->get_last_posts($count, $cid, -1, $status, $last_id, "ASC");
+        $last_posts = $this->mp->get_last_posts($count, $cid, -1, $status, -1, $last_id, "ASC");
 
         if ($last_posts) {
             $last = end($last_posts);

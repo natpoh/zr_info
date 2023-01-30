@@ -1647,7 +1647,8 @@ class MoviesParserAdmin extends ItemAdmin {
         $o = $options['links'];
         $count = $o['pr_num'];
         $cid = $campaign->id;
-        $last_posts = $this->mp->get_last_posts($count, $cid, -1, 1);
+        $version = $options['parsing']['version'];
+        $last_posts = $this->mp->get_last_posts($count, $cid, -1, 1, $version);
         $preivew_data = array();
 
         if ($last_posts) {

@@ -1621,7 +1621,7 @@ class MoviesParser extends MoviesAbstractDB {
      * Parsing rules
      */
 
-    public function get_last_arhives_no_posts($count = 10, $cid = 0, $version = 0, $no_posts = true, $debug=false) {
+    public function get_last_arhives_no_posts($count = 10, $cid = 0, $version = 0, $no_posts = true, $debug = false) {
 
         // Company id
         $cid_and = '';
@@ -1648,10 +1648,10 @@ class MoviesParser extends MoviesAbstractDB {
                 . " WHERE a.id>0 AND u.status!=4" . $np_and . $cid_and
                 . " ORDER BY a.id DESC LIMIT %d", (int) $count);
 
-        if ($debug){
+        if ($debug) {
             print "$query\n";
         }
-                
+
         $result = $this->db_results($query);
 
         return $result;
@@ -1689,7 +1689,7 @@ class MoviesParser extends MoviesAbstractDB {
                 $code = $this->get_arhive_file($cid, $link_hash);
                 $result = array();
                 if ($code) {
-                     if ($debug) {
+                    if ($debug) {
                         print "File arhive exist: $link_hash\n";
                     }
                     // Use reg rules
@@ -2066,7 +2066,7 @@ class MoviesParser extends MoviesAbstractDB {
         return $ret;
     }
 
-    public function get_last_posts($count = 10, $cid = 0, $status_links = -1, $status = -1, $min_pid = 0, $order = "DESC") {
+    public function get_last_posts($count = 10, $cid = 0, $status_links = -1, $status = -1, $version = -1, $min_pid = 0, $order = "DESC") {
 
         // Company id
         $cid_and = '';
@@ -2086,6 +2086,11 @@ class MoviesParser extends MoviesAbstractDB {
             $status_links_and = sprintf(' AND p.status_links = %d', $status_links);
         }
 
+        $version_and = '';
+        if ($version != -1) {
+            $version_and = sprintf(' AND p.version = %d', $version);
+        }
+
         $and_order = "DESC";
         if ($order == "ASC") {
             $and_order = $order;
@@ -2093,9 +2098,9 @@ class MoviesParser extends MoviesAbstractDB {
 
         $query = sprintf("SELECT p.id, u.pid FROM {$this->db['posts']} p"
                 . " INNER JOIN {$this->db['url']} u ON p.uid = u.id"
-                . " WHERE p.id>%d" . $cid_and . $status_and . $status_links_and
+                . " WHERE p.id>%d" . $cid_and . $version_and . $status_and . $status_links_and
                 . " ORDER BY p.id $and_order LIMIT %d", (int) $min_pid, (int) $count);
-
+         
         $result = $this->db_results($query);
         $ret = array();
         if ($result) {
@@ -2288,7 +2293,7 @@ class MoviesParser extends MoviesAbstractDB {
             $ms = $this->ml->get_ms();
             $facets = array();
             if ($movie_id > 0) {
-                $movies = $ms->search_movies_by_id($movie_id);       
+                $movies = $ms->search_movies_by_id($movie_id);
                 foreach ($post_title_name as $key => $name) {
                     $movies_title = $ms->search_movies_by_title($name, $title_rule[$key]['e'], $post_year_name, 20, $movie_type);
 
@@ -2309,9 +2314,9 @@ class MoviesParser extends MoviesAbstractDB {
                 }
 
                 $movies_imdb = array();
-                if ($post_imdb) {                    
+                if ($post_imdb) {
                     // Find movies by IMDB            
-                    $movies_imdb = $ms->search_movies_by_imdb($post_imdb);                   
+                    $movies_imdb = $ms->search_movies_by_imdb($post_imdb);
                 }
 
                 $movies_tmdb = array();
@@ -2323,19 +2328,19 @@ class MoviesParser extends MoviesAbstractDB {
                 if ($post_title_name) {
                     // Find movies by title and year
                     foreach ($post_title_name as $key => $name) {
-                        $movies_title = $ms->search_movies_by_title($name, $title_rule[$key]['e'], $post_year_name, 20, $movie_type);                        
+                        $movies_title = $ms->search_movies_by_title($name, $title_rule[$key]['e'], $post_year_name, 20, $movie_type);
                     }
                 }
-                
+
                 $movies = array();
-                                
+
                 if ($movies_title) {
                     $movies = array_merge($movies, $movies_title);
-                } 
-                
+                }
+
                 if ($movies_imdb) {
                     $movies = array_merge($movies, $movies_imdb);
-                }  
+                }
 
                 if ($movies_tmdb) {
                     $movies = array_merge($movies, $movies_tmdb);
@@ -2344,8 +2349,8 @@ class MoviesParser extends MoviesAbstractDB {
                 if ($movies_posts) {
                     $movies = array_merge($movies, $movies_posts);
                 }
-            }            
-            
+            }
+
             if ($movies) {
                 /*
                   (
@@ -2439,7 +2444,7 @@ class MoviesParser extends MoviesAbstractDB {
                         $results[$movie->id]['total']['match'] += 1;
                         $results[$movie->id]['total']['rating'] += $exist_rule['ra'];
                     }
-                  
+
                     //Facets
                     $facets[$movie->id] = $ms->get_movie_facets($movie->id);
                 }
