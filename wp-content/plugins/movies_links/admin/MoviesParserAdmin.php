@@ -41,6 +41,7 @@ class MoviesParserAdmin extends ItemAdmin {
         1 => 'Xpath',
     );
     public $parse_number = array(1 => 1, 2 => 2, 3 => 3, 5 => 5, 7 => 7, 10 => 10, 20 => 20, 35 => 35, 50 => 50, 75 => 75, 100 => 100, 200 => 200, 500 => 500, 1000 => 1000);
+    public $version_number = array(0,1,2,3,4,5,6,7,8,9,10);
     public $gen_urls_number = array(10 => 10, 100 => 100, 500 => 500, 1000 => 1000);
     public $camp_state = array(
         1 => array('title' => 'Active'),
@@ -986,8 +987,8 @@ class MoviesParserAdmin extends ItemAdmin {
                 if (isset($form_state[$key])) {
                     $add_result[$key] = $form_state[$key];
                 }
-            }
-
+            }           
+      
             if ($form_state['edit_parsing_options']) {
                 $add_result['status'] = isset($form_state['status']) ? $form_state['status'] : 0;
                 $add_result['multi_parsing'] = isset($form_state['multi_parsing']) ? $form_state['multi_parsing'] : 0;
@@ -1199,8 +1200,9 @@ class MoviesParserAdmin extends ItemAdmin {
         $options = $this->mp->get_options($campaign);
         $o = $options['parsing'];
         $count = $o['pr_num'];
+        $version = $o['version'];
         $cid = $campaign->id;
-        $last_posts = $this->mp->get_last_arhives_no_posts($count, $cid, false);
+        $last_posts = $this->mp->get_last_arhives_no_posts($count, $cid, $version, false);
 
         if ($last_posts) {
             $preivew_data = $this->mp->parse_arhives($last_posts, $campaign, $rules_name);

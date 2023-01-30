@@ -18,6 +18,10 @@ class MoviesCustomHooks {
 
         $options = unserialize($post->options);
 
+        // Erating logic
+        if ($post->top_movie>0){
+            $this->update_erating($post, $options, $campaign, $debug);
+        }
         // Tomatoes logic
         $this->update_rotten_tomatoes($post, $options);
 
@@ -36,6 +40,45 @@ class MoviesCustomHooks {
                 print_r("Found mlr for " . $campaign->title . "\n");
             }
             $mlr->hook_update_post($campaign, $post, $options, $debug);
+        }
+    }
+
+    private function update_erating($post, $options, $campaign, $debug = false) {
+        // Kinopoisk
+        $curr_camp = '';
+        if ($campaign->id == 24) {
+            $curr_camp = 'kinop';
+            $score_opt = array(
+                'ratingKinopoisk' => 'rating',
+                'ratingKinopoiskVoteCount' => 'count'
+            );
+        }
+
+        $to_update = array();
+        foreach ($score_opt as $post_key => $db_key) {
+            if (isset($options[$post_key])) {
+                $field_value = base64_decode($options[$post_key]);
+                $to_update[$db_key] = $field_value;
+            }
+        }
+
+        if ($to_update) {
+
+            $data = array();
+
+            if ($curr_camp == 'kinop') {
+                // Update rating            
+                $data['kinop_rating'] = (int) ($to_update['rating'] * 10);
+                $data['kinop_count'] = (int) $to_update['count'];
+                $data['kinop_date'] = $this->mp->curr_time();
+            }
+            
+            if ($debug) {
+                p_r($data);
+            }
+
+            $ma = $this->ml->get_ma();
+            $ma->update_erating($post->top_movie, $data);
         }
     }
 
@@ -68,18 +111,18 @@ class MoviesCustomHooks {
         $uid = $post->uid;
         $url_data = $this->mp->get_url($uid);
         $link = $url_data->link;
-        $arhive = $this->mp->get_arhive_by_url_id($uid);        
+        $arhive = $this->mp->get_arhive_by_url_id($uid);
         $link_hash = $arhive->arhive_hash;
         $top_movie = $post->top_movie;
-        
-        if ($debug){
+
+        if ($debug) {
             p_r($arhive);
         }
 
         $code = $this->mp->get_arhive_file($cid, $link_hash);
         if ($code) {
             $post_result = $this->find_in_post_page($code);
-            if ($debug){
+            if ($debug) {
                 p_r($post_result);
             }
             if (sizeof($post_result['rating'])) {
@@ -97,18 +140,18 @@ class MoviesCustomHooks {
                     'dove_rating' => $rating_json,
                     'dove_rating_desc' => $rating_info_json
                 );
-                if ($debug){
+                if ($debug) {
                     p_r($data);
                 }
                 $ma = $this->ml->get_ma();
                 $ma->update_pg_rating($data, $top_movie);
                 // Save log
-                $message ='Update Dove rating';
-                $log_status=0;
+                $message = 'Update Dove rating';
+                $log_status = 0;
                 $this->mp->log_info($message, $cid, $uid, $log_status);
             }
         } else {
-            if ($debug){
+            if ($debug) {
                 print 'arhive not found';
             }
         }
@@ -199,6 +242,5 @@ class MoviesCustomHooks {
         // Return array
         return array('rating' => $rating, 'rating_info' => $rating_info, 'info' => $info, 'reliase' => $reliase);
     }
-
 
 }

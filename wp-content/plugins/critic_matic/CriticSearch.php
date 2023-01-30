@@ -78,9 +78,9 @@ class CriticSearch extends AbstractDB {
         'rrtg' => array('title' => 'Rotten Tomatoes Gap', 'name_pre' => 'RTG ', 'filter_pre' => 'Rotten Tomatoes Gap ', 'max_count' => 220, 'shift' => -100, 'sort' => 'asc'),
         'rkp' => array('title' => 'Kinopoisk', 'name_pre' => 'KP ', 'filter_pre' => 'Kinopoisk ', 'max_count' => 110, 'multipler' => 10),
         'rdb' => array('title' => 'Douban', 'name_pre' => 'DB ', 'filter_pre' => 'Douban ', 'max_count' => 110, 'multipler' => 10),
-        'rfn' => array('title' => '4chan', 'name_pre' => '4chan ', 'filter_pre' => '4chan '),
-        'rrev' => array('title' => 'Reviews', 'name_pre' => 'RV ', 'filter_pre' => 'Reviews '),
-        'rtotal' => array('title' => 'Total rating', 'name_pre' => 'Total ', 'filter_pre' => 'Total rating '),
+        'rfn' => array('title' => '4chan', 'name_pre' => '4chan ', 'filter_pre' => '4chan ', 'max_count' => 110, 'multipler' => 10),
+        'rrev' => array('title' => 'Reviews', 'name_pre' => 'RV ', 'filter_pre' => 'Reviews ', 'max_count' => 110, 'multipler' => 10),
+        //'rtotal' => array('title' => 'Total rating', 'name_pre' => 'Total ', 'filter_pre' => 'Total rating '),
     );
     public $facets_race_cast = array(
         'race' => array('filter' => 'actor', 'name' => 'actor_all', 'title' => 'Cast race', 'name_pre' => 'Cast '),
