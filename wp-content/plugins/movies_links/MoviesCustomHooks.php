@@ -25,7 +25,6 @@ class MoviesCustomHooks {
         // Tomatoes logic
         // UNUSED DEPRECATED
         // $this->update_rotten_tomatoes($post, $options);
-
         // Dove.org
         if ($campaign->id == 3) {
             $this->update_dove($post, $options, $campaign, $debug);
@@ -77,7 +76,11 @@ class MoviesCustomHooks {
                 'score' => 'rating',
                 'count' => 'count'
             );
-        } else if ($campaign->id == 20||$campaign->id == 21) {
+            // Add anime genre
+            $ma = $this->ml->get_ma();
+            $ma->add_genre_meta($post->top_movie, 'anime');
+            
+        } else if ($campaign->id == 20 || $campaign->id == 21) {
             // rt movies (20) and tv (21)
             $curr_camp = 'rt';
             $score_opt = array(
@@ -124,7 +127,7 @@ class MoviesCustomHooks {
 
                 // Total count
                 $data['total_count'] = $data['rt_count'] + $data['rt_aucount'];
-                
+
                 // Gap: audience - pro
                 $data['rt_gap'] = $data['rt_aurating'] - $data['rt_rating'];
 
@@ -156,7 +159,7 @@ class MoviesCustomHooks {
     }
 
     private function update_rotten_tomatoes($post, $options) {
-
+        // DEPRECATED UNUSED
         $score_opt = array(
             'tomatometerScore' => 'rotten_tomatoes',
             'audienceScore' => 'rotten_tomatoes_audience'

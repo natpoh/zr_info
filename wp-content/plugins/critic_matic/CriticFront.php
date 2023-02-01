@@ -2635,7 +2635,7 @@ class CriticFront extends SearchFacets {
         $theme_url = '<img srcset="' . $icon . '" width="16" height="16"> <a target="_blank" href="' . $url . '">' . $text_url . '</a>';
         return $theme_url;
     }
-
+    
     /*
      * External fucntions 
      */

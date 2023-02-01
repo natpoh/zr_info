@@ -45,10 +45,14 @@ if ($load['loaded']) {
 }
 
 // TODO UNUSED
-exit();
 
+/*
+// Genre test
 $ml = new MoviesLinks();
-
+$ma = $ml->get_ma();
+$ma->add_genre_meta(37193,'anime');
+*/
+exit();
 $cron_name = 'kinop';
 if ($ml->cron_already_run($cron_name, 10, $debug)) {
     exit();

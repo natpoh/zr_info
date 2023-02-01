@@ -25,20 +25,26 @@ class SearchFacets extends AbstractDB {
     // Search sort: /sort_title_desc
     public $search_sort = array(
         'movies' => array(
-            'title' => array('title' => 'Title', 'def' => 'asc', 'main' => 1),
-            'date' => array('title' => 'Date', 'def' => 'desc', 'main' => 1),
-            'div' => array('title' => 'Diversity', 'def' => 'desc', 'main' => 1),
-            'fem' => array('title' => 'Female', 'def' => 'desc', 'main' => 1),
-            'rel' => array('title' => 'Relevance', 'def' => 'desc', 'main' => 1),
-            'pop' => array('title' => 'Popularity', 'def' => 'desc', 'main' => 1),
+            'title' => array('title' => 'Title', 'def' => 'asc', 'main' => 1, 'group' => 'def'),
+            'date' => array('title' => 'Date', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
+            'woketitle' => array('title' => 'Wokeness', 'is_title' => 1, 'group' => 'woke'),
+            'div' => array('title' => 'Diversity', 'def' => 'desc', 'group' => 'woke'),
+            'fem' => array('title' => 'Female', 'def' => 'desc', 'group' => 'woke'),
+            'rel' => array('title' => 'Relevance', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
         ),
         'critics' => array(
-            'title' => array('title' => 'Title', 'def' => 'asc', 'main' => 1),
-            'date' => array('title' => 'Date', 'def' => 'desc', 'main' => 1),
-            'rel' => array('title' => 'Relevance', 'def' => 'desc', 'main' => 1),
-            'pop' => array('title' => 'Popularity', 'def' => 'desc', 'main' => 1),
-            'mw' => array('title' => 'Weight', 'def' => 'desc', 'main' => 1)
+            'title' => array('title' => 'Title', 'def' => 'asc', 'main' => 1, 'group' => 'def'),
+            'date' => array('title' => 'Date', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
+            'rel' => array('title' => 'Relevance', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
+            'pop' => array('title' => 'Emotions', 'def' => 'desc', 'group' => 'woke', 'main' => 1,),
+            'mw' => array('title' => 'Weight', 'def' => 'desc', 'main' => 1, 'group' => 'def')
         )
+    );
+    public $sort_range = array(
+        'Default' => 'def',
+        'Rating' => 'rating',
+        'Popularity' => 'pop',
+        'Wokeness' => 'woke',
     );
     public $def_tab = 'movies';
     // Facets
@@ -125,7 +131,7 @@ class SearchFacets extends AbstractDB {
             $this->filters['minus-' . $facet] = '';
         }
         // Add rating filters
-        $this->search_sort['movies']['ratingtitle'] = array('title' => 'Ratings', 'is_title' => 1);
+        $this->search_sort['movies']['ratingtitle'] = array('title' => 'Ratings', 'is_title' => 1, 'group' => 'rating');
         foreach ($this->cs->rating_facets as $facet => $item) {
             $this->filters[$facet] = '';
             if ($facet != 'rrwt') {
@@ -134,11 +140,22 @@ class SearchFacets extends AbstractDB {
             //Sort
             $def_sort = isset($item['sort']) ? $item['sort'] : 'desc';
             $main = isset($item['main']) ? 1 : 0;
-            $this->search_sort['movies'][$facet] = array('title' => $item['title'], 'def' => $def_sort, 'main' => $main);
+            $this->search_sort['movies'][$facet] = array('title' => $item['title'], 'def' => $def_sort, 'main' => $main, 'group' => $item['group'], 'icon' => $item['icon']);
+        }
+
+        // Add popularity sort        
+        $this->search_sort['movies']['poptitle'] = array('title' => 'Most Talked About', 'is_title' => 1, 'group' => 'pop');
+        foreach ($this->cs->popularity_facets as $facet => $item) {
+            $this->filters[$facet] = '';
+
+            //Sort
+            $def_sort = isset($item['sort']) ? $item['sort'] : 'desc';
+            $main = isset($item['main']) ? 1 : 0;
+            $this->search_sort['movies'][$facet] = array('title' => $item['title'], 'def' => $def_sort, 'main' => $main, 'group' => $item['group'], 'icon' => $item['icon']);
         }
 
         // Add audience filters
-        $au_rating_title = array('title' => 'Audience Ratings', 'is_title' => 1);
+        $au_rating_title = array('title' => 'Audience Ratings', 'is_title' => 1, 'group' => 'woke');
         $this->search_sort['movies']['auratingtitle'] = $au_rating_title;
         $this->search_sort['critics']['auratingtitle'] = $au_rating_title;
         foreach ($this->cs->audience_facets as $facet => $item) {
@@ -150,7 +167,7 @@ class SearchFacets extends AbstractDB {
                 $def_sort = isset($item['sort']) ? $item['sort'] : 'desc';
                 $main = isset($item['main']) ? 1 : 0;
 
-                $append = array('title' => $item['title'], 'def' => $def_sort, 'main' => $main, 'icon' => $item['icon']);
+                $append = array('title' => $item['title'], 'def' => $def_sort, 'main' => $main, 'icon' => $item['icon'], 'group' => $item['group']);
                 $this->search_sort['movies'][$facet] = $append;
                 $this->search_sort['critics'][$facet] = $append;
             }
@@ -742,6 +759,54 @@ class SearchFacets extends AbstractDB {
         return $tags;
     }
 
+    public function theme_sort_val($sort_val = '') {
+        $filters = $this->get_search_filters();
+        $ret = '';
+        if (isset($filters['sort'])) {
+            $curr_sort = explode('-', $filters['sort'])[0];
+            // Popularity
+            if (isset($this->cs->popularity_facets[$curr_sort])) {
+                $title = $this->cs->popularity_facets[$curr_sort]['title'];
+                $value = $this->theme_count_value($sort_val);
+                $ret = "$value - $title";
+            } else if (isset($this->cs->rating_facets[$curr_sort])){
+                // Rating
+                $title = $this->cs->rating_facets[$curr_sort]['title'];                
+                $multipler = $this->cs->rating_facets[$curr_sort]['multipler'];
+                $rating = $sort_val;
+                if ($curr_sort == 'rrtg'){
+                    $rating-=100;
+                }
+                
+                if ($multipler){
+                    $rating = round($rating/$multipler,2);
+                }
+                $ret = "$rating - $title";
+            } else if (isset($this->cs->audience_facets[$curr_sort])){
+                 $title = $this->cs->audience_facets[$curr_sort]['title'];  
+                 $ret = "$sort_val - $title";
+            }
+            
+            
+            
+        }
+
+        return $ret;
+    }
+
+    public function theme_count_value($num) {
+        $sizes = array("", "k", "m", "mm");
+        $ret = '';
+        foreach ($sizes as $uint) {
+            if ($num < 1000) {
+                $ret = $uint;
+                break;
+            }
+            $num /= 1000;
+        }
+        return round($num, 0) . $ret;
+    }
+
     public function sort_critic_mv_result($list, $limit, $start, $filters, $sort) {
         $list_ret = array();
         if ($list) {
@@ -876,15 +941,21 @@ class SearchFacets extends AbstractDB {
 
         $main_sort = array();
         $more_sort = array();
-        $more_active = false;
+        $more_active = array();
+        $tab_class = '';
         if ($sort_available) {
 
             foreach ($sort_available as $slug => $item) {
                 $title = $item['title'];
                 if (isset($item['is_title']) && $item['is_title'] == 1) {
-                    //title
-                    $sort_item = '<li class="' . $tab_class . ' title ' . $slug . '">' . $item['title'] . '</li>';
-                    $more_sort[] = $sort_item;
+                    //title                    
+                    $sort_item = array(
+                        'tab_class' => $tab_class,
+                        'slug' => $slug,
+                        'title' => $title,
+                        'type' => 'title',
+                    );
+                    $more_sort[$item['group']][] = $sort_item;
                     continue;
                 }
 
@@ -923,15 +994,25 @@ class SearchFacets extends AbstractDB {
                     $type_def = $def_sort['type'];
                 }
 
-                $icon = isset($item['icon']) ? '<span class="sort-icon"><i class="' . $item['icon'] . '"></i></span>' : '';
+                $icon = (isset($item['icon'])) ? '<span class="sort-icon"><i class="' . $item['icon'] . '"></i></span>' : '';
 
-                $sort_item = '<li class="' . $tab_class . '">' . $icon . '<a href="' . $url . '" data-sort="' . $slug . '" data-type="' . $item_sort . '" data-def="' . $type_def . '">' . $title . '</a> ' . $sort_icon . '</li>';
+                $sort_item = array(
+                    'tab_class' => $tab_class,
+                    'icon' => $icon,
+                    'url' => $url,
+                    'slug' => $slug,
+                    'item_sort' => $item_sort,
+                    'type_def' => $type_def,
+                    'title' => $title,
+                    'sort_icon' => $sort_icon,
+                    'type' => 'link',
+                );
                 if (isset($item['main']) && $item['main'] == 1) {
-                    $main_sort[] = $sort_item;
+                    $main_sort[$item['group']][] = $sort_item;
                 } else {
-                    $more_sort[] = $sort_item;
+                    $more_sort[$item['group']][] = $sort_item;
                     if ($tab_active) {
-                        $more_active = true;
+                        $more_active[$item['group']] = true;
                     }
                 }
             }
@@ -940,17 +1021,45 @@ class SearchFacets extends AbstractDB {
         if ($main_sort) {
             $ret .= '<span class="sort-title">Sort by: </span>';
             $ret .= '<ul class="sort-wrapper">';
-            $ret .= implode('', $main_sort);
-            if ($more_sort) {
-                $more_sort_content = '<ul class="sort-wrapper more">' . implode('', $more_sort) . '</ul>';
-                $more_active_class = $more_active ? ' mact' : '';
-                $ret .= '<li class="sort-more' . $more_active_class . '">' . $this->get_nte('More <i></i>', $more_sort_content, true) . '</li>';
+
+            foreach ($this->sort_range as $title => $key) {
+                $group = $main_sort[$key];
+                if ($key == 'def') {
+                    foreach ($group as $item) {
+                        $ret .= $this->get_sort_link($item);
+                    }
+                }
+                if ($more_sort[$key]) {
+                    $group_childs = '';
+                    foreach ($more_sort[$key] as $child) {
+                        $group_childs .= $this->get_sort_link($child);
+                    }
+                    $more_sort_content = '<ul class="sort-wrapper more ' . $key . '">' . $group_childs . '</ul>';
+                    $more_active_class = $more_active[$key] ? ' mact' : '';
+                    $more = '<div class="sort-more' . $more_active_class . '" title="' . $title . '">' . $this->get_nte('<i></i>', $more_sort_content, true) . '</div>';
+
+                    $group_item = $group[0];
+                    $group_item['sort_icon'] .= $more;
+                    $group_item['tab_class'] .= ' group';
+
+                    $ret .= $this->get_sort_link($group_item);
+                }
             }
+
             $ret .= '</ul>';
         }
         $ret .= '</div>';
 
         return $ret;
+    }
+
+    private function get_sort_link($item) {
+        if ($item['type'] == 'title') {
+            $sort_item = '<li class="' . $item['tab_class'] . ' title ' . $item['slug'] . '">' . $item['title'] . '</li>';
+        } else {
+            $sort_item = '<li class="' . $item['tab_class'] . '">' . $item['icon'] . '<a href="' . $item['url'] . '" data-sort="' . $item['slug'] . '" data-type="' . $item['item_sort'] . '" data-def="' . $item['type_def'] . '">' . $item['title'] . '</a> ' . $item['sort_icon'] . '</li>';
+        }
+        return $sort_item;
     }
 
     public function search_tabs($results = array()) {
@@ -1341,7 +1450,7 @@ class SearchFacets extends AbstractDB {
                         </div>
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $first_item ?>">
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $max_item ?>">
-                        <?php //unset($items[count($items) - 1]);       ?>
+                        <?php //unset($items[count($items) - 1]);        ?>
                         <script type="text/javascript">var <?php print $type ?>_arr =<?php print json_encode($items) ?></script>
                     </div>  
                 </div>
@@ -1876,7 +1985,7 @@ class SearchFacets extends AbstractDB {
         $dates = array();
         if ($data) {
             $ids = array();
-            
+
             foreach ($data as $value) {
                 $ids[] = $value->id;
             }
@@ -1892,7 +2001,7 @@ class SearchFacets extends AbstractDB {
         }
 
         $title = 'Keywords';
-   
+
         $quick_find = true;
         $this->theme_facet_multi($filter, $dates, $title, $more, $ftype, true, '', '', true, true, 0, $quick_find);
     }
@@ -2420,7 +2529,7 @@ class SearchFacets extends AbstractDB {
                         $expand_text = 'Expand all: ' . $more;
                         if ($more == -1) {
                             $expand_text = 'Expand';
-                            $more='more';
+                            $more = 'more';
                         } else if ($more > $max_count) {
                             $expand_text = 'Expand first: ' . $max_count;
                             print '<p>Total found: ' . $more . '</p>';
