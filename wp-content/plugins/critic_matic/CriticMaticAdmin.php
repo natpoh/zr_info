@@ -78,6 +78,9 @@ class CriticMaticAdmin {
     public $bulk_actions_genre = array(
         'genre_remove' => 'Remove genre',
     );
+    public $bulk_actions_ml = array(
+        'ml_remove_post' => 'Remove post',
+    );
     public $bulk_actions_feeds = array(
         'start_feed' => 'Start campaigns',
         'stop_feed' => 'Stop campaigns',
@@ -1568,7 +1571,7 @@ class CriticMaticAdmin {
                                     }
                                 }
                                 if ($rating_data) {
-                         
+
                                     // Upadte erating
                                     $ma->update_erating($erating['id'], $rating_data);
                                     // Calculate erating
@@ -2983,11 +2986,16 @@ class CriticMaticAdmin {
                 } else if (in_array($b, array_keys($this->bulk_actions_parser))) {
                     $changed = $this->cp->bulk_change_campaign_status($ids, $b);
                 } else if ($b == 'genre_remove') {
-
                     $mid = isset($_GET['mid']) ? (int) $_GET['mid'] : 0;
                     if ($mid) {
                         $ma = $this->cm->get_ma();
                         $ma->bulk_remove_movie_genres($mid, $ids);
+                    }
+                } else if ($b == 'ml_remove_post') {
+                    $ml = new MoviesLinks();
+                    $mp = $ml->get_mp();
+                    foreach ($ids as $id) {
+                        $mp->delete_post_by_url_id($id);
                     }
                 } else {
                     // Change status

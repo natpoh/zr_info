@@ -583,7 +583,9 @@ class MoviesParser extends MoviesAbstractDB {
             'parser_type' => -1,
             'links_type' => -1,
             'exp_status' => -1,
-            'date' => 0,
+            'pid' => -1,
+            'ids'=> array(),
+            'date' => 0,            
         );
 
 
@@ -638,6 +640,18 @@ class MoviesParser extends MoviesAbstractDB {
         if ($q['exp_status'] != -1) {
             $exp_status_and = sprintf(" AND u.exp_status=%d", $q['exp_status']);
         }
+        
+        // Links pid filter
+        $links_pid_and = '';
+        if ($q['pid'] != -1) {
+            $links_pid_and = sprintf(" AND u.pid=%d", $q['pid']);
+        }
+        
+        // Ids and
+        $ids_and = '';
+        if ($q['ids']) {
+            $ids_and = sprintf(" AND u.id IN (%s)", implode(',', $q['ids']));
+        }
 
         // Date filter
         $and_date = '';
@@ -670,7 +684,7 @@ class MoviesParser extends MoviesAbstractDB {
 
             $select = "u.id, u.cid, u.pid, u.status, u.link_hash, u.link, u.date, u.last_upd, u.exp_status, u.upd_rating,"
                     . " a.date as adate,"
-                    . " p.date as pdate, p.status as pstatus, p.title as ptitle, p.year as pyear,"
+                    . " p.date as pdate, p.status as pstatus, p.title as ptitle, p.year as pyear, p.id as postid, "
                     . " p.top_movie as ptop_movie, p.status_links as pstatus_links, p.rating as prating";
         } else {
             $select = "COUNT(u.id)";
@@ -680,8 +694,8 @@ class MoviesParser extends MoviesAbstractDB {
                 . " FROM {$this->db['url']} u"
                 . " LEFT JOIN {$this->db['arhive']} a ON u.id = a.uid"
                 . " LEFT JOIN {$this->db['posts']} p ON u.id = p.uid"
-                . $status_query . $cid_and . $exp_status_and . $arhive_type_and . $parser_type_and . $links_type_and . $and_date . $and_orderby . $limit;
-
+                . $status_query .$ids_and.  $cid_and . $links_pid_and.  $exp_status_and . $arhive_type_and . $parser_type_and . $links_type_and . $and_date . $and_orderby . $limit;
+                
         if (!$count) {
             $result = $this->db_results($query);
         } else {
@@ -2484,6 +2498,31 @@ class MoviesParser extends MoviesAbstractDB {
                         $results[$movie->id]['total']['match'] += 1;
                         $results[$movie->id]['total']['rating'] += $exist_rule['ra'];
                     }
+
+                    // Exist movie
+                    if ($post_exist_movie_name) {
+                        if ($movie->type == 'Movie') {
+                            $results[$movie->id]['exist_movie']['data'] = $post_exist_movie_name;
+                            $results[$movie->id]['exist_movie']['match'] = 1;
+                            $results[$movie->id]['exist_movie']['rating'] = $exist_movie_rule['ra'];
+
+                            $results[$movie->id]['total']['match'] += 1;
+                            $results[$movie->id]['total']['rating'] += $exist_movie_rule['ra'];
+                        }
+                    }
+
+                    // Exist tv
+                    if ($post_exist_tv_name) {
+                        if ($movie->type == 'TVSeries') {
+                            $results[$movie->id]['exist_tv']['data'] = $post_exist_tv_name;
+                            $results[$movie->id]['exist_tv']['match'] = 1;
+                            $results[$movie->id]['exist_tv']['rating'] = $exist_tv_rule['ra'];
+
+                            $results[$movie->id]['total']['match'] += 1;
+                            $results[$movie->id]['total']['rating'] += $exist_tv_rule['ra'];
+                        }
+                    }
+
                     //Facets
                     $facets[$movie->id] = $ms->get_movie_facets($movie->id);
                 }
@@ -3177,6 +3216,13 @@ class MoviesParser extends MoviesAbstractDB {
         $result = $this->db_results($sql);
         return $result;
     }
+    
+    public function get_posts_by_top_movie($top_movie=0) {
+        $sql = sprintf("SELECT * FROM {$this->db['posts']} WHERE top_movie = %d", (int) $top_movie);
+        $result = $this->db_results($sql);
+        return $result;
+    }
+    
 
     public function get_posts_count($cid) {
         $sql = sprintf("SELECT COUNT(p.id) FROM {$this->db['posts']} p INNER JOIN {$this->db['url']} u ON u.id=p.uid WHERE u.cid=%d", $cid);

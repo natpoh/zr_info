@@ -135,6 +135,7 @@ if ($mid) {
                         <tr>
                             <th><?php print __('key') ?></th>
                             <th><?php print __('value') ?></th>                        
+                            <th>Info</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -146,7 +147,12 @@ if ($mid) {
                             ?>
                             <tr>                        
                                 <td><?php print $key ?></td>
-                                <td><input name="<?php print $key ?>" type="text" value="<?php print $value ?>"></td>                           
+                                <td><input name="<?php print $key ?>" type="text" value="<?php print $value ?>"></td> 
+                                <td> <?php
+                                    if (strstr($key, 'date')) {
+                                        print $value ? $ma->curr_date($value) : 0 ;
+                                    }
+                                    ?></td>
                             </tr> 
                         <?php } ?>
                     </tbody>
@@ -159,15 +165,153 @@ if ($mid) {
         <br />
         <?php
     }
-    if (class_exists('MoviesLinks')) {
+    if (class_exists('MoviesLinks') && class_exists('MoviesLinksAdmin')) {
         $ml = new MoviesLinks();
+        $mla = new MoviesLinksAdmin();
+        $mpa = $mla->get_mpa();
         ?>
-
         <h1>Movies links</h1>
+        <?php
+        // Get links urls
+        $mp = $ml->get_mp();
+        $q_req = array('pid' => $mid);
+        $urls = $mp->get_urls_query($q_req, 1, 0);
 
-    <?php }
+        // Get parsing posts
+        $urls2 = array();
+        $parsed_posts = $mp->get_posts_by_top_movie($mid);
+        if ($parsed_posts) {
+            $ids = array();
+            foreach ($parsed_posts as $post) {
+                $ids[] = $post->uid;
+            }
+            $q2_req = array(
+                'ids' => $ids,
+                'pid' => 0,
+            );
+            $urls2 = $mp->get_urls_query($q2_req, 1, 0);
+        }
+
+        $total_urls = array(
+            'Post id' => $urls,
+            'Top movie' => $urls2,
+        );
+
+        foreach ($total_urls as $tkey => $urls) {
+
+            if ($urls) {
+                ?>
+                <h3><?php print $tkey ?></h3>
+                <form accept-charset="UTF-8" method="post" >
+                    <input type="hidden" name="ml_posts" value="1">
+                    <div class="bulk-actions-holder">
+                        <select name="bulkaction" class="bulk-actions">
+                            <option value=""><?php print __('Bulk actions') ?></option>
+                            <?php foreach ($this->bulk_actions_ml as $act_key => $act_name) { ?>                    
+                                <option value="<?php print $act_key ?>">
+                                    <?php print $act_name ?>
+                                </option>                                
+                            <?php } ?>                       
+                        </select>
+                        <input type="submit" id="edit-submit" value="<?php echo __('Submit') ?>" class="button-primary">  
+                    </div>
+                    <table id="movies" class="wp-list-table widefat striped table-view-list">
+                        <thead>
+                            <tr>
+                                <td class="manage-column column-cb check-column" ><input type="checkbox" id="cb-select-all-1"></td>
+                                <th><?php print __('id') ?></th>
+                                <th><?php print __('Date / Update') ?></th>
+                                <th><?php print __('link') ?></th>
+                                <th><?php print __('Movie ID') ?></th>
+                                <th><?php print __('Status') ?></th>
+                                <th><?php print __('Arhive') ?></th>
+                                <th><?php print __('Post') ?></th>
+                                <th><?php print __('Link') ?></th>
+                                <th><?php print __('Camapaign') ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            foreach ($urls as $item) {
+
+                                $campaign = $mp->get_campaign($item->cid, true);
+                                $camp_title = $item->cid;
+                                if ($campaign) {
+                                    $camp_title = $campaign->title;
+                                }
+                                $camp_title = $mla->theme_parser_campaign($item->cid, $camp_title);
+
+                                $ml_url = '/wp-admin/admin.php?page=moveis_links_parser';
+                                ?>
+                                <tr>
+                                    <th  class="check-column" ><input type="checkbox" name="bulk-<?php print $item->id ?>"></th>    
+                                    <td>
+                                        <a href="<?php print $ml_url . '&uid=' . $item->id ?>"><?php print $item->id ?></a>
+                                    </td>
+                                    <td>
+                                        <?php print $item->date ? $mp->curr_date($item->date) : 0  ?><br />
+                                        <?php print $item->last_upd ? $mp->curr_date($item->last_upd) : 0  ?>
+                                    </td> 
+                                    <td class="wrap">                            
+                                        <a href="<?php print $item->link ?>" target="_blank" title="<?php print $item->link ?>"><?php print $item->link ?></a>                                               
+                                    </td> 
+                                    <td><a href="/wp-admin/admin.php?page=critic_matic_movies&mid=<?php print $item->pid ?>"><?php print $item->pid ?></a></td>
+                                    <td><?php print $mpa->get_url_status($item->status) ?></td>
+                                    <td>
+                                        <?php
+                                        if ($item->adate) {
+                                            print $mp->curr_date($item->adate);
+                                        }
+                                        ?>
+                                    </td>
+                                    <td>
+                                        <?php
+                                        if ($item->ptitle) {
+                                            $title = $item->postid . '<br /><b>' . $item->ptitle . '</b>';
+                                            if ($item->pyear) {
+                                                $title = $title . ' [' . $item->pyear . ']';
+                                            }
+                                            print $title . '<br />';
+                                        }
+                                        if ($item->pdate) {
+                                            print 'Date: ' . $mp->curr_date($item->pdate) . '<br />';
+                                        }
+                                        if (isset($item->pstatus)) {
+                                            print 'Status: ' . $mpa->post_parse_status[$item->pstatus];
+                                        }
+                                        ?>
+                                    </td>
+                                    <td>
+                                        <?php
+                                        if ($item->ptop_movie) {
+                                            /* $m = $ma->get_movie_by_id($item->ptop_movie);
+                                              $title = '<b>' . $m->title . '</b>';
+                                              print $title . '  ['.$m->year.']<br />'; */
+                                            print $item->ptop_movie . '<br />';
+                                        }
+                                        if ($item->prating) {
+                                            print 'Rating: ' . $item->prating . '<br />';
+                                        }
+                                        if (isset($item->pstatus_links)) {
+                                            print 'Status: ' . $mpa->post_link_status[$item->pstatus_links];
+                                        }
+                                        ?>
+                                    </td>
+                                    <td>
+                                        <?php print $camp_title ?>
+                                    </td>
+                                </tr> 
+                            <?php } ?>
+                        </tbody>
+                    </table> 
+                </form>   
+
+                <?php
+            }
+        }
+    }
     ?>
-
+    <br />
 
     <h1>Reviews</h1>
     <?php
@@ -281,8 +425,8 @@ if ($mid) {
                 <?php } ?>
             </tbody>        
         </table><?php
-    }
-    ?>
+            }
+            ?>
     <form accept-charset="UTF-8" method="post" >
         <div class="bulk-actions-holder">
             <select name="bulkaction" class="bulk-actions">
@@ -363,12 +507,12 @@ if ($mid) {
                                                     <tr>
                                                         <td><?php print $key ?></td>
                                                         <td><?php
-                                                            if (is_array($value)) {
-                                                                print_r(implode('; ', $value));
-                                                            } else {
-                                                                print_r($value);
-                                                            }
-                                                            ?></td>
+                                                    if (is_array($value)) {
+                                                        print_r(implode('; ', $value));
+                                                    } else {
+                                                        print_r($value);
+                                                    }
+                                                    ?></td>
                                                     </tr>
                                                 <?php } ?>
                                             </tbody>        

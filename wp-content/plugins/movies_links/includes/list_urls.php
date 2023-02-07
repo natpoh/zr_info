@@ -57,7 +57,7 @@ if (sizeof($posts) > 0) {
               <th><?php print __('Last log') ?></th>
               <?php */ ?>
 
-            <th><?php print __('Action') ?></th> 
+  
 
             </thead>
             <tbody>
@@ -74,7 +74,9 @@ if (sizeof($posts) > 0) {
                     ?>
                     <tr>           
                         <th  class="check-column" ><input type="checkbox" name="bulk-<?php print $item->id ?>"></th>
-                        <td><?php print $item->id ?></td>                             
+                        <td>
+                        <a href="<?php print $url . '&uid=' . $item->id ?>"><?php  print $item->id ?></a>
+                        </td>                             
                         <td><?php print $item->date ? $this->mp->curr_date($item->date) : 0  ?></td> 
                         <td><?php print $item->last_upd ? $this->mp->curr_date($item->last_upd) : 0  ?></td> 
                         <td class="wrap">                            
@@ -134,7 +136,7 @@ if (sizeof($posts) > 0) {
                         <?php /* ?>
                           <td><?php print $this->get_last_log($item->id); ?></td>
                           <?php */ ?>
-                        <td><a href="<?php print $url . '&uid=' . $item->id ?>"><?php print 'View' ?></a></td>
+                  
                     </tr> 
                 <?php } ?>
             </tbody>

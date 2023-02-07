@@ -44,8 +44,12 @@ class MoviesLinksAdmin {
         $mpa->overview();
     }
 
-    public function movies() {
-        
+    public function get_mpa() {
+        if (!class_exists('MoviesParserAdmin')) {
+            require_once( MOVIES_LINKS_PLUGIN_DIR . '/admin/MoviesParserAdmin.php' );
+        }
+        $mpa = new MoviesParserAdmin($this);
+        return $mpa;
     }
 
     public function parser() {
