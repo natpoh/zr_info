@@ -75,6 +75,9 @@ class CriticMaticAdmin {
         'meta_unapprove' => 'Unapprove meta',
         'meta_remove' => 'Remove meta',
     );
+    public $bulk_actions_genre = array(
+        'genre_remove' => 'Remove genre',
+    );
     public $bulk_actions_feeds = array(
         'start_feed' => 'Start campaigns',
         'stop_feed' => 'Stop campaigns',
@@ -447,7 +450,7 @@ class CriticMaticAdmin {
             $page_url = $page_url . '&s=' . urlencode($s);
 
             if ($total) {
-                $pager = $this->themePager( $page, $page_url, $total, $per_page, $orderby, $order);
+                $pager = $this->themePager($page, $page_url, $total, $per_page, $orderby, $order);
             }
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_search.php');
@@ -541,11 +544,11 @@ class CriticMaticAdmin {
             $query = $query_adb->get_query();
             $page_url = $filters_tabs['p'];
             $count = $filters_tabs['c'];
-           
+
             $per_page = $this->cm->perpage;
-            $pager = $this->themePager( $page, $page_url, $count, $per_page, $orderby, $order);
+            $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
             $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order, false, false);
-           
+
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_overview.php');
         } else if ($curr_tab == 'details') {
@@ -572,7 +575,7 @@ class CriticMaticAdmin {
             $per_page = $this->cm->perpage;
             $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
             $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order, false, false);
-            
+
             $author_type = isset($_GET['author_type']) ? (int) $_GET['author_type'] : -1;
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_details.php');
@@ -1459,7 +1462,7 @@ class CriticMaticAdmin {
         $count = $filters_tabs['c'];
 
         $per_page = $this->cm->perpage;
-        $pager = $this->themePager( $page, $page_url, $count, $per_page, $orderby, $order);
+        $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
         $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order, false, false);
 
         include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_transcriptions.php');
@@ -1509,7 +1512,7 @@ class CriticMaticAdmin {
             $page_url = $page_url . '&s=' . urlencode($s);
 
             if ($count) {
-                $pager = $this->themePager( $page, $page_url, $count, $per_page, $orderby, $order);
+                $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
             }
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_movies_search.php');
@@ -1534,6 +1537,22 @@ class CriticMaticAdmin {
                 $curr_tab = 'home';
             }
             if ($curr_tab == 'home') {
+
+                if (isset($_POST['mid'])) {
+                    $nonce = wp_verify_nonce($_POST['critic-nonce'], 'critic-options');
+                    if ($nonce) {
+                        
+                        $genre = isset($_POST['genre'])?$_POST['genre']:0;
+                        if ($genre){
+                            $ma = $this->cm->get_ma();
+                            $ma->add_movie_genre($mid,$genre);
+                        }
+
+                        print "<div class=\"updated\"><p><strong>Updated</strong></p></div>";
+                    } else {
+                        print "<div class=\"error\"><p><strong>Error nonce</strong></p></div>";
+                    }
+                }
                 $critics_search = $this->cs->search_critics($movie, true);
                 include(CRITIC_MATIC_PLUGIN_DIR . 'includes/view_movie.php');
             }
@@ -2255,7 +2274,7 @@ class CriticMaticAdmin {
         $count = $filters_tabs['c'];
 
         $per_page = $this->cm->perpage;
-        $pager = $this->themePager( $page, $page_url, $count, $per_page, $orderby, $order);
+        $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
         $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order, false, false);
 
 
@@ -2427,7 +2446,7 @@ class CriticMaticAdmin {
 
         $page_url = $url;
         $page_url .= '&tab=log';
-        
+
         // Filter by status
         $home_log_status = -1;
         $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_log_status;
@@ -2446,9 +2465,9 @@ class CriticMaticAdmin {
             $page_url = $page_url . '&type=' . $type;
             $count = isset($filter_type_arr[$type]['count']) ? $filter_type_arr[$type]['count'] : 0;
         }
-            
+
         $log = $this->cs->get_log($page, 0, 0, $per_page, $status, $type);
-       
+
         $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
         include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_log_meta.php');
     }
@@ -2485,7 +2504,7 @@ class CriticMaticAdmin {
         }
 
         $log = $this->cp->get_log($page, $cid, 0, $status, $type, $per_page);
-        $pager = $this->themePager( $page, $page_url, $count, $per_page, $orderby, $order);
+        $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
         include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_log_parser.php');
     }
 
@@ -2930,6 +2949,13 @@ class CriticMaticAdmin {
                     $changed = $this->cf->bulk_change_campaign_status($ids, $b);
                 } else if (in_array($b, array_keys($this->bulk_actions_parser))) {
                     $changed = $this->cp->bulk_change_campaign_status($ids, $b);
+                } else if ($b == 'genre_remove') {
+
+                    $mid = isset($_GET['mid']) ? (int) $_GET['mid'] : 0;
+                    if ($mid) {
+                        $ma = $this->cm->get_ma();
+                        $ma->bulk_remove_movie_genres($mid, $ids);
+                    }
                 } else {
                     // Change status
                     $updated = false;

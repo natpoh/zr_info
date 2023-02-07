@@ -483,4 +483,9 @@ function movies_links_create_index($names = array(), $table_name = '') {
 /*
  * set date to empty date urls
  * UPDATE `movies_links_url` SET `date`=1670934940,`last_upd`=1670934940 WHERE `last_upd`= 0
+ * Animelist clear
+ * UPDATE `data_movie_erating` SET `animelist_rating`=0,`animelist_count`=0,`animelist_date`=0 WHERE `animelist_date`> 0
+ * DELETE FROM `data_movie_erating` WHERE `kinop_rating` = 0 AND `douban_rating` = 0 AND `fchan_rating` = 0 AND `reviews_rating` = 0 AND `total_rating` > 0 AND `animelist_rating` = 0 AND `imdb_rating` = 0 AND `rt_rating` = 0 AND `rt_aurating` = 0 AND `rt_gap` = 0
+ * DELETE FROM `meta_movie_genre` WHERE `gid` = 29
+ * 
  */

@@ -14,11 +14,11 @@
 print $tabs;
 
 if ($mid) {
-    
+
     $cfront = $this->get_cfront();
     $img = $cfront->get_thumb_path_full(220, 330, $mid);
-    if ($img){
-        print '<img src="'.$img.'" /><br />';
+    if ($img) {
+        print '<img src="' . $img . '" /><br />';
     }
     ?>
     <h3><?php print __('Meta') ?></h3>
@@ -49,7 +49,80 @@ if ($mid) {
             </tr>
         </tbody>        
     </table>
+    <h3>Genre</h3>
+    <?php
+    $ma = $this->cm->get_ma();
+    $genre = $ma->get_movie_genres($mid);
+    if (sizeof($genre)) {
+        ?>
+        <form accept-charset="UTF-8" method="post" >
+            <div class="bulk-actions-holder">
+                <select name="bulkaction" class="bulk-actions">
+                    <option value=""><?php print __('Bulk actions') ?></option>
+                    <?php foreach ($this->bulk_actions_genre as $act_key => $act_name) { ?>                    
+                        <option value="<?php print $act_key ?>">
+                            <?php print $act_name ?>
+                        </option>                                
+                    <?php } ?>                       
+                </select>
+                <input type="submit" id="edit-submit" value="<?php echo __('Submit') ?>" class="button-primary">  
+            </div>
+            <table id="movies" class="wp-list-table widefat striped table-view-list">
+                <thead>
+                    <tr>
+                        <td class="manage-column column-cb check-column" ><input type="checkbox" id="cb-select-all-1"></td>
+                        <th><?php print __('id') ?></th>
+                        <th><?php print __('Name') ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    foreach ($genre as $item) {
+                        ?>
+                        <tr>
+                            <th  class="check-column" ><input type="checkbox" name="bulk-<?php print $item->id ?>"></th>    
+                            <td><?php print $item->name ?></td>          
+                            <td><?php print $item->id ?></td>                                              
+                        </tr> 
+                    <?php } ?>
+                </tbody>
+            </table> 
+        </form>   
 
+        <?php
+    }
+    // Add genre
+    $all_genres = $ma->get_all_genres();
+    ?>
+    <br />
+    <form accept-charset="UTF-8" method="post" >
+        <fieldset>
+            <input type="hidden" name="edit_genre" value="1">
+            <input type="hidden" name="mid" class="mid" value="<?php print $mid ?>">
+            <label class="inline-edit-author">
+                <span class="title"><?php print __('Add a genre') ?></span>
+                <select name="genre" class="authors">
+                    <?php
+                    if ($all_genres) {
+                        foreach ($all_genres as $genre) {
+                            ?>
+                            <option value="<?php print $genre->id ?>"><?php print stripslashes($genre->name) ?></option>                                
+                            <?php
+                        }
+                    }
+                    ?>                       
+                </select>
+            </label>
+            <?php wp_nonce_field('critic-options', 'critic-nonce'); ?>
+            <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save') ?>" class="button-primary">  
+        </fieldset>
+    </form>
+
+    <h3>ERating</h3>
+
+    <h1>Movies links</h1>
+
+    <h1>Reviews</h1>
     <?php
     $critic_meta = $this->cm->get_critics_meta_by_movie($mid);
     $meta_exist = array();
@@ -59,11 +132,11 @@ if ($mid) {
             <div class="bulk-actions-holder">
                 <select name="bulkaction" class="bulk-actions">
                     <option value=""><?php print __('Bulk actions') ?></option>
-                    <?php foreach ($this->bulk_actions_meta as $act_key => $act_name) { ?>                    
+                        <?php foreach ($this->bulk_actions_meta as $act_key => $act_name) { ?>                    
                         <option value="<?php print $act_key ?>">
-                            <?php print $act_name ?>
+                        <?php print $act_name ?>
                         </option>                                
-                    <?php } ?>                       
+        <?php } ?>                       
                 </select>
                 <input type="submit" id="edit-submit" value="<?php echo __('Submit') ?>" class="button-primary">  
             </div>
@@ -101,7 +174,7 @@ if ($mid) {
                             <td><?php print $this->theme_author_link($critic->aid, $critic->author_name) ?></td>
                             <td><?php print $this->cm->get_author_type($critic->author_type) ?></td>
                         </tr> 
-                    <?php } ?>
+        <?php } ?>
                 </tbody>
             </table> 
         </form>   
@@ -137,7 +210,7 @@ if ($mid) {
                     <td><?php print $this->theme_post_link($item->cid, $this->cm->get_post_name_by_id($item->cid)) ?></td> 
                     <td><?php print $this->theme_movie_link($item->mid, $this->get_movie_name_by_id($item->mid)) ?></td>  
                 </tr> 
-            <?php } ?>
+        <?php } ?>
         </tbody>
         </table>    
     <?php } ?>
@@ -153,12 +226,12 @@ if ($mid) {
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($critics_search['debug'] as $key => $value) { ?>
+        <?php foreach ($critics_search['debug'] as $key => $value) { ?>
                     <tr>
                         <td><?php print ucfirst($key) ?></td>
                         <td><?php print $value ?></td>
                     </tr>
-                <?php } ?>
+        <?php } ?>
             </tbody>        
         </table><?php
     }
@@ -167,11 +240,11 @@ if ($mid) {
         <div class="bulk-actions-holder">
             <select name="bulkaction" class="bulk-actions">
                 <option value=""><?php print __('Bulk actions') ?></option>
-                <?php foreach ($this->bulk_actions_search as $act_key => $act_name) { ?>                    
+                    <?php foreach ($this->bulk_actions_search as $act_key => $act_name) { ?>                    
                     <option value="<?php print $act_key ?>">
-                        <?php print $act_name ?>
+                    <?php print $act_name ?>
                     </option>                                
-                <?php } ?>                       
+    <?php } ?>                       
             </select>
             <input type="submit" id="edit-submit" value="<?php echo __('Submit') ?>" class="button-primary">  
         </div>
@@ -233,13 +306,13 @@ if ($mid) {
                                 <td><?php print $rating ?></td>
                                 <td><?php print $score_str ?></td>                    
                             </tr> 
-                            <?php if (isset($critic['debug'])) { ?>
+                <?php if (isset($critic['debug'])) { ?>
                                 <tr>
                                     <td></td>
                                     <td colspan="6">
                                         <table class="wp-list-table widefat striped table-view-list">     
                                             <tbody>
-                                                <?php foreach ($critic['debug'] as $key => $value) { ?>
+                    <?php foreach ($critic['debug'] as $key => $value) { ?>
                                                     <tr>
                                                         <td><?php print $key ?></td>
                                                         <td><?php
@@ -250,7 +323,7 @@ if ($mid) {
                                                             }
                                                             ?></td>
                                                     </tr>
-                                                <?php } ?>
+                    <?php } ?>
                                             </tbody>        
                                         </table>
                                     </td>                        

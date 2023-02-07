@@ -332,6 +332,12 @@ class MoviesAn extends AbstractDBAn {
 
         return $result;
     }
+    
+    public function get_all_genres() {
+        $sql = sprintf("SELECT id, name, slug, status, weight FROM {$this->db['data_genre']} WHERE status!=2 ORDER BY name ASC");
+        $result = $this->db_results($sql);
+        return $result;
+    }
 
     public function get_genres_states() {
         $count = $this->get_genres_count();
@@ -521,10 +527,9 @@ class MoviesAn extends AbstractDBAn {
     }
 
     public function get_movie_genres($mid) {
-        $sql = sprintf("SELECT id, name FROM {$this->db['data_genre']} g"
-                . " INNER JOIN {$this->db['meta_genre']} m ON m.id = g.gid"
+        $sql = sprintf("SELECT g.id, g.name FROM {$this->db['data_genre']} g"
+                . " INNER JOIN {$this->db['meta_genre']} m ON m.gid = g.id"
                 . " WHERE m.mid=%d", $mid);
-
         $result = $this->db_results($sql);
         return $result;
     }
@@ -584,6 +589,17 @@ class MoviesAn extends AbstractDBAn {
     public function remove_movie_genre($mid, $gid) {
         $sql = sprintf("DELETE FROM {$this->db['meta_genre']} WHERE mid=%d AND gid=%d", (int) $mid, (int) $gid);
         $this->db_query($sql);
+    }
+    
+    public function bulk_remove_movie_genres($mid, $gids) {
+        
+        foreach ($gids as $gid) {
+            $data = array(
+                'mid'=>$mid,
+                'gid'=>$gid,
+            );
+            $this->sync_delete_multi($data, $this->db['meta_genre'], true, 10);
+        }
     }
 
     /*

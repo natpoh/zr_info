@@ -1393,5 +1393,15 @@ WHERE
    
  * SELECT * FROM `wp_bcw98b_critic_matic_posts` WHERE `link` LIKE '%www.bitchute.com%'
    UPDATE wp_bcw98b_critic_matic_posts SET view_type=3 WHERE `link` LIKE '%www.bitchute.com%'    
+ *
  * 
+ * 
+ * Movies
+ * SELECT tmdb_id, count(*) FROM `data_movie_imdb` WHERE tmdb_id>0 GROUP by tmdb_id having count(*) > 1;
+ * DELETE m FROM `data_movie_imdb` m
+        INNER JOIN `data_movie_imdb` s
+        WHERE 
+    m.tmdb_id>0 AND
+    m.id > s.id AND 
+    m.tmdb_id = s.tmdb_id;
  */

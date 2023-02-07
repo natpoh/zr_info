@@ -2121,7 +2121,11 @@ class CriticMatic extends AbstractDB {
         $tags = $this->get_author_tags($aid);
         if ($tags) {
             foreach ($tags as $tag) {
-                $this->sync_delete_data($tag->id, $this->db['tag_meta'], $sync_data = $this->sync_data);
+                $data = array(
+                    'tid' => $tag->id,
+                    'aid' => $aid,
+                );
+                $this->sync_delete_multi($data, $this->db['tag_meta'], $sync_data = $this->sync_data, 10);
             }
         }
     }
@@ -3216,7 +3220,7 @@ class CriticMatic extends AbstractDB {
         if ($wait == 0) {
             $wait = 10;
         }
-        
+
         $curr_time = $this->curr_time();
 
         // Last run
