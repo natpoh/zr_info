@@ -249,7 +249,7 @@ function create_total_rating(obj, only_tomatoes)
         if (obj.rwt_staff > 0)
             content_rating += '<div><span>Staff Rating:</span>' + create_rating_star(obj.rwt_staff, '') + '</div>';
         if (obj.imdb)
-            content_rating += '<div><span class="exlink" id="imdb">IMDb:</span>' + create_rating_star(obj.imdb, 'imdb') + '</div>';
+            content_rating += '<div class="exlink" id="imdb" ><span >IMDb:</span>' + create_rating_star(obj.imdb, 'imdb') + '</div>';
     }
 
 
@@ -272,7 +272,7 @@ function create_total_rating(obj, only_tomatoes)
             content_rating += '<div><div class="rotten_tomatoes_score">';
         } else
         {
-            content_rating += '<div><span class="exlink" id="rt">Rotten Tomatoes:</span><div class="rotten_tomatoes_score">';
+            content_rating += '<div class="exlink" id="rt"><span>Rotten Tomatoes:</span><div class="rotten_tomatoes_score">';
 
         }
 
@@ -303,14 +303,14 @@ function create_total_rating(obj, only_tomatoes)
 
     if (!only_tomatoes) {
         if (Number(obj.tmdb) > 0) {
-            content_rating += '<div><span class="exlink" id="tmdb">TMDb Ratig:</span>' + create_rating_star(obj.tmdb, 'tmdb') + '</div>';
+            content_rating += '<div class="exlink" id="tmdb"><span>TMDb Ratig:</span>' + create_rating_star(obj.tmdb, 'tmdb') + '</div>';
         }
 
 
         if (obj.kinop_rating>0)
-            content_rating += '<div><span class="exlink" id="kinop">Kinopoisk (Russia):</span>' + create_rating_star(obj.kinop_rating, 'kinopoisk') + '</div>';
+            content_rating += '<div class="exlink" id="kinop"><span>Kinopoisk (Russia):</span>' + create_rating_star(obj.kinop_rating, 'kinopoisk') + '</div>';
         if (obj.douban_rating>0)
-            content_rating += '<div><span class="exlink" id="douban">Douban (China):</span>' + create_rating_star(obj.douban_rating, 'douban') + '</div>';
+            content_rating += '<div class="exlink" id="douban"><span>Douban (China):</span>' + create_rating_star(obj.douban_rating, 'douban') + '</div>';
     }
 
 
@@ -505,7 +505,7 @@ function create_rating_content(object, m_id)
         }
 
     }
-
+    
     if (object['total_rating'])
     {
         var total_gap = object.total_rating.rotten_tomatoes_gap;
@@ -819,8 +819,8 @@ function create_rating_star(rating, type)
     if (type == 'douban') {
 
         if (rating) {
-            rating = Number(rating);
-            return '<span class="douban_rating"><strong>' + rating + '</strong>/100</span>';
+            rating = Number(rating)/10;
+            return '<span class="douban_rating"><strong>' + rating + '</strong>/10</span>';
         }
     }
     if (type == 'imdb') {
@@ -1331,7 +1331,14 @@ function load_ajax_block(block_id) {
 
                 }
 
-            } else if (block_id == 'ns_related_scroll') {
+            }
+
+            else if (block_id == 'ns_related_scroll') {
+                if (data) {
+                    jQuery('#'+block_id).html(data);
+                }
+            }
+            else if (block_id == 'tags_keywords') {
                 if (data) {
                     jQuery('#'+block_id).html(data);
                 }
@@ -1572,7 +1579,7 @@ function load_next_block(block_id) {
 
         jQuery('div[id="' + block_id + '"]').removeClass('not_load').addClass('loaded');
         load_ajax_block(block_id);
-        check_load_block();
+        //check_load_block();
     }
 
 }
@@ -1581,7 +1588,7 @@ function load_next_block(block_id) {
 function check_load_block() {
     var topcur = jQuery(window).scrollTop() + jQuery(window).height() + 800;
     var last_bloc = get_Top('.not_load:visible');
-    ///  console.log('last_bloc '+last_bloc+' topcur '+topcur);
+   //  console.log('last_bloc '+last_bloc+' topcur '+topcur);
     if (last_bloc) {
         if (topcur >= last_bloc) {
             load_next_block('');
@@ -1590,20 +1597,20 @@ function check_load_block() {
 }
 
 var run = 1;
-jQuery(window).scroll(function () {
-
-    if (!run) {
-        return false;
-    }
-    run = 0;
-
-    check_load_block();
-
-
-    setTimeout(function () {
-        run = 1;
-    }, 500);
-});
+// jQuery(window).scroll(function () {
+//
+//     if (!run) {
+//         return false;
+//     }
+//     run = 0;
+//
+//     check_load_block();
+//
+//
+//     setTimeout(function () {
+//         run = 1;
+//     }, 500);
+// });
 
 function add_popup() {
     if (!jQuery('.popup-container').html()) {
@@ -2107,7 +2114,10 @@ function create_Highcharts(data, block)
 
 jQuery(document).ready(function () {
     jQuery('.not_load:visible').each(function () {
-        check_load_block();
+        let block_id = jQuery(this).attr('id');
+        load_next_block(block_id);
+
+       /// check_load_block();
     });
 
     jQuery('body').upScrollButton();
@@ -3299,6 +3309,11 @@ jQuery(document).ready(function () {
 
         let type =jQuery(this).attr('id');
         let id =jQuery(this).parents('.rating_block').attr('id');
+        if (!id)
+        {
+            id =jQuery(this).parents('.movie_total_rating').attr('data-value');
+
+        }
 
         jQuery.ajax({
             type: 'POST',
@@ -3306,7 +3321,16 @@ jQuery(document).ready(function () {
             url: window.location.protocol + template_path + "movie_rating.php",
             data: {"action": "get_link", "type": type, "id":id },
             success: function (data) {
-               console.log(data);
+               if (data)
+               {
+                let ob  = JSON.parse(data);
+                if (ob['url'])
+                {
+                    window.open(ob['url']);
+
+                }
+
+               }
             }
         });
 

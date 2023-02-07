@@ -36,8 +36,8 @@ class MoviesAbstractDBWp extends MoviesAbstractFunctions {
         return $wpdb->_escape($text);
     }
 
-    public function db_update($data, $table, $id) {
-        return Pdo_wp::db_update($data, $table, $id);
+    public function db_update($data, $table, $id, $id_name = "id") {
+        return Pdo_wp::db_update($data, $table, $id, $id_name);
     }
 
     public function db_insert($data, $table) {

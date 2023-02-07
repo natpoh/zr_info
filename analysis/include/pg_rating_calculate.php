@@ -9,102 +9,125 @@ if (!defined('ABSPATH'))
 
 class PgRatingCalculate {
 
-    public static function get_rating_from_bd($mid,$type)
-    {
+    public static function get_rating_from_bd($mid, $type) {
 
-        $array =[];
-        if ($type)
-        {
-            $q="SELECT `link` FROM `cache_rating_links` WHERE `mid` ={$mid} and  `type` = '{$type}'";
-            $r =Pdo_an::db_results_array($q);
-            $array[$type]  =$r[0]['link'];
-        }
-        else
-        {
+        if ($type) {
 
-            $q="SELECT `link`,  `type`  FROM `cache_rating_links` WHERE `mid` ={$mid}";
-            $r =Pdo_an::db_results_array($q);
-            foreach ($r as $row)
-            {
-                $array[$row['type']]  =$row['link'];
+            $array = [];
+
+            $q = "SELECT `link` FROM `cache_rating_links` WHERE `mid` ={$mid} and  `type` = '{$type}'";
+            $r = Pdo_an::db_results_array($q);
+            if ($r[0]['link']) {
+                $array[$type] = $r[0]['link'];
+                return $array;
             }
-
         }
-return $array;
-
+//        else
+//        {
+//
+//            $q="SELECT `link`,  `type`  FROM `cache_rating_links` WHERE `mid` ={$mid}";
+//            $r =Pdo_an::db_results_array($q);
+//            foreach ($r as $row)
+//            {
+//                $array[$row['type']]  =$row['link'];
+//            }
+//
+//        }
     }
-    public static function get_curl_rating($mid,$type)
-    {
-        $array_cid = array( 'thenumbers'=>1,'rotten_mv' =>20,'rotten_tv' =>21, 'douban'=>22,'metacritic'=>23,'kinop'=>24,'myanimelist'=>27);
+
+    public static function get_curl_rating($mid, $type) {
+        $array_cid = array('thenumbers' => 1, 'rotten_mv' => 20, 'rotten_tv' => 21, 'douban' => 22, 'metacritic' => 23, 'kinop' => 24, 'myanimelist' => 27);
+
+        if ($type == 'rt') {
+
+            $array_type = array('Movie' => 'mv', 'TVSeries' => 'tv', 'TVEpisode' => 'tv');
+
+            !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+            $movie_type = TMDB::get_movie_type_from_id($mid);
+
+            $type = 'rotten_' . $array_type[$movie_type];
+        }
 
         //Curl
         !class_exists('GETCURL') ? include ABSPATH . "analysis/include/get_curl.php" : '';
 
-        $link='https://info.antiwoketomatoes.com/wp-content/plugins/movies_links/cron/get_url_by_mid.php?p=8ggD_23_2D0DSF-F&cid='.$array_cid[$type].'&mid='.$mid;
+        $link = 'https://info.antiwoketomatoes.com/wp-content/plugins/movies_links/cron/get_url_by_mid.php?p=8ggD_23_2D0DSF-F&cid=' . $array_cid[$type] . '&mid=' . $mid;
         $result = GETCURL::getCurlCookie($link);
         return $result;
-
     }
 
-    public static function get_rating_url($mid,$rating_type='')
-    {
+    private static function set_rating_to_bd($mid, $rating_type, $link) {
 
 
-        if ($rating_type=='imdb')
-        {
-            !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
-            $movie_id = TMDB::get_imdb_id_from_id($mid);
-            $final_value = sprintf('%07d', $movie_id);
-            $url = "https://www.imdb.com/title/tt" . $final_value . '/';
-
-            return ['url'=>$url];
+        if (!self::get_rating_from_bd($mid, $rating_type)) {
+            $sql = "INSERT INTO `cache_rating_links` (`id`, `mid`, `type`, `link`) VALUES (NULL,?,?,?)";
+            Pdo_an::db_results_array($sql, [$mid, $rating_type, $link]);
         }
-        else if   ($rating_type=='tmdb') {
-
-            $array_type = array('Movie' => 'movie', 'TVSeries' => 'tv', 'TVEpisode' => 'tv');
-
-            !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
-            $movie_type =TMDB::get_movie_type_from_id($mid);
-            $tvtype= $array_type[$movie_type];
-
-            $tmdbid = TMDB::get_tmdbid_from_id($mid);
-
-            $url='https://www.themoviedb.org/'.$tvtype.'/'.$tmdbid;
-            return ['url'=>$url];
-
-        }
-        else {
-
-               $arating = self::get_rating_from_bd($mid,$rating_type);
-               if (!$arating[$rating_type])
-               {
-                   $result  = self::get_curl_rating($mid,$rating_type);
-                   self::prepare_resuts($rating_type,$result);
-
-
-               }
-        }
-
-
-
-
-
     }
 
-    private static function prepare_resuts($rating_type,$result)
-    {
-        if ($result)
-        {
-            $result=json_decode($result);
+    public static function get_rating_url($mid, $rating_type = '') {
+
+        $arating = self::get_rating_from_bd($mid, $rating_type);
+        if ($arating[$rating_type]) {
+            return ['url' => $arating[$rating_type]];
+        } else {
+            if ($rating_type == 'imdb') {
+                !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+                $movie_id = TMDB::get_imdb_id_from_id($mid);
+                $final_value = sprintf('%07d', $movie_id);
+                $url = "https://www.imdb.com/title/tt" . $final_value . '/reviews';
+                self::set_rating_to_bd($mid, $rating_type, $url);
+
+                return ['url' => $url];
+            } else if ($rating_type == 'tmdb') {
+
+                $array_type = array('Movie' => 'movie', 'TVSeries' => 'tv', 'TVEpisode' => 'tv');
+
+                !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+                $movie_type = TMDB::get_movie_type_from_id($mid);
+                $tvtype = $array_type[$movie_type];
+
+                $tmdbid = TMDB::get_tmdbid_from_id($mid);
+
+                $url = 'https://www.themoviedb.org/' . $tvtype . '/' . $tmdbid;
+
+                self::set_rating_to_bd($mid, $rating_type, $url);
+                return ['url' => $url];
+            } else {
+
+                $result = self::get_curl_rating($mid, $rating_type);
+                $link = self::prepare_resuts($rating_type, $result);
+                self::set_rating_to_bd($mid, $rating_type, $link);
+
+                return ['url' => $link];
+            }
         }
-        var_dump($result);
+    }
 
+    private static function prepare_resuts($rating_type, $result) {
+        if ($result) {
+            $result = json_decode($result);
+            $link = $result->link;
 
+            if ($link) {
+
+                if ($rating_type == 'kinop') {
+                    $str = substr($link, strpos($link, '/films/') + 7);
+                    //$link='https://www.kinopoisk.ru/film/'.$str.'/';
+                    $link = 'https://www-kinopoisk-ru.translate.goog/film/' . $str . '/reviews/?_x_tr_sl=ru&_x_tr_tl=en&_x_tr_hl=en';
+                } else if ($rating_type == 'douban') {
+                    $link = str_replace('movie.douban.com/', 'movie-douban-com.translate.goog/', $link);
+                    $link = $link . '?_x_tr_sl=zh-CN&_x_tr_tl=en&_x_tr_hl=en';
+                }
+
+                return $link;
+            }
+        }
     }
 
     public static function rwt_total_rating($id) {
 
-        $data=[];
+        $data = [];
 
         $sql = "SELECT rwt_audience,	rwt_staff,	imdb,	rotten_tomatoes,	rotten_tomatoes_audience , rotten_tomatoes_gap,metacritic , tmdb	,total_rating,  	last_update	FROM `data_movie_rating` where `movie_id` = " . $id . " limit 1";
         //echo $sql;
@@ -117,10 +140,15 @@ return $array;
         //echo $sql;
         $r = Pdo_an::db_results_array($sql);
         if ($r) {
-            $data['kinop_rating']  =   $r[0]['kinop_rating'];
-            $data['douban_rating']  =   $r[0]['douban_rating'];
+            $data['kinop_rating'] = $r[0]['kinop_rating'];
+            $data['douban_rating'] = $r[0]['douban_rating'];
+            
+            // Add rotten tomatoes
+            $data['rotten_tomatoes'] = $r[0]['rt_rating'];
+            $data['rotten_tomatoes_audience'] = $r[0]['rt_aurating'];
+            $data['rotten_tomatoes_gap'] = $r[0]['rt_gap'];
         }
-return $data;
+        return $data;
     }
 
     public static function add_movie_rating($id, $rwt_array = '', $debug = '', $update = 1) {
@@ -130,7 +158,7 @@ return $data;
         if (!$rwt_array) {
 
             !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-            $value  =OptionData::get_options('','movies_raiting_weight');
+            $value = OptionData::get_options('', 'movies_raiting_weight');
 
             if ($value) {
                 $value = unserialize($value);
@@ -146,32 +174,30 @@ return $data;
         $main_data_ext = Pdo_an::db_fetch_row($sql);
 
         $array_convert = array('total_rwt_staff' => 1, 'total_rwt_audience' => 1, 'total_imdb' => 0.5, 'total_tomatoes_audience' => 0.05, 'total_tomatoes' => 0.05, 'total_tmdb' => 0.05,
-            'total_kinopoisk'=>0.05,	'total_douban'=>0.05);
+            'total_kinopoisk' => 0.05, 'total_douban' => 0.05);
 
         $title = self::get_data_in_movie('title', '', $id);
         $array_db = [];
         ////add rating
-        $audience = self::rwt_audience($id, 1,1);
+        $audience = self::rwt_audience($id, 1, 1);
         ///$audience = self::get_audience_rating_in_movie($id, 1);
-        $staff =[];// self::get_audience_rating_in_movie($id, 2);
+        $staff = []; // self::get_audience_rating_in_movie($id, 2);
         $imdb = self::get_data_in_movie('rating', '', $id);
-      
+
         $total_tomatoes = '';
-        $total_tomatoes_audience = '';        
+        $total_tomatoes_audience = '';
         $total_tmdb = '';
-        $total_metacritic='';
-        $total_kinopoisk='';
-        $total_douban='';
-        if ($main_data)
-        {
-            $total_tomatoes= $main_data->rotten_tomatoes;
-            $total_tomatoes_audience= $main_data->rotten_tomatoes_audience;
-            $total_tmdb= $main_data->tmdb;
+        $total_metacritic = '';
+        $total_kinopoisk = '';
+        $total_douban = '';
+        if ($main_data) {
+            $total_tomatoes = $main_data->rotten_tomatoes;
+            $total_tomatoes_audience = $main_data->rotten_tomatoes_audience;
+            $total_tmdb = $main_data->tmdb;
         }
-        if($main_data_ext)
-        {
-            $total_kinopoisk=$main_data_ext->kinop_rating;
-            $total_douban=$main_data_ext->douban_rating;
+        if ($main_data_ext) {
+            $total_kinopoisk = $main_data_ext->kinop_rating;
+            $total_douban = $main_data_ext->douban_rating;
         }
 
         if ($debug)
@@ -200,10 +226,9 @@ return $data;
         if ($total_tomatoes_audience) {
             $array_db["total_tomatoes_audience"] = $total_tomatoes_audience;
         }
-        $total_tomatoes_gap='';
+        $total_tomatoes_gap = '';
 
-        if ($total_tomatoes_audience>0 && $total_tomatoes>0)
-        {
+        if ($total_tomatoes_audience > 0 && $total_tomatoes > 0) {
             $total_tomatoes_gap = $total_tomatoes_audience - $total_tomatoes;
         }
         if ($total_kinopoisk) {
@@ -334,9 +359,8 @@ VALUES (NULL,'{$id}',?,?,?,'{$imdb}','{$total_tomatoes}','{$total_tomatoes_audie
                 Pdo_an::db_results_array($sql, array($title, $array_db["total_rwt_audience"], $array_db["total_rwt_staff"]));
 
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', 'data_movie_rating', array('movie_id' => $id), 'movie_rating',11,['skip'=>['id']]);
-            }
-            else {
+                Import::create_commit('', 'update', 'data_movie_rating', array('movie_id' => $id), 'movie_rating', 11, ['skip' => ['id']]);
+            } else {
 
                 ////update
                 $sql = "UPDATE `data_movie_rating` 
@@ -346,22 +370,12 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
                 Pdo_an::db_results_array($sql, array($array_db["total_rwt_audience"], $array_db["total_rwt_staff"]));
 
 
-                if ($r[0]['rwt_audience']!=$array_db["total_rwt_audience"]
-
-                    || $r[0]['imdb']!=$imdb
-                    || $r[0]['total_rating']!=$total_rating
-                    || $r[0]['rotten_tomatoes_gap']!=$total_tomatoes_gap  )
-                {
-                   // echo 'updated data ';
+                if ($r[0]['rwt_audience'] != $array_db["total_rwt_audience"] || $r[0]['imdb'] != $imdb || $r[0]['total_rating'] != $total_rating || $r[0]['rotten_tomatoes_gap'] != $total_tomatoes_gap) {
+                    // echo 'updated data ';
                     !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                    Import::create_commit('', 'update', 'data_movie_rating', array('movie_id' => $id), 'movie_rating',11,['skip'=>['id']]);
+                    Import::create_commit('', 'update', 'data_movie_rating', array('movie_id' => $id), 'movie_rating', 11, ['skip' => ['id']]);
                 }
-
             }
-
-
-
-
         }
 
         return $total_rating;
@@ -554,12 +568,11 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
         global $table_prefix;
 
         !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-        $value  =OptionData::get_options('','custom_rating_data');
+        $value = OptionData::get_options('', 'custom_rating_data');
         if ($value) {
 
-        $result = unserialize($value);
-        return $result;
-
+            $result = unserialize($value);
+            return $result;
         } else {
             $rating = [];
 
@@ -882,7 +895,7 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
         }
 
         $audience = self::rwt_audience($id, 1);
-        $staff = [];//self::rwt_audience($id, 2);
+        $staff = []; //self::rwt_audience($id, 2);
 
 
         if ($debug && ($audience["rating"] || $staff["rating"]))
@@ -1144,28 +1157,16 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
             ////update rwt pg cache
         }
 
-        if ($update)
-        {
+        if ($update) {
 
             $array_family_updated = self::get_family_rating_in_movie($imdb_id);
 
 
-            if ($array_family['imdb_result']!=$array_family_updated['imdb_result']
-            ||  $array_family['cms_rating']!=$array_family_updated['cms_rating']
-                ||  $array_family['dove_result']!=$array_family_updated['dove_result']
-                ||  $array_family['rwt_audience']!=$array_family_updated['rwt_audience']
-                ||  $array_family['rwt_pg_result']!=$array_family_updated['rwt_pg_result']
-                ||  $array_family['lgbt_warning']!=$array_family_updated['lgbt_warning']
-                ||  $array_family['woke']!=$array_family_updated['woke']
-            )
-            {
+            if ($array_family['imdb_result'] != $array_family_updated['imdb_result'] || $array_family['cms_rating'] != $array_family_updated['cms_rating'] || $array_family['dove_result'] != $array_family_updated['dove_result'] || $array_family['rwt_audience'] != $array_family_updated['rwt_audience'] || $array_family['rwt_pg_result'] != $array_family_updated['rwt_pg_result'] || $array_family['lgbt_warning'] != $array_family_updated['lgbt_warning'] || $array_family['woke'] != $array_family_updated['woke']
+            ) {
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', 'data_pg_rating', array('movie_id' => $imdb_id), 'pg_rating',9,['skip'=>['id']]);
+                Import::create_commit('', 'update', 'data_pg_rating', array('movie_id' => $imdb_id), 'pg_rating', 9, ['skip' => ['id']]);
             }
-
-
-
-
         }
 
 
@@ -1338,12 +1339,9 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
     public function get_audience_rating_in_movie($rid, $type = 1) {
 
         $rid = intval($rid);
-        if ($type==1)
-        {
+        if ($type == 1) {
             $sql = "SELECT * FROM `cache_rwt_rating` WHERE `movie_id` = {$rid}  limit 1";
-        }
-        else if ($type==2)
-        {
+        } else if ($type == 2) {
             $sql = "SELECT * FROM `cache_rwt_rating_staff` WHERE `movie_id` = {$rid}  limit 1";
         }
 
@@ -1384,14 +1382,14 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
                         $total_audience[$i][$v] ++;
                     } else {
 
-                            if ($v) {
-                                $total_audience[$i]['data'] += $v;
-                                $total_audience[$i]['count'] ++;
-                                if ($i != 'r') {
-                                    $hollywood_total[$rid]['data'] += $v;
-                                    $hollywood_total[$rid]['count'] ++;
-                                }
+                        if ($v) {
+                            $total_audience[$i]['data'] += $v;
+                            $total_audience[$i]['count'] ++;
+                            if ($i != 'r') {
+                                $hollywood_total[$rid]['data'] += $v;
+                                $hollywood_total[$rid]['count'] ++;
                             }
+                        }
                     }
                 }
             }
@@ -1403,8 +1401,7 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
             $result_summ_rating = [];
 
-         //   $array_convert = array('r' => 'rating', 'h' => 'hollywood', 'p' => 'patriotism', 'm' => 'misandry', 'a' => 'affirmative', 'l' => 'lgbtq', 'g' => 'god', 'v' => 'vote');
-
+            //   $array_convert = array('r' => 'rating', 'h' => 'hollywood', 'p' => 'patriotism', 'm' => 'misandry', 'a' => 'affirmative', 'l' => 'lgbtq', 'g' => 'god', 'v' => 'vote');
             //echo 'total_audience<br>'.PHP_EOL;
             //var_dump($total_audience);
             ///echo 'total_audience end<br>'.PHP_EOL;
@@ -1449,10 +1446,9 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
     public function update_rating_db($rid, $ar, $type = 1) {
 
-        $dop='';
-        if ($type==2)
-        {
-            $dop ='_staff';
+        $dop = '';
+        if ($type == 2) {
+            $dop = '_staff';
         }
 
 
@@ -1465,22 +1461,19 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
             ///check before update
 
             if (
-                $r['vote']==$ar['vote'] &&
-                $r['rating']==$ar['rating'] &&
-                $r['affirmative']==$ar['affirmative'] &&
-                $r['god']==$ar['god'] &&
-                $r['hollywood']==$ar['hollywood'] &&
-                $r['lgbtq']==$ar['lgbtq'] &&
-                $r['misandry']==$ar['misandry'] &&
-                $r['patriotism']==$ar['patriotism']
-            )
-            {
+                    $r['vote'] == $ar['vote'] &&
+                    $r['rating'] == $ar['rating'] &&
+                    $r['affirmative'] == $ar['affirmative'] &&
+                    $r['god'] == $ar['god'] &&
+                    $r['hollywood'] == $ar['hollywood'] &&
+                    $r['lgbtq'] == $ar['lgbtq'] &&
+                    $r['misandry'] == $ar['misandry'] &&
+                    $r['patriotism'] == $ar['patriotism']
+            ) {
                 //skip
-            }
-            else
-            {
+            } else {
 
-                $sql = "UPDATE `cache_rwt_rating".$dop."` SET 
+                $sql = "UPDATE `cache_rwt_rating" . $dop . "` SET 
                               `vote` = ?,   `rating` = ?,    `affirmative` = ?,   `god` = ?,
                               `hollywood` = ?,  `lgbtq` = ?, `misandry` = ?, 
                               `patriotism` = ?  WHERE `movie_id` = {$rid} and `type`={$type} ";
@@ -1488,36 +1481,26 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
 
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', 'cache_rwt_rating', array('movie_id' => $rid), 'cache_rwt_rating',20,['skip'=>['id']]);
-
-
+                Import::create_commit('', 'update', 'cache_rwt_rating', array('movie_id' => $rid), 'cache_rwt_rating', 20, ['skip' => ['id']]);
             }
+        } else {
 
+            if ($ar['vote'] || $ar['rating'] || $ar['affirmative'] || $ar['god'] || $ar['hollywood'] || $ar['lgbtq'] || $ar['misandry'] || $ar['patriotism']) {
 
-        }
-        else {
-
-            if ($ar['vote'] || $ar['rating'] || $ar['affirmative'] ||  $ar['god'] ||  $ar['hollywood'] ||  $ar['lgbtq'] || $ar['misandry'] ||  $ar['patriotism'])
-            {
-
-                $sql = "INSERT INTO cache_rwt_rating".$dop." (`id`, `movie_id`, `type`, `vote`, `rating`, `affirmative`, `god`, `hollywood`, `lgbtq`, `misandry`, `patriotism`)   
+                $sql = "INSERT INTO cache_rwt_rating" . $dop . " (`id`, `movie_id`, `type`, `vote`, `rating`, `affirmative`, `god`, `hollywood`, `lgbtq`, `misandry`, `patriotism`)   
                           VALUES (NULL, ?,        ?,     ?,    ?,             ?,           ?,     ?,          ?,          ?,          ?);";
                 Pdo_an::db_results_array($sql, array($rid, $type, $ar['vote'], $ar['rating'], $ar['affirmative'], $ar['god'], $ar['hollywood'], $ar['lgbtq'], $ar['misandry'], $ar['patriotism']));
 
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', 'cache_rwt_rating', array('movie_id' => $rid), 'cache_rwt_rating',20,['skip'=>['id']]);
-
+                Import::create_commit('', 'update', 'cache_rwt_rating', array('movie_id' => $rid), 'cache_rwt_rating', 20, ['skip' => ['id']]);
             }
-
-
         }
     }
 
     public function get_wpcdata($movie_id, $audience_type) {
         if ($audience_type == 1) {
             $staff_type = "and a.type=2";
-        }
-        else {
+        } else {
             $staff_type = "and a.type=0";
         }
 
@@ -1536,24 +1519,23 @@ inner join {$table_prefix}critic_matic_authors as a ON a.id = am.aid
 
 where  m.fid='{$movie_id}' AND m.state!=0  and p.status=1 " . $staff_type;
 
-       ///echo $sql.'<br>';
+        ///echo $sql.'<br>';
         $rows = Pdo_an::db_results_array($sql);
         foreach ($rows as $r) {
 
 
             $r_id = $r['id'];
 
-                $review_data[$r_id] = array(
-                    'rating'=>$r['rating'],
-                    'hollywood'=>$r['hollywood'],
-                    'patriotism'=>$r['patriotism'],
-                    'misandry'=>$r['misandry'],
-                    'affirmative'=>$r['affirmative'],
-                    'lgbtq'=>$r['lgbtq'],
-                    'god'=>$r['god'],
-                    'vote'=>$r['vote']
-                    );
-
+            $review_data[$r_id] = array(
+                'rating' => $r['rating'],
+                'hollywood' => $r['hollywood'],
+                'patriotism' => $r['patriotism'],
+                'misandry' => $r['misandry'],
+                'affirmative' => $r['affirmative'],
+                'lgbtq' => $r['lgbtq'],
+                'god' => $r['god'],
+                'vote' => $r['vote']
+            );
         }
         return $review_data;
     }

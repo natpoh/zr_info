@@ -1171,6 +1171,40 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('movie_id', 'date', 'last_upd', 'total_rating'), "data_movie_erating");
+    
+    $sql = "ALTER TABLE `data_movie_erating` ADD `fchan_posts_found` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `kinop_count` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);    
+    $sql = "ALTER TABLE `data_movie_erating` ADD `douban_count` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `animelist_rating` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `animelist_count` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `animelist_date` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `imdb_rating` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `imdb_count` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `imdb_date` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `rt_rating` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `rt_count` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `rt_aurating` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `rt_aucount` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `rt_gap` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `rt_date` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `total_count` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {

@@ -262,7 +262,19 @@ class SimilarMovies
 $RWT_RATING = new RWT_RATING;
 $content_result = $RWT_RATING->get_rating_data($content_result,0);
 
-$rs = ['content'=>$content,'rating'=>$content_result];
+        $data='';
+
+
+    if ($content)
+    {
+        !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+        $data =  OptionData::get_options('','similar_shows');
+        $data =  str_replace('\\','',$data);
+
+
+    }
+
+$rs = ['content'=>$content,'rating'=>$content_result,'data'=>$data];
 
 return json_encode($rs);
 

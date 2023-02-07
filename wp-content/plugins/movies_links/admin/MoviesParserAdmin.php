@@ -41,6 +41,7 @@ class MoviesParserAdmin extends ItemAdmin {
         1 => 'Xpath',
     );
     public $parse_number = array(1 => 1, 2 => 2, 3 => 3, 5 => 5, 7 => 7, 10 => 10, 20 => 20, 35 => 35, 50 => 50, 75 => 75, 100 => 100, 200 => 200, 500 => 500, 1000 => 1000);
+    public $version_number = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
     public $gen_urls_number = array(10 => 10, 100 => 100, 500 => 500, 1000 => 1000);
     public $camp_state = array(
         1 => array('title' => 'Active'),
@@ -467,6 +468,9 @@ class MoviesParserAdmin extends ItemAdmin {
                             } else {
                                 $result = __('Campaign') . ' [' . $result_id . '] ' . __('untrashed');
                             }
+                        } else if ($_POST['remove_all_error_posts'] == 1) {
+                            $this->mp->remove_all_campaign_error_posts($_POST);
+                            $result = 'Removed';
                         } else if ($_POST['remove_all_posts'] == 1) {
                             $this->mp->remove_all_campaign_posts($_POST);
                             $result = 'Removed';
@@ -494,6 +498,11 @@ class MoviesParserAdmin extends ItemAdmin {
                 include(MOVIES_LINKS_PLUGIN_DIR . 'includes/edit_parser.php');
             } else if ($curr_tab == 'mlr') {
                 // Movies links custom results
+                $mlr_tpl = MOVIES_LINKS_PLUGIN_DIR . 'includes/mlr/' . $mlr_name . '_results.php';
+
+                if (!file_exists($mlr_tpl)) {
+                    return;
+                }
 
                 $mlr = $this->ml->get_campaing_mlr($campaign);
                 if (!$mlr) {
@@ -530,7 +539,7 @@ class MoviesParserAdmin extends ItemAdmin {
 
                 $posts = $mlr->get_posts($page, $orderby, $order, $per_page);
 
-                include(MOVIES_LINKS_PLUGIN_DIR . 'includes/mlr/' . $mlr_name . '_results.php');
+                include($mlr_tpl);
             }
             return;
         }
@@ -1199,8 +1208,9 @@ class MoviesParserAdmin extends ItemAdmin {
         $options = $this->mp->get_options($campaign);
         $o = $options['parsing'];
         $count = $o['pr_num'];
+        $version = $o['version'];
         $cid = $campaign->id;
-        $last_posts = $this->mp->get_last_arhives_no_posts($count, $cid, false);
+        $last_posts = $this->mp->get_last_arhives_no_posts($count, $cid, $version, false);
 
         if ($last_posts) {
             $preivew_data = $this->mp->parse_arhives($last_posts, $campaign, $rules_name);
@@ -1640,7 +1650,8 @@ class MoviesParserAdmin extends ItemAdmin {
         $o = $options['links'];
         $count = $o['pr_num'];
         $cid = $campaign->id;
-        $last_posts = $this->mp->get_last_posts($count, $cid, -1, 1);
+        $version = $options['parsing']['version'];
+        $last_posts = $this->mp->get_last_posts($count, $cid, -1, 1, $version);
         $preivew_data = array();
 
         if ($last_posts) {
@@ -2378,7 +2389,7 @@ class MoviesParserAdmin extends ItemAdmin {
     }
 
     public function get_post_links_types($cid = 0, $status = -1, $arhive_type = -1, $parser_type = -1) {
-         // DEPRECATED
+        // DEPRECATED
 
         $count = $this->mp->get_urls_count($status, $cid, $arhive_type, $parser_type);
         $states = array(

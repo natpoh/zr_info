@@ -75,7 +75,7 @@ include get_template_directory() . '/template/actors_template_single.php';
     
 
     ?>
-        <div id="ns_related_scroll" data-value="<?php print $post_id ?>" class="not_load"></div>
+
 
         <div  id="twitter_scroll" data-value="<?php echo $post_id ?>" class="not_load"></div>
 
@@ -99,7 +99,7 @@ include get_template_directory() . '/template/actors_template_single.php';
             </div>
         </div>
 
-
+        <div id="ns_related_scroll" data-value="<?php print $post_id ?>" class="not_load"></div>
 
 <?php
 $post_type = strtolower($post_type);

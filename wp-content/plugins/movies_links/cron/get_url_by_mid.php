@@ -31,5 +31,7 @@ $mp = $ml->get_mp();
 
 
 $url = $mp->get_url_by_mid($mid, $cid);
+
 echo json_encode($url);
+
 

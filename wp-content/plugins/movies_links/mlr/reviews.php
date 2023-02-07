@@ -89,16 +89,15 @@ class Reviews extends MoviesAbstractDBAn {
                 }
 
                 $time = $this->curr_time();
-                $rating_result = (int) round((($rating_update + 25) / 25), 0);
 
                 // Update rating
                 $data = array(
                     'last_upd' => $time,
                     'reviews_rating' => $rating_update,
-                    'reviews_result' => $rating_result,
                     'reviews_posts' => $rating_count,
                     'reviews_date' => $time,
-                    'total_rating' => $rating_result,
+                    'total_rating' => 0,
+                    'total_count' => $rating_count,
                 );
 
                 if ($debug) {

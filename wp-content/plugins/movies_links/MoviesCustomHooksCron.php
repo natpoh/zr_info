@@ -41,7 +41,7 @@ class MoviesCustomHooksCron {
         }
 
         // 3. Get posts        
-        $result = $this->mp->get_last_posts($count, $cid, 1, -1, $last_run_id, "ASC");
+        $result = $this->mp->get_last_posts($count, $cid, 1, -1,-1, $last_run_id, "ASC");
         if ($debug) {
             print_r($result);
         }

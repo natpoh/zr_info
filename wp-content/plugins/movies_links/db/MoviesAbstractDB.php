@@ -34,8 +34,8 @@ class MoviesAbstractDB extends MoviesAbstractFunctions {
         return addslashes($text);
     }
 
-    public function db_update($data, $table, $id) {
-        return Pdo_ml::db_update($data, $table, $id);
+    public function db_update($data, $table, $id, $id_name = "id") {
+        return Pdo_ml::db_update($data, $table, $id, $id_name);
     }
 
     public function db_insert($data, $table) {

@@ -18,9 +18,13 @@ class MoviesCustomHooks {
 
         $options = unserialize($post->options);
 
+        // Erating logic
+        if ($post->top_movie > 0) {
+            $this->update_erating($post, $options, $campaign, $debug);
+        }
         // Tomatoes logic
-        $this->update_rotten_tomatoes($post, $options);
-
+        // UNUSED DEPRECATED
+        // $this->update_rotten_tomatoes($post, $options);
         // Dove.org
         if ($campaign->id == 3) {
             $this->update_dove($post, $options, $campaign, $debug);
@@ -39,8 +43,123 @@ class MoviesCustomHooks {
         }
     }
 
-    private function update_rotten_tomatoes($post, $options) {
+    private function update_erating($post, $options, $campaign, $debug = false) {
 
+        $simple_camps = array('kinop', 'douban', 'imdb', 'animelist');
+
+        // Kinopoisk
+        $curr_camp = '';
+        if ($campaign->id == 24) {
+            $curr_camp = 'kinop';
+            $score_opt = array(
+                'ratingKinopoisk' => 'rating',
+                'ratingKinopoiskVoteCount' => 'count'
+            );
+        } else if ($campaign->id == 22) {
+            // douban
+            $curr_camp = 'douban';
+            $score_opt = array(
+                'rating' => 'rating',
+                'ratingCount' => 'count'
+            );
+        } else if ($campaign->id == 18) {
+            // douban
+            $curr_camp = 'imdb';
+            $score_opt = array(
+                'rating' => 'rating',
+                'count' => 'count'
+            );
+        } else if ($campaign->id == 27) {
+            // animelist
+            $curr_camp = 'animelist';
+            $score_opt = array(
+                'score' => 'rating',
+                'count' => 'count'
+            );
+            // Add anime genre
+            $ma = $this->ml->get_ma();
+            $ma->add_genre_meta($post->top_movie, 'anime');
+            
+        } else if ($campaign->id == 20 || $campaign->id == 21) {
+            // rt movies (20) and tv (21)
+            $curr_camp = 'rt';
+            $score_opt = array(
+                'tomatometerScore' => 'rating',
+                'tomatometerCount' => 'count',
+                'audienceScore' => 'aurating',
+                'audienceCount' => 'aucount',
+            );
+        }
+
+        $to_update = array();
+        foreach ($score_opt as $post_key => $db_key) {
+            if (isset($options[$post_key])) {
+                $field_value = base64_decode($options[$post_key]);
+                $to_update[$db_key] = $field_value;
+            }
+        }
+
+        if ($to_update) {
+
+            $update_rating = false;
+
+            $data = array();
+
+            if (in_array($curr_camp, $simple_camps)) {
+                // Update rating            
+                $data[$curr_camp . '_rating'] = (int) ($to_update['rating'] * 10);
+                $data[$curr_camp . '_count'] = (int) str_replace(',', '', $to_update['count']);
+                $data[$curr_camp . '_date'] = $this->mp->curr_time();
+                // Total
+                $data['total_count'] = $data[$curr_camp . '_count'];
+                $data['total_rating'] = $data[$curr_camp . '_rating'];
+
+                if ($data['total_count'] > 0 || $data['total_rating'] > 0) {
+                    $update_rating = true;
+                }
+            } else if ($curr_camp == 'rt') {
+                // Rotten tomatoes
+                $data['rt_rating'] = (int) $to_update['rating'];
+                $data['rt_count'] = (int) $to_update['count'];
+                $data['rt_aurating'] = (int) $to_update['aurating'];
+                $data['rt_aucount'] = (int) $to_update['aucount'];
+                $data['rt_date'] = $this->mp->curr_time();
+
+                // Total count
+                $data['total_count'] = $data['rt_count'] + $data['rt_aucount'];
+
+                // Gap: audience - pro
+                $data['rt_gap'] = $data['rt_aurating'] - $data['rt_rating'];
+
+                // Total rating
+                $data['total_rating'] = 0;
+
+                if ($data['rt_rating'] && $data['rt_aurating']) {
+                    $data['total_rating'] = ($data['rt_rating'] + $data['rt_aurating']) / 2;
+                } else if ($data['rt_rating']) {
+                    $data['total_rating'] = $data['rt_rating'];
+                } else if ($data['rt_aurating']) {
+                    $data['total_rating'] = $data['rt_aurating'];
+                }
+
+                if ($data['total_count'] > 0 || $data['total_rating'] > 0) {
+                    $update_rating = true;
+                }
+            }
+
+            if ($debug) {
+                p_r($data);
+            }
+
+            if ($update_rating) {
+                $ma = $this->ml->get_ma();
+                $ma->update_erating($post->top_movie, $data);
+            }
+        }
+    }
+
+    private function update_rotten_tomatoes($post, $options) {
+        // DEPRECATED UNUSED
         $score_opt = array(
             'tomatometerScore' => 'rotten_tomatoes',
             'audienceScore' => 'rotten_tomatoes_audience'
@@ -68,18 +187,18 @@ class MoviesCustomHooks {
         $uid = $post->uid;
         $url_data = $this->mp->get_url($uid);
         $link = $url_data->link;
-        $arhive = $this->mp->get_arhive_by_url_id($uid);        
+        $arhive = $this->mp->get_arhive_by_url_id($uid);
         $link_hash = $arhive->arhive_hash;
         $top_movie = $post->top_movie;
-        
-        if ($debug){
+
+        if ($debug) {
             p_r($arhive);
         }
 
         $code = $this->mp->get_arhive_file($cid, $link_hash);
         if ($code) {
             $post_result = $this->find_in_post_page($code);
-            if ($debug){
+            if ($debug) {
                 p_r($post_result);
             }
             if (sizeof($post_result['rating'])) {
@@ -97,18 +216,18 @@ class MoviesCustomHooks {
                     'dove_rating' => $rating_json,
                     'dove_rating_desc' => $rating_info_json
                 );
-                if ($debug){
+                if ($debug) {
                     p_r($data);
                 }
                 $ma = $this->ml->get_ma();
                 $ma->update_pg_rating($data, $top_movie);
                 // Save log
-                $message ='Update Dove rating';
-                $log_status=0;
+                $message = 'Update Dove rating';
+                $log_status = 0;
                 $this->mp->log_info($message, $cid, $uid, $log_status);
             }
         } else {
-            if ($debug){
+            if ($debug) {
                 print 'arhive not found';
             }
         }
@@ -199,6 +318,5 @@ class MoviesCustomHooks {
         // Return array
         return array('rating' => $rating, 'rating_info' => $rating_info, 'info' => $info, 'reliase' => $reliase);
     }
-
 
 }

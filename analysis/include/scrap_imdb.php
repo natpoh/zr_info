@@ -2392,6 +2392,8 @@ where  m.state!=0  and p.status=1 ".$staff_type;
 
 function check_movie_dublicates()
 {
+    !class_exists('DeleteMovie') ? include ABSPATH . "analysis/include/delete_movie.php" : '';
+
     $sql = "SELECT * FROM `data_movie_imdb` order by  movie_id, id asc";
     $last_data=[];
     $rows = Pdo_an::db_results_array($sql);
@@ -2408,8 +2410,10 @@ function check_movie_dublicates()
 
           if ($_GET['delete']==1)
           {
-              $sql ="DELETE FROM `data_movie_imdb` WHERE `data_movie_imdb`.`id` = ".$id;
-              Pdo_an::db_query($sql);
+
+
+              DeleteMovie::delete_movie($id,1);
+
           }
 
         }

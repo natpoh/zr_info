@@ -32,7 +32,6 @@ if ($cid) {
                 <label>
                     <span class="title"><?php print __('Type') ?></span>
                     <select id="add-campaing-type" name="type" class="type">
-
                         <?php
                         foreach ($this->parser_types as $key => $name) {
                             $selected = ($key == $campaign->type) ? 'selected' : '';

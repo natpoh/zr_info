@@ -49,11 +49,26 @@ if ($cid) {
                     </select>                     
                     <span class="inline-edit"><?php print __('Number of URLs for cron parsing') ?></span> 
                 </label>
+                
+                <label class="inline-edit-interval"> 
+                    <span class="title"><?php print __('Version') ?></span>         
+                    <select name="version" class="interval">
+                        <?php
+                        foreach ($this->version_number as $key => $name) {
+                            $selected = ($key == $o['version']) ? 'selected' : '';
+                            ?>
+                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                            <?php
+                        }
+                        ?>                          
+                    </select>                     
+                    <span class="inline-edit"><?php print __('The version of the current parsing rules. If you\'ve changed the rules and need to update posts, just change the version.') ?></span> 
+                </label>
 
                 <label class="inline-edit-status">                
                     <?php
                     $checked = '';
-                    if ($o['status'] == 1) {
+                    if ($o['status'] == 1 || $o['status'] == 3) {
                         $checked = 'checked="checked"';
                     }
                     ?>

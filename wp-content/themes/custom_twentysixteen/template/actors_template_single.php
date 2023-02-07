@@ -50,6 +50,8 @@ foreach ($array_list as $array_type=> $value)
 $content.=  '</div></details>';
 
 $content = '<div class="movie_total_rating not_load" id="movie_rating" data-value="'.$post_id.'"></div>
+
+<div class="detail_container" >
 <details  class="dark actor_details" >
    <summary>Cast Demographics</summary>
 <div>
@@ -70,7 +72,11 @@ Thank you!</div>
 </details>
 
 
-
+</details>
+<details class="dark actor_details" >
+   <summary>Tags / Keywords</summary>
+<div class="dmg_content" id="actor_data_dop" ><div id="tags_keywords"  data-value="'.$post_id.'" class="not_load"></div></div>
+</details>
 <details class="dark actor_details" >
    <summary>Similar Shows</summary>
 <section class="dmg_content inner_content" id="actor_data_dop" >
@@ -78,6 +84,7 @@ Thank you!</div>
 </section>
 </details>
 
+</div>
 ';
 
 echo $content;

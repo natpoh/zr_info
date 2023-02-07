@@ -1,4 +1,11 @@
 <?php
+if (!defined('ABSPATH'))
+    define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
+
+//DB config
+!defined('DB_HOST_AN') ? include ABSPATH . 'analysis/db_config.php' : '';
+//Abstract DB
+!class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
 
 !class_exists('TMDBIMPORT') ? include ABSPATH . "analysis/include/tmdb_import.php" : '';
 
@@ -6,8 +13,102 @@ class Movie_Keywords {
 
     private $array_keys =[];
 
+    private function to_key_content($result)
+    {
+        $content ='';
+      foreach ($result as $id=>$name)
+      {
+          $keylink= WP_SITEURL.'/search/mkw_'.$id;
+          $content.='<a class="keyword" href="'.$keylink.'" >'.$name.'</a>';
 
-    private function check_add_key($keys)
+      }
+
+        $content = '<div class="keyword_container">'.$content.'</div>';
+
+        return $content;
+
+
+    }
+
+    private function get_keys_from_movie($mid)
+    {
+        $array_keys=[];
+        $keywords_array=[];
+
+        $sql ="SELECT `data_movie_imdb`.`keywords` FROM `data_movie_imdb` 
+        WHERE    `data_movie_imdb`.`id` = ".$mid." limit 1";
+
+        $array_request =Pdo_an::db_results_array($sql);
+        $keywords = $array_request[0]['keywords'];
+
+            if ($keywords) {
+                if (strstr($keywords, ',')) {
+                    $keywords_array = explode(',', $keywords);
+                } else {
+                    $keywords_array[] = $keywords;
+                }
+            }
+
+            if ($keywords_array)
+            {
+                foreach ($keywords_array as $key)
+                {
+                    $kid = $this->check_add_key($key, 0);
+                    if ($kid)
+                    {
+                        $array_keys  [$kid]=$key;
+                    }
+                }
+            }
+            return $array_keys;
+
+    }
+
+    public function front($mid)
+    {
+        ///get movie keywors
+        $array_keys = $this->get_movie_keys($mid);
+        $sql='';
+        if ($array_keys) {
+            foreach ($array_keys as $row) {
+                $kid = $row['kid'];
+                $sql .= "or id =" . $kid . " ";
+
+            }
+            if ($sql) {
+                $sql = substr($sql, 2);
+                $q = "SELECT * FROM `meta_keywords` where " . $sql;
+                $data = Pdo_an::db_results_array($q);
+                if ($data)
+                {
+                    foreach ($data as $dr)
+                    {
+                        $result[$dr['id']]=$dr['name'];
+                    }
+                }
+
+
+            }
+        }
+        else
+        {
+            //old method
+            $result =   $this->get_keys_from_movie($mid);
+
+        }
+
+        if ($result)
+        {   asort($result);
+
+            $content = $this->to_key_content($result);
+        }
+
+        echo $content;
+
+    }
+
+
+    private function check_add_key($keys, $update  =1)
     {
         $q = "SELECT `id` FROM `meta_keywords` WHERE `name` = ? ";
         $r = Pdo_an::db_results_array($q,[$keys]);
@@ -15,7 +116,7 @@ class Movie_Keywords {
         {
             return $r[0]['id'];
         }
-        else
+        else if ($update)
         {
             $q ="INSERT INTO `meta_keywords`(`id`, `name`) VALUES (NULL,?)";
             $r = Pdo_an::db_results_array($q,[$keys]);
@@ -52,6 +153,15 @@ class Movie_Keywords {
 
     }
 
+    private function get_movie_keys($mid)
+    {
+
+        $q ="SELECT * FROM `meta_movie_keywords` WHERE  mid = ".$mid;
+
+        $row = Pdo_an::db_results_array($q);
+        if ($row)return $row;
+
+    }
 
     private function insert_key_request($kid,$mid)
     {

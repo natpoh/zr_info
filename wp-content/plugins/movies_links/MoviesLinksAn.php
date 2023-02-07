@@ -59,7 +59,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
     }
 
     public function get_post_ids_by_weight($min_weight = 0, $max_weight = 0) {
-        $ret = array();        
+        $ret = array();
         $sql = sprintf("SELECT id, weight FROM {$this->db['movie_imdb']} WHERE weight>=%d AND weight<%d", $min_weight, $max_weight);
         $result = $this->db_results($sql);
         if ($result) {
@@ -220,9 +220,10 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         // Get rating      
         $sql = sprintf("SELECT * FROM {$this->db['erating']} WHERE movie_id = %d", (int) $mid);
         $exist = $this->db_fetch_row($sql);
+        $data['last_upd'] = $this->curr_time();
         if ($exist) {
-            // Calculate total rating
-            $rating_names = array('kinop_result', 'douban_result', 'fchan_result', 'reviews_result');
+            // Calculate total rating            
+            $rating_names = array('kinop_rating', 'douban_rating', 'animelist_rating', 'imdb_rating', 'rt_rating', 'rt_aurating');
             foreach ($rating_names as $rn) {
                 if (isset($data[$rn])) {
                     $exist->$rn = $data[$rn];
@@ -230,6 +231,22 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             }
             $total = $this->calculate_total($exist);
             $data['total_rating'] = $total;
+
+            // Calculate total votes
+
+            $count_names = array('kinop_count', 'douban_count', 'animelist_count', 'imdb_count', 'rt_count', 'rt_aucount', 'fchan_posts_found', 'reviews_posts');
+            $total_count = 0;
+            foreach ($count_names as $rn) {
+                if (isset($data[$rn])) {
+                    $total_count += $data[$rn];
+                } else {
+                    $total_count += $exist->$rn;
+                }
+            }
+
+            $data['total_rating'] = $total;
+            $data['total_count'] = $total_count;
+
 
             // Update post            
             $this->sync_update_data($data, $exist->id, $this->db['erating'], true, 10);
@@ -249,24 +266,32 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
          * fchan_result
          * reviews_result
          * total_rating
-         * 
+         * 'kinop_rating', 'douban_rating', 'animelist_rating', 'imdb_rating', 'rt_rating', 'rt_aurating'
          */
         $total = 0;
         $i = 0;
-        if ($post->kinop_result) {
-            $total += $post->kinop_result;
+        if ($post->kinop_rating) {
+            $total += $post->kinop_rating;
             $i += 1;
         }
-        if ($post->douban_result) {
-            $total += $post->douban_result;
+        if ($post->douban_rating) {
+            $total += $post->douban_rating;
             $i += 1;
         }
-        if ($post->fchan_result) {
-            $total += $post->fchan_result;
+        if ($post->animelist_rating) {
+            $total += $post->animelist_rating;
             $i += 1;
         }
-        if ($post->reviews_result) {
-            $total += $post->reviews_result;
+        if ($post->imdb_rating) {
+            $total += $post->imdb_rating;
+            $i += 1;
+        }
+        if ($post->rt_rating) {
+            $total += $post->rt_rating;
+            $i += 1;
+        }
+        if ($post->rt_aurating) {
+            $total += $post->rt_aurating;
             $i += 1;
         }
         $total_result = (int) round($total / $i, 0);
@@ -286,6 +311,66 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         $sql = sprintf("SELECT r.percent as rating FROM {$this->db['reviews_rating']} r"
                 . " INNER JOIN {$this->db['critic_matic_meta']} m ON m.cid=r.cid WHERE m.fid=%d", $mid);
         return $this->db_results($sql);
+    }
+
+    /*
+     * Genre
+     */
+
+    
+    public function add_genre_meta($mid=0, $slug='') {    
+        $genre = $this->get_genre_by_slug($slug);
+        if ($genre->id) {
+            $this->add_movie_genre($mid, $genre->id);
+        }
+    }
+    
+    public function get_genre($id) {
+        $sql = sprintf("SELECT name, slug, status, weight FROM {$this->db['data_genre']} WHERE id=%d", (int) $id);
+        $result = $this->db_fetch_row($sql);
+        return $result;
+    }
+
+    public function get_genre_by_slug($slug, $cache = false) {
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$slug])) {
+                return $dict[$slug];
+            }
+        }
+
+        //Get author id
+        $sql = sprintf("SELECT id, name FROM {$this->db['data_genre']} WHERE slug='%s'", $this->escape($slug));
+        $result = $this->db_fetch_row($sql);
+
+        if ($cache) {
+            $dict[$slug] = $result;
+        }
+        return $result;
+    }
+
+    public function add_movie_genre($mid = 0, $gid = 0) {
+        // Validate values
+        if ($mid > 0 && $gid > 0) {
+            //Get meta
+            $sql = sprintf("SELECT gid FROM {$this->db['meta_genre']} WHERE mid=%d AND gid=%d", (int) $mid, (int) $gid);
+            $meta_exist = $this->db_get_var($sql);
+            if (!$meta_exist) {
+                //Meta not exist
+                $data = array(
+                    'mid' => $mid,
+                    'gid' => $gid,
+                );
+
+                $this->sync_insert_data($data, $this->db['meta_genre'], false, true, 10);               
+            }
+            return true;
+        }
+        return false;
     }
 
 }

@@ -44,6 +44,9 @@ if ($load['loaded']) {
     exit();
 }
 
+// TODO UNUSED
+exit();
+
 $ml = new MoviesLinks();
 
 $cron_name = 'douban_cron';

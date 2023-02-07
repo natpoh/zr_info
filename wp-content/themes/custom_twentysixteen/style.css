@@ -107,6 +107,21 @@ details.dark {
     border-radius: 0;
     padding: 0;
 }
+.detail_container{
+
+
+    display: block;
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content:space-between;
+
+}
+body.theme_dark  .detail_container{
+    background-color: #000;
+}
+.actor_details[open]{
+    width: 100%;
+}
 
 body.theme_dark  details.dark {
     background-color: #000;
@@ -1129,7 +1144,6 @@ body.theme_dark  .tab-wrapper li.nav-tab a {
 .sort-wrapper {
     display: flex;
     flex-wrap: wrap;
-
 }
 .pro_review  .sort-wrapper {
     overflow-y: hidden;
@@ -1138,20 +1152,24 @@ body.theme_dark  .tab-wrapper li.nav-tab a {
 
 .sort-wrapper li.nav-tab,
 .search-sort .sort-title {
-    padding: 6px 12px 6px 0;    
-    display: inline-block;    
+    margin: 6px 12px 6px 0;    
+    display: inline-block;   
+    white-space: nowrap;
 }
 
-.sort-more {
-    display: inline-block;
-}
-
-.sort-more .btn {
-    margin: 5px 0 5px 0;
-    padding: 0 12px;
+.nav-tab.group {
     display: inline-block;
     border: 1px solid #ddd;
     border-radius: 4px;
+    padding: 0 0 0 10px;
+}
+
+.sort-more .btn {
+    margin-left: 10px;
+    padding: 0 15px;
+    display: inline-block;
+    border-left: 1px solid #ddd;
+
     cursor: pointer;  
     user-select: none;
 }
@@ -1165,7 +1183,6 @@ body.theme_dark  .tab-wrapper li.nav-tab a {
     height: 10px;
     background: #d75454;
     display: inline-block;
-    margin-left: 5px;
     border-radius: 50%;
 }
 
@@ -1205,11 +1222,11 @@ body.theme_dark .sort-more li.nav-tab.title {
     align-items: center;
 }
 
-.sort-wrapper .nav-tab.active a{
+.sort-wrapper .nav-tab.active > a{
     color: #000;
     font-weight: bold;
 }
-body.theme_dark  .sort-wrapper .nav-tab.active a {
+body.theme_dark  .sort-wrapper .nav-tab.active > a {
     color: #ffdb18;
 }
 .sort-wrapper .nav-tab span {
@@ -1218,7 +1235,7 @@ body.theme_dark  .sort-wrapper .nav-tab.active a {
     margin-left: 2px;
 }
 
-.sort-wrapper a:hover, .sort-wrapper .nav-tab.active a:hover {
+.sort-wrapper a:hover, .sort-wrapper .nav-tab.active > a:hover {
     color: red; 
 }
 
@@ -1230,13 +1247,6 @@ body.theme_dark  .sort-wrapper .nav-tab.active a {
     content: "↑";
 }
 
-.sort-wrapper .nav-tab.active:hover span.desc:after {
-    content: "↑";
-}
-
-.sort-wrapper .nav-tab.active:hover span.asc:after {
-    content: "↓";
-}
 
 .msg-content {
     margin: 0 20px 20px 20px;
@@ -3019,6 +3029,19 @@ body.theme_dark  .noUi-handle::before,body.theme_dark  .noUi-handle::after {
     background: transparent url("images/rating/good_active.svg");
 }
 
+.sort-icon .kinop{
+    background: transparent url("images/ru_64_2.svg");
+}
+
+.sort-icon .douban{
+    background: transparent url("images/china_64_2.svg");
+}
+
+.sort-icon .rt{
+    background: transparent url("images/rt_64.svg");
+}
+
+
 .facet .facet-title .facet-icon span,
 .nav-tab span.sort-icon i {    
     width: 24px;
@@ -3169,6 +3192,10 @@ body.theme_dark  .noUi-handle::before,body.theme_dark  .noUi-handle::after {
 
 .nte_cnt p {
     margin-bottom: 0.5rem;    
+}
+
+.search-sort .nte_show .nte_cnt {
+    max-height: max-content;
 }
 
 
@@ -7235,6 +7262,10 @@ body.theme_dark.search .content-full {
         width: 140px;
         height: 28px;
     }
+    
+    .search-results .movie_button_action {
+    padding:.1em;
+}
 }
 
 @media screen and (max-width: 600px)  {
@@ -10548,9 +10579,7 @@ custom ratings can be used in the advanced search feature and using the audience
 
 
 
-.search-results .movie_button_action {
-    padding:.1em;
-}
+
 
 .search-results .watch_buttom {
     padding:.9em!important;

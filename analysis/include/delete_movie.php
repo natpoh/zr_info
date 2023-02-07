@@ -186,11 +186,12 @@ class DeleteMovie{
 
         self::delete_table($movie_id,'movie_id','data_pg_rating',$sync);
         self::delete_table($id,'movie_id','data_movie_rating',$sync);
+        self::delete_table($id,'movie_id','data_movie_erating',$sync);
         self::delete_table($id,'movie_id','cache_rating',$sync);
         self::delete_table($id,'movie_id','search_movies_meta',$sync);
         self::delete_table($id,'rwt_id','just_wach',$sync);
         self::delete_table($id,'rwt_id','cache_movie_trailers',$sync);
-
+        self::delete_table($id,'mid','meta_movie_keywords',$sync);
         self::delete_table($id,'id','data_movie_imdb',$sync);
 
 
