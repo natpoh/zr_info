@@ -835,7 +835,7 @@ class MoviesParserAdmin extends ItemAdmin {
         }
 
         $log = $this->mp->get_log($page, $cid, 0, $status, $type, $per_page);
-        $pager = $this->themePager(1, $page, $page_url, $count, $per_page, $orderby, $order);
+        $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
         include(MOVIES_LINKS_PLUGIN_DIR . 'includes/list_log_parser.php');
     }
 
