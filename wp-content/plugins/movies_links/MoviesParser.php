@@ -192,6 +192,8 @@ class MoviesParser extends MoviesAbstractDB {
         'tm' => 'TMDB',
         'e' => 'Exist',
         'm' => 'URL Movie ID',
+        'em' => 'Exist Movie',
+        'et' => 'Exist TV',
     );
     public $links_rules_actor_fields = array(
         'f' => 'Firstname',
@@ -351,8 +353,6 @@ class MoviesParser extends MoviesAbstractDB {
         return $result;
     }
 
-    
-    
     public function remove_all_campaign_error_posts($form_state) {
         if ($form_state['id']) {
             // To trash
@@ -361,7 +361,7 @@ class MoviesParser extends MoviesAbstractDB {
             $this->db_query($sql);
         }
     }
-    
+
     public function remove_all_campaign_posts($form_state) {
         if ($form_state['id']) {
             // To trash
@@ -2112,7 +2112,7 @@ class MoviesParser extends MoviesAbstractDB {
                 . " INNER JOIN {$this->db['url']} u ON p.uid = u.id"
                 . " WHERE p.id>%d" . $cid_and . $version_and . $status_and . $status_links_and
                 . " ORDER BY p.id $and_order LIMIT %d", (int) $min_pid, (int) $count);
-         
+
         $result = $this->db_results($query);
         $ret = array();
         if ($result) {
@@ -2302,6 +2302,34 @@ class MoviesParser extends MoviesAbstractDB {
                 $search_fields['exist'] = $post_exist_name;
             }
 
+            // Get exist movie
+            $post_exist_movie_name = '';
+            $exist_movie_rule = '';
+            if ($active_rules['em']) {
+                foreach ($active_rules['em'] as $item) {
+                    if ($item['content']) {
+                        $post_exist_movie_name = $item['content'];
+                        $exist_movie_rule = $item;
+                        break;
+                    }
+                }
+                $search_fields['exist_movie'] = $post_exist_movie_name;
+            }
+
+            // Get exist tv
+            $post_exist_tv_name = '';
+            $exist_tv_rule = '';
+            if ($active_rules['et']) {
+                foreach ($active_rules['et'] as $item) {
+                    if ($item['content']) {
+                        $post_exist_tv_name = $item['content'];
+                        $exist_tv_rule = $item;
+                        break;
+                    }
+                }
+                $search_fields['exist_tv'] = $post_exist_tv_name;
+            }
+
             $ms = $this->ml->get_ms();
             $facets = array();
             if ($movie_id > 0) {
@@ -2455,6 +2483,30 @@ class MoviesParser extends MoviesAbstractDB {
 
                         $results[$movie->id]['total']['match'] += 1;
                         $results[$movie->id]['total']['rating'] += $exist_rule['ra'];
+                    }
+
+                    // Exist movie
+                    if ($post_exist_movie_name) {
+                        if ($movie->type == 'Movie') {
+                            $results[$movie->id]['exist_movie']['data'] = $post_exist_movie_name;
+                            $results[$movie->id]['exist_movie']['match'] = 1;
+                            $results[$movie->id]['exist_movie']['rating'] = $exist_movie_rule['ra'];
+
+                            $results[$movie->id]['total']['match'] += 1;
+                            $results[$movie->id]['total']['rating'] += $exist_movie_rule['ra'];
+                        }
+                    }
+
+                    // Exist tv
+                    if ($post_exist_tv_name) {
+                        if ($movie->type == 'TVSeries') {
+                            $results[$movie->id]['exist_tv']['data'] = $post_exist_tv_name;
+                            $results[$movie->id]['exist_tv']['match'] = 1;
+                            $results[$movie->id]['exist_tv']['rating'] = $exist_tv_rule['ra'];
+
+                            $results[$movie->id]['total']['match'] += 1;
+                            $results[$movie->id]['total']['rating'] += $exist_tv_rule['ra'];
+                        }
                     }
 
                     //Facets
@@ -3387,9 +3439,9 @@ class MoviesParser extends MoviesAbstractDB {
         $results = $this->db_results($sql);
         return $results;
     }
-    
+
     public function get_fchan_posts_found($uid = 0) {
-        $sql = sprintf("SELECT posts_found FROM {$this->db['fchan_log']} WHERE uid=%d", $uid);        
+        $sql = sprintf("SELECT posts_found FROM {$this->db['fchan_log']} WHERE uid=%d", $uid);
         $result = $this->db_get_var($sql);
         return $result;
     }

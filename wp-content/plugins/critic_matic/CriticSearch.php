@@ -60,40 +60,41 @@ class CriticSearch extends AbstractDB {
         'critics' => array('release', 'type', 'movie', 'genre', 'author', 'state', 'related', 'tags', 'from')
     );
     public $audience_facets = array(
-        'auvote' => array('title' => 'SUGGESTION', 'name_pre' => 'AU ', 'filter_pre' => 'Audience SUGGESTION ', 'icon' => 'vote', 'group' => 'woke'),
-        'aurating' => array('title' => 'OVERALL', 'name_pre' => 'AU WORTHWHILE ', 'filter_pre' => 'Audience WORTHWHILE ', 'icon' => 'rating', 'group' => 'woke'),
-        'auaffirmative' => array('title' => 'AFFIRMATIVE', 'name_pre' => 'AU AFFIRMATIVE ', 'filter_pre' => 'Audience AFFIRMATIVE ', 'icon' => 'affirmative', 'group' => 'woke'),
-        'augod' => array('title' => 'FEDORA', 'name_pre' => 'AU ANTI-GOD ', 'filter_pre' => 'Audience ANTI-GOD ', 'icon' => 'god', 'group' => 'woke'),
+        'auvote' => array('title' => 'SUGGESTION', 'titlesm' => 'SUGGESTION', 'name_pre' => 'AU ', 'filter_pre' => 'Audience SUGGESTION ', 'icon' => 'vote', 'group' => 'woke'),
+        'aurating' => array('title' => 'OVERALL', 'titlesm' => 'OVERALL', 'name_pre' => 'AU OVERALL ', 'filter_pre' => 'Audience OVERALL ', 'icon' => 'rating', 'group' => 'woke'),
+        'auaffirmative' => array('title' => 'AFFIRMATIVE ACTION', 'titlesm' => 'AFF ACT','name_pre' => 'AU AA ', 'filter_pre' => 'Audience AFFIRMATIVE ACTION ', 'icon' => 'affirmative', 'group' => 'woke'),
+        'augod' => array('title' => 'FEDORA TIPPING', 'titlesm' => 'FEDORA T','name_pre' => 'FEDORA TIPPING ', 'filter_pre' => 'Audience FEDORA TIPPING ', 'icon' => 'god', 'group' => 'woke'),
         /* 'auhollywood' => array('title' => 'HOLLYWOOD BS', 'name_pre' => 'AU HOLLYWOOD BS ', 'filter_pre' => 'Audience HOLLYWOOD BS ', 'icon' => 'hollywood'), */
-        'aulgbtq' => array('title' => 'GAY S**T', 'name_pre' => 'AU LGBTQ ', 'filter_pre' => 'Audience LGBTQ ', 'icon' => 'lgbtq', 'group' => 'woke'),
-        'aumisandry' => array('title' => 'FEMINISM', 'name_pre' => 'AU MISANDRY ', 'filter_pre' => 'Audience MISANDRY ', 'icon' => 'misandry', 'group' => 'woke'),
-        'auneo' => array('title' => 'NEO-MARXISM', 'name_pre' => 'AU NEO-MARXISM ', 'filter_pre' => 'Audience NEO-MARXISM ', 'icon' => 'patriotism', 'group' => 'woke')
+        'aulgbtq' => array('title' => 'GAY STUFF', 'titlesm' => 'GAY STUFF', 'name_pre' => 'GAY STUFF ', 'filter_pre' => 'Audience GAY STUFF ', 'icon' => 'lgbtq', 'group' => 'woke'),
+        'aumisandry' => array('title' => 'FEMINISM', 'titlesm' => 'FEMINISM', 'name_pre' => 'AU FEMINISM ', 'filter_pre' => 'Audience FEMINISM ', 'icon' => 'misandry', 'group' => 'woke'),
+        'auneo' => array('title' => 'NEO-MARXISM', 'titlesm' => 'NEO-MARXISM', 'name_pre' => 'AU NEO-MARXISM ', 'filter_pre' => 'Audience NEO-MARXISM ', 'icon' => 'patriotism', 'group' => 'woke')
     );
     public $rating_facets = array(
-        'rrwt' => array('title' => 'ZR Rating', 'name_pre' => 'ZR ', 'filter_pre' => 'ZR Rating ', 'max_count' => 60, 'multipler' => 10, 'main' => 1, 'group' => 'rating'),
-        'rating' => array('title' => 'Family Friendly Score', 'name_pre' => 'FFS ', 'filter_pre' => 'Family Friendly Score ', 'max_count' => 60, 'multipler' => 10, 'group' => 'woke', 'main' => 1),
-        'rimdb' => array('title' => 'IMDB', 'name_pre' => 'IMDB ', 'filter_pre' => 'IMDB Rating ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => ''),
-        'rrt' => array('title' => 'Rotten Tomatoes', 'name_pre' => 'RT ', 'filter_pre' => 'Rotten Tomatoes ', 'max_count' => 110, 'group' => 'rating', 'icon' => 'rt'),
-        'rrta' => array('title' => 'Rotten Tomatoes Audience', 'name_pre' => 'RTA ', 'filter_pre' => 'Rotten Tomatoes Audience ', 'max_count' => 110, 'group' => 'rating', 'icon' => 'rt'),
-        'rrtg' => array('title' => 'Rotten Tomatoes Gap', 'name_pre' => 'RTG ', 'filter_pre' => 'Rotten Tomatoes Gap ', 'max_count' => 220, 'shift' => -100, 'sort' => 'asc', 'group' => 'rating', 'icon' => 'rt'),
-        'rkp' => array('title' => 'Kinopoisk', 'name_pre' => 'KP ', 'filter_pre' => 'Kinopoisk ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'kinop'),
-        'rdb' => array('title' => 'Douban', 'name_pre' => 'DB ', 'filter_pre' => 'Douban ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'douban'),
-        'ranl' => array('title' => 'AnimeList', 'name_pre' => 'AnL ', 'filter_pre' => 'AnL ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => ''),
-        'rfn' => array('title' => '4chan', 'name_pre' => '4chan ', 'filter_pre' => '4chan ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => ''),
-        'rrev' => array('title' => 'Critic Reviews', 'name_pre' => 'RW ', 'filter_pre' => 'Reviews ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => ''),
+        'rrwt' => array('title' => 'Rating', 'titlesm' => 'Rating', 'name_pre' => 'Rating ', 'filter_pre' => 'Rating ', 'max_count' => 60, 'multipler' => 10, 'main' => 1, 'group' => 'rating'),
+        'rating' => array('title' => 'Wokeness', 'titlesm' => 'Wokeness', 'name_pre' => 'Wokeness ', 'filter_pre' => 'Wokeness ', 'max_count' => 60, 'multipler' => 10, 'group' => 'woke', 'main' => 1),
+        'rimdb' => array('title' => 'IMDb', 'titlesm' => 'IMDb', 'name_pre' => 'IMDb ', 'filter_pre' => 'IMDb Rating ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => ''),
+        'rrt' => array('title' => 'Rotten Tomatoes', 'titlesm' => 'RT', 'name_pre' => 'RT ', 'filter_pre' => 'Rotten Tomatoes ', 'max_count' => 110, 'group' => 'rating', 'icon' => 'rt'),
+        'rrta' => array('title' => 'Rotten Tomatoes Audience', 'titlesm' => 'RT Audience', 'name_pre' => 'RTA ', 'filter_pre' => 'Rotten Tomatoes Audience ', 'max_count' => 110, 'group' => 'rating', 'icon' => 'rt'),
+        'rrtg' => array('title' => 'Rotten Tomatoes % Gap', 'titlesm' => 'RT % Gap', 'name_pre' => 'RT%G ', 'filter_pre' => 'Rotten Tomatoes % Gap ', 'max_count' => 220, 'shift' => -100, 'sort' => 'asc', 'group' => 'rating', 'icon' => 'rt'),
+        'rkp' => array('title' => 'Kinopoisk', 'titlesm' => 'Kinopoisk', 'name_pre' => 'KP ', 'filter_pre' => 'Kinopoisk ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'kinop'),
+        'rdb' => array('title' => 'Douban', 'titlesm' => 'Douban', 'name_pre' => 'DB ', 'filter_pre' => 'Douban ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'douban'),
+        'ranl' => array('title' => 'MyAnimeList', 'titlesm' => 'MyAnimeList', 'name_pre' => 'MyAnLi ', 'filter_pre' => 'MyAnLi ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => ''),
+        'rfn' => array('title' => '4chan', 'titlesm' => '4chan', 'name_pre' => '4chan ', 'filter_pre' => '4chan ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => ''),
+        'rrev' => array('title' => 'Critic Reviews', 'titlesm' => 'Critic Reviews', 'name_pre' => 'RW ', 'filter_pre' => 'Reviews ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => ''),
             //'rtotal' => array('title' => 'Total rating', 'name_pre' => 'Total ', 'filter_pre' => 'Total rating '),
     );
     public $popularity_facets = array(
-        'crwt' => array('title' => 'ZR Popularity', 'name_pre' => 'ZR pop ', 'filter_pre' => 'ZR Popularity ', 'main' => 1, 'group' => 'pop'),
-        'cimdb' => array('title' => 'IMDB', 'name_pre' => 'IMDB ', 'filter_pre' => 'IMDB Rating ', 'group' => 'pop', 'icon' => ''),
-        'crt' => array('title' => 'Rotten Tomatoes', 'name_pre' => 'RT ', 'filter_pre' => 'Rotten Tomatoes ', 'group' => 'pop', 'icon' => 'rt'),
-        'crta' => array('title' => 'Rotten Tomatoes Audience', 'name_pre' => 'RTA ', 'filter_pre' => 'Rotten Tomatoes Audience ', 'group' => 'pop', 'icon' => 'rt'),
-        'ckp' => array('title' => 'Kinopoisk', 'name_pre' => 'KP ', 'filter_pre' => 'Kinopoisk ', 'group' => 'pop', 'icon' => 'kinop'),
-        'cdb' => array('title' => 'Douban', 'name_pre' => 'DB ', 'filter_pre' => 'Douban ', 'group' => 'pop', 'icon' => 'douban'),
-        'canl' => array('title' => 'AnimeList', 'name_pre' => 'AnL ', 'filter_pre' => 'AnL ', 'group' => 'pop', 'icon' => ''),
-        'cfn' => array('title' => '4chan', 'name_pre' => '4chan ', 'filter_pre' => '4chan ', 'group' => 'pop', 'icon' => ''),
-        'crev' => array('title' => 'Critic Reviews', 'name_pre' => 'RW ', 'filter_pre' => 'Reviews ', 'group' => 'pop', 'icon' => ''),
-        'pop' => array('title' => 'Emotions', 'group' => 'pop', 'icon' => ''),
+        'crwt' => array('title' => 'Popularity', 'titlesm' => 'Popularity', 'name_pre' => 'Pop ', 'filter_pre' => 'Popularity ', 'main' => 1, 'group' => 'pop'),
+        'cimdb' => array('title' => 'IMDb', 'titlesm' => 'IMDb', 'name_pre' => 'IMDb ', 'filter_pre' => 'IMDb Rating ', 'group' => 'pop', 'icon' => ''),
+        'crt' => array('title' => 'Rotten Tomatoes', 'titlesm' => 'RT', 'name_pre' => 'RT ', 'filter_pre' => 'Rotten Tomatoes ', 'group' => 'pop', 'icon' => 'rt'),
+        'crta' => array('title' => 'Rotten Tomatoes Audience', 'titlesm' => 'RT Audience', 'name_pre' => 'RTA ', 'filter_pre' => 'Rotten Tomatoes Audience ', 'group' => 'pop', 'icon' => 'rt'),
+        'ckp' => array('title' => 'Kinopoisk', 'name_pre' => 'KP ', 'titlesm' => 'Kinopoisk', 'filter_pre' => 'Kinopoisk ', 'group' => 'pop', 'icon' => 'kinop'),
+        'cdb' => array('title' => 'Douban', 'name_pre' => 'DB ', 'titlesm' => 'Douban', 'filter_pre' => 'Douban ', 'group' => 'pop', 'icon' => 'douban'),
+        'canl' => array('title' => 'MyAnimeList', 'titlesm' => 'MyAnimeList', 'name_pre' => 'MyAnLi ', 'filter_pre' => 'MyAnLi ', 'group' => 'pop', 'icon' => ''),
+        'cfn' => array('title' => '4chan', 'titlesm' => '4chan', 'name_pre' => '4chan ', 'filter_pre' => '4chan ', 'group' => 'pop', 'icon' => ''),
+        //crev unused
+        'pop' => array('title' => 'Reviews', 'titlesm' => 'Reviews', 'name_pre' => 'Reviews ', 'filter_pre' => 'Reviews ', 'group' => 'pop', 'icon' => ''),
+            //'pop' => array('title' => 'Emotions', 'group' => 'pop', 'icon' => ''),
     );
     public $facets_race_cast = array(
         'race' => array('filter' => 'actor', 'name' => 'actor_all', 'title' => 'Cast race', 'name_pre' => 'Cast '),
@@ -1888,8 +1889,8 @@ class CriticSearch extends AbstractDB {
                     $select = ', IF(female>0, female, 999) as female_valid';
                 }
             } else if (in_array($sort_key, $rating_facets) || in_array($sort_key, $audience_facets) || in_array($sort_key, $popularity_facets)) {
-              
-                $select = ", ".$sort_key . " as sortval";            
+
+                $select = ", " . $sort_key . " as sortval";
 
                 if ($sort_type == 'DESC') {
                     $order = ' ORDER BY ' . $sort_key . ' DESC';

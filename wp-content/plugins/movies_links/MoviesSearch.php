@@ -47,7 +47,7 @@ class MoviesSearch extends MoviesAbstractDB {
         $this->connect();
 
         // Main sql
-        $sql = sprintf("SELECT id, title, release, year, runtime, movie_id, tmdb_id, weight() w"
+        $sql = sprintf("SELECT id, title, release, year, runtime, movie_id, tmdb_id, type, weight() w"
                 . " FROM movie_an WHERE id>0" . $match_title . $match_year . $type_and . " LIMIT %d ", $limit);
         
 
@@ -74,7 +74,7 @@ class MoviesSearch extends MoviesAbstractDB {
 
     public function search_movies_by_id($keyword = '') {
         // Main sql
-        $sql = sprintf("SELECT id, title, release, year, runtime, movie_id, tmdb_id, weight() w"
+        $sql = sprintf("SELECT id, title, release, year, runtime, movie_id, tmdb_id, type, weight() w"
                 . " FROM movie_an WHERE id=%d", (int) $keyword);
         $result = $this->sdb_results($sql);
 
@@ -89,7 +89,7 @@ class MoviesSearch extends MoviesAbstractDB {
     
     public function search_movies_by_imdb($keyword = '') {
         // Main sql
-        $sql = sprintf("SELECT id, title, release, year, runtime, movie_id, tmdb_id, weight() w"
+        $sql = sprintf("SELECT id, title, release, year, runtime, movie_id, tmdb_id, type, weight() w"
                 . " FROM movie_an WHERE movie_id=%d", (int) $keyword);
         $result = $this->sdb_results($sql);
 
@@ -104,7 +104,7 @@ class MoviesSearch extends MoviesAbstractDB {
 
     public function search_movies_by_tmdb($keyword = '') {
         // Main sql
-        $sql = sprintf("SELECT id, title, release, year, runtime, movie_id, tmdb_id, weight() w"
+        $sql = sprintf("SELECT id, title, release, year, runtime, movie_id, tmdb_id, type, weight() w"
                 . " FROM movie_an WHERE tmdb_id=%d", (int) $keyword);
         $result = $this->sdb_results($sql);
 
