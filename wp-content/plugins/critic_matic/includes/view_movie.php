@@ -181,8 +181,8 @@ if ($mid) {
         $urls2 = array();
         $parsed_posts = $mp->get_posts_by_top_movie($mid);
         if ($parsed_posts) {
-            $ids = array();
-            foreach ($parsed_posts as $post) {
+            $ids = array();            
+            foreach ($parsed_posts as $post) {             
                 $ids[] = $post->uid;
             }
             $q2_req = array(
@@ -190,11 +190,29 @@ if ($mid) {
                 'pid' => 0,
             );
             $urls2 = $mp->get_urls_query($q2_req, 1, 0);
+                        
+            // Exclude camp
+            $pcamp = $mp->get_campaigns(-1,1);
+            $pcamp_exlude = array();
+            if ($pcamp){
+                foreach ($pcamp as $pcampitem) {
+                    $pcamp_exlude[]=$pcampitem->id;
+                }
+            }
+            
+            if ($urls2){
+                $valid_urls_2 = array();
+                foreach ($urls2 as $item) {
+                    if (!in_array($item->cid, $pcamp_exlude)){
+                        $valid_urls_2[]=$item;
+                    }
+                }
+            }
         }
 
         $total_urls = array(
             'Post id' => $urls,
-            'Top movie' => $urls2,
+            'Top movie' => $valid_urls_2,
         );
 
         foreach ($total_urls as $tkey => $urls) {
