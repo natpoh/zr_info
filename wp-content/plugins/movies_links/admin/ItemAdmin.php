@@ -155,7 +155,7 @@ class ItemAdmin {
      * Pager
      */
 
-    public function themePager($status = -1, $page = 1, $url = '/', $count = 1, $per_page = 100, $orderby = '', $order = '', $pg = 'p', $active_class = 'disabled') {
+    public function themePager($page = 1, $url = '/', $count = 1, $per_page = 100, $orderby = '', $order = '', $pg = 'p', $active_class = 'disabled') {
         $ret = '';
         $pager = $this->getPager($page, $url, $count, $per_page, $orderby, $order);
         if ($pager) {
