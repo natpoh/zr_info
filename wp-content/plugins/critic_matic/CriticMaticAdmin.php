@@ -1541,11 +1541,37 @@ class CriticMaticAdmin {
                 if (isset($_POST['mid'])) {
                     $nonce = wp_verify_nonce($_POST['critic-nonce'], 'critic-options');
                     if ($nonce) {
-                        
-                        $genre = isset($_POST['genre'])?$_POST['genre']:0;
-                        if ($genre){
+
+                        if (isset($_POST['genre'])) {
+                            // Add a genre
+                            $genre = $_POST['genre'];
+
+                            if ($genre) {
+                                $ma = $this->cm->get_ma();
+                                $ma->add_movie_genre($mid, $genre);
+                            }
+                        }if ($_POST['edit_erating']) {
                             $ma = $this->cm->get_ma();
-                            $ma->add_movie_genre($mid,$genre);
+                            // Edit rating
+                            $erating = (array) $ma->get_movie_erating($mid);
+
+                            if ($erating) {
+                                $rating_data = array();
+                                foreach ($erating as $key => $value) {
+                                    if ($key == 'id') {
+                                        continue;
+                                    }
+                                    if (isset($_POST[$key])) {
+                                        if ($value != $_POST[$key]) {
+                                            $rating_data[$key] = $_POST[$key];
+                                        }
+                                    }
+                                }                                
+                                if ($rating_data){                                    
+                                    // Upadte erating
+                                    $ma->update_erating($erating['id'], $rating_data);
+                                }
+                            }
                         }
 
                         print "<div class=\"updated\"><p><strong>Updated</strong></p></div>";

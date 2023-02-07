@@ -121,7 +121,8 @@ class MoviesAn extends AbstractDBAn {
             'cpi' => 'data_cpi',
             'title_slugs' => 'data_movie_title_slugs',
             'race_rule' => 'data_an_race_rule',
-            'cache_nf_keywords'=>'cache_nf_keywords',
+            'cache_nf_keywords' => 'cache_nf_keywords',
+            'erating' => 'data_movie_erating',
         );
         $this->timer_start();
         $this->get_perpage();
@@ -332,7 +333,7 @@ class MoviesAn extends AbstractDBAn {
 
         return $result;
     }
-    
+
     public function get_all_genres() {
         $sql = sprintf("SELECT id, name, slug, status, weight FROM {$this->db['data_genre']} WHERE status!=2 ORDER BY name ASC");
         $result = $this->db_results($sql);
@@ -590,13 +591,13 @@ class MoviesAn extends AbstractDBAn {
         $sql = sprintf("DELETE FROM {$this->db['meta_genre']} WHERE mid=%d AND gid=%d", (int) $mid, (int) $gid);
         $this->db_query($sql);
     }
-    
+
     public function bulk_remove_movie_genres($mid, $gids) {
-        
+
         foreach ($gids as $gid) {
             $data = array(
-                'mid'=>$mid,
-                'gid'=>$gid,
+                'mid' => $mid,
+                'gid' => $gid,
             );
             $this->sync_delete_multi($data, $this->db['meta_genre'], true, 10);
         }
@@ -998,15 +999,15 @@ class MoviesAn extends AbstractDBAn {
      */
 
     public function get_directors($movie_id = 0, $type = -1) {
-        
+
         $and_type = '';
-        if ($type!=-1){
-            $and_type = " AND m.type=".(int)$type;
+        if ($type != -1) {
+            $and_type = " AND m.type=" . (int) $type;
         }
-        
+
         $sql = sprintf("SELECT name FROM {$this->db['actors_imdb']} a "
                 . "INNER JOIN {$this->db['meta_director']} m ON m.aid = a.id "
-                . "WHERE m.mid=%d".$and_type, $movie_id);
+                . "WHERE m.mid=%d" . $and_type, $movie_id);
         $results = $this->db_results($sql);
         return $results;
     }
@@ -1503,6 +1504,19 @@ class MoviesAn extends AbstractDBAn {
     }
 
     /*
+     * Erating
+     */
+    public function get_movie_erating($mid) {
+        $sql = sprintf("SELECT * FROM {$this->db['erating']} WHERE movie_id=%d", (int) $mid);
+        $results = $this->db_fetch_row($sql);
+        return $results;
+    }
+    
+    public function update_erating($id, $data) {        
+        $this->sync_update_data($data, $id, $this->db['erating'], true, 10);
+    }
+
+    /*
      * Cpi
      */
 
@@ -1665,23 +1679,24 @@ class MoviesAn extends AbstractDBAn {
         }
         $this->db_query($sql);
     }
-    
+
     /* Nf kewords */
+
     public function get_nf_keywords($mid) {
         $sql = sprintf("SELECT date, keywords FROM {$this->db['cache_nf_keywords']} WHERE mid=%d", $mid);
         $result = $this->db_fetch_row($sql);
-                
-        if ($result){
-            $live_time = 86400*30;
+
+        if ($result) {
+            $live_time = 86400 * 30;
             $curr_time = $this->curr_time();
-            $max_date = $curr_time-$live_time;
+            $max_date = $curr_time - $live_time;
             $date = $result->date;
-            if ($date>$max_date){
-                $keywords = $result->keywords;                
+            if ($date > $max_date) {
+                $keywords = $result->keywords;
                 return $keywords;
             }
         }
-        
+
         return '';
     }
 
@@ -1690,15 +1705,15 @@ class MoviesAn extends AbstractDBAn {
         $exist_id = $this->db_get_var($sql);
         $curr_time = $this->curr_time();
         $data = array(
-            "date"=>$curr_time,
-            "keywords"=>$keywords,
+            "date" => $curr_time,
+            "keywords" => $keywords,
         );
-        if ($exist_id){
+        if ($exist_id) {
             $this->db_update($data, $this->db['cache_nf_keywords'], $exist_id);
         } else {
-            $data['mid']=$mid;
+            $data['mid'] = $mid;
             $this->db_insert($data, $this->db['cache_nf_keywords']);
         }
     }
-    
+
 }

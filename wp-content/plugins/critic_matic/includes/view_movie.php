@@ -119,8 +119,55 @@ if ($mid) {
     </form>
 
     <h3>ERating</h3>
+    <?php
+    $erating = $ma->get_movie_erating($mid);
+    if ($erating) {
+        $earr = (array) $erating;
+        ksort($earr);
+        ?>
+        <form accept-charset="UTF-8" method="post" >
+            <fieldset>
+                <input type="hidden" name="edit_erating" value="1">
+                <input type="hidden" name="mid" class="mid" value="<?php print $mid ?>">
+                <input type="hidden" name="id" class="id" value="<?php print $earr['id'] ?>">
+                <table id="movies" class="wp-list-table widefat striped table-view-list">
+                    <thead>
+                        <tr>
+                            <th><?php print __('key') ?></th>
+                            <th><?php print __('value') ?></th>                        
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        foreach ($earr as $key => $value) {
+                            if ($key == "id") {
+                                continue;
+                            }
+                            ?>
+                            <tr>                        
+                                <td><?php print $key ?></td>
+                                <td><input name="<?php print $key ?>" type="text" value="<?php print $value ?>"></td>                           
+                            </tr> 
+                        <?php } ?>
+                    </tbody>
+                </table> 
+                <?php wp_nonce_field('critic-options', 'critic-nonce'); ?>
+                <br />
+                <input type="submit" name="options" id="edit-submit" value="<?php echo __('Update movie erating') ?>" class="button-primary">  
+            </fieldset>
+        </form>  
+        <br />
+        <?php
+    }
+    if (class_exists('MoviesLinks')) {
+        $ml = new MoviesLinks();
+        ?>
 
-    <h1>Movies links</h1>
+        <h1>Movies links</h1>
+
+    <?php }
+    ?>
+
 
     <h1>Reviews</h1>
     <?php
@@ -132,11 +179,11 @@ if ($mid) {
             <div class="bulk-actions-holder">
                 <select name="bulkaction" class="bulk-actions">
                     <option value=""><?php print __('Bulk actions') ?></option>
-                        <?php foreach ($this->bulk_actions_meta as $act_key => $act_name) { ?>                    
+                    <?php foreach ($this->bulk_actions_meta as $act_key => $act_name) { ?>                    
                         <option value="<?php print $act_key ?>">
-                        <?php print $act_name ?>
+                            <?php print $act_name ?>
                         </option>                                
-        <?php } ?>                       
+                    <?php } ?>                       
                 </select>
                 <input type="submit" id="edit-submit" value="<?php echo __('Submit') ?>" class="button-primary">  
             </div>
@@ -174,7 +221,7 @@ if ($mid) {
                             <td><?php print $this->theme_author_link($critic->aid, $critic->author_name) ?></td>
                             <td><?php print $this->cm->get_author_type($critic->author_type) ?></td>
                         </tr> 
-        <?php } ?>
+                    <?php } ?>
                 </tbody>
             </table> 
         </form>   
@@ -210,7 +257,7 @@ if ($mid) {
                     <td><?php print $this->theme_post_link($item->cid, $this->cm->get_post_name_by_id($item->cid)) ?></td> 
                     <td><?php print $this->theme_movie_link($item->mid, $this->get_movie_name_by_id($item->mid)) ?></td>  
                 </tr> 
-        <?php } ?>
+            <?php } ?>
         </tbody>
         </table>    
     <?php } ?>
@@ -226,12 +273,12 @@ if ($mid) {
                 </tr>
             </thead>
             <tbody>
-        <?php foreach ($critics_search['debug'] as $key => $value) { ?>
+                <?php foreach ($critics_search['debug'] as $key => $value) { ?>
                     <tr>
                         <td><?php print ucfirst($key) ?></td>
                         <td><?php print $value ?></td>
                     </tr>
-        <?php } ?>
+                <?php } ?>
             </tbody>        
         </table><?php
     }
@@ -240,11 +287,11 @@ if ($mid) {
         <div class="bulk-actions-holder">
             <select name="bulkaction" class="bulk-actions">
                 <option value=""><?php print __('Bulk actions') ?></option>
-                    <?php foreach ($this->bulk_actions_search as $act_key => $act_name) { ?>                    
+                <?php foreach ($this->bulk_actions_search as $act_key => $act_name) { ?>                    
                     <option value="<?php print $act_key ?>">
-                    <?php print $act_name ?>
+                        <?php print $act_name ?>
                     </option>                                
-    <?php } ?>                       
+                <?php } ?>                       
             </select>
             <input type="submit" id="edit-submit" value="<?php echo __('Submit') ?>" class="button-primary">  
         </div>
@@ -306,13 +353,13 @@ if ($mid) {
                                 <td><?php print $rating ?></td>
                                 <td><?php print $score_str ?></td>                    
                             </tr> 
-                <?php if (isset($critic['debug'])) { ?>
+                            <?php if (isset($critic['debug'])) { ?>
                                 <tr>
                                     <td></td>
                                     <td colspan="6">
                                         <table class="wp-list-table widefat striped table-view-list">     
                                             <tbody>
-                    <?php foreach ($critic['debug'] as $key => $value) { ?>
+                                                <?php foreach ($critic['debug'] as $key => $value) { ?>
                                                     <tr>
                                                         <td><?php print $key ?></td>
                                                         <td><?php
@@ -323,7 +370,7 @@ if ($mid) {
                                                             }
                                                             ?></td>
                                                     </tr>
-                    <?php } ?>
+                                                <?php } ?>
                                             </tbody>        
                                         </table>
                                     </td>                        
