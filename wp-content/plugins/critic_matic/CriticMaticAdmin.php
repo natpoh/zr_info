@@ -1566,10 +1566,17 @@ class CriticMaticAdmin {
                                             $rating_data[$key] = $_POST[$key];
                                         }
                                     }
-                                }                                
-                                if ($rating_data){                                    
+                                }
+                                if ($rating_data) {
+                         
                                     // Upadte erating
                                     $ma->update_erating($erating['id'], $rating_data);
+                                    // Calculate erating
+                                    if (class_exists('MoviesLinks')) {
+                                        $ml = new MoviesLinks();
+                                        $ml_ma = $ml->get_ma();
+                                        $ml_ma->update_erating($mid);
+                                    }
                                 }
                             }
                         }
