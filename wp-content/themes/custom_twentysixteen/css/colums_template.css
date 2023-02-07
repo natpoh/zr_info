@@ -2385,6 +2385,12 @@ body.theme_dark  .rating_block .imdb_rating {
 .exlink{
     cursor: pointer;
 }
+ .exlink:hover {
+    color: #007acc;
+}
+body.theme_dark .exlink:hover {
+    color: #87b8d8;
+}
 
 .rating_block .rotten_tomatoes_score {
     font-size: 18px;

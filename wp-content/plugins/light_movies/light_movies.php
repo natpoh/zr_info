@@ -113,6 +113,9 @@ $this->set_option(1,$_POST['option_1'],'Ads');
 $this->set_option(3,$_POST['option_3'],'Ethnic array');
 $this->set_option(4,$_POST['option_4'],'Ethnic array fast');
 $this->set_option(6,$_POST['option_6'],'Color array');
+
+$this->set_option('',$_POST['similar_shows'],'similar_shows');
+
 //$this->set_option('',$_POST['verdict_method'],'verdict_method');
         }
 
@@ -147,7 +150,8 @@ $this->set_option(6,$_POST['option_6'],'Color array');
         <textarea name="option_4" style="width: 600px; height: 500px"><?php echo $this->get_option(4); ?></textarea>
         <h2>Color array</h2>
         <textarea name="option_6" style="width: 600px; height: 300px"><?php echo $this->get_option(6); ?></textarea>
-
+        <h2>Similar Shows</h2>
+        <textarea name="similar_shows" style="width: 600px; height: 300px"><?php echo $this->get_option('','similar_shows'); ?></textarea>
 
     <div class="options_data"><button type="submit" class="button button-primary save_option">Save</button></div>
 
@@ -511,7 +515,8 @@ display: none;
 
               foreach ($result_data_array as $movie_id=>$data)
               {
-
+                    $poster =  $data['titlePosterImageModel']['url'];
+                    $poster = str_replace('_V1_.jpg','_V1_QL75_UY74_CR1,0,50,74_.jpg',$poster);
                   if ($movie_id)
                   {
                     $enable_on_db=  $this->check_in_db($movie_id);
@@ -525,7 +530,7 @@ display: none;
                       $button = 'Already in the database <button  id="'.$movie_id.'" class="button button-primary add_movie_todb">Update</button>';
                   }
 
-                   $result_data.= '<tr class="click_open" id="'.$movie_id.'"><td>'.$movie_id.'</td><td><img src="'.$data[1].'" /></td><td><a target="_blank" href="https://www.imdb.com'.$data[0].'">'.$data[2].'</a> '.$data[3].'</td><td>'.$button.'</td><td><a id="op" class="open_ethnic open_ul" href="#"></a></td></tr>';
+                   $result_data.= '<tr class="click_open" id="'.$movie_id.'"><td>'.$movie_id.'</td><td><img src="'.$poster.'" /></td><td><a target="_blank" href="https://www.imdb.com/title/'. $data['id'].'">'.$data['titleNameText'].'</a> '.$data['titleReleaseText'].' '.$data['imageType'].'</td><td>'.$button.'</td><td><a id="op" class="open_ethnic open_ul" href="#"></a></td></tr>';
 
               }
               //print_r($mach);

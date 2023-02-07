@@ -116,6 +116,10 @@
                                     foreach ($total_list as $movie):
                                         global $post_an, $video_api;
 
+                                        
+                                        $sortval = $movie->sortval;
+                                        $movie->sort_val_theme = $search_front->theme_sort_val($sortval);
+
                                         $post_an = $ma->get_post($movie->id);
 
                                         $ids = $movie->id;
@@ -125,7 +129,7 @@
 
                                         if ($post_type == 'movie' || $post_type == 'tvseries' || $post_type == 'videogame') {
                                             if (function_exists('template_single_movie')) {
-                                                template_single_movie($ids, $title, $name);
+                                                template_single_movie($ids, $title, $name, '', $movie);
                                                 $content_result[$ids] = $ids;
                                             }
                                         }

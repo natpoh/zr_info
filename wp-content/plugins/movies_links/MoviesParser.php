@@ -2484,31 +2484,6 @@ class MoviesParser extends MoviesAbstractDB {
                         $results[$movie->id]['total']['match'] += 1;
                         $results[$movie->id]['total']['rating'] += $exist_rule['ra'];
                     }
-
-                    // Exist movie
-                    if ($post_exist_movie_name) {
-                        if ($movie->type == 'Movie') {
-                            $results[$movie->id]['exist_movie']['data'] = $post_exist_movie_name;
-                            $results[$movie->id]['exist_movie']['match'] = 1;
-                            $results[$movie->id]['exist_movie']['rating'] = $exist_movie_rule['ra'];
-
-                            $results[$movie->id]['total']['match'] += 1;
-                            $results[$movie->id]['total']['rating'] += $exist_movie_rule['ra'];
-                        }
-                    }
-
-                    // Exist tv
-                    if ($post_exist_tv_name) {
-                        if ($movie->type == 'TVSeries') {
-                            $results[$movie->id]['exist_tv']['data'] = $post_exist_tv_name;
-                            $results[$movie->id]['exist_tv']['match'] = 1;
-                            $results[$movie->id]['exist_tv']['rating'] = $exist_tv_rule['ra'];
-
-                            $results[$movie->id]['total']['match'] += 1;
-                            $results[$movie->id]['total']['rating'] += $exist_tv_rule['ra'];
-                        }
-                    }
-
                     //Facets
                     $facets[$movie->id] = $ms->get_movie_facets($movie->id);
                 }

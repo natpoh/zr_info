@@ -30,6 +30,23 @@ if (isset($_GET['id']))
     }
 
     $cache = wp_custom_cache('p-'.$id.'_similar_movies_1', 'fastcache', 86400);
+    if (!$cache || $cache=='')
+    {
+
+            !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+            $data =  OptionData::get_options('','similar_shows');
+            $data =  str_replace('\\','',$data);
+            $result['data']=$data;
+
+
+        $result['content']=	'<div class="in_fl_cnt"><p style="margin: 25px auto;">No similar shows have been found yet, they will be added soon...</p>'.$data.'</div>';
+
+        $cache = json_encode($result);
+    }
+
+
+
+
     echo $cache;
 
   // similar_movies($id);
