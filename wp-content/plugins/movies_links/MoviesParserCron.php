@@ -698,7 +698,7 @@ class MoviesParserCron extends MoviesAbstractDB {
                             $message = "Found post link: title: " . $post->title . "; mid: $find_movie; rating: $rating";
                             $this->mp->log_info($message, $cid, $post->uid, 4);
 
-                            $post->top_movie = $find_movie;
+                            $post->top_movie = $find_movie;                           
                             $mch->add_post($campaign, $post);
                         } else {
                             $this->mp->update_post_status($post->uid, 2);

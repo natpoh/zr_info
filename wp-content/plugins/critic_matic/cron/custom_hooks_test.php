@@ -15,4 +15,4 @@ if (!defined('ABSPATH')) {
 
 
 $new_rating = array('rating'=>10);
-CustomHooks::do_action('erating', $new_rating);
+CustomHooks::do_action('test_action', $new_rating);
