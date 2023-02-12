@@ -10,13 +10,9 @@ if (!defined('ABSPATH')) {
     define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
 }
 
-if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
-    define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
-}
 
-!class_exists('CustomHooks') ? include CRITIC_MATIC_PLUGIN_DIR . "CustomHooks.php" : '';
+!class_exists('CustomHooks') ? include ABSPATH . "wp-content/plugins/critic_matic/CustomHooks.php" : '';
 
 
 $new_rating = array('rating'=>10);
-
 CustomHooks::do_action('erating', $new_rating);
