@@ -4,6 +4,8 @@
 var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
 var critic_search = critic_search || {};
 
+critic_search.debug = false;
+
 jQuery(function ($) {
     $(document).ready(function () {
 
@@ -147,6 +149,9 @@ critic_search.menu = function () {
 }
 
 critic_search.init_facet = function (v) {
+    if (critic_search.debug) {
+        console.log('init_facet', v);
+    }
     v.find('input[type=checkbox]').click(function () {
         var $this = $(this);
         var type = $this.attr('data-name');
@@ -177,7 +182,7 @@ critic_search.init_facet = function (v) {
             var label = $this.closest('label');
             var type_title = label.attr('data-type');
             var ftype = v.attr('data-type');
-            // console.log(v);
+
             critic_search.add_filter(type, id, title, ftype, type_title, title_pre);
             //Plus logic
             var plus = $this.hasClass('plus');
@@ -205,6 +210,9 @@ critic_search.init_facet = function (v) {
 }
 
 critic_search.init = function ($custom_id = '') {
+    if (critic_search.debug) {
+        console.log('init', $custom_id);
+    }
     var $ = jQuery;
     // Facets
     $('.facet:not(.init)').each(function (i, v) {
@@ -250,13 +258,18 @@ critic_search.init = function ($custom_id = '') {
                     critic_search.default_facet[data_type] = $(facet_name).first().html();
                 }
             }
+            v.attr('type-kw', keyword);
 
             if (keyword.length > 2) {
                 v.addClass('active');
                 if (!v.hasClass('process')) {
+                    v.addClass('process');
+                    v.attr('submit-kw', keyword);
                     critic_search.submit('autocomplite');
+                } else {
+                    // Waiting for process                    
                 }
-                v.addClass('process');
+
             } else {
                 if (v.hasClass('active')) {
                     v.removeClass('active');
@@ -276,7 +289,7 @@ critic_search.init = function ($custom_id = '') {
                             holder.addClass('custom');
                             holder.html(critic_search.default_facet[data_type]);
                             critic_search.init_facet(holder.closest('.facet'));
-                            critic_search.init_more(holder);                            
+                            critic_search.init_more(holder);
                         }
                     }
                 }
@@ -716,6 +729,9 @@ critic_search.remove_filter = function (type, id) {
 }
 
 critic_search.update_facets = function ($rtn = [], $holder = '#facets', $is_child = false) {
+    if (critic_search.debug) {
+        console.log('update facets', $rtn, $holder, $is_child);
+    }
     var new_ids = [];
     $rtn.find($holder + ' > .ajload').each(function (i, v) {
         var v = $(v), id = v.attr('id');
@@ -770,6 +786,9 @@ critic_search.facet_collapse_update = function (id, v) {
 }
 
 critic_search.submit = function (inc = '', target = '') {
+    if (critic_search.debug) {
+        console.log('submit', inc, target);
+    }
     if (!critic_search.enable_submit) {
         return false;
     }
@@ -865,13 +884,22 @@ critic_search.submit = function (inc = '', target = '') {
     critic_search.ajax(data, function (rtn) {
 
         var ac_facet = '';
-        $('.facet .autocomplite.active').each(function (i, v) {
+        $('.facet .autocomplite.process').each(function (i, v) {
             ac_facet = $(v);
             return;
         });
         var $rtn = $(rtn);
 
         if (ac_facet) {
+            // Check keywords
+            var type_kw = ac_facet.attr('type-kw');
+            var submit_kw = ac_facet.attr('submit-kw');
+            if (type_kw != submit_kw) {
+                ac_facet.attr('submit-kw', type_kw);
+                critic_search.submit('autocomplite');
+                return false;
+            }
+
             ac_facet.removeClass('process');
             var ac_type = ac_facet.attr('ac-type');
             if ($rtn.length !== 0) {
@@ -954,6 +982,9 @@ critic_search.submit = function (inc = '', target = '') {
 
 
 critic_search.ajax = function (data, cb) {
+    if (critic_search.debug) {
+        console.log('ajax', data);
+    }
     var $ = jQuery;
     return $.ajax({
         type: "GET",

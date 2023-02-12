@@ -26,12 +26,6 @@ $noimage_src = $_SERVER['DOCUMENT_ROOT'].'/analysis/images/noimage.png';
 $id =$_GET['id'];
 
 //echo $filename;
-
-if (strstr($id,'_v'))
-{
-    $id = substr($id,0,strpos($id,'_v'));
-}
-
 if (strstr($id,'m_'))
 {
 
@@ -46,11 +40,11 @@ if (strstr($id,'m_'))
         $rows = Pdo_an::db_fetch_row($sql);
         if ($rows)
         {
-        $image_data = $rows->data;
-        if ($image_data)
-        {
-            $image = 'https://image.tmdb.org/t/p/w1280'.$image_data;
-        }
+            $image_data = $rows->data;
+            if ($image_data)
+            {
+                $image = 'https://image.tmdb.org/t/p/w1280'.$image_data;
+            }
             return $image;
         }
     }
@@ -59,21 +53,21 @@ if (strstr($id,'m_'))
 
         $sql ="select * from `data_movie_imdb` where  id = ".intval($id)." limit 1";
         $rows = Pdo_an::db_results_array($sql);
-            return $rows[0];
+        return $rows[0];
 
     }
     function get_img_from_db($id){
 
-    $sql ="select `data` from `data_movie_imdb` where  id = ".intval($id)." limit 1";
-    $rows = Pdo_an::db_fetch_row($sql);
-    if ($rows) {
-        $image_data = $rows->data;
-        if ($image_data) {
-            $image_data = json_decode($image_data, 1);
-            $image = $image_data['image'];
+        $sql ="select `data` from `data_movie_imdb` where  id = ".intval($id)." limit 1";
+        $rows = Pdo_an::db_fetch_row($sql);
+        if ($rows) {
+            $image_data = $rows->data;
+            if ($image_data) {
+                $image_data = json_decode($image_data, 1);
+                $image = $image_data['image'];
+            }
+            return $image;
         }
-        return $image;
-    }
     }
 
 
@@ -97,7 +91,7 @@ if (strstr($id,'m_'))
 
         if ($result=='Not Found')
         {
-         ///try get imdb images
+            ///try get imdb images
             if (isset($_GET['debug']))echo 'result '.$result;
             $result='';
         }
@@ -134,8 +128,8 @@ if (strstr($id,'m_'))
                     $len=0;
 
                 }
-                    $len+= strlen($words);
-                    $res_word.=' '.$words;
+                $len+= strlen($words);
+                $res_word.=' '.$words;
 
 
 
@@ -154,7 +148,7 @@ if (strstr($id,'m_'))
         }
 
         //add empty image
-       $obj =  get_title_imdb($id);
+        $obj =  get_title_imdb($id);
         if ($obj){
             $title = $obj['title'];
             $year = $obj['year'];
@@ -204,7 +198,7 @@ if (strstr($id,'m_'))
 
             imagejpeg ($im);
             ImageDestroy ($im);
-        return;
+            return;
         }
         else
         {
@@ -224,6 +218,41 @@ if (strstr($id,'m_'))
 
 
     return;
+}
+
+
+if (strstr($id,'_v'))
+{
+    $id = substr($id,0,strpos($id,'_v'));
+}
+
+if (strstr($id,'_o'))
+{
+    $id = substr($id,0,strpos($id,'_o'));
+
+    $originalimg=1;
+}
+
+$number = str_pad($id, 7, '0', STR_PAD_LEFT);
+
+
+$imgsource =$_SERVER['DOCUMENT_ROOT'].'/analysis/img_final_tmdb/'.$number.'.jpg';
+
+if (!file_exists($imgsource)) {
+    $imgsource =$_SERVER['DOCUMENT_ROOT'].'/analysis/img_final/'.$number.'.jpg';
+}
+if (!file_exists($imgsource)) {
+    $imgsource =$_SERVER['DOCUMENT_ROOT'].'/analysis/img_final_crowd/'.$number.'.jpg';
+}
+
+if ($originalimg==1)
+{
+    if (!file_exists($imgsource)) {
+        $imgsource= $noimage_src;
+    }
+
+    $result = file_get_contents($imgsource);
+    echo $result;
 }
 
 
@@ -361,17 +390,6 @@ imagettftext($im, 13, 0, 100, 593, $color_result, $font, $verdict);
 
 imagesavealpha($im, true);
 
-$number = str_pad($id, 7, '0', STR_PAD_LEFT);
-
-
-$imgsource =$_SERVER['DOCUMENT_ROOT'].'/analysis/img_final_tmdb/'.$number.'.jpg';
-
-if (!file_exists($imgsource)) {
-    $imgsource =$_SERVER['DOCUMENT_ROOT'].'/analysis/img_final/'.$number.'.jpg';
-}
-if (!file_exists($imgsource)) {
-    $imgsource =$_SERVER['DOCUMENT_ROOT'].'/analysis/img_final_crowd/'.$number.'.jpg';
-}
 
 
 

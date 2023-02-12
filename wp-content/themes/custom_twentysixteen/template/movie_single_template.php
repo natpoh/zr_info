@@ -126,9 +126,9 @@ if (!function_exists('template_single_movie')) {
             );
             $string_attrs = array();
             foreach ($movie_arr as $key => $value) {
-                $string_attrs[]=$key."_".$value;                
+                $string_attrs[] = $key . "_" . $value;
             }
-            $movie_attr = 'data-attr="'.implode("__", $string_attrs).'"';
+            $movie_attr = 'data-attr="' . implode("__", $string_attrs) . '"';
         }
 
         $movie_meta['release_date'] = $post_an->release;
@@ -390,6 +390,11 @@ if (!function_exists('template_single_movie')) {
 
                     <div class="movie_summary">
                         <?php
+                        if (function_exists('current_user_can')) {
+                            if (current_user_can("administrator")) {
+                                print 'Movie <a target="_blank" href="https://info.antiwoketomatoes.com/wp-admin/admin.php?page=critic_matic_movies&mid=' . $id . '">adimin info</a>.<br />';
+                            }
+                        }
                         echo $_wpmoly_movie_overview . $_wpmoly_movie_director . $content_release .
                         '<div class="single_grid">' .
                         $_wpmoly_movie_genres . $_wpmoly_movie_runtime . $_wpmoly_movie_country .
