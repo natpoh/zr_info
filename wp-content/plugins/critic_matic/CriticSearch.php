@@ -62,8 +62,8 @@ class CriticSearch extends AbstractDB {
     public $audience_facets = array(
         'auvote' => array('title' => 'SUGGESTION', 'titlesm' => 'SUGGESTION', 'name_pre' => 'AU ', 'filter_pre' => 'Audience SUGGESTION ', 'icon' => 'vote', 'group' => 'woke'),
         'aurating' => array('title' => 'OVERALL', 'titlesm' => 'OVERALL', 'name_pre' => 'AU OVERALL ', 'filter_pre' => 'Audience OVERALL ', 'icon' => 'rating', 'group' => 'woke'),
-        'auaffirmative' => array('title' => 'AFFIRMATIVE ACTION', 'titlesm' => 'AFF ACT','name_pre' => 'AU AA ', 'filter_pre' => 'Audience AFFIRMATIVE ACTION ', 'icon' => 'affirmative', 'group' => 'woke'),
-        'augod' => array('title' => 'FEDORA TIPPING', 'titlesm' => 'FEDORA T','name_pre' => 'FEDORA TIPPING ', 'filter_pre' => 'Audience FEDORA TIPPING ', 'icon' => 'god', 'group' => 'woke'),
+        'auaffirmative' => array('title' => 'AFFIRMATIVE ACTION', 'titlesm' => 'AFF ACT', 'name_pre' => 'AU AA ', 'filter_pre' => 'Audience AFFIRMATIVE ACTION ', 'icon' => 'affirmative', 'group' => 'woke'),
+        'augod' => array('title' => 'FEDORA TIPPING', 'titlesm' => 'FEDORA T', 'name_pre' => 'FEDORA TIPPING ', 'filter_pre' => 'Audience FEDORA TIPPING ', 'icon' => 'god', 'group' => 'woke'),
         /* 'auhollywood' => array('title' => 'HOLLYWOOD BS', 'name_pre' => 'AU HOLLYWOOD BS ', 'filter_pre' => 'Audience HOLLYWOOD BS ', 'icon' => 'hollywood'), */
         'aulgbtq' => array('title' => 'GAY STUFF', 'titlesm' => 'GAY STUFF', 'name_pre' => 'GAY STUFF ', 'filter_pre' => 'Audience GAY STUFF ', 'icon' => 'lgbtq', 'group' => 'woke'),
         'aumisandry' => array('title' => 'FEMINISM', 'titlesm' => 'FEMINISM', 'name_pre' => 'AU FEMINISM ', 'filter_pre' => 'Audience FEMINISM ', 'icon' => 'misandry', 'group' => 'woke'),
@@ -503,7 +503,7 @@ class CriticSearch extends AbstractDB {
                 $meta_search[$item->id] = 1;
                 $ret[$item->id]['title'] = $item->title;
                 if (strstr($item->t, '<b>')) {
-                    if (preg_match_all('/<b>([^<]+)<\/b>/', $item->t, $title_match)) {
+                    if (preg_match_all('/<b>([^<]+)<\/b>/', $item->t, $title_match)) {                        
                         $ret[$item->id]['found']['title'] = $title_match[1];
                     }
                 }
@@ -586,41 +586,17 @@ class CriticSearch extends AbstractDB {
         $ma = $this->get_ma();
 
         // Search Director
-        $max_directors = 10;
-        $director_id = $post->director;
-        $director_arr = array($director_id);
-        if (strstr($director_id, ',')) {
-            $director_arr = explode(',', $director_id);
-        }
-
-        $director_names = array();
-        $i = 0;
-        foreach ($director_arr as $director_id) {
-            $name_found = $ma->get_actor($director_id);
-            if ($name_found) {
-                if ($i > $max_directors) {
-                    break;
-                }
-                $director_names[$name_found] = $this->filter_text($name_found);
-                $i += 1;
-            }
-        }
-
-        // New metod
-        if (!$director_names) {
-            $directors = $ma->get_directors($post->id);
-            if ($directors) {
-
-                foreach ($directors as $director) {
-                    $name = $director->name;
-                    $i = 0;
-                    if ($name) {
-                        if ($i > $max_directors) {
-                            break;
-                        }
-                        $director_names[$name] = $this->filter_text($name);
-                        $i += 1;
+        $directors = $ma->get_directors($post->id);
+        if ($directors) {
+            foreach ($directors as $director) {
+                $name = $director->name;
+                $i = 0;
+                if ($name) {
+                    if ($i > $max_directors) {
+                        break;
                     }
+                    $director_names[$name] = '"' . $this->filter_text($name) . '"';
+                    $i += 1;
                 }
             }
         }
@@ -633,6 +609,7 @@ class CriticSearch extends AbstractDB {
             if ($debug) {
                 $debug_data['director'] = implode(', ', $director_names);
             }
+
             $director_found = $this->search_in_ids($ids, $director_keywords, $debug);
             if (sizeof($director_found)) {
                 foreach ($director_found as $item) {
@@ -653,40 +630,20 @@ class CriticSearch extends AbstractDB {
         }
 
         //Search Cast
-        $cast_search = array();
-        $max_actors = 10;
-        if ($post->actors) {
-            $cast_obj = json_decode($post->actors);
-            if (isset($cast_obj->s) && sizeof((array) $cast_obj->s)) {
+
+        $actors = $ma->get_actors($post->id);
+
+        if ($actors) {
+
+            foreach ($actors as $actor) {
+                $name = $actor->name;
                 $i = 0;
-                foreach ($cast_obj->s as $value) {
-                    $name = trim(strip_tags($value));
+                if ($name) {
                     if ($i > $max_actors) {
                         break;
                     }
-                    if ($name) {
-                        $cast_search[$name] = $this->filter_text($name);
-                    }
+                    $cast_search[$name] = '"'.$this->filter_text($name).'"';
                     $i += 1;
-                }
-            }
-        }
-
-        if (!$cast_search) {
-            $actors = $ma->get_actors($post->id);
-
-            if ($actors) {
-
-                foreach ($actors as $actor) {
-                    $name = $actor->name;
-                    $i = 0;
-                    if ($name) {
-                        if ($i > $max_actors) {
-                            break;
-                        }
-                        $cast_search[$name] = $this->filter_text($name);
-                        $i += 1;
-                    }
                 }
             }
         }
@@ -736,7 +693,7 @@ class CriticSearch extends AbstractDB {
                 // Validate title
 
                 $title_to_validate = $title;
-                if ($num > 3) {
+                if ($num > 7) {
                     $title_to_validate = '';
                 }
 
@@ -744,7 +701,7 @@ class CriticSearch extends AbstractDB {
 
                 $names = array();
                 if ($keywords) {
-                    $names = $this->search_movies_by_title($keywords, $num, 10);
+                    $names = $this->search_movies_by_title($keywords, $num, 100);
                     if ($debug) {
                         $ret[$id]['debug']['names keywords'] = $keywords;
                     }
@@ -755,7 +712,7 @@ class CriticSearch extends AbstractDB {
                     foreach ($names as $name) {
                         $ret[$id]['debug']['movies found'][] = $name->title;
 
-                        if (strstr($title, $name->title)) {
+                        if ($title==$name->title) {
                             $names_valid[$name->id] = $name->title;
                             $ret[$id]['debug']['movies valid'][] = $name->title;
                         }
