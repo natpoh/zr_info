@@ -39,6 +39,9 @@ class CriticSearch extends AbstractDB {
         'min_valid_point' => 33,
         'update_old_meta' => 1,
         'need_release' => 1980,
+        'name_equals' => 20,
+        'quote_title' => 10,
+        'quote_content' => 10,
     );
     private $log_type = array(
         0 => 'Info',
@@ -477,6 +480,8 @@ class CriticSearch extends AbstractDB {
         $year = $post->year;
 
         $num = 1;
+        // If worlds count < small title need quotes title in content
+        $small_titles = 3;
 
         if ($title) {
             $num = sizeof(explode(' ', $title));
@@ -508,20 +513,24 @@ class CriticSearch extends AbstractDB {
                     if (preg_match_all('/<b>([^<]+)<\/b>/', $item->t, $title_match)) {
                         $ret[$item->id]['found']['title'] = $title_match[1];
                     }
-                }
-
-                $ret[$item->id]['w'] = $item->w;
-                if ($debug) {
-                    if (strstr($item->t, '<b>')) {
+                    if ($debug) {
                         $ret[$item->id]['debug']['title'] = $item->t;
                     }
-                    if (strstr($item->c, '<b>')) {
-                        $content = htmlspecialchars($item->c);
-                        $content = str_replace('&lt;b&gt;', '<b>', $content);
-                        $content = str_replace('&lt;/b&gt', '</b>', $content);
+                }
+
+                if (strstr($item->c, '<b>')) {
+                    $content = htmlspecialchars($item->c);
+                    $content = str_replace('&lt;b&gt;', '<b>', $content);
+                    $content = str_replace('&lt;/b&gt', '</b>', $content);
+                    if (preg_match_all('/<b>([^<]+)<\/b>/', $content, $title_match)) {
+                        $ret[$item->id]['found']['content'] = $title_match[1];
+                    }
+                    if ($debug) {
                         $ret[$item->id]['debug']['content'] = $content;
                     }
                 }
+
+                $ret[$item->id]['w'] = $item->w;
             }
         }
 
@@ -601,6 +610,7 @@ class CriticSearch extends AbstractDB {
         // Search Director
         $directors = $ma->get_directors($post->id);
         if ($directors) {
+            $director_names = array();
             foreach ($directors as $director) {
                 $name = $director->name;
                 $i = 0;
@@ -612,41 +622,43 @@ class CriticSearch extends AbstractDB {
                     $i += 1;
                 }
             }
-        }
+            if ($director_names) {
+                $director_str = implode(' ', $director_names);
+                $director_keywords = $this->wildcards_maybe_query($director_str, $debug);
 
+                if ($debug) {
+                    $debug_data['director'] = implode(', ', $director_names);
+                }
 
-        if ($director_names) {
-            $director_str = implode(' ', $director_names);
-            $director_keywords = $this->wildcards_maybe_query($director_str, $debug);
+                // Find directors in movie ids
+                $director_found = $this->search_in_ids($ids, $director_keywords, $debug);
+                if (sizeof($director_found)) {
+                    foreach ($director_found as $item) {
+                        $w = (int) $item->w;
+                        $ret[$item->id]['total'] += $ss['director_point'];
+                        $ret[$item->id]['score']['director'] = $ss['director_point'];
 
-            if ($debug) {
-                $debug_data['director'] = implode(', ', $director_names);
-            }
-
-            $director_found = $this->search_in_ids($ids, $director_keywords, $debug);
-            if (sizeof($director_found)) {
-                foreach ($director_found as $item) {
-                    $w = (int) $item->w;
-                    $ret[$item->id]['total'] += $ss['director_point'];
-                    $ret[$item->id]['score']['director'] = $ss['director_point'];
-
-                    if ($debug) {
-                        if ($w >= 10) {
-                            $ret[$item->id]['debug']['director title'] = $item->t;
-                        }
-                        if ($w != 10) {
-                            $ret[$item->id]['debug']['director content'] = $item->c;
+                        if ($debug) {
+                            if ($w >= 10) {
+                                $ret[$item->id]['debug']['director title'] = $item->t;
+                            }
+                            if ($w != 10) {
+                                $ret[$item->id]['debug']['director content'] = $item->c;
+                            }
                         }
                     }
                 }
             }
         }
 
+
+
         //Search Cast
 
         $actors = $ma->get_actors($post->id);
 
         if ($actors) {
+            $cast_search = array();
 
             foreach ($actors as $actor) {
                 $name = $actor->name;
@@ -659,34 +671,33 @@ class CriticSearch extends AbstractDB {
                     $i += 1;
                 }
             }
-        }
 
+            if ($cast_search) {
 
-        if ($cast_search) {
+                if ($debug) {
+                    $debug_data['cast'] = implode(', ', $cast_search);
+                }
 
-            if ($debug) {
-                $debug_data['cast'] = implode(', ', $cast_search);
-            }
+                // Find actors im movie ids
+                $cast_found = $this->search_in_ids($ids, $cast_search, $debug);
 
-            $cast_found = $this->search_in_ids($ids, $cast_search, $debug);
-
-            if (sizeof($cast_found)) {
-                foreach ($cast_found as $item) {
-                    $w = (int) $item->w;
-                    $ret[$item->id]['total'] += $ss['cast_point'];
-                    $ret[$item->id]['score']['cast'] = $ss['cast_point'];
-                    if ($debug) {
-                        if ($w >= 10) {
-                            $ret[$item->id]['debug']['cast title'] = $item->t;
-                        }
-                        if ($w != 10) {
-                            $ret[$item->id]['debug']['cast content'] = $item->c;
+                if (sizeof($cast_found)) {
+                    foreach ($cast_found as $item) {
+                        $w = (int) $item->w;
+                        $ret[$item->id]['total'] += $ss['cast_point'];
+                        $ret[$item->id]['score']['cast'] = $ss['cast_point'];
+                        if ($debug) {
+                            if ($w >= 10) {
+                                $ret[$item->id]['debug']['cast title'] = $item->t;
+                            }
+                            if ($w != 10) {
+                                $ret[$item->id]['debug']['cast content'] = $item->c;
+                            }
                         }
                     }
                 }
             }
         }
-
 
         //Title weight
         $result = array(
@@ -694,143 +705,153 @@ class CriticSearch extends AbstractDB {
             'other' => array()
         );
 
-        $small_titles = 5;
-
         foreach ($ret as $id => $value) {
+            $content_tags = false;
+            $title_tags = false;
             // Critic type:
             // 1 => 'Proper Review'
             // 2 => 'Contains Mention'
-
             $critic_type = 2;
+
             $title_w = (int) $value['w'];
             $post_title = $value['title'];
+
             if ($title_w >= 10) {
-                // Validate title
-
-                $title_to_validate = $title;
-                if ($num > $small_titles) {
-                    $title_to_validate = '';
-                }
-
-                $keywords = implode(' ', $this->satinize_phrases($post_title, $title_to_validate));
-
-                $names = array();
-                if ($keywords) {
-                    $names = $this->search_movies_by_title($keywords, $num, 100);
-
-                    if ($debug) {
-                        $ret[$id]['debug']['names keywords'] = $keywords;
-                    }
-                }
-
-                $names_valid = array();
-                if (sizeof($names)) {
-                    foreach ($names as $name) {
-                        $ret[$id]['debug']['movies found'][] = $name->title;
-
-                        if ($title == $name->title) {
-                            $names_valid[$name->id] = $name->title;
-                            $ret[$id]['debug']['movies valid'][] = $name->title;
-                        }
-                    }
-                }
-
-
-                if (isset($names_valid[$pid])) {
-                    $valid_title = true;
-                    //Add validate for small titles
-                    if ($num < $small_titles) {
-                        // Need date in title
-                        $valid_title = false;
-                        if ($year && strstr($post_title, $year)) {
+                // Keywords found in critic title                
+                // Find title in search bold
+                $valid_title = false;
+                if (isset($value['found']['title'])) {
+                    foreach ($value['found']['title'] as $v) {
+                        $find_title = $v;
+                        // "strstr" instead of "=" since a "release" can be present
+                        if (strstr($find_title, $title) || strstr($find_title, strtoupper($title))) {
+                            $ret[$id]['debug']['title valid'] = 'Found title in search';
                             $valid_title = true;
-                            $ret[$id]['debug']['title valid'] = 'Found date in title';
-                        }
-
-                        // Equals
-                        if ($post_title == $names_valid[$pid]) {
-                            $valid_title = true;
-                            $ret[$id]['debug']['title valid'] = 'Titles is equals';
-                        }
-
-                        if (!$valid_title) {
-                            // Regexp
-                            $reg_tags = $this->get_reg_tags();
-                            if (preg_match_all($reg_tags, $post_title, $match)) {
-                                foreach ($match[1] as $v) {
-                                    $find_title = strip_tags($v);
-                                    if ($find_title == $title) {
-                                        $ret[$id]['debug']['title valid'] = 'Found title in tags';
-                                        $valid_title = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-
-                        if (!$valid_title) {
-                            $reg_quotes = $this->get_reg_quotes();
-                            if (preg_match_all($reg_quotes, $this->validate_title_chars(strip_tags($post_title)), $match)) {
-                                foreach ($match[1] as $v) {
-                                    $find_title = $v;
-                                    if ($find_title == $title) {
-                                        $ret[$id]['debug']['title valid'] = 'Found title in quotes';
-                                        $valid_title = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-
-                        if (!$valid_title && $num > 1) {
-                            if (isset($value['found']['title'])) {
-                                foreach ($value['found']['title'] as $v) {
-                                    $find_title = $v;
-                                    if ($find_title == $title) {
-                                        $ret[$id]['debug']['title valid'] = 'Found title in search bolds';
-                                        $valid_title = true;
-                                        break;
-                                    }
-                                }
-                            }
+                            break;
                         }
                     }
+                }
+
+                if ($valid_title) {
+
+                    // Name words multipler       
+                    $points = 0;
+                    if ($ss['name_words_multipler'] > 0) {
+                        $points = (($num - 1) * $ss['name_words_multipler']);
+                    }
+
+                    $title_points = $ss['name_point_title'];
+                    $points = (int) round($title_points * $points, 0);
+
+                    $ret[$id]['score']['name_title'] = $title_points;
+                    $ret[$id]['score']['name_title_words_multipler'] = $points;
+                    $ret[$id]['total'] += $points + $title_points;
 
 
-                    if ($valid_title) {
+                    // Find bold tags
+                    $find_html = $this->find_html_tags($title, $value['title']);
+                    if ($find_html) {
+                        $title_tags = true;
+                        $found_tags = array();
+                        foreach ($find_html as $tag => $count) {
+                            $found_tags[] = "{$tag} => {$count}";
+                        }
+                        $ret[$id]['score']['title_tags'] = $ss['quote_title'];
+                        $ret[$id]['total'] += $ss['quote_title'];
+                        $ret[$id]['debug']['title tags'] = implode('; ', $found_tags);
+                    }
 
-                        // Proper review
+                    // Find quote tags
+                    $find_quote = $this->find_quote_tags($title, strip_tags($value['title']));
+                    if ($find_quote) {
+                        $title_tags = true;
+                        $found_quotes = array();
+                        foreach ($find_quote as $tag => $count) {
+                            $found_quotes[] = "{$tag} => {$count}";
+                        }
+                        $ret[$id]['score']['title_quotes'] = $ss['quote_title'];
+                        $ret[$id]['total'] += $ss['quote_title'];
+                        ;
+                        $ret[$id]['debug']['title quoutes'] = implode('; ', $found_quotes);
+                    }
+
+                    // Proper review
+                    if ($num >= $small_titles || $title_tags) {
                         $critic_type = 1;
-
-                        // Name words multipler       
-                        $points = 0;
-                        if ($ss['name_words_multipler'] > 0) {
-                            $points = (($num - 1) * $ss['name_words_multipler']);
-                        }
-
-                        $title_points = $ss['name_point_title'];
-                        $points = (int) round($title_points * $points, 0);
-
-                        $ret[$id]['score']['name_title'] = $title_points;
-                        $ret[$id]['score']['name_title_words_multipler'] = $points;
-                        $ret[$id]['total'] += $points + $title_points;
                     }
                 }
             }
+
             if ($title_w != 10) {
-
-                // Name words multipler
-                $points = 0;
-                if ($ss['name_words_multipler'] > 0) {
-                    $points = (($num - 1) * $ss['name_words_multipler']);
+                // Keywords found in critic description
+                $valid_desc = false;
+                if (isset($value['found']['content'])) {
+                    foreach ($value['found']['content'] as $v) {
+                        $find_value = $v;
+                        if (strstr($find_value, $title) || strstr($find_value, strtoupper($title))) {
+                            $ret[$id]['debug']['content valid'] = 'Found content in search';
+                            $valid_desc = true;
+                            break;
+                        }
+                    }
                 }
+                if ($valid_desc) {
+                    // Name words multipler
+                    $points = 0;
+                    if ($ss['name_words_multipler'] > 0) {
+                        $points = (($num - 1) * $ss['name_words_multipler']);
+                    }
 
-                $desc_points = $ss['name_point'];
-                $points = (int) round($ss['name_point'] * $points);
+                    $desc_points = $ss['name_point'];
+                    $points = (int) round($ss['name_point'] * $points);
 
-                $ret[$id]['score']['name_desc'] = $desc_points;
-                $ret[$id]['score']['name_desc_words_multipler'] = $points;
-                $ret[$id]['total'] += $desc_points + $points;
+                    $ret[$id]['score']['name_desc'] = $desc_points;
+                    $ret[$id]['score']['name_desc_words_multipler'] = $points;
+                    $ret[$id]['total'] += $desc_points + $points;
+
+                    // Find bold tags
+                    $find_html = $this->find_html_tags($title, $value['content']);
+                    if ($find_html) {
+                        $content_tags = true;
+                        $found_tags = array();
+                        foreach ($find_html as $tag => $count) {
+                            $found_tags[] = "{$tag} => {$count}";
+                        }
+                        $ret[$id]['score']['content_tags'] = $ss['quote_content'];
+                        $ret[$id]['total'] += $ss['quote_content'];
+                        $ret[$id]['debug']['content tags'] = implode('; ', $found_tags);
+                    }
+
+                    // Find quote tags
+                    $find_quote = $this->find_quote_tags($title, strip_tags($value['content']));
+                    if ($find_quote) {
+                        $content_tags = true;
+                        $found_quotes = array();
+                        foreach ($find_quote as $tag => $count) {
+                            $found_quotes[] = "{$tag} => {$count}";
+                        }
+                        $ret[$id]['score']['content_quotes'] = $ss['quote_content'];
+                        $ret[$id]['total'] += $ss['quote_content'];
+                        $ret[$id]['debug']['content quoutes'] = implode('; ', $found_quotes);
+                    }
+                }
+            }
+
+            $title_equals = false;
+            // Find equals title
+            $critic_clear = $this->clear_critic_title($value['title'], $year);
+            $movie_clear = $this->clear_critic_title($title, $year);
+            $ret[$id]['debug']['title equals'] = "$critic_clear != $movie_clear";
+            if ($critic_clear == $movie_clear) {
+                $title_equals = true;
+                $ret[$id]['score']['titles_equals'] = $ss['name_equals'];
+                $ret[$id]['total'] += $ss['name_equals'];
+                $ret[$id]['debug']['title equals'] = "$critic_clear == $movie_clear";
+                // Proper review
+                $critic_type = 1;
+            } else {                
+                //$top_movie = $this->find_top_movie_by_title($movie_clear, $critic_clear, 1);
+                //p_r(array($movie_clear,$critic_clear,$top_movie));                
             }
 
             if ($ret[$id]['score']) {
@@ -840,15 +861,35 @@ class CriticSearch extends AbstractDB {
             // Auto critic type
             $ret[$id]['type'] = $critic_type;
             $valid = $ret[$id]['total'] >= $ss['min_valid_point'] ? true : false;
-            
-            // Check old release
-            if ($need_release && $valid){
+
+            if ($num < $small_titles) {
+
                 $valid = false;
-                if (in_array($id, $valid_release)){
+                $reason = '';
+                if ($title_tags) {
                     $valid = true;
-                }                
+                    $reason = 'Valid: Title tags';
+                } else if ($content_tags) {
+                    $valid = true;
+                    $reason = 'Valid: Content tags';
+                } else if ($title_equals) {
+                    $valid = true;
+                    $reason = 'Valid: Title equals';
+                }
+
+                $ret[$id]['debug']['small title'] = "$num < $small_titles. $reason";
             }
-            
+
+            // Check old release
+            if ($need_release) {   
+                $ret[$id]['score']['release_exist'] = 'True';                
+                if (!in_array($id, $valid_release)) {
+                    $ret[$id]['score']['release_exist'] = 'False';
+                    $valid = false;
+                }
+            }
+
+
             $ret[$id]['valid'] = $valid;
             $ret[$id]['timer'] = $this->timer_stop();
 
@@ -864,6 +905,110 @@ class CriticSearch extends AbstractDB {
         }
 
         return $result;
+    }
+
+    private function clear_critic_title($title, $year = '') {
+        $title = str_replace($year, '', $title);
+        $title = preg_replace('#movie review#i', '', $title);
+        $title = preg_replace('#review#i', '', $title);
+        $title = strip_tags($title);
+        $title = preg_replace('#[^\w\d\' ]+#', '', $title);
+        $title = preg_replace('#  #', ' ', $title);
+        $title = trim(strtolower($title));
+        return $title;
+    }
+
+    private function find_movie_by_title_unused() {
+        // UNUSED DEPRECATED
+
+        $keywords = implode(' ', $this->satinize_phrases($post_title, $title_to_validate));
+
+        $names = array();
+        if ($keywords) {
+            $names = $this->search_movies_by_title($keywords, $num, 100);
+
+            if ($debug) {
+                $ret[$id]['debug']['names keywords'] = $keywords;
+            }
+        }
+
+        $names_valid = array();
+        if (sizeof($names)) {
+            foreach ($names as $name) {
+                $ret[$id]['debug']['movies found'][] = $name->title;
+
+                if ($title == $name->title) {
+                    $names_valid[$name->id] = $name->title;
+                    $ret[$id]['debug']['movies valid'][] = $name->title;
+                }
+            }
+        }
+
+
+        if (isset($names_valid[$pid])) {
+            $valid_title = true;
+
+
+
+            // Add validate for small titles
+            if ($valid_title && $num < $small_titles) {
+
+                // Need date in title
+                $valid_title = false;
+                if ($year && strstr($post_title, $year)) {
+                    $valid_title = true;
+                    $ret[$id]['debug']['title valid'] = 'Found date in title';
+                }
+
+                // Equals
+                if ($post_title == $names_valid[$pid]) {
+                    $valid_title = true;
+                    $ret[$id]['debug']['title valid'] = 'Titles is equals';
+                }
+
+                if (!$valid_title) {
+                    // Regexp
+                    $reg_tags = $this->get_reg_tags();
+                    if (preg_match_all($reg_tags, $post_title, $match)) {
+                        foreach ($match[1] as $v) {
+                            $find_title = strip_tags($v);
+                            if ($find_title == $title) {
+                                $ret[$id]['debug']['title valid'] = 'Found title in tags';
+                                $valid_title = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (!$valid_title) {
+                    $reg_quotes = $this->get_reg_quotes();
+                    if (preg_match_all($reg_quotes, $this->validate_title_chars(strip_tags($post_title)), $match)) {
+                        foreach ($match[1] as $v) {
+                            $find_title = $v;
+                            if ($find_title == $title) {
+                                $ret[$id]['debug']['title valid'] = 'Found title in quotes';
+                                $valid_title = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (!$valid_title && $num > 1) {
+                    if (isset($value['found']['title'])) {
+                        foreach ($value['found']['title'] as $v) {
+                            $find_title = $v;
+                            if ($find_title == $title) {
+                                $ret[$id]['debug']['title valid'] = 'Found title in search bolds';
+                                $valid_title = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public function find_bold_text($text = '') {
@@ -1103,6 +1248,30 @@ class CriticSearch extends AbstractDB {
         return array('keywords' => $k, 'movies' => $movies);
     }
 
+    private function find_quote_tags($name = '', $content = '') {
+        $html_tags = array('"', '`', '\'');
+        $found_tags = array();
+        foreach ($html_tags as $tag) {
+            $tag_string = $tag . $name . $tag;
+            if (strstr($content, $tag_string)) {
+                $found_tags[$tag] += 1;
+            }
+        }
+        return $found_tags;
+    }
+
+    private function find_html_tags($name = '', $content = '') {
+        $html_tags = array('b', 'strong', 'em', 'i');
+        $found_tags = array();
+        foreach ($html_tags as $tag) {
+            $tag_string = "<{$tag}>{$name}</{$tag}>";
+            if (strstr($content, $tag_string)) {
+                $found_tags[$tag] += 1;
+            }
+        }
+        return $found_tags;
+    }
+
     private function get_reg_tags() {
         $html_tags = array('b', 'strong', 'em', 'i');
         $reg = array();
@@ -1199,6 +1368,29 @@ class CriticSearch extends AbstractDB {
         return $result;
     }
 
+    public function find_top_movie_by_title($title = '', $critic_title = '', $limit = 10, $type = '') {
+        $title = str_replace("'", "\'", $title);        
+        $critic_title_arr = explode(' ', $critic_title);
+        $critic_title_maybe = implode('|', $critic_title_arr);
+        $critic_title_maybe = str_replace("'", "\'", $critic_title_maybe);
+        $title_query = '';        
+        $title_query = sprintf("@title ((\"%s\") MAYBE (%s))", $title,  $critic_title_maybe);
+
+        $allow_types = array("'Movie'", "'TVseries'", "'VideoGame'");
+        $type_and = ""; // " AND type IN(" . implode(',', $allow_types) . ")";
+        if ($type) {
+            $type_and = sprintf(' AND type="%s"', $type);
+        }
+        
+        $sql = sprintf("SELECT id, title, type, SNIPPET(title, QUERY()) t, weight() w FROM movie_an "
+                . "WHERE id>0" . $type_and . " AND MATCH('" . $title_query . "') ORDER BY w DESC LIMIT %d", $limit);
+ 
+        $result = $this->sdb_results($sql);
+
+        return $result;
+    }
+    
+    
     /*
      * Front search db
      */
