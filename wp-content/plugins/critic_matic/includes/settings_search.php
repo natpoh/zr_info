@@ -60,6 +60,15 @@
                         </td>
                     </tr>
                     
+                    <tr class="wrap">
+                        <th><label for=""><?php print __('Need Release before') ?></label></th>
+                        <td><input type="text" name="need_release" value="<?php print $ss['need_release'] ?>">
+                        <?php 
+                            $range = $this->cs->get_settings_range('need_release');
+                            print 'Min: '.$range['min'].'; Default: '.$range['def'].'; Max: '.$range['max'] ?> 
+                        </td>
+                    </tr>
+                    
                 </tbody>
             </table>
             

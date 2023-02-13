@@ -37,7 +37,8 @@ class CriticSearch extends AbstractDB {
         'director_point' => 5,
         'cast_point' => 5,
         'min_valid_point' => 33,
-        'update_old_meta' => 1
+        'update_old_meta' => 1,
+        'need_release' => 1980,
     );
     private $log_type = array(
         0 => 'Info',
@@ -409,7 +410,7 @@ class CriticSearch extends AbstractDB {
         }
 
         if (!$bulk) {
-            $remove_old_meta = false;
+            $remove_old_meta = true;
             if ($remove_old_meta && sizeof($old_meta)) {
                 // Remove old meta that not found
                 foreach ($old_meta as $cid => $item) {
@@ -502,8 +503,9 @@ class CriticSearch extends AbstractDB {
                 $ids[] = $item->id;
                 $meta_search[$item->id] = 1;
                 $ret[$item->id]['title'] = $item->title;
+                $ret[$item->id]['content'] = $item->content;
                 if (strstr($item->t, '<b>')) {
-                    if (preg_match_all('/<b>([^<]+)<\/b>/', $item->t, $title_match)) {                        
+                    if (preg_match_all('/<b>([^<]+)<\/b>/', $item->t, $title_match)) {
                         $ret[$item->id]['found']['title'] = $title_match[1];
                     }
                 }
@@ -527,12 +529,21 @@ class CriticSearch extends AbstractDB {
             return array();
         }
 
+        $need_release = false;
+        $valid_release = array();
+
         // Search Release date
 
         if ($year) {
             if ($debug) {
                 $debug_data['year'] = $year;
             }
+
+            if ($ss['need_release'] > $year) {
+                // Old movie. Need relese date in content
+                $need_release = true;
+            }
+
             $year_found = $this->search_in_ids($ids, $year, $debug);
             if (sizeof($year_found)) {
                 foreach ($year_found as $item) {
@@ -545,6 +556,8 @@ class CriticSearch extends AbstractDB {
                         $ret[$item->id]['total'] += $ss['release_point'];
                         $ret[$item->id]['score']['release'] = $ss['release_point'];
                     }
+
+                    $valid_release[] = $item->id;
 
                     if ($debug) {
                         if ($w >= 10) {
@@ -642,7 +655,7 @@ class CriticSearch extends AbstractDB {
                     if ($i > $max_actors) {
                         break;
                     }
-                    $cast_search[$name] = '"'.$this->filter_text($name).'"';
+                    $cast_search[$name] = '"' . $this->filter_text($name) . '"';
                     $i += 1;
                 }
             }
@@ -681,6 +694,8 @@ class CriticSearch extends AbstractDB {
             'other' => array()
         );
 
+        $small_titles = 5;
+
         foreach ($ret as $id => $value) {
             // Critic type:
             // 1 => 'Proper Review'
@@ -693,7 +708,7 @@ class CriticSearch extends AbstractDB {
                 // Validate title
 
                 $title_to_validate = $title;
-                if ($num > 7) {
+                if ($num > $small_titles) {
                     $title_to_validate = '';
                 }
 
@@ -702,6 +717,7 @@ class CriticSearch extends AbstractDB {
                 $names = array();
                 if ($keywords) {
                     $names = $this->search_movies_by_title($keywords, $num, 100);
+
                     if ($debug) {
                         $ret[$id]['debug']['names keywords'] = $keywords;
                     }
@@ -712,7 +728,7 @@ class CriticSearch extends AbstractDB {
                     foreach ($names as $name) {
                         $ret[$id]['debug']['movies found'][] = $name->title;
 
-                        if ($title==$name->title) {
+                        if ($title == $name->title) {
                             $names_valid[$name->id] = $name->title;
                             $ret[$id]['debug']['movies valid'][] = $name->title;
                         }
@@ -723,7 +739,7 @@ class CriticSearch extends AbstractDB {
                 if (isset($names_valid[$pid])) {
                     $valid_title = true;
                     //Add validate for small titles
-                    if ($num < 3) {
+                    if ($num < $small_titles) {
                         // Need date in title
                         $valid_title = false;
                         if ($year && strstr($post_title, $year)) {
@@ -824,6 +840,15 @@ class CriticSearch extends AbstractDB {
             // Auto critic type
             $ret[$id]['type'] = $critic_type;
             $valid = $ret[$id]['total'] >= $ss['min_valid_point'] ? true : false;
+            
+            // Check old release
+            if ($need_release && $valid){
+                $valid = false;
+                if (in_array($id, $valid_release)){
+                    $valid = true;
+                }                
+            }
+            
             $ret[$id]['valid'] = $valid;
             $ret[$id]['timer'] = $this->timer_stop();
 
@@ -839,6 +864,31 @@ class CriticSearch extends AbstractDB {
         }
 
         return $result;
+    }
+
+    public function find_bold_text($text = '') {
+        // Find any selections in the text
+        // 1. html tags
+        $found = array();
+        if (preg_match_all('#(?:<i>|<em>|<b>|<strong>|<h[0-9]+>)([^<]+)(?:</i>|</em>|</b>|</strong>|</h[0-9]+>)#', $text, $match)) {
+            $found = $match[1];
+        }
+
+        // Find quotes
+        $clear_text = strip_tags($text);
+        if (preg_match_all('#"([^"]+)"#', $clear_text, $match)) {
+            $found = $found + $match[1];
+        }
+        if (preg_match_all('#`([^`]+)`#', $clear_text, $match)) {
+            $found = $found + $match[1];
+        }
+        /* if (preg_match_all('#\'([^\']+)\'#', $clear_text, $match)) {
+          $found = $found + $match[1];
+          } */
+        /* if (preg_match_all('#([A-Z ]{3,100})#', $clear_text, $match)) {
+          $found = $found + $match[1];
+          } */
+        return $found;
     }
 
     /*
@@ -904,7 +954,7 @@ class CriticSearch extends AbstractDB {
             $ids_and = ' AND id IN(' . implode(',', $ids) . ')';
         }
 
-        $sql = sprintf("SELECT id, title, weight() w" . $snippet . " FROM critic "
+        $sql = sprintf("SELECT id, title, content, weight() w" . $snippet . " FROM critic "
                 . "WHERE MATCH('@(title,content) ($keyword)') AND author_type!=%d" . $ids_and . " LIMIT %d "
                 . "OPTION ranker=expr('sum(user_weight)'), "
                 . "field_weights=(title=10, content=1) ", $author_type, $limit);
