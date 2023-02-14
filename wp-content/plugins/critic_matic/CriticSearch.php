@@ -837,6 +837,7 @@ class CriticSearch extends AbstractDB {
                 }
             }
 
+            $dates = array();
             $title_equals = false;
             // Find equals title
             $critic_clear = $this->clear_critic_title($value['title'], $year);
@@ -849,7 +850,21 @@ class CriticSearch extends AbstractDB {
                 $ret[$id]['debug']['title equals'] = "$critic_clear == $movie_clear";
                 // Proper review
                 $critic_type = 1;
-            } else {                
+            } else {
+                // 1. Find another date in title
+                $dates = $this->find_dates($value['title'], $title);
+
+                if ($dates) {
+                    $year_valid = false;
+                    if ($year) {
+                        if (in_array($year, $dates)) {
+                            // Year vaild
+                            $year_valid = true;
+                        }
+                    }
+                }
+                // 2. Find quotes from another movie in title
+                // 3. Find another movie in title
                 //$top_movie = $this->find_top_movie_by_title($movie_clear, $critic_clear, 1);
                 //p_r(array($movie_clear,$critic_clear,$top_movie));                
             }
@@ -863,7 +878,7 @@ class CriticSearch extends AbstractDB {
             $valid = $ret[$id]['total'] >= $ss['min_valid_point'] ? true : false;
 
             if ($num < $small_titles) {
-
+                // Small titles
                 $valid = false;
                 $reason = '';
                 if ($title_tags) {
@@ -880,15 +895,25 @@ class CriticSearch extends AbstractDB {
                 $ret[$id]['debug']['small title'] = "$num < $small_titles. $reason";
             }
 
+            if ($dates && $critic_type == 1) {
+                // Check date for proper review
+                $valid_text = 'Valid';
+                if (!$year_valid) {
+                    $valid = false;
+                    $valid_text = 'Invalid ' . $year;
+                    $ret[$id]['score']['dates_exists'] = 'Invalid';
+                }
+                $ret[$id]['debug']['dates'] = 'Found dates in title: ' . implode(';', $dates) . '. ' . $valid_text;
+            }
+
             // Check old release
-            if ($need_release) {   
-                $ret[$id]['score']['release_exist'] = 'True';                
+            if ($need_release) {
+                $ret[$id]['score']['release_exist'] = 'True';
                 if (!in_array($id, $valid_release)) {
                     $ret[$id]['score']['release_exist'] = 'False';
                     $valid = false;
                 }
             }
-
 
             $ret[$id]['valid'] = $valid;
             $ret[$id]['timer'] = $this->timer_stop();
@@ -905,6 +930,25 @@ class CriticSearch extends AbstractDB {
         }
 
         return $result;
+    }
+
+    private function find_dates($text, $title = '') {
+        $curr_time = $this->curr_time();
+        $max_year = ((int) gmdate('Y', $curr_time)) + 2;
+        $min_year = 1850;
+        $results = array();
+        if (preg_match_all('#([0-9]{4})#', $text, $match)) {
+            $years = $match[1];
+            foreach ($years as $year) {
+                if ($min_year < $year && $year < $max_year) {
+                    if (!strstr($title, $year)) {
+                        // Year not a part of title. 
+                        $results[] = $year;
+                    }
+                }
+            }
+        }
+        return $results;
     }
 
     private function clear_critic_title($title, $year = '') {
@@ -1249,12 +1293,14 @@ class CriticSearch extends AbstractDB {
     }
 
     private function find_quote_tags($name = '', $content = '') {
-        $html_tags = array('"', '`', '\'');
+        // “Blade Runner”
+        // ‘Blade Runner 2049’
+        $html_tags = array(['"','"'], ['`','`'], ['\'','\''],['“','”'],['‘','’']);
         $found_tags = array();
         foreach ($html_tags as $tag) {
-            $tag_string = $tag . $name . $tag;
+            $tag_string = $tag[0] . $name . $tag[1];
             if (strstr($content, $tag_string)) {
-                $found_tags[$tag] += 1;
+                $found_tags[$tag[0]] += 1;
             }
         }
         return $found_tags;
@@ -1369,28 +1415,27 @@ class CriticSearch extends AbstractDB {
     }
 
     public function find_top_movie_by_title($title = '', $critic_title = '', $limit = 10, $type = '') {
-        $title = str_replace("'", "\'", $title);        
+        $title = str_replace("'", "\'", $title);
         $critic_title_arr = explode(' ', $critic_title);
         $critic_title_maybe = implode('|', $critic_title_arr);
         $critic_title_maybe = str_replace("'", "\'", $critic_title_maybe);
-        $title_query = '';        
-        $title_query = sprintf("@title ((\"%s\") MAYBE (%s))", $title,  $critic_title_maybe);
+        $title_query = '';
+        $title_query = sprintf("@title ((\"%s\") MAYBE (%s))", $title, $critic_title_maybe);
 
         $allow_types = array("'Movie'", "'TVseries'", "'VideoGame'");
         $type_and = ""; // " AND type IN(" . implode(',', $allow_types) . ")";
         if ($type) {
             $type_and = sprintf(' AND type="%s"', $type);
         }
-        
+
         $sql = sprintf("SELECT id, title, type, SNIPPET(title, QUERY()) t, weight() w FROM movie_an "
                 . "WHERE id>0" . $type_and . " AND MATCH('" . $title_query . "') ORDER BY w DESC LIMIT %d", $limit);
- 
+
         $result = $this->sdb_results($sql);
 
         return $result;
     }
-    
-    
+
     /*
      * Front search db
      */
