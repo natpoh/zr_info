@@ -1241,7 +1241,7 @@ class CriticSearch extends AbstractDB {
             }
             $limit = 10;
 
-            $movies['title'] = $this->front_search_movies_an($keywords, $type = '', $limit = 10, $start = 0, $sort = array(), $filters = array(), $facets = array(), $show_meta = false, $widlcard = false, $mode);
+            $movies['title'] = $this->front_search_movies_an($keywords, $mode);
             $k['title'] = $keywords;
 
             // Find tags in title
@@ -1250,7 +1250,7 @@ class CriticSearch extends AbstractDB {
                 if ($years_string) {
                     $keywords_tag .= ' ' . $years_string;
                 }
-                $movies['title_tags'] = $this->front_search_movies_an($keywords_tag, $type = '', $limit = 10, $start = 0, $sort = array(), $filters = array(), $facets = array(), $show_meta = false, $widlcard = false, $mode);
+                $movies['title_tags'] = $this->front_search_movies_an($keywords_tag, $mode);
                 $k['title_tags'] = $keywords_tag;
             }
 
@@ -1260,7 +1260,7 @@ class CriticSearch extends AbstractDB {
                 if ($years_string) {
                     $keywords_tag .= ' ' . $years_string;
                 }
-                $movies['title_quotes'] = $this->front_search_movies_an($keywords_tag, $type = '', $limit = 10, $start = 0, $sort = array(), $filters = array(), $facets = array(), $show_meta = false, $widlcard = false, $mode);
+                $movies['title_quotes'] = $this->front_search_movies_an($keywords_tag, $mode);
                 $k['title_quotes'] = $keywords_tag;
             }
         }
@@ -1274,7 +1274,7 @@ class CriticSearch extends AbstractDB {
                 if ($years_string) {
                     $keywords_tag .= ' ' . $years_string;
                 }
-                $movies['content_tags'] = $this->front_search_movies_an($keywords_tag, $type = '', $limit = 10, $start = 0, $sort = array(), $filters = array(), $facets = array(), $show_meta = false, $widlcard = false, $mode);
+                $movies['content_tags'] = $this->front_search_movies_an($keywords_tag, $mode);
                 $k['content_tags'] = $keywords_tag;
             }
             // Content quotes
@@ -1284,7 +1284,7 @@ class CriticSearch extends AbstractDB {
                 if ($years_string) {
                     $keywords_tag .= ' ' . $years_string;
                 }
-                $movies['content_quotes'] = $this->front_search_movies_an($keywords_tag, $type = '', $limit = 10, $start = 0, $sort = array(), $filters = array(), $facets = array(), $show_meta = false, $widlcard = false, $mode);
+                $movies['content_quotes'] = $this->front_search_movies_an($keywords_tag, $mode);
                 $k['content_quotes'] = $keywords_tag;
             }
         }
@@ -1295,7 +1295,7 @@ class CriticSearch extends AbstractDB {
     private function find_quote_tags($name = '', $content = '') {
         // “Blade Runner”
         // ‘Blade Runner 2049’
-        $html_tags = array(['"','"'], ['`','`'], ['\'','\''],['“','”'],['‘','’']);
+        $html_tags = array(['"', '"'], ['`', '`'], ['\'', '\''], ['“', '”'], ['‘', '’']);
         $found_tags = array();
         foreach ($html_tags as $tag) {
             $tag_string = $tag[0] . $name . $tag[1];
@@ -1534,17 +1534,18 @@ class CriticSearch extends AbstractDB {
         $title = stripslashes($title);
         $title = addslashes($title);
         $match_query = $this->wildcards_maybe_query($title);
+        $match = sprintf("'@(title,year) ((^%s$)|(" . $match_query . "))'",$title);
 
         $allow_types = array("'Movie'", "'TVseries'", "'VideoGame'");
         $type_and = " AND type IN(" . implode(',', $allow_types) . ")";
-
+                
 
         // Default weight
         $order = ' ORDER BY w DESC';
 
 
         $sql = sprintf("SELECT id, rwt_id, title, year, type, weight() w FROM movie_an " .
-                "WHERE id>0" . $type_and . " AND MATCH('@(title,year) " . $match_query . "') $order LIMIT %d,%d", $start, $limit);
+                "WHERE id>0" . $type_and . " AND MATCH({$match}) $order LIMIT %d,%d", $start, $limit);
 
         $result = $this->sdb_results($sql);
 
@@ -1624,7 +1625,7 @@ class CriticSearch extends AbstractDB {
         $match = '';
         if ($keyword) {
             $search_keywords = $this->wildcards_maybe_query($keyword, $widlcard, ' ');
-            $search_query = sprintf("'@(title,year) (%s)'", $search_keywords);
+            $search_query = sprintf("'@(title,year) ((^%s$)|(%s))'", $keyword, $search_keywords);
             $match = " AND MATCH(:match)";
         }
 
@@ -2534,50 +2535,17 @@ class CriticSearch extends AbstractDB {
         return $filter;
     }
 
-    public function front_search_movies_an($keyword = '', $type = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = array(), $show_meta = true, $widlcard = true, $mode = ' MAYBE ') {
+    public function front_search_movies_an($keyword = '', $mode = ' MAYBE ', $type = '', $start = 0, $limit = 20, $show_meta = false) {
 
-        //Sort logic
-        $order = '';
-        if ($sort) {
-            /*
-             * key: 'title', 'rating', 'date', 'rel'             
-             * type: desc, asc
-             */
-            $sort_key = $sort['sort'];
-            $sort_type = $sort['type'] == 'desc' ? 'DESC' : 'ASC';
-            if ($sort_key == 'title') {
-                $order = ' ORDER BY title ' . $sort_type;
-            } else if ($sort_key == 'date') {
-                $order = ' ORDER BY release_ts ' . $sort_type . ', year_int ' . $sort_type;
-            } else if ($sort_key == 'rel') {
-                $order = ' ORDER BY w ' . $sort_type;
-            } else if ($sort_key == 'rating') {
-                $order = ' ORDER BY rating ' . $sort_type;
-            } else if ($sort_key == 'div') {
-                $order = ' ORDER BY diversity ' . $sort_type;
-            } else if ($sort_key == 'fem') {
-                $order = ' ORDER BY female ' . $sort_type;
-            }
-        } else {
-            // Default weight
-            $order = ' ORDER BY w DESC';
-        }
+        $widlcard = false;
+
+        // Default weight
+        $order = ' ORDER BY w DESC';
+
         //Custom type
         $and_type = '';
         if ($type) {
             $and_type = sprintf(" AND type='%s'", $type);
-        }
-
-        // Filters logic
-        $filters_and = '';
-        if ($filters) {
-            foreach ($filters as $key => $value) {
-                if ($key == 'release') {
-                    $release_from = (int) $value;
-                    $release_to = $release_from + 10;
-                    $filters_and .= sprintf(" AND year_int >=%d AND year_int < %d", $release_from, $release_to);
-                }
-            }
         }
 
         $match = '';
@@ -2586,41 +2554,16 @@ class CriticSearch extends AbstractDB {
             $match_query = $this->wildcards_maybe_query($keyword, $widlcard, $mode);
 
             if ($mode == " ") {
-                $match = sprintf(" AND MATCH('@(title,year) \"%s\"/1')", $match_query);
+                $match = sprintf(" AND MATCH('@(title,year) ((^%s$)|(\"%s\"/1))')", $keyword, $match_query);
             } else {
-                $match = sprintf(" AND MATCH('@(title,year) (%s)')", $match_query);
+                $match = sprintf(" AND MATCH('@(title,year) ((^%s$)|(%s))')", $keyword, $match_query);
             }
         }
-
-        // Facets logic
-        /*
-         * SELECT *, IN(brand_id,1,2,3,4) AS b FROM facetdemo WHERE MATCH('Product') AND b=1 LIMIT 0,10
-          FACET brand_name, brand_id BY brand_id ORDER BY brand_id ASC
-          FACET property ORDER BY COUNT(*) DESC
-          FACET INTERVAL(price,200,400,600,800) ORDER BY FACET() ASC
-          FACET categories ORDER BY FACET() ASC;
-         */
-        $facets_and = '';
 
         $sql = sprintf("SELECT id, rwt_id, title, release, type, year, weight() w FROM movie_an WHERE id>0"
-                . $and_type . $filters_and . $match . $order . " LIMIT %d,%d" . $facets_and, $start, $limit);
-
-
-        //print $sql;
-        $facets_arr = array();
-        if ($facets) {
-            $multi_result = $this->sdb_multi_results($sql);
-            $result = $multi_result[0];
-            foreach ($multi_result as $key => $value) {
-                foreach ($facets as $_fkey => $f_value) {
-                    if ($key == $f_key + 1) {
-                        $facets_arr[$f_value] = $value;
-                    }
-                }
-            }
-        } else {
-            $result = $this->sdb_results($sql);
-        }
+                . $and_type . $match . $order . " LIMIT %d,%d", $start, $limit);
+             
+        $result = $this->sdb_results($sql);
 
         if (!$show_meta) {
             return $result;
@@ -2628,7 +2571,7 @@ class CriticSearch extends AbstractDB {
 
         $total = $this->get_last_meta_total();
 
-        return array('result' => $result, 'total' => $total, 'facets' => $facets_arr);
+        return array('result' => $result, 'total' => $total);
     }
 
     public function get_cast_tabs() {
