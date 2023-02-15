@@ -650,7 +650,9 @@ span.actor_info {
 .theme_white  span.actor_info {
     filter: invert();
 }
-
+.small_gray {
+    color: #414141;
+}
 span.actor_info:hover {
     background: url("../images/ar_u.svg") no-repeat scroll left -3px top -3px #216ebc;
     background-size: 30px 30px;
@@ -1083,6 +1085,38 @@ body.theme_dark  .add_pg_rating_button.button_edit {
 
 .actor_edit.actor_crowdsource_container .actor_crowdsource::before {
     background: none;
+}
+
+.adtor_r_data.actor_crowdsource_container .actor_crowdsource::before {
+    background: none;
+
+}
+.adtor_r_data
+{
+    font-family: 'Encode Sans Condensed',Lato;
+    color: #000000;
+    font-size: 20px;
+    margin-top: 5px;
+}
+
+
+ .theme_dark .adtor_r_data {
+
+    color: #939393;
+}
+
+.adtor_r_data.actor_crowdsource_container .actor_crowdsource {
+    background: url(../images/edit_b.svg) no-repeat scroll left 0 top 0 transparent;
+    padding: 0;
+    margin: 0 0 0 9px;
+    height: 22px;
+    width: 25px;
+    background-size: contain;
+    opacity: 0.7;
+}
+.theme_dark .adtor_r_data.actor_crowdsource_container .actor_crowdsource {
+    background: url(../images/edit.svg) no-repeat scroll left 0 top 0 transparent;
+    background-size: contain;
 }
 .actor_edit {
     position: absolute;

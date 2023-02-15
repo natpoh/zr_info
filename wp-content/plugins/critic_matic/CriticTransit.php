@@ -93,9 +93,9 @@ class CriticTransit extends AbstractDB {
         if ($force) {
             $last_id = 0;
         }
-                              
-        if ($debug){
-            p_r(array('last_id',$last_id));
+
+        if ($debug) {
+            p_r(array('last_id', $last_id));
         }
 
         // 1. Get posts
@@ -136,7 +136,7 @@ class CriticTransit extends AbstractDB {
                             // Ignore trash
                             continue;
                         }
-                        
+
                         $items[$pid] = array(
                             'title' => $povtor_data->title,
                             'link' => $povtor_data->link,
@@ -201,10 +201,10 @@ class CriticTransit extends AbstractDB {
 
                         // 5. Add dublicates info to log
                         $percent_text = $percent;
-                        if (is_array($percent)){
+                        if (is_array($percent)) {
                             $percent_text = implode('%, ', $percent);
                         }
-                        $message = '[' . $key . ']. Percent: ' . $percent_text.'%. Source: [' . $main . '] "' . $title . '".';
+                        $message = '[' . $key . ']. Percent: ' . $percent_text . '%. Source: [' . $main . '] "' . $title . '".';
                         $cs->log_trash_dublicate($message, $key);
                         $trash_posts[] = $key;
                     }
@@ -301,14 +301,17 @@ class CriticTransit extends AbstractDB {
                     print_r($item);
                 }
 
-                $actor_id = $this->get_actor_id_by_data($item);
+                $actor_id = $this->get_actor_id_by_data($item, $debug);
                 if ($debug) {
                     print "Actor code id: " . $actor_id . "\n";
+                    //11101000000413
+                    //111101110101251
+                    //
                 }
 
 
 
-                $n_verdict = $af->custom_weight_race_code($actor_id, $filter_weights, $onlydata);
+                $n_verdict = $af->custom_weight_race_code($actor_id, $filter_weights, $onlydata, $debug);
                 if ($onlydata) {
                     if ($debug) {
                         print "Actor verdict";
@@ -316,7 +319,7 @@ class CriticTransit extends AbstractDB {
                     }
 
 
-                    return;
+                    return $n_verdict;
                 }
                 $s_verdict = '';
                 if ($n_verdict > 0) {
@@ -345,11 +348,15 @@ class CriticTransit extends AbstractDB {
         }
     }
 
-    public function get_actor_id_by_data($item) {
+    public function get_actor_id_by_data($item, $debug = '') {
         $gender = $item->gender;
         if ($gender > 2) {
             $gender = 2;
         }
+        if ($gender==0){
+            $gender=3;
+        }
+        
         $type = 1;
         $n_verdict = $item->n_verdict > 8 ? 7 : $item->n_verdict;
         $n_verdict_weight = $item->n_verdict_weight > 8 ? 7 : $item->n_verdict_weight;
@@ -362,6 +369,27 @@ class CriticTransit extends AbstractDB {
         $n_familysearch = $item->n_familysearch > 8 ? 7 : $item->n_familysearch;
         $n_forebears = $item->n_forebears > 8 ? 7 : $item->n_forebears;
         $n_aid = substr($item->actor_id, -3);
+
+        if ($debug) {
+            var_dump(['total data', $n_forebears, $n_familysearch, $n_ethnic, $n_jew, $n_kairos, $n_bettaface, $n_surname, $n_crowdsource]);
+        }
+        /*
+         * valid alrorithm
+         * 
+         * (IF(r.gender>2,2,r.gender)*100000000000+\
+          m.type*10000000000+\
+          IF(r.n_verdict>8,7,r.n_verdict)*1000000000+\
+          IF(r.n_verdict_weight>8,7,r.n_verdict_weight)*100000000+\
+          IF(r.n_crowdsource>8,7,r.n_crowdsource)*10000000+\
+          IF(r.n_surname>8,7,r.n_surname)*1000000+\
+          IF(r.n_bettaface>8,7,r.n_bettaface)*100000+\
+          IF(r.n_kairos>8,7,r.n_kairos)*10000+\
+          IF(r.n_jew>8,7,r.n_jew)*1000+\
+          IF(r.n_ethnic>8,7,r.n_ethnic)*100+\
+          IF(r.n_familysearch>8,7,r.n_familysearch)*10+\
+          IF(r.n_forebears>8,7,r.n_forebears)\
+          )*1000+SUBSTR(m.aid,-3)\
+         */
 
         $actor_int = ($gender * 100000000000 +
                 $type * 10000000000 +

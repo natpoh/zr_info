@@ -4435,7 +4435,7 @@ class AnalyticsFront extends SearchFacets {
         return $race_code;
     }
 
-    public function custom_weight_race_code($race = 0, $race_weight = array(),$onlydata=0) {
+    public function custom_weight_race_code($race = 0, $race_weight = array(),$onlydata=0,$debugs='') {
 
         /*
           // Other codes
@@ -4473,11 +4473,15 @@ class AnalyticsFront extends SearchFacets {
                 if ($key == 't') {
                     continue;
                 }
+                $score=0;
+
                 $race_code = $this->get_race_by_key($race, $key);
+
+
                 if ($race_code) {
                     $race_code_key = $this->race_small[$race_code]['key'];
                     $score = $row[$race_code_key];
-                    $debug[$key] = array('race' => $race_code, 'key' => $race_code_key, 'score' => $score);
+
 
                     // Plus logic
                     if ($score > 0) {
@@ -4485,7 +4489,18 @@ class AnalyticsFront extends SearchFacets {
                         $result_top[$key] = $score;
                     }
                 }
+                $debug[$key] = array('race' => $race_code, 'key' => $race_code_key, 'score' => $score);
+
+                if ($debugs){
+                    var_dump([$key,$row,$race_code,$race_code_key,$score]);
+
+                }
+
             }
+        }
+        if ($debugs)
+        {
+            var_dump(['debug',$debug]);
         }
         if ($type_calc == 0 && $result_summ) {
             arsort($result_summ);
@@ -4497,7 +4512,7 @@ class AnalyticsFront extends SearchFacets {
         }
         if ($onlydata)
         {
-            return array($result_summ,$result_top,$race_code_ret);
+            return array('type_calc'=>$type_calc,'race_code_ret'=>$race_code_ret,'result'=>$debug,'race_weight'=>$race_weight);
         }
 
         return $race_code_ret;

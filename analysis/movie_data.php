@@ -11,7 +11,7 @@ class MOVIE_DATA
 {
 
     private static $debug=0;
-
+    private static $verdct_method='';
 
     public static function get_actor_meta($id)
     {
@@ -23,6 +23,7 @@ class MOVIE_DATA
 
     public static function get_movies_data($movie_id,$actor_type=array("star","main"),$priority_string='')
     {
+
 
         if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
             define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
@@ -102,6 +103,46 @@ class MOVIE_DATA
 //        }
         return $name;
     }
+    public static function get_verdict_method()
+    {
+
+        if (self::$verdct_method)
+        {
+
+            return self::$verdct_method['verdict'];
+        }
+        else
+        {
+            !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+            $vd_data = unserialize(unserialize(OptionData::get_options('','critic_matic_settings')));
+            $verdict_method=0; if ($vd_data["an_verdict_type"]=='w'){$verdict_method=1;}
+            self::$verdct_method = array('verdict'=>$verdict_method);
+            return $verdict_method;
+        }
+
+    }
+
+    public static function get_actor_race($id)
+    {
+        $array_convert = array('2' => 'Male', '1' => 'Female', '0' => 'NA');
+        $array_compare_cache = array('Sadly, not' => 'N/A', '1' => 'N/A', '2' => 'N/A', 'NJW' => 'N/A', 'W' => 'White', 'B' => 'Black', 'EA' => 'Asian', 'H' => 'Latino', 'JW' => 'Jewish', 'I' => 'Indian', 'M' => 'Arab', 'MIX' => 'Mixed / Other', 'IND' => 'Indigenous');
+
+       $meta = self::get_actor_meta($id);
+        $gender = $array_convert[$meta['gender']];
+        $verdict_method=   self::get_verdict_method();
+        if ($verdict_method==1)
+        {
+            $verdict = $meta['verdict_weight'];
+            if (!$verdict)
+            {
+                $verdict = $meta['verdict'];
+            }
+        }
+
+        if (!$verdict)$verdict=1;
+        $race = $array_compare_cache[$verdict];
+        return $race.' '.$gender;
+    }
 
     public static function single_actor_template($id,$type='',$ethnycity_string='')
     {
@@ -123,6 +164,9 @@ class MOVIE_DATA
 
             $image_link = RWTimages::get_image_link($id,'270x338','','','',1);
             $actor_name_encoded =urlencode($name);
+            ///gender and race
+            $arace = self::get_actor_race($id);
+
 
             $actor_cntr = '<div class="card style_1 img_tooltip">
                      <a  class="actor_info" data-id="' . $id . '"  href="#">
@@ -130,10 +174,13 @@ class MOVIE_DATA
                      <img loading="lazy" title="What ethnicity is ' . $name . '?" alt="' . $name . ' ethnicity" class="a_data_i" 
                      src="' . $image_link . '" />
                      </a>
+                     
+                      <div class="actor_crowdsource_container adtor_r_data">'.$arace.'<a title="Edit Actor data" id="op" data-value="' . $id . '" class="actor_crowdsource button_edit" href="#"></a></div>
+ 
+                     
                      <span class="actor_b_link"><a href="'.$filmolink.'">Filmography</a>
 <a target="_blank" href="https://en.wikipedia.org/w/index.php?search='.$actor_name_encoded.'">Wikipedia</a></span>
-                     <span class="actor_edit actor_crowdsource_container"><a title="Edit Actor data" id="op" data-value="' . $id . '" class="actor_crowdsource button_edit" href="#"></a></span>
-                    </div>';
+                                       </div>';
 
 
 

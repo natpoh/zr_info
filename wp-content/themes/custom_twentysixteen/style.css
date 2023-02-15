@@ -10407,17 +10407,6 @@ strong {
 
 
 
-
-/* just adding space between crowdsource verdict and others */
-
-.actor_crowdsource_container {
-    margin-top:2em;
-}
-
-
-
-
-
 /* temporary fix to make facial recognition pop ups fun and aesthetic but not too crazy and hard to read */
 
 .actor_image_container {

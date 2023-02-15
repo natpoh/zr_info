@@ -16,7 +16,8 @@ if (sizeof($movies) > 0) {
         <thead>
             <tr>
                 <?php $this->sorted_head('id', 'id', $orderby, $order, $page_url) ?>                                
-                <?php $this->sorted_head('year', 'Release', $orderby, $order, $page_url) ?> 
+                <td>Release</td>
+                <?php $this->sorted_head('year', 'Year', $orderby, $order, $page_url) ?> 
                 <?php $this->sorted_head('title', 'Title', $orderby, $order, $page_url) ?>
                 <?php $this->sorted_head('type', 'Type', $orderby, $order, $page_url) ?>
                 <?php $this->sorted_head('add_time', 'Add date', $orderby, $order, $page_url) ?>
@@ -37,6 +38,7 @@ if (sizeof($movies) > 0) {
                 <tr>
                     <td class="mob-hide"><?php print $post->id ?></td>     
                     <td><?php print $post->release ?></td>
+                    <td><?php print $post->year ?></td>
                     <td><?php
                         $movie_link = $this->theme_movie_link($post->id, $post->title);
                         print $movie_link;

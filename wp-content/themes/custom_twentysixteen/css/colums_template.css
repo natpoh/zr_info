@@ -3500,6 +3500,19 @@ body.theme_dark .highcharts-legend-title tspan{
         line-height: 24px;
         gap: 4px;
     }
+
+    .adtor_r_data {
+        font-family: 'Encode Sans Condensed',Lato;
+        font-size: 16px;
+        margin-top: 5px;
+        display: flex;
+        white-space: nowrap;
+    }
+    .adtor_r_data.actor_crowdsource_container .actor_crowdsource {
+        height: 20px;
+        width: 20px;
+    }
+
 }
 
 

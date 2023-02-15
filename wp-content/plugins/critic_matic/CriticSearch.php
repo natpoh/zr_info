@@ -296,26 +296,29 @@ class CriticSearch extends AbstractDB {
             print_r($critics_search);
         }
 
-        $search_valid = $critics_search['valid'];
-        if ($bulk) {
-            $bulk_valid = array();
-            foreach ($search_valid as $cid => $item) {
-                if (in_array($cid, $ids)) {
-                    $bulk_valid[$cid] = $item;
+        $search_valid = [];
+        if ($critics_search) {
+            $search_valid = $critics_search['valid'];
+            if ($bulk) {
+                $bulk_valid = array();
+                foreach ($search_valid as $cid => $item) {
+                    if (in_array($cid, $ids)) {
+                        $bulk_valid[$cid] = $item;
+                    }
                 }
-            }
-            if ($force) {
-                $search_other = $critics_search['other'];
-                if ($search_other) {
-                    foreach ($search_other as $cid => $item) {
-                        if (in_array($cid, $ids)) {
-                            $bulk_valid[$cid] = $item;
+                if ($force) {
+                    $search_other = $critics_search['other'];
+                    if ($search_other) {
+                        foreach ($search_other as $cid => $item) {
+                            if (in_array($cid, $ids)) {
+                                $bulk_valid[$cid] = $item;
+                            }
                         }
                     }
                 }
-            }
 
-            $search_valid = $bulk_valid;
+                $search_valid = $bulk_valid;
+            }
         }
 
         // Update critics meta
@@ -477,7 +480,16 @@ class CriticSearch extends AbstractDB {
         $ss = $this->get_search_settings();
 
         $title = strip_tags($post->title);
+
+        // Get release time
         $year = $post->year;
+        $release = $post->release;
+        if (!$release) {
+            $release = "{$year}-01-01";
+        }
+        
+        
+        $release_time = strtotime($release);
 
         $num = 1;
         // If worlds count < small title need quotes title in content
@@ -491,7 +503,7 @@ class CriticSearch extends AbstractDB {
         }
         // Search by title
         if ($title) {
-            $data = $this->search_by_title_and_date($title, $year, $ss['limit'], true, $cids);
+            $data = $this->search_by_title_and_date($title, $year, $release_time, $ss['limit'], true, $cids);
             if ($debug) {
                 $debug_data['title keyword'] = $title;
                 $debug_data['search results'] = sizeof((array) $data);
@@ -508,6 +520,7 @@ class CriticSearch extends AbstractDB {
                 $ids[] = $item->id;
                 $meta_search[$item->id] = 1;
                 $ret[$item->id]['title'] = $item->title;
+                $ret[$item->id]['date'] = $item->post_date;
                 $ret[$item->id]['content'] = $item->content;
                 if (strstr($item->t, '<b>')) {
                     if (preg_match_all('/<b>([^<]+)<\/b>/', $item->t, $title_match)) {
@@ -543,38 +556,40 @@ class CriticSearch extends AbstractDB {
 
         // Search Release date
 
-        if ($year) {
-            if ($debug) {
-                $debug_data['year'] = $year;
-            }
+        if (!$year) {
+            return [];
+        }
 
-            if ($ss['need_release'] > $year) {
-                // Old movie. Need relese date in content
-                $need_release = true;
-            }
+        if ($debug) {
+            $debug_data['year'] = $year;
+        }
 
-            $year_found = $this->search_in_ids($ids, $year, $debug);
-            if (sizeof($year_found)) {
-                foreach ($year_found as $item) {
-                    $w = (int) $item->w;
+        if ($ss['need_release'] > $year) {
+            // Old movie. Need relese date in content
+            $need_release = true;
+        }
 
+        $year_found = $this->search_in_ids($ids, $year, $debug);
+        if (sizeof($year_found)) {
+            foreach ($year_found as $item) {
+                $w = (int) $item->w;
+
+                if ($w >= 10) {
+                    $ret[$item->id]['total'] += $ss['release_point_title'];
+                    $ret[$item->id]['score']['release_title'] = $ss['release_point_title'];
+                } else {
+                    $ret[$item->id]['total'] += $ss['release_point'];
+                    $ret[$item->id]['score']['release'] = $ss['release_point'];
+                }
+
+                $valid_release[] = $item->id;
+
+                if ($debug) {
                     if ($w >= 10) {
-                        $ret[$item->id]['total'] += $ss['release_point_title'];
-                        $ret[$item->id]['score']['release_title'] = $ss['release_point_title'];
-                    } else {
-                        $ret[$item->id]['total'] += $ss['release_point'];
-                        $ret[$item->id]['score']['release'] = $ss['release_point'];
+                        $ret[$item->id]['debug']['year title'] = $item->t;
                     }
-
-                    $valid_release[] = $item->id;
-
-                    if ($debug) {
-                        if ($w >= 10) {
-                            $ret[$item->id]['debug']['year title'] = $item->t;
-                        }
-                        if ($w != 10) {
-                            $ret[$item->id]['debug']['year content'] = $item->c;
-                        }
+                    if ($w != 10) {
+                        $ret[$item->id]['debug']['year content'] = $item->c;
                     }
                 }
             }
@@ -650,7 +665,6 @@ class CriticSearch extends AbstractDB {
                 }
             }
         }
-
 
 
         //Search Cast
@@ -1123,7 +1137,7 @@ class CriticSearch extends AbstractDB {
         return $result;
     }
 
-    public function search_by_title_and_date($title = '', $year = '', $limit = 1000, $debug = false, $ids = array()) {
+    public function search_by_title_and_date($title = '', $year = '', $release_time = 0, $limit = 1000, $debug = false, $ids = array()) {
         //not audience authors
         $author_type = 2;
 
@@ -1138,17 +1152,24 @@ class CriticSearch extends AbstractDB {
             $keyword .= ' MAYBE ' . $year;
         }
 
+        $and_release = '';
+        if ($release_time != 0) {
+            $and_release = ' AND post_date > ' . $release_time;
+        }
+
         $ids_and = '';
         if ($ids) {
             $ids_and = ' AND id IN(' . implode(',', $ids) . ')';
         }
 
-        $sql = sprintf("SELECT id, title, content, weight() w" . $snippet . " FROM critic "
-                . "WHERE MATCH('@(title,content) ($keyword)') AND author_type!=%d" . $ids_and . " LIMIT %d "
+        $sql = sprintf("SELECT id, title, post_date, content, weight() w" . $snippet . " FROM critic "
+                . "WHERE MATCH('@(title,content) ($keyword)') AND author_type!=%d" . $ids_and . $and_release . " LIMIT %d "
                 . "OPTION ranker=expr('sum(user_weight)'), "
                 . "field_weights=(title=10, content=1) ", $author_type, $limit);
 
+
         $result = $this->sdb_results($sql);
+
         return $result;
     }
 
@@ -1241,7 +1262,7 @@ class CriticSearch extends AbstractDB {
             }
             $limit = 10;
 
-            $movies['title'] = $this->front_search_movies_an($keywords, $mode);
+            $movies['title'] = $this->front_search_movies_an($keywords, $mode, true);
             $k['title'] = $keywords;
 
             // Find tags in title
@@ -1250,7 +1271,7 @@ class CriticSearch extends AbstractDB {
                 if ($years_string) {
                     $keywords_tag .= ' ' . $years_string;
                 }
-                $movies['title_tags'] = $this->front_search_movies_an($keywords_tag, $mode);
+                $movies['title_tags'] = $this->front_search_movies_an($keywords_tag, $mode, true);
                 $k['title_tags'] = $keywords_tag;
             }
 
@@ -1260,7 +1281,7 @@ class CriticSearch extends AbstractDB {
                 if ($years_string) {
                     $keywords_tag .= ' ' . $years_string;
                 }
-                $movies['title_quotes'] = $this->front_search_movies_an($keywords_tag, $mode);
+                $movies['title_quotes'] = $this->front_search_movies_an($keywords_tag, $mode, true);
                 $k['title_quotes'] = $keywords_tag;
             }
         }
@@ -1274,7 +1295,7 @@ class CriticSearch extends AbstractDB {
                 if ($years_string) {
                     $keywords_tag .= ' ' . $years_string;
                 }
-                $movies['content_tags'] = $this->front_search_movies_an($keywords_tag, $mode);
+                $movies['content_tags'] = $this->front_search_movies_an($keywords_tag, $mode, true);
                 $k['content_tags'] = $keywords_tag;
             }
             // Content quotes
@@ -1284,7 +1305,7 @@ class CriticSearch extends AbstractDB {
                 if ($years_string) {
                     $keywords_tag .= ' ' . $years_string;
                 }
-                $movies['content_quotes'] = $this->front_search_movies_an($keywords_tag, $mode);
+                $movies['content_quotes'] = $this->front_search_movies_an($keywords_tag, $mode, true);
                 $k['content_quotes'] = $keywords_tag;
             }
         }
@@ -1534,11 +1555,11 @@ class CriticSearch extends AbstractDB {
         $title = stripslashes($title);
         $title = addslashes($title);
         $match_query = $this->wildcards_maybe_query($title);
-        $match = sprintf("'@(title,year) ((^%s$)|(" . $match_query . "))'",$title);
+        $match = sprintf("'@(title,year) ((^%s$)|(" . $match_query . "))'", $title);
 
         $allow_types = array("'Movie'", "'TVseries'", "'VideoGame'");
         $type_and = " AND type IN(" . implode(',', $allow_types) . ")";
-                
+
 
         // Default weight
         $order = ' ORDER BY w DESC';
@@ -2535,7 +2556,7 @@ class CriticSearch extends AbstractDB {
         return $filter;
     }
 
-    public function front_search_movies_an($keyword = '', $mode = ' MAYBE ', $type = '', $start = 0, $limit = 20, $show_meta = false) {
+    public function front_search_movies_an($keyword = '', $mode = ' MAYBE ', $need_year = false, $type = '', $start = 0, $limit = 20, $show_meta = false) {
 
         $widlcard = false;
 
@@ -2546,6 +2567,11 @@ class CriticSearch extends AbstractDB {
         $and_type = '';
         if ($type) {
             $and_type = sprintf(" AND type='%s'", $type);
+        }
+
+        $year_and = '';
+        if ($need_year) {
+            $year_and = ' AND year>0';
         }
 
         $match = '';
@@ -2561,8 +2587,8 @@ class CriticSearch extends AbstractDB {
         }
 
         $sql = sprintf("SELECT id, rwt_id, title, release, type, year, weight() w FROM movie_an WHERE id>0"
-                . $and_type . $match . $order . " LIMIT %d,%d", $start, $limit);
-             
+                . $year_and . $and_type . $match . $order . " LIMIT %d,%d", $start, $limit);
+
         $result = $this->sdb_results($sql);
 
         if (!$show_meta) {

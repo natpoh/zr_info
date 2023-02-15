@@ -16,7 +16,8 @@ if (sizeof($movies) > 0) {
         <thead>
             <tr>
                 <th class="mob-hide"><?php print __('id') ?></th>
-                <th><?php print __('Release') ?></th>                 
+                <th><?php print __('Release') ?></th>   
+                <th><?php print __('Year') ?></th>
                 <th><?php print __('Title') ?></th>
                 <th><?php print __('Type') ?></th>
                 <th><?php print __('Add date') ?></th> 
@@ -38,6 +39,7 @@ if (sizeof($movies) > 0) {
                 <tr>
                     <td class="mob-hide"><?php print $post->id ?></td>     
                     <td><?php print $post->release ?></td>
+                    <td><?php print $post->year ?></td>
                     <td><?php
                         $movie_link = $this->theme_movie_link($post->id, $post->title);
                         print $movie_link;

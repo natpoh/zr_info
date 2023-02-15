@@ -68,14 +68,14 @@ if (isset($_GET['id'])) {
                         
                             </div>
                         </div></div>';
-    $link = 'https://camas.unddit.com/#{%22resultSize%22:100,%22query%22:%22'.urlencode($movie_title).'%22}';
-    $content.= '<div class="column_inner_content 4chan_review"  > <h3 class="column_header">Reddit:</h3>
-                        <div class="s_container smoched">
-                            <div ><iframe src="' . $link. '"></iframe></div>
-                            <div class="s_container_smoth">
-                        
-                            </div>
-                        </div></div>';
+//    $link = 'https://camas.unddit.com/#{%22resultSize%22:100,%22query%22:%22'.urlencode($movie_title).'%22}';
+//    $content.= '<div class="column_inner_content 4chan_review"  > <h3 class="column_header">Reddit:</h3>
+//                        <div class="s_container smoched">
+//                            <div ><iframe src="' . $link. '"></iframe></div>
+//                            <div class="s_container_smoth">
+//
+//                            </div>
+//                        </div></div>';
     echo $content;
 
 }

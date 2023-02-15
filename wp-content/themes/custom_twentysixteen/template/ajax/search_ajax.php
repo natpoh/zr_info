@@ -50,10 +50,9 @@ class custom_imdb_search
 public static function calculate_actor_data($a_id)
 {
     !class_exists('ActorWeight') ? include ABSPATH . "analysis/include/actors_weight.php" : '';
-    ActorWeight::update_actor_weight($a_id,1,0,1,0,1);
+    $data = ActorWeight::update_actor_weight($a_id,0,0,1,0,1);
 
-
-
+    echo $data;
 
 }
     public static  function check_in_db($movie_id)

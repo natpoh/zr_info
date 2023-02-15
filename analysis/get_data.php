@@ -1650,11 +1650,12 @@ else if ($_POST['oper'] === 'get_actordata') {
             }
         }
 
+        if (!$verdict)$verdict=1;
          if ($verdict)
          {
              echo '<p style="font-size: 20px; margin: 20px 0px; text-transform: uppercase" class="verdict">Final Verdict:  '.$array_compare_cache[$verdict].'</p>';
 
-             //echo '<p><a href="#" data-actor="'.$id.'" class="calculate_actor_data">Methodology</a></p>';
+            echo '<p><a href="#" data-actor="'.$id.'" class="calculate_actor_data">Methodology</a></p>';
 
          }
 
