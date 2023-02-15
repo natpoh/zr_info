@@ -35,6 +35,7 @@ class MoviesWeight extends AbstractDB {
                 $this->update_option($option_name, $last->id);
             }
 
+            $curr_time = $this->curr_time();
             foreach ($results as $item) {
                 $title = $item->title;
                 $clear_title = $this->clear_title($title);
@@ -44,15 +45,26 @@ class MoviesWeight extends AbstractDB {
                 $multipler = 1;
                 $weights = array();
                 foreach ($words as $word) {
-                    $popular = $this->get_word_weight($word);
-                    $weight = 100/$popular;
+                    $popular = $this->get_word_weight(trim($word));
+                    $weight = 1000/$popular;
                     $weights[]=$weight;
-                    $total_weight += $weight*$multipler;
-                    $multipler*=4;
+                    $total_weight += $weight;
+                    $total_weight*=$multipler;
+                    $multipler*=1.5;
                 }
+                $total_weight = (int)round($total_weight,0);
                 if ($debug){
                     p_r(array($title, $words, $weights, $total_weight, $multipler));
                 }
+                // Update weight
+                $data = array(
+                    'title_weight'=>$total_weight,
+                    'title_weight_upd'=>$curr_time,
+                );
+                if ($debug){
+                    p_r($data);
+                }
+                $this->sync_update_data($data, $item->id, $this->db['movie_imdb'], true, 10);
             }
         }
     }
@@ -84,7 +96,8 @@ class MoviesWeight extends AbstractDB {
     private function clear_title($title) {
         $title = strip_tags($title);
         $title = str_replace("'", "", $title);
-        $title = preg_replace('#[^\w\d ]+#', '', $title);
+        $title = preg_replace('#[^\w\d ]+#', ' ', $title);
+        $title = preg_replace('#  #', ' ', $title);
         return $title;
     }
 

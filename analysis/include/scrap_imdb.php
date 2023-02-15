@@ -174,6 +174,14 @@ function fix_actors_verdict($actor_id='')
 
 function set_verdict_weight($id)
 {
+    !class_exists('CPULOAD') ? include ABSPATH . "service/cpu_load.php" : '';
+    $load = CPULOAD::check_load();
+
+    if ($load['loaded'])
+    {
+        return;
+    }
+
     !class_exists('ActorWeight') ? include ABSPATH . "analysis/include/actors_weight.php" : '';
     $count=100;
     if (isset($_GET['count']))
