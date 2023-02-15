@@ -1504,7 +1504,7 @@ class CriticMaticAdmin {
                 $sort = array('sort' => $orderby, 'type' => $order);
             }
                
-            $results = $this->cs->front_search_movies_an($s, ' ', '', $start, $per_page, true);
+            $results = $this->cs->front_search_movies_an($s, ' ',true, '', $start, $per_page, true);
 
             $movies = $results['result'];
             $count = $results['total'];
@@ -1612,7 +1612,7 @@ class CriticMaticAdmin {
 
         $per_page = $ma->perpage;
         $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
-        $movies = $ma->get_posts($page, $type, $orderby, $order);
+        $movies = $ma->get_posts($page, $type, $orderby, $order, true);
         include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_movies.php');
     }
 

@@ -469,6 +469,7 @@ if ($mid) {
                             <td class="manage-column column-cb check-column" ><input type="checkbox" id="cb-select-all-1"></td>
                             <th><?php print __('Critic id') ?></th>
                             <th><?php print __('Critic title') ?></th> 
+                            <th><?php print __('Critic date') ?></th> 
                             <th><?php print __('Type') ?></th> 
                             <th><?php print __('In meta') ?></th>
                             <th><?php print __('Rating') ?></th> 
@@ -485,10 +486,14 @@ if ($mid) {
                                 $title = $post->title;
                                 $name = $post->name;
                                 $link = $post->link;
+                                // Date
+                                $critic_date = gmdate('Y-m-d H:i:s',  $post->date);
                             }
                             $critic_link = $this->theme_post_link($cid, $title);
                             $type = $this->cm->get_post_category_name($critic['type']);
 
+                            
+                            
                             // Rating
                             $rating = $critic['total'];
                             if ($critic['valid']) {
@@ -510,6 +515,7 @@ if ($mid) {
                                 <th  class="check-column" ><input type="checkbox" name="bulk-<?php print $cid ?>"></th>    
                                 <td><?php print $cid ?></td>
                                 <td><?php print $critic_link ?></td>                                                
+                                <td><?php print $critic_date ?></td>
                                 <td><?php print $type ?></td>
                                 <td><?php print $in_meta ?></td>
                                 <td><?php print $rating ?></td>
@@ -518,7 +524,7 @@ if ($mid) {
                             <?php if (isset($critic['debug'])) { ?>
                                 <tr>
                                     <td></td>
-                                    <td colspan="6">
+                                    <td colspan="7">
                                         <table class="wp-list-table widefat striped table-view-list">     
                                             <tbody>
                                                 <?php foreach ($critic['debug'] as $key => $value) { ?>

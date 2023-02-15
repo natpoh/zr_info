@@ -1418,7 +1418,7 @@ class MoviesAn extends AbstractDBAn {
         return $result;
     }
 
-    public function get_posts($page = 1, $post_type = '', $orderby = '', $order = 'ASC') {
+    public function get_posts($page = 1, $post_type = '', $orderby = '', $order = 'ASC', $need_year=false) {
         $page -= 1;
         $start = $page * $this->perpage;
 
@@ -1430,6 +1430,11 @@ class MoviesAn extends AbstractDBAn {
         $post_and = " AND type IN('Movie','TVseries','VideoGame','PodcastSeries')";
         if ($post_type && $post_type != 'all') {
             $post_and = sprintf(" AND type='%s'", $post_type);
+        }
+
+        $year_and = '';
+        if ($need_year) {
+            $year_and = ' AND year>0';
         }
 
         //Sort
@@ -1444,7 +1449,7 @@ class MoviesAn extends AbstractDBAn {
             $and_orderby = " ORDER BY id DESC";
         }
 
-        $sql = "SELECT * FROM {$this->db['movie_imdb']} WHERE id>0" . $post_and . $and_orderby . $limit;
+        $sql = "SELECT * FROM {$this->db['movie_imdb']} WHERE id>0" . $year_and. $post_and . $and_orderby . $limit;
 
 
         $result = $this->db_results($sql);
@@ -1506,13 +1511,14 @@ class MoviesAn extends AbstractDBAn {
     /*
      * Erating
      */
+
     public function get_movie_erating($mid) {
         $sql = sprintf("SELECT * FROM {$this->db['erating']} WHERE movie_id=%d", (int) $mid);
         $results = $this->db_fetch_row($sql);
         return $results;
     }
-    
-    public function update_erating($id, $data) {        
+
+    public function update_erating($id, $data) {
         $this->sync_update_data($data, $id, $this->db['erating'], true, 10);
     }
 
