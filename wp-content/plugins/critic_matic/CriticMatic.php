@@ -18,6 +18,7 @@ class CriticMatic extends AbstractDB {
     private $af;
     private $ma;
     private $uc;
+    private $mw;
 
     /*
      * Posts
@@ -279,7 +280,19 @@ class CriticMatic extends AbstractDB {
         }
         return $this->cav;
     }
+    
+    public function get_mw() {
+        // Get MoviesWeight
+        if (!$this->mw) {
+            if (!class_exists('MoviesWeight')) {                
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'MoviesWeight.php' );
+            }
 
+            $this->mw = new MoviesWeight($this);
+        }
+        return $this->mw;
+    }
+    
     public function get_cp() {
         // Get CriticParser
         if (!$this->cp) {

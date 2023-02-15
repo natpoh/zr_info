@@ -4435,7 +4435,7 @@ class AnalyticsFront extends SearchFacets {
         return $race_code;
     }
 
-    public function custom_weight_race_code($race = 0, $race_weight = array(),$onlydata=0) {
+    public function custom_weight_race_code($race = 0, $race_weight = array(),$onlydata=0,$debugs='') {
 
         /*
           // Other codes
@@ -4474,6 +4474,8 @@ class AnalyticsFront extends SearchFacets {
                     continue;
                 }
                 $race_code = $this->get_race_by_key($race, $key);
+
+
                 if ($race_code) {
                     $race_code_key = $this->race_small[$race_code]['key'];
                     $score = $row[$race_code_key];
@@ -4485,7 +4487,16 @@ class AnalyticsFront extends SearchFacets {
                         $result_top[$key] = $score;
                     }
                 }
+                if ($debugs){
+                    var_dump([$key,$row,$race_code,$race_code_key,$score]);
+
+                }
+
             }
+        }
+        if ($debugs)
+        {
+            var_dump(['debug',$debug]);
         }
         if ($type_calc == 0 && $result_summ) {
             arsort($result_summ);
