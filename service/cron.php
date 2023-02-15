@@ -35,7 +35,7 @@ $array_jobs = array(
 
 'check_face'=>120,///add bettaface verdict
 
-
+'update_crowd_verdict'=>60,    ///crowdsource udate actor verdict
 
 'update_all_rwt_rating'=>30,////update all rating
 'add_pgrating'=>60*2,////add pg rating

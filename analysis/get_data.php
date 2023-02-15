@@ -1327,7 +1327,7 @@ else if ($_POST['oper'] === 'get_actordata') {
         $surname = $av['surname'];
         $etn = $av['ethnic'];
         $jew = $av['jew'];
-        $crowd = $av['crowd'];
+        $crowd = $av['crowdsource'];
         $forebears = $av['forebears'];
         $familysearch = $av['familysearch'];
 

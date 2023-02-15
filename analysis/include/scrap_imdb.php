@@ -816,6 +816,65 @@ function set_tmdb_actors_for_movies()
 }
 
 
+function update_crowd_verdict($id='')
+{
+
+    ///get last id
+    $last_id = OptionData::get_options('','actors_crowd_last_id');
+    if (!$last_id)$last_id=0;
+
+    if ($id)
+    {
+        $where = ' id = '.intval($id);
+    }
+    else
+    {
+
+        $where = '   id > '.$last_id.' ' ;
+    }
+
+
+    echo 'update_crowd_verdict '.$last_id.'<br>';
+
+    $sql ="SELECT * FROM `data_actors_crowd` WHERE `status` = 1 and  ".$where." order by `id` ASC  limit 100";
+
+    $r = Pdo_an::db_results_array($sql);
+
+    if ($r)
+    {
+    foreach ($r as $row) {
+
+        $gender = $row['gender'];
+        $verdict = $row['verdict'];
+        if ($gender) {
+
+            if ($gender == 'm') {
+                $gender = 2;///male
+            } else if ($gender== 'f') {
+                $gender = 1;///female
+            }
+
+            if ($gender)
+            {
+                $set= " `gender` = '" . $gender . "', ";
+            }
+
+        }
+
+        $sql1 = "UPDATE `data_actors_meta` SET  " . $set . " `crowdsource` = '" . $verdict . "', n_crowdsource ='" . intconvert($verdict) . "' ,`last_update` = " . time() . "   WHERE `data_actors_meta`.`actor_id` = '" . $row['actor_id'] . "'";
+
+
+        Pdo_an::db_query($sql1);
+
+        update_actors_verdict($row['actor_id'], 1, 1);
+        OptionData::set_option('', $row['id'],'actors_crowd_last_id');
+    }
+    }
+
+
+}
+
+
 function download_crowd_images()
 {
     echo 'download_crowd_images<br>';
@@ -3205,6 +3264,15 @@ if (isset($_GET['movie_keywords'])) {
 
     return;
 }
+if (isset($_GET['update_crowd_verdict'])) {
+
+    update_crowd_verdict($_GET['update_crowd_verdict'])  ;
+
+    return;
+}
+
+
+
 
 echo 'ok';
 
