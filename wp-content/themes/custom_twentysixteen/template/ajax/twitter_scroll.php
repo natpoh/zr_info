@@ -25,7 +25,7 @@ if (isset($_GET['id'])) {
 
 
 
-    $atts =array('search'=> '"'.$movie_title.'"  lang:en');
+    $atts =array('search'=> '"'.$movie_title.'"  lang:en min_retweets:1000');
     $content= ctf_init( $atts );
 
     if (strstr($content,'Unable to load Tweets'))
@@ -44,9 +44,38 @@ if (isset($_GET['id'])) {
                     <div class="s_container_load"></div>
                 </div>
             </div>
+            <div class="column_inner_bottom">
+            
+             <a class="twiiter_link" target="_blank" href="https://twitter.com/search?q='.urlencode($movie_title).'&src=typed_query&pf=on">Mentioned by people you follow ></a>
+</div>
+           
+            
         </div>';
     }
 
+    $link = 'https://archive.4plebs.org/_/search/boards/pol.tv/text/%22'.urlencode($movie_title).'%22/';
+
+
+///        <div class="column_inner_bottom fchan_btn" data_title = "%22'.urlencode($movie_title).'%22">
+//                    <input class="blue_btn" type="button" dataid="pool" value="/pool/" > <input class="blue_btn" type="button" dataid="tv"  value="/tv/" > <input class="blue_btn" type="button" dataid="pool.tv"  value="All" >
+//</div>
+
+    ///4chan
+    $content.= '<div class="column_inner_content 4chan_review"  > <h3 class="column_header">4Chan:</h3>
+                        <div class="s_container smoched">
+                            <div ><iframe src="' . $link. '"></iframe></div>
+                            <div class="s_container_smoth">
+                        
+                            </div>
+                        </div></div>';
+    $link = 'https://camas.unddit.com/#{%22resultSize%22:100,%22query%22:%22'.urlencode($movie_title).'%22}';
+    $content.= '<div class="column_inner_content 4chan_review"  > <h3 class="column_header">Reddit:</h3>
+                        <div class="s_container smoched">
+                            <div ><iframe src="' . $link. '"></iframe></div>
+                            <div class="s_container_smoth">
+                        
+                            </div>
+                        </div></div>';
     echo $content;
 
 }

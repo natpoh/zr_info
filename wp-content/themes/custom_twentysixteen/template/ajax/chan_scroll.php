@@ -21,8 +21,26 @@ if (isset($_GET['id'])) {
     $movie_title = $r->title;
 
 
-    $link = 'https://archive.4plebs.org/_/search/boards/pol.tv/text/%22'.$movie_title.'%22/';
+    $link = 'https://archive.4plebs.org/_/search/boards/pol.tv/text/%22'.urlencode($movie_title).'%22/';
 
-    $array = array('4chanlink'=>$link);
+    $content=' <h3 class="column_header">4Chan:</h3>
+                        <div class="s_container smoched">
+                            <div ><iframe src="' . $link. '"></iframe></div>
+                            <div class="s_container_smoth">
+                                <div style="text-align: center"></div>
+                            </div>
+                        </div>
+
+
+    ';
+///        <div class="column_inner_bottom fchan_btn" data_title = "%22'.urlencode($movie_title).'%22">
+//                    <input class="blue_btn" type="button" dataid="pool" value="/pool/" > <input class="blue_btn" type="button" dataid="tv"  value="/tv/" > <input class="blue_btn" type="button" dataid="pool.tv"  value="All" >
+//</div>
+
+
+
+
+
+    $array = array('chandata'=>$content);
     echo json_encode($array);
 }

@@ -10,11 +10,6 @@
   License: GPLv2
  */
 
-/*
- * TODO
- * 
-
- */
 
 define('MOVIES_LINKS_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/movies_links/');
 
@@ -36,6 +31,7 @@ function include_movies_links() {
         require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractDB.php' );
         require_once( MOVIES_LINKS_PLUGIN_DIR . 'MoviesLinks.php' );
     }
+    !class_exists('CustomHooks') ? include ABSPATH . "wp-content/plugins/critic_matic/CustomHooks.php" : '';
 }
 
 // WP Logic

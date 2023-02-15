@@ -29,7 +29,7 @@ class GETTWITTER{
         $movie_title = $r->title;
         $year=$r->year;
 
-        $verifed = 'filter:verified lang:en ';
+        $verifed = 'filter:verified lang:en min_retweets:1000';
 
         $request = '"'.$movie_title.' '.$year.'"'.$verifed;
 
@@ -49,27 +49,27 @@ class GETTWITTER{
 <link rel='stylesheet' type="text/css" src="<?php echo WP_SITEURL;?>/wp-content/plugins/custom-twitter-feeds-pro/css/ctf-styles.min.css"/>
 
 <?php
-
+       // https://twitter.com/search?q=%22As%20Good%20As%20It%20Gets%22&src=typed_query&pf=on
         return;
 
      //   $url = 'https://smashballoon.com/custom-twitter-feeds/demo/?'.$data;
 
-        $url ='https://smashballoon.com/wp-admin/admin-ajax.php';
-
-
-
-        $array_request = json_encode(array('search'=>$request));
-
-        $post = array('action'=>'ctf_get_more_posts',
-            'shortcode_data'=>'"{\"search\":+\"The+Matrix\"}"',
-            'num_needed'=>0,
-            'persistent_index'=>1
-            );
-        var_dump($post);
-        $data =  http_build_query($post);
-
-        $result  =GETCURL::getCurlCookie($url,'',$data);
-        echo $result;
+//        $url ='https://smashballoon.com/wp-admin/admin-ajax.php';
+//
+//
+//
+//        $array_request = json_encode(array('search'=>$request));
+//
+//        $post = array('action'=>'ctf_get_more_posts',
+//            'shortcode_data'=>'"{\"search\":+\"The+Matrix\"}"',
+//            'num_needed'=>0,
+//            'persistent_index'=>1
+//            );
+//        var_dump($post);
+//        $data =  http_build_query($post);
+//
+//        $result  =GETCURL::getCurlCookie($url,'',$data);
+//        echo $result;
 
        // echo $url;
 

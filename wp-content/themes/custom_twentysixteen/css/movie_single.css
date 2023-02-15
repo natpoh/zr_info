@@ -948,7 +948,7 @@ body.theme_dark .imdb_rating, body.theme_dark .rotten_tomatoes_score, body.theme
 }
 .column_inner_content {
     flex: 1;
-    max-height: 500px;
+    max-height: 550px;
     overflow: hidden;
     transition: all 0.4s;
 }
@@ -959,7 +959,9 @@ body.theme_dark .imdb_rating, body.theme_dark .rotten_tomatoes_score, body.theme
     flex: 3;
 
 }
-
+#twitter_scroll iframe {
+    width: 100%;
+}
 
 .column_inner_content.max_with .s_container{
 
@@ -1011,6 +1013,14 @@ body.theme_dark  .keyword_container .keyword:hover{
     background-color: #383838;
     color: #e0e0e0;
 }
+
+.nte_cnt .actor_info img
+{
+    width: 135px;
+    margin: 20px  auto;
+    display: block;
+}
+
 .button_edit{
     background: url("../images/edit_modify.svg") no-repeat scroll left 0 top 0 transparent;
     display: inline-block;
@@ -1030,6 +1040,29 @@ body.theme_dark  .keyword_container .keyword:hover{
     opacity: 0.38;
 
 }
+.column_inner_content .column_header{
+    margin: 5px;
+}
+.column_inner_bottom {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px;
+    font-size: 18px;
+    margin-top: 15px;
+    gap: 14px;
+}
+.column_inner_bottom input, .column_inner_bottom input:focus{
+    background-color: #ddd;
+    color: #000;
+    outline: none;
+}
+
+body.theme_dark  .column_inner_bottom input{
+    background-color: #4b4b4b;
+    color: #fff;
+}
+
 
 body.theme_dark  .add_pg_rating_button.button_edit {
     background: url("../images/edit.svg") no-repeat scroll left 6px top 1px  transparent;
@@ -1174,6 +1207,7 @@ div.sortable {
 .content_warning {
     font-size: 1.4375rem;
     margin-bottom: 2.438rem;
+    text-align: center;
 }
 .content_red_warning {
     color: #c20000;

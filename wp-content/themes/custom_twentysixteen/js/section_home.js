@@ -90,7 +90,7 @@ function initializeScroller(mobile, scroller) {
     childScroller.children().each(function () {
         itemWidth += jQuery(this).outerWidth();
     });
-
+    //console.log(parentWidth,itemWidth,scroller);
     var distance;
     if (mobile) {
         distance = 30;
@@ -101,6 +101,7 @@ function initializeScroller(mobile, scroller) {
     if (itemWidth < (parentWidth + distance)) {
         jQuery(scroller).removeClass('should_fade');
     }
+    //console.log(itemWidth,(parentWidth + distance));
 
     var targetScroll;
     childScroller.scroll(function (e) {
@@ -333,7 +334,7 @@ function create_context_rating(obj, hollywood)
     if (obj.affirmative)
         content_rating += '<div><span>Affirmative Action:</span>' + create_rating_star(obj.affirmative, 'affirmative') + '</div>';
     if (obj.lgbtq)
-        content_rating += '<div><span>Gay S**t:</span>' + create_rating_star(obj.lgbtq, 'lgbtq') + '</div>';
+        content_rating += '<div><span>Gay Stuff:</span>' + create_rating_star(obj.lgbtq, 'lgbtq') + '</div>';
     if (obj.god)
         content_rating += '<div><span>Fedora Tipping:</span>' + create_rating_star(obj.god, 'god') + '</div>';
 
@@ -1304,12 +1305,14 @@ function load_ajax_block(block_id) {
                 }
             } else if (block_id == 'twitter_scroll') {
                 if (data) {
-                    jQuery('div.column_header_main').prepend(data);
-
+                  //  jQuery('div.column_header_main').prepend(data);
+                    jQuery('div[id="' + block_id + '"]').html('<div class="column_content flex scroller">'+data+'</div>');
                     if (typeof ctf_init != 'undefined')
                     {
                         ctf_init();
                     }
+
+                    initializeScroller(1, 'div[id="'+block_id+'"]');
                 }
             } else if (block_id == 'chan_scroll') {
                 if (data) {
@@ -1320,13 +1323,13 @@ function load_ajax_block(block_id) {
                         Object_data = null;
                     }
 
-                    let link = Object_data['4chanlink'];
-                    if (link)
+                    let chandata = Object_data['chandata'];
+                    if (chandata)
                     {
                         ///console.log(link);
 
-                        let content = '<iframe src=\'' + link + '\'></iframe>';
-                        jQuery('div[id="' + block_id + '"]').html(content);
+                        jQuery('div[id="' + block_id + '"]').html(chandata);
+                        initializeScroller(1, 'div[id="internet_zeitgest"]');
                     }
 
                 }
@@ -3573,7 +3576,18 @@ jQuery(document).ready(function () {
     });
 
 
-
+    // jQuery('body').on('click', '.fchan_btn input', function () {
+    //
+    //     let pnrt =$(this).parents('.column_inner_bottom');
+    //     let data_title = pnrt.attr('data_title');
+    //     let id =$(this).attr('dataid');
+    //     let link ='https://archive.4plebs.org/_/search/boards/'+id+'/text/'+data_title;
+    //     let bigprnt = $(this).parents('.column_inner_content');
+    //     let iframe = bigprnt.find('.s_container iframe');
+    //     console.log(link);
+    //     iframe.attr('src',link);
+    //
+    // });
 
 });
 jQuery('body').on('click', '.disqus_content spoiler', function () {

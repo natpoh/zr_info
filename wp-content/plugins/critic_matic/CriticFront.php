@@ -1348,10 +1348,11 @@ class CriticFront extends SearchFacets {
         $title = $item->title;
         $type = $item->type;
 
-
-        $slug = 'movies';
-        if (strtolower($type) == 'tvseries') {
-            $slug = 'tvseries';
+       
+        if (strtolower($type) == 'movie') {
+            $slug = 'movies';
+        } else {
+            $slug = strtolower($type);
         }
 
         $array_type = array('tvseries' => 'TV series');
@@ -2389,8 +2390,8 @@ class CriticFront extends SearchFacets {
             ?>
             <div class="ns_related">
                 <div class="column_header">
-                    <h2><a href="<?php print $ns_link ?>">Related posts</a> on Newsfilter for: </h2>
-                    <h3>"<?php print $movie_data->title ?>"</h3>                    
+                    <h2>NewsFilter.biz</h2>
+                    <h3><a href="<?php print $ns_link ?>"><?php print $movie_data->title ?>"</a></h3>
                 </div>                        
                 <?php
                 // Bias facet

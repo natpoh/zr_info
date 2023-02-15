@@ -8,6 +8,10 @@ critic_search.debug = false;
 
 jQuery(function ($) {
     $(document).ready(function () {
+        
+        addEventListener("popstate", function (e) {
+            window.location.reload();
+        }, false);
 
         // Ajax search
         $("body").on("input", ".customsearch_input", function (e) {

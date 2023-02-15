@@ -29,6 +29,8 @@ class MoviesCustomHooks {
         if ($campaign->id == 3) {
             $this->update_dove($post, $options, $campaign, $debug);
         }
+
+        CustomHooks::do_action('ml_add_post', ['campaign' => $campaign, 'post' => $post]);
     }
 
     public function add_actors($campaign = array(), $post = array(), $debug = false) {
@@ -79,7 +81,6 @@ class MoviesCustomHooks {
             // Add anime genre
             $ma = $this->ml->get_ma();
             $ma->add_genre_meta($post->top_movie, 'anime');
-            
         } else if ($campaign->id == 20 || $campaign->id == 21) {
             // rt movies (20) and tv (21)
             $curr_camp = 'rt';

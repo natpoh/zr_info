@@ -121,7 +121,7 @@ class MOVIE_DATA
 
             $dop_string = '<span class="a_data_n_d">' . str_replace('_', ' ', ucfirst($type)) . '</span>';
 
-            $image_link = RWTimages::get_image_link($id);
+            $image_link = RWTimages::get_image_link($id,'270x338','','','',1);
             $actor_name_encoded =urlencode($name);
 
             $actor_cntr = '<div class="card style_1 img_tooltip">

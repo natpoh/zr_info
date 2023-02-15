@@ -25,27 +25,89 @@ include(ABSPATH.'wp-content/themes/custom_twentysixteen/template/include/custom_
 
 class TV_Scroll {
 
+    private static function prepare_movies($id,$content_result)
+    {
+
+        if ($content_result['result'][$id])
+        {
+            return  $content_result;
+        }
+
+        global $cfront;
+
+        try {
+            $array_tsumb = CreateTsumbs::get_poster_tsumb_fast($id, array([220, 330], [440, 660]));
+        } catch (Exception $ex) {
+
+            ///  var_dump($ex);
+            // return null;
+        }
+        $sql = "select * from data_movie_imdb where id = " . $id . " limit 1";
+        $rows = Pdo_an::db_fetch_row($sql);
+
+        $post_name = $rows->post_name;
+        $title = $rows->title;
+        $type = $rows->type;
+        $release = strtotime($rows->release);
+        $slug = 'tvseries';
+        if ($release > time()-86400*180) {
+
+
+
+            if (!$post_name) {
+                if (!$cfront) {
+                    if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
+                        define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
+                    }
+
+                    if (!class_exists('CriticFront')) {
+                        require_once(CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php');
+                    }
+                    $cfront = new CriticFront();
+                }
+                if ($cfront) {
+                    $post_name = $cfront->get_or_create_ma_post_name($id);
+                }
+            }
+
+
+            $content_result['result'][$rows->id] = array(
+                'link' => '/' . $slug . '/' . $post_name,
+                'title' => $title,
+                'genre' => $rows->genre,
+                'poster_link_small' => $array_tsumb[0],
+                'poster_link_big' => $array_tsumb[1],
+                'type' => $slug
+            );
+
+        }
+        return $content_result;
+    }
+
     public static function show_scroll() {
 
         $sql = "SELECT * FROM `options` where id = 14";
         $rows = Pdo_an::db_fetch_row($sql);
-
+        $array_movies_dop=[];
         $array_movies = $rows->val;
         if ($array_movies) {
             $array_movies = json_decode($array_movies, 1);
-        } else {
+        }
+
+
             $starttime = time();
             $date_current = date('Y-m-d', $starttime);
             $date_main = date('Y-m-d', strtotime('-1 year', $starttime));
-            $sql = "SELECT * FROM `data_movie_imdb` WHERE `release`  >=  '" . $date_main . "' and `release`  <=  '" . $date_current . "' and `type`= 'TVSeries' order by `release` desc LIMIT 20 ";
+            $sql = "SELECT * FROM `data_movie_imdb` WHERE `release`  >=  '" . $date_main . "' and `release`  <=  '" . $date_current . "' and `type`= 'TVSeries' order by `rating` desc , `release` desc LIMIT 30 ";
+
             $rows = Pdo_an::db_results_array($sql);
             foreach ($rows as $r) {
                 $movie_id = $r['id'];
-                $array_movies[$movie_id] = strtotime($r['release']);
+                $array_movies_dop[$movie_id] = strtotime($r['release']);
             }
             arsort($array_movies);
-        }
 
+        $content_result=[];
         if (is_array($array_movies)) {
 
             $i = 0;
@@ -53,62 +115,31 @@ class TV_Scroll {
             $cfront = '';
             foreach ($array_movies as $id => $enable) {
 
-                try {
-                    $array_tsumb = CreateTsumbs::get_poster_tsumb_fast($id, array([220, 330], [440, 660]));
-                } catch (Exception $ex) {
 
-                    ///  var_dump($ex);
-                    // return null;
-                }
-                $sql = "select * from data_movie_imdb where id = " . $id . " limit 1";
-                $rows = Pdo_an::db_fetch_row($sql);
-
-                $post_name = $rows->post_name;
-                $title = $rows->title;
-                $type = $rows->type;
-
-
-                $slug = 'tvseries';
-
-
-                if (!$post_name) {
-                    if (!$cfront) {
-                        if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
-                            define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
-                        }
-
-                        if (!class_exists('CriticFront')) {
-                            require_once( CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php' );
-                        }
-                        $cfront = new CriticFront();
-                    }
-                    if ($cfront) {
-                        $post_name = $cfront->get_or_create_ma_post_name($id);
-                    }
-                }
-
-
-
-                $content_result['result'][$rows->id] = array(
-                    'link' => '/' . $slug . '/' . $post_name,
-                    'title' => $title,
-                    'genre' => $rows->genre,
-                    'poster_link_small' => $array_tsumb[0],
-                    'poster_link_big' => $array_tsumb[1],
-                    'type' => $slug
-                );
-
-                $i++;
-
-
-
+                $content_result =self::prepare_movies($id,$content_result);
                 //else echo $imdb_id.'found<br>';
 
 
-                if ($i >= 20) {
+                if (count($content_result['result']) >= 20) {
                     break;
                 }
             }
+
+            if (count($content_result['result']) < 20) {
+                foreach ($array_movies_dop as $id => $enable) {
+
+
+                    $content_result = self::prepare_movies($id, $content_result);
+                    //else echo $imdb_id.'found<br>';
+
+
+                    if (count($content_result['result']) >= 20) {
+                        break;
+                    }
+                }
+            }
+
+
 
             if ($i > 5) {
                 $link = '/search/type_tv';
@@ -116,12 +147,12 @@ class TV_Scroll {
                 $content_result['result'][] = array('link' => $link, 'title' => $title, 'genre' => 'load_more', 'poster_link_small' => '', 'poster_link_big' => '', 'content_pro' => '');
                 $i++;
             }
-            $content_result['count'] = $i;
+            $content_result['count'] = count($content_result['result']);
 
 
             return $content_result;
         } else {
-            $content_result['count'] = 0;
+            $content_result['count'] = count($content_result['result']);
             $content_result['message'] = 'no result';
             $content_string = json_encode($content_result);
             return $content_string;

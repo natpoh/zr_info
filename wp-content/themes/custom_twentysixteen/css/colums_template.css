@@ -3472,6 +3472,34 @@ body.theme_dark .highcharts-legend-title tspan{
         margin-right: 20px;
     }
 
+
+    .section_actors .a_data_r, .section_actors .a_data_n {
+        padding: 10px;
+        box-sizing: border-box;
+        font-size: 17px;
+        min-height: 58px;
+        font-family: 'Encode Sans Condensed',Lato;
+        white-space: nowrap;
+    }
+    .section_actors  .a_data_i {
+        max-width: 100%;
+        width: 135px;
+    }
+    section.inner_content.section_actors div.column_content div.card.style_1 {
+        min-width: 145px;
+        height: 330px;
+    }
+    .actor_b_link {
+        font-family: 'Encode Sans Condensed',Lato;
+        display: flex;
+        justify-content: left;
+        align-items: center;
+        margin-top: 3px;
+        font-size: 16px;
+        flex-wrap: wrap;
+        line-height: 24px;
+        gap: 4px;
+    }
 }
 
 
@@ -3487,7 +3515,13 @@ body.theme_dark .highcharts-legend-title tspan{
     .s_container {
         height: 200px;
     }
+    #twitter_scroll .s_container ,    #twitter_scroll .s_container  iframe{
+        height: 450px;
+    }
 
+    .column_inner_bottom {
+        font-size: 16px;
+    }
 
 .max_with   .s_container {
         min-height: 250px;

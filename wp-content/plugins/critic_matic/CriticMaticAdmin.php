@@ -1503,11 +1503,8 @@ class CriticMaticAdmin {
             if ($orderby) {
                 $sort = array('sort' => $orderby, 'type' => $order);
             }
-
-            $filters = array();
-            $facets = array();
-
-            $results = $this->cs->front_search_movies_an($s, '', $per_page, $start, $sort, $filters, $facets);
+               
+            $results = $this->cs->front_search_movies_an($s, ' ', '', $start, $per_page, true);
 
             $movies = $results['result'];
             $count = $results['total'];

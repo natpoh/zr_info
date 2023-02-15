@@ -77,28 +77,6 @@ include get_template_directory() . '/template/actors_template_single.php';
     ?>
 
 
-        <div  id="twitter_scroll" data-value="<?php echo $post_id ?>" class="not_load"></div>
-
-        <div class="section_content">
-            <div class="column_header">
-                <h2>Internet Zeitgest:</h2>
-                <p class="content_warning"><span class="content_red_warning">CONTENT WARNING:</span> Foul language, offensive images, & possible spoilers.</p>
-                <div class="column_header_main">
-
-                    <div class="column_inner_content 4chan_review">
-                        <h3 class="column_header">4Chan:</h3>
-                        <div class="s_container smoched">
-                            <div id="chan_scroll" data-value="<?php echo $post_id ?>" class="not_load"></div>
-                            <div class="s_container_smoth">
-                                <div style="text-align: center"> </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-
         <div id="ns_related_scroll" data-value="<?php print $post_id ?>" class="not_load"></div>
 
 <?php

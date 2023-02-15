@@ -21,3 +21,4 @@ require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticSearch.php' );
 require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticEmotions.php' );
 require_once( CRITIC_MATIC_PLUGIN_DIR . 'SearchFacets.php' );
 require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticFront.php' );
+!class_exists('CustomHooks') ? include ABSPATH . "wp-content/plugins/critic_matic/CustomHooks.php" : '';

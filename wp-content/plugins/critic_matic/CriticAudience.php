@@ -55,7 +55,7 @@ class CriticAudience extends AbstractDb {
         'lgbtq' => array(
             'img' => '06_queer',
             'class' => 'LGBTQ',
-            'title' => 'Gay S**t'),
+            'title' => 'Gay Stuff'),
         'god' => array(
             'img' => '07_cliche_not_brave',
             'class' => 'GOD',

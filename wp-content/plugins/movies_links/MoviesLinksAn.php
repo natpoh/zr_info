@@ -250,12 +250,14 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
 
             // Update post            
             $this->sync_update_data($data, $exist->id, $this->db['erating'], true, 10);
+            CustomHooks::do_action('add_erating', ['mid'=>$mid,'data'=>$data]);
         } else {
             // Add post            
             $data['movie_id'] = $mid;
             $data['date'] = $data['last_upd'];
 
             $this->sync_insert_data($data, $this->db['erating'], false, true, 10);
+            CustomHooks::do_action('add_erating', ['mid'=>$mid,'data'=>$data]);
         }
     }
 
