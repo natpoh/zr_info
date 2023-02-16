@@ -37,7 +37,7 @@ class MoviesCustomHooksCron {
             $last_run_id = 0;
         }
         if ($debug) {
-            print_r("Last run post id: " . $last_run_id);
+            print_r("Last run post id: " . $last_run_id."\n");
         }
 
         // 3. Get posts        
