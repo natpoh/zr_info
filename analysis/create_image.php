@@ -247,12 +247,39 @@ if (!file_exists($imgsource)) {
 
 if ($originalimg==1)
 {
+
     if (!file_exists($imgsource)) {
-        $imgsource= $noimage_src;
+
+        $sql = "SELECT * FROM `data_actors_meta` where actor_id =" . $id . " ";
+        $row = Pdo_an::db_results_array($sql);
+
+        foreach ($row as $r) {
+
+            if ($r['gender']) $gender = $r['gender'];
+
+            if ($gender==2)
+            {
+                $img = 'empty_m.jpg';
+            }
+            else if ($gender==1)
+            {
+                $img = 'empty_f.jpg';
+            }
+
+        }
+
+        if (!$gender)
+        {
+            $img = 'empty.jpg';
+        }
+
+
+        $imgsource=  $_SERVER['DOCUMENT_ROOT'].'/analysis/images/'.$img;
     }
 
     $result = file_get_contents($imgsource);
     echo $result;
+    return;
 }
 
 
@@ -443,7 +470,7 @@ if ($img_gender)
 
 
 
-imagejpeg($imagebig, $filename_ex);
+//imagejpeg($imagebig, $filename_ex);
 
 
 

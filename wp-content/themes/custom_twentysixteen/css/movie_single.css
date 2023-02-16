@@ -1097,8 +1097,12 @@ body.theme_dark  .add_pg_rating_button.button_edit {
     color: #000000;
     font-size: 20px;
     margin-top: 5px;
+    text-align: center;
 }
-
+.nte_cnt .adtor_r_data
+{
+    margin-bottom: 15px;
+}
 
  .theme_dark .adtor_r_data {
 
