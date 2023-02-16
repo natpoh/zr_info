@@ -8,7 +8,7 @@
 class Forebears extends MoviesAbstractDBAn {
 
     private $ml = '';
-    public $sort_pages = array('id', 'lastname', 'topcountryname');
+    public $sort_pages = array('id', 'lastname', 'topcountryname', 'topcountryrank');
     public $country_names = array(
         'Africa' => 'Central African Republic',
         'Asia' => 'Kazakhstan',
@@ -177,7 +177,7 @@ class Forebears extends MoviesAbstractDBAn {
 
             if (!$name_exist) {
                 // Add meta for non-exist names
-                
+
                 if ($country_meta) {
                     foreach ($country_meta as $item) {
                         // Get country
@@ -235,9 +235,10 @@ class Forebears extends MoviesAbstractDBAn {
 
 
 
-        $query = "SELECT l.id, l.lastname, c.country as topcountryname"
+        $query = "SELECT l.id, l.lastname, c.country as topcountryname, cr.country as topcountryrank"
                 . " FROM {$this->db['lastnames']} l"
                 . " INNER JOIN {$this->db['country']} c ON c.id=l.topcountry"
+                . " LEFT JOIN {$this->db['country']} cr ON cr.id=l.topcountry_rank"
                 . $and_orderby . $limit;
 
 
@@ -421,6 +422,64 @@ class Forebears extends MoviesAbstractDBAn {
                     $rows_total[] = $country . ': ' . $country_count . '<br /> - simpson: ' . $races_arr['simpson'];
                 }
             }
+            arsort($race_total);
+
+            $verdict = array_keys($race_total)[0];
+            $total_str = array();
+            foreach ($race_total as $race => $cnt) {
+                $total_str[] = $race . ': ' . $cnt;
+            }
+            $rows_total[] = 'Total: ' . $total;
+            $rows_race[] = 'Total: ' . implode(', ', $total_str);
+        }
+
+
+        return array(
+            'rows_total' => $rows_total,
+            'rows_race' => $rows_race,
+            'rows_race_arr' => $rows_race_arr,
+            'rows_total_arr' => $rows_total_arr,
+            'verdict' => $verdict,
+        );
+    }
+
+    public function calculate_top_verdict($item = '') {
+
+        $race_total = array();
+        $rows_total = array();
+        $rows_race = array();
+        $rows_total_arr = array();
+        $rows_race_arr = array();
+        $total = 0;
+        $verdict = 0;
+
+        $country = $item->topcountryrank;
+        $country_count = 100;
+
+        $races_arr = array();
+        if ($country) {
+            $races_arr = $this->get_country_races($country, $country_count, false);
+        }
+        if ($races_arr) {
+            $race_str = array();
+            $race_str_arr = array();
+            $cca2 = $races_arr['cca2'];
+            foreach ($races_arr['races'] as $race => $count) {
+                if ($count > 0) {
+                    $race_str[] = $race . ": " . $count;
+                    $race_small = $this->race_small[$race];
+                    $race_str_arr[$race_small] = $count;
+                    $race_total[$race] += $count;
+                }
+            }
+            $rows_race[] = $races_arr['country'] . ': ' . implode(', ', $race_str);
+            $rows_race_arr[$cca2] = $race_str_arr;
+
+            $rows_total_arr[$cca2] = $country_count;
+            $total += $country_count;
+
+            $rows_total[] = $country . ': ' . $country_count . '<br /> - simpson: ' . $races_arr['simpson'];
+
             arsort($race_total);
 
             $verdict = array_keys($race_total)[0];
