@@ -20,7 +20,10 @@ if (sizeof($posts) > 0) {
             <thead>
                 <?php $this->sorted_head('id', 'id', $orderby, $order, $page_url) ?>
                 <?php $this->sorted_head('lastname', 'Lastname', $orderby, $order, $page_url) ?>                                     
-                <?php $this->sorted_head('topcountryname', 'Top country', $orderby, $order, $page_url) ?>                                    
+                <?php $this->sorted_head('topcountryname', 'Top country', $orderby, $order, $page_url) ?>    
+                <?php $this->sorted_head('topcountryrank', 'Top country rank', $orderby, $order, $page_url) ?>  
+            <th><?php print __('Rank races') ?></th>             
+            <th><?php print __('Rank verdict') ?></th>
             <th><?php print __('Countries') ?></th>             
             <th><?php print __('Races') ?></th>             
             <th><?php print __('Verdict') ?></th>
@@ -50,11 +53,19 @@ if (sizeof($posts) > 0) {
                     if ($verdict_meta_item) {
                         $verdict_meta = $mlr->get_verdict_name($verdict_meta_item->verdict);
                     }
+
+                    // Verdict rating country
+                    $top_verdict = $mlr->calculate_top_verdict($item);
+                    $rank_names = implode('<br />', $top_verdict['rows_race']);
+                    $verdict_rank = $top_verdict['verdict'];
                     ?>
                     <tr> 
                         <td><?php print $item->id ?></td>                             
                         <td><?php print $item->lastname ?></td>
                         <td><?php print $item->topcountryname ?></td>
+                        <td><?php print $item->topcountryrank ?></td>  
+                        <td><?php print $rank_names ?></td>  
+                        <td><?php print $verdict_rank; ?></td> 
                         <td><?php print $country_simpson_names ?></td>    
                         <td><?php print $race_names ?></td>  
                         <td><?php print $verdict; ?></td> 
@@ -62,7 +73,7 @@ if (sizeof($posts) > 0) {
                         <td><?php print $verdict_simpson; ?></td>  
                         <td><?php print $verdict_meta; ?></td>
                     </tr> 
-                <?php } ?>
+    <?php } ?>
             </tbody>
         </table>  
     </form>

@@ -126,7 +126,7 @@ function movies_links_plugin_activation() {
      */
     $sql = "ALTER TABLE `movies_links_url` ADD `exp_status` int(11) NOT NULL DEFAULT '0'";
     Pdo_ml::db_query($sql);
-    
+
     $sql = "ALTER TABLE `movies_links_url` ADD `upd_rating` int(11) NOT NULL DEFAULT '0'";
     Pdo_ml::db_query($sql);
 
@@ -170,14 +170,14 @@ function movies_links_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
-   
+
     $sql = "ALTER TABLE `movies_links_posts` ADD `multi` int(11) NOT NULL DEFAULT '0'";
     Pdo_ml::db_query($sql);
-    
+
     $sql = "ALTER TABLE `movies_links_posts` ADD `version` int(11) NOT NULL DEFAULT '0'";
     Pdo_ml::db_query($sql);
 
-    movies_links_create_index(array('version','date', 'last_upd', 'uid', 'status', 'top_movie', 'rating', 'title', 'rel', 'year', 'status_links', 'multi'), 'movies_links_posts');
+    movies_links_create_index(array('version', 'date', 'last_upd', 'uid', 'status', 'top_movie', 'rating', 'title', 'rel', 'year', 'status_links', 'multi'), 'movies_links_posts');
 
     /*
      * Actors names meta
@@ -355,10 +355,14 @@ function movies_links_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
+    
+    $sql = "ALTER TABLE `data_forebears_lastnames` ADD `topcountry_rank` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
     if (function_exists('critic_matic_create_index_an')) {
-        critic_matic_create_index_an(array('lastname', 'topcountry'), 'data_forebears_lastnames');
+        critic_matic_create_index_an(array('lastname', 'topcountry', 'topcountry_rank'), 'data_forebears_lastnames');
     }
-
+    
     $sql = "CREATE TABLE IF NOT EXISTS  `data_forebears_country`(
 				`id` int(11) unsigned NOT NULL auto_increment,                                
                                 `country` varchar(255) NOT NULL default '',                                
@@ -377,6 +381,13 @@ function movies_links_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
+
+
+    $sql = "ALTER TABLE `meta_forebears` ADD `freq` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `meta_forebears` ADD `area_rank` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+
     if (function_exists('critic_matic_create_index_an')) {
         critic_matic_create_index_an(array('nid', 'cid', 'ccount'), 'meta_forebears');
     }
@@ -426,7 +437,7 @@ function movies_links_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
     movies_links_create_index(array('date', 'fdate', 'fpid', 'ftype', 'fblink', 'rating', 'result', 'uid', 'mid', 'status'), 'data_fchan_posts');
-    
+
     $sql = "CREATE TABLE IF NOT EXISTS  `data_fchan_log`(
 				`id` int(11) unsigned NOT NULL auto_increment,                                
                                 `date` int(11) NOT NULL DEFAULT '0',
@@ -442,9 +453,9 @@ function movies_links_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
-    movies_links_create_index(array('date','uid', 'type', 'status'), 'data_fchan_log');
-    
-    
+    movies_links_create_index(array('date', 'uid', 'type', 'status'), 'data_fchan_log');
+
+
     $sql = "CREATE TABLE IF NOT EXISTS  `data_fchan_workers`(
 				`id` int(11) unsigned NOT NULL auto_increment,                                
                                 `date` int(11) NOT NULL DEFAULT '0',                                                                
@@ -452,8 +463,7 @@ function movies_links_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
-    movies_links_create_index(array('date','proxy'), 'data_fchan_workers');
-    
+    movies_links_create_index(array('date', 'proxy'), 'data_fchan_workers');
 }
 
 function movies_links_create_index($names = array(), $table_name = '') {
@@ -474,7 +484,6 @@ function movies_links_create_index($names = array(), $table_name = '') {
         }
     }
 }
-
 
 /*
  * set date to empty date urls

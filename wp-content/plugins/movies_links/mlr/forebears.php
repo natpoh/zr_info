@@ -8,7 +8,7 @@
 class Forebears extends MoviesAbstractDBAn {
 
     private $ml = '';
-    public $sort_pages = array('id', 'lastname', 'topcountryname');
+    public $sort_pages = array('id', 'lastname', 'topcountryname', 'topcountryrank');
     public $country_names = array(
         'Africa' => 'Central African Republic',
         'Asia' => 'Kazakhstan',
@@ -76,7 +76,7 @@ class Forebears extends MoviesAbstractDBAn {
             'actors_imdb' => 'data_actors_imdb',
             'lastnames' => 'data_forebears_lastnames',
             'country' => 'data_forebears_country',
-            'meta_fs' => 'meta_forebears',
+            'meta_fb' => 'meta_forebears',
             'population' => 'data_population_country',
             'verdict' => 'data_forebears_verdict',
         );
@@ -96,6 +96,8 @@ class Forebears extends MoviesAbstractDBAn {
             }
         }
         $topcountry = '';
+        $top_rank = 0;
+        $top_country_rank = '';
         $country = '';
         if ($to_update) {
             $country_meta = array();
@@ -111,8 +113,19 @@ class Forebears extends MoviesAbstractDBAn {
                         if (strstr($value, ', ')) {
                             $val_arr = explode(', ', $value);
                             $c = trim($val_arr[0]);
+                            // incidence
                             $t = (int) trim(str_replace(',', '', $val_arr[1]));
-                            $country_meta[] = array('c' => $c, 't' => $t);
+                            // frequency
+                            $frequency = str_replace('1:', '', $val_arr[2]);
+                            $frequency = (int) trim(str_replace(',', '', $frequency));
+                            //rank
+                            $rank = (int) trim(str_replace(',', '', $val_arr[3]));
+                            if ($top_rank == 0 || $rank < $top_rank) {
+                                $top_rank = $rank;
+                                $top_country_rank = $c;
+                            }
+
+                            $country_meta[] = array('c' => $c, 't' => $t, 'f' => $frequency, 'r' => $rank);
                         }
                     }
                 }
@@ -122,35 +135,78 @@ class Forebears extends MoviesAbstractDBAn {
         $lastname = trim($post->title);
 
         if ($debug) {
-            print_r(array($lastname, $topcountry, $country_meta));
+            print_r(array($lastname, $topcountry, $top_country_rank, $country_meta));
         }
 
         if ($lastname && $topcountry) {
 
-            $lastname_id = $this->get_lastname_id($lastname);
+            // Add name to db
+            $top_country_id = $this->get_or_create_country($topcountry);
 
-            if (!$lastname_id) {
+            $last_name_id = $this->get_lastname_id($lastname);
 
+
+            $top_country_rank_id = 0;
+            if ($top_country_rank) {
+                $top_country_rank_id = $this->get_or_create_country($top_country_rank);
+            }
+
+            $user_data = array(
+                'lastname' => $lastname,
+                'topcountry' => $top_country_id,
+                'topcountry_rank' => $top_country_rank_id,
+            );
+
+            $name_exist = false;
+            if (!$last_name_id) {
+                // Add lastname
+                $this->db_insert($user_data, $this->db['lastnames']);
+                //Get the id
+                $last_name_id = $this->getInsertId('id', $this->db['lastnames']);
                 if ($debug) {
-                    print "Add lastname $lastname\n";
-                }
-
-                // Add name to db
-                $top_country_id = $this->get_or_create_country($topcountry);
-                $last_name_id = $this->create_lastname($lastname, $top_country_id);
-
-                // Add meta
-                if ($country_meta) {
-                    foreach ($country_meta as $item) {
-                        $c = $item['c'];
-                        $t = $item['t'];
-                        $c_id = $this->get_or_create_country($c);
-                        $this->add_country_meta($last_name_id, $c_id, $t);
-                    }
+                    print "Add lastname $last_name_id:$lastname\n";
                 }
             } else {
+                // Update lastname
+                $this->db_update($user_data, $this->db['lastnames'], $last_name_id);
                 if ($debug) {
-                    print "Name already exist, no actions\n";
+                    print "Lastname exist $last_name_id:$lastname\n";
+                }
+                $name_exist = true;
+            }
+
+            if (!$name_exist) {
+                // Add meta for non-exist names
+
+                if ($country_meta) {
+                    foreach ($country_meta as $item) {
+                        // Get country
+                        $c_id = $this->get_or_create_country($item['c']);
+                        $data = array(
+                            'ccount' => (int) $item['t'],
+                            'freq' => (int) $item['f'],
+                            'area_rank' => (int) $item['r'],
+                        );
+                        if ($debug) {
+                            print_r($data);
+                        }
+                        $exist_id = $this->get_country_meta($last_name_id, $c_id);
+
+                        if ($exist_id) {
+                            $this->db_update($data, $this->db['meta_fb'], $exist_id);
+                            if ($debug) {
+                                print_r(array("Update name meta $exist_id\n", $data, $exist_id));
+                            }
+                        } else {
+                            $data['nid'] = (int) $last_name_id;
+                            $data['cid'] = (int) $c_id;
+
+                            $this->db_insert($data, $this->db['meta_fb']);
+                            if ($debug) {
+                                print_r(array("Insert name meta\n", $data));
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -179,9 +235,10 @@ class Forebears extends MoviesAbstractDBAn {
 
 
 
-        $query = "SELECT l.id, l.lastname, c.country as topcountryname"
+        $query = "SELECT l.id, l.lastname, c.country as topcountryname, cr.country as topcountryrank"
                 . " FROM {$this->db['lastnames']} l"
                 . " INNER JOIN {$this->db['country']} c ON c.id=l.topcountry"
+                . " LEFT JOIN {$this->db['country']} cr ON cr.id=l.topcountry_rank"
                 . $and_orderby . $limit;
 
 
@@ -201,17 +258,10 @@ class Forebears extends MoviesAbstractDBAn {
         return $id;
     }
 
-    public function create_lastname($name = '', $country = 0) {
-        $sql = sprintf("INSERT INTO {$this->db['lastnames']} (lastname,topcountry) VALUES ('%s',%d)", $this->escape($name), $country);
-        $this->db_query($sql);
-        //Get the id
-        $id = $this->getInsertId('id', $this->db['lastnames']);
+    public function get_country_meta($last_name_id, $c_id) {
+        $sql = sprintf("SELECT id FROM {$this->db['meta_fb']} WHERE nid=%d AND cid=%d limit 1", $last_name_id, $c_id);
+        $id = $this->db_get_var($sql);
         return $id;
-    }
-
-    public function add_country_meta($last_name_id = 0, $c_id = 0, $t = 0) {
-        $sql = sprintf("INSERT INTO {$this->db['meta_fs']} (nid,cid,ccount) VALUES (%d,%d,%d)", $last_name_id, $c_id, $t);
-        $this->db_query($sql);
     }
 
     public function get_or_create_country($name = '') {
@@ -252,7 +302,7 @@ class Forebears extends MoviesAbstractDBAn {
     }
 
     public function get_countries_by_lasnameid($lastname_id) {
-        $sql = sprintf("SELECT m.ccount, c.country FROM {$this->db['meta_fs']} m"
+        $sql = sprintf("SELECT m.ccount, c.country FROM {$this->db['meta_fb']} m"
                 . " INNER JOIN {$this->db['country']} c ON c.id=m.cid"
                 . " WHERE nid=%d", (int) $lastname_id);
         $results = $this->db_results($sql);
@@ -372,6 +422,64 @@ class Forebears extends MoviesAbstractDBAn {
                     $rows_total[] = $country . ': ' . $country_count . '<br /> - simpson: ' . $races_arr['simpson'];
                 }
             }
+            arsort($race_total);
+
+            $verdict = array_keys($race_total)[0];
+            $total_str = array();
+            foreach ($race_total as $race => $cnt) {
+                $total_str[] = $race . ': ' . $cnt;
+            }
+            $rows_total[] = 'Total: ' . $total;
+            $rows_race[] = 'Total: ' . implode(', ', $total_str);
+        }
+
+
+        return array(
+            'rows_total' => $rows_total,
+            'rows_race' => $rows_race,
+            'rows_race_arr' => $rows_race_arr,
+            'rows_total_arr' => $rows_total_arr,
+            'verdict' => $verdict,
+        );
+    }
+
+    public function calculate_top_verdict($item = '') {
+
+        $race_total = array();
+        $rows_total = array();
+        $rows_race = array();
+        $rows_total_arr = array();
+        $rows_race_arr = array();
+        $total = 0;
+        $verdict = 0;
+
+        $country = $item->topcountryrank;
+        $country_count = 100;
+
+        $races_arr = array();
+        if ($country) {
+            $races_arr = $this->get_country_races($country, $country_count, false);
+        }
+        if ($races_arr) {
+            $race_str = array();
+            $race_str_arr = array();
+            $cca2 = $races_arr['cca2'];
+            foreach ($races_arr['races'] as $race => $count) {
+                if ($count > 0) {
+                    $race_str[] = $race . ": " . $count;
+                    $race_small = $this->race_small[$race];
+                    $race_str_arr[$race_small] = $count;
+                    $race_total[$race] += $count;
+                }
+            }
+            $rows_race[] = $races_arr['country'] . ': ' . implode(', ', $race_str);
+            $rows_race_arr[$cca2] = $race_str_arr;
+
+            $rows_total_arr[$cca2] = $country_count;
+            $total += $country_count;
+
+            $rows_total[] = $country . ': ' . $country_count . '<br /> - simpson: ' . $races_arr['simpson'];
+
             arsort($race_total);
 
             $verdict = array_keys($race_total)[0];
