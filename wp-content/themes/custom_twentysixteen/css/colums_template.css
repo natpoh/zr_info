@@ -2883,8 +2883,16 @@ body.theme_dark  .note_show::after {
     padding: 5px;
     min-width: 80px;
     width: auto;
+    position: relative;
 }
-
+.col_title.star::before {
+    content: "*";
+    position: absolute;
+    color: #ff0000;
+    left: -13px;
+    font-size: 21px;
+    line-height: 32px;
+}
 .rating  .col_title{
     width: 100%;
     font-size: 24px;

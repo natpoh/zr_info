@@ -2391,7 +2391,7 @@ class CriticFront extends SearchFacets {
             <div class="ns_related">
                 <div class="column_header">
                     <h2>NewsFilter.biz</h2>
-                    <h3><a href="<?php print $ns_link ?>"><?php print $movie_data->title ?>"</a></h3>
+                    <h3>"<a href="<?php print $ns_link ?>"><?php print $movie_data->title ?>"</a></h3>
                 </div>                        
                 <?php
                 // Bias facet

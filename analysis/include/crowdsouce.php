@@ -361,7 +361,7 @@ public static function preparename($name)
 
     return $name;
 }
-public static function setcol($name,$b,$desc,$style='',$title='')
+public static function setcol($name,$b,$desc,$style='',$title='',$star='')
 {
 
 
@@ -379,7 +379,7 @@ public static function setcol($name,$b,$desc,$style='',$title='')
     }
     else
     {
-     $col_title=   '<div class="col_title">'.$name.'</div>';
+     $col_title=   '<div class="col_title '.$star.'">'.$name.'</div>';
     }
 
     $col='<div class="row '.$style.'">'.$col_title.'<div class="col_input">'.$b.'<div class="col_desc">'.$desc.'</div></div></div>';
@@ -465,6 +465,7 @@ public static function front($datatype, $array_rows, $array_user = [], $id = '',
 
                 $type = $value['type'];
                 $desc = $value['desc'];
+                $star = $value['star'];
 
 
                 if ($type == 'checkbox') {
@@ -518,7 +519,7 @@ public static function front($datatype, $array_rows, $array_user = [], $id = '',
                     }
 
 
-                    $content.= self::setcol($name,$option,$desc,$style,$title);
+                    $content.= self::setcol($name,$option,$desc,$style,$title,$star);
 
                 }
               if ($type=='select')
@@ -546,7 +547,7 @@ public static function front($datatype, $array_rows, $array_user = [], $id = '',
                       $style = $style.$ptcls;
                   }
 
-                  $content.= self::setcol($name,$select,$desc,$style,$title);
+                  $content.= self::setcol($name,$select,$desc,$style,$title,$star);
               }
                 if ($type=='textarea')
                 {
@@ -556,7 +557,7 @@ public static function front($datatype, $array_rows, $array_user = [], $id = '',
                        $textval= $array_value[$name];
                     }
                     $textarea = '<textarea data-id="' . $name . '"  class="'.$name.'"  placeholder="'.$value['placeholer'].'">'.$textval.'</textarea>';
-                    $content.= self::setcol($name,$textarea,$desc,$style,$title);
+                    $content.= self::setcol($name,$textarea,$desc,$style,$title,$star);
                 }
                 if ($type=='input')
                 {
@@ -567,7 +568,7 @@ public static function front($datatype, $array_rows, $array_user = [], $id = '',
                     }
 
                     $textarea = '<input data-id="' . $name . '" class="' . $name . $class . '" value="' . $textval . '" placeholder="' . $value['placeholer'] . '" >';
-                    $content .= self::setcol($name, $textarea, $desc, $style, $title);
+                    $content .= self::setcol($name, $textarea, $desc, $style, $title,$star);
                 }
                 if ($type=='disabled')
                 {
@@ -578,7 +579,7 @@ public static function front($datatype, $array_rows, $array_user = [], $id = '',
                     }
 
                     $textarea = '<input data-id="' . $name . '" class="' . $name . $class . '" value="' . $textval . '" disabled="disabled" placeholder="' . $value['placeholer'] . '" >';
-                    $content .= self::setcol($name, $textarea, $desc, $style, $title);
+                    $content .= self::setcol($name, $textarea, $desc, $style, $title,$star);
                 }
                 if ($type=='hidden')
                 {
@@ -601,7 +602,7 @@ public static function front($datatype, $array_rows, $array_user = [], $id = '',
                     }
 
                     $textarea = '<div data-id="' . $name . '" class="' . $name . $class . ' input_content" >'.$textval.'</div>';
-                    $content .= self::setcol($name, $textarea, $desc, $style, $title);
+                    $content .= self::setcol($name, $textarea, $desc, $style, $title,$star);
                 }
 
             }

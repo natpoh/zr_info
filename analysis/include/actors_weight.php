@@ -58,7 +58,7 @@ private static function get_ctable($result)
 
     $ptype = $af->race_type_calc[$result['type_calc']];
 
-    $ctable =  '<p>Calculate type: <b>' . $ptype['title'] . '</b></p>';
+    $ctable =  '<p>Calculation type: <b>' . $ptype['title'] . '</b></p>';
     $filter_titles = array();
     $filter_races = array();
     foreach ($af->race_data_setup as $k => $v) {

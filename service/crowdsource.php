@@ -778,8 +778,8 @@ if (isset($_POST['oper'])) {
 
 
         $array_rows = array(
-            'gender' => array('type' => 'select', 'options' => array('0' => 'Not selected', 'm' => 'Male', 'f' => 'Female')),
-            'verdict' => array('type' => 'select', 'options' => $array_result),
+            'gender' => array('type' => 'select', 'options' => array('0' => 'Not selected', 'm' => 'Male', 'f' => 'Female'),'star'=>'star'),
+            'verdict' => array('type' => 'select', 'star'=>'star' ,'options' => $array_result),
             'comment' => array('type' => 'textarea'),
             'image' => array('type' => 'input', 'placeholer' => 'www.actor.jpg', 'desc' => 'If the cast member image is missing or poor quality, you can suggest another here.'),
             'link' => array('type' => 'input', 'placeholer' => 'www.wikipedia.org/actor_link', 'desc' => 'Cite your source(s) here if you have them.'),
