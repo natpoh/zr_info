@@ -398,7 +398,7 @@ check_request();
 <tr><td>Actor names</td><td>' . $total_actors_null_names . '</td>'.$total_actors_null_names_filled.'<td></td></tr>
 
 
-<tr><td>Actor ethnicolr surname</td><td>' . $total_data_actors_ethnicolr . '</td>'.$total_data_actors_ethnicolr_filled.'<td></td></tr>
+<tr><td>Actor ethnicolr</td><td>' . $total_data_actors_ethnicolr . '</td>'.$total_data_actors_ethnicolr_filled.'<td></td></tr>
 <tr><td>Actor surname</td><td>' . $total_actors_meta_surname . '</td>'.$total_actors_meta_surname_filled.'<td></td></tr>
 
 

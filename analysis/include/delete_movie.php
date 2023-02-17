@@ -71,10 +71,11 @@ class DeleteMovie{
         if ($debug) {
             echo 'try delete actor ' . $id . '<br>';
         }
-            self::delete_table($id,'actor_id','data_actors_meta ',$sync);
-            self::delete_table($id,'id','data_actors_imdb ',$sync);
-
-
+            self::delete_table($id,'actor_id','data_actors_meta',$sync);
+            self::delete_table($id,'id','data_actors_imdb',$sync);
+            self::delete_table($id,'aid','data_actors_ethnicolr',$sync);
+            self::delete_table($id,'actor_id','data_actors_face',$sync);
+            self::delete_table($id,'actor_id','data_actors_face',$sync);
 
     }
 
