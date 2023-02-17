@@ -86,6 +86,14 @@ function fix_all_directors($movie_id=0)
             {
                 break;
             }
+
+
+            if (check_cron_time())
+            {
+            break;
+            }
+
+
         }
 
 
@@ -207,6 +215,25 @@ function get_similar($id)
     echo SimilarMovies::get_movies($id);
 }
 
+
+
+
+function check_cron_time()
+{
+    $result = '';
+    if (class_exists('Cronjob'))
+    {
+        global $cron;
+        if ($cron)
+        {
+            $last_time = $cron->check_time();
+            $result =$last_time['result'];
+
+        }
+    }
+    return $result;
+}
+
 function sync_tables($table='')
 {
     if ($table)
@@ -225,7 +252,10 @@ function sync_tables($table='')
 foreach ($array_tables as $table=>$limit)
 {
 
+    if (check_cron_time())break;
+
     Import::sync_db($table,$limit);
+
 }
 
 
@@ -1449,6 +1479,11 @@ function check_last_actors()
     }
     echo 'check actor gender (' . $i . ')' . PHP_EOL;
 
+    if (check_cron_time())
+    {
+        commit_actors($commit_actors);
+        return;
+    }
 
     //check actor gender auto
     $sql = "SELECT data_actor_gender_auto.actor_id,  data_actor_gender_auto.gender 	  FROM `data_actor_gender_auto`
@@ -1480,7 +1515,11 @@ function check_last_actors()
     echo 'check actor gender auto (' . $i . ')' . PHP_EOL;
 
 
-
+    if (check_cron_time())
+    {
+        commit_actors($commit_actors);
+        return;
+    }
 
 
     $array_min = array('Asian' => 'EA', 'White' => 'W', 'Latino' => 'H', 'Black' => 'B', 'Arab' => 'M', 'Dark Asian' => 'I',
@@ -1548,8 +1587,13 @@ function check_last_actors()
 
 
 
-
+    if (check_cron_time())
+    {
+        commit_actors($commit_actors);
+        return;
+    }
     //////check actors surname
+
 
 
     check_verdict_surname();
@@ -1588,6 +1632,11 @@ function check_last_actors()
         }
     }
 
+    if (check_cron_time())
+    {
+        commit_actors($commit_actors);
+        return;
+    }
 
     echo 'check actor face (' . $i . ')' . PHP_EOL;
 
@@ -1672,6 +1721,14 @@ function check_last_actors()
     echo 'check actor kairos tmdb (' . $i . ')' . PHP_EOL;
 
 
+
+
+    if (check_cron_time())
+    {
+        commit_actors($commit_actors);
+        return;
+    }
+
     $i = 0;
     ////check actor ethnic
     ///
@@ -1707,16 +1764,16 @@ function check_last_actors()
 
     }
     echo 'check actor ethnic (' . $i . ')' . PHP_EOL;
+
+
     $i = 0;
 
+    commit_actors($commit_actors);
 
+}
 
-
-
-
-
-
-
+function commit_actors($commit_actors)
+{
 
     if ( $commit_actors)
     {
@@ -1724,12 +1781,12 @@ function check_last_actors()
 
         foreach ($commit_actors as $actor_id=>$enable)
         {
-         Import::create_commit('', 'update', 'data_actors_meta', array('actor_id' => $actor_id), 'actor_meta',3,['skip'=>['id']]);
+            Import::create_commit('', 'update', 'data_actors_meta', array('actor_id' => $actor_id), 'actor_meta',3,['skip'=>['id']]);
 
         }
     }
-}
 
+}
 
 function force_surname_update()
 {

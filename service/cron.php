@@ -86,6 +86,7 @@ class Cronjob
     public $max_time=300; //sec run process
     public $timestart=0;
 
+
     public function __construct()
     {
 
@@ -111,7 +112,10 @@ class Cronjob
 
     public function timer_start()
     {
+        if (!$this->timestart)
+        {
           $this->timestart = microtime(1);
+        }
     }
 
 
@@ -212,6 +216,8 @@ class Cronjob
 
     public   function run($array_jobs,$only_info = 0)
     {
+
+
 
 
         $run_cron = $this->get_cron_options('run_cron');
@@ -352,6 +358,15 @@ class Cronjob
 
     }
 
+    public function check_time()
+    {
+
+        if ($this->timer_stop() > $this->max_time) {
+            return array('result'=>1,'curtime'=>$this->timer_stop(),'maxtime'=> $this->max_time);
+        }
+        return array('result'=>0,'curtime'=>$this->timer_stop(),'maxtime'=> $this->max_time);
+    }
+
 
     public   function run_function($name,$period)
     {
@@ -414,6 +429,7 @@ if (isset($_GET['runjob']))
 {
 
     $cron = new Cronjob;
+    $cron->timer_start();
     $cron->run_function($_GET['runjob'], 1);
 }
     if (isset($_GET['runcron']))
@@ -436,7 +452,9 @@ if (isset($_GET['runjob']))
                 return;
             }
 
+            global $cron;
             $cron = new Cronjob;
+
             $cron->run($array_jobs);
 
 
