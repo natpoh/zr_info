@@ -1733,28 +1733,30 @@ function check_last_actors()
 
 function force_surname_update()
 {
-    return;
-//
-//    set_time_limit(0);
-//    echo 'check actors surname <br>'.PHP_EOL;
-//    //////check actors surname
-//    $i = 0;
-//    $sql = "SELECT data_actors_surname.wiki_data, `data_actors_surname`.actor_id FROM data_actors_surname";
-//    $result= Pdo_an::db_results_array($sql);
-//    $count = count($result);
-//    foreach ($result as $r) {
-//
-//        $meta_result = get_actor_result($r['wiki_data']);
-//        $i++;
-//
-//        if ($meta_result) {
-//
-//            $sql1 = "UPDATE `data_actors_meta` SET `surname` = '" . $meta_result . "'  ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
-//            Pdo_an::db_query($sql1);
-//            update_actors_verdict($r['actor_id'],1);
-//        }
-//        echo $r['actor_id']. ' '.$meta_result. ' (' . $i . ' / '.$count.') <br>' . PHP_EOL;
-//    }
+
+
+    set_time_limit(0);
+    echo 'check actors surname <br>'.PHP_EOL;
+    //////check actors surname
+    $i = 0;
+    $sql = "SELECT data_actors_meta.id, data_actors_meta.actor_id, data_actors_meta.surname, data_actors_ethnicolr.* from data_actors_meta, data_actors_ethnicolr where data_actors_meta.actor_id =data_actors_ethnicolr.aid and  data_actors_meta.surname IS NOT NULL and	data_actors_ethnicolr.firstname='' and data_actors_ethnicolr.verdict!='' and data_actors_meta.id>1 limit 10000 ";
+    $result= Pdo_an::db_results_array($sql);
+    $count = count($result);
+    foreach ($result as $r) {
+
+        $id= get_actor_result($r['id']);
+        $i++;
+
+        if ($id) {
+
+            $sql1 = "UPDATE `data_actors_meta` SET `surname` = 'NULL' ,`n_surname`=0 ,`last_update` = ".time()."  WHERE `data_actors_meta`.`id` = '" .$id . "'";
+            Pdo_an::db_query($sql1);
+            update_actors_verdict($r['actor_id'],1);
+
+
+        }
+        echo $r['actor_id']. '  (' . $i . ' / '.$count.') <br>' . PHP_EOL;
+    }
 
 
 }
