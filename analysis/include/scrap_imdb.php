@@ -1191,7 +1191,7 @@ function addto_db_actors($actor_id, $array_result, $update = 0)
             if ($name)
             {
                 !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
-                ACTIONLOG::update_actor_log('image');
+                ACTIONLOG::update_actor_log('image','data_actors_imdb',$actor_id);
 
             }
 
@@ -1208,7 +1208,7 @@ function addto_db_actors($actor_id, $array_result, $update = 0)
     if ($name)
     {
         !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
-        ACTIONLOG::update_actor_log('name');
+        ACTIONLOG::update_actor_log('name','data_actors_imdb',$actor_id);
 
     }
 
@@ -1440,7 +1440,7 @@ function check_last_actors()
        /// echo $sql1.'<br>';
 
         Pdo_an::db_query($sql1);
-        ACTIONLOG::update_actor_log('gender');
+        ACTIONLOG::update_actor_log('gender','data_actors_meta',$r['actor_id']);
     }
     echo 'check actor gender (' . $i . ')' . PHP_EOL;
 
@@ -1468,7 +1468,7 @@ function check_last_actors()
         /// echo $sql1.'<br>';
 
         Pdo_an::db_query($sql1);
-        ACTIONLOG::update_actor_log('gender');
+        ACTIONLOG::update_actor_log('gender','data_actors_meta',$r['actor_id'] );
 
         $commit_actors[$r['actor_id']]=1;
     }
@@ -1535,7 +1535,7 @@ function check_last_actors()
         $sql1 = "INSERT INTO `data_actors_meta` (`id`, `actor_id`)  VALUES (NULL, '" . $r['id'] . "')";
         Pdo_an::db_query($sql1);
 
-        ACTIONLOG::update_actor_log('data_actors_meta');
+        ACTIONLOG::update_actor_log('data_actors_meta','data_actors_meta',$r['id']);
         $commit_actors[$r['id']]=1;
     }
     echo 'check actors meta (' . $i . ')' . PHP_EOL;
@@ -1609,7 +1609,7 @@ function check_last_actors()
 
 
             update_actors_verdict($r['actor_id']);
-            ACTIONLOG::update_actor_log('bettaface');
+            ACTIONLOG::update_actor_log('bettaface','data_actors_meta',$r['actor_id']);
             $commit_actors[$r['actor_id']]=1;
         }
     }
@@ -1618,7 +1618,7 @@ function check_last_actors()
     echo 'check actor face (' . $i . ')' . PHP_EOL;
 
     $i = 0;
-    ////check actor kairos tmdb
+    ////check actor kairos imdb
 
     $sql = "SELECT data_actors_race.actor_id , data_actors_race.kairos_verdict  FROM `data_actors_race` LEFT JOIN data_actors_meta ON data_actors_race.actor_id=data_actors_meta.actor_id
         WHERE data_actors_meta.kairos IS NULL and data_actors_meta.actor_id >0 and  data_actors_race.kairos_verdict !='' limit 300";
@@ -1632,7 +1632,7 @@ function check_last_actors()
         `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
         Pdo_an::db_query($sql1);
         update_actors_verdict($r['actor_id']);
-        ACTIONLOG::update_actor_log('kairos');
+        ACTIONLOG::update_actor_log('kairos','data_actors_race',$r['actor_id'] );
 
         $commit_actors[$r['actor_id']]=1;
     }
@@ -1665,7 +1665,7 @@ function check_last_actors()
 
         Pdo_an::db_query($sql1);
         update_actors_verdict($r['actor_id']);
-        ACTIONLOG::update_actor_log('kairos');
+        ACTIONLOG::update_actor_log('kairos','data_actors_crowd_race',$r['actor_id']);
 
         $commit_actors[$r['actor_id']]=1;
     }
@@ -1691,7 +1691,7 @@ function check_last_actors()
         `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
         Pdo_an::db_query($sql1);
         update_actors_verdict($r['actor_id']);
-        ACTIONLOG::update_actor_log('kairos');
+        ACTIONLOG::update_actor_log('kairos','data_actors_tmdb_race',$r['actor_id']);
 
         $commit_actors[$r['actor_id']]=1;
     }
@@ -3252,6 +3252,8 @@ return;
 
 }
 if (isset($_GET['delete_new_movies'])) {
+    return;
+
     !class_exists('DeleteMovie') ? include ABSPATH . "analysis/include/delete_movie.php" : '';
     $start_time = time()-86400*2;
     $end_time = time()-3600*4;

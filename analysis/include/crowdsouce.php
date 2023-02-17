@@ -890,7 +890,7 @@ var first_run = 0;
             });
         }
 
-        else if (data_type =='actors_crowd') {
+        else if (data_type =='actors_crowd' || data_type =='actors_log') {
             /// console.log(actor_id);
             ///jQuery('#'+subgrid_id).html('<img src="create_image.php?id='+actor_id+'&nocache=1" />');
             jQuery.ajax({

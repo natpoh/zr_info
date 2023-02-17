@@ -207,7 +207,120 @@ $ublock='';
     }
 
 
+public function graph()
+{
 
+    ?>
+    <p>Period <select autocomplete="off" class="graph_period">
+    <option value="1">1 hour</option>
+    <option value="6">6 hour</option>
+    <option selected="selected" value="24">24 hour</option>
+    <option  value="168">7 days</option>
+    <option  value="680">30 days</option>
+    </select></p>
+    <div id="container_commit_graph" class="commit_graph"></div>
+    <script type="text/javascript" src="https://code.highcharts.com/highcharts.js"></script>
+    <script type="text/javascript">
+
+function create_Highcharts(data, block)
+{
+
+  ///   console.log(data);
+
+    if (typeof Highcharts !== 'undefined') {
+
+        if (data)
+        {
+            data = JSON.parse(data);
+            var data_series = data['series'];
+
+          //  console.log(data_series);
+
+           // var data_series_cast = data['cast'];
+        }
+        if (data)
+        {
+            Highcharts.chart('container_' + block, {
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false,
+                    type: 'spline'
+                },
+                title: {
+                    text:  data['title']
+                },
+
+                plotOptions: {
+                    series: {
+                        grouping: false,
+                        borderWidth: 0
+                    }
+                },
+                legend: {
+                    enabled: true
+                },
+
+                xAxis: {
+                     type: 'datetime',
+                    },
+                yAxis: [{
+                        title: {
+                            text: 'Total'
+                        },
+                        showFirstLabel: false
+                    }],
+                series:  data_series
+            });
+        }
+    }
+}
+
+  function check_request()
+{
+
+   var data = jQuery("#jqGrid").jqGrid("getGridParam", "postData");
+    data.period = jQuery('.graph_period').val();
+
+    data.oper='get_log_data';
+
+    ///get graph data
+                jQuery.ajax({
+                type: "POST",
+                url: "<?php echo site_url() ?>/analysis/include/action_log.php",
+
+                data: data,
+                success: function (html) {
+                   // console.log(html);
+                    ///jQuery('.commit_graph').html(html);
+                    create_Highcharts(html, 'commit_graph')
+                }
+            });
+
+
+
+}
+
+  jQuery(document).ready(function () {
+
+
+
+
+jQuery('body').on('change','.graph_period, .graph_type, .graph_time',function ()
+{
+check_request();
+
+});
+
+
+  });
+
+</script>
+
+
+    <?php
+
+}
 
 
     public function actors_info()
@@ -299,9 +412,34 @@ $ublock='';
 <tr><td>Actor verdict</td><td>' . $total_actors_meta_verdict . '</td>'.$total_actors_meta_verdict_filled.'<td></td></tr>
 
 
-</tbody></table>
+</tbody></table>';
 
-<style type="text/css">
+$groop = ACTIONLOG::$array;
+       foreach ($groop as $i=>$v)
+       {
+           $option.= ';'.$v.':'.$i;
+
+       }
+        $option = substr($option,1);
+
+        $array_rows = array(
+            'id'=>array('w'=>10),
+            'type' => array('type'=>'select','options'=>$option),
+            'result' => array('type'=>'select','options'=>'0:error;1:Complete'),
+            'table' => array('w'=>20, 'type' => 'textarea'),
+            'actor_id' => array('w'=>15, 'type' => 'textarea'),
+            'last_update' => array('w'=>10, 'type' => 'textarea')
+        );
+
+        !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
+
+  $this->graph();
+
+        Crowdsource::Show_admin_table('actors_log',$array_rows,1,'meta_actors_log','',1,0);
+
+
+
+echo '<style type="text/css">
 .percent_container {
     width: 100%;
     background-color: #ddd;

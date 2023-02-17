@@ -89,7 +89,7 @@ class TMDB
 
 
 
-                ACTIONLOG::update_actor_log('tmdb_add_imdbid');
+                ACTIONLOG::update_actor_log('tmdb_add_imdbid','data_actors_tmdb',$actor_imdb);
             }
 
 
@@ -1039,8 +1039,8 @@ public static function add_movie_actor($mid = 0, $id = 0, $type = 0,$table='meta
                 //echo 'Meta not exist';
 
                 ///add log
-                !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
-                ACTIONLOG::update_actor_log('new_actors');
+
+
 
                $sql = sprintf("INSERT INTO {$table} (mid,aid,pos,type) VALUES (%d,%d,%d,%d)", (int) $mid, (int) $id, (int) $pos, (int) $type);
 
@@ -1048,6 +1048,8 @@ public static function add_movie_actor($mid = 0, $id = 0, $type = 0,$table='meta
                 Pdo_an::db_query($sql);
                 $aid = Pdo_an::last_id();
 
+                !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
+                ACTIONLOG::update_actor_log('new_actors',$table,$aid);
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
 
                 $array_custom =array('skip'=>['id']);

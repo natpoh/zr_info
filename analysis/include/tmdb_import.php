@@ -229,7 +229,7 @@ class TMDBIMPORT
                         // echo $sql;
                         Pdo_an::db_query($sql);
                         !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
-                        ACTIONLOG::update_actor_log('tmdb_add_imdbid');
+                        ACTIONLOG::update_actor_log('tmdb_add_imdbid','data_actors_tmdb',$actor_imdb);
 
                     }
 
@@ -526,9 +526,9 @@ class TMDBIMPORT
 
             Pdo_an::db_query($sql1);
 
-            ACTIONLOG::update_actor_log('tmdb_id');
-            if ($image_add)ACTIONLOG::update_actor_log('tmdb_image');
-        if ($gender) ACTIONLOG::update_actor_log('gender');
+            ACTIONLOG::update_actor_log('tmdb_id','data_actors_meta',$imdb_id);
+            if ($image_add)ACTIONLOG::update_actor_log('tmdb_image','data_actors_meta',$imdb_id);
+        if ($gender) ACTIONLOG::update_actor_log('gender','data_actors_meta',$imdb_id);
 
         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
         Import::create_commit('', 'update', 'data_actors_meta', array('id' => $id), 'movie_meta_actor',6);
