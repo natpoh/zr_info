@@ -220,9 +220,11 @@ function start_cron_time($time)
     !class_exists('Cronjob') ? include ABSPATH . "service/cron.php" : '';
     global $cron;
     $cron = new Cronjob();
-    $cron->timer_start(10);
+    $cron->timer_start($time);
 
 }
+
+
 function check_cron_time()
 {
     $result = '';
