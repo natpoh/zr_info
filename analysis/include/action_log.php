@@ -26,20 +26,34 @@ class ACTIONLOG
      Pdo_an::db_query($sql);
     }
 
-    public static function get_last_data($db)
+    public static function get_last_data($db,$custom='',$index='')
     {
     $time =time()-86400;
     $timew =time()-86400*7;
 
     $type = static::$array[$db];
 
-    $sql="SELECT COUNT(*) as count FROM `meta_actors_log` where `last_update` >".$time." and `type` = ".$type;
+    if ($custom)
+    {
+        $sql="SELECT COUNT(*) as count FROM `".$db."` where `$index` >".$time ;
+    }
+    else
+    {
+        $sql="SELECT COUNT(*) as count FROM `meta_actors_log` where `last_update` >".$time." and `type` = ".$type;
+    }
+
+
 
     $row = Pdo_an::db_fetch_row($sql);
     $daily = $row->count;
 
-
-        $sql="SELECT COUNT(*) as count FROM `meta_actors_log` where `last_update` >".$timew." and `type` = ".$type;
+        if ($custom)
+        {
+            $sql="SELECT COUNT(*) as count FROM `".$db."` where `$index` >".$timew ;
+        }
+        else {
+            $sql = "SELECT COUNT(*) as count FROM `meta_actors_log` where `last_update` >" . $timew . " and `type` = " . $type;
+        }
 
         $row = Pdo_an::db_fetch_row($sql);
         $week = $row->count;

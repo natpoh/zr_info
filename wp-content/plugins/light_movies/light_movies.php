@@ -172,13 +172,13 @@ $this->set_option('',$_POST['similar_shows'],'similar_shows');
     }
 
 
-    public function get_filled($total_actors,$total_actors_meta,$db='')
+    public function get_filled($total_actors,$total_actors_meta,$db='',$custom='',$index='')
     {
 
         $wblock='';
         if ($db)
             {
-             $array_update =   ACTIONLOG::get_last_data($db);
+             $array_update =   ACTIONLOG::get_last_data($db,$custom,$index);
 
 $ublock='';
 
@@ -338,6 +338,9 @@ check_request();
        $total_actors_null_names = self::get_data_count_an('data_actors_imdb',"WHERE `name`!= '' ");
        $total_actors_null_names_filled = self::get_filled($total_actors,$total_actors_null_names,'name');
 
+       $total_data_actors_ethnicolr = self::get_data_count_an('data_actors_ethnicolr');
+       $total_data_actors_ethnicolr_filled = self::get_filled($total_actors,$total_data_actors_ethnicolr,'data_actors_ethnicolr',1,'date_upd');
+
        $total_actors_meta_surname = self::get_data_count_an('data_actors_meta',"WHERE `surname` IS NOT NULL");
        $total_actors_meta_surname_filled = self::get_filled($total_actors,$total_actors_meta_surname,'');
 
@@ -389,7 +392,13 @@ check_request();
 <tr><td>Empty Actors</td><td>' . $total_empty_actors . '</td>'.$total_actors_filled.'<td></td></tr>
 
 
+
+
+
 <tr><td>Actor names</td><td>' . $total_actors_null_names . '</td>'.$total_actors_null_names_filled.'<td></td></tr>
+
+
+<tr><td>Actor ethnicolr surname</td><td>' . $total_data_actors_ethnicolr . '</td>'.$total_data_actors_ethnicolr_filled.'<td></td></tr>
 <tr><td>Actor surname</td><td>' . $total_actors_meta_surname . '</td>'.$total_actors_meta_surname_filled.'<td></td></tr>
 
 
