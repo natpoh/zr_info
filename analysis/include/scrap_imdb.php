@@ -1349,28 +1349,40 @@ function add_empty_actors($id='')
         $where=" lastupdate = '0' ";
     }
 
-    $sql = "SELECT id FROM `data_actors_imdb` where  ".$where."   order by id asc limit 200";
-    ///echo $sql.PHP_EOL;
-    $result= Pdo_an::db_results_array($sql);
 
-    $i = 0;
-    foreach ($result as $r) {
-        $i++;
-        $id = $r['id'];
+    !class_exists('Cronjob') ? include ABSPATH . "service/cron.php" : '';
+    $cron = new Cronjob();
 
-        echo 'try add actor ' . $id . PHP_EOL;
+    $cron->timer_start();
 
-        $result = add_actors_to_db($id, 1);
+    $max_time=50;
 
-        ///  set_option(8, $r['id']);
+    for ($i=0; $i<=30;$i++)
+    {
+
+        if ($cron->timer_stop() < $max_time) {
 
 
+            $sql = "SELECT id FROM `data_actors_imdb` where  ".$where."   order by id asc limit 1";
+            ///echo $sql.PHP_EOL;
+            $result= Pdo_an::db_results_array($sql);
+
+            foreach ($result as $r) {
+                $id = $r['id'];
+                echo 'try add actor ' . $id . PHP_EOL;
+                $result = add_actors_to_db($id, 1);
+            }
+
+
+
+        } else {
+            echo '<br>Ended max time > ' . $max_time . ' total: '.$i.'<br>' . PHP_EOL;
+            break;
+
+        }
+
+        sleep(1);
     }
-
-
-    echo 'check_last_actors (' . $i . ') ' . PHP_EOL;
-
-
 }
 
 function add_noname_actors()

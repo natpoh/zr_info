@@ -115,7 +115,7 @@ class Cronjob
     }
 
 
-    private function timer_stop( $precision = 3)
+    public function timer_stop( $precision = 3)
     {
 
         $mtime = microtime(1);
