@@ -31,7 +31,7 @@ $array_jobs = array(
 'disqus_comments'=>30, ///disquss count comments
 
 'download_crowd_images'=>60,///load image to server from crowdsource status 1
-'update_actors_verdict'=>30,///update verdict actors
+'update_actors_verdict'=>120,///update verdict actors
 
 'check_face'=>120,///add bettaface verdict
 
@@ -48,7 +48,7 @@ $array_jobs = array(
 
 'check_tv_series_imdb'=>120, ///add tvseries from list
 
-    'fix_all_directors'=>60,////temp started 12/01/2023
+'fix_all_directors'=>60,////temp started 12/01/2023
 
 'get_new_movies'=>(60*12),///add new movies from fandango
 'get_new_tv'=>(60*12),///add new tv from tmdb
@@ -69,6 +69,7 @@ $array_jobs = array(
 
 
 
+ 'add_noname_actors'=>120, //actor witout names
 
 ///'add_rating'=>10,  ////add new rating to movies (old version)
 //'check_tvexport'=>10

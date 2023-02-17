@@ -1221,16 +1221,18 @@ function addto_db_actors($actor_id, $array_result, $update = 0)
 WHERE `data_actors_imdb`.`id` = " . $actor_id;
 
         Pdo_an::db_results_array($sql,$array_request);
-        echo 'updated ' . $actor_id . '<br>' . PHP_EOL;
+        echo 'updated ' . $actor_id .' '.$name. '<br>' . PHP_EOL;
     }
     else
     {
         $array_request = array($name, $burn_name, $burn_place, $birthDate, $description, $image, time());
         $sql = "INSERT INTO `data_actors_imdb` VALUES ( '" . $actor_id . "' ,?, ?, ?, ?, ?, ?, ?)";
         Pdo_an::db_results_array($sql,$array_request);
-        echo 'adedded ' . $actor_id . '<br>' . PHP_EOL;
+        echo 'adedded ' . $actor_id .' '.$name. '<br>' . PHP_EOL;
 
     }
+    global $debug;
+
 
     !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
 
@@ -1319,6 +1321,77 @@ function check_verdict_surname()
     echo 'check actors surname (' . $i . ')' . PHP_EOL;
 
 }
+function add_empty_actors($id='')
+{
+    !class_exists('CPULOAD') ? include ABSPATH . "service/cpu_load.php" : '';
+    $load = CPULOAD::check_load();
+
+    global $cron_debug;
+    if ($cron_debug)
+    {
+        var_dump($load);
+    }
+
+    if ($load['loaded'])
+    {
+        return;
+    }
+
+
+
+    if ($id)
+    {
+        $where =' id = '.intval($id);
+    }
+    else
+    {
+
+        $where=" lastupdate = '0' ";
+    }
+
+    $sql = "SELECT id FROM `data_actors_imdb` where  ".$where."   order by id asc limit 200";
+    ///echo $sql.PHP_EOL;
+    $result= Pdo_an::db_results_array($sql);
+
+    $i = 0;
+    foreach ($result as $r) {
+        $i++;
+        $id = $r['id'];
+
+        echo 'try add actor ' . $id . PHP_EOL;
+
+        $result = add_actors_to_db($id, 1);
+
+        ///  set_option(8, $r['id']);
+
+
+    }
+
+
+    echo 'check_last_actors (' . $i . ') ' . PHP_EOL;
+
+
+}
+
+function add_noname_actors()
+{
+    $sql = "SELECT id FROM `data_actors_imdb` where `name` = '' and lastupdate != '0' and lastupdate < ".(time()-86400)." order by lastupdate 	 desc limit 10";
+    ///echo $sql.'<br>';
+
+    $result= Pdo_an::db_results_array($sql);
+    $i = 0;
+    foreach ($result as $r) {
+        $i++;
+        $id = $r['id'];
+        echo 'try add actor ' . $id . PHP_EOL;
+        $result = add_actors_to_db($id, 1);
+        ///  set_option(8, $r['id']);
+        $sql = "UPDATE `data_actors_imdb` SET `lastupdate` = '".time()."' WHERE `data_actors_imdb`.`id` =  ".$id;
+        Pdo_an::db_results_array($sql);
+    }
+    echo 'check_last_actors status 2 (' . $i . ') ' . PHP_EOL;
+}
+
 
 function check_last_actors()
 {
@@ -1456,26 +1529,7 @@ function check_last_actors()
     echo 'check actors meta (' . $i . ')' . PHP_EOL;
 
 
-    $sql = "SELECT id FROM `data_actors_imdb` where lastupdate = '0' order by id asc limit 200";
-    ///echo $sql.PHP_EOL;
-    $result= Pdo_an::db_results_array($sql);
 
-    $i = 0;
-    foreach ($result as $r) {
-        $i++;
-        $id = $r['id'];
-
-        echo 'try add actor ' . $id . PHP_EOL;
-
-        $result = add_actors_to_db($id, 1);
-
-        ///  set_option(8, $r['id']);
-
-
-    }
-
-
-    echo 'check_last_actors (' . $i . ') ' . PHP_EOL;
 
 
     //////check actors surname
@@ -1674,21 +1728,7 @@ function check_last_actors()
 
 
 
-    $sql = "SELECT id FROM `data_actors_imdb` where `name` = '' and lastupdate != '0' and lastupdate < ".(time()-86400)." order by lastupdate 	 desc limit 10";
-    ///echo $sql.'<br>';
 
-    $result= Pdo_an::db_results_array($sql);
-    $i = 0;
-    foreach ($result as $r) {
-        $i++;
-        $id = $r['id'];
-        echo 'try add actor ' . $id . PHP_EOL;
-        $result = add_actors_to_db($id, 1);
-        ///  set_option(8, $r['id']);
-        $sql = "UPDATE `data_actors_imdb` SET `lastupdate` = '".time()."' WHERE `data_actors_imdb`.`id` =  ".$id;
-        Pdo_an::db_results_array($sql);
-    }
-    echo 'check_last_actors status 2 (' . $i . ') ' . PHP_EOL;
 
 
 
@@ -3270,7 +3310,12 @@ if (isset($_GET['update_crowd_verdict'])) {
 
     return;
 }
+if (isset($_GET['add_empty_actors'])) {
 
+    add_empty_actors($_GET['add_empty_actors'])  ;
+
+    return;
+}
 
 
 
