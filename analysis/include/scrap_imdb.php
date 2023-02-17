@@ -1296,7 +1296,7 @@ function check_verdict_surname()
 
         $commit='';
 
-        if ($meta_result) {
+        if ($meta_result && $r['firstname']) {
 
 
             $sql="UPDATE `data_actors_ethnicolr` SET `verdict` = '{$meta_result}' WHERE `data_actors_ethnicolr`.`id` = ".$r['id'];
@@ -1311,6 +1311,11 @@ function check_verdict_surname()
 
 
             update_actors_verdict($r['aid'],1);
+
+
+
+            !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
+            ACTIONLOG::update_actor_log('surname','data_actors_ethnicolr',$r['aid']);
 
             !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
             $commit =Import::create_commit($commit, 'update', 'data_actors_ethnicolr', array('id' =>  $r['id']), 'ethnicolr',10);
@@ -1551,37 +1556,6 @@ function check_last_actors()
 
 
 
-//    $sql = "SELECT data_actors_surname.wiki_data, `data_actors_surname`.actor_id FROM `data_actors_meta` ,data_actors_surname
-//        WHERE `data_actors_meta`.actor_id=`data_actors_surname`.actor_id
-//        AND `data_actors_meta`.surname  = 1 LIMIT 10000";
-//    $result= Pdo_an::db_results_array($sql);
-//    foreach ($result as $r) {
-//
-//        $meta_result = get_actor_result($r['wiki_data']);
-//        $i++;
-//
-//        if ($meta_result) {
-//
-//            $sql1 = "UPDATE `data_actors_meta` SET
-//                              `surname` = '" . $meta_result . "',
-//                              `n_surname` = '" . intconvert($meta_result) . "',
-//
-//
-//              `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
-//            Pdo_an::db_query($sql1);
-//            update_actors_verdict($r['actor_id']);
-//            ACTIONLOG::update_actor_log('data_actors_surname');
-//
-//
-//            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-//            Import::create_commit('', 'update', 'data_actors_surname', array('actor_id' =>  $r['actor_id']), 'actors_surname',10,['skip'=>['id']]);
-//
-//
-//            $commit_actors[$r['actor_id']]=1;
-//        }
-//
-//    }
-//    echo 'check actors surname (' . $i . ')' . PHP_EOL;
 
     $array_face = array('white' => 'W', 'hispanic' => 'H', 'black' => 'B', 'mideast' => 'M', 'indian' => 'I', 'asian' => 'EA');
 
@@ -1759,26 +1733,28 @@ function check_last_actors()
 
 function force_surname_update()
 {
-    set_time_limit(0);
-    echo 'check actors surname <br>'.PHP_EOL;
-    //////check actors surname
-    $i = 0;
-    $sql = "SELECT data_actors_surname.wiki_data, `data_actors_surname`.actor_id FROM data_actors_surname";
-    $result= Pdo_an::db_results_array($sql);
-    $count = count($result);
-    foreach ($result as $r) {
-
-        $meta_result = get_actor_result($r['wiki_data']);
-        $i++;
-
-        if ($meta_result) {
-
-            $sql1 = "UPDATE `data_actors_meta` SET `surname` = '" . $meta_result . "'  ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
-            Pdo_an::db_query($sql1);
-            update_actors_verdict($r['actor_id'],1);
-        }
-        echo $r['actor_id']. ' '.$meta_result. ' (' . $i . ' / '.$count.') <br>' . PHP_EOL;
-    }
+    return;
+//
+//    set_time_limit(0);
+//    echo 'check actors surname <br>'.PHP_EOL;
+//    //////check actors surname
+//    $i = 0;
+//    $sql = "SELECT data_actors_surname.wiki_data, `data_actors_surname`.actor_id FROM data_actors_surname";
+//    $result= Pdo_an::db_results_array($sql);
+//    $count = count($result);
+//    foreach ($result as $r) {
+//
+//        $meta_result = get_actor_result($r['wiki_data']);
+//        $i++;
+//
+//        if ($meta_result) {
+//
+//            $sql1 = "UPDATE `data_actors_meta` SET `surname` = '" . $meta_result . "'  ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
+//            Pdo_an::db_query($sql1);
+//            update_actors_verdict($r['actor_id'],1);
+//        }
+//        echo $r['actor_id']. ' '.$meta_result. ' (' . $i . ' / '.$count.') <br>' . PHP_EOL;
+//    }
 
 
 }

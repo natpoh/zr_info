@@ -339,7 +339,9 @@ check_request();
        $total_actors_null_names_filled = self::get_filled($total_actors,$total_actors_null_names,'name');
 
        $total_actors_meta_surname = self::get_data_count_an('data_actors_meta',"WHERE `surname` IS NOT NULL");
-       $total_actors_meta_surname_filled = self::get_filled($total_actors,$total_actors_meta_surname,'data_actors_surname');
+       $total_actors_meta_surname_filled = self::get_filled($total_actors,$total_actors_meta_surname,'');
+
+
 
 
        $total_actors_image = self::get_data_count_an('data_actors_imdb',"WHERE `image`= 'Y' ");

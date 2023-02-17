@@ -661,8 +661,8 @@ function data_etnic_to_table($data, $diversity_select)
 function get_post_data_request($data, $single = '')
 {
     global $pdo;
-
-
+    $idop_yaer='';
+    global $keys;
 
     $type = 'box';
     $data_object = json_decode($data);
@@ -1117,6 +1117,7 @@ if ($_POST['oper'] == 'get_country_data') {
         $result_in .= "{ x: " . $year . ", y: " . $summ . " },";
 
     }
+global $result_data;
 
     $result_data .= "{
                   name: '" . $r['country_name'] . " population',
@@ -1382,7 +1383,7 @@ else if ($_POST['oper'] === 'get_actordata') {
                     echo '<p class="in_hdr">Surname Analysis:</p>';
                     if ($surname) {
 
-                        $sql = "SELECT *  FROM data_actors_surname where actor_id =" . $id;
+                        $sql = "SELECT *  FROM data_actors_ethnicolr where aid =" . $id;
 
                         $q = $pdo->prepare($sql);
                         $q->execute();
@@ -1392,31 +1393,45 @@ else if ($_POST['oper'] === 'get_actordata') {
 
                         $r = $q->fetch();
 
-                        $data = $r['wiki_data'];
+                        $data = $r['wiki'];
                         if ($data) {
-                            $data = json_decode($data);
+                            $data = json_decode($data,1);
 
-                            $actor_data['EA'] += (float)$data[4] * 100;// "Asian,GreaterEastAsian,EastAsian",
-                            $actor_data['EA'] += (float)$data[5] * 100;//   "Asian,GreaterEastAsian,Japanese",
-                            $actor_data['I'] = (float)$data[6] * 100;// "Asian,IndianSubContinent",
-                            $actor_data['B'] = (float)$data[7] * 100;// "GreaterAfrican,Africans",
+                            $actor_data['EA'] += (float)$data[5] * 100;
 
-                            $actor_data['M'] = (float)$data[8] * 100;// "GreaterAfrican,Muslim",
-                            $actor_data['W'] += (float)$data[9] * 100;// "GreaterEuropean,British",
-                            $actor_data['W'] += (float)$data[10] * 100;// "GreaterEuropean,EastEuropean",
 
-                            $actor_data['JW'] = (float)$data[11] * 100;// "GreaterEuropean,Jewish",
-                            $actor_data['W'] += (float)$data[12] * 100;// "GreaterEuropean,WestEuropean,French",
-                            $actor_data['W'] += (float)$data[13] * 100;// "GreaterEuropean,WestEuropean,Germanic",
-                            $actor_data['W'] += (float)$data[14] * 100;// "GreaterEuropean,WestEuropean,Hispanic",
-                            $actor_data['W'] += (float)$data[15] * 100;// "GreaterEuropean,WestEuropean,Italian",
-                            $actor_data['W'] += (float)$data[16] * 100;// "GreaterEuropean,WestEuropean,Nordic"]]
+
+                            $actor_data['EA'] += (float)$data[9] * 100;
+
+
+                            $actor_data['I'] += (float)$data[13] * 100;
+
+
+                            $actor_data['B'] += (float)$data[17] * 100;
+
+
+                            $actor_data['M'] += (float)$data[21] * 100;
+
+
+                            $actor_data['W'] += (float)$data[25] * 100;
+
+
+                            $actor_data['W'] += (float)$data[29] * 100;
+
+
+                            $actor_data['JW'] += (float)$data[33] * 100;
+                            $actor_data['W'] += (float)$data[37] * 100;
+                            $actor_data['W'] += (float)$data[41] * 100;
+                            $actor_data['H'] += (float)$data[45] * 100;
+                            $actor_data['W'] += (float)$data[49] * 100;
+
+                            $actor_data['W'] += (float)$data[53] * 100;
 
 
                             arsort($actor_data);
                             $key = array_keys($actor_data);
 
-                            $surname = $array_compare[$key[0]];
+                            $surname = $array_compare[$r['verdict']];
 
 
                             if ($surname) {
