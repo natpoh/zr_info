@@ -217,8 +217,10 @@ $ublock='';
 
        echo '<h1>Actors info</h1>';
 
+       $total_empty_actors = self::get_data_count_an('data_actors_imdb',"WHERE lastupdate = '0'");
        $total_actors = self::get_data_count_an('data_actors_imdb');
-       $total_actors_filled = self::get_filled($total_actors,$total_actors,'new_actors');
+       $total_actors_filled = self::get_filled($total_actors,$total_actors-$total_empty_actors,'new_actors');
+
 
        $total_actors_null_names = self::get_data_count_an('data_actors_imdb',"WHERE `name`!= '' ");
        $total_actors_null_names_filled = self::get_filled($total_actors,$total_actors_null_names,'name');
@@ -269,6 +271,9 @@ $ublock='';
 <table class="wp-list-table widefat fixed striped posts"><thead><tr><th>Type</th><th>Count</th><th style="width: 30%">Percent</th><th>Not filled</th><th>Add 24 hours</th><th>Add This Week</th><th>Action</th></tr></thead>
 <tbody>
 <tr><td>Actors</td><td>' . $total_actors . '</td>'.$total_actors_filled.'<td></td></tr>
+<tr><td>Empty Actors</td><td>' . $total_empty_actors . '</td>'.$total_actors_filled.'<td></td></tr>
+
+
 <tr><td>Actor names</td><td>' . $total_actors_null_names . '</td>'.$total_actors_null_names_filled.'<td></td></tr>
 <tr><td>Actor surname</td><td>' . $total_actors_meta_surname . '</td>'.$total_actors_meta_surname_filled.'<td></td></tr>
 
