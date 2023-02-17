@@ -367,8 +367,8 @@ check_request();
        $total_actors_tmdb_image_filled = self::get_filled($total_actors,$total_actors_tmdb_image,'tmdb_image');
 
 
-       $total_actors_meta_kairos_imdb= self::get_data_count_an('data_actors_race');
-       $total_actors_meta_kairos_imdb_filled = self::get_filled($total_actors_tmdb_image,$total_actors_meta_kairos_imdb,'kairos');
+       $total_actors_meta_kairos_imdb= self::get_data_count_an('data_actors_race',"WHERE `kairos_verdict` IS NOT NULL");
+       $total_actors_meta_kairos_imdb_filled = self::get_filled($total_actors_image,$total_actors_meta_kairos_imdb,'kairos');
 
 
        $total_actors_meta_kairos = self::get_data_count_an('data_actors_meta',"WHERE `kairos` IS NOT NULL");
