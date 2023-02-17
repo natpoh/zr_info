@@ -22,7 +22,7 @@ class ACTIONLOG
 
     public static function clear_history()
     {
-    $sql = "DELETE FROM `meta_actors_log` WHERE `time` < '".(time()-86400*7)."'";
+    $sql = "DELETE FROM `meta_actors_log` WHERE `last_update` < '".(time()-86400*7)."'";
      Pdo_an::db_query($sql);
     }
 
@@ -33,13 +33,13 @@ class ACTIONLOG
 
     $type = static::$array[$db];
 
-    $sql="SELECT COUNT(*) as count FROM `meta_actors_log` where `time` >".$time." and `type` = ".$type;
+    $sql="SELECT COUNT(*) as count FROM `meta_actors_log` where `last_update` >".$time." and `type` = ".$type;
 
     $row = Pdo_an::db_fetch_row($sql);
     $daily = $row->count;
 
 
-        $sql="SELECT COUNT(*) as count FROM `meta_actors_log` where `time` >".$timew." and `type` = ".$type;
+        $sql="SELECT COUNT(*) as count FROM `meta_actors_log` where `last_update` >".$timew." and `type` = ".$type;
 
         $row = Pdo_an::db_fetch_row($sql);
         $week = $row->count;
@@ -267,16 +267,10 @@ public function log_data_graph()
 
 
     }
-    if ($data_type=='time')
-    {
 
-        $array_series['title']= 'Commits time';
-    }
-    else
-    {
         $array_series['title']= 'Commits count';
 
-    }
+
 
 
 
