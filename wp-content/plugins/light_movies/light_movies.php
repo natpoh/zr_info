@@ -368,7 +368,7 @@ check_request();
 
 
        $total_actors_meta_kairos_imdb= self::get_data_count_an('data_actors_race');
-       $total_actors_meta_kairos_imdb_filled = self::get_filled($total_actors,$total_actors_meta_kairos_imdb,'kairos');
+       $total_actors_meta_kairos_imdb_filled = self::get_filled($total_actors_tmdb_image,$total_actors_meta_kairos_imdb,'kairos');
 
 
        $total_actors_meta_kairos = self::get_data_count_an('data_actors_meta',"WHERE `kairos` IS NOT NULL");
@@ -410,7 +410,7 @@ check_request();
 
 
 
-<tr><td>Actor kairos imd</td><td>' . $total_actors_meta_kairos_imdb . '</td>'.$total_actors_meta_kairos_imdb_filled.'<td></td></tr>
+<tr><td>Actor kairos imdb</td><td>' . $total_actors_meta_kairos_imdb . '</td>'.$total_actors_meta_kairos_imdb_filled.'<td></td></tr>
 <tr><td>Actor kairos meta</td><td>' . $total_actors_meta_kairos . '</td>'.$total_actors_meta_kairos_filled.'<td></td></tr>
 <tr><td>Actor bettaface</td><td>' . $total_actors_meta_bettaface . '</td>'.$total_actors_meta_bettaface_filled.'<td></td></tr>
 
