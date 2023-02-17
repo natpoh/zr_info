@@ -1739,7 +1739,7 @@ function force_surname_update()
     echo 'check actors surname <br>'.PHP_EOL;
     //////check actors surname
     $i = 0;
-    $sql = "SELECT data_actors_meta.id, data_actors_meta.actor_id, data_actors_meta.surname, data_actors_ethnicolr.* from data_actors_meta, data_actors_ethnicolr where data_actors_meta.actor_id =data_actors_ethnicolr.aid and  data_actors_meta.surname IS NOT NULL and	data_actors_ethnicolr.firstname='' and data_actors_ethnicolr.verdict!='' and data_actors_meta.id>1 limit 10000 ";
+    $sql = "SELECT data_actors_meta.id, data_actors_meta.actor_id, data_actors_meta.surname, data_actors_ethnicolr.* from data_actors_meta, data_actors_ethnicolr where data_actors_meta.actor_id =data_actors_ethnicolr.aid and  data_actors_meta.surname IS NOT NULL and	data_actors_ethnicolr.firstname='' and data_actors_ethnicolr.verdict!='' and data_actors_meta.id>1 limit 1000 ";
     $result= Pdo_an::db_results_array($sql);
     $count = count($result);
     foreach ($result as $r) {
@@ -1752,8 +1752,6 @@ function force_surname_update()
             $sql1 = "UPDATE `data_actors_meta` SET `surname` = 'NULL' ,`n_surname`=0 ,`last_update` = ".time()."  WHERE `data_actors_meta`.`id` = '" .$id . "'";
             Pdo_an::db_query($sql1);
             update_actors_verdict($r['actor_id'],1);
-
-
         }
         echo $r['actor_id']. '  (' . $i . ' / '.$count.') <br>' . PHP_EOL;
     }
