@@ -233,7 +233,7 @@ function check_cron_time()
         {
             $last_time = $cron->check_time();
             $result =$last_time['result'];
-            var_dump($last_time);
+            ///var_dump($last_time);
 
         }
     }
