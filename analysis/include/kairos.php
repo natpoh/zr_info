@@ -416,16 +416,17 @@ return;
 
 
 
+
+
         //////requst update tmdb data
         $sql="SELECT `data_actors_imdb`.id  FROM `data_actors_imdb` 
                 LEFT JOIN data_actors_tmdb_race ON data_actors_tmdb_race.actor_id=data_actors_imdb.id
                 LEFT JOIN data_actors_tmdb ON data_actors_tmdb.actor_id=data_actors_imdb.id
                 WHERE (
                     data_actors_tmdb.profile_path IS NOT NULL and data_actors_tmdb.status =1 
-                    and data_actors_tmdb_race.id IS NULL ) ".$dop." limit 50";
+                    and data_actors_tmdb_race.id IS NULL ) ".$dop." limit 10";
         $rows = Pdo_an::db_results($sql);
         self::prepare_arrays($rows,'tmdb');
-
 
 
 
@@ -434,7 +435,7 @@ return;
         ////default request for emtpy data
         $sql = "SELECT `data_actors_imdb`.id  FROM `data_actors_imdb` 
         LEFT JOIN data_actors_race ON data_actors_race.actor_id=data_actors_imdb.id
-        WHERE (data_actors_race.id IS NULL and `data_actors_imdb`.image!='N' and `data_actors_imdb`.image!='NA') ".$dop." limit 10";
+        WHERE (data_actors_race.id IS NULL and `data_actors_imdb`.`image`= 'Y' ) ".$dop." limit 30";
         //echo $sql;
         $rows = Pdo_an::db_results($sql);
         self::prepare_arrays($rows,'imdb');
@@ -542,6 +543,7 @@ VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
     Pdo_an::db_results($sql,$array_result);
 
     ///commit
+    ACTIONLOG::update_actor_log('kairos_add',$table,$id);
 
     !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
     Import::create_commit('', 'update', $table, array('actor_id' => $id), 'kairos_race',9,['skip'=>['id']]);
