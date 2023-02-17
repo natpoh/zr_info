@@ -543,6 +543,7 @@ VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
     Pdo_an::db_results($sql,$array_result);
 
     ///commit
+    !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
     ACTIONLOG::update_actor_log('kairos_add',$table,$id);
 
     !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';

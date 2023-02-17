@@ -244,6 +244,9 @@ class Cronjob
                 $period=$array_jobs[$jobs];
 
                 if ($this->timer_stop() < $this->max_time) {
+
+
+
                     echo 'run ' . $i . ' from ' . $count . ' lastrun: '.$last_update.'<br>' . PHP_EOL;
                     $this->run_function($jobs, $period);
 
