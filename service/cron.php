@@ -16,7 +16,7 @@ $array_jobs = array(
 
 'add_tmdb_without_id'=>10,///add imdb id to tmdb database
 'check_last_actors'=>20,
-'check_kairos'=>5,///add kairos images
+///'check_kairos'=>5,///add kairos images
 
 'movie_keywords'=>20,///upadate movies keywords
 'update_tmdb_actors'=>10, //update tmdb id and images
@@ -110,8 +110,14 @@ class Cronjob
         $this->set_cron_option('run_cron', 1);
     }
 
-    public function timer_start()
+    public function timer_start($time=0)
     {
+        if ($time)
+        {
+            $this->max_time=$time;
+        }
+
+
         if (!$this->timestart)
         {
           $this->timestart = microtime(1);

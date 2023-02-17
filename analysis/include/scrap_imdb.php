@@ -215,9 +215,14 @@ function get_similar($id)
     echo SimilarMovies::get_movies($id);
 }
 
+function start_cron_time($time)
+{
+    !class_exists('Cronjob') ? include ABSPATH . "service/cron.php" : '';
+    global $cron;
+    $cron = new Cronjob();
+    $cron->timer_start(10);
 
-
-
+}
 function check_cron_time()
 {
     $result = '';
@@ -228,6 +233,7 @@ function check_cron_time()
         {
             $last_time = $cron->check_time();
             $result =$last_time['result'];
+            var_dump($last_time);
 
         }
     }
@@ -2666,6 +2672,13 @@ function add_imdb_data_to_options()
 }
 function check_kairos($id='')
 {
+
+    !class_exists('CPULOAD') ? include ABSPATH . "service/cpu_load.php" : '';
+    $load = CPULOAD::check_load();
+    if ($load['loaded']) {  return;  }
+
+    start_cron_time(50);
+
 
     !class_exists('KAIROS') ? include ABSPATH . "analysis/include/kairos.php" : '';
 

@@ -390,6 +390,11 @@ return;
                 static::save_data_to_db($id,$kairos,$result_image,$error_message);
 
                 //return;
+
+                if (function_exists('check_cron_time'))
+                {
+                    if (check_cron_time())break;
+                }
             }
     }
 
@@ -415,6 +420,10 @@ return;
         self::prepare_arrays($rows,'crowd');
 
 
+        if (function_exists('check_cron_time'))
+        {
+            if (check_cron_time())return;
+        }
 
 
 
@@ -428,7 +437,10 @@ return;
         $rows = Pdo_an::db_results($sql);
         self::prepare_arrays($rows,'tmdb');
 
-
+        if (function_exists('check_cron_time'))
+        {
+            if (check_cron_time())return;
+        }
 
 
 
