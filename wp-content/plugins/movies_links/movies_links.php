@@ -333,7 +333,7 @@ function movies_links_plugin_activation() {
                                 `description` text default NULL,
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
-    Pdo_an::db_query($sql);
+    Pdo_an::db_query($sql);   
     if (function_exists('critic_matic_create_index_an')) {
         critic_matic_create_index_an(array('last_upd', 'verdict', 'lastname'), 'data_familysearch_verdict');
     }
@@ -402,8 +402,16 @@ function movies_links_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
+    
+        
+    $sql = "ALTER TABLE `data_forebears_verdict` ADD `verdict_rank` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
+    $sql = "ALTER TABLE `data_forebears_verdict` ADD  `description_rank` text default NULL";
+    Pdo_an::db_query($sql);
+    
     if (function_exists('critic_matic_create_index_an')) {
-        critic_matic_create_index_an(array('last_upd', 'verdict', 'lastname'), 'data_forebears_verdict');
+        critic_matic_create_index_an(array('last_upd', 'verdict', 'verdict_rank', 'lastname'), 'data_forebears_verdict');
     }
 
     /*

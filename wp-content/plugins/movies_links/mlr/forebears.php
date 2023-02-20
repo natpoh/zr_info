@@ -549,9 +549,10 @@ class Forebears extends MoviesAbstractDBAn {
     public function cron_actor_verdict($count = 100, $simpson = true, $debug = false) {
 
         // 1. Get lastnames
-        $sql = sprintf("SELECT l.id, l.lastname, c.country as topcountryname"
+        $sql = sprintf("SELECT l.id, l.lastname, cr.country as topcountryrank, c.country as topcountryname"
                 . " FROM {$this->db['lastnames']} l"
                 . " INNER JOIN {$this->db['country']} c ON c.id=l.topcountry"
+                . " INNER JOIN {$this->db['country']} cr ON cr.id=l.topcountry_rank"
                 . " LEFT JOIN {$this->db['verdict']} v ON v.lastname=l.lastname"
                 . " WHERE v.id is NULL ORDER BY l.id DESC LIMIT %d", (int) $count);
         $result = $this->db_results($sql);
@@ -563,36 +564,49 @@ class Forebears extends MoviesAbstractDBAn {
         if (!$result) {
             return;
         }
-        $commit_id = '';
-
-        $array_update_family = [];
 
         foreach ($result as $item) {
+
             // 2. Calculate vedrict
             $verdict_arr = $this->calculate_fs_verdict($item->id, $simpson);
             if ($debug) {
-                print_r($verdict_arr);
+                print_r(array('verdict',$verdict_arr));
             }
-            // 3. Add verdict to db
-            $verdict_int = $this->race_small[$verdict_arr['verdict']] ? $this->race_small[$verdict_arr['verdict']] : 0;
+            $verdict_data = $this->theme_verdict($verdict_arr);
+
+            // 3. Calculate top verdict
+            $top_arr = $this->calculate_top_verdict($item);
+            if ($debug) {
+                print_r(array('top verdict',$top_arr));
+            }
+            $top_data = $this->theme_verdict($top_arr);
+
+
+            // 4. Add verdict to db
             $last_upd = time();
             $lastname = $this->escape($item->lastname);
-            print_r($verdict_arr['rows_total_arr']);
-            $desc_arr = array('total' => $verdict_arr['rows_total_arr'], 'race' => $verdict_arr['rows_race_arr']);
-            $desc = json_encode($desc_arr);
-            $sql = sprintf("INSERT INTO {$this->db['verdict']} (last_upd,verdict,lastname,description) VALUES (%d,%d,'%s','%s')", $last_upd, $verdict_int, $lastname, $desc);
+            $data = array(
+                'last_upd' => $last_upd,
+                'verdict' => $verdict_data['verdict'],
+                'lastname' => $lastname,
+                'description' => $verdict_data['desc'],
+                'verdict_rank' => $top_data['verdict'],
+                'description_rank' => $top_data['desc'],
+            );
+
             if ($debug) {
-                print_r($sql);
+                print_r($data);
             }
-            $this->db_query($sql);
 
-            // Get id
-            $id = Pdo_an::last_id();
-
-            if ($id) {
-                $array_update_family[$id] = 1;
-            }
+            $this->db_insert($data, $this->db['verdict']);
         }
+    }
+
+    private function theme_verdict($verdict_arr) {
+        $verdict_int = $this->race_small[$verdict_arr['verdict']] ? $this->race_small[$verdict_arr['verdict']] : 0;
+        $desc_arr = array('total' => $verdict_arr['rows_total_arr'], 'race' => $verdict_arr['rows_race_arr']);
+        $desc = json_encode($desc_arr);
+        return array('verdict' => $verdict_int, 'desc' => $desc);
     }
 
     public function get_verdict_by_lastname($lastname) {
