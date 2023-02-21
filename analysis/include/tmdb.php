@@ -779,8 +779,17 @@ global $debug;
             var_dump($array_request);
         }
 
-        $comment =$mid.' '.$title.' ('.$type.') added';
-        self::add_log('',$movie_id,'add movies',$comment,1);
+        if ($mid)
+        {
+
+            $comment =$mid.' '.$title.' ('.$type.') added';
+            self::add_log('',$movie_id,'add movies',$comment,1);
+        }
+        else
+        {
+            self::add_log('',$movie_id,'add movies','error added',1);
+        }
+
 
     }
 
@@ -811,7 +820,10 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
 
     //$movie_id
 
-
+    if (!$mid)
+    {
+        return 0;
+    }
 
     //$array_update = array('k'=>'um','id'=>$mid);
     !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
