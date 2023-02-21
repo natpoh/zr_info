@@ -1410,4 +1410,16 @@ WHERE
     m.tmdb_id>0 AND
     m.id > s.id AND 
     m.tmdb_id = s.tmdb_id;
+ * 
+ * 
+ * Data actors meta
+ * 
+
+SELECT actor_id, count(*) FROM `data_actors_meta` GROUP by actor_id having count(*) > 1;
+
+DELETE m FROM `data_actors_meta` m
+INNER JOIN `data_actors_meta` s
+WHERE 
+    m.id > s.id AND 
+    m.actor_id = s.actor_id;
  */

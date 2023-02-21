@@ -103,6 +103,7 @@ class Pdoa {
         static::connect();
         $sth = static::$pdo->prepare($sql);
         $sth->execute($values);
+        //print_r($sth->errorInfo());
     }
 
     public static function db_fetch_row($sql, $array = [], $type = 'object') {

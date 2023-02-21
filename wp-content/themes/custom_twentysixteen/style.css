@@ -1075,6 +1075,10 @@ input.radio {
     margin-left: -1px;
 }
 
+body.theme_dark .tab-wrapper li.nav-tab a {
+    border-color: #444;
+}
+
 .home-tabs.tab-wrapper li.nav-tab a {
     border-color: #000;
 }
@@ -1172,6 +1176,15 @@ body.theme_dark  .tab-wrapper li.nav-tab a {
 
     cursor: pointer;  
     user-select: none;
+}
+
+
+body.theme_dark .nav-tab.group {
+    border-color: #444;
+}
+
+body.theme_dark .sort-more .btn  {
+    border-left: #444;
 }
 
 .sort-more .open .btn {
@@ -2624,6 +2637,12 @@ body.theme_dark .advanced_search_head_close {
     padding: 5px;
     margin-bottom: 20px; 
 }
+
+body.theme_dark .facets {
+    border: 1px solid #444;
+}
+
+
 .facet, .facets, #search-filters, #search-sort, #search-tabs{
     font-family: 'Encode Sans Condensed',Lato;
 }
@@ -2822,6 +2841,10 @@ body.theme_dark .facet .acc, body.theme_dark .facets .acc, body.theme_dark .more
     padding: 0.4375em;
 }
 
+body.theme_dark .facet .autocomplite {
+    background: #242424;
+}
+
 .facet .ac-result {    
     position: absolute;
     z-index: 3;
@@ -2831,6 +2854,10 @@ body.theme_dark .facet .acc, body.theme_dark .facets .acc, body.theme_dark .more
     padding: 10px 5px 0 5px;
     top: -0.9rem;
     border: 1px solid #999;
+}
+
+body.theme_dark .ac-result {
+    background: #222;
 }
 
 .facet .ac-holder.active {
@@ -3041,6 +3068,26 @@ body.theme_dark  .noUi-handle::before,body.theme_dark  .noUi-handle::after {
     background: transparent url("images/rt_64.svg");
 }
 
+.sort-icon .imdb{
+    background: transparent url("images/imdbicon.svg");
+}
+
+.sort-icon .mal{
+    background: transparent url("images/mal.svg");
+}
+
+.sort-icon .fchan{
+    background: transparent url("images/4chan.svg");
+}
+
+.sort-icon .zr{
+    background:  url("images/zrpulselogo.svg");
+}
+
+.theme_white  .sort-icon .zr {
+
+    filter: invert();
+}
 
 .facet .facet-title .facet-icon span,
 .nav-tab span.sort-icon i {    
@@ -7218,7 +7265,7 @@ body.theme_dark.search .content-full {
         transform: scale(0.8);
     }
 
-    .main-search  .nte_show::after {
+    .main-search  .nte_show:not(.dwn)::after {
         transform: skewX(27deg) rotate(146deg) skewY(-20deg);
         margin-left: -32px;
     }

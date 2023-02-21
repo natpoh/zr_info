@@ -3460,6 +3460,12 @@ class MoviesParser extends MoviesAbstractDB {
         $results = $this->db_results($sql);
         return $results;
     }
+    
+    public function get_fchan_posts_content($uid = 0) {
+        $sql = sprintf("SELECT content FROM {$this->db['fchan_posts']} WHERE mid=%d AND status=1", $uid);
+        $results = $this->db_results($sql);
+        return $results;
+    }
 
     public function get_fchan_posts_found($uid = 0) {
         $sql = sprintf("SELECT posts_found FROM {$this->db['fchan_log']} WHERE uid=%d", $uid);

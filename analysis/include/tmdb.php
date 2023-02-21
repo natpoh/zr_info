@@ -570,6 +570,8 @@ public static function check_tmdb_actors_in_movie($mid)
 public static function addto_db_imdb($movie_id, $array_movie, $rwt_id = 0, $tmdb_id = 0)
 {
 
+global $debug;
+
 
     $reg_v = '#([0-9]{4})#';
     if (preg_match($reg_v, $array_movie['datePublished'], $mach)) {
@@ -758,6 +760,7 @@ public static function addto_db_imdb($movie_id, $array_movie, $rwt_id = 0, $tmdb
 
             }
 
+
         }
         else
         {
@@ -770,9 +773,13 @@ public static function addto_db_imdb($movie_id, $array_movie, $rwt_id = 0, $tmdb
             Pdo_an::db_results_array($sql,$array_request);
             $mid = Pdo_an::last_id();
         }
+        if ($debug)
+        {
+            echo  $sql;
+            var_dump($array_request);
+        }
 
-
-        $comment =$title.' ('.$type.') added';
+        $comment =$mid.' '.$title.' ('.$type.') added';
         self::add_log('',$movie_id,'add movies',$comment,1);
 
     }

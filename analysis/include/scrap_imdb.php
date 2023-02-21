@@ -546,6 +546,7 @@ if (!function_exists('set_option')) {
 
 function add_to_db_from_userlist()
 {
+
     $data =OptionData::get_options(16);
     if ($data) {
         $movie_list = json_decode($data, 1);
@@ -575,7 +576,7 @@ function add_to_db_from_userlist()
 
     }
     //userlist
-    OptionData::set_option(16,json_encode($movie_list),'userlist');
+    OptionData::set_option(16,json_encode($movie_list),'movie_list');
     
 
 
@@ -1324,7 +1325,7 @@ function check_verdict_surname()
 {
     $i = 0;
 
-    $sql="SELECT * FROM `data_actors_ethnicolr` WHERE verdict =''  LIMIT 500";
+    $sql="SELECT * FROM `data_actors_ethnicolr` WHERE verdict ='' AND firstname!='' LIMIT 500";
     $result= Pdo_an::db_results_array($sql);
     foreach ($result as $r) {
 
@@ -2904,7 +2905,7 @@ if (isset($_GET['get_imdb_movie_id'])) {
         $array_movie =  TMDB::get_content_imdb($id);
 
 
-       // if ($debug){var_dump($array_movie);}
+        if ($debug){var_dump($array_movie);}
 
         $add =  TMDB::addto_db_imdb($id, $array_movie);
 

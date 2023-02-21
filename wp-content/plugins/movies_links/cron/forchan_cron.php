@@ -28,6 +28,12 @@ if ($_GET['force']) {
     $force = true;
 }
 
+$t = 1;
+if ($_GET['t']) {
+    $t = (int) $_GET['t'];
+}
+
+
 if (!class_exists('MoviesLinks')) {
     require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractFunctions.php' );
     require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractDBAn.php' );
@@ -47,17 +53,21 @@ if ($load['loaded']) {
 
 $ml = new MoviesLinks();
 
-$cron_name = 'forchan';
-if ($ml->cron_already_run($cron_name, 10, $debug)) {
+$cron_name = 'forchan_' . $t;
+if (!$force && $ml->cron_already_run($cron_name, 10, $debug)) {
     exit();
 }
 $ml->register_cron($cron_name);
 
 $campaign = new stdClass();
 $campaign->title = 'archive.4plebs.org';
-
 $fs = $ml->get_campaing_mlr($campaign);
 
-$fs->forchan_cron_meta($count, $force, $debug);
-
+if ($t == 1) {
+    // Erating
+    $fs->forchan_cron_meta($count, $force, $debug);
+} if ($t == 2) {
+    // Tag cloud
+    $fs->forchan_tags_cloud_cron($count, $force, $debug);
+}
 $ml->unregister_cron($cron_name);

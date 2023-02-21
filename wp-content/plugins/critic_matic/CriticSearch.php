@@ -76,28 +76,28 @@ class CriticSearch extends AbstractDB {
     public $rating_facets = array(
         'rrwt' => array('title' => 'Rating', 'titlesm' => 'Rating', 'name_pre' => 'Rating ', 'filter_pre' => 'Rating ', 'max_count' => 60, 'multipler' => 10, 'main' => 1, 'group' => 'rating'),
         'rating' => array('title' => 'Wokeness', 'titlesm' => 'Wokeness', 'name_pre' => 'Wokeness ', 'filter_pre' => 'Wokeness ', 'max_count' => 60, 'multipler' => 10, 'group' => 'woke', 'main' => 1),
-        'rimdb' => array('title' => 'IMDb', 'titlesm' => 'IMDb', 'name_pre' => 'IMDb ', 'filter_pre' => 'IMDb Rating ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => ''),
+        'rimdb' => array('title' => 'IMDb', 'titlesm' => 'IMDb', 'name_pre' => 'IMDb ', 'filter_pre' => 'IMDb Rating ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'imdb'),
         'rrt' => array('title' => 'Rotten Tomatoes', 'titlesm' => 'RT', 'name_pre' => 'RT ', 'filter_pre' => 'Rotten Tomatoes ', 'max_count' => 110, 'group' => 'rating', 'icon' => 'rt'),
         'rrta' => array('title' => 'Rotten Tomatoes Audience', 'titlesm' => 'RT Audience', 'name_pre' => 'RTA ', 'filter_pre' => 'Rotten Tomatoes Audience ', 'max_count' => 110, 'group' => 'rating', 'icon' => 'rt'),
         'rrtg' => array('title' => 'Rotten Tomatoes % Gap', 'titlesm' => 'RT % Gap', 'name_pre' => 'RT%G ', 'filter_pre' => 'Rotten Tomatoes % Gap ', 'max_count' => 220, 'shift' => -100, 'sort' => 'asc', 'group' => 'rating', 'icon' => 'rt'),
         'rkp' => array('title' => 'Kinopoisk', 'titlesm' => 'Kinopoisk', 'name_pre' => 'KP ', 'filter_pre' => 'Kinopoisk ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'kinop'),
         'rdb' => array('title' => 'Douban', 'titlesm' => 'Douban', 'name_pre' => 'DB ', 'filter_pre' => 'Douban ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'douban'),
-        'ranl' => array('title' => 'MyAnimeList', 'titlesm' => 'MyAnimeList', 'name_pre' => 'MyAnLi ', 'filter_pre' => 'MyAnLi ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => ''),
-        'rfn' => array('title' => '4chan', 'titlesm' => '4chan', 'name_pre' => '4chan ', 'filter_pre' => '4chan ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => ''),
-        'rrev' => array('title' => 'Critic Reviews', 'titlesm' => 'Critic Reviews', 'name_pre' => 'RW ', 'filter_pre' => 'Reviews ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => ''),
+        'ranl' => array('title' => 'MyAnimeList', 'titlesm' => 'MyAnimeList', 'name_pre' => 'MyAnLi ', 'filter_pre' => 'MyAnLi ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'mal'),
+        'rfn' => array('title' => '4chan', 'titlesm' => '4chan', 'name_pre' => '4chan ', 'filter_pre' => '4chan ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'fchan'),
+        'rrev' => array('title' => 'Critic Reviews', 'titlesm' => 'Critic Reviews', 'name_pre' => 'RW ', 'filter_pre' => 'Reviews ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'zr'),
             //'rtotal' => array('title' => 'Total rating', 'name_pre' => 'Total ', 'filter_pre' => 'Total rating '),
     );
     public $popularity_facets = array(
         'crwt' => array('title' => 'Popularity', 'titlesm' => 'Popularity', 'name_pre' => 'Pop ', 'filter_pre' => 'Popularity ', 'main' => 1, 'group' => 'pop'),
-        'cimdb' => array('title' => 'IMDb', 'titlesm' => 'IMDb', 'name_pre' => 'IMDb ', 'filter_pre' => 'IMDb Rating ', 'group' => 'pop', 'icon' => ''),
+        'cimdb' => array('title' => 'IMDb', 'titlesm' => 'IMDb', 'name_pre' => 'IMDb ', 'filter_pre' => 'IMDb Rating ', 'group' => 'pop', 'icon' => 'imdb'),
         'crt' => array('title' => 'Rotten Tomatoes', 'titlesm' => 'RT', 'name_pre' => 'RT ', 'filter_pre' => 'Rotten Tomatoes ', 'group' => 'pop', 'icon' => 'rt'),
         'crta' => array('title' => 'Rotten Tomatoes Audience', 'titlesm' => 'RT Audience', 'name_pre' => 'RTA ', 'filter_pre' => 'Rotten Tomatoes Audience ', 'group' => 'pop', 'icon' => 'rt'),
         'ckp' => array('title' => 'Kinopoisk', 'name_pre' => 'KP ', 'titlesm' => 'Kinopoisk', 'filter_pre' => 'Kinopoisk ', 'group' => 'pop', 'icon' => 'kinop'),
         'cdb' => array('title' => 'Douban', 'name_pre' => 'DB ', 'titlesm' => 'Douban', 'filter_pre' => 'Douban ', 'group' => 'pop', 'icon' => 'douban'),
-        'canl' => array('title' => 'MyAnimeList', 'titlesm' => 'MyAnimeList', 'name_pre' => 'MyAnLi ', 'filter_pre' => 'MyAnLi ', 'group' => 'pop', 'icon' => ''),
-        'cfn' => array('title' => '4chan', 'titlesm' => '4chan', 'name_pre' => '4chan ', 'filter_pre' => '4chan ', 'group' => 'pop', 'icon' => ''),
+        'canl' => array('title' => 'MyAnimeList', 'titlesm' => 'MyAnimeList', 'name_pre' => 'MyAnLi ', 'filter_pre' => 'MyAnLi ', 'group' => 'pop', 'icon' => 'mal'),
+        'cfn' => array('title' => '4chan', 'titlesm' => '4chan', 'name_pre' => '4chan ', 'filter_pre' => '4chan ', 'group' => 'pop', 'icon' => 'fchan'),
         //crev unused
-        'pop' => array('title' => 'Reviews', 'titlesm' => 'Reviews', 'name_pre' => 'Reviews ', 'filter_pre' => 'Reviews ', 'group' => 'pop', 'icon' => ''),
+        'pop' => array('title' => 'Reviews', 'titlesm' => 'Reviews', 'name_pre' => 'Reviews ', 'filter_pre' => 'Reviews ', 'group' => 'pop', 'icon' => 'zr'),
             //'pop' => array('title' => 'Emotions', 'group' => 'pop', 'icon' => ''),
     );
     public $facets_race_cast = array(
@@ -2390,7 +2390,7 @@ class CriticSearch extends AbstractDB {
                         }
                     } else if ($key == 'country') {
                         // Country
-                        $filters_and .= $this->filter_multi_value($key, $value, true);
+                        $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
                     } else if ($key == 'race' || isset($this->facets_race_cast[$key])) {
                         // Race 
                         $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
@@ -2416,8 +2416,7 @@ class CriticSearch extends AbstractDB {
                         if ($key == 'rrtg') {
                             $filters_and .= " AND rrta>0 AND rrt>0";
                         }
-                    } else if ($key == 'rf') {
-                        // Country                       
+                    } else if ($key == 'rf') {                        
                         $value = is_array($value) ? $value : array($value);
                         foreach ($value as $slug) {
                             if ($this->search_filters[$key][$slug]) {

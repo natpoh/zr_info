@@ -23,6 +23,8 @@ if (sizeof($movies) > 0) {
                 <th><?php print __('Add date') ?></th> 
                 <th><?php print __('Meta') ?></th>
                 <th><?php print __('Critics search: valid / other') ?></th>
+                <th><?php print __('Weight') ?></th>
+                <th><?php print __('Unique') ?></th>
 
             </tr>
         </thead>
@@ -55,6 +57,8 @@ if (sizeof($movies) > 0) {
                         print sizeof((array)$critics_search['valid']).' / '.sizeof((array)$critics_search['other']);
                         ?>
                     </td>     
+                    <td><?php print $post->weight ?></td>
+                    <td><?php print $post->title_weight ?></td>
                 </tr> 
             <?php } ?>
         </tbody>

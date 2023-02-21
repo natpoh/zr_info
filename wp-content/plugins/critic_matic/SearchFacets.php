@@ -93,7 +93,7 @@ class SearchFacets extends AbstractDB {
         'tags' => '',
         'year' => ''
     );
-    private $minus_filters = array('genre', 'mkw', 'rf',);
+    private $minus_filters = array('genre', 'mkw', 'rf','country');
 
     public function __construct($cm = '', $cs = '') {
         $this->cm = $cm ? $cm : new CriticMatic();
@@ -1667,6 +1667,9 @@ class SearchFacets extends AbstractDB {
                     $key = $value->id;
                     if (isset($countries[$key])) {
                         $item = $countries[$key];
+                        if (!$item->name){
+                            continue;
+                        }
                         $dates[$item->slug] = array('title' => $item->name, 'count' => $value->cnt);
                     }
                 }
@@ -1674,7 +1677,8 @@ class SearchFacets extends AbstractDB {
                 $filter = 'country';
                 $title = 'Country';
                 $ftype = 'movies';
-                $this->theme_facet_multi($filter, $dates, $title, $more, $ftype);
+                $minus = true;
+                $this->theme_facet_multi($filter, $dates, $title, $more, $ftype, $minus);
             }
 
             public function show_race_facet($data, $more, $filter = 'race', $ftype = 'movies', $facets = array()) {
