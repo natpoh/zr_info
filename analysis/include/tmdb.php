@@ -715,7 +715,7 @@ global $debug;
     $array_request = array($movie_id, $rwt_id, $tmdb_id, $title,$post_name, $type, $genre, $relise, $year, $country, $language,
         $production,
         '', '', '', '', '', $box_usa, $box_world, $productionBudget, $keywords, $description, $array_string, $contentRating,
-        $Rating, time(), $runtime,0,0,0,0);
+        $Rating, time(), $runtime);
 
     ///  var_dump($array_request);
 
@@ -732,6 +732,22 @@ global $debug;
 
    if (!$result_imdb)
     {
+
+        $cq="SELECT COUNT(*) as cnt FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'data_movie_imdb'";
+        $rc  =Pdo_an::db_fetch_row($cq);
+        $cnt_tble =  $rc->cnt-1;
+        $cnt_array = count($array_request);
+        if ($cnt_tble>$cnt_array)
+        {
+            $rescnt = $cnt_tble-$cnt_array;
+
+            for ($d=0;$d<$rescnt;$d++)
+            {
+                $array_request[]  =0;
+            }
+        }
+
+
         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
         $table_access = Import::get_table_access('data_movie_imdb');
 
