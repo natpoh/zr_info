@@ -481,19 +481,24 @@ class CriticSearch extends AbstractDB {
 
         $title = strip_tags($post->title);
 
+        // Get weight
+        $post_weight = $post->weight;
+        $post_title_weight = $post->title_weight;
+
         // Get release time
         $year = $post->year;
         $release = $post->release;
         if (!$release) {
             $release = "{$year}-01-01";
         }
-        
-        
+
+
         $release_time = strtotime($release);
 
         $num = 1;
         // If worlds count < small title need quotes title in content
-        $small_titles = 3;
+        $small_titles = 2;
+        $min_title_weight = 10;
 
         if ($title) {
             $num = sizeof(explode(' ', $title));
@@ -790,7 +795,7 @@ class CriticSearch extends AbstractDB {
                     }
 
                     // Proper review
-                    if ($num >= $small_titles || $title_tags) {
+                    if (($post_title_weight >= $min_title_weight && $num >= $small_titles ) || $title_tags) {
                         $critic_type = 1;
                     }
                 }
@@ -891,22 +896,29 @@ class CriticSearch extends AbstractDB {
             $ret[$id]['type'] = $critic_type;
             $valid = $ret[$id]['total'] >= $ss['min_valid_point'] ? true : false;
 
-            if ($num < $small_titles) {
-                // Small titles
-                $valid = false;
-                $reason = '';
-                if ($title_tags) {
-                    $valid = true;
-                    $reason = 'Valid: Title tags';
-                } else if ($content_tags) {
-                    $valid = true;
-                    $reason = 'Valid: Content tags';
-                } else if ($title_equals) {
-                    $valid = true;
-                    $reason = 'Valid: Title equals';
-                }
+            if ($valid) {
+                if ($post_title_weight < $min_title_weight || $num < $small_titles) {
+                    // Small title weight
 
-                $ret[$id]['debug']['small title'] = "$num < $small_titles. $reason";
+                    $valid = false;
+                    $reason = '';
+                    if ($title_tags) {
+                        $valid = true;
+                        $reason = 'Valid: Title tags';
+                    } else if ($content_tags) {
+                        $valid = true;
+                        $reason = 'Valid: Content tags';
+                    } else if ($title_equals) {
+                        $valid = true;
+                        $reason = 'Valid: Title equals';
+                    }
+                    if ($num < $small_titles) {
+                        $ret[$id]['debug']['small title'] = "$num < $small_titles. $reason";
+                    }
+                    if ($post_title_weight < $min_title_weight) {
+                        $ret[$id]['debug']['small title weigth'] = "$post_title_weight < $min_title_weight. $reason";
+                    }
+                }
             }
 
             if ($dates && $critic_type == 1) {
@@ -2416,7 +2428,7 @@ class CriticSearch extends AbstractDB {
                         if ($key == 'rrtg') {
                             $filters_and .= " AND rrta>0 AND rrt>0";
                         }
-                    } else if ($key == 'rf') {                        
+                    } else if ($key == 'rf') {
                         $value = is_array($value) ? $value : array($value);
                         foreach ($value as $slug) {
                             if ($this->search_filters[$key][$slug]) {

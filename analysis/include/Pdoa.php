@@ -21,46 +21,53 @@ class Pdoa {
      */
 
     public static function connect() {
-        if (static::$pdo) {
-            return static::$pdo;
-        }
 
         try {
-            static::$pdo = new PDO("mysql:host=" . static::$db_host . ";dbname=" . static::$db_name, static::$db_user, static::$db_pass);
+            $pdo = new PDO("mysql:host=" . static::$db_host . ";dbname=" . static::$db_name, static::$db_user, static::$db_pass);
+            $pdo->exec("SET NAMES '" . static::$db_charset . "' ");
+            return $pdo;
         } catch (PDOException $e) {
             print "Error!: " . $e->getMessage() . "<br/>";
             die();
         }
-
-        static::$pdo->exec("SET NAMES '" . static::$db_charset . "' ");
-        return static::$pdo;
     }
 
     //Abstract DB
     public static function db_query($sql) {
-        static::connect();
-        static::$pdo->query($sql);
+        $pdo = self::connect();
+        $pdo->query($sql);
+        $pdo = null;
     }
 
     public static function last_id() {
-        return static::$pdo->lastInsertId();
+        $pdo = self::connect();
+        $id = $pdo->lastInsertId();
+        $pdo = null;
+        return $id;
     }
+
     public static function last_error() {
-        return static::$pdo->errorInfo();
+        $pdo = self::connect();
+        $info = $pdo->errorInfo();
+        $pdo = null;
+        return $info;
     }
+
     public static function db_results($sql, $array = []) {
-        static::connect();
-        $sth = static::$pdo->prepare($sql);
+        $pdo = self::connect();
+        $sth = $pdo->prepare($sql);
         $sth->execute($array);
         $data = $sth->fetchAll(PDO::FETCH_OBJ);
+        $pdo = null;
         return $data;
     }
 
     public static function db_results_array($sql, $array = []) {
-        static::connect();
-        $sth = static::$pdo->prepare($sql);
+        $pdo = self::connect();
+        $sth = $pdo->prepare($sql);
         $sth->execute($array);
         $data = $sth->fetchAll(PDO::FETCH_ASSOC);
+        $pdo = null;
         return $data;
     }
 
@@ -80,12 +87,13 @@ class Pdoa {
             $values[] = $value;
             $val_str[] = "?";
         }
-        $sql = "INSERT INTO {$table} (" . implode(",", $keys) . ") VALUES (" . implode(",", $val_str) . ")";        
+        $sql = "INSERT INTO {$table} (" . implode(",", $keys) . ") VALUES (" . implode(",", $val_str) . ")";
         // print_r($data);
         // print_r($sql);
-        static::connect();
-        $sth = static::$pdo->prepare($sql);
+        $pdo = self::connect();
+        $sth = $pdo->prepare($sql);
         $sth->execute($values);
+        $pdo = null;
         // $arr = $sth->errorInfo();
         // print_r($arr);
         // exit;
@@ -100,30 +108,33 @@ class Pdoa {
         }
         $sql = "UPDATE {$table} SET " . implode(',', $update) . " WHERE " . $id_name . " = " . $id;
 
-        static::connect();
-        $sth = static::$pdo->prepare($sql);
+        $pdo = self::connect();
+        $sth = $pdo->prepare($sql);
         $sth->execute($values);
+        $pdo = null;
         //print_r($sth->errorInfo());
     }
 
     public static function db_fetch_row($sql, $array = [], $type = 'object') {
-        static::connect();
-        $sth = static::$pdo->prepare($sql);
+        $pdo = self::connect();
+        $sth = $pdo->prepare($sql);
         $sth->execute($array);
         if ($type == 'object') {
             $data = $sth->fetch(PDO::FETCH_OBJ);
         } else if ($type == 'array') {
             $data = $sth->fetch(PDO::FETCH_ASSOC);
         }
+        $pdo = null;
 
         return $data;
     }
 
     public static function db_get_var($sql, $array = []) {
-        static::connect();
-        $sth = static::$pdo->prepare($sql);
+        $pdo = self::connect();
+        $sth = $pdo->prepare($sql);
         $sth->execute($array);
         $row = $sth->fetch(PDO::FETCH_OBJ);
+        $pdo = null;
         $ret = '';
 
         if (sizeof((array) $row) > 0) {
@@ -137,15 +148,18 @@ class Pdoa {
     }
 
     public static function quote($sql) {
-        static::connect();
-        return static::$pdo->quote($sql);
+        $pdo = self::connect();
+        $quote = $pdo->quote($sql);
+        $pdo = null;
+        return $quote;
     }
 
     public static function db_get_data($sql, $input, $array = []) {
-        static::connect();
-        $sth = static::$pdo->prepare($sql);
+        $pdo = self::connect();
+        $sth = $pdo->prepare($sql);
         $sth->execute($array);
         $data = $sth->fetch(PDO::FETCH_OBJ);
+        $pdo = null;
         return $data->{$input};
     }
 
@@ -154,23 +168,25 @@ class Pdoa {
         $meta = [];
         if ($metakey) {
             $sql = "SELECT meta_key, meta_value FROM " . $table_prefix . "postmeta WHERE post_id =? and `meta_key` = '" . $metakey . "' ";
-            static::connect();
-            $sth = static::$pdo->prepare($sql);
+            $pdo = self::connect();
+            $sth = $pdo->prepare($sql);
             $sth->execute([$id]);
         } else {
             $sql = "SELECT meta_key, meta_value FROM " . $table_prefix . "postmeta WHERE post_id =? ";
-            static::connect();
-            $sth = static::$pdo->prepare($sql);
+            $pdo = self::connect();
+            $sth = $pdo->prepare($sql);
             $sth->execute([$id]);
         }
         $sth->setFetchMode(PDO::FETCH_ASSOC);
         if ($single) {
             $r = $sth->fetch();
+            $pdo = null;
             return $r['meta_value'];
         } else {
             while ($r = $sth->fetch()) {
                 $meta[$r['meta_key']] = $r['meta_value'];
             }
+            $pdo = null;
             return $meta;
         }
     }
@@ -179,8 +195,8 @@ class Pdoa {
         global $table_prefix;
 
         $sql = "SELECT meta_id FROM " . $table_prefix . "postmeta WHERE post_id =? and meta_key=? limit 1";
-        static::connect();
-        $sth = static::$pdo->prepare($sql);
+        $pdo = self::connect();
+        $sth = $pdo->prepare($sql);
         $sth->execute([$id, $metakey]);
         $data = $sth->fetch(PDO::FETCH_OBJ);
 
@@ -189,16 +205,16 @@ class Pdoa {
         if ($meta_id) {
             ///update
             $sql = "UPDATE `" . $table_prefix . "postmeta` set meta_value=? where meta_id =? ";
-            static::connect();
-            $sth = static::$pdo->prepare($sql);
+            $pdo = self::connect();
+            $sth = $pdo->prepare($sql);
             $sth->execute([$value, $meta_id]);
         } else {
             $sql = "INSERT INTO `" . $table_prefix . "postmeta`  VALUES (NULL, '" . $id . "', '" . $metakey . "', ?) ";
-            static::connect();
-            $sth = static::$pdo->prepare($sql);
+            $pdo = self::connect();
+            $sth = $pdo->prepare($sql);
             $sth->execute([$value]);
         }
-
+        $pdo = null;
         return $id;
     }
 
