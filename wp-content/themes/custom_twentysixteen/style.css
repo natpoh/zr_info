@@ -89,6 +89,12 @@ details {
     margin-bottom: 10px;
     border-radius: 4px;
 }
+
+.theme_dark details {
+    background-color: #2e2d2d;
+}
+
+
 details>div{
     padding: 10px;
 }
@@ -100,7 +106,14 @@ summary{
     border: 1px solid #ccc;
     border-radius: 4px;
 }
-
+.theme_dark summary {
+    padding: 10px;
+    color: #cacaca;
+    cursor: pointer;
+    background-color: #2b2b2b;
+    border: 1px solid #232323;
+    border-radius: 4px;
+}
 details.dark {
     background-color: #fff;
     margin-bottom: 0;

@@ -1015,10 +1015,56 @@ class CriticFront extends SearchFacets {
 
 
         if (!$fullsize) {
+            // Remove su spoilers
+            $regv = '#\[su_spoiler([^\]]+)\].+\[/su_spoiler\]#Us';
+            if (preg_match_all($regv, $content, $mach)) {
+                // var_dump($mach);              
+                foreach ($mach[0] as $i => $val) {
+                    $rtitle = 'Spoiler';
+                    $reg2 = '#title="([^\"]+)#';
+                    if (preg_match($reg2, $mach[1][$i], $m2)) {
+                        $rtitle = $m2[1];
+                    }
+
+                    $content = str_replace($val, $rtitle, $content);
+                }
+            }
+            
             $content = $this->format_content($content, 400);
         } else {
-            // check links
+            // Check links
             $content = $this->replacelink($content);
+            
+            // Active links
+            $content = $this->active_links($content);
+            
+            // Check short codes
+            /*if (function_exists('do_shortcode')) {
+                $content = do_shortcode($content);
+                add_filter('strip_shortcodes_tagnames', function ($tags_to_remove) {
+                    $tags_to_remove[] = 'wp_google_searchbox';
+                    $tags_to_remove[] = 'pt_view';
+                    return $tags_to_remove;
+                });
+                $content = strip_shortcodes($content);
+            }*/
+            
+            // Check su_spoilers
+            $regv = '#\[su_spoiler([^\]]+)\]#';
+            if (preg_match_all($regv, $content, $mach)) {
+                // var_dump($mach);
+                $content = str_replace('[/su_spoiler]', '</div></details>', $content);
+
+                foreach ($mach[0] as $i => $val) {
+                    $rtitle = 'Spoiler';
+                    $reg2 = '#title="([^\"]+)#';
+                    if (preg_match($reg2, $mach[1][$i], $m2)) {
+                        $rtitle = $m2[1];
+                    }
+                    $spoiler = '<details><summary>' . $rtitle . '</summary><div>';
+                    $content = str_replace($val, $spoiler, $content);
+                }
+            }
         }
 
         $content = $this->pccf_filter($content);
@@ -1348,7 +1394,7 @@ class CriticFront extends SearchFacets {
         $title = $item->title;
         $type = $item->type;
 
-       
+
         if (strtolower($type) == 'movie') {
             $slug = 'movies';
         } else {
@@ -1701,6 +1747,17 @@ class CriticFront extends SearchFacets {
 
         return $haystack;
     }
+    
+    public function active_links($content){
+        $pattern = '# (https://[^ ]+) #i';
+
+        if (preg_match_all($pattern, $content, $match)) {
+            foreach ($match[1] as $value) {                
+                $content = str_replace($value, '<a href="'.$value.'" target="_blank">'.$value.'</a>', $content);                
+            }
+        }
+        return $content;        
+    }
 
     public function replacelink($content) {
         $regv = '#<a([^\>]+)\>#';
@@ -1720,6 +1777,7 @@ class CriticFront extends SearchFacets {
     }
 
     public function check_spoiler($content = null) {
+
         if (strstr($content, '[spoiler]')) {
             if (!strstr($content, '[/spoiler]')) {
                 $content = $content . '[/spoiler]';
@@ -2636,7 +2694,7 @@ class CriticFront extends SearchFacets {
         $theme_url = '<img srcset="' . $icon . '" width="16" height="16"> <a target="_blank" href="' . $url . '">' . $text_url . '</a>';
         return $theme_url;
     }
-    
+
     /*
      * External fucntions 
      */
@@ -2732,7 +2790,7 @@ class CriticFront extends SearchFacets {
         $this->cs->facet_limit = $last_limit;
         $this->cs->facet_max_limit = $last_max_limit;
 
-        
+
         $data = array();
         if (isset($result['facets'][$filter]['data'])) {
             $titles = $this->cs->get_keywords_titles($mkw_arr);

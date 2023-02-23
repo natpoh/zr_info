@@ -1800,16 +1800,20 @@ function commit_actors($commit_actors)
 function force_surname_update()
 {
 
+    !class_exists('CPULOAD') ? include ABSPATH . "service/cpu_load.php" : '';
+    $load = CPULOAD::check_load();
+    if ($load['loaded']) {  return;  }
 
-    set_time_limit(0);
+    start_cron_time(550);
+    set_time_limit(600);
     echo 'check actors surname <br>'.PHP_EOL;
     //////check actors surname
     $i = 0;
-    $sql = "SELECT data_actors_meta.id, data_actors_meta.actor_id, data_actors_meta.surname, data_actors_ethnicolr.* from data_actors_meta, data_actors_ethnicolr where data_actors_meta.actor_id =data_actors_ethnicolr.aid and  data_actors_meta.surname IS NOT NULL and	data_actors_ethnicolr.firstname='' and data_actors_ethnicolr.verdict!='' and data_actors_meta.id>1 limit 1000 ";
+    $sql = "SELECT data_actors_meta.id, data_actors_meta.actor_id, data_actors_meta.surname, data_actors_ethnicolr.* from data_actors_meta, data_actors_ethnicolr where data_actors_meta.actor_id =data_actors_ethnicolr.aid and  data_actors_meta.surname IS NOT NULL and	data_actors_ethnicolr.firstname='' and data_actors_ethnicolr.verdict!='' and data_actors_meta.id>1 limit 10000 ";
     $result= Pdo_an::db_results_array($sql);
     $count = count($result);
     foreach ($result as $r) {
-
+        if (check_cron_time())break;
         $id= get_actor_result($r['id']);
         $i++;
 
