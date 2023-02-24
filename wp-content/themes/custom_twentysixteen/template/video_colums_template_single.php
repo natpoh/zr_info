@@ -8,6 +8,7 @@ require('section_home_template.php');
 
 wp_enqueue_style('colums_template', get_template_directory_uri() . '/css/colums_template.css', array(), LASTVERSION);
 wp_enqueue_script('spoiler-min', get_template_directory_uri() . '/js/spoiler.min.js', array('jquery'));
+wp_enqueue_script('awesomeCloud', get_template_directory_uri() . '/js/jquery.awesomeCloud-0.2.js', array('jquery'), LASTVERSION);
 wp_enqueue_script('section_home', get_template_directory_uri() . '/js/section_home.js', array('jquery'), LASTVERSION);
 
 global $post_id;

@@ -116,6 +116,8 @@ $this->set_option(6,$_POST['option_6'],'Color array');
 
 $this->set_option('',$_POST['similar_shows'],'similar_shows');
 
+$this->set_option('',$_POST['words_exclude'],'words_exclude');
+
 //$this->set_option('',$_POST['verdict_method'],'verdict_method');
         }
 
@@ -152,7 +154,8 @@ $this->set_option('',$_POST['similar_shows'],'similar_shows');
         <textarea name="option_6" style="width: 600px; height: 300px"><?php echo $this->get_option(6); ?></textarea>
         <h2>Similar Shows</h2>
         <textarea name="similar_shows" style="width: 600px; height: 300px"><?php echo $this->get_option('','similar_shows'); ?></textarea>
-
+        <h2>4Chan cloud words exclude</h2>
+        <textarea name="words_exclude" style="width: 600px; height: 300px"><?php echo $this->get_option('','words_exclude'); ?></textarea>
     <div class="options_data"><button type="submit" class="button button-primary save_option">Save</button></div>
 
     </div>

@@ -67,7 +67,6 @@ if (function_exists('isAuthorPage')) {
         wp_enqueue_script('author', $themepath . '/js/author_12.js', array('jquery'), $version, true);
         wp_enqueue_style('users-profile', get_template_directory_uri() . '/css/user-profile.css?', array('dashicons'), $version);
         //wp_enqueue_style( 'dashicons-profile', get_stylesheet_uri(), array( 'dashicons' ), $version);
-
     }
 }
 
@@ -84,6 +83,12 @@ function custom_styles() {
     }
     wp_enqueue_style('twentysixteen-style', get_template_directory_uri() . '/style.css', array(), $version);
 }
+
+add_filter('strip_shortcodes_tagnames', function ($tags_to_remove) {
+    $tags_to_remove[] = 'wp_google_searchbox';
+    $tags_to_remove[] = 'pt_view';
+    return $tags_to_remove;
+});
 
 if (!function_exists('twentysixteen_setup')) :
 

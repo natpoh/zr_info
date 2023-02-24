@@ -954,6 +954,18 @@ body.theme_dark .imdb_rating, body.theme_dark .rotten_tomatoes_score, body.theme
     overflow: hidden;
     transition: all 0.4s;
 }
+.wordcloud{
+    height: 450px;
+    width: 100%;
+    min-width: 360px;
+    display: inline-block;
+    cursor: pointer;
+}
+body.theme_dark .wordcloud {
+
+}
+
+
 .column_inner_content_data{
     position: relative;
 }
@@ -1064,8 +1076,11 @@ body.theme_dark  .column_inner_bottom input{
     background-color: #4b4b4b;
     color: #fff;
 }
+body .blue_btn.selected, body .blue_btn.selected:focus, body.theme_dark  .column_inner_bottom input.blue_btn.selected {
+    background-color: #0a4f7e;
+    color: #fff;
 
-
+}
 body.theme_dark  .add_pg_rating_button.button_edit {
     background: url("../images/edit.svg") no-repeat scroll left 6px top 1px  transparent;
     background-size: 28px;

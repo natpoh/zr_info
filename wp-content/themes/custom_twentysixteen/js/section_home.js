@@ -308,9 +308,9 @@ function create_total_rating(obj, only_tomatoes)
         }
 
 
-        if (obj.kinop_rating>0)
+        if (obj.kinop_rating > 0)
             content_rating += '<div class="exlink" id="kinop"><span>Kinopoisk (Russia):</span>' + create_rating_star(obj.kinop_rating, 'kinopoisk') + '</div>';
-        if (obj.douban_rating>0)
+        if (obj.douban_rating > 0)
             content_rating += '<div class="exlink" id="douban"><span>Douban (China):</span>' + create_rating_star(obj.douban_rating, 'douban') + '</div>';
     }
 
@@ -495,7 +495,7 @@ function create_rating_content(object, m_id)
         if (!value)
             value = 0;
 
-        if ( object['diversity_data'] ) {
+        if (object['diversity_data']) {
             var diversity_data = object['diversity_data'];
 
             let  diversity_data_content = create_diversity(diversity_data, value);
@@ -506,7 +506,7 @@ function create_rating_content(object, m_id)
         }
 
     }
-    
+
     if (object['total_rating'])
     {
         var total_gap = object.total_rating.rotten_tomatoes_gap;
@@ -581,10 +581,7 @@ function set_video_scroll(data, block_id, append = '') {
                 return;
             }
 
-        }
-
-
-        else if (data['count'] > 0 && data['tmpl']) {
+        } else if (data['count'] > 0 && data['tmpl']) {
             if (!append) {
                 jQuery('div[id="' + block_id + '"]').parents('section').addClass('loaded');
             }
@@ -751,7 +748,8 @@ function set_video_scroll(data, block_id, append = '') {
                         i++;
                     });
 
-                    init_spoilers();
+                    init_short_codes();
+
                 }
             }
         } else {
@@ -810,7 +808,7 @@ function create_rating_star(rating, type)
     if (type == 'kinopoisk') {
         if (rating)
         {
-            rating = Number(rating)/10;
+            rating = Number(rating) / 10;
 
             return '<span class="kinopoisk_rating"><strong>' + rating + '</strong>/10</span>';
         }
@@ -820,7 +818,7 @@ function create_rating_star(rating, type)
     if (type == 'douban') {
 
         if (rating) {
-            rating = Number(rating)/10;
+            rating = Number(rating) / 10;
             return '<span class="douban_rating"><strong>' + rating + '</strong>/10</span>';
         }
     }
@@ -1193,6 +1191,55 @@ function load_actor_representation(movie_id) {
 
 }
 
+function word_cloud(id)
+{
+    var factor = '0.5';
+    if (jQuery('.wordcloud[id="'+id+'"]').width()>600)
+    {
+        factor=1;
+    }
+    if (jQuery('body').hasClass('theme_dark'))
+    {
+        var clr ='random-light';
+    }
+    else
+    {
+          clr ='random-dark';
+    }
+
+
+    jQuery('.wordcloud[id="'+id+'"]').awesomeCloud({
+        "size" : {
+            "grid" : 5,
+            "factor" : 1,
+
+        },
+        "options" : {
+            "color" : clr,
+            "rotationRatio" : 0.35
+        },
+        "font" : "'Times New Roman', Times, serif",
+        "shape" : "square"
+    });
+
+    // // $("#tv").awesomeCloud({
+    //     "size" : {
+    //         "grid" : 9,
+    //         "normalize" : true
+    //     },
+    //     "options" : {
+    //         "color" : "random-dark",
+    //         "rotationRatio" : 0.35,
+    //         "printMultiplier" : 3,
+    //         "sort" : "random"
+    //     },
+    //     "font" : "'Times New Roman', Times, serif",
+    //     "shape" : "square"
+    // });
+}
+
+
+
 function load_ajax_block(block_id) {
 
     lastload = block_id;
@@ -1269,7 +1316,7 @@ function load_ajax_block(block_id) {
     }
 
     if (block_id == 'ns_related_scroll') {
-        url = 'https://info.antiwoketomatoes.com/service/ns_related.php?pid='+parent_id;
+        url = 'https://info.antiwoketomatoes.com/service/ns_related.php?pid=' + parent_id;
         //url = 'https://rwt.4aoc.ru/service/ns_related.php?pid='+parent_id;
     }
 
@@ -1305,14 +1352,22 @@ function load_ajax_block(block_id) {
                 }
             } else if (block_id == 'twitter_scroll') {
                 if (data) {
-                  //  jQuery('div.column_header_main').prepend(data);
-                    jQuery('div[id="' + block_id + '"]').html('<div class="column_content flex scroller">'+data+'</div>');
+                    //  jQuery('div.column_header_main').prepend(data);
+                    jQuery('div[id="' + block_id + '"]').html('<div class="column_content flex scroller">' + data + '</div>');
                     if (typeof ctf_init != 'undefined')
                     {
                         ctf_init();
                     }
 
+
+                    let af = jQuery('.s_container a:first-of-type').attr('id');
+                    if (af)
+                    {
+                        word_cloud(af);
+                    }
+
                     initializeScroller(1, 'div[id="'+block_id+'"]');
+
                 }
             } else if (block_id == 'chan_scroll') {
                 if (data) {
@@ -1334,16 +1389,13 @@ function load_ajax_block(block_id) {
 
                 }
 
-            }
-
-            else if (block_id == 'ns_related_scroll') {
+            } else if (block_id == 'ns_related_scroll') {
                 if (data) {
-                    jQuery('#'+block_id).html(data);
+                    jQuery('#' + block_id).html(data);
                 }
-            }
-            else if (block_id == 'tags_keywords') {
+            } else if (block_id == 'tags_keywords') {
                 if (data) {
-                    jQuery('#'+block_id).html(data);
+                    jQuery('#' + block_id).html(data);
                 }
             } else if (block_id == 'movie_rating') {
                 add_movie_rating(block_id, data);
@@ -1591,7 +1643,7 @@ function load_next_block(block_id) {
 function check_load_block() {
     var topcur = jQuery(window).scrollTop() + jQuery(window).height() + 800;
     var last_bloc = get_Top('.not_load:visible');
-   //  console.log('last_bloc '+last_bloc+' topcur '+topcur);
+    //  console.log('last_bloc '+last_bloc+' topcur '+topcur);
     if (last_bloc) {
         if (topcur >= last_bloc) {
             load_next_block('');
@@ -2120,14 +2172,13 @@ jQuery(document).ready(function () {
         let block_id = jQuery(this).attr('id');
         load_next_block(block_id);
 
-       /// check_load_block();
+        /// check_load_block();
     });
 
     jQuery('body').upScrollButton();
 
-    init_spoilers();
+    init_short_codes();
 
-    init_gallery();
 
     jQuery("body").on('click', 'details.actor_details summary', function () {
 
@@ -2249,18 +2300,12 @@ jQuery(document).ready(function () {
 
                     jQuery('.full_review').append(emotions);
 
-
-                    ///spoiler
-                    init_spoilers();
+                    // Short codes
+                    init_short_codes(data_object);
 
                     jQuery('.popup-content .full_review').append('<label for="action-popup" class="popup-close-btn">Close</label>');
 
                     jQuery('input[id="action-popup"]').click();
-
-
-
-                    init_gallery();
-
 
                     discuss_config(data_object);
                     init_nte();
@@ -3310,11 +3355,11 @@ jQuery(document).ready(function () {
 
     jQuery('body').on('click', '.exlink', function () {
 
-        let type =jQuery(this).attr('id');
-        let id =jQuery(this).parents('.rating_block').attr('id');
+        let type = jQuery(this).attr('id');
+        let id = jQuery(this).parents('.rating_block').attr('id');
         if (!id)
         {
-            id =jQuery(this).parents('.movie_total_rating').attr('data-value');
+            id = jQuery(this).parents('.movie_total_rating').attr('data-value');
 
         }
 
@@ -3322,23 +3367,20 @@ jQuery(document).ready(function () {
             type: 'POST',
             ///context: this,
             url: window.location.protocol + template_path + "movie_rating.php",
-            data: {"action": "get_link", "type": type, "id":id },
+            data: {"action": "get_link", "type": type, "id": id},
             success: function (data) {
-               if (data)
-               {
-                let ob  = JSON.parse(data);
-                if (ob['url'])
+                if (data)
                 {
-                    window.open(ob['url']);
+                    let ob = JSON.parse(data);
+                    if (ob['url'])
+                    {
+                        window.open(ob['url']);
+
+                    }
 
                 }
-
-               }
             }
         });
-
-
-
 
         return false;
     });
@@ -3424,6 +3466,20 @@ jQuery(document).ready(function () {
         jQuery('.column_inner_content').removeClass('max_with');
         jQuery('.column_inner_content .s_container').addClass('smoched');
     });
+
+
+    jQuery('body').on('click', '.s_container a.wordcloud', function () {
+
+        let src = jQuery(this).attr('src');
+        add_popup();
+
+        jQuery('.popup-content').html('<div class="white_popup maxcontent"><iframe src="' + src + '"></iframe></div>');
+        jQuery('input[id="action-popup"]').click();
+
+        return false;
+
+    });
+
 
     jQuery('body').on('click', '.s_container_smoth', function () {
         jQuery('.column_inner_content').removeClass('max_with');
@@ -3576,76 +3632,35 @@ jQuery(document).ready(function () {
     });
 
 
-    // jQuery('body').on('click', '.fchan_btn input', function () {
-    //
-    //     let pnrt =$(this).parents('.column_inner_bottom');
-    //     let data_title = pnrt.attr('data_title');
-    //     let id =$(this).attr('dataid');
-    //     let link ='https://archive.4plebs.org/_/search/boards/'+id+'/text/'+data_title;
-    //     let bigprnt = $(this).parents('.column_inner_content');
-    //     let iframe = bigprnt.find('.s_container iframe');
-    //     console.log(link);
-    //     iframe.attr('src',link);
-    //
-    // });
+    jQuery('body').on('click', '.fchan_btn input', function () {
+
+        jQuery('.fchan_btn input.selected' ).removeClass('selected');
+        jQuery(this).addClass('selected');
+
+        let pnrt =$(this).parents('.column_inner_bottom');
+
+        let id =$(this).attr('dataid');
+        let bigprnt = $(this).parents('.column_inner_content');
+        let target_contaner = bigprnt.find('.s_container a[id="'+id+'"]');
+        bigprnt.find('.s_container>a').hide();
+        target_contaner.show();
+        let canvs = target_contaner.find('canvas');
+        if (!canvs.attr('id'))
+        {
+            word_cloud(id);
+        }
+
+       // iframe.attr('src',link);
+
+    });
 
 });
 jQuery('body').on('click', '.disqus_content spoiler', function () {
     jQuery(this).toggleClass('spoiler_visible');
 });
-function init_spoilers() {
-    jQuery('.spoiler_default:not(.init)').each(function () {
-        var $this = jQuery(this);
-        if (typeof $this.spoilerAlert !== "undefined") {
-            $this.addClass('init');
-            $this.spoilerAlert({max: 4, partial: 2});
-        } else {
-            ////try to load
-            if (jQuery('body').hasClass('spoilerAlert')) {
-                //console.log('spoilerAlert not init');
-            } else {
-                //console.log('spoilerAlert not load');
-                var third_scripts = {
-                    spoilerAlert: '/wp-content/themes/custom_twentysixteen/js/spoiler.min.js'
-                };
-                use_ext_js(init_spoilers, third_scripts);
-            }
-        }
-    });
-}
 
-function init_gallery() {
-    jQuery('.su-custom-gallery:not(.ginit)').each(function () {
-        jQuery(this).addClass('ginit');
-
-        if (typeof init_gallereies_shortcodes !== "undefined") {
-            init_gallereies_shortcodes();
-        } else {
-            //Load css and js 
-            var plugin = '/wp-content/plugins/shortcodes-ultimate/assets';
-            var css_list = {
-                magnific_popup_css: plugin + '/css/magnific-popup.css',
-                galleries_shortcodes_css: plugin + '/css/galleries-shortcodes.css'
-            }
-            add_css_list(css_list);
-
-            var success = function () {
-                jQuery('body').addClass('init_gallery');
-                init_gallereies_shortcodes();
-            }
-
-            var third_scripts = {
-                magnific_ajax: plugin + '/js/magnific-ajax.js',
-                magnific_popup_js: plugin + '/js/magnific-popup.js',
-                swiper_js: plugin + '/js/swiper.js',
-                galleries_js: plugin + '/js/galleries-shortcodes-live.js',
-            };
-            use_ext_js(success, third_scripts);
-
-        }
-    });
-
-
+function init_short_codes(data_object) {
+    return false;
 }
 
 

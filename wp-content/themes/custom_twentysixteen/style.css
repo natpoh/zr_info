@@ -4933,6 +4933,14 @@ p > video {
 }
 
 
+body .mfp-bg  {
+    z-index: 1000042;
+}
+body .mfp-wrap {
+    z-index: 1000043;
+}
+
+
 /**
  * 13.0 - Multisites
  */

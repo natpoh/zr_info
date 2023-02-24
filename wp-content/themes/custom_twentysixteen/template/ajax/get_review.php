@@ -37,8 +37,12 @@ if (isset($_GET['id'])) {
         $title = '';
         $content = '';
         $link = '';
+      /*  $scripts = array();
+        $scripts_data = array();
+        $styles = array();*/
 
         $post = $cfront->cm->get_post($critic_id);
+        $critic_content = '';
         if ($post) {
 
             $top_movie = $post->top_movie;
@@ -51,9 +55,48 @@ if (isset($_GET['id'])) {
                 if ($valid_meta) {
                     $top_movie = $get_meta;
                 }
-            }
+            }            
             $critic_content = $cfront->cache_single_critic_content($post->id, $top_movie, $post->date_add);
             $link = $cfront->get_critic_url($post);
+            
+            if (strstr($critic_content, 'short_codes_enabled')) {
+                if (function_exists('do_shortcode')) {
+                    ob_start();
+                    // wp_head();
+                    // wp_footer();
+
+                    do_action('su/generator/preview/before');
+                    do_shortcode($post->content);
+                    do_action('su/generator/preview/after');
+                    $short_code_scripts = ob_get_contents();
+                    ob_end_clean();
+                    $critic_content = $critic_content . $short_code_scripts;
+                }
+
+
+                /*
+                  // Links scripts
+                  if (preg_match_all("/<script[^>]+src='([^']+)'[^>]*><\/script>/", $footer, $match)) {
+                  foreach ($match[1] as $script) {
+                  $scripts[] = $script;
+                  }
+                  }
+
+                  // In page scripts
+                  if (preg_match_all("/<script[^>]*>((?!<\/script>).+)<\/script>/Us", $footer, $match)) {
+                  foreach ($match[1] as $script) {
+                  $scripts_data[] = $script;
+                  }
+                  }
+
+
+                  // Link css
+                  if (preg_match_all("/<link rel=\'stylesheet\'[^>]+href='([^']+)'[^>]*>/", $footer, $match)) {
+                  foreach ($match[1] as $style) {
+                  $styles[] = $style;
+                  }
+                  } */
+            }
         }
 
         $content_templ = '<div class="full_review">' . $critic_content . '</div><div id="disqus_thread"></div>';
@@ -62,15 +105,13 @@ if (isset($_GET['id'])) {
         $emotions = $cfront->ce->get_emotions($post->id, true);
 
         ///try pet pgind from db
-        $sql ="SELECT `idn` FROM `cache_disqus_treheads` WHERE `type`='critics' and `post_id` ='".$critic_id."' limit 1";
+        $sql = "SELECT `idn` FROM `cache_disqus_treheads` WHERE `type`='critics' and `post_id` ='" . $critic_id . "' limit 1";
         $r1 = Pdo_an::db_fetch_row($sql);
-        if ($r1)
-        {
-            $pg_idnt =  $r1->idn;
+        if ($r1) {
+            $pg_idnt = $r1->idn;
         }
-        if (!$pg_idnt)
-        {
-            $pg_idnt = $critic_id.' '.$link;
+        if (!$pg_idnt) {
+            $pg_idnt = $critic_id . ' ' . $link;
         }
 
 
@@ -79,7 +120,10 @@ if (isset($_GET['id'])) {
             'page_identifier' => $pg_idnt,
             'title' => $title,
             'content' => $content_templ,
-            'emotions' => $emotions
+            'emotions' => $emotions,
+                /* 'scripts' => $scripts,
+                  'styles' => $styles,
+                  'scripts_data' => $scripts_data, */
         );
         print json_encode($result);
     }

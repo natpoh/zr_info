@@ -1013,58 +1013,66 @@ class CriticFront extends SearchFacets {
                              </div>';
         }
 
+        $short_codes_exist_class = '';
+        $wp_core = '';
 
         if (!$fullsize) {
-            // Remove su spoilers
-            $regv = '#\[su_spoiler([^\]]+)\].+\[/su_spoiler\]#Us';
-            if (preg_match_all($regv, $content, $mach)) {
-                // var_dump($mach);              
-                foreach ($mach[0] as $i => $val) {
-                    $rtitle = 'Spoiler';
-                    $reg2 = '#title="([^\"]+)#';
-                    if (preg_match($reg2, $mach[1][$i], $m2)) {
-                        $rtitle = $m2[1];
-                    }
+            if (strstr($content, '[su_')) {
+                 // Remove su spoilers
+                $wp_core = ' wp_core';
+                
+                $regv = '#\[su_([^\]]+)\].+\[/su_[\w\d]+\]#Us';
+                if (preg_match_all($regv, $content, $mach)) {
+                    // var_dump($mach);              
+                    foreach ($mach[0] as $i => $val) {
+                        $rtitle = '';
+                        $reg2 = '#title="([^\"]+)#';
+                        if (preg_match($reg2, $mach[1][$i], $m2)) {
+                            $rtitle = $m2[1];
+                        }
 
-                    $content = str_replace($val, $rtitle, $content);
+                        $content = str_replace($val, $rtitle, $content);
+                    }
                 }
+                // Remove all custom tags
+                $regv = '#\[su_[^\]]+\]#Us';
+                $content = preg_replace($regv, '', $content);
             }
             
             $content = $this->format_content($content, 400);
         } else {
             // Check links
             $content = $this->replacelink($content);
-            
+
             // Active links
             $content = $this->active_links($content);
-            
-            // Check short codes
-            /*if (function_exists('do_shortcode')) {
-                $content = do_shortcode($content);
-                add_filter('strip_shortcodes_tagnames', function ($tags_to_remove) {
-                    $tags_to_remove[] = 'wp_google_searchbox';
-                    $tags_to_remove[] = 'pt_view';
-                    return $tags_to_remove;
-                });
-                $content = strip_shortcodes($content);
-            }*/
-            
-            // Check su_spoilers
-            $regv = '#\[su_spoiler([^\]]+)\]#';
-            if (preg_match_all($regv, $content, $mach)) {
-                // var_dump($mach);
-                $content = str_replace('[/su_spoiler]', '</div></details>', $content);
 
-                foreach ($mach[0] as $i => $val) {
-                    $rtitle = 'Spoiler';
-                    $reg2 = '#title="([^\"]+)#';
-                    if (preg_match($reg2, $mach[1][$i], $m2)) {
-                        $rtitle = $m2[1];
-                    }
-                    $spoiler = '<details><summary>' . $rtitle . '</summary><div>';
-                    $content = str_replace($val, $spoiler, $content);
+            if (strstr($content, '[su_')) {
+                $short_codes_exist_class = ' short_codes_enabled';
+
+                // Check short codes
+                if (function_exists('do_shortcode')) {
+                    $content = do_shortcode($content);
+                    $content = strip_shortcodes($content);
                 }
             }
+            /*
+              // Check su_spoilers
+              $regv = '#\[su_spoiler([^\]]+)\]#';
+              if (preg_match_all($regv, $content, $mach)) {
+              // var_dump($mach);
+              $content = str_replace('[/su_spoiler]', '</div></details>', $content);
+
+              foreach ($mach[0] as $i => $val) {
+              $rtitle = 'Spoiler';
+              $reg2 = '#title="([^\"]+)#';
+              if (preg_match($reg2, $mach[1][$i], $m2)) {
+              $rtitle = $m2[1];
+              }
+              $spoiler = '<details><summary>' . $rtitle . '</summary><div>';
+              $content = str_replace($val, $spoiler, $content);
+              }
+              } */
         }
 
         $content = $this->pccf_filter($content);
@@ -1088,9 +1096,9 @@ class CriticFront extends SearchFacets {
                     $title = '<strong class="review-title">' . $title . '</strong>';
                 }
 
-                $content = '<div class="full_review_content_block">' . $title . '<div class="vote_main">' . $theme_rating . $content . '</div></div>';
+                $content = '<div class="full_review_content_block' . $short_codes_exist_class . '">' . $title . '<div class="vote_main">' . $theme_rating . $content . '</div></div>';
             } else {
-                $content = '<a class="icntn" href="' . $link . '">
+                $content = '<a class="icntn' . $wp_core . '" href="' . $link . '">
     <div class="vote_main">' . $theme_rating . '<div class="vote_content"><strong>' . $title . '</strong><br>' . $content . "</div>
     </div>
 </a>";
@@ -1747,16 +1755,16 @@ class CriticFront extends SearchFacets {
 
         return $haystack;
     }
-    
-    public function active_links($content){
+
+    public function active_links($content) {
         $pattern = '# (https://[^ ]+) #i';
 
         if (preg_match_all($pattern, $content, $match)) {
-            foreach ($match[1] as $value) {                
-                $content = str_replace($value, '<a href="'.$value.'" target="_blank">'.$value.'</a>', $content);                
+            foreach ($match[1] as $value) {
+                $content = str_replace($value, '<a href="' . $value . '" target="_blank">' . $value . '</a>', $content);
             }
         }
-        return $content;        
+        return $content;
     }
 
     public function replacelink($content) {
