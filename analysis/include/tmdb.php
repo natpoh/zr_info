@@ -553,7 +553,8 @@ public static function check_tmdb_actors_in_movie($mid)
 
 public static function addto_db_imdb($movie_id, $array_movie, $rwt_id = 0, $tmdb_id = 0,$log_type='')
 {
-
+if (!$rwt_id){$rwt_id=0;}
+    if (!$tmdb_id){$tmdb_id=0;}
 global $debug;
 
 
@@ -775,6 +776,7 @@ global $debug;
         }
         if ($debug)
         {
+            echo 'mid='.$mid.'; ';
             echo  $sql;
             var_dump($array_request);
         }

@@ -24,7 +24,7 @@ function update_actor_directors($movie_id)
          $force=1;
         ////update movie
         $array_movie =  TMDB::get_content_imdb($movie_id,0,1,1);
-        $add =  TMDB::addto_db_imdb($movie_id, $array_movie,'update_actor_directors');
+        $add =  TMDB::addto_db_imdb($movie_id, $array_movie,'','','update_actor_directors');
 
         echo $movie_id.' updated<br>';
         return 1;
@@ -51,7 +51,7 @@ function update_actor_stars($id,$movie_id)
     {
         ////update movie
         $array_movie =  TMDB::get_content_imdb($movie_id,0,1,1);
-        $add =  TMDB::addto_db_imdb($movie_id, $array_movie,'update_actor_stars');
+        $add =  TMDB::addto_db_imdb($movie_id, $array_movie,'','','update_actor_stars');
 
         echo $id.' updated<br>';
         return 1;
@@ -560,7 +560,7 @@ function add_to_db_from_userlist()
         {
             ////add movie to database
             $array_movie =  TMDB::get_content_imdb($movie_id);
-            $add =  TMDB::addto_db_imdb($movie_id, $array_movie,'from_userlist');
+            $add =  TMDB::addto_db_imdb($movie_id, $array_movie,'','','from_userlist');
             echo $movie_id.' adedded <br>'.PHP_EOL;
 
             if(isset($movie_list[$movie_id]))
@@ -622,7 +622,7 @@ echo $sql;
         if ($movie_id) {
             // sleep(0.5);
             $array_movie =  TMDB::get_content_imdb($movie_id,'',1,$from_archive);
-            $add =  TMDB::addto_db_imdb($movie_id, $array_movie,'update_imdb_data');
+            $add =  TMDB::addto_db_imdb($movie_id, $array_movie,'','','update_imdb_data');
             if ($add) {
                 echo $movie_id . ' updated<br> ' . PHP_EOL;
             }
@@ -2298,7 +2298,7 @@ function check_imdb($last_id = 0,$logdata='check_imdb')
 
 
                     $array_movie =  TMDB::get_content_imdb($movie_id);
-                    $add =  TMDB::addto_db_imdb($movie_id, $array_movie,$logdata);
+                    $add =  TMDB::addto_db_imdb($movie_id, $array_movie,'','',$logdata);
 
 
                     if (!$add) {
@@ -2349,7 +2349,7 @@ function check_tv_series_imdb($last_id = 0)
 
                 if (!$result_imdb) {
                     $array_movie =  TMDB::get_content_imdb($movie_id);
-                    $add =  TMDB::addto_db_imdb($movie_id, $array_movie,'check_tv_series_imdb');
+                    $add =  TMDB::addto_db_imdb($movie_id, $array_movie,'','','check_tv_series_imdb');
 
                     if (!$add) {
                         echo $movie_id . ' not addeded ' . PHP_EOL;
@@ -2876,7 +2876,7 @@ if (isset($_GET['get_imdb_movie_id'])) {
 
         if ($debug){var_dump($array_movie);}
 
-        $add =  TMDB::addto_db_imdb($id, $array_movie,'get_imdb_movie_id');
+        $add =  TMDB::addto_db_imdb($id, $array_movie,'','','get_imdb_movie_id');
 
     echo $add;
     return;

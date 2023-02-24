@@ -6,6 +6,7 @@
  *
  * @author brahman
  */
+global $pdo;
 class Pdoa {
 
     //put your code here
@@ -23,6 +24,7 @@ class Pdoa {
     public static function connect() {
 
         try {
+            global $pdo;
             $pdo = new PDO("mysql:host=" . static::$db_host . ";dbname=" . static::$db_name, static::$db_user, static::$db_pass);
             $pdo->exec("SET NAMES '" . static::$db_charset . "' ");
             return $pdo;
@@ -40,14 +42,14 @@ class Pdoa {
     }
 
     public static function last_id() {
-        $pdo = self::connect();
+        global $pdo;
         $id = $pdo->lastInsertId();
         $pdo = null;
         return $id;
     }
 
     public static function last_error() {
-        $pdo = self::connect();
+        global $pdo;
         $info = $pdo->errorInfo();
         $pdo = null;
         return $info;

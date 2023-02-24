@@ -733,7 +733,7 @@ class CriticTransit extends AbstractDB {
                                 $movie_id = TMDB::get_imdb_id_from_id($mid);
                                 if ($movie_id) {
                                     $array_movie = TMDB::get_content_imdb($movie_id);
-                                    $add = TMDB::addto_db_imdb($movie_id, $array_movie,'transit_actors');
+                                    $add = TMDB::addto_db_imdb($movie_id, $array_movie,'','','transit_actors');
                                     continue;
                                 }
                             }
