@@ -1048,6 +1048,7 @@ class CriticFront extends SearchFacets {
             $content = $this->active_links($content);
 
             if (strstr($content, '[su_')) {
+                
                 $short_codes_exist_class = ' short_codes_enabled';
 
                 // Check short codes

@@ -787,7 +787,7 @@ global $debug;
         }
         else
         {
-            self::add_log('',$movie_id,'add movies','error added',1,$log_type);
+            self::add_log('',$movie_id,'add movies','error added',2,$log_type);
         }
 
 

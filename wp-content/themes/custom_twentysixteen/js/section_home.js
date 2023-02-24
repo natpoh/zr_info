@@ -3660,7 +3660,29 @@ jQuery('body').on('click', '.disqus_content spoiler', function () {
 });
 
 function init_short_codes(data_object) {
+    init_spoilers();
     return false;
+}
+
+function init_spoilers() {
+    jQuery('.spoiler_default:not(.init)').each(function () {
+        var $this = jQuery(this);
+        if (typeof $this.spoilerAlert !== "undefined") {
+            $this.addClass('init');
+            $this.spoilerAlert({max: 4, partial: 2});
+        } else {
+            ////try to load
+            if (jQuery('body').hasClass('spoilerAlert')) {
+                //console.log('spoilerAlert not init');
+            } else {
+                //console.log('spoilerAlert not load');
+                var third_scripts = {
+                    spoilerAlert: '/wp-content/themes/custom_twentysixteen/js/spoiler.min.js'
+                };
+                use_ext_js(init_spoilers, third_scripts);
+            }
+        }
+    });
 }
 
 
