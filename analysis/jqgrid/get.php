@@ -125,7 +125,7 @@ AND table_schema='".DB_NAME_AN."'";
             {
 
                 !class_exists('DeleteMovie') ? include ABSPATH . "analysis/include/delete_movie.php" : '';
-                DeleteMovie::delete_movie($_POST['parent'],1);
+                DeleteMovie::delete_movie($_POST['parent'],1,'admin');
             }
             else
             {
@@ -280,7 +280,7 @@ AND table_schema='".DB_NAME_AN."'";
                     $comment =$title.' Updated manually';
 
                     !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
-                    TMDB::add_log('',$movie_id,'update movies',$comment,1);
+                    TMDB::add_log('',$movie_id,'update movies',$comment,1,'admin');
                 }
                 $res_id = $array['parent'] ;
 

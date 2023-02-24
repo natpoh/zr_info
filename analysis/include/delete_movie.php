@@ -140,7 +140,7 @@ class DeleteMovie{
         }
     }
 
-    public static function delete_movie($id,$sync=0)
+    public static function delete_movie($id,$sync=0,$logtype='default')
     {
 
         global $debug;
@@ -200,7 +200,7 @@ class DeleteMovie{
 
 
         $comment =$title.' deleted';
-        TMDB::add_log($id,$movie_id,'delete movies',$comment,1);
+        TMDB::add_log($id,$movie_id,'delete movies',$comment,1,$logtype);
     }
 
 

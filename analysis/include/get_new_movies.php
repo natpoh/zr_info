@@ -67,7 +67,7 @@ class GETNEWMOVIES{
                                {
                                    ////add movie to database
                                    $array_movie =  TMDB::get_content_imdb($imdb_id);
-                                   $add =  TMDB::addto_db_imdb($imdb_id, $array_movie);
+                                   $add =  TMDB::addto_db_imdb($imdb_id, $array_movie,'','','tmdbtv');
                                    echo $imdb_id.' adedded <br>'.PHP_EOL;
                                }
 
@@ -228,7 +228,7 @@ class GETNEWMOVIES{
                             $country = $array_movie['country'];
                             if (!strstr($country,'India'))
                             {
-                                $add =  TMDB::addto_db_imdb($coincide, $array_movie);
+                                $add =  TMDB::addto_db_imdb($coincide, $array_movie,'','','fandango');
                                 echo $coincide.' adedded <br>'.PHP_EOL;
 
                             }

@@ -539,23 +539,7 @@ public static function replace_movie_text($m,$allYears = '')
         return $m;
     }
 
-public static function check_and_add_to_imdb_db($imdb_id)
-{
-    if (!self::check_imdb_id($imdb_id))
-    {
-        ///add movie to db
-        $array_movie =  self::get_content_imdb($imdb_id);
-        $add =  self::addto_db_imdb($imdb_id, $array_movie);
-        if ($add) {
-            return 1;
-        }
 
-    }
-    else
-    {
-        return 2;
-    }
-}
 
 public static function check_tmdb_actors_in_movie($mid)
 {
@@ -567,7 +551,7 @@ public static function check_tmdb_actors_in_movie($mid)
 
 }
 
-public static function addto_db_imdb($movie_id, $array_movie, $rwt_id = 0, $tmdb_id = 0)
+public static function addto_db_imdb($movie_id, $array_movie, $rwt_id = 0, $tmdb_id = 0,$log_type='')
 {
 
 global $debug;
@@ -799,11 +783,11 @@ global $debug;
         {
 
             $comment =$mid.' '.$title.' ('.$type.') added';
-            self::add_log('',$movie_id,'add movies',$comment,1);
+            self::add_log('',$movie_id,'add movies',$comment,1,$log_type);
         }
         else
         {
-            self::add_log('',$movie_id,'add movies','error added',1);
+            self::add_log('',$movie_id,'add movies','error added',1,$log_type);
         }
 
 
@@ -828,7 +812,7 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
 
 
         $comment =$title.' ('.$type.') updated';
-        self::add_log('',$movie_id,'update movies',$comment,1);
+        self::add_log('',$movie_id,'update movies',$comment,1,$log_type);
         $mid = self::get_id_from_imdbid($movie_id);
     }
 
@@ -1201,7 +1185,7 @@ public  static function get_country_name($id)
 
 return $result->country_name;
 }
-public static function add_log($id='',$imdb_id='',$name='',$comment='',$log_status=0)
+public static function add_log($id='',$imdb_id='',$name='',$comment='',$log_status=0,$log_type='default')
 {
     if (!$id && $imdb_id)
     {
@@ -1213,9 +1197,9 @@ public static function add_log($id='',$imdb_id='',$name='',$comment='',$log_stat
     }
 
 
-    $sql = "INSERT INTO `movies_log`(`id`, `movie_id`, `rwt_id`, `name`, `comment`, `status`, `last_update`) 
+    $sql = "INSERT INTO `movies_log`(`id`, `movie_id`, `rwt_id`, `name`, `comment`, `status`,  `type`, `last_update`) 
 VALUES (NULL,?,?,?,?,?,?)";
-    Pdo_an::db_results_array($sql,array($imdb_id,$id,$name,$comment,$log_status,time()));
+    Pdo_an::db_results_array($sql,array($imdb_id,$id,$name,$comment,$log_status,$log_type,time()));
 
 
 }

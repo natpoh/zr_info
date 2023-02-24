@@ -47,11 +47,13 @@ $array_jobs = array(
 
 
 
-//'check_tv_series_imdb'=>120, ///add tvseries from list
-//   'get_new_movies'=>(60*12),///add new movies from fandango
-//   'get_new_tv'=>(60*12),///add new tv from tmdb
- //   'add_imdb_data_to_options'=>(60*24*7),
- //   'add_tv_shows_to_options'=>(60*24*30),
+'check_tv_series_imdb'=>120, ///add tvseries from list
+'get_new_movies'=>(60*12),///add new movies from fandango
+'get_new_tv'=>(60*12),///add new tv from tmdb
+
+
+  'add_imdb_data_to_options'=>(60*24*7),
+   'add_tv_shows_to_options'=>(60*24*30),
 
 
 'fix_all_directors'=>60,////temp started 12/01/2023

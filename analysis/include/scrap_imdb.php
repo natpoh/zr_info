@@ -24,7 +24,7 @@ function update_actor_directors($movie_id)
          $force=1;
         ////update movie
         $array_movie =  TMDB::get_content_imdb($movie_id,0,1,1);
-        $add =  TMDB::addto_db_imdb($movie_id, $array_movie);
+        $add =  TMDB::addto_db_imdb($movie_id, $array_movie,'update_actor_directors');
 
         echo $movie_id.' updated<br>';
         return 1;
@@ -51,7 +51,7 @@ function update_actor_stars($id,$movie_id)
     {
         ////update movie
         $array_movie =  TMDB::get_content_imdb($movie_id,0,1,1);
-        $add =  TMDB::addto_db_imdb($movie_id, $array_movie);
+        $add =  TMDB::addto_db_imdb($movie_id, $array_movie,'update_actor_stars');
 
         echo $id.' updated<br>';
         return 1;
@@ -560,7 +560,7 @@ function add_to_db_from_userlist()
         {
             ////add movie to database
             $array_movie =  TMDB::get_content_imdb($movie_id);
-            $add =  TMDB::addto_db_imdb($movie_id, $array_movie);
+            $add =  TMDB::addto_db_imdb($movie_id, $array_movie,'from_userlist');
             echo $movie_id.' adedded <br>'.PHP_EOL;
 
             if(isset($movie_list[$movie_id]))
@@ -622,7 +622,7 @@ echo $sql;
         if ($movie_id) {
             // sleep(0.5);
             $array_movie =  TMDB::get_content_imdb($movie_id,'',1,$from_archive);
-            $add =  TMDB::addto_db_imdb($movie_id, $array_movie);
+            $add =  TMDB::addto_db_imdb($movie_id, $array_movie,'update_imdb_data');
             if ($add) {
                 echo $movie_id . ' updated<br> ' . PHP_EOL;
             }
@@ -2242,7 +2242,7 @@ function check_bettaface($actor_id)
 
 
 }
-function check_imdb($last_id = 0)
+function check_imdb($last_id = 0,$logdata='check_imdb')
 {
 
 
@@ -2298,7 +2298,7 @@ function check_imdb($last_id = 0)
 
 
                     $array_movie =  TMDB::get_content_imdb($movie_id);
-                    $add =  TMDB::addto_db_imdb($movie_id, $array_movie);
+                    $add =  TMDB::addto_db_imdb($movie_id, $array_movie,$logdata);
 
 
                     if (!$add) {
@@ -2349,7 +2349,7 @@ function check_tv_series_imdb($last_id = 0)
 
                 if (!$result_imdb) {
                     $array_movie =  TMDB::get_content_imdb($movie_id);
-                    $add =  TMDB::addto_db_imdb($movie_id, $array_movie);
+                    $add =  TMDB::addto_db_imdb($movie_id, $array_movie,'check_tv_series_imdb');
 
                     if (!$add) {
                         echo $movie_id . ' not addeded ' . PHP_EOL;
@@ -2556,42 +2556,6 @@ where  m.state!=0  and p.status=1 ".$staff_type;
     }
 }
 
-function check_movie_dublicates()
-{
-    !class_exists('DeleteMovie') ? include ABSPATH . "analysis/include/delete_movie.php" : '';
-
-    $sql = "SELECT * FROM `data_movie_imdb` order by  movie_id, id asc";
-    $last_data=[];
-    $rows = Pdo_an::db_results_array($sql);
-    foreach ($rows as $r)
-    {
-        $id = $r['id'];
-        $movie_id = $r['movie_id'];
-
-
-        if ($movie_id==$movie_id_last)
-        {
-            echo   '<br>Origin id=' . $last_data['id'] . ' imdb_id ' .$last_data['movie_id'].' '.$last_data['title'].' '.$last_data['post_name'].'  <br>' . PHP_EOL;
-            echo   'found id= ' . $id . ' imdb_id ' .$movie_id.' '.$r['title'].' '.$r['post_name'].' deleted  <br>' . PHP_EOL;
-
-          if ($_GET['delete']==1)
-          {
-
-
-              DeleteMovie::delete_movie($id,1);
-
-          }
-
-        }
-        else
-        {
-            $last_data = $r;
-            $movie_id_last=$movie_id;
-        }
-
-
-    }
-}
 
 
 
@@ -2674,7 +2638,7 @@ function add_imdb_data_to_options()
 
     set_option(9, $array_year);
     set_option(10, 0);
-    check_imdb(1);
+    check_imdb(1,'add_imdb_data_to_options');
 
 
 }
@@ -2723,7 +2687,7 @@ if (isset($_GET['add_imdb_data_to_options'])) {
 }
 if (isset($_GET['check_imdb'])) {
 
-    check_imdb();
+    check_imdb(0,'get_check_imdb');
     return;
 }
 if (isset($_GET['check_face'])) {
@@ -2912,7 +2876,7 @@ if (isset($_GET['get_imdb_movie_id'])) {
 
         if ($debug){var_dump($array_movie);}
 
-        $add =  TMDB::addto_db_imdb($id, $array_movie);
+        $add =  TMDB::addto_db_imdb($id, $array_movie,'get_imdb_movie_id');
 
     echo $add;
     return;
@@ -3003,10 +2967,7 @@ if (isset($_GET['add_gender_rating_for_new_movies'])) {
     return;
 }
 
-if (isset($_GET['check_movie_dublicates'])) {
-    check_movie_dublicates();
-    return;
-}
+
 if (isset($_GET['add_to_db_from_userlist'])) {
     add_to_db_from_userlist();
     return;
@@ -3300,7 +3261,7 @@ return;
     $debug  =1;
 
     !class_exists('DeleteMovie') ? include ABSPATH . "analysis/include/delete_movie.php" : '';
-    DeleteMovie::delete_movie($_GET['delete_movie'], $sync);
+    DeleteMovie::delete_movie($_GET['delete_movie'], $sync,'request');
 
     return;
 
@@ -3322,7 +3283,7 @@ if (isset($_GET['delete_new_movies'])) {
         $mid = $row['rwt_id'];
         if ($mid)
         {
-            DeleteMovie::delete_movie($mid, 1);
+            DeleteMovie::delete_movie($mid, 1,'request');
         }
 
     }
@@ -3356,7 +3317,7 @@ if (isset($_GET['check_dublicate_movies'])) {
                 unset($array_result[0]);
                 foreach ($array_result as $md)
                 {
-                    DeleteMovie::delete_movie($md, 1);
+                    DeleteMovie::delete_movie($md, 1,'dublicate');
                 }
             }
         }
