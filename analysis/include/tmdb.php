@@ -784,7 +784,7 @@ global $debug;
         if ($mid)
         {
 
-            $comment =$mid.' '.$title.' ('.$type.') added';
+            $comment =$mid.' '.$title.' '.$year.'  ('.$type.') added';
             self::add_log('',$movie_id,'add movies',$comment,1,$log_type);
         }
         else
@@ -809,11 +809,17 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
 
 
         Pdo_an::db_results_array($sql,$array_request);
+        if ($debug)
+        {
+
+            echo  $sql;
+            var_dump($array_request);
+        }
 
 
 
 
-        $comment =$title.' ('.$type.') updated';
+        $comment =$title.' '.$year.' ('.$type.') updated';
         self::add_log('',$movie_id,'update movies',$comment,1,$log_type);
         $mid = self::get_id_from_imdbid($movie_id);
     }
@@ -1200,7 +1206,7 @@ public static function add_log($id='',$imdb_id='',$name='',$comment='',$log_stat
 
 
     $sql = "INSERT INTO `movies_log`(`id`, `movie_id`, `rwt_id`, `name`, `comment`, `status`,  `type`, `last_update`) 
-VALUES (NULL,?,?,?,?,?,?)";
+VALUES (NULL,?,?,?,?,?,?,?)";
     Pdo_an::db_results_array($sql,array($imdb_id,$id,$name,$comment,$log_status,$log_type,time()));
 
 
