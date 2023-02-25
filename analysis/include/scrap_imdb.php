@@ -61,6 +61,15 @@ function update_actor_stars($id,$movie_id)
 
 function fix_all_directors_delete($movie_id=0)
 {
+
+    !class_exists('CPULOAD') ? include ABSPATH . "service/cpu_load.php" : '';
+    $load = CPULOAD::check_load();
+    if ($load['loaded']) {  return;  }
+
+    start_cron_time(50);
+    set_time_limit(60);
+
+    !class_exists('DeleteMovie') ? include ABSPATH . "analysis/include/delete_movie.php" : '';
     !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
     $last_id = OptionData::get_options('','directors_last_id_delete');
     echo 'last_id='.$last_id.'<br>';
@@ -73,24 +82,22 @@ function fix_all_directors_delete($movie_id=0)
     if (!$movie_id)
     {
         $movies_updated = 0;
+$last_update = strtotime('11.01.2023');
 
-        $q= "SELECT `data_movie_imdb`.id  FROM `data_movie_imdb`, `movies_log`
-        where `data_movie_imdb`.id  =`movies_log`.movie_id and `movies_log`.`name` = 'add movies' and `data_movie_imdb`.id > ".$last_id."   order by id asc limit 100";
+        $q= "SELECT `movies_log`.rwt_id  FROM `data_movie_imdb`, `movies_log`
+        where `data_movie_imdb`.id  =`movies_log`.movie_id and `movies_log`.`name` = 'add movies' and `movies_log`.`type` IS NULL  and `movies_log`.rwt_id  IS NOT NULL
+          and  `movies_log`.last_update >{$last_update} and `movies_log`.rwt_id > ".$last_id."   order by `movies_log`.rwt_id asc limit 60";
+
+
         $r = Pdo_an::db_results_array($q);
         foreach ($r as $row)
         {
 
-            $id =  $row['id'];
-
-
-
+            $id =  $row['rwt_id'];
+            DeleteMovie::delete_movie($id, 1,'false_added');
             OptionData::set_option('',$id,'directors_last_id_delete',false);
 
-            if ($movies_updated> 100)
-            {
-                break;
-            }
-
+            echo $id.' deleted<br>';
 
             if (check_cron_time())
             {
