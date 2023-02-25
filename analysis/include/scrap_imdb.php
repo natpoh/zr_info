@@ -66,8 +66,8 @@ function fix_all_directors_delete($movie_id=0)
     $load = CPULOAD::check_load();
     if ($load['loaded']) {  return;  }
 
-    start_cron_time(50);
-    set_time_limit(60);
+    start_cron_time(200);
+    set_time_limit(300);
 
     !class_exists('DeleteMovie') ? include ABSPATH . "analysis/include/delete_movie.php" : '';
     !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
@@ -86,7 +86,7 @@ $last_update = strtotime('11.01.2023');
 
         $q= "SELECT `movies_log`.rwt_id  FROM `data_movie_imdb`, `movies_log`
         where `data_movie_imdb`.id  =`movies_log`.movie_id and `movies_log`.`name` = 'add movies' and `movies_log`.`type` IS NULL  and `movies_log`.rwt_id  IS NOT NULL
-          and  `movies_log`.last_update >{$last_update} and `movies_log`.rwt_id > ".$last_id."   order by `movies_log`.rwt_id asc limit 60";
+          and  `movies_log`.last_update >{$last_update} and `movies_log`.rwt_id > ".$last_id."   order by `movies_log`.rwt_id asc limit 100";
 
 
         $r = Pdo_an::db_results_array($q);
