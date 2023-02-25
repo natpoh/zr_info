@@ -293,8 +293,7 @@ AND table_schema='".DB_NAME_AN."'";
 
                 $sql = "INSERT INTO  `" . $table_data . "` (" . $array_index . ") values ( " . $qres . " ) ";
 
-                $result = Pdo_an::db_results_array($sql, $arrayrequest);
-                $res_id=Pdo_an::last_id();
+                $res_id= Pdo_an::db_insert_sql($sql, $arrayrequest);
 
 
 

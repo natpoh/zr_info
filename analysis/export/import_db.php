@@ -238,8 +238,8 @@ class Import
 
           $sql = "INSERT INTO `".$table."` (`".$column."`) VALUES (NULL)";
           $result['sql']=$sql;
-          Pdo_an::db_query($sql);
-          $result['id']= Pdo_an::last_id();
+          $result['id']= Pdo_an::db_insert_sql($sql);
+
 
 
       }

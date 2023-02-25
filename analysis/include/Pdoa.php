@@ -24,7 +24,6 @@ class Pdoa {
     public static function connect() {
 
         try {
-            global $pdo;
             $pdo = new PDO("mysql:host=" . static::$db_host . ";dbname=" . static::$db_name, static::$db_user, static::$db_pass);
             $pdo->exec("SET NAMES '" . static::$db_charset . "' ");
             return $pdo;
@@ -41,12 +40,15 @@ class Pdoa {
         $pdo = null;
     }
 
-    public static function last_id() {
-        global $pdo;
-        $id = $pdo->lastInsertId();
+    public static function last_id($db) {
+        $pdo = self::connect();
+        $sql = "SELECT id FROM {$db} ORDER BY id DESC limit 1";
+        $sth = $pdo->prepare($sql);
+        $sth->execute();
+        $data = $sth->fetchAll(PDO::FETCH_ASSOC);
         $pdo = null;
-        return $id;
-    }
+        return $data[0]['id'];
+        }
 
     public static function last_error() {
         global $pdo;
@@ -73,6 +75,15 @@ class Pdoa {
         return $data;
     }
 
+    public static function db_insert_sql($sql, $array = []) {
+        $pdo = self::connect();
+        $sth = $pdo->prepare($sql);
+        $sth->execute($array);
+        $id = $pdo->lastInsertId();
+        $pdo = null;
+        return $id;
+    }
+
     public static function db_fetch_object(&$arr) {
         if (sizeof($arr) > 0) {
             return array_unshift($arr);
@@ -95,10 +106,13 @@ class Pdoa {
         $pdo = self::connect();
         $sth = $pdo->prepare($sql);
         $sth->execute($values);
+        
+        $id = $pdo->lastInsertId();
         $pdo = null;
         // $arr = $sth->errorInfo();
         // print_r($arr);
         // exit;
+        return $id;
     }
 
     public static function db_update($data, $table, $id, $id_name = "id") {

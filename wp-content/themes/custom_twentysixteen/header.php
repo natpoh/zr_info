@@ -237,7 +237,7 @@
         }
 
         if (function_exists('wp_theme_cache') && !is_user_logged_in()) {
-         // echo wp_theme_cache('get_header_data');
+          echo wp_theme_cache('get_header_data');
         } else {
             get_header_data();
 

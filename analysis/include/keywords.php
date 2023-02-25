@@ -119,8 +119,8 @@ class Movie_Keywords {
         else if ($update)
         {
             $q ="INSERT INTO `meta_keywords`(`id`, `name`) VALUES (NULL,?)";
-            $r = Pdo_an::db_results_array($q,[$keys]);
-            $id = Pdo_an::last_id();
+            $id = Pdo_an::db_insert_sql($q,[$keys]);
+
             return $id;
         }
 

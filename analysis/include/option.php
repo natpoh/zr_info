@@ -40,13 +40,10 @@ class OptionData {
                 }
 
                 $sql = "INSERT INTO `options`(`id`, `val`, `type`) VALUES (?,?,?)";
-                Pdo_an::db_results_array($sql,array($id,$option,$type));
+                $id =Pdo_an::db_insert_sql($sql,array($id,$option,$type));
 
 
-                if (!$id)
-                {
-                    $id = Pdo_an::last_id();
-                }
+
             }
 
 

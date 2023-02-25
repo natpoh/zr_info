@@ -527,8 +527,8 @@ if (isset($_POST['oper'])) {
                     Pdo_an::db_results_array($inser_sql, $data_array);
                 } else {
                     $inser_sql = "INSERT INTO `data_" . $array_crowd[$type] . "`(`id` " . $oper_insert_colums . " ) VALUES (NULL " . $oper_insert_data . " )";
-                    Pdo_an::db_results_array($inser_sql, $data_array);
-                    $uddate_id = Pdo_an::last_id();
+                    $uddate_id = Pdo_an::db_insert_sql($inser_sql, $data_array);
+
                 }
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
                 Import::create_commit('', 'update', "data_" . $array_crowd[$type], array('id' => $uddate_id), 'crowsource', 5);

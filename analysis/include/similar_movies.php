@@ -200,8 +200,8 @@ class SimilarMovies
         else
         {
             $sql="INSERT INTO `cache_movies_similar`(`id`, `movie_id`, `titles` ,`data`, `last_update`) VALUES (NULL,?,?,?,?)";
-            Pdo_an::db_results_array($sql,[$id,$resultarray,$result_ids,time()]);
-            $mid = Pdo_an::last_id();
+            $mid =Pdo_an::db_insert_sql($sql,[$id,$resultarray,$result_ids,time()]);
+
 
         }
 

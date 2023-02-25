@@ -771,8 +771,8 @@ global $debug;
                 $sql.= ",? ";
             }
             $sql.= ")";
-            Pdo_an::db_results_array($sql,$array_request);
-            $mid = Pdo_an::last_id();
+            $mid =Pdo_an::db_insert_sql($sql,$array_request);
+
         }
         if ($debug)
         {
@@ -1072,8 +1072,8 @@ public static function add_movie_actor($mid = 0, $id = 0, $type = 0,$table='meta
                $sql = sprintf("INSERT INTO {$table} (mid,aid,pos,type) VALUES (%d,%d,%d,%d)", (int) $mid, (int) $id, (int) $pos, (int) $type);
 
                ///echo $sql.PHP_EOL;
-                Pdo_an::db_query($sql);
-                $aid = Pdo_an::last_id();
+                $aid =Pdo_an::db_insert_sql($sql);
+
 
                 !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
                 ACTIONLOG::update_actor_log('new_actors',$table,$aid);

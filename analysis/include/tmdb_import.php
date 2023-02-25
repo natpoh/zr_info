@@ -405,8 +405,8 @@ class TMDBIMPORT
 
                         $sql = "INSERT INTO `meta_movie_actor`(`id`, `mid`, `aid`, `pos`, `type`)
                                     VALUES (NULL,?,?,?,?)";
-                        Pdo_an::db_results_array($sql,$data);
-                        $last_id =Pdo_an::last_id();
+                        $last_id =Pdo_an::db_insert_sql($sql,$data);
+
 
                        /// Import::create_commit($commit_id,'update','meta_movie_actor',array('id'=>$last_id),'movie_meta_actor',5,['skip'=>['id']]);
 

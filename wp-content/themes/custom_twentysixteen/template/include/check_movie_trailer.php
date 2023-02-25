@@ -133,8 +133,8 @@ $array_data = [];
     {
         $sql="INSERT INTO `cache_movie_trailers` (`id`, `rwt_id`, `data`, `status`, `last_update`) 
                                                 VALUES (NULL, ?, ?, ?, ?);";
-        Pdo_an::db_results_array($sql,array($movie_id,$array_data_string,$status,time()));
-        $id = Pdo_an::last_id();
+        $id =Pdo_an::db_insert_sql($sql,array($movie_id,$array_data_string,$status,time()));
+
     }
 
     !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
