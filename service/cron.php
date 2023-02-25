@@ -56,7 +56,7 @@ $array_jobs = array(
    'add_tv_shows_to_options'=>(60*24*30),
 
 
-'fix_all_directors'=>60,////temp started 12/01/2023  ///25.02.2023 restart
+//'fix_all_directors'=>60,////temp started 12/01/2023  ///25.02.2023 restart
 
 
 
