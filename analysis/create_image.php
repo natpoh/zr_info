@@ -152,6 +152,7 @@ if (strstr($id,'m_'))
         if ($obj){
             $title = $obj['title'];
             $year = $obj['year'];
+            $type = $obj['type'];
         }
         if ($title) {
 
@@ -163,7 +164,21 @@ if (strstr($id,'m_'))
             $string = $title;
             $pointsize = 34;
             $pointsize_year = 25;
-            $fontfile = $_SERVER['DOCUMENT_ROOT'].'/analysis/HOLLYWOODSTARFIRE.ttf';
+            if ($type == 'VideoGame')
+            {
+                $pointsize = 26;
+                $pointsize_year = 18;
+                $fontfile = $_SERVER['DOCUMENT_ROOT'].'/analysis/8-bit pusab.ttf';
+            }
+            else
+            {
+                $fontfile = $_SERVER['DOCUMENT_ROOT'].'/analysis/HOLLYWOODSTARFIRE.ttf';
+
+            }
+
+
+
+
             $im = imagecreate($i_width, $i_height);
             $black = imagecolorallocate ($im, 0, 0, 0);
             $white = imagecolorallocate ($im, 255, 255, 255);
