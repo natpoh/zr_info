@@ -57,6 +57,52 @@ function update_actor_stars($id,$movie_id)
         return 1;
     }
 }
+
+
+function fix_all_directors_delete($movie_id=0)
+{
+    !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+    $last_id = OptionData::get_options('','directors_last_id_delete');
+    echo 'last_id='.$last_id.'<br>';
+
+    if (!$last_id)
+    {
+        $last_id=0;
+    }
+
+    if (!$movie_id)
+    {
+        $movies_updated = 0;
+
+        $q= "SELECT `data_movie_imdb`.id  FROM `data_movie_imdb`, `movies_log`
+        where `data_movie_imdb`.id  =`movies_log`.movie_id and `movies_log`.`name` = 'add movies' and `data_movie_imdb`.id > ".$last_id."   order by id asc limit 100";
+        $r = Pdo_an::db_results_array($q);
+        foreach ($r as $row)
+        {
+
+            $id =  $row['id'];
+
+
+
+            OptionData::set_option('',$id,'directors_last_id_delete',false);
+
+            if ($movies_updated> 100)
+            {
+                break;
+            }
+
+
+            if (check_cron_time())
+            {
+                break;
+            }
+
+        }
+
+    }
+
+}
+
 function fix_all_directors($movie_id=0)
 {
     !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
@@ -3236,6 +3282,13 @@ if (isset($_GET['fix_all_directors'])) {
 
 
     fix_all_directors($_GET['fix_all_directors']);
+
+    return;
+}
+if (isset($_GET['fix_all_directors_delete'])) {
+
+
+    fix_all_directors_delete($_GET['fix_all_directors_delete']);
 
     return;
 }
