@@ -24,7 +24,7 @@ function update_actor_directors($movie_id)
          $force=1;
         ////update movie
         $array_movie =  TMDB::get_content_imdb($movie_id,0,1,1);
-        $add =  TMDB::addto_db_imdb($movie_id, $array_movie,'','','update_actor_directors');
+        $add =  TMDB::addto_db_imdb($movie_id, $array_movie,'','','update_actor_directors_new');
 
         echo $movie_id.' updated<br>';
         return 1;
@@ -79,7 +79,7 @@ function fix_all_directors($movie_id=0)
 
             $id =  $row['id'];
             $movie_id =  $row['movie_id'];
-            $movies_updated+=update_actor_directors($id,$movie_id);
+            $movies_updated+=update_actor_directors($movie_id);
             OptionData::set_option('',$id,'directors_last_id',false);
 
             if ($movies_updated> 100)
