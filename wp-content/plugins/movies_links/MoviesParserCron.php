@@ -876,7 +876,7 @@ class MoviesParserCron extends MoviesAbstractDB {
      * Cron async
      */
 
-    public function run_cron_async($cid = 0, $type_name = '', $debug = false) {
+    public function run_cron_async($cid = 0, $type_name = '', $debug = false, $custom_url_id=0) {
 
         if (!$cid) {
             return;
@@ -893,7 +893,7 @@ class MoviesParserCron extends MoviesAbstractDB {
 
             // Random urls
             $random_urls = $type_opt['random'];
-            $urls = $this->mp->get_last_urls($urls_count, $status, $campaign->id, $random_urls, $debug);
+            $urls = $this->mp->get_last_urls($urls_count, $status, $campaign->id, $random_urls, $debug, $custom_url_id);
 
             $count = count((array) $urls);
 

@@ -584,8 +584,8 @@ class MoviesParser extends MoviesAbstractDB {
             'links_type' => -1,
             'exp_status' => -1,
             'pid' => -1,
-            'ids'=> array(),
-            'date' => 0,            
+            'ids' => array(),
+            'date' => 0,
         );
 
 
@@ -640,13 +640,13 @@ class MoviesParser extends MoviesAbstractDB {
         if ($q['exp_status'] != -1) {
             $exp_status_and = sprintf(" AND u.exp_status=%d", $q['exp_status']);
         }
-        
+
         // Links pid filter
         $links_pid_and = '';
         if ($q['pid'] != -1) {
             $links_pid_and = sprintf(" AND u.pid=%d", $q['pid']);
         }
-        
+
         // Ids and
         $ids_and = '';
         if ($q['ids']) {
@@ -694,8 +694,8 @@ class MoviesParser extends MoviesAbstractDB {
                 . " FROM {$this->db['url']} u"
                 . " LEFT JOIN {$this->db['arhive']} a ON u.id = a.uid"
                 . " LEFT JOIN {$this->db['posts']} p ON u.id = p.uid"
-                . $status_query .$ids_and.  $cid_and . $links_pid_and.  $exp_status_and . $arhive_type_and . $parser_type_and . $links_type_and . $and_date . $and_orderby . $limit;
-                
+                . $status_query . $ids_and . $cid_and . $links_pid_and . $exp_status_and . $arhive_type_and . $parser_type_and . $links_type_and . $and_date . $and_orderby . $limit;
+
         if (!$count) {
             $result = $this->db_results($query);
         } else {
@@ -899,125 +899,157 @@ class MoviesParser extends MoviesAbstractDB {
         return $result;
     }
 
-    public function get_last_urls($count = 10, $status = -1, $cid = 0, $random = 0, $debug = false) {
-        $status_trash = 2;
-        $status_query = " WHERE status != " . $status_trash;
-        if ($status != -1) {
-            $status_query = " WHERE status = " . (int) $status;
-        }
+    public function get_last_urls($count = 10, $status = -1, $cid = 0, $random = 0, $debug = false, $custom_url_id = 0) {
 
-        // Company id
-        $cid_and = '';
-        if ($cid > 0) {
-            $cid_and = sprintf(" AND cid=%d", (int) $cid);
-        }
-        $result = '';
-        if ($random == 1) {
-            if ($debug) {
-                print "Random URLs\n";
-            }
-            // Get all urls
-            $query = "SELECT id FROM {$this->db['url']}" . $status_query . $cid_and;
-            $items = $this->db_results($query);
-            if ($items) {
-                $ids = array();
-                foreach ($items as $item) {
-                    $ids[] = $item->id;
-                }
-                shuffle($ids);
-                $i = 1;
-                $random_ids = array();
-                foreach ($ids as $id) {
-                    $random_ids[] = $id;
-                    if ($i >= $count) {
-                        break;
-                    }
-                    $i += 1;
-                }
-                // Get random urls
-                $query = "SELECT * FROM {$this->db['url']} WHERE id IN(" . implode(",", $random_ids) . ")";
-                $result = $this->db_results($query);
-            }
+        if ($custom_url_id > 0) {
+            $query = sprintf("SELECT * FROM {$this->db['url']} WHERE id=%d", $custom_url_id);
+            $result = $this->db_results($query);
         } else {
-            if ($debug) {
-                print "Weight URLs\n";
+
+            $status_trash = 2;
+            $status_query = " WHERE status != " . $status_trash;
+            if ($status != -1) {
+                $status_query = " WHERE status = " . (int) $status;
             }
-            // Pid exists
-            $query = "SELECT COUNT(id) FROM {$this->db['url']} WHERE pid>0" . $cid_and;
-            $pid_exists = $this->db_get_var($query);
-            if ($pid_exists > 0) {
-                // Get by weight
 
-                $result = array();
-                // 1. Weight>20
-                $ma = $this->ml->get_ma();
-                $ids = $ma->get_post_ids_by_min_weight(20);
-                if ($ids) {
-                    $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " AND pid IN(" . implode(",", $ids) . ") ORDER BY id DESC LIMIT %d", $count);
-                    $result = (array) $this->db_results($query);
-                }
+            // Company id
+            $cid_and = '';
+            if ($cid > 0) {
+                $cid_and = sprintf(" AND cid=%d", (int) $cid);
+            }
+            $result = '';
+            if ($random == 1) {
                 if ($debug) {
-                    print "Weight>20: $count\n";
+                    print "Random URLs\n";
                 }
-
-                if (count($result) < $count) {
-                    // 2. Weight>10
-                    $ids = $ma->get_post_ids_by_min_weight(10);
-                    if ($ids) {
-                        $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " AND pid IN(" . implode(",", $ids) . ") ORDER BY id DESC LIMIT %d", $count);
-                        $result_10 = (array) $this->db_results($query);
-                        if ($result_10) {
-                            if ($result) {
-                                $result = array_merge($result, $result_10);
-                            } else {
-                                $result = $result_10;
-                            }
+                // Get all urls
+                $query = "SELECT id FROM {$this->db['url']}" . $status_query . $cid_and;
+                $items = $this->db_results($query);
+                if ($items) {
+                    $ids = array();
+                    foreach ($items as $item) {
+                        $ids[] = $item->id;
+                    }
+                    shuffle($ids);
+                    $i = 1;
+                    $random_ids = array();
+                    foreach ($ids as $id) {
+                        $random_ids[] = $id;
+                        if ($i >= $count) {
+                            break;
                         }
+                        $i += 1;
                     }
-                    if ($debug) {
-                        print "Weight>10: $count\n";
-                    }
-                }
-
-                if (count($result) < $count) {
-                    // 2. Weight>0
-                    $ids = $ma->get_post_ids_by_min_weight(0);
-                    if ($ids) {
-                        $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " AND pid IN(" . implode(",", $ids) . ") ORDER BY id DESC LIMIT %d", $count);
-                        $result_0 = (array) $this->db_results($query);
-                        if ($result_0) {
-                            if ($result) {
-                                $result = array_merge($result, $result_0);
-                            } else {
-                                $result = $result_0;
-                            }
-                        }
-                    }
-
-                    if ($debug) {
-                        print "Weight>0: $count\n";
-                    }
-                }
-
-
-                if (!count($result)) {
-                    // Get by id
-
-                    if ($debug) {
-                        print "Get by id\n";
-                    }
-                    $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " ORDER BY id DESC LIMIT %d", $count);
+                    // Get random urls
+                    $query = "SELECT * FROM {$this->db['url']} WHERE id IN(" . implode(",", $random_ids) . ")";
                     $result = $this->db_results($query);
                 }
             } else {
-                // Get by id
-                $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " ORDER BY id DESC LIMIT %d", $count);
-                $result = $this->db_results($query);
+                if ($debug) {
+                    print "Weight URLs\n";
+                }
+                // Pid exists
+                $query = "SELECT COUNT(id) FROM {$this->db['url']} WHERE pid>0" . $cid_and;
+                $pid_exists = $this->db_get_var($query);
+                if ($pid_exists > 0) {
+                    // Get by weight
+
+                    $result = array();
+                    // 1. Weight>20
+                    $ma = $this->ml->get_ma();
+                    $ids = $ma->get_post_ids_by_min_weight(20);
+                    if ($ids) {
+                        $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " AND pid IN(" . implode(",", $ids) . ") ORDER BY id DESC LIMIT %d", $count);
+                        $result = (array) $this->db_results($query);
+                    }
+                    if ($debug) {
+                        print "Weight>20: $count\n";
+                    }
+
+                    if (count($result) < $count) {
+                        // 2. Weight>10
+                        $ids = $ma->get_post_ids_by_min_weight(10);
+                        if ($ids) {
+                            $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " AND pid IN(" . implode(",", $ids) . ") ORDER BY id DESC LIMIT %d", $count);
+                            $result_10 = (array) $this->db_results($query);
+                            if ($result_10) {
+                                if ($result) {
+                                    $result = array_merge($result, $result_10);
+                                } else {
+                                    $result = $result_10;
+                                }
+                            }
+                        }
+                        if ($debug) {
+                            print "Weight>10: $count\n";
+                        }
+                    }
+
+                    if (count($result) < $count) {
+                        // 2. Weight>0
+                        $ids = $ma->get_post_ids_by_min_weight(0);
+                        if ($ids) {
+                            $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " AND pid IN(" . implode(",", $ids) . ") ORDER BY id DESC LIMIT %d", $count);
+                            $result_0 = (array) $this->db_results($query);
+                            if ($result_0) {
+                                if ($result) {
+                                    $result = array_merge($result, $result_0);
+                                } else {
+                                    $result = $result_0;
+                                }
+                            }
+                        }
+
+                        if ($debug) {
+                            print "Weight>0: $count\n";
+                        }
+                    }
+
+
+                    if (!count($result)) {
+                        // Get by id
+
+                        if ($debug) {
+                            print "Get by id\n";
+                        }
+                        $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " ORDER BY id DESC LIMIT %d", $count);
+                        $result = $this->db_results($query);
+                    }
+                } else {
+                    // Get by id
+                    $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " ORDER BY id DESC LIMIT %d", $count);
+                    $result = $this->db_results($query);
+                }
             }
         }
 
         if ($debug) {
             print_r($result);
+        }
+
+        // Check movie exist
+        if (count($result)) {
+            $valid_result = array();
+            $ma = $this->ml->get_ma();
+            foreach ($result as $item) {
+                if ($item->pid > 0) {
+                    if ($ma->get_movie_by_id($item->pid)) {
+                        // Post exist
+                        $valid_result[] = $item;
+                        if ($debug) {
+                            print "Movie exist: " . $item->pid . "\n";
+                        }
+                    } else {
+                        // Remove url
+                        $this->delete_arhive_by_url_id($item->id);
+                        $this->delete_url($item->id);
+                        if ($debug) {
+                            print "Remove URL: " . $item->id . "\n";
+                        }
+                    }
+                }
+            }
+            $result = $valid_result;
         }
 
         return $result;
@@ -3216,13 +3248,12 @@ class MoviesParser extends MoviesAbstractDB {
         $result = $this->db_results($sql);
         return $result;
     }
-    
-    public function get_posts_by_top_movie($top_movie=0) {
+
+    public function get_posts_by_top_movie($top_movie = 0) {
         $sql = sprintf("SELECT * FROM {$this->db['posts']} WHERE top_movie = %d", (int) $top_movie);
         $result = $this->db_results($sql);
         return $result;
     }
-    
 
     public function get_posts_count($cid) {
         $sql = sprintf("SELECT COUNT(p.id) FROM {$this->db['posts']} p INNER JOIN {$this->db['url']} u ON u.id=p.uid WHERE u.cid=%d", $cid);
@@ -3460,7 +3491,7 @@ class MoviesParser extends MoviesAbstractDB {
         $results = $this->db_results($sql);
         return $results;
     }
-    
+
     public function get_fchan_posts_content($uid = 0) {
         $sql = sprintf("SELECT content FROM {$this->db['fchan_posts']} WHERE mid=%d AND status=1", $uid);
         $results = $this->db_results($sql);
