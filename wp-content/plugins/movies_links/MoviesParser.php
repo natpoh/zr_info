@@ -904,6 +904,7 @@ class MoviesParser extends MoviesAbstractDB {
         if ($custom_url_id > 0) {
             $query = sprintf("SELECT * FROM {$this->db['url']} WHERE id=%d", $custom_url_id);
             $result = $this->db_results($query);
+            
         } else {
 
             $status_trash = 2;
@@ -1679,7 +1680,7 @@ class MoviesParser extends MoviesAbstractDB {
      * Parsing rules
      */
 
-    public function get_last_arhives_no_posts($count = 10, $cid = 0, $version = 0, $no_posts = true, $debug = false) {
+    public function get_last_arhives_no_posts($count = 10, $cid = 0, $version = 0, $no_posts = true, $debug = false, $custom_url=0) {
 
         // Company id
         $cid_and = '';
@@ -1699,11 +1700,16 @@ class MoviesParser extends MoviesAbstractDB {
         } else {
             $np_and = ' AND (p.uid is NULL OR p.multi=0' . $and_version . ')';
         }
+        
+        $and_url_id = '';
+        if ($custom_url>0){
+            $and_url_id = sprintf(' AND u.id=%d',$custom_url);
+        }
 
-        $query = sprintf("SELECT a.uid, a.arhive_hash, u.cid FROM {$this->db['arhive']} a"
+        $query = sprintf("SELECT a.uid, a.arhive_hash, u.cid, u.id as uid, u.pid as upid FROM {$this->db['arhive']} a"
                 . " INNER JOIN {$this->db['url']} u ON u.id = a.uid"
                 . " LEFT JOIN {$this->db['posts']} p ON p.uid = a.uid"
-                . " WHERE a.id>0 AND u.status!=4" . $np_and . $cid_and
+                . " WHERE a.id>0 AND u.status!=4" . $np_and . $cid_and . $and_url_id
                 . " ORDER BY a.id DESC LIMIT %d", (int) $count);
 
         if ($debug) {

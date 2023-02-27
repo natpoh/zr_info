@@ -19,19 +19,19 @@ class MoviesParserCron extends MoviesAbstractDB {
         $this->mp = $this->ml->get_mp();
     }
 
-    public function run_cron($cron_type = 1, $debug = false, $force = false) {
-        $count = $this->process_all($cron_type, $debug, $force);
+    public function run_cron($cron_type = 1, $debug = false, $force = false, $custom_url_id = 0) {
+        $count = $this->process_all($cron_type, $debug, $force, $custom_url_id);
         return $count;
     }
 
-    public function process_all($cron_type, $debug = false, $force = false) {
+    public function process_all($cron_type, $debug = false, $force = false, $custom_url_id = 0) {
         $campaigns = $this->mp->get_campaigns(1, -1, 1, '', 'ASC', 0);
         if ($debug) {
             print_r($campaigns);
         }
         $count = 0;
         foreach ($campaigns as $campaign) {
-            $count += $this->check_time_campaign($campaign, $cron_type, $debug, $force);
+            $count += $this->check_time_campaign($campaign, $cron_type, $debug, $force, $custom_url_id);
             $time = (int) $this->timer_stop(0);
             if ($time > $this->max_cron_time) {
                 break;
@@ -40,7 +40,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         return $count;
     }
 
-    public function check_time_campaign($campaign, $cron_type, $debug = false, $force = false) {
+    public function check_time_campaign($campaign, $cron_type, $debug = false, $force = false, $custom_url_id = 0) {
         $count = 0;
         $options = $this->mp->get_options($campaign);
 
@@ -83,7 +83,7 @@ class MoviesParserCron extends MoviesAbstractDB {
                 $options_upd[$type_name]['last_update'] = $currtime;
                 $this->mp->update_campaign_options($campaign->id, $options_upd);
 
-                $count = $this->process_campaign($campaign, $options, $type_name, $debug, $force);
+                $count = $this->process_campaign($campaign, $options, $type_name, $debug, $force, $custom_url_id);
             } else {
                 if ($debug) {
                     $wait = $next_update - $currtime;
@@ -98,7 +98,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         return $count;
     }
 
-    public function process_campaign($campaign, $options, $type_name, $debug = false, $force = false) {
+    public function process_campaign($campaign, $options, $type_name, $debug = false, $force = false, $custom_url_id = 0) {
 
         if ($debug) {
             print_r($type_name . "\n");
@@ -110,7 +110,7 @@ class MoviesParserCron extends MoviesAbstractDB {
             if ($campaign->type == 2) {
                 $count = $this->proccess_parsing_create_urls($campaign, $options, false, $debug);
             } else {
-                $count = $this->proccess_parsing($campaign, $options, false, $debug);
+                $count = $this->proccess_parsing($campaign, $options, false, $debug, $custom_url_id);
             }
         } else if ($type_name == 'links') {
             $count = $this->proccess_links($campaign, $options);
@@ -236,7 +236,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         $this->mp->update_campaign_options($campaign->id, $options_upd);
     }
 
-    private function proccess_parsing($campaign, $options, $force = false, $debug = false) {
+    private function proccess_parsing($campaign, $options, $force = false, $debug = false, $custom_url_id = 0) {
         ini_set('max_execution_time', '300'); //300 seconds = 5 minutes
         set_time_limit(300);
 
@@ -252,7 +252,39 @@ class MoviesParserCron extends MoviesAbstractDB {
         $version = $type_opt['version'];
 
         // Get last posts
-        $last_posts = $this->mp->get_last_arhives_no_posts($urls_count, $cid, $version, true, $debug);
+        $last_posts = $this->mp->get_last_arhives_no_posts($urls_count, $cid, $version, true, $debug, $custom_url_id);
+
+        $urls_removed = false;
+        // Check valid movies
+        // Check movie exist
+        if (count($last_posts)) {
+            $valid_result = array();
+            $ma = $this->ml->get_ma();
+            foreach ($last_posts as $item) {
+                $pid = $item->upid;
+                $uid = $item->uid;
+                if ($pid > 0) {
+                    if ($ma->get_movie_by_id($pid)) {
+                        // Post exist
+                        $valid_result[] = $item;
+                        if ($debug) {
+                            print "Movie exist: " . $pid . "\n";
+                        }
+                    } else {
+                        $urls_removed = true;
+                        // Remove url
+                        $this->mp->delete_arhive_by_url_id($uid);
+                        $this->mp->delete_url($uid);
+                        if ($debug) {
+                            print "Remove URL: " . $uid . "\n";
+                        }
+                    }
+                }
+            }
+            $last_posts = $valid_result;
+        }
+
+
         if ($debug) {
             p_r(array('Last' => $last_posts));
         }
@@ -272,13 +304,15 @@ class MoviesParserCron extends MoviesAbstractDB {
                 // Update post content
                 $this->parse_items($last_posts, $campaign, $type_opt, true, $force, $debug);
             } else {
-                // Campaign done
-                // Status auto-stop
-                $options_upd = array();
-                $options_upd[$type_name]['status'] = 3;
-                $this->mp->update_campaign_options($campaign->id, $options_upd);
-                $message = 'All arhives parsed to posts';
-                $this->mp->log_info($message, $campaign->id, 0, 3);
+                if (!$urls_removed) {
+                    // Campaign done
+                    // Status auto-stop
+                    $options_upd = array();
+                    $options_upd[$type_name]['status'] = 3;
+                    $this->mp->update_campaign_options($campaign->id, $options_upd);
+                    $message = 'All arhives parsed to posts';
+                    $this->mp->log_info($message, $campaign->id, 0, 3);
+                }
             }
         }
         return $count;
@@ -340,7 +374,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         }
         if ($count > 0) {
             // Unpaused links            
-            
+
             $this->start_paused_module($campaign, 'links');
         }
     }
@@ -429,7 +463,7 @@ class MoviesParserCron extends MoviesAbstractDB {
                 $this->mp->update_post($data, $post_exist->id);
 
                 //Movies custom hook
-                $post_exist_update = $this->mp->get_post_by_uid($uid);                
+                $post_exist_update = $this->mp->get_post_by_uid($uid);
                 $mch = $this->ml->get_mch();
                 $mch->add_post($campaign, $post_exist_update, $debug);
             }
@@ -613,7 +647,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         // Get posts (last is first)        
         $urls_count = $type_opt['num'];
         $count = 0;
-        
+
         $version = $options['parsing']['version'];
 
         // Get last posts
@@ -698,7 +732,7 @@ class MoviesParserCron extends MoviesAbstractDB {
                             $message = "Found post link: title: " . $post->title . "; mid: $find_movie; rating: $rating";
                             $this->mp->log_info($message, $cid, $post->uid, 4);
 
-                            $post->top_movie = $find_movie;                           
+                            $post->top_movie = $find_movie;
                             $mch->add_post($campaign, $post);
                         } else {
                             $this->mp->update_post_status($post->uid, 2);
@@ -726,9 +760,9 @@ class MoviesParserCron extends MoviesAbstractDB {
         return $count;
     }
 
-    private function start_paused_module($campaign, $module, $options=array()) {
+    private function start_paused_module($campaign, $module, $options = array()) {
         $options_upd = array();
-        if (!$options){
+        if (!$options) {
             $options = $this->mp->get_options($campaign);
         }
         if (isset($options[$module])) {
@@ -876,7 +910,7 @@ class MoviesParserCron extends MoviesAbstractDB {
      * Cron async
      */
 
-    public function run_cron_async($cid = 0, $type_name = '', $debug = false, $custom_url_id=0) {
+    public function run_cron_async($cid = 0, $type_name = '', $debug = false, $custom_url_id = 0) {
 
         if (!$cid) {
             return;
