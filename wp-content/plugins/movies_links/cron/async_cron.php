@@ -21,6 +21,8 @@ if (!$cid){
 
 $type = $_GET['type'] ?  $_GET['type'] : '';
 
+$custom_url_id= $_GET['url'] ? (int) $_GET['url'] : 0;
+
 $debug = false;
 if ($_GET['debug']) {
     $debug=true;
@@ -45,6 +47,6 @@ if ($ml->cron_already_run($cron_name, 10, $debug)) {
 $ml->register_cron($cron_name);
 
 $mpc = new MoviesParserCron($ml);
-$mpc->run_cron_async($cid, $type, $debug);
+$mpc->run_cron_async($cid, $type, $debug, $custom_url_id);
 
 $ml->unregister_cron($cron_name);

@@ -502,5 +502,7 @@ function movies_links_create_index($names = array(), $table_name = '') {
  * DELETE FROM `meta_movie_genre` WHERE `gid` = 29
 
 
+  SELECT pid FROM `movies_links_url` WHERE pid>0 GROUP BY pid ORDER BY pid ASC
+
  * 
  */

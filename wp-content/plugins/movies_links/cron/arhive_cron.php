@@ -29,6 +29,8 @@ if ($_GET['force']) {
     $force = true;
 }
 
+$custom_url_id= $_GET['url'] ? (int) $_GET['url'] : 0;
+
 if (!class_exists('MoviesLinks')) {
 
     require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractFunctions.php' );
@@ -66,6 +68,6 @@ if ($ml->cron_already_run($cron_name, 10, $debug)) {
 $ml->register_cron($cron_name);
 
 $mpc = new MoviesParserCron($ml);
-$mpc->run_cron($cron_type, $debug, $force);
+$mpc->run_cron($cron_type, $debug, $force, $custom_url_id);
 
 $ml->unregister_cron($cron_name);
