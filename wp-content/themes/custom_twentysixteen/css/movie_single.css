@@ -424,6 +424,12 @@ body  a.open_demographic {
     font-size: 12px;
     line-height: 14px;
 }
+
+.r_content .nte_cnt  .note_show_content{
+    overflow-y: unset;
+}
+
+
 .r_content .note .note_show::after
 {
     content: " ";
@@ -879,11 +885,16 @@ body.theme_dark .imdb_rating, body.theme_dark .rotten_tomatoes_score, body.theme
     text-decoration: none;
 }
 
-.s_container {
+.s_container.forchan {
     position: relative;
     overflow: hidden;
     margin: 0 auto;
     height: 450px;
+    max-width: 85%;
+    border: 0.1em solid rgba(26, 26, 26, .7);
+    border-radius: 0.2em;
+    background-image: url("../images/chanbg.jpg");
+    background-size: auto 100%;
 }
 .s_container.smoched {
     -webkit-filter: blur(5px);
@@ -950,24 +961,50 @@ body.theme_dark .imdb_rating, body.theme_dark .rotten_tomatoes_score, body.theme
 }
 .column_inner_content {
     flex: 1;
-    max-height: 550px;
     overflow: hidden;
     transition: all 0.4s;
 }
+
+
+.column_inner_content.twitter_content.max_with{
+    max-height: 100vh;
+}
+.column_inner_content.twitter_content.max_with .twitter_content_main{
+    max-width: 800px;
+    position: relative;
+    margin: 0 auto 0 auto;
+    padding: 100px 20px 20px 0px;
+    box-sizing: border-box;
+    background-color: #fff;
+    z-index: 2;
+    height: 100vh;
+}
+
+body.theme_dark .column_inner_content.twitter_content.max_with .twitter_content_main{
+
+    background-color: #646464;
+
+}
+
+
+
 .wordcloud{
     height: 450px;
     width: 100%;
-    min-width: 360px;
+    min-width: 280px;
     display: inline-block;
     cursor: pointer;
+    mix-blend-mode: color-burn;
 }
 body.theme_dark .wordcloud {
 
 }
 
 
-.column_inner_content_data{
+.column_inner_content_data {
     position: relative;
+    height: 450px;
+    overflow: hidden;
 }
 .column_inner_content.max_with{
     flex: 3;
@@ -978,8 +1015,8 @@ body.theme_dark .wordcloud {
 }
 
 .column_inner_content.max_with .s_container{
-
-    overflow: auto;
+    height: 450px;
+    overflow: hidden;
 }
 
 .column_inner_content.max_with .s_container_load{
@@ -997,6 +1034,56 @@ body.theme_dark .wordcloud {
     padding: 0;
     margin: 0;
 }
+
+
+
+.column_inner_content.twitter_content.max_with
+{
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    height: 100vh;
+    width: 100vw;
+    z-index: 1000000;
+    padding: 0;
+    box-sizing: border-box;
+    background-color: transparent;
+    margin: 0;
+
+}
+
+.column_inner_content.twitter_content.max_with  .s_container {
+    height: auto;
+}
+
+body.theme_dark .column_inner_content.twitter_content.max_with {
+    background-color: #1b1b1b;
+}
+
+.column_inner_content.twitter_content.max_with .popup-close {
+    position: absolute;
+    top: 17px;
+    width: 35px;
+    height: 35px;
+    z-index: 10000;
+    right: 10px;
+    cursor: pointer;
+    background: rgba(162, 162, 162, 0.43) url("../images/close_black.svg");
+    border-radius: 4px;
+}
+
+.column_inner_content.twitter_content.max_with .calobl{
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1;
+    left: 0;
+    top: 0;
+    cursor: pointer;
+}
+
 .keyword_container{
     display: flex;
     flex-wrap: wrap;
@@ -1289,38 +1376,9 @@ div.sortable {
         position: unset;
     }
 
-    .column_inner_content.twitter_content.max_with
-    {
-        position: fixed;
-        top: 0;
-        left: 0;
-
-        height: 100vh;
-        width: 100vw;
-        z-index: 1000000;
-        padding: 15px;
-        box-sizing: border-box;
-        background-color: #ffffff;
-    }
-
-    .column_inner_content.twitter_content.max_with  .s_container {
-        height: calc(100vh - 100px);
-    }
-
-    body.theme_dark .column_inner_content.twitter_content.max_with {
-        background-color: #1b1b1b;
-    }
-
     .column_inner_content.twitter_content.max_with .popup-close {
         position: absolute;
         top: 10px;
-        width: 35px;
-        height: 35px;
-        z-index: 10000;
-        right: 10px;
-        cursor: pointer;
-        background: rgba(162, 162, 162, 0.43) url("../images/close_black.svg");
-        border-radius: 4px;
     }
 
     .column_inner_content {

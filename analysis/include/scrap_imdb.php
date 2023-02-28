@@ -496,7 +496,7 @@ $sql = "select * from data_actors_meta ".$where." ";
 
     $rows = Pdo_an::db_results_array($sql);
     ///echo 'count = '.count($rows).'<br>';
-    $array_verdict = array('crowdsource','ethnic','jew','kairos','bettaface','placebirth','forebears','familysearch','surname');
+    $array_verdict = array('crowdsource','ethnic','jew','kairos','bettaface','placebirth','forebears_rank','forebears','familysearch','surname');
     $array_exclude = array('NJW');
     foreach ($rows as $row)
     {
@@ -576,19 +576,19 @@ function movie_keywords($id='')
     $keywords->get_movies_keyword($id);
 
 }
-function get_last_options($id)
+function get_last_options($id,$type='')
 {
 
-    $last_id =OptionData::get_options($id);
+    $last_id =OptionData::get_options($id,$type);
     if (!$last_id) $last_id = 0;
     return $last_id;
 }
 
 if (!function_exists('set_option')) {
 
-    function set_option($id, $option)
+    function set_option($id, $option,$type='')
     {
-        OptionData::set_option($id, $option);
+        OptionData::set_option($id, $option,$type);
     }
 }
 
@@ -835,63 +835,93 @@ function get_forebears($data='')
     );
 
 
-    if ($data)
-    {
+    $q = "SELECT a.`aid`, a.lastname, v.`verdict` FROM `data_actors_normalize` as a
+    LEFT JOIN `data_actors_meta` as  m ON m.`actor_id` = a.`aid`
+      LEFT JOIN `data_forebears_verdict` as v  ON v.`lastname` = a.`lastname`
+where  m.n_forebears = 0 and v.`verdict`>0 limit 1000";
 
-        $data = intval($data);
-        $sql =  "SELECT * FROM `data_forebears_verdict` WHERE `id` = {$data} ";
-        $rows = Pdo_an::db_results_array($sql);
-
-    }
-    else {
-
-        $last_id = get_last_options(20);
-
-        if (!$last_id) $last_id = 0;
-
-        $sql = "SELECT * FROM `data_forebears_verdict` WHERE `id` > {$last_id} limit 200";
-        $rows = Pdo_an::db_results_array($sql);
-
-    }
-
-
+    $rows = Pdo_an::db_results_array($q);
     foreach ($rows as $r)
     {
 
-        $family_id = $r['id'];
+        $aid = $r['aid'];
         $lastname =  $r['lastname'];
-        $verdict  =  $r['verdict'];
-
-        echo $family_id.' lastname='.$lastname.'<br>';
+        $verdict  =  $r['verdict_rank'];
 
 
-        if ($lastname) {
 
-            /////get all actors
-            $sql = "SELECT aid FROM `data_actors_normalize` WHERE  `lastname` = '" . $lastname . "' order by id ASC";
-            $result = Pdo_an::db_results_array($sql);
-            foreach ($result as $val) {
-                $i = $val['aid'];
+
+        ///update data
+        $fm = $race_small[$verdict];
+
+        echo $aid.' '.$fm.' lastname='.$lastname.'<br>';
+
+        $sql1 = "UPDATE `data_actors_meta` SET `forebears` = '" . $fm . "'  , `n_forebears` = '" . intconvert($fm) . "',
+                 `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $aid. "'";
+
+        //echo $sql1.'<br>';
+        Pdo_an::db_query($sql1);
+        update_actors_verdict($aid,1);
+
+
+        if (check_cron_time())
+        {
+            break;
+        }
+    }
+
+}
+function get_forebears_rank($data='')
+{
+
+
+    $race_small = array(
+        1 =>'W',
+        2 => 'EA',
+        3 =>'H',
+        4 =>'B',
+        5 => 'I',
+        6 => 'M' ,
+        7 => 'MIX',
+        8 =>'JW' ,
+        9 => 'IND',
+    );
+
+
+    $q = "SELECT a.`aid`, a.lastname, v.`verdict_rank` FROM `data_actors_normalize` as a
+    LEFT JOIN `data_actors_meta` as  m ON m.`actor_id` = a.`aid`
+      LEFT JOIN `data_forebears_verdict` as v  ON v.`lastname` = a.`lastname`
+where  m.n_forebears_rank = 0 and v.`verdict_rank`>0 limit 1000";
+
+    $rows = Pdo_an::db_results_array($q);
+    foreach ($rows as $r)
+    {
+
+        $aid = $r['aid'];
+        $lastname =  $r['lastname'];
+        $verdict  =  $r['verdict_rank'];
 
 
                 ///update data
                 $fm = $race_small[$verdict];
 
-                $sql1 = "UPDATE `data_actors_meta` SET `forebears` = '" . $fm . "'  , `n_forebears` = '" . intconvert($fm) . "',
-                 `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $i. "'";
+        echo $aid.' '.$fm.' lastname='.$lastname.'<br>';
+
+                $sql1 = "UPDATE `data_actors_meta` SET `forebears_rank` = '" . $fm . "'  , `n_forebears_rank` = '" . intconvert($fm) . "',
+                 `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $aid. "'";
 
                 //echo $sql1.'<br>';
 
                 Pdo_an::db_query($sql1);
 
-                update_actors_verdict($i,1);
-            }
+                update_actors_verdict($aid,1);
+
+
+        if (check_cron_time())
+        {
+            break;
         }
-
-        set_option(20, $family_id);
     }
-
-
 
 }
 
@@ -3212,6 +3242,12 @@ if (isset($_GET['get_family'])) {
 if (isset($_GET['get_forebears'])) {
 
     get_forebears($_GET['get_forebears']);
+
+    return;
+}
+if (isset($_GET['get_forebears_rank'])) {
+
+    get_forebears_rank($_GET['get_forebears_rank']);
 
     return;
 }

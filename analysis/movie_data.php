@@ -1202,12 +1202,16 @@ class MOVIE_DATA
 
 
         }
-        if ($type == 'buying_power') {
+         if ($type == 'buying_power') {
             $comment_array = self::get_population_array('buying_power_notes');
         }
-        else
+         else     if ($index=='us')
+         {
+             $comment_array = self::get_population_array('population_notes');
+         }
+        else if ($type)
         {
-            $comment_array = self::get_population_array('population_notes');
+            $comment_array = $custom_population;
         }
 
 
@@ -1300,10 +1304,10 @@ class MOVIE_DATA
 
 
         }
-        if ($type == 'buying_power') {
+        if ($index == 'w_bp') {
             $comment_array = self::get_population_array('world_buying_power_notes');
         }
-        else
+        else  if ($index == 'w')
         {
             $comment_array = self::get_population_array('world_notes');
         }
@@ -1317,7 +1321,7 @@ class MOVIE_DATA
             'name'=>$pname_w,
             'data' =>$array_population[$pname],
             'percent'=>self::normalise_array($array_population[$pname]),
-            'comment'=>'',
+            'comment'=>$comment,
             'prefix'=>$prefix
         );
 

@@ -24,7 +24,7 @@ function get_movie_rating()
     $gender = $data->gender_and_diversity_rating($movie_id);
     $family = $data->ajax_pg_rating($movie_id);///real id
     $audience = $data->rwt_audience($movie_id, 1);
-    $stuff = $data->rwt_audience($movie_id, 2);
+    $stuff ='';// $data->rwt_audience($movie_id, 2);
     $rating = $data->rwt_total_rating($movie_id);
 
 
