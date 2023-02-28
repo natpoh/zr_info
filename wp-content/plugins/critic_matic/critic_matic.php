@@ -1422,4 +1422,13 @@ INNER JOIN `data_actors_meta` s
 WHERE 
     m.id > s.id AND 
     m.actor_id = s.actor_id;
+ * 
+ * 
+ * CRITIC MATIC
+ * SELECT p.id FROM wp_bcw98b_critic_matic_posts p LEFT JOIN data_movie_imdb d ON d.id = p.top_movie WHERE p.top_movie>0 AND d.id IS NULL
+ * 
+ * UPDATE wp_bcw98b_critic_matic_posts p LEFT JOIN data_movie_imdb d ON d.id = p.top_movie SET p.top_movie=0 WHERE p.top_movie>0 AND d.id IS NULL
+ * 
+ * SELECT m.id FROM wp_bcw98b_critic_matic_posts_meta m LEFT JOIN data_movie_imdb d ON d.id = m.fid WHERE m.fid>0 AND d.id IS NULL
+ * DELETE m FROM wp_bcw98b_critic_matic_posts_meta m LEFT JOIN data_movie_imdb d ON d.id = m.fid WHERE m.fid>0 AND d.id IS NULL
  */
