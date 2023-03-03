@@ -604,7 +604,35 @@ public static function front($datatype, $array_rows, $array_user = [], $id = '',
                     $textarea = '<div data-id="' . $name . '" class="' . $name . $class . ' input_content" >'.$textval.'</div>';
                     $content .= self::setcol($name, $textarea, $desc, $style, $title,$star);
                 }
+                if ($type=='wpform')
+                {
 
+                    if ($array_value[$name])
+                    {
+                        $textval= $array_value[$name];
+                    }
+                    
+                    ob_start();?>
+                            <div id="wp-id_crowd_text-wrap" class="wp-core-ui wp-editor-wrap tmce-active">                                    
+                                <div id="wp-id_crowd_text-editor-tools" class="wp-editor-tools hide-if-no-js">
+                                    <div class="wp-editor-tabs">
+                                        <button type="button" id="id_crowd_text-tmce" class="wp-switch-editor switch-tmce" data-wp-editor-id="id_crowd_text">Visual</button>
+                                        <button type="button" id="id_crowd_text-html" class="wp-switch-editor switch-html" data-wp-editor-id="id_crowd_text">Text</button>
+                                    </div>
+                                </div>
+                                <div id="wp-id_crowd_text-editor-container" class="wp-editor-container">
+                                    <div id="qt_id_crowd_text_toolbar" class="quicktags-toolbar"></div>
+                                    <textarea data-id="<?php print $name ?>" class="wp-editor-area wpcr3_required <?php print $class ?>" rows="20" autocomplete="off" cols="40" name="<?php print $name?>" id="id_crowd_text"><?php
+                                        print $textval;
+                                        ?></textarea>
+                                </div>
+                            </div>
+                    <?php
+                    $textarea = ob_get_contents();
+                    ob_end_clean();
+                    
+                    $content .= self::setcol($name, $textarea, $desc, $style, $title,$star);
+                }
             }
 
     }

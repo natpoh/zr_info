@@ -27,11 +27,21 @@ Timer::timer_start();
 foreach ($results as $item) {
     $id = $item->id;
     $sql = sprintf('SELECT title FROM data_movie_imdb WHERE id=%d', $id);
-    $result = Pdo_an::db_fetch_row($sql, [], 'object', false);
+    $result = Pdo_an::db_fetch_row($sql, [], 'object', 0);
 }
 print_r(array('timer',Timer::timer_stop()));
 
 // Disconnect
+Timer::timer_start();
+foreach ($results as $item) {
+    $id = $item->id;
+    $sql = sprintf('SELECT title FROM data_movie_imdb WHERE id=%d', $id);
+    $result = Pdo_an::db_fetch_row($sql, [], 'object', 1);
+}
+print_r(array('timer',Timer::timer_stop()));
+
+
+// Default
 Timer::timer_start();
 
 foreach ($results as $item) {

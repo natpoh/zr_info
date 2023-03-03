@@ -135,10 +135,21 @@ function critic_crowd_validation($link, $row = []) {
                     }
                 } else {
                     ///get main data
-                    $result = $cp->clear_read($link);
-                    if ($result) {
-                        $title = $result['title'];
-                        $author = $result['author'];
+                    // $result = $cp->clear_read($link);
+                    $service_url = 'http://148.251.54.53:8110/?p=ds1bfgFe_23_KJDS-F&clear=1&wait=3&url=';
+                    $full_url = $service_url .$link;
+                    $content = file_get_contents($full_url);
+                    if ($content) {
+                        $title='';
+                        $author='';
+                        if (preg_match('#^<h1>([^<]+)</h1>[^>]*(<div id="readability.*)<div class="author">([^<]*)</div>#s', $content, $match)){
+                            $title=$match[1];
+                            $content = $match[2];
+                            $author = $match[3];
+                        }
+                        
+                        //$title = $result['title'];
+                        //$author = $result['author'];
                         if ($author) {
                             $author_obj = $cm->get_author_by_name($author);
                             if ($author_obj) {
@@ -146,7 +157,7 @@ function critic_crowd_validation($link, $row = []) {
                                 $author_id = $author_obj->id;
                             }
                         }
-                        $content = $result['content'];
+                        //$content = $result['content'];
                         if (!$title && !$content) {
                             $error['link'] = 'Can not get the data from URL';
                         }
@@ -172,7 +183,7 @@ function critic_crowd_validation($link, $row = []) {
                 'critic_name' => array('type' => $critic_name_type, 'placeholer' => 'Critic name', 'title' => 'Critic\'s Name:', 'default_value' => $author),
                 'critic_id' => array('type' => 'hidden', 'default_value' => $author_id),
                 'review_id' => array('type' => 'hidden', 'default_value' => $cid),
-                'content' => array('type' => 'html', 'title' => 'Review Content:', 'default_value' => $content),
+                'content' => array('type' => 'wpform', 'title' => 'Review Content:', 'default_value' => $content),
             );
 
 

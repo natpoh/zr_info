@@ -2935,6 +2935,10 @@ body.theme_dark  .note_show::after {
     padding: 6px;
     line-height: normal;
 }
+body.theme_dark .col_input div.input_content {
+    background-color: #242424;
+}
+
 
 .row .col_input input.valid {
     background: #d3ffd3;
@@ -3491,7 +3495,8 @@ body.theme_dark .highcharts-legend-title tspan{
     }
     .section_actors  .a_data_i {
         max-width: 100%;
-        width: 135px;
+        width: auto;
+        height: 169px;
     }
     section.inner_content.section_actors div.column_content div.card.style_1 {
         min-width: 145px;
@@ -3500,7 +3505,7 @@ body.theme_dark .highcharts-legend-title tspan{
     .actor_b_link {
         font-family: 'Encode Sans Condensed',Lato;
         display: flex;
-        justify-content: left;
+        justify-content: center;
         align-items: center;
         margin-top: 3px;
         font-size: 16px;
@@ -3534,9 +3539,9 @@ body.theme_dark .highcharts-legend-title tspan{
     }
 
     .s_container {
-        height: 200px;
+
     }
-    #twitter_scroll .s_container ,    #twitter_scroll .s_container  iframe{
+    #twitter_scroll .s_container  iframe{
         height: 450px;
     }
 

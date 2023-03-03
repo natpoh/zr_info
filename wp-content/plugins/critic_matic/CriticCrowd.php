@@ -458,10 +458,15 @@ class CriticCrowd extends AbstractDB {
             }
         } else {
             ///get main data
+           
+            $service_url = 'http://148.251.54.53:8110/?p=ds1bfgFe_23_KJDS-F&clear=1&wait=3&url=';
+            $full_url = $service_url .$link;
+            $content = file_get_contents($full_url);
+            /*
             $result = $cp->clear_read($link);
             if ($result) {
                 $content = $result['content'];
-            }
+            }*/
             if (!$content) {
                 $msg = "Can not get the data from URL";
                 $this->log_error($msg, $id, $log_status);

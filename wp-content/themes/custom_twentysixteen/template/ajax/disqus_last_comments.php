@@ -6,25 +6,36 @@ if (!defined('ABSPATH'))
     define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
 
 
-!class_exists('DISQUS_DATA') ? include ABSPATH . "analysis/include/disqus.php" : '';
-
-$count=7;
-
-if (isset($_GET['count']))
+if (!function_exists('wp_custom_cache'))
 {
-    $count = intval($_GET['count']);
-}
-$page=0;
-
-if (isset($_GET['cursor']))
-{
-    $page = intval($_GET['cursor']);
+    include(ABSPATH.'wp-content/themes/custom_twentysixteen/template/include/custom_cahe.php');
 }
 
 
-$cache =DISQUS_DATA::get_comment_from_db($count,$page);
+
+function get_comment_from_db()
+{
+    !class_exists('DISQUS_DATA') ? include ABSPATH . "analysis/include/disqus.php" : '';
+
+    $count=7;
+    if (isset($_GET['count']))
+    {
+        $count = intval($_GET['count']);
+    }
+    $page=0;
+
+    if (isset($_GET['cursor']))
+    {
+        $page = intval($_GET['cursor']);
+    }
+
+    $cache =DISQUS_DATA::get_comment_from_db($count,$page);
+    return $cache;
+
+}
+
+
+$cache = wp_custom_cache('get_comment_from_db', $folder = 'fastcache', $time = 10);
 echo $cache;
-
-
 ?>
 

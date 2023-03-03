@@ -3290,7 +3290,7 @@ body.theme_dark .nte_show .nte_cnt {
     width: 90px;
     margin-left: -40px;
     text-align: center;
-    z-index: 999999;
+    z-index: 9999999;
 }
 
 /* Text meant only for screen readers */

@@ -3,7 +3,7 @@ var disqus_config = function () {
 var lastload = '';
 var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
 var crowdsource_url = window.location.protocol + "/service/crowdsource.php"
-
+var debug_mode = 0;
 if (window.location.host == 'zeitgeistreviews.com')
 {
     crowdsource_url = 'https://service.' + window.location.host + "/crowdsource.php";
@@ -1194,32 +1194,24 @@ function load_actor_representation(movie_id) {
 function word_cloud(id)
 {
     var factor = '0.5';
-    if (jQuery('.wordcloud[id="'+id+'"]').width()>600)
+    if (jQuery('.wordcloud[id="' + id + '"]').width() > 600)
     {
-        factor=1;
-    }
-    if (jQuery('body').hasClass('theme_dark'))
-    {
-        var clr ='random-light';
-    }
-    else
-    {
-          clr ='random-dark';
+        factor = 1;
     }
 
 
-    jQuery('.wordcloud[id="'+id+'"]').awesomeCloud({
-        "size" : {
-            "grid" : 5,
-            "factor" : 1,
+    jQuery('.wordcloud[id="' + id + '"]').awesomeCloud({
+        "size": {
+            "grid": 5,
+            "factor": 1,
 
         },
-        "options" : {
-            "color" : clr,
-            "rotationRatio" : 0.35
+        "options": {
+            "color": 'random-dark',
+            "rotationRatio": 0.35
         },
-        "font" : "'Times New Roman', Times, serif",
-        "shape" : "square"
+        "font": "'Times New Roman', Times, serif",
+        "shape": "square"
     });
 
     // // $("#tv").awesomeCloud({
@@ -1366,7 +1358,7 @@ function load_ajax_block(block_id) {
                         word_cloud(af);
                     }
 
-                    initializeScroller(1, 'div[id="'+block_id+'"]');
+                    initializeScroller(1, 'div[id="' + block_id + '"]');
 
                 }
             } else if (block_id == 'chan_scroll') {
@@ -1431,13 +1423,14 @@ function load_ajax_block(block_id) {
                 jQuery('div[id="' + block_id + '"]').html(data);
                 //check load script
 
+                /*jQuery('body.jstiny').removeClass('jstiny');
+                if (typeof tinymce !== 'undefined') {
+                    tinymce = undefined;
+                }*/
                 if (typeof wpcr3a == 'object') {
-                    //console.log('second');
-                    jQuery('body').removeClass('jstiny');
-                    tinymce = null;
                     wpcr3a.init();
-
                 } else {
+
                     ///console.log('first');
                     var head = document.getElementsByTagName('head')[0];
                     var link = document.createElement('link');
@@ -2683,6 +2676,9 @@ jQuery(document).ready(function () {
             },
             url: crowdsource_url,
             success: function (html) {
+                if (debug_mode) {
+                    console.log('add_custom', html);
+                }
                 add_popup();
                 let hclass = href.substr(1);
 
@@ -2727,7 +2723,9 @@ jQuery(document).ready(function () {
             },
             url: crowdsource_url,
             success: function (html) {
-
+                if (debug_mode) {
+                    console.log('review_crowd', html);
+                }
                 if (!popup_enable)
                 {
                     add_popup();
@@ -2787,7 +2785,9 @@ jQuery(document).ready(function () {
             },
             url: crowdsource_url,
             success: function (html) {
-
+                if (debug_mode) {
+                    console.log('get_search_movie', html);
+                }
                 if (only_movie)
                 {
                     jQuery('.check_container_main').html(html);
@@ -2973,13 +2973,13 @@ jQuery(document).ready(function () {
             },
             url: crowdsource_url,
             success: function (html) {
-
+                if (debug_mode) {
+                    console.log('crowd_submit', html);
+                }
                 $this.removeClass('in_process');
 
                 if (html)
                 {
-
-
                     var data = JSON.parse(html);
 
                     if (data.critic_data)
@@ -2988,6 +2988,23 @@ jQuery(document).ready(function () {
                         prnt.html(data.critic_data);
                         // Init author autocomplite
                         author_autocomplete('.default_popup');
+                        // Load wp editor
+
+                        /*jQuery('body.jstiny').removeClass('jstiny');
+                        if (typeof tinymce !== 'undefined') {
+                            tinymce = undefined;
+                        }*/
+                        if (typeof wp_custom_editor == 'object') {
+                            wp_custom_editor.load('id_crowd_text');
+                        } else {
+                            success = function () {
+                                wp_custom_editor.load('id_crowd_text');
+                            };
+                            var third_scripts = {
+                                wpeditorjs: '/wp-content/themes/custom_twentysixteen/js/wp-editor.js?v=1.14'
+                            };
+                            use_ext_js(success, third_scripts);
+                        }
                     }
 
                     if (data.error && data.error.link)
@@ -3129,7 +3146,9 @@ jQuery(document).ready(function () {
             },
             url: crowdsource_url,
             success: function (html) {
-
+                if (debug_mode) {
+                    console.log('add_critic', html);
+                }
                 add_popup();
                 jQuery('.popup-content').html('<div id="' + id + '" class="default_popup"><h2>Add Critic Review:</h2><p>Please help improve ZR, add a critic review link</p>' + html + '</div>');
                 jQuery('input[id="action-popup"]').click();
@@ -3164,7 +3183,9 @@ jQuery(document).ready(function () {
             },
             url: crowdsource_url,
             success: function (html) {
-
+                if (debug_mode) {
+                    console.log('pg_rating', html);
+                }
                 add_popup();
                 jQuery('.popup-content').html('<div id="' + id + '" class="default_popup pg_popup"><h2>Edit Family Friendly Rating</h2><p>Please help improve ZR, add a Family Friendly Rating and leave your comment(s).</p>' + html + '</div>');
                 jQuery('input[id="action-popup"]').click();
@@ -3235,11 +3256,11 @@ jQuery(document).ready(function () {
                 },
                 url: crowdsource_url,
                 success: function (html) {
-
+                    if (debug_mode) {
+                        console.log('actor_crowd', html);
+                    }
                     if (cont)
                     {
-
-
 
                         var aname = prnt.find('.a_data_n').html();
 
@@ -3462,7 +3483,7 @@ jQuery(document).ready(function () {
 
     });
 
-    jQuery('body').on('click', '.column_inner_content.max_with .popup-close', function () {
+    jQuery('body').on('click', '.column_inner_content.max_with .popup-close, .column_inner_content.max_with .calobl', function () {
         jQuery('.column_inner_content').removeClass('max_with');
         jQuery('.column_inner_content .s_container').addClass('smoched');
     });
@@ -3634,14 +3655,14 @@ jQuery(document).ready(function () {
 
     jQuery('body').on('click', '.fchan_btn input', function () {
 
-        jQuery('.fchan_btn input.selected' ).removeClass('selected');
+        jQuery('.fchan_btn input.selected').removeClass('selected');
         jQuery(this).addClass('selected');
 
-        let pnrt =$(this).parents('.column_inner_bottom');
+        let pnrt = $(this).parents('.column_inner_bottom');
 
-        let id =$(this).attr('dataid');
+        let id = $(this).attr('dataid');
         let bigprnt = $(this).parents('.column_inner_content');
-        let target_contaner = bigprnt.find('.s_container a[id="'+id+'"]');
+        let target_contaner = bigprnt.find('.s_container a[id="' + id + '"]');
         bigprnt.find('.s_container>a').hide();
         target_contaner.show();
         let canvs = target_contaner.find('canvas');
@@ -3650,7 +3671,7 @@ jQuery(document).ready(function () {
             word_cloud(id);
         }
 
-       // iframe.attr('src',link);
+        // iframe.attr('src',link);
 
     });
 
@@ -3721,6 +3742,9 @@ function author_autocomplete(form_class = '') {
                     url: crowdsource_url,
                     data: {"action": "author_autocomplite", "keyword": keyword},
                     success: function (response) {
+                        if (debug_mode) {
+                            console.log('author_autocomplite', response);
+                        }
                         if (response.type == "ok") {
                             $results.html('');
                             for (var i = 0; i < response.data.length; i++) {
@@ -3832,7 +3856,7 @@ function use_ext_js(f, third_scripts) {
             return;
         }
     }
-    console.log(typeof f);
+
     if (typeof f == 'function')
     {
         f();

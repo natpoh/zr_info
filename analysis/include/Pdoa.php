@@ -15,15 +15,20 @@ class Pdoa {
     public static $db_user = DB_USER_AN;
     public static $db_pass = DB_PASSWORD_AN;
     public static $db_charset = DB_CHARSET_AN;
+    public static $new_connect = DB_NEW_CONNECT;
 
     /*
      * Get pdo instance
      */
 
-    public static function connect($new_connect = true) {
-
+    public static function connect($new_connect = -1) {
+        
+        if ($new_connect==-1){
+            $new_connect = self::$new_connect;
+        }
+        
         try {
-            if ($new_connect) {
+            if ($new_connect==1) {
                 static::$pdo = null;
             } else {
                 if (static::$pdo) {
@@ -45,12 +50,12 @@ class Pdoa {
     }
 
     //Abstract DB
-    public static function db_query($sql, $new_connect = true) {
+    public static function db_query($sql, $new_connect = -1) {
         $pdo = self::connect($new_connect);
         $pdo->query($sql);
     }
 
-    public static function last_id($db, $new_connect = true) {
+    public static function last_id($db, $new_connect = -1) {
         $pdo = self::connect($new_connect);
         $sql = "SELECT id FROM {$db} ORDER BY id DESC limit 1";
         $sth = $pdo->prepare($sql);
@@ -69,7 +74,7 @@ class Pdoa {
         return $info;
     }
 
-    public static function db_results($sql, $array = [], $type = 'object', $new_connect = true) {
+    public static function db_results($sql, $array = [], $type = 'object', $new_connect = -1) {
         $pdo = self::connect($new_connect);
         $sth = $pdo->prepare($sql);
         $sth->execute($array);
@@ -83,7 +88,7 @@ class Pdoa {
         return $data;
     }
 
-    public static function db_results_array($sql, $array = [], $new_connect = true) {
+    public static function db_results_array($sql, $array = [], $new_connect = -1) {
         $pdo = self::connect($new_connect);
         $sth = $pdo->prepare($sql);
         $sth->execute($array);
@@ -91,7 +96,7 @@ class Pdoa {
         return $data;
     }
 
-    public static function db_insert_sql($sql, $array = [], $new_connect = true) {
+    public static function db_insert_sql($sql, $array = [], $new_connect = -1) {
         $pdo = self::connect($new_connect);
         $sth = $pdo->prepare($sql);
         $sth->execute($array);
@@ -106,7 +111,7 @@ class Pdoa {
         return null;
     }
 
-    public static function db_insert($data, $table, $new_connect = true) {
+    public static function db_insert($data, $table, $new_connect = -1) {
         $values = array();
         $val_str = array();
         $keys = array();
@@ -128,7 +133,7 @@ class Pdoa {
         return $id;
     }
 
-    public static function db_update($data, $table, $id, $id_name = "id", $new_connect = true) {
+    public static function db_update($data, $table, $id, $id_name = "id", $new_connect = -1) {
         $update = array();
         $values = array();
         foreach ($data as $key => $value) {
@@ -143,7 +148,7 @@ class Pdoa {
         //print_r($sth->errorInfo());
     }
 
-    public static function db_fetch_row($sql, $array = [], $type = 'object', $new_connect = true) {
+    public static function db_fetch_row($sql, $array = [], $type = 'object', $new_connect = -1) {
         $pdo = self::connect($new_connect);
         $sth = $pdo->prepare($sql);
         $sth->execute($array);
@@ -155,7 +160,7 @@ class Pdoa {
         return $data;
     }
 
-    public static function db_get_var($sql, $array = [], $new_connect = true) {
+    public static function db_get_var($sql, $array = [], $new_connect = -1) {
         $pdo = self::connect($new_connect);
         $sth = $pdo->prepare($sql);
         $sth->execute($array);
@@ -172,13 +177,13 @@ class Pdoa {
         return $ret;
     }
 
-    public static function quote($sql, $new_connect = true) {
+    public static function quote($sql, $new_connect = -1) {
         $pdo = self::connect($new_connect);
         $quote = $pdo->quote($sql);
         return $quote;
     }
 
-    public static function db_get_data($sql, $input, $array = [], $new_connect = true) {
+    public static function db_get_data($sql, $input, $array = [], $new_connect = -1) {
         $pdo = self::connect($new_connect);
         $sth = $pdo->prepare($sql);
         $sth->execute($array);
@@ -186,7 +191,7 @@ class Pdoa {
         return $data->{$input};
     }
 
-    public static function get_post_meta($id, $metakey = '', $single = '', $new_connect = true) {
+    public static function get_post_meta($id, $metakey = '', $single = '', $new_connect = -1) {
         global $table_prefix;
         $meta = [];
         if ($metakey) {
@@ -214,7 +219,7 @@ class Pdoa {
         }
     }
 
-    public static function set_post_meta($id, $metakey = '', $value = '', $new_connect = true) {
+    public static function set_post_meta($id, $metakey = '', $value = '', $new_connect = -1) {
         global $table_prefix;
 
         $sql = "SELECT meta_id FROM " . $table_prefix . "postmeta WHERE post_id =? and meta_key=? limit 1";

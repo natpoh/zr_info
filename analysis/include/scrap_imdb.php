@@ -83,11 +83,15 @@ function fix_all_directors_delete($movie_id=0)
     {
         $movies_updated = 0;
 $last_update = strtotime('11.01.2023');
+        $last_update2 = strtotime('26.02.2023');
 
-        $q= "SELECT `movies_log`.rwt_id  FROM `data_movie_imdb`, `movies_log`
-        where `data_movie_imdb`.id  =`movies_log`.movie_id and `movies_log`.`name` = 'add movies' and `movies_log`.`type` IS NULL  and `movies_log`.rwt_id  IS NOT NULL
-          and  `movies_log`.last_update >{$last_update} and `movies_log`.rwt_id > ".$last_id."   order by `movies_log`.rwt_id asc limit 100";
+//        $q= "SELECT `movies_log`.rwt_id, `movies_log`.id  FROM `data_movie_imdb`, `movies_log` LEFT JOIN `data_movie_imdb` as d ON d.`id`  =`movies_log`.rwt_id
+//        where `data_movie_imdb`.id  =`movies_log`.movie_id and `movies_log`.`name` = 'add movies' and `movies_log`.`type` IS NULL  and `movies_log`.rwt_id  IS NOT NULL
+//         and  d.`id` IS NOT NULL and  `movies_log`.last_update >1673384400  and  `movies_log`.last_update < {$last_update2}    order by `movies_log`.rwt_id asc limit 100";
 
+       $q= "SELECT `movies_log`.rwt_id, `movies_log`.id, d.year  FROM `movies_log` LEFT JOIN `data_movie_imdb` as d ON d.`id` =`movies_log`.rwt_id where `movies_log`.`name` = 'add movies'
+        and (d.year < 2010 OR d.year IS NULL) and `movies_log`.rwt_id IS NOT NULL and d.`id` IS NOT NULL and `movies_log`.last_update >1673384400 and `movies_log`.last_update < 1677358800 
+                                                                                                                                       order by `movies_log`.rwt_id asc limit 100" ;
 
         $r = Pdo_an::db_results_array($q);
         foreach ($r as $row)
