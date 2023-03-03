@@ -1431,17 +1431,4 @@ WHERE
  * 
  * SELECT m.id FROM wp_bcw98b_critic_matic_posts_meta m LEFT JOIN data_movie_imdb d ON d.id = m.fid WHERE m.fid>0 AND d.id IS NULL
  * DELETE m FROM wp_bcw98b_critic_matic_posts_meta m LEFT JOIN data_movie_imdb d ON d.id = m.fid WHERE m.fid>0 AND d.id IS NULL
- * 
- * 
- * Change charset
- * ALTER DATABASE [db] CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
-ALTER TABLE wp_bcw98b_critic_matic_authors CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-ALTER TABLE wp_bcw98b_critic_matic_posts CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-ALTER TABLE wp_bcw98b_critic_matic_tags CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-ALTER TABLE wp_bcw98b_critic_matic_audience CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-ALTER TABLE wp_bcw98b_critic_transcritpions CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
- * 
- * 
-
-
  */
