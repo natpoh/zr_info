@@ -127,7 +127,7 @@ function fix_all_directors($movie_id=0)
 
     if (!$movie_id)
     {
-        $movies_updated = 0;
+
 
         $q= "SELECT id, movie_id FROM `data_movie_imdb` where id > ".$last_id."  order by id asc limit 1000";
         $r = Pdo_an::db_results_array($q);
@@ -136,7 +136,7 @@ function fix_all_directors($movie_id=0)
 
             $id =  $row['id'];
             $movie_id =  $row['movie_id'];
-            $movies_updated+=update_actor_directors($movie_id);
+            update_actor_directors($movie_id);
             OptionData::set_option('',$id,'directors_last_id',false);
 
 

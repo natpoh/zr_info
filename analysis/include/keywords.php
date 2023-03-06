@@ -30,7 +30,7 @@ class Movie_Keywords {
 
     }
 
-    private function get_keys_from_movie($mid)
+    private function get_keys_from_movie($mid,$only_keywords=0)
     {
         $array_keys=[];
         $keywords_array=[];
@@ -48,6 +48,11 @@ class Movie_Keywords {
                     $keywords_array[] = $keywords;
                 }
             }
+            if ($only_keywords)
+            {
+             return  $keywords_array;
+            }
+
 
             if ($keywords_array)
             {
@@ -104,6 +109,43 @@ class Movie_Keywords {
         }
 
         echo $content;
+
+    }
+    public function get_keywors_array($mid)
+    {
+        $result=[];
+        ///get movie keywors
+        $array_keys = $this->get_movie_keys($mid);
+        $sql='';
+        if ($array_keys) {
+            foreach ($array_keys as $row) {
+                $kid = $row['kid'];
+                $sql .= "or id =" . $kid . " ";
+
+            }
+            if ($sql) {
+                $sql = substr($sql, 2);
+                $q = "SELECT * FROM `meta_keywords` where " . $sql;
+                $data = Pdo_an::db_results_array($q);
+                if ($data)
+                {
+                    foreach ($data as $dr)
+                    {
+                        $result[]=$dr['name'];
+                    }
+                }
+
+
+            }
+        }
+        else
+        {
+            //old method
+            $result =   $this->get_keys_from_movie($mid,1);
+
+        }
+
+        return $result;
 
     }
 

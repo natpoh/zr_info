@@ -1072,9 +1072,24 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
         $f = '';
 
-        $keywords = self::get_data_in_movie('keywords', $imdb_id);
+        !class_exists('Movie_Keywords') ? include ABSPATH . "analysis/include/keywords.php" : '';
+        global $keywords_class;
+        if (!$keywords_class)
+        {
+
+            $keywords_class = new Movie_Keywords;
+        }
+
+
+
+
+        $keywords  = $keywords_class->get_keywors_array($id);
+
+       // var_dump($keywords);
+
+        ///$keywords = self::get_data_in_movie('keywords', $imdb_id);
         if ($keywords) {
-            $keywords = explode(',', $keywords);
+          ///  $keywords = explode(',', $keywords);
 
             $words = $rating_array['words_limit'];
             foreach ($words as $i => $v) {
