@@ -370,7 +370,7 @@ function create_diversity(diversity_data, value)
             diversity_data_content += popup_cusomize('row_inner', b.r, b.c + '%');
 
         });
-        diversity_data_content += '<p class="gray_comment">We love all demographics at ZR!<br>We just grow tired of forced "<a href="https://www.facebook.com/868164246578472/posts/the-cast-of-black-panther-is-hella-diverse/1236999296361630/" target="_blank:"><u>diversity.</u></a>" Like Blackwashing superheroes and writing Europeans out of their own history. Unfortunately, we can\'t automatically scan for forced diversity, only analyze the entire cast. On the bright side, you can use these percentages to help support <a href="https://zeitgeistreviews.com/analytics/tab_ethnicity/budget_12000-500000/minus-genre_animation/release_1984-2022/type_movies/showcast_2_1/stacking_percent/vis_regression/xaxis_release/yaxis_simpson/setup_noclasters_inflation" target="_blank"><u>truly diverse</u></a> media as well!</p>';
+        //diversity_data_content += '<p class="gray_comment">We love all demographics at ZR!<br>We just grow tired of forced "<a href="https://www.facebook.com/868164246578472/posts/the-cast-of-black-panther-is-hella-diverse/1236999296361630/" target="_blank:"><u>diversity.</u></a>" Like Blackwashing superheroes and writing Europeans out of their own history. Unfortunately, we can\'t automatically scan for forced diversity, only analyze the entire cast. On the bright side, you can use these percentages to help support <a href="https://zeitgeistreviews.com/analytics/tab_ethnicity/budget_12000-500000/minus-genre_animation/release_1984-2022/type_movies/showcast_2_1/stacking_percent/vis_regression/xaxis_release/yaxis_simpson/setup_noclasters_inflation" target="_blank"><u>truly diverse</u></a> media as well!</p>';
 
     }
 
@@ -1271,7 +1271,14 @@ function load_ajax_block(block_id) {
             scroll_data = tv_scroll_data;
             local_sroll = true;
         }
-    } else if (block_id == 'review_scroll') {
+    }
+    else if (block_id == 'games_scroll') {
+        if (typeof tv_scroll_data !== 'undefined') {
+            scroll_data = games_scroll_data;
+            local_sroll = true;
+        }
+    }
+    else if (block_id == 'review_scroll') {
         if (typeof review_scroll_data !== 'undefined') {
             scroll_data = review_scroll_data;
             local_sroll = true;

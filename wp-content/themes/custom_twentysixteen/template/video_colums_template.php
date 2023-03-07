@@ -17,12 +17,13 @@ $array_list = array(
 
         'Video' => array('title' => 'New Movies:', 'id' => 'video_scroll', 'class' => ''),
     'TV' => array('title' => 'Popular Shows Streaming:', 'id' => 'tv_scroll', 'class' => ''),
+   // 'Games' => array('title' => 'New Games:', 'id' => 'games_scroll', 'class' => ''),
       //  'Staff' => array('title' => 'Latest Staff Reviews:', 'id' => 'stuff_scroll', 'class' => 'stuff_review widthed', 'title_desc' => '<a class="title_desc" href="https://zeitgeistreviews.com/writers-wanted/" target="_blank">Writers Wanted</a>'),
 
 );
 // add scripts
 $scrpts = array();
-gmi('scroll before');
+//gmi('scroll before');
 $scrpts[] = '<script  type="text/javascript" >';
 foreach ($array_list as $value) {
     $scoll_id = $value['id'];
@@ -39,7 +40,7 @@ foreach ($array_list as $value) {
         $scrpts[] = 'var ' . $scoll_id . '_tags = '.$tags.'; ';
     }
 }
-gmi('scroll after');
+//gmi('scroll after');
 $scrpts[] = '</script>';
 print (implode("\n", $scrpts));
 

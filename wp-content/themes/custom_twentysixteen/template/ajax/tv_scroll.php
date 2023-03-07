@@ -25,7 +25,7 @@ include(ABSPATH.'wp-content/themes/custom_twentysixteen/template/include/custom_
 
 class TV_Scroll {
 
-    private static function prepare_movies($id,$content_result)
+    private static function prepare_movies($id,$content_result,$slug = 'tvseries')
     {
 
         if ($content_result['result'][$id])
@@ -49,10 +49,6 @@ class TV_Scroll {
         $title = $rows->title;
         $type = $rows->type;
         $release = strtotime($rows->release);
-        $slug = 'tvseries';
-        if ($release > time()-86400*180) {
-
-
 
             if (!$post_name) {
                 if (!$cfront) {
@@ -80,43 +76,48 @@ class TV_Scroll {
                 'type' => $slug
             );
 
-        }
+
         return $content_result;
     }
 
-    public static function show_scroll() {
+    public static function show_scroll($type='TVSeries') {
 
-        $sql = "SELECT * FROM `options` where id = 14";
-        $rows = Pdo_an::db_fetch_row($sql);
-        $array_movies_dop=[];
-        $array_movies = $rows->val;
-        if ($array_movies) {
-            $array_movies = json_decode($array_movies, 1);
+        if ($type== 'TVSeries') {
+            $sql = "SELECT * FROM `options` where id = 14";
+            $rows = Pdo_an::db_fetch_row($sql);
+            $array_movies_dop = [];
+            $array_movies = $rows->val;
+            if ($array_movies) {
+                $array_movies = json_decode($array_movies, 1);
+            }
+
+
         }
-
 
             $starttime = time();
             $date_current = date('Y-m-d', $starttime);
-            $date_main = date('Y-m-d', strtotime('-1 year', $starttime));
-            $sql = "SELECT * FROM `data_movie_imdb` WHERE `release`  >=  '" . $date_main . "' and `release`  <=  '" . $date_current . "' and `type`= 'TVSeries' order by `rating` desc , `release` desc LIMIT 30 ";
+            $date_main = date('Y-m-d', strtotime('-6 month', $starttime));
+            $sql = "SELECT * FROM `data_movie_imdb` WHERE `release`  >=  '" . $date_main . "' and `release`  <=  '" . $date_current . "' and `type`= '".$type."' order by `rating` desc , `release` desc LIMIT 30 ";
 
             $rows = Pdo_an::db_results_array($sql);
             foreach ($rows as $r) {
                 $movie_id = $r['id'];
                 $array_movies_dop[$movie_id] = strtotime($r['release']);
             }
-            arsort($array_movies);
 
         $content_result=[];
-        if (is_array($array_movies)) {
 
+
+
+        if (is_array($array_movies)) {
+            arsort($array_movies);
             $i = 0;
 
             $cfront = '';
             foreach ($array_movies as $id => $enable) {
 
 
-                $content_result =self::prepare_movies($id,$content_result);
+                $content_result = self::prepare_movies($id, $content_result);
                 //else echo $imdb_id.'found<br>';
 
 
@@ -124,12 +125,13 @@ class TV_Scroll {
                     break;
                 }
             }
+        }
 
             if (count($content_result['result']) < 20) {
                 foreach ($array_movies_dop as $id => $enable) {
 
 
-                    $content_result = self::prepare_movies($id, $content_result);
+                    $content_result = self::prepare_movies($id, $content_result,strtolower($type));
                     //else echo $imdb_id.'found<br>';
 
 
@@ -141,28 +143,33 @@ class TV_Scroll {
 
 
 
-            if ($i > 5) {
-                $link = '/search/type_tv';
-                $title = 'Load more Streaming';
+            if (count($content_result['result']) ) {
+
+                if ($type== 'TVSeries') {
+                    $link = '/search/type_tv';
+                    $title = 'Load more Streaming';
+                }
+                else if ($type== 'VideoGame') {
+                    $link = '/search/type_videogame';
+                    $title = 'Load more Games';
+                }
+
                 $content_result['result'][] = array('link' => $link, 'title' => $title, 'genre' => 'load_more', 'poster_link_small' => '', 'poster_link_big' => '', 'content_pro' => '');
-                $i++;
+                $content_result['count'] = count($content_result['result']);
+                return $content_result;
             }
-            $content_result['count'] = count($content_result['result']);
 
-
-            return $content_result;
-        } else {
-            $content_result['count'] = count($content_result['result']);
+        else  {
+            $content_result['count'] = 0;
             $content_result['message'] = 'no result';
-            $content_string = json_encode($content_result);
-            return $content_string;
+            return $content_result;
         }
     }
 
 }
 
-function tv_scroll() {
-    $content_result = TV_Scroll::show_scroll();
+function tv_scroll($type='TVSeries') {
+    $content_result = TV_Scroll::show_scroll($type);
     include(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/video_item_template.php');    
     $content_result['tmpl'] = $video_template;
 
@@ -173,18 +180,28 @@ function tv_scroll() {
 
     $content_string = json_encode($content_result);
 
-
-
     return $content_string;
 }
 
 //echo tv_scroll();
 //return;
-/*if (function_exists('wp_custom_cache')) {
 
-    $cache = wp_custom_cache('tv_scroll', 'fastcache', 86400);
-} else {*/
-    $cache = tv_scroll();
-/*}*/
+if (isset($_GET['type']))
+{
+    if ($_GET['type'] =='games')
+    {
+        $cache = tv_scroll('VideoGame');
+    }
+}
+else {
+
+//    if (function_exists('wp_custom_cache')) {
+//
+//        $cache = wp_custom_cache('tv_scroll', 'fastcache', 3600);
+//    } else {
+        $cache = tv_scroll();
+    //}
+}
+
 
 echo $cache;

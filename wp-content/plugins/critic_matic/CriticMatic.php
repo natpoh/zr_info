@@ -804,7 +804,7 @@ class CriticMatic extends AbstractDB {
         $date_add = $this->curr_time();
 
         //Clear UTF8
-        $content = $this->clear_utf8($content);
+        #$content = $this->clear_utf8($content);
 
 
         $data = array(
@@ -937,7 +937,7 @@ class CriticMatic extends AbstractDB {
         $top_movie = 0;
 
         //Clear UTF8
-        $content = $this->clear_utf8($content);
+        #$content = $this->clear_utf8($content);
 
         $data = array(
             'date' => $date,

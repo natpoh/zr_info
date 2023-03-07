@@ -420,7 +420,7 @@ class CriticCrowd extends AbstractDB {
         $msg = '';
         $link = $crowd_item->link;
         $id = $crowd_item->id;
-        $content = '';
+        $content = $crowd_item->content;
         $title = $crowd_item->title;
         $author_name = $crowd_item->critic_name;
         $author_id = $crowd_item->critic_id;
@@ -459,9 +459,9 @@ class CriticCrowd extends AbstractDB {
         } else {
             ///get main data
            
-            $service_url = 'http://148.251.54.53:8110/?p=ds1bfgFe_23_KJDS-F&clear=1&wait=3&url=';
-            $full_url = $service_url .$link;
-            $content = file_get_contents($full_url);
+            #$service_url = 'http://148.251.54.53:8110/?p=ds1bfgFe_23_KJDS-F&clear=1&wait=3&url=';
+            #$full_url = $service_url .$link;
+            #$content = file_get_contents($full_url);
             /*
             $result = $cp->clear_read($link);
             if ($result) {
@@ -487,7 +487,7 @@ class CriticCrowd extends AbstractDB {
         $post_status = 1;
 
 
-        $content = $this->cm->clear_utf8($content);
+        # $content = $this->cm->clear_utf8($content);
         $date_add = $curr_time;
         $post_data = array(
             'date' => $date,

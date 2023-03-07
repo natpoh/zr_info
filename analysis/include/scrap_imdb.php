@@ -2447,11 +2447,65 @@ function check_tv_series_imdb($last_id = 0)
         if ($i >10) {
             break;
         }
+        if (check_cron_time())
+        {
+            break;
+        }
         }
 
 }
 
+function check_best_games($last_id = 0)
+{
 
+    $array_movie = get_last_options('','best_games');
+    //// echo $array_movie;
+
+    if ($array_movie) {
+        $array_movie = explode(',', $array_movie);
+    }
+    if (!$last_id) {
+        $last_id = get_last_options(12);
+    }
+
+    /// var_dump($array_movie);
+
+    echo 'last_id=' . $last_id . PHP_EOL;
+
+    $i = 0;
+    foreach ($array_movie as $movie_id) {
+        if ($movie_id > $last_id) {
+            echo $movie_id . '>' . $last_id . PHP_EOL;
+            $last_id = $movie_id;
+            $i++;
+
+            $result_imdb = TMDB::check_imdb_id($movie_id);
+
+            if (!$result_imdb) {
+                $array_movie =  TMDB::get_content_imdb($movie_id);
+                $add =  TMDB::addto_db_imdb($movie_id, $array_movie,'','','check_best_games');
+
+                if (!$add) {
+                    echo $movie_id . ' not addeded ' . PHP_EOL;
+                }
+
+            }
+            else {
+                echo $movie_id . ' already adedded' . PHP_EOL;
+            }
+
+        }
+        set_option('', $last_id,'best_games_last_id');
+        if ($i >20) {
+            break;
+        }
+        if (check_cron_time())
+        {
+            break;
+        }
+    }
+
+}
 
 function check_actor_image($actor_id)
 {
@@ -2497,7 +2551,46 @@ function add_tv_shows_to_options()
     set_option(12, 0);
     return;
 }
+function add_games_to_options()
+{
 
+    $array_year = [];
+    $year_end = date('Y', time());
+    $count=1;
+    for ($count = 1;$count<=10000;$count+=50)
+    {
+        $link = 'https://www.imdb.com/search/title/?title_type=video_game&start='.$count.'&ref_=adv_nxt';
+
+        echo $link . PHP_EOL;
+        $result = GETCURL::getCurlCookie($link);
+//echo $result;
+
+        $regv = '#title\/tt([0-9]+)\/\?ref_\=adv_li_tt#';
+        if (preg_match_all($regv, $result, $match)) {
+            foreach ($match[1] as $link) {
+                ///echo $link . PHP_EOL;
+
+                $link = intval($link);
+
+                if (!in_array($link, $array_year)) {
+                    $array_year[] = $link;
+                }
+            }
+        }
+
+
+    }
+    sort($array_year);
+
+    echo 'count:' . count($array_year) . '<br>';
+
+    $array_year = implode(',',$array_year );
+    print_r($array_year);
+
+    set_option('', $array_year,'best_games');
+    set_option('', 0,'best_games_last_id');
+    return;
+}
 function add_rating()
 {
     ///pg rating
@@ -2986,6 +3079,11 @@ else if (isset($_GET['update_all_pg_rating'])) {
 
 
 
+if (isset($_GET['add_games_to_options'])) {
+    add_games_to_options();
+    return;
+
+}
 
 ///////add tv shows
 if (isset($_GET['add_tv_shows_to_options'])) {
@@ -2998,6 +3096,12 @@ if (isset($_GET['check_tv_series_imdb'])) {
     check_tv_series_imdb();
     return;
 }
+if (isset($_GET['check_best_games'])) {
+    check_best_games();
+    return;
+}
+
+
 
 ///////////add Franchises
 if (isset($_GET['add_franchises'])) {

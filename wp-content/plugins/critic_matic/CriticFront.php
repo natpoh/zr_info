@@ -1893,7 +1893,7 @@ class CriticFront extends SearchFacets {
 
         $content = '';
 
-        if ($type == 'video_scroll' || $type == 'tv_scroll') {
+        if ($type == 'video_scroll' || $type == 'tv_scroll' || $type == 'games_scroll') {
             if (!$last_movies_id) {
                 $ma = $this->get_ma();
                 $last_movies_id = $ma->get_movies_last_update();
@@ -1914,6 +1914,15 @@ class CriticFront extends SearchFacets {
                     $content = $this->get_tv_scroll($last_movies_id);
                 }
             }
+            else if ($type == 'games_scroll') {
+                if ($this->cache_results) {
+                    $filename = "scroll-games-$last_movies_id";
+                    $content = ThemeCache::cache('get_games_scroll', false, $filename, 'def', $this);
+                } else {
+                    $content = $this->get_games_scroll($last_movies_id);
+                }
+            }
+
         }
         if ($type == 'review_scroll' || $type == 'stuff_scroll' || $type == 'audience_scroll') {
             if (!$last_posts_id) {
@@ -1970,7 +1979,13 @@ class CriticFront extends SearchFacets {
         ob_end_clean();
         return $content;
     }
-
+    public function get_games_scroll() {
+        ob_start();
+        require(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/ajax/games_scroll.php');
+        $content = ob_get_contents();
+        ob_end_clean();
+        return $content;
+    }
     public function get_review_scroll($arg = array()) {
         $movie_id = $arg['movie_id'] ? $arg['movie_id'] : 0;
         $content = $this->get_review_scroll_data($movie_id);

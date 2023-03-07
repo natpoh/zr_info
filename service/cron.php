@@ -48,13 +48,15 @@ $array_jobs = array(
 
 'add_to_db_from_userlist'=>60,///add new movies from user vote list //// !not sync
 'check_tv_series_imdb'=>120, ///add tvseries from list
+'check_best_games'=>30, ///add games from list
+
 'get_new_movies'=>(60*12),///add new movies from fandango
 'get_new_tv'=>(60*12),///add new tv from tmdb
 
 
   'add_imdb_data_to_options'=>(60*24*7),
    'add_tv_shows_to_options'=>(60*24*30),
-
+    'add_games_to_options'=>(60*24*30),
 
 'fix_all_directors'=>20,////temp started 12/01/2023  ///25.02.2023 stop ///06/03/2023 restart
 

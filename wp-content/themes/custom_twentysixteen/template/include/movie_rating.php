@@ -48,19 +48,34 @@ class RWT_RATING
     {
        /// $gender = $this->get_gender_rating_in_movie($rwt_id);
 
-        $gender = $this->gender_and_diversity_rating($rwt_id);
+        $type= $this->get_movie_type($rwt_id);
+
+
+        if ($type!='videogame') {
+            $gender = $this->gender_and_diversity_rating($rwt_id);
+            if ($gender['diversity_data']) {
+                $gender['diversity_data'] = json_decode($gender['diversity_data']);
+            }
+        }
+
 
         $family = $this->ajax_pg_rating($rwt_id);
         $total_rwt = $this->rwt_total_rating($rwt_id);
 
-        if ($gender['diversity_data']) {
-            $gender['diversity_data'] = json_decode($gender['diversity_data']);
+
+        if ($type=='videogame') {
+            $array_result = array('type'=>$type, 'family' => $family['pgrating'], 'family_data' => $family['pg_data'],
+                'lgbt_warning'=>$family['lgbt_warning'],'lgbt_text'=>$family['lgbt_text'],'woke'=>$family['woke'],'woke_text'=>$family['woke_text'],'total_rating'=>$total_rwt);
         }
-        $type= $this->get_movie_type($rwt_id);
+        else
+        {
+
+            $array_result = array('type'=>$type,'male' => $gender['male'], 'female' => $gender['female'], 'diversity' => $gender['diversity'], 'diversity_data' => $gender['diversity_data'], 'family' => $family['pgrating'], 'family_data' => $family['pg_data'],
+                'lgbt_warning'=>$family['lgbt_warning'],'lgbt_text'=>$family['lgbt_text'],'woke'=>$family['woke'],'woke_text'=>$family['woke_text'],'total_rating'=>$total_rwt);
+        }
 
 
-        $array_result = array('type'=>$type,'male' => $gender['male'], 'female' => $gender['female'], 'diversity' => $gender['diversity'], 'diversity_data' => $gender['diversity_data'], 'family' => $family['pgrating'], 'family_data' => $family['pg_data'],
-            'lgbt_warning'=>$family['lgbt_warning'],'lgbt_text'=>$family['lgbt_text'],'woke'=>$family['woke'],'woke_text'=>$family['woke_text'],'total_rating'=>$total_rwt);
+
         return $array_result;
     }
     public function show_rating_script($array, $wait = '')
