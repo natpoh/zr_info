@@ -2428,12 +2428,14 @@ function check_tv_series_imdb($last_id = 0)
                 else {
                     echo $movie_id . ' already adedded' . PHP_EOL;
                 }
+            set_option(12, $last_id);
+            if ($i >10) {
+                break;
+            }
 
             }
-            set_option(12, $last_id);
-        if ($i >10) {
-            break;
-        }
+
+
         if (check_cron_time())
         {
             break;
