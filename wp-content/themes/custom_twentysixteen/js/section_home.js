@@ -345,11 +345,10 @@ function create_context_rating(obj, hollywood)
 function create_gender_desc(value)
 {
 
-    let fcontent = '<div class="gray_comment">We love women at ZR!<br>' +
-            'We just grow tired of feminist quotas. The \"<a href="https://en.wikipedia.org/wiki/F-rating" target="_blank"><u>F rated</u></a>\" label is a good proxy for that, and the <a href="https://en.wikipedia.org/wiki/Bechdel_test" target="_blank"><u>Bechdel Test</u></a> sometimes can be. But both are scarcely applied. Thus, a scan of the cast\'s gender is more ubiquitous.</div>';
+    let fcontent = '<div class="gray_comment">We love women at ZR!<br>' +       'We just grow tired of feminist quotas. The \"<a href="https://en.wikipedia.org/wiki/F-rating" target="_blank"><u>F rated</u></a>\" label is a good proxy for that, and the <a href="https://en.wikipedia.org/wiki/Bechdel_test" target="_blank"><u>Bechdel Test</u></a> sometimes can be. But both are scarcely applied. Thus, a scan of the cast\'s gender is more ubiquitous.</div>';
     let hcontent = popup_cusomize('popup_header', value + '% of the Stars & Main Cast are Female.');
 
-    return hcontent + fcontent;
+    return hcontent ;
 }
 function create_diversity(diversity_data, value)
 {

@@ -58,6 +58,23 @@ function update_actor_stars($id,$movie_id)
     }
 }
 
+function check_load($run_time=200,$time_limit='')
+{
+
+    !class_exists('CPULOAD') ? include ABSPATH . "service/cpu_load.php" : '';
+    $load = CPULOAD::check_load();
+    if ($load['loaded']) {  return;  }
+
+    start_cron_time($run_time);
+    if ($time_limit)
+    {
+        set_time_limit($time_limit);
+    }
+
+}
+
+
+
 
 function fix_all_directors_delete($movie_id=0)
 {
@@ -2458,6 +2475,8 @@ function check_tv_series_imdb($last_id = 0)
 function check_best_games($last_id = 0)
 {
 
+    check_load(250,300);
+
     $array_movie = get_last_options('','best_games');
     //// echo $array_movie;
 
@@ -2465,7 +2484,7 @@ function check_best_games($last_id = 0)
         $array_movie = explode(',', $array_movie);
     }
     if (!$last_id) {
-        $last_id = get_last_options(12);
+        $last_id = get_last_options('','best_games_last_id');
     }
 
     /// var_dump($array_movie);
@@ -2501,8 +2520,10 @@ function check_best_games($last_id = 0)
         }
         if (check_cron_time())
         {
+            echo 'end time '.check_cron_time();
             break;
         }
+        sleep(1);
     }
 
 }
