@@ -79,12 +79,7 @@ function check_load($run_time=200,$time_limit='')
 function fix_all_directors_delete($movie_id=0)
 {
 
-    !class_exists('CPULOAD') ? include ABSPATH . "service/cpu_load.php" : '';
-    $load = CPULOAD::check_load();
-    if ($load['loaded']) {  return;  }
-
-    start_cron_time(200);
-    set_time_limit(300);
+    check_load(200,300);
 
     !class_exists('DeleteMovie') ? include ABSPATH . "analysis/include/delete_movie.php" : '';
     !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
@@ -1466,21 +1461,7 @@ function check_verdict_surname()
 }
 function add_empty_actors($id='')
 {
-    !class_exists('CPULOAD') ? include ABSPATH . "service/cpu_load.php" : '';
-    $load = CPULOAD::check_load();
-
-    global $cron_debug;
-    if ($cron_debug)
-    {
-        var_dump($load);
-    }
-
-    if ($load['loaded'])
-    {
-        return;
-    }
-
-
+    check_load(50,60);
 
     if ($id)
     {
@@ -1492,18 +1473,8 @@ function add_empty_actors($id='')
         $where=" lastupdate = '0' ";
     }
 
-
-    !class_exists('Cronjob') ? include ABSPATH . "service/cron.php" : '';
-    $cron = new Cronjob();
-
-    $cron->timer_start();
-
-    $max_time=50;
-
     for ($i=0; $i<=30;$i++)
     {
-
-        if ($cron->timer_stop() < $max_time) {
 
 
             $sql = "SELECT id FROM `data_actors_imdb` where  ".$where."   order by id asc limit 1";
@@ -1514,17 +1485,16 @@ function add_empty_actors($id='')
                 $id = $r['id'];
                 echo 'try add actor ' . $id . PHP_EOL;
                 $result = add_actors_to_db($id, 1);
+                ////logs
+                TMDB::add_log($id,'update movies','result: '.$result,1,'add_empty_actors');
             }
 
-
-
-        } else {
-            echo '<br>Ended max time > ' . $max_time . ' total: '.$i.'<br>' . PHP_EOL;
-            break;
-
-        }
-
         sleep(1);
+
+        if (check_cron_time())
+        {
+            break;
+        }
     }
 }
 
