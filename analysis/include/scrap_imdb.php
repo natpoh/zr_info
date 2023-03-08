@@ -2482,18 +2482,17 @@ function check_best_games($last_id = 0)
             else {
                 echo $movie_id . ' already adedded' . PHP_EOL;
             }
+            set_option('', $last_id,'best_games_last_id');
+            sleep(1);
+        }
 
-        }
-        set_option('', $last_id,'best_games_last_id');
-        if ($i >20) {
-            break;
-        }
+
         if (check_cron_time())
         {
             echo 'end time '.check_cron_time();
             break;
         }
-        sleep(1);
+
     }
 
 }
