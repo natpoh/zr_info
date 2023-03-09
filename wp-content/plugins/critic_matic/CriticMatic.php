@@ -280,11 +280,11 @@ class CriticMatic extends AbstractDB {
         }
         return $this->cav;
     }
-    
+
     public function get_mw() {
         // Get MoviesWeight
         if (!$this->mw) {
-            if (!class_exists('MoviesWeight')) {                
+            if (!class_exists('MoviesWeight')) {
                 require_once( CRITIC_MATIC_PLUGIN_DIR . 'MoviesWeight.php' );
             }
 
@@ -292,7 +292,7 @@ class CriticMatic extends AbstractDB {
         }
         return $this->mw;
     }
-    
+
     public function get_cp() {
         // Get CriticParser
         if (!$this->cp) {
@@ -3143,6 +3143,8 @@ class CriticMatic extends AbstractDB {
                             $au_decode[$k] = base64_decode($v);
                         }
                         $settings[$key] = $au_decode;
+                    } else if ($key == 'games_tags') {
+                        $settings[$key] = base64_decode($settings[$key]);
                     }
                 }
             }
@@ -3172,6 +3174,10 @@ class CriticMatic extends AbstractDB {
 
         if (isset($form['parser_proxy'])) {
             $ss['parser_proxy'] = base64_encode($form['parser_proxy']);
+        }
+
+        if (isset($form['games_tags'])) {
+            $ss['games_tags'] = base64_encode($form['games_tags']);
         }
 
         $audience_desc_encode = array();
