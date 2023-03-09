@@ -725,7 +725,12 @@ class CriticSearch extends AbstractDB {
         if ($games_tags) {
             $games_tags_arr = explode(',', $games_tags);
             $tag_search = array();
-            foreach ($games_tags_arr as $name) {
+            $lower_title = strtolower($title);
+            foreach ($games_tags_arr as $name) {                
+                if (strstr($lower_title, strtolower($name))){
+                    continue;
+                }
+                
                 $tag_search[$name] = '"' . $this->filter_text($name) . '"';
             }
             $debug_data['game tags'] = implode(', ', $tag_search);
