@@ -726,11 +726,11 @@ class CriticSearch extends AbstractDB {
             $games_tags_arr = explode(',', $games_tags);
             $tag_search = array();
             $lower_title = strtolower($title);
-            foreach ($games_tags_arr as $name) {
-                if (strstr($lower_title, strtolower($name))) {
+            foreach ($games_tags_arr as $name) {                
+                if (strstr($lower_title, strtolower($name))){
                     continue;
                 }
-
+                
                 $tag_search[$name] = '"' . $this->filter_text($name) . '"';
             }
             $debug_data['game tags'] = implode(', ', $tag_search);
@@ -939,16 +939,16 @@ class CriticSearch extends AbstractDB {
             $ret[$id]['type'] = $critic_type;
             $valid = $ret[$id]['total'] >= $ss['min_valid_point'] ? true : false;
 
-
+            
             if ($post_type == 'VideoGame' && $valid) {
                 // Need video tags to valid
-                if (!isset($ret[$id]['score']['games_tags'])) {
+                if (!isset($ret[$id]['score']['games_tags'])){
                     $valid = false;
                     $reason = 'Game tags not found';
                     $ret[$id]['debug']['game tags found'] = $reason;
                 }
             }
-
+            
             if ($valid) {
                 if ($post_title_weight < $min_title_weight || $num < $small_titles) {
                     // Small title weight
@@ -2971,7 +2971,7 @@ class CriticSearch extends AbstractDB {
         }
     }
 
-    public function get_last_critics($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tags = array(), $meta_type = array(), $min_rating = 0, $vote = 0, $min_au = 0, $max_au = 0, $vote_type = 0) {
+    public function get_last_critics($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tags = array(), $meta_type = array(), $min_rating = 0, $vote = 0, $min_au = 0, $max_au = 0) {
 
         $filters_and = '';
 
@@ -3015,35 +3015,10 @@ class CriticSearch extends AbstractDB {
             $filters_and .= sprintf(" AND auvote=%d", $vote);
         }
 
-        // Vote type:
-        $and_select = '';
-        if ($vote_type > 0) {
-            if ($vote_type == 1) {
-                /*
-                  Positive
-                  5 stars
-                  4 stars
-                  3 stars (pay to watch)
-                 */
-                $and_select = ", IF(aurating=4 OR aurating=5,1,IF(aurating=3 AND auvote=1,1,0)) AS filter ";
-                $filters_and .= " AND filter=1";
-            } if ($vote_type == 2) {
-                /*
-                  Negative
-                  3 stars (watch if free)
-                  3 stars (skip it)
-                  2 stars
-                  1 stars
-                  0 stars
-                 */
-                $and_select = ", IF(aurating=0 OR aurating=1 OR aurating=2,1,IF(aurating=3 AND auvote!=1,1,0)) AS filter ";
-                $filters_and .= " AND filter=1";
-            }
-        }
-        $sql = sprintf("SELECT id, date_add, top_movie, author_name" . $and_select . " FROM critic WHERE status=1 AND top_movie>0" . $filters_and . $order . " LIMIT %d,%d", $start, $limit);        
+        $sql = sprintf("SELECT id, date_add, top_movie, author_name FROM critic WHERE status=1 AND top_movie>0" . $filters_and . $order . " LIMIT %d,%d", $start, $limit);
+
         $results = $this->sdb_results($sql);
-        //$meta = $this->sdb_results("SHOW META");
-        
+
         return $results;
     }
 
