@@ -17,7 +17,7 @@ $array_list = array(
 
         'Video' => array('title' => 'New Movies:', 'id' => 'video_scroll', 'class' => ''),
     'TV' => array('title' => 'Popular Shows Streaming:', 'id' => 'tv_scroll', 'class' => ''),
-   // 'Games' => array('title' => 'New Games:', 'id' => 'games_scroll', 'class' => ''),
+    'Games' => array('title' => 'New Games:', 'id' => 'games_scroll', 'class' => ''),
       //  'Staff' => array('title' => 'Latest Staff Reviews:', 'id' => 'stuff_scroll', 'class' => 'stuff_review widthed', 'title_desc' => '<a class="title_desc" href="https://zeitgeistreviews.com/writers-wanted/" target="_blank">Writers Wanted</a>'),
 
 );
@@ -45,6 +45,8 @@ $scrpts[] = '</script>';
 print (implode("\n", $scrpts));
 
 $video_items = '';
+global $video_template;
+global $section;
 
 for ($i = 1; $i <= 5; $i++) {
     $video_items .= str_replace('{id}', $i, $video_template);

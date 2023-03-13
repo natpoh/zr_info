@@ -163,7 +163,23 @@
 
                 </tbody>
             </table>
+            <h3>Game tags</h3>
+            <table class="form-table" role="presentation">
+                <tbody>
 
+                    <tr class="wrap">
+                        <th><label for=""><?php print __('Game tag point') ?></label></th>
+                        <td><input type="text" name="game_tag_point" value="<?php print $ss['game_tag_point'] ?>">
+                            <?php
+                            $range = $this->cs->get_settings_range('game_tag_point');
+                            print 'Min: ' . $range['min'] . '; Default: ' . $range['def'] . '; Max: ' . $range['max']
+                            ?> 
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <textarea name="games_tags" style="width: 90%;" rows="5"><?php print stripslashes($ss['games_tags']) ?></textarea>
+            <div class="desc">Tags separated by a comma.</div>                        
             <?php wp_nonce_field('critic-feeds-options', 'critic-feeds-nonce'); ?>
             <br />
             <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save') ?>" class="button-primary">  

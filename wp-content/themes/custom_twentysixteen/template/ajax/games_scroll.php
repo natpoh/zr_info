@@ -1,3 +1,12 @@
 <?php
 $_GET['type']='games';
-include 'tv_scroll.php';
+
+if (!class_exists('TV_Scroll'))  {
+    require(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/ajax/tv_scroll.php');
+}
+else
+{
+    $cache = tv_scroll('VideoGame');
+    echo $cache;
+}
+

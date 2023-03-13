@@ -532,12 +532,6 @@ class CriticMaticAdmin {
         if ($curr_tab == 'home') {
 
             $filters = array(
-                'post_update' => $this->cm->post_update,
-                'post_date' => $this->cm->post_update,
-                'type' => $this->cm->post_type,
-                'view_type' => $this->cm->post_view_type,
-                'author_type' => $this->cm->author_type,
-                'meta_type' => $this->cm->post_meta_status,
                 'status' => $this->cm->post_status
             );
 

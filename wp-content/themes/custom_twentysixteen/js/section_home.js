@@ -1314,8 +1314,7 @@ function load_ajax_block(block_id) {
     }
 
     if (block_id == 'ns_related_scroll') {
-        url = 'https://info.antiwoketomatoes.com/service/ns_related.php?pid=' + parent_id;
-        //url = 'https://rwt.4aoc.ru/service/ns_related.php?pid='+parent_id;
+        url = 'https://newsfilter.biz/service/ns_related.php?pid=' + parent_id;        
     }
 
     jQuery.ajax({

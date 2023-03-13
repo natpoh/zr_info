@@ -75,23 +75,23 @@ class CriticFront extends SearchFacets {
      * Critic functions
      */
 
-    public function theme_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tags = array(), $meta_type = array(), $min_rating = 0, $vote = 0, $search = false, $min_au = 0, $max_au = 0, $unique = 0) {
+    public function theme_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tags = array(), $meta_type = array(), $min_rating = 0, $vote = 0, $search = false, $min_au = 0, $max_au = 0, $unique = 0, $vote_type = 0) {
 
         if ($movie_id || $unique == 0) {
             // If vote = 0 - last post, show all posts
             if ($search && !$movie_id) {
-                $posts = $this->cs->get_last_critics($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au);
+                $posts = $this->cs->get_last_critics($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au, $vote_type);
             } else {
 
-                $posts = $this->get_last_posts($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au);
+                $posts = $this->get_last_posts($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au, $vote_type);
             }
         } else {
             // Get unique authors
             $unique_limit = 100;
             if ($search) {
-                $posts = $this->cs->get_last_critics($a_type, $unique_limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au);
+                $posts = $this->cs->get_last_critics($a_type, $unique_limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au, $vote_type);
             } else {
-                $posts = $this->get_last_posts($a_type, $unique_limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au);
+                $posts = $this->get_last_posts($a_type, $unique_limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au, $vote_type);
             }
             if ($posts) {
                 $unique_authors = array();
@@ -129,7 +129,7 @@ class CriticFront extends SearchFacets {
         return $items;
     }
 
-    public function get_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tags = array(), $meta_type = array(), $min_rating = 0, $vote = 0, $min_au = 0, $max_au = 0, $mtype = 0) {
+    public function get_last_posts($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tags = array(), $meta_type = array(), $min_rating = 0, $vote = 0, $min_au = 0, $max_au = 0, $vote_type = 0, $mtype = 0) {
         $and_author = '';
         if ($a_type != -1) {
             $and_author = sprintf(' AND a.type = %d', $a_type);
@@ -148,11 +148,8 @@ class CriticFront extends SearchFacets {
 
         $min_rating_and = '';
         if ($min_rating) {
-            $min_rating_and = sprintf(' AND m.rating>=%d', $min_rating);
+            $min_rating_and = sprintf(' AND (m.rating>=%d OR m.state=1)', $min_rating);
         }
-
-        // TODO min max au
-
 
         $meta_type_and = '';
         if ($meta_type) {
@@ -190,10 +187,38 @@ class CriticFront extends SearchFacets {
             $vote_and = sprintf(" AND r.vote=%d", $vote);
         }
 
+        // Vote type:
+        $vote_type_and = '';
+        if ($vote_type > 0) {
+            if (!$vote_inner) {
+                $vote_inner = " LEFT JOIN {$this->db['rating']} r ON r.cid = p.id";
+            }
+
+            if ($vote_type == 1) {
+                /*
+                  Positive
+                  5 stars
+                  4 stars
+                  3 stars (pay to watch)
+                 */
+                $vote_type_and = " AND (r.rating IN(5,4) OR (r.rating=3 AND r.vote=1))";
+            } if ($vote_type == 2) {
+                /*
+                  Negative
+                  3 stars (watch if free)
+                  3 stars (skip it)
+                  2 stars
+                  1 stars
+                  0 stars
+                 */
+                $vote_type_and = " AND (r.rating IN(0,1,2) OR (r.rating=3 AND r.vote!=1))";
+            }
+        }
+
         $sql = sprintf("SELECT p.id, p.date_add, p.top_movie, a.name AS author_name FROM {$this->db['posts']} p"
                 . " INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
                 . " INNER JOIN {$this->db['authors']} a ON a.id = am.aid" . $movie_inner . $tag_inner . $vote_inner
-                . " WHERE p.top_movie > 0 AND p.status=1" . $mtype_and . $and_author . $movie_and . $tag_and . $min_rating_and . $meta_type_and . $vote_and . " ORDER BY" . $custom_order . " p.date DESC LIMIT %d, %d", (int) $start, (int) $limit);
+                . " WHERE p.top_movie > 0 AND p.status=1" . $mtype_and . $and_author . $movie_and . $tag_and . $min_rating_and . $meta_type_and . $vote_and. $vote_type_and . " ORDER BY" . $custom_order . " p.date DESC LIMIT %d, %d", (int) $start, (int) $limit);
 
         $results = $this->db_results($sql);
 
@@ -1018,9 +1043,9 @@ class CriticFront extends SearchFacets {
 
         if (!$fullsize) {
             if (strstr($content, '[su_')) {
-                 // Remove su spoilers
+                // Remove su spoilers
                 $wp_core = ' wp_core';
-                
+
                 $regv = '#\[su_([^\]]+)\].+\[/su_[\w\d]+\]#Us';
                 if (preg_match_all($regv, $content, $mach)) {
                     // var_dump($mach);              
@@ -1038,7 +1063,7 @@ class CriticFront extends SearchFacets {
                 $regv = '#\[su_[^\]]+\]#Us';
                 $content = preg_replace($regv, '', $content);
             }
-            
+
             $content = $this->format_content($content, 400);
         } else {
             // Check links
@@ -1048,7 +1073,7 @@ class CriticFront extends SearchFacets {
             $content = $this->active_links($content);
 
             if (strstr($content, '[su_')) {
-                
+
                 $short_codes_exist_class = ' short_codes_enabled';
 
                 // Check short codes
@@ -1913,8 +1938,7 @@ class CriticFront extends SearchFacets {
                 } else {
                     $content = $this->get_tv_scroll($last_movies_id);
                 }
-            }
-            else if ($type == 'games_scroll') {
+            } else if ($type == 'games_scroll') {
                 if ($this->cache_results) {
                     $filename = "scroll-games-$last_movies_id";
                     $content = ThemeCache::cache('get_games_scroll', false, $filename, 'def', $this);
@@ -1922,7 +1946,6 @@ class CriticFront extends SearchFacets {
                     $content = $this->get_games_scroll($last_movies_id);
                 }
             }
-
         }
         if ($type == 'review_scroll' || $type == 'stuff_scroll' || $type == 'audience_scroll') {
             if (!$last_posts_id) {
@@ -1974,18 +1997,22 @@ class CriticFront extends SearchFacets {
 
     public function get_tv_scroll() {
         ob_start();
-        require(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/ajax/tv_scroll.php');
+
+        !class_exists('TV_Scroll') ? require(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/ajax/tv_scroll.php') : '';
         $content = ob_get_contents();
         ob_end_clean();
         return $content;
     }
+
     public function get_games_scroll() {
         ob_start();
         require(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/ajax/games_scroll.php');
+
         $content = ob_get_contents();
         ob_end_clean();
         return $content;
     }
+
     public function get_review_scroll($arg = array()) {
         $movie_id = $arg['movie_id'] ? $arg['movie_id'] : 0;
         $content = $this->get_review_scroll_data($movie_id);
@@ -2172,7 +2199,7 @@ class CriticFront extends SearchFacets {
         return '';
     }
 
-    public function get_audience_scroll_data($movie_id = 0, $vote = 1, $search = false) {
+    public function get_audience_scroll_data($movie_id = 0, $vote_type = 1, $search = false) {
         global $site_url;
         if (!$site_url)
             $site_url = WP_SITEURL . '/';
@@ -2187,25 +2214,29 @@ class CriticFront extends SearchFacets {
         $limit = 10;
 
 
-        // Vote to rating
+        // Vote to rating  
         $min_au = 0;
         $max_au = 0;
         $unique = 0;
-        if ($vote == 1) {
-            // pay
-            $min_au = 3;
-            $vote = 0;
-            $unique = 1;
-        } else if ($vote == 2) {
-            // skip
-            $max_au = 2;
-            $vote = 0;
-            $unique = 1;
-        }
+        $vote = 0;
+        /* if ($vote_type == 1) {
+          // UNUSED
+          // $vote_type = 1; Positive
+          // pay
+          $min_au = 3;
+          $vote = 0;
+          $unique = 1;
+          } else if ($vote_type == 2) {
+          // $vote_type = 2; Negative
+          // skip
+          $max_au = 2;
+          $vote = 0;
+          $unique = 1;
+          } */
 
         $min_rating = 0;
 
-        $posts = $this->theme_last_posts($a_type, $limit, $movie_id, 0, 0, array(), $min_rating, $vote, $search, $min_au, $max_au, $unique);
+        $posts = $this->theme_last_posts($a_type, $limit, $movie_id, 0, 0, array(), $min_rating, $vote, $search, $min_au, $max_au, $unique, $vote_type);
         $count = $this->get_post_count($a_type, $movie_id, 0, $vote, $min_rating, $min_au, $max_au);
         //print_r($vote);
         $content = array();

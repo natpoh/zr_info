@@ -48,7 +48,7 @@ $array_jobs = array(
 
 'add_to_db_from_userlist'=>60,///add new movies from user vote list //// !not sync
 'check_tv_series_imdb'=>120, ///add tvseries from list
-//'check_best_games'=>30, ///add games from list
+'check_best_games'=>120, ///add games from list
 
 'get_new_movies'=>(60*12),///add new movies from fandango
 'get_new_tv'=>(60*12),///add new tv from tmdb

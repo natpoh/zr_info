@@ -20,12 +20,16 @@ if (!defined('ABSPATH'))
 
 !class_exists('CreateTsumbs') ? include ABSPATH . "analysis/include/create_tsumbs.php" : '';
 
+global $pdo;
+if (!$pdo)
+{
+    include(ABSPATH.'wp-content/themes/custom_twentysixteen/template/include/custom_connect.php');
+}
 
-include(ABSPATH.'wp-content/themes/custom_twentysixteen/template/include/custom_connect.php');
 
 class TV_Scroll {
 
-    private static function prepare_movies($id,$content_result,$slug = 'tvseries')
+    private static function prepare_movies($id,$content_result,$slug = 'tvseries',$time =0)
     {
 
         if ($content_result['result'][$id])
@@ -66,15 +70,19 @@ class TV_Scroll {
                 }
             }
 
+            if ($release>$time)
+            {
+                $content_result['result'][$rows->id] = array(
+                    'link' => '/' . $slug . '/' . $post_name,
+                    'title' => $title,
+                    'genre' => $rows->genre,
+                    'poster_link_small' => $array_tsumb[0],
+                    'poster_link_big' => $array_tsumb[1],
+                    'type' => $slug
+                );
+            }
 
-            $content_result['result'][$rows->id] = array(
-                'link' => '/' . $slug . '/' . $post_name,
-                'title' => $title,
-                'genre' => $rows->genre,
-                'poster_link_small' => $array_tsumb[0],
-                'poster_link_big' => $array_tsumb[1],
-                'type' => $slug
-            );
+
 
 
         return $content_result;
@@ -117,7 +125,7 @@ class TV_Scroll {
             foreach ($array_movies as $id => $enable) {
 
 
-                $content_result = self::prepare_movies($id, $content_result);
+                $content_result = self::prepare_movies($id, $content_result,'tvseries',time()-180);
                 //else echo $imdb_id.'found<br>';
 
 
@@ -128,6 +136,7 @@ class TV_Scroll {
         }
 
             if (count($content_result['result']) < 20) {
+                arsort($array_movies_dop);
                 foreach ($array_movies_dop as $id => $enable) {
 
 
@@ -169,6 +178,7 @@ class TV_Scroll {
 }
 
 function tv_scroll($type='TVSeries') {
+    global $video_template;
     $content_result = TV_Scroll::show_scroll($type);
     include(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/video_item_template.php');    
     $content_result['tmpl'] = $video_template;
