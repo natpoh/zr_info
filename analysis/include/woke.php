@@ -459,6 +459,16 @@ class WOKE
             $mid = $row['id'];
             $this->zr_woke_calc($mid);
 
+            if (function_exists('check_cron_time'))
+            {
+                if (check_cron_time())
+                {
+                    echo 'end time '.check_cron_time();
+                    break;
+                }
+            }
+
+
         }
 
 
