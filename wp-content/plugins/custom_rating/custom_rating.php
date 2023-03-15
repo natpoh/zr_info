@@ -95,6 +95,7 @@ class CustomRating
         add_submenu_page($this->parrent_slug, __('Custom Rating overview'), __('Overview'), $this->access_level, $this->parrent_slug, array($this, 'overview'));
         add_submenu_page($this->parrent_slug, __('Custom Rating'), __('Movie Rating'), $this->access_level, $this->parrent_slug . '_movies_rating', array($this, 'movies_rating'));
         add_submenu_page($this->parrent_slug, __('PG Rating'), __('PG Rating'), $this->access_level, $this->parrent_slug . '_pgrating', array($this, 'pgrating'));
+        add_submenu_page($this->parrent_slug, __('Custom Rating'), __('Woke Rating'), $this->access_level, $this->parrent_slug . '_woke_rating', array($this, 'woke_rating'));
 
     }
 
@@ -105,7 +106,75 @@ class CustomRating
         }
         return false;
     }
+    public function woke_rating()
+    {
 
+     if ($_POST['action'] == 'update_woke_rating') {
+        $data = $_POST['val'];
+        $data = stripcslashes($data);
+
+        $data = json_decode($data, 1);
+        //var_dump($data);
+        !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+        OptionData::set_option('',serialize($data),'woke_raiting_weight',1);
+        echo 'ok';
+
+        return;
+    }
+
+        echo '<h1>Woke Rating</h1>';
+
+        !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+        $value  =OptionData::get_options('','woke_raiting_weight');
+
+        if ($value) {
+            $array = unserialize($value);
+        }
+
+        if (!$array)
+        {
+            $array=['woke'=>array(  'diversity' => 1,  'female' => 1, 'woke' => 5, 'lgbt' => 5, 'audience' => 1,
+                'boycott' => 1, 'oweralbs' => 1, 'rtgap' => 1, 'year' => 1, 'rtaudience' => 1,
+                'imdb' => 1, 'kino' => 1, 'douban' => 1),'word_weight'=>['woke' => 5, 'lgbt' => 4],'other_weight'=>['rtgap'=>2,'rtaudience'=>70,	'imdb'=>70,	'kino'=>70,	'douban'=>70,	'year_start'=>1959,'year'=>2010]];
+
+            !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+            OptionData::set_option('',serialize($array),'woke_raiting_weight',1);
+        }
+
+
+        echo self::rating_to_table('woke', $array['woke']);
+        echo '<p>number of words to get 100%, if you enter 5 words, then 5 words will be enough to get a rating of 100%</p>';
+        echo self::rating_to_table('word_weight', $array['word_weight']);
+        echo '<p>other coefficients</p>';
+        echo self::rating_to_table('other_weight', $array['other_weight']);
+
+
+        echo '<p style="margin: 20px;"><input type="submit" name="submit" id="submit" class="button button-primary woke_rating_save" value="Save Changes">
+<span style=" padding-left: 10px; padding-right: 10px;  font-style: italic;" class="rating_save_result"></span>
+<input type="button" class="button button-primary woke_rating_update" value="Update all Woke rating"></p>';
+        echo '<h4>Rating table</h4>';
+
+       self::rwt_woke_scrtpt();
+
+        !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
+
+        if (Crowdsource::checkpost())
+        {
+            return;
+        }
+
+        echo '<h1>Woke rating</h1>';
+
+
+        $array_rows = array(
+            'id'=>array('w'=>5)
+        );
+
+
+        Crowdsource::Show_admin_table('woke',$array_rows,1,'',1);
+
+
+    }
     public function movies_rating()
     {
         echo '<h1>Movies Rating</h1>';
@@ -128,7 +197,11 @@ class CustomRating
         }
         if (!$array['total_tomatoes_audience'] ){$array['total_tomatoes_audience'] =1;}
 
+        if (!$array['total_kinopoisk'] ){$array['total_kinopoisk'] =1;}
+        if (!$array['total_douban'] ){$array['total_douban'] =1;}
+
         echo self::rating_to_table('rwt', $array);
+
 
         echo '<p style="margin: 20px;"><input type="submit" name="submit" id="submit" class="button button-primary rwt_rating_save" value="Save Changes">
 <span style=" padding-left: 10px; padding-right: 10px;  font-style: italic;" class="rating_save_result"></span>
@@ -213,7 +286,7 @@ class CustomRating
 
                 return;
             }
-            if ($_POST['action'] == 'update_array_rating') {
+            else if ($_POST['action'] == 'update_array_rating') {
                 $data = $_POST['val'];
                 $data = stripcslashes($data);
 
@@ -225,6 +298,7 @@ class CustomRating
 
                 return;
             }
+
         }
 
 
@@ -401,6 +475,76 @@ class CustomRating
         return $result->count;
     }
 
+    private function rwt_woke_scrtpt()
+    {
+
+        ?>
+        <script type="text/javascript">
+
+            jQuery(document).ready(function () {
+
+
+                jQuery('.woke_rating_update').click(function () {
+
+                    window.open(window.location.protocol + "/analysis/include/scrap_imdb.php?zr_woke&force=1");
+
+                });
+                jQuery('.woke_rating_save').click(function () {
+
+                    var rating = new Object();
+
+                    jQuery('.rating_table_inputs').each(function (){
+
+                        var id = jQuery(this).attr('id');
+
+                        if (!rating[id]) {
+                            rating[id] = new Object();
+                        }
+                        jQuery(this).find('input').each(function () {
+                            var index = jQuery(this).attr('class');
+                            var val = jQuery(this).val();
+                            if (!val) {
+                                val = 0
+                            }
+                            rating[id][index] = val;
+                        });
+
+
+                    });
+
+
+
+
+                    if (rating) {
+                        var rating_string = JSON.stringify(rating);
+                    }
+
+                    jQuery('.rating_save_result').html('updating...');
+
+
+                    jQuery.ajax({
+                        type: 'post',
+                        url: '?page=custom_rating_woke_rating',
+                        data: ({'action': 'update_woke_rating', 'val': rating_string}),
+
+                        success: function (html) {
+
+                            jQuery('.rating_save_result').html('data saved');
+
+                        }
+                    });
+
+
+                });
+            });
+        </script>
+
+
+
+
+                <?php
+    }
+
     public function rwt_rating_script()
     {
 
@@ -426,7 +570,7 @@ class CustomRating
 
                 jQuery('.rwt_rating_update').click(function () {
 
-                    window.open(window.location.protocol+"/analysis/include/scrap_imdb.php?update_all_rwt_rating=1");
+                    window.open(window.location.protocol+"/analysis/include/scrap_imdb.php?update_all_rwt_rating=1&force=1");
 
                 });
                 jQuery('.rwt_rating_save').click(function () {
@@ -628,7 +772,9 @@ class CustomRating
                 white-space: pre-wrap;
                 word-wrap: anywhere;
             }
-
+            .nte_show{
+                display: none;
+            }
         </style>
         <?php
 
@@ -953,6 +1099,7 @@ class CustomRating
         white-space: pre-wrap;
         word-wrap: anywhere;
     }
+
 </style>
         <?php
 
