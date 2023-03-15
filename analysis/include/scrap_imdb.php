@@ -2065,10 +2065,14 @@ function update_all_pg_rating()
 
 
     set_time_limit(0);
-    $sql ="SELECT * FROM `data_pg_rating` ORDER BY `data_pg_rating`.`id` ASC ";
+    $sql ="SELECT * FROM `data_movie_imdb` ORDER BY `data_movie_imdb`.`id` ASC ";
     $rows = Pdo_an::db_results_array($sql);
-
     $count = count($rows);
+
+    if (!$count)
+    {
+
+    }
    $i =0;
 
     foreach ($rows as $r )
@@ -2168,13 +2172,13 @@ function add_gender_rating_for_new_movies()
     }
 
 }
-function add_pg_rating_for_new_movies()
+function add_pg_rating_for_new_movies($limit=100)
 {
 
     !class_exists('PgRating') ? include ABSPATH . "analysis/include/pg_rating.php" : '';
 
     $rating_update = array( 50=> 86400*7, 40 =>86400*14, 30=> 86400*30 , 20=> 86400*60, 10=> 86400*120, 0=>86400*200);
-    $rows =get_weight_list('data_pg_rating','last_update',"rwt_id",100,$rating_update);
+    $rows =get_weight_list('data_pg_rating','last_update',"rwt_id",$limit,$rating_update);
 
        if ($rows)
        {
@@ -2443,6 +2447,17 @@ function check_tv_series_imdb($last_id = 0)
         }
 
 }
+
+function zr_woke($mid=0)
+{
+
+   !class_exists('WOKE') ? include ABSPATH . "analysis/include/woke.php" : '';
+   $woke = new WOKE;
+   $woke->zr_woke($mid);
+
+
+}
+
 
 function check_best_games($last_id = 0)
 {
@@ -3092,8 +3107,10 @@ if (isset($_GET['check_best_games'])) {
     check_best_games();
     return;
 }
-
-
+if (isset($_GET['zr_woke'])) {
+    zr_woke($_GET['zr_woke']);
+return;
+}
 
 ///////////add Franchises
 if (isset($_GET['add_franchises'])) {
@@ -3132,7 +3149,7 @@ if (isset($_GET['get_new_tv'])) {
     return;
 }
 if (isset($_GET['add_pg_rating_for_new_movies'])) {
-    add_pg_rating_for_new_movies();
+    add_pg_rating_for_new_movies($_GET['add_pg_rating_for_new_movies']);
     return;
 }
 if (isset($_GET['add_gender_rating'])) {

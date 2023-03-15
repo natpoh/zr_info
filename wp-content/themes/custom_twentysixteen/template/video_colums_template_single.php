@@ -16,7 +16,7 @@ $array_list = array(
     'Audience' => array('title' => 'Audience Reviews:', 'id' => 'audience_scroll', 'class' => 'single audience_review',
         'tabs' => array('p' => 'Positive', 'n' => 'Negative', 'a' => 'All')),
     'Pro' => array('title' => 'Critic Reviews: <a href="#" id-data="'.$post_id.'" class="add_critic" >+add</a>', 'id' => 'review_scroll', 'class' => 'single pro_review'),
-    'Staff' => array('title' => 'Staff Reviews:', 'id' => 'stuff_scroll', 'class' => 'single stuff_review widthed secton_gray'),
+   // 'Staff' => array('title' => 'Staff Reviews:', 'id' => 'stuff_scroll', 'class' => 'single stuff_review widthed secton_gray'),
 
       '4chan' => array( 'title_desc'=> '<p class="content_warning"><span class="content_red_warning">CONTENT WARNING:</span> Foul language, offensive images, & possible spoilers.</p>',  'title' => 'Internet Zeitgest:', 'id' => 'twitter_scroll', 'class' => '4chan_review')
 );

@@ -258,20 +258,21 @@ class PgRating
 
     public static function add_pgrating($imdb_id = '',$debug='',$mid='')
     {
-        if (!$mid)
+        if (!$mid && $imdb_id)
         {
             $sql = "SELECT id  FROM `data_movie_imdb` WHERE data_movie_imdb.movie_id ='{$imdb_id}' limit 1";
             $data = Pdo_an::db_fetch_row($sql);
             $mid = $data->id;
         }
-        if (!$imdb_id)
+        else if (!$imdb_id && $mid)
         {
             $sql = "SELECT movie_id  FROM `data_movie_imdb` WHERE data_movie_imdb.id ='{$mid}' limit 1";
             $data = Pdo_an::db_fetch_row($sql);
             $imdb_id = $data->movie_id;
         }
 
-        self::check_enable_pg($imdb_id,$debug,$mid);
+
+
 
         if (!$imdb_id) {
             $array_result = self::update_pg_rating_imdb($imdb_id, $debug);
@@ -286,6 +287,7 @@ class PgRating
         }
         if ($imdb_id)
         {
+            self::check_enable_pg($imdb_id,$debug,$mid);
             PgRatingCalculate::CalculateRating($imdb_id,$mid,$debug);
         }
 

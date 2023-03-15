@@ -23,19 +23,30 @@ if (isset($_POST['filters'])) {
     // Get the video from an db. Video logic after 25.08.2021. 
     $is_movie = isset($filters['movies']);
     $is_tv = isset($filters['tvseries']);
+    $is_game = isset($filters['videogame']);
+    $is_podcastseries = isset($filters['podcastseries']);
+
+
     $post_type_slug = '';
-    if ($is_movie || $is_tv) {
+    if ($is_movie || $is_tv || $is_game || $is_podcastseries) {
 
         if ($is_movie) {
             $post_name = $filters['movies'];
             $post_type = 'Movie';
             $post_type_slug = 'movies';
-        } else {
+        } else if ($is_tv) {
             $post_name = $filters['tvseries'];
             $post_type = 'TVseries';
             $post_type_slug = 'tvseries';
+        } else if ($is_game) {
+            $post_name = $filters['videogame'];
+            $post_type = 'VideoGame';
+            $post_type_slug = 'videogame';
+        } else if ($is_podcastseries) {
+            $post_name = $filters['podcastseries'];
+            $post_type = 'PodcastSeries';
+            $post_type_slug = 'podcastseries';
         }
-
         // Get post from an db
         $ma = $cfront->get_ma();
         $post_id = $ma->get_post_id_by_name($post_name, $post_type);
@@ -75,15 +86,15 @@ if (isset($_POST['filters'])) {
 
     // Single critic post
 
-/*
-    if (isset($filters['old_reviews'])) {
-        // Redirect from old reviews to new
-        $critic_id = $cfront->get_critic_url_by_old_slug($filters['old_reviews']);
-        if ($critic_id) {
-            $filters['critics'][0] = $critic_id;
-        }
-    }
-*/
+    /*
+      if (isset($filters['old_reviews'])) {
+      // Redirect from old reviews to new
+      $critic_id = $cfront->get_critic_url_by_old_slug($filters['old_reviews']);
+      if ($critic_id) {
+      $filters['critics'][0] = $critic_id;
+      }
+      }
+     */
     if (isset($filters['search'])) {
         // Search page
         if ($cfront->need_redirect()) {
@@ -313,12 +324,7 @@ if (isset($_POST['filters'])) {
 
 
         wp_redirect($redirect_url, 301);
-        /*
-          $posts = $cfront->theme_last_posts($type, $per_page, $movie_id, $start, $tag_id);
-          $count = $cfront->get_post_count($type, $movie_id, $tag_id);
 
-          include 'critics-list.php';
-         */
         return;
     }
 }

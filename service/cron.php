@@ -23,7 +23,7 @@ $array_jobs = array(
 
 'check_tmdb_data'=>15,///update country and poster from tmdb
 
-
+'zr_woke'=>15,///empty woke
 
 
 'add_providers'=>30,
@@ -43,7 +43,6 @@ $array_jobs = array(
 
 'add_pg_rating_for_new_movies'=>(60),///add pg rating to new movies
 'add_gender_rating'=>60,///add new gender rating
-
 
 
 'add_to_db_from_userlist'=>60,///add new movies from user vote list //// !not sync

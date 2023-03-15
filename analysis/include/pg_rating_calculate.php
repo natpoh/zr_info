@@ -129,7 +129,7 @@ class PgRatingCalculate {
 
         $data = [];
 
-        $sql = "SELECT rwt_audience,	rwt_staff,	imdb,	rotten_tomatoes,	rotten_tomatoes_audience , rotten_tomatoes_gap,metacritic , tmdb	,total_rating,  	last_update	FROM `data_movie_rating` where `movie_id` = " . $id . " limit 1";
+        $sql = "SELECT rwt_audience,	rwt_staff,	imdb,	metacritic , tmdb	,total_rating,  	last_update	FROM `data_movie_rating` where `movie_id` = " . $id . " limit 1";
         //echo $sql;
         $r = Pdo_an::db_results_array($sql);
         if ($r) {
@@ -144,9 +144,15 @@ class PgRatingCalculate {
             $data['douban_rating'] = $r[0]['douban_rating'];
             
             // Add rotten tomatoes
+
             $data['rotten_tomatoes'] = $r[0]['rt_rating'];
             $data['rotten_tomatoes_audience'] = $r[0]['rt_aurating'];
-            $data['rotten_tomatoes_gap'] = $r[0]['rt_gap'];
+
+            if ($r[0]['rt_rating'])
+            {
+                $data['rotten_tomatoes_gap'] = $r[0]['rt_gap'];
+            }
+
         }
         return $data;
     }
@@ -1139,6 +1145,7 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
         }
 
         if ($update) {
+
             $lgbt_enable = $l_array[1];
             $lgbt_text_string = $l_array[2];
 
@@ -1354,11 +1361,8 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
     public function get_audience_rating_in_movie($rid, $type = 1) {
 
         $rid = intval($rid);
-        if ($type == 1) {
-            $sql = "SELECT * FROM `cache_rwt_rating` WHERE `movie_id` = {$rid}  limit 1";
-        } else if ($type == 2) {
-            $sql = "SELECT * FROM `cache_rwt_rating_staff` WHERE `movie_id` = {$rid}  limit 1";
-        }
+
+        $sql = "SELECT * FROM `cache_rwt_rating` WHERE `movie_id` = {$rid}  limit 1";
 
         $row = Pdo_an::db_results_array($sql);
         if ($row) {
@@ -1371,6 +1375,7 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
         if (!$update) {
             $result_summ_rating = self::get_audience_rating_in_movie($movie_id, $audience_type);
+
             if ($result_summ_rating) {
                 return $result_summ_rating;
             }
