@@ -2451,7 +2451,7 @@ function check_tv_series_imdb($last_id = 0)
 function zr_woke($mid=0)
 {
 
-   check_load(30,0);
+  // check_load(30,0);
 
    $debug= $_GET['debug'];
    !class_exists('WOKE') ? include ABSPATH . "analysis/include/woke.php" : '';
