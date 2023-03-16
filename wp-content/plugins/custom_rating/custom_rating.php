@@ -135,7 +135,8 @@ class CustomRating
         {
             $array=['woke'=>array(  'diversity' => 1,  'female' => 1, 'woke' => 5, 'lgbt' => 5, 'audience' => 1,
                 'boycott' => 1, 'oweralbs' => 1, 'rtgap' => 1, 'year' => 1, 'rtaudience' => 1,
-                'imdb' => 1, 'kino' => 1, 'douban' => 1),'word_weight'=>['woke' => 5, 'lgbt' => 4],'other_weight'=>['rtgap'=>2,'rtaudience'=>70,	'imdb'=>70,	'kino'=>70,	'douban'=>70,	'year_start'=>1959,'year'=>2010]];
+                'imdb' => 1, 'kino' => 1, 'douban' => 1),'word_weight'=>['woke' => 5, 'lgbt' => 4],'other_weight'=>['rtgap'=>2,'rtaudience'=>70,	'imdb'=>70,	'kino'=>70,	'douban'=>70,	'year_start'=>1959,'year'=>2010]
+                ,'country'=>['diversity_country_list'=>'United States,Canada,France,United Kingdom']];
 
             !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
             OptionData::set_option('',serialize($array),'woke_raiting_weight',1);
@@ -147,7 +148,8 @@ class CustomRating
         echo self::rating_to_table('word_weight', $array['word_weight']);
         echo '<p>other coefficients</p>';
         echo self::rating_to_table('other_weight', $array['other_weight']);
-
+        echo '<p>Diversity country (the Diversity parameter will be used for countries from the list)</p>';
+        echo self::rating_to_table('country', $array['country'],1);
 
         echo '<p style="margin: 20px;"><input type="submit" name="submit" id="submit" class="button button-primary woke_rating_save" value="Save Changes">
 <span style=" padding-left: 10px; padding-right: 10px;  font-style: italic;" class="rating_save_result"></span>

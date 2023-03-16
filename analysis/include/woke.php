@@ -67,10 +67,10 @@ class WOKE
 
     private function get_year($mid)
     {
-        $sql = "select `year` from `data_movie_imdb` where  id = " . intval($mid) . " limit 1";
+        $sql = "select `year`, `title`,`country` from `data_movie_imdb` where  id = " . intval($mid) . " limit 1";
 
-        $rows = Pdo_an::db_fetch_row($sql);
-        return $rows->year;
+        $rows = Pdo_an::db_results_array($sql);
+        return [$rows[0]['title'],$rows[0]['year'],$rows[0]['country']];
 
     }
 
@@ -131,6 +131,7 @@ class WOKE
 
 
 
+
         if (!$array) {
             $q = "SELECT * FROM `data_woke` WHERE `mid` = " . $mid;
             $r = Pdo_an::db_results_array($q);
@@ -144,15 +145,66 @@ class WOKE
         }
 
 
+
         if ($debug) self::debug_table('s');
         if ($debug) self::debug_table('ZR Woke Rating');
         if ($debug) $this->debug_table('Rating weight', $weihgt_total, 'red');
         if ($debug) $this->debug_table('Rating array', $array, 'gray');
+///'title'=>$title,'country'=
 
         if ($array['diversity']) {
             $diversity = round($array['diversity'], 0);
         }
+
         if ($debug) $this->debug_table('Diversity', $diversity . '%');
+
+        $country_weight = $weihgt_total['country']['diversity_country_list'];
+        if ($country_weight)
+        {
+            $country_weight_array = explode(',',$country_weight);
+        }
+
+
+        if ($array['country']) {
+
+            $this->debug_table('Country list', $country_weight_array,'red');
+
+            $cdata = $array['country'];
+            ///check country
+            if (strstr($cdata,',')){$countries =explode(',',$cdata);}
+            else{
+                $countries[]=$cdata;
+            }
+
+            if ($debug)
+            {
+                $this->debug_table('Check country', $countries );
+
+            }
+
+            $intersect = array_intersect($country_weight_array, $countries);
+
+            if (!$intersect)
+            {
+
+                if ($debug)
+                {
+                    $this->debug_table('Country not found ' );
+                    $this->debug_table('Diversity set to', '0%' );
+                }
+                $diversity = 0;
+
+            }
+            else
+            {
+                if ($debug)  $this->debug_table('Country found ', $intersect );
+
+
+            }
+
+        }
+
+
 
         if ($array['female']) {
             $female = $array['female'];
@@ -299,7 +351,7 @@ class WOKE
             $year_data_result =  round(($array['year']- $other['year']) *$year_data/$weihgt['year'],2)+1;
 
 
-            if ($debug) $this->debug_table('Release date',  ' 1 / ( '.$other['year'].' - ' .$other['year_start'].' ) = '.$year_data.'<br>
+            if ($debug) $this->debug_table('Release date',  ' 1 / ( '.$array['year'].' - ' .$other['year'].' ) = '.$year_data.'<br>
                                                 ('. $array['year'].'-'. $other['year'].')*'.$year_data.'/'.$weihgt['year'].'+1='.$year_data_result);
 
 
@@ -377,20 +429,20 @@ class WOKE
 
              if (!$total)
              {
-                 $q = "INSERT INTO `data_woke`(`id`, `mid`, `result`, `last_update`) 
-                VALUES (NULL,'" . $mid . "','" . $result . "','" . time() . "')";
+                 $q = "INSERT INTO `data_woke`(`id`, `mid`,`title`, `country`, `result`, `last_update`) 
+                VALUES (NULL,'" . $mid . "',?, ?   '" . $result . "','" . time() . "')";
              }
              else {
 
 
-                 $q = "INSERT INTO `data_woke`(`id`, `mid`, `diversity`, `female`, `woke`, `lgbt`, `audience`, `boycott`, `oweralbs`, `rtgap`, `year`, `rtaudience`, `imdb`, `kino`, `douban`,
+                 $q = "INSERT INTO `data_woke`(`id`, `mid`,`title`, `country`, `diversity`, `female`, `woke`, `lgbt`, `audience`, `boycott`, `oweralbs`, `rtgap`, `year`, `rtaudience`, `imdb`, `kino`, `douban`,
                       `woke_result`, `lgbt_result` ,`result`, `last_update`) 
-                VALUES (NULL,'" . $mid . "','" . $array['diversity'] . "','" . $array['female'] . "','" . $array['woke'] . "','" . $array['lgbt'] . "','" . $array['audience'] . "',
+                VALUES (NULL,'" . $mid . "',?, ?, '" . $array['diversity'] . "','" . $array['female'] . "','" . $array['woke'] . "','" . $array['lgbt'] . "','" . $array['audience'] . "',
                 '" . $array['boycott'] . "','" . $array['oweralbs'] . "','" . $array['rtgap'] . "','" . $array['year'] . "','" . $array['rtaudience'] . "','" . $array['imdb'] . "','" . $array['kino'] . "','" . $array['douban'] . "',
                 '" . $woke . "','" . $lgbt . "','" . $result . "','" . time() . "')";
 
              }
-             $rid  = Pdo_an::db_insert_sql($q);
+             $rid  = Pdo_an::db_insert_sql($q,[$array['title'],$array['country']]);
 
             // echo ' inserted ';
 
@@ -410,18 +462,19 @@ class WOKE
 
                  if (!$total) {
 
-                     $q = "UPDATE `data_woke` SET `last_update`=? WHERE `mid`= ? ";
-                     Pdo_an::db_results_array($q, [time(), $mid]);
+                     $q = "UPDATE `data_woke` SET `title` =?, `country`=?, `last_update`=? WHERE `mid`= ? ";
+                     Pdo_an::db_results_array($q, [$array['title'],$array['country'],time(), $mid]);
                  }
                  else {
 
-                     $q = "UPDATE `data_woke` SET `diversity`=?,
+                     $q = "UPDATE `data_woke` SET `title` =?, `country`=?,
+                       `diversity`=?,
                        `female`=?,`woke`=?,`lgbt`=?,`audience`=?,
                        `boycott`=?,`oweralbs`=?,`rtgap`=?,`year`=?,
                        `rtaudience`=?,`imdb`=?,`kino`=?,`douban`=?,
                        `woke_result`=?,`lgbt_result`=?,`result`=?,
                        `last_update`=? WHERE `mid`= ? ";
-                     Pdo_an::db_results_array($q, [$array['diversity'], $array['female'], $array['woke'], $array['lgbt'], $array['audience'], $array['boycott'], $array['oweralbs'],
+                     Pdo_an::db_results_array($q, [$array['title'],$array['country'],$array['diversity'], $array['female'], $array['woke'], $array['lgbt'], $array['audience'], $array['boycott'], $array['oweralbs'],
                          $array['rtgap'], $array['year'], $array['rtaudience'], $array['imdb'], $array['kino'], $array['douban'],
                          $woke, $lgbt, $result, time(), $mid]);
 
@@ -538,12 +591,14 @@ class WOKE
         $lgbt_count = $this->get_lgbt($mid);
         $audience = $this->rwt_audience($mid, 1);
         ///$rtomatoes =  $this->get_rwt_rating($mid);
-        $years = $this->get_year($mid);
+        list($title,$years,$country) = $this->get_year($mid);
         $erating = $this->total_rating($mid);
         $oweralbs = $this->get_oweralbs($audience);
 
 
-        $array = ['diversity' => $gender_data['diversity'], 'female' => $gender_data['gender'], 'woke' => $lgbt_count['woke'], 'lgbt' => $lgbt_count['lgbt'], 'audience' => $audience['rating'],
+
+
+        $array = ['title'=>$title,'country'=>$country,'diversity' => $gender_data['diversity'], 'female' => $gender_data['gender'], 'woke' => $lgbt_count['woke'], 'lgbt' => $lgbt_count['lgbt'], 'audience' => $audience['rating'],
             'boycott' => $audience['vote'], 'oweralbs' => $oweralbs, 'rtgap' => $erating['rotten_tomatoes_gap'], 'year' => $years, 'rtaudience' => $erating['rotten_tomatoes_audience'],
             'imdb' => $erating['imdb'], 'kino' => $erating['kinop_rating'], 'douban' => $erating['douban_rating']];
 
