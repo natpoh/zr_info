@@ -396,36 +396,62 @@ class WOKE
              $rid  = Pdo_an::db_insert_sql($q);
 
             // echo ' inserted ';
+
+             if ($sync)
+             {
+
+                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                 Import::create_commit('', 'update', 'data_woke', array('mid' => $mid), 'woke',10,['skip'=>['id']]);
+
+             }
+
          }
          else
          {
-             if (!$total)
-             {
-                 $q = "UPDATE `data_woke` SET `last_update`=? WHERE `mid`= ? ";
-                 Pdo_an::db_results_array($q, [time(), $mid]);
-             }
-             else {
 
 
-                 $q = "UPDATE `data_woke` SET `diversity`=?,
+
+                 if (!$total) {
+
+                     $q = "UPDATE `data_woke` SET `last_update`=? WHERE `mid`= ? ";
+                     Pdo_an::db_results_array($q, [time(), $mid]);
+                 }
+                 else {
+
+                     $q = "UPDATE `data_woke` SET `diversity`=?,
                        `female`=?,`woke`=?,`lgbt`=?,`audience`=?,
                        `boycott`=?,`oweralbs`=?,`rtgap`=?,`year`=?,
                        `rtaudience`=?,`imdb`=?,`kino`=?,`douban`=?,
                        `woke_result`=?,`lgbt_result`=?,`result`=?,
                        `last_update`=? WHERE `mid`= ? ";
-                 Pdo_an::db_results_array($q, [$array['diversity'], $array['female'], $array['woke'], $array['lgbt'], $array['audience'], $array['boycott'], $array['oweralbs'],
-                     $array['rtgap'], $array['year'], $array['rtaudience'], $array['imdb'], $array['kino'], $array['douban'],
-                     $woke, $lgbt, $result, time(), $mid]);
+                     Pdo_an::db_results_array($q, [$array['diversity'], $array['female'], $array['woke'], $array['lgbt'], $array['audience'], $array['boycott'], $array['oweralbs'],
+                         $array['rtgap'], $array['year'], $array['rtaudience'], $array['imdb'], $array['kino'], $array['douban'],
+                         $woke, $lgbt, $result, time(), $mid]);
+
+                 }
+                 //echo ' updated ';
+
+             if ($update==2)
+             {
+                 if ( $array['woke_result']!=$woke || $array['lgbt_result']!=$lgbt || $array['result']!=$result )
+                 {
+                     if ($sync)
+                     {
+                         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                         Import::create_commit('', 'update', 'data_woke', array('mid' => $mid), 'woke',10,['skip'=>['id']]);
+                     }
+                 }
              }
-             //echo ' updated ';
+             else
+             {
+                 if ($sync)
+                 {
+                     !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                     Import::create_commit('', 'update', 'data_woke', array('mid' => $mid), 'woke',10,['skip'=>['id']]);
+                 }
+             }
          }
-         if ($sync)
-         {
-             !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-             Import::create_commit('', 'update', 'data_woke', array('mid' => $mid), 'woke',10,['skip'=>['id']]);
 
-
-         }
 
 
 
@@ -471,7 +497,7 @@ class WOKE
         if (isset($_GET['force'])) {
             $q = " SELECT * FROM `data_woke` ORDER BY `mid` ASC ";
         }
-        echo $q;
+        //echo $q;
 
         $r = Pdo_an::db_results_array($q);
         $count =count($r);
@@ -485,7 +511,7 @@ class WOKE
 
             if (isset($_GET['force'])) {
 
-                $result = $this->calculate_rating($mid, $row, 1, 1);
+                $result = $this->calculate_rating($mid, $row, 2, 0);
                 echo $i.'/'.$count.' mid = ' . $mid.' result = '.$result.'%<br>' ;
             }
             else
@@ -517,29 +543,14 @@ class WOKE
     public function zr_woke_calc($mid = 0,$debug=0)
     {
 
-
-
-
-
-
         //get diversity, female
         $gender_data = $this->get_diverstiy($mid);
-
         $lgbt_count = $this->get_lgbt($mid);
-
         $audience = $this->rwt_audience($mid, 1);
-
         ///$rtomatoes =  $this->get_rwt_rating($mid);
-
         $years = $this->get_year($mid);
-
         $erating = $this->total_rating($mid);
-
         $oweralbs = $this->get_oweralbs($audience);
-
-
-
-
 
 
         $array = ['diversity' => $gender_data['diversity'], 'female' => $gender_data['gender'], 'woke' => $lgbt_count['woke'], 'lgbt' => $lgbt_count['lgbt'], 'audience' => $audience['rating'],
