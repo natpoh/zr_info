@@ -92,7 +92,7 @@ class WOKE
     private function calculate_custom($imdb_input,$imdb_min,$name,$debug)
     {
 
-        $imdb_cur = round(-($imdb_input-$imdb_min)/(100-$imdb_min)*100,0);
+        $imdb_cur = round(-($imdb_input-$imdb_min)/(90-$imdb_min)*90,0);
 
         if($imdb_cur>100)
         {
@@ -300,7 +300,7 @@ class WOKE
 
 
             if ($debug) $this->debug_table('Release date',  ' 1 / ( '.$other['year'].' - ' .$other['year_start'].' ) = '.$year_data.'<br>
-                                                ('. $array['year'].'-'. $other['year_start'].')*'.$year_data.'/'.$weihgt['year'].'+1='.$year_data_result);
+                                                ('. $array['year'].'-'. $other['year'].')*'.$year_data.'/'.$weihgt['year'].'+1='.$year_data_result);
 
 
         }
