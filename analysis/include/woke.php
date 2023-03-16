@@ -554,16 +554,16 @@ class WOKE
         foreach ($r as $row)
         {
 
-            $mid = $row['id'];
+
 
             if (isset($_GET['force'])) {
-
+                $mid = $row['mid'];
                 $result = $this->calculate_rating($mid, $row, 2, 0);
                 echo $i.'/'.$count.' mid = ' . $mid.' result = '.$result.'%<br>' ;
             }
             else
             {
-
+                $mid = $row['id'];
                 $result = $this->zr_woke_calc($mid,$debug);
                 echo $i.'/'.$count.' mid = ' . $mid.' result = '.$result.'%<br>' ;
 
