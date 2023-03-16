@@ -117,7 +117,7 @@ class WOKE
     return [$imdb,$imdb_text];
     }
 
-    public function calculate_rating($mid, $array, $update = 0, $debug = 0,$sync=1)
+    public function calculate_rating($mid, $array, $update = 0, $debug = 0,$sync=0)
     {
 
 
@@ -143,14 +143,9 @@ class WOKE
             }
         }
 
-        if (!$total) {
-            return 0;
-        }
 
         if ($debug) self::debug_table('s');
-
         if ($debug) self::debug_table('ZR Woke Rating');
-
         if ($debug) $this->debug_table('Rating weight', $weihgt_total, 'red');
         if ($debug) $this->debug_table('Rating array', $array, 'gray');
 
@@ -365,8 +360,11 @@ class WOKE
 
         if ($result<0)$result=0;
         if ($result>100)$result=100;
-        $this->debug_table('Result', $result.'%');
+        if ($debug) $this->debug_table('Result', $result.'%');
         if ($debug)  self::debug_table('e');
+
+        if (!$woke)$woke=0;
+        if (!$lgbt)$lgbt=0;
 
         if ($update)
         {
@@ -379,26 +377,47 @@ class WOKE
 
          if (!$r)
          {
-             $q="INSERT INTO `data_woke`(`id`, `mid`, `diversity`, `female`, `woke`, `lgbt`, `audience`, `boycott`, `oweralbs`, `rtgap`, `year`, `rtaudience`, `imdb`, `kino`, `douban`,
+
+             if (!$total)
+             {
+                 $q = "INSERT INTO `data_woke`(`id`, `mid`, `result`, `last_update`) 
+                VALUES (NULL,'" . $mid . "','" . $result . "','" . time() . "')";
+             }
+             else {
+
+
+                 $q = "INSERT INTO `data_woke`(`id`, `mid`, `diversity`, `female`, `woke`, `lgbt`, `audience`, `boycott`, `oweralbs`, `rtgap`, `year`, `rtaudience`, `imdb`, `kino`, `douban`,
                       `woke_result`, `lgbt_result` ,`result`, `last_update`) 
-                VALUES (NULL,'".$mid."','".$array['diversity']."','".$array['female']."','".$array['woke']."','".$array['lgbt']."','".$array['audience']."',
-                '".$array['boycott']."','".$array['oweralbs']."','".$array['rtgap']."','".$array['year']."','".$array['rtaudience']."','".$array['imdb']."','".$array['kino']."','".$array['douban']."',
-                '".$woke."','".$lgbt."','".$result."','".time()."')";
+                VALUES (NULL,'" . $mid . "','" . $array['diversity'] . "','" . $array['female'] . "','" . $array['woke'] . "','" . $array['lgbt'] . "','" . $array['audience'] . "',
+                '" . $array['boycott'] . "','" . $array['oweralbs'] . "','" . $array['rtgap'] . "','" . $array['year'] . "','" . $array['rtaudience'] . "','" . $array['imdb'] . "','" . $array['kino'] . "','" . $array['douban'] . "',
+                '" . $woke . "','" . $lgbt . "','" . $result . "','" . time() . "')";
+
+             }
              $rid  = Pdo_an::db_insert_sql($q);
+
+            // echo ' inserted ';
          }
          else
          {
-            $q="UPDATE `data_woke` SET `diversity`=?,
+             if (!$total)
+             {
+                 $q = "UPDATE `data_woke` SET `last_update`=? WHERE `mid`= ? ";
+                 Pdo_an::db_results_array($q, [time(), $mid]);
+             }
+             else {
+
+
+                 $q = "UPDATE `data_woke` SET `diversity`=?,
                        `female`=?,`woke`=?,`lgbt`=?,`audience`=?,
                        `boycott`=?,`oweralbs`=?,`rtgap`=?,`year`=?,
                        `rtaudience`=?,`imdb`=?,`kino`=?,`douban`=?,
                        `woke_result`=?,`lgbt_result`=?,`result`=?,
                        `last_update`=? WHERE `mid`= ? ";
-            Pdo_an::db_results_array($q,[$array['diversity'],$array['female'],$array['woke'],$array['lgbt'],$array['audience'],$array['boycott'],$array['oweralbs'],
-                $array['rtgap'],$array['year'],$array['rtaudience'],$array['imdb'],$array['kino'],$array['douban'],
-                $woke,$lgbt,$result,time(),$mid]);
-
-
+                 Pdo_an::db_results_array($q, [$array['diversity'], $array['female'], $array['woke'], $array['lgbt'], $array['audience'], $array['boycott'], $array['oweralbs'],
+                     $array['rtgap'], $array['year'], $array['rtaudience'], $array['imdb'], $array['kino'], $array['douban'],
+                     $woke, $lgbt, $result, time(), $mid]);
+             }
+             //echo ' updated ';
          }
          if ($sync)
          {
@@ -437,49 +456,71 @@ class WOKE
 
 
     }
-    public function zr_woke($mid = 0)
+    public function zr_woke($mid = 0,$debug=0)
     {
 
         if ($mid) {
             $where = " data_movie_imdb.id = '" . $mid . "' ";
         } else {
-            $where = " data_woke.mid IS NULL ";
+            $where = " data_woke.id IS NULL ";
 
         }
-        if (isset($_GET['force'])) {
-            $where = " data_movie_imdb.id > 0 ";
-        }
+
 
         $q = "SELECT data_movie_imdb.id FROM `data_movie_imdb` LEFT JOIN data_woke ON (data_movie_imdb.id = data_woke.mid) WHERE " . $where . " LIMIT 1000";
+        if (isset($_GET['force'])) {
+            $q = " SELECT * FROM `data_woke` ORDER BY `mid` ASC ";
+        }
+        echo $q;
 
         $r = Pdo_an::db_results_array($q);
+        $count =count($r);
+        echo 'total woke not fill ='.$count.'<br>';
 
+        $i=0;
         foreach ($r as $row)
         {
-            $mid = $row['id'];
-            $this->zr_woke_calc($mid);
 
-            if (function_exists('check_cron_time'))
+            $mid = $row['id'];
+
+            if (isset($_GET['force'])) {
+
+                $result = $this->calculate_rating($mid, $row, 1, 1);
+                echo $i.'/'.$count.' mid = ' . $mid.' result = '.$result.'%<br>' ;
+            }
+            else
             {
-                if (check_cron_time())
+
+                $result = $this->zr_woke_calc($mid,$debug);
+                echo $i.'/'.$count.' mid = ' . $mid.' result = '.$result.'%<br>' ;
+
+                if (function_exists('check_cron_time'))
                 {
-                    echo 'end time '.check_cron_time();
-                    break;
+                    if (check_cron_time())
+                    {
+                        echo 'end time '.check_cron_time();
+                        break;
+                    }
                 }
+
             }
 
 
+
+
+
+            $i++;
         }
 
 
     }
-    public function zr_woke_calc($mid = 0)
+    public function zr_woke_calc($mid = 0,$debug=0)
     {
 
 
 
 
-        echo ' mid = ' . $mid . '<br>';
+
 
         //get diversity, female
         $gender_data = $this->get_diverstiy($mid);
@@ -512,9 +553,9 @@ class WOKE
 
         /// diversity	female	woke	lgbt	audience	boycott	oweralbs	rtgap	year	rtaudience	imdb	kino	douban	result	last_update
 
-        $this->calculate_rating($mid, $array, 1, 1);
+        $result = $this->calculate_rating($mid, $array, 1, $debug);
 
-
+    return $result;
     }
 
 }
