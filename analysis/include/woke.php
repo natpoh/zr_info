@@ -554,7 +554,7 @@ class WOKE
 
         /// diversity	female	woke	lgbt	audience	boycott	oweralbs	rtgap	year	rtaudience	imdb	kino	douban	result	last_update
 
-        $result = $this->calculate_rating($mid, $array, 1, $debug);
+        $result = $this->calculate_rating($mid, $array, 1, $debug,1);
 
     return $result;
     }
