@@ -167,7 +167,7 @@ class WOKE
 
         if ($array['country']) {
 
-            $this->debug_table('Country list', $country_weight_array,'red');
+            if ($debug)$this->debug_table('Country list', $country_weight_array,'red');
 
             $cdata = $array['country'];
             ///check country
