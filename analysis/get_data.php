@@ -87,9 +87,11 @@ function single_movie($curent_user='')
 
     if (isset($_POST['rwt_id']))
     {
+
         !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
         $rwt_id =intval($_POST['rwt_id']);
         $id=TMDB::get_imdb_id_from_id($rwt_id);
+
     }
     else
     {
@@ -199,7 +201,21 @@ function single_movie($curent_user='')
         }
 
     }
+    else if (isset($_POST['woke']))
+    {
 
+        if ($_POST['woke']==1)
+        {
+            !class_exists('WOKE') ? include ABSPATH . "analysis/include/woke.php" : '';
+            $woke = new WOKE;
+
+            $woke->zr_woke_calc($rwt_id,1);
+
+
+            return;
+        }
+
+    }
 
    $actors_array=  MOVIE_DATA::get_actors_from_movie($rwt_id,'',$actor_type);
 

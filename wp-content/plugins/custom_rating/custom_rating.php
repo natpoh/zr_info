@@ -174,6 +174,14 @@ class CustomRating
         Crowdsource::Show_admin_table('woke',$array_rows,1,'',1);
 
 
+    ?>
+
+        <style type="text/css">
+            .nte_show {
+                display: none;
+            }
+        </style>
+    <?php
     }
     public function movies_rating()
     {

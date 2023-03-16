@@ -311,9 +311,6 @@ class WOKE
         }
 
 
-
-
-
         $result = round((
                 $diversity * $weihgt['diversity'] +
                 $female * $weihgt['female'] +
@@ -452,9 +449,6 @@ class WOKE
              }
          }
 
-
-
-
         }
 
         return  $result;
@@ -530,10 +524,6 @@ class WOKE
                 }
 
             }
-
-
-
-
 
             $i++;
         }
