@@ -191,6 +191,24 @@ class CustomRating
             .red {
                 color: red;
             }
+            details.details_info{
+                color: gray;
+                display: inline-block;
+
+                white-space: pre-line;
+            }
+            details.details_info summary{
+                border-radius: 50%;
+                border: 1px solid gray;
+                width: 20px;
+                text-align: center;
+                height: 20px;
+                margin-left: 5px;
+                cursor: pointer;
+            }
+            details.details_info[open]{
+                width: 100%;
+            }
         </style>
     <?php
     }

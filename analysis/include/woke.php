@@ -112,9 +112,61 @@ class WOKE
         if($imdb<0){
             $imdb_text = '<span class="red">'.$imdb_cur.'</span>';
         }
-
-        if ($debug) $this->debug_table($name,  '-('.$imdb_input.'-'.$imdb_min.')/('.$imb_max.'-'.$imdb_min.')*'.$imb_max.' =  '.$imdb_text.$imdb_dop.'% ');
+        if ($debug){$qs= $this->details('imdb');}
+        if ($debug) $this->debug_table($name,  '-('.$imdb_input.'-'.$imdb_min.')/('.$imb_max.'-'.$imdb_min.')*'.$imb_max.' =  '.$imdb_text.$imdb_dop.'% '.$qs);
     return [$imdb,$imdb_text];
+    }
+    private function details($data,$a='',$b='')
+    {
+        $array = ['diversity'=>'diversity counts only for countries from the list below, this is done so that there are no false positives for countries such as India or Japan, you can add other white countries to this list.
+        for a list of countries, you can see here:   <a href="https://zeitgeistreviews.com/analytics/tab_population" target="_blank">https://zeitgeistreviews.com/analytics/tab_population</a>',
+            'woke'=>'woke and lgbt counted based on the number of words, for example if in the settings we put 5, and in the keywords used 5 words it will be 100% if 1 word, it will be 20%',
+'boycott'=>'The boycott and boycott are considered to be so:
+if there is a boycott and it is Pay To Consume, the rating will be -100
+if the boycott is Skip It, the rating will be added to 100
+so this rating can be either -100 or 100, 
+
+Audience can also be from -100 to 100, it is calculated by formula:
+150 - audience_input * 50;
+if the audience is 5, then the result will be 100
+if 1, then the result will be -100
+
+if Consume If Free, then the boycott and audiences are not counted
+',
+            'oweralbs'=>'oweralbs is always positive it counts as input*20
+so for value 5 the result will be 5*20=100',
+            'rtgap'=>'rt gap is calculated by the formula -value * rtgap coefficient
+Example: rt gap =18 then 
+result = -18*2 = -36%
+or rt gap =60 then 
+--60*2 = 120; 120 > 100; result = 100%',
+            'imdb'=>'this rating is calculated using the formula
+-($imdb_input-$imdb_min)/($rating_max-$imdb_min)*$rating_max
+
+so for example if we have rating_max =90, imdb_min=70 and imdb_input=87
+the result would be
+-(87-70)/(90-70)*90 = -77%
+and for rating 49
+-(49-70)/(90-70)*90 = 95%
+
+this rating ranges from -100 to 100',
+            'year'=>'
+            The date coefficient is calculated from the period of the movie from '.$a.', if the movie is older, the coefficient is lower, if younger, the coefficient is higher.
+             To adjust the coefficient, a correction factor of '.$b.' is used. 
+The date coefficient is multiplied by the total result of all coefficients.
+            Here\'s an example of how the year is calculated
+Release date (1995) 1 / ( 2010 - 1959 ) = 0.01961
+(1995-1959)*0.01961/2=0.35
+
+Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
+(2015-2010)*0.07692/2+1=1.19'
+
+
+        ];
+
+
+
+      return  '<details class="details_info" ><summary>?</summary>'.$array[$data].'</details>';
     }
 
     public function calculate_rating($mid, $array, $update = 0, $debug = 0,$sync=0)
@@ -156,7 +208,10 @@ class WOKE
             $diversity = round($array['diversity'], 0);
 
 
-        if ($debug) $this->debug_table('Diversity', $diversity . '%');
+            if ($debug){$qs= $this->details('diversity');}
+
+
+        if ($debug) $this->debug_table('Diversity', $diversity . '% '.$qs);
 
         $country_weight = $weihgt_total['country']['diversity_country_list'];
         if ($country_weight)
@@ -210,7 +265,16 @@ class WOKE
             $female = $array['female'];
             if ($debug) $this->debug_table('Female', $female . '% ');
         }
+        if ($array['woke'] || $array['lgbt'])
+        {
+            if ($debug){$qs= $this->details('woke');}
+        }
+
+
         if ($array['woke']) {
+
+
+
             $woke_input = $array['woke'];
 
             $woke_percent = round(100 / $word_weight['woke'], 2);
@@ -221,7 +285,7 @@ class WOKE
             }
             $woke = round($woke_input * $woke_percent, 0);
 
-            if ($debug) $this->debug_table('Woke', $woke_input . '*' . $woke_percent . '=' . $woke . '% ');
+            if ($debug) $this->debug_table('Woke', $woke_input . '*' . $woke_percent . '=' . $woke . '% '.$qs);
         }
         if ($array['lgbt']) {
             $lgbt_input = $array['lgbt'];
@@ -234,31 +298,32 @@ class WOKE
             }
             $lgbt = round($lgbt_input * $lgbt_percent, 0);
 
-            if ($debug) $this->debug_table('Lgbt', $lgbt_input . '*' . $lgbt_percent . '=' . $lgbt . '% ');
+            if ($debug) $this->debug_table('Lgbt', $lgbt_input . '*' . $lgbt_percent . '=' . $lgbt . '% '.$qs);
         }
 ///audience
         $boycott=0;
         $boycott_text=0;
         if ($array['boycott']) {
+            if ($debug){$qs= $this->details('boycott');}
             $boycott_input=$array['boycott'];
 
             if ($boycott_input==1)
             {
-                if ($debug) $this->debug_table('Boycott', 'Pay To Consume <span class="red">-100</span>%');
+                if ($debug) $this->debug_table('Boycott', 'Pay To Consume <span class="red">-100</span>% '.$qs);
 
                 $boycott=-100;
                 $boycott_text='<span class="red">-100</span>';
             }
             else if ($boycott_input==2)
             {
-                if ($debug) $this->debug_table('Boycott', 'Skip It 100%');
+                if ($debug) $this->debug_table('Boycott', 'Skip It 100% '.$qs);
 
                 $boycott=100;
                 $boycott_text=$boycott;
             }
             else if ($boycott_input==3)
             {
-                if ($debug) $this->debug_table('Boycott', 'Consume If Free; rating is not calculated');
+                if ($debug) $this->debug_table('Boycott', 'Consume If Free; rating is not calculated '.$qs);
 
                 $boycott=0;
             }
@@ -283,14 +348,17 @@ class WOKE
 
         }
         if ($array['oweralbs']) {
+
+            if ($debug){$qs= $this->details('oweralbs');}
+
             $oweralbs_input = $array['oweralbs'];
             $oweralbs = $oweralbs_input*20;
 
-            if ($debug) $this->debug_table('Overall BS',  $oweralbs_input . '*20 =' . $oweralbs . '% ');
+            if ($debug) $this->debug_table('Overall BS',  $oweralbs_input . '*20 =' . $oweralbs . '% '.$qs);
 
         }
         if ($array['rtgap']) {
-
+            if ($debug){$qs= $this->details('rtgap');}
             $rtgap_input = $array['rtgap'];
 
             $rtgap_custom = -$rtgap_input*$other['rtgap'];
@@ -317,7 +385,7 @@ class WOKE
             {
                 $rtgap_text = '<span class="red">'.$rtgap.'</span>';
             }
-            if ($debug) $this->debug_table('RT Gap',  '-'.$rtgap_input . '*'.$other['rtgap'].' = ' . $rtgap_custom.$rtgap_dop . '%');
+            if ($debug) $this->debug_table('RT Gap',  '-'.$rtgap_input . '*'.$other['rtgap'].' = ' . $rtgap_custom.$rtgap_dop . '% '.$qs);
 
         }
 
@@ -339,7 +407,7 @@ class WOKE
 
         //year
         $year = $array['year'];
-
+        if ($debug){$qs= $this->details('year',$other['year'],$weihgt['year']);}
         if ( $array['year'] < $other['year_start'] ) {
 
             $year_data_result=0;
@@ -353,7 +421,7 @@ class WOKE
 
 
             if ($debug) $this->debug_table('Release date ('. $array['year'].')',  ' 1 / ( '.$other['year'].' - ' .$other['year_start'].' ) = '.$year_data.'<br>
-                                                ('. $array['year'].'-'. $other['year_start'].')*'.$year_data.'/'.$weihgt['year'].'='.$year_data_result);
+                                                ('. $array['year'].'-'. $other['year_start'].')*'.$year_data.'/'.$weihgt['year'].'='.$year_data_result.' '.$qs);
 
 
         } else if ( $array['year'] > $other['year'] ) {
@@ -365,15 +433,15 @@ class WOKE
             $year_data_result =  round(($array['year']- $other['year']) *$year_data/$weihgt['year'],2)+1;
 
 
-            if ($debug) $this->debug_table('Release date',  ' 1 / ( '.$curtime.' - ' .$other['year'].' ) = '.$year_data.'<br>
-                                                ('. $array['year'].'-'. $other['year'].')*'.$year_data.'/'.$weihgt['year'].'+1='.$year_data_result);
+            if ($debug) $this->debug_table('Release date  ('. $array['year'].')',  ' 1 / ( '.$curtime.' - ' .$other['year'].' ) = '.$year_data.'<br>
+                                                ('. $array['year'].'-'. $other['year'].')*'.$year_data.'/'.$weihgt['year'].'+1='.$year_data_result.' '.$qs);
 
 
         }
         else{
 
             $year_data_result=1;
-            if ($debug) $this->debug_table('Release date',  $array['year'].' = '.$other['year'].'; result = 1');
+            if ($debug) $this->debug_table('Release date',  $array['year'].' = '.$other['year'].'; result = 1 '.$qs);
         }
 
 
