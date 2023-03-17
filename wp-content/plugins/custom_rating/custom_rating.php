@@ -135,11 +135,16 @@ class CustomRating
         {
             $array=['woke'=>array(  'diversity' => 1,  'female' => 1, 'woke' => 5, 'lgbt' => 5, 'audience' => 1,
                 'boycott' => 1, 'oweralbs' => 1, 'rtgap' => 1, 'year' => 1, 'rtaudience' => 1,
-                'imdb' => 1, 'kino' => 1, 'douban' => 1),'word_weight'=>['woke' => 5, 'lgbt' => 4],'other_weight'=>['rtgap'=>2,'rtaudience'=>70,	'imdb'=>70,	'kino'=>70,	'douban'=>70,	'year_start'=>1959,'year'=>2010]
+                'imdb' => 1, 'kino' => 1, 'douban' => 1),'word_weight'=>['woke' => 5, 'lgbt' => 4],'other_weight'=>['rtgap'=>2,'rtaudience'=>70,
+                'imdb'=>70,	'kino'=>70,	'douban'=>70,'rating_max'=>90,	'year_start'=>1959,'year'=>2010]
                 ,'country'=>['diversity_country_list'=>'United States,Canada,France,United Kingdom']];
 
             !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
             OptionData::set_option('',serialize($array),'woke_raiting_weight',1);
+        }
+        if (!$array['other_weight']['rating_max'])
+        {
+            $array['other_weight']['rating_max']=90;
         }
 
 

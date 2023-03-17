@@ -89,10 +89,10 @@ class WOKE
 
     }
 
-    private function calculate_custom($imdb_input,$imdb_min,$name,$debug)
+    private function calculate_custom($imdb_input,$imdb_min,$imb_max=90,$name,$debug)
     {
 
-        $imdb_cur = round(-($imdb_input-$imdb_min)/(90-$imdb_min)*90,0);
+        $imdb_cur = round(-($imdb_input-$imdb_min)/($imb_max-$imdb_min)*$imb_max,0);
 
         if($imdb_cur>100)
         {
@@ -113,7 +113,7 @@ class WOKE
             $imdb_text = '<span class="red">'.$imdb_cur.'</span>';
         }
 
-        if ($debug) $this->debug_table($name,  '-('.$imdb_input.'-'.$imdb_min.')/(100-'.$imdb_min.')*100 =  '.$imdb_text.$imdb_dop.'% ');
+        if ($debug) $this->debug_table($name,  '-('.$imdb_input.'-'.$imdb_min.')/('.$imb_max.'-'.$imdb_min.')*'.$imb_max.' =  '.$imdb_text.$imdb_dop.'% ');
     return [$imdb,$imdb_text];
     }
 
@@ -237,7 +237,8 @@ class WOKE
             if ($debug) $this->debug_table('Lgbt', $lgbt_input . '*' . $lgbt_percent . '=' . $lgbt . '% ');
         }
 ///audience
-
+        $boycott=0;
+        $boycott_text=0;
         if ($array['boycott']) {
             $boycott_input=$array['boycott'];
 
@@ -246,12 +247,14 @@ class WOKE
                 if ($debug) $this->debug_table('Boycott', 'Pay To Consume <span class="red">-100</span>%');
 
                 $boycott=-100;
+                $boycott_text='<span class="red">-100</span>';
             }
             else if ($boycott_input==2)
             {
                 if ($debug) $this->debug_table('Boycott', 'Skip It 100%');
 
                 $boycott=100;
+                $boycott_text=$boycott;
             }
             else if ($boycott_input==3)
             {
@@ -305,7 +308,7 @@ class WOKE
             {
                 $rtgap=-100;
 
-                $rtgap_dop = '; '.$rtgap_custom.' < -100; result = -100';
+                $rtgap_dop = '; '.$rtgap_custom.' < -100; result = <span class="red">-100</span>';
             }
 
             $rtgap_text=$rtgap;
@@ -314,23 +317,23 @@ class WOKE
             {
                 $rtgap_text = '<span class="red">'.$rtgap.'</span>';
             }
+            if ($debug) $this->debug_table('RT Gap',  '-'.$rtgap_input . '*'.$other['rtgap'].' = ' . $rtgap_custom.$rtgap_dop . '%');
 
-            if ($debug) $this->debug_table('RT Gap',  '-'.$rtgap_input . '*'.$other['rtgap'].' = ' . $rtgap_text.$rtgap_dop . '%');
         }
 
         if ($array['rtaudience']) {
-        list( $rtaudience,$rtaudience_text) =   $this->calculate_custom($array['rtaudience'],$other['rtaudience'],'RT Audience',$debug);
+        list( $rtaudience,$rtaudience_text) =   $this->calculate_custom($array['rtaudience'],$other['rtaudience'],$other['rating_max'],'RT Audience',$debug);
          }
 
         if ($array['imdb']) {
-            list( $imdb,$imdb_text) =   $this->calculate_custom($array['imdb']*10,$other['imdb'],'IMDB',$debug);
+            list( $imdb,$imdb_text) =   $this->calculate_custom($array['imdb']*10,$other['imdb'],$other['rating_max'],'IMDB',$debug);
         }
 
         if ($array['kino']) {
-            list( $kino,$kino_text) =   $this->calculate_custom($array['kino'],$other['kino'],'Kinopoisk (RUS)',$debug);
+            list( $kino,$kino_text) =   $this->calculate_custom($array['kino'],$other['kino'],$other['rating_max'],'Kinopoisk (RUS)',$debug);
         }
         if ($array['douban']) {
-            list( $douban,$douban_text) =   $this->calculate_custom($array['douban'],$other['douban'],'Douban (CN)',$debug);
+            list( $douban,$douban_text) =   $this->calculate_custom($array['douban'],$other['douban'],$other['rating_max'],'Douban (CN)',$debug);
         }
 
 
@@ -404,8 +407,9 @@ class WOKE
             if ($woke) $result_text .= '+' . $woke . '*' . $weihgt['woke'];
             if ($lgbt) $result_text .= '+' . $lgbt . '*' . $weihgt['lgbt'];
 
-            if ($boycott) $result_text .= '<span class="red">' . $boycott . '*' . $weihgt['boycott'].'</span>';
+            if ($boycott) $result_text .= '+' . $boycott_text . '*' . $weihgt['boycott'].'</span>';
             if ($audience) $result_text .= '+' . $audience_text . '*' . $weihgt['audience'];
+
             if ($oweralbs) $result_text .= '+' . $oweralbs . '*' . $weihgt['oweralbs'];
             if ($rtgap) $result_text .= '+' . $rtgap_text . '*' . $weihgt['rtgap'];
             if ($rtaudience) $result_text .= '+' . $rtaudience_text . '*' . $weihgt['rtaudience'];
