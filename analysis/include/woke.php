@@ -154,7 +154,7 @@ class WOKE
 
         if ($array['diversity']) {
             $diversity = round($array['diversity'], 0);
-        }
+
 
         if ($debug) $this->debug_table('Diversity', $diversity . '%');
 
@@ -203,7 +203,7 @@ class WOKE
             }
 
         }
-
+        }
 
 
         if ($array['female']) {
@@ -237,32 +237,43 @@ class WOKE
             if ($debug) $this->debug_table('Lgbt', $lgbt_input . '*' . $lgbt_percent . '=' . $lgbt . '% ');
         }
 ///audience
-        if ($array['audience']) {
-            $audience_input = $array['audience'];
 
-            $audience = 100 - $audience_input * 40;
-            $audience_text =$audience;
-            if ($audience<0)
-            {
-                $audience_text = '<span class="red">'.$audience.'</span>';
-            }
-            if ($debug) $this->debug_table('Audience', '100-' . $audience_input . '*40 =' . $audience_text . '% ');
-
-
-        }
         if ($array['boycott']) {
+            $boycott_input=$array['boycott'];
 
-         $boycott_input=$array['boycott'];
-         if ($boycott_input==1)
-         {
-             $boycott=-100;
-             if ($debug) $this->debug_table('Boycott', 'Pay To Consume =<span class="red">-100%</span>');
-         }
-            if ($boycott_input==2)
+            if ($boycott_input==1)
             {
-                $boycott=100;
-                if ($debug) $this->debug_table('Boycott', 'Skip It = 100%');
+                if ($debug) $this->debug_table('Boycott', 'Pay To Consume <span class="red">-100</span>%');
+
+                $boycott=-100;
             }
+            else if ($boycott_input==2)
+            {
+                if ($debug) $this->debug_table('Boycott', 'Skip It 100%');
+
+                $boycott=100;
+            }
+            else if ($boycott_input==3)
+            {
+                if ($debug) $this->debug_table('Boycott', 'Consume If Free; rating is not calculated');
+
+                $boycott=0;
+            }
+            if ($boycott_input==1 || $boycott_input==2) {
+                if ($array['audience']) {
+                    $audience_input = $array['audience'];
+
+                    $audience = 150 - $audience_input * 50;
+                    $audience_text = $audience;
+                    if ($audience < 0) {
+                        $audience_text = '<span class="red">' . $audience . '</span>';
+                    }
+                    if ($debug) $this->debug_table('Audience', '150-' . $audience_input . '*50 =' . $audience_text . '% ');
+
+                }
+            }
+
+
 //                1 => array('title' => 'Pay To Consume'
 //                2 => array('title' => 'Skip It',
 //                3 => array('title' => 'Consume If Free',
@@ -368,8 +379,10 @@ class WOKE
                 $female * $weihgt['female'] +
                 $woke * $weihgt['woke'] +
                 $lgbt * $weihgt['lgbt'] +
-                $audience * $weihgt['audience']+
+
                 $boycott * $weihgt['boycott']+
+                $audience * $weihgt['audience']+
+
                 $oweralbs * $weihgt['oweralbs']+
                 $rtgap * $weihgt['rtgap'] +
                 $rtaudience * $weihgt['rtaudience'] +
@@ -390,9 +403,9 @@ class WOKE
             if ($female) $result_text .= '+' . $female . '*' . $weihgt['female'];
             if ($woke) $result_text .= '+' . $woke . '*' . $weihgt['woke'];
             if ($lgbt) $result_text .= '+' . $lgbt . '*' . $weihgt['lgbt'];
-            if ($audience) $result_text .= '+' . $audience_text . '*' . $weihgt['audience'];
-            if ($boycott) $result_text .= '<span class="red">' . $boycott . '*' . $weihgt['boycott'].'</span>';
 
+            if ($boycott) $result_text .= '<span class="red">' . $boycott . '*' . $weihgt['boycott'].'</span>';
+            if ($audience) $result_text .= '+' . $audience_text . '*' . $weihgt['audience'];
             if ($oweralbs) $result_text .= '+' . $oweralbs . '*' . $weihgt['oweralbs'];
             if ($rtgap) $result_text .= '+' . $rtgap_text . '*' . $weihgt['rtgap'];
             if ($rtaudience) $result_text .= '+' . $rtaudience_text . '*' . $weihgt['rtaudience'];
