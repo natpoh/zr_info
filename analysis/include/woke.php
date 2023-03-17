@@ -365,7 +365,7 @@ class WOKE
             $year_data_result =  round(($array['year']- $other['year']) *$year_data/$weihgt['year'],2)+1;
 
 
-            if ($debug) $this->debug_table('Release date',  ' 1 / ( '.$array['year'].' - ' .$other['year'].' ) = '.$year_data.'<br>
+            if ($debug) $this->debug_table('Release date',  ' 1 / ( '.$curtime.' - ' .$other['year'].' ) = '.$year_data.'<br>
                                                 ('. $array['year'].'-'. $other['year'].')*'.$year_data.'/'.$weihgt['year'].'+1='.$year_data_result);
 
 
