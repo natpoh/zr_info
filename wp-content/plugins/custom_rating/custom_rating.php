@@ -181,6 +181,10 @@ class CustomRating
         <style type="text/css">
             .nte_show {
                 display: none;
+
+            }
+            .red {
+                color: red;
             }
         </style>
     <?php
