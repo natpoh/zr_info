@@ -418,7 +418,7 @@ class CriticMatic extends AbstractDB {
 
         $where = sprintf(" WHERE p.id=%d", (int) $id);
 
-        $sql = "SELECT p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, p.view_type, am.aid" . $cid_get . $ts_get
+        $sql = "SELECT p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.top_rating, p.blur, p.view_type, am.aid" . $cid_get . $ts_get
                 . " FROM {$this->db['posts']} p"
                 . " LEFT JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
                 . $cid_inner . $ts_inner . $where;
@@ -917,15 +917,18 @@ class CriticMatic extends AbstractDB {
         // Update top movie link after any change in critic meta
         // Get movies meta list
         $top_meta_movie = $this->get_top_critics_meta($cid);
+        $top_movie = $top_meta_movie?$top_meta_movie->fid:0;
+        $top_rating = $top_meta_movie?$top_meta_movie->rating:0;
         // Get critic top link
         $post_movie = $this->get_post_top_movie($cid);
 
         // Update critic top link
-        if ($top_meta_movie != $post_movie) {
+        if ($top_movie != $post_movie) {
             $date_add = $this->curr_time();
             $data = array(
-                'top_movie' => $top_meta_movie,
-                'date_add' => $date_add
+                'top_movie' => $top_movie,
+                'date_add' => $date_add,
+                'top_rating' => $top_rating,
             );
             $this->sync_update_data($data, $cid, $this->db['posts'], $this->sync_data);
         }
@@ -2318,20 +2321,20 @@ class CriticMatic extends AbstractDB {
 
     public function get_top_critics_meta($cid) {
         // 1. Get meta where state = Approved
-        $sql = sprintf("SELECT fid "
+        $sql = sprintf("SELECT * "
                 . "FROM {$this->db['meta']} "
                 . "WHERE cid=%d AND type>0 AND state=1 ORDER BY rating DESC", (int) $cid);
-        $result = $this->db_get_var($sql);
+        $result = $this->db_fetch_row($sql);
 
         if ($result) {
             return $result;
         }
 
         // 2. Get any state
-        $sql = sprintf("SELECT fid "
+        $sql = sprintf("SELECT * "
                 . "FROM {$this->db['meta']} "
                 . "WHERE cid=%d AND type>0 AND state>0 ORDER BY rating DESC", (int) $cid);
-        $result = $this->db_get_var($sql);
+        $result = $this->db_fetch_row($sql);
 
         if (!$result) {
             $result = 0;
@@ -2401,7 +2404,12 @@ class CriticMatic extends AbstractDB {
     }
 
     public function get_top_movie($cid) {
-        return $this->get_top_critics_meta($cid);
+        $top_meta = $this->get_top_critics_meta($cid);
+        $top_movie = 0;
+        if ($top_meta){
+            $top_movie = $top_meta->fid;
+        }
+        return $top_movie;
     }
 
     public function get_critic_slug($post) {

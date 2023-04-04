@@ -25,7 +25,7 @@ class CriticAudience extends AbstractDb {
     private $p = '';
     public $vote_data = array(
         'vote' => array(
-            'title' => 'Boycott Suggestion',
+            'title' => 'Support',
             'options' => array(
                 1 => array('title' => 'Pay To Consume', 'img' => "slider_green_pay_drk.png", 'verdict' => 'pay_to_watch'),
                 2 => array('title' => 'Skip It', 'img' => 'slider_red_skip_drk.png', 'verdict' => 'skip_it'),
@@ -35,7 +35,7 @@ class CriticAudience extends AbstractDb {
         'rating' => array(
             'img' => '01_star',
             'class' => 'WORTHWHILE',
-            'title' => 'Overall Rating'),
+            'title' => 'Rating'),
         'hollywood' => array(
             'img' => '02_poop',
             'class' => 'hollywood',
