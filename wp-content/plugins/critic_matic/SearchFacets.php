@@ -36,7 +36,7 @@ class SearchFacets extends AbstractDB {
             'title' => array('title' => 'Title', 'def' => 'asc', 'main' => 1, 'group' => 'def'),
             'date' => array('title' => 'Date', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
             'rel' => array('title' => 'Relevance', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
-            'pop' => array('title' => 'Emojis', 'def' => 'desc', 'group' => 'woke', 'main' => 1,),
+            'pop' => array('title' => 'Rating', 'def' => 'desc', 'group' => 'woke', 'main' => 1,),
             'mw' => array('title' => 'Weight', 'def' => 'desc', 'main' => 1, 'group' => 'def')
         )
     );

@@ -70,24 +70,25 @@ class Forchan extends MoviesAbstractDBAn {
                     print_r(array('title_weight', $title_weight));
                 }
 
-                if ($title_weight >= $min_title_weight) {
-                    $last_mids = $this->mp->get_fchan_posts($mid);
-                    foreach ($last_mids as $post) {
-                        if ($ratings[$mid]['rating']) {
-                            $ratings[$mid]['rating'] += $post->rating;
-                            $ratings[$mid]['total'] += 1;
-                        } else {
-                            $ratings[$mid]['rating'] = $post->rating;
-                            $ratings[$mid]['total'] = 1;
-                            $ratings[$mid]['valid'] = 1;
-                        }
+                /* if ($title_weight >= $min_title_weight) { */
+                $last_mids = $this->mp->get_fchan_posts($mid);
+                foreach ($last_mids as $post) {
+                    if ($ratings[$mid]['rating']) {
+                        $ratings[$mid]['rating'] += $post->rating;
+                        $ratings[$mid]['total'] += 1;
+                    } else {
+                        $ratings[$mid]['rating'] = $post->rating;
+                        $ratings[$mid]['total'] = 1;
+                        $ratings[$mid]['valid'] = 1;
                     }
-                } else {
-                    // Empty rating
-                    $ratings[$mid]['rating'] = 0;
-                    $ratings[$mid]['total'] = 0;
-                    $ratings[$mid]['valid'] = 0;
                 }
+                $ratings[$mid]['weight'] = $title_weight;
+                /* } else {
+                  // Empty rating
+                  $ratings[$mid]['rating'] = 0;
+                  $ratings[$mid]['total'] = 0;
+                  $ratings[$mid]['valid'] = 0;
+                  } */
             }
 
             if ($debug) {
@@ -97,51 +98,59 @@ class Forchan extends MoviesAbstractDBAn {
             foreach ($ratings as $pid => $post) {
                 // Get fchan posts
 
-                $valid = $post['valid'];
-                if ($valid) {
-                    $rating_count = $post['total'];
-                    $rating_update = (int) round($post['rating'] / $rating_count, 0);
+                /* $valid = $post['valid'];
+                  if ($valid) { */
+                $rating_count = $post['total'];
+                $rating_update = (int) round($post['rating'] / $rating_count, 0);
 
-                    if ($rating_count == 0) {
-                        continue;
-                    }
-
-                    if ($debug) {
-                        p_r(array($pid, $rating_update));
-                    }
-
-
-
-                    // Get fchan_posts_found
-                    $uid = $mids[$pid];
-                    $fchan_posts_found = $this->mp->get_fchan_posts_found($uid);
-                    if (!$fchan_posts_found) {
-                        $fchan_posts_found = $rating_count;
-                    }
-
-
-                    // Update rating
-                    $data = array(
-                        'last_upd' => $time,
-                        'fchan_rating' => $rating_update,
-                        'fchan_posts_found' => $fchan_posts_found,
-                        'fchan_posts' => $rating_count,
-                        'fchan_date' => $time,
-                        'total_rating' => 0,
-                        'total_count' => $fchan_posts_found,
-                    );
-                } else {
-                    // Clear invalid rating
-                    $data = array(
-                        'last_upd' => $time,
-                        'fchan_rating' => 0,
-                        'fchan_posts_found' => 0,
-                        'fchan_posts' => 0,
-                        'fchan_date' => $time,
-                        'total_rating' => 0,
-                        'total_count' => 0,
-                    );
+                if ($rating_count == 0) {
+                    continue;
                 }
+
+                if ($debug) {
+                    p_r(array($pid, $rating_update));
+                }
+
+                $title_weight = $post['weight'];
+
+                // Get fchan_posts_found
+                $uid = $mids[$pid];
+                $fchan_posts_found = $this->mp->get_fchan_posts_found($uid);
+                if (!$fchan_posts_found) {
+                    $fchan_posts_found = $rating_count;
+                }
+
+                if ($title_weight < 100) {
+                    // Max post found for small weight titles
+                    $max_post_found = (int) $title_weight * 10;
+                    if ($fchan_posts_found > $max_post_found) {
+                        $fchan_posts_found = $max_post_found;
+                    }
+                }
+
+
+                // Update rating
+                $data = array(
+                    'last_upd' => $time,
+                    'fchan_rating' => $rating_update,
+                    'fchan_posts_found' => $fchan_posts_found,
+                    'fchan_posts' => $rating_count,
+                    'fchan_date' => $time,
+                    'total_rating' => 0,
+                    'total_count' => $fchan_posts_found,
+                );
+                /* } else {
+                  // Clear invalid rating
+                  $data = array(
+                  'last_upd' => $time,
+                  'fchan_rating' => 0,
+                  'fchan_posts_found' => 0,
+                  'fchan_posts' => 0,
+                  'fchan_date' => $time,
+                  'total_rating' => 0,
+                  'total_count' => 0,
+                  );
+                  } */
                 if ($debug) {
                     p_r($data);
                 }
@@ -270,7 +279,7 @@ class Forchan extends MoviesAbstractDBAn {
                     if ($cloud_sort) {
                         foreach ($cloud_sort as $mid => $data) {
                             $row = json_encode($data);
-                            if ($debug){
+                            if ($debug) {
                                 print_r(array($mid, $row));
                             }
                             $this->save_arhive($mid, $row);
@@ -291,7 +300,7 @@ class Forchan extends MoviesAbstractDBAn {
 
         $arhive_path = ABSPATH . 'temp/tag_cloud';
         $full_path = $arhive_path . '/' . $mid;
-        
+
         $this->mp->check_and_create_dir($arhive_path);
         if (file_exists($full_path)) {
             unlink($full_path);
