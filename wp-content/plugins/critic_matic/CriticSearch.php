@@ -950,10 +950,10 @@ class CriticSearch extends AbstractDB {
                 $title_key_score = 3;
 
                 foreach ($title_arr as $key) {
-                    if (strstr($post_title_clear, $key)){
-                         $ret[$id]['debug']['title_keys'] .= $key.'; ';
-                         $ret[$id]['score']['title_keys_score'] += $title_key_score;
-                         $ret[$id]['total'] += $title_key_score;
+                    if (strstr($post_title_clear, $key)) {
+                        $ret[$id]['debug']['title_keys'] .= $key . '; ';
+                        $ret[$id]['score']['title_keys_score'] += $title_key_score;
+                        $ret[$id]['total'] += $title_key_score;
                     }
                 }
             }
@@ -3104,7 +3104,8 @@ class CriticSearch extends AbstractDB {
 
         $povtor = false;
         $length = 200;
-        $min_precent = 90;
+        $min_precent_all = 90;
+        $min_precent_day = 70;
 
         $title = $this->clear_text($title, $length);
 
@@ -3124,7 +3125,7 @@ class CriticSearch extends AbstractDB {
                 if ($debug) {
                     p_r(array('Title percent', $key, $precent));
                 }
-                if ($precent >= $min_precent) {
+                if ($precent >= $min_precent_day) {
 
                     // Validate percent content
                     if ($precent != 100) {
@@ -3138,18 +3139,34 @@ class CriticSearch extends AbstractDB {
                             p_r(array('Domains', $post_domain, $post_domain2));
                         }
                         if ($post_domain != $post_domain2) {
-                            $post_content = $this->getUniqueWords(strip_tags($post_cache->content));
-                            $post_content2 = $this->getUniqueWords(strip_tags($post_cache2->content));
-                            if ($post_content || $post_content2) {
-                                $precent_c = $this->get_min_percent($post_content, $post_content2);
+                            // different sources
+                            if ((($post_cache2->date - 86400) < $post_cache->date) &&
+                                    ($post_cache->date < ($post_cache2->date + 86400))) {
+                                // One day
+                                $min_percent = $min_precent_day;
+                                
+                            } else {
+                                
+                                $min_percent = $min_precent_all;
                             }
-                            if ($debug) {
-                                p_r(array('Content percent', $key, $precent_c));
-                            }
+                            
+                            p_r(array(array('Dates',$post_cache->date,$post_cache2->date)),array('Min percent',$min_percent));
 
-                            if ($precent_c >= $min_precent) {
-                                $povtor->percent = array($precent, $precent_c);
-                                $valid_povtors[$key] = $povtor;
+                            if ($precent >= $min_percent) {
+
+                                $post_content = $this->getUniqueWords(strip_tags($post_cache->content));
+                                $post_content2 = $this->getUniqueWords(strip_tags($post_cache2->content));
+                                if ($post_content || $post_content2) {
+                                    $precent_c = $this->get_min_percent($post_content, $post_content2);
+                                }
+                                if ($debug) {
+                                    p_r(array('Content percent', $key, $precent_c));
+                                }
+
+                                if ($precent_c >= $min_percent) {
+                                    $povtor->percent = array($precent, $precent_c);
+                                    $valid_povtors[$key] = $povtor;
+                                }
                             }
                         }
                     } else {
