@@ -152,7 +152,7 @@ $this->set_option('',$_POST['words_exclude'],'words_exclude');
         <textarea name="option_4" style="width: 600px; height: 500px"><?php echo $this->get_option(4); ?></textarea>
         <h2>Color array</h2>
         <textarea name="option_6" style="width: 600px; height: 300px"><?php echo $this->get_option(6); ?></textarea>
-        <h2>Similar Shows</h2>
+        <h2>Similar Stuff</h2>
         <textarea name="similar_shows" style="width: 600px; height: 300px"><?php echo $this->get_option('','similar_shows'); ?></textarea>
         <h2>4Chan cloud words exclude</h2>
         <textarea name="words_exclude" style="width: 600px; height: 300px"><?php echo $this->get_option('','words_exclude'); ?></textarea>

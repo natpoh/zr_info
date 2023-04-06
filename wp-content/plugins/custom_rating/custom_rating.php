@@ -128,14 +128,23 @@ class CustomRating
         $value  =OptionData::get_options('','woke_raiting_weight');
 
         if ($value) {
-            $array = unserialize($value);
+         $array = unserialize($value);
         }
 
         if (!$array)
         {
             $array=['woke'=>array(  'diversity' => 1,  'female' => 1, 'woke' => 5, 'lgbt' => 5, 'audience' => 1,
                 'boycott' => 1, 'oweralbs' => 1, 'rtgap' => 1, 'year' => 1, 'rtaudience' => 1,
-                'imdb' => 1, 'kino' => 1, 'douban' => 1),'word_weight'=>['woke' => 5, 'lgbt' => 4],'other_weight'=>['rtgap'=>2,'rtaudience'=>70,
+                'imdb' => 1, 'kino' => 1, 'douban' => 1),
+                //'word_weight'=>['woke' => 5, 'lgbt' => 4],
+                'woke_word_weight'=>['1 word' => 5, '2 word' => 10, '3 word' => 50, '4 word' => 75, '5 word' => 100],
+                'lgbt_word_weight'=>['1 word' => 5, '2 word' => 10, '3 word' => 50, '4 word' => 75, '5 word' => 100],
+
+                'woke_word_limit'=>['1 word' => '0-15', '2 word' => '0-30', '3 word' => '30-70', '4 word' => '60-100', '5 word' => '80-100'],
+                'lgbt_word_limit'=>['1 word' => '0-15', '2 word' => '0-30', '3 word' => '30-70', '4 word' => '60-100', '5 word' => '80-100'],
+                'combient_word_limit'=>[ '2 word' => '0-30', '3 word' => '30-70', '4 word' => '60-100', '5 word' => '80-100'],
+
+                'other_weight'=>['rtgap'=>2,'rtaudience'=>70,
                 'imdb'=>70,	'kino'=>70,	'douban'=>70,'rating_max'=>90,	'year_start'=>1959,'year'=>2010]
                 ,'country'=>['diversity_country_list'=>'United States,Canada,France,United Kingdom']];
 
@@ -149,12 +158,30 @@ class CustomRating
 
 
         echo self::rating_to_table('woke', $array['woke']);
-        echo '<p>number of words to get 100%, if you enter 5 words, then 5 words will be enough to get a rating of 100%</p>';
-        echo self::rating_to_table('word_weight', $array['word_weight']);
+
+        echo '<p>WOKE coefficients</p>';
+        echo self::rating_to_table('woke_word_weight', $array['woke_word_weight']);
+        echo '<p>LGBT coefficients</p>';
+        echo self::rating_to_table('lgbt_word_weight', $array['lgbt_word_weight']);
+
         echo '<p>other coefficients</p>';
         echo self::rating_to_table('other_weight', $array['other_weight']);
         echo '<p>Diversity country (the Diversity parameter will be used for countries from the list)</p>';
         echo self::rating_to_table('country', $array['country'],1);
+
+
+
+
+
+        echo '<p>Woke keyword Rating limit parameters</p>';
+        echo self::rating_to_table('woke_word_limit', $array['woke_word_limit']);
+
+        echo '<p>LGBT keyword Rating limit parameters</p>';
+        echo self::rating_to_table('lgbt_word_limit', $array['lgbt_word_limit']);
+
+        echo '<p>Combient keyword Rating limit parameters</p>';
+        echo self::rating_to_table('combient_word_limit', $array['combient_word_limit']);
+
 
         echo '<p style="margin: 20px;"><input type="submit" name="submit" id="submit" class="button button-primary woke_rating_save" value="Save Changes">
 <span style=" padding-left: 10px; padding-right: 10px;  font-style: italic;" class="rating_save_result"></span>
@@ -461,7 +488,7 @@ class CustomRating
             $result_head .= '<th>' . $index . '</th>';
             $style='';
             if ($fulwidth ){$style=' style="width:100%"';}
-            $result_body .= '<td><input '.$style.' class="' .$index . '" value="' . $val . '"></td>';
+            $result_body .= '<td><input autocomplete="Off" '.$style.' class="' .$index . '" value="' . $val . '"></td>';
         }
 
         $rating_result = '<table class="wp-list-table widefat fixed striped posts rating_table_inputs" id="' . $rating_name . '"><thead><tr>' . $result_head . '</tr></thead><tbody><tr>' . $result_body . '</tr></tbody></table>';
@@ -526,6 +553,7 @@ class CustomRating
                     window.open(window.location.protocol + "/analysis/include/scrap_imdb.php?zr_woke&force=1");
 
                 });
+/*
                 jQuery('.woke_rating_save').click(function () {
 
                     var rating = new Object();
@@ -573,6 +601,55 @@ class CustomRating
 
 
                 });
+*/
+
+                document.querySelector('.woke_rating_save').addEventListener('click', async function() {
+
+                    let rating = {};
+
+                    document.querySelectorAll('.rating_table_inputs').forEach(function(input) {
+
+                        let id = input.getAttribute('id');
+
+                        if (!rating[id]) {
+                            rating[id] = {};
+                        }
+
+                        input.querySelectorAll('input').forEach(function(subInput) {
+                            let index = subInput.getAttribute('class');
+                            let val = subInput.value;
+                            if (!val) {
+                                val = 0;
+                            }
+                            rating[id][index] = val;
+                        });
+
+                    });
+
+                    if (rating) {
+                        var rating_string = JSON.stringify(rating);
+                    }
+
+                    document.querySelector('.rating_save_result').textContent = 'updating...';
+
+                    try {
+                        const response = await fetch('?page=custom_rating_woke_rating', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                       //  body: JSON.stringify({ action: 'update_woke_rating', val: rating_string }),
+                            body: 'action=update_woke_rating&val=' + encodeURIComponent(rating_string),
+                        });
+
+                        const html = await response.text();
+                        document.querySelector('.rating_save_result').textContent = 'data saved';
+                    } catch (error) {
+                        console.log(error);
+                        document.querySelector('.rating_save_result').textContent = 'an error occurred';
+                    }
+
+                });
+
+
             });
         </script>
 

@@ -78,7 +78,7 @@ Thank you!</div>
 <div class="dmg_content" id="actor_data_dop" ><div id="tags_keywords"  data-value="'.$post_id.'" class="not_load"></div></div>
 </details>
 <details class="dark actor_details" >
-   <summary>Similar Shows</summary>
+   <summary>Similar Stuff</summary>
 <section class="dmg_content inner_content" id="actor_data_dop" >
         <div  id="similar_movies" data-value="'.$post_id.'" class="not_load"></div>
 </section>

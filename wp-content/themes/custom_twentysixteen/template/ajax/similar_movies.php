@@ -39,7 +39,7 @@ if (isset($_GET['id']))
             $result['data']=$data;
 
 
-        $result['content']=	'<div class="in_fl_cnt"><p style="margin: 25px auto;">No similar shows have been found yet, they will be added soon...</p>'.$data.'</div>';
+        $result['content']=	'<div class="in_fl_cnt"><p style="margin: 25px auto;">No similar have been found yet, they will be added soon...</p>'.$data.'</div>';
 
         $cache = json_encode($result);
     }

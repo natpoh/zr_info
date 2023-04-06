@@ -68,33 +68,7 @@
                             ?>
 
                         </div><!-- .site-branding -->
-                        <?php
 
-                        if (has_nav_menu('primary')) :
-                            ?>
-                            <div id="site-header-menu" class="site-header-menu"><span class="close_header_nav"></span>
-                                <?php if (has_nav_menu('primary')) : ?>
-                                    <nav id="site-navigation" class="main-navigation" role="navigation" aria-label="<?php esc_attr_e('Primary Menu', 'twentysixteen'); ?>">
-                                        <?php
-                                        wp_nav_menu(
-                                            array(
-                                                'theme_location' => 'primary',
-                                                'menu_class' => 'primary-menu',
-                                            )
-                                        );
-                                        ?>
-                                        <div class="site_theme_switch" title="Color theme">
-                                            <div class="btn">
-                                                <div class="box">
-                                                    <div class="ball"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </nav><!-- .main-navigation -->
-                                <?php endif; ?>
-
-                            </div><!-- .site-header-menu -->
-                        <?php endif; ?>
 
                         <div class="search">
                             <?php
@@ -218,21 +192,64 @@
 
                     <?php endif; // End header image check.
                     ?>
-                    <div class="scont site-header-menu"></div>
+
 
 
                 </header><!-- .site-header -->
             </div>
-            <script type="text/javascript">
-                var site_theme = localStorage.getItem('site_theme');
-                if (site_theme == 'theme_dark')
-                {
-                    document.querySelector('body').classList.add('theme_dark');
-                } else
-                {
-                    document.querySelector('body').classList.add('theme_white');
-                }
-            </script>
+
+
+        <?php
+
+        if (has_nav_menu('primary')) :
+        ?>
+            <div id="site-header-menu" class="site-header-menu"><span class="close_header_nav"></span>
+                <?php if (has_nav_menu('primary')) : ?>
+                    <nav id="site-navigation" class="main-navigation" role="navigation" aria-label="<?php esc_attr_e('Primary Menu', 'twentysixteen'); ?>">
+                        <?php
+                        wp_nav_menu(
+                            array(
+                                'theme_location' => 'primary',
+                                'menu_class' => 'primary-menu',
+                            )
+                        );
+                        ?>
+                        <div class="site_theme_switch" title="Color theme">
+                            <div class="btn">
+                                <div class="box">
+                                    <div class="ball"></div>
+                                </div>
+                            </div>
+                        </div>
+                                      </nav><!-- .main-navigation -->
+                <?php endif; ?>
+                <div class="hide_left_sidebar"><svg class="hide_left_sidebar_arrow" version="1.1"  x="0px" y="0px" width="20px" height="20px" viewBox="0 0 24 24" enable-background="new 0 0 24 24" xml:space="preserve" fill="#5F6368"><path d="M8.59,16.59L13.17,12L8.59,7.41L10,6l6,6l-6,6L8.59,16.59z"></path><path fill="none" d="M0,0h24v24H0V0z"></path></svg></div>
+
+                <script type="text/javascript">
+                    var site_theme = localStorage.getItem('site_theme');
+                    if (site_theme == 'theme_dark')
+                    {
+                        document.querySelector('body').classList.add('theme_dark');
+                    } else
+                    {
+                        document.querySelector('body').classList.add('theme_white');
+                    }
+
+                    var left_sidebar = localStorage.getItem('left_sidebar');
+
+                    if (left_sidebar == 'hidden')
+                    {
+                        const siteHeaderMenu = document.querySelector('.site-header-menu');
+                        siteHeaderMenu.classList.add('hidden_left');
+
+                    }
+
+
+                </script>
+            </div><!-- .site-header-menu -->
+        <?php endif; ?>
+
+
             <?php
         }
 

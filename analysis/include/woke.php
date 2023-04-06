@@ -120,7 +120,7 @@ class WOKE
     {
         $array = ['diversity'=>'diversity counts only for countries from the list below, this is done so that there are no false positives for countries such as India or Japan, you can add other white countries to this list.
         for a list of countries, you can see here:   <a href="https://zeitgeistreviews.com/analytics/tab_population" target="_blank">https://zeitgeistreviews.com/analytics/tab_population</a>',
-            'woke'=>'woke and lgbt counted based on the number of words, for example if in the settings we put 5, and in the keywords used 5 words it will be 100% if 1 word, it will be 20%',
+            'woke'=>'woke and lgbt counted based on the number of words, for example if in the settings we put 5, and in the keywords used 5 words it will be 100% if 1 word, it will be 5%',
 'boycott'=>'The boycott and boycott are considered to be so:
 if there is a boycott and it is Pay To Consume, the rating will be -100
 if the boycott is Skip It, the rating will be added to 100
@@ -169,6 +169,30 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
       return  '<details class="details_info" ><summary>?</summary>'.$array[$data].'</details>';
     }
 
+    private function check_limits($words,$array,$result,$debug=0)
+    {
+        $combient_word_weight = $array;
+        if ($debug) $this->debug_table('Limit data',$combient_word_weight ,'red');
+
+        if ($words>5)
+        {
+            $res_data =  $combient_word_weight['5 word'];
+        }
+        else
+        {
+            $res_data =  $combient_word_weight[$words.' word'];
+        }
+        $lm = explode('-',$res_data);
+
+
+        if ($debug) $this->debug_table('Words limit', 'word count = '.$words.'; result = '.$res_data.'% ' );
+
+        if ($result<$lm[0]){if ($debug) {$this->debug_table(' ', $result.' < '.$lm[0].'; result = '.$lm[0].'% ' );}$result=$lm[0];}
+        if ($result>$lm[1]){if ($debug) {$this->debug_table(' ', $result.' > '.$lm[1].'; result = '.$lm[1].'% ' );}$result=$lm[1];}
+
+        return $result;
+    }
+
     public function calculate_rating($mid, $array, $update = 0, $debug = 0,$sync=0)
     {
 
@@ -177,7 +201,7 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
         $weihgt_total= OptionData::get_options('', 'woke_raiting_weight');
         $weihgt_total = unserialize($weihgt_total);
 
-        $word_weight = $weihgt_total['word_weight'];
+
         $other = $weihgt_total['other_weight'];
         $weihgt = $weihgt_total['woke'];
 
@@ -274,32 +298,49 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
         if ($array['woke']) {
 
 
+            $woke_word_weight = $weihgt_total['woke_word_weight'];
+
+            if ($debug) $this->debug_table('Woke data',$woke_word_weight ,'red');
 
             $woke_input = $array['woke'];
+            if ($woke_input>5)
+            {
+                $woke=100;
 
-            $woke_percent = round(100 / $word_weight['woke'], 2);
-
-            if ($woke_input > $word_weight['woke']) {
-                $woke_input = $word_weight['woke'];
-
+                if ($debug) $this->debug_table('Woke', 'word count > 5; woke = 100% ');
             }
-            $woke = round($woke_input * $woke_percent, 0);
+            else if ($woke_input)
+            {
+                $woke =  $woke_word_weight[$woke_input.' word'];
+                if ($debug) $this->debug_table('Woke', 'word count = '.$woke_input.'; woke = '.$woke.'% ' );
+            }
 
-            if ($debug) $this->debug_table('Woke', $woke_input . '*' . $woke_percent . '=' . $woke . '% '.$qs);
+
         }
         if ($array['lgbt']) {
+            $lgbt_word_weight = $weihgt_total['lgbt_word_weight'];
+
+            if ($debug) $this->debug_table('LBGT data',$lgbt_word_weight ,'red');
+
             $lgbt_input = $array['lgbt'];
+            if ($lgbt_input>5)
+            {
+                $lgbt=100;
 
-            $lgbt_percent = round(100 / $word_weight['lgbt'], 2);
-
-            if ($lgbt_input > $word_weight['lgbt']) {
-                $lgbt_input = $word_weight['lgbt'];
-
+                if ($debug) $this->debug_table('LBGT', 'word count > 5; lgbt = 100% ');
             }
-            $lgbt = round($lgbt_input * $lgbt_percent, 0);
+            else if ($lgbt_input)
+            {
+                $lgbt =  $lgbt_word_weight[$lgbt_input.' word'];
+                if ($debug) $this->debug_table('LBGT', 'word count = '.$lgbt_input.'; lgbt = '.$lgbt.'% ' );
+            }
 
-            if ($debug) $this->debug_table('Lgbt', $lgbt_input . '*' . $lgbt_percent . '=' . $lgbt . '% '.$qs);
+
         }
+
+
+
+
 ///audience
         $boycott=0;
         $boycott_text=0;
@@ -491,6 +532,24 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
             $this->debug_table('Total', $result_text);
 
         }
+
+        ///check limits
+
+
+        if ($lgbt_input && $woke_input)
+        {
+            $words = $lgbt_input+$woke_input;
+            $result = $this->check_limits($words,$weihgt_total['combient_word_limit'],$result,$debug);
+        }
+        else  if ($lgbt_input)
+        {
+           $result = $this->check_limits($lgbt_input,$weihgt_total['lgbt_word_limit'],$result,$debug);
+        }
+        else  if ($woke_input)
+        {
+            $result = $this->check_limits($woke_input,$weihgt_total['woke_word_limit'],$result,$debug);
+        }
+
 
         if ($result<0)$result=0;
         if ($result>100)$result=100;

@@ -117,6 +117,12 @@ if ($pid) {
                     }
                     ?></td>
             </tr>
+                        <tr>
+                <td><?php print __('Top rating') ?></td>
+                <td><?php
+                    print $post->top_rating;
+                    ?></td>
+            </tr>
             <tr>
                 <td><?php print __('In index') ?></td>
                 <td><?php print $this->cs->critic_in_index($pid) ? 'Index' : 'Not'; ?></td>

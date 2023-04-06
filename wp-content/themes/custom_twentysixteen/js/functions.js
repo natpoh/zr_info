@@ -53,7 +53,8 @@
 			var _this            = $( this );
 
 
-			if ($('body').hasClass('menu-open')) {
+			//if ($('body').hasClass('menu-open'))
+			{
 				///screenReaderSpan = _this.find( '.screen-reader-text' );
 
 				e.preventDefault();
@@ -151,7 +152,8 @@
 
 	// Add the default ARIA attributes for the menu toggle and the navigations.
 	function onResizeARIA() {
-		if ( window.innerWidth < 910 ) {
+		if ( window.innerWidth < 910 )
+		{
 			if ( menuToggle.hasClass( 'toggled-on' ) ) {
 				menuToggle.attr( 'aria-expanded', 'true' );
 			} else {

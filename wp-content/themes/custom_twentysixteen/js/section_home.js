@@ -326,7 +326,7 @@ function create_context_rating(obj, hollywood)
     //if (hollywood)
     //  content_rating += '<div><span>ZR BS Score:</span>' + create_rating_star(hollywood, 'hollywood') + '</div>';
     if (obj.vote)
-        content_rating += '<div><span>Boycott Suggestion:</span>' + create_rating_star(obj.vote, 'vote') + '</div>';
+        content_rating += '<div><span>Support:</span>' + create_rating_star(obj.vote, 'vote') + '</div>';
     if (obj.patriotism)
         content_rating += '<div><span>Neo-Marxism:</span>' + create_rating_star(obj.patriotism, 'patriotism') + '</div>';
     if (obj.misandry)
@@ -407,7 +407,7 @@ function create_rating_content(object, m_id)
         block_class = 'family_friendly';
         let value = '';
 
-        ///LGBT content included  console.log(object);
+        ///LGBTQ content included  console.log(object);
 
         let lgbt_class = '';
         let woke_class = '';
@@ -448,7 +448,7 @@ function create_rating_content(object, m_id)
 
                 lgbt_class = ' lgbt ';
 
-                lgbt_warning_text = popup_cusomize('row_text_head', 'LGBT content included: <a target="_blank" href="https://zeitgeistreviews.com/faq/" class="link_info">i</a>') + popup_cusomize('row_text', ltext);
+                lgbt_warning_text = popup_cusomize('row_text_head', 'LGBTQ content included: <a target="_blank" href="https://zeitgeistreviews.com/faq/" class="link_info">i</a>') + popup_cusomize('row_text', ltext);
             }
             woke_warning_text = '';
 
@@ -943,7 +943,7 @@ function add_movie_rating(block_id, data)
                     {
                         ltext = '<span class="bg_rainbow">' + obj.family.lgbt_text + '</span>';
                     }
-                    lgbt_text = popup_cusomize('row_text_head', 'LGBT content included: <a target="_blank" href="https://zeitgeistreviews.com/faq/" class="link_info">i</a>') + popup_cusomize('row_text', ltext);
+                    lgbt_text = popup_cusomize('row_text_head', 'LGBTQ content included: <a target="_blank" href="https://zeitgeistreviews.com/faq/" class="link_info">i</a>') + popup_cusomize('row_text', ltext);
 
                 }
                 if (obj.family.woke == 1) {
@@ -1329,7 +1329,7 @@ function load_ajax_block(block_id) {
                         if (obj.content)
                         {
                             jQuery('div[id="' + block_id + '"]').html('<div class="column_header">\n' +
-                                    '                    <h2>Similar Shows:</h2>\n' +
+                                    '                    <h2>Similar Stuff:</h2>\n' +
                                     '                </div><div class="movie_scroller scroller_wrap"><div class="column_content flex scroller flex_movies_block">' + obj.content + '</div></div>');
 
                             if (obj['rating'])
@@ -3326,59 +3326,6 @@ jQuery(document).ready(function () {
         return false;
     });
 
-
-    jQuery('body').on('click', '.how_calculate_rating, .read_more_rating, .how_calculate_rwt_rating', function () {
-
-        let movie_id = jQuery(this).parents('.movie_total_rating').attr('data-value');
-
-        var rwt_id = jQuery(this).parents('.rating_block').attr('id');
-
-        var post = {};
-        if (jQuery(this).hasClass('how_calculate_rwt_rating'))
-        {
-
-
-
-            post = {'refresh_rwt_rating': 1,
-                'rwt_id': rwt_id,
-                'movie_id': movie_id
-            }
-        }
-
-
-        if (jQuery(this).hasClass('how_calculate_rating'))
-        {
-            post = {'refresh_rating': 1,
-                'movie_id': movie_id,
-                'rwt_id': rwt_id
-            }
-        } else if (jQuery(this).hasClass('read_more_rating'))
-        {
-            post = {'read_more_rating': 1,
-                'movie_id': movie_id,
-                'rwt_id': rwt_id
-            }
-        }
-
-        jQuery.ajax({
-            type: 'post',
-            data: (post),
-            url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/template/ajax/search_ajax.php",
-            success: function (html) {
-
-                add_popup();
-
-                jQuery('.popup-content').html('<div class="white_popup">' + html + '<label style="margin-top: -22px;margin-right: 15px;" for="action-popup" class="popup-close-btn">Close</label></div>');
-                jQuery('input[id="action-popup"]').click();
-            }
-        });
-
-
-
-        return false;
-    });
-
-
     jQuery('body').on('click', '.exlink', function () {
 
         let type = jQuery(this).attr('id');
@@ -3410,6 +3357,11 @@ jQuery(document).ready(function () {
 
         return false;
     });
+
+
+
+
+
     jQuery('body').on('click', '.how_calculate_rating, .read_more_rating, .how_calculate_rwt_rating, .calculate_actor_data', function () {
 
 
@@ -3426,7 +3378,8 @@ jQuery(document).ready(function () {
             post = {
                 'calculate_actor_data': a_id
             }
-        } else {
+        }
+        else {
 
             let movie_id = jQuery(this).parents('.movie_total_rating').attr('data-value');
             var rwt_id = jQuery(this).parents('.rating_block').attr('id');
@@ -3680,7 +3633,26 @@ jQuery(document).ready(function () {
 
     });
 
+
+
+
 });
+
+jQuery('body').on('click','.hide_left_sidebar',function (){
+   let prnt = jQuery(this).parent('.site-header-menu');
+    prnt.toggleClass('hidden_left');
+
+    if (prnt.hasClass('hidden_left')){
+        localStorage.setItem('left_sidebar','hidden');
+    }
+    else
+    {
+        localStorage.setItem('left_sidebar','open');
+    }
+
+});
+
+
 jQuery('body').on('click', '.disqus_content spoiler', function () {
     jQuery(this).toggleClass('spoiler_visible');
 });
