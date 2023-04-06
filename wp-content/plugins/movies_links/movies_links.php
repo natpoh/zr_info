@@ -505,4 +505,12 @@ function movies_links_create_index($names = array(), $table_name = '') {
   SELECT pid FROM `movies_links_url` WHERE pid>0 GROUP BY pid ORDER BY pid ASC
 
  * 
+ * 
+ * 
+ * 
+ * SELECT title_weight FROM `data_movie_imdb` WHERE title_weight<10
+ * 
+ * SELECT m.title, m.title_weight, r.fchan_posts_found FROM `data_movie_erating` r INNER JOIN `data_movie_imdb` m ON r.movie_id=m.id WHERE m.title_weight<10 AND r.fchan_posts_found>0 ORDER BY r.fchan_posts_found DESC
+ * 
+ * 
  */
