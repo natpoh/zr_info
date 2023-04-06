@@ -63,7 +63,7 @@ class CriticSearch extends AbstractDB {
             'actors', 'dirs',
             'rating', 'country', 'race', 'dirrace', 'lgbt', 'woke',
             'race_cast', 'race_dir', 'gender_cast', 'gender_dir'),
-        'critics' => array('release', 'type', 'movie', 'genre', 'author', 'state', 'tags', 'from',/* 'related',*/)
+        'critics' => array('release', 'type', 'movie', 'genre', 'author', 'state', 'tags', 'from', /* 'related', */)
     );
     public $audience_facets = array(
         'auvote' => array('title' => 'SUGGESTION', 'titlesm' => 'SUGGESTION', 'name_pre' => 'AU ', 'filter_pre' => 'Audience SUGGESTION ', 'icon' => 'vote', 'group' => 'woke'),
@@ -791,7 +791,10 @@ class CriticSearch extends AbstractDB {
                     foreach ($value['found']['title'] as $v) {
                         $find_title = $v;
                         // "strstr" instead of "=" since a "release" can be present
-                        if (strstr($find_title, $title) || strstr($find_title, strtoupper($title))) {
+                        $reg_clear = '#[^\w\d\ ]+#';
+                        $find_title_clear = preg_replace($reg_clear, '', $find_title);
+                        $title_clear = preg_replace($reg_clear, '', $title);
+                        if (strstr($find_title_clear, $title_clear) || strstr($find_title_clear, strtoupper($title_clear))) {
                             $ret[$id]['debug']['title valid'] = 'Found title in search';
                             $valid_title = true;
                             break;
@@ -838,7 +841,6 @@ class CriticSearch extends AbstractDB {
                         }
                         $ret[$id]['score']['title_quotes'] = $ss['quote_title'];
                         $ret[$id]['total'] += $ss['quote_title'];
-                        ;
                         $ret[$id]['debug']['title quoutes'] = implode('; ', $found_quotes);
                     }
 
@@ -855,7 +857,10 @@ class CriticSearch extends AbstractDB {
                 if (isset($value['found']['content'])) {
                     foreach ($value['found']['content'] as $v) {
                         $find_value = $v;
-                        if (strstr($find_value, $title) || strstr($find_value, strtoupper($title))) {
+                        $reg_clear = '#[^\w\d\ ]+#';
+                        $find_value_clear = preg_replace($reg_clear, '', $find_value);
+                        $title_clear = preg_replace($reg_clear, '', $title);
+                        if (strstr($find_value_clear, $title_clear) || strstr($find_value_clear, strtoupper($title_clear))) {
                             $ret[$id]['debug']['content valid'] = 'Found content in search';
                             $valid_desc = true;
                             break;
@@ -936,6 +941,24 @@ class CriticSearch extends AbstractDB {
                 //p_r(array($movie_clear,$critic_clear,$top_movie));                
             }
 
+            // Find movie keywodrs in title for no proper reviews
+            if ($critic_type != 1) {
+                $reg_clear = '#[^\w\d\ ]+#';
+                $post_title_clear = preg_replace($reg_clear, '', $post_title);
+                $title_clear = preg_replace($reg_clear, '', $title);
+                $title_arr = explode(' ', $title_clear);
+                $title_key_score = 3;
+
+                foreach ($title_arr as $key) {
+                    if (strstr($post_title_clear, $key)){
+                         $ret[$id]['debug']['title_keys'] .= $key.'; ';
+                         $ret[$id]['score']['title_keys_score'] += $title_key_score;
+                         $ret[$id]['total'] += $title_key_score;
+                    }
+                }
+            }
+
+
             if ($ret[$id]['score']) {
                 arsort($ret[$id]['score']);
             }
@@ -944,9 +967,7 @@ class CriticSearch extends AbstractDB {
             $ret[$id]['type'] = $critic_type;
 
 
-
             $valid = true;
-
 
             if ($post_type == 'VideoGame' && $valid) {
                 // Need video tags to valid
@@ -1228,6 +1249,8 @@ class CriticSearch extends AbstractDB {
         //not audience authors
         $author_type = 2;
 
+        $title = str_replace("'", "\'", $title);
+
         $snippet = '';
         if ($debug) {
             $snippet = ', SNIPPET(title, QUERY()) t, SNIPPET(content, QUERY()) c';
@@ -1241,7 +1264,7 @@ class CriticSearch extends AbstractDB {
 
         $and_release = '';
         if ($release_time != 0) {
-            $and_release = ' AND post_date > ' . $release_time;
+            $and_release = ' AND post_date > ' . ($release_time - 86400 * 30 * 6);
         }
 
         $ids_and = '';
@@ -1415,6 +1438,8 @@ class CriticSearch extends AbstractDB {
     }
 
     private function find_html_tags($name = '', $content = '') {
+        // <b>Blade Runner</b>
+        // <em>Blade Runner 2049</em>
         $html_tags = array('b', 'strong', 'em', 'i');
         $found_tags = array();
         foreach ($html_tags as $tag) {
@@ -1708,8 +1733,13 @@ class CriticSearch extends AbstractDB {
         $sql = sprintf("SELECT id, date_add, weight() w, author_type" . $snippet . $custom_fields . $order['select']
                 . " FROM critic WHERE status=1" . $filters_and . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
 
-        //print_r($sql);
-        //exit;
+        /*
+          print $sql;
+          $meta = $this->sdb_results("SHOW META");
+          p_r($meta);
+          exit;
+         */
+
         //Get result
         $ret = $this->movie_results($sql, $match, $search_query);
 
@@ -1894,15 +1924,15 @@ class CriticSearch extends AbstractDB {
                         . " WHERE status=1" . $filters_and . $match
                         . "  GROUP BY top_movie ORDER BY year_int DESC LIMIT 0,100";
                 $sql_arr[] = "SHOW META";
-            } /*else if ($facet == 'related') {
-                $filters_facet = $filters;
-                $filters_facet['state'] = 'related';
-                $filters_and = $this->get_filters_query($filters_facet, '', $query_type);
+            } /* else if ($facet == 'related') {
+              $filters_facet = $filters;
+              $filters_facet['state'] = 'related';
+              $filters_and = $this->get_filters_query($filters_facet, '', $query_type);
 
-                $sql_arr[] = "SELECT COUNT(*) as cnt FROM critic WHERE status=1 AND top_movie=0" . $filters_and . $match;
+              $sql_arr[] = "SELECT COUNT(*) as cnt FROM critic WHERE status=1 AND top_movie=0" . $filters_and . $match;
 
-                $sql_arr[] = "SHOW META";
-            }*/
+              $sql_arr[] = "SHOW META";
+              } */
         }
 
         return array('sql_arr' => $sql_arr, 'skip' => $skip);
@@ -2284,31 +2314,31 @@ class CriticSearch extends AbstractDB {
                 }
 
                 if (is_array($filters['state'])) {
-                    /*if (in_array('related', $filters['state'])) {
-                        unset($filters['state'][array_search('related', $filters['state'])]);
-                        // $filters_and .= $this->filter_multi_value('state', $filters['state']);
+                    /* if (in_array('related', $filters['state'])) {
+                      unset($filters['state'][array_search('related', $filters['state'])]);
+                      // $filters_and .= $this->filter_multi_value('state', $filters['state']);
 
-                        $not = array();
-                        foreach ($this->search_filters['state'] as $key => $value) {
-                            if ($key == 'related') {
-                                //continue;
-                            }
-                            if (!in_array($key, $filters['state'])) {
-                                $not[] = $value['key'];
-                            }
-                        }
+                      $not = array();
+                      foreach ($this->search_filters['state'] as $key => $value) {
+                      if ($key == 'related') {
+                      //continue;
+                      }
+                      if (!in_array($key, $filters['state'])) {
+                      $not[] = $value['key'];
+                      }
+                      }
 
-                        $top_movie_sql = " AND state NOT IN (" . implode(',', $not) . ")";
-                    } else {*/
-                        $filters_and .= $this->filter_multi_value('state', $filters['state']);
-                    /*}*/
+                      $top_movie_sql = " AND state NOT IN (" . implode(',', $not) . ")";
+                      } else { */
+                    $filters_and .= $this->filter_multi_value('state', $filters['state']);
+                    /* } */
                 } else {
-                    /*if ($filters['state'] == 'related') {
-                        unset($filters['state']);
-                        $top_movie_sql = " AND top_movie=0";
-                    } else {*/
-                        $filters_and .= $this->filter_multi_value('state', $filters['state']);
-                    /*}*/
+                    /* if ($filters['state'] == 'related') {
+                      unset($filters['state']);
+                      $top_movie_sql = " AND top_movie=0";
+                      } else { */
+                    $filters_and .= $this->filter_multi_value('state', $filters['state']);
+                    /* } */
                 }
             }
             $filters_and .= $top_movie_sql;
@@ -3059,11 +3089,9 @@ class CriticSearch extends AbstractDB {
                 $filters_and .= " AND filter=1";
             }
         }
-
-        $sql = sprintf("SELECT id, date_add, top_movie, author_name" . $and_select . " FROM critic WHERE status=1 AND top_movie>0" . $filters_and . $order . " LIMIT %d,%d", $start, $limit);        
+        $sql = sprintf("SELECT id, date_add, top_movie, author_name" . $and_select . " FROM critic WHERE status=1 AND top_movie>0" . $filters_and . $order . " LIMIT %d,%d", $start, $limit);
         $results = $this->sdb_results($sql);
         // $meta = $this->sdb_results("SHOW META");
-        
 
         return $results;
     }
