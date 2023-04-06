@@ -174,7 +174,11 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
         $combient_word_weight = $array;
         if ($debug) $this->debug_table('Limit data',$combient_word_weight ,'red');
 
-        if ($words>5)
+        if ($words==0)
+        {
+            $res_data =  $combient_word_weight['1 word'];
+        }
+        else if ($words>5)
         {
             $res_data =  $combient_word_weight['5 word'];
         }
@@ -549,7 +553,10 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
         {
             $result = $this->check_limits($woke_input,$weihgt_total['woke_word_limit'],$result,$debug);
         }
-
+        else
+        {
+            $result = $this->check_limits(0,$weihgt_total['woke_word_limit'],$result,$debug);
+        }
 
         if ($result<0)$result=0;
         if ($result>100)$result=100;
