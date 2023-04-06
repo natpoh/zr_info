@@ -3140,13 +3140,13 @@ class CriticSearch extends AbstractDB {
                         }
                         if ($post_domain != $post_domain2) {
                             // different sources
+                            $one_day = false;
                             if ((($post_cache2->date - 86400) < $post_cache->date) &&
                                     ($post_cache->date < ($post_cache2->date + 86400))) {
                                 // One day
                                 $min_percent = $min_precent_day;
-                                
-                            } else {
-                                
+                                $one_day = true;
+                            } else {                                
                                 $min_percent = $min_precent_all;
                             }
                             
@@ -3163,7 +3163,7 @@ class CriticSearch extends AbstractDB {
                                     p_r(array('Content percent', $key, $precent_c));
                                 }
 
-                                if ($precent_c >= $min_percent) {
+                                if ($precent_c >= $min_percent || $one_day) {
                                     $povtor->percent = array($precent, $precent_c);
                                     $valid_povtors[$key] = $povtor;
                                 }
