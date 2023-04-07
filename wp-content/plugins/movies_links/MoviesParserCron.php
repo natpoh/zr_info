@@ -928,7 +928,9 @@ class MoviesParserCron extends MoviesAbstractDB {
             // Random urls
             $random_urls = $type_opt['random'];
             $urls = $this->mp->get_last_urls($urls_count, $status, $campaign->id, $random_urls, $debug, $custom_url_id);
-
+            if ($debug) {
+                print_r($urls);
+            }
             $count = count((array) $urls);
 
             $count_expired = 0;

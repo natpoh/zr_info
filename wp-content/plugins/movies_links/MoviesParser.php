@@ -904,7 +904,6 @@ class MoviesParser extends MoviesAbstractDB {
         if ($custom_url_id > 0) {
             $query = sprintf("SELECT * FROM {$this->db['url']} WHERE id=%d", $custom_url_id);
             $result = $this->db_results($query);
-            
         } else {
 
             $status_trash = 2;
@@ -925,6 +924,9 @@ class MoviesParser extends MoviesAbstractDB {
                 }
                 // Get all urls
                 $query = "SELECT id FROM {$this->db['url']}" . $status_query . $cid_and;
+                if ($debug) {
+                    print $query."\n";
+                }
                 $items = $this->db_results($query);
                 if ($items) {
                     $ids = array();
@@ -943,6 +945,9 @@ class MoviesParser extends MoviesAbstractDB {
                     }
                     // Get random urls
                     $query = "SELECT * FROM {$this->db['url']} WHERE id IN(" . implode(",", $random_ids) . ")";
+                    if ($debug) {
+                        print $query."\n";
+                    }
                     $result = $this->db_results($query);
                 }
             } else {
@@ -1014,11 +1019,17 @@ class MoviesParser extends MoviesAbstractDB {
                             print "Get by id\n";
                         }
                         $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " ORDER BY id DESC LIMIT %d", $count);
+                        if ($debug) {
+                            print $query;
+                        }
                         $result = $this->db_results($query);
                     }
                 } else {
                     // Get by id
                     $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " ORDER BY id DESC LIMIT %d", $count);
+                    if ($debug) {
+                        print $query;
+                    }
                     $result = $this->db_results($query);
                 }
             }
@@ -1048,6 +1059,8 @@ class MoviesParser extends MoviesAbstractDB {
                             print "Remove URL: " . $item->id . "\n";
                         }
                     }
+                } else {
+                    $valid_result[] = $item;
                 }
             }
             $result = $valid_result;
@@ -1680,7 +1693,7 @@ class MoviesParser extends MoviesAbstractDB {
      * Parsing rules
      */
 
-    public function get_last_arhives_no_posts($count = 10, $cid = 0, $version = 0, $no_posts = true, $debug = false, $custom_url=0) {
+    public function get_last_arhives_no_posts($count = 10, $cid = 0, $version = 0, $no_posts = true, $debug = false, $custom_url = 0) {
 
         // Company id
         $cid_and = '';
@@ -1700,10 +1713,10 @@ class MoviesParser extends MoviesAbstractDB {
         } else {
             $np_and = ' AND (p.uid is NULL OR p.multi=0' . $and_version . ')';
         }
-        
+
         $and_url_id = '';
-        if ($custom_url>0){
-            $and_url_id = sprintf(' AND u.id=%d',$custom_url);
+        if ($custom_url > 0) {
+            $and_url_id = sprintf(' AND u.id=%d', $custom_url);
         }
 
         $query = sprintf("SELECT a.uid, a.arhive_hash, u.cid, u.id as uid, u.pid as upid FROM {$this->db['arhive']} a"
