@@ -350,6 +350,13 @@ class MoviesAbstractFunctions {
         return true;
     }
 
+    public function validate_varchar($string = '', $len = 255) {
+        if (strlen($string) > $len) {
+            $string = substr($string, 0, ($len - 1));
+        }
+        return $string;
+    }
+
 }
 
 class MoviesQueryADB {

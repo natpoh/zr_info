@@ -18,9 +18,12 @@ class MoviesCustomHooks {
 
         $options = unserialize($post->options);
 
-        // Erating logic
         if ($post->top_movie > 0) {
+            // Erating logic
             $this->update_erating($post, $options, $campaign, $debug);
+
+            // Franchises
+            $this->update_franchises($post, $options, $campaign, $debug);
         }
         // Tomatoes logic
         // UNUSED DEPRECATED
@@ -155,6 +158,51 @@ class MoviesCustomHooks {
             if ($update_rating) {
                 $ma = $this->ml->get_ma();
                 $ma->update_erating($post->top_movie, $data);
+            }
+        }
+    }
+
+    private function update_franchises($post, $options, $campaign, $debug = false) {
+        if ($campaign->id == 33) {
+
+            $ma = $this->ml->get_ma();
+
+
+
+            $upd_opt = array(
+                'Distributor' => 'dist_name',
+                'Distributor link' => 'dist_link',
+                'Franchise' => 'fr_name',
+                'Franchise link' => 'fr_link',
+            );
+
+            $to_update = array();
+            foreach ($upd_opt as $post_key => $db_key) {
+                $field_value = '';
+                if (isset($options[$post_key])) {
+                    $field_value = base64_decode($options[$post_key]);
+                }
+                $to_update[$db_key] = $field_value;
+            }
+            if ($to_update) {
+                // Distributor
+                $dist_id = $ma->add_movie_distributor($to_update['dist_name'], $to_update['dist_link']);
+
+                // Franchise
+                $fr_id = $ma->add_movie_franchise($to_update['fr_name'], $to_update['fr_link']);
+
+                // Add indi data
+                /*
+                  `movie_id` int(11) NOT NULL DEFAULT '0',
+                  `date` int(11) NOT NULL DEFAULT '0',
+                  `distributor` int(11) NOT NULL DEFAULT '0',
+                  `franchise` int(11) NOT NULL DEFAULT '0',
+                 */
+                $data = array(                   
+                    'distributor'=>$dist_id,
+                    'franchise'=>$fr_id,
+                );
+                $ma->update_indie($post->top_movie, $data);
             }
         }
     }

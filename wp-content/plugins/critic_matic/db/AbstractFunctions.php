@@ -80,20 +80,19 @@ class AbstractFunctions {
     public function sync_delete_multi($request, $db, $sync_data = true, $priority = 5) {
         $fileds = array();
         foreach ($request as $key => $value) {
-            $fileds[]="$key=$value";
+            $fileds[] = "$key=$value";
         }
 
-        $sql = "DELETE FROM {$db} WHERE ". implode(' AND ', $fileds);
-  
+        $sql = "DELETE FROM {$db} WHERE " . implode(' AND ', $fileds);
+
         $this->db_query($sql);
 
         if ($sync_data) {
             $this->create_commit_delete_multi($request, $db, $priority);
         }
-
     }
-    
-    public function sync_delete_data($id, $db, $sync_data = true, $priority = 5, $table_row='id') {
+
+    public function sync_delete_data($id, $db, $sync_data = true, $priority = 5, $table_row = 'id') {
 
         $sql = sprintf("DELETE FROM {$db} WHERE `%s` = %d", $table_row, (int) $id);
         $this->db_query($sql);
@@ -128,26 +127,25 @@ class AbstractFunctions {
         return $commit_id;
     }
 
-    public function create_commit_delete($id = 0, $db = '', $priority = 10, $table_row='id') {
+    public function create_commit_delete($id = 0, $db = '', $priority = 10, $table_row = 'id') {
         if (!class_exists('Import')) {
             include ABSPATH . "analysis/export/import_db.php";
         }
-        $skip='';
+        $skip = '';
         if ($table_row != 'id') {
             $skip = ['skip' => ['id']];
         }
         $request = array($table_row => $id);
-        $commit_id = Import::create_commit('', 'delete', $db, $request, 'delete_'.$db, $priority, $skip);
+        $commit_id = Import::create_commit('', 'delete', $db, $request, 'delete_' . $db, $priority, $skip);
         return $commit_id;
     }
-    
-    
+
     public function create_commit_delete_multi($request = array(), $db = '', $priority = 10) {
         if (!class_exists('Import')) {
             include ABSPATH . "analysis/export/import_db.php";
         }
-        $skip = ['skip' => ['id']]; 
-        $commit_id = Import::create_commit('', 'delete', $db, $request, 'delete_'.$db, $priority, $skip);
+        $skip = ['skip' => ['id']];
+        $commit_id = Import::create_commit('', 'delete', $db, $request, 'delete_' . $db, $priority, $skip);
         return $commit_id;
     }
 
@@ -378,6 +376,13 @@ class AbstractFunctions {
             return false;
         }
         return true;
+    }
+
+    public function validate_varchar($string='', $len = 255) {
+        if (strlen($string) > $len) {
+            $string = substr($string, 0, ($len-1));
+        }
+        return $string;
     }
 
 }

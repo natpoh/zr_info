@@ -27,6 +27,9 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             'fchan_posts' => 'data_fchan_posts',
             'reviews_rating' => 'meta_reviews_rating',
             'critic_matic_meta' => $table_prefix . 'critic_matic_posts_meta',
+            'distributors' => 'data_movie_distributors',
+            'franchises' => 'data_movie_franchises',
+            'indie' => 'data_movie_indie',
         );
     }
 
@@ -250,14 +253,14 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
 
             // Update post            
             $this->sync_update_data($data, $exist->id, $this->db['erating'], true, 10);
-            CustomHooks::do_action('add_erating', ['mid'=>$mid,'data'=>$data]);
+            CustomHooks::do_action('add_erating', ['mid' => $mid, 'data' => $data]);
         } else {
             // Add post            
             $data['movie_id'] = $mid;
             $data['date'] = $data['last_upd'];
 
             $this->sync_insert_data($data, $this->db['erating'], false, true, 10);
-            CustomHooks::do_action('add_erating', ['mid'=>$mid,'data'=>$data]);
+            CustomHooks::do_action('add_erating', ['mid' => $mid, 'data' => $data]);
         }
     }
 
@@ -319,14 +322,13 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
      * Genre
      */
 
-    
-    public function add_genre_meta($mid=0, $slug='') {    
+    public function add_genre_meta($mid = 0, $slug = '') {
         $genre = $this->get_genre_by_slug($slug);
         if ($genre->id) {
             $this->add_movie_genre($mid, $genre->id);
         }
     }
-    
+
     public function get_genre($id) {
         $sql = sprintf("SELECT name, slug, status, weight FROM {$this->db['data_genre']} WHERE id=%d", (int) $id);
         $result = $this->db_fetch_row($sql);
@@ -368,11 +370,141 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
                     'gid' => $gid,
                 );
 
-                $this->sync_insert_data($data, $this->db['meta_genre'], false, true, 10);               
+                $this->sync_insert_data($data, $this->db['meta_genre'], false, true, 10);
             }
             return true;
         }
         return false;
     }
 
+    /*
+     * Distributors
+     */
+
+    public function get_distributor_by_name($slug, $cache = false) {
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$slug])) {
+                return $dict[$slug];
+            }
+        }
+
+        //Get author id
+        $sql = sprintf("SELECT * FROM {$this->db['distributors']} WHERE name='%s'", $this->escape($slug));
+        $result = $this->db_fetch_row($sql);
+
+        if ($cache) {
+            $dict[$slug] = $result;
+        }
+        return $result;
+    }
+
+    public function add_movie_distributor($name = '', $link = '') {
+        /*
+          `date` int(11) NOT NULL DEFAULT '0',
+          `name` varchar(255) NOT NULL default '',
+          `link` varchar(255) NOT NULL default '',
+         */
+        $id = 0;
+        if ($name) {
+            $name = $this->validate_varchar($name);
+            $item_exist = $this->get_distributor_by_name($name);
+            if (!$item_exist) {
+                //Meta not exist
+                $data = array(
+                    'date' => $this->curr_time(),
+                    'name' => $name,
+                    'link' => $this->validate_varchar($link),
+                );
+
+                $id = $this->sync_insert_data($data, $this->db['distributors'], false, true, 10);
+            } else {
+                $id = $item_exist->id;
+            }
+        }
+        return $id;
+    }
+
+    /*
+     * Franchise
+     */
+
+    public function get_franchise_by_name($slug, $cache = false) {
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$slug])) {
+                return $dict[$slug];
+            }
+        }
+
+        //Get author id
+        $sql = sprintf("SELECT * FROM {$this->db['franchises']} WHERE name='%s'", $this->escape($slug));
+        $result = $this->db_fetch_row($sql);
+
+        if ($cache) {
+            $dict[$slug] = $result;
+        }
+        return $result;
+    }
+
+    public function add_movie_franchise($name = '', $link = '') {
+        /*
+          `date` int(11) NOT NULL DEFAULT '0',
+          `name` varchar(255) NOT NULL default '',
+          `link` varchar(255) NOT NULL default '',
+         */
+        $id = 0;
+        if ($name) {
+            $name = $this->validate_varchar($name);
+            $item_exist = $this->get_franchise_by_name($name);
+            if (!$item_exist) {
+                //Meta not exist
+                $data = array(
+                    'date' => $this->curr_time(),
+                    'name' => $name,
+                    'link' => $this->validate_varchar($link),
+                );
+
+                $id = $this->sync_insert_data($data, $this->db['franchises'], false, true, 10);
+            } else {
+                $id = $item_exist->id;
+            }
+        }
+        return $id;
+    }
+
+    /*
+     * Indie
+     */
+
+    public function update_indie($mid = 0, $data = array()) {
+        // Get rating      
+        /*
+          `movie_id` int(11) NOT NULL DEFAULT '0',
+          `date` int(11) NOT NULL DEFAULT '0',
+          `distributor` int(11) NOT NULL DEFAULT '0',
+          `franchise` int(11) NOT NULL DEFAULT '0',
+         */
+        $sql = sprintf("SELECT * FROM {$this->db['indie']} WHERE movie_id = %d", (int) $mid);
+        $exist = $this->db_fetch_row($sql);
+        $data['date'] = $this->curr_time();
+        if ($exist) {           
+            // Update post            
+            $this->sync_update_data($data, $exist->id, $this->db['indie'], true, 10);
+            CustomHooks::do_action('update_indie', ['mid' => $mid, 'data' => $data]);
+        } else {
+            // Add post            
+            $data['movie_id'] = $mid;
+            $this->sync_insert_data($data, $this->db['indie'], false, true, 10);
+            CustomHooks::do_action('add_indie', ['mid' => $mid, 'data' => $data]);
+        }
+    }
 }
