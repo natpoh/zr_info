@@ -526,7 +526,8 @@ class CriticSearch extends AbstractDB {
         $ids = array();
         // Search custom fields
         if (sizeof($data)) {
-            foreach ($data as $item) {
+            foreach ($data as $item)
+            {
                 $ids[] = $item->id;
                 $meta_search[$item->id] = 1;
                 $ret[$item->id]['title'] = $item->title;
@@ -3046,6 +3047,7 @@ class CriticSearch extends AbstractDB {
 
         if ($meta_type) {
             // TODO meta type
+            $filters_and .=" AND ANY(state) IN (" . implode(',', $meta_type) . ")";
         }
 
         // Odrer by rating desc
