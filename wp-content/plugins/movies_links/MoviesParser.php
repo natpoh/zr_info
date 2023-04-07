@@ -2469,6 +2469,11 @@ class MoviesParser extends MoviesAbstractDB {
                   )
                  */
                 foreach ($movies as $movie) {
+                    
+                    if ($results[$movie->id]){
+                        // Already in list
+                        continue;
+                    }
                     //Movie              
                     if ($post_title_name) {
                         foreach ($post_title_name as $key => $name) {
