@@ -100,34 +100,29 @@ function movies_links_plugin_activation() {
      * cid - campaign id
      * pid - post id
      * 
-     */
-    $sql = "CREATE TABLE IF NOT EXISTS  `movies_links_url`(
-				`id` int(11) unsigned NOT NULL auto_increment,
-                                `cid` int(11) NOT NULL DEFAULT '0',   
-                                `pid` int(11) NOT NULL DEFAULT '0',
-                                `status` int(11) NOT NULL DEFAULT '0',
-                                `link_hash` varchar(255) NOT NULL default '',                                
-                                `link` text default NULL,               
-				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8mb4_general_ci;";
-    Pdo_ml::db_query($sql);
-
-    $sql = "ALTER TABLE `movies_links_url` ADD `date` int(11) NOT NULL DEFAULT '0'";
-    Pdo_ml::db_query($sql);
-
-    $sql = "ALTER TABLE `movies_links_url` ADD `last_upd` int(11) NOT NULL DEFAULT '0'";
-    Pdo_ml::db_query($sql);
-    /*
      * Expire status
      * 0 - vaild
      * 1 - expired
      * 2 - arhived
      * 3 - parsed
      */
-    $sql = "ALTER TABLE `movies_links_url` ADD `exp_status` int(11) NOT NULL DEFAULT '0'";
+    $sql = "CREATE TABLE IF NOT EXISTS  `movies_links_url`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `cid` int(11) NOT NULL DEFAULT '0',   
+                                `pid` int(11) NOT NULL DEFAULT '0',
+                                `status` int(11) NOT NULL DEFAULT '0',
+                                `date` int(11) NOT NULL DEFAULT '0',
+                                `last_upd` int(11) NOT NULL DEFAULT '0',
+                                `exp_status` int(11) NOT NULL DEFAULT '0',
+                                `upd_rating` int(11) NOT NULL DEFAULT '0',
+                                `link_hash` varchar(255) NOT NULL default '',                                
+                                `link` text default NULL,               
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
 
-    $sql = "ALTER TABLE `movies_links_url` ADD `upd_rating` int(11) NOT NULL DEFAULT '0'";
+
+    $sql = "ALTER TABLE `movies_links_url` ADD `parent_url` int(11) NOT NULL DEFAULT '0'";
     Pdo_ml::db_query($sql);
 
     movies_links_create_index(array('cid', 'pid', 'status', 'link_hash', 'date', 'last_upd', 'exp_status', 'upd_rating'), 'movies_links_url');
@@ -333,7 +328,7 @@ function movies_links_plugin_activation() {
                                 `description` text default NULL,
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
-    Pdo_an::db_query($sql);   
+    Pdo_an::db_query($sql);
     if (function_exists('critic_matic_create_index_an')) {
         critic_matic_create_index_an(array('last_upd', 'verdict', 'lastname'), 'data_familysearch_verdict');
     }
@@ -355,14 +350,14 @@ function movies_links_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_forebears_lastnames` ADD `topcountry_rank` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     if (function_exists('critic_matic_create_index_an')) {
         critic_matic_create_index_an(array('lastname', 'topcountry', 'topcountry_rank'), 'data_forebears_lastnames');
     }
-    
+
     $sql = "CREATE TABLE IF NOT EXISTS  `data_forebears_country`(
 				`id` int(11) unsigned NOT NULL auto_increment,                                
                                 `country` varchar(255) NOT NULL default '',                                
@@ -402,14 +397,14 @@ function movies_links_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
-    
-        
+
+
     $sql = "ALTER TABLE `data_forebears_verdict` ADD `verdict_rank` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_forebears_verdict` ADD  `description_rank` text default NULL";
     Pdo_an::db_query($sql);
-    
+
     if (function_exists('critic_matic_create_index_an')) {
         critic_matic_create_index_an(array('last_upd', 'verdict', 'verdict_rank', 'lastname'), 'data_forebears_verdict');
     }

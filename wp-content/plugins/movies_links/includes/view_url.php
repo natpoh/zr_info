@@ -30,7 +30,15 @@ if ($uid) {
             <tr>
                 <td><?php print __('Link hash') ?></td>
                 <td><?php print $url_data->link_hash ?></td>
-            </tr>           
+            </tr>  
+            <tr>
+                <td><?php print __('Parent URL') ?></td>
+                <td><?php if ($url_data->parent_url) { ?>
+                    <a href="<?php print $url . '&uid=' . $url_data->parent_url ?>"><?php print $url_data->parent_url ?></a>
+                            <?php }
+                            ?>
+                </td>
+            </tr> 
             <tr>
                 <td><?php print __('Last log') ?></td>
                 <td><?php print $this->get_last_log($uid) ?></td>

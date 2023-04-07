@@ -474,7 +474,7 @@ class MoviesParser extends MoviesAbstractDB {
      * Urls
      */
 
-    public function add_url($cid, $link, $pid = 0, $weight = 0) {
+    public function add_url($cid, $link, $pid = 0, $weight = 0, $parent_url = 0) {
         $link_hash = $this->link_hash($link);
         $url_exist = $this->get_url_by_hash($link_hash);
 
@@ -509,15 +509,17 @@ class MoviesParser extends MoviesAbstractDB {
         $status = 0;
 
         $date = $this->curr_time();
+        $data = array(
+            'cid' => (int) $cid,
+            'pid' => (int) $pid,
+            'status' => (int) $status,
+            'date' => (int) $date,
+            'parent_url' => (int) $parent_url,
+            'link_hash' => $link_hash,
+            'link' => $link,            
+        );
 
-        $sql = sprintf("INSERT INTO {$this->db['url']} (cid,pid,status,date,link_hash,link) "
-                . "VALUES ('%d','%d','%d','%d','%s','%s')", (int) $cid, (int) $pid, (int) $status, (int) $date, $link_hash, $this->escape($link));
-
-        $this->db_query($sql);
-
-        //Return id
-        $id = $this->getInsertId('id', $this->db['url']);
-
+        $id = $this->db_insert($data, $this->db['url']);        
 
         return $id;
     }
@@ -682,7 +684,7 @@ class MoviesParser extends MoviesAbstractDB {
                 $limit = " LIMIT $start, " . $perpage;
             }
 
-            $select = "u.id, u.cid, u.pid, u.status, u.link_hash, u.link, u.date, u.last_upd, u.exp_status, u.upd_rating,"
+            $select = "u.id, u.cid, u.pid, u.status, u.link_hash, u.link, u.date, u.last_upd, u.exp_status, u.upd_rating, u.parent_url,"
                     . " a.date as adate,"
                     . " p.date as pdate, p.status as pstatus, p.title as ptitle, p.year as pyear, p.id as postid, "
                     . " p.top_movie as ptop_movie, p.status_links as pstatus_links, p.rating as prating";
@@ -925,7 +927,7 @@ class MoviesParser extends MoviesAbstractDB {
                 // Get all urls
                 $query = "SELECT id FROM {$this->db['url']}" . $status_query . $cid_and;
                 if ($debug) {
-                    print $query."\n";
+                    print $query . "\n";
                 }
                 $items = $this->db_results($query);
                 if ($items) {
@@ -946,7 +948,7 @@ class MoviesParser extends MoviesAbstractDB {
                     // Get random urls
                     $query = "SELECT * FROM {$this->db['url']} WHERE id IN(" . implode(",", $random_ids) . ")";
                     if ($debug) {
-                        print $query."\n";
+                        print $query . "\n";
                     }
                     $result = $this->db_results($query);
                 }

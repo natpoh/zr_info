@@ -553,7 +553,7 @@ class MoviesParserCron extends MoviesAbstractDB {
                         if ($add_urls) {
                             // Add urls
                             foreach ($add_urls as $to_add) {
-                                $this->mp->add_url($cid_dst, $to_add, $movie_id, $new_url_weight);
+                                $this->mp->add_url($cid_dst, $to_add, $movie_id, $new_url_weight, $uid);
                             }
                             // Parsed done
                             $status = 1;

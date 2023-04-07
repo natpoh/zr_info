@@ -44,6 +44,7 @@ if (sizeof($posts) > 0) {
             <?php if ($campaign->type != 1) { ?>
                 <?php $this->sorted_head('pid', 'Movie ID', $orderby, $order, $page_url) ?>
             <?php } ?>
+            <?php $this->sorted_head('parent_url', 'Parent URL', $orderby, $order, $page_url) ?>
             <?php $this->sorted_head('status', 'Status', $orderby, $order, $page_url) ?>                                     
             <?php $this->sorted_head('adate', 'Arhive', $orderby, $order, $page_url) ?>            
             <?php $this->sorted_head('pdate', 'Post', $orderby, $order, $page_url) ?>                    
@@ -57,7 +58,7 @@ if (sizeof($posts) > 0) {
               <th><?php print __('Last log') ?></th>
               <?php */ ?>
 
-  
+
 
             </thead>
             <tbody>
@@ -75,7 +76,7 @@ if (sizeof($posts) > 0) {
                     <tr>           
                         <th  class="check-column" ><input type="checkbox" name="bulk-<?php print $item->id ?>"></th>
                         <td>
-                        <a href="<?php print $url . '&uid=' . $item->id ?>"><?php  print $item->id ?></a>
+                            <a href="<?php print $url . '&uid=' . $item->id ?>"><?php print $item->id ?></a>
                         </td>                             
                         <td><?php print $item->date ? $this->mp->curr_date($item->date) : 0  ?></td> 
                         <td><?php print $item->last_upd ? $this->mp->curr_date($item->last_upd) : 0  ?></td> 
@@ -85,6 +86,10 @@ if (sizeof($posts) > 0) {
                         <?php if ($campaign->type != 1) { ?>
                             <th><a href="/wp-admin/admin.php?page=critic_matic_movies&mid=<?php print $item->pid ?>"><?php print $item->pid ?></a></th>
                         <?php } ?>
+                        <td><?php if ($item->parent_url) { ?>
+                                <a href="<?php print $url . '&uid=' . $item->parent_url ?>"><?php print $item->parent_url ?></a>
+                            <?php }
+                            ?></td>
                         <td><?php print $this->get_url_status($item->status) ?></td>
                         <td>
                             <?php
@@ -136,7 +141,7 @@ if (sizeof($posts) > 0) {
                         <?php /* ?>
                           <td><?php print $this->get_last_log($item->id); ?></td>
                           <?php */ ?>
-                  
+
                     </tr> 
                 <?php } ?>
             </tbody>
