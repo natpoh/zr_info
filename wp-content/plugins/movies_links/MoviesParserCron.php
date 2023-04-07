@@ -253,6 +253,9 @@ class MoviesParserCron extends MoviesAbstractDB {
 
         // Get last posts
         $last_posts = $this->mp->get_last_arhives_no_posts($urls_count, $cid, $version, true, $debug, $custom_url_id);
+        if ($debug){
+            print_r($last_posts);
+        }
 
         $urls_removed = false;
         // Check valid movies
@@ -279,6 +282,11 @@ class MoviesParserCron extends MoviesAbstractDB {
                             print "Remove URL: " . $uid . "\n";
                         }
                     }
+                } else {
+                    if ($debug) {
+                            print "No movie link in post\n";
+                        }
+                    $valid_result[] = $item;
                 }
             }
             $last_posts = $valid_result;
