@@ -1469,6 +1469,8 @@ function add_movie_production()
     {
 
     TMDB::add_movie_distributors($row['id'],$row['production'],1,'cron');
+
+        echo 'try update ' . $row['id'] . PHP_EOL;
         if (check_cron_time())
         {
             break;
