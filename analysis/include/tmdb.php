@@ -698,8 +698,7 @@ global $debug;
 
 
     $array_request = array($movie_id, $rwt_id, $tmdb_id, $title,$post_name, $type, $genre, $relise, $year, $country, $language,
-        $production,
-        '', '', '', '', '', $box_usa, $box_world, $productionBudget, $keywords, $description, $array_string, $contentRating,
+        '','', '', '', '', '', $box_usa, $box_world, $productionBudget, $keywords, $description, $array_string, $contentRating,
         $Rating, time(), $runtime);
 
     ///  var_dump($array_request);
@@ -798,10 +797,15 @@ global $debug;
 
     else {
         ///update
-        $array_request = array( $title,  $type, $genre, $relise, $year, $country, $language, $production, $box_usa, $box_world, $productionBudget, $keywords, $description, $array_string, $contentRating, $Rating, time(), $runtime,$movie_id);
+        $array_request = array( $title,  $type, $genre, $relise, $year, $country, $language, $box_usa, $box_world, $productionBudget, $keywords, $description, $array_string, $contentRating, $Rating, time(), $runtime,$movie_id);
 
         $sql ="UPDATE `data_movie_imdb` SET 
-`title` =?, `type`=?, `genre`=?, `release`=?, `year`=?, `country`=?, `language`=?, `production`=?, `box_usa`=?, `box_world`=?, 
+`title` =?, `type`=?, `genre`=?, `release`=?, `year`=?, `country`=?, `language`=?,  `box_usa`=?, `box_world`=?, 
+                             `production`='',
+                             `producers` ='',
+                             `director`='',
+                             `cast_director`='',
+                             `writer`='',
                              `productionBudget`=?,
                              `keywords`=?,
                              `description`=?, `data`=?, `contentrating`=?, `rating`=?, `add_time`=?, `runtime`=? 
@@ -836,6 +840,14 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
     //$array_update = array('k'=>'um','id'=>$mid);
     !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
     $commit_id = Import::create_commit('','update','data_movie_imdb',array('id'=>$mid),'movie_add',4);
+
+    ///distributors
+
+
+    self::add_movie_distributors($mid,$production,1,$log_type);
+
+
+
 
 
     $actor_types = array('s' => 1, 'm' => 2, 'e' => 3);
@@ -1021,7 +1033,76 @@ public static function add_todb_actor($id,$name='')
         Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $id),'actor_update',4);
     }
 }
+private function insert_production($id,$name,$synch)
+{
+$q= "SELECT id FROM `data_movie_distributors` WHERE `link` = '".$id."'";
+$r = Pdo_an::db_results_array($q);
+if ($r)
+{
+    $pid = $r[0]['id'];
 
+}
+else {
+$q ="INSERT INTO `data_movie_distributors`(`id`, `date`, `name`, `link`, `type`) VALUES (NULL,?,?,?,?)";
+$pid = Pdo_an::db_insert_sql($q,[time(),$name,$id,0]);
+
+if ($pid && $synch)
+{
+
+    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+    Import::create_commit('', 'update', 'data_movie_distributors', array('id' => $id), 'data_movie_distributors',10);
+
+}
+
+
+}
+
+return $pid;
+
+}
+private static function add_production_meta($mid,$pid,$synch)
+{
+
+$q="SELECT `id` FROM `meta_movie_distributors` WHERE `did` = ".$pid." and `mid` = ".$mid;
+    $r = Pdo_an::db_results_array($q);
+    if (!$r)
+    {
+        $q="INSERT INTO `meta_movie_distributors`(`id`, `mid`, `did`) VALUES (NULL,{$mid},{$pid})";
+        $meta_id = Pdo_an::db_insert_sql($q);
+
+        if ($synch)
+        {
+
+            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+            $array_custom =array('skip'=>['id']);
+            Import::create_commit('','update','meta_movie_distributors',array('mid'=>$mid,'did'=>$pid),'meta_movie_distributors',12,$array_custom);
+
+        }
+    }
+}
+
+
+
+
+public static function add_movie_distributors($mid,$string,$synch=1,$log_type='default')
+{
+
+if ($string)
+{
+    $arr = json_decode($string,1);
+    foreach ($arr as $i=>$v )
+    {
+            $pid = self::insert_production($i,$v,$synch);
+            self::add_production_meta($mid,$pid,$synch);
+
+    }
+    !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
+    self::add_log('',$mid,'update movies','update distributors',1,$log_type);
+}
+
+
+
+}
 public static function add_movie_actor($mid = 0, $id = 0, $type = 0,$table='meta_movie_actor',$pos=0) {
 
         // Validate values
