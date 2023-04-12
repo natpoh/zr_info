@@ -1459,6 +1459,25 @@ function check_verdict_surname()
     echo 'check actors surname (' . $i . ')' . PHP_EOL;
 
 }
+
+
+function add_movie_production()
+{
+    $q = "SELECT `id`, `production`  FROM `data_movie_imdb` where `production` !='' and  `production` IS NOT NULL order by id asc LIMIT 1000";
+    $s = Pdo_an::db_results_array($q);
+    foreach ($s as $row)
+    {
+
+    TMDB::add_movie_distributors($row['id'],$row['production'],1,'cron');
+        if (check_cron_time())
+        {
+            break;
+        }
+    }
+
+}
+
+
 function add_empty_actors($id='')
 {
     check_load(50,60);
@@ -3114,13 +3133,7 @@ if (isset($_GET['zr_woke'])) {
 return;
 }
 
-///////////add Franchises
-if (isset($_GET['add_franchises'])) {
 
-    include "franchises.php";
-    Franchises::parse();
-    return;
-}
 if (isset($_GET['check_kairos'])) {
     check_kairos($_GET['check_kairos']);
     return;
@@ -3557,6 +3570,13 @@ if (isset($_GET['add_empty_actors'])) {
 }
 
 
+
+if (isset($_GET['add_movie_production'])) {
+
+    add_movie_production();
+
+    return;
+}
 
 echo 'ok';
 

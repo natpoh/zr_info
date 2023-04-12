@@ -1021,6 +1021,10 @@ input.radio {
     background-image: url(images/customsearch.svg);
 }
 
+.html-active .wp-editor-area {
+    visibility: visible!important;
+}
+
 /**
  * 6.0 - Navigation
  */
@@ -2795,7 +2799,8 @@ body.theme_dark .facet .acc, body.theme_dark .facets .acc, body.theme_dark .more
 .facet.collapsed .facet-ch,
 .facets.collapsed .chevron,
 .facets.collapsed .facets-ch,
-.more .collapsed .chevron {
+.more .collapsed .chevron,
+.facet.collapsed .facet-quickfind {
     display: none;
 }
 

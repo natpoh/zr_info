@@ -1724,34 +1724,6 @@ function generate_watch_content(data, title, year, type) {
         });
     }
 
-
-    Object_data['data'].push({
-        'monetization_type': '"free"',
-        'provider_id': 'putlocker',
-        'currency': 'USD',
-        'retail_price': '0.00',
-
-        'presentation_type': '',
-        urls: {'standard_web': 'https://putlocker.fan/?s=' + title + ' ' + year}
-    });
-    Object_data['data'].push({
-        'monetization_type': '"free"',
-        'provider_id': 'flixtor',
-        'currency': 'USD',
-        'retail_price': '0.00',
-
-        'presentation_type': '',
-        urls: {'standard_web': 'https://flixtor.uk/?s=' + title + ' ' + year}
-    });
-    Object_data['data'].push({
-        'monetization_type': '"free"',
-        'provider_id': 'soap2day',
-        'currency': 'USD',
-        'retail_price': '0.00',
-
-        'presentation_type': '',
-        urls: {'standard_web': 'https://soap2day.ma/?s=' + title + ' ' + year}
-    });
     if (type == 'Movie') {
         Object_data['providers']['showtimes'] = {
             's': 'fullsize fullsizebig',
@@ -1760,9 +1732,7 @@ function generate_watch_content(data, title, year, type) {
         };
     }
 
-    Object_data['providers']['putlocker'] = {'s': 'fullsize', 'n': 'Putlocker', 'i': window.location.protocol + "/wp-content/themes/custom_twentysixteen/images/putlocker-logo.png"};
-    Object_data['providers']['flixtor'] = {'s': 'fullsize', 'n': 'Flixtor', 'i': window.location.protocol + "/wp-content/themes/custom_twentysixteen/images/flixtor-logo.png"};
-    Object_data['providers']['soap2day'] = {'s': 'fullsize', 'n': 'Soap2day', 'i': window.location.protocol + "/wp-content/themes/custom_twentysixteen/images/soap2day-logo.png"};
+
 
 
     //console.log(Object_data['data']);
@@ -1845,8 +1815,15 @@ function generate_watch_content(data, title, year, type) {
             {
                 cls = '  ' + provider.s;
             }
+            let res_price='';
+            if (provider_currency || current_data.presentation_type)
+            {
+                res_price=`<div class="povider_price">${provider_currency}<span class="provider_type">${current_data.presentation_type}</span></div>`;
+            }
+
+
             let result_data = `<a target="_blank" class="provider_container type_${current_data.presentation_type + priorityclass + cls}"  href="${url}" title="${provider.n}">
-<img src="${provider.i}" alt="${provider.n}" /><div class="povider_price">${provider_currency}<span class="provider_type">${current_data.presentation_type}</span></div></a>`;
+<img src="${provider.i}" alt="${provider.n}" />${res_price}</a>`;
 
 
             if (current_data.monetization_type == 'flatrate') {

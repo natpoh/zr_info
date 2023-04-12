@@ -22,6 +22,7 @@ class LightMovies{
         add_submenu_page($this->parrent_slug, __('Movies overview'), __('Overview'), $this->access_level, $this->parrent_slug, array($this, 'overview'));
         add_submenu_page($this->parrent_slug, __('Add Movies'), __('Add Movies'), $this->access_level, $this->parrent_slug . '_add_movies', array($this, 'add_movies'));
         add_submenu_page($this->parrent_slug, __('Actors info'), __('Actors info'), $this->access_level, $this->parrent_slug. '_actors_info', array($this, 'actors_info'));
+        add_submenu_page($this->parrent_slug, __('Piracy links'), __('Piracy links'), $this->access_level, $this->parrent_slug. '_piracy_links', array($this, 'piracy_links'));
         add_submenu_page($this->parrent_slug, __('Custom options'), __('Custom options'), $this->access_level, $this->parrent_slug. '_custom_options', array($this, 'option'));
         add_submenu_page($this->parrent_slug, __('Logs'), __('Logs'), $this->access_level, $this->parrent_slug. '_movie_logs', array($this, 'movie_logs'));
          add_submenu_page($this->parrent_slug, __('Cron info'), __('Cron info'), $this->access_level, $this->parrent_slug. '_cron_info', array($this, 'cron_info'));
@@ -325,6 +326,31 @@ check_request();
 
 }
 
+
+
+    public function piracy_links()
+    {
+        echo '<h1>Piracy links</h1>';
+
+
+
+        !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
+
+
+        $array_rows = array(
+            'id'=>array('w'=>5),
+            'query_type'=>array('type'=>'select','options'=>'0:Default;1:Other'),
+
+
+            'include_year'=>array('type'=>'select','options'=>'0:No;1:Yes'),
+            'last_update' =>array('w'=>10, 'type' => 'textarea','editfalse'=>1),
+            'enable'=>array('type'=>'select','options'=>'1:Enable;0:Disable'),
+        );
+
+        Crowdsource::Show_admin_table('meta_piracy_links',$array_rows,1,'meta_piracy_links','',1,1);
+
+
+    }
 
     public function actors_info()
     {
