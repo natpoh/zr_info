@@ -1213,6 +1213,21 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'mid', 'name'), "data_movie_distributors");
 
+    $sql = "ALTER TABLE `data_movie_distributors` ADD `type` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('type'), "data_movie_distributors");
+    
+    $sql = "CREATE TABLE IF NOT EXISTS  `meta_movie_distributors`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `mid` int(11) NOT NULL DEFAULT '0',
+                                `did` int(11) NOT NULL DEFAULT '0',                                
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('mid', 'did'), "meta_movie_distributors");
+   
+    
     /* Franchise
      * mid - movie id
      * name - name

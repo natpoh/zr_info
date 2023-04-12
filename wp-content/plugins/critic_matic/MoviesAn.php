@@ -123,6 +123,8 @@ class MoviesAn extends AbstractDBAn {
             'race_rule' => 'data_an_race_rule',
             'cache_nf_keywords' => 'cache_nf_keywords',
             'erating' => 'data_movie_erating',
+            'franchises' => 'data_movie_franchises',
+            'distributors' => 'data_movie_distributors',
         );
         $this->timer_start();
         $this->get_perpage();
@@ -1405,6 +1407,93 @@ class MoviesAn extends AbstractDBAn {
     }
 
     /*
+     * Franchise
+     */
+    public function get_franchises() {
+        
+        $sql = "SELECT id, name FROM {$this->db['franchises']}";
+        $result = $this->db_results($sql);
+        $ret = array();
+        if ($result) {
+            foreach ($result as $item) {
+                $ret[$item->id] = $item->name;
+            }
+        }
+        return $ret;
+    }
+    
+    public function get_franchises_by_ids($ids, $cache = true) {
+        $ids_str = implode(',', $ids);
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$ids_str])) {
+                return $dict[$ids_str];
+            }
+        }
+
+        $sql = sprintf("SELECT id, name FROM {$this->db['franchises']} WHERE id IN(%s)", $ids_str);
+        $result = $this->db_results($sql);
+        $ret = array();
+        if ($result) {
+            foreach ($result as $item) {
+                $ret[$item->id] = $item->name;
+            }
+        }
+
+        if ($cache) {
+            $dict[$ids_str] = $ret;
+        }
+        return $ret;
+    }
+    /*
+     * Distributor
+     */
+    public function get_distributors() {
+        
+        $sql = "SELECT id, name FROM {$this->db['distributors']}";
+        $result = $this->db_results($sql);
+        $ret = array();
+        if ($result) {
+            foreach ($result as $item) {
+                $ret[$item->id] = $item->name;
+            }
+        }
+        return $ret;
+    }
+    
+    public function get_distributors_by_ids($ids, $cache = true) {
+        $ids_str = implode(',', $ids);
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$ids_str])) {
+                return $dict[$ids_str];
+            }
+        }
+
+        $sql = sprintf("SELECT id, name FROM {$this->db['distributors']} WHERE id IN(%s)", $ids_str);
+        $result = $this->db_results($sql);
+        $ret = array();
+        if ($result) {
+            foreach ($result as $item) {
+                $ret[$item->id] = $item->name;
+            }
+        }
+
+        if ($cache) {
+            $dict[$ids_str] = $ret;
+        }
+        return $ret;
+    }
+
+    /*
      * Admin functions
      */
 
@@ -1418,7 +1507,7 @@ class MoviesAn extends AbstractDBAn {
         return $result;
     }
 
-    public function get_posts($page = 1, $post_type = '', $orderby = '', $order = 'ASC', $need_year=false) {
+    public function get_posts($page = 1, $post_type = '', $orderby = '', $order = 'ASC', $need_year = false) {
         $page -= 1;
         $start = $page * $this->perpage;
 
@@ -1449,7 +1538,7 @@ class MoviesAn extends AbstractDBAn {
             $and_orderby = " ORDER BY id DESC";
         }
 
-        $sql = "SELECT * FROM {$this->db['movie_imdb']} WHERE id>0" . $year_and. $post_and . $and_orderby . $limit;
+        $sql = "SELECT * FROM {$this->db['movie_imdb']} WHERE id>0" . $year_and . $post_and . $and_orderby . $limit;
 
 
         $result = $this->db_results($sql);

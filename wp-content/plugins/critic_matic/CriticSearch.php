@@ -61,7 +61,7 @@ class CriticSearch extends AbstractDB {
     public $facets = array(
         'movies' => array('release', 'type', 'genre', 'provider', 'providerfree', 'mkw',
             'actors', 'dirs',
-            'rating', 'country', 'race', 'dirrace', 'lgbt', 'woke',
+            'rating', 'country', 'race', 'dirrace', 'lgbt', 'woke', 'isfranchise', 'bigdist', 'franchise', 'distributor',
             'race_cast', 'race_dir', 'gender_cast', 'gender_dir'),
         'critics' => array('release', 'type', 'movie', 'genre', 'author', 'state', 'tags', 'from', /* 'related', */)
     );
@@ -194,6 +194,10 @@ class CriticSearch extends AbstractDB {
             'pay' => array('key' => 1, 'title' => 'Pay To Consume'),
         ),
         'movie' => array('key' => 'id', 'name_pre' => 'Movie ', 'filter_pre' => 'Movie'),
+        'indie' => array(
+            'isfranchise' => array('key' => 'isfranchise', 'title' => 'Franchise'),
+            'bigdist' => array('key' => 'bigdist', 'title' => 'Distributor'),
+        ),
             /* UNUSED
              * 'rf' => array(
               'lgbt' => array('key' => 'lgbt', 'title' => 'LGBT'),
@@ -526,8 +530,7 @@ class CriticSearch extends AbstractDB {
         $ids = array();
         // Search custom fields
         if (sizeof($data)) {
-            foreach ($data as $item)
-            {
+            foreach ($data as $item) {
                 $ids[] = $item->id;
                 $meta_search[$item->id] = 1;
                 $ret[$item->id]['title'] = $item->title;
@@ -1990,6 +1993,26 @@ class CriticSearch extends AbstractDB {
                 $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
                         . " GROUP BY " . $facet . " ORDER BY cnt DESC LIMIT 0,$limit" . $max_option;
                 $sql_arr[] = "SHOW META";
+            } else if ($facet == 'franchise') {
+                $limit = $expand == 'franchise' ? $this->facet_max_limit : $this->facet_limit;
+                $filters_and = $this->get_filters_query($filters, array('franchise'), 'movies', $facet);
+                $max_option = '';
+                if ($limit > 1000) {
+                    $max_option = ' OPTION max_matches=' . $limit;
+                }
+                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
+                        . " GROUP BY " . $facet . " ORDER BY cnt DESC LIMIT 0,$limit" . $max_option;
+                $sql_arr[] = "SHOW META";
+            } else if ($facet == 'distributor') {
+                $limit = $expand == 'distributor' ? $this->facet_max_limit : $this->facet_limit;
+                $filters_and = $this->get_filters_query($filters, array('distributor'), 'movies', $facet);
+                $max_option = '';
+                if ($limit > 1000) {
+                    $max_option = ' OPTION max_matches=' . $limit;
+                }
+                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
+                        . " GROUP BY " . $facet . " ORDER BY cnt DESC LIMIT 0,$limit" . $max_option;
+                $sql_arr[] = "SHOW META";
             } else if ($facet == 'actors') {
                 // Cast actor logic
                 $facet_active = $this->get_active_race_facet($filters);
@@ -2109,6 +2132,16 @@ class CriticSearch extends AbstractDB {
                 }
                 $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
                         . " GROUP BY " . $facet . " ORDER BY " . $facet . " ASC LIMIT 0," . $max_count;
+                $sql_arr[] = "SHOW META";
+            } else if ($facet == 'isfranchise') {
+                $filters_and = $this->get_filters_query($filters, array('indie', 'minus-indie'));
+                $sql_arr[] = "SELECT 1 as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
+                        . " AND isfranchise=1 ORDER BY cnt DESC LIMIT 1";
+                $sql_arr[] = "SHOW META";
+            } else if ($facet == 'bigdist') {
+                $filters_and = $this->get_filters_query($filters, array('indie', 'minus-indie'));
+                $sql_arr[] = "SELECT 1 as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
+                        . " AND bigdist=1 ORDER BY cnt DESC LIMIT 1";
                 $sql_arr[] = "SHOW META";
             }
             /*
@@ -2430,8 +2463,23 @@ class CriticSearch extends AbstractDB {
                     foreach ($value as $id) {
                         $this->search_filters[$key][$id] = array('key' => $id, 'title' => $names[$id]);
                     }
+                } else if ($key == 'franchise') {
+                    $value = is_array($value) ? $value : array($value);
+                    $titles = $this->get_franchise_titles($value);
+                    if ($titles) {
+                        foreach ($titles as $slug => $title) {
+                            $this->search_filters[$key][$slug] = array('key' => $slug, 'title' => $title);
+                        }
+                    }
+                } else if ($key == 'distributor') {
+                    $value = is_array($value) ? $value : array($value);
+                    $titles = $this->get_distributor_titles($value);
+                    if ($titles) {
+                        foreach ($titles as $slug => $title) {
+                            $this->search_filters[$key][$slug] = array('key' => $slug, 'title' => $title);
+                        }
+                    }
                 }
-
 
                 // Exclude filter
                 if (is_array($exlude)) {
@@ -2531,7 +2579,15 @@ class CriticSearch extends AbstractDB {
                         if ($key == 'rrtg') {
                             $filters_and .= " AND rrta>0 AND rrt>0";
                         }
+                    } else if ($key == 'indie') {
+                        $value = is_array($value) ? $value : array($value);
+                        foreach ($value as $slug) {
+                            if ($this->search_filters[$key][$slug]) {
+                                $filters_and .= $this->filter_multi_value($slug, 1, false, $minus, true, true, false);
+                            }
+                        }
                     } else if ($key == 'rf') {
+                        // UNUSED
                         $value = is_array($value) ? $value : array($value);
                         foreach ($value as $slug) {
                             if ($this->search_filters[$key][$slug]) {
@@ -2540,6 +2596,12 @@ class CriticSearch extends AbstractDB {
                         }
                     } else if ($key == 'mkw') {
                         // Movie Keywords
+                        $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
+                    } else if ($key == 'franchise') {
+                        // Franchise
+                        $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
+                    } else if ($key == 'distributor') {
+                        // Distributor
                         $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
                     }
                 } else if ($query_type == 'critics') {
@@ -2927,6 +2989,18 @@ class CriticSearch extends AbstractDB {
         return $ret;
     }
 
+    public function get_franchise_titles($ids) {
+        $ma = $this->get_ma();
+        $ret = $ma->get_franchises_by_ids($ids);
+        return $ret;
+    }
+
+    public function get_distributor_titles($ids) {
+        $ma = $this->get_ma();
+        $ret = $ma->get_distributors_by_ids($ids);
+        return $ret;
+    }
+
     public function find_keywords_ids($keyword) {
         $search_keywords = $this->wildcards_maybe_query($keyword, true, ' ');
 
@@ -3047,7 +3121,7 @@ class CriticSearch extends AbstractDB {
 
         if ($meta_type) {
             // TODO meta type
-            $filters_and .=" AND ANY(state) IN (" . implode(',', $meta_type) . ")";
+            $filters_and .= " AND ANY(state) IN (" . implode(',', $meta_type) . ")";
         }
 
         // Odrer by rating desc
@@ -3148,11 +3222,11 @@ class CriticSearch extends AbstractDB {
                                 // One day
                                 $min_percent = $min_precent_day;
                                 $one_day = true;
-                            } else {                                
+                            } else {
                                 $min_percent = $min_precent_all;
                             }
-                            
-                            p_r(array(array('Dates',$post_cache->date,$post_cache2->date)),array('Min percent',$min_percent));
+
+                            p_r(array(array('Dates', $post_cache->date, $post_cache2->date)), array('Min percent', $min_percent));
 
                             if ($precent >= $min_percent) {
 

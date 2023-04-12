@@ -49,13 +49,13 @@ class SearchFacets extends AbstractDB {
     public $def_tab = 'movies';
     // Facets
     public $facets = array(
-        'movies' => array('release', 'budget', 'type', 'genre', 'provider', 'providerfree', 'auratings', 'ratings', 'price', 'race', 'dirrace',
-            'actor', 'actorstar', 'actormain', 'mkw',
+        'movies' => array('release', 'budget', 'type', 'genre', 'provider', 'providerfree', 'auratings', 'ratings', 'indie', 'price', 'race', 'dirrace',
+            'actor', 'actorstar', 'actormain', 'mkw', 'franchise','distributor',
             'dirall', 'dir', 'dirwrite', 'dircast', 'dirprod',
             'country', 'lgbt', 'woke', /* 'rf' */),
-        'critics' => array('release', 'type', 'author', 'state', 'movie', 'genre', 'auratings', 'tags', 'from', /*'related',*/)
+        'critics' => array('release', 'type', 'author', 'state', 'movie', 'genre', 'auratings', 'tags', 'from', /* 'related', */)
     );
-    public $facets_no_data = array('ratings', 'auratings', 'state');
+    public $facets_no_data = array('ratings', 'auratings', 'state', 'indie');
     public $hide_facets = array('country', 'directors');
     public $facet_filters = array();
     // Search filters    
@@ -93,7 +93,7 @@ class SearchFacets extends AbstractDB {
         'tags' => '',
         'year' => ''
     );
-    private $minus_filters = array('genre', 'mkw', /* 'rf', */ 'country');
+    private $minus_filters = array('genre', 'mkw', /* 'rf', */ 'country', 'indie', 'franchise', 'distributor');
 
     public function __construct($cm = '', $cs = '') {
         $this->cm = $cm ? $cm : new CriticMatic();
@@ -718,6 +718,24 @@ class SearchFacets extends AbstractDB {
                     $name = isset($this->cs->search_filters[$key][$slug]['title']) ? $this->cs->search_filters[$key][$slug]['title'] : $slug;
                     $tags[] = array('name' => $name, 'type' => $key, 'type_title' => 'Keywords', 'id' => $slug, 'tab' => 'movies', 'minus' => $minus);
                 }
+            } else if ($key == 'indie') {
+                $value = is_array($value) ? $value : array($value);
+                foreach ($value as $slug) {
+                    $name = isset($this->cs->search_filters['indie'][$slug]['title']) ? $this->cs->search_filters['indie'][$slug]['title'] : $slug;
+                    $tags[] = array('name' => $name, 'type' => $key, 'type_title' => 'Indie filter', 'id' => $slug, 'tab' => 'movies', 'minus' => $minus);
+                }
+            } else if ($key == 'franchise') {
+                $value = is_array($value) ? $value : array($value);
+                foreach ($value as $slug) {
+                    $name = isset($this->cs->search_filters[$key][$slug]['title']) ? $this->cs->search_filters[$key][$slug]['title'] : $slug;
+                    $tags[] = array('name' => $name, 'type' => $key, 'type_title' => 'Franchise', 'id' => $slug, 'tab' => 'movies', 'minus' => $minus);
+                }
+            } else if ($key == 'distributor') {
+                $value = is_array($value) ? $value : array($value);
+                foreach ($value as $slug) {
+                    $name = isset($this->cs->search_filters[$key][$slug]['title']) ? $this->cs->search_filters[$key][$slug]['title'] : $slug;
+                    $tags[] = array('name' => $name, 'type' => $key, 'type_title' => 'Franchise', 'id' => $slug, 'tab' => 'movies', 'minus' => $minus);
+                }
             }
             /*
              * Critics
@@ -1216,6 +1234,8 @@ class SearchFacets extends AbstractDB {
                         $this->show_audience_facet($facets_data);
                     } else if ($key == 'state') {
                         $this->show_state_facet($facets_data);
+                    } else if ($key == 'indie') {
+                        $this->show_indie_facet($facets_data);
                     }
                     continue;
                 }
@@ -1554,6 +1574,113 @@ class SearchFacets extends AbstractDB {
 
         $type = 'ratings';
         $title = 'Ratings';
+        if ($content) {
+            //Show multifacet
+            $collapsed = in_array($type, $this->hide_facets) ? ' collapsed' : '';
+            ?>
+            <div id="facets-<?php print $type ?>" class="facets ajload<?php print $collapsed ?>">
+                <div class="facet-title">
+                    <h3 class="title"><?php print $title ?></h3>   
+                    <div class="acc">
+                        <div class="chevron"></div>
+                        <div class="chevronup"></div>
+                    </div>
+                </div>
+                <div class="facets-ch"> 
+                    <?php print $content; ?>
+                </div>                    
+            </div>
+            <?php
+        }
+    }
+
+    public function show_indie_facet($data) {
+
+        ob_start();
+        /* foreach ($this->cs->rating_facets as $key => $value) {
+
+          $rating_data = $data[$key]['data'];
+          if ($rating_data) {
+          $count = sizeof($rating_data);
+          $icon = '';
+          $name_pre = $value['name_pre'];
+          $filter_pre = $value['filter_pre'];
+          $max_count = isset($this->cs->rating_facets[$key]['max_count']) ? $this->cs->rating_facets[$key]['max_count'] : 100;
+          $multipler = isset($this->cs->rating_facets[$key]['multipler']) ? $this->cs->rating_facets[$key]['multipler'] : 0;
+          $shift = isset($this->cs->rating_facets[$key]['shift']) ? $this->cs->rating_facets[$key]['shift'] : 0;
+          $this->show_slider_facet($rating_data, $count, $key, 'movies', $value['title'], $name_pre, $filter_pre, $icon, $max_count, $multipler, $shift);
+          }
+          } */
+        // Is franchise
+
+        $isfranchise_cnt = 0;
+
+        if ($data['isfranchise']['data'][0]) {
+            $isfranchise_cnt = $data['isfranchise']['data'][0]->cnt;
+        }
+
+        $bigdist_cnt = 0;
+        if ($data['bigdist']['data'][0]) {
+            $bigdist_cnt = $data['bigdist']['data'][0]->cnt;
+        }
+
+        $rf = array(
+            'isfranchise' => $isfranchise_cnt,
+            'bigdist' => $bigdist_cnt,
+        );
+
+        foreach ($this->cs->search_filters['indie'] as $key => $item) {
+            if ($rf[$key]) {
+                $dates[$key] = array('title' => $item['title'], 'count' => $rf[$key], 'type_title' => 'Indie filter', 'name_pre' => '', 'filter' => 'indie');
+            }
+        }
+
+        $filter = 'indie';
+        $title = 'Filters';
+        $minus = true;
+        $this->theme_facet_multi($filter, $dates, $title, 0, 'movies', $minus);
+
+        /*
+         * Franchise facet
+         */
+
+        $dates = array();
+        $facet_data = isset($data['franchise']['data']) ? $data['franchise']['data'] : array();
+
+        if ($facet_data) {
+            $count = sizeof($facet_data);
+
+            $total = $this->get_meta_total_found($data['franchise']['meta']);
+            $view_more = ($total > $count) ? $total : 0;
+            $ftype = 'movies';
+            $filter = 'franchise';
+            $this->show_franchise_facet($facet_data, $view_more, $filter, $ftype);
+        }
+
+        /*
+         * Distributor facet
+         */
+
+        $dates = array();
+        $facet_data = isset($data['distributor']['data']) ? $data['distributor']['data'] : array();
+
+        if ($facet_data) {
+            $count = sizeof($facet_data);
+
+            $total = $this->get_meta_total_found($data['distributor']['meta']);
+            $view_more = ($total > $count) ? $total : 0;
+            $ftype = 'movies';
+            $filter = 'distributor';
+            $this->show_distributor_facet($facet_data, $view_more, $filter, $ftype);
+        }
+
+
+
+        $content = ob_get_contents();
+        ob_end_clean();
+
+        $type = 'indie';
+        $title = 'ZR Indie Meter';
         if ($content) {
             //Show multifacet
             $collapsed = in_array($type, $this->hide_facets) ? ' collapsed' : '';
@@ -2011,6 +2138,62 @@ class SearchFacets extends AbstractDB {
         $this->theme_facet_multi($filter, $dates, $title, $more, $ftype, true, '', '', true, true, 0, $quick_find);
     }
 
+    public function show_franchise_facet($data, $more, $filter = 'franchise', $ftype = 'movies', $facets_data = array()) {
+        $dates = array();
+        if ($data) {
+            $ids = array();
+
+            foreach ($data as $value) {
+                if ($value->id) {
+                    $ids[] = $value->id;
+                }
+            }
+
+            $titles = $this->cs->get_franchise_titles($ids);
+
+            foreach ($data as $value) {
+                $id = $value->id;
+                if ($id) {
+                    $name = isset($titles[$id]) ? $titles[$id] : $id;
+                    $cnt = $value->cnt;
+                    $dates[$id] = array('title' => $name, 'count' => $cnt);
+                }
+            }
+        }
+
+        $title = 'Franchise';
+        $quick_find = true;
+        $this->theme_facet_multi($filter, $dates, $title, $more, $ftype, true, '', '', true, true, 0, $quick_find);
+    }
+
+    public function show_distributor_facet($data, $more, $filter = 'distributor', $ftype = 'movies', $facets_data = array()) {
+        $dates = array();
+        if ($data) {
+            $ids = array();
+
+            foreach ($data as $value) {
+                if ($value->id) {
+                    $ids[] = $value->id;
+                }
+            }
+
+            $titles = $this->cs->get_distributor_titles($ids);
+
+            foreach ($data as $value) {
+                $id = $value->id;
+                if ($id) {
+                    $name = isset($titles[$id]) ? $titles[$id] : $id;
+                    $cnt = $value->cnt;
+                    $dates[$id] = array('title' => $name, 'count' => $cnt);
+                }
+            }
+        }
+
+        $title = 'Distributor';
+        $quick_find = true;
+        $this->theme_facet_multi($filter, $dates, $title, $more, $ftype, true, '', '', true, true, 0, $quick_find);
+    }
+
     private function facet_tabs($tabs = array(), $active_facet = '', $def_tab = '', $filter_name = '', $filter_type = 'facet', $inactive = array(), $column = false) {
         ob_start();
         ?>
@@ -2295,10 +2478,10 @@ class SearchFacets extends AbstractDB {
             }
         }
 
-        /*if ($other_cnt) {
-            $other_item = $this->cs->search_filters['state']['related'];
-            $dates['related'] = array('title' => $other_item['title'], 'count' => $other_cnt);
-        }*/
+        /* if ($other_cnt) {
+          $other_item = $this->cs->search_filters['state']['related'];
+          $dates['related'] = array('title' => $other_item['title'], 'count' => $other_cnt);
+          } */
         $filter = 'state';
         $title = 'Relevance';
         $this->theme_facet_multi($filter, $dates, $title);
@@ -2769,6 +2952,76 @@ class SearchFacets extends AbstractDB {
                     $view_more = (count($data) < $last_limit) ? 0 : -1;
 
                     $this->show_keyword_facet($data, $view_more, $filter, 'movies', $result['facets']);
+                }
+            }
+        } else if ($filter == 'franchise' || $filter == 'distributor') {
+            // Quick filter logic
+            $ma = $this->get_ma();
+            if ($filter == 'franchise') {
+                $all_names = $ma->get_franchises();
+            } else {
+                $all_names = $ma->get_distributors();
+            }
+
+            $names = array();
+            if ($all_names) {
+                foreach ($all_names as $id => $name) {
+                    if (preg_match('/^(' . $keyword . ')/i', $name)) {
+                        $names[$id] = $name;
+                    }
+                }
+            }
+
+
+            $expand = isset($this->filters['expand']) ? $this->filters['expand'] : '';
+            $limit = $expand == $filter ? $this->cs->facet_max_limit : $this->cs->facet_limit;
+
+
+            if ($names) {
+                $facets = array($filter);
+                $filters = $this->get_search_filters();
+
+                $keys = array_keys($names);
+
+                $last_limit = $this->cs->facet_limit;
+                $last_max_limit = $this->cs->facet_max_limit;
+                $this->cs->facet_limit = 10000;
+                $this->cs->facet_max_limit = 10000;
+
+                $this->cs->filter_custom_and[$filter] = " AND " . $filter . " IN(" . implode(',', $keys) . ")";
+                $result = $this->cs->front_search_movies_multi($this->keywords, $facets, 0, array(), $filters, $facets, true, true, false);
+
+                $this->cs->facet_limit = $last_limit;
+                $this->cs->facet_max_limit = $last_max_limit;
+
+                if (isset($result['facets'][$filter]['data'])) {
+                    $data = array();
+                    if (sizeof($result['facets'][$filter]['data'])) {
+
+                        $i = 0;
+                        foreach ($result['facets'][$filter]['data'] as $item) {
+
+                            if (isset($names[$item->id])) {
+                                $data[] = $item;
+                                $i += 1;
+                            }
+
+                            if ($i >= $limit) {
+                                break;
+                            }
+                        }
+                    }
+
+                    // Total
+                    $total = $this->get_meta_total_found($result['facets'][$filter]['meta']);
+
+                    $view_more = (count($data) < $last_limit) ? 0 : -1;
+
+                    if ($filter == 'franchise') {
+                        $this->show_franchise_facet($data, $view_more, $filter, 'movies', $result['facets']);
+                    } else {
+                        $this->show_distributor_facet($data, $view_more, $filter, 'movies', $result['facets']);
+                    }
                 }
             }
         }
