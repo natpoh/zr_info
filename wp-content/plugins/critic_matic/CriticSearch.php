@@ -75,6 +75,21 @@ class CriticSearch extends AbstractDB {
         'aumisandry' => array('title' => 'FEMINISM', 'titlesm' => 'FEMINISM', 'name_pre' => 'AU FEMINISM ', 'filter_pre' => 'Audience FEMINISM ', 'icon' => 'misandry', 'group' => 'woke'),
         'auneo' => array('title' => 'NEO-MARXISM', 'titlesm' => 'NEO-MARXISM', 'name_pre' => 'AU NEO-MARXISM ', 'filter_pre' => 'Audience NEO-MARXISM ', 'icon' => 'patriotism', 'group' => 'woke')
     );
+    /*
+      sql_attr_uint       = budget
+      sql_attr_uint       = boxusa
+      sql_attr_bigint     = boxprofit
+      sql_attr_uint       = boxworld
+     */
+    public $finances_facets = array(
+        'boxworld' => array('title' => 'Box Office revenue worldwide', 'titlesm' => 'BO Worldwide', 'name_pre' => 'BOW ', 'filter_pre' => 'Box Office revenue profit ', 'group' => 'indie',),
+        'boxint' => array('title' => 'Box Office revenue internationally', 'titlesm' => 'BO Internationally', 'name_pre' => 'BOI ', 'filter_pre' => 'Box Office revenue profit ', 'group' => 'indie',),
+        'boxusa' => array('title' => 'Box Office revenue domestic', 'titlesm' => 'BO Domestic', 'name_pre' => 'BOD ', 'filter_pre' => 'Box Office revenue profit ', 'group' => 'indie',),
+        'boxprofit' => array('title' => 'Box Office revenue profit', 'titlesm' => 'Profit', 'name_pre' => 'BOP ', 'filter_pre' => 'Box Office revenue profit ', 'group' => 'indie',),
+        'budget' => array('title' => 'Budget', 'titlesm' => 'Budget', 'name_pre' => 'Budget ', 'filter_pre' => 'Budget ', 'group' => 'indie',),
+    );
+    public $budget_min = 100;
+    public $budget_max = 500000;
     public $rating_facets = array(
         'rrwt' => array('title' => 'Rating', 'titlesm' => 'Rating', 'name_pre' => 'Rating ', 'filter_pre' => 'Rating ', 'max_count' => 60, 'multipler' => 10, 'main' => 1, 'group' => 'rating'),
         'rating' => array('title' => 'Family Friend Score', 'titlesm' => 'FFS', 'name_pre' => 'FFS ', 'filter_pre' => 'FFS ', 'max_count' => 60, 'multipler' => 10, 'group' => 'woke'),
@@ -217,6 +232,7 @@ class CriticSearch extends AbstractDB {
         //Merge facets
         $this->facets['movies'] = array_merge($this->facets['movies'], $audience_facets);
         $this->facets['movies'] = array_merge($this->facets['movies'], array_keys($this->rating_facets));
+        $this->facets['movies'] = array_merge($this->facets['movies'], array_keys($this->finances_facets));
 
         //Critics facets
         $this->facets['critics'] = array_merge($this->facets['critics'], $audience_facets);
@@ -1960,6 +1976,7 @@ class CriticSearch extends AbstractDB {
         $expand = isset($filters['expand']) ? $filters['expand'] : '';
         $audience_facets = array_keys($this->audience_facets);
         $rating_facets = array_keys($this->rating_facets);
+        $finances_facets = array_keys($this->finances_facets);
         foreach ($facet_list as $facet) {
             if ($facet == 'release') {
                 $filters_and = $this->get_filters_query($filters, $facet);
@@ -2065,11 +2082,6 @@ class CriticSearch extends AbstractDB {
                 $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
                         . " GROUP BY dirrace ORDER BY cnt DESC LIMIT 0,$limit";
                 $sql_arr[] = "SHOW META";
-            } else if ($facet == 'budget') {
-                $filters_and = $this->get_filters_query($filters, array('budget'));
-                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
-                        . " GROUP BY budget ORDER BY budget DESC LIMIT 0,$limit";
-                $sql_arr[] = "SHOW META";
             } else if ($facet == 'race_cast') {
                 // Race actor logic
                 $facet_active = $this->get_active_race_facet($filters);
@@ -2132,6 +2144,13 @@ class CriticSearch extends AbstractDB {
                 }
                 $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
                         . " GROUP BY " . $facet . " ORDER BY " . $facet . " ASC LIMIT 0," . $max_count;
+                $sql_arr[] = "SHOW META";
+            } else if (in_array($facet, $finances_facets)) {
+                // Finances facets
+                $filters_and = $this->get_filters_query($filters, $facet);
+                $sql_arr[] = "SELECT GROUPBY() as id, COUNT(*) as cnt, FLOOR({$facet}/100000)*100 as bgt FROM movie_an"
+                        . " WHERE {$facet}>0" . $filters_and . $match
+                        . " GROUP BY bgt ORDER BY {$facet} ASC LIMIT 0,1000";
                 $sql_arr[] = "SHOW META";
             } else if ($facet == 'isfranchise') {
                 $filters_and = $this->get_filters_query($filters, array('indie', 'minus-indie'));
@@ -2521,6 +2540,16 @@ class CriticSearch extends AbstractDB {
                             } else {
                                 $filters_and .= sprintf(" AND " . $key . " >%d AND " . $key . " <= %d", $from, $to);
                             }
+                        }
+                    } else if (isset($this->finances_facets[$key])) {
+                        // Finances filter
+                        $dates = explode('-', $value);
+                        $from = (int) $dates[0];
+                        $to = (int) $dates[1];
+                        if ($from == $to) {
+                            $filters_and .= sprintf(" AND " . $key . " =%d", $from);
+                        } else {
+                            $filters_and .= sprintf(" AND " . $key . " >%d AND " . $key . " <= %d", $from, $to);
                         }
                     }
                 }
@@ -3752,6 +3781,20 @@ class CriticSearch extends AbstractDB {
         $result = $this->sdb_results($sql);
         $result = array_pop($result);
         return $result;
+    }
+
+    public function get_budget_array() {
+        $max_key = $this->budget_max;
+        $karay = array();
+        $k = $this->budget_min;
+        while ($k < $max_key) {
+            $karay[] = $k;
+            $k = round($k * 1.2, 0);
+            $klen = strlen('' . $k);
+            $k = round($k / pow(10, $klen - 2), 0) * pow(10, $klen - 2);
+        }
+        $karay[] = $max_key;
+        return $karay;
     }
 
     //Abstract DB

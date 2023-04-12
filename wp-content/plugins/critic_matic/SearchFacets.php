@@ -49,13 +49,14 @@ class SearchFacets extends AbstractDB {
     public $def_tab = 'movies';
     // Facets
     public $facets = array(
-        'movies' => array('release', 'budget', 'type', 'genre', 'provider', 'providerfree', 'auratings', 'ratings', 'indie', 'price', 'race', 'dirrace',
-            'actor', 'actorstar', 'actormain', 'mkw', 'franchise','distributor',
+        'movies' => array('release', 'budget', 'type', 'genre', 'provider', 'providerfree', 'auratings', 'ratings', 'indie', 'finances',
+            'price', 'race', 'dirrace',
+            'actor', 'actorstar', 'actormain', 'mkw', 'franchise', 'distributor',
             'dirall', 'dir', 'dirwrite', 'dircast', 'dirprod',
             'country', 'lgbt', 'woke', /* 'rf' */),
         'critics' => array('release', 'type', 'author', 'state', 'movie', 'genre', 'auratings', 'tags', 'from', /* 'related', */)
     );
-    public $facets_no_data = array('ratings', 'auratings', 'state', 'indie');
+    public $facets_no_data = array('ratings', 'auratings', 'state', 'indie', 'finances');
     public $hide_facets = array('country', 'directors');
     public $facet_filters = array();
     // Search filters    
@@ -1236,6 +1237,8 @@ class SearchFacets extends AbstractDB {
                         $this->show_state_facet($facets_data);
                     } else if ($key == 'indie') {
                         $this->show_indie_facet($facets_data);
+                    } else if ($key == 'finances') {
+                        $this->show_finances_facet($facets_data);
                     }
                     continue;
                 }
@@ -1699,6 +1702,204 @@ class SearchFacets extends AbstractDB {
             </div>
             <?php
         }
+    }
+
+    public function show_finances_facet($data) {
+        ob_start();
+        /* foreach ($this->cs->rating_facets as $key => $value) {
+
+          $rating_data = $data[$key]['data'];
+          if ($rating_data) {
+          $count = sizeof($rating_data);
+          $icon = '';
+          $name_pre = $value['name_pre'];
+          $filter_pre = $value['filter_pre'];
+          $max_count = isset($this->cs->rating_facets[$key]['max_count']) ? $this->cs->rating_facets[$key]['max_count'] : 100;
+          $multipler = isset($this->cs->rating_facets[$key]['multipler']) ? $this->cs->rating_facets[$key]['multipler'] : 0;
+          $shift = isset($this->cs->rating_facets[$key]['shift']) ? $this->cs->rating_facets[$key]['shift'] : 0;
+          $this->show_slider_facet($rating_data, $count, $key, 'movies', $value['title'], $name_pre, $filter_pre, $icon, $max_count, $multipler, $shift);
+          }
+          } */
+
+
+        $content = ob_get_contents();
+        ob_end_clean();
+
+        $type = 'finances';
+        $title = 'Finances';
+        if ($content) {
+            //Show multifacet
+            $collapsed = in_array($type, $this->hide_facets) ? ' collapsed' : '';
+            ?>
+            <div id="facets-<?php print $type ?>" class="facets ajload<?php print $collapsed ?>">
+                <div class="facet-title">
+                    <h3 class="title"><?php print $title ?></h3>   
+                    <div class="acc">
+                        <div class="chevron"></div>
+                        <div class="chevronup"></div>
+                    </div>
+                </div>
+                <div class="facets-ch"> 
+                    <?php print $content; ?>
+                </div>                    
+            </div>
+            <?php
+        }
+    }
+
+    public function show_finance_facet($data, $count, $type, $ftype = 'all', $title = '', $name_pre = '', $filter_pre = '', $icon = '', $multipler = 0, $shift = 0) {
+        if (!$title) {
+            $title = ucfirst($type);
+        }
+
+        if (!$filter_pre) {
+            $filter_pre = $title;
+        }
+        $data_count = array();
+        $max_key = $this->cs->budget_max;
+        $karay = $this->cs->get_budget_array();
+
+
+        $from = $to = 0;
+        // Filters
+        $filters = $this->facet_filters[$type];
+        if ($filters) {
+            $f_arr = explode('-', $filters);
+            $from = array_search($f_arr[0], $karay);
+            $to = array_search($f_arr[1], $karay);
+        }
+
+        $num = 0;
+        $k = $karay[$num];
+        foreach ($data as $value) {
+            $value = (array) $value;
+            $id = trim($value['id']);
+            $cnt = $value['cnt'];
+            if ($id == 0) {
+                continue;
+            }
+            $key = $k;
+            if ($id > $max_key) {
+                $key = $max_key;
+            } else if ($id > $k) {
+                while ($id > $k) {
+                    $num += 1;
+                    $k = $karay[$num];
+                }
+            }
+            $data_count[$key] += $cnt;
+        }
+
+        $i = 0;
+        $first_item = $i;
+        $items = array();
+        $keys = array();
+        foreach ($karay as $key) {
+            $count = isset($data_count[$key]) ? $data_count[$key] : 0;
+            $items[$i] = $count;
+            $show_key = $this->get_finance_showkey($key);
+            $keys[$i] = $show_key;
+            $i++;
+        }
+        $max_item = $i - 1;
+
+
+        $data_min = $first_item;
+        $collapsed = in_array($type, $this->hide_facets) ? ' collapsed' : '';
+
+        if (sizeof($items) > 1) {
+            ?>
+            <div id="facet-<?php print $type ?>" class="facet slider-facet ajload<?php print $collapsed ?>" data-type="<?php print $ftype ?>">
+                <div class="facet-title">                    
+                    <?php if ($icon) { ?>
+                        <div class="facet-icon"><?php print $icon; ?></div>
+                    <?php } ?>
+                    <h3 class="title">                        
+                        <?php print $title ?>
+                    </h3>   
+                    <div class="acc">
+                        <div class="chevron"></div>
+                        <div class="chevronup"></div>
+                    </div>
+                </div>
+                <div class="facet-ch">        
+                    <div class="facet-content">
+                        <canvas id="<?php print $type ?>-canvas" class="facet-canvas"></canvas>
+                        <div id="<?php print $type ?>-slider" class="extend" data-min="<?php print $data_min ?>" data-max="<?php print $max_item ?>" 
+                             data-from="<?php print $from ?>" data-to="<?php print $to ?>" data-filter-pre="<?php print $filter_pre ?>" 
+                             data-title-pre="<?php print $name_pre ?>" data-multipler="<?php print $multipler ?>" data-shift="<?php print $shift ?>"></div>
+                        <div class="select-holder">
+                            <div class="select-from">
+                                From: 
+                                <select id="<?php print $type ?>-from" name="<?php print $type ?>[]">                        
+                                    <?php
+                                    foreach ($items as $key => $value) {
+                                        $data_value = $karay[$key];
+                                        $checked = '';
+                                        if (!$filters) {
+                                            //Last checked
+                                            if ($key == $first_item) {
+                                                $checked = 'selected ';
+                                            }
+                                        } else {
+                                            if ($key == $from) {
+                                                $checked = 'selected ';
+                                            }
+                                        }
+                                        $show_key = $keys[$key];
+                                        ?>
+                                        <option value="<?php print $key ?>" <?php print $checked ?> data-value="<?php print $data_value ?>"><?php print $show_key ?></option>
+                                    <?php } ?>
+                                </select> 
+                            </div>
+                            <div class="select-to">
+                                To: 
+                                <select id="<?php print $type ?>-to" name="<?php print $type ?>[]">                        
+                                    <?php
+                                    foreach ($items as $key => $value) {
+                                        $data_value = $karay[$key];
+                                        $checked = '';
+                                        if (!$filters) {
+                                            //Last checked
+                                            if ($key == $max_item) {
+                                                $checked = 'selected ';
+                                            }
+                                        } else {
+                                            if ($key == $to) {
+                                                $checked = 'selected ';
+                                            }
+                                        }
+                                        $show_key = $keys[$key];
+                                        ?>
+                                        <option value="<?php print $key ?>" <?php print $checked ?> data-value="<?php print $data_value ?>"><?php print $show_key ?></option>
+                                    <?php } ?>
+                                </select>  
+                            </div>
+                        </div>
+                        <input type="hidden" name="<?php print $type ?>" value="<?php print $first_item ?>">
+                        <input type="hidden" name="<?php print $type ?>" value="<?php print $max_item ?>">
+                        <?php //unset($items[count($items) - 1]);                                  ?>
+                        <script type="text/javascript">var <?php print $type ?>_arr =<?php print json_encode($items) ?></script>
+                    </div>  
+                </div>
+            </div>
+            <?php
+        }
+    }
+
+    public function get_finance_showkey($key) {
+        $show_key = $key;
+
+        if ($key < 1000) {
+            $show_key = $show_key . 'k';
+        } else {
+            $round = 0;
+            if ($key < 10000) {
+                $round = 1;
+            }
+            $show_key = round($show_key / 1000, $round) . 'm';
+        }
+        return $show_key;
     }
 
     public function show_type_facet($data) {

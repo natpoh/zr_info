@@ -65,7 +65,7 @@ $cr = new CriticTransit($cm);
 //$cr->actor_slug($acount, $debug);
 
 //One time transit data
-//$cr->transit_genres($count, $debug);
+$cr->transit_genres($count, $debug);
 
 //One time transit data
 //$cr->transit_countries($count, $debug);
@@ -77,4 +77,4 @@ $cr = new CriticTransit($cm);
 
 
 // Remove meta type 2.
-$cr->remove_unused_meta($count, $debug);
+//$cr->remove_unused_meta($count, $debug);
