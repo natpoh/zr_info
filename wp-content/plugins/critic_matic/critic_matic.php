@@ -1489,6 +1489,9 @@ ALTER TABLE wp_bcw98b_critic_matic_audience CONVERT TO CHARACTER SET utf8mb4 COL
 ALTER TABLE wp_bcw98b_critic_transcritpions CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
  * 
  * 
+ * ALTER TABLE 	wp_critic_feed_campaign CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+ * 
+ * 
 
 
  */

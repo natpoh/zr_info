@@ -82,11 +82,11 @@ class CriticSearch extends AbstractDB {
       sql_attr_uint       = boxworld
      */
     public $finances_facets = array(
-        'boxworld' => array('title' => 'Box Office revenue worldwide', 'titlesm' => 'BO Worldwide', 'name_pre' => 'BOW ', 'filter_pre' => 'Box Office revenue profit ', 'group' => 'indie',),
-        'boxint' => array('title' => 'Box Office revenue internationally', 'titlesm' => 'BO Internationally', 'name_pre' => 'BOI ', 'filter_pre' => 'Box Office revenue profit ', 'group' => 'indie',),
-        'boxusa' => array('title' => 'Box Office revenue domestic', 'titlesm' => 'BO Domestic', 'name_pre' => 'BOD ', 'filter_pre' => 'Box Office revenue profit ', 'group' => 'indie',),
-        'boxprofit' => array('title' => 'Box Office revenue profit', 'titlesm' => 'Profit', 'name_pre' => 'BOP ', 'filter_pre' => 'Box Office revenue profit ', 'group' => 'indie',),
         'budget' => array('title' => 'Budget', 'titlesm' => 'Budget', 'name_pre' => 'Budget ', 'filter_pre' => 'Budget ', 'group' => 'indie',),
+        'boxprofit' => array('title' => 'Profit', 'titlesm' => 'Profit', 'name_pre' => 'Profit ', 'filter_pre' => 'Profit ', 'group' => 'indie',),
+        'boxworld' => array('title' => 'Worldwide Box Office', 'titlesm' => 'Worldwide', 'name_pre' => 'BOW ', 'filter_pre' => 'Worldwide Box Office ', 'group' => 'indie',),
+        'boxint' => array('title' => 'International Box Office', 'titlesm' => 'International', 'name_pre' => 'International ', 'filter_pre' => 'International Box Office ', 'group' => 'indie',),
+        'boxusa' => array('title' => 'Domestic Box Office', 'titlesm' => 'Domestic', 'name_pre' => 'Domestic ', 'filter_pre' => 'Domestic Box Office ', 'group' => 'indie',),
     );
     public $budget_min = 100;
     public $budget_max = 500000;
@@ -2541,17 +2541,7 @@ class CriticSearch extends AbstractDB {
                                 $filters_and .= sprintf(" AND " . $key . " >%d AND " . $key . " <= %d", $from, $to);
                             }
                         }
-                    } else if (isset($this->finances_facets[$key])) {
-                        // Finances filter
-                        $dates = explode('-', $value);
-                        $from = (int) $dates[0];
-                        $to = (int) $dates[1];
-                        if ($from == $to) {
-                            $filters_and .= sprintf(" AND " . $key . " =%d", $from);
-                        } else {
-                            $filters_and .= sprintf(" AND " . $key . " >%d AND " . $key . " <= %d", $from, $to);
-                        }
-                    }
+                    } 
                 }
 
                 if ($query_type == 'movies') {
@@ -2632,6 +2622,33 @@ class CriticSearch extends AbstractDB {
                     } else if ($key == 'distributor') {
                         // Distributor
                         $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
+                    } else if (isset($this->finances_facets[$key])) {
+                        // Finances
+                        $data_arr = explode('-', $value);
+                        $from = ((int) $data_arr[0]) * 1000;
+                        $to = ((int) $data_arr[1]) * 1000;
+                        $budget_min = $this->budget_min * 1000;
+                        $budget_max = $this->budget_max * 1000;
+
+                        if ($from == $to) {
+                            if ($from == $budget_min) {
+                                $filters_and .= sprintf(" AND {$key} > 0 AND {$key}<=%d", $from);
+                            } else if ($from == $budget_max) {
+                                $filters_and .= sprintf(" AND {$key}>=%d", $to);
+                            } else {
+                                $filters_and .= sprintf(" AND {$key}=%d", $from);
+                            }
+                        } else {
+                            if ($from == $budget_min && $to == $budget_max) {
+                                $filters_and .= " AND {$key} > 0";
+                            } else if ($from == $budget_min) {
+                                $filters_and .= sprintf(" AND {$key} > 0 AND {$key} < %d", $to);
+                            } else if ($to == $budget_max) {
+                                $filters_and .= sprintf(" AND {$key} >= %d", $from);
+                            } else {
+                                $filters_and .= sprintf(" AND {$key} >=%d AND {$key} < %d", $from, $to);
+                            }
+                        }       
                     }
                 } else if ($query_type == 'critics') {
                     if ($key == 'author') {
