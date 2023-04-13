@@ -1464,6 +1464,7 @@ function check_verdict_surname()
 function add_movie_production()
 {
     $q = "SELECT data_movie_imdb.`id`, data_movie_imdb.`production` FROM `data_movie_imdb` left join meta_movie_distributors as meta ON (meta.mid =data_movie_imdb.id ) where `production` !='' and `production` IS NOT NULL and meta.id IS NULL order by id asc LIMIT 1000";
+
     $s = Pdo_an::db_results_array($q);
     foreach ($s as $row)
     {
