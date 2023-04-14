@@ -877,7 +877,7 @@ class CriticFeeds extends AbstractDBWp {
                 WHERE id = %d", $last_update, $update_interval, $author, $status, $title, $feed_hash, $feed, $site, $opt_str, $id
             );
 
-            $this->db_query($sql);
+            $this->db_query($sql);           
             $result = $id;
         } else {
             //ADD
@@ -897,7 +897,7 @@ class CriticFeeds extends AbstractDBWp {
                 %d,%d,%d,%d,%d,'%s','%s','%s','%s','%s','%s')"
                             . "", $date, $last_update, $update_interval, $author, $status, $title, $feed_hash, $feed, $site, $last_hash, $opt_str
             ));
-
+            // print_r(array('last error',Pdo_wp::last_error()));
             //Return id
             $id = $this->getInsertId('id', $this->db['campaign']);
 

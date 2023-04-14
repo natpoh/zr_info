@@ -173,6 +173,24 @@ class SearchFacets extends AbstractDB {
                 $this->search_sort['critics'][$facet] = $append;
             }
         }
+
+        // Add finance filters
+        /*$au_rating_title = array('title' => 'Audience Ratings', 'is_title' => 1, 'group' => 'woke');
+        $this->search_sort['movies']['auratingtitle'] = $au_rating_title;
+        $this->search_sort['critics']['auratingtitle'] = $au_rating_title;*/
+        foreach ($this->cs->finances_facets as $facet => $item) {
+            $this->filters[$facet] = '';
+            if ($facet != 'budget') {
+                $this->hide_facets[] = $facet;
+
+                //Sort
+                $def_sort = isset($item['sort']) ? $item['sort'] : 'desc';
+                $main = isset($item['main']) ? 1 : 0;
+
+                $append = array('title' => $item['title'], 'def' => $def_sort, 'main' => $main, 'icon' => $item['icon'], 'group' => $item['group']);
+                $this->search_sort['movies'][$facet] = $append;                
+            }
+        }
     }
 
     public function init_scripts() {
@@ -561,6 +579,7 @@ class SearchFacets extends AbstractDB {
     public function get_filter_tags($filters) {
         $audience_facets = array_keys($this->cs->audience_facets);
         $rating_facets = array_keys($this->cs->rating_facets);
+        $finances_facets = array_keys($this->cs->finances_facets);
         $tags = array();
         foreach ($filters as $key => $value) {
 
@@ -737,6 +756,17 @@ class SearchFacets extends AbstractDB {
                     $name = isset($this->cs->search_filters[$key][$slug]['title']) ? $this->cs->search_filters[$key][$slug]['title'] : $slug;
                     $tags[] = array('name' => $name, 'type' => $key, 'type_title' => 'Franchise', 'id' => $slug, 'tab' => 'movies', 'minus' => $minus);
                 }
+            }else if (in_array($key, $finances_facets)) {
+                $name = $value;
+                if (strstr($name, '-')) {
+                    $name_arr = explode('-', $value);
+                    $name = (((int) $name_arr[0])) . '-' . (((int) $name_arr[1]));
+                }
+                $slug = $value;
+                $name_pre = $this->cs->finances_facets[$key]['name_pre'];
+                $filter_pre = $this->cs->finances_facets[$key]['filter_pre'];
+
+                $tags[] = array('name' => $name, 'type' => $key, 'type_title' => $filter_pre, 'name_pre' => $name_pre, 'id' => $slug, 'tab' => 'all', 'minus' => $minus);
             }
             /*
              * Critics
@@ -1706,20 +1736,18 @@ class SearchFacets extends AbstractDB {
 
     public function show_finances_facet($data) {
         ob_start();
-        /* foreach ($this->cs->rating_facets as $key => $value) {
+        foreach ($this->cs->finances_facets as $key => $value) {
 
-          $rating_data = $data[$key]['data'];
-          if ($rating_data) {
-          $count = sizeof($rating_data);
-          $icon = '';
-          $name_pre = $value['name_pre'];
-          $filter_pre = $value['filter_pre'];
-          $max_count = isset($this->cs->rating_facets[$key]['max_count']) ? $this->cs->rating_facets[$key]['max_count'] : 100;
-          $multipler = isset($this->cs->rating_facets[$key]['multipler']) ? $this->cs->rating_facets[$key]['multipler'] : 0;
-          $shift = isset($this->cs->rating_facets[$key]['shift']) ? $this->cs->rating_facets[$key]['shift'] : 0;
-          $this->show_slider_facet($rating_data, $count, $key, 'movies', $value['title'], $name_pre, $filter_pre, $icon, $max_count, $multipler, $shift);
-          }
-          } */
+            $rating_data = $data[$key]['data'];
+            
+            if ($rating_data) {
+                $count = sizeof($rating_data);
+                $icon = '';
+                $name_pre = $value['name_pre'];
+                $filter_pre = $value['filter_pre'];
+                $this->show_finance_facet($rating_data, $key, 'movies', $value['title'], $name_pre, $filter_pre);
+            }
+        }
 
 
         $content = ob_get_contents();
@@ -1747,7 +1775,7 @@ class SearchFacets extends AbstractDB {
         }
     }
 
-    public function show_finance_facet($data, $count, $type, $ftype = 'all', $title = '', $name_pre = '', $filter_pre = '', $icon = '', $multipler = 0, $shift = 0) {
+    public function show_finance_facet($data, $type, $ftype = 'all', $title = '', $name_pre = '', $filter_pre = '', $icon = '', $multipler = 0, $shift = 0) {
         if (!$title) {
             $title = ucfirst($type);
         }
