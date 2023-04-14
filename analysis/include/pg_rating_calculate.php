@@ -1186,9 +1186,19 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
             if ($array_family['imdb_result'] != $array_family_updated['imdb_result'] || $array_family['cms_rating'] != $array_family_updated['cms_rating'] || $array_family['dove_result'] != $array_family_updated['dove_result'] || $array_family['rwt_audience'] != $array_family_updated['rwt_audience'] || $array_family['rwt_pg_result'] != $array_family_updated['rwt_pg_result'] || $array_family['lgbt_warning'] != $array_family_updated['lgbt_warning'] || $array_family['woke'] != $array_family_updated['woke']
             ) {
+
+
+                $comment=' updated';
+
+                !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+                TMDB::add_log($id,$imdb_id,'update movies','CalculateRating  PG'.$comment,1,'admin');
+
+
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
                 Import::create_commit('', 'update', 'data_pg_rating', array('movie_id' => $imdb_id), 'pg_rating', 9, ['skip' => ['id']]);
             }
+
+
         }
 
 

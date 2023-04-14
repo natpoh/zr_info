@@ -1093,7 +1093,7 @@ if (!$rating_update)
     $rating_update = array( 50=> 86400*7, 40 =>86400*30, 30=> 86400*60 , 20=> 86400*90, 10=> 86400*180, 0=>86400*360);
 }
 
-        $where=$table.'.id IS NULL';
+        $where=$table.".id IS NULL OR `{$table}`.`{$last_update}` IS NULL  OR `{$table}`.`{$last_update}` = 0  ";
 
         foreach ($rating_update as $w =>$period){
             $time = time()-$period;
@@ -2196,7 +2196,10 @@ function add_gender_rating_for_new_movies()
 }
 function add_pg_rating_for_new_movies($limit=100)
 {
+    if (!$limit)$limit=1000;
+    global $debug;
 
+    if (isset($_GET['debug']))$debug=1;
     !class_exists('PgRating') ? include ABSPATH . "analysis/include/pg_rating.php" : '';
 
     $rating_update = array( 50=> 86400*7, 40 =>86400*14, 30=> 86400*30 , 20=> 86400*60, 10=> 86400*120, 0=>86400*200);
@@ -2210,7 +2213,7 @@ function add_pg_rating_for_new_movies($limit=100)
 
               /// $imdb_id = TMDB::get_imdb_id_from_id($r['id']);
                echo $r['id'].' <br>';
-               PgRating::add_pgrating('',0,$r['id']);
+               PgRating::update_pgrating('',0,$r['id']);
 
            }
        }
@@ -2220,10 +2223,11 @@ function add_pg_rating_for_new_movies($limit=100)
 
 function add_pgrating($imdb_id='')
 {
-
+    global $debug;
     !class_exists('PgRating') ? include ABSPATH . "analysis/include/pg_rating.php" : '';
+if (isset($_GET['debug']))$debug=1;
 
-    PgRating::add_pgrating($imdb_id,1);
+    PgRating::add_pgrating($imdb_id,$debug);
 
     return;
 }
