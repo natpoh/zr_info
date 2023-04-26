@@ -92,12 +92,19 @@ class CriticParser extends AbstractDBWp {
         'x' => 'XPath',
         'm' => 'Regexp match',
         'r' => 'Regexp replace',
+        'n' => 'None',
     );
     public $parser_rules_fields = array(
         'a' => 'Author',
         'd' => 'Content',
         't' => 'Title',
         'y' => 'Date',
+    );
+    public $parser_data_fields = array(
+        'r' => 'Raw HTML',
+        'ct' => 'Clear Title',
+        'cc' => 'Clear Content',
+        'ca' => 'Clear Author',
     );
     public $def_options;
     private $parser_settings = '';
@@ -470,7 +477,7 @@ class CriticParser extends AbstractDBWp {
                 }
 
                 // Use reg rules
-                $items = $this->check_reg_post($options['parser_rules'], $code);
+                $items = $this->check_reg_post($options['parser_rules'], $code,'', $item->link);
 
                 $content = isset($items['d']) ? $items['d'] : '';
                 $title = isset($items['t']) ? $items['t'] : '';
@@ -810,7 +817,7 @@ class CriticParser extends AbstractDBWp {
                     }
 
                     // Use reg rules
-                    $items = $this->check_reg_post($options['parser_rules'], $code);
+                    $items = $this->check_reg_post($options['parser_rules'], $code,'', $item->link);
                     $content = isset($items['d']) ? trim($items['d']) : '';
                     $title = isset($items['t']) ? trim($items['t']) : '';
                     $author = isset($items['a']) ? trim(strip_tags($items['a'])) : '';
@@ -871,7 +878,7 @@ class CriticParser extends AbstractDBWp {
                         } else {
 
                             $view_type = $this->cm->get_post_view_type($item->link);
-                            
+
                             // Add post 
                             $log_message = 'Add post';
                             $pid = $this->cm->add_post($date, $post_type, $item->link, $title, $content, $top_movie, $post_status, $view_type);
@@ -1412,7 +1419,12 @@ class CriticParser extends AbstractDBWp {
         $status = isset($form_state['status']) ? $form_state['status'] : 0;
         $options['rules'] = $this->rules_form($form_state);
         $options['parser_rules'] = $this->parser_rules_form($form_state);
-
+        if ($form_state['import_rules_json']) {
+            $rules = json_decode(trim(stripslashes($form_state['import_rules_json'])), true);
+            if (sizeof($rules)) {
+                $options['parser_rules'] = $rules;
+            }
+        }
         if ($form_state['dom']) {
             $options['dom'] = base64_encode(stripslashes($form_state['dom']));
         }
@@ -2497,7 +2509,7 @@ class CriticParser extends AbstractDBWp {
         return $rule;
     }
 
-    public function check_reg_post($rules, $content, $rule_type = '') {
+    public function check_reg_post($rules, $content, $rule_type = '', $link='') {
         $results = array();
         $rule_type_exist = 0;
         if ($rules && sizeof($rules)) {
@@ -2515,12 +2527,31 @@ class CriticParser extends AbstractDBWp {
               )
              */
 
+            $clear_content = array();
             foreach ($this->parser_rules_fields as $type => $title) {
                 if ($rule_type && $type != $rule_type) {
                     continue;
                 }
                 $i = 0;
                 foreach ($rules_w as $key => $rule) {
+                    // Clear content logic
+                    $data_field = isset($rule['d']) ? $rule['d'] : 'r';
+                    if ($data_field == 'r') {
+                        $rule_content = $content;
+                    } else {
+                        // Get clear content
+                        if (!$clear_content){
+                            $clear_content = $this->clear_read($link, $content);                            
+                        }
+                        if ($data_field == 'ca') {
+                            $rule_content = isset($clear_content['author'])?$clear_content['author']:'';
+                        } else if ($data_field == 'ct') {
+                            $rule_content = isset($clear_content['title'])?$clear_content['title']:'';
+                        } else if ($data_field == 'cc') {
+                            $rule_content = isset($clear_content['content'])?$clear_content['content']:'';
+                        }
+                    }
+
                     if ($type == $rule['f']) {
                         if ($rule['a'] != 1) {
                             continue;
@@ -2530,7 +2561,7 @@ class CriticParser extends AbstractDBWp {
                         }
 
                         if (!isset($results[$type][$i])) {
-                            $results[$type][$i] = $content;
+                            $results[$type][$i] = $rule_content;
                         }
                         $results[$type][$i] = $this->use_reg_rule($rule, $results[$type][$i]);
 
@@ -2582,7 +2613,7 @@ class CriticParser extends AbstractDBWp {
             $content = $this->get_reg_match($reg, $rule['m'], $content);
         } else if ($rule['t'] == 'r') {
             $content = $this->get_reg($reg, $rule['m'], $content);
-        }
+        } 
 
         return $content;
     }
@@ -2607,7 +2638,8 @@ class CriticParser extends AbstractDBWp {
                     'c' => $form_state['rule_reg_c_' . $key],
                     'w' => $form_state['rule_reg_w_' . $key],
                     'a' => $form_state['rule_reg_a_' . $key],
-                    'n' => $form_state['rule_reg_n_' . $key]
+                    'n' => $form_state['rule_reg_n_' . $key],
+                    'd' => $form_state['rule_reg_d_' . $key]
                 );
                 $rule_exists[$key] = $upd_rule;
             }
@@ -2630,7 +2662,8 @@ class CriticParser extends AbstractDBWp {
                 'c' => $form_state['reg_new_rule_c'],
                 'w' => $form_state['reg_new_rule_w'],
                 'a' => $form_state['reg_new_rule_a'],
-                'n' => $form_state['reg_new_rule_n']
+                'n' => $form_state['reg_new_rule_n'],
+                'd' => $form_state['reg_new_rule_d']
             );
             $rule_exists[$new_rule_key] = $new_rule;
         }
@@ -2651,6 +2684,8 @@ class CriticParser extends AbstractDBWp {
                 unset($parser_rules_fields['y']);
             }
 
+            $data_fields = $this->parser_data_fields;
+
             if (!$edit) {
                 $disabled = ' disabled ';
                 $title = __('Rules parser');
@@ -2666,6 +2701,7 @@ class CriticParser extends AbstractDBWp {
                         <th><?php print __('Rule') ?></th>
                         <th><?php print __('Match') ?></th>
                         <th><?php print __('New') ?></th>
+                        <th><?php print __('Data field') ?></th> 
                         <th><?php print __('Comment') ?></th>                        
                         <th><?php print __('Weight') ?></th> 
                         <th><?php print __('Active') ?></th>
@@ -2727,6 +2763,21 @@ class CriticParser extends AbstractDBWp {
                                     }
                                     ?>
                                     <input type="checkbox" name="rule_reg_n_<?php print $rid ?>" value="1" <?php print $checked ?> <?php print $disabled ?>>                                    
+                                </td>
+                                <td>
+                                    <select name="rule_reg_d_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
+                                        <?php
+                                        if ($data_fields) {
+                                            $con = isset($rule['d']) ? $rule['d'] : 'r';
+                                            foreach ($data_fields as $key => $name) {
+                                                $selected = ($key == $con) ? 'selected' : '';
+                                                ?>
+                                                <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                                                <?php
+                                            }
+                                        }
+                                        ?>                          
+                                    </select>  
                                 </td>
                                 <td>
                                     <input type="text" name="rule_reg_c_<?php print $rid ?>" class="rule_c" value="<?php print $rule['c'] ?>"<?php print $disabled ?>>
@@ -2806,6 +2857,19 @@ class CriticParser extends AbstractDBWp {
                                 <div class="desc">
                                     Append <br />a new field
                                 </div>
+                            </td>
+                            <td>
+                                <select name="reg_new_rule_d" class="condition">
+                                    <?php
+                                    if ($data_fields) {
+                                        foreach ($data_fields as $key => $name) {
+                                            ?>
+                                            <option value="<?php print $key ?>"><?php print $name ?></option>                                
+                                            <?php
+                                        }
+                                    }
+                                    ?>                          
+                                </select> 
                             </td>
                             <td>
                                 <input type="text" name="reg_new_rule_c" class="rule_c" value="" placeholder="Comment">
@@ -3281,7 +3345,7 @@ class CriticParser extends AbstractDBWp {
         }
         $arg = array();
         $arg['cid'] = $cid;
-        
+
         $filename = "yci-$cid";
         $str = ThemeCache::cache('yt_channel_info', false, $filename, 'def', $this, $arg);
         $responce = json_decode(gzdecode($str));
