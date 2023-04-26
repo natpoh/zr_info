@@ -56,3 +56,7 @@ include (ABSPATH . 'wp-content/themes/custom_twentysixteen/template-parts/critic
 
 <?php get_sidebar(); ?>
 <?php get_footer(); ?>
+<?php if (isset($_GET['gmi_debug'])){
+    global $gmi;
+    p_r($gmi);
+} ?>

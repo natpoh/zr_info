@@ -4,11 +4,11 @@
 var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
 var critic_search = critic_search || {};
 
-critic_search.debug = false;
+critic_search.debug = true;
 
 jQuery(function ($) {
     $(document).ready(function () {
-        
+
         addEventListener("popstate", function (e) {
             window.location.reload();
         }, false);
@@ -519,13 +519,26 @@ critic_search.init_collapse = function (id, v) {
     var cc = 'collapsed';
     $('#' + id + ' > .facet-title .acc').click(function () {
         if (v.hasClass(cc)) {
-            //Init facet
-            critic_search.init(id);
+            // Load facet data
             v.removeClass(cc);
             critic_search.remove_collapse(id);
+
+            if ($('#' + id + ' > .facet-ch > .blockload').length || $('#' + id + ' > .facets-ch > .blockload').length) {
+                critic_search.submit('blockload', '', id);
+
+            } else {
+                // Init facet
+                critic_search.init(id);
+                // Change url
+                critic_search.submit('none');
+            }
+
         } else {
             v.addClass('collapsed');
             critic_search.add_collapse(id);
+            // Change url
+            critic_search.submit('none');
+
         }
     });
     if (v.hasClass(cc)) {
@@ -535,6 +548,9 @@ critic_search.init_collapse = function (id, v) {
 
 critic_search.slider_facet = function (type, data_arr, ftype = 'all') {
     var $ = jQuery;
+    if (critic_search.debug) {
+        console.log('slider init: ' + type);
+    }
     // Release facet
     if ($("#" + type + "-slider").length === 0) {
         return false;
@@ -789,7 +805,7 @@ critic_search.facet_collapse_update = function (id, v) {
     }
 }
 
-critic_search.submit = function (inc = '', target = '') {
+critic_search.submit = function (inc = '', target = '', facetid = '') {
     if (critic_search.debug) {
         console.log('submit', inc, target);
     }
@@ -803,6 +819,11 @@ critic_search.submit = function (inc = '', target = '') {
     var data = {};
 
     data['inc'] = inc;
+
+    // load block logic
+    if (inc == 'blockload') {
+        data['facetid'] = facetid;
+    }
 
     // kw
     data['search_type'] = 'ajax';
@@ -884,6 +905,31 @@ critic_search.submit = function (inc = '', target = '') {
         }
     });
 
+    // Hide facets
+    $('.defhide:not(.collapsed)').each(function (i, v) {
+        var v = $(v), id = v.attr('id'), type = 'show[]';
+        var facet_name = id.replace('facet-', '');
+        var facet_name = facet_name.replace('facets-', '');
+        if (typeof data[type] === "undefined") {
+            data[type] = [];
+        }
+        if (data[type].indexOf(facet_name) === -1) {
+            data[type].push(facet_name);
+        }
+    });
+
+    // Show facets
+    $('.defshow.collapsed').each(function (i, v) {
+        var v = $(v), id = v.attr('id'), type = 'hide[]';
+        var facet_name = id.replace('facet-', '');
+        var facet_name = facet_name.replace('facets-', '');
+        if (typeof data[type] === "undefined") {
+            data[type] = [];
+        }
+        if (data[type].indexOf(facet_name) === -1) {
+            data[type].push(facet_name);
+        }
+    });
 
     critic_search.ajax(data, function (rtn) {
 
@@ -943,6 +989,10 @@ critic_search.submit = function (inc = '', target = '') {
         } else if (inc == 'facets') {
             up_c = false;
         } else if (inc == 'none') {
+            up_f = false;
+            up_c = false;
+        } else if (inc == 'blockload') {
+            $('#' + facetid).replaceWith($rtn.find('#' + facetid).first());
             up_f = false;
             up_c = false;
         }

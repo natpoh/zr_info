@@ -94,13 +94,21 @@ AND table_schema='".DB_NAME_AN."'";
         foreach ($rows as $r) {
 
             $link = $r["TABLE_NAME"];
-            if (strstr($link, 'data') || strstr($link, 'meta')) {
+            if (strstr($link, 'data') ) {
 
                 $array_meta[substr($link, 5)] = $link;
 
             }
         }
-
+//        foreach ($rows as $r) {
+//
+//            $link = $r["TABLE_NAME"];
+//            if ( strstr($link, 'meta') && !$array_meta[substr($link, 5)] ) {
+//
+//                $array_meta[substr($link, 5)] = $link;
+//
+//            }
+//        }
 
         $datatype = $_GET['data'];
 
@@ -235,7 +243,7 @@ AND table_schema='".DB_NAME_AN."'";
                         $qres .= ", ? ";
                         ///$qres .= ",'".$array[str_replace(' ','_',$val)]."' ";
                         //
-                        if ($val == 'add_time') {
+                        if ($val == 'add_time' || $val == 'last_update'  || $val == 'lastupdate' ) {
                             $arrayrequest[] = time();
                         } else {
                             $arrayrequest[] = $array[str_replace(' ', '_', $val)];

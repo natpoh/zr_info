@@ -167,6 +167,8 @@ body.theme_dark .single_post .movie_summary .block span {
     background-color: #646464;
     position: relative;
     border-bottom: 1px solid #262626;
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 
 
@@ -259,6 +261,7 @@ body.theme_dark .providers_colum {
     justify-content: center;
     transition: all 0.2s;
     align-content: center;
+    min-width: 100px;
 }
 .providers_colum a.fullsize.fullsizebig {
     max-width: 200px;
@@ -316,8 +319,21 @@ body .ready_to_load .button_play_trailer {
     box-sizing: border-box;
     align-items: center;
 }
-
-
+.ext_links a{
+    padding-right: 26px;
+    position: relative;
+}
+.ext_links a:after {
+    content: "";
+    display: block;
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: url(../images/link-external.svg);
+    background-repeat: no-repeat;
+    right: 0px;
+    top: 7px;
+}
 body.theme_dark  body .ready_to_load .button_play_trailer {
     color: #fff;
     text-shadow: 0px 0px 2px #0167a4,0px 0px 4px #0167a4,0px 0px 8px #0167a4,0px 0px 10px #0167a4;

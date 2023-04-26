@@ -1,11 +1,5 @@
 <?php
 
-/*
- * TODO 
- * for max results
- * OPTION max_matches=%d
- */
-
 /**
  * Analytics Search
  *
@@ -13,7 +7,6 @@
  */
 class AnalyticsSearch extends CriticSearch {
 
-    private $sps;
     private $max_matches = 100000;
     public $budget_min = 100;
     public $budget_max = 500000;
@@ -21,26 +14,50 @@ class AnalyticsSearch extends CriticSearch {
         'current' => array('key' => 'year_int', 'name_pre' => 'Current ', 'filter_pre' => 'Current select'),
         'showcast' => array('key' => 'showcast', 'name_pre' => 'Show cast ', 'filter_pre' => 'Show cast'),
     );
-    public $facets_extend = array(
-        'movies' => array('budget', 'movie'),
+    public $facet_data_extend = array(
+        'international' => array(
+            'title' => 'Box office',
+            'tabs' => array('international'),
+            'is_parent' => 1,
+            'weight' => 20,
+            'childs' => array(
+                'setup' => array('title' => 'Setup'),
+            ),
+        ),
+        'ethnicity' => array(
+            'title' => 'Ethnicity',
+            'tabs' => array('ethnicity'),
+            'is_parent' => 1,
+            'weight' => 20,
+            'childs' => array(
+                'vis' => array('title' => 'Visualization'),
+                'xaxis' => array('title' => 'X-axis'),
+                'yaxis' => array('title' => 'Y-axis'),
+                'showcast' => array('title' => 'Show cast'),
+                'setup' => array('title' => 'Setup'),
+                'verdict' => array('title' => 'Race verdict mode'),
+                'priority' => array('title' => 'Priority'),
+                'weight' => array('title' => 'Weight')
+            ),
+        ),
+        'year' => array(
+            'title' => 'Year',
+            'tabs' => array('population', 'worldmap'),
+            'weight' => 20,
+        ),
+        'movie' => array(
+            'title' => 'Movies',
+            'tabs' => array('international', 'ethnicity'),
+            'weight' => 30,
+        ),
     );
 
     public function __construct($cm) {
         parent::__construct($cm);
         $this->search_filters = array_merge($this->search_filters, $this->analytics_filters);
-    }
-
-    private function connect() {
-        if ($this->sps) {
-            return $this->sps;
+        foreach ($this->facet_data_extend as $key => $facet) {
+            $this->init_filters($key, $facet);
         }
-        try {
-            $this->sps = new PDO("mysql:host=" . SPHINX_SEARCH_HOST . ";dbname=''");
-        } catch (PDOException $e) {
-            print "Error!: " . $e->getMessage() . "<br/>";
-            die();
-        }
-        return $this->sps;
     }
 
     public function get_filters_query($filters = array(), $exlude = array(), $query_type = 'movies', $include = array()) {
@@ -78,33 +95,6 @@ class AnalyticsSearch extends CriticSearch {
                     } if ($current['type'] == 'm') {
                         $filters_and .= sprintf(" AND id=%d", (int) $current['value']);
                     }
-                } else if ($key == 'budget') {
-                    // Release
-                    $data_arr = explode('-', $value);
-                    $from = ((int) $data_arr[0]) * 1000;
-                    $to = ((int) $data_arr[1]) * 1000;
-                    $budget_min = $this->budget_min * 1000;
-                    $budget_max = $this->budget_max * 1000;
-
-                    if ($from == $to) {
-                        if ($from == $budget_min) {
-                            $filters_and .= sprintf(" AND budget > 0 AND budget<=%d", $from);
-                        } else if ($from == $budget_max) {
-                            $filters_and .= sprintf(" AND budget>=%d", $to);
-                        } else {
-                            $filters_and .= sprintf(" AND budget=%d", $from);
-                        }
-                    } else {
-                        if ($from == $budget_min && $to == $budget_max) {
-                            $filters_and .= " AND budget > 0";
-                        } else if ($from == $budget_min) {
-                            $filters_and .= sprintf(" AND budget > 0 AND budget < %d", $to);
-                        } else if ($to == $budget_max) {
-                            $filters_and .= sprintf(" AND budget >= %d", $from);
-                        } else {
-                            $filters_and .= sprintf(" AND budget >=%d AND budget < %d", $from, $to);
-                        }
-                    }
                 } else if ($key == 'movie') {
                     // Movie                 
                     $value = is_array($value) ? $value : array($value);
@@ -122,66 +112,12 @@ class AnalyticsSearch extends CriticSearch {
     }
 
     public function get_order_query($sort = array()) {
-        //Sort logic
-        $order = '';
-        $select = '';
-        if ($sort) {
-            /*
-             * key: 'title', 'rating', 'date', 'rel'             
-             * type: desc, asc
-             */
-            $sort_key = $sort['sort'];
-            $sort_type = $sort['type'] == 'desc' ? 'DESC' : 'ASC';
-
-            $box_keys = array('boxworld', 'boxusa', 'boxint', 'budget', 'share', 'boxprofit');
-
-            $rating_facets = array_keys($this->rating_facets);
-            $rating_facets[] = 'aurating';
-
-            if ($sort_key == 'title') {
-                $order = ' ORDER BY title ' . $sort_type;
-            } else if ($sort_key == 'date') {
-                if ($sort_type == 'DESC') {
-                    $order = ' ORDER BY year_int ' . $sort_type . ', release_ts ' . $sort_type;
-                } else {
-                    $order = ' ORDER BY year_int_valid ASC';
-                    $select = ', IF(year_int>0, year_int, 9999) as year_int_valid';
-                }
-            } else if ($sort_key == 'rel') {
-                $order = ' ORDER BY w ' . $sort_type;
-            } else if ($sort_key == 'rating') {
-                $order = ' ORDER BY rating ' . $sort_type;
-            } else if ($sort_key == 'div') {
-                if ($sort_type == 'DESC') {
-                    $order = ' ORDER BY diversity DESC';
-                } else {
-                    $order = ' ORDER BY diversity_valid ASC';
-                    $select = ', IF(diversity>0, diversity, 999) as diversity_valid';
-                }
-            } else if ($sort_key == 'fem') {
-                if ($sort_type == 'DESC') {
-                    $order = ' ORDER BY female DESC';
-                } else {
-                    $order = ' ORDER BY female_valid ASC';
-                    $select = ', IF(female>0, female, 999) as female_valid';
-                }
-            } else if (in_array($sort_key, $box_keys) || in_array($sort_key, $rating_facets)) {
-                if ($sort_type == 'DESC') {
-                    $order = ' ORDER BY ' . $sort_key . ' DESC';
-                } else {
-                    $order = ' ORDER BY ' . $sort_key . '_valid ASC';
-                    $select = ', IF(' . $sort_key . '>0, ' . $sort_key . ', 999) as ' . $sort_key . '_valid';
-                }
-            }
-        } else {
-            // Default weight
-            $order = ' ORDER BY w DESC';
-        }
-        return array('order' => $order, 'select' => $select);
+        //Sort logic        
+        $ret = parent::get_order_query($sort);
+        return $ret;
     }
 
-    public function front_search_international($keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = true) {
-        $widlcard = true;
+    public function front_search_international($keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = true, $show_meta = true, $widlcard = true, $show_main = true, $show_boxusa = true) {
 
         // Keywords logic
         $match = '';
@@ -193,45 +129,54 @@ class AnalyticsSearch extends CriticSearch {
 
         // Main logic
         $this->connect();
+        gmi('search connect');
 
-        // Sort logic
-        $order = $this->get_order_query($sort);
+        if ($show_main) {
+            // Sort logic
+            $order = $this->get_order_query($sort);
 
-        // Filters logic
-        $filters['boxworldtrue'] = 1;
-        $filters['yearinttrue'] = 1;
-        $filters_and = $this->get_filters_query($filters, array(), 'movies', array('current'));
+            // Filters logic
+            $filters['boxworldtrue'] = 1;
+            $filters['yearinttrue'] = 1;
+            $filters_and = $this->get_filters_query($filters, array(), 'movies', array('current'));
 
-        // Main sql
-        $sql = sprintf("SELECT id, title, release, add_time, post_name, type, boxusa, boxworld, (boxworld-boxusa) AS boxint, (boxusa/boxworld) AS share, budget, year_int as year, weight() w" . $order['select']
-                . " FROM movie_an WHERE id>0" . $filters_and . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
+            // Main sql
+            $sql = sprintf("SELECT id, title, release, add_time, post_name, type, boxusa, boxworld, boxint, (boxusa/boxworld) AS share, budget, year_int as year, weight() w" . $order['select']
+                    . " FROM movie_an WHERE id>0" . $filters_and . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
 
-        $ret = $this->movie_results($sql, $match, $search_query);
-        if (!$facets) {
-            return $ret;
+            $ret = $this->movie_results($sql, $match, $search_query);
+            gmi('main sql');
+            if (!$show_meta) {
+                return $ret;
+            }
         }
+        // Facets logic
+        $facets_arr = array();
 
-        // Facets logic        
-        $facets_arr = $this->movies_facets($filters, $match, $search_query);
+        if ($facets) {
 
-        // International facet
-        $facet = 'international';
+            $facets_arr = $this->movies_facets($filters, $match, $search_query, $facets, 'international');
 
-        $filters_and = $this->get_filters_query($filters);
-        $sql = sprintf("SELECT boxusa as box_usa, boxworld as box_world, year_int as year"
-                . " FROM movie_an WHERE id>0" . $filters_and . $match . " ORDER BY year_int ASC LIMIT 0,%d OPTION max_matches=%d", $this->max_matches, $this->max_matches);
+            if ($show_boxusa) {
+                // International facet
+                $facet = 'international';
 
-        $international_facet = $this->movies_facet_single_get($sql, $search_query);
-        $facets_arr[$facet]['data'] = $international_facet['data'];
-        $facets_arr[$facet]['meta'] = $international_facet['meta'];
+                $filters_and = $this->get_filters_query($filters);
+                $sql = sprintf("SELECT boxusa as box_usa, boxworld as box_world, year_int as year"
+                        . " FROM movie_an WHERE id>0" . $filters_and . $match . " ORDER BY year_int ASC LIMIT 0,%d OPTION max_matches=%d", $this->max_matches, $this->max_matches);
+
+                $international_facet = $this->movies_facet_single_get($sql, $search_query);
+                $facets_arr[$facet]['data'] = $international_facet['data'];
+                $facets_arr[$facet]['meta'] = $international_facet['meta'];
+            }
+        }
 
         $ret['facets'] = $facets_arr;
         return $ret;
     }
 
-    public function front_search_ethnicity($keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $ids = array(), $vis = '', $diversity = '', $xaxis = '', $yaxis = '', $facets = true) {
-        $widlcard = true;
-
+    public function front_search_ethnicity($keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $ids = array(), $vis = '', $diversity = '', $xaxis = '', $yaxis = '', $facets = true, $show_meta = true, $widlcard = true, $show_main = true, $show_ethnicity = true) {
+        // UNUSED
         // Keywords logic
         $match = '';
         if ($keyword) {
@@ -242,6 +187,7 @@ class AnalyticsSearch extends CriticSearch {
 
         // Main logic
         $this->connect();
+        gmi('search connect');
 
         // Sort logic
         $order = $this->get_order_query($sort);
@@ -267,7 +213,7 @@ class AnalyticsSearch extends CriticSearch {
             $select_and = ", boxusa as xdata";
             $filters_need .= ' AND boxworld > 0';
         } else if ($xaxis == 'boxint') {
-            $select_and = ", (boxworld - boxusa) as xdata";
+            $select_and = ", boxint as xdata";
             $filters_need .= ' AND boxworld > 0';
         } else if ($xaxis == 'boxprofit') {
             $select_and = ", boxprofit as xdata";
@@ -302,47 +248,54 @@ class AnalyticsSearch extends CriticSearch {
             $select_and = ", 1 as xdata";
         }
 
-        // Main sql
-        $sql = sprintf("SELECT id, title, release, add_time, post_name, type, boxusa, boxworld, (boxworld - boxusa) AS boxint, boxprofit, budget, (boxusa/boxworld) AS share, "
-                . "year_int as year, raceu, draceu, rimdb, rrwt, rrt, rrta, rrtg, rating, aurating, weight() w" . $order['select']
-                . " FROM movie_an WHERE id>0" . $filters_and . $filters_need . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
+        if ($show_main) {
+            // Main sql
+            $sql = sprintf("SELECT id, title, release, add_time, post_name, type, boxusa, boxworld, boxint, boxprofit, budget, (boxusa/boxworld) AS share, "
+                    . "year_int as year, raceu, draceu, rimdb, rrwt, rrt, rrta, rrtg, rating, aurating, weight() w" . $order['select']
+                    . " FROM movie_an WHERE id>0" . $filters_and . $filters_need . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
 
-        $ret = $this->movie_results($sql, $match, $search_query);
+            $ret = $this->movie_results($sql, $match, $search_query);
 
-        gmi('main find query');
+            gmi('main find query');
 
-        if (!$facets) {
-            return $ret;
+            if (!$facets) {
+                return $ret;
+            }
         }
+
         // Facets logic      
-        if (!$ids) {
-            $facets_arr = $this->movies_facets($filters, $match, $search_query);
-            gmi('facets query');
+        $facets_arr = array();
+        if ($facets) {
+            if (!$ids) {
+                $facets_arr = $this->movies_facets($filters, $match, $search_query, $facets, 'ethnicity');
+                gmi('facets query');
+            }
+
+            if ($show_ethnicity) {
+                // ethnicity
+                $facet = 'ethnicity';
+                // Filters
+                $filters_and = $this->get_filters_query($filters, array('current'));
+                // Ids facets logic
+                if ($ids) {
+                    $filters_and .= ' AND id IN(' . implode(',', $ids) . ')';
+                }
+                $sql = sprintf("SELECT " . $select . $select_and . " FROM movie_an WHERE id>0" . $filters_and . $filters_need . $match . " ORDER BY year_int ASC LIMIT 0,%d OPTION max_matches=%d", $this->max_matches, $this->max_matches);
+
+                $ethnicity_facet = $this->movies_facet_single_get($sql, $search_query);
+
+                gmi('page facet query');
+
+                $facets_arr[$facet]['data'] = $ethnicity_facet['data'];
+                $facets_arr[$facet]['meta'] = $ethnicity_facet['meta'];
+            }
         }
-
-        // ethnicity
-        $facet = 'ethnicity';
-        // Filters
-        $filters_and = $this->get_filters_query($filters, array('current'));
-        // Ids facets logic
-        if ($ids) {
-            $filters_and .= ' AND id IN(' . implode(',', $ids) . ')';
-        }
-        $sql = sprintf("SELECT " . $select . $select_and . " FROM movie_an WHERE id>0" . $filters_and . $filters_need . $match . " ORDER BY year_int ASC LIMIT 0,%d OPTION max_matches=%d", $this->max_matches, $this->max_matches);
-
-        $ethnicity_facet = $this->movies_facet_single_get($sql, $search_query);
-
-        gmi('page facet query');
-
-        $facets_arr[$facet]['data'] = $ethnicity_facet['data'];
-        $facets_arr[$facet]['meta'] = $ethnicity_facet['meta'];
         $ret['facets'] = $facets_arr;
 
         return $ret;
     }
 
-    public function front_search_ethnicity_xy($keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $ids = array(), $vis = '', $diversity = '', $xaxis = '', $yaxis = '', $facets = true) {
-        $widlcard = true;
+    public function front_search_ethnicity_xy($keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $ids = array(), $vis = '', $diversity = '', $xaxis = '', $yaxis = '', $facets = true, $show_meta = true, $widlcard = true, $show_main = true, $show_ethnicity = true) {
 
         // Keywords logic
         $match = '';
@@ -359,7 +312,6 @@ class AnalyticsSearch extends CriticSearch {
         $order = $this->get_order_query($sort);
 
         // Filters logic
-
         $filters['yearintrue'] = 1;
         $filters_and = $this->get_filters_query($filters, array(), 'movies', array('current'));
 
@@ -386,42 +338,48 @@ class AnalyticsSearch extends CriticSearch {
         $select_and_str = implode('', array_keys($select_and));
         $filters_need_str = implode('', array_keys($filters_need));
 
-        // Main sql
-        $sql = sprintf("SELECT id, title, release, add_time, post_name, type, boxusa, boxworld, (boxworld - boxusa) AS boxint, boxprofit, budget, (boxusa/boxworld) AS share, "
-                . "year_int as year, raceu, draceu, rimdb, rrwt, rrt, rrta, rrtg, rating, aurating, weight() w" . $order['select']
-                . " FROM movie_an WHERE id>0" . $filters_and . $filters_need_str . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
+        if ($show_main) {
+            // Main sql
+            $sql = sprintf("SELECT id, title, release, add_time, post_name, type, boxusa, boxworld, boxint, boxprofit, budget, (boxusa/boxworld) AS share, "
+                    . "year_int as year, raceu, draceu, rimdb, rrwt, rrt, rrta, rrtg, rating, aurating, weight() w" . $order['select']
+                    . " FROM movie_an WHERE id>0" . $filters_and . $filters_need_str . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
 
-        $ret = $this->movie_results($sql, $match, $search_query);
+            $ret = $this->movie_results($sql, $match, $search_query);
 
-        gmi('main find query');
+            gmi('main find query');
 
-        if (!$facets) {
-            return $ret;
+            if (!$show_meta) {
+                return $ret;
+            }
         }
 
         $facets_arr = array();
         // Facets logic      
-        if (!$ids) {
-            $facets_arr = $this->movies_facets($filters, $match, $search_query);
-            gmi('facets query');
+        if ($facets) {
+            if (!$ids) {
+                $facets_arr = $this->movies_facets($filters, $match, $search_query, $facets, 'ethnicity');
+                gmi('facets query');
+            }
+
+            if ($show_ethnicity) {
+                // ethnicity
+                $facet = 'ethnicity';
+                // Filters
+                $filters_and = $this->get_filters_query($filters, array('current'));
+                // Ids facets logic
+                if ($ids) {
+                    $filters_and .= ' AND id IN(' . implode(',', $ids) . ')';
+                }
+                $sql = sprintf("SELECT " . $select . $select_and_str . " FROM movie_an WHERE id>0" . $filters_and . $filters_need_str . $match . " ORDER BY year_int ASC LIMIT 0,%d OPTION max_matches=%d", $this->max_matches, $this->max_matches);
+
+                $ethnicity_facet = $this->movies_facet_single_get($sql, $search_query);
+
+                gmi('page facet query');
+
+                $facets_arr[$facet]['data'] = $ethnicity_facet['data'];
+                $facets_arr[$facet]['meta'] = $ethnicity_facet['meta'];
+            }
         }
-
-        // ethnicity
-        $facet = 'ethnicity';
-        // Filters
-        $filters_and = $this->get_filters_query($filters, array('current'));
-        // Ids facets logic
-        if ($ids) {
-            $filters_and .= ' AND id IN(' . implode(',', $ids) . ')';
-        }
-        $sql = sprintf("SELECT " . $select . $select_and_str . " FROM movie_an WHERE id>0" . $filters_and . $filters_need_str . $match . " ORDER BY year_int ASC LIMIT 0,%d OPTION max_matches=%d", $this->max_matches, $this->max_matches);
-
-        $ethnicity_facet = $this->movies_facet_single_get($sql, $search_query);
-
-        gmi('page facet query');
-
-        $facets_arr[$facet]['data'] = $ethnicity_facet['data'];
-        $facets_arr[$facet]['meta'] = $ethnicity_facet['meta'];
         $ret['facets'] = $facets_arr;
 
         return $ret;
@@ -451,7 +409,7 @@ class AnalyticsSearch extends CriticSearch {
             $select = ", boxusa";
             $filters .= ' AND boxworld > 0';
         } else if ($axis == 'boxint') {
-            $select = ", (boxworld - boxusa) as boxint";
+            $select = ", boxint";
             $filters .= ' AND boxworld > 0';
         } else if ($axis == 'boxprofit') {
             $select = ", boxprofit";
@@ -511,77 +469,10 @@ class AnalyticsSearch extends CriticSearch {
         return array('select' => $select, 'filters' => $filters);
     }
 
-    public function movies_facets($filters, $match, $search_query, $facets=array()) {
+    public function movies_facets($filters, $match, $search_query, $facets = array(), $tab = 'movies') {
         // All facets
-        $facet_list = $this->facets['movies'];
-        $sql_arr_data = $this->movies_facets_sql($facet_list, $filters, $match);
-
-        foreach ($this->facets_extend['movies'] as $facet) {
-            if ($facet == 'budget') {
-                $filters_and = $this->get_filters_query($filters, 'budget');
-                $sql_arr_data['sql_arr'][] = "SELECT GROUPBY() as id, COUNT(*) as cnt, FLOOR(budget/100000)*100 as bgt FROM movie_an"
-                        . " WHERE budget>0" . $filters_and . $match
-                        . " GROUP BY bgt ORDER BY budget ASC LIMIT 0,1000";
-                $sql_arr_data['sql_arr'][] = "SHOW META";
-            } else if ($facet == 'movie') {
-
-                $filters_and = $this->get_filters_query($filters, 'movie');
-                $sql_arr_data['sql_arr'][] = "SELECT id, title, year_int as year FROM movie_an"
-                        . " WHERE id>0" . $filters_and . $match
-                        . " ORDER BY year DESC LIMIT 0,100";
-                $sql_arr_data['sql_arr'][] = "SHOW META";
-            }
-        }
-
-        $facet_list = array_merge($facet_list, $this->facets_extend['movies']);
-        $facets_arr = $this->movies_facets_get($facet_list, $sql_arr_data, $match, $search_query);
-
-        return $facets_arr;
-    }
-
-    public function movies_facets_get($facet_list, $data_arr, $match, $search_query) {
-        $facets_arr = array();
-        $sql_arr = $data_arr['sql_arr'];
-        $skip = $data_arr['skip'];
-        if (sizeof($sql_arr)) {
-
-            $sql = implode('; ', $sql_arr);
-
-            $this->sps->setAttribute(PDO::ATTR_EMULATE_PREPARES, 1);
-
-            $stmt = $this->sps->prepare($sql);
-            if ($match) {
-                $stmt->bindValue(':match', $search_query, PDO::PARAM_STR);
-            }
-            $stmt->execute();
-            $rows = array();
-            do {
-                $rows[] = $stmt->fetchAll(PDO::FETCH_OBJ);
-            } while ($stmt->nextRowset());
-
-            $i = 0;
-            foreach ($facet_list as $facet) {
-                if (in_array($facet, $skip)) {
-                    continue;
-                }
-                if ($rows[$i] && $rows[$i + 1]) {
-                    $facets_arr[$facet]['data'] = $rows[$i];
-                    $facets_arr[$facet]['meta'] = $rows[$i + 1];
-                }
-                $i += 2;
-            }
-        }
-        return $facets_arr;
-    }
-
-    public function movies_facet_single_get($sql, $search_query) {
-        $stmt = $this->sps->prepare($sql);
-        $stmt->bindValue(':match', $search_query, PDO::PARAM_STR);
-        $stmt->execute();
-        $value = $stmt->fetchAll(PDO::FETCH_OBJ);
-        $meta = $this->sps->query("SHOW META")->fetchAll();
-
-        return array('data' => $value, 'meta' => $meta);
+        $parent_arr = parent::movies_facets($filters, $match, $search_query, $facets, $tab);
+        return $parent_arr;
     }
 
     public function movie_results($sql, $match, $search_query) {

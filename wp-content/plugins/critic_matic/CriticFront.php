@@ -2137,13 +2137,13 @@ class CriticFront extends SearchFacets {
             $title = $this->get_movie_title($movie_id);
             $title = urlencode($title);
 
-            $content['other'] = '<p class="big_desc">Sorry, no reviews yet. Help us out and add some links?</p>
-<div class="ext_links">
-<a target="_blank" href="https://www.google.com/search?q=site%3A*.blogspot.com+%22' . $title . '%22">BlogSpot.com »</a>
-<a target="_blank"  href="https://letterboxd.com/search/reviews/' . $title . '/">Letterboxd.com »</a>
-<a target="_blank"  href="https://threadreaderapp.com/search?q=%22' . $title . '%22">ThreadReaderApp.com »</a>
-<a  target="_blank" href="https://www.google.com/search?q=site%3Ayoutube.com+%22' . $title . '%22+review" >YouTube.com »</a></div>
-';
+            $sql = "SELECT val FROM `options` where `type` = 'critic_empty'";
+            $rows = Pdo_an::db_fetch_row($sql);
+            $content_data = $rows->val;
+            $content_data =  str_replace('\\','',$content_data);
+            $content_data = str_replace('$',$title,$content_data);
+            $content['other'] = $content_data;
+
 
             return json_encode($content);
         }

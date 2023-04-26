@@ -33,6 +33,8 @@ if (isset($_GET['search_type']) && $_GET['search_type'] == 'ajax') {
         } else if ($inc == 'autocomplite') {
             $autocomplite = true;
             $autocomplite_type = $_GET['facet_type'];
+        } else if ($inc == 'blockload') {
+            
         } else if ($inc == 'none') {
             
         } else {
@@ -117,6 +119,20 @@ if (isset($_GET['search_type']) && $_GET['search_type'] == 'ajax') {
     if ($inc == 'none') {
         print '<div>';
         $search_front->theme_search_url($search_url, $search_text, $inc);
+        print '</div>';
+        exit;
+    } else if ($inc == 'blockload') {
+        // Only one block
+        print '<div>';
+        $search_front->theme_search_url($search_url, $search_text, $inc);        
+        $facet = $_GET['facetid'];
+        if (strstr($facet, 'facet-')||strstr($facet, 'facets-')) {
+            $facet = str_replace('facet-', '', $facet);
+            $facet = str_replace('facets-', '', $facet);
+            $results = $search_front->get_facet($facet);
+       
+            $search_front->show_facets($results[$tab_key]['facets'], $tab_key, $facet);            
+        }
         print '</div>';
         exit;
     }

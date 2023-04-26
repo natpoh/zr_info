@@ -306,7 +306,16 @@ if (!function_exists('template_single_movie')) {
         $wach_data = Pdo_an::db_fetch_row($sql);
 
 
-        if ($movie_t != 'videogame') {
+        if ($movie_t == 'videogame') {
+
+            $wb = 'Play';
+
+        }
+        else
+        {
+            $wb = 'Watch';
+        }
+
             if ($wach_data->data || strtotime($_wpmoly_movie_release_date) < time() + 86400 * 30) {
                 $year_string = '';
                 if ($post_an->year) {
@@ -314,9 +323,9 @@ if (!function_exists('template_single_movie')) {
                     $year_string = ' data-year="' . ($post_an->year) . '" ';
                 }
 
-                $_wpmoly_buttom = '<button style="font-size: 18px;" class="watch_buttom" id="' . $id . '" ' . $year_string . ' data-title="' . ($post_an->title) . '" data-type="' . ($post_an->type) . '">Watch Now</button>';
+                $_wpmoly_buttom = '<button style="font-size: 18px;" class="watch_buttom" id="' . $id . '" ' . $year_string . ' data-title="' . ($post_an->title) . '" data-type="' . ($post_an->type) . '">'.$wb.' Now</button>';
             }
-        }
+
 
 
         if ($single) {

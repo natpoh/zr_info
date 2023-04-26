@@ -103,7 +103,8 @@ if (isset($_POST['filters'])) {
             wp_redirect($redirect_url, 301);
             exit();
         }
-
+        gmi('search pre');
+        
         // Include content parts logic for ajax
         $inc = '';
         $show_content = true;
@@ -111,7 +112,8 @@ if (isset($_POST['filters'])) {
 
         // Init filters
         $cfront->init_search_filters();
-
+        gmi('init_search_filters');
+        
         // Get current tab
         $curr_tab = $cfront->get_search_tab();
         $results = $cfront->find_results();
@@ -134,7 +136,7 @@ if (isset($_POST['filters'])) {
         $sort = $cfront->search_sort($tab_key);
         $facets = $results[$tab_key]['facets'];
 
-        //Lodad facets css and js
+        // Lodad facets css and js
         $tpl = get_template_directory_uri();
         wp_enqueue_script('nouislider', $tpl . '/js/nouislider.js', array(), CRITIC_MATIC_VERSION, true);
         wp_enqueue_style('nouislider', $tpl . '/css/nouislider.css', array(), CRITIC_MATIC_VERSION);

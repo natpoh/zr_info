@@ -22,7 +22,7 @@ class AnalyticsFront extends SearchFacets {
         'power' => array('title' => 'Buying power', 'count' => 0),
         'powerrace' => array('title' => 'Buying power by race', 'count' => 0),
     );
-    public $search_sort = array(
+    public $an_search_sort = array(
         'international' => array(
             'title' => array('title' => 'Title', 'def' => 'asc', 'main' => 1),
             'date' => array('title' => 'Date', 'def' => 'desc', 'main' => 1),
@@ -49,13 +49,12 @@ class AnalyticsFront extends SearchFacets {
     public $xaxis_def = 'release';
     public $yaxis_def = 'eth';
     // Facets
-    public $facets = array(
+    public $an_facets = array(
         'international' => array('release', 'budget', 'international', 'setup', 'movie', 'type', 'genre', 'provider', 'providerfree', 'auratings', 'ratings', 'price', 'race', 'dirrace', 'actor', 'country'),
         'ethnicity' => array('release', 'budget', 'ethnicity', 'movie', 'diversity', 'vis', 'xaxis', 'yaxis', 'setup', 'verdict', 'priority', 'weight', 'showcast', 'type', 'genre', 'provider', 'providerfree', 'auratings', 'ratings', 'price', 'race', 'dirrace', 'actor', 'country'),
         'population' => array('year'),
         'worldmap' => array('year'),
     );
-    public $hide_facets = array('genre', 'provider', 'audience', 'ratings', 'dirrace', 'starrace', 'race', 'actor', 'country');
     public $race_small = array(
         1 => array('key' => 'w', 'title' => 'White'),
         2 => array('key' => 'ea', 'title' => 'Asian'),
@@ -237,30 +236,9 @@ class AnalyticsFront extends SearchFacets {
 
     public function init_search() {
         parent::init_search();
-        $this->filters['budget'] = '';
+
         $this->filters['current'] = '';
-        $this->filters['showcast'] = '';
-        // $this->filters['diversity'] = '';
         $this->filters['stacking'] = '';
-        $this->filters['vis'] = '';
-        $this->filters['xaxis'] = '';
-        $this->filters['yaxis'] = '';
-        $this->filters['setup'] = '';
-        $this->filters['verdict'] = '';
-        $this->filters['priority'] = '';
-        $this->filters['weight'] = '';
-
-
-        foreach ($this->cs->rating_facets as $facet => $item) {
-            //Sort
-            $def_sort = isset($item['sort']) ? $item['sort'] : 'desc';
-            $main = isset($item['main']) ? 1 : 0;
-            $this->search_sort['ethnicity'][$facet] = array('title' => $item['title'], 'def' => $def_sort, 'main' => $main);
-        }
-
-        $facet = 'aurating';
-        $item = $this->cs->audience_facets[$facet];
-        $this->search_sort['ethnicity'][$facet] = array('title' => $item['title'], 'def' => $def_sort, 'main' => 0);
     }
 
     public function search_filters($curr_tab = '') {
@@ -441,6 +419,44 @@ class AnalyticsFront extends SearchFacets {
         return $result;
     }
 
+    public function get_facet($facet) {
+        gmi('find_results');
+        $result = array();
+        $start = 0;
+        $page = $this->get_search_page();
+        if ($page > 1) {
+            $start = ($page - 1) * $this->search_limit;
+        }
+
+        $tab_key = $this->get_tab_key();
+
+        $filters = $this->get_search_filters();
+        gmi('get_search_filters');
+
+        $facets = array($facet);
+        $result = array();
+
+        if ($tab_key == 'international') {
+            $sort = $this->get_search_sort('international');
+            $result[$tab_key] = $this->cs->front_search_international($this->keywords, $this->search_limit, $start, $sort, $filters, $facets, true, true, false, false);
+        } else if ($tab_key == 'ethnicity') {
+
+            $sort = $this->get_search_sort('ethnicity');
+            $vis = $this->get_filter('vis');
+            $diversity = $this->get_filter('diversity');
+            $xaxis = $this->get_filter('xaxis', $this->xaxis_def);
+            $yaxis = $this->get_filter('yaxis', $this->yaxis_def);
+            $ids = array();
+            $result[$tab_key] = $this->cs->front_search_ethnicity_xy($this->keywords, $this->search_limit, $start, $sort, $filters, $ids, $vis, $diversity, $xaxis, $yaxis, $facets, true, true, false, false);
+        } else if ($tab_key == 'population') {
+            $result[$tab_key] = $this->get_population_data();
+        } else if ($tab_key == 'worldmap') {
+            $result[$tab_key] = $this->get_worldmap_data();
+        }
+
+        return $result;
+    }
+
     public function get_tab_key() {
         $tab = $this->get_search_tab();
         if (!$tab) {
@@ -450,82 +466,27 @@ class AnalyticsFront extends SearchFacets {
         return $tab;
     }
 
-    public function show_facets($facets_data, $tab_key) {
+    public function get_facet_weight($key) {
+        $weight = isset($this->cs->facet_data[$key]['weight']) ? $this->cs->facet_data[$key]['weight'] : -1;
+        if ($weight == -1) {
+            $weight = isset($this->cs->facet_data_extend[$key]['weight']) ? $this->cs->facet_data_extend[$key]['weight'] : $this->cs->facet_weight_def;
+        }
+        return $weight;
+    }
 
-        if ($facets_data && sizeof($facets_data) && isset($this->facets[$tab_key])) {
-            $items = array();
-            foreach ($this->facets[$tab_key] as $key) {
-                if (isset($facets_data[$key])) {
-                    $items[$key] = $facets_data[$key];
-                } else if (in_array($key, $this->facets_no_data)) {
-                    $items[$key] = 1;
-                }
-            }
+    public function show_custom_multi_facet($facets_data, $facet) {
+        
+    }
 
-            foreach ($items as $key => $value) {
-                if ($value == 1) {
-                    //Multi facets
-                    if ($key == 'ratings') {
-                        $this->show_rating_facet($facets_data);
-                    } else if ($key == 'auratings') {
-                        $this->show_audience_facet($facets_data);
-                    }
-                    continue;
-                }
-                if (!isset($value['data'])) {
-                    continue;
-                }
-                $data = $value['data'];
-                $count = sizeof($data);
-                if (!$count) {
-                    continue;
-                }
-
-                $meta = $value['meta'];
-                $meta_map = array();
-                foreach ($meta as $m) {
-                    $m = (array) $m;
-                    $meta_map[$m['Variable_name']] = $m['Value'];
-                }
-                $total = $meta_map['total_found'];
-
-
-                $view_more = ($total > $count) ? $total : 0;
-
-                // All
-
-                if ($key == 'release') {
-                    $this->show_slider_facet($data, $count, $key, 'all', 'Release', 'Release ');
-                } else if ($key == 'genre') {
-                    $this->show_genre_facet($data, $view_more);
-                } else if ($key == 'type') {
-                    $this->show_type_facet($data);
-                } else if ($key == 'provider') {
-                    $providerfree = isset($items['providerfree']) ? $items['providerfree'] : '';
-                    $this->show_provider_facet($data, $count, $key, $providerfree);
-                } else if ($key == 'actor') {
-                    $this->show_actor_facet($data, $view_more);
-                } else if ($key == 'race') {
-                    $this->show_race_facet($data, $view_more, $key, 'movies', $facets_data);
-                } else if ($key == 'dirrace') {
-                    //Race directors                    
-                    $this->show_director_facet($data, $view_more, $key, 'movies', $facets_data);
-                } else if ($key == 'country') {
-                    $this->show_country_facet($data, $view_more);
-                } else if ($key == 'international') {
-                    $this->show_international_facet($data);
-                } else if ($key == 'ethnicity') {
-                    $this->show_ethnicity_facet($data);
-                } else if ($key == 'year') {
-                    $this->show_slider_facet($data, $count, $key, 'population', 'Year', 'Year ');
-                } else if ($key == 'budget') {
-                    $this->show_budget_facet($data, $count, $key, 'movies', 'Budget', 'Budget ');
-                } else if ($key == 'movie') {
-                    $this->show_movie_facet($data, $view_more, $count, $total);
-                }
-            }
-        } else {
-            print '<p id="no-facets">No available filters found.</p>';
+    public function show_custom_facet($key, $data, $view_more, $count, $total, $facets_data) {
+        if ($key == 'international') {
+            $this->show_international_facet($data);
+        } else if ($key == 'ethnicity') {
+            $this->show_ethnicity_facet($data);
+        } else if ($key == 'year') {
+            $this->show_slider_facet($data, $count, $key, 'population', 'Year', 'Year ');
+        } else if ($key == 'movie') {
+            $this->show_movie_facet($data, $view_more, $count, $total);
         }
     }
 
@@ -631,7 +592,7 @@ class AnalyticsFront extends SearchFacets {
             // Get filter from settings
             $ss = $this->cm->get_settings(true);
             if (isset($ss['an_weightid']) && $ss['an_weightid'] > 0) {
-                $mode_key = $ss['an_weightid'];                
+                $mode_key = $ss['an_weightid'];
             }
         }
 
@@ -807,9 +768,9 @@ class AnalyticsFront extends SearchFacets {
         $title = 'Ethnicity';
         if ($content) {
             //Show multifacet
-            $collapsed = in_array($type, $this->hide_facets) ? ' collapsed' : '';
+            $collapsed = $this->cs->is_hide_facet($type, $this->filters)
             ?>
-            <div id="facets-<?php print $type ?>" class="facets ajload<?php print $collapsed ?>">
+            <div id="facets-<?php print $type ?>" class="facets ajload<?php print $this->cs->hide_facet_class($type, $this->filters) ?>">
                 <div class="facet-title">
                     <h3 class="title"><?php print $title ?></h3>   
                     <div class="acc">
@@ -957,9 +918,9 @@ class AnalyticsFront extends SearchFacets {
         $title = 'Box office';
         if ($content) {
             //Show multifacet
-            $collapsed = in_array($type, $this->hide_facets) ? ' collapsed' : '';
+            $collapsed = $this->cs->is_hide_facet($type, $this->filters)
             ?>
-            <div id="facets-<?php print $type ?>" class="facets ajload<?php print $collapsed ?>">
+            <div id="facets-<?php print $type ?>" class="facets ajload<?php print $this->cs->hide_facet_class($type, $this->filters) ?>">
                 <div class="facet-title">
                     <h3 class="title"><?php print $title ?></h3>   
                     <div class="acc">
@@ -997,13 +958,8 @@ class AnalyticsFront extends SearchFacets {
             $to = array_search($f_arr[1], $karay);
         }
 
-
-
         // $last = $data[sizeof($data) - 1];
         // $max_count = $last->id;
-
-
-
 
         $num = 0;
         $k = $karay[$num];
@@ -1041,11 +997,11 @@ class AnalyticsFront extends SearchFacets {
 
 
         $data_min = $first_item;
-        $collapsed = in_array($type, $this->hide_facets) ? ' collapsed' : '';
+        $collapsed = $this->cs->is_hide_facet($type, $this->filters);
 
         if (sizeof($items) > 1) {
             ?>
-            <div id="facet-<?php print $type ?>" class="facet slider-facet ajload<?php print $collapsed ?>" data-type="<?php print $ftype ?>">
+            <div id="facet-<?php print $type ?>" class="facet slider-facet ajload<?php print $this->cs->hide_facet_class($type, $this->filters) ?>" data-type="<?php print $ftype ?>">
                 <div class="facet-title">                    
                     <?php if ($icon) { ?>
                         <div class="facet-icon"><?php print $icon; ?></div>
@@ -1114,7 +1070,7 @@ class AnalyticsFront extends SearchFacets {
                         </div>
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $first_item ?>">
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $max_item ?>">
-                        <?php //unset($items[count($items) - 1]);                                  ?>
+                        <?php //unset($items[count($items) - 1]);                                       ?>
                         <script type="text/javascript">var <?php print $type ?>_arr =<?php print json_encode($items) ?></script>
                     </div>  
                 </div>
@@ -1569,7 +1525,7 @@ class AnalyticsFront extends SearchFacets {
                  } else {
                      print '<p>Movies count: ' . $movies_count . '</p>';
                  }
-                 ?> <div id="facet-<?php print $type ?>" class="facet ajload<?php print $collapsed ?>">
+                 ?> <div id="facet-<?php print $type ?>" class="facet ajload<?php print $this->cs->hide_facet_class($type, $this->filters) ?>">
                 <div class="facet-title">
                     <h3 class="title"><?php print $title ?></h3>   
                     <div class="acc">
@@ -2381,7 +2337,7 @@ class AnalyticsFront extends SearchFacets {
         $table_class = $axis . 'table';
         ?>
 
-        <div id="facet-<?php print $table_class ?>" class="facet ajload<?php print $collapsed ?>">
+        <div id="facet-<?php print $table_class ?>" class="facet ajload<?php print $this->cs->hide_facet_class($type, $this->filters) ?>">
             <div class="facet-title">
                 <h3 class="title"><?php print $title ?></h3>   
                 <div class="acc">
@@ -2477,7 +2433,7 @@ class AnalyticsFront extends SearchFacets {
         ?>
 
 
-        <div id="facet-<?php print $type ?>" class="facet ajload<?php print $collapsed ?>">
+        <div id="facet-<?php print $type ?>" class="facet ajload<?php print $this->cs->hide_facet_class($type, $this->filters) ?>">
             <div class="facet-title">
                 <h3 class="title"><?php print $title ?></h3>   
                 <div class="acc">
@@ -2843,7 +2799,7 @@ class AnalyticsFront extends SearchFacets {
             $sbox_count = sizeof($ids);
         }
         ?>
-        <div id="facet-<?php print $type ?>" class="facet ajload<?php print $collapsed ?>">
+        <div id="facet-<?php print $type ?>" class="facet ajload<?php print $this->cs->hide_facet_class($type, $this->filters) ?>">
             <div class="facet-title">
                 <h3 class="title"><?php print $title ?></h3>   
                 <div class="acc">
@@ -4435,7 +4391,7 @@ class AnalyticsFront extends SearchFacets {
         return $race_code;
     }
 
-    public function custom_weight_race_code($race = 0, $race_weight = array(),$onlydata=0,$debugs='') {
+    public function custom_weight_race_code($race = 0, $race_weight = array(), $onlydata = 0, $debugs = '') {
 
         /*
           // Other codes
@@ -4473,7 +4429,7 @@ class AnalyticsFront extends SearchFacets {
                 if ($key == 't') {
                     continue;
                 }
-                $score=0;
+                $score = 0;
 
                 $race_code = $this->get_race_by_key($race, $key);
 
@@ -4491,16 +4447,13 @@ class AnalyticsFront extends SearchFacets {
                 }
                 $debug[$key] = array('race' => $race_code, 'key' => $race_code_key, 'score' => $score);
 
-                if ($debugs){
-                    var_dump([$key,$row,$race_code,$race_code_key,$score]);
-
+                if ($debugs) {
+                    var_dump([$key, $row, $race_code, $race_code_key, $score]);
                 }
-
             }
         }
-        if ($debugs)
-        {
-            var_dump(['debug',$debug]);
+        if ($debugs) {
+            var_dump(['debug', $debug]);
         }
         if ($type_calc == 0 && $result_summ) {
             arsort($result_summ);
@@ -4510,9 +4463,8 @@ class AnalyticsFront extends SearchFacets {
             $calc_id = array_key_first($result_top);
             $race_code_ret = $debug[$calc_id]['race'];
         }
-        if ($onlydata)
-        {
-            return array('type_calc'=>$type_calc,'race_code_ret'=>$race_code_ret,'result'=>$debug,'race_weight'=>$race_weight);
+        if ($onlydata) {
+            return array('type_calc' => $type_calc, 'race_code_ret' => $race_code_ret, 'result' => $debug, 'race_weight' => $race_weight);
         }
 
         return $race_code_ret;
@@ -5157,7 +5109,7 @@ class AnalyticsFront extends SearchFacets {
                 <p><?php print $movies_count_title ?></p> 
             <?php } ?>  
 
-            <div id="facet-<?php print $type ?>" class="facet ajload<?php print $collapsed ?>">
+            <div id="facet-<?php print $type ?>" class="facet ajload<?php print $this->cs->hide_facet_class($type, $this->filters) ?>">
                 <div class="facet-title">
                     <h3 class="title"><?php print $title ?></h3>   
                     <div class="acc">
@@ -5520,7 +5472,7 @@ class AnalyticsFront extends SearchFacets {
                 $sbox_count = sizeof($ids);
             }
             ?>
-            <div id="facet-<?php print $type ?>" class="facet ajload<?php print $collapsed ?>">
+            <div id="facet-<?php print $type ?>" class="facet ajload<?php print $this->cs->hide_facet_class($type, $this->filters) ?>">
                 <div class="facet-title">
                     <h3 class="title"><?php print $title ?></h3>   
                     <div class="acc">

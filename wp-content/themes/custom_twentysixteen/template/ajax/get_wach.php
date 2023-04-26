@@ -319,7 +319,7 @@ function get_just_wach($movie_id='',$force='')
                     $arrays_id[$provider_id] = $providers_object->{$provider_id};
                 }
 
-                $regv='#(https\:\/\/watch\.amazon\.com\/detail\?asin=[A-Z0-9]+)(&tag=.+)*#';
+                $regv='#(https\:\/\/watch\.amazon\.com\/detail\?[\.a-z\=\-A-Z0-9]+)(&tag=.+)*#';
 
                 foreach ($result as $item => $value) {
 
@@ -447,8 +447,86 @@ if (isset($_GET['force']))
 }
 
 $result = get_just_wach('',$force);
+$result =piracy_links($result);
 echo $result;
 return;
+
+
+function piracy_links($data){
+  ///0:Movies and TV;1:All;2:Games;3:Music;4:Books;5:Movies;6:TV;
+    $array_type=['VideoGame' =>[1,2], 'TVSeries'=>[0,1,6],'Movie'=>[0,1,5]];
+
+    $pay_cat =[0=>'"Free"',1=>'Free',2=>'Irl',3=>'Rent',4=>'Buy'];
+
+    if ($data)
+    {
+        $data_ob = json_decode($data,1);
+    }
+    else
+    {
+        $data_ob = [];
+    }
+    $movie_id = $_POST['id'];
+    $movie_id = intval($movie_id);
+    $sql = "SELECT `title`, `year`, `type` FROM `data_movie_imdb` where `id` ='" . $movie_id . "' limit 1 ";
+    $r = Pdo_an::db_fetch_row($sql);
+    $movie_title = $r->title;
+    $year = $r->year;
+    $type= $r->type;
+
+    $where='';
+    if ($array_type[$type] ) {
+        foreach ($array_type[$type] as $v) {
+
+                $where .= "OR `type` = " . $v . " ";
+
+
+        }
+        if ($where) {
+            $where = " AND (" . substr($where, 3) . ")";
+        }
+    }
+    else {$where = " AND (`type`=0 OR `type`=1) ";}
+
+    $sql = "SELECT * FROM `meta_piracy_links` where `enable` =1 ".$where." order by `category` desc";
+
+
+    $r = Pdo_an::db_results_array($sql);
+    foreach ($r as $row)
+    {
+
+        $url  = $row['search_query'];
+        $category  = $row['category'];
+        $namecat = $pay_cat[$category];
+
+        $include_year = $row['include_year'];
+        if ($include_year)
+        {
+            $movie_title_encoded = urlencode($movie_title.' '.$year);
+        }
+        else
+        {
+            $movie_title_encoded = urlencode($movie_title);
+        }
+
+        $url = str_replace('$',$movie_title_encoded,$url);
+
+        $data_ob['data'][]= [
+        'monetization_type'=> $namecat,
+        'provider_id'=> 'p_'.$row['id'],
+        'currency'=>  '',
+        'retail_price'=>  '',
+        'presentation_type'=>  '',
+        'urls'=>  ['standard_web'=>  $url]
+    ];
+
+        $data_ob['providers']['p_'.$row['id']] = ['s'=> 'fullsize', 'n'=> $row['name'], 'i'=> $row['logo_url']];
+    }
+
+return json_encode($data_ob);
+
+}
+
 
 function add_provider($movie_id, $tmdb_id, $provider)
 {

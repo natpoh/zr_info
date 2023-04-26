@@ -305,7 +305,7 @@ if (isset($_POST['oper'])) {
 
             $data = json_decode($data, 1);
 
-            $link = strip_tags($data['link']);
+            $link = trim(strip_tags($data['link']));
             $row = [];
 
 

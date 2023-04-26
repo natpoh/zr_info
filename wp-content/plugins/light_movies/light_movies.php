@@ -22,7 +22,7 @@ class LightMovies{
         add_submenu_page($this->parrent_slug, __('Movies overview'), __('Overview'), $this->access_level, $this->parrent_slug, array($this, 'overview'));
         add_submenu_page($this->parrent_slug, __('Add Movies'), __('Add Movies'), $this->access_level, $this->parrent_slug . '_add_movies', array($this, 'add_movies'));
         add_submenu_page($this->parrent_slug, __('Actors info'), __('Actors info'), $this->access_level, $this->parrent_slug. '_actors_info', array($this, 'actors_info'));
-        add_submenu_page($this->parrent_slug, __('Piracy links'), __('Piracy links'), $this->access_level, $this->parrent_slug. '_piracy_links', array($this, 'piracy_links'));
+        add_submenu_page($this->parrent_slug, __('Piracy links'), __('Custom links'), $this->access_level, $this->parrent_slug. '_piracy_links', array($this, 'piracy_links'));
         add_submenu_page($this->parrent_slug, __('Custom options'), __('Custom options'), $this->access_level, $this->parrent_slug. '_custom_options', array($this, 'option'));
         add_submenu_page($this->parrent_slug, __('Logs'), __('Logs'), $this->access_level, $this->parrent_slug. '_movie_logs', array($this, 'movie_logs'));
          add_submenu_page($this->parrent_slug, __('Cron info'), __('Cron info'), $this->access_level, $this->parrent_slug. '_cron_info', array($this, 'cron_info'));
@@ -119,6 +119,9 @@ $this->set_option('',$_POST['similar_shows'],'similar_shows');
 
 $this->set_option('',$_POST['words_exclude'],'words_exclude');
 
+$this->set_option('',$_POST['critic_empty'],'critic_empty');
+
+
 //$this->set_option('',$_POST['verdict_method'],'verdict_method');
         }
 
@@ -157,7 +160,14 @@ $this->set_option('',$_POST['words_exclude'],'words_exclude');
         <textarea name="similar_shows" style="width: 600px; height: 300px"><?php echo $this->get_option('','similar_shows'); ?></textarea>
         <h2>4Chan cloud words exclude</h2>
         <textarea name="words_exclude" style="width: 600px; height: 300px"><?php echo $this->get_option('','words_exclude'); ?></textarea>
+
+         <h2>Critic Reviews empty message</h2>
+        <textarea name="critic_empty" style="width: 600px; height: 300px"><?php echo $this->get_option('','critic_empty'); ?></textarea>
+
+
+
     <div class="options_data"><button type="submit" class="button button-primary save_option">Save</button></div>
+
 
     </div>
 </form>
@@ -330,7 +340,7 @@ check_request();
 
     public function piracy_links()
     {
-        echo '<h1>Piracy links</h1>';
+        echo '<h1>Custom links</h1>';
 
 
 
@@ -339,9 +349,14 @@ check_request();
 
         $array_rows = array(
             'id'=>array('w'=>5),
-            'query_type'=>array('type'=>'select','options'=>'0:Default;1:Other'),
+
+            'type'=>array('type'=>'select','options'=>'0:Movies and TV;1:All;2:Games;3:Music;4:Books;5:Movies;6:TV'),
 
 
+
+
+            'category'=>array('type'=>'select','options'=>'0:\"FREE\";1:FREE;2:IRL;3:RENT;4:BUY'),
+            'game_type'=>array('type'=>'select','options'=>'0:All;1:Nintendo Entertainment System (NES);2:Super Nintendo Entertainment System (SNES);3:Nintendo 64 (N64);4:GameCube;5:Wii;6:Wii U;7:Nintendo Switch;8:Game Boy;9:Game Boy Advance;10:Nintendo DS;11:Nintendo 3DS;10:PlayStation;11:PlayStation 2 (PS2);12:PlayStation 3 (PS3);13:PlayStation 4 (PS4);15:PlayStation 5 (PS5);16:Xbox;17:Xbox 360;18:Xbox One;19:Xbox Series X/S;20:PC (Windows, macOS, Linux);21:Mobile (iOS, Android);22:Arcade games'),
             'include_year'=>array('type'=>'select','options'=>'0:No;1:Yes'),
             'last_update' =>array('w'=>10, 'type' => 'textarea','editfalse'=>1),
             'enable'=>array('type'=>'select','options'=>'1:Enable;0:Disable'),

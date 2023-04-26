@@ -18,6 +18,7 @@
                 <?php $search_front->theme_search_url($search_url, $search_text, $inc); ?>
                 <?php
                 if ($show_content):
+                    gmi('show_content_pre');
                     //Search tabs
                     print $search_tabs;
                     print $fiters;
@@ -116,7 +117,7 @@
                                     foreach ($total_list as $movie):
                                         global $post_an, $video_api;
 
-                                        
+
                                         $sortval = $movie->sortval;
                                         $movie->sort_val_theme = $search_front->theme_sort_val($sortval);
 
@@ -201,9 +202,12 @@
                             </div>
                         <?php endif; ?>
                     </div>
-                <?php endif; ?>
+                    <?php
+                    gmi('show_content');
+                endif;
+                ?>
                 <footer class="entry-footer">
-                    <?php // TODO Edit post link           ?>
+                    <?php // TODO Edit post link            ?>
                 </footer><!-- .entry-footer -->
             </main><!-- .site-main --> 
         </div><!-- .content-area -->
@@ -219,7 +223,9 @@
                     <div id="facets">
                         <?php
                         if ($show_facets) {
+                            gmi('show_facets_pre');
                             $search_front->show_facets($facets, $tab_key);
+                            gmi('show_facets');
                         }
                         ?>
                     </div>
