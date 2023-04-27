@@ -1050,7 +1050,7 @@ if ($pid && $synch)
 {
 
     !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-    Import::create_commit('', 'update', 'data_movie_distributors', array('id' => $id), 'data_movie_distributors',10);
+    Import::create_commit('', 'update', 'data_movie_distributors', array('id' => $pid), 'data_movie_distributors',10);
 
 }
 
