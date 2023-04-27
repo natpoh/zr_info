@@ -1877,6 +1877,14 @@ class CriticMaticAdmin {
                             print '<p>Total add:' . $preivew_data['add'] . '</p>';
                         }
                         exit;
+                    } else if ($_GET['export_parser_rules']) {
+                        $options = $this->cp->get_options($campaign);
+                        $parser_rules = $options['parser_rules'];
+                        $json = json_encode($parser_rules);
+                        print '<h2>Export campaign parser row rules</h2>';
+                        print '<textarea style="width:90%; height:500px">' . $json . '</textarea>';
+
+                        exit;
                     }
                     include(CRITIC_MATIC_PLUGIN_DIR . 'includes/view_parser.php');
                 }

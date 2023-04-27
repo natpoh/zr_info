@@ -62,11 +62,11 @@ if ($cid) {
 
                 <label>
                     <span class="title"><?php print __('URLs weight') ?></span>
-                    <span class="input-text-wrap"><input type="text" name="new_urls_weight" class="title" value="<?php print $options['new_urls_weight'];?>"></span>
+                    <span class="input-text-wrap"><input type="text" name="new_urls_weight" class="title" value="<?php print $options['new_urls_weight']; ?>"></span>
                 </label>
                 <div class="desc"><?php print __('If the weight is higher than other campaigns, when adding new urls added by campaigns before, they will be assigned to this campaign.') ?></div>
                 <br />
-                
+
                 <label class="inline-edit-status">                
                     <?php
                     $checked = '';
@@ -247,6 +247,15 @@ if ($cid) {
                 $parser_rules = $options['parser_rules'];
                 $this->cp->show_parser_rules($parser_rules, true, $campaign->type);
                 ?> 
+                <p><b>Export</b> Rules to <a target="_blank" href="<?php print $url ?>&cid=<?php print $cid ?>&export_parser_rules=1">JSON array</a>.</p>
+                <p><b>Import</b> Rules from JSON array:</p>
+                <div class="inline-edit-row">
+                    <fieldset>              
+                        <textarea name="import_rules_json" style="width:100%" rows="3"></textarea>           
+                    </fieldset>
+                </div>
+                <div class="desc">Warning: adding new rules will replace all previous rules.</div>
+                <br />
                 <label class="inline-edit-interval">                    
                     <?php
                     $pr_num = $options['pr_num'];

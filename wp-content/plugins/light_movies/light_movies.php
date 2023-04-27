@@ -688,6 +688,16 @@ display: none;
     }
     public function overview()
     {
+
+
+    !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
+
+
+    if (Crowdsource::checkpost())
+    {
+        return;
+    }
+
         global $WP_include;
         $WP_include=1;
         include ABSPATH.'analysis/data.php';

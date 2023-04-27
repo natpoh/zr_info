@@ -208,11 +208,13 @@ class CriticFront extends SearchFacets {
                   Negative
                   3 stars (watch if free)
                   3 stars (skip it)
+                 *  OR (r.rating=3 AND r.vote!=1)
+                 * 
                   2 stars
                   1 stars
                   0 stars
                  */
-                $vote_type_and = " AND(r.rating IN (0,1,2) OR (r.rating=3 AND r.vote!=1))";
+                $vote_type_and = " AND r.rating IN (0,1,2)";
             }
         }
 
@@ -2085,8 +2087,8 @@ class CriticFront extends SearchFacets {
         if ($ss['posts_type_3']) {
             $meta_type[] = 3;
         }
-
-        $posts = $this->theme_last_posts($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, 0, true);
+        $unique = 1;                                
+        $posts = $this->theme_last_posts($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, 0, true, 0,  0, $unique);
         $count = $this->get_post_count($a_type, $movie_id);
         $content = array();
 

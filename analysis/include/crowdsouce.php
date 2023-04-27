@@ -53,6 +53,11 @@ public static function get_search_block($content_input,$movie_block='',$class=''
                 {
                     $array = json_decode($request['ids'],1);
 
+                    if ($request['fields'])
+                    {
+                        $fields = $request['fields'];
+                    }
+
 
                     if ($request['action'] == 'wl' || $request['action'] == 'gl' || $request['action'] == 'bl' || $request['action'] == 'nl') {
                         // Move IP to list
@@ -66,7 +71,8 @@ public static function get_search_block($content_input,$movie_block='',$class=''
                     }
                     else
                     {
-                        self::update_status($request['table'],$request['action'],$array );
+
+                        self::update_status($request['table'],$request['action'],$array,$fields );
                     }
 
 
@@ -77,7 +83,7 @@ public static function get_search_block($content_input,$movie_block='',$class=''
 
 
     }
-    public static function update_status($table,$request,$array)
+    public static function update_status($table,$request,$array,$fields='')
     {
         foreach ($array as $id)
         {
@@ -88,13 +94,35 @@ public static function get_search_block($content_input,$movie_block='',$class=''
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
                 Import::create_commit('', 'delete', "data_" . $table, array('id' => $id), 'crowsource',5);
 
-            } else if (strstr ($request, 'critic_status_'))
+            }
+            else if (strstr ($request, 'critic_status_'))
             {
                 $new_status =  str_replace('critic_status_', '', $request);
                 $sql ="update data_".$table." set critic_status =".intval($new_status)." where id=".$id;
 
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
                 Import::create_commit('', 'update', "data_" . $table, array('id' => $id), 'crowsource',5);
+
+            }
+            else if ($request=='change_column')
+            {
+
+                $set ='';
+                foreach ($fields as $i=>$v)
+                {
+                    $set.=", `".$i."`  = '".$v."' ";
+
+
+                }
+                if ($set)
+                {
+                    $set = substr($set,2);
+                    $sql ="update data_".$table." set ".$set." where id=".$id;
+                    echo $sql;
+                    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                    Import::create_commit('', 'update', "data_" . $table, array('id' => $id), 'crowsource',12);
+
+                }
 
             }
             else

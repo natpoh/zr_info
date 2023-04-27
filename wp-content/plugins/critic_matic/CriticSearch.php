@@ -3460,11 +3460,12 @@ class CriticSearch extends AbstractDB {
                   Negative
                   3 stars (watch if free)
                   3 stars (skip it)
+                 * IF(aurating=3 AND auvote!=1,1,0)
                   2 stars
                   1 stars
                   0 stars
                  */
-                $and_select = ", IF(aurating=0 OR aurating=1 OR aurating=2,1,IF(aurating=3 AND auvote!=1,1,0)) AS filter ";
+                $and_select = ", IF(aurating=0 OR aurating=1 OR aurating=2,1,0) AS filter ";
                 $filters_and .= " AND filter=1";
             }
         }

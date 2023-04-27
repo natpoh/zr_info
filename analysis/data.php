@@ -31,6 +31,9 @@ if ($curent_user) {
         $datatype = 'movie_imdb';
 
 
+
+
+
     $links = '';
 
 
@@ -230,7 +233,7 @@ AND table_schema='".DB_NAME_AN."'";
                         height: (window.innerHeight - 220),
                                 rowNum: 100,
                                 pager: "#jqGridPager",
-
+                                multiselect: true,
                                 subGrid: true,
                                 subGridRowExpanded: function(subgrid_id, row_id) {
 
@@ -313,9 +316,110 @@ AND table_schema='".DB_NAME_AN."'";
 
                         );
                         });
+
+                function getSelectedRows() {
+                    var grid = $("#jqGrid");
+                    var rowKey = grid.getGridParam("selrow");
+
+                    if (!rowKey)
+                        alert("No rows are selected");
+                    else {
+                        var selectedIDs = grid.getGridParam("selarrrow");
+
+                        var result = new Array();
+                        for (var i = 0; i < selectedIDs.length; i++) {
+
+                            let id  =jQuery('tr[id="'+selectedIDs[i]+'"] td[aria-describedby="jqGrid_id"]').html();
+
+                            id = Number(id);
+                            result.push(id);
+                        }
+                        return(result);
+                    }
+                }
+
+                jQuery('body').on('change','select.bulk-actions', function (e) {
+                    var valueSelected = this.value;
+                    console.log(valueSelected);
+                    if (valueSelected == 'change_column') {
+
+
+                       let cntnt =  jQuery('.ui-jqgrid .ui-jqgrid-htable').html();
+
+                        jQuery('.notice_edit').html('<table>'+cntnt+'</table>');
+
+                    }
+                });
+
+                jQuery('body').on('click','.update_crowd', function (e) {
+
+                    var thiss = jQuery(this);
+                    var table =thiss.attr('data-value');
+                    var action =jQuery('.bulk-actions').val();
+                    let update_fields_str;
+                    let update_fields = {};
+                    if (action =='change_column')
+                    {
+                        jQuery('.notice_edit table input').each(function (){
+                            let val = jQuery(this).val();
+                            let id = jQuery(this).attr('id');
+                            if (val && id !='cb_jqGrid') {
+
+                                id =id.substr(3);
+
+                                update_fields[id] = val;
+                            }
+
+                        });
+                        jQuery('.notice_edit').html('');
+                        jQuery('select.bulk-actions').val('none').change();
+                    }
+
+                    var data_crowd  = getSelectedRows();
+
+                    thiss.attr('disabled','disabled');
+                    if (data_crowd && action !='none')
+                    {
+
+                        var data_crowd_str =  JSON.stringify(data_crowd);
+                        jQuery.ajax({
+                            type: "POST",
+                            url: window.location.href,
+                            data: ({
+                                oper: 'update_crowd',
+                                ids: data_crowd_str,
+                                table:table,
+                                action:action,
+                                fields:update_fields
+
+                            }),
+                            success: function () {
+                                thiss.attr('disabled',false);
+                                jQuery('#refresh_jqGrid .glyphicon-refresh').click();
+
+                            }
+                        });
+                    }
+
+                });
+
             </script>
         </head>
         <body>
+
+        <?php if ($WP_include) { ?>
+        <div class="bulk-actions-holder">
+            <select autocomplete="off" name="bulkaction" class="bulk-actions">
+                <option value="none">Bulk actions</option>
+                <option value="change_column">Change the column value</option>
+                <option value="trash">Delete</option>
+            </select>
+            <span class="notice_edit">
+            </span>
+            <input type="submit" id="edit-submit" data-value="<?php echo $datatype ?>" value="Submit" class="update_crowd button-primary">
+        </div>
+<?php } ?>
+
             <table id="jqGrid"></table>
             <div id="jqGridPager"></div>
                 <!--   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>-->
@@ -324,8 +428,28 @@ AND table_schema='".DB_NAME_AN."'";
           <script type="text/ecmascript" src="../../../js/bootstrap3-typeahead.js"></script>
           <link rel="stylesheet" type="text/css" media="screen" href="../../../css/bootstrap-datepicker.css" />
             -->
-            <style type="text/css">
 
+
+            <style type="text/css">
+                .notice_edit a,   .notice_edit #cb_jqGrid{
+                    display: none;
+                }
+
+                .notice_edit input{
+                    margin-right: 10px;
+                }
+                .notice_edit table{ margin: 10px 0}
+
+
+                input.cbox[type="checkbox"] {
+                    height: 20px;
+                    width: 20px;
+                }
+
+                input.cbox[type="checkbox"]:checked::before  {
+                    width: 20px;
+                    height: 21px;
+                }
                 .movie_description_container{
                     font-size: 16px;
                 }

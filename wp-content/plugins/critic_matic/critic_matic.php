@@ -10,12 +10,6 @@
   License: GPLv2
  */
 
-/*
- * TODO
- * 1. Single critic no top_movie view
- * 2. Remove meta for related articles: Remove meta type 2, calculate top movie. 
- * 3. Move other articles to related
- */
 
 if (!function_exists('add_action')) {
     exit;
@@ -24,7 +18,7 @@ if (!function_exists('add_action')) {
 define('CRITIC_MATIC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CRITIC_MATIC_PLUGIN_URL', plugin_dir_url(__FILE__));
 
-$version = '1.0.93';
+$version = '1.0.94';
 if (defined('LASTVERSION')) {
     define('CRITIC_MATIC_VERSION', $version . LASTVERSION);
 } else {
