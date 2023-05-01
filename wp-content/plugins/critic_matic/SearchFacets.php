@@ -1563,9 +1563,21 @@ class SearchFacets extends AbstractDB {
                 $bigdist_cnt = $data['bigdist']['data'][0]->cnt;
             }
 
+            $meddist_cnt = 0;
+            if ($data['meddist']['data'][0]) {
+                $meddist_cnt = $data['meddist']['data'][0]->cnt;
+            }
+            
+            $indidist_cnt = 0;
+            if ($data['indidist']['data'][0]) {
+                $indidist_cnt = $data['indidist']['data'][0]->cnt;
+            }
+            
             $rf = array(
                 'isfranchise' => $isfranchise_cnt,
                 'bigdist' => $bigdist_cnt,
+                'meddist' => $meddist_cnt,
+                'indidist' => $indidist_cnt,
             );
 
             foreach ($this->cs->search_filters['indie'] as $key => $item) {
@@ -3180,7 +3192,7 @@ class SearchFacets extends AbstractDB {
 
                     $view_more = (count($data) < $last_limit) ? 0 : -1;
 
-                    $this->show_distributor_facet($data, $view_more, $filter, 'movies', $result['facets']);                    
+                    $this->show_distributor_facet($data, $view_more, $filter, 'movies', $result['facets']);
                 }
             }
         } else if ($filter == 'franchise') {

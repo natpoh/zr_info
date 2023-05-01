@@ -33,7 +33,11 @@ class AbstractDBWp extends AbstractFunctions {
 
     public function escape($text) {
         global $wpdb;
-        return $wpdb->_escape($text);
+        if ($wpdb) {
+            return $wpdb->_escape($text);
+        } else {
+            return addslashes($text);
+        }
     }
 
     public function db_update($data, $table, $id) {
