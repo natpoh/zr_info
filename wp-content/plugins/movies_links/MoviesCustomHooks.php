@@ -24,6 +24,9 @@ class MoviesCustomHooks {
 
             // Franchises
             $this->update_franchises($post, $options, $campaign, $debug);
+
+            // Distributors
+            $this->update_distributors($post, $options, $campaign, $debug);
         }
         // Tomatoes logic
         // UNUSED DEPRECATED
@@ -198,11 +201,110 @@ class MoviesCustomHooks {
                   `distributor` int(11) NOT NULL DEFAULT '0',
                   `franchise` int(11) NOT NULL DEFAULT '0',
                  */
-                $data = array(                   
-                    'distributor'=>$dist_id,
-                    'franchise'=>$fr_id,
+                $data = array(
+                    'distributor' => $dist_id,
+                    'franchise' => $fr_id,
                 );
                 $ma->update_indie($post->top_movie, $data);
+            }
+        }
+    }
+
+    private function update_distributors($post, $options, $campaign, $debug = false) {
+        if ($campaign->id == 34) {
+            $ma = $this->ml->get_ma();
+            $cid = $campaign->id;
+            $uid = $post->uid;
+            $url_data = $this->mp->get_url($uid);
+            $link = $url_data->link;
+            $arhive = $this->mp->get_arhive_by_url_id($uid);
+            $link_hash = $arhive->arhive_hash;
+            $top_movie = $post->top_movie;
+
+            if ($debug) {
+                p_r($arhive);
+            }
+
+            $code = $this->mp->get_arhive_file($cid, $link_hash);
+            if ($code) {
+                // Prouduction:
+                $prod_names = array('production', 'distribution');
+                $prod_data = array();
+                // {"id":"production","name":"Production Companies","section":{"items":[{"id":"co0283444","rowTitle":"DC Entertainment","rowLink":"/company/co0283444?ref_=ttco_co_0","listContent":[{"text":""}]},{"id":"co0179825","rowTitle":"The Safran Company","rowLink":"/company/co0179825?ref_=ttco_co_1","listContent":[{"text":""}]},{"id":"co0002663","rowTitle":"Warner Bros.","rowLink":"/company/co0002663?ref_=ttco_co_2","listContent":[{"text":""}]}],"total":3,"endCursor":"Mw=="}}
+                // {"id":"distribution","name":"Distributors","section":{"items":[{"id":"co0237749","rowTitle":"Kinomania","rowLink":"/company/co0237749?ref_=ttco_co_0","listContent":[{"text":"(Ukraine, 2023)","subText":"(theatrical)"}]},{"id":"co0826866","rowTitle":"Warner Bros. Holland","rowLink":"/company/co0826866?ref_=ttco_co_1","listContent":[{"text":"(Netherlands, 2023)","subText":"(theatrical)"}]},{"id":"co0519888","rowTitle":"Warner Bros. Pictures Germany","rowLink":"/company/co0519888?ref_=ttco_co_2","listContent":[{"text":"(Germany, 2023)","subText":"(theatrical)"}]},{"id":"co0498895","rowTitle":"Warner Bros. Pictures","rowLink":"/company/co0498895?ref_=ttco_co_3","listContent":[{"text":"(Argentina, 2023)","subText":"(theatrical)"}]},{"id":"co0816712","rowTitle":"Warner Bros. Pictures","rowLink":"/company/co0816712?ref_=ttco_co_4","listContent":[{"text":"(United Kingdom, 2023)","subText":"(theatrical)"}]}],"total":9,"endCursor":"OA=="}},
+                foreach ($prod_names as $name) {
+                    if (preg_match('/{"id":"' . $name . '".*"endCursor":"[^"]+"}}/U', $code, $match)) {
+                        try {
+                            $prod_data[$name] = json_decode($match[0]);
+                        } catch (Exception $ex) {
+                            
+                        }
+                    }
+                }
+
+                if ($debug) {
+                    print_r($prod_data);
+                }
+
+                if ($prod_data) {
+                    foreach ($prod_data as $name => $data) {
+                        $data_items = isset($data->section->items) ? $data->section->items : array();
+                        if ($data_items) {
+                            foreach ($data_items as $item) {
+                                /*
+                                  [id] => co0408520
+                                  [rowTitle] => CEL Film Distribution
+                                  [rowLink] => /company/co0408520?ref_=ttco_co_2
+                                  [listContent] => Array
+                                  (
+                                  [0] => stdClass Object
+                                  (
+                                  [text] => (Australia, 1986)
+                                  [subText] => (theatrical)
+                                  )
+
+                                  )
+                                 */
+                                $data_link = $item->id;
+                                $data_title = $item->rowTitle;
+                                $data_text = isset($item->listContent[0]->text) ? $item->listContent[0]->text : '';
+
+                                if ($data_title) {
+
+                                    // Add meta
+                                    if ($name == 'production') {
+                                        // Add production
+                                        $dist_id = $ma->add_movie_distributor($data_title, $data_link);
+
+                                        // Add meta
+                                        $meta_id = $ma->add_distributor_meta($top_movie, $dist_id);
+
+                                        if ($debug) {
+                                            print_r(array($name, $dist_id, $data_title, $data_text, $meta_id));
+                                        }
+                                    } else {
+                                        // Add distributor
+                                        if (strstr($data_text, 'United States') || strstr($data_text, 'World-wide')) {
+                                            $dist_id = $ma->add_movie_distributor($data_title, $data_link);
+                                            // Add meta
+                                            $meta_type = 1;
+                                            $meta_id = $ma->add_distributor_meta($top_movie, $dist_id, $meta_type);
+                                            if ($debug) {
+                                                print_r(array($name, $dist_id, $data_title, $data_text, $meta_id));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        // Check post count
+                        $total_count = isset($data->section->total) ? $data->section->total : 0;
+                        if ($total_count>5){
+                            // Need advanced parsing post. Move URL status to error.
+                            $this->mp->change_url_state($uid, 4);
+                        }
+                    }
+                }
             }
         }
     }

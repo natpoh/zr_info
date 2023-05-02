@@ -1219,7 +1219,11 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('mid', 'did'), "meta_movie_distributors");
+    
+    $sql = "ALTER TABLE `meta_movie_distributors` ADD `type` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
+    critic_matic_create_index_an(array('mid', 'did', 'type'), "meta_movie_distributors");
    
     
     /* Franchise

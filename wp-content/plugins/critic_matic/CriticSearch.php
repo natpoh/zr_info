@@ -1355,7 +1355,7 @@ class CriticSearch extends AbstractDB {
 
     private function filter_movie_tile($title) {
         $title = str_replace('&amp;', 'and', $title);
-        $title = str_replace('&', 'and', $title);        
+        $title = str_replace('&', 'and', $title);
         $title = preg_replace('#[^\w\d\' ]+#', '', $title);
         $title = preg_replace('#  #', ' ', $title);
         return $title;
@@ -1536,7 +1536,7 @@ class CriticSearch extends AbstractDB {
         //Example: "=The =Widow"
         $keyword = '"=' . str_replace(' ', ' =', $title) . '"';
         if (strstr($keyword, '&amp;')) {
-            $keyword = str_replace( '&amp;', '&', $keyword);
+            $keyword = str_replace('&amp;', '&', $keyword);
         }
         if (strstr($keyword, '&')) {
             $keyword = '(' . str_replace('=&', '&', $keyword) . '|' . str_replace('&', 'and', $keyword) . ')';
@@ -1563,11 +1563,11 @@ class CriticSearch extends AbstractDB {
 
         $result = $this->sdb_results($sql);
 
-        
+
         //    print $sql.'<br/>';
         //    $meta = $this->sdb_results("SHOW META");
         //    print_r($meta);        
-    
+
         return $result;
     }
 
@@ -3165,6 +3165,9 @@ class CriticSearch extends AbstractDB {
             $keyword_arr = explode(' ', $keyword);
             $match_query_arr = array();
             foreach ($keyword_arr as $value) {
+                if ($value == '&') {
+                    continue;
+                }
                 if ($wildcars) {
                     if (filter_var($value, FILTER_VALIDATE_INT) === false) {
                         $value = "(($value)|($value*))";
