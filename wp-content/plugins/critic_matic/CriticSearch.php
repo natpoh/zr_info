@@ -446,10 +446,7 @@ class CriticSearch extends AbstractDB {
 
                 // Facets logic
                 $this->facets[$tab][] = $key;
-                if (isset($facet['sort']) && $facet['sort']) {
-                    // Search sort logic                    
-                    $this->search_sort[$tab][$key] = $facet['sort'];
-                } else if (isset($facet['sorted'])) {
+                if (isset($facet['sorted'])) {
                     //Sort
                     $def_sort = isset($facet['sort']) ? $facet['sort'] : 'desc';
                     $main = isset($facet['main']) ? 1 : 0;
@@ -457,6 +454,9 @@ class CriticSearch extends AbstractDB {
                     $group = isset($facet['group']) ? $facet['group'] : '';
                     $sort_append = array('title' => $facet['title'], 'def' => $def_sort, 'main' => $main, 'icon' => $icon, 'group' => $group);
                     $this->search_sort[$tab][$key] = $sort_append;
+                } else if (isset($facet['sort']) && $facet['sort']) {
+                    // Search sort logic                    
+                    $this->search_sort[$tab][$key] = $facet['sort'];
                 }
             }
         }
@@ -2566,7 +2566,7 @@ class CriticSearch extends AbstractDB {
                     $order = ' ORDER BY diversity DESC';
                 } else {
                     $order = ' ORDER BY diversity_valid ASC';
-                    $select = ', IF(diversity>0, diversity, 999) as diversity_valid';
+                    $select = ', IF(diversity>=0, diversity, 999) as diversity_valid';
                 }
             } else if ($sort_key == 'fem') {
                 if ($sort_type == 'DESC') {
@@ -3340,8 +3340,10 @@ class CriticSearch extends AbstractDB {
 
     public function find_keywords_ids($keyword) {
         # $search_keywords = $this->wildcards_maybe_query($keyword, true, ' ');
+        $filter_kw = $this->filter_text($keyword);
+        $filter_kw = str_replace("'", "\'", $filter_kw);
 
-        $sql = sprintf("SELECT id, name FROM movie_keywords WHERE MATCH('((^%s)|(^%s*))') LIMIT 1000", $keyword, $keyword);
+        $sql = sprintf("SELECT id, name FROM movie_keywords WHERE MATCH('((^%s)|(^%s*))') LIMIT 1000", $filter_kw, $filter_kw);
         $result = $this->sdb_results($sql);
         $results = array();
         if (sizeof($result)) {
@@ -3503,6 +3505,13 @@ class CriticSearch extends AbstractDB {
                 $filters_and .= " AND filter=1";
             }
         }
+
+        // Hide home author
+
+        if ($movie_id == 0) {
+            $filters_and .= ' AND author_show_type!=1';
+        }
+
         $sql = sprintf("SELECT id, date_add, top_movie, author_name" . $and_select . " FROM critic WHERE status=1 AND top_movie>0" . $filters_and . $order . " LIMIT %d,%d", $start, $limit);
         $results = $this->sdb_results($sql);
         // $meta = $this->sdb_results("SHOW META");

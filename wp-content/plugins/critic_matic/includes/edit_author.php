@@ -66,7 +66,20 @@ if ($aid) {
                     </select>                                  
                 </label>
 
-
+                <label class="inline-edit-interval">
+                    <span class="title"><?php print __('Show type') ?></span>
+                    <select name="show_type" class="show_type">
+                        <?php
+                        foreach ($this->cm->author_show_type as $key => $name) {
+                            $selected = ($key == $author->show_type) ? 'selected' : '';
+                            ?>
+                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                            <?php
+                        }
+                        ?>                          
+                    </select>                                  
+                </label>
+                
                 <span class="title inline-edit-categories-label"><?php print __('Tags') ?></span>
                 <input type="hidden" name="post_category[]" value="0">
                 <ul class="cat-checklist category-checklist">
