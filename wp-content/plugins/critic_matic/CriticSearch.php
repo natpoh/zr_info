@@ -225,6 +225,14 @@ class CriticSearch extends AbstractDB {
                     'title' => 'bigdist',
                     'tabs' => array('movies'),
                 ),
+                'meddist' => array(
+                    'title' => 'meddist',
+                    'tabs' => array('movies'),
+                ),
+                'indidist' => array(
+                    'title' => 'indidist',
+                    'tabs' => array('movies'),
+                ),
                 'franchise' => array(
                     'title' => 'Franchise',
                     'tabs' => array('movies'),
@@ -398,7 +406,9 @@ class CriticSearch extends AbstractDB {
         'movie' => array('key' => 'id', 'name_pre' => 'Movie ', 'filter_pre' => 'Movie'),
         'indie' => array(
             'isfranchise' => array('key' => 'isfranchise', 'title' => 'Franchise'),
-            'bigdist' => array('key' => 'bigdist', 'title' => 'Majors Distributors'),
+            'bigdist' => array('key' => 'bigdist', 'title' => 'The “Big Five”'),
+            'meddist' => array('key' => 'meddist', 'title' => 'Mini-majors'),
+            'indidist' => array('key' => 'bigdist', 'title' => 'Independent Studios (USA)'),
         ),
     );
     public $budget_min = 100;
@@ -436,10 +446,7 @@ class CriticSearch extends AbstractDB {
 
                 // Facets logic
                 $this->facets[$tab][] = $key;
-                if (isset($facet['sort']) && $facet['sort']) {
-                    // Search sort logic                    
-                    $this->search_sort[$tab][$key] = $facet['sort'];
-                } else if (isset($facet['sorted'])) {
+                if (isset($facet['sorted'])) {
                     //Sort
                     $def_sort = isset($facet['sort']) ? $facet['sort'] : 'desc';
                     $main = isset($facet['main']) ? 1 : 0;
@@ -447,6 +454,9 @@ class CriticSearch extends AbstractDB {
                     $group = isset($facet['group']) ? $facet['group'] : '';
                     $sort_append = array('title' => $facet['title'], 'def' => $def_sort, 'main' => $main, 'icon' => $icon, 'group' => $group);
                     $this->search_sort[$tab][$key] = $sort_append;
+                } else if (isset($facet['sort']) && $facet['sort']) {
+                    // Search sort logic                    
+                    $this->search_sort[$tab][$key] = $facet['sort'];
                 }
             }
         }
@@ -1048,9 +1058,9 @@ class CriticSearch extends AbstractDB {
                     foreach ($value['found']['title'] as $v) {
                         $find_title = $v;
                         // "strstr" instead of "=" since a "release" can be present
-                        $reg_clear = '#[^\w\d\ ]+#';
-                        $find_title_clear = preg_replace($reg_clear, '', $find_title);
-                        $title_clear = preg_replace($reg_clear, '', $title);
+                        $find_title_clear = $this->filter_movie_tile($find_title);
+                        $title_clear = $this->filter_movie_tile($title);
+                        //print "$find_title->$find_title_clear, $title->$title_clear<br />";
                         if (strstr($find_title_clear, $title_clear) || strstr($find_title_clear, strtoupper($title_clear))) {
                             $ret[$id]['debug']['title valid'] = 'Found title in search';
                             $valid_title = true;
@@ -1114,9 +1124,8 @@ class CriticSearch extends AbstractDB {
                 if (isset($value['found']['content'])) {
                     foreach ($value['found']['content'] as $v) {
                         $find_value = $v;
-                        $reg_clear = '#[^\w\d\ ]+#';
-                        $find_value_clear = preg_replace($reg_clear, '', $find_value);
-                        $title_clear = preg_replace($reg_clear, '', $title);
+                        $find_value_clear = $this->filter_movie_tile($find_value);
+                        $title_clear = $this->filter_movie_tile($title);
                         if (strstr($find_value_clear, $title_clear) || strstr($find_value_clear, strtoupper($title_clear))) {
                             $ret[$id]['debug']['content valid'] = 'Found content in search';
                             $valid_desc = true;
@@ -1335,9 +1344,20 @@ class CriticSearch extends AbstractDB {
         $title = preg_replace('#movie review#i', '', $title);
         $title = preg_replace('#review#i', '', $title);
         $title = strip_tags($title);
+        $title = str_replace('&amp;', 'and', $title);
+        $title = str_replace('&', 'and', $title);
         $title = preg_replace('#[^\w\d\' ]+#', '', $title);
         $title = preg_replace('#  #', ' ', $title);
         $title = trim(strtolower($title));
+
+        return $title;
+    }
+
+    private function filter_movie_tile($title) {
+        $title = str_replace('&amp;', 'and', $title);
+        $title = str_replace('&', 'and', $title);
+        $title = preg_replace('#[^\w\d\' ]+#', '', $title);
+        $title = preg_replace('#  #', ' ', $title);
         return $title;
     }
 
@@ -1515,6 +1535,13 @@ class CriticSearch extends AbstractDB {
 
         //Example: "=The =Widow"
         $keyword = '"=' . str_replace(' ', ' =', $title) . '"';
+        if (strstr($keyword, '&amp;')) {
+            $keyword = str_replace('&amp;', '&', $keyword);
+        }
+        if (strstr($keyword, '&')) {
+            $keyword = '(' . str_replace('=&', '&', $keyword) . '|' . str_replace('&', 'and', $keyword) . ')';
+        }
+        //$keyword = str_replace("=&", "&", $keyword);
         if ($year) {
             $keyword .= ' MAYBE ' . $year;
         }
@@ -1534,8 +1561,12 @@ class CriticSearch extends AbstractDB {
                 . "OPTION ranker=expr('sum(user_weight)'), "
                 . "field_weights=(title=10, content=1) ", $author_type, $limit);
 
-
         $result = $this->sdb_results($sql);
+
+
+        //    print $sql.'<br/>';
+        //    $meta = $this->sdb_results("SHOW META");
+        //    print_r($meta);        
 
         return $result;
     }
@@ -2380,10 +2411,10 @@ class CriticSearch extends AbstractDB {
                 $filters_and = $this->get_filters_query($filters, array('indie', 'minus-indie'));
                 $sql_arr[$facet] = "SELECT 1 as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
                         . " AND isfranchise=1 ORDER BY cnt DESC LIMIT 1";
-            } else if ($facet == 'bigdist') {
+            } else if (in_array($facet, array('bigdist', 'meddist', 'indidist'))) {
                 $filters_and = $this->get_filters_query($filters, array('indie', 'minus-indie'));
                 $sql_arr[$facet] = "SELECT 1 as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
-                        . " AND bigdist=1 ORDER BY cnt DESC LIMIT 1";
+                        . " AND {$facet}=1 ORDER BY cnt DESC LIMIT 1";
             } else if ($facet == 'movie') {
                 $filters_and = $this->get_filters_query($filters, 'movie');
                 $sql_arr[$facet] = "SELECT id, title, year_int as year FROM movie_an WHERE id>0" . $filters_and . $match
@@ -2535,7 +2566,7 @@ class CriticSearch extends AbstractDB {
                     $order = ' ORDER BY diversity DESC';
                 } else {
                     $order = ' ORDER BY diversity_valid ASC';
-                    $select = ', IF(diversity>0, diversity, 999) as diversity_valid';
+                    $select = ', IF(diversity>=0, diversity, 999) as diversity_valid';
                 }
             } else if ($sort_key == 'fem') {
                 if ($sort_type == 'DESC') {
@@ -3134,6 +3165,9 @@ class CriticSearch extends AbstractDB {
             $keyword_arr = explode(' ', $keyword);
             $match_query_arr = array();
             foreach ($keyword_arr as $value) {
+                if ($value == '&') {
+                    continue;
+                }
                 if ($wildcars) {
                     if (filter_var($value, FILTER_VALIDATE_INT) === false) {
                         $value = "(($value)|($value*))";
@@ -3306,8 +3340,10 @@ class CriticSearch extends AbstractDB {
 
     public function find_keywords_ids($keyword) {
         # $search_keywords = $this->wildcards_maybe_query($keyword, true, ' ');
+        $filter_kw = $this->filter_text($keyword);
+        $filter_kw = str_replace("'", "\'", $filter_kw);
 
-        $sql = sprintf("SELECT id, name FROM movie_keywords WHERE MATCH('((^%s)|(^%s*))') LIMIT 1000", $keyword, $keyword);
+        $sql = sprintf("SELECT id, name FROM movie_keywords WHERE MATCH('((^%s)|(^%s*))') LIMIT 1000", $filter_kw, $filter_kw);
         $result = $this->sdb_results($sql);
         $results = array();
         if (sizeof($result)) {
@@ -3469,6 +3505,13 @@ class CriticSearch extends AbstractDB {
                 $filters_and .= " AND filter=1";
             }
         }
+
+        // Hide home author
+
+        if ($movie_id == 0) {
+            $filters_and .= ' AND author_show_type!=1';
+        }
+
         $sql = sprintf("SELECT id, date_add, top_movie, author_name" . $and_select . " FROM critic WHERE status=1 AND top_movie>0" . $filters_and . $order . " LIMIT %d,%d", $start, $limit);
         $results = $this->sdb_results($sql);
         // $meta = $this->sdb_results("SHOW META");
@@ -3714,6 +3757,50 @@ class CriticSearch extends AbstractDB {
             }
         }
         return $hide_facet;
+    }
+
+    public function related_movies($mid = 0, $limit = 1000, $strict_type = true, $debug = false) {
+        // Get related movies
+        $movie = $this->get_movie_by_id($mid);
+        if ($debug) {
+            print_r($movie);
+        }
+        $genre = $movie->genre;
+        $mkw = $movie->mkw;
+
+        $match = '';
+        if ($genre || $mkw) {
+            if ($genre) {
+                $m_genre = " @(genre_str) (" . str_replace(',', '|', $genre) . ")";
+            }
+            if ($mkw) {
+                $m_mkw = " @(mkw_str) (" . str_replace(',', '|', $mkw) . ")";
+            }
+
+            $match = " AND MATCH('" . $m_genre . $m_mkw . "')";
+        } else {
+            return array();
+        }
+
+        $type_sql = '';
+        if ($strict_type) {
+            $type_sql = " AND type='" . $movie->type . "'";
+        }
+
+        $sql = sprintf("SELECT id, title, genre, mkw, weight() w"
+                . " FROM movie_an WHERE id!={$mid}" . $type_sql . $match . " ORDER BY w DESC LIMIT %d ", $limit);
+
+        if ($debug) {
+            print_r($sql);
+        }
+
+        $result = $this->sdb_results($sql);
+
+        if ($debug) {
+            $meta = $this->sdb_results("SHOW META");
+            print_r($meta);
+        }
+        return $result;
     }
 
     /* Newsfilter */

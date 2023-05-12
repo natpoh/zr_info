@@ -61,7 +61,7 @@ $ml = new MoviesLinks();
   6 => 'find_expired',
  */
 $cron_name = 'arhive_cron_'.$cron_type;
-if ($ml->cron_already_run($cron_name, 10, $debug)) {
+if ($ml->cron_already_run($cron_name, 10, $debug)&&!$force) {
     exit();
 }
 

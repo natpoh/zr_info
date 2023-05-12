@@ -2541,6 +2541,7 @@ class CriticParser extends AbstractDBWp {
                     } else {
                         // Get clear content
                         if (!$clear_content){
+                            // $content = force_balance_tags($content);
                             $clear_content = $this->clear_read($link, $content);                            
                         }
                         if ($data_field == 'ca') {

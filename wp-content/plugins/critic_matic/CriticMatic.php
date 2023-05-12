@@ -73,7 +73,7 @@ class CriticMatic extends AbstractDB {
         7 => 'Last week',
         30 => 'Last Mounth',
     );
-    public $sort_pages = array('author_name', 'free', 'id', 'ip', 'date', 'date_add', 'title', 'last_update', 'update_interval', 'name', 'pid', 'slug', 'status', 'type', 'weight', 'wp_uid');
+    public $sort_pages = array('author_name', 'free', 'id', 'ip', 'date', 'date_add', 'title', 'last_update', 'update_interval', 'name', 'pid', 'slug', 'status', 'type', 'weight', 'wp_uid','show_type');
 
     /*
      * Authors
@@ -88,6 +88,10 @@ class CriticMatic extends AbstractDB {
         1 => 'Publish',
         0 => 'Draft',
         2 => 'Trash'
+    );
+    public $author_show_type = array(
+        0 => 'All',
+        1 => 'Hide in Home page',        
     );
     public $authors_tabs = array(
         'home' => 'Authors list',
@@ -1385,7 +1389,7 @@ class CriticMatic extends AbstractDB {
         //Custom type
 
 
-        $sql = "SELECT `id`, `name`, `type`, `options` FROM {$this->db['authors']} WHERE id>0 ORDER BY id DESC LIMIT 1";
+        $sql = "SELECT `id`, `name`, `type`, `options`, `wp_uid`, `show_type`  FROM {$this->db['authors']} WHERE id>0 ORDER BY id DESC LIMIT 1";
 
         $result = $this->db_results($sql);
         return $result;
@@ -1403,7 +1407,7 @@ class CriticMatic extends AbstractDB {
             }
         }
         //Get author id
-        $sql = sprintf("SELECT id, name, type, status, options, wp_uid FROM {$this->db['authors']} WHERE id=%d", (int) $id);
+        $sql = sprintf("SELECT id, name, type, status, options, wp_uid, show_type FROM {$this->db['authors']} WHERE id=%d", (int) $id);
         $author = $this->db_fetch_row($sql);
 
         if ($cache) {
@@ -1443,7 +1447,7 @@ class CriticMatic extends AbstractDB {
         }
 
         //Get author id
-        $sql = sprintf("SELECT id, name, type, status, options FROM {$this->db['authors']} WHERE name='%s'" . $type_and . $wpuid_and, $this->escape($name));
+        $sql = sprintf("SELECT id, name, type, status, options, wp_uid, show_type FROM {$this->db['authors']} WHERE name='%s'" . $type_and . $wpuid_and, $this->escape($name));
 
         if ($multi) {
             $author = $this->db_results($sql);
@@ -1468,7 +1472,7 @@ class CriticMatic extends AbstractDB {
             }
         }
         //Get author id
-        $sql = sprintf("SELECT id, name, type, status, options FROM {$this->db['authors']} WHERE wp_uid=%d", (int) $id);
+        $sql = sprintf("SELECT id, name, type, status, options, wp_uid, show_type FROM {$this->db['authors']} WHERE wp_uid=%d", (int) $id);
         $author = $this->db_fetch_row($sql);
 
         if ($cache) {
@@ -1503,7 +1507,7 @@ class CriticMatic extends AbstractDB {
     }
 
     public function get_authors_by_ids($ids) {
-        $sql = sprintf("SELECT id, name, type, status, options, wp_uid FROM {$this->db['authors']} WHERE id IN(%s)", implode(',', $ids));
+        $sql = sprintf("SELECT id, name, type, status, options, wp_uid, wp_uid, show_type FROM {$this->db['authors']} WHERE id IN(%s)", implode(',', $ids));
         $result = $this->db_results($sql);
         $arr = array();
         if (sizeof($result)) {
@@ -1540,7 +1544,7 @@ class CriticMatic extends AbstractDB {
             $and_limit = sprintf(' LIMIT %d', $limit);
         }
 
-        $sql = "SELECT id, name, type FROM {$this->db['authors']} WHERE id>0 " . $and_type . $and_status . $and_id . $and_limit;
+        $sql = "SELECT id, name, type, wp_uid, show_type FROM {$this->db['authors']} WHERE id>0 " . $and_type . $and_status . $and_id . $and_limit;
         $results = $this->db_results($sql);
         return $results;
     }
@@ -1630,7 +1634,7 @@ class CriticMatic extends AbstractDB {
             $limit = " LIMIT $start, " . $this->perpage;
         }
 
-        $sql = "SELECT a.id, a.status, a.type, a.name, a.options, a.wp_uid FROM {$this->db['authors']} a" . $tags_inner . $status_query . $tags_and . $type_and . $and_orderby . $limit;
+        $sql = "SELECT a.id, a.status, a.type, a.name, a.options, a.wp_uid, a.show_type FROM {$this->db['authors']} a" . $tags_inner . $status_query . $tags_and . $type_and . $and_orderby . $limit;
 
         $result = $this->db_results($sql);
 
@@ -1648,7 +1652,7 @@ class CriticMatic extends AbstractDB {
         if ($exclude_type != -1) {
             $ex_type_and = sprintf(" AND type != %d", (int) $exclude_type);
         }
-        $sql = "SELECT id, name, type, options FROM {$this->db['authors']} WHERE id>0" . $type_and . $ex_type_and . " ORDER BY name ASC";
+        $sql = "SELECT id, name, type, options, wp_uid, show_type FROM {$this->db['authors']} WHERE id>0" . $type_and . $ex_type_and . " ORDER BY name ASC";
         $result = $this->db_results($sql);
         return $result;
     }
@@ -1823,13 +1827,14 @@ class CriticMatic extends AbstractDB {
         $status = $form_state['status'];
         $from = $form_state['type'];
         $name = $form_state['name'];
+        $show_type = $form_state['show_type'];
         $tags = isset($form_state['post_category']) ? $form_state['post_category'] : array();
 
         $options = array();
         $options['autoblur'] = $form_state['autoblur'];
         $options['image'] = $form_state['image'];
         $options['secret'] = $form_state['secret'];
-
+        
         $opt_str = serialize($options);
 
         if ($form_state['id']) {
@@ -1846,7 +1851,8 @@ class CriticMatic extends AbstractDB {
                 'status' => $status,
                 'type' => $from,
                 'name' => stripslashes($name),
-                'options' => $opt_str
+                'options' => $opt_str,
+                'show_type' => $show_type,
             );
 
             $this->sync_update_data($data, $id, $this->db['authors'], $this->sync_data);
@@ -1868,7 +1874,8 @@ class CriticMatic extends AbstractDB {
                 'status' => $status,
                 'type' => $from,
                 'name' => $name,
-                'options' => $opt_str
+                'options' => $opt_str,
+                'show_type' => $show_type,
             );
 
             //Return id

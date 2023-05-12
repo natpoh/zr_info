@@ -34,17 +34,10 @@ if ($_GET['c']) {
 $cm = new CriticMatic();
 $cs = $cm->get_cs();
 
-
-$strict_type = 0;
-if ($_GET['t']) {
-    // t - media type:
-    // 0 - any type
-    // 1 - source type
-    // 2 - movie and tv
-    $strict_type = (int) $_GET['t'];
-}
+$strict_type = true;
 
 $result = $cs->related_movies($mid, $count, $strict_type, $debug);
+
 
 print '<pre>';
 print_r($result);

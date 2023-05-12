@@ -542,16 +542,17 @@ function critic_matic_plugin_activation() {
                                 `type` int(11) NOT NULL DEFAULT '0',  
                                 `name` varchar(255) NOT NULL default '',                                
                                 `options` text default NULL,
+                                `wp_uid` int(11) NOT NULL DEFAULT '0',
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('status', 'type', 'name'), $table_prefix . "critic_matic_authors");
+    
 
     // Add wp user id
-    $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_authors` ADD `wp_uid` int(11) NOT NULL DEFAULT '0'";
+    $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_authors` ADD `show_type` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('wp_uid'), $table_prefix . "critic_matic_authors");
-
+    
+    critic_matic_create_index_an(array('status', 'type', 'name', 'wp_uid', 'show_type'), $table_prefix . "critic_matic_authors");
 
     // Authors meta
     $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_matic_authors_meta`(
@@ -1219,7 +1220,11 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('mid', 'did'), "meta_movie_distributors");
+    
+    $sql = "ALTER TABLE `meta_movie_distributors` ADD `type` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
+    critic_matic_create_index_an(array('mid', 'did', 'type'), "meta_movie_distributors");
    
     
     /* Franchise

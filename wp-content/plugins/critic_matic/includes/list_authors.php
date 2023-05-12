@@ -17,6 +17,7 @@ if (sizeof($authors) > 0) {
                 <?php $this->sorted_head('name', 'Author', $orderby, $order, $page_url) ?> 
                 <?php $this->sorted_head('type', 'From', $orderby, $order, $page_url) ?>
                 <?php $this->sorted_head('status', 'Status', $orderby, $order, $page_url) ?>
+                <?php $this->sorted_head('show_type', 'Show type', $orderby, $order, $page_url) ?>
                 <th><?php print __('Autoblur') ?></th> 
                 <th><?php print __('Tags') ?></th>
                 <th><?php print __('Posts') ?></th> 
@@ -102,6 +103,7 @@ if (sizeof($authors) > 0) {
                     </td>
                     <td><?php print $author_type ?></td>
                     <td><?php print $author_status ?></td>
+                    <td><?php print $this->cm->author_show_type[$author->show_type] ?></td>
                     <td><?php print isset($options['autoblur']) && $options['autoblur'] == 1 ? 'True' : 'False'  ?></td>
                     <td><?php print implode(', ', $tag_arr) ?></td>  
                     <td><?php print $post_count ?></td>   

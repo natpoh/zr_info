@@ -28,6 +28,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             'reviews_rating' => 'meta_reviews_rating',
             'critic_matic_meta' => $table_prefix . 'critic_matic_posts_meta',
             'distributors' => 'data_movie_distributors',
+            'distributors_meta' => 'meta_movie_distributors',
             'franchises' => 'data_movie_franchises',
             'indie' => 'data_movie_indie',
         );
@@ -429,6 +430,22 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         return $id;
     }
 
+    public function add_distributor_meta($mid, $did, $type = 0) {
+        // Meta exist
+        $sql = sprintf("SELECT id FROM {$this->db['distributors_meta']} WHERE mid=%d AND did=%d AND type=%d", $mid, $did, $type);
+        $exist_id = $this->db_get_var($sql);
+        if (!$exist_id) {
+            $data = array(
+                'mid' => $mid,
+                'did' => $did,
+                'type' => $type,
+            );
+
+            $exist_id = $this->sync_insert_data($data, $this->db['distributors_meta'], false, true, 10);
+        }
+        return $exist_id;
+    }
+
     /*
      * Franchise
      */
@@ -496,7 +513,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         $sql = sprintf("SELECT * FROM {$this->db['indie']} WHERE movie_id = %d", (int) $mid);
         $exist = $this->db_fetch_row($sql);
         $data['date'] = $this->curr_time();
-        if ($exist) {           
+        if ($exist) {
             // Update post            
             $this->sync_update_data($data, $exist->id, $this->db['indie'], true, 10);
             CustomHooks::do_action('update_indie', ['mid' => $mid, 'data' => $data]);
@@ -507,4 +524,5 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             CustomHooks::do_action('add_indie', ['mid' => $mid, 'data' => $data]);
         }
     }
+
 }

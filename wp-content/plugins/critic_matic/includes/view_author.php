@@ -57,7 +57,6 @@ if ($aid) {
     }
 
     print $image;
-    
     ?>
     <br />
     <table class="wp-list-table widefat striped table-view-list">
@@ -92,6 +91,10 @@ if ($aid) {
             <tr>
                 <td><?php print __('Status') ?></td>
                 <td><?php print $author_status[$author->status] ?></td>
+            </tr>
+            <tr>
+                <td><?php print __('Show type') ?></td>
+                <td><?php print $this->cm->author_show_type[$author->show_type] ?></td>
             </tr>
             <tr>
                 <td><?php print __('WP Account') ?></td>
