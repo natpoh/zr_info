@@ -82,7 +82,7 @@ class CriticTransit extends AbstractDB {
         }
         return $this->ma;
     }
-
+    
     /*
      * Find dublicates critic posts
      */

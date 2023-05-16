@@ -206,7 +206,7 @@ class CriticFront extends SearchFacets {
             } if ($vote_type == 2) {
                 /*
                   Negative
-                  3 stars (watch if free)
+                  3 stars (Watch If Free)
                   3 stars (skip it)
                  *  OR (r.rating=3 AND r.vote!=1)
                  * 
@@ -297,7 +297,7 @@ class CriticFront extends SearchFacets {
             } if ($vote_type == 2) {
                 /*
                   Negative
-                  3 stars (watch if free)
+                  3 stars (Watch If Free)
                   3 stars (skip it)
                   2 stars
                   1 stars
@@ -434,6 +434,7 @@ class CriticFront extends SearchFacets {
             // Title
             $title = $movie->title;
 
+            global $slug;
             // Post name
             $post_name = $this->get_or_create_ma_post_name($top_movie, $top_movie, $title, $movie->type);
             $slug = $ma->get_post_slug($movie->type);
@@ -666,7 +667,7 @@ class CriticFront extends SearchFacets {
         $review_bottom = '<div class="review_bottom"><div class="r_type">' . $meta_type . '</div><div class="r_right"><div class="r_date">' . $critic_addtime . '</div>' . $info_link . '</div></div>';
 
         // Find video link
-        $video_link = $this->find_video_link($permalink, $critic->content, $critic->id);
+        $video_link = $this->find_video_link($permalink, $critic->id);
 
         if ($fullsize) {
 
@@ -834,7 +835,7 @@ class CriticFront extends SearchFacets {
         return $link;
     }
 
-    public function find_video_link($link, $content = '', $cid = 0) {
+    public function find_video_link($link, $cid = 0) {
         $ret = array();
         // https://www.bitchute.com/embed/kntoSwUiKY4T/
         if (preg_match('/bitchute\.com\/(?:embed|video)\/([a-zA-Z0-9\-_]+)/', $link, $match)) {
@@ -1108,7 +1109,7 @@ class CriticFront extends SearchFacets {
             $content = $this->replacelink($content);
 
             // Active links
-            $content = $this->active_links($content);
+            $content = $this->active_links($content, true, true);
 
             if (strstr($content, '[su_')) {
 
@@ -1820,12 +1821,46 @@ class CriticFront extends SearchFacets {
         return $haystack;
     }
 
-    public function active_links($content) {
-        $pattern = '# (https://[^ ]+) #i';
+    public function active_links($content, $find_video = false, $find_images = false) {
+        // $pattern = '# (https://[\w\d-_\.]+)( |\n) #i';
 
-        if (preg_match_all($pattern, $content, $match)) {
-            foreach ($match[1] as $value) {
-                $content = str_replace($value, '<a href="' . $value . '" target="_blank">' . $value . '</a>', $content);
+        $pattern = '/(((http|https)\:\/\/)|(www\.|))[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\:[0-9]+)?(\/\S*)?/';
+
+
+        if (preg_match_all($pattern, $content, $match, PREG_PATTERN_ORDER)) {
+            // print_r($match);
+            $i = 0;
+            foreach ($match[0] as $link) {
+
+                $need_replace = true;
+                $valid_link = $link;
+                $first = $match[1][$i];
+                if ($first == 'www.') {
+                    $valid_link = 'https://' . $link;
+                } else if ($first == '') {
+                    $valid_link = 'https://' . $link;
+                    $need_replace = false;
+                }
+                $theme_link = '';
+
+                if (preg_match('/\.(jpg|jpeg|png|gif|webp)$/i', $link)) {
+                    $theme_link = '<img src="https://zeitgeistreviews.com/wp-content/themes/custom_twentysixteen/images/placeholder.png" srcset="' . $valid_link . '" loading="lazy" />';
+                } else if ($find_video) {
+                    $video_link = $this->find_video_link($valid_link);
+                    if ($video_link) {
+                        $theme_link = $video_link['video'];
+                    }
+                } else {
+                    if ($need_replace) {
+                        $theme_link = '<a href="' . $valid_link . '" target="_blank">' . $valid_link . '</a>';
+                    }
+                }
+
+                if ($theme_link) {
+                    $content = str_replace($link, $theme_link, $content);
+                }
+
+                $i++;
             }
         }
         return $content;
@@ -2399,64 +2434,64 @@ class CriticFront extends SearchFacets {
             ?>
             <div class="simple">
                 <div class="items">
-                    <?php
-                    foreach ($posts as $post) {
+            <?php
+            foreach ($posts as $post) {
 
-                        $critic = $this->cm->get_post_and_author($post->id);
+                $critic = $this->cm->get_post_and_author($post->id);
 
-                        $permalink = $critic->link;
-                        if (!$permalink) {
-                            // Create local permalink
-                            $permalink = $this->get_critic_url($critic);
+                $permalink = $critic->link;
+                if (!$permalink) {
+                    // Create local permalink
+                    $permalink = $this->get_critic_url($critic);
+                }
+                $title = $critic->title;
+                $top_movie = $critic->top_movie;
+
+                if ($top_movie) {
+                    $meta_state = $this->cm->get_critic_meta_state($critic->id, $top_movie);
+                    $info_link = $this->get_info_link($critic->id, $top_movie, $meta_state->state);
+                    $meta_type = $this->cm->get_post_category_name($meta_state->type);
+                }
+
+
+                // Link to full post
+                $link = $this->get_critic_url($critic);
+
+                // Time
+                $ptime = $critic->date;
+                $critic_addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+
+                // Title
+                $title_str = '';
+                $title = strip_tags($title);
+                $title = $this->pccf_filter($title);
+
+
+                // Movie
+                $ma = $this->get_ma();
+                if ($top_movie) {
+                    $movie = $ma->get_post($top_movie);
+
+                    // Title
+                    $mtitle = $movie->title;
+
+                    $slug = $ma->get_post_slug($movie->type);
+
+                    // release
+                    $release = $movie->release;
+                    if ($release) {
+                        $release = strtotime($release);
+                        $release = date('Y', $release);
+                        if (strstr($mtitle, $release)) {
+                            $release = '';
+                        } else {
+                            $release = ' (' . $release . ')';
                         }
-                        $title = $critic->title;
-                        $top_movie = $critic->top_movie;
+                    }
 
-                        if ($top_movie) {
-                            $meta_state = $this->cm->get_critic_meta_state($critic->id, $top_movie);
-                            $info_link = $this->get_info_link($critic->id, $top_movie, $meta_state->state);
-                            $meta_type = $this->cm->get_post_category_name($meta_state->type);
-                        }
-
-
-                        // Link to full post
-                        $link = $this->get_critic_url($critic);
-
-                        // Time
-                        $ptime = $critic->date;
-                        $critic_addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
-
-                        // Title
-                        $title_str = '';
-                        $title = strip_tags($title);
-                        $title = $this->pccf_filter($title);
-
-
-                        // Movie
-                        $ma = $this->get_ma();
-                        if ($top_movie) {
-                            $movie = $ma->get_post($top_movie);
-
-                            // Title
-                            $mtitle = $movie->title;
-
-                            $slug = $ma->get_post_slug($movie->type);
-
-                            // release
-                            $release = $movie->release;
-                            if ($release) {
-                                $release = strtotime($release);
-                                $release = date('Y', $release);
-                                if (strstr($mtitle, $release)) {
-                                    $release = '';
-                                } else {
-                                    $release = ' (' . $release . ')';
-                                }
-                            }
-
-                            $poster_link_90 = $this->get_thumb_path_full(90, 120, $top_movie);
-                        }
-                        ?>
+                    $poster_link_90 = $this->get_thumb_path_full(90, 120, $top_movie);
+                }
+                ?>
                         <div class="item">
                             <a href="<?php print $link ?>" title="<?php print $title ?>" >
                                 <img srcset="<?php print $poster_link_90 ?>" alt="<?php print $mtitle ?>">
@@ -2466,7 +2501,7 @@ class CriticFront extends SearchFacets {
                                 </div>
                             </a>
                         </div>
-                    <?php } ?>
+            <?php } ?>
                 </div>
             </div>
             <?php
@@ -2544,52 +2579,52 @@ class CriticFront extends SearchFacets {
                     <h2>NewsFilter.biz</h2>
                     <h3>"<a href="<?php print $ns_link ?>"><?php print $movie_data->title ?>"</a></h3>
                 </div>                        
-                <?php
-                // Bias facet
-                $this->show_bias_facet($results['facets']);
+            <?php
+            // Bias facet
+            $this->show_bias_facet($results['facets']);
 
-                foreach ($results['list'] as $item) {
-                    $theme_url = $this->theme_item_url($item);
+            foreach ($results['list'] as $item) {
+                $theme_url = $this->theme_item_url($item);
 
-                    $cats_arr = array('bias', 'biastag');
+                $cats_arr = array('bias', 'biastag');
 
-                    $cats_arr = array(
-                        'bias' => array('title' => 0),
-                        'biastag' => array('title' => 0, 'show_tags' => 1),
-                    );
+                $cats_arr = array(
+                    'bias' => array('title' => 0),
+                    'biastag' => array('title' => 0, 'show_tags' => 1),
+                );
 
-                    $tags = $this->theme_search_tags($item, $cats_arr, $ns_link);
-                    ?>
+                $tags = $this->theme_search_tags($item, $cats_arr, $ns_link);
+                ?>
                     <div class="ns_item">
                         <h3 class="tile"><?php print $item->t ?></h3>
                         <div class="url">
-                            <?php print $theme_url ?>
+                <?php print $theme_url ?>
                         </div>  
                         <p class="content"><?php print $item->c ?></p>  
                         <div class="meta">
                             <span class="p-date block">
                                 <time><?php
-                                    print date('d.m.Y H:i', $item->date);
-                                    ?></time>
+                print date('d.m.Y H:i', $item->date);
+                ?></time>
                             </span>
 
                             <span class="p-cat block">
-                                <?php
-                                if ($tags) {
-                                    print implode(' ', $tags);
-                                }
-                                ?>
+                <?php
+                if ($tags) {
+                    print implode(' ', $tags);
+                }
+                ?>
                             </span>
 
-                            <?php if ($item->nresult) { ?>
+                <?php if ($item->nresult) { ?>
                                 <span class="p-rating block">
                                     Rating: <span class="rt_color-<?php print $item->nresult ?>"><?php print $item->nresult ?></span>/5
                                 </span>
-                            <?php } ?>
+                <?php } ?>
                         </div>
                     </div><?php
-                }
-                ?>
+            }
+            ?>
                 <?php if ($total_count > $view_rows) { ?>
                     <h3 class="ns_all"><a href="<?php print $ns_link ?>">Show all related posts: <?php print $total_count ?></a></h3>
                     <?php
@@ -2682,235 +2717,236 @@ class CriticFront extends SearchFacets {
         }
         ?>
         <div class="bias_info rspv-table">
-            <?php
-            $rows = array(
-            );
-            foreach ($dates as $key => $value) {
-                $rating = $value['rating'];
-                $rating_text = $rating > 0 ? $rating : 'None';
+        <?php
+        $rows = array(
+        );
+        foreach ($dates as $key => $value) {
+            $rating = $value['rating'];
+            $rating_text = $rating > 0 ? $rating : 'None';
 
-                $rating_after = '';
-                if ($rating > 0) {
-                    $rating_after = '/5';
-                }
-
-                $rows['title'][] = '<span class="title">' . $value['title'] . '</span> <span class="cnt">(' . $value['count'] . ')</span>';
-                $rows['rating'][] = '<span class="rating"><span class="rt_color-' . $rating . '">' . $rating_text . '</span>' . $rating_after . '</span>';
+            $rating_after = '';
+            if ($rating > 0) {
+                $rating_after = '/5';
             }
-            ?>
+
+            $rows['title'][] = '<span class="title">' . $value['title'] . '</span> <span class="cnt">(' . $value['count'] . ')</span>';
+            $rows['rating'][] = '<span class="rating"><span class="rt_color-' . $rating . '">' . $rating_text . '</span>' . $rating_after . '</span>';
+        }
+        ?>
             <?php
             $ir = 1;
             foreach ($rows as $row) {
                 $ic = 1;
                 ?>
                 <div class="rspv-row row-<?php print $ir ?>">
-                    <?php foreach ($row as $clmn) { ?>
+                <?php foreach ($row as $clmn) { ?>
                         <div class="rspv-clm clm-<?php print $ic ?>"><?php print $clmn ?></div>
                         <?php
                         $ic++;
                     }
                     ?>
                 </div>                    
-                <?php
-                $ir++;
-            }
-            ?>
+                    <?php
+                    $ir++;
+                }
+                ?>
         </div>
-        <?php
-    }
+            <?php
+        }
 
-    public function theme_search_tags($item, $cats_arr, $link = '') {
-        $tags = array();
-        $facet_data = array(
-            'bias' => array(
-                'title' => 'Bias rating',
-                'facet_titles' => array(
-                    0 => 'Not rated',
-                    1 => 'Extreme left',
-                    2 => 'Far left',
-                    3 => 'Left',
-                    4 => 'Left-center',
-                    5 => 'Least biased',
-                    6 => 'Right-center',
-                    7 => 'Right',
-                    8 => 'Far right',
-                    9 => 'Extreme right'
-                )
-            ),
-            'biastag' => array(
-                'title' => 'Bias tags',
-                'facet_titles' => array(
-                    1 => 'Conpiracy-pseudoscience',
-                    2 => 'Pro-science',
-                    3 => 'Satire',
+        public function theme_search_tags($item, $cats_arr, $link = '') {
+            $tags = array();
+            $facet_data = array(
+                'bias' => array(
+                    'title' => 'Bias rating',
+                    'facet_titles' => array(
+                        0 => 'Not rated',
+                        1 => 'Extreme left',
+                        2 => 'Far left',
+                        3 => 'Left',
+                        4 => 'Left-center',
+                        5 => 'Least biased',
+                        6 => 'Right-center',
+                        7 => 'Right',
+                        8 => 'Far right',
+                        9 => 'Extreme right'
+                    )
                 ),
-            ),);
+                'biastag' => array(
+                    'title' => 'Bias tags',
+                    'facet_titles' => array(
+                        1 => 'Conpiracy-pseudoscience',
+                        2 => 'Pro-science',
+                        3 => 'Satire',
+                    ),
+                ),);
 
-        foreach ($cats_arr as $tag => $tag_data) {
-            if ($item->$tag >= 0) {
-                $tag_tile = '';
-                if ($tag_data['title']) {
-                    $tag_tile = $facet_data[$tag]['title'];
-                    $tag_tile .= ': ';
-                }
+            foreach ($cats_arr as $tag => $tag_data) {
+                if ($item->$tag >= 0) {
+                    $tag_tile = '';
+                    if ($tag_data['title']) {
+                        $tag_tile = $facet_data[$tag]['title'];
+                        $tag_tile .= ': ';
+                    }
 
-                $title = $item->$tag;
-                if (isset($facet_data[$tag]['facet_titles'][$item->$tag])) {
-                    $title = $facet_data[$tag]['facet_titles'][$item->$tag];
-                } else {
-                    if ($tag_data['show_tags']) {
-                        $title = null;
+                    $title = $item->$tag;
+                    if (isset($facet_data[$tag]['facet_titles'][$item->$tag])) {
+                        $title = $facet_data[$tag]['facet_titles'][$item->$tag];
+                    } else {
+                        if ($tag_data['show_tags']) {
+                            $title = null;
+                        }
+                    }
+
+                    if (isset($title)) {
+                        $theme_tag = '<a href="' . $link . '/' . $tag . '_' . $item->$tag . '" rel="category tag">#' . $title . '</a>';
+                        $tags[] = $theme_tag;
                     }
                 }
+            }
+            return $tags;
+        }
 
-                if (isset($title)) {
-                    $theme_tag = '<a href="' . $link . '/' . $tag . '_' . $item->$tag . '" rel="category tag">#' . $title . '</a>';
-                    $tags[] = $theme_tag;
+        public function theme_item_url($item) {
+            $url = $item->link;
+            if ($item->type == 0) {
+                $url = $item->site . substr($item->link, 1);
+            }
+            $text_url = $url;
+            $domain = $url;
+            if (preg_match('#(http[s]*://)([^/]+)/#', $url, $match)) {
+                $text_url = str_replace($match[2], '<b>' . $match[2] . '</b>', $text_url);
+                $domain = $match[1] . $match[2];
+            }
+            $icon = 'https://www.google.com/s2/favicons?domain=' . $domain;
+            $theme_url = '<img srcset="' . $icon . '" width="16" height="16"> <a target="_blank" href="' . $url . '">' . $text_url . '</a>';
+            return $theme_url;
+        }
+
+        /*
+         * External fucntions 
+         */
+
+        public function cache_img($url) {
+            $cache_site = 'https://img.rightwingtomatoes.com/';
+            if (!strstr($url, $cache_site)) {
+                $url = $cache_site . $url;
+            }
+            return $url;
+        }
+
+        public function rating_images($type, $rating, $subrating = 0) {
+            $ca = $this->get_ca();
+            return $ca->rating_images($type, $rating, $subrating);
+        }
+
+        public function get_user_reactions($cid) {
+            if ($this->enable_reactions) {
+                $reaction_data = $this->ce->get_user_reactions($cid);
+            } else {
+                $reaction_data = '<div class="review_comment_data"></div>';
+            }
+            return $reaction_data;
+        }
+
+        public function init_thumb_service() {
+            if (!$this->thumb_class) {
+
+                if (!class_exists('GETTSUMB')) {
+                    include (ABSPATH . 'wp-content/themes/custom_twentysixteen/template/include/create_tsumb.php');
                 }
+                $this->thumb_class = new GETTSUMB();
             }
         }
-        return $tags;
-    }
 
-    public function theme_item_url($item) {
-        $url = $item->link;
-        if ($item->type == 0) {
-            $url = $item->site . substr($item->link, 1);
+        public function get_local_thumb($w = 0, $h = 0, $path = '', $name = '') {
+            // DEPRECATED
+            $this->init_thumb_service();
+            $image = CreateTsumbs::getThumbLocal_custom($w, $h, $path, $name);
+            return $image;
         }
-        $text_url = $url;
-        $domain = $url;
-        if (preg_match('#(http[s]*://)([^/]+)/#', $url, $match)) {
-            $text_url = str_replace($match[2], '<b>' . $match[2] . '</b>', $text_url);
-            $domain = $match[1] . $match[2];
-        }
-        $icon = 'https://www.google.com/s2/favicons?domain=' . $domain;
-        $theme_url = '<img srcset="' . $icon . '" width="16" height="16"> <a target="_blank" href="' . $url . '">' . $text_url . '</a>';
-        return $theme_url;
-    }
 
-    /*
-     * External fucntions 
-     */
+        public function screenshot($url, $resolution = array(800, 460)) {
 
-    public function cache_img($url) {
-        $cache_site = 'https://img.rightwingtomatoes.com/';
-        if (!strstr($url, $cache_site)) {
-            $url = $cache_site . $url;
-        }
-        return $url;
-    }
+            return '/wp-content/uploads/2021/12/RWT_rightwingtomatoes_filter_the_woke.gif';
 
-    public function rating_images($type, $rating, $subrating = 0) {
-        $ca = $this->get_ca();
-        return $ca->rating_images($type, $rating, $subrating);
-    }
-
-    public function get_user_reactions($cid) {
-        if ($this->enable_reactions) {
-            $reaction_data = $this->ce->get_user_reactions($cid);
-        } else {
-            $reaction_data = '<div class="review_comment_data"></div>';
-        }
-        return $reaction_data;
-    }
-
-    public function init_thumb_service() {
-        if (!$this->thumb_class) {
-
-            if (!class_exists('GETTSUMB')) {
-                include (ABSPATH . 'wp-content/themes/custom_twentysixteen/template/include/create_tsumb.php');
-            }
-            $this->thumb_class = new GETTSUMB();
-        }
-    }
-
-    public function get_local_thumb($w = 0, $h = 0, $path = '', $name = '') {
-        // DEPRECATED
-        $this->init_thumb_service();
-        $image = CreateTsumbs::getThumbLocal_custom($w, $h, $path, $name);
-        return $image;
-    }
-
-    public function screenshot($url, $resolution = array(800, 460)) {
-
-        return '/wp-content/uploads/2021/12/RWT_rightwingtomatoes_filter_the_woke.gif';
-
-        //        $and = '?';
-        //        if (strstr($url, '?')) {
-        //            $and = '&';
-        //        }
-        //        $url = $url . $and . 'to_image';
-        //        $post = md5($url);
-        //        if (file_exists(ABSPATH . 'wp-content/uploads/screencap/' . $post . '.png')) {
-        //            return '/wp-content/uploads/screencap/' . $post . '.png';
-        //        }
-        //
+            //        $and = '?';
+            //        if (strstr($url, '?')) {
+            //            $and = '&';
+            //        }
+            //        $url = $url . $and . 'to_image';
+            //        $post = md5($url);
+            //        if (file_exists(ABSPATH . 'wp-content/uploads/screencap/' . $post . '.png')) {
+            //            return '/wp-content/uploads/screencap/' . $post . '.png';
+            //        }
+            //
          //        $request = 'xvfb-run --server-args="-screen 0, ' . $resolution[0] . 'x' . $resolution[1] . 'x16" cutycapt --url=' . $url . ' --out=wp-content/uploads/screencap/' . $post . '.png';
-        //        //echo $request;
-        //        system($request);
-        //        return '/wp-content/uploads/screencap/' . $post . '.png';
-    }
-
-    public function get_movie_tags_facet($mid = 0, $limit = 1000, $debug = false) {
-
-        $movie = $this->cs->get_movie_by_id($mid);
-        if ($debug) {
-            print_r($movie);
+            //        //echo $request;
+            //        system($request);
+            //        return '/wp-content/uploads/screencap/' . $post . '.png';
         }
 
-        $result = array();
+        public function get_movie_tags_facet($mid = 0, $limit = 1000, $debug = false) {
 
-        $mkw = $movie->mkw;
-
-        if (!$mkw) {
-            return $result;
-        }
-
-        $mkw_arr = explode(',', $mkw);
-
-        $filter = 'mkw';
-
-        $facets = array($filter);
-        $filters = [];
-
-        $last_limit = $this->cs->facet_limit;
-        $last_max_limit = $this->cs->facet_max_limit;
-        $this->cs->facet_limit = 10000;
-        $this->cs->facet_max_limit = 10000;
-
-        $this->cs->filter_custom_and[$filter] = " AND ANY(mkw) IN(" . implode(',', $mkw_arr) . ")";
-        $result = $this->cs->front_search_movies_multi($this->keywords, $facets, 0, array(), $filters, $facets, true, true, false);
-        $this->cs->facet_limit = $last_limit;
-        $this->cs->facet_max_limit = $last_max_limit;
-
-
-        $data = array();
-        if (isset($result['facets'][$filter]['data'])) {
-            $titles = $this->cs->get_keywords_titles($mkw_arr);
-
-            if (sizeof($result['facets'][$filter]['data'])) {
-
-                $i = 0;
-                foreach ($result['facets'][$filter]['data'] as $item) {
-
-                    if (in_array($item->id, $mkw_arr)) {
-                        $item->title = isset($titles[$item->id]) ? $titles[$item->id] : $item->id;
-                        $data[] = $item;
-                        $i += 1;
-                    }
-
-                    if ($i >= $limit) {
-                        break;
-                    }
-                }
+            $movie = $this->cs->get_movie_by_id($mid);
+            if ($debug) {
+                print_r($movie);
             }
 
-            // Get names
+            $result = array();
+
+            $mkw = $movie->mkw;
+
+            if (!$mkw) {
+                return $result;
+            }
+
+            $mkw_arr = explode(',', $mkw);
+
+            $filter = 'mkw';
+
+            $facets = array($filter);
+            $filters = [];
+
+            $last_limit = $this->cs->facet_limit;
+            $last_max_limit = $this->cs->facet_max_limit;
+            $this->cs->facet_limit = 10000;
+            $this->cs->facet_max_limit = 10000;
+
+            $this->cs->filter_custom_and[$filter] = " AND ANY(mkw) IN(" . implode(',', $mkw_arr) . ")";
+            $result = $this->cs->front_search_movies_multi($this->keywords, $facets, 0, array(), $filters, $facets, true, true, false);
+            $this->cs->facet_limit = $last_limit;
+            $this->cs->facet_max_limit = $last_max_limit;
+
+
+            $data = array();
+            if (isset($result['facets'][$filter]['data'])) {
+                $titles = $this->cs->get_keywords_titles($mkw_arr);
+
+                if (sizeof($result['facets'][$filter]['data'])) {
+
+                    $i = 0;
+                    foreach ($result['facets'][$filter]['data'] as $item) {
+
+                        if (in_array($item->id, $mkw_arr)) {
+                            $item->title = isset($titles[$item->id]) ? $titles[$item->id] : $item->id;
+                            $data[] = $item;
+                            $i += 1;
+                        }
+
+                        if ($i >= $limit) {
+                            break;
+                        }
+                    }
+                }
+
+                // Get names
+            }
+
+
+
+            return $data;
         }
 
-
-
-        return $data;
     }
-
-}
+    

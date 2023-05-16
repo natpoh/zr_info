@@ -30,6 +30,23 @@ class CriticAudience extends AbstractDb {
                 1 => array('title' => 'Pay To Consume', 'img' => "slider_green_pay_drk.png", 'verdict' => 'pay_to_watch'),
                 2 => array('title' => 'Skip It', 'img' => 'slider_red_skip_drk.png', 'verdict' => 'skip_it'),
                 3 => array('title' => 'Consume If Free', 'img' => 'slider_orange_free.png', 'verdict' => 'watch_if_free')
+            ),
+            'options_custom' => array(
+                'movies'=> array(
+                1 => array('title' => 'Pay To Watch!'),
+                2 => array('title' => 'Skip It'),
+                3 => array('title' => 'Watch If Free')
+                ),
+                'tvseries'=> array(
+                    1 => array('title' => 'Pay To Watch!'),
+                    2 => array('title' => 'Skip It'),
+                    3 => array('title' => 'Watch If Free')
+                ),
+                'videogame'=> array(
+                    1 => array('title' => 'Pay to play it!'),
+                    2 => array('title' => 'Skip It'),
+                    3 => array('title' => 'Play If Free')
+                )
             )
         ),
         'rating' => array(
@@ -682,11 +699,16 @@ class CriticAudience extends AbstractDb {
 
         if ($type == 'vote') {
             if (isset($this->vote_data['vote']['options'][$rating]['img'])) {
-                $desc = $this->vote_data['vote']['options'][$rating]['title'];
+
                 $verdict = $this->vote_data['vote']['options'][$rating]['verdict'];
 
 
                 $title = $this->vote_data[$type]['title'];
+
+                global $slug;
+
+                $desc = $this->vote_data['vote']['options_custom'][$slug][$rating]['title'];
+                if (!$desc) $desc = $this->vote_data['vote']['options'][$rating]['title'];
 
 
                 $image_path = '<div class="rating_inner_row"><span class="rating_title">' . $title . '</span><span title="' . $desc . '" class="rating_result ' . $verdict . '"><span class="verdict_text">' . $desc . '</span></span></div>';
@@ -974,6 +996,8 @@ class CriticAudience extends AbstractDb {
         $ma = $this->cm->get_ma();
         $movie = $ma->get_post($post_id);
         $post_link = $ma->get_post_link($movie);
+        global $post_slug;
+        $post_slug = strtolower($movie->type);
 
         // Audience desc
         $cfront = new CriticFront($this->cm);
@@ -1015,6 +1039,7 @@ class CriticAudience extends AbstractDb {
                     <tbody>
                         <tr>
                             <td colspan="2">
+                                <span class="sub_red"><span>*</span> - required</span>
                                 <h3 class="column_header"><?php print $submit_text ?></h3>
                             </td>
                         </tr>                        
@@ -1138,7 +1163,7 @@ class CriticAudience extends AbstractDb {
                     ?>                         
                     <tr id="review-text" class="wpcr3_review_form_review_field_textarea">
                         <td colspan="2">
-                            <label for="id_wpcr3_ftext" class="comment-field"><span class="rtitle">Review text</span>: </label>
+                            <label for="id_wpcr3_ftext" class="comment-field sub_red_b"><span class="rtitle">Review text</span>: </label>
                             <div id="wp-id_wpcr3_ftext-wrap" class="wp-core-ui wp-editor-wrap tmce-active">                                    
                                 <div id="wp-id_wpcr3_ftext-editor-tools" class="wp-editor-tools hide-if-no-js">
                                     <div class="wp-editor-tabs">
@@ -1179,14 +1204,15 @@ class CriticAudience extends AbstractDb {
     public function audience_revew_form_boycott($desc, $rating_val = 3) {
         $vote_order = array(2, 3, 1);
         $title = $this->vote_data['vote']['title'];
+        global $post_slug;
         $vote_data = $this->vote_data['vote']['options'];
         ?>
         <tr>
             <td id="suggestion" class="wpcr3_review_form_rating_field">
-                <label><?php print $title . ': ' . $desc ?></label>
+                <label class="sub_red_b"><?php print $title . ': ' . $desc ?></label>
             </td>
             <td >
-                <div class="sug_buttons_wrapper">
+                <div class="sug_buttons_wrapper <?php echo $post_slug; ?>">
                     <select class="wpcr3_vote" name="wpcr3_review_form_rating_field_vote">
                         <?php
                         foreach ($vote_order as $value) {
@@ -1218,10 +1244,12 @@ class CriticAudience extends AbstractDb {
             $sizes = array(0, 100, 50, 33.3333, 25, 20);
             $span_style = "width: " . $width . "%; background-size: " . $sizes[$value] . "%;";
         }
+        $s='';
+        if ($key=='rating'){$s='sub_red_b';}
         ?>
         <tr class="wpcr3_review_form_rating_field">
             <td>
-                <label for="id_wpcr3_frating" class="comment-field"><span class="rtitle"><?php print $vote_data['title'] . '</span>: ' . $desc ?> </label>
+                <label for="id_wpcr3_frating" class="comment-field <?php echo $s; ?>"><span class="rtitle"><?php print $vote_data['title'] . '</span>: ' . $desc ?> </label>
             </td>
             <td class="<?php print $vote_data['class'] ?> rating_input">
 

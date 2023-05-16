@@ -38,7 +38,7 @@ div.wpcr3_review div.wpcr3_review_customs { margin-bottom:5px; }
 div.wpcr3_review div.wpcr3_review_custom { font-size:12px; float:left; margin-right:60px; }
 
 .wpcr3_respond_2 { position:relative; }
-.wpcr3_respond_2 label { display:inline-block!important; }
+.wpcr3_respond_2 label { display:inline-block!important;    position: relative; color: #939090;}
 .wpcr3_respond_2 .fconfirm2 { width:auto !important; }
 
 .wpcr3_respond_2 input { }
@@ -373,7 +373,37 @@ div.select ul.options li {
 
 
 }
-
+label.sub_red_b::before{
+	content:"*";
+	display: block;
+	position: absolute;
+	color: #ff0000;
+	left: -23px;
+	font-size: 30px;
+	line-height: 37px;
+}
+label.sub_red_b{
+	color: #000;
+}
+.theme_dark label.sub_red_b{
+	color: #fff;
+}
+span.sub_red
+{
+	position: absolute;
+	right: 30px;
+	top: 24px;
+	color: #ff0000;
+	display: flex;
+	line-height: 20px;
+	align-items: center;
+	font-family: 'Encode Sans Condensed',Lato;
+}
+span.sub_red>span{
+	font-size: 30px;
+	position: relative;
+	top: 7px;
+}
 .number_rate_5{
 	color: #f44;
 }

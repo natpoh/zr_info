@@ -11,14 +11,16 @@ class CriticMatic extends AbstractDB {
     private $db = array();
     public $user_can;
     public $new_audience_count = 0;
-    private $cav;
-    private $cp;
-    private $cs;
-    private $ts;
+    private $ac;
     private $af;
+    private $cav;
+    private $cp;    
+    private $cs;
     private $ma;
-    private $uc;
     private $mw;
+    private $ts;
+    private $uc;
+    
 
     /*
      * Posts
@@ -73,7 +75,7 @@ class CriticMatic extends AbstractDB {
         7 => 'Last week',
         30 => 'Last Mounth',
     );
-    public $sort_pages = array('author_name', 'free', 'id', 'ip', 'date', 'date_add', 'title', 'last_update', 'update_interval', 'name', 'pid', 'slug', 'status', 'type', 'weight', 'wp_uid','show_type');
+    public $sort_pages = array('author_name', 'free', 'id', 'ip', 'date', 'date_add', 'title', 'last_update', 'update_interval', 'name', 'pid', 'slug', 'status', 'type', 'weight', 'wp_uid', 'show_type');
 
     /*
      * Authors
@@ -91,7 +93,7 @@ class CriticMatic extends AbstractDB {
     );
     public $author_show_type = array(
         0 => 'All',
-        1 => 'Hide in Home page',        
+        1 => 'Hide in Home page',
     );
     public $authors_tabs = array(
         'home' => 'Authors list',
@@ -253,6 +255,18 @@ class CriticMatic extends AbstractDB {
         $this->sync_status = DB_SYNC_MODE;
         $this->sync_client = DB_SYNC_MODE == 2 ? true : false;
         $this->sync_server = DB_SYNC_MODE == 1 ? true : false;
+    }
+
+    public function get_ac() {
+        // Get actors countyr
+        if (!$this->ac) {
+            if (!class_exists('ActorsCountry')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'ActorsCountry.php' );
+            }
+
+            $this->ac = new ActorsCountry($this);
+        }
+        return $this->ac;
     }
 
     public function get_uc() {
@@ -921,8 +935,8 @@ class CriticMatic extends AbstractDB {
         // Update top movie link after any change in critic meta
         // Get movies meta list
         $top_meta_movie = $this->get_top_critics_meta($cid);
-        $top_movie = $top_meta_movie?$top_meta_movie->fid:0;
-        $top_rating = $top_meta_movie?$top_meta_movie->rating:0;
+        $top_movie = $top_meta_movie ? $top_meta_movie->fid : 0;
+        $top_rating = $top_meta_movie ? $top_meta_movie->rating : 0;
         // Get critic top link
         $post_movie = $this->get_post_top_movie($cid);
 
@@ -1834,7 +1848,7 @@ class CriticMatic extends AbstractDB {
         $options['autoblur'] = $form_state['autoblur'];
         $options['image'] = $form_state['image'];
         $options['secret'] = $form_state['secret'];
-        
+
         $opt_str = serialize($options);
 
         if ($form_state['id']) {
@@ -2413,7 +2427,7 @@ class CriticMatic extends AbstractDB {
     public function get_top_movie($cid) {
         $top_meta = $this->get_top_critics_meta($cid);
         $top_movie = 0;
-        if ($top_meta){
+        if ($top_meta) {
             $top_movie = $top_meta->fid;
         }
         return $top_movie;

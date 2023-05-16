@@ -1,3 +1,6 @@
+1.0.95 - 16.05.2022
+Search ajax GET->POST
+
 1.0.94 - 26.04.2022
 Critic parser clear read
 

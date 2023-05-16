@@ -18,7 +18,7 @@ if (!function_exists('add_action')) {
 define('CRITIC_MATIC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CRITIC_MATIC_PLUGIN_URL', plugin_dir_url(__FILE__));
 
-$version = '1.0.94';
+$version = '1.0.95';
 if (defined('LASTVERSION')) {
     define('CRITIC_MATIC_VERSION', $version . LASTVERSION);
 } else {
@@ -1206,11 +1206,16 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('date', 'mid', 'name'), "data_movie_distributors");
+    
 
     $sql = "ALTER TABLE `data_movie_distributors` ADD `type` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('type'), "data_movie_distributors");
+    
+    $sql = "ALTER TABLE `data_movie_distributors` ADD `parent` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
+    critic_matic_create_index_an(array('date', 'mid', 'name', 'type', 'parent'), "data_movie_distributors");
+    
     
     $sql = "CREATE TABLE IF NOT EXISTS  `meta_movie_distributors`(
 				`id` int(11) unsigned NOT NULL auto_increment,
@@ -1257,6 +1262,23 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'movie_id'), "data_movie_indie");
+    
+    /* Actor country
+     * actor_id - actor id
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_actors_country`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `actor_id` int(11) NOT NULL DEFAULT '0',                              
+                                `forebears` int(11) NOT NULL DEFAULT '0',
+                                `familysearch` int(11) NOT NULL DEFAULT '0',
+                                `ethnic` int(11) NOT NULL DEFAULT '0',
+                                `crowdsource` int(11) NOT NULL DEFAULT '0',
+                                `result` int(11) NOT NULL DEFAULT '0',
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('actor_id', 'result'), "data_actors_country");
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {
