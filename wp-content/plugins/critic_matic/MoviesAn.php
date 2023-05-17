@@ -774,7 +774,7 @@ class MoviesAn extends AbstractDBAn {
         $sql = sprintf("SELECT id FROM {$this->db['data_country']} WHERE name='%s'", $this->escape($name));
         $result = $this->db_get_var($sql);
 
-        if ($cache) {
+        if ($cache && $result) {
             $dict[$name] = $result;
         }
         return $result;

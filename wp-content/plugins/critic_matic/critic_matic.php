@@ -1514,5 +1514,12 @@ ALTER TABLE wp_bcw98b_critic_transcritpions CONVERT TO CHARACTER SET utf8mb4 COL
  * 
  * 
 
-
+Movie country
+SELECT name, count(*) FROM `data_movie_country` GROUP by name having count(*) > 1;
+ * 
+DELETE m FROM `data_movie_country` m
+INNER JOIN `data_movie_country` s
+WHERE 
+    m.id > s.id AND 
+    m.name = s.name;
  */
