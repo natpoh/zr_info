@@ -1419,6 +1419,7 @@ class CriticParser extends AbstractDBWp {
         $status = isset($form_state['status']) ? $form_state['status'] : 0;
         $options['rules'] = $this->rules_form($form_state);
         $options['parser_rules'] = $this->parser_rules_form($form_state);
+        
         if ($form_state['import_rules_json']) {
             $rules = json_decode(trim(stripslashes($form_state['import_rules_json'])), true);
             if (sizeof($rules)) {
@@ -2647,7 +2648,7 @@ class CriticParser extends AbstractDBWp {
         }
 
         // New rule
-        if ($form_state['reg_new_rule_r']) {
+        if ($form_state['reg_new_rule_r']||$form_state['reg_new_rule_t']=='n') {
 
             $old_key = 0;
             if ($rule_exists) {
