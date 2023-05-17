@@ -1522,4 +1522,7 @@ INNER JOIN `data_movie_country` s
 WHERE 
     m.id > s.id AND 
     m.name = s.name;
+ * 
+ * 
+DELETE FROM `data_movie_country` WHERE id>181
  */

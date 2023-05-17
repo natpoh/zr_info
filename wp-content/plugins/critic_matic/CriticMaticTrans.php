@@ -310,7 +310,7 @@ class CriticMaticTrans extends AbstractDB {
         $proxy_text = '';
         if ($proxy) {
             $proxy_num = array_rand($proxy);
-            $proxy_text = "&proxy=" . $proxy[$proxy_num];
+            $proxy_text = trim("&proxy=" . $proxy[$proxy_num]);
         }
         $service = $service . $proxy_text . '&url=' . $link;
         $data = file_get_contents($service);

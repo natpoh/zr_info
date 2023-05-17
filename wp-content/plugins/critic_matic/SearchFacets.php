@@ -78,7 +78,7 @@ class SearchFacets extends AbstractDB {
 
     public function need_redirect() {
         $ret = false;
-        if (isset($_GET['s'])) {
+        if (isset($_POST['s'])) {
             $ret = true;
         }
         return $ret;
@@ -1024,7 +1024,7 @@ class SearchFacets extends AbstractDB {
 
     public function search_form() {
         ?>
-        <form action="/search" method="get" >
+        <form action="/search" method="post" >
             <div class="customsearch_container cm_api">
                 <div class="customsearch_component__inner">
                     <input type="search" class="customsearch_input" name="s"  placeholder="Search Movies, TV,  Reviews" autocomplete="off">  

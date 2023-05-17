@@ -73,8 +73,8 @@ class ActorsCountry extends AbstractDB {
                         # Update or Create meta
                         $field = 'forebears';
                         $country = $ma->get_or_create_country_by_name($item->country, true);
-                        if ($debug){
-                            print_r(array($aid,$country,$item->country));
+                        if ($debug) {
+                            print_r(array($aid, $country, $item->country));
                         }
                         $this->update_actor_meta($aid, $country, $field);
                     }
@@ -110,6 +110,85 @@ class ActorsCountry extends AbstractDB {
             $this->sync_insert_data($data, $this->db['actors_country'], $this->cm->sync_client, $this->cm->sync_data, 10);
         }
     }
+
+    /*
+     * Etchic logic
+     */
+
+    public function test_ethnic() {
+        // Get movielinks data an show unique countryes
+
+        if (!class_exists('MoviesLinks')) {
+            require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractFunctions.php' );
+            require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractDBAn.php' );
+            require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractDB.php' );
+            require_once( MOVIES_LINKS_PLUGIN_DIR . 'MoviesLinks.php' );
+        }
+
+        $ml = new MoviesLinks();
+        $cid = 25;
+        $mp = $ml->get_mp();
+        // $campaign = $mp->get_campaign($cid);
+
+        $posts = $mp->get_last_posts(10000, $cid, 1);
+        if ($posts) {
+            $places = array();
+            foreach ($posts as $post) {
+
+                $options = unserialize($post->options);
+
+                $str_bplace = isset($options['bplace']) ? base64_decode($options['bplace']) : '';
+                $place = $this->validate_place($str_bplace);
+
+                if ($place) {
+                    $places[$place] += 1;
+                }
+            }
+
+            arsort($places);
+            print_r($places);
+        }
+    }
+
+    private function validate_place($place) {
+
+        if (preg_match('/\((?:now|present-day) (.+)\)/', $place, $match)) {
+            $place = $match[1];
+        }
+        if (strstr($place, ', ')) {
+            $str_bplace_arr = explode(', ', $place);
+            $place = $str_bplace_arr[sizeof($str_bplace_arr) - 1];
+        }
+
+
+        $place = preg_replace('/\([a-z A-Z]+\)/', '', $place);
+        $place = preg_replace('/\[[a-z A-Z]+\]/', '', $place);
+        
+
+        $replace = array(
+            'U.S.' => 'United States',
+            'U.S' => 'United States',
+            'US' => 'United States',
+            'USA' => 'United States',
+            'UK' => 'United Kingdom',
+            'U.K.' => 'United Kingdom',
+        );
+
+        foreach ($replace as $key => $value) {
+            if (strstr($place, $key)) {
+                $place = str_replace($key, $value, $place);
+                break;
+            }
+        }
+        
+        $place = trim($place);
+        
+        return $place;
+    }
+
+    /*
+     * Other
+     */
 
     private function get_total_country($meta, $def = '') {
         if ($meta->crowdsource) {
