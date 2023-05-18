@@ -123,7 +123,7 @@ class ActorsCountry extends AbstractDB {
             $aid = $post->top_movie;
             $ma = $this->cm->get_ma();
             $country = $ma->get_country_by_name($place, true);
-            if ($cid){
+            if ($country){
                 $field = 'ethnic';
                 $this->update_actor_meta($aid, $country, $field);
             }
