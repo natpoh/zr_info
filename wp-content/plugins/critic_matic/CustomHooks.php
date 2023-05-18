@@ -64,6 +64,19 @@ class CustomHooks {
             $campaign = $args['campaign'];
             $post = $args['post'];
 
+            if ($campaign->id == 25) {
+                // Ethnic
+                if (!class_exists('CriticMatic')) {
+                    return;
+                }
+
+                if ($post->top_movie > 0) {
+                    $cm = new CriticMatic();
+                    $ac = $cm->get_ac();
+                    $ac->add_ethnic($post);
+                }
+            }
+
             // $options = unserialize($post->options);
             // print_r(array('custom hooks', $post, $campaign));
             /*
@@ -98,7 +111,7 @@ class CustomHooks {
               [options] => a:8
               [type] => 0
               )
-             */         
+             */
             // TODO ml custom hooks logic
         }
     }

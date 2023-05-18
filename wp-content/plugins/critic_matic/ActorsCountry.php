@@ -115,6 +115,22 @@ class ActorsCountry extends AbstractDB {
      * Etchic logic
      */
 
+    public function add_ethnic($post) {
+        $options = unserialize($post->options);
+        $str_bplace = isset($options['bplace']) ? base64_decode($options['bplace']) : '';
+        $place = $this->validate_place($str_bplace);
+        if ($place){
+            $aid = $post->top_movie;
+            $ma = $this->cm->get_ma();
+            $country = $ma->get_country_by_name($place, true);
+            if ($cid){
+                $field = 'ethnic';
+                $this->update_actor_meta($aid, $country, $field);
+            }
+        }
+        
+    }
+
     public function test_ethnic() {
         // Get movielinks data an show unique countryes
 
@@ -163,7 +179,7 @@ class ActorsCountry extends AbstractDB {
 
         $place = preg_replace('/\([a-z A-Z]+\)/', '', $place);
         $place = preg_replace('/\[[a-z A-Z]+\]/', '', $place);
-        
+
 
         $replace = array(
             'U.S.' => 'United States',
@@ -180,9 +196,9 @@ class ActorsCountry extends AbstractDB {
                 break;
             }
         }
-        
+
         $place = trim($place);
-        
+
         return $place;
     }
 
@@ -197,9 +213,7 @@ class ActorsCountry extends AbstractDB {
         if ($meta->ethnic) {
             return $meta->ethnic;
         }
-        if ($meta->ethnic) {
-            return $meta->ethnic;
-        }
+
         if ($meta->forebears) {
             return $meta->forebears;
         }
