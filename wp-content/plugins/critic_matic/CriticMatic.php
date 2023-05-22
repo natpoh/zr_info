@@ -14,13 +14,13 @@ class CriticMatic extends AbstractDB {
     private $ac;
     private $af;
     private $cav;
-    private $cp;    
+    private $cp;
     private $cs;
     private $ma;
     private $mw;
     private $ts;
     private $uc;
-    
+
 
     /*
      * Posts
@@ -249,6 +249,7 @@ class CriticMatic extends AbstractDB {
             'sync_status' => 1,
             'an_weightid' => 0,
             'an_verdict_type' => 'p',
+            'audience_unique' => 0,
         );
 
         $this->sync_data = DB_SYNC_DATA == 1 ? true : false;
@@ -3200,6 +3201,9 @@ class CriticMatic extends AbstractDB {
             $ss['posts_type_2'] = $form['posts_type_2'] ? 1 : 0;
             $ss['posts_type_3'] = $form['posts_type_3'] ? 1 : 0;
         }
+        
+        $ss['audience_unique'] = $form['audience_unique'] ? 1 : 0;
+        
 
         if (isset($form['parser_proxy'])) {
             $ss['parser_proxy'] = base64_encode($form['parser_proxy']);

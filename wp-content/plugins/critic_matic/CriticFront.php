@@ -2286,11 +2286,12 @@ class CriticFront extends SearchFacets {
         $a_type = 2;
         $limit = 10;
 
+        $ss = $this->cm->get_settings();
+        $unique = $ss['audience_unique'];
 
         // Vote to rating  
         $min_au = 0;
-        $max_au = 0;
-        $unique = 0;
+        $max_au = 0;        
         $vote = 0;
         /* if ($vote_type == 1) {
           // UNUSED

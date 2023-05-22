@@ -133,7 +133,7 @@ class CriticSearch extends AbstractDB {
                 'rimdb' => array('title' => 'IMDb', 'titlesm' => 'IMDb', 'name_pre' => 'IMDb ', 'filter_pre' => 'IMDb Rating ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'imdb', 'hide' => 1, 'sorted' => 1,),
                 'rrt' => array('title' => 'Rotten Tomatoes', 'titlesm' => 'RT', 'name_pre' => 'RT ', 'filter_pre' => 'Rotten Tomatoes ', 'max_count' => 110, 'group' => 'rating', 'icon' => 'rt', 'hide' => 1, 'sorted' => 1,),
                 'rrta' => array('title' => 'Rotten Tomatoes Audience', 'titlesm' => 'RT Audience', 'name_pre' => 'RTA ', 'filter_pre' => 'Rotten Tomatoes Audience ', 'max_count' => 110, 'group' => 'rating', 'icon' => 'rt', 'hide' => 1, 'sorted' => 1,),
-                'rrtg' => array('title' => 'Rotten Tomatoes % Gap', 'titlesm' => 'RT % Gap', 'name_pre' => 'RT%G ', 'filter_pre' => 'Rotten Tomatoes % Gap ', 'max_count' => 220, 'shift' => -100, 'sort' => 'asc', 'group' => 'rating', 'icon' => 'rt', 'hide' => 1, 'sorted' => 1,),
+                'rrtg' => array('title' => 'Rotten Tomatoes % Gap', 'titlesm' => 'RT % Gap', 'name_pre' => 'RT%G ', 'filter_pre' => 'Rotten Tomatoes % Gap ', 'max_count' => 220, 'shift' => -100, 'group' => 'rating', 'icon' => 'rt', 'hide' => 1, 'sorted' => 1,),
                 'rkp' => array('title' => 'Kinopoisk', 'titlesm' => 'Kinopoisk', 'name_pre' => 'KP ', 'filter_pre' => 'Kinopoisk ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'kinop', 'hide' => 1, 'sorted' => 1,),
                 'rdb' => array('title' => 'Douban', 'titlesm' => 'Douban', 'name_pre' => 'DB ', 'filter_pre' => 'Douban ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'douban', 'hide' => 1, 'sorted' => 1,),
                 'ranl' => array('title' => 'MyAnimeList', 'titlesm' => 'MyAnimeList', 'name_pre' => 'MyAnLi ', 'filter_pre' => 'MyAnLi ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'mal', 'hide' => 1, 'sorted' => 1,),
@@ -3079,15 +3079,17 @@ class CriticSearch extends AbstractDB {
             $match_query = $this->wildcards_maybe_query($keyword, $widlcard, $mode);
 
             if ($mode == " ") {
-                $match = sprintf(" AND MATCH('@(title,year) ((^%s$)|(\"%s\"/1))')", $keyword, $match_query);
+                $match_query_maybe = $this->wildcards_maybe_query($keyword, $widlcard, ' MAYBE ');
+                $match_query_or = $this->wildcards_maybe_query($keyword, $widlcard, '|');
+                $match = sprintf(" AND MATCH('@(title,year) ((^%s$)|(%s)|(%s))')", $keyword, $match_query_maybe, $match_query_or);
             } else {
                 $match = sprintf(" AND MATCH('@(title,year) ((^%s$)|(%s))')", $keyword, $match_query);
             }
         }
-
+        
         $sql = sprintf("SELECT id, rwt_id, title, release, type, year, weight() w FROM movie_an WHERE id>0"
                 . $year_and . $and_type . $match . $order . " LIMIT %d,%d", $start, $limit);
-
+        
         $result = $this->sdb_results($sql);
 
         if (!$show_meta) {

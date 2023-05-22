@@ -226,6 +226,24 @@ class ThemeCache {
         return null;
     }
 
+    static function count_dir($path_tag = '') {
+        $cacheFolder = self::$path['def']['folder'];
+        if ($path_tag && isset(self::$path[$path_tag])) {
+            $cacheFolder = self::$path[$path_tag]['folder'];
+        }
+
+        //Открываем директорию кеша
+        $dir = WP_CONTENT_DIR . "/uploads/cache/" . $cacheFolder;
+
+        // Returns an array of files
+        $files = scandir($dir);
+
+        // Count the number of files and store them inside the variable..
+        // Removing 2 because we do not count '.' and '..'.
+        $num_files = count($files) - 2;
+        return $num_files;
+    }
+
     static function fileman($way) {
         //Проверка наличия и создание директории
         // string $way - путь к дириктории

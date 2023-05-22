@@ -364,7 +364,7 @@ class AnalyticsFront extends SearchFacets {
         return $tags;
     }
 
-    public function find_results($ids = array(), $facets = true) {
+    public function find_results($ids = array(), $facets = true, $only_curr_tab = false) {
         $result = array();
         $start = 0;
         $page = $this->get_search_page();

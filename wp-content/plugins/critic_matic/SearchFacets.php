@@ -345,7 +345,7 @@ class SearchFacets extends AbstractDB {
         return $ret;
     }
 
-    public function find_results($ids = array(), $show_facets = true) {
+    public function find_results($ids = array(), $show_facets = true, $only_curr_tab = false) {
         gmi('find_results');
         $result = array();
         $start = 0;
@@ -366,29 +366,37 @@ class SearchFacets extends AbstractDB {
             $is_critic = true;
         }
         $facets = false;
+        $movies_count = $critics_count = 0;
 
-        // Find movies in AN base
-        $type = 'Movie';
-        $sort = $this->get_search_sort('movies');
-        if ($show_facets) {
-            $facets = $is_movie ? true : false;
-        }
-        $result['movies'] = $this->cs->front_search_movies_multi($this->keywords, $this->search_limit, $start, $sort, $filters, $facets);
-        gmi('front_search_movies_multi');
-
-        //Critics
-        $sort = $this->get_search_sort('critics');
-        if ($show_facets) {
-            $facets = $is_critic ? true : false;
-        }
-        $result['critics'] = $this->cs->front_search_critics_multi($this->keywords, $this->search_limit, $start, $sort, $filters, $facets);
-        gmi('front_search_critics_multi');
-        // Movie weight logic        
-        if ($sort['sort'] == 'mw') {
-            $result['critics']['list'] = $this->sort_critic_mv_result($result['critics']['list'], $this->search_limit, $start, $filters, $sort);
+        if ($is_movie && $only_curr_tab || !$only_curr_tab) {
+            // Find movies in AN base
+            $type = 'Movie';
+            $sort = $this->get_search_sort('movies');
+            if ($show_facets) {
+                $facets = $is_movie ? true : false;
+            }
+            $result['movies'] = $this->cs->front_search_movies_multi($this->keywords, $this->search_limit, $start, $sort, $filters, $facets);
+            $movies_count = $result['movies']['count'];
+            gmi('front_search_movies_multi');
         }
 
-        $result['count'] = $result['movies']['count'] + $result['critics']['count'];
+        if ($is_critic && $only_curr_tab || !$only_curr_tab) {
+            //Critics
+            $sort = $this->get_search_sort('critics');
+            if ($show_facets) {
+                $facets = $is_critic ? true : false;
+            }
+            $result['critics'] = $this->cs->front_search_critics_multi($this->keywords, $this->search_limit, $start, $sort, $filters, $facets);
+            $critics_count = $result['critics']['count'];
+
+            gmi('front_search_critics_multi');
+            // Movie weight logic        
+            if ($sort['sort'] == 'mw') {
+                $result['critics']['list'] = $this->sort_critic_mv_result($result['critics']['list'], $this->search_limit, $start, $filters, $sort);
+            }
+        }
+
+        $result['count'] = $movies_count + $critics_count;
         return $result;
     }
 

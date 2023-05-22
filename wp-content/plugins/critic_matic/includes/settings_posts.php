@@ -3,9 +3,11 @@
 
 <form accept-charset="UTF-8" method="post" id="tag">
     <div class="cm-edit inline-edit-row">
+
         <fieldset> 
             <input type="hidden" name="posts" value="1">
-            <h3>Post type</h3>
+            <h3>Critic reviews settings</h3>
+            <b>Show posts</b>
 
             <?php
             /*
@@ -45,6 +47,22 @@
                 </span>
             </label>
             <div class="desc">Minimum rating for displaying posts.</div>
+
+            <h3>Audience reviews settings</h3>
+
+            <label class="inline-edit-status">                
+                <?php
+                $checked = '';
+                $type_name = 'audience_unique';
+                $type = isset($ss[$type_name]) ? $ss[$type_name] : 0;
+                if ($type == 1) {
+                    $checked = 'checked="checked"';
+                }
+                ?>
+                <input type="checkbox" name="<?php print $type_name ?>" value="1" <?php print $checked ?> >
+                <span class="checkbox-title">Unique authors. Show only unique authors on the front page.</span>
+            </label>
+
 
             <?php wp_nonce_field('critic-feeds-options', 'critic-feeds-nonce'); ?>
             <br />

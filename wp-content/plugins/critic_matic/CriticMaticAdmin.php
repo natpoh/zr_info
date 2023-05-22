@@ -40,6 +40,7 @@ class CriticMaticAdmin {
         'audience' => 'Audience',
         'posts' => 'Posts view',
         'analytics' => 'Analytics',
+        'cache' => 'Cache',
         'sync' => 'Sync'
     );
     public $bulk_actions = array(
@@ -1497,8 +1498,8 @@ class CriticMaticAdmin {
             if ($orderby) {
                 $sort = array('sort' => $orderby, 'type' => $order);
             }
-               
-            $results = $this->cs->front_search_movies_an($s, ' ',true, '', $start, $per_page, true);
+
+            $results = $this->cs->front_search_movies_an($s, ' ', true, '', $start, $per_page, true);
 
             $movies = $results['result'];
             $count = $results['total'];
@@ -2189,6 +2190,21 @@ class CriticMaticAdmin {
             $ss = $this->cm->get_settings(false);
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/settings_posts.php');
+        } else if ($curr_tab == 'cache') {
+
+            if (isset($_POST['critic-feeds-nonce'])) {
+                $valid = $this->nonce_validate($_POST);
+                if ($valid === true) {
+                    $this->cm->update_settings($_POST);
+                    $result = __('Updated');
+                    print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                } else {
+                    print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                }
+            }
+            $ss = $this->cm->get_settings(false);
+
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/settings_cache.php');
         } else if ($curr_tab == 'sync') {
 
             if (isset($_POST['critic-feeds-nonce'])) {
