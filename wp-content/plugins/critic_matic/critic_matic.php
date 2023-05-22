@@ -407,15 +407,16 @@ function critic_matic_plugin_activation() {
                                 `top_movie` int(11) NOT NULL DEFAULT '0', 
                                 `blur` int(11) NOT NULL DEFAULT '0', 
                                 `view_type` int(11) NOT NULL DEFAULT '0', 
+                                `top_rating` int(11) NOT NULL DEFAULT '0',
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
 
     // Add category
-    $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_posts` ADD `top_rating` int(11) NOT NULL DEFAULT '0'";
+    $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_posts` ADD `link_id` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
 
-    critic_matic_create_index_an(array('date', 'date_add', 'status', 'type', 'link_hash', 'top_movie', 'top_rating', 'view_type'), $table_prefix . "critic_matic_posts");
+    critic_matic_create_index_an(array('date', 'date_add', 'status', 'type', 'link_hash', 'top_movie', 'top_rating', 'view_type', 'link_id'), $table_prefix . "critic_matic_posts");
     //
     // Add options
     //$sql = "ALTER TABLE `" . $table_prefix . "critic_parser_log` ADD `uid` int(11) NOT NULL DEFAULT '0'";
