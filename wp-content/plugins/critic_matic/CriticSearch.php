@@ -3078,10 +3078,9 @@ class CriticSearch extends AbstractDB {
             $keyword = str_replace("'", "\'", $keyword);
             $match_query = $this->wildcards_maybe_query($keyword, $widlcard, $mode);
 
-            if ($mode == " ") {
-                $match_query_maybe = $this->wildcards_maybe_query($keyword, $widlcard, ' MAYBE ');
+            if ($mode == " ") {               
                 $match_query_or = $this->wildcards_maybe_query($keyword, $widlcard, '|');
-                $match = sprintf(" AND MATCH('@(title,year) ((^%s$)|(%s)|(%s))')", $keyword, $match_query_maybe, $match_query_or);
+                $match = sprintf(" AND MATCH('@(title,year) ((^%s$)|(%s))')", $keyword, $match_query_or);
             } else {
                 $match = sprintf(" AND MATCH('@(title,year) ((^%s$)|(%s))')", $keyword, $match_query);
             }
