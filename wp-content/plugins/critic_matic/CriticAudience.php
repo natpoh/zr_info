@@ -32,17 +32,17 @@ class CriticAudience extends AbstractDb {
                 3 => array('title' => 'Consume If Free', 'img' => 'slider_orange_free.png', 'verdict' => 'watch_if_free')
             ),
             'options_custom' => array(
-                'movies'=> array(
-                1 => array('title' => 'Pay To Watch!'),
-                2 => array('title' => 'Skip It'),
-                3 => array('title' => 'Watch If Free')
-                ),
-                'tvseries'=> array(
+                'movies' => array(
                     1 => array('title' => 'Pay To Watch!'),
                     2 => array('title' => 'Skip It'),
                     3 => array('title' => 'Watch If Free')
                 ),
-                'videogame'=> array(
+                'tvseries' => array(
+                    1 => array('title' => 'Pay To Watch!'),
+                    2 => array('title' => 'Skip It'),
+                    3 => array('title' => 'Watch If Free')
+                ),
+                'videogame' => array(
                     1 => array('title' => 'Pay to play it!'),
                     2 => array('title' => 'Skip It'),
                     3 => array('title' => 'Play If Free')
@@ -197,13 +197,13 @@ class CriticAudience extends AbstractDb {
 
             $user = wp_get_current_user();
             $uid = $user->exists() ? $user->ID : 0;
-                        
+
             // Anon review            
             $anon_review = $posted->fname ? false : true;
 
-            
+
             if ($uid) {
-                $anon_review=false;                
+                $anon_review = false;
             }
 
             // Unique id post ip and user agent hash
@@ -708,7 +708,8 @@ class CriticAudience extends AbstractDb {
                 global $slug;
 
                 $desc = $this->vote_data['vote']['options_custom'][$slug][$rating]['title'];
-                if (!$desc) $desc = $this->vote_data['vote']['options'][$rating]['title'];
+                if (!$desc)
+                    $desc = $this->vote_data['vote']['options'][$rating]['title'];
 
 
                 $image_path = '<div class="rating_inner_row"><span class="rating_title">' . $title . '</span><span title="' . $desc . '" class="rating_result ' . $verdict . '"><span class="verdict_text">' . $desc . '</span></span></div>';
@@ -930,7 +931,7 @@ class CriticAudience extends AbstractDb {
         $result = $this->db_fetch_row($query);
         return $result;
     }
-    
+
     public function get_post_queue_by_date($date) {
         $query = sprintf("SELECT * FROM {$this->db['audience']} WHERE date=%d", (int) $date);
         $result = $this->db_fetch_row($query);
@@ -1244,8 +1245,10 @@ class CriticAudience extends AbstractDb {
             $sizes = array(0, 100, 50, 33.3333, 25, 20);
             $span_style = "width: " . $width . "%; background-size: " . $sizes[$value] . "%;";
         }
-        $s='';
-        if ($key=='rating'){$s='sub_red_b';}
+        $s = '';
+        if ($key == 'rating') {
+            $s = 'sub_red_b';
+        }
         ?>
         <tr class="wpcr3_review_form_rating_field">
             <td>
@@ -1276,6 +1279,11 @@ class CriticAudience extends AbstractDb {
                     if (!isset($this->rating_form[$key])) {
                         continue;
                     }
+
+                    if ($key == 'r') {
+                        continue;
+                    }
+
                     $name = $this->rating_form[$key];
 
                     if (!isset($this->vote_data[$name])) {

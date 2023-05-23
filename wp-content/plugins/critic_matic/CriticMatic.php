@@ -1154,7 +1154,17 @@ class CriticMatic extends AbstractDB {
         $rating = array();
         foreach ($form_state as $key => $value) {
             if (preg_match('/rating_([a-z]+)/', $key, $match)) {
-                $rating[$match[1]] = $value;
+                $rating_name = $match[1];
+                if ($rating_name=='r'){
+                    $value = (float) round($value,1);
+                    if ($value>5){
+                        $value=5;
+                    }
+                    if ($value<0){
+                        $value=0;
+                    }
+                }
+                $rating[$rating_name] = $value;
             }
         }
 

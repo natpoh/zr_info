@@ -223,7 +223,7 @@ if ($pid) {
                         </tr>                 
                     </tbody>
                 </table>  
-                <br />
+                <br />                               
                 <?php
                 if ($autor_type == 0 || $autor_type == 2) {
                     $rating = $this->cm->get_post_rating($post->id);
@@ -231,6 +231,12 @@ if ($pid) {
                     if ($rating) {
                         ?>
                         <h3><?php print __('Edit rating') ?></h3>
+
+                        <label>
+                            <span class="title"><?php print __('Rating') ?></span>
+                            <span class="input-text-wrap"><input type="text" name="rating_r" value="<?php print $rating['r'] ?>"></span>
+                        </label>
+                        <br />
                         <?php
                         $ca = $this->get_ca();
                         if ($ca) {
@@ -245,7 +251,7 @@ if ($pid) {
                     <span class="input-text-wrap"><input type="text" name="rating_ip" value="<?php print $rating['ip'] ?>"></span>
                 </label>
                 <br />
-                
+
                 <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save') ?>" class="button-primary">  
 
             </fieldset>
