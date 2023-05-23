@@ -422,6 +422,13 @@ function critic_matic_plugin_activation() {
     //$sql = "ALTER TABLE `" . $table_prefix . "critic_parser_log` ADD `uid` int(11) NOT NULL DEFAULT '0'";
     //dbDelta($sql);
 
+    $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_matic_links`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                                           
+                                `site` varchar(255) NOT NULL default '',
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('site'), $table_prefix . "critic_matic_links");
 
     /*
      * Transcriptions
