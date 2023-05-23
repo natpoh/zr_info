@@ -449,6 +449,7 @@ span.sub_red>span{
 	content: "/5";
 	display: inline-block;
 	color: #ababab;
+	position: absolute;
 }
 
 

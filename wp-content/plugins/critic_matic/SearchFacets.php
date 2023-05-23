@@ -1479,7 +1479,7 @@ class SearchFacets extends AbstractDB {
         if (!$main_collapsed) {
             foreach ($this->cs->facet_data['auratings']['childs'] as $key => $value) {
 
-                $rating_data = isset($data[$key]['data']) ? $data[$key]['data'] : array();
+                $rating_data = isset($data[$key]['data']) ? $data[$key]['data'] : array();                
                 if ($rating_data || $this->cs->is_hide_facet($key, $this->filters) || $facet == $key) {
                     $count = sizeof($rating_data);
                     $icon = '<span class="' . $value['icon'] . '"></span>';

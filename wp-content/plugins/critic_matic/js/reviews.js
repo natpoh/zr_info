@@ -74,7 +74,11 @@ function listen_click(box, e) {
     let wd = box.clientWidth;
 
     let rz = (cw / wd) * 5;
-    rz = Math.ceil(Number(rz));
+
+    //rz = Math.round(Number(rz) * 2) / 2;
+    rz =Math.ceil(Number(rz));
+    let r_color = Math.ceil(Number(rz));
+
     if (rz > 5)
     {
         rz = 5;
@@ -122,7 +126,7 @@ function listen_click(box, e) {
     }
     number_block.textContent = rz;
     number_block.classList.remove("number_rate_0", "number_rate_1", "number_rate_2", "number_rate_3", "number_rate_4", "number_rate_5");
-    number_block.classList.add('number_rate_' + rz);
+    number_block.classList.add('number_rate_' + r_color);
 
     inner_input.value = rz;
     box.classList.add("selected");

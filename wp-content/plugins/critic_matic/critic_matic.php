@@ -1533,4 +1533,13 @@ WHERE
  * 
  * 
 DELETE FROM `data_movie_country` WHERE id>181
+ * 
+ * 
+ * int to float
+ 
+ ALTER TABLE wp_bcw98b_critic_matic_audience_rev MODIFY rating float(5) NOT NULL
+ ALTER TABLE wp_bcw98b_critic_matic_audience MODIFY rating float(5) NOT NULL
+ ALTER TABLE wp_bcw98b_critic_matic_rating MODIFY rating float(5) NOT NULL
+
+ * 
  */

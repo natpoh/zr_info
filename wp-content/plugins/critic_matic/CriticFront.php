@@ -2703,7 +2703,7 @@ class CriticFront extends SearchFacets {
         $r_1 = isset($first['rating']) ? $first['rating'] : 0;
         $r_2 = isset($second['rating']) ? $second['rating'] : 0;
         if ($r_1 && $r_2) {
-            $ret['rating'] = (int) round(($r_1 + $r_2) / 2, 0);
+            $ret['rating'] = round(($r_1 + $r_2) / 2, 1);
         } else if ($r_1) {
             $ret['rating'] = $r_1;
         } else if ($r_2) {

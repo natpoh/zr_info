@@ -1090,7 +1090,7 @@ class CriticMatic extends AbstractDB {
                 foreach ($meta_to_update as $fid => $value) {
                     $type = (int) $value['type'];
                     $state = (int) $value['state'];
-                    $rating = (int) $value['rating'];
+                    $rating = $value['rating'];
 
                     $db_meta = $this->get_critic_meta($id, $fid);
                     if ($db_meta) {
@@ -2651,7 +2651,7 @@ class CriticMatic extends AbstractDB {
 
         $data = array(
             'cid' => $cid,
-            'rating' => $ret['r'],
+            'rating' => round($ret['r'],1),
             'hollywood' => $ret['h'],
             'patriotism' => $ret['p'],
             'misandry' => $ret['m'],
@@ -2679,7 +2679,7 @@ class CriticMatic extends AbstractDB {
             $options = '';
 
             $data = array(
-                'rating' => $ret['r'],
+                'rating' => round($ret['r'],1),
                 'hollywood' => $ret['h'],
                 'patriotism' => $ret['p'],
                 'misandry' => $ret['m'],

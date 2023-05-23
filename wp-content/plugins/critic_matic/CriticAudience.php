@@ -371,7 +371,7 @@ class CriticAudience extends AbstractDb {
                 'date' => $date,
                 'status' => 0,
                 'top_movie' => (int) $top_movie,
-                'rating' => (int) $posted->frating_rating,
+                'rating' => (float) $posted->frating_rating,
                 'hollywood' => (int) $posted->frating_hollywood,
                 'patriotism' => (int) $posted->frating_patriotism,
                 'misandry' => (int) $posted->frating_misandry,
