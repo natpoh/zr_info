@@ -260,20 +260,22 @@ class MoviesCustomHooks {
                             if ($debug) {
                                 print "Total count: {$total_count}. Try to get data from regexp\n";
                             }
+                            
+                            $total_match=0;
 
                             if (preg_match('/<div data-testid="sub-section-' . $name . '".*<\/ul><\/div><\/section>/Us', $code, $match)) {
                                 if (preg_match_all('/<a class="ipc-metadata-list-item__label[^>]+href="\/company\/([co0-9]+)\?[^>]+">([^<]+)<\/a>(<div class="ipc-metadata-list-item__content-container">.*<\/div>)/Us', $match[0], $match_link)) {
                                     if ($debug) {
                                         print_r($match_link);
-                                        $total_match = sizeof($match_link[0]);
-                                        for ($i = 0; $i < $total_match; $i++) {
-                                            $data_link = $match_link[1][$i];
-                                            $data_title = $match_link[2][$i];
-                                            $data_text = strip_tags($match_link[3][$i]);
+                                    }
+                                    $total_match = sizeof($match_link[0]);
+                                    for ($i = 0; $i < $total_match; $i++) {
+                                        $data_link = $match_link[1][$i];
+                                        $data_title = $match_link[2][$i];
+                                        $data_text = strip_tags($match_link[3][$i]);
 
-                                            if ($data_title) {
-                                                $this->add_distributor($ma, $top_movie, $name, $data_title, $data_link, $data_text, $debug);
-                                            }
+                                        if ($data_title) {
+                                            $this->add_distributor($ma, $top_movie, $name, $data_title, $data_link, $data_text, $debug);
                                         }
                                     }
                                 }
@@ -283,7 +285,7 @@ class MoviesCustomHooks {
                                 if ($debug) {
                                     print_r("Need advanced parsing post. Move URL status to error. $total_count > $total_match\n");
                                 }
-                                //$this->mp->change_url_state($uid, 4);
+                                $this->mp->change_url_state($uid, 4);
                             }
                         } else {
                             if ($debug) {
