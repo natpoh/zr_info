@@ -283,7 +283,7 @@ class MoviesCustomHooks {
                                 if ($debug) {
                                     print_r("Need advanced parsing post. Move URL status to error. $total_count > $total_match\n");
                                 }
-                                $this->mp->change_url_state($uid, 4);
+                                //$this->mp->change_url_state($uid, 4);
                             }
                         } else {
                             if ($debug) {
