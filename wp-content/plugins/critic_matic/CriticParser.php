@@ -2008,6 +2008,12 @@ class CriticParser extends AbstractDBWp {
         return $result;
     }
 
+    public function get_url_by_post($pid) {
+        $sql = sprintf("SELECT * FROM {$this->db['url']} WHERE pid = %d", (int) $pid);
+        $result = $this->cm->db_fetch_row($sql);
+        return $result;
+    }
+    
     public function get_url_by_hash($link_hash) {
         $sql = sprintf("SELECT id, cid FROM {$this->db['url']} WHERE link_hash = '%s'", $link_hash);
         $result = $this->cm->db_fetch_row($sql);

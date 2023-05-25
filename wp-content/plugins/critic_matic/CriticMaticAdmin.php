@@ -1816,6 +1816,7 @@ class CriticMaticAdmin {
 
         $curr_tab = $this->get_tab();
         $cid = isset($_GET['cid']) ? (int) $_GET['cid'] : '';
+        $uid = isset($_GET['uid']) ? (int) $_GET['uid'] : '';
         $page = $this->get_page();
         $per_page = $this->get_perpage();
 
@@ -2017,6 +2018,10 @@ class CriticMaticAdmin {
                     include(CRITIC_MATIC_PLUGIN_DIR . 'includes/parser_preview.php');
                 }
             }
+            return;
+        } else if ($uid){
+            $url_data = $this->cp->get_url($uid);
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/view_url.php');
             return;
         }
 
@@ -3181,6 +3186,15 @@ class CriticMaticAdmin {
         $link = $id;
         if ($id > 0) {
             $url = $this->admin_page . $this->movies_url . '&mid=' . $id;
+            $link = '<a href="' . $url . '">' . $name . '</a>';
+        }
+        return $link;
+    }
+
+    public function theme_parser_url_link($id, $name) {
+        $link = $id;
+        if ($id > 0) {
+            $url = $this->admin_page . $this->parser_url. '&uid=' . $id;
             $link = '<a href="' . $url . '">' . $name . '</a>';
         }
         return $link;

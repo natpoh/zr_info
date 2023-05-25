@@ -58,6 +58,7 @@ if (sizeof($posts) > 0) {
                     $author_link = '';
                     $post = '';
 
+                    $url_link = $this->theme_parser_url_link($item->id,$item->id);
 
                     if ($item->pid) {
                         $post = $this->cm->get_post($item->pid);
@@ -79,7 +80,7 @@ if (sizeof($posts) > 0) {
                     ?>
                     <tr>           
                         <th  class="check-column" ><input type="checkbox" name="bulk-<?php print $item->id ?>"></th>
-                        <td><?php print $item->id ?></td>                             
+                        <td><?php print $url_link ?></td>                             
                         <td class="wrap">                            
                             <a href="<?php print $item->link ?>" target="_blank" title="<?php print $item->link ?>"><?php print $item->link ?></a>                    
                             <?php /*

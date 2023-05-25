@@ -63,14 +63,15 @@ if ($pid) {
                 <td><?php print __('Blur') ?></td>
                 <td><?php print $post->blur ? 'Blur the content' : 'No'  ?></td>
             </tr>
+            <tr>
+                <td><?php print __('Type') ?></td>
+                <td><?php print $this->cm->get_post_type($post->type) ?></td>
+            </tr> 
             <?php
             // For all, except Audience
             if ($autor_type != 2):
                 ?>
-                <tr>
-                    <td><?php print __('Type') ?></td>
-                    <td><?php print $this->cm->get_post_type($post->type) ?></td>
-                </tr> 
+
                 <tr>
                     <td><?php print __('Link') ?></td>
                     <td><?php print $post->link ?></td>
@@ -79,10 +80,7 @@ if ($pid) {
                     <td><?php print __('Link hash') ?></td>
                     <td><?php print $post->link_hash ?></td>
                 </tr>
-                <tr>
-                    <td><?php print __('ZR URL') ?></td>
-                    <td><a href="/critics/<?php print $pid ?>">/critics/<?php print $pid ?></td>
-                </tr>  
+
                 <?php
                 $verdict = $this->cm->get_critic_verdict($pid);
 
@@ -94,13 +92,17 @@ if ($pid) {
                     </tr>  
                 <?php }
                 ?>
-    <?php endif; ?>
+            <?php endif; ?>
+            <tr>
+                <td><?php print __('ZR URL') ?></td>
+                <td><a href="https://zeitgeistreviews.com/critics/<?php print $pid ?>">/critics/<?php print $pid ?></td>
+            </tr>  
             <tr>
                 <td><?php print __('Author') ?></td>
                 <td>
                     <?php if ($post->aid) { ?>
                         <a href="<?php print $author_url ?>"><?php print $author_name ?></a>
-    <?php } ?>
+                    <?php } ?>
 
                 </td>
             </tr>  
@@ -117,7 +119,7 @@ if ($pid) {
                     }
                     ?></td>
             </tr>
-                        <tr>
+            <tr>
                 <td><?php print __('Top rating') ?></td>
                 <td><?php
                     print $post->top_rating;
@@ -167,11 +169,116 @@ if ($pid) {
         </tbody>       
     </table>
 
+    <?php
+    if ($autor_type != 2):
+        // Find parser data
+        $cp = $this->cm->get_cp();
+        $url_data = $cp->get_url_by_post($pid);
+        $url_link = $this->theme_parser_url_link($url_data->id, $url_data->id);
+        if ($url_data):
+            $campaign = $this->cp->get_campaign($url_data->cid);
+            ?>
+            <br />
+            <h3>Parser URL</h3>
+            <table class="wp-list-table widefat striped table-view-list">
+                <thead>
+                    <tr>
+                        <th><?php print __('Name') ?></th>                
+                        <th><?php print __('Value') ?></th>    
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><?php print __('Campaign') ?></td>
+                        <td><?php if ($campaign) { ?>
+                                <a href="/wp-admin/admin.php?page=critic_matic_parser&cid=<?php print $campaign->id ?>"><?php print $campaign->title ?></a>                        
+                            <?php }
+                            ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><?php print __('URL id') ?></td>
+                        <td><?php print $url_link ?></td>
+                    </tr> 
 
+                    <tr>
+                        <td><?php print __('Link') ?></td>
+                        <td><a target="_blank" href="<?php print $url_data->link ?>"><?php print $url_data->link ?></a></td>
+                    </tr>
+                    <tr>
+                        <td><?php print __('Link hash') ?></td>
+                        <td><?php print $url_data->link_hash ?></td>
+                    </tr> 
+                    <tr>
+                        <td><?php print __('Status') ?></td>
+                        <td><?php print $this->cp->get_url_status($url_data->status) ?></td>
+                    </tr>      
+                    <tr>
+                        <td><?php print __('Last log') ?></td>
+                        <td><?php print $this->cp->get_last_log($url_data->id); ?></td>
+                    </tr>
+                </tbody>        
+            </table>
+
+            <?php
+        endif;
+
+
+        // Find feed data
+
+        $cf = $this->cm->get_cf();
+        $feed_cid = $cf->get_cid_by_pid($pid);
+
+        if ($feed_cid) {
+            $feed_camp = $cf->get_campaign($feed_cid);
+            ?>
+            <br />
+            <h3>Feed campaign</h3>
+            <table class="wp-list-table widefat striped table-view-list">
+                <thead>
+                    <tr>
+                        <th><?php print __('Name') ?></th>                
+                        <th><?php print __('Value') ?></th>    
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><?php print __('Campaign') ?></td>
+                        <td><?php if ($feed_camp) { ?>
+                                <a href="/wp-admin/admin.php?page=critic_matic_feeds&cid=<?php print $feed_camp->id ?>"><?php print $feed_camp->title ?></a>                        
+                            <?php }
+                            ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><?php print __('Feed') ?></td>
+                        <td><?php print $feed_camp->feed ?></td>
+                    </tr>
+                    <tr>
+                        <td><?php print __('Site') ?></td>
+                        <td><?php print $feed_camp->site ?></td>
+                    </tr>
+                    <tr>
+                        <td><?php print __('Status') ?></td>
+                        <td><?php print $cf->feed_state[$feed_camp->status] ?></td>
+                    </tr>    
+                    <tr>
+                        <td><?php print __('Last log') ?></td>
+                        <td><?php print $this->cf->get_last_log($feed_cid) ?></td>
+                    </tr>
+                </tbody>        
+            </table>
+
+            <?php
+        }
+
+    endif;
+    ?>
     <?php
     $critic_meta = $this->cm->get_movies_data($post->id);
     if (sizeof($critic_meta)) {
         ?>
+        <br />
         <h2><?php print __('Movies meta') ?></h2>
         <?php
         $state_items = array();
@@ -208,7 +315,7 @@ if ($pid) {
                                 <td><?php print $this->cm->get_movie_state_name($item->state) ?></td>                          
                                 <td><?php print $item->rating ?></td>
                             </tr> 
-                <?php } ?>
+                        <?php } ?>
                     </tbody>
                 </table>    
 
@@ -249,7 +356,7 @@ if ($pid) {
                     <td><?php print $this->theme_post_link($item->cid, $this->cm->get_post_name_by_id($item->cid)) ?></td> 
                     <td><?php print $this->theme_movie_link($item->mid, $this->get_movie_name_by_id($item->mid)) ?></td>  
                 </tr> 
-        <?php } ?>
+            <?php } ?>
         </tbody>
         </table>    
     <?php } ?>
@@ -293,7 +400,7 @@ if ($pid) {
                                     ?></td>                        
                                 <td><?php print $item->w ?></td>                        
                             </tr> 
-                <?php } ?>
+                        <?php } ?>
                     </tbody>
                 </table>    
 

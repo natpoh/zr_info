@@ -14,6 +14,7 @@ class CriticMatic extends AbstractDB {
     private $ac;
     private $af;
     private $cav;
+    private $cf;
     private $cp;
     private $cs;
     private $ma;
@@ -326,6 +327,21 @@ class CriticMatic extends AbstractDB {
             $this->cp = new CriticParser($this);
         }
         return $this->cp;
+    }
+
+    public function get_cf() {
+        // Get CriticFeeds
+        if (!$this->cf) {
+            if (!class_exists('CriticFeeds')) {
+                if (!class_exists('AbstractDBWp')) {
+                    require_once( CRITIC_MATIC_PLUGIN_DIR . 'db/AbstractDBWp.php' );
+                }
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticFeeds.php' );
+            }
+
+            $this->cf = new CriticFeeds($this);
+        }
+        return $this->cf;
     }
 
     public function get_cs() {
@@ -1481,7 +1497,7 @@ class CriticMatic extends AbstractDB {
         return $id;
     }
 
-    public function get_post_links($cache=true) {
+    public function get_post_links($cache = true) {
         //Get from cache
 
         $name = 'links';
@@ -1501,7 +1517,7 @@ class CriticMatic extends AbstractDB {
         $items = array();
         if ($results && $cache) {
             foreach ($results as $item) {
-               $items[$item->id] = $item->site;
+                $items[$item->id] = $item->site;
             }
             // Add to cache
             $dict[$name] = $items;
@@ -2690,7 +2706,7 @@ class CriticMatic extends AbstractDB {
 
         $data = array(
             'cid' => $cid,
-            'rating' => round((float) $ret['r'],1),
+            'rating' => round((float) $ret['r'], 1),
             'hollywood' => $ret['h'],
             'patriotism' => $ret['p'],
             'misandry' => $ret['m'],
@@ -2704,7 +2720,7 @@ class CriticMatic extends AbstractDB {
 
         try {
             $id = $this->sync_insert_data($data, $this->db['rating'], false, $this->sync_data);
-        } catch (Exception $exc) {            
+        } catch (Exception $exc) {
             $id = 0;
         }
         return $id;

@@ -84,11 +84,12 @@ class CriticFeeds extends AbstractDBWp {
     );
 
     public function __construct($cm = '') {
-        $this->cm = $cm;
+        $this->cm = $cm ? $cm : new CriticMatic();
         $table_prefix = DB_PREFIX_WP;
         $this->db = array(
             // Critic Feeds
             'campaign' => $table_prefix . 'critic_feed_campaign',
+            'feed_meta' => $table_prefix . 'critic_feed_meta',
             'log' => $table_prefix . 'critic_feed_log',
         );
 
@@ -707,6 +708,13 @@ class CriticFeeds extends AbstractDBWp {
     public function get_campaign_by_hash($rss_hash) {
         $sql = sprintf("SELECT id FROM {$this->db['campaign']} WHERE feed_hash='%s'", $rss_hash);
         $result = $this->db_fetch_row($sql);
+        return $result;
+    }
+    
+    public function get_cid_by_pid($pid) {
+        $query = sprintf("SELECT cid FROM {$this->db['feed_meta']} WHERE pid=%d", $pid);
+
+        $result = $this->cm->db_get_var($query);
         return $result;
     }
 
