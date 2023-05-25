@@ -11,14 +11,17 @@ class CriticMatic extends AbstractDB {
     private $db = array();
     public $user_can;
     public $new_audience_count = 0;
+    private $ac;
+    private $af;
     private $cav;
+    private $cf;
     private $cp;
     private $cs;
-    private $ts;
-    private $af;
     private $ma;
-    private $uc;
     private $mw;
+    private $ts;
+    private $uc;
+
 
     /*
      * Posts
@@ -73,7 +76,7 @@ class CriticMatic extends AbstractDB {
         7 => 'Last week',
         30 => 'Last Mounth',
     );
-    public $sort_pages = array('author_name', 'free', 'id', 'ip', 'date', 'date_add', 'title', 'last_update', 'update_interval', 'name', 'pid', 'slug', 'status', 'type', 'weight', 'wp_uid','show_type');
+    public $sort_pages = array('author_name', 'free', 'id', 'ip', 'date', 'date_add', 'title', 'last_update', 'update_interval', 'name', 'pid', 'slug', 'status', 'type', 'weight', 'wp_uid', 'show_type');
 
     /*
      * Authors
@@ -91,7 +94,7 @@ class CriticMatic extends AbstractDB {
     );
     public $author_show_type = array(
         0 => 'All',
-        1 => 'Hide in Home page',        
+        1 => 'Hide in Home page',
     );
     public $authors_tabs = array(
         'home' => 'Authors list',
@@ -188,6 +191,7 @@ class CriticMatic extends AbstractDB {
         $this->db = array(
             // CM
             'posts' => $table_prefix . 'critic_matic_posts',
+            'posts_links' => $table_prefix . 'critic_matic_links',
             'meta' => $table_prefix . 'critic_matic_posts_meta',
             'rating' => $table_prefix . 'critic_matic_rating',
             'tags' => $table_prefix . 'critic_matic_tags',
@@ -247,12 +251,25 @@ class CriticMatic extends AbstractDB {
             'sync_status' => 1,
             'an_weightid' => 0,
             'an_verdict_type' => 'p',
+            'audience_unique' => 0,
         );
 
         $this->sync_data = DB_SYNC_DATA == 1 ? true : false;
         $this->sync_status = DB_SYNC_MODE;
         $this->sync_client = DB_SYNC_MODE == 2 ? true : false;
         $this->sync_server = DB_SYNC_MODE == 1 ? true : false;
+    }
+
+    public function get_ac() {
+        // Get actors countyr
+        if (!$this->ac) {
+            if (!class_exists('ActorsCountry')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'ActorsCountry.php' );
+            }
+
+            $this->ac = new ActorsCountry($this);
+        }
+        return $this->ac;
     }
 
     public function get_uc() {
@@ -310,6 +327,21 @@ class CriticMatic extends AbstractDB {
             $this->cp = new CriticParser($this);
         }
         return $this->cp;
+    }
+
+    public function get_cf() {
+        // Get CriticFeeds
+        if (!$this->cf) {
+            if (!class_exists('CriticFeeds')) {
+                if (!class_exists('AbstractDBWp')) {
+                    require_once( CRITIC_MATIC_PLUGIN_DIR . 'db/AbstractDBWp.php' );
+                }
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticFeeds.php' );
+            }
+
+            $this->cf = new CriticFeeds($this);
+        }
+        return $this->cf;
     }
 
     public function get_cs() {
@@ -797,12 +829,16 @@ class CriticMatic extends AbstractDB {
 
     public function add_post($date = 0, $type = 0, $link = '', $title = '', $content = '', $top_movie = 0, $status = 1, $view_type = 0, $blur = 0, $sync = true) {
         $link_hash = '';
+        $link_id = 0;
         if ($link) {
             $link_hash = $this->link_hash($link);
             //Check the post already in db
             if ($this->get_post_by_link_hash($link_hash)) {
                 return 0;
             }
+
+            $site_name = $this->clean_site_name($link);
+            $link_id = $this->get_or_create_post_link_by_name($site_name);
         }
 
         $date_add = $this->curr_time();
@@ -823,6 +859,7 @@ class CriticMatic extends AbstractDB {
             'content' => $content,
             'top_movie' => $top_movie,
             'view_type' => $view_type,
+            'link_id' => $link_id,
         );
 
 
@@ -916,13 +953,19 @@ class CriticMatic extends AbstractDB {
         $result = $this->db_get_var($query);
         return $result;
     }
+    
+    public function get_feed_by_pid($pid) {
+        $query = sprintf("SELECT cid FROM {$this->db['feed_meta']} WHERE pid=%d", $pid);
+        $result = $this->db_get_var($query);
+        return $result;
+    }
 
     public function update_critic_top_movie($cid) {
         // Update top movie link after any change in critic meta
         // Get movies meta list
         $top_meta_movie = $this->get_top_critics_meta($cid);
-        $top_movie = $top_meta_movie?$top_meta_movie->fid:0;
-        $top_rating = $top_meta_movie?$top_meta_movie->rating:0;
+        $top_movie = $top_meta_movie ? $top_meta_movie->fid : 0;
+        $top_rating = $top_meta_movie ? $top_meta_movie->rating : 0;
         // Get critic top link
         $post_movie = $this->get_post_top_movie($cid);
 
@@ -940,7 +983,14 @@ class CriticMatic extends AbstractDB {
 
     public function update_post($id, $date, $status, $link, $title, $content, $type, $blur = 0) {
         $date_add = $this->curr_time();
-        $link_hash = $this->link_hash($link);
+        $link_hash = '';
+        $link_id = 0;
+        if ($link) {
+            $link_hash = $this->link_hash($link);
+            $site_name = $this->clean_site_name($link);
+            $link_id = $this->get_or_create_post_link_by_name($site_name);
+        }
+
         $top_movie = 0;
 
         //Clear UTF8
@@ -956,7 +1006,8 @@ class CriticMatic extends AbstractDB {
             'link' => $link,
             'title' => $title,
             'content' => $content,
-            'top_movie' => $top_movie
+            'top_movie' => $top_movie,
+            'link_id' => $link_id,
         );
         $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
 
@@ -1061,7 +1112,7 @@ class CriticMatic extends AbstractDB {
                 foreach ($meta_to_update as $fid => $value) {
                     $type = (int) $value['type'];
                     $state = (int) $value['state'];
-                    $rating = (int) $value['rating'];
+                    $rating = $value['rating'];
 
                     $db_meta = $this->get_critic_meta($id, $fid);
                     if ($db_meta) {
@@ -1125,7 +1176,17 @@ class CriticMatic extends AbstractDB {
         $rating = array();
         foreach ($form_state as $key => $value) {
             if (preg_match('/rating_([a-z]+)/', $key, $match)) {
-                $rating[$match[1]] = $value;
+                $rating_name = $match[1];
+                if ($rating_name == 'r') {
+                    $value = (float) round($value, 1);
+                    if ($value > 5) {
+                        $value = 5;
+                    }
+                    if ($value < 0) {
+                        $value = 0;
+                    }
+                }
+                $rating[$rating_name] = $value;
             }
         }
 
@@ -1379,6 +1440,109 @@ class CriticMatic extends AbstractDB {
 
         $this->update_critic_top_movie($mid);
         return true;
+    }
+
+    /*
+     * Post link
+     */
+
+    public function post_link_cron($count = 10, $debug = false, $force = false) {
+        # 1. Get posts no links
+        $sql = sprintf("SELECT id, link FROM {$this->db['posts']} WHERE link_hash!='' AND link_id=0 LIMIT %d", $count);
+        $results = $this->db_results($sql);
+
+        if ($debug) {
+            print_r($results);
+        }
+
+        if ($results) {
+            # 2. Add link
+            foreach ($results as $item) {
+                $site_name = $this->clean_site_name($item->link);
+                $link_id = $this->get_or_create_post_link_by_name($site_name);
+
+                if ($debug) {
+                    print_r(array($site_name, $link_id));
+                }
+
+                $data = array(
+                    'link_id' => $link_id,
+                );
+                $this->sync_update_data($data, $item->id, $this->db['posts'], $this->sync_data, 10);
+            }
+        }
+    }
+
+    public function get_or_create_post_link_by_name($name = '') {
+        //Get from cache
+        static $dict;
+        if (is_null($dict)) {
+            $dict = array();
+        }
+
+        if (isset($dict[$name])) {
+            return $dict[$name];
+        }
+
+        //Get name id
+        $sql = sprintf("SELECT id FROM {$this->db['posts_links']} WHERE site='%s'", $this->escape($name));
+        $id = $this->db_get_var($sql);
+
+        if (!$id) {
+            // Create the name
+            $data = array(
+                'site' => $name,
+            );
+
+            $id = $this->sync_insert_data($data, $this->db['posts_links'], $this->sync_client, $this->sync_data);
+        }
+
+        // Add to cache
+        $dict[$name] = $id;
+
+        return $id;
+    }
+
+    public function get_post_links($cache = true) {
+        //Get from cache
+
+        $name = 'links';
+        static $dict;
+        if (is_null($dict)) {
+            $dict = array();
+        }
+
+        if (isset($dict[$name]) && $cache) {
+            return $dict[$name];
+        }
+
+        //Get name id
+        $sql = "SELECT * FROM {$this->db['posts_links']}";
+        $results = $this->db_results($sql);
+
+        $items = array();
+        if ($results && $cache) {
+            foreach ($results as $item) {
+                $items[$item->id] = $item->site;
+            }
+            // Add to cache
+            $dict[$name] = $items;
+        }
+
+        return $items;
+    }
+
+    public function clean_site_name($url) {
+        # 1. Clear
+        $domain = strtolower(parse_url($url, PHP_URL_HOST));
+        $domain = preg_replace('/^www\./', '', $domain);
+
+        # 2. Replace
+        if ($domain == 'youtu.be') {
+            $domain = 'youtube.com';
+        }
+
+        return $domain;
     }
 
     /*
@@ -1834,7 +1998,7 @@ class CriticMatic extends AbstractDB {
         $options['autoblur'] = $form_state['autoblur'];
         $options['image'] = $form_state['image'];
         $options['secret'] = $form_state['secret'];
-        
+
         $opt_str = serialize($options);
 
         if ($form_state['id']) {
@@ -2413,7 +2577,7 @@ class CriticMatic extends AbstractDB {
     public function get_top_movie($cid) {
         $top_meta = $this->get_top_critics_meta($cid);
         $top_movie = 0;
-        if ($top_meta){
+        if ($top_meta) {
             $top_movie = $top_meta->fid;
         }
         return $top_movie;
@@ -2548,7 +2712,7 @@ class CriticMatic extends AbstractDB {
 
         $data = array(
             'cid' => $cid,
-            'rating' => $ret['r'],
+            'rating' => round((float) $ret['r'], 1),
             'hollywood' => $ret['h'],
             'patriotism' => $ret['p'],
             'misandry' => $ret['m'],
@@ -2560,8 +2724,11 @@ class CriticMatic extends AbstractDB {
             'options' => $options
         );
 
-        $id = $this->sync_insert_data($data, $this->db['rating'], $this->sync_client, $this->sync_data);
-
+        try {
+            $id = $this->sync_insert_data($data, $this->db['rating'], false, $this->sync_data);
+        } catch (Exception $exc) {
+            $id = 0;
+        }
         return $id;
     }
 
@@ -2576,7 +2743,7 @@ class CriticMatic extends AbstractDB {
             $options = '';
 
             $data = array(
-                'rating' => $ret['r'],
+                'rating' => round((float) $ret['r'], 1),
                 'hollywood' => $ret['h'],
                 'patriotism' => $ret['p'],
                 'misandry' => $ret['m'],
@@ -3186,6 +3353,9 @@ class CriticMatic extends AbstractDB {
             $ss['posts_type_2'] = $form['posts_type_2'] ? 1 : 0;
             $ss['posts_type_3'] = $form['posts_type_3'] ? 1 : 0;
         }
+
+        $ss['audience_unique'] = $form['audience_unique'] ? 1 : 0;
+
 
         if (isset($form['parser_proxy'])) {
             $ss['parser_proxy'] = base64_encode($form['parser_proxy']);

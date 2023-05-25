@@ -18,7 +18,7 @@ if (!function_exists('add_action')) {
 define('CRITIC_MATIC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CRITIC_MATIC_PLUGIN_URL', plugin_dir_url(__FILE__));
 
-$version = '1.0.94';
+$version = '1.0.96';
 if (defined('LASTVERSION')) {
     define('CRITIC_MATIC_VERSION', $version . LASTVERSION);
 } else {
@@ -407,20 +407,28 @@ function critic_matic_plugin_activation() {
                                 `top_movie` int(11) NOT NULL DEFAULT '0', 
                                 `blur` int(11) NOT NULL DEFAULT '0', 
                                 `view_type` int(11) NOT NULL DEFAULT '0', 
+                                `top_rating` int(11) NOT NULL DEFAULT '0',
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
 
     // Add category
-    $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_posts` ADD `top_rating` int(11) NOT NULL DEFAULT '0'";
+    $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_posts` ADD `link_id` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
 
-    critic_matic_create_index_an(array('date', 'date_add', 'status', 'type', 'link_hash', 'top_movie', 'top_rating', 'view_type'), $table_prefix . "critic_matic_posts");
+    critic_matic_create_index_an(array('date', 'date_add', 'status', 'type', 'link_hash', 'top_movie', 'top_rating', 'view_type', 'link_id'), $table_prefix . "critic_matic_posts");
     //
     // Add options
     //$sql = "ALTER TABLE `" . $table_prefix . "critic_parser_log` ADD `uid` int(11) NOT NULL DEFAULT '0'";
     //dbDelta($sql);
 
+    $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_matic_links`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                                           
+                                `site` varchar(255) NOT NULL default '',
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('site'), $table_prefix . "critic_matic_links");
 
     /*
      * Transcriptions
@@ -586,7 +594,7 @@ function critic_matic_plugin_activation() {
                                 `date` int(11) NOT NULL DEFAULT '0',                                    
                                 `status` int(11) NOT NULL DEFAULT '0',      		                                
                                 `top_movie` int(11) NOT NULL DEFAULT '0',                                
-                                `rating` int(11) NOT NULL DEFAULT '0', 
+                                `rating` float(5) NOT NULL DEFAULT '0', 
                                 `hollywood` int(11) NOT NULL DEFAULT '0', 
                                 `patriotism` int(11) NOT NULL DEFAULT '0', 
                                 `misandry` int(11) NOT NULL DEFAULT '0', 
@@ -617,7 +625,7 @@ function critic_matic_plugin_activation() {
 				`id` int(11) unsigned NOT NULL auto_increment,
                                 `cid` int(11) NOT NULL DEFAULT '0',
                                 `date` int(11) NOT NULL DEFAULT '0',
-                                `rating` int(11) NOT NULL DEFAULT '0', 
+                                `rating` float(5) NOT NULL DEFAULT '0', 
                                 `hollywood` int(11) NOT NULL DEFAULT '0', 
                                 `patriotism` int(11) NOT NULL DEFAULT '0', 
                                 `misandry` int(11) NOT NULL DEFAULT '0', 
@@ -675,7 +683,7 @@ function critic_matic_plugin_activation() {
 				`id` int(11) unsigned NOT NULL auto_increment,
                                 `cid` int(11) NOT NULL DEFAULT '0',       
                                 `options` text default NULL,
-                                `rating` int(11) NOT NULL DEFAULT '0', 
+                                `rating` float(5) NOT NULL DEFAULT '0', 
                                 `hollywood` int(11) NOT NULL DEFAULT '0', 
                                 `patriotism` int(11) NOT NULL DEFAULT '0', 
                                 `misandry` int(11) NOT NULL DEFAULT '0', 
@@ -1206,11 +1214,16 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('date', 'mid', 'name'), "data_movie_distributors");
+    
 
     $sql = "ALTER TABLE `data_movie_distributors` ADD `type` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('type'), "data_movie_distributors");
+    
+    $sql = "ALTER TABLE `data_movie_distributors` ADD `parent` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
+    critic_matic_create_index_an(array('date', 'mid', 'name', 'type', 'parent'), "data_movie_distributors");
+    
     
     $sql = "CREATE TABLE IF NOT EXISTS  `meta_movie_distributors`(
 				`id` int(11) unsigned NOT NULL auto_increment,
@@ -1257,6 +1270,23 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'movie_id'), "data_movie_indie");
+    
+    /* Actor country
+     * actor_id - actor id
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_actors_country`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `actor_id` int(11) NOT NULL DEFAULT '0',                              
+                                `forebears` int(11) NOT NULL DEFAULT '0',
+                                `familysearch` int(11) NOT NULL DEFAULT '0',
+                                `ethnic` int(11) NOT NULL DEFAULT '0',
+                                `crowdsource` int(11) NOT NULL DEFAULT '0',
+                                `result` int(11) NOT NULL DEFAULT '0',
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('actor_id', 'result'), "data_actors_country");
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {
@@ -1492,5 +1522,24 @@ ALTER TABLE wp_bcw98b_critic_transcritpions CONVERT TO CHARACTER SET utf8mb4 COL
  * 
  * 
 
+Movie country
+SELECT name, count(*) FROM `data_movie_country` GROUP by name having count(*) > 1;
+ * 
+DELETE m FROM `data_movie_country` m
+INNER JOIN `data_movie_country` s
+WHERE 
+    m.id > s.id AND 
+    m.name = s.name;
+ * 
+ * 
+DELETE FROM `data_movie_country` WHERE id>181
+ * 
+ * 
+ * int to float
+ 
+ ALTER TABLE wp_bcw98b_critic_matic_audience_rev MODIFY rating float(5) NOT NULL DEFAULT '0'
+ ALTER TABLE wp_bcw98b_critic_matic_audience MODIFY rating float(5) NOT NULL DEFAULT '0'
+ ALTER TABLE wp_bcw98b_critic_matic_rating MODIFY rating float(5) NOT NULL DEFAULT '0'
 
+ * 
  */

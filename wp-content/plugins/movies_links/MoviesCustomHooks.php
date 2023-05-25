@@ -248,62 +248,103 @@ class MoviesCustomHooks {
 
                 if ($prod_data) {
                     foreach ($prod_data as $name => $data) {
-                        $data_items = isset($data->section->items) ? $data->section->items : array();
-                        if ($data_items) {
-                            foreach ($data_items as $item) {
-                                /*
-                                  [id] => co0408520
-                                  [rowTitle] => CEL Film Distribution
-                                  [rowLink] => /company/co0408520?ref_=ttco_co_2
-                                  [listContent] => Array
-                                  (
-                                  [0] => stdClass Object
-                                  (
-                                  [text] => (Australia, 1986)
-                                  [subText] => (theatrical)
-                                  )
+                        /*
+                         * TODO
+                         * get data with regexp
+                         * if total count > data count, change state
+                         */
 
-                                  )
-                                 */
-                                $data_link = $item->id;
-                                $data_title = $item->rowTitle;
-                                $data_text = isset($item->listContent[0]->text) ? $item->listContent[0]->text : '';
+                        // Check post count
+                        $total_count = isset($data->section->total) ? $data->section->total : 0;
+                        if ($total_count > 5) {
+                            if ($debug) {
+                                print "Total count: {$total_count}. Try to get data from regexp\n";
+                            }
+                            
+                            $total_match=0;
 
-                                if ($data_title) {
+                            if (preg_match('/<div data-testid="sub-section-' . $name . '".*<\/ul><\/div><\/section>/Us', $code, $match)) {
+                                if (preg_match_all('/<a class="ipc-metadata-list-item__label[^>]+href="\/company\/([co0-9]+)\?[^>]+">([^<]+)<\/a>(<div class="ipc-metadata-list-item__content-container">.*<\/div>)/Us', $match[0], $match_link)) {
+                                    if ($debug) {
+                                        print_r($match_link);
+                                    }
+                                    $total_match = sizeof($match_link[0]);
+                                    for ($i = 0; $i < $total_match; $i++) {
+                                        $data_link = $match_link[1][$i];
+                                        $data_title = $match_link[2][$i];
+                                        $data_text = strip_tags($match_link[3][$i]);
 
-                                    // Add meta
-                                    if ($name == 'production') {
-                                        // Add production
-                                        $dist_id = $ma->add_movie_distributor($data_title, $data_link);
-
-                                        // Add meta
-                                        $meta_id = $ma->add_distributor_meta($top_movie, $dist_id);
-
-                                        if ($debug) {
-                                            print_r(array($name, $dist_id, $data_title, $data_text, $meta_id));
-                                        }
-                                    } else {
-                                        // Add distributor
-                                        if (strstr($data_text, 'United States') || strstr($data_text, 'World-wide')) {
-                                            $dist_id = $ma->add_movie_distributor($data_title, $data_link);
-                                            // Add meta
-                                            $meta_type = 1;
-                                            $meta_id = $ma->add_distributor_meta($top_movie, $dist_id, $meta_type);
-                                            if ($debug) {
-                                                print_r(array($name, $dist_id, $data_title, $data_text, $meta_id));
-                                            }
+                                        if ($data_title) {
+                                            $this->add_distributor($ma, $top_movie, $name, $data_title, $data_link, $data_text, $debug);
                                         }
                                     }
                                 }
                             }
-                        }
-                        // Check post count
-                        $total_count = isset($data->section->total) ? $data->section->total : 0;
-                        if ($total_count>5){
-                            // Need advanced parsing post. Move URL status to error.
-                            $this->mp->change_url_state($uid, 4);
+
+                            if ($total_count > $total_match) {
+                                if ($debug) {
+                                    print_r("Need advanced parsing post. Move URL status to error. $total_count > $total_match\n");
+                                }
+                                $this->mp->change_url_state($uid, 4);
+                            }
+                        } else {
+                            if ($debug) {
+                                print "Total count: {$total_count}. Get data from json\n";
+                            }
+                            $data_items = isset($data->section->items) ? $data->section->items : array();
+                            if ($data_items) {
+                                foreach ($data_items as $item) {
+                                    /*
+                                      [id] => co0408520
+                                      [rowTitle] => CEL Film Distribution
+                                      [rowLink] => /company/co0408520?ref_=ttco_co_2
+                                      [listContent] => Array
+                                      (
+                                      [0] => stdClass Object
+                                      (
+                                      [text] => (Australia, 1986)
+                                      [subText] => (theatrical)
+                                      )
+
+                                      )
+                                     */
+                                    $data_link = $item->id;
+                                    $data_title = $item->rowTitle;
+                                    $data_text = isset($item->listContent[0]->text) ? $item->listContent[0]->text : '';
+
+                                    if ($data_title) {
+                                        $this->add_distributor($ma, $top_movie, $name, $data_title, $data_link, $data_text, $debug);
+                                    }
+                                }
+                            }
                         }
                     }
+                }
+            }
+        }
+    }
+
+    private function add_distributor($ma, $top_movie, $name, $data_title, $data_link, $data_text, $debug) {
+        // Add meta
+        if ($name == 'production') {
+            // Add production
+            $dist_id = $ma->add_movie_distributor($data_title, $data_link);
+
+            // Add meta
+            $meta_id = $ma->add_distributor_meta($top_movie, $dist_id);
+
+            if ($debug) {
+                print_r(array($name, $dist_id, $data_title, $data_text, $meta_id));
+            }
+        } else {
+            // Add distributor
+            if (strstr($data_text, 'United States') || strstr($data_text, 'World-wide')) {
+                $dist_id = $ma->add_movie_distributor($data_title, $data_link);
+                // Add meta
+                $meta_type = 1;
+                $meta_id = $ma->add_distributor_meta($top_movie, $dist_id, $meta_type);
+                if ($debug) {
+                    print_r(array($name, $dist_id, $data_title, $data_text, $meta_id));
                 }
             }
         }

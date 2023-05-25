@@ -364,7 +364,7 @@ class AnalyticsFront extends SearchFacets {
         return $tags;
     }
 
-    public function find_results($ids = array(), $facets = true) {
+    public function find_results($ids = array(), $facets = true, $only_curr_tab = false) {
         $result = array();
         $start = 0;
         $page = $this->get_search_page();
@@ -1125,13 +1125,13 @@ class AnalyticsFront extends SearchFacets {
 
             if ($this->claster_data && sizeof($this->claster_data) > 1) {
                 // Claster logic
-                $search_data = $this->find_results($this->claster_data);
+                $search_claster_data = $this->find_results($this->claster_data);
             }
 
             if ($this->claster_data) {
                 // New claster data       
-                $data = $search_data[$tab_key]['list'];
-                $eth_data = isset($search_data[$tab_key]['facets'][$tab_key]['data']) ? $search_data[$tab_key]['facets'][$tab_key]['data'] : array();
+                // $data = $search_data[$tab_key]['list'];
+                $eth_data = isset($search_claster_data[$tab_key]['facets'][$tab_key]['data']) ? $search_claster_data[$tab_key]['facets'][$tab_key]['data'] : array();
             }
         }
 
@@ -1490,7 +1490,7 @@ class AnalyticsFront extends SearchFacets {
         $vis = '';
         ?>
         <script type="text/javascript">
-                        var search_extend_data = [<?php echo $result_data; ?>];
+                            var search_extend_data = [<?php echo $result_data; ?>];
         </script>
         <div id="chart_div" 
              data-tab="<?php print $tab_key ?>" 
@@ -4510,7 +4510,15 @@ class AnalyticsFront extends SearchFacets {
         //$this->keywords
         unset($filters['movie']);
         $search_limit = 6;
-        $data = $this->cs->front_search_international($keyword, $search_limit, $start, $sort, $filters, $facets);
+
+        $tab_key = $this->get_tab_key();
+
+
+        if ($tab_key == 'international') {
+            $data = $this->cs->front_search_international($keyword, $search_limit, $start, $sort, $filters, $facets);
+        } else {
+            $data = $this->cs->front_search_ethnicity_xy($keyword, $search_limit, $start, $sort, $filters, array(), '', '', '', '', $facets);
+        }
 
         $filter = 'movie';
         $list = $data['list'];

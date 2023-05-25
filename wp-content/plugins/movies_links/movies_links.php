@@ -466,7 +466,11 @@ function movies_links_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
-    movies_links_create_index(array('date', 'proxy'), 'data_fchan_workers');
+    
+    $sql = "ALTER TABLE `data_fchan_workers` ADD `cid` int(11) NOT NULL DEFAULT '0'";
+    Pdo_ml::db_query($sql);
+    
+    movies_links_create_index(array('date', 'proxy', 'cid'), 'data_fchan_workers');
 }
 
 function movies_links_create_index($names = array(), $table_name = '') {

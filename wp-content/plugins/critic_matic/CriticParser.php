@@ -1419,6 +1419,7 @@ class CriticParser extends AbstractDBWp {
         $status = isset($form_state['status']) ? $form_state['status'] : 0;
         $options['rules'] = $this->rules_form($form_state);
         $options['parser_rules'] = $this->parser_rules_form($form_state);
+        
         if ($form_state['import_rules_json']) {
             $rules = json_decode(trim(stripslashes($form_state['import_rules_json'])), true);
             if (sizeof($rules)) {
@@ -2007,6 +2008,12 @@ class CriticParser extends AbstractDBWp {
         return $result;
     }
 
+    public function get_url_by_post($pid) {
+        $sql = sprintf("SELECT * FROM {$this->db['url']} WHERE pid = %d", (int) $pid);
+        $result = $this->cm->db_fetch_row($sql);
+        return $result;
+    }
+    
     public function get_url_by_hash($link_hash) {
         $sql = sprintf("SELECT id, cid FROM {$this->db['url']} WHERE link_hash = '%s'", $link_hash);
         $result = $this->cm->db_fetch_row($sql);
@@ -2647,7 +2654,7 @@ class CriticParser extends AbstractDBWp {
         }
 
         // New rule
-        if ($form_state['reg_new_rule_r']) {
+        if ($form_state['reg_new_rule_r']||$form_state['reg_new_rule_t']=='n') {
 
             $old_key = 0;
             if ($rule_exists) {

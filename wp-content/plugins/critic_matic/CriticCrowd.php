@@ -468,7 +468,7 @@ class CriticCrowd extends AbstractDB {
                 $content = $result['content'];
             }*/
             if (!$content) {
-                $msg = "Can not get the data from URL";
+                $msg = "Sorry, there was an error fetching data from the URL. Please try again or manually submit it.";
                 $this->log_error($msg, $id, $log_status);
                 if ($debug) {
                     print $msg;

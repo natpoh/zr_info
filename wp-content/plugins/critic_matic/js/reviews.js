@@ -4,6 +4,7 @@
 function listen(box, e)
 {
     let cw = 0;
+    let rs=0;
 
     if (e.touches)
     {
@@ -40,11 +41,34 @@ function listen(box, e)
     inner_blok.style.width = cw + 'px';
     inner_blok.style.backgroundSize = rz + '%';
 
+    rs = (cw / wd) * 5;
+
+    rs = Number(rs);
+
+    if (box.classList.contains('rating'))
+    {
+        if (rs<0.2)rs=0;
+        if (rs>0 && rs<0.5)rs=0.5;
+        if (rs>4.5)rs=5;
+        rs = Number(rs.toFixed(1));
+    }
+    else
+    {
+        if (rs<0.2)rs=0;
+        rs =Math.ceil(Number(rs));
+    }
+
+    let prnt = box.parentElement;
+    let number_block = prnt.querySelector(".rating_number_rate");
+
+    let r_color = Math.ceil(Number(rs));
+    number_block.textContent = rs;
+    number_block.classList.remove("number_rate_0", "number_rate_1", "number_rate_2", "number_rate_3", "number_rate_4", "number_rate_5");
+    number_block.classList.add('number_rate_' + r_color);
+
 }
 function listen_click(box, e) {
     let  cw = 0;
-
-
 
     if (e.changedTouches)
     {
@@ -74,7 +98,19 @@ function listen_click(box, e) {
     let wd = box.clientWidth;
 
     let rz = (cw / wd) * 5;
-    rz = Math.ceil(Number(rz));
+    if (box.classList.contains('rating'))
+    {
+        if (rz>0 && rz<0.5)rz=0.5;
+        if (rz>4.5)rz=5;
+        rz = Number(rz.toFixed(1));
+    }
+    else
+    {
+        rz =Math.ceil(Number(rz));
+    }
+
+    let r_color = Math.ceil(Number(rz));
+
     if (rz > 5)
     {
         rz = 5;
@@ -122,7 +158,7 @@ function listen_click(box, e) {
     }
     number_block.textContent = rz;
     number_block.classList.remove("number_rate_0", "number_rate_1", "number_rate_2", "number_rate_3", "number_rate_4", "number_rate_5");
-    number_block.classList.add('number_rate_' + rz);
+    number_block.classList.add('number_rate_' + r_color);
 
     inner_input.value = rz;
     box.classList.add("selected");
@@ -202,6 +238,14 @@ function init_select() {
 
             inner_blok.style.width = '0px';
             inner_blok.style.backgroundSize = '0%';
+
+            let prnt = box.parentElement;
+            let number_block = prnt.querySelector(".rating_number_rate");
+            number_block.textContent = 0;
+            number_block.classList.remove("number_rate_0", "number_rate_1", "number_rate_2", "number_rate_3", "number_rate_4", "number_rate_5");
+
+
+
             return false;
         });
         box.addEventListener("click", function (e) {

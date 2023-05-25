@@ -40,6 +40,7 @@ class CriticMaticAdmin {
         'audience' => 'Audience',
         'posts' => 'Posts view',
         'analytics' => 'Analytics',
+        'cache' => 'Cache',
         'sync' => 'Sync'
     );
     public $bulk_actions = array(
@@ -1497,8 +1498,8 @@ class CriticMaticAdmin {
             if ($orderby) {
                 $sort = array('sort' => $orderby, 'type' => $order);
             }
-               
-            $results = $this->cs->front_search_movies_an($s, ' ',true, '', $start, $per_page, true);
+
+            $results = $this->cs->front_search_movies_an($s, ' ', true, '', $start, $per_page, true);
 
             $movies = $results['result'];
             $count = $results['total'];
@@ -1815,6 +1816,7 @@ class CriticMaticAdmin {
 
         $curr_tab = $this->get_tab();
         $cid = isset($_GET['cid']) ? (int) $_GET['cid'] : '';
+        $uid = isset($_GET['uid']) ? (int) $_GET['uid'] : '';
         $page = $this->get_page();
         $per_page = $this->get_perpage();
 
@@ -2017,6 +2019,10 @@ class CriticMaticAdmin {
                 }
             }
             return;
+        } else if ($uid){
+            $url_data = $this->cp->get_url($uid);
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/view_url.php');
+            return;
         }
 
         //
@@ -2189,6 +2195,21 @@ class CriticMaticAdmin {
             $ss = $this->cm->get_settings(false);
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/settings_posts.php');
+        } else if ($curr_tab == 'cache') {
+
+            if (isset($_POST['critic-feeds-nonce'])) {
+                $valid = $this->nonce_validate($_POST);
+                if ($valid === true) {
+                    $this->cm->update_settings($_POST);
+                    $result = __('Updated');
+                    print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                } else {
+                    print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                }
+            }
+            $ss = $this->cm->get_settings(false);
+
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/settings_cache.php');
         } else if ($curr_tab == 'sync') {
 
             if (isset($_POST['critic-feeds-nonce'])) {
@@ -3165,6 +3186,15 @@ class CriticMaticAdmin {
         $link = $id;
         if ($id > 0) {
             $url = $this->admin_page . $this->movies_url . '&mid=' . $id;
+            $link = '<a href="' . $url . '">' . $name . '</a>';
+        }
+        return $link;
+    }
+
+    public function theme_parser_url_link($id, $name) {
+        $link = $id;
+        if ($id > 0) {
+            $url = $this->admin_page . $this->parser_url. '&uid=' . $id;
             $link = '<a href="' . $url . '">' . $name . '</a>';
         }
         return $link;
