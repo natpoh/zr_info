@@ -2223,6 +2223,7 @@ class MoviesParser extends MoviesAbstractDB {
                 . " WHERE p.id>0" . $and_top_movie . $cid_and . $and_last_update
                 . " ORDER BY p.id DESC LIMIT %d,%d", (int) $start, $count);
 
+
         $result = $this->db_results($query);
 
         return $result;

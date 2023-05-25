@@ -13,16 +13,27 @@ class Movie_Keywords {
 
     private $array_keys =[];
 
-    private function to_key_content($result)
+    public function to_key_content($result,$notag =0)
     {
         $content ='';
       foreach ($result as $id=>$name)
       {
           $keylink= WP_SITEURL.'/search/mkw_'.$id;
-          $content.='<a class="keyword" href="'.$keylink.'" >'.$name.'</a>';
+
+          if (!$notag)
+          {$cs='class="keyword"';}
+          else
+          {
+              $cb=', ';
+          }
+          $content.=$cb.'<a '.$cs.' href="'.$keylink.'" >'.$name.'</a>';
 
       }
+      if ($notag) {
+       if ($content)$content =substr($content,2);
 
+          return $content;
+      }
         $content = '<div class="keyword_container">'.$content.'</div>';
 
         return $content;
@@ -111,7 +122,7 @@ class Movie_Keywords {
         echo $content;
 
     }
-    public function get_keywors_array($mid)
+    public function get_keywors_array($mid,$get_id='')
     {
         $result=[];
         ///get movie keywors
@@ -131,7 +142,17 @@ class Movie_Keywords {
                 {
                     foreach ($data as $dr)
                     {
-                        $result[]=$dr['name'];
+                        if ($get_id)
+                        {
+                            $result[$dr['id']]=$dr['name'];
+                        }
+                        else
+                        {
+                            $result[]=$dr['name'];
+                        }
+
+
+
                     }
                 }
 
@@ -140,6 +161,10 @@ class Movie_Keywords {
         }
         else
         {
+            if ($get_id)
+            {
+                return ;
+            }
             //old method
             $result =   $this->get_keys_from_movie($mid,1);
 
@@ -216,44 +241,70 @@ class Movie_Keywords {
         if (!$this->check_movie_keys($kid,$mid))
         {
             $this->insert_key_request($kid,$mid);
+            return 1;
         }
     }
     private function  add_keys_to_movie($keys,$mid)
     {
         $kid = $this->get_key_id($keys);
         //echo $kid.' ';
-        $this->insert_key_to_movie($kid,$mid);
+        $insert = $this->insert_key_to_movie($kid,$mid);
+        return $insert;
     }
 	private function fill_main_keys($array,$mid)
 	{
+    $count=0;
 
 		foreach ($array as $keys)
 		{
 			// echo $keys.' ';
 
-			$this->add_keys_to_movie($keys,$mid);
-		}
+			$res = $this->add_keys_to_movie($keys,$mid);
 
+            if ($res)$count++;
+		}
+    return $count;
 
 	}
     private function fill_keys($content,$mid)
     {
+        $count=0;
+
         $regv='/data-item-keyword="([^"]+)"/';
         if (preg_match_all($regv, $content,$match)){
 
             foreach ($match[1] as $keys)
             {
-               // echo $keys.' ';
 
-                $this->add_keys_to_movie($keys,$mid);
+                global $debug;
+                if ($debug)echo $keys.' ';
+                $res = $this->add_keys_to_movie($keys,$mid);
+
+                if ($res)$count++;
             }
 
         }
+        else
+        {
 
+        $regv='/ \"rowTitle\"\:\"([^\"]+)\"/';
+        if (preg_match_all($regv, $content,$match)){
 
+            foreach ($match[1] as $keys)
+            {
+                global $debug;
+                if ($debug)echo $keys.' ';
+                $res = $this->add_keys_to_movie($keys,$mid);
+                if ($res)$count++;
+            }
+        }
+        }
+
+        return $count;
     }
-    private function update_movie_meta($mid)
+    private function update_movie_meta($mid,$count=0)
     {
+
 
     $q="SELECT `id` FROM `meta_movie_keywords_update` WHERE `mid` ={$mid}";
     if (!Pdo_an::db_results_array($q))
@@ -271,14 +322,34 @@ class Movie_Keywords {
     }
 
 
+        !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+        TMDB::add_log($mid,'','update movies','Total updated '.$count,1,'meta_movie_keywords_update');
 
+    }
+    public function parse_imdb_keywords($id)
+    {
+        !class_exists('GETCURL') ? include ABSPATH . "analysis/include/get_curl.php" : '';
 
+        $final_value = sprintf('%07d', $id);
+        $url = "https://www.imdb.com/title/tt" . $final_value . '/keywords?ref_=tt_stry_kw';
+
+        global $debug;
+        global $RWT_PROXY;
+        $result = GETCURL::getCurlCookie($url,$RWT_PROXY);
+
+        if ($debug)var_dump($result);
+
+        $data = TMDB::actor_data_to_object($result,$debug);
+
+        var_dump($data);
 
     }
 
     public function get_movies_keyword($id='')
     {
 
+     //  $res =$this->parse_imdb_keywords($id);
+      // return;
 
 // 1.w50  Last 30 days (30)
 // 2. w40 Last year  and rating 3-5 (250)
@@ -331,18 +402,21 @@ class Movie_Keywords {
             echo 'try get '.$mid. ' last_update '.date('H:i Y.m.d',$last_update).'<br>';
 
             $content =  TMDBIMPORT::get_data_from_archive(17,$mid,$last_update);
+            global $debug;
+            if ($debug )echo $content;
+            $count=0;
             if ($content)
             {
             $this->fill_keys($content,$mid);
             }
 	        if ($keywords_array)
 	        {
-		        $this->fill_main_keys($keywords_array,$mid);
+		      $count =   $this->fill_main_keys($keywords_array,$mid);
 	        }
 
            // echo $content;
             ///update movie meta
-            $this->update_movie_meta($mid);
+            $this->update_movie_meta($mid,$count);
         }
 
     }

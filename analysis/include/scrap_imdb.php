@@ -588,6 +588,12 @@ function movie_keywords($id='')
     !class_exists('Movie_Keywords') ? include ABSPATH . "analysis/include/keywords.php" : '';
 
     $keywords = new Movie_Keywords;
+    global $debug;
+    if (isset($_GET['debug']))
+    {
+        $debug =$_GET['debug'];
+    }
+
 
     $keywords->get_movies_keyword($id);
 
@@ -1508,7 +1514,7 @@ function add_empty_actors($id='')
                 echo 'try add actor ' . $id . PHP_EOL;
                 $result = add_actors_to_db($id, 1);
                 ////logs
-                TMDB::add_log($id,'update movies','result: '.$result,1,'add_empty_actors');
+                TMDB::add_log($id,'','update movies','result: '.$result,1,'add_empty_actors');
             }
 
         sleep(1);

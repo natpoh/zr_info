@@ -724,7 +724,8 @@ class TMDBIMPORT
     function get_data_from_archive($id,$movie_id,$last_update)
     {
         $data = self::get_archive($id,$movie_id,$last_update);
-
+        global $debug;
+        if ($debug){echo 'get_data_from_archive '; var_dump($data);}
         ///var_dump($data);
         if ($data) {
             $key = array_keys($data);
@@ -813,7 +814,8 @@ class TMDBIMPORT
         $arhives = $mp->get_last_arhives($company_id,$start,$count,$top_movie,$last_update);
 
 
-        ///var_dump($arhives);
+        global $debug;
+        if ($debug)var_dump($arhives);
 
         if ($arhives){
             foreach ($arhives as $item) {
