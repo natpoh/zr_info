@@ -1155,13 +1155,13 @@ class CriticMatic extends AbstractDB {
         foreach ($form_state as $key => $value) {
             if (preg_match('/rating_([a-z]+)/', $key, $match)) {
                 $rating_name = $match[1];
-                if ($rating_name=='r'){
-                    $value = (float) round($value,1);
-                    if ($value>5){
-                        $value=5;
+                if ($rating_name == 'r') {
+                    $value = (float) round($value, 1);
+                    if ($value > 5) {
+                        $value = 5;
                     }
-                    if ($value<0){
-                        $value=0;
+                    if ($value < 0) {
+                        $value = 0;
                     }
                 }
                 $rating[$rating_name] = $value;
@@ -1479,6 +1479,35 @@ class CriticMatic extends AbstractDB {
         $dict[$name] = $id;
 
         return $id;
+    }
+
+    public function get_post_links($cache=true) {
+        //Get from cache
+
+        $name = 'links';
+        static $dict;
+        if (is_null($dict)) {
+            $dict = array();
+        }
+
+        if (isset($dict[$name]) && $cache) {
+            return $dict[$name];
+        }
+
+        //Get name id
+        $sql = "SELECT * FROM {$this->db['posts_links']}";
+        $results = $this->db_results($sql);
+
+        $items = array();
+        if ($results && $cache) {
+            foreach ($results as $item) {
+               $items[$item->id] = $item->site;
+            }
+            // Add to cache
+            $dict[$name] = $items;
+        }
+
+        return $items;
     }
 
     public function clean_site_name($url) {
@@ -2661,7 +2690,7 @@ class CriticMatic extends AbstractDB {
 
         $data = array(
             'cid' => $cid,
-            'rating' => round($ret['r'],1),
+            'rating' => round((float) $ret['r'],1),
             'hollywood' => $ret['h'],
             'patriotism' => $ret['p'],
             'misandry' => $ret['m'],
@@ -2673,8 +2702,11 @@ class CriticMatic extends AbstractDB {
             'options' => $options
         );
 
-        $id = $this->sync_insert_data($data, $this->db['rating'], $this->sync_client, $this->sync_data);
-
+        try {
+            $id = $this->sync_insert_data($data, $this->db['rating'], false, $this->sync_data);
+        } catch (Exception $exc) {            
+            $id = 0;
+        }
         return $id;
     }
 
@@ -2689,7 +2721,7 @@ class CriticMatic extends AbstractDB {
             $options = '';
 
             $data = array(
-                'rating' => round($ret['r'],1),
+                'rating' => round((float) $ret['r'], 1),
                 'hollywood' => $ret['h'],
                 'patriotism' => $ret['p'],
                 'misandry' => $ret['m'],

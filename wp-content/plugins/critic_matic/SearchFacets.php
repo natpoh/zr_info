@@ -690,6 +690,12 @@ class SearchFacets extends AbstractDB {
                     $name = isset($this->cs->search_filters[$key][$slug]['title']) ? $this->cs->search_filters[$key][$slug]['title'] : $slug;
                     $tags[] = array('name' => $name, 'type' => $key, 'id' => $slug, 'tab' => 'critics', 'minus' => $minus);
                 }
+            } else if ($key == 'site') {
+                $value = is_array($value) ? $value : array($value);
+                foreach ($value as $slug) {
+                    $name = isset($this->cs->search_filters[$key][$slug]['title']) ? $this->cs->search_filters[$key][$slug]['title'] : $slug;
+                    $tags[] = array('name' => $name, 'type' => $key, 'id' => $slug, 'tab' => 'critics', 'minus' => $minus);
+                }
             }
         }
         return $tags;
@@ -1238,6 +1244,8 @@ class SearchFacets extends AbstractDB {
                     $this->show_tags_facet($data, $view_more);
                 } else if ($key == 'from') {
                     $this->show_from_author_facet($data, $view_more);
+                } else if ($key == 'site') {
+                    $this->show_from_site_facet($data, $view_more);
                 } else if ($key == 'movie' && $tab_key == 'critics') {
                     $this->show_movie_facet($data, $view_more, $count, $total);
                 } else if ($key == 'state') {
@@ -1479,7 +1487,7 @@ class SearchFacets extends AbstractDB {
         if (!$main_collapsed) {
             foreach ($this->cs->facet_data['auratings']['childs'] as $key => $value) {
 
-                $rating_data = isset($data[$key]['data']) ? $data[$key]['data'] : array();                
+                $rating_data = isset($data[$key]['data']) ? $data[$key]['data'] : array();
                 if ($rating_data || $this->cs->is_hide_facet($key, $this->filters) || $facet == $key) {
                     $count = sizeof($rating_data);
                     $icon = '<span class="' . $value['icon'] . '"></span>';
@@ -2719,6 +2727,43 @@ class SearchFacets extends AbstractDB {
 
 
         $title = 'From author';
+        $ftype = 'critics';
+        $this->theme_facet_multi($filter, $dates, $title, $more, $ftype);
+    }
+
+    public function show_from_site_facet($data, $more) {
+        $keys = array();
+        $filter = 'site';
+
+        foreach ($data as $value) {
+            $keys[] = (int) $value->id;
+        }
+        $sites = $this->cm->get_post_links();
+
+        $dates = array();
+        $titles = array();
+        $sort_dates = array();
+        foreach ($data as $value) {
+            $id = (int) $value->id;
+            $cnt = $value->cnt;
+            if (isset($sites[$id])) {
+                $slug = $id;
+                $title = $sites[$id];
+                if (!$title){
+                    $title='none';
+                }
+                $titles[$title . '-' . $id] = $id;
+                $dates[$slug] = array('title' => $title, 'count' => $cnt);
+            }
+        }
+        ksort($titles);
+        foreach ($titles as $key => $id) {
+            $sort_dates[$id] = $dates[$id];
+        }
+        $dates = $sort_dates;
+
+
+        $title = 'From site';
         $ftype = 'critics';
         $this->theme_facet_multi($filter, $dates, $title, $more, $ftype);
     }

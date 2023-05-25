@@ -686,7 +686,7 @@ class CriticAudience extends AbstractDb {
     public function rating_images($type, $rating, $subrating = 0) {
 
         if ($subrating == 0) {
-            $rating = (int) round($rating, 0);
+            $rating = (float) round($rating, 1);
         }
         if ($rating > 5)
             $rating = 5;
@@ -1243,7 +1243,17 @@ class CriticAudience extends AbstractDb {
         if ($value) {
             $width = $value * 20;
             $sizes = array(0, 100, 50, 33.3333, 25, 20);
-            $span_style = "width: " . $width . "%; background-size: " . $sizes[$value] . "%;";
+
+
+            $count = $value * 100 / 5;
+
+            if ($value)
+            {
+                $bg = 100 / $value;
+            }
+
+
+            $span_style = "width: " . $count . "%; background-size: " . $bg . "%;";
         }
         $s = '';
         if ($key == 'rating') {

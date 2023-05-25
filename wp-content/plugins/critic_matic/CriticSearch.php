@@ -334,6 +334,11 @@ class CriticSearch extends AbstractDB {
             'tabs' => array('critics'),
             'weight' => 70,
         ),
+        'site' => array(
+            'title' => 'From site',
+            'tabs' => array('critics'),
+            'weight' => 80,
+        ),
     );
     // Facets
     public $facets = array();
@@ -2203,6 +2208,11 @@ class CriticSearch extends AbstractDB {
                 $filters_and = $this->get_filters_query($filters, 'from', $query_type);
                 $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM critic WHERE status=1 AND author_type!=2" . $filters_and . $match
                         . " GROUP BY aid ORDER BY cnt DESC LIMIT 0,$limit";
+            } else if ($facet == 'site') {
+                $limit = $expand == $facet ? $this->facet_max_limit : $this->facet_limit;
+                $filters_and = $this->get_filters_query($filters, $facet, $query_type);
+                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM critic WHERE status=1 AND author_type!=2" . $filters_and . $match
+                        . " GROUP BY " . $facet . " ORDER BY cnt DESC LIMIT 0,$limit";
             } else if ($facet == 'genre') {
                 $limit = $expand == 'genre' ? $this->facet_max_limit : $this->facet_limit;
                 $filters_and = $this->get_filters_query($filters, 'genre', $query_type);
@@ -2743,6 +2753,18 @@ class CriticSearch extends AbstractDB {
                         // Todo get author by slug
                         $this->search_filters[$key][$slug] = array('key' => $slug, 'title' => $authors[$slug]->name);
                     }
+                } else if ($key == 'site') {
+                    // From site
+                    $value = is_array($value) ? $value : array($value);
+                    $sites = $this->cm->get_post_links();
+                    foreach ($value as $slug) {
+                        // Todo get author by slug
+                        $title = $sites[$slug];
+                        if (!$title) {
+                            $title = 'none';
+                        }
+                        $this->search_filters[$key][$slug] = array('key' => $slug, 'title' => $title);
+                    }
                 } else if ($key == 'tags') {
                     // Tags                       
                     $value = is_array($value) ? $value : array($value);
@@ -2935,6 +2957,9 @@ class CriticSearch extends AbstractDB {
                     } else if ($key == 'from') {
                         // From author
                         $filters_and .= $this->filter_multi_value('aid', $value, true);
+                    } else if ($key == 'site') {
+                        // From author
+                        $filters_and .= $this->filter_multi_value($key, $value, true);
                     } else if ($key == 'tags') {
                         // Tags                       
                         $filters_and .= $this->filter_multi_value($key, $value, true);
@@ -3078,17 +3103,17 @@ class CriticSearch extends AbstractDB {
             $keyword = str_replace("'", "\'", $keyword);
             $match_query = $this->wildcards_maybe_query($keyword, $widlcard, $mode);
 
-            if ($mode == " ") {               
+            if ($mode == " ") {
                 $match_query_or = $this->wildcards_maybe_query($keyword, $widlcard, '|');
                 $match = sprintf(" AND MATCH('@(title,year) ((^%s$)|(%s))')", $keyword, $match_query_or);
             } else {
                 $match = sprintf(" AND MATCH('@(title,year) ((^%s$)|(%s))')", $keyword, $match_query);
             }
         }
-        
+
         $sql = sprintf("SELECT id, rwt_id, title, release, type, year, weight() w FROM movie_an WHERE id>0"
                 . $year_and . $and_type . $match . $order . " LIMIT %d,%d", $start, $limit);
-        
+
         $result = $this->sdb_results($sql);
 
         if (!$show_meta) {

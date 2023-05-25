@@ -44,8 +44,6 @@ function listen(box, e)
 function listen_click(box, e) {
     let  cw = 0;
 
-
-
     if (e.changedTouches)
     {
 
@@ -74,9 +72,15 @@ function listen_click(box, e) {
     let wd = box.clientWidth;
 
     let rz = (cw / wd) * 5;
+    if (box.classList.contains('rating'))
+    {
+        rz = Math.round(Number(rz) * 2) / 2;
+    }
+    else
+    {
+        rz =Math.ceil(Number(rz));
+    }
 
-    //rz = Math.round(Number(rz) * 2) / 2;
-    rz =Math.ceil(Number(rz));
     let r_color = Math.ceil(Number(rz));
 
     if (rz > 5)

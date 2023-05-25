@@ -18,7 +18,7 @@ if (!function_exists('add_action')) {
 define('CRITIC_MATIC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CRITIC_MATIC_PLUGIN_URL', plugin_dir_url(__FILE__));
 
-$version = '1.0.95';
+$version = '1.0.96';
 if (defined('LASTVERSION')) {
     define('CRITIC_MATIC_VERSION', $version . LASTVERSION);
 } else {
@@ -594,7 +594,7 @@ function critic_matic_plugin_activation() {
                                 `date` int(11) NOT NULL DEFAULT '0',                                    
                                 `status` int(11) NOT NULL DEFAULT '0',      		                                
                                 `top_movie` int(11) NOT NULL DEFAULT '0',                                
-                                `rating` int(11) NOT NULL DEFAULT '0', 
+                                `rating` float(5) NOT NULL DEFAULT '0', 
                                 `hollywood` int(11) NOT NULL DEFAULT '0', 
                                 `patriotism` int(11) NOT NULL DEFAULT '0', 
                                 `misandry` int(11) NOT NULL DEFAULT '0', 
@@ -625,7 +625,7 @@ function critic_matic_plugin_activation() {
 				`id` int(11) unsigned NOT NULL auto_increment,
                                 `cid` int(11) NOT NULL DEFAULT '0',
                                 `date` int(11) NOT NULL DEFAULT '0',
-                                `rating` int(11) NOT NULL DEFAULT '0', 
+                                `rating` float(5) NOT NULL DEFAULT '0', 
                                 `hollywood` int(11) NOT NULL DEFAULT '0', 
                                 `patriotism` int(11) NOT NULL DEFAULT '0', 
                                 `misandry` int(11) NOT NULL DEFAULT '0', 
@@ -683,7 +683,7 @@ function critic_matic_plugin_activation() {
 				`id` int(11) unsigned NOT NULL auto_increment,
                                 `cid` int(11) NOT NULL DEFAULT '0',       
                                 `options` text default NULL,
-                                `rating` int(11) NOT NULL DEFAULT '0', 
+                                `rating` float(5) NOT NULL DEFAULT '0', 
                                 `hollywood` int(11) NOT NULL DEFAULT '0', 
                                 `patriotism` int(11) NOT NULL DEFAULT '0', 
                                 `misandry` int(11) NOT NULL DEFAULT '0', 
@@ -1537,9 +1537,9 @@ DELETE FROM `data_movie_country` WHERE id>181
  * 
  * int to float
  
- ALTER TABLE wp_bcw98b_critic_matic_audience_rev MODIFY rating float(5) NOT NULL
- ALTER TABLE wp_bcw98b_critic_matic_audience MODIFY rating float(5) NOT NULL
- ALTER TABLE wp_bcw98b_critic_matic_rating MODIFY rating float(5) NOT NULL
+ ALTER TABLE wp_bcw98b_critic_matic_audience_rev MODIFY rating float(5) NOT NULL DEFAULT '0'
+ ALTER TABLE wp_bcw98b_critic_matic_audience MODIFY rating float(5) NOT NULL DEFAULT '0'
+ ALTER TABLE wp_bcw98b_critic_matic_rating MODIFY rating float(5) NOT NULL DEFAULT '0'
 
  * 
  */

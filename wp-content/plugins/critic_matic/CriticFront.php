@@ -1300,7 +1300,7 @@ class CriticFront extends SearchFacets {
         if (!$stars)
             $stars = 0;
 
-        $stars = round($stars, 0);
+        $stars = round($stars, 1);
         $stars_data = $stars;
 
         $stars = $this->rating_images('rating', $stars);
