@@ -21,7 +21,11 @@ class CriticSearch extends AbstractDB {
     public $sps;
     private $wpdb;
     private $search_settings = '';
-    private $search_setting_valid_pocent = 10;
+    
+    private $search_prc = array(
+        'def'=> 10,
+        'limit' => 200,
+    );
     public $facet_limit = 10;
     public $facet_max_limit = 200;
     public $facet_weight_def = 100;
@@ -4239,7 +4243,8 @@ class CriticSearch extends AbstractDB {
     }
 
     public function get_settings_range($param) {
-        $procent = $this->search_setting_valid_pocent;
+        $procent = isset($this->search_prc[$param])?$this->search_prc[$param]:$this->search_prc['def'];
+        
         $min_setting = $def_setting = $max_setting = 0;
 
         if (isset($this->default_search_settings[$param])) {
@@ -4251,6 +4256,9 @@ class CriticSearch extends AbstractDB {
             if ($def_setting > 5) {
                 $min_setting = (int) $min_setting;
                 $max_setting = (int) $max_setting;
+            }
+            if ($min_setting<0){
+                $min_setting=0;
             }
         }
         return array('min' => $min_setting, 'def' => $def_setting, 'max' => $max_setting);
