@@ -1587,7 +1587,7 @@ class CriticSearch extends AbstractDB {
         }
 
         $sql = sprintf("SELECT id, title, post_date, content, weight() w" . $snippet . " FROM critic "
-                . "WHERE MATCH('@(title,content) ($keyword)') AND author_type!=%d" . $ids_and . $and_release . " LIMIT %d "
+                . "WHERE MATCH('@(title,content) ($keyword)') AND status=1 AND author_type!=%d" . $ids_and . $and_release . " LIMIT %d "
                 . "OPTION ranker=expr('sum(user_weight)'), "
                 . "field_weights=(title=10, content=1) ", $author_type, $limit);
 
