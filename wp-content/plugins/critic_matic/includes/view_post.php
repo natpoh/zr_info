@@ -225,11 +225,10 @@ if ($pid) {
 
 
         // Find feed data
-
-        $cf = $this->cm->get_cf();
-        $feed_cid = $cf->get_cid_by_pid($pid);
+        $feed_cid = $this->cm->get_feed_by_pid($pid);
 
         if ($feed_cid) {
+            $cf = $this->cm->get_cf();
             $feed_camp = $cf->get_campaign($feed_cid);
             ?>
             <br />

@@ -953,6 +953,12 @@ class CriticMatic extends AbstractDB {
         $result = $this->db_get_var($query);
         return $result;
     }
+    
+    public function get_feed_by_pid($pid) {
+        $query = sprintf("SELECT cid FROM {$this->db['feed_meta']} WHERE pid=%d", $pid);
+        $result = $this->db_get_var($query);
+        return $result;
+    }
 
     public function update_critic_top_movie($cid) {
         // Update top movie link after any change in critic meta
