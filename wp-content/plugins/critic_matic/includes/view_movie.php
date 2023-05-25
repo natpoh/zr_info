@@ -356,7 +356,8 @@ if ($mid) {
                         <td class="manage-column column-cb check-column" ><input type="checkbox" id="cb-select-all-1"></td>
                         <th><?php print __('Meta id') ?></th>
                         <th><?php print __('Critic id') ?></th>
-                        <th><?php print __('Critic title') ?></th>                    
+                        <th><?php print __('Critic title') ?></th>
+                        <th><?php print __('Critic status') ?></th>
                         <th><?php print __('Type') ?></th>                 
                         <th><?php print __('State') ?></th>                    
                         <th><?php print __('Rating') ?></th> 
@@ -377,6 +378,7 @@ if ($mid) {
                             <td><?php print $item->id ?></td>
                             <td><?php print $item->cid ?></td>
                             <td><?php print $critic_link ?></td>
+                            <td><?php print $this->cm->get_post_status($critic->status) ?></td>
                             <td><?php print $this->cm->get_post_category_name($item->type) ?></td>
                             <td><?php print $state ?></td>                          
                             <td><?php print $item->rating ?></td>
