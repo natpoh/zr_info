@@ -252,6 +252,7 @@ class CriticMatic extends AbstractDB {
             'an_weightid' => 0,
             'an_verdict_type' => 'p',
             'audience_unique' => 0,
+            'audience_top_unique' => 0,
         );
 
         $this->sync_data = DB_SYNC_DATA == 1 ? true : false;
@@ -953,7 +954,7 @@ class CriticMatic extends AbstractDB {
         $result = $this->db_get_var($query);
         return $result;
     }
-    
+
     public function get_feed_by_pid($pid) {
         $query = sprintf("SELECT cid FROM {$this->db['feed_meta']} WHERE pid=%d", $pid);
         $result = $this->db_get_var($query);
@@ -2075,6 +2076,19 @@ class CriticMatic extends AbstractDB {
         );
 
         $this->sync_update_data($data, $author->id, $this->db['authors'], $this->sync_data);
+    }
+
+    public function update_author_status($aid, $status) {
+        $sql = sprintf("SELECT status FROM {$this->db['authors']} WHERE id=%d", $aid);
+        $old_status = $this->db_get_var($sql);
+        if ($old_status != $status) {
+            $data = array(
+                'status' => $status,
+            );
+            $this->sync_update_data($data, $aid, $this->db['authors'], $this->sync_data);
+            return true;
+        }
+        return false;
     }
 
     public function update_author_wp_uid($id = 0, $wp_uid = 0) {
@@ -3355,6 +3369,7 @@ class CriticMatic extends AbstractDB {
         }
 
         $ss['audience_unique'] = $form['audience_unique'] ? 1 : 0;
+        $ss['audience_top_unique'] = $form['audience_top_unique'] ? 1 : 0;
 
 
         if (isset($form['parser_proxy'])) {

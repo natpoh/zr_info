@@ -60,10 +60,22 @@
                 }
                 ?>
                 <input type="checkbox" name="<?php print $type_name ?>" value="1" <?php print $checked ?> >
-                <span class="checkbox-title">Unique authors. Show only unique authors on the front page.</span>
+                <span class="checkbox-title">Latest front audience: unique authors.</span>
             </label>
 
-
+            <label class="inline-edit-status">                
+                <?php
+                $checked = '';
+                $type_name = 'audience_top_unique';
+                $type = isset($ss[$type_name]) ? $ss[$type_name] : 0;
+                if ($type == 1) {
+                    $checked = 'checked="checked"';
+                }
+                ?>
+                <input type="checkbox" name="<?php print $type_name ?>" value="1" <?php print $checked ?> >
+                <span class="checkbox-title">Positive and negative front audience: unique authors.</span>
+            </label>
+            
             <?php wp_nonce_field('critic-feeds-options', 'critic-feeds-nonce'); ?>
             <br />
             <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save') ?>" class="button-primary">  

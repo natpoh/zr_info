@@ -206,7 +206,7 @@ class SearchFacets extends AbstractDB {
             $sort = 'mw';
         }
 
-        if ($this->keywords) {
+        if ($this->keywords||$this->filters['mkw']) {
             $sort = 'rel';
         }
 
@@ -428,7 +428,7 @@ class SearchFacets extends AbstractDB {
 
     public function get_sort_available($tab) {
         $sort_available = $this->search_sort[$tab];
-        if (!$this->keywords) {
+        if (!$this->keywords && !$this->filters['mkw']) {
             unset($sort_available['rel']);
         }
         if (!$this->filters['movie']) {
@@ -1229,8 +1229,8 @@ class SearchFacets extends AbstractDB {
                 } else if ($key == 'country') {
                     $this->show_country_facet($data, $view_more);
                 } else if ($key == 'mkw') {
-                    if (isset($_GET['ackw-facet-mkw'])) {
-                        $keyword = $_GET['ackw-facet-mkw'];
+                    if (isset($_POST['ackw-facet-mkw'])) {
+                        $keyword = $_POST['ackw-facet-mkw'];
                         $this->movie_quickfilter($keyword, 0, $key);
                     } else {
                         $this->show_keyword_facet($data, $view_more, $key, 'movies', $facets_data);
@@ -1665,8 +1665,8 @@ class SearchFacets extends AbstractDB {
                     $view_more = ($total > $count) ? $total : 0;
                 }
 
-                if (isset($_GET['ackw-facet-' . $filter])) {
-                    $keyword = $_GET['ackw-facet-' . $filter];
+                if (isset($_POST['ackw-facet-' . $filter])) {
+                    $keyword = $_POST['ackw-facet-' . $filter];
                     $this->movie_quickfilter($keyword, 0, $filter);
                 } else {
                     $this->show_franchise_facet($facet_data, $view_more, $filter, $ftype);
@@ -1689,8 +1689,8 @@ class SearchFacets extends AbstractDB {
                     $total = $this->get_meta_total_found($data[$filter]['meta']);
                     $view_more = ($total > $count) ? $total : 0;
                 }
-                if (isset($_GET['ackw-facet-' . $filter])) {
-                    $keyword = $_GET['ackw-facet-' . $filter];
+                if (isset($_POST['ackw-facet-' . $filter])) {
+                    $keyword = $_POST['ackw-facet-' . $filter];
                     $this->movie_quickfilter($keyword, 0, $filter);
                 } else {
                     $this->show_distributor_facet($facet_data, $view_more, $filter, $ftype, array(), '', 'Production');
@@ -1713,8 +1713,8 @@ class SearchFacets extends AbstractDB {
                     $total = $this->get_meta_total_found($data[$filter]['meta']);
                     $view_more = ($total > $count) ? $total : 0;
                 }
-                if (isset($_GET['ackw-facet-' . $filter])) {
-                    $keyword = $_GET['ackw-facet-' . $filter];
+                if (isset($_POST['ackw-facet-' . $filter])) {
+                    $keyword = $_POST['ackw-facet-' . $filter];
                     $this->movie_quickfilter($keyword, 0, $filter);
                 } else {
                     $this->show_distributor_facet($facet_data, $view_more, $filter, $ftype);

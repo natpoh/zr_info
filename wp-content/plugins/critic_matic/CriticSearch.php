@@ -21,9 +21,8 @@ class CriticSearch extends AbstractDB {
     public $sps;
     private $wpdb;
     private $search_settings = '';
-    
     private $search_prc = array(
-        'def'=> 10,
+        'def' => 10,
         'limit' => 200,
     );
     public $facet_limit = 10;
@@ -2076,13 +2075,30 @@ class CriticSearch extends AbstractDB {
     }
 
     public function front_search_movies_multi($keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = false, $show_meta = true, $widlcard = true, $show_main = true) {
+
+        $m_mkw = '';
+        if ($filters['mkw']) {
+            $mkw = $filters['mkw'];
+            if (is_array($mkw)) {
+                $mkw = implode('|', $mkw);
+            }
+            $m_mkw = " @(mkw_str) (" . $mkw . ")";
+        }
+
         //Keywords logic
         $match = '';
         if ($keyword) {
             $search_keywords = $this->wildcards_maybe_query($keyword, $widlcard, ' ');
-            $search_query = sprintf("'@(title,year) ((^%s$)|(%s))'", $keyword, $search_keywords);
+            $search_query = sprintf("'@(title,year) ((^%s$)|(%s))" . $m_mkw . "'", $keyword, $search_keywords);
             $match = " AND MATCH(:match)";
+        } else {
+            if ($m_mkw) {
+                $search_query = "'" . $m_mkw . "'";
+                $match = " AND MATCH(:match)";
+            }
         }
+
+
 
         $ret = array('list' => array(), 'count' => 0);
         $this->connect();
@@ -2919,7 +2935,7 @@ class CriticSearch extends AbstractDB {
                         }
                     } else if ($key == 'mkw') {
                         // Movie Keywords
-                        $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
+                        // $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
                     } else if ($key == 'franchise') {
                         // Franchise
                         $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
@@ -4243,8 +4259,8 @@ class CriticSearch extends AbstractDB {
     }
 
     public function get_settings_range($param) {
-        $procent = isset($this->search_prc[$param])?$this->search_prc[$param]:$this->search_prc['def'];
-        
+        $procent = isset($this->search_prc[$param]) ? $this->search_prc[$param] : $this->search_prc['def'];
+
         $min_setting = $def_setting = $max_setting = 0;
 
         if (isset($this->default_search_settings[$param])) {
@@ -4257,15 +4273,21 @@ class CriticSearch extends AbstractDB {
                 $min_setting = (int) $min_setting;
                 $max_setting = (int) $max_setting;
             }
-            if ($min_setting<0){
-                $min_setting=0;
+            if ($min_setting < 0) {
+                $min_setting = 0;
             }
         }
         return array('min' => $min_setting, 'def' => $def_setting, 'max' => $max_setting);
     }
 
     private function get_perpage() {
-        $this->perpage = isset($_GET['perpage']) ? (int) $_GET['perpage'] : $this->perpage;
+        $perpage = isset($_GET['perpage']) ? (int) $_GET['perpage'] : 0;
+        if (!$perpage) {
+            $perpage = isset($_POST['perpage']) ? (int) $_POST['perpage'] : $this->perpage;
+        }
+
+        $this->perpage = $perpage;
+
         return $this->perpage;
     }
 
