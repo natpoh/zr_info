@@ -143,6 +143,10 @@ class SiteImg extends AbstractDB {
                 }
             }
         }
+        
+        if ($debug){
+            print_r($ml_camp_ret);
+        }
 
         return $ml_camp_ret;
     }
@@ -172,7 +176,15 @@ class SiteImg extends AbstractDB {
                 if ($post) {
                     $po = $mp->get_post_options($post);
                     if (isset($po['url'])) {
+                        
                         $url = $po['url'];
+                        
+                        # Translate link
+                        $turl = str_replace('https://www.kinopoisk.ru/', 'https://www-kinopoisk-ru.translate.goog/', $url);
+                        $turl = $turl.'reviews/?_x_tr_sl=ru&_x_tr_tl=en&_x_tr_hl=en';
+                        
+                        $url = $turl;
+                        
                     }
                 }
             } else {
