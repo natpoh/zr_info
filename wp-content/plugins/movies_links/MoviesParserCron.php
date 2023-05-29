@@ -253,7 +253,7 @@ class MoviesParserCron extends MoviesAbstractDB {
 
         // Get last posts
         $last_posts = $this->mp->get_last_arhives_no_posts($urls_count, $cid, $version, true, $debug, $custom_url_id);
-        if ($debug){
+        if ($debug) {
             print_r($last_posts);
         }
 
@@ -284,8 +284,8 @@ class MoviesParserCron extends MoviesAbstractDB {
                     }
                 } else {
                     if ($debug) {
-                            print "No movie link in post\n";
-                        }
+                        print "No movie link in post\n";
+                    }
                     $valid_result[] = $item;
                 }
             }
@@ -1000,6 +1000,58 @@ class MoviesParserCron extends MoviesAbstractDB {
                 if ($urls) {
                     foreach ($urls as $url) {
                         $this->mp->delete_arhive_by_url_id($url->id);
+                    }
+                }
+            }
+        }
+    }
+
+    public function remove_invalid_urls($count = 10, $debug = false, $force = false) {
+
+        $option_name = 'invalid_urls_last_id';
+        $last_id = $this->get_option($option_name, 0);
+        if ($force) {
+            $last_id = 0;
+        }
+
+        if ($debug) {
+            p_r(array('last_id', $last_id));
+        }
+
+        # 1. Get pids from site campaigns
+        $pids = $this->mp->get_last_pids($last_id, $count);
+
+        if ($debug) {
+            print_r($pids);
+        }
+
+        if ($pids) {
+            $last = end($pids);
+            if ($debug) {
+                print 'last id: ' . $last->pid . "\n";
+            }
+            if ($last) {
+                $this->update_option($option_name, $last->pid);
+            }
+            $ma = $this->ml->get_ma();
+
+            foreach ($pids as $item) {
+                $pid = $item->pid;
+                # 2. Get movie by pid
+                if (!$ma->get_movie_id_by_id($pid)) {
+
+
+                    $urls = $this->mp->get_all_movie_urls_by_pid($pid);
+                    if ($debug) {
+                        print_r(array($pid, 'Movie not exist. Trash urls', $urls));
+                    }
+                    if ($urls){
+                        foreach ($urls as $url) {
+                             $data = array(
+                                 'status'=>2,
+                             );
+                             $this->mp->update_url($data, $url->id);
+                         }
                     }
                 }
             }
