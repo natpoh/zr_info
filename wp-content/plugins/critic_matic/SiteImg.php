@@ -10,9 +10,9 @@ class SiteImg extends AbstractDB {
     private $cm;
     private $mp;
     private $db;
-    private $ml_camp = array(
-        22 => array('ekey' => 'kinop_rating', 'name' => 'Kinopoisk', 'flag' => 'ru', 'ratmax' => 10, 'multipler' => 10),
-        24 => array('ekey' => 'douban_rating', 'name' => 'Douban', 'flag' => 'cn', 'link' => 'douban', 'ratmax' => 10, 'multipler' => 10),
+    private $ml_camp = array(        
+        22 => array('ekey' => 'douban_rating', 'name' => 'Douban', 'flag' => 'cn', 'link' => 'douban', 'ratmax' => 10, 'multipler' => 10),
+        24 => array('ekey' => 'kinop_rating', 'name' => 'Kinopoisk', 'flag' => 'ru', 'ratmax' => 10, 'multipler' => 10),
     );
 
     public function __construct($cm = '') {
@@ -118,14 +118,12 @@ class SiteImg extends AbstractDB {
                 $this->db_update($data, $this->db['site_img'], $exist->id);
             } else {
                 # Append
-                $link_data = $this->get_link($cid, $mid);
+                $link = $this->get_link($cid, $mid, $debug);
                 if ($debug) {
-                    print_r($link_data);
+                    print_r($link);
                 }
-                if ($link_data) {
-                    $link = $link_data->link;
-                    $link_hash = $link_data->link_hash;
-
+                if ($link) {
+                    $link_hash = $this->link_hash($link);
                     $ml_camp_ret[$cid]['link'] = $link;
                     $ml_camp_ret[$cid]['link_hash'] = $link_hash;
                     $ml_camp_ret[$cid]['img'] = 0;
@@ -155,9 +153,34 @@ class SiteImg extends AbstractDB {
         return $results;
     }
 
-    public function get_link($cid, $mid) {
+    public function get_link($cid, $mid, $debug = false) {
         $mp = $this->get_mp();
-        $url = $mp->get_url_by_mid($mid, $cid);
+        $url_data = $mp->get_url_by_mid($mid, $cid);
+
+        if ($debug) {
+            print_r($url_data);
+        }
+
+        $url = '';
+        if ($url_data) {
+            if ($cid == 24) {
+                # Kinopoisk logic
+                $post = $mp->get_post_by_uid($url_data->id);
+                if ($debug) {
+                    print_r($post);
+                }
+                if ($post) {
+                    $po = $mp->get_post_options($post);
+                    if (isset($po['url'])) {
+                        $url = $po['url'];
+                    }
+                }
+            } else {
+                # Other
+                $url = $url_data->link;
+            }
+        }
+
         return $url;
     }
 
