@@ -6,19 +6,13 @@
   Description: This plugin manages the movies
   Author: Brahman  <fb@emelianovip.ru>
   Author URI: https://emelianovip.ru
-  Version: 0.0.2
+  Version: 1.0.2
   License: GPLv2
  */
 
 
-define('MOVIES_LINKS_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/movies_links/');
+!defined(MOVIES_LINKS_PLUGIN_DIR) ? define('MOVIES_LINKS_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/movies_links/') : '';
 
-$version = '0.0.2';
-if (defined('LASTVERSION')) {
-    define('MOVIES_LINKS_VERSION', $version . LASTVERSION);
-} else {
-    define('MOVIES_LINKS_VERSION', $version);
-}
 
 function include_movies_links() {
     //DB config

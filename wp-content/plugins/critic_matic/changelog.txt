@@ -1,3 +1,6 @@
+1.0.97 - 26.05.2022
+Cancel search load if click to new item
+
 1.0.96 - 25.05.2022
 Add source site filter for reviews
 

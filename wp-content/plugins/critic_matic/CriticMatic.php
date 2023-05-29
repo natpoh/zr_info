@@ -21,6 +21,7 @@ class CriticMatic extends AbstractDB {
     private $mw;
     private $ts;
     private $uc;
+    private $si;
 
 
     /*
@@ -380,7 +381,6 @@ class CriticMatic extends AbstractDB {
     }
 
     public function get_ma() {
-        // Get criti
         if (!$this->ma) {
             // init cma
             if (!class_exists('MoviesAn')) {
@@ -391,6 +391,18 @@ class CriticMatic extends AbstractDB {
         return $this->ma;
     }
 
+    
+    public function get_si() {
+        // Get site img
+        if (!$this->si) {
+            if (!class_exists('SiteImg')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'SiteImg.php' );
+            }
+            $this->si = new SiteImg($this);
+        }
+        return $this->si;
+    }
+    
     function admin_bar_render($wp_admin_bar) {
         if ($this->new_audience_count > 0 && $this->user_can) {
 

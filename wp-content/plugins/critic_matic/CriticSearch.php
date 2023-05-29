@@ -2097,8 +2097,13 @@ class CriticSearch extends AbstractDB {
                 $match = " AND MATCH(:match)";
             }
         }
-
-
+        /*
+        $match = '';
+        $search_query = $this->get_search_query($keyword, $filters, $widlcard);
+        if ($search_query){
+            $match = " AND MATCH(:match)";
+        }
+*/
 
         $ret = array('list' => array(), 'count' => 0);
         $this->connect();
@@ -2134,6 +2139,48 @@ class CriticSearch extends AbstractDB {
 
         $ret['facets'] = $facets_arr;
         return $ret;
+    }
+
+    public function get_search_query($keyword = '', $filters = array(), $widlcard = true, $exclude = array()) {
+        $search_query = '';
+
+        $keys = array('mkw');
+        $custom_query = '';
+        foreach ($keys as $key) {
+
+            // Exclude filter
+            if (is_array($exclude)) {
+                if (in_array($key, $exclude)) {
+                    continue;
+                }
+            } else if ($key == $exclude) {
+                continue;
+            }
+
+            if ($key == 'mkw') {                
+                if ($filters['mkw']) {
+                    $mkw = $filters['mkw'];
+                    if (is_array($mkw)) {
+                        $mkw = implode('|', $mkw);
+                    }
+                    $custom_query .= " @(mkw_str) (" . $mkw . ")";
+                }
+            }
+        }
+
+
+
+
+        //Keywords logic
+        if ($keyword) {
+            $search_keywords = $this->wildcards_maybe_query($keyword, $widlcard, ' ');
+            $search_query = sprintf("'@(title,year) ((^%s$)|(%s))" . $custom_query . "'", $keyword, $search_keywords);
+        } else {
+            if ($custom_query) {
+                $search_query = "'" . $custom_query . "'";
+            }
+        }
+        return $search_query;
     }
 
     public function front_search_critic_movies($keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = false, $show_meta = true, $widlcard = false) {
