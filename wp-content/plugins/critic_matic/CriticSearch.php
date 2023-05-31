@@ -21,9 +21,8 @@ class CriticSearch extends AbstractDB {
     public $sps;
     private $wpdb;
     private $search_settings = '';
-    
     private $search_prc = array(
-        'def'=> 10,
+        'def' => 10,
         'limit' => 200,
     );
     public $facet_limit = 10;
@@ -1587,7 +1586,7 @@ class CriticSearch extends AbstractDB {
         }
 
         $sql = sprintf("SELECT id, title, post_date, content, weight() w" . $snippet . " FROM critic "
-                . "WHERE MATCH('@(title,content) ($keyword)') AND author_type!=%d" . $ids_and . $and_release . " LIMIT %d "
+                . "WHERE MATCH('@(title,content) ($keyword)') AND status=1 AND author_type!=%d" . $ids_and . $and_release . " LIMIT %d "
                 . "OPTION ranker=expr('sum(user_weight)'), "
                 . "field_weights=(title=10, content=1) ", $author_type, $limit);
 
@@ -2076,13 +2075,35 @@ class CriticSearch extends AbstractDB {
     }
 
     public function front_search_movies_multi($keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = false, $show_meta = true, $widlcard = true, $show_main = true) {
+
+        $m_mkw = '';
+        if ($filters['mkw']) {
+            $mkw = $filters['mkw'];
+            if (is_array($mkw)) {
+                $mkw = implode('|', $mkw);
+            }
+            $m_mkw = " @(mkw_str) (" . $mkw . ")";
+        }
+
         //Keywords logic
         $match = '';
         if ($keyword) {
             $search_keywords = $this->wildcards_maybe_query($keyword, $widlcard, ' ');
-            $search_query = sprintf("'@(title,year) ((^%s$)|(%s))'", $keyword, $search_keywords);
+            $search_query = sprintf("'@(title,year) ((^%s$)|(%s))" . $m_mkw . "'", $keyword, $search_keywords);
+            $match = " AND MATCH(:match)";
+        } else {
+            if ($m_mkw) {
+                $search_query = "'" . $m_mkw . "'";
+                $match = " AND MATCH(:match)";
+            }
+        }
+        /*
+        $match = '';
+        $search_query = $this->get_search_query($keyword, $filters, $widlcard);
+        if ($search_query){
             $match = " AND MATCH(:match)";
         }
+*/
 
         $ret = array('list' => array(), 'count' => 0);
         $this->connect();
@@ -2118,6 +2139,48 @@ class CriticSearch extends AbstractDB {
 
         $ret['facets'] = $facets_arr;
         return $ret;
+    }
+
+    public function get_search_query($keyword = '', $filters = array(), $widlcard = true, $exclude = array()) {
+        $search_query = '';
+
+        $keys = array('mkw');
+        $custom_query = '';
+        foreach ($keys as $key) {
+
+            // Exclude filter
+            if (is_array($exclude)) {
+                if (in_array($key, $exclude)) {
+                    continue;
+                }
+            } else if ($key == $exclude) {
+                continue;
+            }
+
+            if ($key == 'mkw') {                
+                if ($filters['mkw']) {
+                    $mkw = $filters['mkw'];
+                    if (is_array($mkw)) {
+                        $mkw = implode('|', $mkw);
+                    }
+                    $custom_query .= " @(mkw_str) (" . $mkw . ")";
+                }
+            }
+        }
+
+
+
+
+        //Keywords logic
+        if ($keyword) {
+            $search_keywords = $this->wildcards_maybe_query($keyword, $widlcard, ' ');
+            $search_query = sprintf("'@(title,year) ((^%s$)|(%s))" . $custom_query . "'", $keyword, $search_keywords);
+        } else {
+            if ($custom_query) {
+                $search_query = "'" . $custom_query . "'";
+            }
+        }
+        return $search_query;
     }
 
     public function front_search_critic_movies($keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = false, $show_meta = true, $widlcard = false) {
@@ -2919,7 +2982,7 @@ class CriticSearch extends AbstractDB {
                         }
                     } else if ($key == 'mkw') {
                         // Movie Keywords
-                        $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
+                        // $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
                     } else if ($key == 'franchise') {
                         // Franchise
                         $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
@@ -4243,8 +4306,8 @@ class CriticSearch extends AbstractDB {
     }
 
     public function get_settings_range($param) {
-        $procent = isset($this->search_prc[$param])?$this->search_prc[$param]:$this->search_prc['def'];
-        
+        $procent = isset($this->search_prc[$param]) ? $this->search_prc[$param] : $this->search_prc['def'];
+
         $min_setting = $def_setting = $max_setting = 0;
 
         if (isset($this->default_search_settings[$param])) {
@@ -4257,15 +4320,21 @@ class CriticSearch extends AbstractDB {
                 $min_setting = (int) $min_setting;
                 $max_setting = (int) $max_setting;
             }
-            if ($min_setting<0){
-                $min_setting=0;
+            if ($min_setting < 0) {
+                $min_setting = 0;
             }
         }
         return array('min' => $min_setting, 'def' => $def_setting, 'max' => $max_setting);
     }
 
     private function get_perpage() {
-        $this->perpage = isset($_GET['perpage']) ? (int) $_GET['perpage'] : $this->perpage;
+        $perpage = isset($_GET['perpage']) ? (int) $_GET['perpage'] : 0;
+        if (!$perpage) {
+            $perpage = isset($_POST['perpage']) ? (int) $_POST['perpage'] : $this->perpage;
+        }
+
+        $this->perpage = $perpage;
+
         return $this->perpage;
     }
 

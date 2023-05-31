@@ -108,6 +108,12 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         return $result;
     }
 
+    public function get_movie_id_by_id($mid) {
+        $sql = sprintf("SELECT id FROM {$this->db['movie_imdb']} WHERE id=%d", $mid);
+        $result = $this->db_get_var($sql);
+        return $result;
+    }
+    
     public function update_movie_rating($mid = 0, $fields = array()) {
         $update = array();
         if ($fields) {

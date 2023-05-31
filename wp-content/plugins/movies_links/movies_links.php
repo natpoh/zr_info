@@ -6,19 +6,13 @@
   Description: This plugin manages the movies
   Author: Brahman  <fb@emelianovip.ru>
   Author URI: https://emelianovip.ru
-  Version: 0.0.2
+  Version: 1.0.2
   License: GPLv2
  */
 
 
-define('MOVIES_LINKS_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/movies_links/');
+!defined(MOVIES_LINKS_PLUGIN_DIR) ? define('MOVIES_LINKS_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/movies_links/') : '';
 
-$version = '0.0.2';
-if (defined('LASTVERSION')) {
-    define('MOVIES_LINKS_VERSION', $version . LASTVERSION);
-} else {
-    define('MOVIES_LINKS_VERSION', $version);
-}
 
 function include_movies_links() {
     //DB config
@@ -511,5 +505,8 @@ function movies_links_create_index($names = array(), $table_name = '') {
  * 
  * SELECT m.title, m.title_weight, r.fchan_posts_found FROM `data_movie_erating` r INNER JOIN `data_movie_imdb` m ON r.movie_id=m.id WHERE m.title_weight<10 AND r.fchan_posts_found>0 ORDER BY r.fchan_posts_found DESC
  * 
+ * 
+ * 
+ SELECT u.pid, count(*)  FROM `movies_links_url` u INNER JOIN `movies_links_campaign` c ON c.id = u.cid WHERE c.type!=1 AND u.pid>0 GROUP BY u.pid ORDER BY u.pid ASC
  * 
  */

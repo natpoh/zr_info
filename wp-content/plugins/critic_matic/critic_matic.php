@@ -18,7 +18,7 @@ if (!function_exists('add_action')) {
 define('CRITIC_MATIC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CRITIC_MATIC_PLUGIN_URL', plugin_dir_url(__FILE__));
 
-$version = '1.0.96';
+$version = '1.0.97';
 if (defined('LASTVERSION')) {
     define('CRITIC_MATIC_VERSION', $version . LASTVERSION);
 } else {
@@ -551,16 +551,16 @@ function critic_matic_plugin_activation() {
                                 `name` varchar(255) NOT NULL default '',                                
                                 `options` text default NULL,
                                 `wp_uid` int(11) NOT NULL DEFAULT '0',
+                                `show_type` int(11) NOT NULL DEFAULT '0',
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     
-
-    // Add wp user id
-    $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_authors` ADD `show_type` int(11) NOT NULL DEFAULT '0'";
+    
+    $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_authors` ADD `avatar` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
     
-    critic_matic_create_index_an(array('status', 'type', 'name', 'wp_uid', 'show_type'), $table_prefix . "critic_matic_authors");
+    critic_matic_create_index_an(array('status', 'type', 'name', 'wp_uid', 'show_type', 'avatar'), $table_prefix . "critic_matic_authors");
 
     // Authors meta
     $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_matic_authors_meta`(
@@ -1287,6 +1287,24 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('actor_id', 'result'), "data_actors_country");
+    
+    /* 
+     * Site images     
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_site_img`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `mid` int(11) NOT NULL DEFAULT '0',
+                                `mlcid` int(11) NOT NULL DEFAULT '0',
+                                `date` int(11) NOT NULL DEFAULT '0',
+                                `counter` int(11) NOT NULL DEFAULT '0',
+                                `expired` int(11) NOT NULL DEFAULT '0',
+                                `link_hash` varchar(255) NOT NULL default '',
+                                `link` text default NULL,                                
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('mid','mlcid', 'date', 'views', 'expired', 'link_hash'), "data_site_img");
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {

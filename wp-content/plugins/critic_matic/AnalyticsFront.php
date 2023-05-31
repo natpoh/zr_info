@@ -4307,6 +4307,7 @@ class AnalyticsFront extends SearchFacets {
             }
             template_single_movie($mid, '', '', 1);
             include ABSPATH . 'wp-content/themes/custom_twentysixteen/template/actors_template_single.php';
+            show_actors_template_single_cache();
         }
     }
 

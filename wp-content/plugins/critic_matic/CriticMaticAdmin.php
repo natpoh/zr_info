@@ -61,6 +61,12 @@ class CriticMaticAdmin {
         'nl' => 'Remove IP from list',
         'findmovies' => 'Find movies',
     );
+    public $bulk_actions_authors = array(
+        'author_publish' => 'Publish',
+        'author_draft' => 'Draft',
+        'author_trash' => 'Trash',
+        'author_findmovies' => 'Find avatar',
+    );
     public $bulk_actions_audience_ip = array(
         'wl' => 'IP to White list',
         'gl' => 'IP to Gray list',
@@ -797,6 +803,8 @@ class CriticMaticAdmin {
         $page = $this->get_page();
         $per_page = $this->get_perpage();
         $aid = isset($_GET['aid']) ? (int) $_GET['aid'] : '';
+
+        $this->bulk_submit();
 
         //Sort
         $sort_pages = $this->cm->sort_pages;
@@ -2019,7 +2027,7 @@ class CriticMaticAdmin {
                 }
             }
             return;
-        } else if ($uid){
+        } else if ($uid) {
             $url_data = $this->cp->get_url($uid);
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/view_url.php');
             return;
@@ -3017,6 +3025,29 @@ class CriticMaticAdmin {
                     foreach ($ids as $id) {
                         $mp->delete_post_by_url_id($id);
                     }
+                } else if (in_array($b, array_keys($this->bulk_actions_authors))) {
+                    /* 'author_publish' => 'Publish',
+                      'author_draft' => 'Draft',
+                      'author_trash' => 'Trash',
+                      'author_findmovies' => 'Find avatar', */
+                    if ($b == 'author_findmovies') {
+                        
+                    } else {
+                        $status = -1;
+                        if ($b == 'author_publish') {
+                            $status = 1;
+                        } else if ($b == 'author_draft') {
+                            $status = 0;
+                        } else if ($b == 'author_trash') {
+                            $status = 2;
+                        }
+                        if ($status != -1) {
+                            foreach ($ids as $id) {
+                                $this->cm->update_author_status($id, $status);                                
+                            }
+                            $updated = true;
+                        }
+                    }
                 } else {
                     // Change status
                     $updated = false;
@@ -3194,7 +3225,7 @@ class CriticMaticAdmin {
     public function theme_parser_url_link($id, $name) {
         $link = $id;
         if ($id > 0) {
-            $url = $this->admin_page . $this->parser_url. '&uid=' . $id;
+            $url = $this->admin_page . $this->parser_url . '&uid=' . $id;
             $link = '<a href="' . $url . '">' . $name . '</a>';
         }
         return $link;

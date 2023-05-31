@@ -516,10 +516,10 @@ class MoviesParser extends MoviesAbstractDB {
             'date' => (int) $date,
             'parent_url' => (int) $parent_url,
             'link_hash' => $link_hash,
-            'link' => $link,            
+            'link' => $link,
         );
 
-        $id = $this->db_insert($data, $this->db['url']);        
+        $id = $this->db_insert($data, $this->db['url']);
 
         return $id;
     }
@@ -2470,8 +2470,8 @@ class MoviesParser extends MoviesAbstractDB {
                   )
                  */
                 foreach ($movies as $movie) {
-                    
-                    if ($results[$movie->id]){
+
+                    if ($results[$movie->id]) {
                         // Already in list
                         continue;
                     }
@@ -3528,6 +3528,23 @@ class MoviesParser extends MoviesAbstractDB {
     public function get_fchan_posts_found($uid = 0) {
         $sql = sprintf("SELECT posts_found FROM {$this->db['fchan_log']} WHERE uid=%d", $uid);
         $result = $this->db_get_var($sql);
+        return $result;
+    }
+
+    public function get_last_pids($last_id, $count) {
+        $sql = sprintf("SELECT u.pid "
+                . "FROM {$this->db['url']} u "
+                . "INNER JOIN {$this->db['campaign']} c ON c.id = u.cid "
+                . "WHERE c.type!=1 AND u.pid>%d GROUP BY u.pid ORDER BY u.pid ASC LIMIT %d", $last_id, $count);
+        $pids = $this->db_results($sql);
+        return $pids;
+    }
+
+    public function get_all_movie_urls_by_pid($pid) {
+        $query = sprintf("SELECT u.id FROM {$this->db['url']} u "
+        . "INNER JOIN {$this->db['campaign']} c ON c.id = u.cid "
+        . "WHERE c.type!=1 AND u.pid=%d AND u.status!=2", $pid);
+        $result = $this->db_results($query);
         return $result;
     }
 
