@@ -1,17 +1,15 @@
 <?php
+
 header('Access-Control-Allow-Origin:*');
 
-if (strstr( $_SERVER['DOCUMENT_ROOT'],'service'))
-{
-    $root = str_replace('/service','', $_SERVER['DOCUMENT_ROOT']);
-}
-else
-{
-    $root =$_SERVER['DOCUMENT_ROOT'];
+if (strstr($_SERVER['DOCUMENT_ROOT'], 'service')) {
+    $root = str_replace('/service', '', $_SERVER['DOCUMENT_ROOT']);
+} else {
+    $root = $_SERVER['DOCUMENT_ROOT'];
 }
 
 if (!defined('ABSPATH'))
-    define('ABSPATH',$root . '/');
+    define('ABSPATH', $root . '/');
 
 
 // DB config
@@ -85,7 +83,7 @@ function critic_crowd_validation($link, $row = []) {
 
                 // 2. Get post movie meta
                 $movie_exist = $cm->get_movies_data($cid, $id);
-                
+
 
                 if ($post_publish && $movie_exist) {
                     // Post pulbish already linked
@@ -136,18 +134,30 @@ function critic_crowd_validation($link, $row = []) {
                 } else {
                     ///get main data
                     // $result = $cp->clear_read($link);
-                    $service_url = 'http://148.251.54.53:8110/?p=ds1bfgFe_23_KJDS-F&clear=1&wait=3&url=';
-                    $full_url = $service_url .$link;
+                   
+                    $proxy = $cm->get_parser_proxy(true);
+                    $proxy_text = '';
+                    if ($proxy) {
+                        $proxy_num = array_rand($proxy);
+                        $proxy_text = trim("&proxy=" . $proxy[$proxy_num]);
+                    }
+                    
+                    $service_url = 'http://148.251.54.53:8110/?p=ds1bfgFe_23_KJDS-F&clear=1&wait=3'.$proxy_text.'&url=';
+                    
+                     
+                    $full_url = $service_url . $link;
+                    
+           
                     $content = file_get_contents($full_url);
                     if ($content) {
-                        $title='';
-                        $author='';
-                        if (preg_match('#^<h1>([^<]+)</h1>[^>]*(<div id="readability.*)<div class="author">([^<]*)</div>#s', $content, $match)){
-                            $title=$match[1];
+                        $title = '';
+                        $author = '';
+                        if (preg_match('#^<h1>([^<]+)</h1>[^>]*(<div id="readability.*)<div class="author">([^<]*)</div>#s', $content, $match)) {
+                            $title = $match[1];
                             $content = $match[2];
                             $author = $match[3];
                         }
-                        
+
                         //$title = $result['title'];
                         //$author = $result['author'];
                         if ($author) {
@@ -159,10 +169,10 @@ function critic_crowd_validation($link, $row = []) {
                         }
                         //$content = $result['content'];
                         if (!$title && !$content) {
-                            $error['link'] = 'Can not get the data from URL';
+                            $error['link'] = 'Can not find content and title in the url';
                         }
                     } else {
-                        $error['link'] = 'Can not get the data from URL';
+                        $error['link'] = 'Sorry, there was an error fetching data from the URL. Please try again or manually submit it.';
                     }
                 }
             }
@@ -232,47 +242,39 @@ if (isset($_POST['oper'])) {
     $oper = $_POST['oper'];
     $id = intval($_POST['id']);
 
-    if ($oper == 'add_custom')
-    {
+    if ($oper == 'add_custom') {
         $type = $_POST['type'];
 
-        if ($type=="#add_movie")
-        {
+        if ($type == "#add_movie") {
             //add movie
 
 
             echo 'ok';
             return;
-
-        }
-        else if ($type=="#add_review")
-        {
-            $content='';
+        } else if ($type == "#add_review") {
+            $content = '';
 
             //add movie
-            $array_rows =  array('movies' => array('class' => ' crowd_movie_autoinput', 'type' => 'input', 'placeholer' => 'type movies, tv, games', 'title' => 'Select Movie / TV / Game'));
+            $array_rows = array('movies' => array('class' => ' crowd_movie_autoinput', 'type' => 'input', 'placeholer' => 'type movies, tv, games', 'title' => 'Select Movie / TV / Game'));
 
-            $content_input = Crowdsource::front('', $array_rows, [], [],1);
+            $content_input = Crowdsource::front('', $array_rows, [], [], 1);
 
-            $content = Crowdsource::get_search_block($content_input,'','crowd_select_movie');
+            $content = Crowdsource::get_search_block($content_input, '', 'crowd_select_movie');
 
 
 
             echo $content;
 
             $oper = 'add_critic';
-
-        }
-        else if ($type=="#add_audience_review")
-        {
-            $content='';
+        } else if ($type == "#add_audience_review") {
+            $content = '';
 
             //add movie
-            $array_rows =  array('movies' => array('class' => ' crowd_movie_autoinput', 'type' => 'input', 'placeholer' => 'title', 'title' => 'Please select a movie, tv show, or game:'));
+            $array_rows = array('movies' => array('class' => ' crowd_movie_autoinput', 'type' => 'input', 'placeholer' => 'title', 'title' => 'Please select a movie, tv show, or game:'));
 
-            $content_input = Crowdsource::front('', $array_rows, [], [],1);
+            $content_input = Crowdsource::front('', $array_rows, [], [], 1);
 
-            $content = Crowdsource::get_search_block($content_input,'','crowd_select_movie');
+            $content = Crowdsource::get_search_block($content_input, '', 'crowd_select_movie');
 
 
 
@@ -282,7 +284,6 @@ if (isset($_POST['oper'])) {
 <p class="w50"> </p>
 </div>';
             return;
-
         }
     }
 
@@ -411,8 +412,7 @@ if (isset($_POST['oper'])) {
                 $reqest_field = 'review_id';
 
                 $data_obj['movies'] = json_encode($array_movies);
-            }
-            else if ($array_crowd[$type] == 'actors_crowd') {
+            } else if ($array_crowd[$type] == 'actors_crowd') {
                 ///add name from authors
 
                 $sql = "SELECT `name` FROM `data_actors_imdb` where id = " . $id;
@@ -422,8 +422,7 @@ if (isset($_POST['oper'])) {
                 $data_obj['actor_name'] = $actor_name;
                 $data_obj['actor_id'] = $id;
                 $reqest_field = 'actor_id';
-            }
-            else if ($array_crowd[$type] == 'movies_pg_crowd') {
+            } else if ($array_crowd[$type] == 'movies_pg_crowd') {
                 ///add name from authors
 
                 $sql = "SELECT * FROM `data_movie_imdb` where id = " . $id;
@@ -435,8 +434,7 @@ if (isset($_POST['oper'])) {
                 $data_obj['movie_id'] = $imdb_id;
                 $data_obj['rwt_id'] = $id;
                 $reqest_field = 'rwt_id';
-            }
-            else if ($array_crowd[$type] == 'critic_crowd') {
+            } else if ($array_crowd[$type] == 'critic_crowd') {
                 ///add name from authors
 
                 $sql = "SELECT * FROM `data_movie_imdb` where id = " . $id;
@@ -539,7 +537,6 @@ if (isset($_POST['oper'])) {
                 } else {
                     $inser_sql = "INSERT INTO `data_" . $array_crowd[$type] . "`(`id` " . $oper_insert_colums . " ) VALUES (NULL " . $oper_insert_data . " )";
                     $uddate_id = Pdo_an::db_insert_sql($inser_sql, $data_array);
-
                 }
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
                 Import::create_commit('', 'update', "data_" . $array_crowd[$type], array('id' => $uddate_id), 'crowsource', 5);
@@ -559,8 +556,7 @@ if (isset($_POST['oper'])) {
                 }
             }
         }
-    }
-    else if ($oper == 'get_search_movie') {
+    } else if ($oper == 'get_search_movie') {
         $m_id = intval($_POST['id']);
         $r_id = intval($_POST['r_id']);
         $only_movie = intval($_POST['only_movie']);
@@ -575,24 +571,21 @@ if (isset($_POST['oper'])) {
 
         $cfront = new CriticFront();
 
-        if ($only_movie)
-        {
+        if ($only_movie) {
             $movie_tmpl = Crowdsource::get_movie_template_small($m_id, $cfront);
-        }
-        else
-        {
+        } else {
             $movie_tmpl = Crowdsource::get_movie_template($r_id, $m_id, $cfront);
         }
 
         echo $movie_tmpl;
-    }
-    else if ($oper == 'review_crowd') {
+    } else if ($oper == 'review_crowd') {
         $id = intval($_POST['id']);
 
 
         //////movie
         if (isset($_POST['movie']))
-            ; {
+            ;
+        {
             $movie_id = $_POST['movie'];
             $ma_id = intval($movie_id);
         }
@@ -742,7 +735,7 @@ if (isset($_POST['oper'])) {
 
             $content_input = Crowdsource::front('', $array_rows, $array_user, $id, 1, $inner_content);
         }
-        $inner_content =Crowdsource::get_search_block($content_input,$movie_tmpl,'');
+        $inner_content = Crowdsource::get_search_block($content_input, $movie_tmpl, '');
 
 
 
@@ -771,8 +764,7 @@ if (isset($_POST['oper'])) {
 
 
         echo $content;
-    }
-    else if ($oper == 'actor_crowd') {
+    } else if ($oper == 'actor_crowd') {
 
         ///get ethnic array
         $sql = "SELECT val  FROM `options` where id = 4";
@@ -789,8 +781,8 @@ if (isset($_POST['oper'])) {
 
 
         $array_rows = array(
-            'gender' => array('type' => 'select', 'options' => array('0' => 'Not selected', 'm' => 'Male', 'f' => 'Female'),'star'=>'star'),
-            'verdict' => array('type' => 'select', 'star'=>'star' ,'options' => $array_result),
+            'gender' => array('type' => 'select', 'options' => array('0' => 'Not selected', 'm' => 'Male', 'f' => 'Female'), 'star' => 'star'),
+            'verdict' => array('type' => 'select', 'star' => 'star', 'options' => $array_result),
             'comment' => array('type' => 'textarea'),
             'image' => array('type' => 'input', 'placeholer' => 'www.actor.jpg', 'desc' => 'If the cast member image is missing or poor quality, you can suggest another here.'),
             'link' => array('type' => 'input', 'placeholer' => 'www.wikipedia.org/actor_link', 'desc' => 'Cite your source(s) here if you have them.'),
@@ -804,8 +796,7 @@ if (isset($_POST['oper'])) {
         $content = Crowdsource::front('actor_crowdsource', $array_rows, $array_user, $id);
 
         echo $content;
-    }
-    else if ($oper == 'pg_rating') {
+    } else if ($oper == 'pg_rating') {
 //`message`, `message_comment`, `nudity`, `nudity_comment`, `violence`, `violence_comment`, `language`, `language_comment`,
 // `drugs`, `drugs_comment`, `other`, `other_comment`
         ///get movie header
@@ -838,8 +829,7 @@ if (isset($_POST['oper'])) {
 
         $content = Crowdsource::front('moviespgcrowd', $array_rows, $array_user, $id);
         echo $chead . $content;
-    }
-    else if ($oper == 'add_critic') {
+    } else if ($oper == 'add_critic') {
 
 
         include(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/movie_single_template.php');

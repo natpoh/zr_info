@@ -40,7 +40,20 @@ function get_imdb_data_search()
         echo json_encode($result_data_array);
     }
 }
+function get_imdb_actor_search()
+{
+    $type=    $_GET['data'];
+    if ($type)
+    {
+        $result =unserialize(urldecode($type));
+    }
 
+    $result_data_array  = TMDB::get_actor_imdb_movies($result[0],$result[1],$result[2]);//get_data($result[0], $result[1]);
+    if ($result_data_array)
+    {
+        echo json_encode($result_data_array);
+    }
+}
 
 
 
@@ -69,15 +82,26 @@ public static function calculate_actor_data($a_id)
 
     }
 
-    public static function search_result($key, $type,$exclude=[],$debug =0,$force=0)
+    public static function search_result($key='', $type='',$exclude=[],$debug =0,$force=0,$actor='',$actor_type='')
     {
         //print_r($exclude);
         $array_enable=[];
         $array_not_enable=[];
 
-        $keycode = serialize([$key,$type]);
-        $name  ='p-0_get_imdb_data_search_1_'.urlencode($keycode);
-        $cache=   wp_custom_cache($name,'file_cache', 3600*4);
+        if ($key)
+        {
+            $keycode = serialize([$key,$type]);
+            $name  ='p-0_get_imdb_data_search_1_'.urlencode($keycode);
+            $cache=   wp_custom_cache($name,'file_cache', 3600*4);
+
+        }
+        else if ($actor)
+        {
+            $keycode = serialize([$actor,$type,$actor_type]);
+            $name  ='p-0_get_imdb_actor_search_1_'.urlencode($keycode);
+            $cache=   wp_custom_cache($name,'file_cache', 3600*48);
+        }
+
 
         if ($cache && !$force)
         {
@@ -85,13 +109,19 @@ public static function calculate_actor_data($a_id)
         }
        else
        {
-           $result_data_array = TMDB::get_data($key, $type,$debug);
+           if ($key)
+           {
+               $result_data_array = TMDB::get_data($key, $type,$debug);
+           }
+           else if ($actor)
+           {
+               $result_data_array = TMDB::get_actor_imdb_movies($actor,$type,$actor_type,$debug);
+
+           }
+
        }
 
-       if ($debug)
-       {
-           print_r($result_data_array);
-       }
+
 
         foreach ($result_data_array as $movie_id => $data) {
 
@@ -152,7 +182,21 @@ public static function calculate_actor_data($a_id)
             }
 
         }
+
+
+
+
         $result =  array('result'=>$array_enable,'result_imdb'=>$array_not_enable);
+
+
+        if ($debug)
+        {
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode($result);
+            return ;
+            //print_r($result_data_array);
+        }
+
         $content_result=[];
         $content='';
         if (is_array($array_enable))
@@ -219,9 +263,10 @@ Vote to increase its priority.</p>';
                     $movie_link_desc = 'class="card_movie_type ctype_videogame" title="Game"';
                 }
 
-                if ($data['cast'])
+                if ($data['cast'])  $actors=implode(', ',$data['cast']);
+                if ($actors)
                 {
-                    $summary ='<div class="block block_summary"><span></span>Actors:  '.implode($data['cast'],', ').'</div>';
+                    $summary ='<div class="block block_summary"><span></span>Actors:  '.$actors.'</div>';
                 }
 
                 $result_data.= '<div  class="movie_container">
@@ -474,10 +519,14 @@ if (isset($_GET['id']))
     $type =$key_array[1];
     $key=$key_array[0];
     $exclude = $key_array[2];
+    $actor = $key_array[3];
+    $actor_type = $key_array[4];
 
 if ($type=='movies')$type='ft';
 
-   echo custom_imdb_search::search_result($key,$type,$exclude,$debug,$force);
+
+    echo custom_imdb_search::search_result($key,$type,$exclude,$debug,$force,$actor,$actor_type);
+
 
 }
 

@@ -25,6 +25,9 @@ global $site_url;
 if (!$site_url)
     $site_url = WP_SITEURL. '/';
 
+
+
+
 if (!function_exists('video_scroll')) {
 
     function video_scroll() {
@@ -37,15 +40,19 @@ if (!function_exists('video_scroll')) {
         $array_country = array("United States", "United Kingdom", "France", "Canada", "Germany", "Australia", "Italy", "Spain");
         $array_country_ignored = array("India");
 
-        $sql = "SELECT * FROM `options` where id = 13";
-        $rows = Pdo_an::db_fetch_row($sql);
+        $array_movies=[];
+//        $sql = "SELECT * FROM `options` where id = 13";
+//        $rows = Pdo_an::db_fetch_row($sql);
 
-        $array_movies = $rows->val;
-        if ($array_movies) {
-            $array_movies = json_decode($array_movies, 1);
-            arsort($array_movies);
-        } else {
-            $starttime = time();
+//        $array_movies = $rows->val;
+//        if ($array_movies) {
+//            $array_movies = json_decode($array_movies, 1);
+//            arsort($array_movies);
+//        } else
+
+           // {
+
+        $starttime = time();
             $date_current = date('Y-m-d', $starttime);
             $date_main = date('Y-m-d', strtotime('-1 year', $starttime));
             $sql = "SELECT * FROM `data_movie_imdb` WHERE `release`  >=  '" . $date_main . "' and `release`  <=  '" . $date_current . "' and `type`= 'Movie' order by `release` desc LIMIT 50 ";
@@ -55,8 +62,8 @@ if (!function_exists('video_scroll')) {
                 $array_movies[$movie_id] = strtotime($r['release']);
             }
             arsort($array_movies);
-        }
-        // print_r($array_movies);
+       //}
+
         $i = 0;
 
         $content_result = [];
@@ -98,11 +105,15 @@ if (!function_exists('video_scroll')) {
                     continue;
                 }
                 foreach ($data as $id => $rows) {
-
+                    $release=0;
                     $post_name = $rows->post_name;
                     $title = $rows->title;
                     $type = $rows->type;
-
+                    $release = $rows->release;
+                    if ($release)
+                    {
+                        $release = strtotime($release);
+                    }
 
                     $slug = 'movies';
                     if ($type == 'TVseries') {
@@ -129,20 +140,25 @@ if (!function_exists('video_scroll')) {
                             $post_name = $cfront->get_or_create_ma_post_name($id);
                         }
                     }
+                    ///check poster
 
+                    $poster = CreateTsumbs::get_img_from_db($rows->id);
 
                     global $site_url;
 
-                    $content_result['result'][$rows->id] = array(
-                        'link' => $site_url . $slug . '/' . $post_name,
-                        'title' => $title,
-                        'genre' => $rows->genre,
-                        'poster_link_small' => $array_tsumb[0],
-                        'poster_link_big' => $array_tsumb[1],
-                        'type' => $slug
-                    );
+                    if ($poster) {
+                        $content_result['result'][$rows->id] = array(
+                            'link' => $site_url . $slug . '/' . $post_name,
+                            'title' => $title,
+                            'genre' => $rows->genre,
+                            'poster_link_small' => $array_tsumb[0],
+                            'poster_link_big' => $array_tsumb[1],
+                            'type' => $slug,
+                            'release'=>$release
+                        );
+                        $i++;
+                    }
 
-                    $i++;
 
 
 

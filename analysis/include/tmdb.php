@@ -1972,6 +1972,70 @@ if (strpos($content, $pos)) {
 return $array_result;
 }
 
+    public static function actor_data_to_object($data,$debug)
+    {
+        $object=[];
+
+        $pos = strpos($data,'<script id="__NEXT_DATA__" type="application/json">');
+        if ($pos) {
+            $data = substr($data, $pos);
+            $pos2 = strpos($data, '</script>');
+            $data = substr($data, 51, $pos2 - 51);
+
+           ///echo $data;
+
+            $data = mb_convert_encoding($data, 'utf-8', mb_detect_encoding($data));
+            $object = json_decode($data, 1);
+
+            if ($debug) {
+
+                switch (json_last_error()) {
+                    case JSON_ERROR_NONE:
+                        $error = '';
+                        break;
+                    case JSON_ERROR_DEPTH:
+                        $error = 'Maximum stack depth exceeded';
+                        break;
+                    case JSON_ERROR_STATE_MISMATCH:
+                        $error = 'Underflow or the modes mismatch';
+                        break;
+                    case JSON_ERROR_CTRL_CHAR:
+                        $error = 'Unexpected control character found';
+                        break;
+                    case JSON_ERROR_SYNTAX:
+                        $error = 'Syntax error, malformed JSON '.$data;
+                        break;
+                    case JSON_ERROR_UTF8:
+                        $error = 'Malformed UTF-8 characters, possibly incorrectly encoded';
+                        break;
+                    case JSON_ERROR_RECURSION:
+                        $error = 'One or more recursive references in the value to be encoded';
+                        break;
+                    case JSON_ERROR_INF_OR_NAN:
+                        $error = 'One or more NAN or INF values in the value to be encoded';
+                        break;
+                    case JSON_ERROR_UNSUPPORTED_TYPE:
+                        $error = 'A value of a type that cannot be encoded was given';
+                    default:
+                        $error = 'Unknown error';
+                        break;
+                }
+                if ($error) {
+                    echo $error;
+                }
+            }
+
+
+        }
+        else
+        {
+            if ($debug) {
+                echo 'cant find pos0<br>';
+            }
+        }
+        return $object;
+    }
+
 
 private static function search_data_to_object($data,$debug)
 {
@@ -2033,6 +2097,71 @@ private static function search_data_to_object($data,$debug)
         }
     }
     return $object;
+}
+    public static function  get_actor_imdb_movies($actor,$type,$actor_type,$debug=0)
+    {
+        $result =[];
+
+        $object= self::get_data_actor($actor,$debug);
+
+       if ($object)
+        {
+            $result_data=($object["props"]["pageProps"]["mainColumnData"]["releasedPrimaryCredits"][$actor_type]['credits']['edges']);
+        }
+
+
+
+
+        if ($result_data)
+        {
+            foreach ($result_data as $i=>$v)
+            {
+                $ob = $v['node']['title'];
+                $id = $ob['id'];
+
+                $id = intval(substr($id,2));
+
+
+                $type = $ob['titleType']['id'];
+
+                $caption = substr($ob['primaryImage']['caption']['plainText'], 0,strpos($ob['primaryImage']['caption']['plainText'],' in ') );
+                $caption = explode(',',$caption);
+
+                $result[$id]['imageType']=$type;
+                $result[$id]['titlePosterImageModel']['url']= $ob['primaryImage']['url'];
+                $result[$id]['titleNameText']=$ob['titleText']['text'];
+                $result[$id]['topCredits']=$caption;
+                $result[$id]['titleReleaseText']=$ob['releaseYear']['year'];
+
+            }
+        }
+//        if ($debug)
+//        {
+//            header('Content-Type: application/json; charset=utf-8');
+//            echo json_encode($result);
+//            return ;
+//            //print_r($result_data_array);
+//        }
+
+        return $result;
+
+    }
+
+
+
+public static function  get_data_actor($actor,$debug=0)
+{
+    $result_data=[];
+    $final_value = sprintf('%07d', $actor);
+
+    $url ='https://www.imdb.com/name/nm'.$final_value.'/';
+
+    $data = GETCURL::getCurlCookie($url);
+    $object = self::actor_data_to_object($data,$debug);
+
+    return $object;
+
+
 }
 
 public static  function get_data($key,$type,$debug=0)

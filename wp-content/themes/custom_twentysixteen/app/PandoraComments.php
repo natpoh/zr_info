@@ -163,9 +163,48 @@ class PandoraComments {
         return $ret;
     }
 
-    function getComments() {
+    function getComments($post_id=0) {
         ob_start();
-        comments_template();
+        $comments = $this->get_post_comments_data($post_id);
+        ?>
+        <?php if ($comments): ?>
+            <?php
+            $number = get_comments_number();
+            $comm_text = 'Нет комментариев';
+            if ($number == 1) {
+                $comm_text = 'Один комментарий';
+            } else if ($number > 1) {
+                $comm_text = $number . ' Комментари' . TextOp::okonchanie($number, 'й', 'я', 'ев');
+            }
+            ?>
+            <h5 class="com-title"><b><?php print $comm_text ?></b>
+                &raquo; <a href="#respond">Оставить комментарий</a>
+            </h5>
+            <?php
+            // Навигация 
+            if (get_comment_pages_count() > 1 && get_option('page_comments')) : // Are there comments to navigate through? 
+                ?>
+                <div class="navigation clearfix">
+                    <div class="nav-previous"><?php previous_comments_link('<span class="meta-nav">&larr; Старые комментарии</span>') ?></div>
+                    <div class="nav-next"><?php next_comments_link('Новые комментарии <span class="meta-nav">&rarr;</span>') ?></div>
+                </div> <!-- .navigation -->
+            <?php endif; ?>
+
+            <ul class="commentlist">
+                <?php wp_list_comments(array(), $comments); ?>
+            </ul>
+
+            <?php
+            // Навигация низ 
+            if (get_comment_pages_count() > 1 && get_option('page_comments')) : // Are there comments to navigate through? 
+                ?>
+                <div class="navigation clearfix">
+                    <div class="nav-previous"><?php previous_comments_link('<span class="meta-nav">&larr; Старые комментарии</span>') ?></div>
+                    <div class="nav-next"><?php next_comments_link('Новые комментарии <span class="meta-nav">&rarr;</span>') ?></div>
+                </div> <!-- .navigation -->
+            <?php endif; ?>
+        <?php endif; ?>
+        <?php
         $comments_template_data = ob_get_contents();
         ob_end_clean();
 
@@ -174,7 +213,7 @@ class PandoraComments {
 
     function commentForm($args = array(), $post_id = null) {
         if (null === $post_id)
-            $post_id = get_the_ID();
+            return;
 
         //Пользователь
         $user = wp_get_current_user();
@@ -182,7 +221,11 @@ class PandoraComments {
 
         //Автор записи
         $author_class = '';
-        if ($post = get_post($post_id)) {
+        global $cfornt;
+        if (!$cfornt){
+            return;
+        }
+        if ($post = $cfornt->cm->get_post($post_id)) {
             $post_author = $post->post_author;
             if ($user->ID && $post_author == $user->ID) {
                 $author_class = ' psta';
@@ -229,7 +272,7 @@ class PandoraComments {
             <?php
             $is_block = false;
             $is_comment_block = false;
-// Проверка блокировки пользователя
+            // Проверка блокировки пользователя
             if (class_exists('UsersBan')) {
                 $usersBan = new UsersBan();
                 if ($user->ID > 0) {
@@ -239,7 +282,7 @@ class PandoraComments {
                         $ubt = $banInfo->ubt;
                         if ($ubt == 1) {
                             $is_block = true;
-// Бан комментариев
+                            // Бан комментариев
                         } else if ($ubt == 2) {
                             $current_time = strtotime(gmdate('Y-m-d H:i:s', ( time() + ( get_option('gmt_offset') * HOUR_IN_SECONDS ))));
                             $unblock_date = $banInfo->date_added + ($banInfo->time) * 86400;
@@ -317,10 +360,10 @@ class PandoraComments {
         <?php else : ?>
             <?php do_action('comment_form_comments_closed'); ?>
             <div id="commentform">
-                    <div class="hide">
-                        <input id="sjs" name="sjs" type="hidden" value="no" />
-                    </div>
+                <div class="hide">
+                    <input id="sjs" name="sjs" type="hidden" value="no" />
                 </div>
+            </div>
         <?php endif; ?>
         <?php
     }
@@ -707,6 +750,40 @@ class PandoraComments {
         return $comments;
     }
 
+    function get_post_comments_data($post_id=0, $page = 1) {
+        if ($page < 1) {
+            $page = 1;
+        }
+
+        global $wpdb;
+
+        // First comment.
+        $start = $this->comments_per_page * ($page - 1);
+
+        // Need to pick one more so that we can know if there's more comments exist.
+        $size = $this->comments_per_page + 1;
+
+        $user_sql = '';
+        if ($this->cauthor_id > 0) {
+            //User comments
+            $user_sql = sprintf("AND user_id = %d ", $this->cauthor_id);
+        }
+
+        // Select comments on database.
+        $comments_query = "SELECT 
+	comment_date, comment_author, comment_author_email, comment_author_url, comment_ID, comment_post_ID, user_id, 
+        comment_content, comment_type, comment_author_IP, comment_agent, comment_parent, comment_date_gmt 
+        FROM $wpdb->comments "             
+                . "WHERE comment_approved = '1' "
+                . "AND comment_post_ID = $post_id "
+                . $user_sql     
+                . "ORDER BY comment_ID DESC "
+                . "LIMIT " . $start . "," . $size;
+        $comments = $wpdb->get_results($comments_query);
+
+        return $comments;
+    }
+
     function searchComments() {
         //post data
         //$found = array();
@@ -867,6 +944,147 @@ class PandoraComments {
         $this->is_recent = true;
         $this->ajax_load = false;
         $this->renderComments($data);
+    }
+
+    /**
+     * List comments.
+     *
+     * Used in the comments.php template to list comments for a particular post.
+     *
+     * @since 2.7.0
+     *
+     * @see WP_Query->comments
+     *
+     * @param string|array $args {
+     *     Optional. Formatting options.
+     *
+     *     @type string $walker            The Walker class used to list comments. Default null.
+     *     @type int    $max_depth         The maximum comments depth. Default empty.
+     *     @type string $style             The style of list ordering. Default 'ul'. Accepts 'ul', 'ol'.
+     *     @type string $callback          Callback function to use. Default null.
+     *     @type string $end-callback      Callback function to use at the end. Default null.
+     *     @type string $type              Type of comments to list.
+     *                                     Default 'all'. Accepts 'all', 'comment', 'pingback', 'trackback', 'pings'.
+     *     @type int    $page              Page ID to list comments for. Default empty.
+     *     @type int    $per_page          Number of comments to list per page. Default empty.
+     *     @type int    $avatar_size       Height and width dimensions of the avatar size. Default 32.
+     *     @type string $reverse_top_level Ordering of the listed comments. Default null. Accepts 'desc', 'asc'.
+     *     @type bool   $reverse_children  Whether to reverse child comments in the list. Default null.
+     *     @type string $format            How to format the comments list.
+     *                                     Default 'html5' if the theme supports it. Accepts 'html5', 'xhtml'.
+     *     @type bool   $short_ping        Whether to output short pings. Default false.
+     *     @type bool   $echo              Whether to echo the output or return it. Default true.
+     * }
+     * @param array $comments Optional. Array of comment objects.
+     */
+    function wp_list_comments($args = array(), $comments = null) {
+        global $wp_query, $comment_alt, $comment_depth, $comment_thread_alt, $overridden_cpage, $in_comment_loop;
+
+        $in_comment_loop = true;
+
+        $comment_alt = $comment_thread_alt = 0;
+        $comment_depth = 1;
+
+        $defaults = array(
+            'walker' => null,
+            'max_depth' => '',
+            'style' => 'ul',
+            'callback' => null,
+            'end-callback' => null,
+            'type' => 'all',
+            'page' => '',
+            'per_page' => '',
+            'avatar_size' => 32,
+            'reverse_top_level' => null,
+            'reverse_children' => '',
+            'format' => current_theme_supports('html5', 'comment-list') ? 'html5' : 'xhtml',
+            'short_ping' => false,
+            'echo' => true,
+        );
+
+        $r = wp_parse_args($args, $defaults);
+
+        // Figure out what comments we'll be looping through ($_comments)
+        if (null !== $comments) {
+            $comments = (array) $comments;
+            if (empty($comments))
+                return;
+            if ('all' != $r['type']) {
+                $comments_by_type = separate_comments($comments);
+                if (empty($comments_by_type[$r['type']]))
+                    return;
+                $_comments = $comments_by_type[$r['type']];
+            } else {
+                $_comments = $comments;
+            }
+        } else {
+            if (empty($wp_query->comments))
+                return;
+            if ('all' != $r['type']) {
+                if (empty($wp_query->comments_by_type))
+                    $wp_query->comments_by_type = separate_comments($wp_query->comments);
+                if (empty($wp_query->comments_by_type[$r['type']]))
+                    return;
+                $_comments = $wp_query->comments_by_type[$r['type']];
+            } else {
+                $_comments = $wp_query->comments;
+            }
+        }
+
+        if ('' === $r['per_page'] && get_option('page_comments'))
+            $r['per_page'] = get_query_var('comments_per_page');
+
+        if (empty($r['per_page'])) {
+            $r['per_page'] = 0;
+            $r['page'] = 0;
+        }
+
+        if ('' === $r['max_depth']) {
+            if (get_option('thread_comments'))
+                $r['max_depth'] = get_option('thread_comments_depth');
+            else
+                $r['max_depth'] = -1;
+        }
+
+        if ('' === $r['page']) {
+            if (empty($overridden_cpage)) {
+                $r['page'] = get_query_var('cpage');
+            } else {
+                $threaded = ( -1 != $r['max_depth'] );
+                $r['page'] = ( 'newest' == get_option('default_comments_page') ) ? get_comment_pages_count($_comments, $r['per_page'], $threaded) : 1;
+                set_query_var('cpage', $r['page']);
+            }
+        }
+        // Validation check
+        $r['page'] = intval($r['page']);
+        if (0 == $r['page'] && 0 != $r['per_page'])
+            $r['page'] = 1;
+
+        if (null === $r['reverse_top_level'])
+            $r['reverse_top_level'] = ( 'desc' == get_option('comment_order') );
+
+        extract($r, EXTR_SKIP);
+
+        if (empty($walker))
+            $walker = new Walker_Comment;
+
+        if (class_exists('CommentsTree')) {
+            if (sizeof($_comments)) {
+                $commentsTree = new CommentsTree($_comments);
+                $output = $commentsTree->paged_walk($page, $per_page);
+            }
+            $wp_query->max_num_comment_pages = $commentsTree->max_pages;
+        } else {
+            $output = $walker->paged_walk($_comments, $max_depth, $page, $per_page, $r);
+            $wp_query->max_num_comment_pages = $walker->max_pages;
+        }
+
+        $in_comment_loop = false;
+
+        if ($r['echo'])
+            echo $output;
+        else
+            return $output;
     }
 
 }
@@ -1326,8 +1544,8 @@ class CommentRender {
                             <?php print $answers ?> <a class="ext" href="<?php print $answer_link ?>"><?php print $answer_text; ?> <i class="icon icon-link-ext"></i></a>
                         <?php } else { ?>
                             <a class="ext" href="<?php print $answer_link ?>">Ответить <i class="icon icon-link-ext"></i></a>
-                        <?php } ?>
-                    <?php } else { ?>                    
+                            <?php } ?>
+                        <?php } else { ?>                    
                         <a href="<?php print $answer_link ?>">Ответить</a>
                     <?php } ?>
                 </div>

@@ -2,7 +2,7 @@
 error_reporting('E_ALL');
 ini_set('display_errors', 'On');
 
-
+global $included;
 
 
 if (!defined('ABSPATH'))
@@ -14,21 +14,27 @@ if (!defined('ABSPATH'))
 
 
 
-function get_movie_rating()
+function get_movie_rating($movie_id='')
 {
     !class_exists('RWT_RATING') ?    include ABSPATH . "wp-content/themes/custom_twentysixteen/template/include/movie_rating.php" : "";
+    if (!$movie_id)
+    {
+        $movie_id = intval($_GET['id']);
+    }
 
-    $movie_id = intval($_GET['id']);
     $data = new RWT_RATING;
+//    $type= $data->get_movie_type($movie_id);
+//    $gender = $data->gender_and_diversity_rating($movie_id);
+//    $family = $data->ajax_pg_rating($movie_id);///real id
+//    $audience = $data->rwt_audience($movie_id, 1);
+//    $stuff ='';// $data->rwt_audience($movie_id, 2);
+//    $rating = $data->rwt_total_rating($movie_id);
+//    $indie = $data->box_office($movie_id);
 
-    $gender = $data->gender_and_diversity_rating($movie_id);
-    $family = $data->ajax_pg_rating($movie_id);///real id
-    $audience = $data->rwt_audience($movie_id, 1);
-    $stuff ='';// $data->rwt_audience($movie_id, 2);
-    $rating = $data->rwt_total_rating($movie_id);
+    $content_result = $data->get_rating_movie($movie_id);
 
 
-    $array_result = array('gender' => $gender, 'family' => $family, 'audience' => $audience, 'stuff' => $stuff,'total_rating'=>$rating);
+    $array_result = $content_result;//array('type'=>$type,'gender' => $gender, 'family' => $family, 'audience' => $audience, 'stuff' => $stuff,'total_rating'=>$rating,'indie'=>$indie);
     if ($array_result) {
         return json_encode($array_result);
     }
@@ -39,6 +45,8 @@ function get_movie_rating()
 //        $cache =get_movie_rating();
 //        echo $cache;
 //        return;
+
+if ($included) return;
 
 
 if (isset($_POST['action'])) {

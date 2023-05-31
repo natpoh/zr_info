@@ -55,6 +55,8 @@ template_single_movie($post_id, $post_title, '', 1);
 /////movie actors
 
 include get_template_directory() . '/template/actors_template_single.php';
+
+show_actors_template_single_cache();
 ?>
 
     <?php
@@ -97,9 +99,7 @@ echo '<div class="column_header" style="text-align: center; margin-top: 35px"><h
 
 
     </div><!-- .entry-content -->
-<!--    <section class="inner_content">-->
-    <!--        <div  id="similar_movies" data-value="--><?php //echo  $post_id ?><!--" class="not_load"></div>-->
-    <!--    </section>-->
+
     <footer class="entry-footer">
     </footer><!-- .entry-footer -->
 </article>

@@ -135,7 +135,9 @@ body.theme_dark  .detail_container{
 .actor_details[open]{
     width: 100%;
 }
-
+body.theme_dark  details.trsprnt {
+    background-color: transparent;
+}
 body.theme_dark  details.dark {
     background-color: #000;
 }
@@ -739,6 +741,64 @@ body.theme_dark  .rt_color-3 {
     color: #08b308;
 }
 
+
+.icon {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+}
+
+.icon-loader {
+    background: url(images/loader.svg);
+    webkit-animation: spin 1.5s infinite linear;
+    animation: spin 1.5s infinite linear;
+}
+@-ms-keyframes spin {
+    from { -ms-transform: rotate(0deg); }
+    to { -ms-transform: rotate(360deg); }
+}
+@-moz-keyframes spin {
+    from { -moz-transform: rotate(0deg); }
+    to { -moz-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+    from { -webkit-transform: rotate(0deg); }
+    to { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+    from {
+        transform:rotate(0deg);
+    }
+    to {
+        transform:rotate(360deg);
+    }
+}
+
+#progress-bar-container {
+    height: 30px;
+    background-color: #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+    position: relative;
+}
+
+#progress-bar {
+    height: 100%;
+    background: #9ecbff;
+}
+
+#progress-bar-container .txt {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    line-height: 30px;
+    display: flex;
+    align-items: center;    
+    justify-content: center;
+}
+#progress-bar-container .txt .icon {
+    margin-right: 7px;
+}
 
 /**
  * 5.0 - Forms
@@ -9752,7 +9812,7 @@ section.inner_content.no_pad div.column_header {
         font-size: 18px;
     }
 
-    .wpcr3_review_form_rating_field {
+    .wpcr3_review_form_rating_field, label.comment-field {
         font-size: 18px;
     }
 
@@ -10510,7 +10570,7 @@ strong {
 
 
 
-@media only screen and (max-width: 990px) {
+@media only screen and (max-width: 768px) {
 
     .actor_image_container {
         width:79%!important;
@@ -10520,7 +10580,11 @@ strong {
         margin-left: -20px;
         margin-right: -20px;
     }
-
+    section.inner_content.single.pro_review,  section.inner_content.single.audience_review {
+        display: block;
+        margin-left: -20px;
+        margin-right: -20px;
+    }
 }
 
 
@@ -10894,12 +10958,6 @@ body.theme_dark .row_head {
 .family_friendly .popup_header:after {
     content: ".";
     margin-left:-0.7em;
-}
-
-
-
-.row_inner:last-of-type {
-    margin-bottom:2em!important;
 }
 
 

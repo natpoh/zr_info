@@ -42,9 +42,8 @@ if (isset($_GET['id']))
     $cache = wp_custom_cache('p-'.$id.'_tags_keyword_1', 'fastcache', 86400);
     if (!$cache || $cache=='')
     {
-        $result['content']=	'<p style="margin: 25px auto;">No keywords have been found yet, they will be added soon...</p>';
+        $cache=	'<p style="margin: 25px auto;">No keywords have been found yet, they will be added soon...</p>';
 
-        $cache = json_encode($result);
     }
     echo $cache;
 

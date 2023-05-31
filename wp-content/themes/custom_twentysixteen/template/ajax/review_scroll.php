@@ -35,7 +35,16 @@ if (isset($_GET['id'])) {
     $movie_id = (int) $_GET['id'];
 }
 
-print $cfront->get_review_scroll_data($movie_id);
+$tags = array();
+if (isset($_GET['tags'])) {
+    $tags = $_GET['tags'];
+    $tags_valid = array();
+    foreach ($tags as $tag) {
+        $tags_valid[] = (int) $tag;
+    }
+    $tags = $tags_valid;
+}
 
+print $cfront->get_review_scroll_data($movie_id, $tags);
 exit();
 

@@ -20,7 +20,8 @@ get_header(); ?>
             // Include the single post content template.
 
             global $post;
-            if ($post->post_type == 'movie' || $post->post_type == 'tvseries' ) {
+
+            if ($post->post_type == 'movie' || $post->post_type == 'tvseries' || $post->post_type == 'videogame' || $post->post_type =='podcastseries') {
 
 
                 if (isset($_GET)) {
@@ -41,126 +42,7 @@ get_header(); ?>
 
 
             }
-//
-//            else if ($post->post_type == 'wprss_feed_item') {
-//
-//
-//                global $review_type,$review_id;
-//                $review_id =$post->ID;
-//                $review_type ='p';
-//                $movie_id='';
-//                $post_meta = get_post_meta($review_id);
-//                $movie_id_main='';
-//                $movie_id_main_enable='';
-//
-//                if (isset($_GET))
-//                {
-//                    $key = array_keys( $_GET);
-//                    if (preg_match('#([0-9]+)#', $key[0], $mach)) {
-//                        $movie_title_main= get_the_title($mach[1]);
-//                        if ($movie_title_main)
-//                        {
-//                            $movie_id_main=$mach[1];
-//                        }
-//                    }
-//                }
-//
-//
-//                foreach ($post_meta as $i=>$v)
-//                {
-//                //    var_dump($v[0]);
-//                    if ($i=='wprss_feed_url' && strstr($v[0],'zeitgeistreviews')){
-//
-//
-//                        $review_type='s';
-//                    }
-//                    if ($i=='wprss_item_permalink' && strstr($v[0],'zeitgeistreviews')){
-//
-//                        $review_type='s';
-//                    }
-//                    if ($i=='wprss_feed_type' && $v[0]=='staff'){
-//
-//                        $review_type='s';
-//                    }
-//
-//
-//                    if ($i=='wprss_item_movies'&& strstr($v[0],$movie_title_main)){
-//
-//                        $movie_id_main_enable=1;
-//
-//                    }
-//                    if ($i=='wprss_item_movie' && $v && !$movie_id){
-//                        foreach ($v as $i1=>$v1)
-//                        {
-//                            $movie_title=$v1;
-//                            //echo $movie_title;
-//
-//                            if ($movie_title_main && $movie_title_main==$movie_title)
-//                            {
-//                                $movie_id_main_enable=1;
-//                            }
-//
-//
-//                            $movie_id = get_page_by_title( $movie_title, OBJECT , array('movie') );
-//
-//                            if ($movie_id)
-//                            {
-//                                $movie_id=$movie_id->ID;
-//                                break;
-//                            }
-//                        }
-//
-//                    }
-//
-//                }
-//
-//
-//              if ($movie_id_main_enable)
-//              {
-//                  $movie_id  =$movie_id_main;
-//
-//              }
-//                // get_review_type($review_id);
-//
-//                get_template_part('template-parts/content', 'single-movie-review');
-//            }
-//            else if ($post->post_type == 'wpcr3_review') {
-//
-//
-//                global $review_type,$review_id;
-//                $review_id =$post->ID;
-//                $review_type ='a';
-//                $movie_id='';
-//                $post_meta_movie = get_post_meta($review_id,'wpcr3_review_post',1);
-//                $movie_id_main='';
-//                $movie_id_main_enable='';
-//
-//                if (isset($_GET))
-//                {
-//                    $key = array_keys( $_GET);
-//                    if (preg_match('#([0-9]+)#', $key[0], $mach)) {
-//                        $movie_title_main= get_the_title($mach[1]);
-//                        if ($movie_title_main)
-//                        {
-//                            $movie_id_main=$mach[1];
-//                        }
-//                    }
-//                }
-//
-//
-//                if (!$movie_id_main)
-//                {
-//                    $movie_id =$post_meta_movie;
-//
-//                }else
-//                {
-//                    $movie_id  = $movie_id_main;
-//
-//                }
-//                // get_review_type($review_id);
-//
-//                get_template_part('template-parts/content', 'single-movie-review');
-//            }
+
             else {
 
                 get_template_part('template-parts/content', 'single');

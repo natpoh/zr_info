@@ -104,8 +104,15 @@ body.theme_dark .single_post .movie_summary .block span {
     color: #fff;
 }
 .block_summary{
+    margin-bottom: 10px;
 
 }
+.single_grid
+{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 445px));
+}
+
 .block_main{
     margin-top: 20px;
 }
@@ -305,6 +312,19 @@ body.theme_dark .providers_colum {
     opacity: 0.9;
 }
 
+
+.ext_links_extra {
+    font-size: 14px;
+    max-width: 80%;
+    opacity: .5;
+    margin: 1em auto;
+}
+
+
+.theme_white  .ext_links_extra a{
+    text-decoration:underline;
+    color:black;
+}
 body .ready_to_load .button_play_trailer {
     position: relative;
     padding-left: 50px;
@@ -496,7 +516,7 @@ section.inner_content.section_actors  div.column_content.flex.scroller {
     justify-content: center;
 }
 .movie_total_rating {
-    min-height: 250px;
+    min-height: 100px;
     background-color: transparent;
     color: #000;
     font-family: 'HOLLYWOODSTARFIRE', "Helvetica Neue", Courier;
@@ -507,7 +527,45 @@ section.inner_content.section_actors  div.column_content.flex.scroller {
     justify-content: space-evenly;
     border-top: 1px solid #e3e3e3;
     border-bottom: 1px solid #e3e3e3;
+    padding-bottom: 0px;
 }
+
+.movie_total_rating>.rating_block {
+    position: relative;
+    width: 100%;
+    height: auto;
+    display: grid;
+    grid-template-columns: 254px 1fr 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr;
+    align-items: center;
+    justify-items: center;
+    right: unset;
+    top: unset;
+}
+
+.movie_total_rating>.rating_block>.note.rwt_stars
+{
+    width: 80%;
+    max-width: 270px;
+    align-self: center;
+    grid-row: 1;
+    grid-column: 1/2;
+    margin: 0 auto;
+    height: 40px;
+
+}
+.movie_total_rating>.rating_block>.note.edit
+{
+    grid-column: 6/7;
+}
+
+.movie_total_rating>.rating_block>.note {
+    position: relative;
+    top: 0px!important;
+    right: 0px!important;
+}
+
+
 body.theme_dark  .movie_total_rating {
 
     background-color: #040708;
@@ -539,14 +597,16 @@ body.theme_dark  .rating_row .rating_row_content {
     color: #fff;
 
 }
+.block {
 
+}
 .single_flex
 {
     display: flex;
     flex-wrap: wrap;
     gap: 0 20px;
     justify-content: space-between;
-    margin-top: 20px;
+
 }
 
 .flex_movies_block .page-header{
@@ -556,7 +616,7 @@ body.theme_dark  .rating_row .rating_row_content {
 .flex_movies_block  .movie_poster {
     box-shadow: none;
 }
-.flex_movies_block {
+.theme_dark .flex_movies_block {
     background-color: #393838;
     color: #d0d0d0;
 }
@@ -1431,6 +1491,32 @@ div.sortable {
 }
 @media screen and (max-width: 550px) {
 
+
+    .movie_total_rating>.rating_block {
+
+        grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+        grid-template-rows: 1fr  1fr;
+
+    }
+
+    .movie_total_rating>.rating_block>.note.rwt_stars {
+        width: 80%;
+        max-width: 270px;
+        align-self: center;
+        grid-row: 1;
+        grid-column: 1/7;
+        margin: 0 auto;
+        height: 70px;
+    }
+    .movie_total_rating>.rating_block>.note.edit
+    {
+        grid-column: unset;
+    }
+
+    .movie_total_rating {
+        min-height: 200px;
+    }
+
     .theme_white  span.actor_info {
         filter: invert();
     }
@@ -1569,4 +1655,12 @@ div.sortable {
     .single_flex {
         display: block;
     }
+
+    .ext_links_extra {
+
+        max-width: 100%;
+
+    }
+
+
 }

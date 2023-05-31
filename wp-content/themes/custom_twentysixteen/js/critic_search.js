@@ -4,7 +4,7 @@
 var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
 var critic_search = critic_search || {};
 
-critic_search.debug = true;
+critic_search.debug = false;
 
 jQuery(function ($) {
     $(document).ready(function () {
@@ -101,7 +101,8 @@ critic_search.collapse = [];
 critic_search.autocomplite = [];
 critic_search.no_submit_filters = [];
 critic_search.enable_submit = true;
-critic_search.default_facet = {};
+critic_search.last_submit = 0;
+
 
 critic_search.remove_collapse = function (id) {
     const index = critic_search.collapse.indexOf(id);
@@ -255,13 +256,6 @@ critic_search.init = function ($custom_id = '') {
             var keyword = v.val();
             var at = v.attr('ac-type');
             var data_type = v.attr('data-type');
-            if (at == 'qf') {
-                var facet_name = '#facet-' + data_type + ' .facet-ch';
-
-                if (data_type in critic_search.default_facet === false) {
-                    critic_search.default_facet[data_type] = $(facet_name).first().html();
-                }
-            }
             v.attr('type-kw', keyword);
 
             if (keyword.length > 2) {
@@ -286,15 +280,7 @@ critic_search.init = function ($custom_id = '') {
                 if (at == 'qf') {
                     //quick find                         
                     if (keyword.length === 0) {
-                        if ($(facet_name).hasClass('custom')) {
-                            $(facet_name).removeClass('custom');
-
-                            var holder = $(facet_name).first();
-                            holder.addClass('custom');
-                            holder.html(critic_search.default_facet[data_type]);
-                            critic_search.init_facet(holder.closest('.facet'));
-                            critic_search.init_more(holder);
-                        }
+                        critic_search.submit('blockload', '', 'facet-' + data_type);
                     }
                 }
             }
@@ -455,7 +441,7 @@ critic_search.init = function ($custom_id = '') {
         v.addClass('init');
         if (typeof rating !== "undefined") {
             $.each(rating, function (a, b) {
-                let rating_content = create_rating_content(b, a);
+                let rating_content = create_rating_content(b, a, 1);
                 if (rating_content) {
                     $('.movie_container[id="' + a + '"]').append(rating_content);
                 }
@@ -732,7 +718,18 @@ critic_search.add_filter = function (type, id, title, ftype, type_title = '', ti
 
 critic_search.add_clear_all = function () {
     if ($('.filters-wrapper .filter').length >= 3 && !$(".filters-wrapper .clear-all").length) {
-        $('.filters-wrapper').append('<li class="filter clear-all" title="Clear filters"><a href="/search">Clear <span class="close"></span></a></li>');
+        var clear_url = '/search';
+        if (typeof search_extend !== 'undefined') {
+            clear_url = '/analytics';
+        }
+
+        // Tab
+        var tab = $('#search-tabs .active a').attr('data-id');
+        if (tab !== '') {
+            clear_url = clear_url + '/tab_' + tab
+        }
+
+        $('.filters-wrapper').append('<li class="filter clear-all" title="Clear filters"><a href="' + clear_url + '">Clear <span class="close"></span></a></li>');
     }
 }
 
@@ -779,6 +776,14 @@ critic_search.update_facets = function ($rtn = [], $holder = '#facets', $is_chil
         }
     });
 
+    $rtn.find($holder + ' > .blockload').each(function (i, v) {
+        // Hide facets
+        var v = $(v), id = v.closest('.facets').attr('id');
+        new_ids.push(id);
+        $($holder).html(v);
+    });
+
+
     if (new_ids.length > 0) {
         //remove old facets
         $('#no-facets').remove();
@@ -819,6 +824,9 @@ critic_search.submit = function (inc = '', target = '', facetid = '') {
     var data = {};
 
     data['inc'] = inc;
+
+    critic_search.last_submit = Date.now();
+    data['ts'] = critic_search.last_submit;
 
     // load block logic
     if (inc == 'blockload') {
@@ -892,17 +900,29 @@ critic_search.submit = function (inc = '', target = '', facetid = '') {
 
 
     //Autocomplite facet
-    $('.facet .autocomplite.active').each(function (i, v) {
+    $('.facet .autocomplite').each(function (i, v) {
         var v = $(v);
+        var kw = v.val();
+
         if (inc === 'autocomplite') {
-            data['facet_type'] = v.attr('data-type');
-            data['facet_keyword'] = v.val();
-            data['facet_count'] = v.attr('data-count');
-            data['facet_ac_type'] = v.attr('ac-type');
-            return;
+            if (v.hasClass('active')) {
+                data['facet_type'] = v.attr('data-type');
+                data['facet_keyword'] = kw
+                data['facet_count'] = v.attr('data-count');
+                data['facet_ac_type'] = v.attr('ac-type');
+                return;
+            } else {
+                v.removeClass('active');
+            }
         } else {
-            v.removeClass('active');
+            if (kw !== '') {
+                // Add facet keywords
+                var ac_parent = v.closest('.facet');
+                var ac_name = 'ackw-' + ac_parent.attr('id');
+                data[ac_name] = kw;
+            }
         }
+
     });
 
     // Hide facets
@@ -972,6 +992,19 @@ critic_search.submit = function (inc = '', target = '', facetid = '') {
             return false;
         }
 
+        var ts = '';
+        $rtn.find('#search-ts').each(function (i, v) {
+            var v = $(v);
+            ts = v.attr('data-id');
+        });
+
+        if (critic_search.debug) {
+            console.log(ts, critic_search.last_submit);
+        }               
+        
+        if (ts != ''&& ts != critic_search.last_submit) {                        
+            return false;
+        }
 
         var inc = '';
         //Url and Title
@@ -1041,7 +1074,7 @@ critic_search.ajax = function (data, cb) {
     }
     var $ = jQuery;
     return $.ajax({
-        type: "GET",
+        type: "POST",
         url: '/wp-content/themes/custom_twentysixteen/template/ajax/search.php',
         data: data,
         success: function (rtn) {

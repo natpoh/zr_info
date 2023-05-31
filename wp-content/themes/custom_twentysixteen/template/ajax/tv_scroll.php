@@ -29,7 +29,7 @@ if (!$pdo)
 
 class TV_Scroll {
 
-    private static function prepare_movies($id,$content_result,$slug = 'tvseries',$time =0)
+    private static function prepare_movies($id,$content_result,$slug = '',$time =0)
     {
 
         if ($content_result['result'][$id])
@@ -53,6 +53,10 @@ class TV_Scroll {
         $title = $rows->title;
         $type = $rows->type;
         $release = strtotime($rows->release);
+
+        if (!$slug)$slug=strtolower($type);
+
+        if ($slug=='movie')$slug='movies';
 
             if (!$post_name) {
                 if (!$cfront) {
@@ -88,67 +92,131 @@ class TV_Scroll {
         return $content_result;
     }
 
-    public static function show_scroll($type='TVSeries') {
-
-        if ($type== 'TVSeries') {
-            $sql = "SELECT * FROM `options` where id = 14";
-            $rows = Pdo_an::db_fetch_row($sql);
-            $array_movies_dop = [];
-            $array_movies = $rows->val;
-            if ($array_movies) {
-                $array_movies = json_decode($array_movies, 1);
-            }
-
-
-        }
-
-            $starttime = time();
-            $date_current = date('Y-m-d', $starttime);
-            $date_main = date('Y-m-d', strtotime('-6 month', $starttime));
-            $sql = "SELECT * FROM `data_movie_imdb` WHERE `release`  >=  '" . $date_main . "' and `release`  <=  '" . $date_current . "' and `type`= '".$type."' order by `rating` desc , `release` desc LIMIT 30 ";
-
-            $rows = Pdo_an::db_results_array($sql);
-            foreach ($rows as $r) {
-                $movie_id = $r['id'];
-                $array_movies_dop[$movie_id] = strtotime($r['release']);
-            }
-
+    public static function show_scroll($type='TVSeries',$data='') {
         $content_result=[];
+        $array_movies_dop = [];
+        $array_movies = [];
+
+          if ($type== 'compilation') {
+
+              global $cfront;
+
+              if (!$cfront) {
+                  if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
+                      define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
+                  }
+
+                  if (!class_exists('CriticFront')) {
+                      require_once(CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php');
+                  }                  
+              }
+
+              if ($data) $q="SELECT * FROM `meta_compilation_links` WHERE `enable` = 1 and id =".intval($data)." LIMIT 1";
+              $ru=Pdo_an::db_fetch_row($q);
+              $url = $ru->url;
+              $last_req = $_SERVER['REQUEST_URI'];
+              $_SERVER['REQUEST_URI'] = $url;
+              
+              $search_front = new CriticFront();
+              $search_front->init_search_filters();              
+              $array_data= $search_front->find_results(array(),false, true);
+              
+              //var_dump($array_data["movies"]["list"]);
+
+           /// var_dump($array_data["movies"] ["list"]);
+              if ($array_data["movies"] ["list"])
+              {
+                  foreach ($array_data["movies"] ["list"] as $i=>$v)
+                      {
+
+                          $array_movies[ $v->id] = strtotime($v->release);
+                      }
+              }
+              $_SERVER['REQUEST_URI']=$last_req;
+
+                  foreach ($array_movies as $id => $enable) {
+
+                      $content_result = self::prepare_movies($id, $content_result);
+                      //else echo $imdb_id.'found<br>';
+
+
+                      if (count($content_result['result']) >= 20) {
+                          break;
+                      }
+                  }
+
+          }
+          else {
+
+              if ($type == 'TVSeries') {
+                  $sql = "SELECT * FROM `options` where id = 14";
+                  $rows = Pdo_an::db_fetch_row($sql);
+
+                  $array_movies = $rows->val;
+                  if ($array_movies) {
+                      $array_movies = json_decode($array_movies, 1);
+                  }
+
+
+              }
+
+              $starttime = time();
+              $date_current = date('Y-m-d', $starttime);
+              $date_main = date('Y-m-d', strtotime('-6 month', $starttime));
+              $sql = "SELECT * FROM `data_movie_imdb` WHERE `release`  >=  '" . $date_main . "' and `release`  <=  '" . $date_current . "' and `type`= '" . $type . "' order by `rating` desc , `release` desc LIMIT 30 ";
+
+              $rows = Pdo_an::db_results_array($sql);
+              foreach ($rows as $r) {
+                  $movie_id = $r['id'];
+                  $array_movies_dop[$movie_id] = strtotime($r['release']);
+              }
 
 
 
-        if (is_array($array_movies)) {
-            arsort($array_movies);
-            $i = 0;
-
-            $cfront = '';
-            foreach ($array_movies as $id => $enable) {
 
 
-                $content_result = self::prepare_movies($id, $content_result,'tvseries',time()-180);
-                //else echo $imdb_id.'found<br>';
+              if (is_array($array_movies)) {
+                  arsort($array_movies);
+                  $i = 0;
+
+                  $cfront = '';
+                  foreach ($array_movies as $id => $enable) {
 
 
-                if (count($content_result['result']) >= 20) {
-                    break;
-                }
-            }
-        }
-
-            if (count($content_result['result']) < 20) {
-                arsort($array_movies_dop);
-                foreach ($array_movies_dop as $id => $enable) {
+                      $content_result = self::prepare_movies($id, $content_result,'',time()-180);
+                      //else echo $imdb_id.'found<br>';
 
 
-                    $content_result = self::prepare_movies($id, $content_result,strtolower($type));
-                    //else echo $imdb_id.'found<br>';
+                      if (count($content_result['result']) >= 20) {
+                          break;
+                      }
+                  }
+              }
+
+              if (count($content_result['result']) < 20 ) {
+                  arsort($array_movies_dop);
+                  foreach ($array_movies_dop as $id => $enable) {
 
 
-                    if (count($content_result['result']) >= 20) {
-                        break;
-                    }
-                }
-            }
+                      $content_result = self::prepare_movies($id, $content_result);
+                      //else echo $imdb_id.'found<br>';
+
+
+                      if (count($content_result['result']) >= 20) {
+                          break;
+                      }
+                  }
+              }
+          }
+
+
+
+
+
+
+
+
+
 
 
 
@@ -162,6 +230,12 @@ class TV_Scroll {
                     $link = '/search/type_videogame';
                     $title = 'Load more Games';
                 }
+                else if ($type== 'compilation') {
+                    $link = $url;
+                    $title = 'Load more';
+                }
+
+
 
                 $content_result['result'][] = array('link' => $link, 'title' => $title, 'genre' => 'load_more', 'poster_link_small' => '', 'poster_link_big' => '', 'content_pro' => '');
                 $content_result['count'] = count($content_result['result']);
@@ -177,9 +251,9 @@ class TV_Scroll {
 
 }
 
-function tv_scroll($type='TVSeries') {
+function tv_scroll($type='TVSeries',$data='') {
     global $video_template;
-    $content_result = TV_Scroll::show_scroll($type);
+    $content_result = TV_Scroll::show_scroll($type,$data);
     include(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/video_item_template.php');    
     $content_result['tmpl'] = $video_template;
 
@@ -201,6 +275,14 @@ if (isset($_GET['type']))
     if ($_GET['type'] =='games')
     {
         $cache = tv_scroll('VideoGame');
+    }
+    if ($_GET['type'] =='games')
+    {
+        $cache = tv_scroll('VideoGame');
+    }
+    if ($_GET['type'] =='compilation')
+    {
+        $cache = tv_scroll('compilation',intval($_GET['id']));
     }
 }
 else {

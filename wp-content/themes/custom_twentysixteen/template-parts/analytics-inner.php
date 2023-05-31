@@ -1,4 +1,4 @@
-<form method="get" action="/analytics" id="search-form" class="analytics">
+<form method="post" action="/analytics" id="search-form" class="analytics">
     <div class="flex-page">
         <div id="primary" class="content-full with-sidebar-left">
             <main id="main" class="site-main" role="main">

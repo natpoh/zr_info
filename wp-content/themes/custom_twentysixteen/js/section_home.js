@@ -28,6 +28,31 @@ function recomendations_resset()
     //window.DISQUS_RECOMMENDATIONS.reset();
 }
 
+
+function scroll_block(block_id){
+    if (window.innerWidth <= 450)
+    {
+        let scrollWrapper = document.querySelector('.single div#'+block_id+'  div.scroller');
+        ///console.log(scrollWrapper);
+        if (scrollWrapper)
+        {
+            scrollWrapper.scrollLeft = 40;
+        }
+        else
+        {
+
+             scrollWrapper = document.querySelector('.home div#'+block_id+'  div.scroller');
+            ///console.log(scrollWrapper);
+            if (scrollWrapper)
+            {
+                scrollWrapper.scrollLeft = 10;
+            }
+        }
+
+
+    }
+}
+
 function discuss_config(data_object) {
     var page_url = data_object['page_url'];
     var page_identifier = data_object['page_identifier'];
@@ -120,18 +145,22 @@ function initializeScroller(mobile, scroller) {
     }, 250);
 }
 
-
-function add_rating_block(type, data, desc, usescroll, new_api = false)
+function add_rating_duoble_block(type, value_female, data, desc, usescroll, new_api = false)
 {
-    if (new_api) {
-        $api = `<div class="note nte ${type}"><div class="btn">${data}</div>
+
+    $api = `<div class="note nte ${type}"><div class="btn"><span  class="num_1">${value_female}</span><span  class="num_2">${data}</span></div>
                  <div class="nte_show"><div class="nte_in"><div class="nte_cnt"><div class="note_show_content_${usescroll}" >${desc}</div></div></div></div>
                  </div>`;
-    } else {
-        $api = `<div class="note ${type}">${data}<div class="note_togle"></div>
-            <div class="note_show" style="display: none;"><div class="note_show_content_${usescroll}" >${desc}</div></div>
-            </div>`;
-    }
+
+    return $api;
+
+}
+function add_rating_block(type, data, desc, usescroll, new_api = false, dwn = '')
+{
+
+    $api = `<div class="note nte ${type}"><div class="btn">${data}</div>
+                 <div class="nte_show ${dwn}"><div class="nte_in"><div class="nte_cnt"><div class="note_show_content_${usescroll}" >${desc}</div></div></div></div>
+                 </div>`;
 
     return $api;
 
@@ -237,7 +266,7 @@ function family_rating(family_data)
     return family_data_result;
 }
 
-function create_total_rating(obj, only_tomatoes)
+function create_total_rating(obj, only_tomatoes,rt_gap)
 {
     let content_rating = '';
 
@@ -246,9 +275,8 @@ function create_total_rating(obj, only_tomatoes)
 
     if (!only_tomatoes) {
         if (obj.rwt_audience > 0)
-            content_rating += '<div><span>Audience Rating:</span>' + create_rating_star(obj.rwt_audience, '') + '</div>';
-        if (obj.rwt_staff > 0)
-            content_rating += '<div><span>Staff Rating:</span>' + create_rating_star(obj.rwt_staff, '') + '</div>';
+            content_rating += '<div><span>ZR Audience:</span>' + create_rating_star(obj.rwt_audience, '') + '</div>';
+
         if (obj.imdb)
             content_rating += '<div class="exlink" id="imdb" ><span >IMDb:</span>' + create_rating_star(obj.imdb, 'imdb') + '</div>';
     }
@@ -257,23 +285,23 @@ function create_total_rating(obj, only_tomatoes)
     if (Number(obj.rotten_tomatoes) > 0 || Number(obj.rotten_tomatoes_audience) > 0)
     {
 
-        if (only_tomatoes != 0) {
+        if (rt_gap != 0) {
             var ttcomment = '';
-            if (only_tomatoes > 10) {
-                ttcomment = "The Rotten Tomatoes audience rated this " + only_tomatoes + "% higher than the critics."
-            } else if (only_tomatoes < -10) {
-                ttcomment = "The Rotten Tomatoes audience rated this " + only_tomatoes + "% lower than the critics."
-            } else if (only_tomatoes > 0) {
-                ttcomment = "The Rotten Tomatoes audience rated this " + only_tomatoes + "% higher than the critics."
-            } else if (only_tomatoes < 0) {
-                ttcomment = "The Rotten Tomatoes audience rated this " + only_tomatoes + "% lower than the critics."
+            if (rt_gap > 10) {
+                ttcomment = "The Rotten Tomatoes audience rated this " + rt_gap + "% higher than the critics."
+            } else if (rt_gap < -10) {
+                ttcomment = "The Rotten Tomatoes audience rated this " + rt_gap + "% lower than the critics."
+            } else if (rt_gap > 0) {
+                ttcomment = "The Rotten Tomatoes audience rated this " + rt_gap + "% higher than the critics."
+            } else if (rt_gap < 0) {
+                ttcomment = "The Rotten Tomatoes audience rated this " + rt_gap + "% lower than the critics."
             }
             content_rating += popup_cusomize('popup_header', ttcomment);
 
             content_rating += '<div><div class="rotten_tomatoes_score">';
         } else
         {
-            content_rating += '<div class="exlink" id="rt"><span>Rotten Tomatoes:</span><div class="rotten_tomatoes_score">';
+            content_rating += '<div class="exlink" id="rt"><span>RottenTomatoes:</span><div class="rotten_tomatoes_score">';
 
         }
 
@@ -304,14 +332,14 @@ function create_total_rating(obj, only_tomatoes)
 
     if (!only_tomatoes) {
         if (Number(obj.tmdb) > 0) {
-            content_rating += '<div class="exlink" id="tmdb"><span>TMDb Ratig:</span>' + create_rating_star(obj.tmdb, 'tmdb') + '</div>';
+            content_rating += '<div class="exlink" id="tmdb"><span>TMDb:</span>' + create_rating_star(obj.tmdb, 'tmdb') + '</div>';
         }
 
 
         if (obj.kinop_rating > 0)
-            content_rating += '<div class="exlink" id="kinop"><span>Kinopoisk (Russia):</span>' + create_rating_star(obj.kinop_rating, 'kinopoisk') + '</div>';
+            content_rating += '<div class="exlink" id="kinop"><span>Kinopoisk:</span>' + create_rating_star(obj.kinop_rating, 'kinopoisk') + '</div>';
         if (obj.douban_rating > 0)
-            content_rating += '<div class="exlink" id="douban"><span>Douban (China):</span>' + create_rating_star(obj.douban_rating, 'douban') + '</div>';
+            content_rating += '<div class="exlink" id="douban"><span>Douban:</span>' + create_rating_star(obj.douban_rating, 'douban') + '</div>';
     }
 
 
@@ -321,12 +349,13 @@ function create_total_rating(obj, only_tomatoes)
 
 function create_context_rating(obj, hollywood)
 {
+
     let content_rating = '';
 
     //if (hollywood)
     //  content_rating += '<div><span>ZR BS Score:</span>' + create_rating_star(hollywood, 'hollywood') + '</div>';
     if (obj.vote)
-        content_rating += '<div><span>Support:</span>' + create_rating_star(obj.vote, 'vote') + '</div>';
+        content_rating += '<div><span>Support:</span>' + create_rating_star([obj.vote, obj.vote_type], 'vote') + '</div>';
     if (obj.patriotism)
         content_rating += '<div><span>Neo-Marxism:</span>' + create_rating_star(obj.patriotism, 'patriotism') + '</div>';
     if (obj.misandry)
@@ -345,10 +374,10 @@ function create_context_rating(obj, hollywood)
 function create_gender_desc(value)
 {
 
-    let fcontent = '<div class="gray_comment">We love women at ZR!<br>' +       'We just grow tired of feminist quotas. The \"<a href="https://en.wikipedia.org/wiki/F-rating" target="_blank"><u>F rated</u></a>\" label is a good proxy for that, and the <a href="https://en.wikipedia.org/wiki/Bechdel_test" target="_blank"><u>Bechdel Test</u></a> sometimes can be. But both are scarcely applied. Thus, a scan of the cast\'s gender is more ubiquitous.</div>';
+    let fcontent = '<div class="gray_comment">We love women at ZR!<br>' + 'We just grow tired of feminist quotas. The \"<a href="https://en.wikipedia.org/wiki/F-rating" target="_blank"><u>F rated</u></a>\" label is a good proxy for that, and the <a href="https://en.wikipedia.org/wiki/Bechdel_test" target="_blank"><u>Bechdel Test</u></a> sometimes can be. But both are scarcely applied. Thus, a scan of the cast\'s gender is more ubiquitous.</div>';
     let hcontent = popup_cusomize('popup_header', value + '% of the Stars & Main Cast are Female.');
 
-    return hcontent ;
+    return hcontent;
 }
 function create_diversity(diversity_data, value)
 {
@@ -375,35 +404,187 @@ function create_diversity(diversity_data, value)
 
     return diversity_data_content;
 }
+function abbreviateNumber(number) {
+    const abbreviations = [
+        {value: 1e18, symbol: "E"},
+        {value: 1e15, symbol: "P"},
+        {value: 1e12, symbol: "T"},
+        {value: 1e9, symbol: "B"},
+        {value: 1e6, symbol: "M"},
+        {value: 1e3, symbol: "K"},
+    ];
 
-function create_rating_content(object, m_id)
+    for (let i = 0; i < abbreviations.length; i++) {
+        if (number >= abbreviations[i].value) {
+            return (
+                    (number / abbreviations[i].value).toFixed(1).replace(/\.0$/, "") +
+                    abbreviations[i].symbol
+                    );
+        }
+    }
+
+    return number.toString();
+}
+function create_rating_content(object, m_id, search_block = 0)
 {
     let content = '';
-
 
 
     if (object['type'])
     {
         var movie_type = object['type'];
     }
-    // console.log(movie_type);
+    //console.log(movie_type);
 
-    if (object['female'] || object['male'])
+    if (object['indie'])
     {
-        block_class = 'gender';
-        let value = Number(object['female']);
-        value = value.toFixed(0);
+        //console.log(object['indie']);
+        let data = '';
+        if (object['indie']['productionBudget'] > 0 || object['indie']['box_usa'] > 0 || object['indie']['box_intern'] || object['indie']['box_world'] > 0) {
 
-        hcontent = create_gender_desc(value);
-        content += add_rating_block(block_class, value + '%', hcontent, 2, true);
 
+            if (object['indie']['box_usa'] > 0 || object['indie']['box_world'] > 0)
+            {
+                data = popup_cusomize('row_text_head', 'Box office:');
+            }
+
+
+            if (object['indie']['productionBudget'] > 0)
+                data += popup_cusomize('row_inner', 'Budget:', '$' + abbreviateNumber(object['indie']['productionBudget']));
+            if (object['indie']['box_usa'] > 0)
+                data += popup_cusomize('row_inner', 'Domestic:', '$' + abbreviateNumber(object['indie']['box_usa']));
+            if (object['indie']['box_intern'] > 0)
+                data += popup_cusomize('row_inner', 'International:', '$' + abbreviateNumber(object['indie']['box_intern']));
+
+
+            if (object['indie']['box_world'] > 0)
+                data += popup_cusomize('row_inner', 'Worldwide:', '$' + abbreviateNumber(object['indie']['box_world']));
+        }
+
+
+        let recycle = '';
+        if (object['indie']['recycle'])
+        {
+
+
+            if (object['indie']['recycle']['enabled'])
+            {
+                recycle = ' recycle ';
+            }
+
+            if (object['indie']['recycle']['enabled'] || (object['indie']['recycle']['keywords'] && object['indie']['recycle']['keywords']['lasy_grab'])) {
+
+                data += popup_cusomize('row_text_head row_margin l_c_g', 'Possible lazy cash grab:');
+            }
+
+
+
+
+            if (object['indie']['recycle']['keywords']) {
+
+                if (object['indie']['recycle']['keywords']['lasy_grab']) {
+
+                    data += popup_cusomize('row_link', object['indie']['recycle']['keywords']['lasy_grab']);
+                }
+            }
+
+            if (object['indie']['recycle']['franchise']) {
+
+                data += popup_cusomize('row_text_head', 'Franchise:');
+                data += popup_cusomize('row_link', object['indie']['recycle']['franchise']);
+            }
+
+
+            if (object['indie']['recycle']['keywords']) {
+                if (object['indie']['recycle']['keywords']['remake_words']) {
+
+                    data += popup_cusomize('row_text_head row_margin', 'Adaptation/remake:');
+                    data += object['indie']['recycle']['keywords']['remake_words'];
+                }
+
+            }
+
+
+
+
+        }
+        let big_b = '';
+
+
+        if (object['indie']['production'])
+        {
+
+            if (object['indie']['production'][1]) {
+                big_b = ' big_business ';
+            }
+            if (object['indie']['production'][1] || object['indie']['production'][2]) {
+                data += popup_cusomize('row_text_head row_margin big_b_i', 'Possible Big Business:');
+            }
+            data += popup_cusomize('row_text_head ', 'Production:');
+
+            jQuery.each(object['indie']['production'], function (a, b) {
+
+                jQuery.each(b, function (c, d) {
+
+                    data += popup_cusomize('row_link ', d);
+
+                });
+
+            });
+
+        }
+
+
+        let dwn = 'dwn';
+        if (search_block)
+        {
+            dwn = '';
+        }
+
+        content += add_rating_block('indie' + recycle + big_b, ' ', data, 2, true, dwn);
     }
 
 
-
-
-    if (object['family'])
+    if ((object['diversity'] || object['diversity_data'] || object['female'] || object['male']) && object['type']!='videogame')
     {
+
+        let fem_desk = '';
+        let  diversity_data_content = '';
+        let value_female = 'N/A';
+        let value = 'N/A';
+        if (object['female'] || object['male'])
+        {
+            // block_class = 'gender';
+
+            // content += add_rating_block(block_class, value + '%', hcontent, 2, true);
+            value_female = Number(object['female']);
+            value_female = value_female.toFixed(0);
+            fem_desk = create_gender_desc(value_female);
+
+            value_female = value_female + '%';
+        }
+
+
+
+
+        if (object['diversity_data']) {
+
+            value = Number(object['diversity']);
+            value = value.toFixed(0);
+            if (!value)
+                value = 0;
+
+            var diversity_data = object['diversity_data'];
+            diversity_data_content = create_diversity(diversity_data, value);
+
+            value = value + '%';
+        }
+        content += add_rating_duoble_block('diversity', value_female, value, fem_desk + diversity_data_content, 3, true);
+
+    }
+
+        ///family rating
+
         block_class = 'family_friendly';
         let value = '';
 
@@ -415,14 +596,17 @@ function create_rating_content(object, m_id)
         let woke_warning_text = '';
 
 
-        if (object['family']) {
-
-            value = Number(object['family']);
-
-            value = value.toFixed(2);
 
 
-            let rating_color = 'green';
+        value = Number(object['family']);
+
+        value = value.toFixed(2);
+
+        let rating_color = 'noffrating';
+
+        if (value>0)
+        {
+            rating_color = 'green';
             if (value < 3) {
                 rating_color = 'orange';
             }
@@ -430,117 +614,130 @@ function create_rating_content(object, m_id)
                 rating_color = 'red';
             }
             let family_data_result = '';
-            if (object['family_data']) {
-
-                var family_data = object['family_data'];
-
-                family_data = JSON.parse(family_data);
-                family_data_result = family_rating(family_data);
-            }
-            lgbt_warning_text = '';
-
-            if (object['lgbt_warning'] == 1) {
-                let ltext = '';
-                if (object['lgbt_text'])
-                {
-                    ltext = '<span class="bg_rainbow">' + object['lgbt_text'] + '</span>';
-                }
-
-                lgbt_class = ' lgbt ';
-
-                lgbt_warning_text = popup_cusomize('row_text_head', 'LGBTQ content included: <a target="_blank" href="https://zeitgeistreviews.com/faq/" class="link_info">i</a>') + popup_cusomize('row_text', ltext);
-            }
-            woke_warning_text = '';
-
-            if (object['woke'] == 1) {
-                let woketext = '';
-                if (object['woke_text'])
-                {
-                    woketext = '<span class="bg_woke">' + object['woke_text'] + '</span>';
-                }
-                woke_class = ' woke ';
-                woke_warning_text = popup_cusomize('row_text_head', 'Possibly woke elements: <a target="_blank" href="https://zeitgeistreviews.com/faq/" class="link_info">i</a>') + popup_cusomize('row_text', woketext);
-            }
+        }
 
 
-            /// console.log(movie_type);
+        let family_data_result='';
 
-            let array_title = {'movie': 'film', 'tvseries': 'show', 'videogame': 'game'};
-            let name = 'film';
-            if (array_title[movie_type])
+        if (object['family_data']) {
+
+            var family_data = object['family_data'];
+
+            family_data = JSON.parse(family_data);
+            family_data_result = family_rating(family_data);
+        }
+        lgbt_warning_text = '';
+
+        if (object['lgbt_warning'] == 1) {
+            let ltext = '';
+            if (object['lgbt_text'])
             {
-                name = array_title[movie_type];
+                ltext = '<span class="bg_rainbow">' + object['lgbt_text'] + '</span>';
             }
 
+            lgbt_class = ' lgbt ';
 
-            let scorecontent = popup_cusomize('popup_header', `This ${name} gets a ${value}/5 family friendly score `);
+            lgbt_warning_text = popup_cusomize('row_text_head', 'LGBTQ content included: <a target="_blank" href="https://zeitgeistreviews.com/faq/" class="link_info">i</a>') + popup_cusomize('row_text', ltext);
+        }
+        woke_warning_text = '';
 
-            if (value != 0) {
-
-                let rating_link = popup_cusomize('row_link', '<a href="#" class="read_more_rating">CONTENT BREAKDOWN</a>');
-                rating_link += popup_cusomize('row_link', '<a href="#" class="how_calculate_rating">Methodology</a>')
-
-                content += add_rating_block(block_class + ' ' + lgbt_class + woke_class + rating_color, value, scorecontent + lgbt_warning_text + woke_warning_text + family_data_result + rating_link, 1, true);
+        if (object['woke'] == 1) {
+            let woketext = '';
+            if (object['woke_text'])
+            {
+                woketext = '<span class="bg_woke">' + object['woke_text'] + '</span>';
             }
-        }
-    }
-
-    if (object['diversity'] || object['diversity_data'])
-    {
-
-        block_class = 'diversity';
-        let value = Number(object['diversity']);
-        value = value.toFixed(0);
-        if (!value)
-            value = 0;
-
-        if (object['diversity_data']) {
-            var diversity_data = object['diversity_data'];
-
-            let  diversity_data_content = create_diversity(diversity_data, value);
-
-
-            content += add_rating_block(block_class, value + '%', diversity_data_content, 3, true);
-
+            woke_class = ' woke ';
+            woke_warning_text = popup_cusomize('row_text_head', 'Possibly woke elements: <a target="_blank" href="https://zeitgeistreviews.com/faq/" class="link_info">i</a>') + popup_cusomize('row_text', woketext);
         }
 
+
+        /// console.log(movie_type);
+
+        let array_title = {'movie': 'film', 'tvseries': 'show', 'videogame': 'game'};
+        let name = 'film';
+        if (array_title[movie_type])
+        {
+            name = array_title[movie_type];
+        }
+    let scorecontent='';
+    if (value>0) {
+         scorecontent = popup_cusomize('popup_header', `This ${name} gets a ${value}/5 family friendly score `);
+    }
+    else if (value==0)
+    {
+        value='N/A';
+        scorecontent = 'Rating has not yet been added, please help improve our site and <div class="add_pg_rating_button"><a href="#" class="empty_ff_rating">Add Family Friendly Rating</a></div>';
+
     }
 
-    if (object['total_rating'])
-    {
+
+            let rating_link = popup_cusomize('row_link', '<a href="#" class="read_more_rating">CONTENT BREAKDOWN</a>');
+            rating_link += popup_cusomize('row_link', '<a href="#" class="how_calculate_rating">Methodology</a>')
+
+            content += add_rating_block(block_class + ' ' + lgbt_class + woke_class + rating_color, value,  scorecontent + lgbt_warning_text + woke_warning_text + family_data_result + rating_link, 1, true);
+
+
+
+
+
+if (object['type']!='videogame') {
+    if (object.total_rating && (object.total_rating.rotten_tomatoes_gap > 0 || object.total_rating.rotten_tomatoes > 0 || object.total_rating.rotten_tomatoes_audience > 0)) {
+
+        let total_gap_str = 'N/A';
+
         var total_gap = object.total_rating.rotten_tomatoes_gap;
-        total_gap = Number(total_gap);
+        let rating_color = '';
+        if (total_gap) {
+            total_gap = Number(total_gap);
 
-        if (total_gap > 0 || total_gap < 0) {
+            if (total_gap > 0 || total_gap < 0) {
 
 
-            let rating_color = '';
+                let rating_color = '';
 
-            if ((total_gap) > 10) {
-                rating_color = 'green_rt';
+                if ((total_gap) > 10) {
+                    rating_color = 'green_rt';
+                }
+                if ((total_gap) < -10) {
+                    rating_color = 'red_rt';
+                }
             }
-            if ((total_gap) < -10) {
-                rating_color = 'red_rt';
-            }
-
-
-            let total_tomatoes_content = create_total_rating(object.total_rating, total_gap);
-
-            content += add_rating_block('rt_gap ' + rating_color, total_gap + '%', total_tomatoes_content, 4, true);
+            total_gap_str = total_gap + '%'
         }
-        if (object.total_rating.total_rating > 0) {
+
+        let total_tomatoes_content = create_total_rating(object.total_rating, 1, total_gap);
+
+        content += add_rating_block('rt_gap ' + rating_color, total_gap_str, total_tomatoes_content, 4, true);
+
+    } else {
+        let rating_color = 'gray_rt';
+        let total_gap_str = 'N/A';
+        let total_tomatoes_content = 'No <b class="exlink" id="rt">RottenTomatoes</b> ratings yet';
+
+        content += add_rating_block('rt_gap ' + rating_color, total_gap_str, total_tomatoes_content, 4, true);
+    }
+}
+
+        if (object.total_rating && object.total_rating.total_rating > 0) {
             let total_rating_star = create_rating_star(object.total_rating.total_rating, '');
 
 
             let rating_link_t = popup_cusomize('row_link', '<a href="#" class="how_calculate_rwt_rating">Methodology</a>');
 
-            var content_rating_adata = create_total_rating(object.total_rating, '') + rating_link_t;
+            var content_rating_adata = create_total_rating(object.total_rating, '','') + rating_link_t;
 
             var rdata = '<div class="rwt_stars" title="ZR Rating">' + total_rating_star + '</div>';
             content += add_rating_block('rwt_stars', rdata, content_rating_adata, 'rwt_rt', true);
 
         }
-    }
+        else
+        {
+            var rdata = '<div class="rwt_stars not_rated" title="ZR Rating">Not rated</div>';
+            let rcontent ='No rating yet,<br> Please  <b class="edit_review">Write a Review</b> to create a rating';
+            content += add_rating_block('rwt_stars', rdata, rcontent, 'rwt_rt', true);
+        }
+
 
     content += '<div id="' + m_id + '"  class="note edit"><div class="note_togle">' +
             '<div  class="edit_area  note_show">' +
@@ -835,9 +1032,22 @@ function create_rating_star(rating, type)
 
     } else if (type == 'vote')
     {
-        let array = {1: ['pay_to_watch', 'Pay To Consume'], 2: ['skip_it', 'Skip It'], 3: ['watch_if_free', 'Consume If Free']};
+        //  console.log(rating[1]);
+        let array = {};
+        if (rating[1] == 'tvseries' || rating[1] == 'movie')
+        {
+            array = {1: ['pay_to_watch', 'Pay To Watch!'], 2: ['skip_it', 'Skip It'], 3: ['watch_if_free', 'Watch If Free.']};
+        } else if (rating[1] == 'videogame')
+        {
+            array = {1: ['pay_to_watch', 'Pay to play it!'], 2: ['skip_it', 'Skip It'], 3: ['watch_if_free', 'Play if Free.']};
+        } else
+        {
+            array = {1: ['pay_to_watch', 'Pay To Consume'], 2: ['skip_it', 'Skip It'], 3: ['watch_if_free', 'Consume if Free']};
+        }
 
-        return  '<span title="' + array[rating][1] + '" style="background-size: 30%" class="rating_result ' + array[rating][0] + '"><span class="verdict_text">' + array[rating][1] + '</span></span>';
+
+
+        return  '<span title="' + array[rating[0]][1] + '" style="background-size: 30%" class="rating_result ' + array[rating[0]][0] + '"><span class="verdict_text">' + array[rating[0]][1] + '</span></span>';
     } else
     {
         rating = Number(rating);
@@ -859,13 +1069,27 @@ function create_rating_star(rating, type)
 
 function add_movie_rating(block_id, data)
 {
+    let parent_id = jQuery('div[id="' + block_id + '"]').attr('data-value');
+    let rating_content = create_rating_content(data,parent_id,1);
+
+    jQuery('div.movie_total_rating[id="' + block_id + '"]').html(rating_content);
+return;
+
 
     var content = '';
-
+    let obj ={};
     if (data) {
-        let obj = JSON.parse(data);
+        if (typeof data =="object")
+        {
+             obj =data;
+        }
+        else
+        {
+            obj = JSON.parse(data);
+        }
 
-        ///  console.log(obj);
+
+
         ///  var content =  create_rating_content(obj);
 
         if (obj.gender) {
@@ -910,7 +1134,7 @@ function add_movie_rating(block_id, data)
 
 
         }
-        if (obj.family) {
+        if (obj['family']) {
 
 
             if (obj.family.pgrating) {
@@ -978,6 +1202,8 @@ function add_movie_rating(block_id, data)
 
 
                 }
+                let family_data_result='';
+
                 if (family_data)
                 {
                     family_data = JSON.parse(family_data);
@@ -990,8 +1216,13 @@ function add_movie_rating(block_id, data)
                 rating_text += '<span title="Edit Family Friendly Rating" class="add_pg_rating_button button_edit"></span>';
 
                 content += add_rating_row(title, rating_text, 'family_friendly', `${rating_text_result + lgbt_text + woke_warning_text + family_data_result}`)
+            } else
+            {
+
+                content += add_rating_row('Family Friendly Score:', 'Coming soon...<span title="Edit Family Friendly Rating" class="add_pg_rating_button button_edit"></span>', 'family_friendly', '<p>Rating has not yet been added, please help improve our site and add a family rating</p><span title="Edit Family Friendly Rating" class="add_pg_rating_button button_edit"></span>' + popup_cusomize('row_link', '<a target="_blank" href="https://zeitgeistreviews.com/family-friendly-movie-review-sites/">Family Friendly review sites</a>'));
             }
         }
+
         var hollywood = '';
 
         if (obj.audience) {
@@ -1005,6 +1236,10 @@ function add_movie_rating(block_id, data)
 
 
                 }
+                if (obj.type && obj.audience) {
+                    obj.audience.vote_type = obj.type;
+                }
+
                 var content_audience_adata = create_context_rating(obj.audience, hollywood);
 
 
@@ -1025,7 +1260,7 @@ function add_movie_rating(block_id, data)
                 title = 'ZR Rating:';
                 let total_rating_star = create_rating_star(obj.total_rating.total_rating, '');
 
-                var content_rating_adata = create_total_rating((obj.total_rating), '') + '<br><a href="#" class="how_calculate_rwt_rating">Methodology</a>';
+                var content_rating_adata = create_total_rating((obj.total_rating), '','') + '<br><a href="#" class="how_calculate_rwt_rating">Methodology</a>';
                 var content_total_rating = add_rating_row(title, total_rating_star, 'rwt_rating', content_rating_adata);
 
             }
@@ -1270,14 +1505,12 @@ function load_ajax_block(block_id) {
             scroll_data = tv_scroll_data;
             local_sroll = true;
         }
-    }
-    else if (block_id == 'games_scroll') {
+    } else if (block_id == 'games_scroll') {
         if (typeof tv_scroll_data !== 'undefined') {
             scroll_data = games_scroll_data;
             local_sroll = true;
         }
-    }
-    else if (block_id == 'review_scroll') {
+    } else if (block_id == 'review_scroll') {
         if (typeof review_scroll_data !== 'undefined') {
             scroll_data = review_scroll_data;
             local_sroll = true;
@@ -1301,6 +1534,8 @@ function load_ajax_block(block_id) {
         initializeScroller(0, 'div[id="' + block_id + '"]');
         init_nte();
         init_tags();
+
+        scroll_block(block_id);
         return true;
     }
 
@@ -1314,7 +1549,7 @@ function load_ajax_block(block_id) {
     }
 
     if (block_id == 'ns_related_scroll') {
-        url = 'https://newsfilter.biz/service/ns_related.php?pid=' + parent_id;        
+        url = 'https://newsfilter.biz/service/ns_related.php?pid=' + parent_id;
     }
 
     jQuery.ajax({
@@ -1322,15 +1557,23 @@ function load_ajax_block(block_id) {
         url: url,
         success: function (data) {
             if (block_id == 'similar_movies') {
+
+                let title = jQuery('div[id="' + block_id + '"]').attr('data-name');
                 if (data) {
                     let obj = JSON.parse(data);
                     if (obj)
                     {
                         if (obj.content)
                         {
+                            let dto = '';
+                            if (obj.data) {
+                                dto = '<details style="margin-top: 15px" class="trsprnt"><summary>Other sources</summary><div>' + obj.data + '</div></details>';
+                            }
+
                             jQuery('div[id="' + block_id + '"]').html('<div class="column_header">\n' +
-                                    '                    <h2>Similar Stuff:</h2>\n' +
-                                    '                </div><div class="movie_scroller scroller_wrap"><div class="column_content flex scroller flex_movies_block">' + obj.content + '</div></div>');
+                                    '                    <h2>Similar ' + title + ':</h2>\n' +
+                                    '                </div><div class="movie_scroller scroller_wrap"><div class="column_content flex scroller flex_movies_block">' + obj.content + '</div>' +
+                                    '</div>' + dto);
 
                             if (obj['rating'])
                             {
@@ -1392,11 +1635,26 @@ function load_ajax_block(block_id) {
                 }
             } else if (block_id == 'tags_keywords') {
                 if (data) {
+
+
                     jQuery('#' + block_id).html(data);
+
                 }
-            } else if (block_id == 'movie_rating') {
+            }
+            else if (block_id == 'global_zeitgeist') {
+                if (data) {
+
+
+                    jQuery('#' + block_id).html(data);
+
+                }
+            }
+
+
+            else if (block_id == 'movie_rating') {
                 add_movie_rating(block_id, data);
-            } else if (block_id == 'last_donations') {
+            }
+            else if (block_id == 'last_donations') {
                 jQuery('div[id="' + block_id + '"]').html(data);
             } else if (block_id == 'mailpoet_form') {
                 jQuery('div[id="' + block_id + '"]').html(data);
@@ -1429,9 +1687,9 @@ function load_ajax_block(block_id) {
                 //check load script
 
                 /*jQuery('body.jstiny').removeClass('jstiny');
-                if (typeof tinymce !== 'undefined') {
-                    tinymce = undefined;
-                }*/
+                 if (typeof tinymce !== 'undefined') {
+                 tinymce = undefined;
+                 }*/
                 if (typeof wpcr3a == 'object') {
                     wpcr3a.init();
                 } else {
@@ -1556,6 +1814,27 @@ function init_audience_tabs(block_id, parent_id) {
 
     });
 }
+
+function update_scrool_Title(event) {
+    var selectedOption = event.target;
+    var selectedValue = selectedOption.getAttribute("data-value");
+    var selectedText = selectedOption.innerText;
+
+    let title = jQuery('.rand_scroll .column_header>h2 span.block_title')
+    title.html(selectedText);
+    jQuery('#compilation_scroll').attr('data-value',selectedValue);
+
+    ///jQuery('#compilation_scroll').removeClass('loaded').addClass('not_load');
+    load_ajax_block('compilation_scroll');
+}
+var update_scrool = document.getElementById("myList");
+if (update_scrool)
+{
+    update_scrool.addEventListener("click", update_scrool_Title);
+}
+
+
+
 
 function get_Top(block) {
     if (jQuery(block).attr('id')) {
@@ -1815,10 +2094,10 @@ function generate_watch_content(data, title, year, type) {
             {
                 cls = '  ' + provider.s;
             }
-            let res_price='';
+            let res_price = '';
             if (provider_currency || current_data.presentation_type)
             {
-                res_price=`<div class="povider_price">${provider_currency}<span class="provider_type">${current_data.presentation_type}</span></div>`;
+                res_price = `<div class="povider_price">${provider_currency}<span class="provider_type">${current_data.presentation_type}</span></div>`;
             }
 
 
@@ -2143,10 +2422,17 @@ function create_Highcharts(data, block)
 }
 
 jQuery(document).ready(function () {
-    jQuery('.not_load:visible').each(function () {
-        let block_id = jQuery(this).attr('id');
-        load_next_block(block_id);
 
+
+
+
+    jQuery('.not_load:visible').each(function () {
+        let prnts =jQuery(this).parents('details').html();
+        let block_id = jQuery(this).attr('id');
+        if (!prnts)
+        {
+            load_next_block(block_id);
+        }
         /// check_load_block();
     });
 
@@ -2944,7 +3230,24 @@ jQuery(document).ready(function () {
 
         }
 
-        jQuery('.form_msg').html('');
+        if (type == 'critic_crowd_link') {
+            var msg_text = '<div id="progress-bar-container"><div class="txt"><i class="icon icon-loader"></i><span>Loading <span id="dtime">00:00</span></span></div><div id="progress-bar"></div></div>';
+            jQuery('.form_msg').html(msg_text);
+            var timer = 0, minutes, seconds;
+            var display = $('#dtime');
+            jQuery.progress_interval = setInterval(function () {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+                display.text(minutes + ":" + seconds);
+                ++timer;
+            }, 1000);
+        } else {
+            jQuery('.form_msg').html('');
+        }
+
 
         jQuery.ajax({
             type: 'post',
@@ -2960,6 +3263,11 @@ jQuery(document).ready(function () {
                 }
                 $this.removeClass('in_process');
 
+                if (jQuery.progress_interval != '') {
+                    clearInterval(jQuery.progress_interval);
+                    jQuery.progress_interval = '';
+                }
+
                 if (html)
                 {
                     var data = JSON.parse(html);
@@ -2973,9 +3281,9 @@ jQuery(document).ready(function () {
                         // Load wp editor
 
                         /*jQuery('body.jstiny').removeClass('jstiny');
-                        if (typeof tinymce !== 'undefined') {
-                            tinymce = undefined;
-                        }*/
+                         if (typeof tinymce !== 'undefined') {
+                         tinymce = undefined;
+                         }*/
                         if (typeof wp_custom_editor == 'object') {
                             wp_custom_editor.load('id_crowd_text');
                         } else {
@@ -3143,11 +3451,15 @@ jQuery(document).ready(function () {
     });
 
 
-    jQuery('body').on('click', '.add_pg_rating_button, .edit_family_rating', function (e) {
+    jQuery('body').on('click', '.add_pg_rating_button, .edit_family_rating, .empty_ff_rating', function (e) {
 
         if (jQuery(this).hasClass('edit_family_rating'))
         {
             var prnt = jQuery(this).parents('.note.edit');
+            var id = prnt.attr('id');
+        } else if (jQuery(this).hasClass('empty_ff_rating'))
+        {
+            var prnt = jQuery(this).parents('.rating_block');
             var id = prnt.attr('id');
         } else
         {
@@ -3310,9 +3622,11 @@ jQuery(document).ready(function () {
         if (!id)
         {
             id = jQuery(this).parents('.movie_total_rating').attr('data-value');
-
         }
-
+        if (!id)
+        {
+            id = jQuery(this).parents('#global_zeitgeist').attr('data-value');
+        }
         jQuery.ajax({
             type: 'POST',
             ///context: this,
@@ -3355,8 +3669,7 @@ jQuery(document).ready(function () {
             post = {
                 'calculate_actor_data': a_id
             }
-        }
-        else {
+        } else {
 
             let movie_id = jQuery(this).parents('.movie_total_rating').attr('data-value');
             var rwt_id = jQuery(this).parents('.rating_block').attr('id');
@@ -3615,16 +3928,15 @@ jQuery(document).ready(function () {
 
 });
 
-jQuery('body').on('click','.hide_left_sidebar',function (){
-   let prnt = jQuery(this).parent('.site-header-menu');
+jQuery('body').on('click', '.hide_left_sidebar', function () {
+    let prnt = jQuery(this).parent('.site-header-menu');
     prnt.toggleClass('hidden_left');
 
-    if (prnt.hasClass('hidden_left')){
-        localStorage.setItem('left_sidebar','hidden');
-    }
-    else
+    if (prnt.hasClass('hidden_left')) {
+        localStorage.setItem('left_sidebar', 'hidden');
+    } else
     {
-        localStorage.setItem('left_sidebar','open');
+        localStorage.setItem('left_sidebar', 'open');
     }
 
 });

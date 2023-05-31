@@ -57,17 +57,28 @@ $sql = "SELECT `last_update` FROM `data_actors_meta` WHERE `actor_id`=".intval($
         return $result;
     }
 
-    public static function get_image_link($id='',$resolution=540,$request='',$las_update='',$image ='')
+
+    public static function get_image_link($id='',$resolution=540,$request='',$las_update='',$image ='',$original=0)
     {
 
 
         $current_site  ='https://info.antiwoketomatoes.com';
         $cache_site  ='https://img.zeitgeistreviews.com';
 
+
+
         if ($image)
         {
             $result = $cache_site.'/webp/'.$resolution.'/'.$image.'.webp';
             return $result;
+        }
+
+        if ($original)
+        {
+            $result = $cache_site.'/webp/'.$resolution.'/'.$current_site.'/analysis/create_image/' . $id .'_o'.$las_update.'.jpg.webp';
+
+            return $result;
+
         }
 
 

@@ -452,9 +452,6 @@ class Familysearch extends MoviesAbstractDBAn {
         if (!$result) {
             return;
         }
-        $commit_id = '';
-
-        $array_update_family = [];
 
         foreach ($result as $item) {
             // 2. Calculate vedrict
@@ -475,12 +472,6 @@ class Familysearch extends MoviesAbstractDBAn {
             }
             $this->db_query($sql);
 
-            // Get id
-            $id = Pdo_an::last_id($this->db['verdict']);
-
-            if ($id) {
-                $array_update_family[$id] = 1;
-            }
         }
     }
 

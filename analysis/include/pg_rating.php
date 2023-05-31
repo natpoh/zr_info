@@ -209,7 +209,7 @@ class PgRating
 
                     if ($debug)echo 'updated<br>';
 
-                    $comment ='updated';
+                    $comment ='updated '.json_encode([$contentrating, $mpaa,  $cert_contries, $imdb_data]);
                 }
 
                  $array_result_data[]=$movie_id;
@@ -328,73 +328,73 @@ class PgRating
         $type_request = '';
         if ($array_type[$type]) {
             $type_request = '?f%5B0%5D=field_reference_review_ent_prod%253Atype%3Acsm_movie&f%5B1%5D=field_reference_review_ent_prod%3Atype%3Acsm_' . $array_type[$type];
-        }
-        // echo $url;
-        $url = "https://www.commonsensemedia.org/search/" . rawurlencode($title) . $type_request;
-        $result1 = GETCURL::getCurlCookie($url);
-       ///echo $result1;
 
-        //get_content_commonsense($title,$type,$movie_id);
-        $reg_v = '/\<a href\=\"\/movie-reviews\/([^\"]+)" class\=\"csm-button\"\>Continue reading\<\/a\>/';
+            // echo $url;
+            $url = "https://www.commonsensemedia.org/search/" . rawurlencode($title) . $type_request;
+            $result1 = GETCURL::getCurlCookie($url);
+            ///echo $result1;
 
-        // $url = urlencode($url);
-        if (preg_match_all($reg_v, $result1, $mach)) {
-            foreach ($mach[0] as $i) {
+            //get_content_commonsense($title,$type,$movie_id);
+            $reg_v = '/\<a href\=\"\/movie-reviews\/([^\"]+)" class\=\"csm-button\"\>Continue reading\<\/a\>/';
 
-                if (preg_match($reg_v, $i, $mach_result)) {
+            // $url = urlencode($url);
+            if (preg_match_all($reg_v, $result1, $mach)) {
+                foreach ($mach[0] as $i) {
 
-                    $array_result_url[] = $mach_result[1];
+                    if (preg_match($reg_v, $i, $mach_result)) {
+
+                        $array_result_url[] = $mach_result[1];
+                    }
                 }
             }
-        }
-        ///  var_dump($array_result_url);
-        $i = 0;
-        if (is_array($array_result_url)) {
-            foreach ($array_result_url as $url) {
-                $i++;
-                if ($i > 3 || $array_total) {
-                    break;
-                }
-                $url_inner = 'https://www.commonsensemedia.org/movie-reviews/' . $url;
-                //  echo $url_inner.' ';
-                $result2 = GETCURL::getCurlCookie($url_inner);
-                // echo $result2;
-                $final_value = sprintf('%07d', $movie_id);
-                if (strstr($result2, 'tt' . $final_value)) {
-                    $pos = 'field-collection-container clearfix';
+            ///  var_dump($array_result_url);
+            $i = 0;
+            if (is_array($array_result_url)) {
+                foreach ($array_result_url as $url) {
+                    $i++;
+                    if ($i > 3 || $array_total) {
+                        break;
+                    }
+                    $url_inner = 'https://www.commonsensemedia.org/movie-reviews/' . $url;
+                    //  echo $url_inner.' ';
+                    $result2 = GETCURL::getCurlCookie($url_inner);
+                    // echo $result2;
+                    $final_value = sprintf('%07d', $movie_id);
+                    if (strstr($result2, 'tt' . $final_value)) {
+                        $pos = 'field-collection-container clearfix';
 
-                    $content = substr($result2, strpos($result2, $pos));
-                    // echo $content;
-                    $pos2 = 'pane-node-field-parents-need-to-know';
+                        $content = substr($result2, strpos($result2, $pos));
+                        // echo $content;
+                        $pos2 = 'pane-node-field-parents-need-to-know';
 
-                    $rating = substr($content, 0, strpos($content, $pos2));
-                    //  echo $rating;
-
-
-                    $reg_v = '/\id\=\"content-grid-item-([a-z_ ]+)\"\>.+\n.+\n.+\<div class\=\"content-grid-rating content-grid-([0-9]+)(.+\<p\>([^\<]+)\<\/p\>)*/';
+                        $rating = substr($content, 0, strpos($content, $pos2));
+                        //  echo $rating;
 
 
-                    if (preg_match_all($reg_v, $rating, $mach)) {
-                        foreach ($mach[0] as $i) {
-
-                            if (preg_match($reg_v, $i, $mach_result)) {
+                        $reg_v = '/\id\=\"content-grid-item-([a-z_ ]+)\"\>.+\n.+\n.+\<div class\=\"content-grid-rating content-grid-([0-9]+)(.+\<p\>([^\<]+)\<\/p\>)*/';
 
 
-                                $array_total['data'][$mach_result[1]] = $mach_result[2];
-                                $array_total['comment'][$mach_result[1]] = $mach_result[4];
+                        if (preg_match_all($reg_v, $rating, $mach)) {
+                            foreach ($mach[0] as $i) {
+
+                                if (preg_match($reg_v, $i, $mach_result)) {
+
+
+                                    $array_total['data'][$mach_result[1]] = $mach_result[2];
+                                    $array_total['comment'][$mach_result[1]] = $mach_result[4];
+                                }
                             }
+
+                            $array_total['link'] = $url_inner;
                         }
 
-                        $array_total['link'] = $url_inner;
+
                     }
-
-
                 }
             }
-        }
 //var_dump($array_total);
-        return $array_total;
-
+            return $array_total;
+        }
     }
 
     private static function get_imdb_parse_pg($content, $array_result)

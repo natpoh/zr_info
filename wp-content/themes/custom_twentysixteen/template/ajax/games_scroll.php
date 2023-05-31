@@ -1,6 +1,10 @@
 <?php
 $_GET['type']='games';
 
+if (!defined('ABSPATH'))
+    define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
+
+
 if (!class_exists('TV_Scroll'))  {
     require(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/ajax/tv_scroll.php');
 }

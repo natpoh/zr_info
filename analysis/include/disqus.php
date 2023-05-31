@@ -115,7 +115,7 @@ class DISQUS_DATA
                 if ($mdata->url && ($mdata->mediaType == 1 || $mdata->mediaType == 2)) {
 
                     if ($array_replace[$mdata->url]) {
-                        $content_data = '<img  alt="' . $mdata->title . '" src="' . $mdata->url . '"/>';
+                        $content_data = '<img src="https://zeitgeistreviews.com/wp-content/themes/custom_twentysixteen/images/placeholder.png"  alt="' . $mdata->title . '" srcset="' . $mdata->url . '" loading="lazy"  />';
                         $message = str_replace($array_replace[$mdata->url], $content_data, $message);
                     }
                 }

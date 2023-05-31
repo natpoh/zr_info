@@ -58,11 +58,7 @@ $array_jobs = array(
     'add_games_to_options'=>(60*24*30),
 
 ///'fix_all_directors'=>20,////temp started 12/01/2023  ///25.02.2023 stop ///06/03/2023 restart 12.04.2023 stop
-
-
-
-
-'add_movie_production'=>15,///12.04.2023  start temp cron
+//'add_movie_production'=>15,///start 12.04.2023  start temp cron stop 12.06.2023
 
 'update_all_audience_and_staff'=>(60*12),///recreate cache audience and staff
 'get_coins_data'=>60*24,////get data donations
@@ -73,14 +69,9 @@ $array_jobs = array(
     'get_forebears'=>15, //forebears to actors meta
     'get_forebears_rank'=>15, //forebears rank to actors meta
 
-
-
-
     'set_tmdb_actors_for_movies'=>30,////update tmdb actors from japan anime
 
-
-
- 'add_noname_actors'=>120, //actor witout names
+     'add_noname_actors'=>120, //actor witout names
 
 ///'add_rating'=>10,  ////add new rating to movies (old version)
 //'check_tvexport'=>10

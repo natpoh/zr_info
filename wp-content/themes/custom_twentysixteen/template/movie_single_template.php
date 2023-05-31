@@ -25,10 +25,67 @@ if (!function_exists('format_movie_runtime')) {
 
 class MovieSingle {
 
+    public static function get_franchise($mid){
+        $data=[];
+        $q="SELECT `franchise` FROM `data_movie_indie` WHERE `movie_id`= ".$mid." and `franchise`>0";
+        $r= Pdo_an::db_results_array($q);
+        $count = count($r);
+        foreach ($r as $row)
+        {
+            $fid = $row['franchise'];
+            if ($fid)
+            {
+                $q ="SELECT `name` FROM `data_movie_franchises` WHERE `id` =".$fid;
+                $rf =Pdo_an::db_fetch_row($q);
+                $name = $rf->name;
+                $data[]= '<a target="_blank" href="' . WP_SITEURL . '/search/show_franchise/franchise_' .$fid . '">' .$name. '</a>';
+            }
+
+        }
+        $count = count($data);
+        if ($count)
+        {
+            $s='';
+            if ($count>1)$s='s';
+            $data_string = implode(', ', $data);
+            $data_string= '<div class="block"><span>Franchise'.$s.': '.$data_string.'</span></div>';
+
+            return $data_string;
+        }
+
+    }
     private static function get_actor_name($aid) {
         $q = "SELECT `name` FROM `data_actors_imdb` where id =" . $aid;
         $r = Pdo_an::db_fetch_row($q);
         return $r->name;
+    }
+
+    public static function get_productions($mid,$type=0)
+    {
+        $data=[];
+
+        $q="SELECT ds.* FROM `data_movie_distributors` as ds  LEFT JOIN meta_movie_distributors as m ON ds.`id` = m.`did` and m.`type`='".$type."'  WHERE m.`mid` = ".$mid;
+
+        $r = Pdo_an::db_results_array($q);
+        foreach ($r as $row)
+        {
+
+            if ($type==0)
+            {
+              $l =   '/search/show_production/production_';
+            }
+            else if ($type==1)
+            {
+                $l =   '/search/show_distributor/distributor_';
+            }
+
+
+            $data[]= '<a target="_blank" href="' . WP_SITEURL .$l . strtolower($row['id']) . '">' . $row['name'] . '</a>';
+
+        }
+
+        $data_string = implode(', ', $data);
+        return $data_string;
     }
 
     public static function director_template($id) {
@@ -48,9 +105,9 @@ class MovieSingle {
         if ($director_result) {
             foreach ($director_types as $name => $type) {
                 if ($director_result[$type]) {
-
+                    $s='';
                     $actors = '';
-
+                    if (count($director_result[$type])>1)$s='s';
                     foreach ($director_result[$type] as $aid => $enable) {
                         $actor_name = self::get_actor_name($aid);
 
@@ -69,7 +126,7 @@ class MovieSingle {
                         $actors = substr($actors, 2);
                     }
 
-                    $content_release .= '<div class="block"><span>' . $name . ': </span>' . $actors . '</div>';
+                    $content_release .= '<div class="block"><span>' . $name .$s. ': </span>' . $actors . '</div>';
                 }
             }
         }
@@ -138,19 +195,9 @@ if (!function_exists('template_single_movie')) {
         $movie_meta['imdb_id'] = $post_an->movie_id;
         $movie_meta['country'] = $post_an->country;
         $movie_meta['runtime'] = $post_an->runtime;
+        $movie_meta['mpaa'] = $post_an->contentrating;
 
 
-        $production_companies = $post_an->production;
-        if ($production_companies) {
-            $production_companies_array = [];
-            $production_companies = json_decode($production_companies, 1);
-            foreach ($production_companies as $c => $n) {
-                $production_companies_array[] = $n;
-            }
-            if ($production_companies_array[0]) {
-                $movie_meta['production_companies'] = implode(', ', $production_companies_array);
-            }
-        }
 
 
         if ($post_an->productionBudget) {
@@ -173,11 +220,7 @@ if (!function_exists('template_single_movie')) {
 
 
         if ($id) {
-            if (function_exists('site_url')) {
-                $site_url = site_url();
-            } else {
-                $site_url = WP_SITEURL;
-            }
+
             $movie_t = strtolower($post_an->type);
             if ($movie_t == 'movie') {
                 $movie_t = 'movies';
@@ -202,7 +245,7 @@ if (!function_exists('template_single_movie')) {
             }
 
             if ($name) {
-                $link_before = '<a href="' . $site_url . '/' . $movie_t . '/' . $name . '/">';
+                $link_before = '<a href="' . WP_SITEURL . '/' . $movie_t . '/' . $name . '/">';
                 $ilin_after = '</a>';
             } else {
                 $link_before = '';
@@ -219,20 +262,27 @@ if (!function_exists('template_single_movie')) {
 
         if ($_wpmoly_movie_release_date) {
 
-            $date = date('F d, Y', strtotime($_wpmoly_movie_release_date));
-
-            $content_release .= '<span>Release Date:</span> ' . $date . ' ';
+            $date = date('F d', strtotime($_wpmoly_movie_release_date));
+            $date_y = date('Y', strtotime($_wpmoly_movie_release_date));
+            $content_release = '<div class="block"><span>Release Date:</span> ' . $date . ', <a href="' . WP_SITEURL . '/search/release_'.$date_y.'-'.$date_y.'">'.$date_y.'</a></div>';
         }
 
-        $_wpmoly_movie_production_companies = $movie_meta['production_companies'];
-
-        if ($_wpmoly_movie_production_companies) {
-            $content_release .= '| ' . $_wpmoly_movie_production_companies . ' ';
+//        $_wpmoly_movie_production_companies = $movie_meta['production_companies'];
+//
+//        if ($_wpmoly_movie_production_companies) {
+//            $content_release .= '| ' . $_wpmoly_movie_production_companies . ' ';
+//        }
+        $production_companies = MovieSingle::get_productions($id,0);
+        if ($production_companies)
+        {
+            $production_block= '<div class="block"><span>Production:</span> ' .   $production_companies.'</div>';
+        }
+        $distributors= MovieSingle::get_productions($id,1);
+        if ($distributors)
+        {
+            $distributors_block= '<div class="block"><span>Distributor:</span> ' .   $distributors.'</div>';
         }
 
-        if ($content_release) {
-            $content_release = '<div class="block block_main">' . $content_release . '</div>';
-        }
 
         $_wpmoly_movie_overview = '<div class="block block_summary"><span>Summary: </span>' . $movie_meta['overview'] . '</div>';
 
@@ -242,16 +292,35 @@ if (!function_exists('template_single_movie')) {
 
         if ($_wpmoly_movie_genres) {
 
+
             $genre_array = explode(',', $_wpmoly_movie_genres);
             $array_genre = [];
+
+            if (count($genre_array)==1)
+            {
+                $gstring='Genre';
+            }
+            else
+            {
+                $gstring='Genres';
+            }
             foreach ($genre_array as $val) {
                 $val = trim($val);
-                $array_genre[] = '<a target="_blank" href="' . $site_url . '/search/genre_' . strtolower($val) . '">' . $val . '</a>';
+                $array_genre[] = '<a target="_blank" href="' . WP_SITEURL . '/search/genre_' . strtolower($val) . '">' . $val . '</a>';
                 //$array_genre[] = $val;
             }
             $genre_string = implode(', ', $array_genre);
-            $_wpmoly_movie_genres = '<div class="block"><span>Genres: </span>' . $genre_string . '</div>';
+            $_wpmoly_movie_genres = '<div class="block"><span>'.$gstring.': </span>' . $genre_string . '</div>';
         }
+
+        ///franchise
+
+        $franchise = MovieSingle::get_franchise($id);
+
+//        if ($content_release || $_wpmoly_movie_genres) {
+//            $content_release = '<div class="single_flex">' . $content_release .$_wpmoly_movie_genres. '</div>';
+//        }
+
 
         $director_result = MovieSingle::director_template($id);
 
@@ -265,13 +334,18 @@ if (!function_exists('template_single_movie')) {
         if ($_wpmoly_movie_runtime) {
             $_wpmoly_movie_runtime = '<div class="block"><span>Runtime: </span>' . format_movie_runtime($_wpmoly_movie_runtime) . '</div>';
         }
+
+        if ($movie_meta['mpaa']){$mpaa = '<div class="block"><span>MPAA: </span>' . $movie_meta['mpaa']. '</div>';}
+
+
         $_wpmoly_movie_country = $movie_meta['country'];
         if ($_wpmoly_movie_country) {
             $_wpmoly_movie_country = explode(',', $_wpmoly_movie_country);
+
             $array_wpmoly_movie_country = [];
             foreach ($_wpmoly_movie_country as $val) {
                 if ($val)
-                    $array_wpmoly_movie_country[] = '<a target="_blank" href="' . $site_url . '/search/country_' . str_replace(' ', '-', strtolower($val)) . '">' . $val . '</a>';
+                    $array_wpmoly_movie_country[] = '<a target="_blank" href="' . WP_SITEURL . '/search/country_' . str_replace(' ', '-', strtolower($val)) . '">' . $val . '</a>';
             }
             $_wpmoly_movie_country = implode(', ', $array_wpmoly_movie_country);
             if (count($array_wpmoly_movie_country) > 1) {
@@ -404,9 +478,16 @@ if (!function_exists('template_single_movie')) {
                                 print 'Movie <a target="_blank" href="https://info.antiwoketomatoes.com/wp-admin/admin.php?page=critic_matic_movies&mid=' . $id . '">adimin info</a>.<br />';
                             }
                         }
-                        echo $_wpmoly_movie_overview . $_wpmoly_movie_director . $content_release .
-                        '<div class="single_grid">' .
-                        $_wpmoly_movie_genres . $_wpmoly_movie_runtime . $_wpmoly_movie_country .
+
+
+
+                        echo $_wpmoly_movie_overview . '<div class="single_grid">'. $content_release.$_wpmoly_movie_genres . $director_result.'</div>
+<div class="single_grid">'. $_wpmoly_movie_runtime.$mpaa.'</div>
+                               <hr><div class="single_flex">' .
+                            $production_block .$distributors_block.
+                            '</div>
+                        <div class="single_grid">' .
+                          $_wpmoly_movie_country .$franchise.
                         '</div>' .
                         '<div class="single_flex">' . $_wpmoly_movie_budget . $_box_usa . $_box_international . '</div>';
                         ?>

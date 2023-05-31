@@ -2152,7 +2152,7 @@ class CriticFront extends SearchFacets {
 
             // Link more
             if ($count > $limit) {
-                $link = '/search/tab_critics/author_critic/state_proper_related';
+                $link = '/search/tab_critics/author_critic/state_proper_contains';
 
                 if ($movie_id) {
                     $link .= '/movie_' . $movie_id;

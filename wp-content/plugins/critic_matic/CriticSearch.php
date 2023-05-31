@@ -1206,6 +1206,7 @@ class CriticSearch extends AbstractDB {
 
             $dates = array();
             $title_equals = false;
+            $year_invalid = false;
             // Find equals title
             $critic_clear = $this->clear_critic_title($value['title'], $year);
             $movie_clear = $this->clear_critic_title($title, $year);
@@ -1222,12 +1223,9 @@ class CriticSearch extends AbstractDB {
                 $dates = $this->find_dates($value['title'], $title);
 
                 if ($dates) {
-                    $year_valid = false;
-                    if ($year) {
-                        if (in_array($year, $dates)) {
-                            // Year vaild
-                            $year_valid = true;
-                        }
+                    if (!in_array($year, $dates)) {
+                        // Year vaild
+                        $year_invalid = true;                        
                     }
                 }
                 // 2. Find quotes from another movie in title
@@ -1301,7 +1299,7 @@ class CriticSearch extends AbstractDB {
             if ($dates && $critic_type == 1) {
                 // Check date for proper review
                 $valid_text = 'Valid';
-                if (!$year_valid) {
+                if ($year_invalid) {
                     $valid = false;
                     $valid_text = 'Invalid ' . $year;
                     $ret[$id]['score']['dates_exists'] = 'Invalid';
@@ -2098,12 +2096,12 @@ class CriticSearch extends AbstractDB {
             }
         }
         /*
-        $match = '';
-        $search_query = $this->get_search_query($keyword, $filters, $widlcard);
-        if ($search_query){
-            $match = " AND MATCH(:match)";
-        }
-*/
+          $match = '';
+          $search_query = $this->get_search_query($keyword, $filters, $widlcard);
+          if ($search_query){
+          $match = " AND MATCH(:match)";
+          }
+         */
 
         $ret = array('list' => array(), 'count' => 0);
         $this->connect();
@@ -2157,7 +2155,7 @@ class CriticSearch extends AbstractDB {
                 continue;
             }
 
-            if ($key == 'mkw') {                
+            if ($key == 'mkw') {
                 if ($filters['mkw']) {
                     $mkw = $filters['mkw'];
                     if (is_array($mkw)) {

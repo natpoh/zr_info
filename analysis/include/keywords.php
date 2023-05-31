@@ -80,7 +80,7 @@ class Movie_Keywords {
 
     }
 
-    public function front($mid)
+    public function front($mid,$return_data = 0)
     {
         ///get movie keywors
         $array_keys = $this->get_movie_keys($mid);
@@ -119,7 +119,15 @@ class Movie_Keywords {
             $content = $this->to_key_content($result);
         }
 
-        echo $content;
+        if ($return_data)
+        {
+            return $content;
+        }
+        else
+        {
+            echo $content;
+        }
+
 
     }
     public function get_keywors_array($mid,$get_id='')
@@ -251,6 +259,36 @@ class Movie_Keywords {
         $insert = $this->insert_key_to_movie($kid,$mid);
         return $insert;
     }
+
+    public function get_key_link($keys)
+    {
+        if (is_string($keys))
+        {
+            if (strstr($keys,','))
+            {
+                $keys = explode(',',$keys);
+            }
+            else
+            {
+                $keys =[trim($keys)];
+
+            }
+
+
+        }
+        $result = [];
+        foreach ($keys as $key)
+        {
+            $kid = $this->get_key_id($key);
+            $result[$kid]=$key;
+        }
+
+        $links = $this->to_key_content($result,1);
+
+        return $links;
+    }
+
+
 	private function fill_main_keys($array,$mid)
 	{
     $count=0;

@@ -580,8 +580,8 @@ search_extend.init_chart_power = function (chart_div) {
             title: 'Purchasing Power Parity (Per Capita)',
             tooltip: '<p>{point.name}</p><br><p>Buying Power (Per Capita): <b>$ {point.value}</b></p><br><p>Buying Power (Total): $ {point.total}</p><br><p>Year: {point.year}</p>',
             color: {
-                min: min,
-                max: max,
+                min: Number(min),
+                max: Number(max),
                 minColor: '#dbe3ff',
                 maxColor: '#000016',
                 stops: [
@@ -599,8 +599,8 @@ search_extend.init_chart_power = function (chart_div) {
             title: 'Purchasing Power Total',
             tooltip: '<p>{point.name}</p><br><p>Buying Power (Total): <b>$ {point.value}</b></p><br><p>Buying Power (Per Capita): $ {point.total}</p><br><p>Year: {point.year}</p>',
             color: {
-                min: amin,
-                max: amax,
+                min: Number(amin),
+                max: Number(amax),
                 minColor: '#dbe3ff',
                 maxColor: '#000016',
                 stops: [

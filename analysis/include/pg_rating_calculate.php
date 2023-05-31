@@ -64,6 +64,19 @@ class PgRatingCalculate {
             Pdo_an::db_results_array($sql, [$mid, $rating_type, $link]);
         }
     }
+    public static function create_search_url($id,$type)
+    {
+
+        $title = self::get_data_in_movie('title', '', $id);
+        $title = urlencode($title);
+
+        if ($type=='rt')
+        {
+            $link = 'https://www.rottentomatoes.com/search?search='.$title;
+        }
+
+      return $link;
+    }
 
     public static function get_rating_url($mid, $rating_type = '') {
 
@@ -96,8 +109,13 @@ class PgRatingCalculate {
             } else {
 
                 $result = self::get_curl_rating($mid, $rating_type);
+
+
                 $link = self::prepare_resuts($rating_type, $result);
-                self::set_rating_to_bd($mid, $rating_type, $link);
+
+                if($link)self::set_rating_to_bd($mid, $rating_type, $link);
+
+                if (!$link){$link = self::create_search_url($mid,$rating_type);}
 
                 return ['url' => $link];
             }
@@ -113,7 +131,6 @@ class PgRatingCalculate {
 
                 if ($rating_type == 'kinop') {
                     $str = substr($link, strpos($link, '/films/') + 7);
-                    //$link='https://www.kinopoisk.ru/film/'.$str.'/';
                     $link = 'https://www-kinopoisk-ru.translate.goog/film/' . $str . '/reviews/?_x_tr_sl=ru&_x_tr_tl=en&_x_tr_hl=en';
                 } else if ($rating_type == 'douban') {
                     $link = str_replace('movie.douban.com/', 'movie-douban-com.translate.goog/', $link);
@@ -704,7 +721,8 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
         return array($total_lgbt, $lgbt_enable, $lgbt_text_string);
     }
 
-    public function CalculateRating($imdb_id = '', $id = '', $debug = '', $update = 1) {
+    public function CalculateRating($imdb_id = '', $id = '', $debug = '', $update = 1)
+    {
 
         if (!$id) {
             $movie_data = self::get_movie_data($imdb_id);
@@ -718,6 +736,8 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
         if (!$imdb_id) {
             return;
         }
+
+        $movie_type = self::get_data_in_movie('type', $imdb_id);
 
 
         if ($debug)
@@ -772,8 +792,6 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
             $array_family['crowd'] = $family_rating_croud['imdb_rating_desc'];
         }
-
-
         if ($imdb_rating) {
 
             $final_value = sprintf('%07d', $imdb_id);
@@ -854,11 +872,6 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
             $rating_count++;
         }
 
-
-
-
-
-
         $cms_rating = $array_family['cms_rating'];
         if ($cms_rating) {
 
@@ -904,8 +917,8 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
         $staff = []; //self::rwt_audience($id, 2);
 
 
-        if ($debug && ($audience["rating"] || $staff["rating"]))
-            self::debug_table('<b>Audience and Staff</b>');
+        if ($debug && ($audience["rating"] ))
+            self::debug_table('<b>Audience</b>');
 
 
         if ($audience["rating"]) {
@@ -916,31 +929,10 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
             $sql = "UPDATE `data_pg_rating` SET  `rwt_audience` = '" . $audience_rating . "' WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
             Pdo_an::db_query($sql);
         }
-        if ($staff["rating"]) {
-            $staff_rating = $staff["rating"];
-            $sql = "UPDATE `data_pg_rating` SET  `rwt_staff` = '" . $staff_rating . "' WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
-            Pdo_an::db_query($sql);
-
-            if ($debug)
-                self::debug_table('Staff', $staff_rating);
-        }
-
-        if ($audience_rating && $staff_rating) {
-            $array_Audience_Staff = $rating_array['Audience_Staff'];
-
-            if ($debug)
-                self::debug_table('Audience & Staff array weight', $array_Audience_Staff, 'red');
-
-            $k_a = $array_Audience_Staff['audience_rating'] / ($array_Audience_Staff['audience_rating'] + $array_Audience_Staff['staff_rating']);
-            $k_s = $array_Audience_Staff['staff_rating'] / ($array_Audience_Staff['audience_rating'] + $array_Audience_Staff['staff_rating']);
-            $total_positive_rwt = $audience_rating * $k_a + $staff_rating * $k_s;
-            if ($debug)
-                self::debug_table('Total positive ZR calculate', ' (' . $audience_rating . '*' . $k_a . '+' . $staff_rating . '*' . $k_s . ') = ' . $total_positive_rwt);
-        } else if ($audience_rating) {
+        if ($audience_rating) {
             $total_positive_rwt = $audience_rating;
-        } else if ($staff_rating) {
-            $total_positive_rwt = $staff_rating;
         }
+
 
 
         if ($debug && $total_positive_rwt)
@@ -996,12 +988,19 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
 
             $total_weight = ($imdb_weight + $cms_weight + $dove_weight + $rwt_weight) / $rating_count;
-
-            $total = round((
+            if (!$total_weight)$total_weight=1;
+            $total =(
                     $total_rwt_croud_rating * $rwt_weight / $total_weight +
                     $total_imdb_rating * $imdb_weight / $total_weight + $total_cms_rating * $cms_weight / $total_weight + $total_dove_rating * $dove_weight / $total_weight
 
-                    ) / $rating_count, 2);
+                    ) / $rating_count;
+            $total = doubleval($total);
+            if ($total)
+            {
+                $total =round($total, 2);
+            }
+
+
 
             if (!$total_imdb_rating)
                 $total_imdb_rating = 0;
@@ -1011,13 +1010,16 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
                 $total_cms_rating = 0;
 
             if (!$rwt_weight)
-                $rwt_weight = '0';
+                $rwt_weight = 0;
             if (!$imdb_weight)
-                $imdb_weight = '0';
+                $imdb_weight = 0;
             if (!$cms_weight)
-                $cms_weight = '0';
+                $cms_weight = 0;
             if (!$dove_weight)
-                $dove_weight = '0';
+                $dove_weight =0;
+
+
+
 
             if ($debug)
                 self::debug_table('Total rating calculate', ''
@@ -1027,29 +1029,50 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
                         '+' . $total_dove_rating . '*' . $dove_weight . '/(' . $total_weight . '*' . $rating_count . ')'
                 );
         }
+
+
+        if (!$total)$total=0;
         if ($debug)
-            self::debug_table('Total rating', $total, 'green');
+            self::debug_table('Total rating', ' '.$total.' ', 'green');
         $pg_cert = $array_family['certification_countries'];
         $pg = $array_family['pg'];
 
         $pg_rated = 0;
-        if ($pg || $pg_cert) {
+
+        ///video
+        ///check movie type
+        if ($movie_type=='VideoGame')
+        {
+            $limit ='PG_games_limit';
+        }
+        else
+        {
+            $limit ='PG_limit';
+        }
+
+        if (($pg || $pg_cert) && $total>0) {
             if ($debug)
                 self::debug_table('PG Limit');
 
-            if ($debug)
-                self::debug_table('PG  limit array', $rating_array['PG_limit'], 'red');
 
-            foreach ($rating_array['PG_limit'] as $i => $v) {
+            if ($debug)
+            self::debug_table('PG  limit array', $rating_array[$limit], 'red');
+
+
+
+            foreach ($rating_array[$limit] as $i => $v) {
                 if (strstr($i, ',')) {
                     $array_rating_index = explode(',', $i);
 
                     ///var_dump($array_rating_index);
                     if (in_array($pg, $array_rating_index)) {
                         $pg_rated = 1;
-                        $total = self::check_pg_limit($pg, $v, $total, $debug);
+                          $total = self::check_pg_limit($pg, $v, $total, $debug);
+
+
                     }
                 }
+
             }
             if ($pg_cert && !$pg_rated) {
                 $pg_cert_array = json_decode($pg_cert);
@@ -1058,22 +1081,83 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
                     if ($pg_rated) {
                         break;
                     }
-                    foreach ($rating_array['PG_limit'] as $i => $v) {
+                    foreach ($rating_array[$limit] as $i => $v) {
                         if (strstr($i, ',')) {
                             $array_rating_index = explode(',', $i);
                             if (in_array($pg[0], $array_rating_index)) {
                                 $pg_rated = 1;
-                                $total = self::check_pg_limit($country . ' => ' . $pg[0], $v, $total, $debug);
+                                 $total = self::check_pg_limit($country . ' => ' . $pg[0], $v, $total, $debug);
                                 break;
                             }
                         }
                     }
+
                 }
             }
         }
 
+                ////Keywords limit
 
-        ////Keywords limit
+
+        else if (!$total &&($pg || $pg_cert)) {
+
+            $pg_rated = 0;
+            $cr = 5;
+            foreach ($rating_array[$limit] as $i => $v) {
+                if (strstr($i, ',')) {
+                    $array_rating_index = explode(',', $i);
+
+                    ///var_dump($array_rating_index);
+                    if (in_array($pg, $array_rating_index)) {
+                        $pg_rated = 1;
+
+                        break;
+
+                    }
+
+                }
+                $cr--;
+            }
+
+            if ($pg_cert && !$pg_rated) {
+                $pg_cert_array = json_decode($pg_cert);
+
+                foreach ($pg_cert_array as $country => $pg) {
+                    if ($pg_rated) {
+                        break;
+                    }
+                    foreach ($rating_array[$limit] as $i => $v) {
+                        if (strstr($i, ',')) {
+                            $array_rating_index = explode(',', $i);
+                            if (in_array($pg[0], $array_rating_index)) {
+                                $pg_rated = 1;
+
+                                break;
+                            }
+
+                        }
+                        $cr--;
+                    }
+
+                }
+            }
+
+
+        if ($pg_rated ) {
+                $total =  $rating_array['PG_default'][$cr];
+
+
+                if ($debug)
+                {
+                    self::debug_table('PG  limit array', $rating_array[$limit], 'red');
+                    self::debug_table('PG  Default', $rating_array['PG_default'], 'red');
+                    self::debug_table('Total:', $i.'=>' .$cr.' = '.$total.' ');
+                }
+
+            }
+
+        }
+
 
 
         $f = '';
@@ -1172,6 +1256,8 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
 
 
+
+
         if ($total && $update) {
             $sql = "UPDATE `data_pg_rating` SET  `rwt_pg_result` = '" . $total . "' WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
             Pdo_an::db_query($sql);
@@ -1180,16 +1266,16 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
         }
 
         if ($update) {
+            !class_exists('RWT_RATING') ? include ABSPATH . "wp-content/themes/custom_twentysixteen/template/include/movie_rating.php" : '';
+            $data = new RWT_RATING;
 
-            $array_family_updated = self::get_family_rating_in_movie($imdb_id);
+            $array_family_updated = $data->get_family_rating_in_movie($imdb_id);
 
 
             if ($array_family['imdb_result'] != $array_family_updated['imdb_result'] || $array_family['cms_rating'] != $array_family_updated['cms_rating'] || $array_family['dove_result'] != $array_family_updated['dove_result'] || $array_family['rwt_audience'] != $array_family_updated['rwt_audience'] || $array_family['rwt_pg_result'] != $array_family_updated['rwt_pg_result'] || $array_family['lgbt_warning'] != $array_family_updated['lgbt_warning'] || $array_family['woke'] != $array_family_updated['woke']
-            ) {
-
-
+            )
+            {
                 $comment=' updated';
-
                 !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
                 TMDB::add_log($id,$imdb_id,'update movies','CalculateRating  PG'.$comment,1,'admin');
 

@@ -43,7 +43,6 @@ get_header();
 <div id="primary" class="content-area">
     <main id="main" class="site-main" role="main">
         <?php
-
         wp_enqueue_style('movie_single', get_template_directory_uri() . '/css/movie_single.css', array(), LASTVERSION);
         wp_enqueue_style('colums_template', get_template_directory_uri() . '/css/colums_template.css', array(), LASTVERSION);
         wp_enqueue_script('spoiler.min', get_template_directory_uri() . '/js/spoiler.min.js', array('jquery'));
@@ -73,21 +72,27 @@ get_header();
                     if (function_exists('do_shortcode')) {
                         $short_content = do_shortcode($post->content);
                         $short_content = strip_shortcodes($short_content);
-                    }                   
+                    }
                 }
                 ?>
                 <div class="full_review">
-                <?php print $critic_content ?>                    
+                    <?php print $critic_content ?>                    
                 </div>
 
-                    <?php print $cfront->ce->get_emotions($post->id, true); ?>
+                <?php print $cfront->ce->get_emotions($post->id, true); ?>
 
                 <div id="comments">                                    
-                <?php
-                /* $pandoraComments = new PandoraComments();
-                  print $pandoraComments->getComments($post->id);
-                  $pandoraComments->commentForm(array(), $post->id); */
-                ?>       
+                    <?php
+                    /* $pandoraComments = new PandoraComments();
+                      print $pandoraComments->getComments($post->id);
+                      $pandoraComments->commentForm(array(), $post->id); */
+
+                    if (function_exists('current_user_can')) {
+                        if (current_user_can("administrator")) {
+                            print 'Review <a target="_blank" href="https://info.antiwoketomatoes.com/wp-admin/admin.php?page=critic_matic&pid=' . $post->id . '">adimin info</a>.<br />';
+                        }
+                    }
+                    ?>       
                 </div>  
 
                 <div id="disqus_thread"></div>
@@ -95,8 +100,8 @@ get_header();
                 <script type="text/javascript">
                     var data_object = new Object();
 
-                    //data_object['page_url'] ='<?php //print 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];  ?>//';
-                    //data_object['page_identifier'] = '<?php //print $post->id.' https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];  ?>//';
+                    //data_object['page_url'] ='<?php //print 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];   ?>//';
+                    //data_object['page_identifier'] = '<?php //print $post->id.' https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];   ?>//';
 
 <?php
 ///try pet pgind from db
@@ -119,7 +124,7 @@ if (!$pg_idnt) {
 
                 </script>
 
-<?php ?>
+                <?php ?>
             </div><!-- .entry-content -->
 
             <footer class="entry-footer">
@@ -127,7 +132,7 @@ if (!$pg_idnt) {
             </footer><!-- .entry-footer -->
         </article><!-- #critic-post-<?php print $post->id; ?> -->
     </main><!-- .site-main -->
-                <?php get_sidebar('content-bottom'); ?>
+    <?php get_sidebar('content-bottom'); ?>
 </div><!-- .content-area -->
 <?php
 if (isset($_GET['to_image'])) {

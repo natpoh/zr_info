@@ -1,4 +1,5 @@
 <?php
+
 if (!defined('ABSPATH'))
     define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
 
@@ -7,19 +8,18 @@ if (!defined('ABSPATH'))
 //Abstract DB
 !class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
 
-
-class CPULOAD{
+class CPULOAD {
 
     public static function getSystemMemInfo() {
 
-        if (function_exists('sys_getloadavg'))
-        {
+        if (function_exists('sys_getloadavg')) {
             $load = sys_getloadavg();
             $cpu = round($load[0], 2) * 100;
-        }
-        else
-        {   global $cron_debug;
-            if ($cron_debug){echo 'getSystemMemInfo not found';}
+        } else {
+            global $cron_debug;
+            if ($cron_debug) {
+                echo 'getSystemMemInfo not found';
+            }
         }
 
 
@@ -36,7 +36,7 @@ class CPULOAD{
             'SwapTotal' => 0,
             'SwapFree' => 0,
             'MemAvailable' => 0,
-            'cpu'=>$cpu
+            'cpu' => $cpu
         );
         $keys = array_keys($mem_array);
         foreach ($keys as $key) {
@@ -47,15 +47,12 @@ class CPULOAD{
         return $mem_array;
     }
 
-
-
-    public static function check_load($porcessor=50,$mem=3000,$db=0)
-    {
+    public static function check_load($porcessor = 50, $mem = 3000, $db = 0) {
         global $cron_debug;
-        $loaded=0;
-        $date=0;
-        $info='';
-        $type='';
+        $loaded = 0;
+        $date = 0;
+        $info = '';
+        $type = '';
 
         if ($db) {
 
@@ -74,61 +71,52 @@ class CPULOAD{
                 $type = 'db';
             }
         }
-            if (!$db || $date<time()-600)
-            {
+        if (!$db || $date < time() - 600) {
 
-                $row=self::getSystemMemInfo();
+            $row = self::getSystemMemInfo();
 
-                if ($cron_debug){var_dump($row);}
-
-
-                if ($row['cpu'] && $row['MemAvailable'])
-                {
-                    $cpu = $row['cpu'];
-                    $memavailable = $row['MemAvailable'];
-                    $date=time();
-
-                    $type='current';
-                }
-
-
-
-                if ($cron_debug){
-
-                    var_dump($row);
-                }
-
+            if ($cron_debug) {
+                var_dump($row);
             }
 
-            if ($cpu)
-            {
-                $cpu_load = $cpu/100;
-                if ($cpu_load>$porcessor)
-                {
-                    $loaded =1;
-                    $info.=' cpu_load ('.$cpu_load.') > porcessor ('.$porcessor.') ';
-                }
+
+            if ($row['cpu'] && $row['MemAvailable']) {
+                $cpu = $row['cpu'];
+                $memavailable = $row['MemAvailable'];
+                $date = time();
+
+                $type = 'current';
             }
-        if ($memavailable && $memavailable<$mem)
-        {
-            $loaded =1;
-            $info.=' memavailable ('.$memavailable.') < mem ('.$mem.') ';
+
+
+
+            if ($cron_debug) {
+
+                var_dump($row);
+            }
         }
 
-        return array('loaded'=>$loaded,'info'=>$info,'cpu'=>$cpu_load,'mem'=>$memavailable,'time'=>date('h:i:s d:m:Y',$date),'type'=>$type);
+        if ($cpu) {
+            $cpu_load = $cpu / 100;
+            if ($cpu_load > $porcessor) {
+                $loaded = 1;
+                $info .= ' cpu_load (' . $cpu_load . ') > porcessor (' . $porcessor . ') ';
+            }
+        }
+        if ($memavailable && $memavailable < $mem) {
+            $loaded = 1;
+            $info .= ' memavailable (' . $memavailable . ') < mem (' . $mem . ') ';
+        }
 
-
+        return array('loaded' => $loaded, 'info' => $info, 'cpu' => $cpu_load, 'mem' => $memavailable, 'time' => date('h:i:s d:m:Y', $date), 'type' => $type);
     }
-
 
 }
 
-if (isset($_GET['check_load']))
-{
-    if (isset($_GET['debug']))
-    {
+if (isset($_GET['check_load'])) {
+    if (isset($_GET['debug'])) {
         global $cron_debug;
-        $cron_debug=1;
+        $cron_debug = 1;
     }
 
 

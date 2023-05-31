@@ -120,7 +120,7 @@ function get_chan_data($id, $title)
 
     }
     if ($content_data) {
-        $content_data = '<div class="s_container">' . $content_data . '</div>';
+        $content_data = '<div class="s_container forchan">' . $content_data . '</div>';
     }
 
     $genre = '';
@@ -160,9 +160,7 @@ if (isset($_GET['id'])) {
     $clud = get_chan_data($movie_id, $movie_title);
     if (!$clud) {
         $clud['content'] =
-            '<div class="s_container smoched"><iframe src="' . $link . '"></iframe>
-<div class="s_container_smoth"></div> 
-</div>';
+            '<div class="s_container forchan smoched"><a id="pol" class="wordcloud"  src="'.$link.'" target="_blank"></a></div>';
 
         $clud['genre'] = '';
     }
@@ -187,6 +185,7 @@ if (isset($_GET['id'])) {
     } else {
 
         $content .= '<div class="column_inner_content twitter_content">
+<div class="twitter_content_main">
 <div class="popup-close"></div>
             <h3 class="column_header">Twitter:</h3>
 
@@ -200,7 +199,8 @@ if (isset($_GET['id'])) {
             
              <a class="twiiter_link" target="_blank" href="https://twitter.com/search?q=' . urlencode($movie_title) . '&src=typed_query&pf=on">Mentioned by people you follow ></a>
 </div>
-           
+    </div>
+    <div class="calobl"></div>       
             
         </div>';
     }

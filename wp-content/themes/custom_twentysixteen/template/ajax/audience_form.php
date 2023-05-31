@@ -1,24 +1,33 @@
 <?php
 
-// NO wp api
+// WP api
+require_once($_SERVER['DOCUMENT_ROOT'] . '/wp-config.php');
+/*
+  // NO wp api
 
-if (!defined('ABSPATH')) {
-    define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
-}
+  if (!defined('ABSPATH')) {
+  define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
+  }
 
-if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
-    define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
-}
+  if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
+  define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
+  }
 
-if (!class_exists('CriticFront')) {
-    require_once( CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php' );
+  if (!class_exists('CriticFront')) {
+  require_once( CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php' );
+  }
+ $cfront = new CriticFront();
+ * 
+ */
+global $cfront;
+if (!$cfront) {
+    exit;
 }
-$cfront = new CriticFront();
 
 $ca = $cfront->get_ca();
 
 // Get form
-if ($_GET['id']) {
+if (isset($_GET['id'])) {
     $id = (int) $_GET['id'];
     $avoted = $ca->already_voted($id);
     $ret = $avoted['ret'];

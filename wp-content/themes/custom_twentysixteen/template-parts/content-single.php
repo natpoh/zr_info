@@ -34,11 +34,16 @@ global $post;
 
         $link = WP_SITEURL . '/' . $post_name . '/';
         $pg_idnt = $post_id . ' ' . $link;
-        $comments_account = get_option('disqus_forum_url');
 
-        echo '<div style="text-align: center"><h3 class="column_header">Comments:</h3></div>
+        $comments_allowed = comments_open($post_id);
+
+
+        if ($comments_allowed) {
+            $comments_account = get_option('disqus_forum_url');
+
+            echo '<div style="text-align: center"><h3 class="column_header">Comments:</h3></div>
             <div class="not_load" id="disquss_container" data_comments="' . $comments_account . '"  data_title="' . $post_title . '" data_link="' . $link . '" data_idn="' . $pg_idnt . '"></div>';
-
+        }
 
 
 

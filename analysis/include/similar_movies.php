@@ -265,46 +265,83 @@ $content_result = $RWT_RATING->get_rating_data($content_result,0);
         $data='';
 
 
-    if ($content)
-    {
-        !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-        $data =  OptionData::get_options('','similar_shows');
-        $data =  str_replace('\\','',$data);
+//    if ($content)
+//    {
+//        !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+//        $data =  OptionData::get_options('','similar_shows');
+//        $data =  str_replace('\\','',$data);
+//
+//    }
+
+        if ($content)
+        {
+            $rs = ['content'=>$content,'rating'=>$content_result,'data'=>$data];
+            return json_encode($rs,JSON_INVALID_UTF8_IGNORE);
+        }
 
 
     }
 
-$rs = ['content'=>$content,'rating'=>$content_result,'data'=>$data];
+public static function get_title($id)
+{
 
-return json_encode($rs);
+    $sql = "SELECT * from data_movie_imdb where id =".intval($id);
+    $r = Pdo_an::db_results_array($sql);
+    $title = $r[0]['title'];
+    $type = $r[0]['type'];
+    return [urlencode($title),$type];
 
-    }
-
-
+}
     public static function get_movies($id)
     {
+        $result_ids=[];
 
-         $data  = self::get_from_db($id,14);
-        if ($data)
-        {
-            $result_ids = json_decode($data->data,1);
-        }
+        $sql = "SELECT * from data_movie_imdb where id =" . intval($id);
+        $r = Pdo_an::db_results_array($sql);
+        $title = $r[0]['title'];
+        $type = $r[0]['type'];
+        $strict_type=0;
 
-        else
-        {
-            $sql = "SELECT * from data_movie_imdb where id =".intval($id);
-            $r = Pdo_an::db_results_array($sql);
-            $title = $r[0]['title'];
-            $resultarray = self::get_data($title);
-            $result_ids = self::find_movies_byname($resultarray,$r[0]);
-            if ($result_ids)
-            {
-                self::save_data($id,$result_ids,$resultarray);
+        if ($type=='VideoGame'){$strict_type=1;}
+
+        if ($type=='Movie'  || $type=='TVSeries') {
+            $strict_type=2;
+
+            $data = self::get_from_db($id, 14);
+            if ($data) {
+                $result_ids = json_decode($data->data, 1);
+            } else {
+                $resultarray = self::get_data($title);
+                $result_ids = self::find_movies_byname($resultarray, $r[0]);
+                if ($result_ids) {
+                    self::save_data($id, $result_ids, $resultarray);
+                }
             }
         }
-//return ;
 
-        if ($result_ids)
+            if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
+                define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
+                require_once(CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php');
+
+            }
+            $cm = new CriticMatic();
+            $cs = $cm->get_cs();
+             global $debug;
+            $result = $cs->related_movies($id, 20, $strict_type, $debug);
+
+            foreach ($result  as $i=>$v)
+            {
+                if (count($result_ids)>=20)break;
+                if (!in_array($v->id,$result_ids))
+                {
+                    $result_ids[]= $v->id;
+                }
+
+            }
+
+
+
+        if (count($result_ids)>0)
         {
             ///add tempate
             $result_data = self::template_movies($result_ids);

@@ -1,4 +1,4 @@
-<form method="get" action="/search" id="search-form" class="main-search">
+<form method="post" action="/search" id="search-form" class="main-search">
     <div class="flex-page">
         <div id="primary" class="content-full with-sidebar-left">
             <main id="main" class="site-main" role="main">
@@ -17,7 +17,39 @@
                 </div>
                 <?php $search_front->theme_search_url($search_url, $search_text, $inc); ?>
                 <?php
-                if ($show_content):
+                ///var_dump($search_front->cs->search_filters);
+                $sfilters =$search_front->cs->search_filters;
+                if ( $sfilters['actorstar'] || $sfilters['actor'] )
+                {
+                    if ( $sfilters['actorstar'])  {$firstElement = reset($search_front->cs->search_filters['actorstar']);}
+                    else if ( $sfilters['actor'])  {$firstElement = reset($search_front->cs->search_filters['actor']);}
+                    $actor_find  = $firstElement['key'];
+                 if ($actor_find)
+                 {
+                     $actor_type=1; ///1:producer
+                 }
+                }
+                else if ( $sfilters['dir']  )
+                {
+                    if ( $sfilters['dir'])  {$firstElement = reset($search_front->cs->search_filters['dir']);}
+                    $actor_find  = $firstElement['key'];
+                    if ($actor_find)
+                    {
+                        $actor_type=2; // 2 :producer
+                    }
+                }
+                else if ( $sfilters['dirwrite']  )
+                {
+                    if ( $sfilters['dirwrite'])  {$firstElement = reset($search_front->cs->search_filters['dirwrite']);}
+                    $actor_find  = $firstElement['key'];
+                    if ($actor_find)
+                    {
+                        $actor_type=0; ///0: writer
+                    }
+                }
+
+
+                if ($show_content || $actor_find):
                     gmi('show_content_pre');
                     //Search tabs
                     print $search_tabs;
@@ -61,6 +93,9 @@
                                             }
                                         }
                                         $post_content = $post_arr['content_pro'];
+
+
+
                                         if ($keywords) {
                                             if (preg_match('/<div class="vote_content">(.*)<\/div>/Us', $post_content, $match) ||
                                                     preg_match('/<a[^>]* class="icntn"[^>]*>(.*)<\/a>/Us', $post_content, $match)) {
@@ -150,7 +185,7 @@
                                 <?php
                                 print $search_front->pagination($total_count);
 
-                                if ($keywords) {
+                                if ($keywords || $actor_find) {
 
                                     $after_search = false;
                                     $exclude = array();
@@ -191,7 +226,7 @@
                                             }
                                         }
 
-                                        $array_result = array($keywords, $key, $exclude);
+                                        $array_result = array($keywords, $key, $exclude,$actor_find,$actor_type);
                                         $keywords_data = serialize($array_result);
                                         $keywords_data = urlencode($keywords_data);
 

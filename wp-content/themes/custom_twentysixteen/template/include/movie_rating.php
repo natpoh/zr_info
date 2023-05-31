@@ -37,14 +37,14 @@ class RWT_RATING
         }
 
     }
-    private function get_movie_type($rwt_id)
+    public function get_movie_type($rwt_id)
    {
        $sql = "SELECT `type` FROM `data_movie_imdb` WHERE `id` = {$rwt_id} limit 1";
        $row = Pdo_an::db_fetch_row($sql);
        $type = $row->type;
        return strtolower($type);
    }
-    private function get_rating_movie($rwt_id)
+    public function get_rating_movie($rwt_id)
     {
        /// $gender = $this->get_gender_rating_in_movie($rwt_id);
 
@@ -61,18 +61,13 @@ class RWT_RATING
 
         $family = $this->ajax_pg_rating($rwt_id);
         $total_rwt = $this->rwt_total_rating($rwt_id);
+        $indie = $this->box_office($rwt_id);
 
 
-        if ($type=='videogame') {
-            $array_result = array('type'=>$type, 'family' => $family['pgrating'], 'family_data' => $family['pg_data'],
-                'lgbt_warning'=>$family['lgbt_warning'],'lgbt_text'=>$family['lgbt_text'],'woke'=>$family['woke'],'woke_text'=>$family['woke_text'],'total_rating'=>$total_rwt);
-        }
-        else
-        {
 
-            $array_result = array('type'=>$type,'male' => $gender['male'], 'female' => $gender['female'], 'diversity' => $gender['diversity'], 'diversity_data' => $gender['diversity_data'], 'family' => $family['pgrating'], 'family_data' => $family['pg_data'],
-                'lgbt_warning'=>$family['lgbt_warning'],'lgbt_text'=>$family['lgbt_text'],'woke'=>$family['woke'],'woke_text'=>$family['woke_text'],'total_rating'=>$total_rwt);
-        }
+       $array_result = array('type'=>$type,'male' => $gender['male'], 'female' => $gender['female'], 'diversity' => $gender['diversity'], 'diversity_data' => $gender['diversity_data'], 'family' => $family['pgrating'], 'family_data' => $family['pg_data'],
+                'lgbt_warning'=>$family['lgbt_warning'],'lgbt_text'=>$family['lgbt_text'],'woke'=>$family['woke'],'woke_text'=>$family['woke_text'],'total_rating'=>$total_rwt,'indie'=>$indie);
+
 
 
 
@@ -268,11 +263,24 @@ class RWT_RATING
             $data = json_encode($data);
         }
 
+        if ($array_family['lgbt_text'] || $array_family['woke_text'])
+        {
+            !class_exists('Movie_Keywords') ? include ABSPATH . "analysis/include/keywords.php" : '';
+            global $keywords_class;
+            if (!$keywords_class)
+            {
+
+                $keywords_class = new Movie_Keywords;
+            }
+
+            if ($array_family['lgbt_text'])            $array_family['lgbt_text'] =   $keywords_class->get_key_link($array_family['lgbt_text']);
+            if ($array_family['woke_text'])            $array_family['woke_text'] =   $keywords_class->get_key_link($array_family['woke_text']);
+        }
 
 
         return array('pgrating'=>$array_family['rwt_pg_result'],'pg_data'=>$data,
-        'lgbt_warning'=>$array_family['lgbt_warning'],'lgbt_text'=>str_replace(',',', ',$array_family['lgbt_text']),
-        'woke'=>$array_family['woke'],'woke_text'=>str_replace(',',', ',$array_family['woke_text']),
+        'lgbt_warning'=>$array_family['lgbt_warning'],'lgbt_text'=>$array_family['lgbt_text'] ,
+        'woke'=>$array_family['woke'],'woke_text'=>$array_family['woke_text'],
         );
 
     }
@@ -287,6 +295,192 @@ class RWT_RATING
     {
         return PgRatingCalculate::rwt_audience($id, $type, $update);
     }
+
+    private function get_parent($id)
+    {
+        $result='';
+
+        $q="SELECT * FROM `data_movie_distributors`  WHERE `id` = ".$id;
+        $row = Pdo_an::db_results_array($q);
+
+      if ($row) {
+          $wiki = $this->get_wiki_link($row[0]['name'] );
+
+          $result = '<p class="bb_row_after">'.$wiki.'<a target="_blank" href="' . WP_SITEURL . '/search/show_distributor/distributor_' . strtolower($row[0]['id']) . '">(' . $row[0]['name'] . ' subsidiary)</a></p>';
+      }
+      return $result;
+    }
+    private function get_wiki_link($name)
+    {
+        $name_encoded =urlencode($name);
+        return '<a class="out_link"  target="_blank" href="https://en.wikipedia.org/w/index.php?search='.$name_encoded.'"></a>';
+    }
+    public  function get_productions($mid)
+    {
+        $big_b =0;
+        $minor=0;
+        $indie=0;
+        $data=[];
+
+        $q="SELECT ds.* FROM `data_movie_distributors` as ds  LEFT JOIN meta_movie_distributors as m ON ds.`id` = m.`did`  WHERE (ds.`type` = 1 OR ds.`parent` >0 OR ds.`type` = 2 ) and  m.`mid` = ".$mid;
+
+        $r = Pdo_an::db_results_array($q);
+        foreach ($r as $row)
+        {
+
+            $parent='';
+            if ($row['parent']>0 && $row['type']!=1)
+            {
+                $parent = $this->get_parent($row['parent']);
+            }
+
+            $wiki = $this->get_wiki_link($row['name'] );
+
+            $data[$row['type']][$row['id']]= '<p class="bb_row">'.$wiki.'<a href="' . WP_SITEURL . '/search/show_distributor/distributor_' . strtolower($row['id']) . '">' . $row['name'] . '</a></p>'.$parent;
+
+        }
+
+        return $data;
+    }
+
+    public function get_franchise($mid){
+        $data=[];
+        $first=0;
+        $q="SELECT `franchise` FROM `data_movie_indie` WHERE `movie_id`= ".$mid." and `franchise`>0";
+        $r= Pdo_an::db_results_array($q);
+        $count = count($r);
+        foreach ($r as $row)
+        {
+            $fid = $row['franchise'];
+
+            if ($fid)
+            {
+                ///check all movies
+                $q="SELECT `data_movie_imdb`.`id`  FROM `data_movie_indie`, `data_movie_imdb` WHERE `franchise`= ".$fid." and `data_movie_indie`. `movie_id` = `data_movie_imdb`.`id` order by `data_movie_imdb`.`year` asc limit 1";
+                $r= Pdo_an::db_fetch_row($q);
+
+                 if ($mid==$r->id && $mid)
+                 {
+                     $first=1;
+                 }
+
+
+                $q ="SELECT `name` FROM `data_movie_franchises` WHERE `id` =".$fid;
+                $rf =Pdo_an::db_fetch_row($q);
+                $name = $rf->name;
+                $data[]= '<a target="_blank" href="' . WP_SITEURL . '/search/show_franchise/franchise_' .$fid . '">' .$name. '</a>';
+            }
+
+        }
+        $count = count($data);
+        if ($count)
+        {
+            $data_string = implode(', ', $data);
+            return [$first,$data_string];
+        }
+        return [0,''];
+    }
+    private function compare_arrays($firstArray,$secondArray)
+    {
+
+        $resultArray = [];
+
+        foreach ($firstArray as $word) {
+            if (strpos($word, '*') !== false) {
+                $pattern = trim(str_replace('*', '', $word));
+                foreach ($secondArray as $index=> $secondWord) {
+                    if (strpos($secondWord, $pattern) !== false) {
+                        $resultArray[$index] = $secondWord;
+                    }
+                }
+            } else {
+                if (in_array(trim($word), $secondArray)) {
+                    $index = array_search(trim($word), $secondArray);
+                    $resultArray[$index] = $word;
+                }
+            }
+        }
+        return $resultArray;
+    }
+
+    public function check_keywords($mid)
+    {
+        $result =[];
+        $array_keys = ['lasy_grab'=>'indie_lasy_grab','remake_words'=>'indie_remake_words'];
+
+        !class_exists('Movie_Keywords') ? include ABSPATH . "analysis/include/keywords.php" : '';
+        global $keywords_class;
+        if (!$keywords_class)
+        {
+            $keywords_class = new Movie_Keywords;
+        }
+
+        $keywords  = $keywords_class->get_keywors_array($mid,1);
+
+        if ($keywords) {
+            //get options
+            !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+
+            foreach ($array_keys as $i => $req) {
+                $key_data = OptionData::get_options('', $req);
+                if ($key_data)
+                {
+                    $key_data =  str_replace('\\','',$key_data);
+                    $key_ob = explode(',',$key_data);
+                }
+
+            $ki= $this->compare_arrays($key_ob, $keywords);
+
+              if ($ki) {
+                  $links = $keywords_class->to_key_content($ki,1);
+                  $result[$i] = $links;
+              }
+            }
+
+        }
+        return $result;
+
+    }
+    public function box_office($mid)
+    {
+        $mid = intval($mid);
+        $sql = "SELECT box_usa,box_world,productionBudget FROM `data_movie_imdb` WHERE `id` = {$mid} and (box_usa >0 OR box_world>0 OR productionBudget>0) limit 1";
+        $row = Pdo_an::db_results_array($sql);
+        $result = $row[0];
+        if ($result['box_world'] && $result['box_usa'] && $result['box_world'] > $result['box_usa'] ){$result['box_intern']=$result['box_world']-$result['box_usa'];}
+
+        $keywords  = $this->check_keywords($mid);
+        if ( $keywords)
+        {
+
+            $result['recycle']['keywords']=  $keywords;
+
+        }
+
+        [$first,$franchise] = $this->get_franchise($mid);
+
+        if ((!$first && $franchise) || $keywords['lasy_grab'])
+        {
+            $result['recycle']['enabled']=1;
+        }
+
+        if ($franchise || $keywords['remake_words'])
+        {
+            $result['recycle']['franchise']=$franchise;
+        }
+        //production
+        $production=$this->get_productions($mid);
+        if ($production)
+        {
+
+            $result['production']=$production;
+        }
+
+
+    return $result;
+
+    }
+
     public function rwt_total_rating($id)
     {
         $rating =  PgRatingCalculate::rwt_total_rating($id);

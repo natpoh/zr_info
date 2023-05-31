@@ -1022,6 +1022,7 @@ global $pdo;
 
     <?php }
     else if ($display_select == 'Buying_power') {
+
         ?>
 
         <script type="text/javascript">

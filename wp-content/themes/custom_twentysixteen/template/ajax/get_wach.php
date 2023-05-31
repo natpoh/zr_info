@@ -488,7 +488,7 @@ function piracy_links($data){
     }
     else {$where = " AND (`type`=0 OR `type`=1) ";}
 
-    $sql = "SELECT * FROM `meta_piracy_links` where `enable` =1 ".$where." order by `category` desc";
+    $sql = "SELECT * FROM `meta_piracy_links` where `enable` =1 ".$where." order by `category` desc, `name` asc";
 
 
     $r = Pdo_an::db_results_array($sql);

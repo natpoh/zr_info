@@ -23,6 +23,7 @@ class LightMovies{
         add_submenu_page($this->parrent_slug, __('Add Movies'), __('Add Movies'), $this->access_level, $this->parrent_slug . '_add_movies', array($this, 'add_movies'));
         add_submenu_page($this->parrent_slug, __('Actors info'), __('Actors info'), $this->access_level, $this->parrent_slug. '_actors_info', array($this, 'actors_info'));
         add_submenu_page($this->parrent_slug, __('Piracy links'), __('Custom links'), $this->access_level, $this->parrent_slug. '_piracy_links', array($this, 'piracy_links'));
+        add_submenu_page($this->parrent_slug, __('Compilation Links'), __('Compilation Links'), $this->access_level, $this->parrent_slug. '_compilation_links', array($this, 'compilation_links'));
         add_submenu_page($this->parrent_slug, __('Custom options'), __('Custom options'), $this->access_level, $this->parrent_slug. '_custom_options', array($this, 'option'));
         add_submenu_page($this->parrent_slug, __('Logs'), __('Logs'), $this->access_level, $this->parrent_slug. '_movie_logs', array($this, 'movie_logs'));
          add_submenu_page($this->parrent_slug, __('Cron info'), __('Cron info'), $this->access_level, $this->parrent_slug. '_cron_info', array($this, 'cron_info'));
@@ -116,10 +117,18 @@ $this->set_option(4,$_POST['option_4'],'Ethnic array fast');
 $this->set_option(6,$_POST['option_6'],'Color array');
 
 $this->set_option('',$_POST['similar_shows'],'similar_shows');
+$this->set_option('',$_POST['similar_games'],'similar_games');
+$this->set_option('',$_POST['global_zeitgeist'],'global_zeitgeist');
+
+
 
 $this->set_option('',$_POST['words_exclude'],'words_exclude');
 
 $this->set_option('',$_POST['critic_empty'],'critic_empty');
+
+$this->set_option('',$_POST['indie_remake_words'],'indie_remake_words');
+$this->set_option('',$_POST['indie_lasy_grab'],'indie_lasy_grab');
+
 
 
 //$this->set_option('',$_POST['verdict_method'],'verdict_method');
@@ -156,15 +165,26 @@ $this->set_option('',$_POST['critic_empty'],'critic_empty');
         <textarea name="option_4" style="width: 600px; height: 500px"><?php echo $this->get_option(4); ?></textarea>
         <h2>Color array</h2>
         <textarea name="option_6" style="width: 600px; height: 300px"><?php echo $this->get_option(6); ?></textarea>
-        <h2>Similar Stuff</h2>
+        <h2>Similar Movies</h2>
         <textarea name="similar_shows" style="width: 600px; height: 300px"><?php echo $this->get_option('','similar_shows'); ?></textarea>
+        <h2>Similar Games</h2>
+        <textarea name="similar_games" style="width: 600px; height: 300px"><?php echo $this->get_option('','similar_games'); ?></textarea>
+
+                <h2>Global Consensus</h2>
+        <textarea name="global_zeitgeist" style="width: 600px; height: 300px"><?php echo $this->get_option('','global_zeitgeist'); ?></textarea>
+
+
         <h2>4Chan cloud words exclude</h2>
         <textarea name="words_exclude" style="width: 600px; height: 300px"><?php echo $this->get_option('','words_exclude'); ?></textarea>
 
          <h2>Critic Reviews empty message</h2>
         <textarea name="critic_empty" style="width: 600px; height: 300px"><?php echo $this->get_option('','critic_empty'); ?></textarea>
 
+           <h2>Keywords for Adaptation/remake<h2>
+        <textarea name="indie_remake_words" style="width: 600px; height: 300px"><?php echo $this->get_option('','indie_remake_words'); ?></textarea>
 
+        <h2>Keywords for lazy cash grab<h2>
+        <textarea name="indie_lasy_grab" style="width: 600px; height: 300px"><?php echo $this->get_option('','indie_lasy_grab'); ?></textarea>
 
     <div class="options_data"><button type="submit" class="button button-primary save_option">Save</button></div>
 
@@ -337,7 +357,30 @@ check_request();
 }
 
 
+    public function compilation_links()
+    {
 
+                echo '<h1>Compilation links</h1>';
+
+                 !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
+
+
+        $array_rows = array(
+            'id'=>array('w'=>5),
+
+            'type'=>array('type'=>'select','options'=>'0:Movies and TV;1:All;2:Games;3:Music;4:Books;5:Movies;6:TV'),
+
+            'last_update' =>array('w'=>10, 'type' => 'textarea','editfalse'=>1),
+            'enable'=>array('type'=>'select','options'=>'1:Enable;0:Disable'),
+        );
+
+        Crowdsource::Show_admin_table('meta_compilation_links',$array_rows,1,'meta_compilation_links','',1,1);
+
+
+
+
+
+    }
     public function piracy_links()
     {
         echo '<h1>Custom links</h1>';

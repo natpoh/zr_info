@@ -9,18 +9,26 @@ wp_enqueue_script('section_home', get_template_directory_uri() . '/js/section_ho
 
 global $cfront;
 
+include ABSPATH.'wp-content/themes/custom_twentysixteen/template/compilation.php';
+[$c_id,$c_title]=last_compilation_scroll();
+
 $array_list = array(
     'Audience' => array('title' => 'Latest Audience Reviews:', 'id' => 'audience_scroll', 'class' => 'audience_review widthed ',
        'tabs' => array('p' => 'Positive', 'n' => 'Negative', 'a' => 'Latest')),
         'Pro' => array('title' => 'Latest Critic Reviews:', 'id' => 'review_scroll', 'class' => 'pro_review widthed secton_gray'),
 
 
-        'Video' => array('title' => 'New Movies:', 'id' => 'video_scroll', 'class' => ''),
+    'Video' => array('title' => 'New Movies:', 'id' => 'video_scroll', 'class' => ''),
     'TV' => array('title' => 'Popular Shows Streaming:', 'id' => 'tv_scroll', 'class' => ''),
     'Games' => array('title' => 'New Games:', 'id' => 'games_scroll', 'class' => ''),
-      //  'Staff' => array('title' => 'Latest Staff Reviews:', 'id' => 'stuff_scroll', 'class' => 'stuff_review widthed', 'title_desc' => '<a class="title_desc" href="https://zeitgeistreviews.com/writers-wanted/" target="_blank">Writers Wanted</a>'),
 
 );
+
+
+    $array_list [ 'Random']=array('title' => $c_title, 'id' => 'compilation_scroll', 'class' => 'rand_scroll', 'pid'=>$c_id);
+
+
+
 // add scripts
 $scrpts = array();
 //gmi('scroll before');
@@ -51,9 +59,10 @@ global $section;
 for ($i = 1; $i <= 5; $i++) {
     $video_items .= str_replace('{id}', $i, $video_template);
 }
-
+$pid = $value['pid'];
+if(!$pid)$pid='';
 $content = '';
-foreach ($array_list as $value) {
+foreach ($array_list as $index=> $value) {
     $content_inner = $section;
     foreach ($value as $id => $name) {
         if ($id == 'tabs') {
@@ -74,8 +83,18 @@ foreach ($array_list as $value) {
         }
         $content_inner = str_replace('{' . $id . '}', $name, $content_inner);
     }
+
+
+    if ($index=='Random')
+    {
+
+
+        $content_inner = str_replace('{post_id}', $pid, $content_inner);
+
+    }
+
     $content_inner = str_replace('{content}', $video_items, $content_inner);
-    $content_inner = str_replace('{post_id}', '', $content_inner);
+
     $content_inner = preg_replace('/\{[a-z_]+\}/', '', $content_inner);
     $content .= $content_inner;
 }
