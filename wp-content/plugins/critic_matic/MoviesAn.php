@@ -467,7 +467,7 @@ class MoviesAn extends AbstractDBAn {
         $sql = sprintf("SELECT id FROM {$this->db['data_genre']} WHERE name='%s'", $this->escape($name));
         $result = $this->db_get_var($sql);
 
-        if ($cache) {
+        if ($cache && $result) {
             $dict[$name] = $result;
         }
         return $result;
@@ -583,8 +583,11 @@ class MoviesAn extends AbstractDBAn {
                     'gid' => $gid,
                 );
                 $id = $this->cm->sync_insert_data($data, $this->db['meta_genre'], $this->cm->sync_client, $this->cm->sync_data);
+                return true;
+            } else {
+                return false;
             }
-            return true;
+            
         }
         return false;
     }
@@ -871,6 +874,7 @@ class MoviesAn extends AbstractDBAn {
     }
 
     public function get_movies_no_country_meta($count) {
+        // UNUSED DEPRECATED
         $sql = sprintf("SELECT p.id, p.country FROM {$this->db['movie_imdb']} p "
                 . "LEFT JOIN {$this->db['meta_country']} m ON p.id = m.mid "
                 . "WHERE p.country !='' AND m.id is NULL limit %d", (int) $count);
@@ -891,8 +895,11 @@ class MoviesAn extends AbstractDBAn {
                     'cid' => $cid,
                 );
                 $id = $this->cm->sync_insert_data($data, $this->db['meta_country'], $this->cm->sync_client, $this->cm->sync_data);
+                return true;
+            } else {
+                return false;
             }
-            return true;
+            
         }
         return false;
     }

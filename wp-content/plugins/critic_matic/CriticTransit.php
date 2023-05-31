@@ -82,7 +82,7 @@ class CriticTransit extends AbstractDB {
         }
         return $this->ma;
     }
-    
+
     /*
      * Find dublicates critic posts
      */
@@ -306,7 +306,7 @@ class CriticTransit extends AbstractDB {
                     print "Actor code id: " . $actor_id . "\n";
                     //11101000000413
                     //111101110101251
-                    //
+                //
                 }
 
 
@@ -353,10 +353,10 @@ class CriticTransit extends AbstractDB {
         if ($gender > 2) {
             $gender = 2;
         }
-        if ($gender==0){
-            $gender=3;
+        if ($gender == 0) {
+            $gender = 3;
         }
-        
+
         $type = 1;
         $n_verdict = $item->n_verdict > 8 ? 7 : $item->n_verdict;
         $n_verdict_weight = $item->n_verdict_weight > 8 ? 7 : $item->n_verdict_weight;
@@ -733,7 +733,7 @@ class CriticTransit extends AbstractDB {
                                 $movie_id = TMDB::get_imdb_id_from_id($mid);
                                 if ($movie_id) {
                                     $array_movie = TMDB::get_content_imdb($movie_id);
-                                    $add = TMDB::addto_db_imdb($movie_id, $array_movie,'','','transit_actors');
+                                    $add = TMDB::addto_db_imdb($movie_id, $array_movie, '', '', 'transit_actors');
                                     continue;
                                 }
                             }
@@ -915,12 +915,18 @@ class CriticTransit extends AbstractDB {
                         }
                         // Add genres
                         foreach ($to_add as $name) {
-                            $gid = $ma->get_or_create_genre_by_name($name);
-                            $ma->add_movie_genre($mid, $gid);
-
-                            if ($debug) {
+                            $gid = $ma->get_or_create_genre_by_name($name,true);
+                            if ($ma->add_movie_genre($mid, $gid)){
+                                if ($debug) {
                                 print "Add move genre: $name, $mid, $gid\n";
                             }
+                            } else {
+                                if ($debug) {
+                                print "Move genre already exist: $name, $mid, $gid\n";
+                            }
+                            }
+
+                            
                         }
                     }
                 }
@@ -928,18 +934,40 @@ class CriticTransit extends AbstractDB {
         }
     }
 
-    public function transit_countries($count = 100, $debug = false) {
-        // ger movies
-        $ma = $this->get_ma();
-        $posts_no_meta = $ma->get_movies_no_country_meta($count);
+    public function transit_countries($count = 100, $debug = false, $force = false) {
 
-        if ($debug) {
-            print_r($posts_no_meta);
+        $option_name = 'transit_countries_unique_id';
+        $last_id = $this->get_option($option_name, 0);
+        if ($force) {
+            $last_id = 0;
         }
 
-        // transit ganres
-        if (sizeof($posts_no_meta)) {
-            foreach ($posts_no_meta as $post) {
+        if ($debug) {
+            p_r(array('last_id', $last_id));
+        }
+
+        // 1. Get posts
+        $sql = sprintf("SELECT id, title, country FROM {$this->db['movie_imdb']} "
+                . " WHERE id>%d ORDER BY id ASC limit %d", $last_id, $count);
+        $results = $this->db_results($sql);
+
+        if ($debug) {
+            print_r($results);
+        }
+
+        // get movies
+        $ma = $this->get_ma();
+
+        if ($results) {
+            $last = end($results);
+            if ($debug) {
+                print 'last id: ' . $last->id . "\n";
+            }
+            if ($last) {
+                $this->update_option($option_name, $last->id);
+            }
+
+            foreach ($results as $post) {
                 $mid = $post->id;
                 $countrys = $post->country;
                 //Get post countrys
@@ -956,18 +984,23 @@ class CriticTransit extends AbstractDB {
                     } else {
                         $to_add[] = trim($countrys);
                     }
+                    if ($debug) {
+                        print_r($to_add);
+                    }
 
                     if (sizeof($to_add)) {
-                        if ($debug) {
-                            print_r($to_add);
-                        }
+
                         // Add countrys
                         foreach ($to_add as $name) {
-                            $gid = $ma->get_or_create_country_by_name($name);
-                            $ma->add_movie_country($mid, $gid);
-
-                            if ($debug) {
-                                print "Add movie country: $name, $mid, $gid\n";
+                            $gid = $ma->get_or_create_country_by_name($name, true);
+                            if ($ma->add_movie_country($mid, $gid)) {
+                                if ($debug) {
+                                    print "Add movie country: $name, $mid, $gid\n";
+                                }
+                            } else {
+                                if ($debug) {
+                                    print "Movie country already exist: $name, $mid, $gid\n";
+                                }
                             }
                         }
                     }

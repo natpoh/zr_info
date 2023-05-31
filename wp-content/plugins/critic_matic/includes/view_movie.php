@@ -44,6 +44,10 @@ if ($mid) {
                 </tr>
             <?php } ?>
             <tr>
+                <td><?php print __('Add date') ?></td>
+                <td><?php print $this->cm->curr_date($movie->add_time); ?></td>
+            </tr>
+            <tr>
                 <td><?php print __('Last update') ?></td>
                 <td><?php print date('d.m.Y H:i:s', $ma->get_movie_last_update($mid)); ?></td>
             </tr>
@@ -181,8 +185,8 @@ if ($mid) {
         $urls2 = array();
         $parsed_posts = $mp->get_posts_by_top_movie($mid);
         if ($parsed_posts) {
-            $ids = array();            
-            foreach ($parsed_posts as $post) {             
+            $ids = array();
+            foreach ($parsed_posts as $post) {
                 $ids[] = $post->uid;
             }
             $q2_req = array(
@@ -190,21 +194,21 @@ if ($mid) {
                 'pid' => 0,
             );
             $urls2 = $mp->get_urls_query($q2_req, 1, 0);
-                        
+
             // Exclude camp
-            $pcamp = $mp->get_campaigns(-1,1);
+            $pcamp = $mp->get_campaigns(-1, 1);
             $pcamp_exlude = array();
-            if ($pcamp){
+            if ($pcamp) {
                 foreach ($pcamp as $pcampitem) {
-                    $pcamp_exlude[]=$pcampitem->id;
+                    $pcamp_exlude[] = $pcampitem->id;
                 }
             }
-            
-            if ($urls2){
+
+            if ($urls2) {
                 $valid_urls_2 = array();
                 foreach ($urls2 as $item) {
-                    if (!in_array($item->cid, $pcamp_exlude)){
-                        $valid_urls_2[]=$item;
+                    if (!in_array($item->cid, $pcamp_exlude)) {
+                        $valid_urls_2[] = $item;
                     }
                 }
             }
@@ -445,8 +449,8 @@ if ($mid) {
                 <?php } ?>
             </tbody>        
         </table><?php
-            }
-            ?>
+    }
+    ?>
     <form accept-charset="UTF-8" method="post" >
         <div class="bulk-actions-holder">
             <select name="bulkaction" class="bulk-actions">
@@ -489,13 +493,13 @@ if ($mid) {
                                 $name = $post->name;
                                 $link = $post->link;
                                 // Date
-                                $critic_date = gmdate('Y-m-d H:i:s',  $post->date);
+                                $critic_date = gmdate('Y-m-d H:i:s', $post->date);
                             }
                             $critic_link = $this->theme_post_link($cid, $title);
                             $type = $this->cm->get_post_category_name($critic['type']);
 
-                            
-                            
+
+
                             // Rating
                             $rating = $critic['total'];
                             if ($critic['valid']) {
@@ -533,12 +537,12 @@ if ($mid) {
                                                     <tr>
                                                         <td><?php print $key ?></td>
                                                         <td><?php
-                                                    if (is_array($value)) {
-                                                        print_r(implode('; ', $value));
-                                                    } else {
-                                                        print_r($value);
-                                                    }
-                                                    ?></td>
+                                                            if (is_array($value)) {
+                                                                print_r(implode('; ', $value));
+                                                            } else {
+                                                                print_r($value);
+                                                            }
+                                                            ?></td>
                                                     </tr>
                                                 <?php } ?>
                                             </tbody>        
