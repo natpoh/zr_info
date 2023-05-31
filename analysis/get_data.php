@@ -82,95 +82,32 @@ if (!function_exists('fileman')) {
 
 function single_movie($curent_user='')
 {
-
-    !class_exists('RWTimages') ? include ABSPATH . "analysis/include/rwt_images.php" : '';
-
     if (isset($_POST['rwt_id']))
     {
 
+        $mid =intval($_POST['rwt_id']);
+    }
+
+    if (isset($_POST['id']))
+    {
         !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
-        $rwt_id =intval($_POST['rwt_id']);
-        $id=TMDB::get_imdb_id_from_id($rwt_id);
-
-    }
-    else
-    {
-
-        $id = intval($_POST['id']);
-    }
-
-
-
-    global $data_object;
-
-    $global_actor_id = '';
-
-    if (!isset($_POST['data']) && !$data_object)
-    {
-        $_POST['data']="{\"movie_type\":[],\"movie_genre\":[],\"animation\":\"0\",\"inflation\":\"0\",\"start\":\"1960\",\"end\":\"2100\",\"actor_type\":[\"star\",\"main\"],\"diversity_select\":\"default\",\"display_select\":\"date_range_international\",\"country_movie_select\":[],\"display_xa_axis\":\"Box+Office+Worldwide\",\"color\":\"default\",\"filter_director\":[],\"filter_cast_director\":[],\"filter_writer\":[],\"filter_leed_actor\":[],\"ethnycity\":{\"1\":{\"crowd\":1},\"2\":{\"ethnic\":1},\"3\":{\"jew\":1},\"4\":{\"face\":1},\"5\":{\"face2\":1},\"6\":{\"surname\":1}}}";
-        $data_object=get_post_data_request($_POST['data']);
-
-    }
-    else  {
-        $data_object=get_post_data_request($_POST['data']);
+        $imdb_id =intval($_POST['id']);
+        $mid=TMDB::get_id_from_imdbid($imdb_id);
 
     }
 
-
-    ///////////////////////////////////////////////////setup data //////////////////////
-
-
-
-
-
-    $array_data = $data_object->result_data;
-    $display_select = $data_object->display_select;
-    $ethnycity = $data_object->ethnycity;
-    $start = $array_data['start'];
-    global $end;
-    $end = $array_data['end'];
-    $join_dop = $array_data['join'];
-    $idop = $array_data['dop'];
-    $inflation_array = $data_object->inflation;
-    $actor_type = $data_object->actor_type;
-    $display_xa_axis = $data_object->display_xa_axis;
-    $diversity_select = $data_object->diversity_select;
-    $post_country_2 = $data_object->post_country_2;
-    $idop_yaer = $data_object->idop_yaer;
-    global $country;
-    $country = $data_object->country_movie_select;
-    ///////////////////////////////////////////////////setup data //////////////////////
-
-
-
-
-
-    global $debug;
-
-
-    if ($id) {
-
-        global $pdo;
-
-        $sql = "SELECT * FROM data_movie_imdb  where movie_id=" . $id;
-
-        $q = $pdo->prepare($sql);
-        $q->execute();
-        $q->setFetchMode(PDO::FETCH_ASSOC);
-
-        $r = $q->fetch();
-        $title = $r['title'];
-        $rwt_id = $r['id'];
+    $post_id = $mid;
+    if (!function_exists('template_single_movie')) {
+        require ABSPATH . 'wp-content/themes/custom_twentysixteen/template/movie_single_template.php';
     }
+    template_single_movie($mid, '', '', 1);
 
-    ///get movie template
 
-        include($_SERVER['DOCUMENT_ROOT'] . '/wp-content/themes/custom_twentysixteen/template/movie_single_template.php');
-        include($_SERVER['DOCUMENT_ROOT'] . '/wp-content/themes/custom_twentysixteen/template/section_home_template.php');
+    echo '<style type="text/css">.nte_show {    display: none;}</style>';
 
-        $movie_template = template_single_movie($rwt_id, $title, $name = '', 1);
 
-        echo '<div class="movie_load_grid"><a class="button" target="_blank" href="/analysis/include/scrap_imdb.php?get_imdb_movie_id='.$id.'">Update data</a>'.$movie_template.'</div>';
+
+    echo '<div class="movie_load_grid"><a class="button" target="_blank" href="/analysis/include/scrap_imdb.php?get_imdb_movie_id='.$imdb_id.'">Update data</a></div>';
 
 
 
@@ -184,7 +121,7 @@ function single_movie($curent_user='')
 
 //PgRatingCalculate
             !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
-            PgRatingCalculate::CalculateRating($id,$rwt_id,1);
+            PgRatingCalculate::CalculateRating($imdb_id,$mid,1);
             return;
         }
 
@@ -196,7 +133,7 @@ function single_movie($curent_user='')
         {
 
             !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
-            PgRatingCalculate::add_movie_rating($rwt_id,'',1);
+            PgRatingCalculate::add_movie_rating($mid,'',1);
             return;
         }
 
@@ -209,7 +146,7 @@ function single_movie($curent_user='')
             !class_exists('WOKE') ? include ABSPATH . "analysis/include/woke.php" : '';
             $woke = new WOKE;
 
-            $woke->zr_woke_calc($rwt_id,1);
+            $woke->zr_woke_calc($mid,1);
 
 
             return;
@@ -217,124 +154,6 @@ function single_movie($curent_user='')
 
     }
 
-   $actors_array=  MOVIE_DATA::get_actors_from_movie($rwt_id,'',$actor_type);
-
-
-
-   $array_movie_result = MOVIE_DATA::get_movie_data_from_db($rwt_id, '', 0, $actor_type , $actors_array, $diversity_select, $ethnycity, 1 );
-
-
-
-     ///$array_movie_result = get_movie_data_from_db($id, '', '', $actor_type, $actors_array, $diversity_select, $ethnycity, 1);
-
-
-    $data = $array_movie_result['data'];
-
-    //////////create result_data
-     echo $array_movie_result['current'];
-
-     $all_data = $array_movie_result['all_data'];
-
-
-    //$actor_content = set_table_ethnic($data, $country);
-
-    // echo $actor_content;
-
-
-    $chart = '';
-
-
-
-
-    $actors_array =MOVIE_DATA::check_actors_to_stars($actors_array,$actor_type);
-
-    $actor_type_min = MOVIE_DATA::get_actor_type_min();
-
-    if (!$global_actor_id) {
-        if (is_array($actors_array)) {
-            if ($only_actors) {
-                $content_array = [];
-
-                foreach ($actor_type as $type) {
-
-                    foreach ($actors_array[$actor_type_min[$type]] as $id => $enable) {
-
-                        $name =MOVIE_DATA::get_actor_name($id);
-
-                        if ($id) {
-                            $dop_string='';
-
-
-                                $dop_string = '<span class="a_data_n_d">'.str_replace('_',' ',ucfirst($type)).'</span>';
-
-
-                            $image_link = RWTimages::get_image_link($id);
-
-                            $actor_cntr = '<div class="card style_1 img_tooltip">
-                     <a  class="actor_info" data-id="' . $id . '"  href="#">
-                     <div class="a_data_n">' . $name .$dop_string. ' </div>
-                     <img loading="lazy" class="a_data_i" src="'.$image_link.'" />
-                     </a><span class="actor_edit actor_crowdsource_container"><a title="Edit Actor data" id="op" data-value="' . $id . '" class="actor_crowdsource button_edit" href="#"></a></span>
-                    </div>';
-
-                            $addtime = time();
-                            $content_array['result'][$addtime . '_' . $id] = array('pid' => $id, 'content_data' => $actor_cntr);
-
-                        }
-                    }
-
-                    //$content_array['html'][$type] = $array_movie_result['current'];
-
-
-                }
-
-
-            }
-            else {
-
-
-                foreach ($actor_type as $type) {
-                    $actor_cntr = '';
-                    foreach ($actors_array[$actor_type_min[$type]] as $id => $e) {
-
-                        if ($id) {
-
-                            $name =MOVIE_DATA::get_actor_name($id);
-
-                            $dop_string = '<span class="a_data_n_d">'.str_replace('_',' ',ucfirst($type)).'</span>';
-
-
-                            $image_link = RWTimages::get_image_link($id);
-
-                            $actor_cntr .= '<div class="card style_1 img_tooltip">
-                     <a  class="actor_info" data-id="' . $id . '"  href="#">
-                     <div class="a_data_n">' . $name .$dop_string. ' </div>
-                     <img class="a_data_i" src="'.$image_link.'" />
-                     </a>
-                    </div>';
-                        }
-                    }
-
-
-                    $section_data = $section;
-
-                    $section_data = str_replace('{post_id}', 'none', $section_data);
-                    $section_data = str_replace('{class}', 'section_actors', $section_data);
-                    $section_data = str_replace('{id}', $type, $section_data);
-                    $section_data = str_replace('{title}', ucfirst($type), $section_data);
-                    $section_data = str_replace('{content}', $actor_cntr, $section_data);
-                    $section_data = preg_replace('/\{[a-z_]+\}/','',$section_data);
-                    $content .= $section_data;
-
-                }
-            }
-        }
-
-    }
-
-    echo $content;
-
-    return;
 }
 
 
