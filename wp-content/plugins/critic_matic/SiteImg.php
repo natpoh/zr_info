@@ -12,7 +12,7 @@ class SiteImg extends AbstractDB {
     private $db;
     private $ml_camp = array(        
         22 => array('ekey' => 'douban_rating', 'name' => 'Douban', 'flag' => 'cn', 'link' => 'douban', 'ratmax' => 10, 'multipler' => 10),
-        23 => array('ekey' => 'metacritic_rating', 'name' => 'MetaCritic', 'flag' => 'en', 'ratmax' => 100, 'multipler' => 1),
+        23 => array('ekey' => 'metacritic_rating', 'name' => 'MetaCritic', 'flag' => 'glb', 'ratmax' => 100, 'multipler' => 1),
         24 => array('ekey' => 'kinop_rating', 'name' => 'Kinopoisk', 'flag' => 'ru', 'ratmax' => 10, 'multipler' => 10),
         27 => array('ekey' => 'animelist_rating', 'name' => 'MyAnimeList', 'flag' => 'jp', 'ratmax' => 10, 'multipler' => 10),
         36 => array('ekey' => 'eiga_rating', 'name' => 'Eiga', 'flag' => 'jp', 'ratmax' => 5, 'multipler' => 10),
@@ -53,6 +53,11 @@ class SiteImg extends AbstractDB {
         $erating = $this->get_movie_erating($mid);
         if (!$erating) {
             return $ret;
+        }
+        
+        
+        if ($debug) {
+            print_r($erating);
         }
 
         $ml_camp_ret = $this->ml_camp;
