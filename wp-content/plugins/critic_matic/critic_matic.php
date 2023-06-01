@@ -1196,6 +1196,8 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     $sql = "ALTER TABLE `data_movie_erating` ADD `metacritic_date` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `metacritic_userscore` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
 
     // eiga
     $sql = "ALTER TABLE `data_movie_erating` ADD `eiga_rating` int(11) NOT NULL DEFAULT '0'";
