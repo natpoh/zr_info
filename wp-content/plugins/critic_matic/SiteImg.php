@@ -64,10 +64,13 @@ class SiteImg extends AbstractDB {
         foreach ($this->ml_camp as $cid => $item) {
 
             $ekey = $item['ekey'];
+            # Add only exist rating
+            $ml_camp_ret[$cid] = $item;
+
             if (isset($erating->$ekey) && $erating->$ekey > 0) {
-                # Add only exist rating
-                $ml_camp_ret[$cid] = $item;
                 $ml_camp_ret[$cid]['rating'] = $erating->$ekey;
+            } else {
+                $ml_camp_ret[$cid]['rating'] = -1;
             }
         }
 
@@ -102,20 +105,25 @@ class SiteImg extends AbstractDB {
             }
         }
 
+        if ($debug) {
+            print_r(array('exists', $exists));
+        }
+
         foreach ($this->ml_camp as $cid => $item) {
             if (isset($exists[$cid])) {
 
                 if ($debug) {
-                    print 'Update ' . $cid;
+                    print 'Update ' . $cid . "\n";
+                    ;
                 }
 
                 $exist = $exists[$cid];
 
-                if (isset($ml_camp_ret[$cid])) {
-                    $ml_camp_ret[$cid]['link'] = $exist->link;
-                    $ml_camp_ret[$cid]['link_hash'] = $exist->link_hash;
-                    $ml_camp_ret[$cid]['img'] = 0;
-                }
+
+                $ml_camp_ret[$cid]['link'] = $exist->link;
+                $ml_camp_ret[$cid]['link_hash'] = $exist->link_hash;
+                $ml_camp_ret[$cid]['img'] = 0;
+
                 $data = array(
                     'counter' => $exist->counter + 1,
                 );
@@ -123,9 +131,9 @@ class SiteImg extends AbstractDB {
 
                 if ($exist->date > 0) {
                     # Image exist
-                    if (isset($ml_camp_ret[$cid])) {
-                        $ml_camp_ret[$cid]['img'] = $exist->id;
-                    }
+
+                    $ml_camp_ret[$cid]['img'] = $exist->id;
+
                     # 2. Check expire                   
                     if ($expire_date > $exist->date) {
                         $data['expired'] = 1;
@@ -135,21 +143,23 @@ class SiteImg extends AbstractDB {
                 # Update
                 $this->db_update($data, $this->db['site_img'], $exist->id);
             } else {
-                if ($debug) {
-                    print 'Append ' . $cid;
-                }
+
                 # Append
                 $link = $this->get_link($cid, $mid, $debug);
                 if ($debug) {
                     print_r($link);
                 }
                 if ($link) {
-                    $link_hash = $this->link_hash($link);
-                    if (isset($ml_camp_ret[$cid])) {
-                        $ml_camp_ret[$cid]['link'] = $link;
-                        $ml_camp_ret[$cid]['link_hash'] = $link_hash;
-                        $ml_camp_ret[$cid]['img'] = 0;
+
+                    if ($debug) {
+                        print 'Append ' . $cid . "\n";
                     }
+                    $link_hash = $this->link_hash($link);
+
+                    $ml_camp_ret[$cid]['link'] = $link;
+                    $ml_camp_ret[$cid]['link_hash'] = $link_hash;
+                    $ml_camp_ret[$cid]['img'] = 0;
+
                     # Add item
                     $data = array(
                         'mid' => $mid,
