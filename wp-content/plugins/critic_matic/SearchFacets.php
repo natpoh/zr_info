@@ -439,7 +439,7 @@ class SearchFacets extends AbstractDB {
         $clear_filters = array();
         if ($filters) {
             foreach ($filters as $fkey => $fvalue) {
-                if (in_array($fkey, $main_filters)==$revers) {
+                if (in_array($fkey, $main_filters) == $revers) {
                     $clear_filters[$fkey] = $fvalue;
                 }
             }
@@ -587,6 +587,13 @@ class SearchFacets extends AbstractDB {
             } else if (isset($this->cs->facet_data['actorsdata']['childs'][$key])) {
                 $value = is_array($value) ? $value : array($value);
                 if ($key == 'actor' || $key == 'actorstar' || $key == 'actormain') {
+                    $type_title = isset($this->cs->facet_data['actorsdata']['childs'][$key]) ? $this->cs->facet_data['actorsdata']['childs'][$key]['title'] : '';
+                    $name_pre = isset($this->cs->facet_data['actorsdata']['childs'][$key]) ? $this->cs->facet_data['actorsdata']['childs'][$key]['name_pre'] : '';
+                    foreach ($value as $slug) {
+                        $name = isset($this->cs->search_filters[$key][$slug]['title']) ? $this->cs->search_filters[$key][$slug]['title'] : $slug;
+                        $tags[] = array('name' => $name, 'type' => $key, 'id' => $slug, 'type_title' => $type_title, 'name_pre' => $name_pre, 'tab' => 'movies', 'minus' => $minus);
+                    }
+                } else if ($key == 'countryall' || $key == 'countrystar' || $key == 'countrymain') {
                     $type_title = isset($this->cs->facet_data['actorsdata']['childs'][$key]) ? $this->cs->facet_data['actorsdata']['childs'][$key]['title'] : '';
                     $name_pre = isset($this->cs->facet_data['actorsdata']['childs'][$key]) ? $this->cs->facet_data['actorsdata']['childs'][$key]['name_pre'] : '';
                     foreach ($value as $slug) {
@@ -2190,6 +2197,7 @@ class SearchFacets extends AbstractDB {
             $tabs = $this->facet_tabs($tabs_arr, $filter, $def_tab, 'cast');
 
             ob_start();
+            $more = false;
             $this->theme_facet_multi($filter, $dates, $title, $more, $ftype, $minus);
 
             // Actors
@@ -2197,7 +2205,7 @@ class SearchFacets extends AbstractDB {
             $data = array();
 
             $filter = $this->cs->facet_data['actorsdata']['childs'][$active_filter]['filter'];
-   
+
             $name_pre = $this->cs->facet_data['actorsdata']['childs'][$filter]['name_pre'];
             $type_title = $this->cs->facet_data['actorsdata']['childs'][$filter]['title'];
             $filter_name = $this->cs->facet_data['actorsdata']['childs'][$filter]['placeholder'];
@@ -2241,6 +2249,55 @@ class SearchFacets extends AbstractDB {
                 $ftype = 'movies';
                 $this->theme_facet_multi_search($filter, $dates, $title, $view_more, $ftype, 0, $filter_name);
             }
+
+            // Country
+            $dates = array();
+            $data = array();
+
+            $filter = $this->cs->facet_data['actorsdata']['race_country'][$active_filter];
+
+            $name_pre = $this->cs->facet_data['actorsdata']['childs'][$filter]['name_pre'];
+            $type_title = $this->cs->facet_data['actorsdata']['childs'][$filter]['title'];
+           
+            $count = 0;
+            if (isset($facets['actorscountry'])) {
+                $data = $facets['actorscountry']['data'];
+                $count = sizeof($data);
+            }
+
+            if ($data) {
+
+                $total = $this->get_meta_total_found($facets['actorscountry']['meta']);
+                $view_more = ($total > $count) ? $total : 0;
+
+                //Get countries
+                $ma = $this->get_ma();
+                $keys = array();
+                foreach ($data as $value) {
+                    $keys[] = $value->id;
+                }
+                $countries = $ma->get_countries_by_ids($keys);
+
+                foreach ($data as $value) {
+                    $key = $value->id;
+                    if (isset($countries[$key])) {
+                        $item = $countries[$key];
+                        if (!$item->name) {
+                            continue;
+                        }
+                        $dates[$item->slug] = array('title' => $item->name, 'count' => $value->cnt, 'name_pre' => $name_pre, 'type_title' => $type_title);                        
+                        
+                    }
+                }
+                ksort($dates);
+            }
+
+            $title = 'Actors Country';
+            $ftype = 'movies';
+            $minus = true;
+            $this->theme_facet_multi($filter, $dates, $title, $view_more, $ftype, $minus);
+
+
             $content = ob_get_contents();
             ob_end_clean();
         } else {

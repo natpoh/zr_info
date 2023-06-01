@@ -12,7 +12,11 @@ class SiteImg extends AbstractDB {
     private $db;
     private $ml_camp = array(        
         22 => array('ekey' => 'douban_rating', 'name' => 'Douban', 'flag' => 'cn', 'link' => 'douban', 'ratmax' => 10, 'multipler' => 10),
+        23 => array('ekey' => 'metacritic_rating', 'name' => 'MetaCritic', 'flag' => 'en', 'ratmax' => 100, 'multipler' => 1),
         24 => array('ekey' => 'kinop_rating', 'name' => 'Kinopoisk', 'flag' => 'ru', 'ratmax' => 10, 'multipler' => 10),
+        27 => array('ekey' => 'animelist_rating', 'name' => 'MyAnimeList', 'flag' => 'jp', 'ratmax' => 10, 'multipler' => 10),
+        36 => array('ekey' => 'eiga_rating', 'name' => 'Eiga', 'flag' => 'jp', 'ratmax' => 5, 'multipler' => 10),
+        38 => array('ekey' => 'moviemeter_rating', 'name' => 'MovieMeter', 'flag' => 'nl', 'ratmax' => 5, 'multipler' => 10),
     );
 
     public function __construct($cm = '') {
@@ -69,7 +73,9 @@ class SiteImg extends AbstractDB {
         if (!$ml_camp_ret) {
             return $ret;
         }
+        
         # 2. Get urls
+        # TODO get expired by movie weight
 
         $expire = 360;
         $urls = $this->get_img_urls_by_mid($mid);

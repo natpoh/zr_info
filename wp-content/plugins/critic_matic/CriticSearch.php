@@ -140,12 +140,10 @@ class CriticSearch extends AbstractDB {
                 'rkp' => array('title' => 'Kinopoisk', 'titlesm' => 'Kinopoisk', 'name_pre' => 'KP ', 'filter_pre' => 'Kinopoisk ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'kinop', 'hide' => 1, 'sorted' => 1,),
                 'rdb' => array('title' => 'Douban', 'titlesm' => 'Douban', 'name_pre' => 'DB ', 'filter_pre' => 'Douban ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'douban', 'hide' => 1, 'sorted' => 1,),
                 'ranl' => array('title' => 'MyAnimeList', 'titlesm' => 'MyAnimeList', 'name_pre' => 'MyAnLi ', 'filter_pre' => 'MyAnLi ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'mal', 'hide' => 1, 'sorted' => 1,),
-                /*
-                'rmm' => array('title' => 'MyAnimeList', 'titlesm' => 'MyAnimeList', 'name_pre' => 'MyAnLi ', 'filter_pre' => 'MyAnLi ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'mal', 'hide' => 1, 'sorted' => 1,),
-                'reiga' => array('title' => 'Eiga', 'titlesm' => 'Eiga', 'name_pre' => 'Eiga ', 'filter_pre' => 'Eiga ', 'max_count' => 110, 'multipler' => 20, 'group' => 'rating', 'icon' => '', 'hide' => 1, 'sorted' => 1,),
-                'rmc' => array('title' => 'MyAnimeList', 'titlesm' => 'MyAnimeList', 'name_pre' => 'MyAnLi ', 'filter_pre' => 'MyAnLi ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'mal', 'hide' => 1, 'sorted' => 1,),
-                'rmu' => array('title' => 'MyAnimeList', 'titlesm' => 'MyAnimeList', 'name_pre' => 'MyAnLi ', 'filter_pre' => 'MyAnLi ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'mal', 'hide' => 1, 'sorted' => 1,),
-                */
+                'rmm' => array('title' => 'MovieMeter', 'titlesm' => 'MovieMeter', 'name_pre' => 'MovieMeter ', 'filter_pre' => 'MovieMeter ', 'max_count' => 60, 'multipler' => 10, 'group' => 'rating', 'icon' => '', 'hide' => 1, 'sorted' => 1,),
+                'reiga' => array('title' => 'Eiga', 'titlesm' => 'Eiga', 'name_pre' => 'Eiga ', 'filter_pre' => 'Eiga ', 'max_count' => 60, 'multipler' => 10, 'group' => 'rating', 'icon' => '', 'hide' => 1, 'sorted' => 1,),
+                'rmc' => array('title' => 'Metacritic MetaScore', 'titlesm' => 'MetaScore', 'name_pre' => 'MetaScore ', 'filter_pre' => 'MetaScore ', 'max_count' => 110, 'multipler' => 1, 'group' => 'rating', 'icon' => '', 'hide' => 1, 'sorted' => 1,),
+                'rmu' => array('title' => 'Metacritic UserScore', 'titlesm' => 'UserScore', 'name_pre' => 'UserScore ', 'filter_pre' => 'UserScore ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => '', 'hide' => 1, 'sorted' => 1,),
                 // 'rfn' => array('title' => '4chan', 'titlesm' => '4chan', 'name_pre' => '4chan ', 'filter_pre' => '4chan ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'fchan', 'hide' => 1, 'sorted' => 1,),
                 'rrev' => array('title' => 'Critic Reviews (beta)', 'titlesm' => 'Critic Reviews', 'name_pre' => 'RW ', 'filter_pre' => 'Reviews ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'zr', 'hide' => 1, 'sorted' => 1,),
             ),
@@ -171,11 +169,21 @@ class CriticSearch extends AbstractDB {
                 'actor' => array('filter' => 'actor_all', 'title' => 'Actor', 'name_pre' => '', 'placeholder' => ''),
                 'actorstar' => array('filter' => 'actor_star', 'title' => 'Actor star', 'name_pre' => 'Star: ', 'placeholder' => 'star'),
                 'actormain' => array('filter' => 'actor_main', 'title' => 'Actor main', 'name_pre' => 'Main: ', 'placeholder' => 'main'),
+                // Actors country
+                'actorscountry' => array('title' => 'Actors Country',),
+                'countryall' => array('filter' => 'countryall', 'title' => 'Actor Country', 'name_pre' => 'Actor Country: ', 'placeholder' => '', 'minus' => 1,),
+                'countrystar' => array('filter' => 'countrystar', 'title' => 'Actor star Country', 'name_pre' => 'Star Country: ', 'placeholder' => 'star', 'minus' => 1,),
+                'countrymain' => array('filter' => 'countrymain', 'title' => 'Actor main Country', 'name_pre' => 'Main Country: ', 'placeholder' => 'main', 'minus' => 1,),
             ),
             'race_gender' => array(
                 'race' => 'gender',
                 'starrace' => 'stargender',
                 'mainrace' => 'maingender',
+            ),
+            'race_country' => array(
+                'race' => 'countryall',
+                'starrace' => 'countrystar',
+                'mainrace' => 'countrymain',
             ),
         ),
         'dirsdata' => array(
@@ -302,6 +310,8 @@ class CriticSearch extends AbstractDB {
                 'canl' => array('title' => 'MyAnimeList', 'titlesm' => 'MyAnimeList', 'name_pre' => 'MyAnLi ', 'filter_pre' => 'MyAnLi ', 'group' => 'pop', 'icon' => 'mal', 'sorted' => 1,),
                 'cfn' => array('title' => '4chan', 'titlesm' => '4chan', 'name_pre' => '4chan ', 'filter_pre' => '4chan ', 'group' => 'pop', 'icon' => 'fchan', 'sorted' => 1,),
                 'pop' => array('title' => 'Reviews', 'titlesm' => 'Reviews', 'name_pre' => 'Reviews ', 'filter_pre' => 'Reviews ', 'group' => 'pop', 'icon' => 'zr', 'sorted' => 1,),
+                'cmm' => array('title' => 'MovieMeter', 'titlesm' => 'MovieMeter', 'name_pre' => 'MovieMeter ', 'filter_pre' => 'MovieMeter ', 'group' => 'pop', 'icon' => '', 'sorted' => 1,),
+                'ceiga' => array('title' => 'Eiga', 'titlesm' => 'Eiga', 'name_pre' => 'Eiga ', 'filter_pre' => 'Eiga ', 'group' => 'pop', 'icon' => '', 'sorted' => 1,),
             ),
         ),
         'mkw' => array(
@@ -1231,7 +1241,7 @@ class CriticSearch extends AbstractDB {
                 if ($dates) {
                     if (!in_array($year, $dates)) {
                         // Year vaild
-                        $year_invalid = true;                        
+                        $year_invalid = true;
                     }
                 }
                 // 2. Find quotes from another movie in title
@@ -2423,6 +2433,16 @@ class CriticSearch extends AbstractDB {
                     $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $this->filter_actor_and . $match
                             . " GROUP BY " . $race_name . " ORDER BY cnt DESC LIMIT 0,$limit";
                 }
+            } else if ($facet == 'actorscountry') {
+                // Cast actor logic
+                $facet_active = $this->get_active_actor_country_facet($filters);
+
+                if (isset($this->facet_data['actorsdata']['childs'][$facet_active])) {
+                    $limit = $expand == $facet_active ? $this->facet_max_limit : $this->facet_limit;
+                    $filters_and = $this->get_filters_query($filters, array($facet_active, 'minus-' . $facet_active));
+                    $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
+                            . " GROUP BY " . $facet_active . " ORDER BY cnt DESC LIMIT 0,$limit";
+                }
             } else if ($facet == 'dirs') {
                 // Directors logic
                 $facet_active = $this->get_active_director_facet($filters);
@@ -2794,6 +2814,14 @@ class CriticSearch extends AbstractDB {
                         $prov = $ma->get_provider_by_slug($slug, true);
                         $this->search_filters[$key][$slug] = array('key' => $prov->pid, 'title' => $prov->name);
                     }
+                } else if ($key == 'countryall' || $key == 'countrystar' || $key == 'countrymain') {
+                    // Actor Country     
+                    $ma = $this->get_ma();
+                    $value = is_array($value) ? $value : array($value);
+                    foreach ($value as $slug) {
+                        $country = $ma->get_country_by_slug($slug, true);
+                        $this->search_filters[$key][$slug] = array('key' => $country->id, 'title' => $country->name);
+                    }
                 } else if ($key == 'actor' || $key == 'actorstar' || $key == 'actormain') {
                     // Actor       
                     $value = is_array($value) ? $value : array($value);
@@ -2941,6 +2969,10 @@ class CriticSearch extends AbstractDB {
                             // Actor       
                             $actor_filter = $this->facet_data['actorsdata']['childs'][$key]['filter'];
                             $filters_and .= $this->filter_multi_value($actor_filter, $value);
+                        } else if ($key == 'countryall' || $key == 'countrystar' || $key == 'countrymain') {
+                            // Actor Country
+                            $actor_filter = $this->facet_data['actorsdata']['childs'][$key]['filter'];
+                            $filters_and .= $this->filter_multi_value($actor_filter, $value, true, $minus);
                         } else {
                             // Race
                             // Gender  
@@ -3225,6 +3257,12 @@ class CriticSearch extends AbstractDB {
         $race = $this->get_active_race_facet($filters);
         $gender = $this->facet_data['actorsdata']['race_gender'][$race];
         return $gender;
+    }
+
+    public function get_active_actor_country_facet($filters) {
+        $race = $this->get_active_race_facet($filters);
+        $country = $this->facet_data['actorsdata']['race_country'][$race];
+        return $country;
     }
 
     public function get_active_gender_dir_facet($filters) {
