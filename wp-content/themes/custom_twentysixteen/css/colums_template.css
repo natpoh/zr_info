@@ -634,6 +634,7 @@ body.theme_dark .inner_content.secton_gray {
     gap: 10px;
     box-shadow: 1px 1px 7px #a0a0a0;
     border-radius: 4px;
+    flex-wrap: wrap;
 }
 #global_zeitgeist  .in_fl_cnt{
     width: 100%;

@@ -1464,7 +1464,65 @@ function word_cloud(id)
     // });
 }
 
+function global_zeitgeist_content(data)
+{
 
+    console.log(data);
+    let result ='';
+
+    if (data.result)
+    {
+    let gzobj = data.result;
+
+    for (var key in gzobj) {
+
+        if (gzobj.hasOwnProperty(key)) {
+            let item = gzobj[key];
+
+            if (item.link) {
+                if (!item.multipler) {
+                    item.multipler = 10;
+                }
+
+
+                let rating = item.rating;
+
+
+                if (rating > item.ratmax) {
+                    rating = rating / item.multipler;
+                }
+                if (rating) {
+                    rating = rating + '/' + item.ratmax;
+                } else {
+                    rating = '';
+                }
+                let img_container = '';
+
+
+                if (item.img) {
+                    img_container = '<div class="gl_image"><img src="https://info.antiwoketomatoes.com/wp-content/uploads/sites_img/' + item.img + '.png" alt="' + item.name + '"></div>';
+                }
+                let flag='';
+                if (item.flag) {
+
+                    flag = `<img style="width:40px;height:40px" src="https://zeitgeistreviews.com/wp-content/themes/custom_twentysixteen/images/flags/4x3/${item.flag}.svg">`;
+                }
+
+                result += `<a target="_blank" href="${item.link}" class="gl_zr_block" id="${item.ekey}"><p class="gl_zr_title">${flag+item.name}</p><div class="gl_rating">${rating}</div>${img_container}</a>`;
+            }
+
+        }
+    }
+
+    }
+    if (data.other)
+    {
+        result +=data.other;
+    }
+
+
+return result;
+}
 
 function load_ajax_block(block_id) {
 
@@ -1552,7 +1610,7 @@ function load_ajax_block(block_id) {
         url = 'https://newsfilter.biz/service/ns_related.php?pid=' + parent_id;
     }
     if (block_id == 'global_zeitgeist') {
-        url = 'https://info.antiwoketomatoes.com/wp-content/plugins/critic_matic/cron/get_images.php?p=D_23_2D0FS0-vbb&mid=' + parent_id;
+        url = 'https://info.antiwoketomatoes.com/service/global_consensus.php&mid=' + parent_id;
     }
 
     jQuery.ajax({
@@ -1646,9 +1704,14 @@ function load_ajax_block(block_id) {
             }
             else if (block_id == 'global_zeitgeist') {
                 if (data) {
+                    let gzobj = JSON.parse(data);
 
 
-                    jQuery('#' + block_id).html(data);
+                   let gz_content =  global_zeitgeist_content(gzobj);
+
+
+
+                    jQuery('#' + block_id).html(gz_content);
 
                 }
             }
