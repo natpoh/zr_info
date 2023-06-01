@@ -232,8 +232,19 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         $exist = $this->db_fetch_row($sql);
         $data['last_upd'] = $this->curr_time();
         if ($exist) {
-            // Calculate total rating            
-            $rating_names = array('kinop_rating', 'douban_rating', 'animelist_rating', 'imdb_rating', 'rt_rating', 'rt_aurating');
+            // Calculate total rating                         
+            $rating_names = array(
+                'kinop_rating', 
+                'douban_rating', 
+                'animelist_rating', 
+                'imdb_rating', 
+                'rt_rating', 
+                'rt_aurating',
+                'eiga_rating',
+                'moviemeter_rating',
+                'metacritic_rating',
+                'metacritic_userscore',
+                );
             foreach ($rating_names as $rn) {
                 if (isset($data[$rn])) {
                     $exist->$rn = $data[$rn];
@@ -244,7 +255,18 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
 
             // Calculate total votes
 
-            $count_names = array('kinop_count', 'douban_count', 'animelist_count', 'imdb_count', 'rt_count', 'rt_aucount', 'fchan_posts_found', 'reviews_posts');
+            $count_names = array(
+                'kinop_count', 
+                'douban_count', 
+                'animelist_count', 
+                'imdb_count', 
+                'rt_count', 
+                'rt_aucount', 
+                'fchan_posts_found', 
+                'reviews_posts',
+                'eiga_count',
+                'moviemeter_count',
+                );
             $total_count = 0;
             foreach ($count_names as $rn) {
                 if (isset($data[$rn])) {

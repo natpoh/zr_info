@@ -94,7 +94,7 @@ class MoviesCustomHooks {
                 'rating' => 'rating',
                 'count' => 'count'
             );
-        }  else if ($campaign->id == 27) {
+        } else if ($campaign->id == 27) {
             // animelist
             $curr_camp = 'animelist';
             $score_opt = array(
@@ -112,6 +112,13 @@ class MoviesCustomHooks {
                 'tomatometerCount' => 'count',
                 'audienceScore' => 'aurating',
                 'audienceCount' => 'aucount',
+            );
+        } else if ($campaign->id == 23) {
+            // metacritic
+            $curr_camp = 'metacritic';
+            $score_opt = array(
+                'metascore' => 'rating',
+                'userscore' => 'userscore'
             );
         }
 
@@ -149,7 +156,7 @@ class MoviesCustomHooks {
                 }
 
                 $camp_count = str_replace(',', '', $to_update['count']);
-                
+
                 $data[$curr_camp . '_rating'] = (int) $camp_rating;
                 $data[$curr_camp . '_count'] = (int) $camp_count;
                 $data[$curr_camp . '_date'] = $this->mp->curr_time();
@@ -188,6 +195,26 @@ class MoviesCustomHooks {
                 if ($data['total_count'] > 0 || $data['total_rating'] > 0) {
                     $update_rating = true;
                 }
+            } else if ($curr_camp == 'metacritic') {
+                
+                $rating =  (int) $to_update['rating'];
+                $userscore = (int) ($to_update['userscore'] * 10);
+                // metacritic
+                $data[$curr_camp . '_rating'] = $rating;
+                $data[$curr_camp . '_userscore'] = $userscore;
+                $data[$curr_camp . '_date'] = $this->mp->curr_time();
+                
+                $total_rating=0;
+                if ($rating && $userscore){
+                    $total_rating = ($rating + $userscore)/2;
+                } else if ($userscore){
+                    $total_rating = $userscore;
+                } else {
+                    $total_rating = $rating;
+                }
+                
+                // Total
+                $data['total_rating'] = $total_rating;
             }
 
             if ($debug) {
