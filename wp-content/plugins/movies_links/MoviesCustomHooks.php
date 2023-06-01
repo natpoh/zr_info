@@ -53,7 +53,7 @@ class MoviesCustomHooks {
 
     private function update_erating($post, $options, $campaign, $debug = false) {
 
-        $simple_camps = array('kinop', 'douban', 'imdb', 'animelist', 'eiga');
+        $simple_camps = array('kinop', 'douban', 'imdb', 'animelist', 'eiga', 'moviemeter');
 
         // Kinopoisk
         $curr_camp = '';
@@ -86,7 +86,15 @@ class MoviesCustomHooks {
                 'rating' => 'rating',
                 'count' => 'count'
             );
-        } else if ($campaign->id == 27) {
+        } else if ($campaign->id == 38) {
+            // moviemeter
+            $curr_camp = 'moviemeter';
+            $one_five = true;
+            $score_opt = array(
+                'rating' => 'rating',
+                'count' => 'count'
+            );
+        }  else if ($campaign->id == 27) {
             // animelist
             $curr_camp = 'animelist';
             $score_opt = array(
