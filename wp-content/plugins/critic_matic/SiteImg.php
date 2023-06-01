@@ -145,33 +145,37 @@ class SiteImg extends AbstractDB {
             } else {
 
                 # Append
-                $link = $this->get_link($cid, $mid, $debug);
-                if ($debug) {
-                    print_r($link);
-                }
-                if ($link) {
 
+                if ($ml_camp_ret[$cid]['rating'] != -1) {
+
+                    $link = $this->get_link($cid, $mid, $debug);
                     if ($debug) {
-                        print 'Append ' . $cid . "\n";
+                        print_r($link);
                     }
-                    $link_hash = $this->link_hash($link);
+                    if ($link) {
 
-                    $ml_camp_ret[$cid]['link'] = $link;
-                    $ml_camp_ret[$cid]['link_hash'] = $link_hash;
-                    $ml_camp_ret[$cid]['img'] = 0;
+                        if ($debug) {
+                            print 'Append ' . $cid . "\n";
+                        }
+                        $link_hash = $this->link_hash($link);
 
-                    # Add item
-                    $data = array(
-                        'mid' => $mid,
-                        'mlcid' => $cid,
-                        'counter' => 1,
-                        'link_hash' => $link_hash,
-                        'link' => $link,
-                    );
-                    if ($debug) {
-                        print_r($data);
+                        $ml_camp_ret[$cid]['link'] = $link;
+                        $ml_camp_ret[$cid]['link_hash'] = $link_hash;
+                        $ml_camp_ret[$cid]['img'] = 0;
+
+                        # Add item
+                        $data = array(
+                            'mid' => $mid,
+                            'mlcid' => $cid,
+                            'counter' => 1,
+                            'link_hash' => $link_hash,
+                            'link' => $link,
+                        );
+                        if ($debug) {
+                            print_r($data);
+                        }
+                        $this->db_insert($data, $this->db['site_img']);
                     }
-                    $this->db_insert($data, $this->db['site_img']);
                 }
             }
         }
@@ -180,7 +184,21 @@ class SiteImg extends AbstractDB {
             print_r($ml_camp_ret);
         }
 
-        return $ml_camp_ret;
+        $to_ret = array();
+
+        if ($ml_camp_ret) {
+            foreach ($ml_camp_ret as $key => $value) {
+                if ($value['rating'] != -1) {
+                    $to_ret[$key] = $value;
+                }
+            }
+        }
+
+        if ($debug) {
+            print_r($to_ret);
+        }
+
+        return $to_ret;
     }
 
     public function get_movie_erating($mid) {
