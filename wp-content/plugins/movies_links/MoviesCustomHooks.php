@@ -206,7 +206,7 @@ class MoviesCustomHooks {
                 
                 $total_rating=0;
                 if ($rating && $userscore){
-                    $total_rating = ($rating + $userscore)/2;
+                    $total_rating = (int) ($rating + $userscore)/2;
                 } else if ($userscore){
                     $total_rating = $userscore;
                 } else {
