@@ -915,18 +915,16 @@ class CriticTransit extends AbstractDB {
                         }
                         // Add genres
                         foreach ($to_add as $name) {
-                            $gid = $ma->get_or_create_genre_by_name($name,true);
-                            if ($ma->add_movie_genre($mid, $gid)){
+                            $gid = $ma->get_or_create_genre_by_name($name, true);
+                            if ($ma->add_movie_genre($mid, $gid)) {
                                 if ($debug) {
-                                print "Add move genre: $name, $mid, $gid\n";
-                            }
+                                    print "Add move genre: $name, $mid, $gid\n";
+                                }
                             } else {
                                 if ($debug) {
-                                print "Move genre already exist: $name, $mid, $gid\n";
+                                    print "Move genre already exist: $name, $mid, $gid\n";
+                                }
                             }
-                            }
-
-                            
                         }
                     }
                 }

@@ -53,10 +53,11 @@ class MoviesCustomHooks {
 
     private function update_erating($post, $options, $campaign, $debug = false) {
 
-        $simple_camps = array('kinop', 'douban', 'imdb', 'animelist');
+        $simple_camps = array('kinop', 'douban', 'imdb', 'animelist', 'eiga');
 
         // Kinopoisk
         $curr_camp = '';
+        $one_five = false;
         if ($campaign->id == 24) {
             $curr_camp = 'kinop';
             $score_opt = array(
@@ -73,6 +74,14 @@ class MoviesCustomHooks {
         } else if ($campaign->id == 18) {
             // douban
             $curr_camp = 'imdb';
+            $score_opt = array(
+                'rating' => 'rating',
+                'count' => 'count'
+            );
+        } else if ($campaign->id == 36) {
+            // eiga
+            $curr_camp = 'eiga';
+            $one_five = true;
             $score_opt = array(
                 'rating' => 'rating',
                 'count' => 'count'
@@ -113,9 +122,28 @@ class MoviesCustomHooks {
             $data = array();
 
             if (in_array($curr_camp, $simple_camps)) {
-                // Update rating            
-                $data[$curr_camp . '_rating'] = (int) ($to_update['rating'] * 10);
-                $data[$curr_camp . '_count'] = (int) str_replace(',', '', $to_update['count']);
+                // Update rating     
+                $camp_rating = $to_update['rating'] * 10;
+                if ($one_five) {
+                    /* 1*10 = 10
+                     * 5*10 = 50
+                     * Example ratings                     
+                     * 10-10 = 1 * 2,5 = 0
+                     * 20-10 = 10 * 2,5 = 25
+                     * 30-10 = 20 * 2,5 = 50
+                     * 40-10 = 30 * 2,5 = 75
+                     * 50-10 = 40 * 2,5 = 100
+                     */
+                    $camp_rating = ($camp_rating - 10) * 2.5;
+                    if ($camp_rating < 0) {
+                        $camp_rating = 0;
+                    }
+                }
+
+                $camp_count = str_replace(',', '', $to_update['count']);
+                
+                $data[$curr_camp . '_rating'] = (int) $camp_rating;
+                $data[$curr_camp . '_count'] = (int) $camp_count;
                 $data[$curr_camp . '_date'] = $this->mp->curr_time();
                 // Total
                 $data['total_count'] = $data[$curr_camp . '_count'];
@@ -260,8 +288,8 @@ class MoviesCustomHooks {
                             if ($debug) {
                                 print "Total count: {$total_count}. Try to get data from regexp\n";
                             }
-                            
-                            $total_match=0;
+
+                            $total_match = 0;
 
                             if (preg_match('/<div data-testid="sub-section-' . $name . '".*<\/ul><\/div><\/section>/Us', $code, $match)) {
                                 if (preg_match_all('/<a class="ipc-metadata-list-item__label[^>]+href="\/company\/([co0-9]+)\?[^>]+">([^<]+)<\/a>(<div class="ipc-metadata-list-item__content-container">.*<\/div>)/Us', $match[0], $match_link)) {
