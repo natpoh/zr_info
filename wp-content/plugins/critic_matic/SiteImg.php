@@ -10,7 +10,7 @@ class SiteImg extends AbstractDB {
     private $cm;
     private $mp;
     private $db;
-    private $ml_camp = array(        
+    private $ml_camp = array(
         22 => array('ekey' => 'douban_rating', 'name' => 'Douban', 'flag' => 'cn', 'link' => 'douban', 'ratmax' => 10, 'multipler' => 10),
         23 => array('ekey' => 'metacritic_rating', 'name' => 'MetaCritic', 'flag' => 'glb', 'ratmax' => 100, 'multipler' => 1),
         24 => array('ekey' => 'kinop_rating', 'name' => 'Kinopoisk', 'flag' => 'ru', 'ratmax' => 10, 'multipler' => 10),
@@ -54,13 +54,13 @@ class SiteImg extends AbstractDB {
         if (!$erating) {
             return $ret;
         }
-        
-        
+
+
         if ($debug) {
             print_r($erating);
         }
 
-        $ml_camp_ret = $this->ml_camp;
+        $ml_camp_ret = array();
         foreach ($this->ml_camp as $cid => $item) {
 
             $ekey = $item['ekey'];
@@ -78,7 +78,7 @@ class SiteImg extends AbstractDB {
         if (!$ml_camp_ret) {
             return $ret;
         }
-        
+
         # 2. Get urls
         # TODO get expired by movie weight
 
@@ -107,10 +107,11 @@ class SiteImg extends AbstractDB {
 
                 $exist = $exists[$cid];
 
-                $ml_camp_ret[$cid]['link'] = $exist->link;
-                $ml_camp_ret[$cid]['link_hash'] = $exist->link_hash;
-                $ml_camp_ret[$cid]['img'] = 0;
-
+                if (isset($ml_camp_ret[$cid])) {
+                    $ml_camp_ret[$cid]['link'] = $exist->link;
+                    $ml_camp_ret[$cid]['link_hash'] = $exist->link_hash;
+                    $ml_camp_ret[$cid]['img'] = 0;
+                }
                 $data = array(
                     'counter' => $exist->counter + 1,
                 );
@@ -118,7 +119,9 @@ class SiteImg extends AbstractDB {
 
                 if ($exist->date > 0) {
                     # Image exist
-                    $ml_camp_ret[$cid]['img'] = $exist->id;
+                    if (isset($ml_camp_ret[$cid])) {
+                        $ml_camp_ret[$cid]['img'] = $exist->id;
+                    }
                     # 2. Check expire                   
                     if ($expire_date > $exist->date) {
                         $data['expired'] = 1;
@@ -135,10 +138,11 @@ class SiteImg extends AbstractDB {
                 }
                 if ($link) {
                     $link_hash = $this->link_hash($link);
-                    $ml_camp_ret[$cid]['link'] = $link;
-                    $ml_camp_ret[$cid]['link_hash'] = $link_hash;
-                    $ml_camp_ret[$cid]['img'] = 0;
-
+                    if (isset($ml_camp_ret[$cid])) {
+                        $ml_camp_ret[$cid]['link'] = $link;
+                        $ml_camp_ret[$cid]['link_hash'] = $link_hash;
+                        $ml_camp_ret[$cid]['img'] = 0;
+                    }
                     # Add item
                     $data = array(
                         'mid' => $mid,
@@ -154,8 +158,8 @@ class SiteImg extends AbstractDB {
                 }
             }
         }
-        
-        if ($debug){
+
+        if ($debug) {
             print_r($ml_camp_ret);
         }
 
@@ -187,15 +191,14 @@ class SiteImg extends AbstractDB {
                 if ($post) {
                     $po = $mp->get_post_options($post);
                     if (isset($po['url'])) {
-                        
+
                         $url = $po['url'];
-                        
+
                         # Translate link
                         $turl = str_replace('https://www.kinopoisk.ru/', 'https://www-kinopoisk-ru.translate.goog/', $url);
-                        $turl = $turl.'reviews/?_x_tr_sl=ru&_x_tr_tl=en&_x_tr_hl=en';
-                        
+                        $turl = $turl . 'reviews/?_x_tr_sl=ru&_x_tr_tl=en&_x_tr_hl=en';
+
                         $url = $turl;
-                        
                     }
                 }
             } else {
