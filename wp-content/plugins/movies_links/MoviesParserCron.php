@@ -109,6 +109,15 @@ class MoviesParserCron extends MoviesAbstractDB {
         } else if ($type_name == 'parsing') {
             if ($campaign->type == 2) {
                 $count = $this->proccess_parsing_create_urls($campaign, $options, false, $debug);
+                if ($count) {
+                    // Unpaused child campaign  
+                    $lo = $options['links'];
+                    $cid_dst = $lo['camp'];
+                    if ($cid_dst) {
+                        $child_campaign = $this->mp->get_campaign($cid_dst);
+                        $this->start_paused_module($child_campaign, 'arhive');
+                    }
+                }
             } else {
                 $count = $this->proccess_parsing($campaign, $options, false, $debug, $custom_url_id);
             }
@@ -1045,13 +1054,13 @@ class MoviesParserCron extends MoviesAbstractDB {
                     if ($debug) {
                         print_r(array($pid, 'Movie not exist. Trash urls', $urls));
                     }
-                    if ($urls){
+                    if ($urls) {
                         foreach ($urls as $url) {
-                             $data = array(
-                                 'status'=>2,
-                             );
-                             $this->mp->update_url($data, $url->id);
-                         }
+                            $data = array(
+                                'status' => 2,
+                            );
+                            $this->mp->update_url($data, $url->id);
+                        }
                     }
                 }
             }
