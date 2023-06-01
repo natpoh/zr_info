@@ -113,7 +113,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         $result = $this->db_get_var($sql);
         return $result;
     }
-    
+
     public function update_movie_rating($mid = 0, $fields = array()) {
         $update = array();
         if ($fields) {
@@ -234,17 +234,17 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         if ($exist) {
             // Calculate total rating                         
             $rating_names = array(
-                'kinop_rating', 
-                'douban_rating', 
-                'animelist_rating', 
-                'imdb_rating', 
-                'rt_rating', 
+                'kinop_rating',
+                'douban_rating',
+                'animelist_rating',
+                'imdb_rating',
+                'rt_rating',
                 'rt_aurating',
                 'eiga_rating',
                 'moviemeter_rating',
                 'metacritic_rating',
                 'metacritic_userscore',
-                );
+            );
             foreach ($rating_names as $rn) {
                 if (isset($data[$rn])) {
                     $exist->$rn = $data[$rn];
@@ -256,17 +256,17 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             // Calculate total votes
 
             $count_names = array(
-                'kinop_count', 
-                'douban_count', 
-                'animelist_count', 
-                'imdb_count', 
-                'rt_count', 
-                'rt_aucount', 
-                'fchan_posts_found', 
+                'kinop_count',
+                'douban_count',
+                'animelist_count',
+                'imdb_count',
+                'rt_count',
+                'rt_aucount',
+                'fchan_posts_found',
                 'reviews_posts',
                 'eiga_count',
                 'moviemeter_count',
-                );
+            );
             $total_count = 0;
             foreach ($count_names as $rn) {
                 if (isset($data[$rn])) {
@@ -293,6 +293,27 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         }
     }
 
+    public function five_to_ten($camp_rating = 0) {
+
+        /* Update 10-50 rating to 0-100
+         * 
+         * 1*10 = 10
+         * 5*10 = 50
+         * Example ratings                     
+         * 10-10 = 1 * 2,5 = 0
+         * 20-10 = 10 * 2,5 = 25
+         * 30-10 = 20 * 2,5 = 50
+         * 40-10 = 30 * 2,5 = 75
+         * 50-10 = 40 * 2,5 = 100
+         */
+        $camp_rating = ($camp_rating - 10) * 2.5;
+        if ($camp_rating < 0) {
+            $camp_rating = 0;
+        }
+
+        return $camp_rating;
+    }
+
     public function calculate_total($post) {
         /*
          * kinop_result
@@ -301,6 +322,10 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
          * reviews_result
          * total_rating
          * 'kinop_rating', 'douban_rating', 'animelist_rating', 'imdb_rating', 'rt_rating', 'rt_aurating'
+         * 'eiga_rating',
+          'moviemeter_rating',
+          'metacritic_rating',
+          'metacritic_userscore',
          */
         $total = 0;
         $i = 0;
@@ -326,6 +351,22 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         }
         if ($post->rt_aurating) {
             $total += $post->rt_aurating;
+            $i += 1;
+        }
+        if ($post->eiga_rating) {
+            $total += $this->five_to_ten($post->eiga_rating);
+            $i += 1;
+        }
+        if ($post->moviemeter_rating) {
+            $total += $this->five_to_ten($post->moviemeter_rating);
+            $i += 1;
+        }
+        if ($post->metacritic_rating) {
+            $total += $post->metacritic_rating;
+            $i += 1;
+        }
+        if ($post->metacritic_userscore) {
+            $total += $post->metacritic_userscore;
             $i += 1;
         }
         $total_result = (int) round($total / $i, 0);

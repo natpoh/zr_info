@@ -135,24 +135,15 @@ class MoviesCustomHooks {
             $update_rating = false;
 
             $data = array();
+            $ma = $this->ml->get_ma();
 
             if (in_array($curr_camp, $simple_camps)) {
                 // Update rating     
                 $camp_rating = $to_update['rating'] * 10;
+                $total_rating = $camp_rating;
+                 
                 if ($one_five) {
-                    /* 1*10 = 10
-                     * 5*10 = 50
-                     * Example ratings                     
-                     * 10-10 = 1 * 2,5 = 0
-                     * 20-10 = 10 * 2,5 = 25
-                     * 30-10 = 20 * 2,5 = 50
-                     * 40-10 = 30 * 2,5 = 75
-                     * 50-10 = 40 * 2,5 = 100
-                     */
-                    $camp_rating = ($camp_rating - 10) * 2.5;
-                    if ($camp_rating < 0) {
-                        $camp_rating = 0;
-                    }
+                    $total_rating = $ma->five_to_ten($total_rating);
                 }
 
                 $camp_count = str_replace(',', '', $to_update['count']);
@@ -162,7 +153,7 @@ class MoviesCustomHooks {
                 $data[$curr_camp . '_date'] = $this->mp->curr_time();
                 // Total
                 $data['total_count'] = $data[$curr_camp . '_count'];
-                $data['total_rating'] = $data[$curr_camp . '_rating'];
+                $data['total_rating'] = (int) $total_rating;
 
                 if ($data['total_count'] > 0 || $data['total_rating'] > 0) {
                     $update_rating = true;
@@ -196,26 +187,26 @@ class MoviesCustomHooks {
                     $update_rating = true;
                 }
             } else if ($curr_camp == 'metacritic') {
-                
-                $rating =  (int) $to_update['rating'];
+
+                $rating = (int) $to_update['rating'];
                 $userscore = (int) ($to_update['userscore'] * 10);
                 // metacritic
                 $data[$curr_camp . '_rating'] = $rating;
                 $data[$curr_camp . '_userscore'] = $userscore;
                 $data[$curr_camp . '_date'] = $this->mp->curr_time();
-                
-                $total_rating=0;
-                if ($rating && $userscore){
-                    $total_rating = (int) ($rating + $userscore)/2;
-                } else if ($userscore){
+
+                $total_rating = 0;
+                if ($rating && $userscore) {
+                    $total_rating = (int) ($rating + $userscore) / 2;
+                } else if ($userscore) {
                     $total_rating = $userscore;
                 } else {
                     $total_rating = $rating;
                 }
-                
+
                 // Total
                 $data['total_rating'] = $total_rating;
-                
+
                 if ($data['total_rating'] > 0) {
                     $update_rating = true;
                 }
@@ -226,11 +217,13 @@ class MoviesCustomHooks {
             }
 
             if ($update_rating) {
-                $ma = $this->ml->get_ma();
+                
                 $ma->update_erating($post->top_movie, $data);
             }
         }
     }
+
+
 
     private function update_franchises($post, $options, $campaign, $debug = false) {
         if ($campaign->id == 33) {
