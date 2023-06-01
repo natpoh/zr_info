@@ -196,7 +196,7 @@ class SiteImg extends AbstractDB {
 
                         # Translate link
                         $turl = str_replace('https://www.kinopoisk.ru/', 'https://www-kinopoisk-ru.translate.goog/', $url);
-                        $turl = $turl . 'reviews/?_x_tr_sl=ru&_x_tr_tl=en&_x_tr_hl=en';
+                        $turl = $turl . 'votes/?_x_tr_sl=ru&_x_tr_tl=en&_x_tr_hl=en';
 
                         $url = $turl;
                     }
