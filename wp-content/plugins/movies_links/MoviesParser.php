@@ -570,6 +570,12 @@ class MoviesParser extends MoviesAbstractDB {
         return $result;
     }
 
+    public function get_url_by_top_movie($mid = 0, $cid = 0) {
+        $sql = sprintf("SELECT u.id, u.pid, u.link, u.link_hash, p.top_movie, p.options FROM {$this->db['url']} u INNER JOIN {$this->db['posts']} p ON p.uid = u.id WHERE u.cid = %d AND p.top_movie=%d", (int) $cid, (int) $mid);       
+        $result = $this->db_fetch_row($sql);
+        return $result;
+    }
+    
     public function update_urls_status($id, $status) {
         $sql = sprintf("UPDATE {$this->db['url']} SET status=%d WHERE id = %d", (int) $status, (int) $id);
         $this->db_query($sql);
@@ -3542,8 +3548,8 @@ class MoviesParser extends MoviesAbstractDB {
 
     public function get_all_movie_urls_by_pid($pid) {
         $query = sprintf("SELECT u.id FROM {$this->db['url']} u "
-        . "INNER JOIN {$this->db['campaign']} c ON c.id = u.cid "
-        . "WHERE c.type!=1 AND u.pid=%d AND u.status!=2", $pid);
+                . "INNER JOIN {$this->db['campaign']} c ON c.id = u.cid "
+                . "WHERE c.type!=1 AND u.pid=%d AND u.status!=2", $pid);
         $result = $this->db_results($query);
         return $result;
     }

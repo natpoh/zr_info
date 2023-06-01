@@ -104,9 +104,9 @@ class SiteImg extends AbstractDB {
 
         foreach ($this->ml_camp as $cid => $item) {
             if (isset($exists[$cid])) {
-                
-                if($debug){
-                    print 'Update '.$cid;
+
+                if ($debug) {
+                    print 'Update ' . $cid;
                 }
 
                 $exist = $exists[$cid];
@@ -135,8 +135,8 @@ class SiteImg extends AbstractDB {
                 # Update
                 $this->db_update($data, $this->db['site_img'], $exist->id);
             } else {
-                if($debug){
-                    print 'Append '.$cid;
+                if ($debug) {
+                    print 'Append ' . $cid;
                 }
                 # Append
                 $link = $this->get_link($cid, $mid, $debug);
@@ -181,7 +181,7 @@ class SiteImg extends AbstractDB {
 
     public function get_link($cid, $mid, $debug = false) {
         $mp = $this->get_mp();
-        $url_data = $mp->get_url_by_mid($mid, $cid);
+        $url_data = $mp->get_url_by_top_movie($mid, $cid);
 
         if ($debug) {
             print_r($url_data);
@@ -191,22 +191,13 @@ class SiteImg extends AbstractDB {
         if ($url_data) {
             if ($cid == 24) {
                 # Kinopoisk logic
-                $post = $mp->get_post_by_uid($url_data->id);
-                if ($debug) {
-                    print_r($post);
-                }
-                if ($post) {
-                    $po = $mp->get_post_options($post);
-                    if (isset($po['url'])) {
-
-                        $url = $po['url'];
-
-                        # Translate link
-                        $turl = str_replace('https://www.kinopoisk.ru/', 'https://www-kinopoisk-ru.translate.goog/', $url);
-                        $turl = $turl . 'votes/?_x_tr_sl=ru&_x_tr_tl=en&_x_tr_hl=en';
-
-                        $url = $turl;
-                    }
+                $po = $mp->get_post_options($url_data);
+                if (isset($po['url'])) {
+                    $url = $po['url'];
+                    # Translate link
+                    $turl = str_replace('https://www.kinopoisk.ru/', 'https://www-kinopoisk-ru.translate.goog/', $url);
+                    $turl = $turl . 'votes/?_x_tr_sl=ru&_x_tr_tl=en&_x_tr_hl=en';
+                    $url = $turl;
                 }
             } else {
                 # Other
