@@ -104,6 +104,10 @@ class SiteImg extends AbstractDB {
 
         foreach ($this->ml_camp as $cid => $item) {
             if (isset($exists[$cid])) {
+                
+                if($debug){
+                    print 'Update '.$cid;
+                }
 
                 $exist = $exists[$cid];
 
@@ -131,6 +135,9 @@ class SiteImg extends AbstractDB {
                 # Update
                 $this->db_update($data, $this->db['site_img'], $exist->id);
             } else {
+                if($debug){
+                    print 'Append '.$cid;
+                }
                 # Append
                 $link = $this->get_link($cid, $mid, $debug);
                 if ($debug) {
