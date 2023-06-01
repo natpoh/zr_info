@@ -1,3 +1,6 @@
+1.0.98 - 31.05.2022
+No reset filters on type a new keyword
+
 1.0.97 - 26.05.2022
 Cancel search load if click to new item
 

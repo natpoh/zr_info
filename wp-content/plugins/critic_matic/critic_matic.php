@@ -18,7 +18,7 @@ if (!function_exists('add_action')) {
 define('CRITIC_MATIC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CRITIC_MATIC_PLUGIN_URL', plugin_dir_url(__FILE__));
 
-$version = '1.0.97';
+$version = '1.0.98';
 if (defined('LASTVERSION')) {
     define('CRITIC_MATIC_VERSION', $version . LASTVERSION);
 } else {
@@ -555,11 +555,11 @@ function critic_matic_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
-    
-    
+
+
     $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_authors` ADD `avatar` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     critic_matic_create_index_an(array('status', 'type', 'name', 'wp_uid', 'show_type', 'avatar'), $table_prefix . "critic_matic_authors");
 
     // Authors meta
@@ -1149,37 +1149,28 @@ function critic_matic_plugin_activation() {
     critic_matic_create_index_an(array('weight', 'name'), "data_words_weight");
 
     /*
-     * kinop_rating: 0-100
-     * kinop_result: 1-5
+     * kinop_rating: 0-100 
      * douban_rating: 0-100
-     * douban_result: 1-5
      * fchan_rating: 0-100
-     * fchan_result: 1-5
-     * total_rating: 1-5
      */
     $sql = "CREATE TABLE IF NOT EXISTS  `data_movie_erating`(
 				`id` int(11) unsigned NOT NULL auto_increment,
                                 `movie_id` int(11) NOT NULL DEFAULT '0', 
                                 `date` int(11) NOT NULL DEFAULT '0',  
                                 `last_upd` int(11) NOT NULL DEFAULT '0', 
-                                `kinop_rating` int(11) NOT NULL DEFAULT '0',
-                                `kinop_result` int(11) NOT NULL DEFAULT '0',
-                                `kinop_date` int(11) NOT NULL DEFAULT '0',
-                                `douban_rating` int(11) NOT NULL DEFAULT '0', 
-                                `douban_result` int(11) NOT NULL DEFAULT '0', 
-                                `douban_date` int(11) NOT NULL DEFAULT '0', 
-                                `fchan_rating` int(11) NOT NULL DEFAULT '0', 
-                                `fchan_result` int(11) NOT NULL DEFAULT '0', 
-                                `fchan_posts` int(11) NOT NULL DEFAULT '0', 
-                                `fchan_date` int(11) NOT NULL DEFAULT '0', 
-                                `reviews_rating` int(11) NOT NULL DEFAULT '0', 
-                                `reviews_result` int(11) NOT NULL DEFAULT '0', 
-                                `reviews_posts` int(11) NOT NULL DEFAULT '0', 
-                                `reviews_date` int(11) NOT NULL DEFAULT '0', 
-                                `total_rating` int(11) NOT NULL DEFAULT '0', 
-                                `fchan_posts_found` int(11) NOT NULL DEFAULT '0',
+                                `kinop_rating` int(11) NOT NULL DEFAULT '0',                             
                                 `kinop_count` int(11) NOT NULL DEFAULT '0',
+                                `kinop_date` int(11) NOT NULL DEFAULT '0',                                 
+                                `douban_rating` int(11) NOT NULL DEFAULT '0',                               
                                 `douban_count` int(11) NOT NULL DEFAULT '0',
+                                `douban_date` int(11) NOT NULL DEFAULT '0',                                 
+                                `fchan_rating` int(11) NOT NULL DEFAULT '0',                                
+                                `fchan_posts` int(11) NOT NULL DEFAULT '0', 
+                                `fchan_posts_found` int(11) NOT NULL DEFAULT '0',
+                                `fchan_date` int(11) NOT NULL DEFAULT '0',                                 
+                                `reviews_rating` int(11) NOT NULL DEFAULT '0',                                 
+                                `reviews_posts` int(11) NOT NULL DEFAULT '0', 
+                                `reviews_date` int(11) NOT NULL DEFAULT '0',
                                 `animelist_rating` int(11) NOT NULL DEFAULT '0',
                                 `animelist_count` int(11) NOT NULL DEFAULT '0',
                                 `animelist_date` int(11) NOT NULL DEFAULT '0',
@@ -1193,13 +1184,40 @@ function critic_matic_plugin_activation() {
                                 `rt_gap` int(11) NOT NULL DEFAULT '0',
                                 `rt_date` int(11) NOT NULL DEFAULT '0',
                                 `total_count` int(11) NOT NULL DEFAULT '0',
+                                `total_rating` int(11) NOT NULL DEFAULT '0',
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
 
+
+    // metacritic
+    $sql = "ALTER TABLE `data_movie_erating` ADD `metacritic_rating` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);    
+    $sql = "ALTER TABLE `data_movie_erating` ADD `metacritic_count` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `metacritic_date` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `metacritic_userscore` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+
+    // eiga
+    $sql = "ALTER TABLE `data_movie_erating` ADD `eiga_rating` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `eiga_count` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `eiga_date` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);    
+    
+    // moviemeter
+    $sql = "ALTER TABLE `data_movie_erating` ADD `moviemeter_rating` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `moviemeter_count` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `moviemeter_date` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
+    
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('movie_id', 'date', 'last_upd', 'total_rating'), "data_movie_erating");
-
-
 
     /* Distributor
      * mid - movie id
@@ -1214,17 +1232,17 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
-    
+
 
     $sql = "ALTER TABLE `data_movie_distributors` ADD `type` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_movie_distributors` ADD `parent` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     critic_matic_create_index_an(array('date', 'mid', 'name', 'type', 'parent'), "data_movie_distributors");
-    
-    
+
+
     $sql = "CREATE TABLE IF NOT EXISTS  `meta_movie_distributors`(
 				`id` int(11) unsigned NOT NULL auto_increment,
                                 `mid` int(11) NOT NULL DEFAULT '0',
@@ -1233,13 +1251,13 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `meta_movie_distributors` ADD `type` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     critic_matic_create_index_an(array('mid', 'did', 'type'), "meta_movie_distributors");
-   
-    
+
+
     /* Franchise
      * mid - movie id
      * name - name
@@ -1254,7 +1272,7 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'mid', 'name'), "data_movie_franchises");
-    
+
     /* Idie rating
      * mid - movie id
      * name - name
@@ -1270,7 +1288,7 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'movie_id'), "data_movie_indie");
-    
+
     /* Actor country
      * actor_id - actor id
      */
@@ -1287,8 +1305,8 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('actor_id', 'result'), "data_actors_country");
-    
-    /* 
+
+    /*
      * Site images     
      */
     $sql = "CREATE TABLE IF NOT EXISTS  `data_site_img`(
@@ -1304,7 +1322,7 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('mid','mlcid', 'date', 'views', 'expired', 'link_hash'), "data_site_img");
+    critic_matic_create_index_an(array('mid', 'mlcid', 'date', 'views', 'expired', 'link_hash'), "data_site_img");
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {

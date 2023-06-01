@@ -1,4 +1,8 @@
 <?php
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET");
+
+
 
 if (!defined('ABSPATH')) {
     define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');

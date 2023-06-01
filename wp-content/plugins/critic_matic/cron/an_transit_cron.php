@@ -64,17 +64,28 @@ $cr = new CriticTransit($cm);
 //// Create actors slug
 //$cr->actor_slug($acount, $debug);
 
-//One time transit data
-$cr->transit_genres($count, $debug);
+
+$cron_name = 'critic_matic_transit';
+if ($cm->cron_already_run($cron_name, 10, $debug, $force)) {
+    exit();
+}
+$cm->register_cron($cron_name);
+
+
+$cr->transit_countries($count, $debug, $force);
 
 //One time transit data
-//$cr->transit_countries($count, $debug);
+$cr->transit_genres($count, $debug);
 
 //$cr->transit_actors($count, $debug);
 
 // One time task. Complite
 //$cr->transit_providers();
 
-
 // Remove meta type 2.
 //$cr->remove_unused_meta($count, $debug);
+
+$cm->unregister_cron($cron_name);
+
+
+

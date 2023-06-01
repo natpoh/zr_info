@@ -733,7 +733,7 @@ if (object['type']!='videogame') {
         }
         else
         {
-            var rdata = '<div class="rwt_stars not_rated" title="ZR Rating">Not rated</div>';
+            var rdata = '<div class="rwt_stars not_rated" title="ZR Rating"><span class="rating_result btn raitng_empty"></span></div>';
             let rcontent ='No rating yet,<br> Please  <b class="edit_review">Write a Review</b> to create a rating';
             content += add_rating_block('rwt_stars', rdata, rcontent, 'rwt_rt', true);
         }
@@ -1550,6 +1550,9 @@ function load_ajax_block(block_id) {
 
     if (block_id == 'ns_related_scroll') {
         url = 'https://newsfilter.biz/service/ns_related.php?pid=' + parent_id;
+    }
+    if (block_id == 'global_zeitgeist') {
+        url = 'https://info.antiwoketomatoes.com/wp-content/plugins/critic_matic/cron/get_images.php?p=D_23_2D0FS0-vbb&mid=' + parent_id;
     }
 
     jQuery.ajax({

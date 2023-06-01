@@ -53,10 +53,11 @@ class MoviesCustomHooks {
 
     private function update_erating($post, $options, $campaign, $debug = false) {
 
-        $simple_camps = array('kinop', 'douban', 'imdb', 'animelist');
+        $simple_camps = array('kinop', 'douban', 'imdb', 'animelist', 'eiga', 'moviemeter');
 
         // Kinopoisk
         $curr_camp = '';
+        $one_five = false;
         if ($campaign->id == 24) {
             $curr_camp = 'kinop';
             $score_opt = array(
@@ -73,6 +74,22 @@ class MoviesCustomHooks {
         } else if ($campaign->id == 18) {
             // douban
             $curr_camp = 'imdb';
+            $score_opt = array(
+                'rating' => 'rating',
+                'count' => 'count'
+            );
+        } else if ($campaign->id == 36) {
+            // eiga
+            $curr_camp = 'eiga';
+            $one_five = true;
+            $score_opt = array(
+                'rating' => 'rating',
+                'count' => 'count'
+            );
+        } else if ($campaign->id == 38) {
+            // moviemeter
+            $curr_camp = 'moviemeter';
+            $one_five = true;
             $score_opt = array(
                 'rating' => 'rating',
                 'count' => 'count'
@@ -96,6 +113,13 @@ class MoviesCustomHooks {
                 'audienceScore' => 'aurating',
                 'audienceCount' => 'aucount',
             );
+        } else if ($campaign->id == 23) {
+            // metacritic
+            $curr_camp = 'metacritic';
+            $score_opt = array(
+                'metascore' => 'rating',
+                'userscore' => 'userscore'
+            );
         }
 
         $to_update = array();
@@ -111,15 +135,25 @@ class MoviesCustomHooks {
             $update_rating = false;
 
             $data = array();
+            $ma = $this->ml->get_ma();
 
             if (in_array($curr_camp, $simple_camps)) {
-                // Update rating            
-                $data[$curr_camp . '_rating'] = (int) ($to_update['rating'] * 10);
-                $data[$curr_camp . '_count'] = (int) str_replace(',', '', $to_update['count']);
+                // Update rating     
+                $camp_rating = $to_update['rating'] * 10;
+                $total_rating = $camp_rating;
+                 
+                if ($one_five) {
+                    $total_rating = $ma->five_to_ten($total_rating);
+                }
+
+                $camp_count = str_replace(',', '', $to_update['count']);
+
+                $data[$curr_camp . '_rating'] = (int) $camp_rating;
+                $data[$curr_camp . '_count'] = (int) $camp_count;
                 $data[$curr_camp . '_date'] = $this->mp->curr_time();
                 // Total
                 $data['total_count'] = $data[$curr_camp . '_count'];
-                $data['total_rating'] = $data[$curr_camp . '_rating'];
+                $data['total_rating'] = (int) $total_rating;
 
                 if ($data['total_count'] > 0 || $data['total_rating'] > 0) {
                     $update_rating = true;
@@ -152,6 +186,30 @@ class MoviesCustomHooks {
                 if ($data['total_count'] > 0 || $data['total_rating'] > 0) {
                     $update_rating = true;
                 }
+            } else if ($curr_camp == 'metacritic') {
+
+                $rating = (int) $to_update['rating'];
+                $userscore = (int) ($to_update['userscore'] * 10);
+                // metacritic
+                $data[$curr_camp . '_rating'] = $rating;
+                $data[$curr_camp . '_userscore'] = $userscore;
+                $data[$curr_camp . '_date'] = $this->mp->curr_time();
+
+                $total_rating = 0;
+                if ($rating && $userscore) {
+                    $total_rating = (int) ($rating + $userscore) / 2;
+                } else if ($userscore) {
+                    $total_rating = $userscore;
+                } else {
+                    $total_rating = $rating;
+                }
+
+                // Total
+                $data['total_rating'] = $total_rating;
+
+                if ($data['total_rating'] > 0) {
+                    $update_rating = true;
+                }
             }
 
             if ($debug) {
@@ -159,11 +217,13 @@ class MoviesCustomHooks {
             }
 
             if ($update_rating) {
-                $ma = $this->ml->get_ma();
+                
                 $ma->update_erating($post->top_movie, $data);
             }
         }
     }
+
+
 
     private function update_franchises($post, $options, $campaign, $debug = false) {
         if ($campaign->id == 33) {
@@ -260,8 +320,8 @@ class MoviesCustomHooks {
                             if ($debug) {
                                 print "Total count: {$total_count}. Try to get data from regexp\n";
                             }
-                            
-                            $total_match=0;
+
+                            $total_match = 0;
 
                             if (preg_match('/<div data-testid="sub-section-' . $name . '".*<\/ul><\/div><\/section>/Us', $code, $match)) {
                                 if (preg_match_all('/<a class="ipc-metadata-list-item__label[^>]+href="\/company\/([co0-9]+)\?[^>]+">([^<]+)<\/a>(<div class="ipc-metadata-list-item__content-container">.*<\/div>)/Us', $match[0], $match_link)) {

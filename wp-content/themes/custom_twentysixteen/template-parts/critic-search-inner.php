@@ -18,33 +18,32 @@
                 <?php $search_front->theme_search_url($search_url, $search_text, $inc); ?>
                 <?php
                 ///var_dump($search_front->cs->search_filters);
-                $sfilters =$search_front->cs->search_filters;
-                if ( $sfilters['actorstar'] || $sfilters['actor'] )
-                {
-                    if ( $sfilters['actorstar'])  {$firstElement = reset($search_front->cs->search_filters['actorstar']);}
-                    else if ( $sfilters['actor'])  {$firstElement = reset($search_front->cs->search_filters['actor']);}
-                    $actor_find  = $firstElement['key'];
-                 if ($actor_find)
-                 {
-                     $actor_type=1; ///1:producer
-                 }
-                }
-                else if ( $sfilters['dir']  )
-                {
-                    if ( $sfilters['dir'])  {$firstElement = reset($search_front->cs->search_filters['dir']);}
-                    $actor_find  = $firstElement['key'];
-                    if ($actor_find)
-                    {
-                        $actor_type=2; // 2 :producer
+                $sfilters = $search_front->cs->search_filters;
+                if ($sfilters['actorstar'] || $sfilters['actor']) {
+                    if ($sfilters['actorstar']) {
+                        $firstElement = reset($search_front->cs->search_filters['actorstar']);
+                    } else if ($sfilters['actor']) {
+                        $firstElement = reset($search_front->cs->search_filters['actor']);
                     }
-                }
-                else if ( $sfilters['dirwrite']  )
-                {
-                    if ( $sfilters['dirwrite'])  {$firstElement = reset($search_front->cs->search_filters['dirwrite']);}
-                    $actor_find  = $firstElement['key'];
-                    if ($actor_find)
-                    {
-                        $actor_type=0; ///0: writer
+                    $actor_find = $firstElement['key'];
+                    if ($actor_find) {
+                        $actor_type = 1; ///1:producer
+                    }
+                } else if ($sfilters['dir']) {
+                    if ($sfilters['dir']) {
+                        $firstElement = reset($search_front->cs->search_filters['dir']);
+                    }
+                    $actor_find = $firstElement['key'];
+                    if ($actor_find) {
+                        $actor_type = 2; // 2 :producer
+                    }
+                } else if ($sfilters['dirwrite']) {
+                    if ($sfilters['dirwrite']) {
+                        $firstElement = reset($search_front->cs->search_filters['dirwrite']);
+                    }
+                    $actor_find = $firstElement['key'];
+                    if ($actor_find) {
+                        $actor_type = 0; ///0: writer
                     }
                 }
 
@@ -64,6 +63,7 @@
                             <div class="flex_content_block">
                                 <?php
                                 if (sizeof($results['critics']['list'])):
+
                                     foreach ($results['critics']['list'] as $post):
 
                                         $post_arr = $search_front->get_top_movie_critic($post->id, $post->date_add);
@@ -115,8 +115,9 @@
                                                 $title = $movie_title;
                                             }
                                         }
-                                        ?><div class="card search_review">
-                                        <?php if ($mid) { ?>
+                                        ?>
+                                        <div class="card search_review">
+                                            <?php if ($mid) { ?>
                                                 <div class="full_review_movie">
                                                     <a href="<?php print $post_arr['link'] ?>" class="movie_link" >
                                                         <img src="<?php print $post_arr['poster_link_90'] ?>">
@@ -128,14 +129,28 @@
                                                 </div>
                                             <?php } ?>
                                             <?php print $post_content ?>
-                                        </div><?php endforeach; ?>
-
-                                    <?php
+                                        </div>
+                                        <?php
+                                    endforeach;
                                     print $search_front->pagination($results['critics']['count']);
+                                else:
                                     ?>
-                                </div>
-                                <?php
-                            endif;
+                                    <h2 style="width: 100%; text-align: center" >No results found</h2>
+                                    <?php
+                                    if (isset($results[$tab_key]['no_filters_count'])) {
+                                        $found_results = $results[$tab_key]['no_filters_count'];
+                                        $clean_search = $search_front->get_current_search_url(array(),array(),true);
+                                        ?>
+                                        <p style="width: 100%; text-align: center; margin-bottom: 20px;" >
+                                            You may <a href="<?php print $clean_search ?>">reset filters</a> and get <?php print $found_results ?> found result<?php print $found_results > 1 ? 's' : ''
+                                        ?>.
+                                        </p>
+                                        <?php
+                                    }
+                                endif;
+                                ?>
+                            </div>
+                            <?php
                         else:
                             ?>
                             <div class="flex_movies_block">
@@ -181,6 +196,18 @@
                                         var rating = <?php echo($content_result) ?>;
                                     </script>
 
+                                <?php else: ?>
+                                    <h2 style="width: 100%; text-align: center" >No results found</h2>
+                                    <?php
+                                    if (isset($results[$tab_key]['no_filters_count'])) {
+                                        $found_results = $results[$tab_key]['no_filters_count'];
+                                        $clean_search = $search_front->get_current_search_url(array(),array(),true);
+                                        ?>
+                                        <p style="width: 100%; text-align: center; margin-bottom: 20px;" >
+                                            You may <a href="<?php print $clean_search ?>">reset filters</a> and get <?php print $found_results ?> found result<?php print $found_results > 1 ? 's' : ''
+                                        ?>.
+                                        </p>
+                                    <?php } ?>
                                 <?php endif; ?>
                                 <?php
                                 print $search_front->pagination($total_count);
@@ -226,7 +253,7 @@
                                             }
                                         }
 
-                                        $array_result = array($keywords, $key, $exclude,$actor_find,$actor_type);
+                                        $array_result = array($keywords, $key, $exclude, $actor_find, $actor_type);
                                         $keywords_data = serialize($array_result);
                                         $keywords_data = urlencode($keywords_data);
 
@@ -242,7 +269,7 @@
                 endif;
                 ?>
                 <footer class="entry-footer">
-                    <?php // TODO Edit post link            ?>
+                    <?php // TODO Edit post link                 ?>
                 </footer><!-- .entry-footer -->
             </main><!-- .site-main --> 
         </div><!-- .content-area -->

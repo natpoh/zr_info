@@ -404,7 +404,7 @@ critic_search.init = function ($custom_id = '') {
         });
 
         $("#submit").click(function () {
-            $('#search-filters').remove();
+            // $('#search-filters').remove();
             critic_search.submit();
             return false;
         });
