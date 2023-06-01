@@ -215,6 +215,10 @@ class MoviesCustomHooks {
                 
                 // Total
                 $data['total_rating'] = $total_rating;
+                
+                if ($data['total_rating'] > 0) {
+                    $update_rating = true;
+                }
             }
 
             if ($debug) {
