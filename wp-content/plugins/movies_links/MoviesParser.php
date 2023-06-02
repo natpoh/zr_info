@@ -1310,6 +1310,11 @@ class MoviesParser extends MoviesAbstractDB {
         $count = $ret['total'];
         return $count;
     }
+    
+    public function get_settings() {
+         $settings = $this->ml->get_settings();
+         return $settings;
+    }
 
     private function find_urls_in_progress($campaign, $options) {
         $type_name = 'service_urls';

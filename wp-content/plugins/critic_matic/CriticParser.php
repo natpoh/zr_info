@@ -15,6 +15,8 @@ class CriticParser extends AbstractDBWp {
 
     // Critic matic
     private $cm;
+    // Movie parser
+    private $mp;
     // Google client
     private $gs;
     private $client;
@@ -65,11 +67,11 @@ class CriticParser extends AbstractDBWp {
     public $campaign_tabs = array(
         'home' => 'Veiw',
         'urls' => 'URLs',
-        'find' => 'Find URLs',
+        'find' => '1. Find URLs',
+        'edit' => '2. Edit Parsing',
+        'preview' => '3. Preview',
         'log' => 'Log',
-        'edit' => 'Edit',
-        'preview' => 'Preview',
-        'update' => 'Update',
+        'update' => 'Force Update',
         'trash' => 'Trash',
     );
     public $rules_fields = array(
@@ -166,6 +168,22 @@ class CriticParser extends AbstractDBWp {
     public $yt_in_quota = true;
     public $yt_error_msg = '';
 
+    /*
+     * Parser mode
+     */
+    public $parse_mode = array(
+        0 => 'Curl',
+        1 => 'Webdrivers',
+        2 => 'Tor Webdrivers',
+        3 => 'Tor Curl',
+    );
+    public $tor_mode = array(
+        0 => 'Tor and Proxy',
+        1 => 'Tor',
+        2 => 'Proxy',
+    );
+    public $parse_number = array(1 => 1, 2 => 2, 3 => 3, 5 => 5, 7 => 7, 10 => 10, 20 => 20, 35 => 35, 50 => 50, 75 => 75, 100 => 100, 200 => 200, 500 => 500, 1000 => 1000);
+
     public function __construct($cm = '') {
         $this->cm = $cm ? $cm : new CriticMatic();
         $table_prefix = DB_PREFIX_WP;
@@ -235,11 +253,38 @@ class CriticParser extends AbstractDBWp {
                     'last_update' => 0,
                     'status' => 1,
                 ),
+                'service_urls' => array(
+                    'webdrivers' => 0,
+                    'del_pea' => 0,
+                    'del_pea_cnt' => 10,
+                    'tor_h' => 20,
+                    'tor_d' => 100,
+                    'tor_mode' => 2,
+                    'progress' => 0,
+                    'weight' => 0,
+                ),
                 'yt_playlists' => array(),
             ),
             'max_error' => $this->parser_settings['max_error'],
         );
         $this->get_perpage();
+    }
+
+    public function get_mp() {
+        // Get movies parser
+        if (!$this->mp) {
+            if (!class_exists('MoviesLinks')) {
+                !defined('MOVIES_LINKS_PLUGIN_DIR') ? define('MOVIES_LINKS_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/movies_links/') : '';
+                require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractFunctions.php' );
+                require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractDB.php' );
+                require_once( MOVIES_LINKS_PLUGIN_DIR . 'MoviesLinks.php' );
+            }
+
+            $ml = new MoviesLinks();
+            // get parser
+            $this->mp = $ml->get_mp();
+        }
+        return $this->mp;
     }
 
     private function init_client() {
@@ -466,8 +511,13 @@ class CriticParser extends AbstractDBWp {
                 }
             }
 
-            // 2. Get the content       
-            $code = $this->get_proxy($item->link, '', $headers);
+            // 2. Get the content   
+            $service_urls = $options['service_urls'];
+
+            $mp = $this->get_mp();
+            $mp_settings = $mp->get_settings();
+            $code = $mp->get_code_by_current_driver($item->link, $headers, $mp_settings, $service_urls);
+            // $code = $this->get_proxy($item->link, '', $headers);
 
             if ($code) {
                 $ret[$item->id]['raw'] = $code;
@@ -477,7 +527,7 @@ class CriticParser extends AbstractDBWp {
                 }
 
                 // Use reg rules
-                $items = $this->check_reg_post($options['parser_rules'], $code,'', $item->link);
+                $items = $this->check_reg_post($options['parser_rules'], $code, '', $item->link);
 
                 $content = isset($items['d']) ? $items['d'] : '';
                 $title = isset($items['t']) ? $items['t'] : '';
@@ -808,8 +858,13 @@ class CriticParser extends AbstractDBWp {
                     }
                 }
 
-                // 2. Get the content       
-                $code = $this->get_proxy($item->link, '', $headers);
+                // 2. Get the content  
+                $service_urls = $options['service_urls'];
+
+                $mp = $this->get_mp();
+                $mp_settings = $mp->get_settings();
+                $code = $mp->get_code_by_current_driver($item->link, $headers, $mp_settings, $service_urls);
+                //$code = $this->get_proxy($item->link, '', $headers);
 
                 if ($code) {
                     if ($options['p_encoding'] != 'utf-8') {
@@ -817,7 +872,7 @@ class CriticParser extends AbstractDBWp {
                     }
 
                     // Use reg rules
-                    $items = $this->check_reg_post($options['parser_rules'], $code,'', $item->link);
+                    $items = $this->check_reg_post($options['parser_rules'], $code, '', $item->link);
                     $content = isset($items['d']) ? trim($items['d']) : '';
                     $title = isset($items['t']) ? trim($items['t']) : '';
                     $author = isset($items['a']) ? trim(strip_tags($items['a'])) : '';
@@ -1369,7 +1424,7 @@ class CriticParser extends AbstractDBWp {
 
     public function campaign_edit_validate($form_state) {
 
-        if (isset($form_state['trash']) || isset($form_state['add_urls']) || isset($form_state['yt_urls'])) {
+        if (isset($form_state['trash']) || isset($form_state['add_urls']) || isset($form_state['yt_urls']) || isset($form_state['service_urls'])) {
             // Trash
         } else if (isset($form_state['find_urls']) || isset($form_state['cron_urls'])) {
             // Find urls
@@ -1419,7 +1474,7 @@ class CriticParser extends AbstractDBWp {
         $status = isset($form_state['status']) ? $form_state['status'] : 0;
         $options['rules'] = $this->rules_form($form_state);
         $options['parser_rules'] = $this->parser_rules_form($form_state);
-        
+
         if ($form_state['import_rules_json']) {
             $rules = json_decode(trim(stripslashes($form_state['import_rules_json'])), true);
             if (sizeof($rules)) {
@@ -1604,6 +1659,25 @@ class CriticParser extends AbstractDBWp {
                 $this->update_campaign_options($id, $options);
             } else if ($form_state['add_urls']) {
                 $this->add_urls($id, $form_state['add_urls'], $opt_prev);
+            } else if ($form_state['service_urls']) {
+
+                $urls_prev = $opt_prev['service_urls'];
+                $urls = array();
+                foreach ($urls_prev as $key => $value) {
+                    if (isset($form_state[$key])) {
+                        $urls[$key] = $form_state[$key];
+                    } else {
+                        $urls[$key] = $value;
+                    }
+                }
+                $checkbox_fields = array('del_pea');
+                foreach ($checkbox_fields as $field) {
+                    $urls[$field] = isset($form_state[$field]) ? $form_state[$field] : 0;
+                }
+
+                $options = $opt_prev;
+                $options['service_urls'] = $urls;
+                $this->update_campaign_options($id, $options);
             }
         }
     }
@@ -1875,11 +1949,16 @@ class CriticParser extends AbstractDBWp {
 
         $ret = array();
         $new_urls_weight = $options['new_urls_weight'];
+        $service_urls = $options['service_urls'];
+
+        $mp = $this->get_mp();
+        $mp_settings = $mp->get_settings();
 
         if ($reg && $urls) {
             foreach ($urls as $url) {
                 $url = htmlspecialchars_decode($url);
-                $code = $this->get_proxy($url, '', $headers);
+                $code = $mp->get_code_by_current_driver($url, $headers, $mp_settings, $service_urls);
+                //$code = $this->get_proxy($url, '', $headers);
                 if (preg_match_all($reg, $code, $match)) {
                     foreach ($match[1] as $u) {
                         if (preg_match('#^/#', $u)) {
@@ -2013,7 +2092,7 @@ class CriticParser extends AbstractDBWp {
         $result = $this->cm->db_fetch_row($sql);
         return $result;
     }
-    
+
     public function get_url_by_hash($link_hash) {
         $sql = sprintf("SELECT id, cid FROM {$this->db['url']} WHERE link_hash = '%s'", $link_hash);
         $result = $this->cm->db_fetch_row($sql);
@@ -2516,7 +2595,7 @@ class CriticParser extends AbstractDBWp {
         return $rule;
     }
 
-    public function check_reg_post($rules, $content, $rule_type = '', $link='') {
+    public function check_reg_post($rules, $content, $rule_type = '', $link = '') {
         $results = array();
         $rule_type_exist = 0;
         if ($rules && sizeof($rules)) {
@@ -2547,16 +2626,16 @@ class CriticParser extends AbstractDBWp {
                         $rule_content = $content;
                     } else {
                         // Get clear content
-                        if (!$clear_content){
+                        if (!$clear_content) {
                             // $content = force_balance_tags($content);
-                            $clear_content = $this->clear_read($link, $content);                            
+                            $clear_content = $this->clear_read($link, $content);
                         }
                         if ($data_field == 'ca') {
-                            $rule_content = isset($clear_content['author'])?$clear_content['author']:'';
+                            $rule_content = isset($clear_content['author']) ? $clear_content['author'] : '';
                         } else if ($data_field == 'ct') {
-                            $rule_content = isset($clear_content['title'])?$clear_content['title']:'';
+                            $rule_content = isset($clear_content['title']) ? $clear_content['title'] : '';
                         } else if ($data_field == 'cc') {
-                            $rule_content = isset($clear_content['content'])?$clear_content['content']:'';
+                            $rule_content = isset($clear_content['content']) ? $clear_content['content'] : '';
                         }
                     }
 
@@ -2621,7 +2700,7 @@ class CriticParser extends AbstractDBWp {
             $content = $this->get_reg_match($reg, $rule['m'], $content);
         } else if ($rule['t'] == 'r') {
             $content = $this->get_reg($reg, $rule['m'], $content);
-        } 
+        }
 
         return $content;
     }
@@ -2654,7 +2733,7 @@ class CriticParser extends AbstractDBWp {
         }
 
         // New rule
-        if ($form_state['reg_new_rule_r']||$form_state['reg_new_rule_t']=='n') {
+        if ($form_state['reg_new_rule_r'] || $form_state['reg_new_rule_t'] == 'n') {
 
             $old_key = 0;
             if ($rule_exists) {

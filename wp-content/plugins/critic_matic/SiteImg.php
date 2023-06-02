@@ -33,7 +33,7 @@ class SiteImg extends AbstractDB {
         // Get movies parser
         if (!$this->mp) {
             if (!class_exists('MoviesLinks')) {
-                !defined(MOVIES_LINKS_PLUGIN_DIR) ? define('MOVIES_LINKS_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/movies_links/') : '';
+                !defined('MOVIES_LINKS_PLUGIN_DIR') ? define('MOVIES_LINKS_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/movies_links/') : '';
                 require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractFunctions.php' );
                 require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractDB.php' );
                 require_once( MOVIES_LINKS_PLUGIN_DIR . 'MoviesLinks.php' );

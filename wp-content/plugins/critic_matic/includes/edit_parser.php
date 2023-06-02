@@ -31,7 +31,8 @@ if ($cid) {
 
                 <label class="inline-edit-author">
                     <span class="title"><?php print __('Author') ?></span>
-                    <select name="author" class="authors">
+                    <select name="author" class="authors">          
+                        <option value="0">None</option>                                
                         <?php
                         if (sizeof($authors)) {
                             foreach ($authors as $author) {

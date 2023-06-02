@@ -92,7 +92,7 @@ if ($cid) {
                             <span class="title"><?php print __('Last upd. all') ?></span>
                             <span class="input-text-wrap"><input type="text" disabled="disabled" name="last_update_all" value="<?php print $yt_urls['last_update_all'] ?>"></span>
                         </label>
-                        
+
                         <h2><?php print __('Find URLs settings') ?></h2>
 
                         <label class="inline-edit-interval">                            
@@ -173,12 +173,12 @@ if ($cid) {
             <h2>Find YouTube URLs</h2>
             <div class="content-preview">
                 <textarea style="width: 90%; height: 300px;"><?php
-            if ($yt_preivew['urls']) {
-                foreach ($yt_preivew['urls'] as $value) {
-                    print $value . "\n";
-                }
-            }
-            ?></textarea>                                
+                    if ($yt_preivew['urls']) {
+                        foreach ($yt_preivew['urls'] as $value) {
+                            print $value . "\n";
+                        }
+                    }
+                    ?></textarea>                                
             </div>      
             <h2>Responce</h2>
             <?php if ($yt_preivew['total']) { ?>
@@ -190,6 +190,103 @@ if ($cid) {
         <hr />
         <?php
     } else {
+        ?>
+
+        <form accept-charset="UTF-8" method="post" id="generate_urls">
+            <div class="cm-edit inline-edit-row">
+                <fieldset>              
+                    <?php
+                    $service_urls = $options['service_urls'];
+                    ?>      
+                    <input type="hidden" name="service_urls" value="1">
+                    <input type="hidden" name="id" class="id" value="<?php print $campaign->id ?>">              
+
+                    <h3>Parser settings</h3>
+
+                    <label class="inline-edit-interval">
+                        <span class="title"><?php print __('Parse with') ?></span>
+                        <select name="webdrivers" class="interval">
+                            <?php
+                            $current = $service_urls['webdrivers'];
+                            foreach ($this->cp->parse_mode as $key => $name) {
+                                $selected = ($key == $current) ? 'selected' : '';
+                                ?>
+                                <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                                <?php
+                            }
+                            ?>                          
+                        </select>                                        
+                    </label>
+
+                    <label class="inline-edit-interval">
+                        <span class="title"><?php print __('Tor mode') ?></span>
+                        <select name="tor_mode" class="interval">
+                            <?php
+                            $current = $service_urls['tor_mode'];
+                            foreach ($this->cp->tor_mode as $key => $name) {
+                                $selected = ($key == $current) ? 'selected' : '';
+                                ?>
+                                <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                                <?php
+                            }
+                            ?>                          
+                        </select>                                        
+                    </label>
+
+
+                    <label class="inline-edit-interval"> 
+                        <span class="title"><?php print __('Tor hour') ?></span>         
+                        <?php
+                        $parse_num = $service_urls['tor_h'];
+                        $previews_number = $this->cp->parse_number;
+                        ?>
+
+                        <select name="tor_h" class="tor_h">
+                            <?php
+                            foreach ($previews_number as $key => $name) {
+                                $selected = ($key == $parse_num) ? 'selected' : '';
+                                ?>
+                                <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                                <?php
+                            }
+                            ?>                          
+                        </select>                     
+                        <span class="inline-edit"><?php print __('Number of URLs parsing from one IP at one hour') ?></span> 
+                    </label>
+
+
+                    <label class="inline-edit-interval"> 
+                        <span class="title"><?php print __('Tor day') ?></span>         
+                        <?php
+                        $parse_num = $service_urls['tor_d'];
+                        $previews_number = $this->cp->parse_number;
+                        ?>
+
+                        <select name="tor_d" class="tor_d">
+                            <?php
+                            foreach ($previews_number as $key => $name) {
+                                $selected = ($key == $parse_num) ? 'selected' : '';
+                                ?>
+                                <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                                <?php
+                            }
+                            ?>                          
+                        </select>                     
+                        <span class="inline-edit"><?php print __('Number of URLs parsing from one IP at one day') ?></span> 
+                    </label>
+
+                    <label>
+                        <span class="title"><?php print __('Weight') ?></span>
+                        <span class="input-text-wrap"><input type="text" name="weight" class="weight" value="<?php print $service_urls['weight'] ?>"></span>
+                    </label>
+
+                    <br />
+                    <?php wp_nonce_field('critic-feeds-options', 'critic-feeds-nonce'); ?>
+                    <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save settings') ?>" class="button-primary">  
+                </fieldset>
+            </div>
+        </form>
+        <?php
         $find_urls = $options['find_urls'];
         ?>
         <h2><?php print __('Search URL addresses on site pages') ?></h2>
@@ -262,12 +359,12 @@ if ($cid) {
             <h2>Find URLs</h2>
             <div class="content-preview">
                 <textarea style="width: 90%; height: 300px;"><?php
-            if ($preivew_data['urls']) {
-                foreach ($preivew_data['urls'] as $value) {
-                    print $value . "\n";
-                }
-            }
-            ?></textarea>                                
+                    if ($preivew_data['urls']) {
+                        foreach ($preivew_data['urls'] as $value) {
+                            print $value . "\n";
+                        }
+                    }
+                    ?></textarea>                                
             </div>
             <h2>Headers</h2>
             <textarea style="width: 90%; height: 300px;"><?php print $preivew_data['headers'] ?></textarea>        
@@ -346,12 +443,12 @@ if ($cid) {
             <h2>Fetch URLs</h2>
             <div class="content-preview">
                 <textarea style="width: 90%; height: 300px;"><?php
-            if ($cron_preivew_data['urls']) {
-                foreach ($cron_preivew_data['urls'] as $value) {
-                    print $value . "\n";
-                }
-            }
-            ?></textarea>                                
+                    if ($cron_preivew_data['urls']) {
+                        foreach ($cron_preivew_data['urls'] as $value) {
+                            print $value . "\n";
+                        }
+                    }
+                    ?></textarea>                                
             </div>
             <h2>Headers</h2>
             <textarea style="width: 90%; height: 300px;"><?php print $cron_preivew_data['headers'] ?></textarea>        

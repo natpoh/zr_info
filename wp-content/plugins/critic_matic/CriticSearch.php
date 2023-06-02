@@ -156,9 +156,9 @@ class CriticSearch extends AbstractDB {
             'childs' => array(
                 // facets_race_cast
                 'race_cast' => array('title' => 'race_cast',),
-                'race' => array('filter' => 'actor', 'name' => 'actor_all', 'title' => 'Cast race', 'name_pre' => 'Cast ', 'filter_key' => 'race', 'minus' => 1,),
-                'starrace' => array('filter' => 'actorstar', 'name' => 'actor_star', 'title' => 'Star race', 'name_pre' => 'Star ', 'filter_key' => 'race', 'minus' => 1,),
-                'mainrace' => array('filter' => 'actormain', 'name' => 'actor_main', 'title' => 'Main race', 'name_pre' => 'Main ', 'filter_key' => 'race', 'minus' => 1,),
+                'race' => array('filter' => 'actor', 'parent' => array('race_cast', 'gender_cast'), 'name' => 'actor_all', 'title' => 'Cast race', 'name_pre' => 'Cast ', 'filter_key' => 'race', 'minus' => 1,),
+                'starrace' => array('filter' => 'actorstar', 'parent' => array('race_cast', 'gender_cast'), 'name' => 'actor_star', 'title' => 'Star race', 'name_pre' => 'Star ', 'filter_key' => 'race', 'minus' => 1,),
+                'mainrace' => array('filter' => 'actormain', 'parent' => array('race_cast', 'gender_cast'), 'name' => 'actor_main', 'title' => 'Main race', 'name_pre' => 'Main ', 'filter_key' => 'race', 'minus' => 1,),
                 // facets_gender
                 'gender_cast' => array('title' => 'gender_cast',),
                 'gender' => array('title' => 'Cast gender', 'name_pre' => 'Cast ', 'filter_key' => 'gender', 'minus' => 1,),
@@ -166,14 +166,14 @@ class CriticSearch extends AbstractDB {
                 'maingender' => array('title' => 'Main gender', 'name_pre' => 'Main ', 'filter_key' => 'gender', 'minus' => 1,),
                 // actor_filters                
                 'actors' => array('title' => 'Actors',),
-                'actor' => array('filter' => 'actor_all', 'title' => 'Actor', 'name_pre' => '', 'placeholder' => ''),
-                'actorstar' => array('filter' => 'actor_star', 'title' => 'Actor star', 'name_pre' => 'Star: ', 'placeholder' => 'star'),
-                'actormain' => array('filter' => 'actor_main', 'title' => 'Actor main', 'name_pre' => 'Main: ', 'placeholder' => 'main'),
+                'actor' => array('filter' => 'actor_all', 'parent' => 'actors', 'title' => 'Actor', 'name_pre' => '', 'placeholder' => ''),
+                'actorstar' => array('filter' => 'actor_star', 'parent' => 'actors', 'title' => 'Actor star', 'name_pre' => 'Star: ', 'placeholder' => 'star'),
+                'actormain' => array('filter' => 'actor_main', 'parent' => 'actors', 'title' => 'Actor main', 'name_pre' => 'Main: ', 'placeholder' => 'main'),
                 // Actors country
                 'actorscountry' => array('title' => 'Actors Country',),
-                'countryall' => array('filter' => 'countryall', 'title' => 'Actor Country', 'name_pre' => 'Actor Country: ', 'placeholder' => '', 'minus' => 1,),
-                'countrystar' => array('filter' => 'countrystar', 'title' => 'Actor star Country', 'name_pre' => 'Star Country: ', 'placeholder' => 'star', 'minus' => 1,),
-                'countrymain' => array('filter' => 'countrymain', 'title' => 'Actor main Country', 'name_pre' => 'Main Country: ', 'placeholder' => 'main', 'minus' => 1,),
+                'countryall' => array('filter' => 'countryall', 'parent' => 'actorscountry', 'title' => 'Actor Country', 'name_pre' => 'Actor Country: ', 'placeholder' => '', 'minus' => 1,),
+                'countrystar' => array('filter' => 'countrystar', 'parent' => 'actorscountry', 'title' => 'Actor star Country', 'name_pre' => 'Star Country: ', 'placeholder' => 'star', 'minus' => 1,),
+                'countrymain' => array('filter' => 'countrymain', 'parent' => 'actorscountry', 'title' => 'Actor main Country', 'name_pre' => 'Main Country: ', 'placeholder' => 'main', 'minus' => 1,),
             ),
             'race_gender' => array(
                 'race' => 'gender',
@@ -195,11 +195,11 @@ class CriticSearch extends AbstractDB {
             'childs' => array(
                 // facets_race_directors
                 'race_dir' => array('title' => 'race_dir',),
-                'dirrace' => array('filter' => 'dirall', 'name' => 'director_all', 'title' => 'All Production race', 'name_pre' => 'All Production ', 'filter_key' => 'race', 'minus' => 1,),
-                'dirsrace' => array('filter' => 'dir', 'name' => 'director_dir', 'title' => 'Directors race', 'name_pre' => 'Directors ', 'filter_key' => 'race', 'minus' => 1,),
-                'writersrace' => array('filter' => 'dirwrite', 'name' => 'director_write', 'title' => 'Writers race', 'name_pre' => 'Writers ', 'filter_key' => 'race', 'minus' => 1,),
-                'castdirrace' => array('filter' => 'dircast', 'name' => 'director_cast', 'title' => 'Casting Directors race', 'name_pre' => 'Casting Directors ', 'filter_key' => 'race', 'minus' => 1,),
-                'producerrace' => array('filter' => 'dirprod', 'name' => 'director_prod', 'title' => 'Producers race', 'name_pre' => 'Producers ', 'filter_key' => 'race', 'minus' => 1,),
+                'dirrace' => array('filter' => 'dirall', 'parent' => array('race_dir', 'gender_dir'), 'name' => 'director_all', 'title' => 'All Production race', 'name_pre' => 'All Production ', 'filter_key' => 'race', 'minus' => 1,),
+                'dirsrace' => array('filter' => 'dir', 'parent' => array('race_dir', 'gender_dir'), 'name' => 'director_dir', 'title' => 'Directors race', 'name_pre' => 'Directors ', 'filter_key' => 'race', 'minus' => 1,),
+                'writersrace' => array('filter' => 'dirwrite', 'parent' => array('race_dir', 'gender_dir'), 'name' => 'director_write', 'title' => 'Writers race', 'name_pre' => 'Writers ', 'filter_key' => 'race', 'minus' => 1,),
+                'castdirrace' => array('filter' => 'dircast', 'parent' => array('race_dir', 'gender_dir'), 'name' => 'director_cast', 'title' => 'Casting Directors race', 'name_pre' => 'Casting Directors ', 'filter_key' => 'race', 'minus' => 1,),
+                'producerrace' => array('filter' => 'dirprod', 'parent' => array('race_dir', 'gender_dir'), 'name' => 'director_prod', 'title' => 'Producers race', 'name_pre' => 'Producers ', 'filter_key' => 'race', 'minus' => 1,),
                 // facets_gender_dir                 
                 'gender_dir' => array('title' => 'gender_dir',),
                 'dirgender' => array('title' => 'All Production gender', 'name_pre' => 'All Production ', 'filter_key' => 'gender', 'minus' => 1,),
@@ -209,11 +209,11 @@ class CriticSearch extends AbstractDB {
                 'producergender' => array('title' => 'Producers gender', 'name_pre' => 'Producers ', 'filter_key' => 'gender', 'minus' => 1,),
                 // director_filters
                 'dirs' => array('title' => 'Production',),
-                'dirall' => array('filter' => 'director_all', 'title' => 'Production', 'name_pre' => 'Production ', 'placeholder' => 'all'),
-                'dir' => array('filter' => 'director_dir', 'title' => 'Director', 'name_pre' => 'Director: ', 'placeholder' => 'director'),
-                'dirwrite' => array('filter' => 'director_write', 'title' => 'Writer', 'name_pre' => 'Writer: ', 'placeholder' => 'writer'),
-                'dircast' => array('filter' => 'director_cast', 'title' => 'Casting director', 'name_pre' => 'Casting dir: ', 'placeholder' => 'casting'),
-                'dirprod' => array('filter' => 'director_prod', 'title' => 'Producer', 'name_pre' => 'Producer: ', 'placeholder' => 'producer'),
+                'dirall' => array('filter' => 'director_all', 'parent' => 'dirs', 'title' => 'Production', 'name_pre' => 'Production ', 'placeholder' => 'all'),
+                'dir' => array('filter' => 'director_dir', 'parent' => 'dirs', 'title' => 'Director', 'name_pre' => 'Director: ', 'placeholder' => 'director'),
+                'dirwrite' => array('filter' => 'director_write', 'parent' => 'dirs', 'title' => 'Writer', 'name_pre' => 'Writer: ', 'placeholder' => 'writer'),
+                'dircast' => array('filter' => 'director_cast', 'parent' => 'dirs', 'title' => 'Casting director', 'name_pre' => 'Casting dir: ', 'placeholder' => 'casting'),
+                'dirprod' => array('filter' => 'director_prod', 'parent' => 'dirs', 'title' => 'Producer', 'name_pre' => 'Producer: ', 'placeholder' => 'producer'),
             ),
             'race_gender_dir' => array(
                 'dirrace' => 'dirgender',
@@ -456,6 +456,7 @@ class CriticSearch extends AbstractDB {
             'woke' => array('key' => 'rfwoke', 'title' => 'Woke'),
         ),
     );
+    public $facet_parent = array();
     public $budget_min = 100;
     public $budget_max = 500000;
 
@@ -520,6 +521,12 @@ class CriticSearch extends AbstractDB {
             $this->hide_facets[$key] = 1;
         }
 
+        // Parent name logic
+        if (isset($facet['parent'])) {
+            $this->facet_parent[$key] = $facet['parent'];
+        }
+
+        // Childs
         if (isset($facet['childs'])) {
             foreach ($facet['childs'] as $ckey => $child) {
                 if (!isset($child['tabs'])) {

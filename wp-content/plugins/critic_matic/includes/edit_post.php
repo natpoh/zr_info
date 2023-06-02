@@ -16,6 +16,7 @@ if ($pid) {
 
         <div class="cm-edit inline-edit-row">
             <fieldset>
+                <input type="hidden" name="edit_parser" value="1">
                 <input type="hidden" name="id" class="id" value="<?php print $pid ?>">
 
                 <label>

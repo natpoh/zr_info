@@ -461,7 +461,13 @@ class SearchFacets extends AbstractDB {
         $filters = $this->get_search_filters();
         gmi('get_search_filters');
 
+        
+        $facet = isset($this->cs->facet_parent[$facet]) ? $this->cs->facet_parent[$facet] : $facet;
         $facets = array($facet);
+        if (is_array($facet)){
+            $facets = $facet;
+        }
+        
         if ($tab_key == 'movies') {
             $sort = $this->get_search_sort('movies');
             $result['movies'] = $this->cs->front_search_movies_multi($this->keywords, $this->search_limit, $start, $sort, $filters, $facets, true, true, false);
@@ -2258,7 +2264,7 @@ class SearchFacets extends AbstractDB {
 
             $name_pre = $this->cs->facet_data['actorsdata']['childs'][$filter]['name_pre'];
             $type_title = $this->cs->facet_data['actorsdata']['childs'][$filter]['title'];
-           
+
             $count = 0;
             if (isset($facets['actorscountry'])) {
                 $data = $facets['actorscountry']['data'];
@@ -2285,8 +2291,7 @@ class SearchFacets extends AbstractDB {
                         if (!$item->name) {
                             continue;
                         }
-                        $dates[$item->slug] = array('title' => $item->name, 'count' => $value->cnt, 'name_pre' => $name_pre, 'type_title' => $type_title);                        
-                        
+                        $dates[$item->slug] = array('title' => $item->name, 'count' => $value->cnt, 'name_pre' => $name_pre, 'type_title' => $type_title);
                     }
                 }
                 ksort($dates);
@@ -2579,30 +2584,30 @@ class SearchFacets extends AbstractDB {
             print ' column';
         }
         ?>" data-filter="<?php print $filter_name ?>"><?php
-                foreach ($tabs as $slug => $item) {
-                    $is_active = '';
-                    $is_default = '';
+            foreach ($tabs as $slug => $item) {
+                $is_active = '';
+                $is_default = '';
 
-                    if ($inactive && in_array($item[$filter_type], $inactive)) {
-                        continue;
-                    }
+                if ($inactive && in_array($item[$filter_type], $inactive)) {
+                    continue;
+                }
 
-                    if ($item[$filter_type] == $active_facet) {
-                        $is_active = ' active';
-                    }
-                    if ($def_tab == $item[$filter_type]) {
-                        $is_default = ' default';
-                        $include = array();
-                        $exclude = array($filter_name);
-                    } else {
-                        $include = array($filter_name => $slug);
-                        $exclude = array();
-                    }
+                if ($item[$filter_type] == $active_facet) {
+                    $is_active = ' active';
+                }
+                if ($def_tab == $item[$filter_type]) {
+                    $is_default = ' default';
+                    $include = array();
+                    $exclude = array($filter_name);
+                } else {
+                    $include = array($filter_name => $slug);
+                    $exclude = array();
+                }
 
-                    $url = $this->get_current_search_url($include, $exclude);
-                    ?><li class="nav-tab<?php print $is_active . $is_default ?>" data-id="<?php print $slug ?>"><a href="<?php print $url ?>"><?php print $item['title'] ?></a></li><?php }
-                ?></ul>
-        <?php
+                $url = $this->get_current_search_url($include, $exclude);
+                ?><li class="nav-tab<?php print $is_active . $is_default ?>" data-id="<?php print $slug ?>"><a href="<?php print $url ?>"><?php print $item['title'] ?></a></li><?php }
+            ?></ul>
+            <?php
         $content = ob_get_contents();
         ob_end_clean();
         return $content;
@@ -3024,10 +3029,10 @@ class SearchFacets extends AbstractDB {
             <?php if ($quick_find) { ?>
                 <div class="facet-quickfind">
                     <input type="search" class="autocomplite<?php
-                    if ($keyword) {
-                        print ' active';
-                    }
-                    ?>" data-type="<?php print $filter ?>" data-count="<?php print $more ?>" value="<?php print $keyword ?>" placeholder="Quick find" ac-type="qf">
+                if ($keyword) {
+                    print ' active';
+                }
+                ?>" data-type="<?php print $filter ?>" data-count="<?php print $more ?>" value="<?php print $keyword ?>" placeholder="Quick find" ac-type="qf">
                 </div>          
             <?php } ?>
             <div class="facet-ch<?php
@@ -3035,7 +3040,7 @@ class SearchFacets extends AbstractDB {
                 print ' custom';
             }
             ?>">
-                     <?php
+                 <?php
                      if ($collapsed):
                          $this->theme_block_loading();
                      else:
