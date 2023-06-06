@@ -1,16 +1,16 @@
-<h2><a href="<?php print $url ?>"><?php print __('Critic matic') ?></a>. <?php print __('Critic authors') ?></h2>
+<h2><a href="<?php print $url ?>"><?php print __('Critic matic') ?></a>. <?php print __('Audience authors') ?></h2>
 
 <?php print $tabs; ?>
-<?php
-if (isset($filters_tabs['filters'])) {
+
+<?php if (isset($filters_tabs['filters'])){
     print implode("\n", array_values($filters_tabs['filters']));
-}
-?>
+} ?>
 
 <?php
 if (sizeof($authors) > 0) {
-
+    
     $author_status = $this->cm->author_status;
+    
     ?>
     <?php print $pager ?>
     <form accept-charset="UTF-8" method="post" >
@@ -31,12 +31,11 @@ if (sizeof($authors) > 0) {
                     <td class="manage-column column-cb check-column" ><input type="checkbox" id="cb-select-all-1"></td>
                     <th ><?php print __('Img') ?></th> 
                     <?php $this->sorted_head('id', 'id', $orderby, $order, $page_url) ?>                                
-
+                    <?php $this->sorted_head('wp_uid', 'WP Uid', $orderby, $order, $page_url) ?> 
                     <?php $this->sorted_head('name', 'Author', $orderby, $order, $page_url) ?> 
-
+                    <?php $this->sorted_head('type', 'From', $orderby, $order, $page_url) ?>
                     <?php $this->sorted_head('status', 'Status', $orderby, $order, $page_url) ?>
                     <?php $this->sorted_head('show_type', 'Show type', $orderby, $order, $page_url) ?>
-                    <th><?php print __('Avatar') ?></th> 
                     <th><?php print __('Autoblur') ?></th> 
                     <th><?php print __('Tags') ?></th>
                     <th><?php print __('Posts') ?></th> 
@@ -64,7 +63,7 @@ if (sizeof($authors) > 0) {
 
                     // Feeds
                     $campaigns = $this->cf->get_feeds_count(-1, $author->id);
-
+                    
                     // Parsers
                     $parsers = $cp->get_parser_count($author->id);
 
@@ -82,27 +81,53 @@ if (sizeof($authors) > 0) {
                     if ($options['image']) {
                         $image = '<img src="' . $options['image'] . '" width="50"  height="50">';
                     }
+
+                    $wp_uid = $author->wp_uid;
+
+
+                    if (!$image && $author->type == 2) {
+                        if ($wp_uid) {
+                            // User            
+                            $image = $cav->get_or_create_user_avatar($wp_uid, 0, 64);
+                        } else {
+                            $image = $cav->get_or_create_user_avatar(0, $author->id, 64);
+                        }
+                    }
+
+                    /*
+                      //Critic posts (TEST ONLY. UNUSED)
+                      global $wpdb;
+                      $post_id = get_post();
+                      $posttitle = $author_name;
+                      $pid_sql = sprintf("SELECT p.ID FROM $wpdb->posts p WHERE p.post_title = '%s' and p.post_type = 'wprss_feed'", $posttitle);
+                      $pid = $wpdb->get_var($pid_sql);
+
+                      $critic_count = 0;
+                      if ($pid){
+                      $sql = sprintf("SELECT COUNT(id) FROM $wpdb->postmeta m "
+                      . "WHERE m.meta_key = 'wprss_feed_id' AND m.meta_value=%d", $pid);
+                      $critic_count = $wpdb->get_var($sql);
+                      }
+                      //$sql = sprintf("SELECT COUNT(id) FROM $wpdb->posts p INNER JOIN $wpdb->postmeta m "
+                      //        . "WHERE p.post_title = '%s' AND m.meta_key = 'wprss_feed_id' AND m.meta_value=p.ID", $posttitle);
+
+                     */
                     ?>
                     <tr>
                         <th  class="check-column" ><input type="checkbox" name="bulk-<?php print $author->id ?>"></th>
                         <td ><?php print $image ?></td>  
                         <td><?php print $author->id ?></td>     
-
-                        <td>
-                            <a href="<?php print $author_url ?>"><?php print $author_name ?></a>
-                           </td>
-
+                        <td><?php print $wp_uid ?></td>
+                        <td><a href="<?php print $author_url ?>"><?php print $author_name ?></a>
+                            <?php
+                            if ($author->type == 2 && isset($options['audience'])) {
+                                print '<br />Key: ' . $options['audience'];
+                            }
+                            ?>
+                        </td>
+                        <td><?php print $author_type ?></td>
                         <td><?php print $author_status ?></td>
                         <td><?php print $this->cm->author_show_type[$author->show_type] ?></td>
-                        <td><?php
-                            if ($author->avatar_name) {
-                                print $author->avatar_name;
-
-                                if ($options['image']) {
-                                    print '<br />URL exist';
-                                }
-                            }
-                            ?></td>
                         <td><?php print isset($options['autoblur']) && $options['autoblur'] == 1 ? 'True' : 'False'  ?></td>
                         <td><?php print implode(', ', $tag_arr) ?></td>  
                         <td><?php print $post_count ?></td>   
