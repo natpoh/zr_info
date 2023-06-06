@@ -9,17 +9,21 @@
 class CriticAvatars extends AbstractDB {
 
     private $cm;
+    // Audience
     public $source_dir = "ca/source";
     public $cketch_dir = "ca/sketch";
     public $tomato_dir = "ca/tomato";
     public $img_service = 'https://info.antiwoketomatoes.com/';
     public $thumb_service = 'https://img.zeitgeistreviews.com/';
+    // Pro critic
+    public $pro_source_dir = "cp/source";
 
     public function __construct($cm = '') {
         $this->cm = $cm ? $cm : new CriticMatic();
-        // $table_prefix = DB_PREFIX_WP;
+        $table_prefix = DB_PREFIX_WP_AN;
         $this->db = array(
             'user_avatars' => 'data_user_avatars',
+            'authors' => $table_prefix . 'critic_matic_authors',
         );
     }
 
@@ -225,36 +229,8 @@ class CriticAvatars extends AbstractDB {
     public function parse_avatar($force = false, $debug = false) {
         $time = $this->curr_time();
         $url = 'https://thispersondoesnotexist.com/image';
-        $ip_limit = array('h' => 20, 'd' => 200);
-        $tor_mode = 2;
-        $file_content = '';
-        if ($this->cm->sync_server) {
-            if (!class_exists('MoviesLinks')) {
-                !defined('MOVIES_LINKS_PLUGIN_DIR') ? define('MOVIES_LINKS_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/movies_links/') : '';
-                require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractFunctions.php' );
-                require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractDB.php' );
-                require_once( MOVIES_LINKS_PLUGIN_DIR . 'MoviesLinks.php' );
-                require_once( MOVIES_LINKS_PLUGIN_DIR . 'TorParser.php' );
-            }
-            // 1. Get ml parser
-            if ($debug) {
-                print "ML parser\n";
-            }
-            $tp = new TorParser();
-            $file_content = $tp->get_url_content($url, $headers, $ip_limit, true, $tor_mode, false, array(), array(), $debug);
-        } else {
-            // 2. Get cm parser
-            $cp = $this->cm->get_cp();
-            $file_content = $cp->get_proxy($url, '', $headers);
-            if ($debug) {
-                print "CM parser\n";
-            }
-        }
 
-        //print_r($code);
-        if ($debug) {
-            p_r($headers);
-        }
+        $file_content = $this->get_file_content($url, $debug);
 
         if ($file_content) {
             // This is an image?
@@ -323,6 +299,40 @@ class CriticAvatars extends AbstractDB {
                 }
             }
         }
+    }
+
+    public function get_file_content($url, $debug) {
+        $ip_limit = array('h' => 20, 'd' => 200);
+        $tor_mode = 2;
+        $file_content = '';
+        if ($this->cm->sync_server) {
+            if (!class_exists('MoviesLinks')) {
+                !defined('MOVIES_LINKS_PLUGIN_DIR') ? define('MOVIES_LINKS_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/movies_links/') : '';
+                require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractFunctions.php' );
+                require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractDB.php' );
+                require_once( MOVIES_LINKS_PLUGIN_DIR . 'MoviesLinks.php' );
+                require_once( MOVIES_LINKS_PLUGIN_DIR . 'TorParser.php' );
+            }
+            // 1. Get ml parser
+            if ($debug) {
+                print "ML parser\n";
+            }
+            $tp = new TorParser();
+            $file_content = $tp->get_url_content($url, $headers, $ip_limit, true, $tor_mode, false, array(), array(), $debug);
+        } else {
+            // 2. Get cm parser
+            $cp = $this->cm->get_cp();
+            $file_content = $cp->get_proxy($url, '', $headers);
+            if ($debug) {
+                print "CM parser\n";
+            }
+        }
+
+        if ($debug) {
+            p_r($headers);
+        }
+
+        return $file_content;
     }
 
     public function get_sketch($force = false, $debug = false) {
@@ -577,6 +587,94 @@ class CriticAvatars extends AbstractDB {
             return '';
         }
         return $src_type;
+    }
+
+    /*
+     * Pro critic avatars    
+     *  
+     * 1. Change current paths to local avatars
+     *  Add one time transit task
+     *  Change show pro avatars to new api
+     * 2. Upload module for critic avatar
+     *  In single author page and list of authors
+     * 3. Search avatars by critic channels: youtube, bichdue, odysee
+     */
+
+    public function transit_pro_avatars($count = 10, $debug = false, $force = false) {
+        # 1. Get pro authors without images data.
+        $sql = sprintf("SELECT * FROM {$this->db['authors']} WHERE avatar=0 AND type=1 ORDER BY id ASC LIMIT %d", $count);
+        $authors = $this->db_results($sql);
+        if ($debug) {
+            print_r($authors);
+        }
+        # 2. Get image.
+        $this->pro_url_to_image($authors, $debug);
+
+    }
+
+    public function pro_url_to_image($authors, $debug = false) {
+        $ret = array();
+        foreach ($authors as $author) {
+            $ret[$author->id] = 1;
+            $options = unserialize($author->options);
+            if (isset($options['image']) && $options['image']) {
+                $img = $options['image'];
+
+                # 3. Try to get image
+                $file_content = $this->get_file_content($img, $debug);
+
+                // This is an image?
+                $src_type = $this->isImage($file_content);
+                if (!$src_type) {
+                    $ret[$author->id] = 0;
+                    continue;
+                }
+
+                $allowed_mime_types = [
+                    'image/jpeg' => '.jpg',
+                    'image/gif' => '.gif',
+                    'image/png' => '.png',
+                ];
+                
+                if (!isset($allowed_mime_types[$src_type])) {
+                    $ret[$author->id] = 0;
+                    continue;
+                }
+
+                $time = $this->curr_time();
+
+                $filename = $author->id . '-' . $time . $allowed_mime_types[$src_type];
+
+
+                // Save image           
+                $source_dir = WP_CONTENT_DIR . '/uploads/' . $this->pro_source_dir;
+                if (class_exists('ThemeCache')) {
+                    ThemeCache::check_and_create_dir($source_dir);
+                }
+
+                $img_path = $source_dir . "/" . $filename;
+
+                if (!file_exists($img_path)) {
+                    // Save file
+                    $fp = fopen($img_path, "w");
+                    fwrite($fp, $file_content);
+                    fclose($fp);
+
+                    // Add avatar to db
+                    $data = array(
+                        'avatar' => 1,
+                        'avatar_name' => $filename,
+                    );
+
+                    $id = $this->sync_update_data($data, $author->id, $this->db['authors']);
+                    if ($debug) {
+                        p_r($data);
+                        p_r($id);
+                    }
+                }
+            }
+        }
+        return $ret;
     }
 
 }

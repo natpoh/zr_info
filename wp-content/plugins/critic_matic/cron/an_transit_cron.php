@@ -85,6 +85,10 @@ $cr->transit_genres($count, $debug);
 // Remove meta type 2.
 //$cr->remove_unused_meta($count, $debug);
 
+// Upload pro-user avatars. One time task
+$cav = $cm->get_cav();
+$cav->transit_pro_avatars($count, $debug);
+
 $cm->unregister_cron($cron_name);
 
 
