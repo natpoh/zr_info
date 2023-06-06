@@ -266,6 +266,10 @@ class CriticMatic extends AbstractDB {
         $this->sync_status = DB_SYNC_MODE;
         $this->sync_client = DB_SYNC_MODE == 2 ? true : false;
         $this->sync_server = DB_SYNC_MODE == 1 ? true : false;
+        
+        if ($this->sync_client){
+            unset($this->author_tabs['edit']);
+        }
     }
 
     public function get_ac() {
