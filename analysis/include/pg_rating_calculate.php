@@ -9,6 +9,38 @@ if (!defined('ABSPATH'))
 
 class PgRatingCalculate {
 
+    public  function ckeck_imdb_pg_rating($id)
+    {
+
+
+        $imdb_id = self::get_imdb_id_from_id($id);
+
+        $array_family = self::get_family_rating_in_movie($imdb_id);
+
+        $last_imdb_updated  = $array_family['imdb_date'];
+
+        $cur_total =  $array_family['rwt_pg_result'];
+
+       /// echo date('h: i d m Y',$last_imdb_updated);
+
+        if ($last_imdb_updated < time()-86400)
+        {
+            !class_exists('PgRating') ? include ABSPATH . "analysis/include/pg_rating.php" : '';
+          //update imdb data
+
+            PgRating::update_pg_rating_imdb($imdb_id);
+
+           $total =  self::CalculateRating($imdb_id,$id);
+
+
+           if ($cur_total!=$total){return(2);}
+
+           return 1;
+        }
+        return 0;
+
+
+    }
     public static function get_rating_from_bd($mid, $type) {
 
         if ($type) {
@@ -492,6 +524,26 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
         if ($array_family['certification']) {
             $content .= self::debug_table('MPAA Certification', $array_family['certification']);
         }
+        else
+        {
+            $content .= self::debug_table('MPAA Certification', 'No MPAA rating foung yet.  <a href="#" data-value="'.$id.'" class="empty_ff_rating empty_ff_popup_rating">Add Family Friendly Rating?</a>');
+        }
+
+
+        $pg_cert = $array_family['certification_countries'];
+        if ($pg_cert)
+        {
+        $cont_sert = '';
+            $pg_cert_array = json_decode($pg_cert);
+
+            foreach ($pg_cert_array as $country => $pg) {
+
+                $cont_sert.='<p>'.$country.' : ';
+                $cont_sert.=implode(',',$pg).'</p>';
+
+            }
+            $content .= self::debug_table('Other Certification', $cont_sert);
+        }
 
         if ($croudsurce['imdb_rating']) {
 
@@ -500,12 +552,25 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
         }
 
 
-        if ($array_family['imdb_rating']) {
+        if ($imdb_id) {
+
+            //get last updated
+
+            $last_imdb_updated  = $array_family['imdb_date'];
+
+            $last_imdb_updated_string = date('Y-m-d',$last_imdb_updated);
+            $update_link='';
+            if ($last_imdb_updated < time()-86400)
+            {
+                $update_link = '<a href="#" data-value="'.$id.'" class="update_data">Update data</a>';
+            }
 
             $final_value = sprintf('%07d', $imdb_id);
             $url = "https://www.imdb.com/title/tt" . $final_value . '/parentalguide';
 
-            $content .= self::debug_table('<h3>IMDb Rating</h3><a target="_blank" href="' . $url . '">' . $url . '</a>');
+            $content .= self::debug_table('<h3>IMDb Rating</h3><a target="_blank" href="' . $url . '">' . $url . '</a><br><p class="last_updated_desc">last updated: '.$last_imdb_updated_string.$update_link.'</p>');
+        }
+        if ($array_family['imdb_rating']) {
             $content .= self::rating_to_comment($array_family['imdb_rating'], $array_family['imdb_rating_desc'], 1);
         }
 
@@ -579,8 +644,18 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
         $imdb_id = intval($imdb_id);
 
-        $sql = "UPDATE `data_pg_rating` SET `" . $rating_name . "_date` = '" . time() . "', `" . $rating_name . "_result` = '" . $rating_value . "' WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
-        Pdo_an::db_query($sql);
+        if ($rating_name =='imdb')
+        {
+            $sql = "UPDATE `data_pg_rating` SET  `" . $rating_name . "_result` = '" . $rating_value . "' WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
+
+        }
+        else
+        {
+            $sql = "UPDATE `data_pg_rating` SET `" . $rating_name . "_date` = '" . time() . "', `" . $rating_name . "_result` = '" . $rating_value . "' WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
+
+        }
+
+               Pdo_an::db_query($sql);
     }
 
     public function get_data() {
@@ -1126,6 +1201,7 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
                     if ($pg_rated) {
                         break;
                     }
+                    $cr = 5;
                     foreach ($rating_array[$limit] as $i => $v) {
                         if (strstr($i, ',')) {
                             $array_rating_index = explode(',', $i);
@@ -1258,7 +1334,9 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
 
 
-        if ($total && $update) {
+        if ($update) {
+            if (!$total)$total=0;
+
             $sql = "UPDATE `data_pg_rating` SET  `rwt_pg_result` = '" . $total . "' WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
             Pdo_an::db_query($sql);
 
@@ -1266,13 +1344,21 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
         }
 
         if ($update) {
-            !class_exists('RWT_RATING') ? include ABSPATH . "wp-content/themes/custom_twentysixteen/template/include/movie_rating.php" : '';
-            $data = new RWT_RATING;
-
-            $array_family_updated = $data->get_family_rating_in_movie($imdb_id);
 
 
-            if ($array_family['imdb_result'] != $array_family_updated['imdb_result'] || $array_family['cms_rating'] != $array_family_updated['cms_rating'] || $array_family['dove_result'] != $array_family_updated['dove_result'] || $array_family['rwt_audience'] != $array_family_updated['rwt_audience'] || $array_family['rwt_pg_result'] != $array_family_updated['rwt_pg_result'] || $array_family['lgbt_warning'] != $array_family_updated['lgbt_warning'] || $array_family['woke'] != $array_family_updated['woke']
+            if ($id !=$array_family['rwt_id'] )
+            {
+                $sql = "UPDATE `data_pg_rating` SET  `rwt_id` = '" . $id . "' WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
+                Pdo_an::db_query($sql);
+            }
+
+
+
+
+            $array_family_updated =self::get_family_rating_in_movie($imdb_id);
+
+
+            if ($array_family_updated['rwt_id'] != $array_family['rwt_id']  || $array_family['imdb_result'] != $array_family_updated['imdb_result'] || $array_family['cms_rating'] != $array_family_updated['cms_rating'] || $array_family['dove_result'] != $array_family_updated['dove_result'] || $array_family['rwt_audience'] != $array_family_updated['rwt_audience'] || $array_family['rwt_pg_result'] != $array_family_updated['rwt_pg_result'] || $array_family['lgbt_warning'] != $array_family_updated['lgbt_warning'] || $array_family['woke'] != $array_family_updated['woke']
             )
             {
                 $comment=' updated';

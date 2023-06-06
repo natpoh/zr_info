@@ -266,7 +266,12 @@ if (isset($_POST['oper'])) {
             echo $content;
 
             $oper = 'add_critic';
-        } else if ($type == "#add_audience_review") {
+        }
+
+
+
+
+        else if ($type == "#add_audience_review") {
             $content = '';
 
             //add movie
@@ -578,7 +583,19 @@ if (isset($_POST['oper'])) {
         }
 
         echo $movie_tmpl;
-    } else if ($oper == 'review_crowd') {
+    }
+
+     else if ($oper == 'ckeck_imdb_pg_rating') {
+         $id = intval($_POST['id']);
+        ///check pg rating
+         !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
+
+         $pg = new PgRatingCalculate();
+         $result = $pg->ckeck_imdb_pg_rating($id);
+        echo $result;
+        return;
+    }
+    else if ($oper == 'review_crowd') {
         $id = intval($_POST['id']);
 
 

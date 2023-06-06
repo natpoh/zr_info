@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+
+<svg
+   fill="#000000"
+   height="16"
+   width="16"
+   version="1.1"
+   id="Capa_1"
+   viewBox="0 0 9.8 9.8"
+   xml:space="preserve"
+   sodipodi:docname="down-arrow.svg"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+   id="defs9" /><sodipodi:namedview
+   id="namedview7"
+   pagecolor="#505050"
+   bordercolor="#ffffff"
+   borderopacity="1"
+   inkscape:showpageshadow="0"
+   inkscape:pageopacity="0"
+   inkscape:pagecheckerboard="1"
+   inkscape:deskcolor="#505050"
+   showgrid="false"
+   inkscape:zoom="20.54"
+   inkscape:cx="2.8967868"
+   inkscape:cy="4.211295"
+   inkscape:window-width="2560"
+   inkscape:window-height="1351"
+   inkscape:window-x="-9"
+   inkscape:window-y="-9"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="Capa_1" />
+<g
+   id="g4"
+   transform="matrix(0.02428147,0,0,0.02,-1.0489595,0)"
+   style="fill:#1a1a1a">
+	<path
+   d="M 52.8,311.3 C 40,298.5 40,277.9 52.8,265.1 c 6.4,-6.4 14.7,-9.6 23.1,-9.6 8.4,0 16.7,3.2 23.1,9.6 L 212.4,378.5 V 32.7 C 212.4,14.7 227,0 245.1,0 c 18,0 32.7,14.6 32.7,32.7 V 378.5 L 391,265.1 c 12.8,-12.8 33.4,-12.8 46.2,0 12.8,12.8 12.8,33.4 0,46.2 L 268.1,480.4 c -6.1,6.1 -14.4,9.6 -23.1,9.6 -8.7,0 -17,-3.4 -23.1,-9.6 z"
+   id="path2"
+   style="fill:#1a1a1a" />
+</g>
+</svg>

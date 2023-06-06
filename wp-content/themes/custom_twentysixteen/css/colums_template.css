@@ -636,6 +636,19 @@ body.theme_dark .inner_content.secton_gray {
     border-radius: 4px;
     flex-wrap: wrap;
 }
+
+.gl_zr_extlink {
+    display: block;
+    position: relative;
+    width: 30px;
+    height: 30px;
+    background: url(../images/link-external.svg);
+    background-repeat: no-repeat;
+    background-size: contain;
+    margin-left: 12px;
+    margin-top: -10px;
+}
+
 #global_zeitgeist  .in_fl_cnt{
     width: 100%;
 }
@@ -647,7 +660,8 @@ body.theme_dark .inner_content.secton_gray {
     border-radius: 0;
 }
 #global_zeitgeist .gl_zr_title {
-
+    display: flex;
+    align-items: center;
 }
 
 #global_zeitgeist .gl_zr_title >img{
@@ -656,7 +670,8 @@ body.theme_dark .inner_content.secton_gray {
 
 }
 #global_zeitgeist .gl_rating {
-
+    margin-left: 10px;
+    display: inline-block;
 }
 
 section.inner_content.widthed div.column_content div.card.style_1 {
@@ -1501,6 +1516,45 @@ body.theme_dark .popup-container .popup {
     max-height: 100%;
     overflow-y: auto;
 
+}
+
+
+a.update_data {
+    padding-left: 30px;
+    position: relative;
+}
+a.update_data::before {
+    content: "";
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin: 4px 4px 6px 0;
+    background: url(../images/update-arrow.svg);
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    top: 10px;
+    left: -3px;
+    position: relative;
+    transform: rotate(0deg);
+    transition: transform 0.5s ease;
+
+}
+@keyframes rotateAnimation {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+a.update_data.rotate::before {
+    animation: rotateAnimation 2s infinite linear;
+}
+
+.theme_dark a.update_data::before {
+
+filter: invert(1);
 }
 
 .row.hidden {
@@ -3881,7 +3935,9 @@ body.theme_dark .highcharts-legend-title tspan{
         top: 293px;
         right: 50px;
     }
-
+    #global_zeitgeist .gl_zr_title {
+        font-size: 1.3rem;
+    }
 }
 
 @media screen and (max-width: 450px) {

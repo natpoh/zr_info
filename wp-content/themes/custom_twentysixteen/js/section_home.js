@@ -667,7 +667,7 @@ function create_rating_content(object, m_id, search_block = 0)
     else if (value==0)
     {
         value='N/A';
-        scorecontent = 'Rating has not yet been added, please help improve our site and <div class="add_pg_rating_button"><a href="#" class="empty_ff_rating">Add Family Friendly Rating</a></div>';
+        scorecontent = 'No MPAA or IMDb parental guidance data has been imported yet.<br>Please help improve our site and <div class="add_pg_rating_button"><a href="#" class="empty_ff_rating">add a Family Friendly Rating.</a></div>';
 
     }
 
@@ -1487,11 +1487,9 @@ function global_zeitgeist_content(data)
 
                 let rating = item.rating;
 
-
-                if (rating > item.ratmax) {
-                    rating = rating / item.multipler;
-                }
                 if (rating) {
+                    rating = rating / item.multipler;
+
                     rating = rating + '/' + item.ratmax;
                 } else {
                     rating = '';
@@ -1508,7 +1506,7 @@ function global_zeitgeist_content(data)
                     flag = `<img style="width:40px;height:40px" src="https://zeitgeistreviews.com/wp-content/themes/custom_twentysixteen/images/flags/4x3/${item.flag}.svg">`;
                 }
 
-                result += `<a target="_blank" href="${item.link}" class="gl_zr_block" id="${item.ekey}"><p class="gl_zr_title">${flag+item.name}</p><div class="gl_rating">${rating}</div>${img_container}</a>`;
+                result += `<div class="gl_zr_block" id="${item.ekey}"><div class="gl_zr_title">${flag+item.name} <span class="gl_rating">${rating}</span><a class="gl_zr_extlink" target="_blank" href="${item.link}" ></a></div>${img_container}</div>`;
             }
 
         }
@@ -1610,7 +1608,7 @@ function load_ajax_block(block_id) {
         url = 'https://newsfilter.biz/service/ns_related.php?pid=' + parent_id;
     }
     if (block_id == 'global_zeitgeist') {
-        url = 'https://info.antiwoketomatoes.com/service/global_consensus.php&mid=' + parent_id;
+        url = 'https://info.antiwoketomatoes.com/service/global_consensus.php?mid=' + parent_id;
     }
 
     jQuery.ajax({
@@ -3515,7 +3513,38 @@ jQuery(document).ready(function () {
 
         return false;
     });
+    jQuery('body').on('click', '.update_data', function (e) {
 
+        let ths = jQuery(this);
+        ths.addClass('rotate');
+        var id = ths.attr('data-value');
+
+        jQuery.ajax({
+            type: 'post',
+            data: {
+                'oper': 'ckeck_imdb_pg_rating',
+                'id': id
+            },
+            url: crowdsource_url,
+            success: function (html) {
+                if (html)   {
+                    ths.removeClass('rotate');
+                    if (html==1)  ths.html('updated');
+
+
+                    if (html==2) {
+                        jQuery('input[id="action-popup"]').click();
+                        jQuery('.rating_block[id="'+id+'"] a.read_more_rating').click();
+                    }
+
+                }
+
+            }
+        });
+
+        return false;
+
+    });
 
     jQuery('body').on('click', '.add_pg_rating_button, .edit_family_rating, .empty_ff_rating', function (e) {
 
@@ -3523,7 +3552,14 @@ jQuery(document).ready(function () {
         {
             var prnt = jQuery(this).parents('.note.edit');
             var id = prnt.attr('id');
-        } else if (jQuery(this).hasClass('empty_ff_rating'))
+        }
+        else if (jQuery(this).hasClass('empty_ff_popup_rating'))
+        {
+           var id = jQuery(this).attr('data-value');
+            jQuery('input[id="action-popup"]').click();
+        }
+
+        else if (jQuery(this).hasClass('empty_ff_rating'))
         {
             var prnt = jQuery(this).parents('.rating_block');
             var id = prnt.attr('id');

@@ -378,7 +378,7 @@ if (!function_exists('get_audience_templ')) {
         }
 
 
-        $array_avatars = $avatars[$stars_data];
+        $array_avatars = $avatars[intval($stars_data)];
 
         if (is_array($array_avatars)) {
             $rand_keys = array_rand($array_avatars, 1);

@@ -1331,12 +1331,21 @@ body.theme_dark  .sort-wrapper .nav-tab.active > a {
     color: red; 
 }
 
-.sort-wrapper span.desc:after {
-    content: "↓";
-}
+.sort-wrapper span.desc:after, .sort-wrapper span.asc:after {
 
+    content: " ";
+    display: inline-block;
+    width: 11px;
+    height: 11px;
+    background: url(images/down-arrow.svg) 1px 0px / 11px 11px no-repeat;
+    margin-left: 3px;
+    margin-bottom: 2px;
+}
+.theme_dark .sort-wrapper span.desc:after, .theme_dark  .sort-wrapper span.asc:after{
+    filter: invert();
+}
 .sort-wrapper span.asc:after {
-    content: "↑";
+    rotate: 180deg;
 }
 
 
@@ -6776,18 +6785,25 @@ body.theme_dark.search .content-full {
     opacity: 0.6;
 }
 .site-header-menu .main-navigation .back-button::before {
-    content: "‹";
+    content: " ";
     display: block;
     float: left;
     font-size: 26px;
-    line-height: 12px;
-    margin-left: 0px;
-    margin-right: 10px;
-    font-family: 'Encode Sans Condensed', Courier;
-
     font-weight: normal;
+    background: url(images/arrow.svg) no-repeat;
+    background-size: contain;
+
+    width: 17px;
+    height: 17px;
+    font-weight: normal;
+    rotate: 180deg;
+    margin-left: -4px;
+    margin-right: 4px;
 }
 
+.theme_dark .site-header-menu .main-navigation .back-button::before {
+    filter: invert(1);
+}
 .site-header-menu .main-navigation .back-button {
     cursor: pointer;
     white-space: nowrap;
@@ -6807,7 +6823,7 @@ body.theme_dark.search .content-full {
 }
 
 .site-header-menu .main-navigation .primary-menu > li  a.toggled-on {
-    display: none;
+
 }
 .main-navigation ul.toggled-on {
     margin-left: 0;
@@ -8063,6 +8079,7 @@ body.theme_dark .site_theme_switch::before {
         bottom: 30px;
         position: fixed;
         top: unset;
+        z-index: 10;
     }
     .header_nav  .site-branding{
         z-index: 100;
@@ -8523,6 +8540,7 @@ body.theme_dark .site_theme_switch::before {
         border: 1px solid #939393;
         transition: all .3s cubic-bezier(.4,0,.2,1);
         width: 40px;
+        z-index: 10;
     }
     .hide_left_sidebar:hover{
         background-color: #e5e5e5;

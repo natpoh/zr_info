@@ -1182,7 +1182,7 @@ class CriticFront extends SearchFacets {
         } else if ($author_admin_img) {
             $actorsdata = $author_admin_img;
         } else if ($avatars) {
-            $array_avatars = $avatars[$stars_data];
+            $array_avatars = $avatars[intval($stars_data)];
 
             if (is_array($array_avatars)) {
                 $rand_keys = array_rand($array_avatars, 1);

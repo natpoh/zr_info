@@ -49,7 +49,7 @@ class WOKE
             $woke_array = explode(',', $woke_text);
             $woke_count = count($woke_array);
         }
-        return array('lgbt' => $lgbt_count, 'woke' => $woke_count);
+        return array('lgbt' => $lgbt_count, 'woke' => $woke_count,'lgbt_text'=>$lgbt_text,'woke_text'=>$woke_text);
     }
 
     private function rwt_audience($id, $type = 1, $update = '')
@@ -305,7 +305,7 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
             $woke_word_weight = $weihgt_total['woke_word_weight'];
 
             if ($debug) $this->debug_table('Woke data',$woke_word_weight ,'red');
-
+            if ($debug) $this->debug_table('Woke words', $array['woke_text']);
             $woke_input = $array['woke'];
             if ($woke_input>5)
             {
@@ -325,7 +325,7 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
             $lgbt_word_weight = $weihgt_total['lgbt_word_weight'];
 
             if ($debug) $this->debug_table('LBGT data',$lgbt_word_weight ,'red');
-
+            if ($debug) $this->debug_table('LBGT words', $array['lgbt_text']);
             $lgbt_input = $array['lgbt'];
             if ($lgbt_input>5)
             {
@@ -749,7 +749,7 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
 
 
 
-        $array = ['title'=>$title,'country'=>$country,'diversity' => $gender_data['diversity'], 'female' => $gender_data['gender'], 'woke' => $lgbt_count['woke'], 'lgbt' => $lgbt_count['lgbt'], 'audience' => $audience['rating'],
+        $array = ['title'=>$title,'country'=>$country,'diversity' => $gender_data['diversity'], 'female' => $gender_data['gender'], 'woke' => $lgbt_count['woke'], 'lgbt' => $lgbt_count['lgbt'],'lgbt_text'=>$lgbt_count['lgbt_text'],'woke_text'=>$lgbt_count['woke_text'], 'audience' => $audience['rating'],
             'boycott' => $audience['vote'], 'oweralbs' => $oweralbs, 'rtgap' => $erating['rotten_tomatoes_gap'], 'year' => $years, 'rtaudience' => $erating['rotten_tomatoes_audience'],
             'imdb' => $erating['imdb'], 'kino' => $erating['kinop_rating'], 'douban' => $erating['douban_rating']];
 
