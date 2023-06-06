@@ -899,7 +899,7 @@ class CriticMaticAdmin {
             $filters = array(
                 'type' => array(
                     'type_list' => $this->cm->author_type,
-                    'home_type=>' => 1,
+                    'home_type' => 1,
                 ),                
             );
             
@@ -2794,12 +2794,13 @@ class CriticMaticAdmin {
 
         if ($filters) {
             foreach ($filters as $key => $value) {
-                $type_list = $value;
-
-                $type_list = isset($value['type_list']) ? $value['type_list'] : $value;
                 $home_type = isset($value['home_type']) ? $value['home_type'] : -1;
-
+                
+                $type_list = $value;
+                $type_list = isset($value['type_list']) ? $value['type_list'] : $value;
+                
                 $type = isset($_GET[$key]) ? (int) $_GET[$key] : $home_type;
+   
                 # Custom query types
                 if ($c_type == 'author') {
                     $filter_type_arr = $this->cm->get_author_type_count($query_adb->get_query(), $type_list, $key, $all);

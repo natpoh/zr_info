@@ -90,17 +90,16 @@ if (sizeof($authors) > 0) {
 
                         <td>
                             <a href="<?php print $author_url ?>"><?php print $author_name ?></a>
-                           </td>
+                        </td>
 
                         <td><?php print $author_status ?></td>
                         <td><?php print $this->cm->author_show_type[$author->show_type] ?></td>
                         <td><?php
                             if ($author->avatar_name) {
                                 print $author->avatar_name;
-
-                                if ($options['image']) {
-                                    print '<br />URL exist';
-                                }
+                            }
+                            if ($options['image']) {
+                                print '<br />URL exist';
                             }
                             ?></td>
                         <td><?php print isset($options['autoblur']) && $options['autoblur'] == 1 ? 'True' : 'False'  ?></td>
