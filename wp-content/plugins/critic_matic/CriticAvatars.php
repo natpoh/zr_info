@@ -578,10 +578,13 @@ class CriticAvatars extends AbstractDB {
         return $result;
     }
 
-    public function isImage($temp_file) {
+    public function isImage($temp_file, $debug=false) {
         //Провереяем, картинка ли это
         @list($src_w, $src_h, $src_type_num) = array_values(getimagesizefromstring($temp_file));
         $src_type = image_type_to_mime_type($src_type_num);
+        if ($debug){
+            print_r($src_type);
+        }
 
         if (empty($src_w) || empty($src_h) || empty($src_type)) {
             return '';
@@ -624,7 +627,7 @@ class CriticAvatars extends AbstractDB {
                 $file_content = $this->get_file_content($img, $debug);
 
                 // This is an image?
-                $src_type = $this->isImage($file_content);
+                $src_type = $this->isImage($file_content, $debug);
                 if (!$src_type) {
                     $ret[$author->id] = 0;
                     continue;
