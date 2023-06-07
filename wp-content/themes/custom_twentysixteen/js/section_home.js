@@ -3516,6 +3516,8 @@ jQuery(document).ready(function () {
     jQuery('body').on('click', '.update_data', function (e) {
 
         let ths = jQuery(this);
+
+        let type =ths.attr('id');
         ths.addClass('rotate');
         var id = ths.attr('data-value');
 
@@ -3523,7 +3525,8 @@ jQuery(document).ready(function () {
             type: 'post',
             data: {
                 'oper': 'ckeck_imdb_pg_rating',
-                'id': id
+                'id': id,
+                'data_type':type
             },
             url: crowdsource_url,
             success: function (html) {
@@ -3533,8 +3536,18 @@ jQuery(document).ready(function () {
 
 
                     if (html==2) {
-                        jQuery('input[id="action-popup"]').click();
-                        jQuery('.rating_block[id="'+id+'"] a.read_more_rating').click();
+                        if (type=='last_imdb_pg_update')
+                        {
+                            jQuery('input[id="action-popup"]').click();
+                            jQuery('.rating_block[id="'+id+'"] a.read_more_rating').click();
+                        }
+                        else   if (type=='update_data')
+                        {
+                            jQuery('input[id="action-popup"]').click();
+                            jQuery('.rating_block[id="'+id+'"] a.how_calculate_rating').click();
+                        }
+
+
                     }
 
                 }

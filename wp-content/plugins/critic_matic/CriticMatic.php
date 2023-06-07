@@ -83,7 +83,7 @@ class CriticMatic extends AbstractDB {
      * Authors
      */
     public $author_type = array(
-        0 => 'Staff',
+        /* 0 => 'Staff', */
         1 => 'Critic',
         2 => 'Audience'
     );
@@ -97,6 +97,12 @@ class CriticMatic extends AbstractDB {
         0 => 'All',
         1 => 'Hide in Home page',
     );
+    
+    public $pro_author_avatar = array(
+        0 => 'None',
+        1 => 'Exist',
+    );
+    
     public $authors_tabs = array(
         'home' => 'Authors list',
         'add' => 'Add a new author',
@@ -260,6 +266,10 @@ class CriticMatic extends AbstractDB {
         $this->sync_status = DB_SYNC_MODE;
         $this->sync_client = DB_SYNC_MODE == 2 ? true : false;
         $this->sync_server = DB_SYNC_MODE == 1 ? true : false;
+        
+        if ($this->sync_client){
+            unset($this->author_tabs['edit']);
+        }
     }
 
     public function get_ac() {
@@ -391,7 +401,6 @@ class CriticMatic extends AbstractDB {
         return $this->ma;
     }
 
-    
     public function get_si() {
         // Get site img
         if (!$this->si) {
@@ -402,7 +411,7 @@ class CriticMatic extends AbstractDB {
         }
         return $this->si;
     }
-    
+
     function admin_bar_render($wp_admin_bar) {
         if ($this->new_audience_count > 0 && $this->user_can) {
 
@@ -1770,7 +1779,89 @@ class CriticMatic extends AbstractDB {
         return $feed_actions;
     }
 
+    public function get_authors_query($q_req = array(), $page = 1, $perpage = 20, $orderby = '', $order = 'ASC', $count = false) {
+        $q_def = array(
+            'status' => -1,            
+            'type' => -1,
+            'avatar' => -1,
+            'tag' => 0,
+        );
+
+        $q = array();
+        foreach ($q_def as $key => $value) {
+            $q[$key] = isset($q_req[$key]) ? $q_req[$key] : $value;
+        }
+        
+        $filters_and = '';
+
+        // Custom status
+        $status_trash = 2;
+        $filters_and = " WHERE a.status != " . $status_trash;
+        if ($q['status'] != -1) {
+            $filters_and = sprintf(" WHERE a.status = %d", (int) $q['status']);
+        }
+
+        //Custom type
+
+        if ($q['type'] != -1) {
+            $filters_and .= sprintf(" AND a.type = %d", (int) $q['type']);
+        }
+
+        // Avatar
+
+        if ($q['avatar'] != -1) {
+            $filters_and .= sprintf(" AND a.avatar = %d", (int) $q['avatar']);
+        }
+        
+        //Custom tag
+
+        $tags_inner = '';
+        if ($q['tag'] > 0) {
+            $tags_inner = " INNER JOIN {$this->db['tag_meta']} t ON t.cid = a.id ";
+            $filters_and .= sprintf(" AND t.tid = %d", $q['tag']);
+        }
+
+        //Sort
+        $and_orderby = '';
+        $limit = '';
+        if (!$count) {
+
+            if ($orderby && in_array($orderby, $this->sort_pages)) {
+                $and_orderby = ' ORDER BY ' . $orderby;
+                if ($order) {
+                    $and_orderby .= ' ' . $order;
+                }
+            } else {
+                $and_orderby = " ORDER BY name ASC";
+            }
+
+            $page -= 1;
+            $start = $page * $perpage;
+
+            if ($perpage > 0) {
+                $limit = " LIMIT $start, " . $perpage;
+            }
+
+            $select = 'a.id, a.status, a.type, a.name, a.options, a.wp_uid, a.show_type, a.avatar, a.avatar_name';
+        } else {
+            $select = " COUNT(a.id)";
+        }
+
+
+        $sql = "SELECT " . $select . " FROM {$this->db['authors']} a" . $tags_inner . $filters_and. $and_orderby . $limit;
+
+
+        if (!$count) {
+            $result = $this->db_results($sql);
+        } else {
+            $result = $this->db_get_var($sql);
+        }
+
+        return $result;
+    }
+
     public function get_authors($status = 0, $page = 1, $tag = 0, $type = -1, $orderby = '', $order = 'ASC') {
+        // DEPRECATED
         $page -= 1;
         $start = $page * $this->perpage;
 
@@ -1834,7 +1925,36 @@ class CriticMatic extends AbstractDB {
         return $result;
     }
 
+    public function get_authors_query_count($q_req = array()) {
+        return $this->get_authors_query($q_req, $page = 1, 1, '', '', true);
+    }
+
+    public function get_author_type_count($q_req = array(), $types = array(), $custom_type = '', $all = true) {
+        $status = -1;
+        $count = $this->get_authors_query_count($q_req);
+        if ($all) {
+            $states = array(
+                '-1' => array(
+                    'title' => 'All',
+                    'count' => $count
+                )
+            );
+        } else {
+            $states = array();
+        }
+        $q_req_custom = $q_req;
+
+        foreach ($types as $key => $value) {
+            $q_req_custom[$custom_type] = $key;
+            $states[$key] = array(
+                'title' => $value,
+                'count' => $this->get_authors_query_count($q_req_custom));
+        }
+        return $states;
+    }
+
     public function get_authors_count($status = -1, $tag = 0, $type = -1) {
+        // DEPRECATED
         // Custom status
         $status_trash = 2;
         $status_query = " AND a.status != " . $status_trash;
@@ -1898,14 +2018,18 @@ class CriticMatic extends AbstractDB {
         return $feed_states;
     }
 
-    public function get_author_types() {
+    public function get_author_types($all = true) {
         $count = $this->get_authors_count();
-        $feed_states = array(
-            '-1' => array(
-                'title' => 'All',
-                'count' => $count
-            )
-        );
+        if ($all) {
+            $feed_states = array(
+                '-1' => array(
+                    'title' => 'All',
+                    'count' => $count
+                )
+            );
+        } else {
+            $feed_states = array();
+        }
         foreach ($this->author_type as $key => $value) {
             $feed_states[$key] = array(
                 'title' => $value,

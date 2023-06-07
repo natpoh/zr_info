@@ -589,10 +589,11 @@ if (isset($_POST['oper'])) {
          $id = intval($_POST['id']);
         ///check pg rating
          !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
-
          $pg = new PgRatingCalculate();
-         $result = $pg->ckeck_imdb_pg_rating($id);
-        echo $result;
+         $type =  $_POST['data_type'];
+         $result = $pg->ckeck_imdb_pg_rating($id,$type);
+         echo $result;
+
         return;
     }
     else if ($oper == 'review_crowd') {
@@ -601,7 +602,7 @@ if (isset($_POST['oper'])) {
 
         //////movie
         if (isset($_POST['movie']))
-            ;
+
         {
             $movie_id = $_POST['movie'];
             $ma_id = intval($movie_id);

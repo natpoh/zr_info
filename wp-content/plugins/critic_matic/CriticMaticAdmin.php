@@ -890,32 +890,45 @@ class CriticMaticAdmin {
 
         if (!$curr_tab) {
             // Authors   
-            // Filter by author type
-            $home_author_type = -1;
-            $author_type = isset($_GET['author_type']) ? (int) $_GET['author_type'] : $home_author_type;
-            $filter_author_type_arr = $this->cm->get_author_types();
-            $filters_author_type = $this->get_filters($filter_author_type_arr, $page_url, $author_type, $front_slug = '', $name = 'author_type');
-            if ($author_type != $home_author_type) {
-                $page_url = $page_url . '&author_type=' . $author_type;
-                $count = isset($filters_author_type[$author_type]['count']) ? $filters_author_type[$author_type]['count'] : 0;
+
+            $author_type = isset($_GET['type']) ? (int) $_GET['type'] : 1;
+
+            $query_adb = new QueryADB();
+
+
+            $filters = array(
+                'type' => array(
+                    'type_list' => $this->cm->author_type,
+                    'home_type' => 1,
+                ),                
+            );
+            
+            if ($author_type==1){
+                $filters['avatar'] =$this->cm->pro_author_avatar;
             }
+            
+            $filters['status'] =$this->cm->author_status;
+            
 
-            // Filter by status
-            $home_status = -1;
-            $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_status;
-            $filter_arr = $this->cm->get_author_states($author_type);
-            $filters = $this->get_filters($filter_arr, $page_url, $status);
-            if ($status != $home_status) {
-                $page_url = $page_url . '&status=' . $status;
-            }
 
-            $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
+            $filters_tabs = $this->get_filters_tabs($filters, $page_url, $query_adb, 'author', false);
+            $query_adb = $filters_tabs['query_adb'];
+            $query = $query_adb->get_query();
+            $page_url = $filters_tabs['p'];
+            $count = $filters_tabs['c'];
 
+
+            $per_page = $this->cm->perpage;
             $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
+            $authors = $this->cm->get_authors_query($query, $page, $per_page, $orderby, $order);
 
-            $authors = $this->cm->get_authors($status, $page, 0, $author_type, $orderby, $order);
-            $author_status = $this->cm->author_status;
-            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_authors.php');
+
+
+            if ($author_type == 1) {
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_authors.php');
+            } else {
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_authors_audience.php');
+            }
         } else if ($curr_tab == 'add') {
             // Add
             if (isset($_POST['name'])) {
@@ -2772,7 +2785,7 @@ class CriticMaticAdmin {
         return '<ul class="cm-filters subsubsub' . $class . '">' . $first . implode(' | ', $ret) . '</ul>';
     }
 
-    public function get_filters_tabs($filters = array(), $p = '', $query_adb = '') {
+    public function get_filters_tabs($filters = array(), $p = '', $query_adb = '', $c_type = 'post', $all = true) {
         if (!$query_adb) {
             $query_adb = new QueryADB();
         }
@@ -2780,10 +2793,21 @@ class CriticMaticAdmin {
         $filters_tabs = array();
 
         if ($filters) {
-            foreach ($filters as $key => $type_list) {
-                $home_type = -1;
+            foreach ($filters as $key => $value) {
+                $home_type = isset($value['home_type']) ? $value['home_type'] : -1;
+                
+                $type_list = $value;
+                $type_list = isset($value['type_list']) ? $value['type_list'] : $value;
+                
                 $type = isset($_GET[$key]) ? (int) $_GET[$key] : $home_type;
-                $filter_type_arr = $this->cm->get_post_type_count($query_adb->get_query(), $type_list, $key);
+   
+                # Custom query types
+                if ($c_type == 'author') {
+                    $filter_type_arr = $this->cm->get_author_type_count($query_adb->get_query(), $type_list, $key, $all);
+                } else {
+                    # Post default
+                    $filter_type_arr = $this->cm->get_post_type_count($query_adb->get_query(), $type_list, $key);
+                }
                 $filters_type = $this->get_filters($filter_type_arr, $p, $type, '', $key);
                 if ($type != $home_type) {
                     $p = $p . '&' . $key . '=' . $type;
@@ -3043,7 +3067,7 @@ class CriticMaticAdmin {
                         }
                         if ($status != -1) {
                             foreach ($ids as $id) {
-                                $this->cm->update_author_status($id, $status);                                
+                                $this->cm->update_author_status($id, $status);
                             }
                             $updated = true;
                         }

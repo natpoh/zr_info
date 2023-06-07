@@ -695,6 +695,12 @@ body.theme_dark  .rating_row .rating_row_content {
     padding: 7px;
     position: relative;
 }
+
+.flex_movies_block   .movie_container  .link_adimin_info{
+    display: none;
+}
+
+
 .flex_movies_block{
     display: flex;
     width: 100%;
