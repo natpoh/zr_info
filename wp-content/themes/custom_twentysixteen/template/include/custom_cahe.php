@@ -42,6 +42,19 @@ if ( $local_cahe == true ) {
         }
     }
 
+    function clear_wp_custom_cache($cachename = null, $folder = 'fastcache')
+    {
+
+        $path = 'wp-content/uploads/' . $folder;
+        $file_name = ABSPATH .''.$path . '/' . $cachename . '.html';
+
+        if (file_exists($file_name)) {
+            unlink($file_name);
+        }
+
+
+    }
+
     function wp_custom_cache($name = null, $folder = 'fastcache', $time = 3600)
     {
 

@@ -25,6 +25,8 @@ class PgRating
     public static function update_pg_rating_cms($imdb_id = '',$debug='')
     {
         $array_result_data = [];
+        !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
+        $PgRatingCalculate = new PgRatingCalculate();
 
 
 
@@ -47,10 +49,15 @@ class PgRating
         $i = 0;
         foreach ($rows as $r) {
 
+
+
+
             $rows_data =   self::get_movie_data($r['id']);
             $movie_id = $rows_data['movie_id'];
             $title = $rows_data['title'];
             $type = $rows_data['type'];
+
+            $array_family = $PgRatingCalculate->get_family_rating_in_movie($movie_id);
 
 
             if ($debug){echo 'try get cms '.$title.' '.$movie_id.'<br>';}
@@ -71,23 +78,29 @@ class PgRating
 
             if ($commonsense_link) {
 
-                $sql = "UPDATE `data_pg_rating` SET `cms_date` = '" . time() . "',
+                if ($array_family['cms_link'] != $commonsense_link || $array_family['cms_rating'] != $commonsense_data || $array_family['cms_rating_desk'] != $commonsense_comment)
+                {
+
+
+                    $sql = "UPDATE `data_pg_rating` SET `cms_date` = '" . time() . "',
         `cms_link`=?,
         `cms_rating`=?,
         `cms_rating_desk`=? 
           WHERE `data_pg_rating`.`movie_id` = " . $movie_id;
-                Pdo_an::db_results_array($sql, array($commonsense_link, $commonsense_data, $commonsense_comment));
+                    Pdo_an::db_results_array($sql, array($commonsense_link, $commonsense_data, $commonsense_comment));
 
-                $array_result_data[]=$movie_id;
-                if ($debug)echo 'update cms '.$movie_id.'<br>'.PHP_EOL;
-
-
+                    $array_result_data[] = $movie_id;
+                    if ($debug) echo 'update cms ' . $movie_id . '<br>' . PHP_EOL;
 
 
-                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', 'data_pg_rating', array('movie_id' => $movie_id), 'pg_rating',9,['skip'=>['id']]);
-                $comment= 'updated';
-            } else {
+                    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                    Import::create_commit('', 'update', 'data_pg_rating', array('movie_id' => $movie_id), 'pg_rating', 9, ['skip' => ['id']]);
+                    $comment = 'updated';
+                }
+            }
+
+
+            else {
                 $sql = "UPDATE `data_pg_rating` SET `cms_date` = '" . time() . "'  WHERE `data_pg_rating`.`movie_id` = " . $movie_id;
                 Pdo_an::db_query($sql);
                 if ($debug)echo 'not new data cms '.$movie_id.'<br>'.PHP_EOL;
@@ -450,10 +463,18 @@ class PgRating
                     if ($debug) echo $url_inner.' ';
                     $result2 = GETCURL::getCurlCookie($url_inner);
 
-                   // if ($debug) echo $result2;
+
                     $array_total=[];
 
                     $final_value = sprintf('%07d', $movie_id);
+                    if ($debug)
+                    {
+                        echo 'find tt' . $final_value;
+                        echo $result2;
+                    }
+
+
+
                     if (strstr($result2, 'tt' . $final_value)) {
                         $pos = 'review-view-content-grid';
 

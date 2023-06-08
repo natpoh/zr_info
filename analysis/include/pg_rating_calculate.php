@@ -15,20 +15,19 @@ class PgRatingCalculate {
     {
         $imdb_id = self::get_imdb_id_from_id($id);
         $array_family = self::get_family_rating_in_movie($imdb_id);
+        $cur_total =  $array_family['rwt_pg_result'];
+
         $last_updated = $array_family['cms_date'];
         if ($last_updated < time()-86400)
         {
            !class_exists('PgRating') ? include ABSPATH . "analysis/include/pg_rating.php" : '';
            PgRating::update_pg_rating_cms($imdb_id );
 
-            $total =$array_family['cms_result'];
 
 
-            $array_family = self::get_family_rating_in_movie($imdb_id);
-            $cur_total =$array_family['cms_result'];
 
-
-            if ($cur_total!=$total){return(2);}
+           $total =  self::CalculateRating($imdb_id,$id);
+           if ($cur_total!=$total){return(2);}
 
             return 1;
         }
@@ -557,6 +556,9 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
     public static function get_movie_desc($id) {
         $content = self::debug_table('s');
 
+        $movie_type = self::get_data_in_movie('type', '',$id);
+
+
         $imdb_id = self::get_imdb_id_from_id($id);
         $array_family = self::get_family_rating_in_movie($imdb_id);
 
@@ -617,56 +619,49 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
             $content .= self::rating_to_comment($array_family['imdb_rating'], $array_family['imdb_rating_desc'], 1);
         }
 
-        if ($array_family['cms_rating']) {
-            $content .= self::debug_table('<h3>Commonsensemedia Rating</h3><a target="_blank" href="' . $array_family['cms_link'] . '">' . $array_family['cms_link'] . '</a>');
-            $content .= self::rating_to_comment($array_family['cms_rating'], $array_family['cms_rating_desk']);
-        }
-        else
-        {
-            $last_cm_updated  = $array_family['cms_date'];
-            if ($last_cm_updated)
-            {
-                $last_cm_updated_string = date('Y-m-d',$last_cm_updated);
-            }
-            else
-            {
+        if ($movie_type!='VideoGame') {
+
+            $last_cm_updated = $array_family['cms_date'];
+            if ($last_cm_updated) {
+                $last_cm_updated_string = date('Y-m-d', $last_cm_updated);
+            } else {
                 $last_cm_updated_string = 'never';
             }
-            $cmslink =$array_family['cms_link'];
 
-
-            if (!$cmslink)
-
+            $update_link = '';
+            if ($last_cm_updated < time()-86400)
             {
-
-                !class_exists('PgRating') ? include ABSPATH . "analysis/include/pg_rating.php" : '';
-                $cmslink = PgRating::get_cms_link($id);
+                $update_link = '<a href="#" id="last_cms_pg_update" data-value="' . $id . '" class="update_data">Update data</a>';
             }
 
 
-            if ($cmslink)
-            {
-                $cms_extlink = '<a target="_blank" href="' . $cmslink. '">https://www.commonsensemedia.org</a>';
+            if ($array_family['cms_rating']) {
 
-                $update_link='';
-                if ($last_cm_updated < time()-86400)
-                {
-                    $update_link = '<a href="#" id="last_cms_pg_update" data-value="'.$id.'" class="update_data">Update data</a>';
+                $cms_extlink ='<a target="_blank" href="' . $array_family['cms_link'] . '">' . $array_family['cms_link'].'</a>';
+
+            } else {
+
+                    !class_exists('PgRating') ? include ABSPATH . "analysis/include/pg_rating.php" : '';
+                    $cmslink = PgRating::get_cms_link($id);
+
+                if ($cmslink) {
+                    $cms_extlink = '<a target="_blank" href="' . $cmslink . '">https://www.commonsensemedia.org</a>';
+
                 }
-
-                $content .= self::debug_table('<h3>Commonsensemedia Rating</h3>'.$cms_extlink.'<br><p class="last_updated_desc">last updated: '.$last_cm_updated_string.$update_link.'</p>');
-
             }
+             $content .= self::debug_table('<h3>Commonsensemedia Rating</h3>' . $cms_extlink . '<br><p class="last_updated_desc">last updated: ' . $last_cm_updated_string . $update_link . '</p>');
+
+             $content .= self::rating_to_comment($array_family['cms_rating'], $array_family['cms_rating_desk']);
 
 
 
-
+            if ($array_family['dove_rating']) {
+                $content .= self::debug_table('<h3>Dove Rating</h3><a target="_blank" href="' . $array_family['dove_link'] . '">' . $array_family['dove_link'] . '</a>');
+                $content .= self::rating_to_comment($array_family['dove_rating'], $array_family['dove_rating_desc']);
+            }
         }
 
-        if ($array_family['dove_rating']) {
-            $content .= self::debug_table('<h3>Dove Rating</h3><a target="_blank" href="' . $array_family['dove_link'] . '">' . $array_family['dove_link'] . '</a>');
-            $content .= self::rating_to_comment($array_family['dove_rating'], $array_family['dove_rating_desc']);
-        }
+
 
         $content .= self::debug_table('e');
 

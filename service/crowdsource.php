@@ -106,9 +106,9 @@ function critic_crowd_validation($link, $row = []) {
                         // Need add a new movie to post
                     } else {
                         // Need publish post
-                        if (!$movies_meta) {
-                            // Need add a new movie to post
-                        }
+//                        if (!$movies_meta) {
+//                            // Need add a new movie to post
+//                        }
                     }
                 }
             } else {
@@ -606,6 +606,15 @@ if (isset($_POST['oper'])) {
 
          echo $result;
 
+         ///clear page cache
+         if ($result==2)
+         {
+             if (!function_exists('wp_custom_cache')) {
+                 require(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/include/custom_cahe.php');
+             }
+
+              clear_wp_custom_cache('p-'.$id.'_show_actors_template_single_1', 'fastcache');
+         }
         return;
     }
     else if ($oper == 'review_crowd') {
