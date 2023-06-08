@@ -322,7 +322,7 @@ class RWT_RATING
         $indie=0;
         $data=[];
 
-        $q="SELECT ds.* FROM `data_movie_distributors` as ds  LEFT JOIN meta_movie_distributors as m ON ds.`id` = m.`did`  WHERE (ds.`type` = 1 OR ds.`parent` >0 OR ds.`type` = 2 ) and  m.`mid` = ".$mid;
+        $q="SELECT ds.* FROM `data_movie_distributors` as ds  LEFT JOIN meta_movie_distributors as m ON ds.`id` = m.`did`  WHERE (ds.`type` = 1 OR ds.`parent` >0 OR ds.`type` = 2 )  and m.`type` = 0  and  m.`mid` = ".$mid;
 
         $r = Pdo_an::db_results_array($q);
         foreach ($r as $row)

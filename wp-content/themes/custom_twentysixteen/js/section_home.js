@@ -3536,12 +3536,12 @@ jQuery(document).ready(function () {
 
 
                     if (html==2) {
-                        if (type=='last_imdb_pg_update')
+                        if (type=='last_imdb_pg_update' || type=='last_cms_pg_update')
                         {
                             jQuery('input[id="action-popup"]').click();
                             jQuery('.rating_block[id="'+id+'"] a.read_more_rating').click();
                         }
-                        else   if (type=='update_data')
+                        else   if (type=='last_pg_update')
                         {
                             jQuery('input[id="action-popup"]').click();
                             jQuery('.rating_block[id="'+id+'"] a.how_calculate_rating').click();

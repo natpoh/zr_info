@@ -591,7 +591,19 @@ if (isset($_POST['oper'])) {
          !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
          $pg = new PgRatingCalculate();
          $type =  $_POST['data_type'];
-         $result = $pg->ckeck_imdb_pg_rating($id,$type);
+
+
+         if ($type =='last_cms_pg_update')
+         {
+             $result = $pg->ckeck_cms_pg_rating($id);
+         }
+         else
+         {
+             $result = $pg->ckeck_imdb_pg_rating($id,$type);
+         }
+
+
+
          echo $result;
 
         return;

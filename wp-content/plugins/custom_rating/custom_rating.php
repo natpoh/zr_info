@@ -477,6 +477,12 @@ class CustomRating
 
         }
 
+
+        if (!$rating['Commonsensemedia']["diverse"])$rating['Commonsensemedia']["diverse"] = '0.7';
+        if (!$rating['Commonsensemedia']["drinking"])$rating['Commonsensemedia']["drinking"] = '0.6';
+
+
+
         if (! $rating['PG_games_limit'] )
         {
             $rating['PG_games_limit'] = array('4+,L,TE,E,EC,0,6,3+,A,3,0+,U,ALL,6+' => '3-5', 'PG,9+,12+,ATP,G,10,E10+,7+,10' => '2-4.5', 'PG-13,T,MA 15+,14,12,12+,+13,14+,B,C,R13' => '1-3.5','M,MA 15+,R15,15,15+,B15,16,R16,16+,ADV16,D'=>'0-2.4','17+,+18,R 18+,18,18+,AO,Z,R18,M18,21'=>'0-2');

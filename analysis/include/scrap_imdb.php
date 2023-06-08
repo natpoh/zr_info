@@ -1486,7 +1486,13 @@ function add_movie_production()
 
 }
 
+function update_pg_rating_cms($id){
 
+$imdb_id = TMDB::get_imdb_id_from_id($id);
+
+    !class_exists('PgRating') ? include ABSPATH . "analysis/include/pg_rating.php" : '';
+    PgRating::update_pg_rating_cms($imdb_id ,1);
+}
 function add_empty_actors($id='')
 {
     check_load(50,60);
@@ -3575,6 +3581,15 @@ if (isset($_GET['update_crowd_verdict'])) {
 
     return;
 }
+
+
+if (isset($_GET['update_pg_rating_cms'])) {
+
+    update_pg_rating_cms($_GET['update_pg_rating_cms'])  ;
+
+    return;
+}
+
 if (isset($_GET['add_empty_actors'])) {
 
     add_empty_actors($_GET['add_empty_actors'])  ;

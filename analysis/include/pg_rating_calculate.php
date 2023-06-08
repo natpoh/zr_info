@@ -9,7 +9,37 @@ if (!defined('ABSPATH'))
 
 class PgRatingCalculate {
 
-    public  function ckeck_imdb_pg_rating($id,$post_type)
+
+
+    public  function ckeck_cms_pg_rating($id)
+    {
+        $imdb_id = self::get_imdb_id_from_id($id);
+        $array_family = self::get_family_rating_in_movie($imdb_id);
+        $last_updated = $array_family['cms_date'];
+        if ($last_updated < time()-86400)
+        {
+           !class_exists('PgRating') ? include ABSPATH . "analysis/include/pg_rating.php" : '';
+           PgRating::update_pg_rating_cms($imdb_id );
+
+            $total =$array_family['cms_result'];
+
+
+            $array_family = self::get_family_rating_in_movie($imdb_id);
+            $cur_total =$array_family['cms_result'];
+
+
+            if ($cur_total!=$total){return(2);}
+
+            return 1;
+        }
+        return 0;
+
+
+
+    }
+
+
+        public  function ckeck_imdb_pg_rating($id,$post_type)
     {
 
 
@@ -591,6 +621,47 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
             $content .= self::debug_table('<h3>Commonsensemedia Rating</h3><a target="_blank" href="' . $array_family['cms_link'] . '">' . $array_family['cms_link'] . '</a>');
             $content .= self::rating_to_comment($array_family['cms_rating'], $array_family['cms_rating_desk']);
         }
+        else
+        {
+            $last_cm_updated  = $array_family['cms_date'];
+            if ($last_cm_updated)
+            {
+                $last_cm_updated_string = date('Y-m-d',$last_cm_updated);
+            }
+            else
+            {
+                $last_cm_updated_string = 'never';
+            }
+            $cmslink =$array_family['cms_link'];
+
+
+            if (!$cmslink)
+
+            {
+
+                !class_exists('PgRating') ? include ABSPATH . "analysis/include/pg_rating.php" : '';
+                $cmslink = PgRating::get_cms_link($id);
+            }
+
+
+            if ($cmslink)
+            {
+                $cms_extlink = '<a target="_blank" href="' . $cmslink. '">https://www.commonsensemedia.org</a>';
+
+                $update_link='';
+                if ($last_cm_updated < time()-86400)
+                {
+                    $update_link = '<a href="#" id="last_cms_pg_update" data-value="'.$id.'" class="update_data">Update data</a>';
+                }
+
+                $content .= self::debug_table('<h3>Commonsensemedia Rating</h3>'.$cms_extlink.'<br><p class="last_updated_desc">last updated: '.$last_cm_updated_string.$update_link.'</p>');
+
+            }
+
+
+
+
+        }
 
         if ($array_family['dove_rating']) {
             $content .= self::debug_table('<h3>Dove Rating</h3><a target="_blank" href="' . $array_family['dove_link'] . '">' . $array_family['dove_link'] . '</a>');
@@ -673,7 +744,7 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
     public function get_data() {
 
-
+        !class_exists('PgRating') ? include ABSPATH . "analysis/include/pg_rating.php" : '';
 
 
         global $table_prefix;
@@ -689,7 +760,7 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
             $rating['convert'] = array("None" => 0, "Mild" => 1.5, "Moderate" => 3, "Severe" => 5);
             $rating['Imdb'] = array("nudity" => 1, "violence" => 1, "profanity" => 1, "alcohol" => 1, "frightening" => 1);
-            $rating['Commonsensemedia'] = array("educational" => 1, "message" => 1, "role_model" => 1, "sex" => 1, "violence" => 1, "language" => 1, "drugs" => 1, "consumerism" => 1);
+            $rating['Commonsensemedia'] = PgRating::rating_cms_array();
             $rating['Dove'] = array("Faith" => 1, "Integrity" => 1, "Sex" => 1, "Language" => 1, "Violence" => 1, "Drugs" => 1, "Nudity" => 1, "Other" => 1);
             $rating['Positive'] = array('imdb_weight' => 1, 'cms_weight' => 1, 'dove_weight' => 1, 'audience_rating' => 1, 'staff_rating' => 3, 'total_imdb_rating' => 5, 'total_positive_rwt' => 1);
             return $rating;
@@ -844,8 +915,10 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
         $rating_array = self::get_data();
 
+
+        !class_exists('PgRating') ? include ABSPATH . "analysis/include/pg_rating.php" : '';
         ///get
-        $array_cms_rating_type = array("educational" => 1, "message" => 1, "role_model" => 1, "sex" => -1, "violence" => -1, "language" => -1, "drugs" => -1, "consumerism" => -1);
+        $array_cms_rating_type = PgRating::rating_cms_array(2);//array("educational" => 1, "message" => 1, "role_model" => 1, "sex" => -1, "violence" => -1, "language" => -1, "drugs" => -1, "consumerism" => -1);
         $array_dove_rating_type = array("Faith" => 1, "Integrity" => 1, "Sex" => -1, "Language" => -1, "Violence" => -1, "Drugs" => -1, "Nudity" => -1, "Other" => -1);
         $array_rwt_rating_type = array("message" => 1, "nudity" => -1, "violence" => -1, "language" => -1, "drugs" => -1, "other" => -1);
         $array_rating_convert = $rating_array['convert'];

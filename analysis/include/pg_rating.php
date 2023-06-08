@@ -55,7 +55,7 @@ class PgRating
 
             if ($debug){echo 'try get cms '.$title.' '.$movie_id.'<br>';}
 
-            $array_commonsense = self::get_content_commonsense($title, $type, $movie_id);
+            $array_commonsense = self::get_content_commonsense($title, $type, $movie_id,$debug);
 
             $commonsense_link = $array_commonsense['link'];
 
@@ -105,7 +105,7 @@ class PgRating
     }
     public static function get_movie_data($mid)
     {
-        $sql = "SELECT movie_id, title  FROM `data_movie_imdb` WHERE data_movie_imdb.id ='{$mid}' limit 1";
+        $sql = "SELECT `movie_id`, `title`, `type`  FROM `data_movie_imdb` WHERE data_movie_imdb.id ='{$mid}' limit 1";
         $data = Pdo_an::db_results_array($sql);
         return $data[0];
 
@@ -319,8 +319,81 @@ class PgRating
 
         return;
     }
+    public static function get_cms_link($id)
+    {
+        $rows_data =   self::get_movie_data($id);
+        $url='';
 
-    public static function get_content_commonsense($title, $type, $movie_id)
+        $title = $rows_data['title'];
+        $type = $rows_data['type'];
+
+        $array_type = array('Movie' => 'movie', 'TVSeries' => 'tv', 'TVEpisode' => 'tv');
+        if ($array_type[$type])
+        {
+            $type_request = '?f%5B0%5D=field_reference_review_ent_prod%253Atype%3Acsm_movie&f%5B1%5D=field_reference_review_ent_prod%3Atype%3Acsm_' . $array_type[$type];
+
+            $url = "https://www.commonsensemedia.org/search/" . rawurlencode($title) . $type_request;
+
+        }
+
+        return $url;
+    }
+    private static function exlude_cms_data($array)
+    {
+        $convert_array = self::rating_cms_array(1);
+
+        $result = [];
+        foreach ($array as $data)
+        {
+            $reg_name = '/id=\"content-grid-item-([a-z -_]+)-score\"/';
+            if (preg_match($reg_name,$data,$match))
+            {
+                $name = $match[1];
+
+            }
+            if ($name) {
+
+                $reg_cmnt = '/data-text=\"([^\"]+)\"/';
+                if (preg_match($reg_cmnt, $data, $match)) {
+                    $content = $match[1];
+                    $content=  html_entity_decode($content);
+                }
+
+
+                //stars
+                $targetWord = 'icon-circle-solid active';
+                $wordCount = substr_count($data, $targetWord);
+
+                if ($convert_array[$name])
+                {
+                    $name =  $convert_array[$name];
+                }
+
+
+                $result['data'][$name] = $wordCount;
+                $result['comment'][$name] = $content;
+            }
+        }
+
+
+        return $result;
+
+    }
+    public static function rating_cms_array($result =0)
+    {
+      $rating =  array("educational" => 1, "message" => 1, "role_model" => 1, "sex" => 1, "violence" => 1, "language" => 1, "drugs" => 1, "consumerism" => 1,"diverse"=>1,"drinking"=>1);
+
+      $rating_convert =  array("educational" => "educational","diverse-representation"=>"diverse", "positive-messages"=>"message" , "role-models"=>"role_model", "sex" => "sex" , "violence"=>"violence" , "language" => "language","drinking"=>"drinking" , "drugs"=>"drugs" ,"consumerism"=> "consumerism" );
+
+        $rating_type =   array("educational" => 1, "message" => 1, "role_model" => 1, "sex" => -1, "violence" => -1, "language" => -1, "drugs" => -1, "consumerism" => -1,"diverse"=> -1,"drinking"=> -1);
+
+
+        if (!$result) return $rating;
+        if ($result==1) return $rating_convert;
+        if ($result==2) return $rating_type;
+    }
+
+    public static function get_content_commonsense($title, $type, $movie_id,$debug='')
     {
         $array_total = [];
         $array_type = array('Movie' => 'movie', 'TVSeries' => 'tv', 'TVEpisode' => 'tv');
@@ -331,11 +404,18 @@ class PgRating
 
             // echo $url;
             $url = "https://www.commonsensemedia.org/search/" . rawurlencode($title) . $type_request;
+
+            if ($debug)echo $url;
+
             $result1 = GETCURL::getCurlCookie($url);
             ///echo $result1;
 
+            //if ($debug)var_dump($result1);
+
             //get_content_commonsense($title,$type,$movie_id);
             $reg_v = '/\<a href\=\"\/movie-reviews\/([^\"]+)" class\=\"csm-button\"\>Continue reading\<\/a\>/';
+            $reg_v2 = '/\<h3 class=\"review-title\"\>[^\<]+\<a href=\"([^\"]+)\"/';
+
 
             // $url = urlencode($url);
             if (preg_match_all($reg_v, $result1, $mach)) {
@@ -343,11 +423,22 @@ class PgRating
 
                     if (preg_match($reg_v, $i, $mach_result)) {
 
-                        $array_result_url[] = $mach_result[1];
+                        $array_result_url[] = 'https://www.commonsensemedia.org/movie-reviews/' .$mach_result[1];
                     }
                 }
             }
-            ///  var_dump($array_result_url);
+            if (preg_match_all($reg_v2, $result1, $mach)) {
+                foreach ($mach[0] as $i) {
+
+                    if (preg_match($reg_v2, $i, $mach_result)) {
+
+                        $array_result_url[] = 'https://www.commonsensemedia.org' .$mach_result[1];
+                    }
+                }
+            }
+
+
+            if ($debug) var_dump($array_result_url);
             $i = 0;
             if (is_array($array_result_url)) {
                 foreach ($array_result_url as $url) {
@@ -355,44 +446,37 @@ class PgRating
                     if ($i > 3 || $array_total) {
                         break;
                     }
-                    $url_inner = 'https://www.commonsensemedia.org/movie-reviews/' . $url;
-                    //  echo $url_inner.' ';
+                    $url_inner =  $url;
+                    if ($debug) echo $url_inner.' ';
                     $result2 = GETCURL::getCurlCookie($url_inner);
-                    // echo $result2;
+
+                   // if ($debug) echo $result2;
+                    $array_total=[];
+
                     $final_value = sprintf('%07d', $movie_id);
                     if (strstr($result2, 'tt' . $final_value)) {
-                        $pos = 'field-collection-container clearfix';
+                        $pos = 'review-view-content-grid';
 
                         $content = substr($result2, strpos($result2, $pos));
                         // echo $content;
-                        $pos2 = 'pane-node-field-parents-need-to-know';
+                        $pos2 = 'content-grid-item-parents-need-know';
 
                         $rating = substr($content, 0, strpos($content, $pos2));
-                        //  echo $rating;
+                        //if ($debug) echo $rating;
+
+                        $array_data = explode('<div class="content-grid-item',$rating);
 
 
-                        $reg_v = '/\id\=\"content-grid-item-([a-z_ ]+)\"\>.+\n.+\n.+\<div class\=\"content-grid-rating content-grid-([0-9]+)(.+\<p\>([^\<]+)\<\/p\>)*/';
+                        $array_total = self::exlude_cms_data($array_data);
 
+                        $array_total['link'] = $url_inner;
 
-                        if (preg_match_all($reg_v, $rating, $mach)) {
-                            foreach ($mach[0] as $i) {
-
-                                if (preg_match($reg_v, $i, $mach_result)) {
-
-
-                                    $array_total['data'][$mach_result[1]] = $mach_result[2];
-                                    $array_total['comment'][$mach_result[1]] = $mach_result[4];
-                                }
-                            }
-
-                            $array_total['link'] = $url_inner;
-                        }
-
+                       // if ($debug)var_dump($array_data);
 
                     }
                 }
             }
-//var_dump($array_total);
+            if ($debug) var_dump($array_total);
             return $array_total;
         }
     }

@@ -1063,11 +1063,11 @@ return $pid;
 private static function add_production_meta($mid,$pid,$synch)
 {
 
-$q="SELECT `id` FROM `meta_movie_distributors` WHERE `did` = ".$pid." and `mid` = ".$mid;
+$q="SELECT `id` FROM `meta_movie_distributors` WHERE `did` = ".$pid." and `type` = 0 and `mid` = ".$mid;
     $r = Pdo_an::db_results_array($q);
     if (!$r)
     {
-        $q="INSERT INTO `meta_movie_distributors`(`id`, `mid`, `did`) VALUES (NULL,{$mid},{$pid})";
+        $q="INSERT INTO `meta_movie_distributors`(`id`, `mid`, `did`, `type`) VALUES (NULL,{$mid},{$pid},0)";
         $meta_id = Pdo_an::db_insert_sql($q);
 
         if ($synch)
