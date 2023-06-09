@@ -37,7 +37,6 @@ class Global_zeitgeist{
             }
             else
             {
-
                 $flag ='<img style="width:40px;height:40px" src="' .WP_SITEURL.'/wp-content/themes/custom_twentysixteen/images/flags/4x3/'.$data['flag'].'.svg" />';
             }
 
