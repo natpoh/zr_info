@@ -484,13 +484,9 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
         $imdb_rating_colors = array("None" => 'gray', "Mild" => 'yelow', "Moderate" => 'orange', "Severe" => 'red',
             "0" => 'gray', "1" => 'green', "2" => 'yelow', "3" => 'orange', "4" => 'red', "5" => 'red');
 
-        $cms_rating_plus = array(
-            "educational" => '1',
-            "message" => '1',
-            "role_model" => '1',
-            "Faith" => '1',
-            "Integrity" => '1'
-        );
+        !class_exists('PgRating') ? include ABSPATH . "analysis/include/pg_rating.php" : '';
+
+        $cms_rating_plus = PgRating::rating_cms_array(3);
 
         $content = '';
 

@@ -3168,6 +3168,18 @@ body.theme_dark  .noUi-handle::before,body.theme_dark  .noUi-handle::after {
     background:  url("images/zrpulselogo.svg");
 }
 
+.sort-icon .nl{
+    background: transparent url(images/flags/4x3/nl.svg) 0px 3px no-repeat;
+}
+.sort-icon .jp{
+    background: transparent url(images/flags/4x3/jp.svg) 0px 3px no-repeat;
+}
+
+.sort-icon .mtcr{
+    background:  url("images/metacritic-logo.svg");
+}
+
+
 .theme_white  .sort-icon .zr {
 
     filter: invert();
@@ -10757,14 +10769,6 @@ custom ratings can be used in the advanced search feature and using the audience
     padding:.69em!important;
 }
 
-
-
-
-/* adding space between tooltip disclaimer */
-
-.gray {
-    margin-top:1em;
-}
 
 
 

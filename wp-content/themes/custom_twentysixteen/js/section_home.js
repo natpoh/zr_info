@@ -214,7 +214,8 @@ function family_rating(family_data)
                         "message": '1',
                         "role_model": '1',
                         "Faith": '1',
-                        "Integrity": '1'
+                        "Integrity": '1',
+                        "diverse": '2'
                     };
 
                     jQuery.each(b, function (c, d) {
@@ -235,10 +236,12 @@ function family_rating(family_data)
                             }
                         } else if (Number(d) > 0) {
                             var data_class = cms_rating_colors[d];
-                            if (cms_rating_plus[c]) {
+                            if (cms_rating_plus[c]==1) {
                                 data_class = 'green';
                             }
-
+                            else if (cms_rating_plus[c]==2) {
+                                data_class = 'gray';
+                            }
                             if (c == 'role_model') {
                                 c = 'role model';
                             }

@@ -400,10 +400,20 @@ class PgRating
 
         $rating_type =   array("educational" => 1, "message" => 1, "role_model" => 1, "sex" => -1, "violence" => -1, "language" => -1, "drugs" => -1, "consumerism" => -1,"diverse"=> 1,"drinking"=> -1);
 
+        $cms_rating_plus = array(
+            "diverse"=> '1',
+            "educational" => '1',
+            "message" => '1',
+            "role_model" => '1',
+            "Faith" => '1',
+            "Integrity" => '1'
+        );
+
 
         if (!$result) return $rating;
         if ($result==1) return $rating_convert;
         if ($result==2) return $rating_type;
+        if ($result==3) return $cms_rating_plus;
     }
 
     public static function get_content_commonsense($title, $type, $movie_id,$debug='')

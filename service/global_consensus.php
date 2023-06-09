@@ -30,7 +30,20 @@ class Global_zeitgeist{
         }
 
         $title = $data['name'];
-        if ($data['flag'])$flag ='<img style="width:40px;height:40px" src="' .WP_SITEURL.'/wp-content/themes/custom_twentysixteen/images/flags/4x3/'.$data['flag'].'.svg" />';
+        if ($data['flag'])
+        {
+            if ($data['flag']=='mtcr'){
+                $flag ='<img style="width:40px;height:40px" src="' .WP_SITEURL.'/wp-content/themes/custom_twentysixteen/images/metacritic-logo.svg" />';
+            }
+            else
+            {
+
+                $flag ='<img style="width:40px;height:40px" src="' .WP_SITEURL.'/wp-content/themes/custom_twentysixteen/images/flags/4x3/'.$data['flag'].'.svg" />';
+            }
+
+        }
+
+
 
         $result='<div class="gl_zr_block exlink" id="'.$data['link'].'"><p class="gl_zr_title">'.$flag.$title.'</p><div class="gl_rating">'.$val.'/'.$data['ratmax'].'</div></div>';
         return $result;
