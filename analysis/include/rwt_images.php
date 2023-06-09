@@ -50,6 +50,18 @@ $sql = "SELECT `last_update` FROM `data_actors_meta` WHERE `actor_id`=".intval($
             return $result;
         }
 
+        if (defined('LOCALCACHEIMAGES'))
+        {
+            if (LOCALCACHEIMAGES ==1)
+            {
+                $cache_site  ='https://img.4aoc.ru/';
+
+                $result =  $cache_site.WP_SITEURL.'/analysis/create_image.php?id=' . $id .'_v'.$las_update.'.webp';
+                return  $result;
+
+            }
+
+        }
 
         $result = $cache_site.'/jpg/'.$w.'/'.$current_site.'/analysis/create_image/' . $id .'_v'.$las_update.'.jpg.jpg';
 
@@ -66,6 +78,16 @@ $sql = "SELECT `last_update` FROM `data_actors_meta` WHERE `actor_id`=".intval($
         $cache_site  ='https://img.zeitgeistreviews.com';
 
 
+        if (defined('LOCALCACHEIMAGES'))
+        {
+            if (LOCALCACHEIMAGES ==1)
+            {
+                $cache_site  ='https://img.4aoc.ru/';
+
+            $result = $cache_site.WP_SITEURL.'/analysis/create_image.php?id=' . $id .'_v'.$las_update.'.webp';
+            return  $result;
+            }
+        }
 
         if ($image)
         {

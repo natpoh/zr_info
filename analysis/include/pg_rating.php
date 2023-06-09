@@ -398,7 +398,7 @@ class PgRating
 
       $rating_convert =  array("educational" => "educational","diverse-representation"=>"diverse", "positive-messages"=>"message" , "role-models"=>"role_model", "sex" => "sex" , "violence"=>"violence" , "language" => "language","drinking"=>"drinking" , "drugs"=>"drugs" ,"consumerism"=> "consumerism" );
 
-        $rating_type =   array("educational" => 1, "message" => 1, "role_model" => 1, "sex" => -1, "violence" => -1, "language" => -1, "drugs" => -1, "consumerism" => -1,"diverse"=> -1,"drinking"=> -1);
+        $rating_type =   array("educational" => 1, "message" => 1, "role_model" => 1, "sex" => -1, "violence" => -1, "language" => -1, "drugs" => -1, "consumerism" => -1,"diverse"=> 1,"drinking"=> -1);
 
 
         if (!$result) return $rating;

@@ -25,6 +25,24 @@ $noimage_src = $_SERVER['DOCUMENT_ROOT'].'/analysis/images/noimage.png';
 
 $id =$_GET['id'];
 
+
+if (isset($_GET['c']))
+{
+
+    $mage_file = $_GET['id'];
+
+    //check cache
+    $cachePath = ABSPATH.'analysis/img_result/';
+    $filename_image = $cachePath . $mage_file . '.jpg';
+    if (file_exists($filename_image)) {
+        readfile($filename_image);
+        return;
+    }
+
+}
+
+
+
 //echo $filename;
 if (strstr($id,'m_'))
 {
@@ -208,7 +226,11 @@ if (strstr($id,'m_'))
 
             }
 
+            if (isset($_GET['c']))
+            {
 
+                imagejpeg($im, $filename_image);
+            }
 
 
             imagejpeg ($im);
@@ -228,6 +250,14 @@ if (strstr($id,'m_'))
 
     if ($result)
     {
+
+        if (isset($_GET['c']))
+        {
+
+            file_put_contents($filename_image,$result );
+        }
+
+
         if (!isset($_GET['debug']))echo $result;
     }
 
@@ -487,9 +517,16 @@ if ($img_gender)
 
 //imagejpeg($imagebig, $filename_ex);
 
+if (isset($_GET['c']))
+{
 
+    imagejpeg($imagebig, $filename_image);
+}
 
 imagejpeg($imagebig);
+
+
+
 
 imagedestroy($image);
 imagedestroy($im);

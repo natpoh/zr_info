@@ -4567,6 +4567,20 @@ class AnalyticsFront extends SearchFacets {
         $current_site = 'https://zeitgeistreviews.com';
         $cache_site = 'https://img.zeitgeistreviews.com';
 
+
+        if (defined('LOCALCACHEIMAGES'))
+        {
+            if (LOCALCACHEIMAGES ==1)
+            {
+                $cache_site  ='https://img.4aoc.ru/webp/' . $resolution . '/';
+
+                $result = $cache_site. WP_SITEURL.'/analysis/create_image.php?id=m_' . $id .'_v'.$last_update.'.webp';
+                return  $result;
+
+            }
+
+        }
+
         $result = $cache_site . '/webp/' . $resolution . '/' . $current_site . '/analysis/create_image/m_' . $id . '_v' . $last_update . '.jpg.webp';
         return $result;
     }
