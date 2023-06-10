@@ -327,7 +327,7 @@ class CriticAvatars extends AbstractDB {
 
             $mp = $this->get_mp();
             $tp = $mp->get_tp();
-           
+
             $file_content = $tp->get_url_content($url, $headers, $ip_limit, true, $tor_mode, false, array(), array(), $debug);
         } else {
             // 2. Get cm parser
@@ -626,7 +626,7 @@ class CriticAvatars extends AbstractDB {
 
     public function bulk_transit_pro_avatars($ids = array(), $debug = false) {
         # 1. Get pro authors without images data.
-        $sql = "SELECT * FROM {$this->db['authors']} WHERE avatar=0 AND type=1 AND id IN(". implode(',', $ids).")";
+        $sql = "SELECT * FROM {$this->db['authors']} WHERE avatar=0 AND type=1 AND id IN(" . implode(',', $ids) . ")";
         $authors = $this->db_results($sql);
         if ($debug) {
             print_r($authors);
@@ -818,6 +818,9 @@ class CriticAvatars extends AbstractDB {
                                     if ($site == 'youtube.com') {
                                         # Get by youtube
                                         $avatar_url = $this->get_avatar_from_youtube($post->link);
+                                    } else if ($site == 'bitchute.com') {
+                                        # Get by bitchute
+                                        $avatar_url = $this->get_avatar_from_bitchute($post->link);
                                     }
 
                                     if ($avatar_url) {
@@ -855,20 +858,7 @@ class CriticAvatars extends AbstractDB {
         }
 
         $avatar_url = '';
-
-        $mp = $this->get_mp();
-        $mp_settings = $mp->get_settings();
-        $service_urls = array(
-            'webdrivers' => 3, // Tor curl
-            'del_pea' => 0,
-            'del_pea_cnt' => 10,
-            'tor_h' => 20,
-            'tor_d' => 100,
-            'tor_mode' => 2, // Proxy
-            'progress' => 0,
-            'weight' => 0,
-        );
-        $code = $mp->get_code_by_current_driver($url, $headers, $mp_settings, $service_urls);
+        $code = $this->get_by_webdriver($url);
         if ($code) {
             # "channelAvatar":{"thumbnails":[{"url":"https://yt3.ggpht.com/ytc/AGIKgqMpMWaZ54cB3hH8RuKkKK2uP4DZHjpwzgzfV602MA=s88-c-k-c0x00ffffff-no-rj"}]}
             if (preg_match('/"channelAvatar":{"thumbnails":\[{"url":"([^"]+)"}\]/', $code, $match)) {
@@ -876,6 +866,41 @@ class CriticAvatars extends AbstractDB {
             }
         }
         return $avatar_url;
+    }
+
+    private function get_avatar_from_bitchute($url = '') {
+        if (!$url) {
+            return '';
+        }
+
+        $avatar_url = '';
+        $code = $this->get_by_webdriver($url);
+        if ($code) {
+            # <img class="image lazyload" src="/static/v141/images/loading_small.png" data-src="https://static-3.bitchute.com/live/channel_images/ZMv79MtHJ9al/qOAV1UTaMWe66EQEI3YhwtUf_small.jpg" onerror="this.src='/static/v141/images/blank_small.png';this.onerror='';" alt="channel image">
+            if (preg_match('/<img [^>]+data-src="([^"]+)"[^>]+ alt="channel image">/', $code, $match)) {
+                $avatar_url = $match[1];
+            }
+        }
+        return $avatar_url;
+    }
+
+    private function get_by_webdriver($url, $parse_mode = 3, $tor_mode = 2) {
+        // $parse_mode=3 - Tor curl
+        // $tor_mode=2 - Proxy
+        $mp = $this->get_mp();
+        $mp_settings = $mp->get_settings();
+        $service_urls = array(
+            'webdrivers' => $parse_mode,
+            'del_pea' => 0,
+            'del_pea_cnt' => 10,
+            'tor_h' => 20,
+            'tor_d' => 100,
+            'tor_mode' => $tor_mode,
+            'progress' => 0,
+            'weight' => 0,
+        );
+        $code = $mp->get_code_by_current_driver($url, $headers, $mp_settings, $service_urls);
+        return $code;
     }
 
 }
