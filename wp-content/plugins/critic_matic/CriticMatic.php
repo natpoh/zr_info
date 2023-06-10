@@ -1541,7 +1541,7 @@ class CriticMatic extends AbstractDB {
     public function get_author_post_link_by_site($aid, $site_key) {
         $sql = sprintf("SELECT p.id, p.link FROM {$this->db['posts']} p "
                 . "INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id "
-                . "WHERE am.aid=%d AND p.link_id=%d", $aid, $site_key);
+                . "WHERE am.aid=%d AND p.link_id=%d ORDER BY p.id DESC", $aid, $site_key);
  
         $result = $this->db_fetch_row($sql);
         return $result;
