@@ -66,6 +66,7 @@ class CriticMaticAdmin {
         'author_draft' => 'Draft',
         'author_trash' => 'Trash',
         'author_find_avatar' => 'Find avatar',
+        'author_url_to_avatar' => 'Upload avatars from URLs',
     );
     public $bulk_actions_audience_ip = array(
         'wl' => 'IP to White list',
@@ -3063,6 +3064,13 @@ class CriticMaticAdmin {
                         
                         print '<textarea style="width:100%; height:300px">';
                         print $cav->find_pro_avatars($ids, true);
+                        print '</textarea>';
+                    }else if ($b == 'author_url_to_avatar') {
+                        // Find avatar for author campaigns
+                        $cav = $this->cm->get_cav();
+                        
+                        print '<textarea style="width:100%; height:300px">';
+                        print $cav->bulk_transit_pro_avatars($ids, true);
                         print '</textarea>';
                     } else {
                         $status = -1;

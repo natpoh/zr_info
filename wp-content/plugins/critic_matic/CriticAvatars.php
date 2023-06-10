@@ -324,18 +324,10 @@ class CriticAvatars extends AbstractDB {
         $tor_mode = 2;
         $file_content = '';
         if ($this->cm->sync_server) {
-            if (!class_exists('MoviesLinks')) {
-                !defined('MOVIES_LINKS_PLUGIN_DIR') ? define('MOVIES_LINKS_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/movies_links/') : '';
-                require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractFunctions.php' );
-                require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractDB.php' );
-                require_once( MOVIES_LINKS_PLUGIN_DIR . 'MoviesLinks.php' );
-                require_once( MOVIES_LINKS_PLUGIN_DIR . 'TorParser.php' );
-            }
-            // 1. Get ml parser
-            if ($debug) {
-                print "ML parser\n";
-            }
-            $tp = new TorParser();
+
+            $mp = $this->get_mp();
+            $tp = $mp->get_tp();
+           
             $file_content = $tp->get_url_content($url, $headers, $ip_limit, true, $tor_mode, false, array(), array(), $debug);
         } else {
             // 2. Get cm parser
@@ -632,6 +624,17 @@ class CriticAvatars extends AbstractDB {
         $this->pro_url_to_image($authors, $debug);
     }
 
+    public function bulk_transit_pro_avatars($ids = array(), $debug = false) {
+        # 1. Get pro authors without images data.
+        $sql = "SELECT * FROM {$this->db['authors']} WHERE avatar=0 AND type=1 AND id IN(". implode(',', $ids).")";
+        $authors = $this->db_results($sql);
+        if ($debug) {
+            print_r($authors);
+        }
+        # 2. Get image.
+        $this->pro_url_to_image($authors, $debug);
+    }
+
     public function pro_url_to_image($authors, $debug = false) {
         $ret = array();
         foreach ($authors as $author) {
@@ -827,7 +830,7 @@ class CriticAvatars extends AbstractDB {
                         if ($debug) {
                             print_r(array('Avatar URL:', $avatar_url));
                         }
-                        
+
                         if ($avatar_url) {
                             # 3. Update author
                             $author_opt = unserialize($author->options);
