@@ -827,14 +827,17 @@ class CriticAvatars extends AbstractDB {
                         if ($debug) {
                             print_r(array('Avatar URL:', $avatar_url));
                         }
-                        # 3. Update author
+                        
                         if ($avatar_url) {
+                            # 3. Update author
                             $author_opt = unserialize($author->options);
                             $author_opt['image'] = $avatar_url;
                             $author->options = $author_opt;
                             $this->cm->update_author($author);
 
-                            $authors = array($author);
+                            # 4. Upload avatar
+                            $author_upd = $this->cm->get_author($aid);
+                            $authors = array($author_upd);
                             $this->pro_url_to_image($authors, $debug);
                         }
                     }
