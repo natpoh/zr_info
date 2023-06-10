@@ -677,7 +677,7 @@ class CriticAvatars extends AbstractDB {
     public function get_pro_avatar($filename = '') {
         $img_path = '';
         if ($filename) {
-            $source_dir = '/wp-content/uploads/' . $this->pro_source_dir;
+            $source_dir = $this->img_service.'wp-content/uploads/' . $this->pro_source_dir;
             $img_path = $source_dir . "/" . $filename;
         }
         return $img_path;
@@ -687,11 +687,10 @@ class CriticAvatars extends AbstractDB {
         $ret = '';
 
         if ($filename) {
-            $source_dir = '/wp-content/uploads/' . $this->pro_source_dir;
-            $img_path = $source_dir . "/" . $filename;
-            $service = 'https://info.antiwoketomatoes.com';
+            $source_dir = $this->img_service.'wp-content/uploads/' . $this->pro_source_dir;
+            $img_path = $source_dir . "/" . $filename;            
             //$service = 'https://rwt.4aoc.ru';
-            $ret = 'https://img.zeitgeistreviews.com/webp/' . $w . 'x' . $w . '/' . $service . $img_path . '.webp';
+            $ret = $this->thumb_service.'webp/' . $w . 'x' . $w . '/' . $img_path . '.webp';
         }
         return $ret;
     }
