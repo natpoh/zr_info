@@ -97,12 +97,10 @@ class CriticMatic extends AbstractDB {
         0 => 'All',
         1 => 'Hide in Home page',
     );
-    
     public $pro_author_avatar = array(
         0 => 'None',
         1 => 'Exist',
     );
-    
     public $authors_tabs = array(
         'home' => 'Authors list',
         'add' => 'Add a new author',
@@ -266,8 +264,8 @@ class CriticMatic extends AbstractDB {
         $this->sync_status = DB_SYNC_MODE;
         $this->sync_client = DB_SYNC_MODE == 2 ? true : false;
         $this->sync_server = DB_SYNC_MODE == 1 ? true : false;
-        
-        if ($this->sync_client){
+
+        if ($this->sync_client) {
             unset($this->author_tabs['edit']);
         }
     }
@@ -1525,6 +1523,30 @@ class CriticMatic extends AbstractDB {
         return $id;
     }
 
+    public function get_post_links_by_names($names = array()) {
+        $ret = array();
+        if ($names) {
+            $names_and = "'" . implode("','", $names) . "'";
+            $sql = "SELECT id, site FROM {$this->db['posts_links']} WHERE site IN (" . $names_and . ")";
+            $results = $this->db_results($sql);
+            if ($results) {
+                foreach ($results as $value) {
+                    $ret[$value->site] = $value->id;
+                }
+            }
+        }
+        return $ret;
+    }
+
+    public function get_author_post_link_by_site($aid, $site_key) {
+        $sql = sprintf("SELECT p.id, p.link FROM {$this->db['posts']} p "
+                . "INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id "
+                . "WHERE am.aid=%d AND p.link_id=%d", $aid, $site_key);
+ 
+        $result = $this->db_fetch_row($sql);
+        return $result;
+    }
+
     public function get_post_links($cache = true) {
         //Get from cache
 
@@ -1781,7 +1803,7 @@ class CriticMatic extends AbstractDB {
 
     public function get_authors_query($q_req = array(), $page = 1, $perpage = 20, $orderby = '', $order = 'ASC', $count = false) {
         $q_def = array(
-            'status' => -1,            
+            'status' => -1,
             'type' => -1,
             'avatar' => -1,
             'tag' => 0,
@@ -1791,7 +1813,7 @@ class CriticMatic extends AbstractDB {
         foreach ($q_def as $key => $value) {
             $q[$key] = isset($q_req[$key]) ? $q_req[$key] : $value;
         }
-        
+
         $filters_and = '';
 
         // Custom status
@@ -1812,7 +1834,7 @@ class CriticMatic extends AbstractDB {
         if ($q['avatar'] != -1) {
             $filters_and .= sprintf(" AND a.avatar = %d", (int) $q['avatar']);
         }
-        
+
         //Custom tag
 
         $tags_inner = '';
@@ -1848,7 +1870,7 @@ class CriticMatic extends AbstractDB {
         }
 
 
-        $sql = "SELECT " . $select . " FROM {$this->db['authors']} a" . $tags_inner . $filters_and. $and_orderby . $limit;
+        $sql = "SELECT " . $select . " FROM {$this->db['authors']} a" . $tags_inner . $filters_and . $and_orderby . $limit;
 
 
         if (!$count) {
@@ -2056,7 +2078,7 @@ class CriticMatic extends AbstractDB {
 
         return true;
     }
-    
+
     /*
      * Authors set
      */

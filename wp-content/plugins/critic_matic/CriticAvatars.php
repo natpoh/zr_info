@@ -9,6 +9,7 @@
 class CriticAvatars extends AbstractDB {
 
     private $cm;
+    private $mp;
     // Audience
     public $source_dir = "ca/source";
     public $cketch_dir = "ca/sketch";
@@ -30,6 +31,23 @@ class CriticAvatars extends AbstractDB {
             'user_avatars' => 'data_user_avatars',
             'authors' => $table_prefix . 'critic_matic_authors',
         );
+    }
+
+    public function get_mp() {
+        // Get movies parser
+        if (!$this->mp) {
+            if (!class_exists('MoviesLinks')) {
+                !defined('MOVIES_LINKS_PLUGIN_DIR') ? define('MOVIES_LINKS_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/movies_links/') : '';
+                require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractFunctions.php' );
+                require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractDB.php' );
+                require_once( MOVIES_LINKS_PLUGIN_DIR . 'MoviesLinks.php' );
+            }
+
+            $ml = new MoviesLinks();
+            // get parser
+            $this->mp = $ml->get_mp();
+        }
+        return $this->mp;
     }
 
     function add_actions() {
@@ -677,7 +695,7 @@ class CriticAvatars extends AbstractDB {
     public function get_pro_avatar($filename = '') {
         $img_path = '';
         if ($filename) {
-            $source_dir = $this->img_service.'wp-content/uploads/' . $this->pro_source_dir;
+            $source_dir = $this->img_service . 'wp-content/uploads/' . $this->pro_source_dir;
             $img_path = $source_dir . "/" . $filename;
         }
         return $img_path;
@@ -687,10 +705,10 @@ class CriticAvatars extends AbstractDB {
         $ret = '';
 
         if ($filename) {
-            $source_dir = $this->img_service.'wp-content/uploads/' . $this->pro_source_dir;
-            $img_path = $source_dir . "/" . $filename;            
+            $source_dir = $this->img_service . 'wp-content/uploads/' . $this->pro_source_dir;
+            $img_path = $source_dir . "/" . $filename;
             //$service = 'https://rwt.4aoc.ru';
-            $ret = $this->thumb_service.'webp/' . $w . 'x' . $w . '/' . $img_path . '.webp';
+            $ret = $this->thumb_service . 'webp/' . $w . 'x' . $w . '/' . $img_path . '.webp';
         }
         return $ret;
     }
@@ -760,6 +778,97 @@ class CriticAvatars extends AbstractDB {
             }
         }
         return false;
+    }
+
+    public function find_pro_avatars($ids, $debug = false) {
+        // Find and add avatars for pro critic campaings
+        if ($ids) {
+            # 1. Get sites ids
+            $sites = array('youtube.com', 'bitchute.com', 'odysee.com');
+            $sites_ids = $this->cm->get_post_links_by_names($sites);
+            if ($debug) {
+                print_r(array('Sites_ids:', $sites_ids));
+            }
+            foreach ($ids as $aid) {
+                # 1. Load author
+                $author = $this->cm->get_author($aid);
+                if ($author->type == 1) {
+                    # Only pro critic
+                    if ($author->avatar == 0) {
+                        # Only empty avatar
+                        $avatar_url = '';
+                        foreach ($sites as $site) {
+                            # 2. Find avatar in sites
+                            $site_key = isset($sites_ids[$site]) ? $sites_ids[$site] : 0;
+                            if ($site_key) {
+                                if ($debug) {
+                                    print_r(array('Site:', $site, $site_key));
+                                }
+                                # Get avatar by site api
+                                $post = $this->cm->get_author_post_link_by_site($aid, $site_key);
+
+
+                                if ($post) {
+                                    if ($debug) {
+                                        print_r(array('Post:', $post->link));
+                                    }
+                                    if ($site == 'youtube.com') {
+                                        # Get by youtube
+                                        $avatar_url = $this->get_avatar_from_youtube($post->link);
+                                    }
+
+                                    if ($avatar_url) {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        if ($debug) {
+                            print_r(array('Avatar URL:', $avatar_url));
+                        }
+                        # 3. Update author
+                        if ($avatar_url) {
+                            $author_opt = unserialize($author->options);
+                            $author_opt['image'] = $avatar_url;
+                            $this->cm->update_author($author);
+
+                            $authors = array($author);
+                            $this->pro_url_to_image($authors, $debug);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private function get_avatar_from_youtube($url = '') {
+        if (!$url) {
+            return '';
+        }
+
+        $avatar_url = '';
+
+        $mp = $this->get_mp();
+        $mp_settings = $mp->get_settings();
+        $service_urls = array(
+            'webdrivers' => 3, // Tor curl
+            'del_pea' => 0,
+            'del_pea_cnt' => 10,
+            'tor_h' => 20,
+            'tor_d' => 100,
+            'tor_mode' => 2, // Proxy
+            'progress' => 0,
+            'weight' => 0,
+        );
+        $code = $mp->get_code_by_current_driver($url, $headers, $mp_settings, $service_urls);
+        if ($code) {
+            # "channelAvatar":{"thumbnails":[{"url":"https://yt3.ggpht.com/ytc/AGIKgqMpMWaZ54cB3hH8RuKkKK2uP4DZHjpwzgzfV602MA=s88-c-k-c0x00ffffff-no-rj"}]}
+            if (preg_match('/"channelAvatar":{"thumbnails":\[{"url":"([^"]+)"}\]/', $code, $match)) {
+                $avatar_url = $match[1];
+            }
+        }
+        return $avatar_url;
     }
 
 }

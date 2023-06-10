@@ -65,7 +65,7 @@ class CriticMaticAdmin {
         'author_publish' => 'Publish',
         'author_draft' => 'Draft',
         'author_trash' => 'Trash',
-      //  'author_findmovies' => 'Find avatar',
+        'author_find_avatar' => 'Find avatar',
     );
     public $bulk_actions_audience_ip = array(
         'wl' => 'IP to White list',
@@ -3056,9 +3056,11 @@ class CriticMaticAdmin {
                     /* 'author_publish' => 'Publish',
                       'author_draft' => 'Draft',
                       'author_trash' => 'Trash',
-                      'author_findmovies' => 'Find avatar', */
-                    if ($b == 'author_findmovies') {
-                        
+                      'author_find_avatar' => 'Find avatar', */
+                    if ($b == 'author_find_avatar') {
+                        // Find avatar for author campaigns
+                        $cav = $this->cm->get_cav();
+                        print $cav->find_pro_avatars($ids);
                     } else {
                         $status = -1;
                         if ($b == 'author_publish') {

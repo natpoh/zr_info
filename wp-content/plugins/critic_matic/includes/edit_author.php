@@ -30,16 +30,21 @@ if ($aid) {
                 </label>
 
 
-                <label>
-                    <?php
-                    $image = '';
-                    if (isset($options['image'])) {
-                        $image = $options['image'];
-                    }
+                <?php if ($author->type == 1) { 
+                    // Images field for pro critics only
                     ?>
-                    <span class="title"><?php print __('Image') ?></span>
-                    <span class="input-text-wrap"><input type="text" name="image" value="<?php print $image ?>"></span>
-                </label>
+                    <label>
+                        <?php
+                        $image = '';
+                        if (isset($options['image'])) {
+                            $image = $options['image'];
+                        }
+                        ?>
+                        <span class="title"><?php print __('Image') ?></span>
+                        <span class="input-text-wrap"><input type="text" name="image" value="<?php print $image ?>"></span>
+                    </label>
+                <?php } ?>
+
 
                 <label>
                     <?php
