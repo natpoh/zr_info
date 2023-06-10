@@ -65,7 +65,7 @@ class CriticMaticAdmin {
         'author_publish' => 'Publish',
         'author_draft' => 'Draft',
         'author_trash' => 'Trash',
-        'author_findmovies' => 'Find avatar',
+      //  'author_findmovies' => 'Find avatar',
     );
     public $bulk_actions_audience_ip = array(
         'wl' => 'IP to White list',
@@ -127,7 +127,9 @@ class CriticMaticAdmin {
         add_action('admin_menu', array($this, 'add_option_page'));
         add_action('admin_print_styles', array($this, 'print_admin_styles'));
 
+        wp_enqueue_script('croppie', CRITIC_MATIC_PLUGIN_URL . 'js/croppie.js', false, CRITIC_MATIC_VERSION);
         wp_enqueue_script('critic_matic_admin', CRITIC_MATIC_PLUGIN_URL . 'js/admin.js', false, CRITIC_MATIC_VERSION);
+                
         add_action("wp_ajax_cm_autocomplite", array($this, "cm_autocomplite"));
         add_action("wp_ajax_cm_author_autocomplite", array($this, "cm_author_autocomplite"));
         add_action("wp_ajax_cm_find_yt_channel", array($this, "cm_find_yt_channel"));
@@ -160,6 +162,7 @@ class CriticMaticAdmin {
 
     public function print_admin_styles() {
         wp_enqueue_style('critic_matic_admin', CRITIC_MATIC_PLUGIN_URL . 'css/style.css', false, CRITIC_MATIC_VERSION);
+        wp_enqueue_style('critic_matic_croppie', CRITIC_MATIC_PLUGIN_URL . 'css/croppie.css', false, CRITIC_MATIC_VERSION);
     }
 
     public function get_ma() {

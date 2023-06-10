@@ -79,7 +79,7 @@ if ($aid) {
                         ?>                          
                     </select>                                  
                 </label>
-                
+
                 <span class="title inline-edit-categories-label"><?php print __('Tags') ?></span>
                 <input type="hidden" name="post_category[]" value="0">
                 <ul class="cat-checklist category-checklist">

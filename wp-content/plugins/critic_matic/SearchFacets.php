@@ -1594,6 +1594,9 @@ class SearchFacets extends AbstractDB {
         ob_start();
         if (!$main_collapsed) {
             foreach ($this->cs->facet_data['ratings']['childs'] as $key => $value) {
+                if (isset($value['no_data'])){
+                    continue;
+                }
                 $rating_data = isset($data[$key]['data']) ? $data[$key]['data'] : array();
                 if ($rating_data || $this->cs->is_hide_facet($key, $this->filters) || $facet == $key) {
                     $count = sizeof($rating_data);

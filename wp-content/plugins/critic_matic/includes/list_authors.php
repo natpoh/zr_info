@@ -76,11 +76,11 @@ if (sizeof($authors) > 0) {
                     $author_url = $url . '&aid=' . $author->id;
                     $action_links = $this->get_filters($author_actions, $author_url, $curr_tab = 'none', $front_slug = 'home', $name = 'tab', '', false);
 
-
-                    //image            
-                    $image = '';
-                    if ($options['image']) {
-                        $image = '<img src="' . $options['image'] . '" width="50"  height="50">';
+                    //image   
+                    $image='';
+                    $avatar_url = $cav->get_pro_avatar($author->avatar_name);
+                    if ($avatar_url) {
+                        $image = '<img src="' . $avatar_url . '" width="50"  height="50">';
                     }
                     ?>
                     <tr>

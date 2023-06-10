@@ -607,15 +607,23 @@ class CriticFront extends SearchFacets {
         // Author image
         $author = $this->cm->get_author($critic->aid);
         $author_options = unserialize($author->options);
-        $author_img = $author_options['image'];
+        
+        
+        $cav = $this->cm->get_cav();
+        //$author_img = $cav->get_pro_avatar($author->avatar_name);
+        $author_img = $cav->get_pro_thumb(100, 100, $author->avatar_name);
+        // print $author_img;
+        // $author_img = $author_options['image'];
+       
         $actorsdata = '';
         if ($author_img) {
-            try {
+            $actorsdata = '<div class="a_img_container" style="background: url(' . $author_img . '); background-size: cover;"></div>';
+            /*try {                
                 $image = $this->get_local_thumb(100, 100, $author_img);
                 $actorsdata = '<div class="a_img_container" style="background: url(' . $image . '); background-size: cover;"></div>';
             } catch (Exception $exc) {
                 
-            }
+            }*/
         }
         if (!$actorsdata) {
             // Empty image

@@ -1593,7 +1593,7 @@ class CriticMatic extends AbstractDB {
             }
         }
         //Get author id
-        $sql = sprintf("SELECT id, name, type, status, options, wp_uid, show_type FROM {$this->db['authors']} WHERE id=%d", (int) $id);
+        $sql = sprintf("SELECT id, name, type, status, options, wp_uid, show_type, avatar, avatar_name FROM {$this->db['authors']} WHERE id=%d", (int) $id);
         $author = $this->db_fetch_row($sql);
 
         if ($cache) {
@@ -1633,7 +1633,7 @@ class CriticMatic extends AbstractDB {
         }
 
         //Get author id
-        $sql = sprintf("SELECT id, name, type, status, options, wp_uid, show_type FROM {$this->db['authors']} WHERE name='%s'" . $type_and . $wpuid_and, $this->escape($name));
+        $sql = sprintf("SELECT id, name, type, status, options, wp_uid, show_type, avatar, avatar_name  FROM {$this->db['authors']} WHERE name='%s'" . $type_and . $wpuid_and, $this->escape($name));
 
         if ($multi) {
             $author = $this->db_results($sql);
@@ -1658,7 +1658,7 @@ class CriticMatic extends AbstractDB {
             }
         }
         //Get author id
-        $sql = sprintf("SELECT id, name, type, status, options, wp_uid, show_type FROM {$this->db['authors']} WHERE wp_uid=%d", (int) $id);
+        $sql = sprintf("SELECT id, name, type, status, options, wp_uid, show_type, avatar, avatar_name FROM {$this->db['authors']} WHERE wp_uid=%d", (int) $id);
         $author = $this->db_fetch_row($sql);
 
         if ($cache) {
@@ -1693,7 +1693,7 @@ class CriticMatic extends AbstractDB {
     }
 
     public function get_authors_by_ids($ids) {
-        $sql = sprintf("SELECT id, name, type, status, options, wp_uid, wp_uid, show_type FROM {$this->db['authors']} WHERE id IN(%s)", implode(',', $ids));
+        $sql = sprintf("SELECT id, name, type, status, options, wp_uid, wp_uid, show_type, avatar, avatar_name FROM {$this->db['authors']} WHERE id IN(%s)", implode(',', $ids));
         $result = $this->db_results($sql);
         $arr = array();
         if (sizeof($result)) {
@@ -1730,7 +1730,7 @@ class CriticMatic extends AbstractDB {
             $and_limit = sprintf(' LIMIT %d', $limit);
         }
 
-        $sql = "SELECT id, name, type, wp_uid, show_type FROM {$this->db['authors']} WHERE id>0 " . $and_type . $and_status . $and_id . $and_limit;
+        $sql = "SELECT id, name, type, wp_uid, show_type, avatar, avatar_name FROM {$this->db['authors']} WHERE id>0 " . $and_type . $and_status . $and_id . $and_limit;
         $results = $this->db_results($sql);
         return $results;
     }
@@ -1920,7 +1920,7 @@ class CriticMatic extends AbstractDB {
         if ($exclude_type != -1) {
             $ex_type_and = sprintf(" AND type != %d", (int) $exclude_type);
         }
-        $sql = "SELECT id, name, type, options, wp_uid, show_type FROM {$this->db['authors']} WHERE id>0" . $type_and . $ex_type_and . " ORDER BY name ASC";
+        $sql = "SELECT id, name, type, options, wp_uid, show_type, avatar, avatar_name FROM {$this->db['authors']} WHERE id>0" . $type_and . $ex_type_and . " ORDER BY name ASC";
         $result = $this->db_results($sql);
         return $result;
     }
@@ -2056,7 +2056,7 @@ class CriticMatic extends AbstractDB {
 
         return true;
     }
-
+    
     /*
      * Authors set
      */

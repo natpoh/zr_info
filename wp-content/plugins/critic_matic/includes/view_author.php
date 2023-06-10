@@ -38,15 +38,8 @@ if ($aid) {
 
 
     //image            
-    $image = '';
-    if ($options['image']) {
-        $image = '<img src="' . $options['image'] . '" width="150"  height="150">';
-    }
-
     $wp_uid = $author->wp_uid;
-
-
-    if (!$image && $author->type == 2) {
+    if ($author->type == 2) {
         $cav = $this->cm->get_cav();
         if ($wp_uid) {
             // User            
@@ -54,9 +47,37 @@ if ($aid) {
         } else {
             $image = $cav->get_or_create_user_avatar(0, $author->id, 150);
         }
-    }
 
-    print $image;
+        print $image;
+    } else if ($author->type == 1) {
+        // Show avatar for pro critic
+        $cav = $this->cm->get_cav();
+        $avatar_url = $cav->get_pro_avatar($author->avatar_name);
+        ?>
+
+        <div id="upload-image-i" class="pro_avatar">
+            <?php if ($avatar_url) { ?>
+                <img src="<?php print $avatar_url ?>">
+            <?php } ?>
+        </div>
+
+        <?php if (!$this->cm->sync_client) { ?>
+
+            <div id="author_id" data-id="<?php print $aid ?>"></div>
+            <div class="upload-holder">
+                <div id="upload-image"></div>
+            </div>
+            <div>    
+                <a href="#upl_avatar" id="upl_avatar" class="button-secondary">Upload avatar</a><br />
+                <input type="file" id="avatar_file">
+                <div class="cropped_images">
+                    <button id="cropped_image" class="button-primary">Submit Image</button> 
+                    <button id="cropped_cancel" class="button-secondary">Cancel</button>
+                </div>
+            </div>	
+            <?php
+        }
+    }
     ?>
     <br />
     <table class="wp-list-table widefat striped table-view-list">

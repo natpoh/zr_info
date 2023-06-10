@@ -115,12 +115,12 @@ jQuery(function ($) {
         // Filter author
         $('#filter_author').keyup(function () {
             var a = $(this).val();
-            if (a.length > 2) {                
+            if (a.length > 2) {
                 // this finds all links in the list that contain the input,
                 // and hide the ones not containing the input while showing the ones that do
                 var containing = $('#overview tr.row').filter(function () {
                     var regex = new RegExp('\\b' + a, 'i');
-                    var data_author = $(this).attr('data-author');                   
+                    var data_author = $(this).attr('data-author');
                     return regex.test(data_author);
                 }).slideDown();
                 $('#overview tr.row').not(containing).slideUp();
@@ -130,7 +130,101 @@ jQuery(function ($) {
             return false;
         });
 
+        $image_crop = null;
+
+        $('#upl_avatar').on('click', function () {
+            $('#avatar_file').click();
+            return false;
+        });
+
+        $('#avatar_file').on('change', function () {
+
+
+            $('#upload-image-i').hide();
+            $('#upl_avatar').hide();
+
+            $('#upload-image').show();
+            $('.cropped_images').show();
+
+
+
+            $image_crop = $('#upload-image').croppie({
+                enableExif: true,
+                viewport: {
+                    width: 200,
+                    height: 200,
+                    type: 'square'
+                },
+                boundary: {
+                    width: 300,
+                    height: 300
+                }
+            });
+
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                $image_crop.croppie('bind', {
+                    url: e.target.result
+                }).then(function () {
+                    // console.log('jQuery bind complete');
+                });
+            }
+            reader.readAsDataURL(this.files[0]);
+        });
+
+        $('#cropped_image').on('click', function (ev) {
+            var author = $('#author_id');
+            if (author.hasClass('proccess')) {
+                return false;
+            }
+
+            if ($image_crop === null) {
+                return false;
+            }
+
+            author.addClass('proccess');
+
+
+            $image_crop.croppie('result', {
+                type: 'canvas',
+                size: 'viewport'
+            }).then(function (response) {
+                $.ajax({
+                    url: "/wp-content/plugins/critic_matic/cron/ajax_pro_img.php",
+                    type: "POST",
+                    data: {"image": response, "author_id": author.attr('data-id')},
+                    success: function (data) {
+
+                        console.log(data);
+                        html = '<img src="' + response + '" />';
+                        $("#upload-image-i").html(html);
+                        author.removeClass('proccess')
+
+                        cropped_success();
+                    }
+                });
+            });
+            return false;
+        });
+
+        $('#cropped_cancel').on('click', function (ev) {
+            cropped_success();
+            return false;
+        });
+
     });
+
+    function cropped_success() {
+        $('#upload-image').hide();
+        $('.cropped_images').hide();
+
+        $('#upload-image-i').show();
+        $('#upl_avatar').show();
+
+        $image_crop = null;
+        $('#upload-image').html('');
+        $('#avatar_file').val('');
+    }
 
     function init_author_autocomplite() {
         $('.change_author:not(.init)').each(function () {
