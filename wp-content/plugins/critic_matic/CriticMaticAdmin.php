@@ -3060,7 +3060,10 @@ class CriticMaticAdmin {
                     if ($b == 'author_find_avatar') {
                         // Find avatar for author campaigns
                         $cav = $this->cm->get_cav();
-                        print $cav->find_pro_avatars($ids);
+                        
+                        print '<textarea style="width:100%; height:300px">';
+                        print $cav->find_pro_avatars($ids, true);
+                        print '</textarea>';
                     } else {
                         $status = -1;
                         if ($b == 'author_publish') {

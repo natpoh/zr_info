@@ -780,7 +780,7 @@ class CriticAvatars extends AbstractDB {
         return false;
     }
 
-    public function find_pro_avatars($ids, $debug = true) {
+    public function find_pro_avatars($ids, $debug = false) {
         // Find and add avatars for pro critic campaings
         if ($ids) {
             # 1. Get sites ids
