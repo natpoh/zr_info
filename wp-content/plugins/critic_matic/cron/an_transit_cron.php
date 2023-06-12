@@ -73,8 +73,6 @@ $cm->register_cron($cron_name);
 
 
 $cr->transit_countries($count, $debug, $force);
-
-//One time transit data
 $cr->transit_genres($count, $debug);
 
 //$cr->transit_actors($count, $debug);
@@ -85,9 +83,9 @@ $cr->transit_genres($count, $debug);
 // Remove meta type 2.
 //$cr->remove_unused_meta($count, $debug);
 
-// Upload pro-user avatars. One time task
-// $cav = $cm->get_cav();
-// $cav->transit_pro_avatars($count, $debug);
+// Upload pro-user avatars for new authors
+$cav = $cm->get_cav();
+$cav->transit_pro_avatars($count, $debug, $force);
 
 $cm->unregister_cron($cron_name);
 

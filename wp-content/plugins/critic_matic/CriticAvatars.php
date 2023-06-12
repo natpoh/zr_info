@@ -615,13 +615,42 @@ class CriticAvatars extends AbstractDB {
 
     public function transit_pro_avatars($count = 10, $debug = false, $force = false) {
         # 1. Get pro authors without images data.
-        $sql = sprintf("SELECT * FROM {$this->db['authors']} WHERE avatar=0 AND type=1 ORDER BY id ASC LIMIT %d", $count);
+
+        $option_name = 'transit_pro_avatars_id';
+        $last_id = (int) $this->get_option($option_name, 0);
+        if ($force) {
+            $last_id = 0;
+        }
+
+        if ($debug) {
+            p_r(array('last_id', $last_id));
+        }
+
+        $sql = sprintf("SELECT id FROM {$this->db['authors']} WHERE id>%d AND avatar=0 AND type=1 ORDER BY id ASC LIMIT %d", $last_id, $count);
         $authors = $this->db_results($sql);
         if ($debug) {
             print_r($authors);
         }
-        # 2. Get image.
-        $this->pro_url_to_image($authors, $debug);
+        if ($authors) {
+            $last = end($authors);
+            if ($debug) {
+                print 'last id: ' . $last->id . "\n";
+            }
+            if ($last) {
+                $this->update_option($option_name, $last->id);
+            }
+            # 1. Find image
+            $ids = array();
+            foreach ($authors as $author) {
+                $ids[] = $author->id;
+            }
+            $this->find_pro_avatars($ids, $debug);
+
+            # 2. Get image.
+            $sql = "SELECT * FROM {$this->db['authors']} WHERE avatar=0 AND type=1 AND id IN(" . implode(',', $ids) . ")";
+            $upd_authors = $this->db_results($sql);
+            $this->pro_url_to_image($upd_authors, $debug);
+        }
     }
 
     public function bulk_transit_pro_avatars($ids = array(), $debug = false) {
