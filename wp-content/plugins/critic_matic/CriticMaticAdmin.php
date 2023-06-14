@@ -39,6 +39,7 @@ class CriticMaticAdmin {
         'parser' => 'Parser',
         'audience' => 'Audience',
         'posts' => 'Posts view',
+        'score' => 'Score',
         'analytics' => 'Analytics',
         'cache' => 'Cache',
         'sync' => 'Sync'
@@ -130,7 +131,7 @@ class CriticMaticAdmin {
 
         wp_enqueue_script('croppie', CRITIC_MATIC_PLUGIN_URL . 'js/croppie.js', false, CRITIC_MATIC_VERSION);
         wp_enqueue_script('critic_matic_admin', CRITIC_MATIC_PLUGIN_URL . 'js/admin.js', false, CRITIC_MATIC_VERSION);
-                
+
         add_action("wp_ajax_cm_autocomplite", array($this, "cm_autocomplite"));
         add_action("wp_ajax_cm_author_autocomplite", array($this, "cm_author_autocomplite"));
         add_action("wp_ajax_cm_find_yt_channel", array($this, "cm_find_yt_channel"));
@@ -904,16 +905,10 @@ class CriticMaticAdmin {
                 'type' => array(
                     'type_list' => $this->cm->author_type,
                     'home_type' => 1,
-                ),                
+                ),
+                'avatar' => $this->cm->pro_author_avatar,
+                'status' => $this->cm->author_status,
             );
-            
-            if ($author_type==1){
-                $filters['avatar'] =$this->cm->pro_author_avatar;
-            }
-            
-            $filters['status'] =$this->cm->author_status;
-            
-
 
             $filters_tabs = $this->get_filters_tabs($filters, $page_url, $query_adb, 'author', false);
             $query_adb = $filters_tabs['query_adb'];
@@ -2191,6 +2186,21 @@ class CriticMaticAdmin {
             $ss = $this->cm->get_settings(false);
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/settings_audience.php');
+        } else if ($curr_tab == 'score') {
+
+            if (isset($_POST['critic-feeds-nonce'])) {
+                $valid = $this->nonce_validate($_POST);
+                if ($valid === true) {
+                    $this->cm->update_settings($_POST);
+                    $result = __('Updated');
+                    print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                } else {
+                    print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                }
+            }
+            $ss = $this->cm->get_settings(false);
+
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/settings_score.php');
         } else if ($curr_tab == 'analytics') {
             if (isset($_POST['critic-feeds-nonce'])) {
                 $valid = $this->nonce_validate($_POST);
@@ -2799,12 +2809,12 @@ class CriticMaticAdmin {
         if ($filters) {
             foreach ($filters as $key => $value) {
                 $home_type = isset($value['home_type']) ? $value['home_type'] : -1;
-                
+
                 $type_list = $value;
                 $type_list = isset($value['type_list']) ? $value['type_list'] : $value;
-                
+
                 $type = isset($_GET[$key]) ? (int) $_GET[$key] : $home_type;
-   
+
                 # Custom query types
                 if ($c_type == 'author') {
                     $filter_type_arr = $this->cm->get_author_type_count($query_adb->get_query(), $type_list, $key, $all);
@@ -3061,14 +3071,14 @@ class CriticMaticAdmin {
                     if ($b == 'author_find_avatar') {
                         // Find avatar for author campaigns
                         $cav = $this->cm->get_cav();
-                        
+
                         print '<textarea style="width:100%; height:300px">';
                         print $cav->find_pro_avatars($ids, true);
                         print '</textarea>';
-                    }else if ($b == 'author_url_to_avatar') {
+                    } else if ($b == 'author_url_to_avatar') {
                         // Find avatar for author campaigns
                         $cav = $this->cm->get_cav();
-                        
+
                         print '<textarea style="width:100%; height:300px">';
                         print $cav->bulk_transit_pro_avatars($ids, true);
                         print '</textarea>';

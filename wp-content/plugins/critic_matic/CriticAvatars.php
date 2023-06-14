@@ -85,8 +85,17 @@ class CriticAvatars extends AbstractDB {
                     $user_id = $user_obj->id ? $user_obj->id : 0;
                 }
             }
-            // Get avatar by code     
-            $avatar = $this->get_or_create_user_avatar($user_id, 0, $size);
+
+            // Check avatar type
+            $author = $this->cm->get_author_by_wp_uid($user_id, true);
+
+            if ($author->avatar_type == 1 && $author->avatar_name) {
+                // Get upload avatar
+                $avatar = $this->get_upload_user_avatar($author->id, $size, $author->avatar_name);
+            } else {
+                // Get avatar by code     
+                $avatar = $this->get_or_create_user_avatar($user_id, 0, $size);
+            }
         }
         return $avatar;
     }
@@ -129,6 +138,29 @@ class CriticAvatars extends AbstractDB {
 
         $avatar = '<img class="neuro avatar' . $tomato_class . '" srcset="' . $img_path . '" width="' . $size . '" height="' . $size . '" />';
         return $avatar;
+    }
+
+    public function get_upload_user_avatar($aid = 0, $size = 64, $filename = '') {
+        $img_path = $this->img_service . 'wp-content/uploads/' . $this->pro_source_dir . '/' . $filename;
+        $img_path = $this->get_avatar_thumb($img_path, $size);
+        $avatar = '<img class="neuro avatar upload" srcset="' . $img_path . '" width="' . $size . '" height="' . $size . '" />';
+        return $avatar;
+    }
+
+    public function get_author_avatar($author, $av_size=150) {
+        // User   
+        if ($author->avatar_type == 1 && $author->avatar_name) {
+            $image = $this->get_upload_user_avatar($author->id, $av_size, $author->avatar_name);
+        } else {
+            $wp_uid = $author->wp_uid;
+            if ($wp_uid) {
+                $image = $this->get_or_create_user_avatar($wp_uid, 0, $av_size);
+            } else {
+                $image = $this->get_or_create_user_avatar(0, $author->id, $av_size);
+            }
+        }
+
+        return $image;
     }
 
     public function get_avatar_thumb($img_path = '', $w = 150) {
@@ -746,22 +778,40 @@ class CriticAvatars extends AbstractDB {
     }
 
     public function ajax_pro_img() {
-        $croped_image = $_POST['image'];
+        $croped_image = isset($_POST['image']) ? $_POST['image'] : '';
         $author_id = (int) $_POST['author_id'];
+        $no_upd = isset($_POST['no_upd']) ? true : false;
+        $filename = isset($_POST['filename ']) ? $_POST['filename '] : '';
+        if ($filename) {
+            return $this->update_author_file($author_id, $filename);
+        }
+
+        if (isset($_POST['change_type'])) {
+            $av_type = (int) $_POST['av_type'];
+            $av_size = (int) $_POST['av_size'];
+            return $this->change_author_type($author_id, $av_type, $av_size = 150);
+        }
+
+
+
         list($type, $croped_image) = explode(';', $croped_image);
         list(, $croped_image) = explode(',', $croped_image);
         $file_content = base64_decode($croped_image);
 
-        $ret = 0;
+        $ret = array();
 
         // This is an image?
         $src_type = $this->isImage($file_content);
         if (!$src_type) {
-            return $ret;
+            $ret['error'] = 1;
+            $ret['reason'] = 'This is no image';
+            return json_encode($ret);
         }
 
         if (!isset($this->allowed_mime_types[$src_type])) {
-            return $ret;
+            $ret['error'] = 1;
+            $ret['reason'] = 'This image type is not allowed';
+            return json_encode($ret);
         }
 
         $time = $this->curr_time();
@@ -788,15 +838,60 @@ class CriticAvatars extends AbstractDB {
         fwrite($fp, $file_content);
         fclose($fp);
 
+        $ret['filename'] = $filename;
+
+        if ($no_upd) {
+            // No update. Only return filename.
+            return json_encode($ret);
+        }
         // Add avatar to db
         $data = array(
             'avatar' => 1,
+            'avatar_type' => 1,
             'avatar_name' => $filename,
         );
 
         $this->sync_update_data($data, $author_id, $this->db['authors']);
 
-        return $ret;
+        return json_encode($ret);
+    }
+
+    private function update_author_file($author_id, $filename) {
+        // Add avatar to db
+        $data = array(
+            'avatar' => 1,
+            'avatar_type' => 1,
+            'avatar_name' => $filename,
+        );
+
+        $this->sync_update_data($data, $author_id, $this->db['authors']);
+        $ret = array(
+            'success' => 1,
+        );
+
+        return json_encode($ret);
+    }
+
+    private function change_author_type($author_id, $av_type, $size) {
+        // Add avatar to db
+        $data = array(
+            'avatar_type' => $av_type,
+        );
+
+        $this->sync_update_data($data, $author_id, $this->db['authors']);
+
+        // Check avatar type
+        $author = $this->cm->get_author($author_id);
+
+        if ($author->avatar_type == 1 && $author->avatar_name) {
+            // Get upload avatar
+            $avatar = $this->get_upload_user_avatar($author->id, $size, $author->avatar_name);
+        } else {
+            // Get avatar by code     
+            $avatar = $this->get_or_create_user_avatar($author->wp_uid, 0, $size);
+        }
+
+        return $avatar;
     }
 
     public function remove_old_pro_avatar($aid) {

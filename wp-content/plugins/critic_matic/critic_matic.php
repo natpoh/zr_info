@@ -561,8 +561,10 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);   
     $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_authors` ADD `avatar_name` varchar(255) NOT NULL default ''";
     Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_authors` ADD `avatar_type` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);   
 
-    critic_matic_create_index_an(array('status', 'type', 'name', 'wp_uid', 'show_type', 'avatar'), $table_prefix . "critic_matic_authors");
+    critic_matic_create_index_an(array('status', 'type', 'name', 'wp_uid', 'show_type', 'avatar', 'avatar_type'), $table_prefix . "critic_matic_authors");
 
     // Authors meta
     $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_matic_authors_meta`(

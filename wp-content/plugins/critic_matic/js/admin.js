@@ -139,8 +139,15 @@ jQuery(function ($) {
 
         $('#avatar_file').on('change', function () {
 
+            $('#msgh').html('');
+            let allowedExtension = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            let type = this.files[0].type;
+            if (allowedExtension.indexOf(type) == -1) {
+                $('#msgh').html('<div class="msg-content msg error">This image is invalid. Supported only: .jpg, .png, .gif</div>');
+                return false;
+            }
 
-            $('#upload-image-i').hide();
+            $('#author_image').hide();
             $('#upl_avatar').hide();
 
             $('#upload-image').show();
@@ -197,7 +204,7 @@ jQuery(function ($) {
 
                         console.log(data);
                         html = '<img src="' + response + '" />';
-                        $("#upload-image-i").html(html);
+                        $("#author_image").html(html);
                         author.removeClass('proccess')
 
                         cropped_success();
@@ -218,7 +225,7 @@ jQuery(function ($) {
         $('#upload-image').hide();
         $('.cropped_images').hide();
 
-        $('#upload-image-i').show();
+        $('#author_image').show();
         $('#upl_avatar').show();
 
         $image_crop = null;

@@ -19,7 +19,7 @@ class SearchFacets extends AbstractDB {
     // Movies an
     private $ma = '';
     public $search_tabs = array(
-        'movies' => array('title' => 'Movies and TV', 'count' => 0),
+        'movies' => array('title' => 'Movies/TV/Games', 'count' => 0),
         'critics' => array('title' => 'Reviews', 'count' => 0)
     );
     // Search sort: /sort_title_desc
@@ -2300,7 +2300,7 @@ class SearchFacets extends AbstractDB {
                 ksort($dates);
             }
 
-            $title = 'Actors Country';
+            $title = 'Actors Country <span data-value="actor_country_popup" class="nte_info"></span>';
             $ftype = 'movies';
             $minus = true;
             $this->theme_facet_multi($filter, $dates, $title, $view_more, $ftype, $minus);

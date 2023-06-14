@@ -2,10 +2,6 @@
     width: 200px;
 }
 
-#upload-image, #avatar_file, .cropped_images {
-    display: none;
-}
-
 .upload-holder {
     width: 300px;
 }

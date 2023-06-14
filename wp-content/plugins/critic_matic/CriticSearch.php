@@ -408,7 +408,7 @@ class CriticSearch extends AbstractDB {
     public $search_filters = array(
         'type' => array(
             'movies' => array('key' => 'Movie', 'title' => 'Movies'),
-            'tv' => array('key' => 'TVSeries', 'title' => 'TV Series'),
+            'tv' => array('key' => 'TVSeries', 'title' => 'TV / Streaming'),
             'videogame' => array('key' => 'VideoGame', 'title' => 'Video Games'),
         ),
         'author_type' => array(

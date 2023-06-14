@@ -50,6 +50,7 @@ if (sizeof($authors) > 0) {
                 $cp = $this->cm->get_cp();
 
                 foreach ($authors as $author) {
+    
                     $author_name = $author->name;
                     $author_type = $this->cm->get_author_type($author->type);
                     $author_status = $this->cm->get_author_status($author->status);
@@ -77,22 +78,8 @@ if (sizeof($authors) > 0) {
 
 
                     //image            
-                    $image = '';
-                    if ($options['image']) {
-                        $image = '<img src="' . $options['image'] . '" width="50"  height="50">';
-                    }
-
-                    $wp_uid = $author->wp_uid;
-
-
-                    if (!$image && $author->type == 2) {
-                        if ($wp_uid) {
-                            // User            
-                            $image = $cav->get_or_create_user_avatar($wp_uid, 0, 64);
-                        } else {
-                            $image = $cav->get_or_create_user_avatar(0, $author->id, 64);
-                        }
-                    }
+                    $av_size=64;
+                    $image = $cav->get_author_avatar($author, $av_size);
 
                     /*
                       //Critic posts (TEST ONLY. UNUSED)

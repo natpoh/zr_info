@@ -607,23 +607,23 @@ class CriticFront extends SearchFacets {
         // Author image
         $author = $this->cm->get_author($critic->aid);
         $author_options = unserialize($author->options);
-        
-        
+
+
         $cav = $this->cm->get_cav();
         //$author_img = $cav->get_pro_avatar($author->avatar_name);
         $author_img = $cav->get_pro_thumb(100, 100, $author->avatar_name);
         // print $author_img;
         // $author_img = $author_options['image'];
-       
+
         $actorsdata = '';
         if ($author_img) {
             $actorsdata = '<div class="a_img_container" style="background: url(' . $author_img . '); background-size: cover;"></div>';
-            /*try {                
-                $image = $this->get_local_thumb(100, 100, $author_img);
-                $actorsdata = '<div class="a_img_container" style="background: url(' . $image . '); background-size: cover;"></div>';
-            } catch (Exception $exc) {
-                
-            }*/
+            /* try {                
+              $image = $this->get_local_thumb(100, 100, $author_img);
+              $actorsdata = '<div class="a_img_container" style="background: url(' . $image . '); background-size: cover;"></div>';
+              } catch (Exception $exc) {
+
+              } */
         }
         if (!$actorsdata) {
             // Empty image
@@ -2296,7 +2296,7 @@ class CriticFront extends SearchFacets {
 
         $ss = $this->cm->get_settings();
         $unique = $ss['audience_unique'];
-        
+
         if ($vote_type == 1 || $vote_type == 2) {
             // $vote_type = 1; Positive
             // $vote_type = 2; Negative
@@ -2836,6 +2836,81 @@ class CriticFront extends SearchFacets {
         $icon = 'https://www.google.com/s2/favicons?domain=' . $domain;
         $theme_url = '<img srcset="' . $icon . '" width="16" height="16"> <a target="_blank" href="' . $url . '">' . $text_url . '</a>';
         return $theme_url;
+    }
+
+    /*
+     * User avatars
+     */
+
+    public function select_user_avatar($wp_id = 0, $user_rating = 0) {
+        $ss = $this->cm->get_settings();
+        $score_avatar = $ss['score_avatar'];
+        $cav = $this->cm->get_cav();
+
+        if ($user_rating >= $score_avatar) {
+            // Enable to upload avatar
+            // Check avatar type
+            $author = $this->cm->get_author_by_wp_uid($wp_id, true);
+            ?>
+            <div id="author_id" data-id="<?php print $author->id ?>"></div>
+            <fieldset id="select_av_type">
+                <legend>Select an avatar type:</legend>
+                <?php
+                foreach ($this->cm->author_av_types as $key => $value) {
+                    $checked = $key == $author->avatar_type ? 'checked' : '';
+                    ?>
+                    <div>
+                        <input type="radio" id="<?php print $key ?>" name="avtype" value="<?php print $key ?>" <?php print $checked ?>>
+                        <label for="<?php print $key ?>"><?php print $value ?></label>
+                    </div>
+                    <?php
+                }
+                ?>              
+            </fieldset>
+            <div class="av_actions">
+                <?php
+                foreach ($this->cm->author_av_types as $key => $value) {
+                    $checked = $key == $author->avatar_type ? ' active' : '';
+                    ?>
+                    <div id="av_action_<?php print $key ?>" class="av_action<?php print $checked ?>" >
+                        <?php
+                        if ($key == 0) {
+                            $this->user_random_avatar();
+                        } else {
+                            $this->user_upload_avatar();
+                        }
+                        ?>
+                    </div>
+                    <?php
+                }
+                ?>                
+            </div>
+            <?php
+        } else {
+            $this->user_random_avatar();
+        }
+    }
+
+    private function user_upload_avatar() {
+        ?>
+        <div class="upload-holder">
+            <div id="upload-image"></div>
+        </div>
+        <div>    
+            <button id="upl_avatar" class="btn-small">Upload avatar</button><br />
+            <input type="file" id="avatar_file">
+            <div class="cropped_images">
+                <button id="cropped_image" class="button-primary">Submit Image</button> 
+                <button id="cropped_cancel" class="button-secondary">Cancel</button>
+            </div>
+        </div>
+        <?php
+    }
+
+    private function user_random_avatar() {
+        ?>
+        <button id="change_avatar" class="btn-small" title="Get another random avatar">Change avatar</button>
+        <?php
     }
 
     /*
