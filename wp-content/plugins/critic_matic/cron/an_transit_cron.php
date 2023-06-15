@@ -74,7 +74,7 @@ $cm->register_cron($cron_name);
 // Indie tags
 $cr->transit_indie_tags($count, $debug, $force);
 
-/*
+
 // Transit countries
 $cr->transit_countries($count, $debug, $force);
 
@@ -84,7 +84,7 @@ $cr->transit_genres($count, $debug);
 // Upload pro-user avatars for new authors
 $cav = $cm->get_cav();
 $cav->transit_pro_avatars($count, $debug, $force);
-*/
+
 $cm->unregister_cron($cron_name);
 
 
