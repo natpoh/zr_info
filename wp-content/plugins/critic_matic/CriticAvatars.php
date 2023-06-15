@@ -142,12 +142,14 @@ class CriticAvatars extends AbstractDB {
 
     public function get_upload_user_avatar($aid = 0, $size = 64, $filename = '') {
         $img_path = $this->img_service . 'wp-content/uploads/' . $this->pro_source_dir . '/' . $filename;
-        $img_path = $this->get_avatar_thumb($img_path, $size);
+        if ($size < 200) {
+            $img_path = $this->get_avatar_thumb($img_path, $size);
+        }
         $avatar = '<img class="neuro avatar upload" srcset="' . $img_path . '" width="' . $size . '" height="' . $size . '" />';
         return $avatar;
     }
 
-    public function get_author_avatar($author, $av_size=150) {
+    public function get_author_avatar($author, $av_size = 200) {
         // User   
         if ($author->avatar_type == 1 && $author->avatar_name) {
             $image = $this->get_upload_user_avatar($author->id, $av_size, $author->avatar_name);
@@ -163,7 +165,7 @@ class CriticAvatars extends AbstractDB {
         return $image;
     }
 
-    public function get_avatar_thumb($img_path = '', $w = 150) {
+    public function get_avatar_thumb($img_path = '', $w = 200) {
         $result = $this->thumb_service . 'webp/' . $w . '/' . $img_path . '.webp';
         return $result;
     }
@@ -216,7 +218,7 @@ class CriticAvatars extends AbstractDB {
         $user_id = $user->exists() ? $user->ID : 0;
         $avatar = '';
         if ($user_id) {
-            $size = 150;
+            $size = 200;
             $img_path = '/wp-content/themes/custom_twentysixteen/images/antomface-150.jpg';
 
             // Get last data
@@ -781,7 +783,7 @@ class CriticAvatars extends AbstractDB {
         $croped_image = isset($_POST['image']) ? $_POST['image'] : '';
         $author_id = (int) $_POST['author_id'];
         $no_upd = isset($_POST['no_upd']) ? true : false;
-        $filename = isset($_POST['filename ']) ? $_POST['filename '] : '';
+        $filename = isset($_POST['filename']) ? $_POST['filename'] : '';
         if ($filename) {
             return $this->update_author_file($author_id, $filename);
         }
@@ -789,7 +791,7 @@ class CriticAvatars extends AbstractDB {
         if (isset($_POST['change_type'])) {
             $av_type = (int) $_POST['av_type'];
             $av_size = (int) $_POST['av_size'];
-            return $this->change_author_type($author_id, $av_type, $av_size = 150);
+            return $this->change_author_type($author_id, $av_type, $av_size = 200);
         }
 
 

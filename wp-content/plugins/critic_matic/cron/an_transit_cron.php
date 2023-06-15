@@ -71,17 +71,14 @@ if ($cm->cron_already_run($cron_name, 10, $debug, $force)) {
 }
 $cm->register_cron($cron_name);
 
+// Indie tags
+$cr->transit_indie_tags($count, $debug, $force);
 
+// Transit countries
 $cr->transit_countries($count, $debug, $force);
+
+// Transit genres
 $cr->transit_genres($count, $debug);
-
-//$cr->transit_actors($count, $debug);
-
-// One time task. Complite
-//$cr->transit_providers();
-
-// Remove meta type 2.
-//$cr->remove_unused_meta($count, $debug);
 
 // Upload pro-user avatars for new authors
 $cav = $cm->get_cav();
@@ -90,4 +87,15 @@ $cav->transit_pro_avatars($count, $debug, $force);
 $cm->unregister_cron($cron_name);
 
 
+/*
+ * UNUSED OLD TASKS
 
+$cr->transit_actors($count, $debug);
+
+// One time task. Complite
+$cr->transit_providers();
+
+// Remove meta type 2.
+$cr->remove_unused_meta($count, $debug);
+
+*/

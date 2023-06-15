@@ -993,17 +993,13 @@ class CriticFront extends SearchFacets {
         $wp_uid = $author->wp_uid;
         $cav = $this->cm->get_cav();
         if ($wp_uid) {
-            // User            
-            $wp_avatar = $cav->get_or_create_user_avatar($wp_uid, 0, 64);
-        } else {
-            // $wp_avatar = $cav->get_or_create_user_avatar(0, $aid, 64);
+            $wp_avatar = $cav->get_author_avatar($author, 64);
         }
-
         $author_admin_img = '';
 
         if (!$avatars && !$wp_avatar) {
             // Author image
-            $author = $this->cm->get_author($critic->aid);
+
             $author_options = unserialize($author->options);
             $author_img = $author_options['image'];
 
@@ -1030,8 +1026,7 @@ class CriticFront extends SearchFacets {
             $author_link = $uc->get_user_profile_link($wp_user->url);
             $ucarma_class = ($wp_user->carma < 0) ? " minus" : " plus";
             $umeta = '<div class="umeta' . $ucarma_class . '">
-                    <span class="urating" ><i class="icon-star"></i>' . (int) $wp_user->rating . '</span>
-                    <span class="ucarma" ><i class="icon-emo-squint"></i>' . (int) $wp_user->carma . '</span>
+                    <span class="urating" ><i class="icon-star"></i>' . (int) $wp_user->rating . '</span>                   
                 </div>';
         } else {
             // Search 
@@ -2854,7 +2849,7 @@ class CriticFront extends SearchFacets {
             ?>
             <div id="author_id" data-id="<?php print $author->id ?>"></div>
             <fieldset id="select_av_type">
-                <legend>Select an avatar type:</legend>
+                <legend>Avatar type:</legend>
                 <?php
                 foreach ($this->cm->author_av_types as $key => $value) {
                     $checked = $key == $author->avatar_type ? 'checked' : '';
