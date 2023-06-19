@@ -28,8 +28,8 @@ class SearchFacets extends AbstractDB {
         'Default' => 'def',
         'Rating' => 'rating',
         'Popularity' => 'pop',
-        'Diversity' => 'woke',
-        'Indie' => 'indie',
+        'Wokeness' => 'woke',
+        'Finances' => 'indie',
     );
     public $def_tab = 'movies';
     // Facets
@@ -1040,11 +1040,14 @@ class SearchFacets extends AbstractDB {
                     }
                     $more_sort_content = '<ul class="sort-wrapper more ' . $key . '">' . $group_childs . '</ul>';
                     $more_active_class = $more_active[$key] ? ' mact' : '';
-                    $more = '<div class="sort-more' . $more_active_class . '" title="' . $title . '">' . $this->get_nte('<i></i>', $more_sort_content, true) . '</div>';
+                    $more = '<div class="sort-more' . $more_active_class . '" title="' . $title . '">' . $this->get_nte($title.'<i></i>', $more_sort_content, true) . '</div>';
 
                     $group_item = $group[0];
-                    $group_item['sort_icon'] .= $more;
+                    //$group_item['sort_icon'] .= $more;
                     $group_item['tab_class'] .= ' group';
+                    
+                    $group_item['type']='title';                    
+                    $group_item['title']=$more;
 
                     $ret .= $this->get_sort_link($group_item);
                 }
@@ -1673,39 +1676,14 @@ class SearchFacets extends AbstractDB {
         if (!$main_collapsed) {
             // Is franchise
 
-            $isfranchise_cnt = 0;
-
-            if ($data['isfranchise']['data'][0]) {
-                $isfranchise_cnt = $data['isfranchise']['data'][0]->cnt;
-            }
-
-            $bigdist_cnt = 0;
-            if ($data['bigdist']['data'][0]) {
-                $bigdist_cnt = $data['bigdist']['data'][0]->cnt;
-            }
-
-            $meddist_cnt = 0;
-            if ($data['meddist']['data'][0]) {
-                $meddist_cnt = $data['meddist']['data'][0]->cnt;
-            }
-
-            $indidist_cnt = 0;
-            if ($data['indidist']['data'][0]) {
-                $indidist_cnt = $data['indidist']['data'][0]->cnt;
-            }
-
-            $rf = array(
-                'isfranchise' => $isfranchise_cnt,
-                'bigdist' => $bigdist_cnt,
-                'meddist' => $meddist_cnt,
-                'indidist' => $indidist_cnt,
-            );
-
+            $dates = array();
             foreach ($this->cs->search_filters['indie'] as $key => $item) {
-                if ($rf[$key]) {
-                    $dates[$key] = array('title' => $item['title'], 'count' => $rf[$key], 'type_title' => 'Indie filter', 'name_pre' => '', 'filter' => 'indie');
+                $count=isset($data[$key]['data'][0])?$data[$key]['data'][0]->cnt:0;
+                if ($count){
+                    $dates[$key] = array('title' => $item['title'], 'count' => $count, 'type_title' => 'Indie filter', 'name_pre' => '', 'filter' => 'indie');
                 }
             }
+            
 
             $filter = 'indie';
             $title = 'Filters';

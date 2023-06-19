@@ -72,7 +72,7 @@ class ActorsCountry extends AbstractDB {
                         $aid = $actor->aid;
                         # Update or Create meta
                         $field = 'forebears';
-                        $country = $ma->get_or_create_country_by_name($item->country, true);
+                        $country = $ma->get_or_create_country_by_name($item->country, false);
                         if ($debug) {
                             print_r(array($aid, $country, $item->country));
                         }

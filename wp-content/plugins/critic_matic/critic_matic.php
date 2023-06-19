@@ -1599,4 +1599,7 @@ Stars witch foto
  * 
 SELECT m.mid, count(*) FROM meta_movie_actor m INNER JOIN data_actors_meta r ON m.aid = r.actor_id WHERE m.type = 1 AND r.n_kairos=0 GROUP by m.mid
  * 
+ * 
+ * 
+ * DELETE FROM `data_actors_country` WHERE result=232
  */
