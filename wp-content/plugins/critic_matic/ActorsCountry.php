@@ -64,6 +64,10 @@ class ActorsCountry extends AbstractDB {
                   [country] => United States
                   )
                  */
+                $fb_country = $item->country;
+                if ($fb_country == 'Saint Helena') {
+                    $fb_country = 'United States';
+                }
 
                 # Get actors
                 $actors = $this->get_actors_by_last_name($item->lastname);
@@ -75,15 +79,15 @@ class ActorsCountry extends AbstractDB {
                         $aid = $actor->aid;
                         # Update or Create meta
                         $field = 'forebears';
-                        $country = $ma->get_or_create_country_by_name($item->country, true);
+                        $country = $ma->get_or_create_country_by_name($fb_country, true);
                         if ($country) {
                             if ($debug) {
-                                print_r(array($actor, $country, $item->country));
+                                print_r(array($actor, $country, $fb_country));
                             }
                             $this->update_actor_meta($aid, $country, $field);
                         } else {
                             if ($debug) {
-                                print_r(array('Not found contry for: ', $actor, $item->country));
+                                print_r(array('Not found contry for: ', $actor, $fb_country));
                             }
                         }
                         $country = '';
