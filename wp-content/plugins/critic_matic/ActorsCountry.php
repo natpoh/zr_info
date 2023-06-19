@@ -147,8 +147,7 @@ class ActorsCountry extends AbstractDB {
         }
 
         // Add ethnic data
-        $score_opt = array(
-            'Title' => 'Name',
+        $score_opt = array(            
             'date' => 'DateBirth',
             'ethnicity' => 'Ethnicity',
             'bname' => 'BirthName',
@@ -167,6 +166,8 @@ class ActorsCountry extends AbstractDB {
         }
 
         if ($to_update) {
+            
+            $to_update['Name'] = $post->title;
             $to_update['last_update'] = $this->curr_time();
 
             // Add link
