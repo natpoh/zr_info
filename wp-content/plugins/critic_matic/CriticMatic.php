@@ -276,7 +276,7 @@ class CriticMatic extends AbstractDB {
     }
 
     public function get_ac() {
-        // Get actors countyr
+        // Get actors country
         if (!$this->ac) {
             if (!class_exists('ActorsCountry')) {
                 require_once( CRITIC_MATIC_PLUGIN_DIR . 'ActorsCountry.php' );

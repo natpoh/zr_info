@@ -22,6 +22,7 @@ class ActorsCountry extends AbstractDB {
             'actors_country' => 'data_actors_country',
             'forebears_lastnames' => 'data_forebears_lastnames',
             'forebears_country' => 'data_forebears_country',
+            'actors_ethnic' => 'data_actors_ethnic',
         );
     }
 
@@ -129,8 +130,9 @@ class ActorsCountry extends AbstractDB {
      * Etchic logic
      */
 
-    public function add_ethnic($post) {
+    public function add_ethnic($post, $url) {
         $options = unserialize($post->options);
+        // Add country
         $str_bplace = isset($options['bplace']) ? base64_decode($options['bplace']) : '';
         $place = $this->validate_place($str_bplace);
         if ($place) {
@@ -141,6 +143,31 @@ class ActorsCountry extends AbstractDB {
                 $field = 'ethnic';
                 $this->update_actor_meta($aid, $country, $field);
             }
+        }
+
+        // Add ethnic data
+        $score_opt = array(
+            'Title' => 'Name',
+            'date' => 'DateBirth',
+            'ethnicity' => 'Ethnicity',
+            'bname' => 'BirthName',
+            'bplace' => 'PlaceBirth',
+        );
+
+        $to_update = array();
+        foreach ($score_opt as $post_key => $db_key) {
+            if (isset($options[$post_key])) {
+                $field_value = base64_decode($options[$post_key]);
+                if ($field_value) {
+                    $to_update[$db_key] = $field_value;
+                }
+            }
+        }
+        
+        
+        if ($to_update){
+            // Add link
+            $to_update['Link'] = $url->link;
         }
     }
 

@@ -1340,6 +1340,13 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('mid', 'mlcid', 'date', 'views', 'expired', 'link_hash'), "data_site_img");
+    
+    
+    /*
+     * Ethic img
+     */
+    $sql = "ALTER TABLE `data_actors_ethnic` ADD `Img` text default NULL";
+    Pdo_an::db_query($sql);
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {
