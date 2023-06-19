@@ -148,15 +148,14 @@ class ActorsCountry extends AbstractDB {
 
         // Add ethnic data
         $score_opt = array(
-            'actor_id' => $aid,
             'Title' => 'Name',
             'date' => 'DateBirth',
             'ethnicity' => 'Ethnicity',
             'bname' => 'BirthName',
             'bplace' => 'PlaceBirth',
-            'tags' => 'Tags',            
+            'tags' => 'Tags',
         );
-
+        return;
         $to_update = array();
         foreach ($score_opt as $post_key => $db_key) {
             if (isset($options[$post_key])) {
@@ -180,6 +179,7 @@ class ActorsCountry extends AbstractDB {
             if ($actor_exist) {
                 $this->sync_update_data($to_update, $actor_exist->id, $this->db['actors_ethnic'], $this->cm->sync_data, 10);
             } else {
+                $to_update['actor_id'] = $aid;
                 $this->sync_insert_data($to_update, $this->db['actors_ethnic'], $this->cm->sync_client, $this->cm->sync_data, 10);
             }
         }
