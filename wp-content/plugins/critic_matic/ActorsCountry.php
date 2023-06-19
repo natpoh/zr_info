@@ -153,6 +153,7 @@ class ActorsCountry extends AbstractDB {
             'bname' => 'BirthName',
             'bplace' => 'PlaceBirth',
             'tags' => 'Tags',
+            'img' => 'Img',
         );
 
         $to_update = array();
