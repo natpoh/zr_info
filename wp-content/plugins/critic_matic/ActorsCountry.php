@@ -72,12 +72,16 @@ class ActorsCountry extends AbstractDB {
                         $aid = $actor->aid;
                         # Update or Create meta
                         $field = 'forebears';
-                        $country = $ma->get_or_create_country_by_name($item->country, false);
+                        $country = $ma->get_or_create_country_by_name($item->country, true);
                         if ($country) {
                             if ($debug) {
                                 print_r(array($aid, $country, $item->country));
                             }
                             $this->update_actor_meta($aid, $country, $field);
+                        } else {
+                            if ($debug) {
+                                print_r(array('Not found contry for: ', $item->country));
+                            }
                         }
                         $country = '';
                     }
