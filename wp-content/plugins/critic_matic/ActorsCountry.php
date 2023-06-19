@@ -131,12 +131,13 @@ class ActorsCountry extends AbstractDB {
      */
 
     public function add_ethnic($post, $url) {
+        $aid = $post->top_movie;
         $options = unserialize($post->options);
         // Add country
         $str_bplace = isset($options['bplace']) ? base64_decode($options['bplace']) : '';
         $place = $this->validate_place($str_bplace);
         if ($place) {
-            $aid = $post->top_movie;
+
             $ma = $this->cm->get_ma();
             $country = $ma->get_country_by_name($place, true);
             if ($country) {
@@ -147,11 +148,13 @@ class ActorsCountry extends AbstractDB {
 
         // Add ethnic data
         $score_opt = array(
+            'actor_id' => $aid,
             'Title' => 'Name',
             'date' => 'DateBirth',
             'ethnicity' => 'Ethnicity',
             'bname' => 'BirthName',
             'bplace' => 'PlaceBirth',
+            'tags' => 'Tags',            
         );
 
         $to_update = array();
@@ -163,11 +166,22 @@ class ActorsCountry extends AbstractDB {
                 }
             }
         }
-        
-        
-        if ($to_update){
+
+        if ($to_update) {
+            $to_update['last_update'] = $this->curr_time();
+
             // Add link
             $to_update['Link'] = $url->link;
+
+            // Data exist?
+            $sql = sprintf("SELECT * FROM {$this->db['actors_ethnic']} WHERE actor_id=%d", $aid);
+            $actor_exist = $this->db_fetch_row($sql);
+
+            if ($actor_exist) {
+                $this->sync_update_data($to_update, $actor_exist->id, $this->db['actors_ethnic'], $this->cm->sync_data, 10);
+            } else {
+                $this->sync_insert_data($to_update, $this->db['actors_ethnic'], $this->cm->sync_client, $this->cm->sync_data, 10);
+            }
         }
     }
 
