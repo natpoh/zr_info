@@ -68,6 +68,9 @@ class ActorsCountry extends AbstractDB {
                 # Get actors
                 $actors = $this->get_actors_by_last_name($item->lastname);
                 if ($actors) {
+                    if ($debug) {
+                        print_r(array('actors: ', $actors));
+                    }
                     foreach ($actors as $actor) {
                         $aid = $actor->aid;
                         # Update or Create meta
@@ -75,12 +78,12 @@ class ActorsCountry extends AbstractDB {
                         $country = $ma->get_or_create_country_by_name($item->country, true);
                         if ($country) {
                             if ($debug) {
-                                print_r(array($aid, $country, $item->country));
+                                print_r(array($actor, $country, $item->country));
                             }
                             $this->update_actor_meta($aid, $country, $field);
                         } else {
                             if ($debug) {
-                                print_r(array('Not found contry for: ', $item->country));
+                                print_r(array('Not found contry for: ', $actor, $item->country));
                             }
                         }
                         $country = '';
