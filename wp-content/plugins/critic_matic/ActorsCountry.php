@@ -73,10 +73,13 @@ class ActorsCountry extends AbstractDB {
                         # Update or Create meta
                         $field = 'forebears';
                         $country = $ma->get_or_create_country_by_name($item->country, false);
-                        if ($debug) {
-                            print_r(array($aid, $country, $item->country));
+                        if ($country) {
+                            if ($debug) {
+                                print_r(array($aid, $country, $item->country));
+                            }
+                            $this->update_actor_meta($aid, $country, $field);
                         }
-                        $this->update_actor_meta($aid, $country, $field);
+                        $country = '';
                     }
                 }
             }
@@ -119,16 +122,15 @@ class ActorsCountry extends AbstractDB {
         $options = unserialize($post->options);
         $str_bplace = isset($options['bplace']) ? base64_decode($options['bplace']) : '';
         $place = $this->validate_place($str_bplace);
-        if ($place){
+        if ($place) {
             $aid = $post->top_movie;
             $ma = $this->cm->get_ma();
             $country = $ma->get_country_by_name($place, true);
-            if ($country){
+            if ($country) {
                 $field = 'ethnic';
                 $this->update_actor_meta($aid, $country, $field);
             }
         }
-        
     }
 
     public function test_ethnic() {
