@@ -155,7 +155,7 @@ class ActorsCountry extends AbstractDB {
             'bplace' => 'PlaceBirth',
             'tags' => 'Tags',
         );
-        return;
+
         $to_update = array();
         foreach ($score_opt as $post_key => $db_key) {
             if (isset($options[$post_key])) {
