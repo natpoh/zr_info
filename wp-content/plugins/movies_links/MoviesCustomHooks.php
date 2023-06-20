@@ -36,7 +36,9 @@ class MoviesCustomHooks {
             $this->update_dove($post, $options, $campaign, $debug);
         }
 
-        CustomHooks::do_action('ml_add_post', ['campaign' => $campaign, 'post' => $post]);
+        $url_data = $this->mp->get_url($post->uid);
+
+        CustomHooks::do_action('ml_add_post', ['campaign' => $campaign, 'post' => $post, 'url' => $url_data]);
     }
 
     public function add_actors($campaign = array(), $post = array(), $debug = false) {
@@ -141,7 +143,7 @@ class MoviesCustomHooks {
                 // Update rating     
                 $camp_rating = $to_update['rating'] * 10;
                 $total_rating = $camp_rating;
-                 
+
                 if ($one_five) {
                     $total_rating = $ma->five_to_ten($total_rating);
                 }
@@ -217,13 +219,11 @@ class MoviesCustomHooks {
             }
 
             if ($update_rating) {
-                
+
                 $ma->update_erating($post->top_movie, $data);
             }
         }
     }
-
-
 
     private function update_franchises($post, $options, $campaign, $debug = false) {
         if ($campaign->id == 33) {

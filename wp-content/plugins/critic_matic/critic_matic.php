@@ -561,8 +561,10 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);   
     $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_authors` ADD `avatar_name` varchar(255) NOT NULL default ''";
     Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_authors` ADD `avatar_type` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);   
 
-    critic_matic_create_index_an(array('status', 'type', 'name', 'wp_uid', 'show_type', 'avatar'), $table_prefix . "critic_matic_authors");
+    critic_matic_create_index_an(array('status', 'type', 'name', 'wp_uid', 'show_type', 'avatar', 'avatar_type'), $table_prefix . "critic_matic_authors");
 
     // Authors meta
     $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_matic_authors_meta`(
@@ -1289,6 +1291,19 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
+    
+    $sql = "ALTER TABLE `data_movie_indie` ADD `reboot` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
+    $sql = "ALTER TABLE `data_movie_indie` ADD `remake` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
+    $sql = "ALTER TABLE `data_movie_indie` ADD `sequel` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
+    $sql = "ALTER TABLE `data_movie_indie` ADD `prequel` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
     critic_matic_create_index_an(array('date', 'movie_id'), "data_movie_indie");
 
     /* Actor country
@@ -1325,6 +1340,13 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('mid', 'mlcid', 'date', 'views', 'expired', 'link_hash'), "data_site_img");
+    
+    
+    /*
+     * Ethic img
+     */
+    $sql = "ALTER TABLE `data_actors_ethnic` ADD `Img` text default NULL";
+    Pdo_an::db_query($sql);
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {
@@ -1579,5 +1601,12 @@ DELETE FROM `data_movie_country` WHERE id>181
  ALTER TABLE wp_bcw98b_critic_matic_audience MODIFY rating float(5) NOT NULL DEFAULT '0'
  ALTER TABLE wp_bcw98b_critic_matic_rating MODIFY rating float(5) NOT NULL DEFAULT '0'
 
+
+Stars witch foto
  * 
+SELECT m.mid, count(*) FROM meta_movie_actor m INNER JOIN data_actors_meta r ON m.aid = r.actor_id WHERE m.type = 1 AND r.n_kairos=0 GROUP by m.mid
+ * 
+ * 
+ * 
+ * DELETE FROM `data_actors_country` WHERE result=232
  */

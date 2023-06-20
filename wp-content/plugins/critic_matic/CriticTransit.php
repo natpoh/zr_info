@@ -68,6 +68,8 @@ class CriticTransit extends AbstractDB {
             'staff_postmeta' => DB_PREFIX_STF . 'postmeta',
             'staff_users' => DB_PREFIX_STF . 'users',
             'actors_meta' => 'data_actors_meta',
+            'indie' => 'data_movie_indie',
+            'meta_movie_keywords' => 'meta_movie_keywords',
         );
     }
 
@@ -81,6 +83,89 @@ class CriticTransit extends AbstractDB {
             $this->ma = new MoviesAn($this->cm);
         }
         return $this->ma;
+    }
+
+    /*
+     * Transit ne tags to indie meta
+     */
+
+    public function transit_indie_tags($count = 10, $debug = false, $force = false) {
+        $option_name = 'last_tags_unique_id';
+        $last_id = $this->get_option($option_name, 0);
+        if ($force) {
+            $last_id = 0;
+        }
+
+        if ($debug) {
+            p_r(array('last_id', $last_id));
+        }
+
+        $allow_tags = array(
+            147 => 'sequel',
+            148 => 'reboot',
+            1921 => 'prequel',
+            3157 => 'remake',
+        );
+
+        // 1. Get posts
+        $sql = sprintf("SELECT id,mid,kid FROM {$this->db['meta_movie_keywords']} "
+                . "WHERE id>%d AND kid IN(" . implode(',', array_keys($allow_tags)) . ") ORDER BY id ASC limit %d", $last_id, $count);
+
+        if ($debug) {
+            print_r($sql);
+        }
+        $results = $this->db_results($sql);
+
+        if ($results) {
+            $last = end($results);
+            if ($debug) {
+                print 'last id: ' . $last->id . "\n";
+            }
+            if ($last) {
+                $this->update_option($option_name, $last->id);
+            }
+
+            $to_update = array();
+            foreach ($results as $item) {
+                $to_update[$item->mid][$allow_tags[$item->kid]] = 1;
+            }
+
+            if ($debug) {
+                print_r(array(sizeof($to_update), $to_update));
+            }
+            if ($to_update){
+                foreach ($to_update as $mid => $data) {
+                    $this->update_indie($mid, $data);
+                }
+            }
+        }
+    }
+
+    /*
+     * Indie
+     */
+
+    public function update_indie($mid = 0, $data = array()) {
+        // Get rating      
+        /*
+          `movie_id` int(11) NOT NULL DEFAULT '0',
+          `date` int(11) NOT NULL DEFAULT '0',
+          `distributor` int(11) NOT NULL DEFAULT '0',
+          `franchise` int(11) NOT NULL DEFAULT '0',
+         */
+        $sql = sprintf("SELECT * FROM {$this->db['indie']} WHERE movie_id = %d", (int) $mid);
+        $exist = $this->db_fetch_row($sql);
+        $data['date'] = $this->curr_time();
+        if ($exist) {
+            // Update post            
+            $this->sync_update_data($data, $exist->id, $this->db['indie'], true, 10);
+            CustomHooks::do_action('update_indie', ['mid' => $mid, 'data' => $data]);
+        } else {
+            // Add post            
+            $data['movie_id'] = $mid;
+            $this->sync_insert_data($data, $this->db['indie'], false, true, 10);
+            CustomHooks::do_action('add_indie', ['mid' => $mid, 'data' => $data]);
+        }
     }
 
     /*

@@ -38,25 +38,41 @@ if ($aid) {
 
 
     //image            
-    $image = '';
-    if ($options['image']) {
-        $image = '<img src="' . $options['image'] . '" width="150"  height="150">';
-    }
-
     $wp_uid = $author->wp_uid;
+    $cav = $this->cm->get_cav();
+    if ($author->type == 2) {
+        $av_size = 150;
+        $image = $cav->get_author_avatar($author, $av_size);
+        print $image;
+    } else if ($author->type == 1) {
+        // Show avatar for pro critic
 
+        $avatar_url = $cav->get_pro_avatar($author->avatar_name);
+        ?>
 
-    if (!$image && $author->type == 2) {
-        $cav = $this->cm->get_cav();
-        if ($wp_uid) {
-            // User            
-            $image = $cav->get_or_create_user_avatar($wp_uid, 0, 150);
-        } else {
-            $image = $cav->get_or_create_user_avatar(0, $author->id, 150);
+        <div id="upload-image-i" class="pro_avatar">
+            <?php if ($avatar_url) { ?>
+                <img src="<?php print $avatar_url ?>">
+            <?php } ?>
+        </div>
+
+        <?php if (!$this->cm->sync_client) { ?>
+            <div id="msgh"></div>
+            <div id="author_id" data-id="<?php print $aid ?>"></div>
+            <div class="upload-holder">
+                <div id="upload-image"></div>
+            </div>
+            <div>    
+                <a href="#upl_avatar" id="upl_avatar" class="button-secondary">Upload avatar</a><br />
+                <input type="file" id="avatar_file">
+                <div class="cropped_images">
+                    <button id="cropped_image" class="button-primary">Submit Image</button> 
+                    <button id="cropped_cancel" class="button-secondary">Cancel</button>
+                </div>
+            </div>	
+            <?php
         }
     }
-
-    print $image;
     ?>
     <br />
     <table class="wp-list-table widefat striped table-view-list">
@@ -99,6 +115,21 @@ if ($aid) {
             <tr>
                 <td><?php print __('WP Account') ?></td>
                 <td><?php print $author->wp_uid ?></td>
+            </tr>
+
+            <tr>
+                <td><?php print __('Avatar exist') ?></td>
+                <td><?php print $author->avatar ? 'True' : 'False'  ?></td>
+            </tr>
+
+            <tr>
+                <td><?php print __('Avatar name') ?></td>
+                <td><?php print $author->avatar_name ?></td>
+            </tr>
+
+            <tr>
+                <td><?php print __('Avatar type') ?></td>
+                <td><?php print $this->cm->author_av_types[$author->avatar_type] ?></td>
             </tr>
             <tr>
                 <td><?php print __('Autoblur') ?></td>

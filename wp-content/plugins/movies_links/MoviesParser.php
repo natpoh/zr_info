@@ -239,6 +239,10 @@ class MoviesParser extends MoviesAbstractDB {
         1080 => [0, 10],
     );
 
+    public function get_tp() {
+        return $this->ml->get_tp();
+    }
+    
     /*
      * Campaign
      */

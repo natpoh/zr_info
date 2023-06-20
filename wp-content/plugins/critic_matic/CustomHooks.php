@@ -60,9 +60,10 @@ class CustomHooks {
         /*
          * args = ['campaign'=>$campaign,'post'=>$post]
          */
-        if (isset($args['post']) && isset($args['campaign'])) {
+        if (isset($args['post']) && isset($args['campaign']) && isset($args['url'])) {
             $campaign = $args['campaign'];
             $post = $args['post'];
+            $url = $args['url'];
 
             if ($campaign->id == 25) {
                 // Ethnic
@@ -73,7 +74,7 @@ class CustomHooks {
                 if ($post->top_movie > 0) {
                     $cm = new CriticMatic();
                     $ac = $cm->get_ac();
-                    $ac->add_ethnic($post);
+                    $ac->add_ethnic($post, $url);
                 }
             }
 

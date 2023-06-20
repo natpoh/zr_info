@@ -22,6 +22,7 @@ class ActorsCountry extends AbstractDB {
             'actors_country' => 'data_actors_country',
             'forebears_lastnames' => 'data_forebears_lastnames',
             'forebears_country' => 'data_forebears_country',
+            'actors_ethnic' => 'data_actors_ethnic',
         );
     }
 
@@ -64,19 +65,33 @@ class ActorsCountry extends AbstractDB {
                   [country] => United States
                   )
                  */
+                $fb_country = $item->country;
+                if ($fb_country == 'Saint Helena') {
+                    $fb_country = 'United States';
+                }
 
                 # Get actors
                 $actors = $this->get_actors_by_last_name($item->lastname);
                 if ($actors) {
+                    if ($debug) {
+                        print_r(array('actors: ', $actors));
+                    }
                     foreach ($actors as $actor) {
                         $aid = $actor->aid;
                         # Update or Create meta
                         $field = 'forebears';
-                        $country = $ma->get_or_create_country_by_name($item->country, true);
-                        if ($debug) {
-                            print_r(array($aid, $country, $item->country));
+                        $country = $ma->get_or_create_country_by_name($fb_country, true);
+                        if ($country) {
+                            if ($debug) {
+                                print_r(array($actor, $country, $fb_country));
+                            }
+                            $this->update_actor_meta($aid, $country, $field);
+                        } else {
+                            if ($debug) {
+                                print_r(array('Not found contry for: ', $actor, $fb_country));
+                            }
                         }
-                        $this->update_actor_meta($aid, $country, $field);
+                        $country = '';
                     }
                 }
             }
@@ -115,20 +130,61 @@ class ActorsCountry extends AbstractDB {
      * Etchic logic
      */
 
-    public function add_ethnic($post) {
+    public function add_ethnic($post, $url) {
+        $aid = $post->top_movie;
         $options = unserialize($post->options);
+        // Add country
         $str_bplace = isset($options['bplace']) ? base64_decode($options['bplace']) : '';
         $place = $this->validate_place($str_bplace);
-        if ($place){
-            $aid = $post->top_movie;
+        if ($place) {
+
             $ma = $this->cm->get_ma();
             $country = $ma->get_country_by_name($place, true);
-            if ($country){
+            if ($country) {
                 $field = 'ethnic';
                 $this->update_actor_meta($aid, $country, $field);
             }
         }
-        
+
+        // Add ethnic data
+        $score_opt = array(            
+            'date' => 'DateBirth',
+            'ethnicity' => 'Ethnicity',
+            'bname' => 'BirthName',
+            'bplace' => 'PlaceBirth',
+            'tags' => 'Tags',
+            'img' => 'Img',
+        );
+
+        $to_update = array();
+        foreach ($score_opt as $post_key => $db_key) {
+            if (isset($options[$post_key])) {
+                $field_value = base64_decode($options[$post_key]);
+                if ($field_value) {
+                    $to_update[$db_key] = $field_value;
+                }
+            }
+        }
+
+        if ($to_update) {
+            
+            $to_update['Name'] = $post->title;
+            $to_update['last_update'] = $this->curr_time();
+
+            // Add link
+            $to_update['Link'] = $url->link;
+
+            // Data exist?
+            $sql = sprintf("SELECT * FROM {$this->db['actors_ethnic']} WHERE actor_id=%d", $aid);
+            $actor_exist = $this->db_fetch_row($sql);
+
+            if ($actor_exist) {
+                $this->sync_update_data($to_update, $actor_exist->id, $this->db['actors_ethnic'], $this->cm->sync_data, 10);
+            } else {
+                $to_update['actor_id'] = $aid;
+                $this->sync_insert_data($to_update, $this->db['actors_ethnic'], $this->cm->sync_client, $this->cm->sync_data, 10);
+            }
+        }
     }
 
     public function test_ethnic() {

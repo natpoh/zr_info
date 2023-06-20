@@ -19,7 +19,7 @@ class SearchFacets extends AbstractDB {
     // Movies an
     private $ma = '';
     public $search_tabs = array(
-        'movies' => array('title' => 'Movies and TV', 'count' => 0),
+        'movies' => array('title' => 'Movies/TV/Games', 'count' => 0),
         'critics' => array('title' => 'Reviews', 'count' => 0)
     );
     // Search sort: /sort_title_desc
@@ -28,8 +28,8 @@ class SearchFacets extends AbstractDB {
         'Default' => 'def',
         'Rating' => 'rating',
         'Popularity' => 'pop',
-        'Diversity' => 'woke',
-        'Indie' => 'indie',
+        'Wokeness' => 'woke',
+        'Finances' => 'indie',
     );
     public $def_tab = 'movies';
     // Facets
@@ -142,6 +142,7 @@ class SearchFacets extends AbstractDB {
 
     public function init_search_filters() {
         $url = $_SERVER['REQUEST_URI'];
+        $url = preg_replace('/\?.*$/', '', $url);
         $url_arr = explode('/', $url);
         if (sizeof($url_arr) > 2) {
             for ($i = 2; $i < sizeof($url_arr); $i++) {
@@ -461,13 +462,13 @@ class SearchFacets extends AbstractDB {
         $filters = $this->get_search_filters();
         gmi('get_search_filters');
 
-        
+
         $facet = isset($this->cs->facet_parent[$facet]) ? $this->cs->facet_parent[$facet] : $facet;
         $facets = array($facet);
-        if (is_array($facet)){
+        if (is_array($facet)) {
             $facets = $facet;
         }
-        
+
         if ($tab_key == 'movies') {
             $sort = $this->get_search_sort('movies');
             $result['movies'] = $this->cs->front_search_movies_multi($this->keywords, $this->search_limit, $start, $sort, $filters, $facets, true, true, false);
@@ -592,7 +593,7 @@ class SearchFacets extends AbstractDB {
                 }
             } else if (isset($this->cs->facet_data['actorsdata']['childs'][$key])) {
                 $value = is_array($value) ? $value : array($value);
-                if ($key == 'actor' || $key == 'actorstar' || $key == 'actormain') {
+                if ($key == 'actor' || $key == 'actorstar' || $key == 'actormain'|| $key=='sphoto') {
                     $type_title = isset($this->cs->facet_data['actorsdata']['childs'][$key]) ? $this->cs->facet_data['actorsdata']['childs'][$key]['title'] : '';
                     $name_pre = isset($this->cs->facet_data['actorsdata']['childs'][$key]) ? $this->cs->facet_data['actorsdata']['childs'][$key]['name_pre'] : '';
                     foreach ($value as $slug) {
@@ -1039,11 +1040,14 @@ class SearchFacets extends AbstractDB {
                     }
                     $more_sort_content = '<ul class="sort-wrapper more ' . $key . '">' . $group_childs . '</ul>';
                     $more_active_class = $more_active[$key] ? ' mact' : '';
-                    $more = '<div class="sort-more' . $more_active_class . '" title="' . $title . '">' . $this->get_nte('<i></i>', $more_sort_content, true) . '</div>';
+                    $more = '<div class="sort-more' . $more_active_class . '" title="' . $title . '">' . $this->get_nte($title.'<i></i>', $more_sort_content, true) . '</div>';
 
                     $group_item = $group[0];
-                    $group_item['sort_icon'] .= $more;
+                    //$group_item['sort_icon'] .= $more;
                     $group_item['tab_class'] .= ' group';
+                    
+                    $group_item['type']='title';                    
+                    $group_item['title']=$more;
 
                     $ret .= $this->get_sort_link($group_item);
                 }
@@ -1594,6 +1598,9 @@ class SearchFacets extends AbstractDB {
         ob_start();
         if (!$main_collapsed) {
             foreach ($this->cs->facet_data['ratings']['childs'] as $key => $value) {
+                if (isset($value['no_data'])) {
+                    continue;
+                }
                 $rating_data = isset($data[$key]['data']) ? $data[$key]['data'] : array();
                 if ($rating_data || $this->cs->is_hide_facet($key, $this->filters) || $facet == $key) {
                     $count = sizeof($rating_data);
@@ -1669,39 +1676,14 @@ class SearchFacets extends AbstractDB {
         if (!$main_collapsed) {
             // Is franchise
 
-            $isfranchise_cnt = 0;
-
-            if ($data['isfranchise']['data'][0]) {
-                $isfranchise_cnt = $data['isfranchise']['data'][0]->cnt;
-            }
-
-            $bigdist_cnt = 0;
-            if ($data['bigdist']['data'][0]) {
-                $bigdist_cnt = $data['bigdist']['data'][0]->cnt;
-            }
-
-            $meddist_cnt = 0;
-            if ($data['meddist']['data'][0]) {
-                $meddist_cnt = $data['meddist']['data'][0]->cnt;
-            }
-
-            $indidist_cnt = 0;
-            if ($data['indidist']['data'][0]) {
-                $indidist_cnt = $data['indidist']['data'][0]->cnt;
-            }
-
-            $rf = array(
-                'isfranchise' => $isfranchise_cnt,
-                'bigdist' => $bigdist_cnt,
-                'meddist' => $meddist_cnt,
-                'indidist' => $indidist_cnt,
-            );
-
+            $dates = array();
             foreach ($this->cs->search_filters['indie'] as $key => $item) {
-                if ($rf[$key]) {
-                    $dates[$key] = array('title' => $item['title'], 'count' => $rf[$key], 'type_title' => 'Indie filter', 'name_pre' => '', 'filter' => 'indie');
+                $count=isset($data[$key]['data'][0])?$data[$key]['data'][0]->cnt:0;
+                if ($count){
+                    $dates[$key] = array('title' => $item['title'], 'count' => $count, 'type_title' => 'Indie filter', 'name_pre' => '', 'filter' => 'indie');
                 }
             }
+            
 
             $filter = 'indie';
             $title = 'Filters';
@@ -2195,6 +2177,35 @@ class SearchFacets extends AbstractDB {
                 }
             }
 
+            if ($active_filter == 'starrace') {
+                // Need photo for stars
+                $need_data = array();
+                $need_filter = 'sphoto';
+                if (isset($facets[$need_filter])) {
+                    $need_data = $facets[$need_filter]['data'];
+                } else {
+                    $need_data = array();
+                }
+
+                $type_title = isset($this->cs->facet_data['actorsdata']['childs'][$need_filter]) ? $this->cs->facet_data['actorsdata']['childs'][$need_filter]['title'] : ucfirst($need_filter);
+                $name_pre = isset($this->cs->facet_data['actorsdata']['childs'][$need_filter]) ? $this->cs->facet_data['actorsdata']['childs'][$need_filter]['name_pre'] : '';
+
+                if ($need_data) {
+                    $dates[] = array('title' => 'Star conditions', 'type_title' => 'header');
+                    foreach ($need_data as $value) {
+                        $id = (int) trim($value->id);
+                        $cnt = $value->cnt;
+                        if ($id) {
+                            foreach ($this->cs->search_filters['sphoto'] as $key => $item) {
+                                if ($item['key'] == $id) {
+                                    $dates[$key] = array('title' => $item['title'], 'count' => $cnt, 'type_title' => $type_title, 'name_pre' => $name_pre, 'filter' => $need_filter);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             $minus = true;
             $tabs_arr = $this->cs->get_cast_tabs();
             $def_tab = $this->cs->get_default_cast_tab();
@@ -2297,7 +2308,7 @@ class SearchFacets extends AbstractDB {
                 ksort($dates);
             }
 
-            $title = 'Actors Country';
+            $title = 'Actors Country <span data-value="actor_country_popup" class="nte_info"></span>';
             $ftype = 'movies';
             $minus = true;
             $this->theme_facet_multi($filter, $dates, $title, $view_more, $ftype, $minus);
@@ -2584,30 +2595,30 @@ class SearchFacets extends AbstractDB {
             print ' column';
         }
         ?>" data-filter="<?php print $filter_name ?>"><?php
-            foreach ($tabs as $slug => $item) {
-                $is_active = '';
-                $is_default = '';
+                foreach ($tabs as $slug => $item) {
+                    $is_active = '';
+                    $is_default = '';
 
-                if ($inactive && in_array($item[$filter_type], $inactive)) {
-                    continue;
-                }
+                    if ($inactive && in_array($item[$filter_type], $inactive)) {
+                        continue;
+                    }
 
-                if ($item[$filter_type] == $active_facet) {
-                    $is_active = ' active';
-                }
-                if ($def_tab == $item[$filter_type]) {
-                    $is_default = ' default';
-                    $include = array();
-                    $exclude = array($filter_name);
-                } else {
-                    $include = array($filter_name => $slug);
-                    $exclude = array();
-                }
+                    if ($item[$filter_type] == $active_facet) {
+                        $is_active = ' active';
+                    }
+                    if ($def_tab == $item[$filter_type]) {
+                        $is_default = ' default';
+                        $include = array();
+                        $exclude = array($filter_name);
+                    } else {
+                        $include = array($filter_name => $slug);
+                        $exclude = array();
+                    }
 
-                $url = $this->get_current_search_url($include, $exclude);
-                ?><li class="nav-tab<?php print $is_active . $is_default ?>" data-id="<?php print $slug ?>"><a href="<?php print $url ?>"><?php print $item['title'] ?></a></li><?php }
-            ?></ul>
-            <?php
+                    $url = $this->get_current_search_url($include, $exclude);
+                    ?><li class="nav-tab<?php print $is_active . $is_default ?>" data-id="<?php print $slug ?>"><a href="<?php print $url ?>"><?php print $item['title'] ?></a></li><?php }
+                ?></ul>
+        <?php
         $content = ob_get_contents();
         ob_end_clean();
         return $content;
@@ -3029,10 +3040,10 @@ class SearchFacets extends AbstractDB {
             <?php if ($quick_find) { ?>
                 <div class="facet-quickfind">
                     <input type="search" class="autocomplite<?php
-                if ($keyword) {
-                    print ' active';
-                }
-                ?>" data-type="<?php print $filter ?>" data-count="<?php print $more ?>" value="<?php print $keyword ?>" placeholder="Quick find" ac-type="qf">
+                    if ($keyword) {
+                        print ' active';
+                    }
+                    ?>" data-type="<?php print $filter ?>" data-count="<?php print $more ?>" value="<?php print $keyword ?>" placeholder="Quick find" ac-type="qf">
                 </div>          
             <?php } ?>
             <div class="facet-ch<?php
@@ -3040,7 +3051,7 @@ class SearchFacets extends AbstractDB {
                 print ' custom';
             }
             ?>">
-                 <?php
+                     <?php
                      if ($collapsed):
                          $this->theme_block_loading();
                      else:
