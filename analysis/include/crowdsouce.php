@@ -789,7 +789,13 @@ public static function Show_admin_table($datatype,$array_rows,$WP_include,$custo
                }
                 else if ($type=='textarea')
                 {
-                    $edittipe = 'edittype:"textarea",editoptions: {  rows: 3,   cols: 40,  wrap: "off" }';
+                    $trw=3;
+                    if ($array_rows[$name]['textarea_rows'])
+                    {
+                        $trw= $array_rows[$name]['textarea_rows'];
+                    }
+
+                    $edittipe = 'edittype:"textarea",editoptions: {  rows: '.$trw.',   cols: 40,  wrap: "off" }';
                 }
               }
             if ($array_rows[$name]['hidden'])
@@ -1190,6 +1196,22 @@ var first_run = 0;
             },
             {
                 beforeShowForm: function(formID) {
+
+
+                    jQuery('.DataTD textarea, .DataTD input').each(function(){
+
+                        let vl = jQuery(this).val();
+
+
+                       // vl = vl.replace(/\\+/g, '\\');
+
+                        vl = vl.replace(/"\\"/g, '"');
+                        vl = vl.replace(/\\""/g, '"');
+
+                        jQuery(this).val(vl);
+
+                    });
+
 
                     let link =  jQuery('.DataTD input[id="link"]').val();
 

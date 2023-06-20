@@ -1241,18 +1241,14 @@ body.theme_dark  .tab-wrapper li.nav-tab a {
 }
 
 .nav-tab.group {
+    display: inline-block; 
+}
+
+.sort-more .btn {    
+    padding: 0 10px;
     display: inline-block;
     border: 1px solid #ddd;
     border-radius: 4px;
-    padding: 0 0 0 10px;
-}
-
-.sort-more .btn {
-    margin-left: 10px;
-    padding: 0 15px;
-    display: inline-block;
-    border-left: 1px solid #ddd;
-
     cursor: pointer;  
     user-select: none;
 }
@@ -1271,6 +1267,7 @@ body.theme_dark .sort-more .btn  {
 }
 
 .sort-more .btn i {
+    margin-left: 7px;
     width: 10px;
     height: 10px;
     background: #d75454;
@@ -3165,7 +3162,7 @@ body.theme_dark  .noUi-handle::before,body.theme_dark  .noUi-handle::after {
 }
 
 .sort-icon .zr{
-    background:  url("images/zrpulselogo.svg");
+    background:  url("images/zr_small_logo.png");
 }
 
 .sort-icon .nl{
@@ -3174,7 +3171,9 @@ body.theme_dark  .noUi-handle::before,body.theme_dark  .noUi-handle::after {
 .sort-icon .jp{
     background: transparent url(images/flags/4x3/jp.svg) 0px 3px no-repeat;
 }
-
+.theme_white .sort-icon .jp{
+    border: 1px solid #818181;
+}
 .sort-icon .mtcr{
     background:  url("images/metacritic-logo.svg");
 }
@@ -3331,6 +3330,16 @@ body.theme_dark  .noUi-handle::before,body.theme_dark  .noUi-handle::after {
     line-height: 1.1rem;
     position: relative;
     z-index: 1001;
+}
+
+.actor_popup .actor_main_container>.nte_info {
+    background: url(images/info.svg) no-repeat left 0 top 0 transparent;
+    background-size: contain;
+}
+
+.actor_popup  .nte_show .nte_cnt {
+    text-shadow: none;
+    font-size: 12px;
 }
 
 .nte_cnt p {
@@ -6300,6 +6309,42 @@ body.theme_dark ::-webkit-scrollbar-track {
     color: #ff6f00;
 }
 
+span.small_block {
+    display: inline-block;
+    padding: 5px 14px;
+    font-family: 'Encode Sans Condensed',Lato;
+}
+#family_friendly .rating_result {
+    background-blend-mode: unset;
+
+    display: block;
+    background-size: 20%;
+    padding-top: 0;
+    position: relative;
+    width: 100%;
+    top: unset;
+    left: unset;
+    max-width: 350px;
+    margin: 0 auto;
+    overflow: hidden;
+    min-height: unset;
+    height: 80px;
+}
+#family_friendly .ff_rating_desc {
+    display: block;
+    margin: 0 0 20px 0;
+    text-align: center;
+    font-family: 'Encode Sans Condensed',Lato;
+    font-size: 1.2em;
+}
+.ff_rating_contaner{
+    margin-top: 10px;
+}
+.ff_other_content{
+    overflow-y: auto;
+
+}
+
 .verdict_text {
     position: absolute;
     top: 0px;
@@ -6327,6 +6372,18 @@ body.theme_dark ::-webkit-scrollbar-track {
     top: 0px;
 }
 
+.rating_result.ff_total{
+    background: transparent url("images/rating/family.svg") repeat-x;
+    background-size: 20%;
+
+}
+
+.rating_result.ff_total .rating_result_total{
+    background: transparent url("images/rating/family_active.svg") repeat-x;
+    background-size: 20%;
+}
+
+
 .rating_result.hollywood{
     background: transparent url("images/rating/overal.svg") repeat-x;
     background-size: 20%;
@@ -6337,6 +6394,7 @@ body.theme_dark ::-webkit-scrollbar-track {
     background: transparent url("images/rating/overal_active.svg") repeat-x;
     background-size: 20%;
 }
+
 
 .rating_result.patriotism{
     background: transparent url("images/rating/neo.svg") repeat-x;
@@ -7447,6 +7505,7 @@ body.theme_dark .site_theme_switch::before {
         transform: scale(0.8);
     }
 
+
     .main-search  .nte_show:not(.dwn)::after {
         transform: skewX(27deg) rotate(146deg) skewY(-20deg);
         margin-left: -32px;
@@ -7577,6 +7636,11 @@ body.theme_dark .site_theme_switch::before {
 }
 
 @media screen and (max-width: 450px) {
+
+    .ff_other_content {
+        overflow-y: auto;
+        font-family: 'Encode Sans Condensed',Lato;
+    }
     .bias_info {
         font-size: 1.4em;
     }
@@ -8601,6 +8665,13 @@ body.theme_dark .site_theme_switch::before {
         -webkit-transition: all .3s cubic-bezier(.4,0,.2,1);
         transition: all .3s cubic-bezier(.4,0,.2,1);
     }
+
+
+li#menu-item-489295{
+    display: none;
+}
+
+
 }
 
 

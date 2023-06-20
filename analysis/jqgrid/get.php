@@ -511,7 +511,7 @@ AND table_schema='".DB_NAME_AN."'";
 
 
 //ob_clean();
-
+//var_dump($responce);
         echo json_encode($responce);
 
     }

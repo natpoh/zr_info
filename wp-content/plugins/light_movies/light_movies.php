@@ -24,7 +24,10 @@ class LightMovies{
         add_submenu_page($this->parrent_slug, __('Actors info'), __('Actors info'), $this->access_level, $this->parrent_slug. '_actors_info', array($this, 'actors_info'));
         add_submenu_page($this->parrent_slug, __('Piracy links'), __('Custom links'), $this->access_level, $this->parrent_slug. '_piracy_links', array($this, 'piracy_links'));
         add_submenu_page($this->parrent_slug, __('Compilation Links'), __('Compilation Links'), $this->access_level, $this->parrent_slug. '_compilation_links', array($this, 'compilation_links'));
-        add_submenu_page($this->parrent_slug, __('Custom options'), __('Custom options'), $this->access_level, $this->parrent_slug. '_custom_options', array($this, 'option'));
+        add_submenu_page($this->parrent_slug, __('Custom fields'), __('Custom fields'), $this->access_level, $this->parrent_slug. '_custom_fields', array($this, 'custom_fields'));
+        add_submenu_page($this->parrent_slug, __('Ethnic data'), __('Ethnic data'), $this->access_level, $this->parrent_slug. '_custom_options', array($this, 'option'));
+
+
         add_submenu_page($this->parrent_slug, __('Logs'), __('Logs'), $this->access_level, $this->parrent_slug. '_movie_logs', array($this, 'movie_logs'));
          add_submenu_page($this->parrent_slug, __('Cron info'), __('Cron info'), $this->access_level, $this->parrent_slug. '_cron_info', array($this, 'cron_info'));
 
@@ -103,92 +106,74 @@ tr.jqgrow>td
 
 }
 
+    public function custom_fields()
+    {
 
+
+ echo '<h1>Custom Option</h1>';
+
+                 !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
+
+
+        $array_rows = array(
+            'id'=>array('w'=>5),
+            'val' =>array('w'=>50, 'type' => 'textarea','textarea_rows' => 20),
+        );
+
+        Crowdsource::Show_admin_table('options',$array_rows,1,'options','',1,1);
+
+?>
+<style type="text/css">
+.ui-jqgrid .ui-jqgrid-btable tbody tr.jqgrow td {
+    overflow: hidden;
+    white-space: nowrap;
+    padding-right: 2px;
+    max-height: 40px;
+}
+.EditTable td textarea {
+    width: 100%;
+}
+</style>
+<?php
+
+
+    }
     public function option()
     {
 
 
-    if (isset($_POST['option_1']))
+
+
+
+    if (isset($_POST['option_3']))
         {
 
-$this->set_option(1,$_POST['option_1'],'Ads');
+
 $this->set_option(3,$_POST['option_3'],'Ethnic array');
 $this->set_option(4,$_POST['option_4'],'Ethnic array fast');
 $this->set_option(6,$_POST['option_6'],'Color array');
 
-$this->set_option('',$_POST['similar_shows'],'similar_shows');
-$this->set_option('',$_POST['similar_games'],'similar_games');
-$this->set_option('',$_POST['global_zeitgeist'],'global_zeitgeist');
 
-
-
-$this->set_option('',$_POST['words_exclude'],'words_exclude');
-
-$this->set_option('',$_POST['critic_empty'],'critic_empty');
-
-$this->set_option('',$_POST['indie_remake_words'],'indie_remake_words');
-$this->set_option('',$_POST['indie_lasy_grab'],'indie_lasy_grab');
-
-
-
-//$this->set_option('',$_POST['verdict_method'],'verdict_method');
         }
 
 
     ?>
     <div class="content">
-<h1>Option</h1>
+<h1>Ethnic data</h1>
 
-
-<?php
-
-
-//$verdict_method =$this->get_option('','verdict_method');
-//if ($verdict_method==0 || !$verdict_method)
-//    {
-//        $option ='<option value="0" selected>Default</option><option value="1">Weight</option>';
-//    }
-//else if ($verdict_method==1)
-//    {
-//        $option ='<option value="0">Default</option><option value="1" selected>Weight</option>';
-//    }
-?>
 <form action="admin.php?page=light_movies_custom_options" method="post">
     <div class="options_data">
 <!--         <h2>Verdicts method</h2>-->
 <!--        <select name="verdict_method">--><?php //echo $option; ?><!--</select>-->
-        <h2>Ads</h2>
-        <textarea name="option_1" style="width: 600px; height: 300px"><?php echo $this->get_option(1); ?></textarea>
-                <h2>Ethnic array</h2>
+
+        <h2>Ethnic array</h2>
         <textarea name="option_3" style="width: 600px; height: 500px"><?php echo $this->get_option(3); ?></textarea>
                 <h2>Ethnic array fast</h2>
         <textarea name="option_4" style="width: 600px; height: 500px"><?php echo $this->get_option(4); ?></textarea>
         <h2>Color array</h2>
         <textarea name="option_6" style="width: 600px; height: 300px"><?php echo $this->get_option(6); ?></textarea>
-        <h2>Similar Movies</h2>
-        <textarea name="similar_shows" style="width: 600px; height: 300px"><?php echo $this->get_option('','similar_shows'); ?></textarea>
-        <h2>Similar Games</h2>
-        <textarea name="similar_games" style="width: 600px; height: 300px"><?php echo $this->get_option('','similar_games'); ?></textarea>
-
-                <h2>Global Consensus</h2>
-        <textarea name="global_zeitgeist" style="width: 600px; height: 300px"><?php echo $this->get_option('','global_zeitgeist'); ?></textarea>
-
-
-        <h2>4Chan cloud words exclude</h2>
-        <textarea name="words_exclude" style="width: 600px; height: 300px"><?php echo $this->get_option('','words_exclude'); ?></textarea>
-
-         <h2>Critic Reviews empty message</h2>
-        <textarea name="critic_empty" style="width: 600px; height: 300px"><?php echo $this->get_option('','critic_empty'); ?></textarea>
-
-           <h2>Keywords for Adaptation/remake<h2>
-        <textarea name="indie_remake_words" style="width: 600px; height: 300px"><?php echo $this->get_option('','indie_remake_words'); ?></textarea>
-
-        <h2>Keywords for lazy cash grab<h2>
-        <textarea name="indie_lasy_grab" style="width: 600px; height: 300px"><?php echo $this->get_option('','indie_lasy_grab'); ?></textarea>
 
     <div class="options_data"><button type="submit" class="button button-primary save_option">Save</button></div>
-
-
     </div>
 </form>
 

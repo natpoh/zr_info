@@ -385,7 +385,7 @@ function create_gender_desc(value)
 function create_diversity(diversity_data, value)
 {
 
-    diversity_data_content = popup_cusomize('popup_header', `${value}% of the Stars & Main Cast are "diverse."`);
+    diversity_data_content = popup_cusomize('popup_header', `${value}% of the Stars & Main Cast are <a href="https://www.facebook.com/868164246578472/posts/the-cast-of-black-panther-is-hella-diverse/1236999296361630/" target="_blank:"><u>"diverse."</u></a>`);
 
     if (diversity_data) {
 
@@ -477,7 +477,7 @@ function create_rating_content(object, m_id, search_block = 0)
 
             if (object['indie']['recycle']['enabled'] || (object['indie']['recycle']['keywords'] && object['indie']['recycle']['keywords']['lasy_grab'])) {
 
-                data += popup_cusomize('row_text_head row_margin l_c_g', 'Possible lazy cash grab:');
+                data += popup_cusomize('row_text_head row_margin l_c_g', 'Possible lazy cash grab:')+  '<span data-value="lazy_cash_grab_popup" class="nte_info nte_right"></span>';
             }
 
 
@@ -521,7 +521,7 @@ function create_rating_content(object, m_id, search_block = 0)
                 big_b = ' big_business ';
             }
             if (object['indie']['production'][1] || object['indie']['production'][2]) {
-                data += popup_cusomize('row_text_head row_margin big_b_i', 'Possible Big Business:');
+                data += popup_cusomize('row_text_head row_margin big_b_i', 'Possible Big Business:')+'<span data-value="big_business_popup" class="nte_info nte_right"></span>';
             }
             data += popup_cusomize('row_text_head ', 'Production:');
 
@@ -640,7 +640,7 @@ function create_rating_content(object, m_id, search_block = 0)
 
             lgbt_class = ' lgbt ';
 
-            lgbt_warning_text = popup_cusomize('row_text_head', 'LGBTQ content included: <a target="_blank" href="https://zeitgeistreviews.com/faq/" class="link_info">i</a>') + popup_cusomize('row_text', ltext);
+            lgbt_warning_text = popup_cusomize('row_text_head', 'LGBTQ content included:<span data-value="lgbt_popup" class="nte_info"></span>') + popup_cusomize('row_text', ltext);
         }
         woke_warning_text = '';
 
@@ -651,7 +651,7 @@ function create_rating_content(object, m_id, search_block = 0)
                 woketext = '<span class="bg_woke">' + object['woke_text'] + '</span>';
             }
             woke_class = ' woke ';
-            woke_warning_text = popup_cusomize('row_text_head', 'Possibly woke elements: <a target="_blank" href="https://zeitgeistreviews.com/faq/" class="link_info">i</a>') + popup_cusomize('row_text', woketext);
+            woke_warning_text = popup_cusomize('row_text_head', 'Possibly woke elements:<span data-value="woke_popup" class="nte_info"></span>') + popup_cusomize('row_text', woketext);
         }
 
 
@@ -716,7 +716,7 @@ if (object['type']!='videogame') {
     } else {
         let rating_color = 'gray_rt';
         let total_gap_str = 'N/A';
-        let total_tomatoes_content = 'No <b class="exlink" id="rt">RottenTomatoes</b> ratings yet';
+        let total_tomatoes_content = 'No <b class="exlink" id="rt">RottenTomatoes</b> ratings imported yet.';
 
         content += add_rating_block('rt_gap ' + rating_color, total_gap_str, total_tomatoes_content, 4, true);
     }
@@ -737,7 +737,7 @@ if (object['type']!='videogame') {
         else
         {
             var rdata = '<div class="rwt_stars not_rated" title="ZR Rating"><span class="rating_result btn raitng_empty"></span></div>';
-            let rcontent ='No rating yet,<br> Please  <b class="edit_review">Write a Review</b> to create a rating';
+            let rcontent ='No ratings imported yet,<br> <b class="edit_review">Write a review?</b>';
             content += add_rating_block('rwt_stars', rdata, rcontent, 'rwt_rt', true);
         }
 
@@ -1078,308 +1078,6 @@ function add_movie_rating(block_id, data)
     jQuery('div.movie_total_rating[id="' + block_id + '"]').html(rating_content);
 return;
 
-
-    var content = '';
-    let obj ={};
-    if (data) {
-        if (typeof data =="object")
-        {
-             obj =data;
-        }
-        else
-        {
-            obj = JSON.parse(data);
-        }
-
-
-
-        ///  var content =  create_rating_content(obj);
-
-        if (obj.gender) {
-            if (obj.gender.diversity || obj.gender.diversity_data) {
-                title = 'Diversity Ratio:';
-
-                let diversity = Number(obj.gender.diversity);
-                if (!diversity) {
-                    diversity = 0;
-                }
-                diversity = diversity.toFixed(0);
-
-
-
-                let text = diversity + '% Diverse';
-
-                var diversity_data = obj.gender.diversity_data;
-                let diversity_data_content = '';
-                if (diversity_data) {
-                    diversity_data = JSON.parse(diversity_data);
-
-                    diversity_data_content = create_diversity(diversity_data, diversity)
-
-                }
-
-                content += add_rating_row(title, text, 'gender', diversity_data_content)
-            }
-
-            if (obj.gender.female || obj.gender.male) {
-                let title = 'Gender Ratio:';
-
-                if (!obj.gender.female)
-                    obj.gender.female = 0;
-
-                let value = Number(obj.gender.female);
-                value = value.toFixed(0);
-
-                let content_text = create_gender_desc(value)
-
-                content += add_rating_row(title, value + '% Female', 'female', content_text)
-            }
-
-
-        }
-        if (obj['family']) {
-
-
-            if (obj.family.pgrating) {
-                title = 'Family Friendly Score:';
-                let rating = Number(obj.family.pgrating);
-                let rating_color = 'green';
-                if (rating < 3) {
-                    rating_color = 'orange';
-                }
-                if (rating < 2) {
-                    rating_color = 'red';
-                }
-                let family_data_resul = '';
-                let family_data = '';
-
-                if (obj.family.pg_data)
-                {
-                    family_data = obj.family.pg_data;
-                }
-                let rating_text = '';
-                let rating_link = '';
-                let rating_text_result = '';
-                let lgbt_text = '';
-                let woke_warning_text = '';
-
-                if (obj.family.lgbt_warning == 1)
-                {
-                    let ltext = '';
-                    if (obj.family.lgbt_text)
-                    {
-                        ltext = '<span class="bg_rainbow">' + obj.family.lgbt_text + '</span>';
-                    }
-                    lgbt_text = popup_cusomize('row_text_head', 'LGBTQ content included: <a target="_blank" href="https://zeitgeistreviews.com/faq/" class="link_info">i</a>') + popup_cusomize('row_text', ltext);
-
-                }
-                if (obj.family.woke == 1) {
-                    let woketext = '';
-                    if (obj.family.woke_text)
-                    {
-                        woketext = '<span class="bg_woke">' + obj.family.woke_text + '</span>';
-                    }
-                    woke_warning_text = popup_cusomize('row_text_head', 'Possibly woke elements: <a target="_blank" href="https://zeitgeistreviews.com/faq/" class="link_info">i</a>') + popup_cusomize('row_text', woketext);
-
-                }
-
-                if (rating == 0)
-                {
-
-                    rating_text = 'Coming soon...';
-                    rating_link = '';
-                    rating_text_result = '';
-
-                } else if (rating > 0)
-                {
-                    ///get type
-                    ///!!!
-
-                    rating_link = popup_cusomize('row_link', '<a href="#" class="read_more_rating">CONTENT BREAKDOWN</a>');
-                    rating_link += popup_cusomize('row_link', '<a href="#" class="how_calculate_rating">Methodology</a>');
-
-                    rating_text = '<span class="' + rating_color + '">' + rating + '</span>/5';
-                    rating_text_result = popup_cusomize('popup_header', `This film gets a ${rating}/5 family friendly score`);
-
-
-
-
-                }
-                let family_data_result='';
-
-                if (family_data)
-                {
-                    family_data = JSON.parse(family_data);
-                    family_data_result = family_rating(family_data);
-
-                    rating_link += popup_cusomize('row_link', '<a target="_blank" href="https://zeitgeistreviews.com/family-friendly-movie-review-sites/">Family Friendly review sites</a>');
-                    family_data_result += rating_link;
-                }
-
-                rating_text += '<span title="Edit Family Friendly Rating" class="add_pg_rating_button button_edit"></span>';
-
-                content += add_rating_row(title, rating_text, 'family_friendly', `${rating_text_result + lgbt_text + woke_warning_text + family_data_result}`)
-            } else
-            {
-
-                content += add_rating_row('Family Friendly Score:', 'Coming soon...<span title="Edit Family Friendly Rating" class="add_pg_rating_button button_edit"></span>', 'family_friendly', '<p>Rating has not yet been added, please help improve our site and add a family rating</p><span title="Edit Family Friendly Rating" class="add_pg_rating_button button_edit"></span>' + popup_cusomize('row_link', '<a target="_blank" href="https://zeitgeistreviews.com/family-friendly-movie-review-sites/">Family Friendly review sites</a>'));
-            }
-        }
-
-        var hollywood = '';
-
-        if (obj.audience) {
-            if (obj.audience.rating) {
-                title = 'Audience Rating:';
-                let audience_star = create_rating_star(obj.audience.rating, '');
-                if (obj.audience.hollywood) {
-
-                    hollywood = obj.audience.hollywood;
-
-
-
-                }
-                if (obj.type && obj.audience) {
-                    obj.audience.vote_type = obj.type;
-                }
-
-                var content_audience_adata = create_context_rating(obj.audience, hollywood);
-
-
-
-                if (content_audience_adata)
-                {
-                    var content_audience = add_rating_row(title, audience_star, 'audience', content_audience_adata)
-                } else
-                {
-                    content_audience = add_rating_row(title, audience_star, '', '')
-                }
-
-            }
-        }
-
-        if (obj.total_rating) {
-            if (obj.total_rating.total_rating > 0) {
-                title = 'ZR Rating:';
-                let total_rating_star = create_rating_star(obj.total_rating.total_rating, '');
-
-                var content_rating_adata = create_total_rating((obj.total_rating), '','') + '<br><a href="#" class="how_calculate_rwt_rating">Methodology</a>';
-                var content_total_rating = add_rating_row(title, total_rating_star, 'rwt_rating', content_rating_adata);
-
-            }
-        }
-
-        //console.log(obj);
-
-        if (obj.stuff) {
-            if (obj.stuff.hollywood) {
-
-                var hollywood_s = obj.stuff.hollywood;
-
-            }
-
-            if (obj.stuff.rating) {
-                title = 'Staff Rating:';
-
-                let stuff_star = create_rating_star(obj.stuff.rating, '');
-
-
-
-
-                var content_staff_adata = create_context_rating(obj.stuff, hollywood_s);
-
-
-                if (content_staff_adata) {
-                    var content_staff = add_rating_row(title, stuff_star, 'staff', content_staff_adata)
-                } else {
-                    var content_staff = add_rating_row(title, stuff_star, '', '')
-                }
-            }
-
-        }
-
-        if (hollywood > 0 && hollywood_s > 0) {
-            hollywood = (Number(hollywood) + Number(hollywood_s)) / 2;
-            hollywood = hollywood.toFixed(0);
-
-        } else if (hollywood_s > 0) {
-            hollywood = hollywood_s;
-
-        }
-        // console.log(obj.stuff);
-        // console.log(obj.audience);
-        obj_overal = new Object();
-
-        for (var attrname in obj.stuff) {
-
-            if (attrname == 'id' || attrname == 'movie_id' || attrname == 'type')
-            {
-                continue;
-            }
-
-            let a = obj.audience[attrname];
-            let s = obj.stuff[attrname];
-            let n = 1;
-            if (a !== null && s !== null)
-            {
-                n = 2;
-            }
-            ///console.log(a,s,n);
-            if (attrname == 'vote')
-            {
-                let r = s;
-                if (!r) {
-                    r = a
-                }
-                ;
-                obj_overal[attrname] = r;
-            } else if (a || s)
-            {
-                obj_overal[attrname] = (Number(a) + Number(s)) / n;
-            }
-
-        }
-        // console.log(obj_overal);
-        // console.log(hollywood);
-//         if (hollywood) {
-//             title = 'ZR BS Score:';
-//             hollywood = create_rating_star(hollywood, 'hollywood');
-//
-//             content_rating = '';
-//
-//             content_rating = create_context_rating(obj_overal, '');
-//
-//             if (content_rating)
-//             {
-//                 content += add_rating_row(title, hollywood, 'bs', content_rating);
-//             } else
-//             {
-//                 content += add_rating_row(title, hollywood, '', '');
-//             }
-// // obj.stuff.vote: "1"
-//         }
-
-
-
-        if (content_total_rating) {
-            content += content_total_rating;
-        }
-
-        if (content_audience) {
-            content += content_audience;
-        }
-        if (content_staff) {
-            content += content_staff;
-        }
-
-
-        jQuery('div.movie_total_rating[id="' + block_id + '"]').html(content);
-    } else
-    {
-        jQuery('div.movie_total_rating[id="' + block_id + '"]').remove();
-    }
-
-
 }
 function load_actor_representation(movie_id) {
     var data = new Object();
@@ -1467,10 +1165,70 @@ function word_cloud(id)
     // });
 }
 
+
+function ff_content(data,id)
+{
+    let content ='<div class="column_header"><h2>Family Friendly Breakdown: <a href="#" data-value="'+id+'" class="empty_ff_rating empty_ff_popup_rating">+add</a></h2></div>';
+
+ if (data)
+ {
+     let data_ob = JSON.parse(data);
+
+//     console.log(data_ob);
+
+     if (data_ob.rating)
+     {
+
+
+         let movie_type = data_ob.type;
+
+         let array_title = {'movie': 'film', 'tvseries': 'show', 'videogame': 'game'};
+         let name = 'film';
+         if (array_title[movie_type])
+         {
+             name = array_title[movie_type];
+         }
+         let scorecontent='';
+
+
+
+         if (data_ob.rating > 0)
+         {
+             scorecontent = `This ${name} gets a ${data_ob.rating }/5 family friendly score `;
+             content += '<div class="ff_rating_contaner">' + create_rating_star(data_ob.rating, 'ff_total') + '<p class="ff_rating_desc">'+scorecontent+'</p></div>';
+         }
+
+     }
+
+     if (data_ob.content)
+     {
+      content += '<div class="ff_other_content">'+data_ob.content + '</div><a href="#" class="ff_other_content_calculate how_calculate_rating">Methodology</a>';
+
+
+         if (data_ob.other)
+         {
+             content+= '<details style="margin-top: 15px" class="trsprnt"><summary>Other sources</summary><div>' + data_ob.other + '</div></details>';
+         }
+     }
+     else
+     {
+
+         if (data_ob.other)
+         {
+             content+=  data_ob.other;
+         }
+     }
+
+
+ }
+
+  return content;
+}
+
 function global_zeitgeist_content(data)
 {
 
-    console.log(data);
+
     let result ='';
 
     if (data.result)
@@ -1506,7 +1264,15 @@ function global_zeitgeist_content(data)
                 let flag='';
                 if (item.flag) {
 
-                    flag = `<img style="width:40px;height:40px" src="https://zeitgeistreviews.com/wp-content/themes/custom_twentysixteen/images/flags/4x3/${item.flag}.svg">`;
+                    if (item.flag=='mtcr'){
+
+                        flag = `<img style="width:40px;height:40px" src="https://zeitgeistreviews.com/wp-content/themes/custom_twentysixteen/images/metacritic-logo.svg">`;
+                    }
+                    else
+                    {
+                        flag = `<img style="width:40px;height:40px" src="https://zeitgeistreviews.com/wp-content/themes/custom_twentysixteen/images/flags/4x3/${item.flag}.svg">`;
+                    }
+
                 }
 
                 result += `<div class="gl_zr_block" id="${item.ekey}"><div class="gl_zr_title">${flag+item.name} <span class="gl_rating">${rating}</span><a class="gl_zr_extlink" target="_blank" href="${item.link}" ></a></div>${img_container}</div>`;
@@ -1703,6 +1469,20 @@ function load_ajax_block(block_id) {
 
                 }
             }
+            else if (block_id == 'family_friendly') {
+                if (data) {
+
+                    let ffcontent = ff_content(data,block_id);
+
+                    jQuery('#' + block_id).html(ffcontent);
+
+
+
+
+
+                }
+            }
+
             else if (block_id == 'global_zeitgeist') {
                 if (data) {
                     let gzobj = JSON.parse(data);
@@ -1743,6 +1523,10 @@ function load_ajax_block(block_id) {
                     });
 
                 });
+
+
+
+
                 jQuery('body').on('change', '.r_row_item  input', function () {
                     load_actor_representation(parent_id);
                 });
@@ -2123,7 +1907,7 @@ function generate_watch_content(data, title, year, type) {
 
         let current_data = Object_data['data'][key];
 
-        //console.log(current_data);
+
         let priorityclass = '';
 
         if (providers_priority[current_data.monetization_type][current_data.provider_id]['id'] == key) {
@@ -2211,7 +1995,15 @@ function generate_watch_content(data, title, year, type) {
     });
     content += `<span class="close_filters"></span></div>`;
     Object.keys(content_array).forEach((key) => {
-        content += `<div class="providers_colum"><div class='providers_desc providers_${key}'>${key}</div><div class="providers_colum_data">${content_array[key]}</div></div>`;
+
+
+        let dop ='';
+        if (key=='"Free"')
+        {
+            dop ='<span data-value="piracy_disclaimer_popup" class="nte_info nte_providers"></span>';
+        }
+
+        content += `${dop}<div class="providers_colum"><div class='providers_desc providers_${key}'>${key}</div><div class="providers_colum_data">${content_array[key]}</div></div>`;
 
     });
 
@@ -2579,7 +2371,7 @@ jQuery(document).ready(function () {
         }
 
 
-        // console.log('ok');
+      //  console.log('ok');
 
     });
 
@@ -3541,6 +3333,14 @@ jQuery(document).ready(function () {
                     if (html==2) {
                         if (type=='last_imdb_pg_update' || type=='last_cms_pg_update')
                         {
+                            let prnt = jQuery(this).parents('#family_friendly');
+                            if (prnt.hasClass('loaded'))
+                            {
+                                prnt.removeClass('loaded').addClass('not_load');
+                                load_next_block('family_friendly');
+                                return;
+                            }
+
                             jQuery('input[id="action-popup"]').click();
                             jQuery('.rating_block[id="'+id+'"] a.read_more_rating').click();
                         }
@@ -3598,10 +3398,11 @@ jQuery(document).ready(function () {
                 if (debug_mode) {
                     console.log('pg_rating', html);
                 }
+                jQuery('.popup-container').remove();
                 add_popup();
                 jQuery('.popup-content').html('<div id="' + id + '" class="default_popup pg_popup"><h2>Edit Family Friendly Rating</h2><p>Please help improve ZR, add a Family Friendly Rating and leave your comment(s).</p>' + html + '</div>');
                 jQuery('input[id="action-popup"]').click();
-
+                return false;
             }
         });
 
@@ -3682,7 +3483,7 @@ jQuery(document).ready(function () {
                             jQuery('.popup-content').html('<div id="' + id + '" class="default_popup">' + html + '</div>');
                         } else
                         {
-                            jQuery('.popup-content').html('<div id="' + id + '" class="default_popup"><h2>Edit Actor Data</h2><p class="center">Please help improve ZR by correcting & adding data.</p><h1>' + aname + '</h1>' + html + '</div>');
+                            jQuery('.popup-content').html('<div id="' + id + '" class="default_popup"><h2>Edit Actor Data</h2><span data-value="actor_popup" class="nte_info nte_right nte_open_down"></span><p class="center">Please help improve ZR by correcting & adding data.</p><h1>' + aname + '</h1>' + html + '</div>');
                         }
 
 
@@ -3804,6 +3605,13 @@ jQuery(document).ready(function () {
 
 
             if (jQuery(this).hasClass('how_calculate_rating')) {
+
+
+                if (!rwt_id && jQuery(this).hasClass('ff_other_content_calculate'))
+                {
+                    rwt_id = jQuery(this).parents('#family_friendly').attr('data-value');
+                }
+
                 post = {
                     'refresh_rating': 1,
                     'movie_id': movie_id,
@@ -4041,7 +3849,86 @@ jQuery(document).ready(function () {
 
     });
 
+    jQuery('body').on('click', '.nte_info', function () {
+        let ts =jQuery(this);
 
+
+        let prnt_popup = ts.parents('.nte_cnt').length;
+        let inner_content;
+        if (prnt_popup)
+        {
+        inner_content = ts.next('div.tlp_cnt').length;
+        }
+        else
+        {
+
+        inner_content =ts.find('.nte').length;
+        }
+
+
+
+
+     if (!inner_content){
+        let type = ts.attr('data-value');
+
+
+
+         if (prnt_popup)
+         {
+             ts.after('<div class="tlp_cnt"><div class="nte_ajax_loading icon-loader"></div></div>');
+         }
+         else
+         {
+             let dopclass ='';
+             if (ts.hasClass('nte_open_down'))
+             {
+                 dopclass ='dwn';
+             }
+             let data = add_rating_block('nte_ajax', ' ', '<div class="nte_ajax_loading icon-loader"></div>', type, true,dopclass);
+             ts.html(data);
+
+         }
+
+
+
+
+       //  ts.find('.nte').addClass('open');
+       //  init_nte();
+         ///load data
+         jQuery.ajax({
+             type: "GET",
+             url: '/wp-content/themes/custom_twentysixteen/template/ajax/tooltips.php',
+             data:{'type':type},
+
+             success: function (html) {
+
+
+                 if (prnt_popup)
+                 {
+                     ts.next('div.tlp_cnt').html(html);
+                 }
+                 else
+                 {
+                     ts.find('.nte .nte_cnt').html(html);
+                     ts.find('.btn').click();
+                 }
+
+             }
+         });
+
+     }
+     else
+     {
+
+         if (prnt_popup)
+         {
+             ts.next('div.tlp_cnt').toggleClass('tlp_hidden');
+         }
+
+        ///console.log('already added');
+     }
+
+    });
 
 
 });

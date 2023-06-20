@@ -579,8 +579,8 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
             foreach ($pg_cert_array as $country => $pg) {
 
-                $cont_sert.='<p>'.$country.' : ';
-                $cont_sert.=implode(',',$pg).'</p>';
+                $cont_sert.='<span class="small_block">'.$country.' : ';
+                $cont_sert.=implode(',',$pg).'</span>';
 
             }
             $content .= self::debug_table('Other Certification', $cont_sert);
@@ -661,7 +661,7 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
 
         $content .= self::debug_table('e');
 
-        return $content;
+        return $array_family;
     }
 
     public function debug_table($a = '', $b = '', $color = '') {

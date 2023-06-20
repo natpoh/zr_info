@@ -15,7 +15,7 @@ include ABSPATH.'wp-content/themes/custom_twentysixteen/template/compilation.php
 $array_list = array(
     'Audience' => array('title' => 'Latest Audience Reviews:', 'id' => 'audience_scroll', 'class' => 'audience_review widthed ',
        'tabs' => array('p' => 'Positive', 'n' => 'Negative', 'a' => 'Latest')),
-        'Pro' => array('title' => 'Latest Critic Reviews:', 'id' => 'review_scroll', 'class' => 'pro_review widthed secton_gray'),
+        'Pro' => array( 'title' => 'Latest Critic Reviews:<span data-value="critics_reviews_popup" class="critic_popup nte_info nte_right"></span>', 'id' => 'review_scroll', 'class' => 'pro_review widthed secton_gray'),
 
 
     'Video' => array('title' => 'New Movies:', 'id' => 'video_scroll', 'class' => ''),

@@ -273,7 +273,7 @@ section.inner_content.no_pad div.column_header {
     padding-left: 40px;
     padding-right: 40px;
 }
-.column_header .add_critic
+.column_header .add_critic, .column_header .empty_ff_rating
 {
     font-size: 23px;
     color: #f00;
@@ -630,11 +630,17 @@ body.theme_dark .inner_content.secton_gray {
     padding: 1rem;
     box-sizing: border-box;
     background-color: #fff;
-    font-size: 1.8rem;
+    font-size: 1.2rem;
     gap: 10px;
     box-shadow: 1px 1px 7px #a0a0a0;
     border-radius: 4px;
     flex-wrap: wrap;
+    width: min-content;
+}
+
+details details summary {
+
+    margin-left: 15px;
 }
 
 .gl_zr_extlink {
@@ -658,12 +664,19 @@ body.theme_dark .inner_content.secton_gray {
     background: #292929;
     border: 1px solid #434343;
     border-radius: 0;
+
 }
 #global_zeitgeist .gl_zr_title {
     display: flex;
     align-items: center;
 }
 
+.gl_image{
+    flex: 100%;
+}
+.gl_image img{
+    max-width: 300px;
+}
 #global_zeitgeist .gl_zr_title >img{
     display: inline-block;
     margin-right: 10px;
@@ -1008,7 +1021,7 @@ section.inner_content.single.loaded
 }
 
 section.inner_content.single.pro_review{
-
+    overflow: unset;
 }
 section.inner_content.single .column_header h2 {
     font-size: 30px;
@@ -1370,6 +1383,11 @@ body.theme_dark  .a_data_n_d
     font-size: 17px;
     min-height: 58px;
 }
+
+.theme_white  .section_gray div.scroller_wrap.should_fade::after {
+    background-image: linear-gradient(to right, rgba(255,255,255,0) 0%, #fff 100%);
+}
+
 .section_actors div.card.style_1 {
     margin: 0;
 }
@@ -2843,6 +2861,95 @@ body.theme_dark .tablesorter-blackice .t_column{
     background: url("../images/column.svg") no-repeat left 0 top 0 transparent;
     background-size: contain;
 }
+.nte_info.nte_providers
+{
+    position: absolute;
+    z-index: 1000;
+    margin-left: 32px;
+    margin-top: 7px;
+}
+.nte_providers .nte_show .nte_cnt{
+    max-height: 300px;
+    overflow-y: auto;
+
+}
+.nte_info{
+    background: url("../images/info.svg") no-repeat left 0 top 0 transparent;
+    background-size: contain;
+    display: inline-block;
+    width: 19px;
+    height: 19px;
+    cursor: pointer;
+    position: relative;
+    margin-left: 8px;
+}
+.nte_info .nte, .nte_info .nte .btn{
+width: 100%;
+height: 100%;
+}
+.nte_info .nte  .nte_ajax_loading{
+    width: 80px;
+    height: 80px;
+    margin: 15px auto;
+    background: url("../images/loader.svg");
+    background-size: contain;
+}
+
+.theme_dark .nte_info .nte  .nte_ajax_loading{
+    filter: invert(1);
+}
+.nte_right
+{
+    position: relative;
+    right: 0px;
+    float: right;
+    margin-top: -40px;
+    margin-right: 8px;
+}
+.critic_popup.nte_info {
+    margin-top: -10px;
+}
+.detail_container .nte_right {
+    position: relative;
+    margin-top: 0px;
+}
+
+.tlp_cnt {
+    padding: 5px 5px;
+    margin-top: 9px;
+    margin-bottom: 15px;
+    font-family: 'Encode Sans Condensed',Lato;
+    background-color: #e8e6e6;
+    position: relative;
+}
+.tlp_cnt::before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 47%;
+    width: 20px;
+    height: 20px;
+    background-color: #e8e6e6;
+    transform: rotate(45deg);
+    z-index: -1;
+}
+.theme_dark .tlp_cnt, .theme_dark .tlp_cnt::before {
+
+    background-color: #292929;
+}
+
+.tlp_hidden{
+    display: none;
+}
+
+.pro_review  .column>.nte_info  .nte_cnt{
+    overflow-y: auto;
+    max-height: 350px;
+}
+body.theme_white .nte_info{
+    background: url("../images/info_b.svg") no-repeat left 0 top 0 transparent;
+    background-size: contain;
+}
 
 .wpcr3_respond_2 .wpcr3_div_2 {
     padding-top: 15px;
@@ -3882,6 +3989,10 @@ body.theme_dark .highcharts-legend-title tspan{
 
 
 @media screen and (max-width: 550px) {
+
+
+
+
     .column_header .dropdown-content {
         max-width: 100vw;
         left: unset;
@@ -3895,7 +4006,8 @@ body.theme_dark .highcharts-legend-title tspan{
         top: 0px;
     }
     .column_header h2 {
-    position: relative;
+        position: relative;
+        font-size: 21px;
     }
 
     .audience_review .column_header::after {
@@ -3937,6 +4049,11 @@ body.theme_dark .highcharts-legend-title tspan{
     }
     #global_zeitgeist .gl_zr_title {
         font-size: 1.3rem;
+    }
+
+    section.inner_content.no_pad div.column_header {
+        padding: 0;
+        margin: 0 auto;;
     }
 }
 
@@ -4040,5 +4157,9 @@ body.theme_dark .highcharts-legend-title tspan{
     .audience-tab.tab-wrapper li.nav-tab a {
         display: block;
         width: 100%;
+    }
+
+    section.inner_content.single .column_header h2 {
+        font-size: 22px;
     }
 }

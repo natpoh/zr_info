@@ -31,7 +31,7 @@ add_filter('wpseo_opengraph_title', function () {
 get_header();
 ?>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script src="https://code.highcharts.com/maps/highmaps.js"></script>
+<!--script src="https://code.highcharts.com/maps/highmaps.js"></script-->
 <script src="https://code.highcharts.com/stock/highstock.js"></script>
 
 <!--<script src="https://code.highcharts.com/highcharts.js"></script>-->
@@ -40,8 +40,8 @@ get_header();
 <script src="https://code.highcharts.com/modules/export-data.js"></script>
 <script src="https://code.highcharts.com/modules/accessibility.js"></script>
 <script src="https://code.highcharts.com/modules/series-label.js"></script>
-<script src="/analysis/js/bell_curve_src.js"></script>
-<!-- <script src="https://code.highcharts.com/modules/histogram-bellcurve.js"></script>-->
+<!--<script src="/analysis/js/bell_curve_src.js"></script>-->
+ <script src="https://code.highcharts.com/modules/histogram-bellcurve.js"></script>
 
 
 <script src="https://code.highcharts.com/maps/modules/map.js"></script>

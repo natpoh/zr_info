@@ -427,7 +427,7 @@ if (isset($_POST['read_more_rating']))
         }
         if ($id){
             !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
-            echo  PgRatingCalculate::get_movie_desc($id);
+             PgRatingCalculate::get_movie_desc($id);
         }
     }
 return;

@@ -142,8 +142,9 @@
                                         $clean_search = $search_front->get_current_search_url(array(),array(),true);
                                         ?>
                                         <p style="width: 100%; text-align: center; margin-bottom: 20px;" >
-                                            You may <a href="<?php print $clean_search ?>">reset filters</a> and get <?php print $found_results ?> found result<?php print $found_results > 1 ? 's' : ''
-                                        ?>.
+
+                                            If you <a href="<?php print $clean_search ?>">reset the filters</a> you'll get <?php print $found_results ?> result<?php print $found_results > 1 ? 's' : ''  ?>, though.
+
                                         </p>
                                         <?php
                                     }
@@ -204,8 +205,9 @@
                                         $clean_search = $search_front->get_current_search_url(array(),array(),true);
                                         ?>
                                         <p style="width: 100%; text-align: center; margin-bottom: 20px;" >
-                                            You may <a href="<?php print $clean_search ?>">reset filters</a> and get <?php print $found_results ?> found result<?php print $found_results > 1 ? 's' : ''
-                                        ?>.
+
+                                            If you <a href="<?php print $clean_search ?>">reset the filters</a> you'll get <?php print $found_results ?> result<?php print $found_results > 1 ? 's' : ''  ?>, though.
+
                                         </p>
                                     <?php } ?>
                                 <?php endif; ?>

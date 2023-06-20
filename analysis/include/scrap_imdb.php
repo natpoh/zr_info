@@ -1203,52 +1203,51 @@ function add_gender_rating()
 
 function get_imdb_actor_parse_inner($content)
 {
+    $result=[];
+    global $debug;
+    $object = TMDB::actor_data_to_object($content,$debug);
+    $object_actor = $object['props']["pageProps"]["contentData"];//["entityMetadata"];
 
-    $regv = '/\>Birth Name\<\/td\>\<td\>([^\<]+)/';
-    if (preg_match($regv, $content, $mach)) {
-        $array_result['burn_name'] = trim($mach[1]);
-    }
-    $regv = "/image_src\' href\=\\\"([^\\\"]+)/";
+ //  if ($debug) var_dump($object_actor);
 
-    if (preg_match($regv, $content, $mach)) {
 
-        $image = trim($mach[1]);
-        if (!strstr($image, 'imdb_logo')) {
-            $array_result['image'] = $image;
+    $result['name']=$object_actor["entityMetadata"]["nameText"]["text"];
+    $result['description']=$object_actor["entityMetadata"]["bio"]["text"]["plainText"];
+    $result['image']=$object_actor["entityMetadata"]["primaryImage"]["url"];
+    $result['birthDate']=$object_actor["entityMetadata"]["birthDate"]["date"];
+
+
+    $categories =  $object_actor["categories"];
+    foreach ($categories as $data)
+    {
+
+    if ($data["id"]=='overview') {
+
+        foreach ($data["section"]["items"] as $item)
+        {
+          if   ($item["rowTitle"]=='Birth name')
+          {
+              $result['burn_name']  =$item["htmlContent"];
+          }
+            if   ($item["rowTitle"]=='Born')
+            {
+                $birth_place =$item["htmlContent"];
+                $regv='/birth_place=([^&]+)&/';
+                if (preg_match($regv,$birth_place,$match))
+                {
+                    $result['burn_place']=$match[1];
+
+                }
+            }
         }
+
+        break;
     }
 
-    $regv = '/"title" content="([^\>]+)/';
-
-    if (preg_match($regv, $content, $mach)) {
-        $array_result['name'] = trim($mach[1]);
-
-        $array_result['name'] = substr($array_result['name'], 0, strpos($array_result['name'], '- IMDb"'));
-        $array_result['name'] = trim($array_result['name']);
-
-    }
-    $regv = '/\<time datetime="([^"]+)/';
-
-    if (preg_match($regv, $content, $mach)) {
-        $array_result['birthDate'] = trim($mach[1]);
     }
 
+    return $result;
 
-    $regv = '/birth_place[^\>]+\>([^\>]+)\</';
-
-    if (preg_match($regv, $content, $mach)) {
-        $array_result['burn_place'] = trim($mach[1]);
-    }
-    $regv = '/description" content="([^"]+)/';
-
-    if (preg_match($regv, $content, $mach)) {
-        $array_result['description'] = trim($mach[1]);
-    }
-//  var_dump($array_result);
-    /// echo $content;
-
-
-    return $array_result;
 
 }
 function get_imdb_actor_parse($content)
@@ -1383,7 +1382,7 @@ WHERE `data_actors_imdb`.`id` = " . $actor_id;
 
 function add_actors_to_db($id, $update = 0)
 {
-
+    global $debug;
     $final_value = sprintf('%07d', $id);
 
 
@@ -1395,6 +1394,7 @@ function add_actors_to_db($id, $update = 0)
 
     $array_result = get_imdb_actor_parse_inner($result);
 
+    if  ($debug)var_dump($array_result);
     if ($array_result) {
 
         return addto_db_actors($id, $array_result, $update);
@@ -1495,29 +1495,34 @@ $imdb_id = TMDB::get_imdb_id_from_id($id);
 }
 function add_empty_actors($id='')
 {
+
+    global $debug;
+
     check_load(50,60);
 
     if ($id)
     {
         $where =' id = '.intval($id);
+        $in =0;
     }
     else
     {
+        $in =30;
 
         $where=" lastupdate = '0' ";
     }
 
-    for ($i=0; $i<=30;$i++)
+    for ($i=0; $i<=$in;$i++)
     {
 
 
             $sql = "SELECT id FROM `data_actors_imdb` where  ".$where."   order by id asc limit 1";
-            ///echo $sql.PHP_EOL;
+             if ($debug)echo $sql.PHP_EOL;
             $result= Pdo_an::db_results_array($sql);
 
             foreach ($result as $r) {
                 $id = $r['id'];
-                echo 'try add actor ' . $id . PHP_EOL;
+                echo '  try add actor ' . $id . PHP_EOL;
                 $result = add_actors_to_db($id, 1);
                 ////logs
                 TMDB::add_log($id,'','update movies','result: '.$result,1,'add_empty_actors');
@@ -3591,6 +3596,11 @@ if (isset($_GET['update_pg_rating_cms'])) {
 }
 
 if (isset($_GET['add_empty_actors'])) {
+
+
+    global $debug;
+
+    if (isset($_GET['debug']))$debug=1;
 
     add_empty_actors($_GET['add_empty_actors'])  ;
 

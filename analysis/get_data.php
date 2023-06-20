@@ -1134,7 +1134,7 @@ else if ($_POST['oper'] === 'get_actordata') {
 /////name
 
         echo '<div id="' . $id . '" class="actor_main_container">';
-        echo '<div class="actor_title_container">' . $name . '</div>';
+        echo '<div class="actor_title_container">' . $name . '</div><span data-value="actor_popup" class="nte_info nte_right nte_open_down"></span>';
         /////image
 
         $image_link = RWTimages::get_image_link($id);

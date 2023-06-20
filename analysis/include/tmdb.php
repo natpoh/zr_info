@@ -865,7 +865,7 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
 
 
 //var_dump($actors_data);
-        if (!$tmdb_actors) {
+       // if (!$tmdb_actors) {
 
             ////get actors meta current
           $array_actors =  self::get_current_meta('meta_movie_actor',$mid);
@@ -876,7 +876,7 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
         foreach ($actors_data as $type => $data) {
             foreach ($data as $id => $name) {
 
-                self::add_todb_actor($id);
+                self::add_todb_actor($id,$name);
 
                 //add actor meta
                 $pos = $actor_pos[$id];
@@ -892,7 +892,7 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
 
         self::remove_actors($array_actors,'meta_movie_actor');
 
-    }
+   // }
 
 
 global $force;
@@ -1016,7 +1016,12 @@ public static function get_current_meta($table,$id,$aid='aid')
 
 public static function add_todb_actor($id,$name='')
 {
-    if (!self::check_enable_actors($id)) {
+    global $debug;
+
+        [$enable,$name_db] = self::check_enable_actors($id,$name);
+
+
+    if (!$enable) {
 
         if ($name)
         {
@@ -1028,6 +1033,17 @@ public static function add_todb_actor($id,$name='')
             $sql = "INSERT INTO `data_actors_imdb`  VALUES (?, '', '', '', '', '', '', '0')";
             Pdo_an::db_results_array($sql, array($id));
         }
+        if ($debug) echo 'insert '.$id.' '.$name.'<br>'.PHP_EOL;
+
+        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+        Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $id),'actor_update',4);
+    }
+    else if ($name && $name!=$name_db)
+    {
+        $q ="UPDATE `data_actors_imdb` SET `name` = ? , `lastupdate` = ? WHERE `data_actors_imdb`.`id` = ? ";
+        Pdo_an::db_results_array($q,[$name,time(),$id]);
+
+        if ($debug) echo 'updated '.$id.' '.$name.'<br>'.PHP_EOL;
 
         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
         Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $id),'actor_update',4);
@@ -1195,15 +1211,27 @@ public static  function check_imdb_id($movie_id, $movie_tmdb_id = '', $rwt_id = 
         return 0;
     }
 
-public static  function check_enable_actors($id)
+public static  function check_enable_actors($id,$name='')
     {
 
-        $sql = "SELECT id FROM `data_actors_imdb` where  id ='" . $id . "'  limit 1 ";
-        $id  = Pdo_an::db_get_data($sql,'id');
-        if ($id> 0) {
-            return 1;
+        if ($name)
+        {
+            $sql = "SELECT `id`, `name` FROM `data_actors_imdb` where  id ='" . $id . "'  limit 1 ";
         }
-        return 0;
+        else
+        {
+            $sql = "SELECT `id` FROM `data_actors_imdb` where  id ='" . $id . "'  limit 1 ";
+        }
+
+        $row  = Pdo_an::db_results_array($sql);
+
+        if ($row) {
+
+        return [1,$row[0]['name']];
+
+        }
+         return [0,0];
+
     }
 
 public static function get_actor_array($stars_data,$type='s',$actors,$actor_data,$array_pos=[])

@@ -986,21 +986,42 @@ body.theme_dark .simple .items{
 
 #audience_form .nte,
 #settings_form .nte{
-	display: inline-block;
+    display: inline-block;
 }
 
 #audience_form .nte .btn,
 #settings_form .nte .btn {
-	cursor: pointer;
-	border: 1px solid #8f8f8f;
-	border-radius: 50%;
-	width: 18px;
-	height: 18px;
-	text-align: center;
-	line-height: 18px;
-	font-size: 15px;
-	color: #8f8f8f;
+    cursor: pointer;
+    border: 1px solid #8f8f8f;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    text-align: center;
+    line-height: 18px;
+    font-size: 15px;
+    color: #8f8f8f;
 }
+
+.av_action {
+    display: none;
+}
+
+.av_action.active {
+    display: block;
+}
+
+
+#upload-image, #avatar_file, .cropped_images {
+    display: none;
+}
+
+#select_av_type {
+    margin-bottom: 0.5rem;
+    display: inline-block;
+    min-width: 200px;
+}
+
+
 
 @media (min-width: 720px) {
 
