@@ -1326,25 +1326,27 @@ function add_actors_description($actor_id,$description)
 
 function migration_actors_description()
 {
-    check_load(590,600);
+    check_load(280,290);
 
+    $count =0;
     $q = "SELECT * FROM `data_actors_imdb` WHERE `description` !='' ORDER BY `name` ASC limit 100000";
     $rows = Pdo_an::db_results_array($q);
     foreach ($rows as $t)
     {
-
+        $count++;
         add_actors_description($t['id'],$t['description']);
         $sql = "UPDATE `data_actors_imdb` SET `description`='' WHERE `data_actors_imdb`.`id` = " . $t['id'];
         Pdo_an::db_results_array($sql);
 
         if (check_cron_time())
         {
+
             break;
         }
 
     }
 
-
+    echo $count;
 
 
 }
