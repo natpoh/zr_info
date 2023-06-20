@@ -558,11 +558,11 @@ function critic_matic_plugin_activation() {
 
 
     $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_authors` ADD `avatar` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);   
+    Pdo_an::db_query($sql);
     $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_authors` ADD `avatar_name` varchar(255) NOT NULL default ''";
     Pdo_an::db_query($sql);
     $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_authors` ADD `avatar_type` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);   
+    Pdo_an::db_query($sql);
 
     critic_matic_create_index_an(array('status', 'type', 'name', 'wp_uid', 'show_type', 'avatar', 'avatar_type'), $table_prefix . "critic_matic_authors");
 
@@ -1195,7 +1195,7 @@ function critic_matic_plugin_activation() {
 
     // metacritic
     $sql = "ALTER TABLE `data_movie_erating` ADD `metacritic_rating` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);    
+    Pdo_an::db_query($sql);
     $sql = "ALTER TABLE `data_movie_erating` ADD `metacritic_count` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
     $sql = "ALTER TABLE `data_movie_erating` ADD `metacritic_date` int(11) NOT NULL DEFAULT '0'";
@@ -1209,8 +1209,8 @@ function critic_matic_plugin_activation() {
     $sql = "ALTER TABLE `data_movie_erating` ADD `eiga_count` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
     $sql = "ALTER TABLE `data_movie_erating` ADD `eiga_date` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);    
-    
+    Pdo_an::db_query($sql);
+
     // moviemeter
     $sql = "ALTER TABLE `data_movie_erating` ADD `moviemeter_rating` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
@@ -1218,8 +1218,8 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     $sql = "ALTER TABLE `data_movie_erating` ADD `moviemeter_date` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
-    
+
+
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('movie_id', 'date', 'last_upd', 'total_rating'), "data_movie_erating");
 
@@ -1291,19 +1291,19 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_movie_indie` ADD `reboot` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_movie_indie` ADD `remake` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_movie_indie` ADD `sequel` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_movie_indie` ADD `prequel` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     critic_matic_create_index_an(array('date', 'movie_id'), "data_movie_indie");
 
     /* Actor country
@@ -1340,8 +1340,26 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('mid', 'mlcid', 'date', 'views', 'expired', 'link_hash'), "data_site_img");
-    
-    
+
+
+
+    /*
+     * Clear comments
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `log_clear_comments`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                
+                                `type` int(11) NOT NULL DEFAULT '0',
+                                `ftype` int(11) NOT NULL DEFAULT '0',
+                                `cid` int(11) NOT NULL DEFAULT '0',
+                                `date` int(11) NOT NULL DEFAULT '0',                                
+                                `content` text default NULL,
+                                `content_clear` text default NULL,
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('type', 'date'), "log_clear_comments");
+
     /*
      * Ethic img
      */

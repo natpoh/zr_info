@@ -14,6 +14,7 @@ class CriticMatic extends AbstractDB {
     private $ac;
     private $af;
     private $cav;
+    private $cc;
     private $cf;
     private $cp;
     private $cs;
@@ -77,7 +78,7 @@ class CriticMatic extends AbstractDB {
         7 => 'Last week',
         30 => 'Last Mounth',
     );
-    public $sort_pages = array('author_name', 'free', 'id', 'ip', 'date', 'date_add', 'title', 'last_update', 'update_interval', 'name', 'pid', 'slug', 'status', 'type', 'weight', 'wp_uid', 'show_type');
+    public $sort_pages = array('author_name', 'free','ftype', 'id', 'ip', 'date', 'date_add', 'title', 'last_update', 'update_interval', 'name', 'pid', 'slug', 'status', 'type', 'weight', 'wp_uid', 'show_type');
 
     /*
      * Authors
@@ -344,6 +345,17 @@ class CriticMatic extends AbstractDB {
         return $this->cp;
     }
 
+    public function get_cc() {
+        // Get ClearCommetns
+        if (!$this->cc) {
+            if (!class_exists('ClearComments')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'ClearComments.php' );
+            }
+            $this->cc = new ClearComments($this);
+        }
+        return $this->cc;
+    }
+
     public function get_cf() {
         // Get CriticFeeds
         if (!$this->cf) {
@@ -448,6 +460,11 @@ class CriticMatic extends AbstractDB {
                     PgRatingCalculate::add_movie_rating($meta->fid);
                 }
             }
+
+            // Clear comments
+            $cc = $this->get_cc();
+            $cc->check_post($pa);
+            
         } else {
             // Find movies from critic
             if ($pa->top_movie == 0 && $pa->status == 1 && $this->sync_server) {

@@ -1723,6 +1723,12 @@ class CriticFront extends SearchFacets {
     }
 
     public function pccf_filter($text) {
+        $cc = $this->cm->get_cc();
+        $clear_data = $cc->validate_content($text);
+        return $clear_data['content'];
+    }
+
+    public function pccf_filter_old($text) {
 
         $valprev = '';
         $tmp = $this->get_option('pccf_options');
@@ -2614,8 +2620,8 @@ class CriticFront extends SearchFacets {
                         <div class="meta">
                             <span class="p-date block">
                                 <time><?php
-                                    print date('d.m.Y H:i', $item->date);
-                                    ?></time>
+                            print date('d.m.Y H:i', $item->date);
+                            ?></time>
                             </span>
 
                             <span class="p-cat block">
@@ -2633,8 +2639,8 @@ class CriticFront extends SearchFacets {
                             <?php } ?>
                         </div>
                     </div><?php
-                }
-                ?>
+                        }
+                        ?>
                 <?php if ($total_count > $view_rows) { ?>
                     <h3 class="ns_all"><a href="<?php print $ns_link ?>">Show all related posts: <?php print $total_count ?></a></h3>
                     <?php

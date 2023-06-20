@@ -25,6 +25,7 @@ class CriticMaticAdmin {
     private $authors_url = '';
     private $audience_url = '';
     private $countries_url = '';
+    private $clear_url = '';
     private $feeds_url = '';
     private $genres_url = '';
     private $movies_url = '';
@@ -115,6 +116,7 @@ class CriticMaticAdmin {
         $this->authors_url = $this->parrent_slug . '_authors';
         $this->audience_url = $this->parrent_slug . '_audience';
         $this->countries_url = $this->parrent_slug . '_countries';
+        $this->clear_url = $this->parrent_slug . '_clear';
         $this->feeds_url = $this->parrent_slug . '_feeds';
         $this->genres_url = $this->parrent_slug . '_genres';
         $this->movies_url = $this->parrent_slug . '_movies';
@@ -153,6 +155,7 @@ class CriticMaticAdmin {
         add_submenu_page($this->parrent_slug, __('Countries'), __('Countries'), $this->access_level, $this->countries_url, array($this, 'countries'));
         add_submenu_page($this->parrent_slug, __('Providers'), __('Providers'), $this->access_level, $this->providers_url, array($this, 'providers'));
         add_submenu_page($this->parrent_slug, __('Audience'), __('Audience') . $count_text, $this->access_level, $this->audience_url, array($this, 'audience'));
+        add_submenu_page($this->parrent_slug, __('Clear comments'), __('Clear comments') . $count_text, $this->access_level, $this->clear_url, array($this, 'clear_comments'));
         add_submenu_page($this->parrent_slug, __('Transcriptions'), __('Transcriptions'), $this->access_level, $this->transcriptions_url, array($this, 'transcriptions'));
         if (!$this->cm->sync_client) {
             add_submenu_page($this->parrent_slug, __('Feeds'), __('Feeds'), $this->access_level, $this->feeds_url, array($this, 'feeds'));
@@ -238,8 +241,8 @@ class CriticMaticAdmin {
      * Get current tab
      */
 
-    private function get_tab() {
-        $tab = !empty($_GET['tab']) ? sanitize_text_field(stripslashes($_GET['tab'])) : '';
+    private function get_tab($def = '') {
+        $tab = !empty($_GET['tab']) ? sanitize_text_field(stripslashes($_GET['tab'])) : $def;
         return $tab;
     }
 
@@ -1439,6 +1442,60 @@ class CriticMaticAdmin {
                 }
             }
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/add_provider.php');
+        }
+    }
+
+    /*
+     * Clear commetns page
+     */
+
+    public function clear_comments() {
+        $curr_tab = $this->get_tab();
+        $page = $this->get_page();
+        $per_page = $this->get_perpage();
+
+
+        $url = $this->admin_page . $this->clear_url;
+        $page_url = $url;
+
+        $cc = $this->cm->get_cc();
+
+        $tabs_arr = $cc->tabs;
+        $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab);
+
+        // Sort
+        $sort_pages = $this->cm->sort_pages;
+        $orderby = $this->get_orderby($sort_pages);
+        $order = $this->get_order();
+
+
+        /*
+          'home' => 'Overview',
+          'settings' => 'Settings',
+          'test' => 'Test',
+          'revisions' => 'Revisions',
+         */
+
+        if (!$curr_tab) {
+
+            $page_url = $page_url . '&tab=' . $curr_tab;
+            $count = $cc->get_log_count();
+            $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
+            $posts = $cc->get_log($page, $per_page, $orderby, $order);
+
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_clear_comments.php');
+        } else if ($curr_tab == 'settings') {
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/settings_clear_comments.php');
+        } else if ($curr_tab == 'test') {
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/test_clear_comments.php');
+        } else if ($curr_tab == 'revisions') {
+
+            $page_url = $page_url . '&tab=' . $curr_tab;
+            $count = $cc->get_revisions_count();
+            $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
+            $posts = $cc->get_revisions($page, $per_page, $orderby, $order);
+            wp_enqueue_style('audience_rating', CRITIC_MATIC_PLUGIN_URL . 'css/rating.css', false, CRITIC_MATIC_VERSION);
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_clear_comments_revisions.php');
         }
     }
 
