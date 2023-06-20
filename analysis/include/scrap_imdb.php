@@ -1282,6 +1282,49 @@ function check_image_on_server($actor_id, $image = '', $tmdb = '')
  return   KAIROS::check_image_on_server($actor_id, $image, $tmdb);
 
 }
+
+function add_actors_description($actor_id,$description)
+{
+
+    $q = "SELECT `id`, `description`, `last_updata` FROM `data_actors_description` WHERE `actor_id` = ".$actor_id." limit 1";
+    $rows = Pdo_an::db_results_array($q);
+    $t = $rows[0];
+
+    if ($t )
+    {
+        if ($t['description']!=$description)
+        {
+            $q = "UPDATE `data_actors_description` SET `description`=?,`last_updata`=? WHERE `actor_id`= ".$actor_id;
+            Pdo_an::db_results_array($q,[$description,time()]);
+
+            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+            Import::create_commit('', 'update', 'data_actors_description', array('actor_id' => $actor_id), 'actor_update_desc',30);
+
+
+        }
+        else
+        {
+            $q = "UPDATE `data_actors_description` SET `last_updata`=".time()." WHERE `actor_id`= ".$actor_id;
+            Pdo_an::db_results_array($q);
+        }
+
+    }
+    else
+    {
+
+        $q="INSERT INTO `data_actors_description`(`id`, `actor_id`, `description`, `last_updata`) VALUES (NULL,?,?,?)";
+        Pdo_an::db_results_array($q,[$actor_id,$description,time()]);
+
+        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+        Import::create_commit('', 'update', 'data_actors_description', array('actor_id' => $actor_id), 'actor_update_desc',29);
+
+    }
+
+
+
+}
+
+
 function addto_db_actors($actor_id, $array_result, $update = 0)
 {
 
@@ -1345,15 +1388,17 @@ function addto_db_actors($actor_id, $array_result, $update = 0)
         $image = 'N';
     }
 
+      add_actors_description($actor_id,$description);
+
 
 
     if ($t) {
 
 
         if ($t['name']!=$name || $t['birth_name']!=$burn_name || $t['birth_place']!=$burn_place || $t['burn_date']!=$birthDate
-            || $t['description']!=$description || $t['image_url']!=$image_url || $t['image']!=$image )
+            || $t['image_url']!=$image_url || $t['image']!=$image )
         {
-            $array_request = array($name, $burn_name, $burn_place, $birthDate, $description, $image_url, $image, time());
+            $array_request = array($name, $burn_name, $burn_place, $birthDate, '', $image_url, $image, time());
             $sql = "UPDATE `data_actors_imdb` SET
                `name`=?, `birth_name`=?, `birth_place`=?, `burn_date`=?, `description`=?, `image_url`=?, `image`=?, `lastupdate`=?
 WHERE `data_actors_imdb`.`id` = " . $actor_id;
@@ -1375,7 +1420,7 @@ WHERE `data_actors_imdb`.`id` = " . $actor_id;
     }
     else
     {
-        $array_request = array($name, $burn_name, $burn_place, $birthDate, $description,$image_url, $image, time());
+        $array_request = array($name, $burn_name, $burn_place, $birthDate, '',$image_url, $image, time());
         $sql = "INSERT INTO `data_actors_imdb` VALUES ( '" . $actor_id . "' ,?, ?, ?, ?, ?, ?, ?, ?)";
         Pdo_an::db_results_array($sql,$array_request);
         echo 'adedded ' . $actor_id .' '.$name. '<br>' . PHP_EOL;
