@@ -1287,7 +1287,9 @@ function addto_db_actors($actor_id, $array_result, $update = 0)
 
 
     /// print_r($array_result);
-
+    $q = "SELECT * FROM `data_actors_imdb` WHERE id = ".$actor_id." limit 1";
+    $rows = Pdo_an::db_results_array($q);
+    $t = $rows[0];
 
     $name = '';
     if (isset($array_result['name'])) {
@@ -1320,13 +1322,13 @@ function addto_db_actors($actor_id, $array_result, $update = 0)
 
     $image = '';
     if (isset($array_result['image'])) {
-        $image = $array_result['image'];
+        $image_url = $array_result['image'];
 
 
-        if (check_image_on_server($actor_id, $image)) {
+        if (check_image_on_server($actor_id, $image_url)) {
             $image = 'Y';
 
-            if ($name)
+            if ($t['image']!=$image )
             {
                 !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
                 ACTIONLOG::update_actor_log('image','data_actors_imdb',$actor_id);
@@ -1343,38 +1345,43 @@ function addto_db_actors($actor_id, $array_result, $update = 0)
         $image = 'N';
     }
 
-    if ($name)
-    {
-        !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
-        ACTIONLOG::update_actor_log('name','data_actors_imdb',$actor_id);
-
-    }
 
 
+    if ($t) {
 
-    if ($update) {
-        $array_request = array($name, $burn_name, $burn_place, $birthDate, $description, $image, time());
-        $sql = "UPDATE `data_actors_imdb` SET
-               `name`=?, `birth_name`=?, `birth_place`=?, `burn_date`=?, `description`=?, `image`=?, `lastupdate`=?
+
+        if ($t['name']!=$name || $t['birth_name']!=$burn_name || $t['birth_place']!=$burn_place || $t['burn_date']!=$birthDate
+            || $t['description']!=$description || $t['image_url']!=$image_url || $t['image']!=$image )
+        {
+            $array_request = array($name, $burn_name, $burn_place, $birthDate, $description, $image_url, $image, time());
+            $sql = "UPDATE `data_actors_imdb` SET
+               `name`=?, `birth_name`=?, `birth_place`=?, `burn_date`=?, `description`=?, `image_url`=?, `image`=?, `lastupdate`=?
 WHERE `data_actors_imdb`.`id` = " . $actor_id;
+            Pdo_an::db_results_array($sql,$array_request);
 
-        Pdo_an::db_results_array($sql,$array_request);
-        echo 'updated ' . $actor_id .' '.$name. '<br>' . PHP_EOL;
+
+            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+            Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $actor_id), 'actor_update',4);
+            echo 'updated ' . $actor_id .' '.$name. '<br>' . PHP_EOL;
+        }
+        else
+        {
+            $sql = "UPDATE `data_actors_imdb` SET `lastupdate`=".time()." WHERE `data_actors_imdb`.`id` = " . $actor_id;
+            Pdo_an::db_results_array($sql);
+
+            echo 'skip no new data ' . $actor_id .' '.$name. '<br>' . PHP_EOL;
+        }
+
     }
     else
     {
-        $array_request = array($name, $burn_name, $burn_place, $birthDate, $description, $image, time());
-        $sql = "INSERT INTO `data_actors_imdb` VALUES ( '" . $actor_id . "' ,?, ?, ?, ?, ?, ?, ?)";
+        $array_request = array($name, $burn_name, $burn_place, $birthDate, $description,$image_url, $image, time());
+        $sql = "INSERT INTO `data_actors_imdb` VALUES ( '" . $actor_id . "' ,?, ?, ?, ?, ?, ?, ?, ?)";
         Pdo_an::db_results_array($sql,$array_request);
         echo 'adedded ' . $actor_id .' '.$name. '<br>' . PHP_EOL;
-
+        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+        Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $actor_id), 'actor_update',4);
     }
-    global $debug;
-
-
-    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-
-    Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $actor_id), 'actor_update',4);
 
 
     return 1;
