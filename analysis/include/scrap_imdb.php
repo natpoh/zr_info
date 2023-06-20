@@ -1510,58 +1510,36 @@ function add_empty_actors($id='')
     if ($id)
     {
         $where =' id = '.intval($id);
-        $in =0;
     }
     else
     {
-        $in =30;
-
-        $where=" lastupdate = '0' ";
+        $where="( lastupdate = '0' OR  (`name` = '' and lastupdate != '0' and lastupdate < ".(time()-86400).") OR ((`birth_name` = '' OR `birth_place` = '' OR `burn_date` = '' OR `image_url` = NULL) and lastupdate != '0' and lastupdate < ".(time()-86400*60).")  )";
     }
 
-    for ($i=0; $i<=$in;$i++)
-    {
 
 
-            $sql = "SELECT id FROM `data_actors_imdb` where  ".$where."   order by id asc limit 1";
+            $sql = "SELECT id FROM `data_actors_imdb` where  ".$where."  limit 60";
              if ($debug)echo $sql.PHP_EOL;
             $result= Pdo_an::db_results_array($sql);
 
             foreach ($result as $r) {
                 $id = $r['id'];
-                echo '  try add actor ' . $id . PHP_EOL;
+               if ($debug) echo '  try add actor ' . $id . PHP_EOL;
                 $result = add_actors_to_db($id, 1);
                 ////logs
-                TMDB::add_log($id,'','update movies','result: '.$result,1,'add_empty_actors');
+                TMDB::add_log($id,'','update actors','result: '.$result,1,'add_empty_actors');
+
+                if (check_cron_time())
+                {
+                    break;
+                }
+                sleep(0.5);
+
             }
 
-        sleep(1);
-
-        if (check_cron_time())
-        {
-            break;
-        }
-    }
 }
 
-function add_noname_actors()
-{
-    $sql = "SELECT id FROM `data_actors_imdb` where `name` = '' and lastupdate != '0' and lastupdate < ".(time()-86400)." order by lastupdate 	 desc limit 10";
-    ///echo $sql.'<br>';
 
-    $result= Pdo_an::db_results_array($sql);
-    $i = 0;
-    foreach ($result as $r) {
-        $i++;
-        $id = $r['id'];
-        echo 'try add actor ' . $id . PHP_EOL;
-        $result = add_actors_to_db($id, 1);
-        ///  set_option(8, $r['id']);
-        $sql = "UPDATE `data_actors_imdb` SET `lastupdate` = '".time()."' WHERE `data_actors_imdb`.`id` =  ".$id;
-        Pdo_an::db_results_array($sql);
-    }
-    echo 'check_last_actors status 2 (' . $i . ') ' . PHP_EOL;
-}
 
 
 function check_last_actors()

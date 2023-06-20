@@ -71,8 +71,8 @@ $array_jobs = array(
 
     'set_tmdb_actors_for_movies'=>30,////update tmdb actors from japan anime
 
-     'add_empty_actors'=>30, //add new empty actors
-     'add_noname_actors'=>120, //actor witout names
+     ///'add_empty_actors'=>30, //add new empty actors
+
 
 ///'add_rating'=>10,  ////add new rating to movies (old version)
 //'check_tvexport'=>10
