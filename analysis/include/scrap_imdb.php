@@ -1324,6 +1324,31 @@ function add_actors_description($actor_id,$description)
 
 }
 
+function migration_actors_description()
+{
+    check_load(590,600);
+
+    $q = "SELECT * FROM `data_actors_imdb` WHERE `description` !='' ORDER BY `name` ASC limit 100000";
+    $rows = Pdo_an::db_results_array($q);
+    foreach ($rows as $t)
+    {
+
+        add_actors_description($t['id'],$t['description']);
+        $sql = "UPDATE `data_actors_imdb` SET `description`='' WHERE `data_actors_imdb`.`id` = " . $t['id'];
+        Pdo_an::db_results_array($sql);
+
+        if (check_cron_time())
+        {
+            break;
+        }
+
+    }
+
+
+
+
+}
+
 
 function addto_db_actors($actor_id, $array_result, $update = 0)
 {
@@ -3637,7 +3662,14 @@ if (isset($_GET['add_empty_actors'])) {
     return;
 }
 
+if (isset($_GET['migration_actors_description'])) {
 
+
+
+    migration_actors_description();
+
+    return;
+}
 
 if (isset($_GET['add_movie_production'])) {
 
