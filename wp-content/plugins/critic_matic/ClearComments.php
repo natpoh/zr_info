@@ -115,17 +115,16 @@ class ClearComments extends AbstractDB {
                             $line_arr = explode(':', $line);
                             $keys = explode(',', $line_arr[0]);
                             $to_replace = $line_arr[1];
-                            
+
                             foreach ($keys as $rkey) {
                                 $replace_data[$rkey] = $to_replace;
-                                $spamlist_big[]=$rkey;
-                            }                            
-                            
+                                $spamlist_big[] = $rkey;
+                            }
                         } catch (Exception $exc) {
                             $error[] = array($exc, $line);
                         }
                     }
-                   
+
                     $spamlist = $spamlist_big;
                 }
 
@@ -182,22 +181,29 @@ class ClearComments extends AbstractDB {
                                 }
                             }
                         } else if ($type == 'replace') {
-                            $keyString = isset($replace_data[$phrase])?$replace_data[$phrase]:$phrase;                        
+                            $keyString = isset($replace_data[$keyword]) ? $replace_data[$keyword] : '';
+                            if ($keyString){
+                                $keyString = str_replace($keyword, $keyString, $found);
+                            } else {
+                                $keyString = $phrase;
+                            }
                         }
 
                         $content_ret = preg_replace('/([^\p{L}]+|^)' . $phrase . '([^\p{L}]+|$)/ui', "$1" . $keyString . "$2", $content_ret);
+                        
+        
                         if ($valid) {
                             $valid = false;
                         }
                     }
                 }
             }
-
+            //p_r($replace_data);
 
             $comment_bold = $this->comment_bold($content, $keys_found);
         }
 
-        
+
 
 
         $ret = array(
