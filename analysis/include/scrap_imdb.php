@@ -1931,7 +1931,7 @@ function check_last_actors()
             Pdo_an::db_query($sql1);
             $i++;
 
-            update_actors_verdict($actor_id);
+            update_actors_verdict($actor_id,1);
 
             $commit_actors[$r['actor_id']]=1;
         }
@@ -2225,14 +2225,22 @@ function set_actors_ethnic($id)
 {
     !class_exists('Ethinc') ? include ABSPATH . "analysis/include/ethnic.php" : '';
 
-    if (isset($_GET['update']))
-    {
-        Ethinc::update_verdict_meta($id);
-    }
-    else
-    {
-        Ethinc::set_actors_ethnic($id);
-    }
+
+
+
+        if (isset($_GET['debug']))$debug =1;
+
+        if (isset($_GET['force']))$force =1;
+
+        Ethinc::set_actors_ethnic($id,$force,$debug);
+
+
+//
+//    if (isset($_GET['update']))
+//    {
+//        Ethinc::update_verdict_meta($id);
+//    }
+
 }
 function set_actors_ethnic_vedict($id)
 {

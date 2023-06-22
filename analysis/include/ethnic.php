@@ -51,11 +51,19 @@ class Ethinc
     public static function update_verdict_meta($id='')
     {
 
-        self::check_verdict();
+        self::check_verdict($id);
 
         $array_min = array('Asian' => 'EA', 'White' => 'W', 'Latino' => 'H', 'Black' => 'B', 'Arab' => 'M', 'Dark Asian' => 'I', 'Jewish' => 'JW', 'Other' => 'MIX', 'Mixed / Other' => 'MIX', 'Indigenous' => 'IND', 'Not a Jew' => 'NJW', 'Sadly, not' => 'NJW');
 
-        $sql = "select * from data_actors_ethnic where actor_id>0 ";
+        if ($id)
+        {
+            $sql = "select * from data_actors_ethnic where actor_id=".$id;
+        }
+        else
+        {
+            $sql = "select * from data_actors_ethnic where actor_id>0 ";
+        }
+
         $array_movie = Pdo_an::db_results_array($sql);
 
         foreach ($array_movie as $movie_data) {
@@ -119,8 +127,9 @@ class Ethinc
     }
 
 
-    public static function addverdict($id,$result_array)
+    public static function addverdict($id,$result_array,$debug='')
 {
+
     if (is_array($result_array))
     {
     arsort($result_array) ;
@@ -158,7 +167,8 @@ class Ethinc
        {
            $verdict='Other';
        }
-        $debug = $_GET['debug'];
+
+
         if ($debug)
         {
             echo 'verdict: '.$verdict.' <br>';
@@ -167,11 +177,25 @@ class Ethinc
 
        if ($verdict)
        {
-           $sql = "UPDATE `data_actors_ethnic` SET `verdict` = ? WHERE `data_actors_ethnic`.`id` ={$id} ";
 
+           $sql = "select * from data_actors_ethnic where id =".$id;
+           $r = Pdo_an::db_results_array($sql);
+           $verdict_old = $r[0]['verdict'];
+           $actor_id = $r[0]['actor_id'];
+
+           if ($verdict !=$verdict_old )
+           {
+           $sql = "UPDATE `data_actors_ethnic` SET `verdict` = ? WHERE `data_actors_ethnic`.`id` ={$id} ";
            Pdo_an::db_results_array($sql, array($verdict));
 
+           if ($actor_id)
+           {
+               !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+               Import::create_commit('', 'update', 'data_actors_ethnic', array('actor_id' => $actor_id), 'data_actors_ethnic',10,['skip'=>['id']]);
+           }
+           }
        }
+
     }
 }
 
@@ -267,12 +291,14 @@ class Ethinc
         return array($result_array, $array_notfound);
     }
 
-    public static function set_actors_ethnic($id='')
+    public static function set_actors_ethnic($id='',$force =0,$debug=0)
     {
-        $sql = "UPDATE `data_actors_ethnic` SET `verdict` ='' ";
-        Pdo_an::db_results_array($sql);
+        if ($force)
+        {
+            $sql = "UPDATE `data_actors_ethnic` SET `verdict` ='' ";
+            Pdo_an::db_results_array($sql);
 
-        $debug = $_GET['debug'];
+        }
 
         global $array_compare;
         if (!$array_compare) {
@@ -285,9 +311,19 @@ class Ethinc
         {
             $where = " where actor_id = {$id} ";
         }
+        else if ($force){
+            $where = '';
+        }
+        else{
+
+            $where = " where verdict is NULL and actor_id > 0 and last_update_verdict < ".(time()-86400*7)." limit 100";
+        }
+
+
 //var_dump($array_compare);
         $array_notfound = [];
         $sql = "select * from data_actors_ethnic ".$where;
+        if ($debug) echo $sql;
         $array_movie = Pdo_an::db_results_array($sql);
         $array_ethnic_result = [];
         foreach ($array_movie as $movie_data) {
@@ -441,10 +477,17 @@ class Ethinc
 
                 if ($result_array)
                 {
-                    $sql = "UPDATE `data_actors_ethnic` SET `ethnic_result` = ?, `ethnic_decode` = ? WHERE `data_actors_ethnic`.`id` ={$id} ";
-                    Pdo_an::db_results_array($sql, array(json_encode($ethnic_result_data),json_encode($result_array)));
+                    $sql = "UPDATE `data_actors_ethnic` SET `ethnic_result` = ?, `ethnic_decode` = ? , last_update_verdict	=? WHERE `data_actors_ethnic`.`id` ={$id} ";
+                    Pdo_an::db_results_array($sql, array(json_encode($ethnic_result_data),json_encode($result_array),time()));
 
-                    self::addverdict($id,$result_array);
+                    self::addverdict($id,$result_array,$debug);
+
+                   /// self::update_verdict_meta($id);
+                }
+                else
+                {
+                    $sql = "UPDATE `data_actors_ethnic` SET  last_update_verdict	=? WHERE `data_actors_ethnic`.`id` ={$id} ";
+                    Pdo_an::db_results_array($sql, array(time()));
                 }
 
 
@@ -458,7 +501,7 @@ class Ethinc
 
         ///create verdict
 
-       self::update_verdict_meta();
+       // self::update_verdict_meta();
     }
 
 

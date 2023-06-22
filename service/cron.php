@@ -71,6 +71,8 @@ $array_jobs = array(
 
     'set_tmdb_actors_for_movies'=>30,////update tmdb actors from japan anime
 
+    'set_actors_ethnic'=>60, ///add ethnic verdict
+
      ///'add_empty_actors'=>30, //add new empty actors
 
 
