@@ -3105,86 +3105,99 @@ body.theme_dark  .noUi-handle::before,body.theme_dark  .noUi-handle::after {
 
 
 .facet .facet-icon span.rating,
-.sort-icon .rating{
+i.rating{
     background: transparent url("images/rating/star_active.svg");
 }
 .facet .facet-icon span.vote,
-.sort-icon .vote{
+i.vote{
     background: transparent url("images/rating/verdict_free.svg");
 }
 .facet .facet-icon span.hollywood,
-.sort-icon .hollywood{
+i.hollywood{
     background: transparent url("images/rating/overal_active.svg");
 }
 .facet .facet-icon span.patriotism,
-.sort-icon .patriotism{
+i.patriotism{
     background: transparent url("images/rating/neo_active.svg");
 }
 .facet .facet-icon span.misandry,
-.sort-icon .misandry{
+i.misandry{
     background: transparent url("images/rating/miss_active.svg");
 }
 .facet .facet-icon span.affirmative,
-.sort-icon .affirmative{
+i.affirmative{
     background: transparent url("images/rating/affirmate_active.svg");
 }
 .facet .facet-icon span.lgbtq,
-.sort-icon .lgbtq{
+i.lgbtq{
     background: transparent url("images/rating/lgbt_active.svg");
 }
 .facet .facet-icon span.god,
-.sort-icon .god{
+i.god{
     background: transparent url("images/rating/good_active.svg");
 }
 
-.sort-icon .kinop{
+i.kinop{
     background: transparent url("images/ru_64_2.svg");
 }
 
-.sort-icon .douban{
+i.douban{
     background: transparent url("images/china_64_2.svg");
 }
 
-.sort-icon .rt{
+i.rt{
     background: transparent url("images/rt_64.svg");
 }
 
-.sort-icon .imdb{
+i.imdb{
     background: transparent url("images/imdbicon.svg");
 }
 
-.sort-icon .mal{
+i.mal{
     background: transparent url("images/mal.svg");
 }
 
-.sort-icon .fchan{
+i.fchan{
     background: transparent url("images/4chan.svg");
 }
 
-.sort-icon .zr{
+i.zr{
     background:  url("images/zr_small_logo.png");
 }
 
-.sort-icon .nl{
+i.zr_family{
+    background: transparent url(images/rating/family_active.svg) repeat-x;
+}
+
+i.zr_lgbt{
+    background: url(images/rating/lgbt_active.svg) 0px 0px no-repeat;
+
+}
+
+i.zr_woke{
+    background:  url(images/eyepiramid_gray.svg) 0px 0px no-repeat;
+}
+
+i.nl{
     background: transparent url(images/flags/4x3/nl.svg) 0px 3px no-repeat;
 }
-.sort-icon .jp{
+i.jp{
     background: transparent url(images/flags/4x3/jp.svg) 0px 3px no-repeat;
 }
-.theme_white .sort-icon .jp{
+.theme_white i.jp{
     border: 1px solid #818181;
 }
-.sort-icon .mtcr{
+i.mtcr{
     background:  url("images/metacritic-logo.svg");
 }
 
 
-.theme_white  .sort-icon .zr {
+.theme_white  i.zr {
 
     filter: invert();
 }
 
-.facet .facet-title .facet-icon span,
+.facet .facet-title .facet-icon i,
 .nav-tab span.sort-icon i {    
     width: 24px;
     height: 24px;    
@@ -3193,7 +3206,7 @@ body.theme_dark  .noUi-handle::before,body.theme_dark  .noUi-handle::after {
     margin-right: 10px;
 }
 
-.facet .facet-title .facet-icon span.vote {
+.facet .facet-title .facet-icon i.vote {
     background-size: 200%;
     margin-top: -7px;
 }

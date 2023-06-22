@@ -129,6 +129,10 @@ table.analytics_table tbody tr#more-content {
     color: #888;
     margin: 0 0 0 8px;
 }
+.facet  .nte_info .nte .btn {
+   margin: 0;
+    border: none;
+}
 
 .analytics_table .plus {
     color: green;

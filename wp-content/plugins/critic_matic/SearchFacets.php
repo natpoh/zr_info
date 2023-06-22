@@ -593,7 +593,7 @@ class SearchFacets extends AbstractDB {
                 }
             } else if (isset($this->cs->facet_data['actorsdata']['childs'][$key])) {
                 $value = is_array($value) ? $value : array($value);
-                if ($key == 'actor' || $key == 'actorstar' || $key == 'actormain'|| $key=='sphoto') {
+                if ($key == 'actor' || $key == 'actorstar' || $key == 'actormain' || $key == 'sphoto') {
                     $type_title = isset($this->cs->facet_data['actorsdata']['childs'][$key]) ? $this->cs->facet_data['actorsdata']['childs'][$key]['title'] : '';
                     $name_pre = isset($this->cs->facet_data['actorsdata']['childs'][$key]) ? $this->cs->facet_data['actorsdata']['childs'][$key]['name_pre'] : '';
                     foreach ($value as $slug) {
@@ -1040,14 +1040,14 @@ class SearchFacets extends AbstractDB {
                     }
                     $more_sort_content = '<ul class="sort-wrapper more ' . $key . '">' . $group_childs . '</ul>';
                     $more_active_class = $more_active[$key] ? ' mact' : '';
-                    $more = '<div class="sort-more' . $more_active_class . '" title="' . $title . '">' . $this->get_nte($title.'<i></i>', $more_sort_content, true) . '</div>';
+                    $more = '<div class="sort-more' . $more_active_class . '" title="' . $title . '">' . $this->get_nte($title . '<i></i>', $more_sort_content, true) . '</div>';
 
                     $group_item = $group[0];
                     //$group_item['sort_icon'] .= $more;
                     $group_item['tab_class'] .= ' group';
-                    
-                    $group_item['type']='title';                    
-                    $group_item['title']=$more;
+
+                    $group_item['type'] = 'title';
+                    $group_item['title'] = $more;
 
                     $ret .= $this->get_sort_link($group_item);
                 }
@@ -1554,7 +1554,7 @@ class SearchFacets extends AbstractDB {
                 $rating_data = isset($data[$key]['data']) ? $data[$key]['data'] : array();
                 if ($rating_data || $this->cs->is_hide_facet($key, $this->filters) || $facet == $key) {
                     $count = sizeof($rating_data);
-                    $icon = '<span class="' . $value['icon'] . '"></span>';
+                    $icon = '<i class="' . $value['icon'] . '"></i>';
                     $name_pre = $value['name_pre'];
                     $filter_pre = $value['filter_pre'];
 
@@ -1604,7 +1604,7 @@ class SearchFacets extends AbstractDB {
                 $rating_data = isset($data[$key]['data']) ? $data[$key]['data'] : array();
                 if ($rating_data || $this->cs->is_hide_facet($key, $this->filters) || $facet == $key) {
                     $count = sizeof($rating_data);
-                    $icon = '';
+                    $icon = isset($value['icon'])?'<i class="' . $value['icon'] . '"></i>':'';
                     $name_pre = $value['name_pre'];
                     $filter_pre = $value['filter_pre'];
                     $max_count = isset($this->cs->facet_data['ratings']['childs'][$key]['max_count']) ? $this->cs->facet_data['ratings']['childs'][$key]['max_count'] : 100;
@@ -1678,12 +1678,12 @@ class SearchFacets extends AbstractDB {
 
             $dates = array();
             foreach ($this->cs->search_filters['indie'] as $key => $item) {
-                $count=isset($data[$key]['data'][0])?$data[$key]['data'][0]->cnt:0;
-                if ($count){
+                $count = isset($data[$key]['data'][0]) ? $data[$key]['data'][0]->cnt : 0;
+                if ($count) {
                     $dates[$key] = array('title' => $item['title'], 'count' => $count, 'type_title' => 'Indie filter', 'name_pre' => '', 'filter' => 'indie');
                 }
             }
-            
+
 
             $filter = 'indie';
             $title = 'Filters';
@@ -1699,21 +1699,21 @@ class SearchFacets extends AbstractDB {
             $facet_data = isset($data[$filter]['data']) ? $data[$filter]['data'] : array();
             $filter_collapsed = $this->cs->is_hide_facet($filter, $this->filters);
 
-            if ($facet_data || $filter_collapsed) {
-                $view_more = 0;
-                if (!$filter_collapsed) {
-                    $count = sizeof($facet_data);
-                    $total = $this->get_meta_total_found($data[$filter]['meta']);
-                    $view_more = ($total > $count) ? $total : 0;
-                }
-
-                if (isset($_POST['ackw-facet-' . $filter])) {
-                    $keyword = $_POST['ackw-facet-' . $filter];
-                    $this->movie_quickfilter($keyword, 0, $filter);
-                } else {
-                    $this->show_franchise_facet($facet_data, $view_more, $filter, $ftype);
-                }
+            //if ($facet_data || $filter_collapsed) {
+            $view_more = 0;
+            if (!$filter_collapsed) {
+                $count = sizeof($facet_data);
+                $total = $this->get_meta_total_found($data[$filter]['meta']);
+                $view_more = ($total > $count) ? $total : 0;
             }
+
+            if (isset($_POST['ackw-facet-' . $filter])) {
+                $keyword = $_POST['ackw-facet-' . $filter];
+                $this->movie_quickfilter($keyword, 0, $filter);
+            } else {
+                $this->show_franchise_facet($facet_data, $view_more, $filter, $ftype);
+            }
+            //}
 
             /*
              * Production facet
@@ -1724,20 +1724,20 @@ class SearchFacets extends AbstractDB {
             $facet_data = isset($data[$filter]['data']) ? $data[$filter]['data'] : array();
             $filter_collapsed = $this->cs->is_hide_facet($filter, $this->filters);
 
-            if ($facet_data || $filter_collapsed) {
-                $view_more = 0;
-                if (!$filter_collapsed) {
-                    $count = sizeof($facet_data);
-                    $total = $this->get_meta_total_found($data[$filter]['meta']);
-                    $view_more = ($total > $count) ? $total : 0;
-                }
-                if (isset($_POST['ackw-facet-' . $filter])) {
-                    $keyword = $_POST['ackw-facet-' . $filter];
-                    $this->movie_quickfilter($keyword, 0, $filter);
-                } else {
-                    $this->show_distributor_facet($facet_data, $view_more, $filter, $ftype, array(), '', 'Production');
-                }
+            //if ($facet_data || $filter_collapsed) {
+            $view_more = 0;
+            if (!$filter_collapsed) {
+                $count = sizeof($facet_data);
+                $total = $this->get_meta_total_found($data[$filter]['meta']);
+                $view_more = ($total > $count) ? $total : 0;
             }
+            if (isset($_POST['ackw-facet-' . $filter])) {
+                $keyword = $_POST['ackw-facet-' . $filter];
+                $this->movie_quickfilter($keyword, 0, $filter);
+            } else {
+                $this->show_distributor_facet($facet_data, $view_more, $filter, $ftype, array(), '', 'Production');
+            }
+            //}
 
             /*
              * Distributor facet
@@ -1748,20 +1748,20 @@ class SearchFacets extends AbstractDB {
             $facet_data = isset($data[$filter]['data']) ? $data[$filter]['data'] : array();
             $filter_collapsed = $this->cs->is_hide_facet($filter, $this->filters);
 
-            if ($facet_data || $filter_collapsed) {
-                $view_more = 0;
-                if (!$filter_collapsed) {
-                    $count = sizeof($facet_data);
-                    $total = $this->get_meta_total_found($data[$filter]['meta']);
-                    $view_more = ($total > $count) ? $total : 0;
-                }
-                if (isset($_POST['ackw-facet-' . $filter])) {
-                    $keyword = $_POST['ackw-facet-' . $filter];
-                    $this->movie_quickfilter($keyword, 0, $filter);
-                } else {
-                    $this->show_distributor_facet($facet_data, $view_more, $filter, $ftype);
-                }
+            //if ($facet_data || $filter_collapsed) {
+            $view_more = 0;
+            if (!$filter_collapsed) {
+                $count = sizeof($facet_data);
+                $total = $this->get_meta_total_found($data[$filter]['meta']);
+                $view_more = ($total > $count) ? $total : 0;
             }
+            if (isset($_POST['ackw-facet-' . $filter])) {
+                $keyword = $_POST['ackw-facet-' . $filter];
+                $this->movie_quickfilter($keyword, 0, $filter);
+            } else {
+                $this->show_distributor_facet($facet_data, $view_more, $filter, $ftype);
+            }
+            //}
         } else {
             $this->theme_block_loading();
         }
