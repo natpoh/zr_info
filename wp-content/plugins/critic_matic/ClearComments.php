@@ -111,20 +111,17 @@ class ClearComments extends AbstractDB {
 
                     $spamlist_big = array();
                     foreach ($spamlist as $line) {
-                        $line = trim($line);
-                        if ($line) {
-                            try {
-                                $line_arr = explode(':', $line);
-                                $keys = explode(',', $line_arr[0]);
-                                $to_replace = $line_arr[1];
+                        try {
+                            $line_arr = explode(':', $line);
+                            $keys = explode(',', $line_arr[0]);
+                            $to_replace = $line_arr[1];
 
-                                foreach ($keys as $rkey) {
-                                    $replace_data[$rkey] = strtolower(trim($to_replace));
-                                    $spamlist_big[] = trim($rkey);
-                                }
-                            } catch (Exception $exc) {
-                                $error[] = array($exc, $line);
+                            foreach ($keys as $rkey) {
+                                $replace_data[$rkey] = $to_replace;
+                                $spamlist_big[] = $rkey;
                             }
+                        } catch (Exception $exc) {
+                            $error[] = array($exc, $line);
                         }
                     }
 
@@ -132,13 +129,10 @@ class ClearComments extends AbstractDB {
                 }
 
                 foreach ($spamlist as $keyword) {
-                    if (preg_match_all('|([\p{L}0-9\']*)(' . $keyword . ')([\p{L}0-9\']*)|ui', $content, $match)) {
-
-                        foreach ($match[1] as $key => $value) {
-                            $full_key = $match[1][$key] . $match[2][$key] . $match[3][$key];
-                            $keys_found[$full_key] = array(
+                    if (preg_match_all('|([\p{L}0-9\']*' . $keyword . '[\p{L}0-9\']*)|ui', $content, $match)) {
+                        foreach ($match[1] as $value) {
+                            $keys_found[$value] = array(
                                 'key' => $keyword,
-                                'found_key' => $match[2][$key],
                                 'type' => $type,
                             );
                         }
@@ -146,6 +140,8 @@ class ClearComments extends AbstractDB {
                 }
             }
         }
+
+
 
         // White list
         if ($white_list_data && $keys_found) {
@@ -160,17 +156,13 @@ class ClearComments extends AbstractDB {
             }
         }
 
-        $key_ret = array();
-
         if ($keys_found) {
             foreach ($keys_found as $phrase => $keyword_data) {
                 $keyword = $keyword_data['key'];
-                $found_key = $keyword_data['found_key'];
                 $type = $keyword_data['type'];
                 if ($keyword) {
                     if (preg_match_all('|[\p{L}0-9\']|ui', $phrase, $match)) {
-                        $found_arr = $match[0];
-                        $found = implode('', $found_arr);
+                        $found = implode('', $match[0]);
                         $len = strlen($found);
                         $keyString = '';
 
@@ -189,64 +181,17 @@ class ClearComments extends AbstractDB {
                                 }
                             }
                         } else if ($type == 'replace') {
-                            $keyword_low = strtolower($keyword);
-
-                            $keyString = isset($replace_data[$keyword_low]) ? $replace_data[$keyword_low] : '';
-
-                            if ($keyString) {
-
-                                //$keyString = str_replace($keyword, $keyString, $found);
-
-                                $word_arr = str_split($found_key);
-                                $key_arr = str_split($keyString);
-
-                                if (sizeof($word_arr) == sizeof($key_arr)) {
-                                    // Copy lower or upper case from source text                                   
-                                    $i = 0;
-                                    foreach ($word_arr as $word) {
-                                        $up_word = strtoupper($word);
-                                        if ($up_word == $word) {
-                                            $key_arr[$i] = strtoupper($key_arr[$i]);
-                                        }
-                                        $i++;
-                                    }
-                                    $keyString = implode('', $key_arr);
-                                } else {
-                                    // Check first or all upper case.
-                                    $all_caps = true;
-                                    $first_caps = false;
-                                    foreach ($word_arr as $i => $word) {
-                                        $up_word = strtoupper($word);
-                                        if ($up_word == $word) {
-                                            if ($i == 0) {
-                                                $first_caps = true;
-                                            }
-                                        } else {
-                                            $all_caps = false;
-                                        }
-                                    }
-                                    if ($all_caps) {
-                                        $key_arr_caps = array();
-                                        foreach ($key_arr as $word) {
-                                            $key_arr_caps[] = strtoupper($word);
-                                        }
-                                        $keyString = implode('', $key_arr_caps);
-                                    } else if ($first_caps) {
-                                        $key_arr[0] = strtoupper($key_arr[0]);
-                                        $keyString = implode('', $key_arr);
-                                    }
-                                }
-
-                                $keyString = preg_replace('/' . $keyword . '/i', $keyString, $found);
+                            $keyString = isset($replace_data[$keyword]) ? $replace_data[$keyword] : '';
+                            if ($keyString){
+                                $keyString = str_replace($keyword, $keyString, $found);
                             } else {
                                 $keyString = $phrase;
                             }
                         }
 
-                        $key_ret[$phrase] = array('key' => $keyword, 'type' => $type, 'replace' => $keyString);
-                        $content_ret = preg_replace('/([^\p{L}]+|^)' . $phrase . '([^\p{L}]+|$)/u', "$1" . $keyString . "$2", $content_ret);
-
-
+                        $content_ret = preg_replace('/([^\p{L}]+|^)' . $phrase . '([^\p{L}]+|$)/ui', "$1" . $keyString . "$2", $content_ret);
+                        
+        
                         if ($valid) {
                             $valid = false;
                         }
@@ -262,7 +207,7 @@ class ClearComments extends AbstractDB {
 
 
         $ret = array(
-            'keywords' => $key_ret,
+            'keywords' => array_keys($keys_found),
             'comment_bold' => $comment_bold,
             'content' => $content_ret,
             'valid' => $valid,
