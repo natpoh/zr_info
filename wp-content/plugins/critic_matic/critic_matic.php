@@ -1232,6 +1232,27 @@ function critic_matic_plugin_activation() {
     $sql = "ALTER TABLE `data_movie_erating` ADD `moviemeter_date` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
 
+    
+    // Audience rating
+    $sql = "ALTER TABLE `data_movie_erating` ADD `audience_rating` int(11) NOT NULL DEFAULT '0' AFTER last_upd";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `audience_date` int(11) NOT NULL DEFAULT '0' AFTER audience_rating";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `title` varchar(255) NOT NULL default '' AFTER movie_id";
+    Pdo_an::db_query($sql);
+    
+    /*
+     * 
+ALTER TABLE data_movie_erating 
+     * ADD audience_rating FLOAT(20) NOT NULL DEFAULT '0' 
+     * AFTER last_upd, 
+     * ADD audience_date INT(20) NOT NULL DEFAULT '0' AFTER audience_rating;
+
+ALTER TABLE data_movie_erating CHANGE total_rating total_rating FLOAT NOT NULL DEFAULT '0';
+
+ALTER TABLE data_movie_erating ADD
+     *  title VARCHAR(200) NULL DEFAULT NULL AFTER movie_id;
+     */
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('movie_id', 'date', 'last_upd', 'total_rating'), "data_movie_erating");

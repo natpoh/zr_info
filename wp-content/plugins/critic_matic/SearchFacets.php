@@ -43,6 +43,7 @@ class SearchFacets extends AbstractDB {
     public $keywords = '';
     public $tab = '';
     public $filters = array();
+    public $tool_tips = '';
 
     public function __construct($cm = '', $cs = '') {
         $this->cm = $cm ? $cm : new CriticMatic();
@@ -1572,12 +1573,13 @@ class SearchFacets extends AbstractDB {
         ob_end_clean();
 
         $title = 'Audience';
+        $filter = 'auratings';
         if ($content || $main_collapsed) {
             //Show multifacet
             ?>
             <div id="facets-<?php print $main_type ?>" class="facets ajload<?php print $this->cs->hide_facet_class($main_type, $this->filters) ?>">
                 <div class="facet-title">
-                    <h3 class="title"><?php print $title ?></h3>   
+                    <h3 class="title"><?php print $title ?><?php print $this->get_tooltip($filter) ?></h3>   
                     <div class="acc">
                         <div class="chevron"></div>
                         <div class="chevronup"></div>
@@ -1604,7 +1606,7 @@ class SearchFacets extends AbstractDB {
                 $rating_data = isset($data[$key]['data']) ? $data[$key]['data'] : array();
                 if ($rating_data || $this->cs->is_hide_facet($key, $this->filters) || $facet == $key) {
                     $count = sizeof($rating_data);
-                    $icon = isset($value['icon'])?'<i class="' . $value['icon'] . '"></i>':'';
+                    $icon = isset($value['icon']) ? '<i class="' . $value['icon'] . '"></i>' : '';
                     $name_pre = $value['name_pre'];
                     $filter_pre = $value['filter_pre'];
                     $max_count = isset($this->cs->facet_data['ratings']['childs'][$key]['max_count']) ? $this->cs->facet_data['ratings']['childs'][$key]['max_count'] : 100;
@@ -1649,12 +1651,13 @@ class SearchFacets extends AbstractDB {
         ob_end_clean();
 
         $title = 'Ratings';
+        $filter = 'ratings';
         if ($content || $main_collapsed) {
             //Show multifacet            
             ?>
             <div id="facets-<?php print $main_type ?>" class="facets ajload<?php print $this->cs->hide_facet_class($main_type, $this->filters) ?>">
                 <div class="facet-title">
-                    <h3 class="title"><?php print $title ?></h3>   
+                    <h3 class="title"><?php print $title ?><?php print $this->get_tooltip($filter) ?></h3>   
                     <div class="acc">
                         <div class="chevron"></div>
                         <div class="chevronup"></div>
@@ -1770,12 +1773,13 @@ class SearchFacets extends AbstractDB {
         ob_end_clean();
 
         $title = 'ZR Indie Meter';
+        $filter = 'indiedata';
         if ($content || $main_collapsed) {
             //Show multifacet
             ?>
             <div id="facets-<?php print $main_type ?>" class="facets ajload<?php print $this->cs->hide_facet_class($main_type, $this->filters) ?>">
                 <div class="facet-title">
-                    <h3 class="title"><?php print $title ?></h3>   
+                    <h3 class="title"><?php print $title ?><?php print $this->get_tooltip($filter) ?></h3>   
                     <div class="acc">
                         <div class="chevron"></div>
                         <div class="chevronup"></div>
@@ -1814,12 +1818,13 @@ class SearchFacets extends AbstractDB {
         ob_end_clean();
 
         $title = 'Finances';
+        $filter = 'findata';
         if ($content || $main_collapsed) {
             //Show multifacet            
             ?>
             <div id="facets-<?php print $main_type ?>" class="facets ajload<?php print $this->cs->hide_facet_class($main_type, $this->filters) ?>">
                 <div class="facet-title">
-                    <h3 class="title"><?php print $title ?></h3>   
+                    <h3 class="title"><?php print $title ?><?php print $this->get_tooltip($filter) ?></h3>   
                     <div class="acc">
                         <div class="chevron"></div>
                         <div class="chevronup"></div>
@@ -2308,7 +2313,7 @@ class SearchFacets extends AbstractDB {
                 ksort($dates);
             }
 
-            $title = 'Actors Country <span data-value="actor_country_popup" class="nte_info"></span>';
+            $title = 'Actors Country';
             $ftype = 'movies';
             $minus = true;
             $this->theme_facet_multi($filter, $dates, $title, $view_more, $ftype, $minus);
@@ -2319,13 +2324,14 @@ class SearchFacets extends AbstractDB {
         } else {
             $content = $this->theme_block_loading(false);
         }
+        $filter = 'actorsdata';
         $title = 'Actors';
         if ($content || $main_collapsed) {
             //Show multifacet
             ?>
             <div id="facets-<?php print $main_type ?>" class="facets ajload<?php print $this->cs->hide_facet_class($main_type, $this->filters) ?>">
                 <div class="facet-title">
-                    <h3 class="title"><?php print $title ?></h3>   
+                    <h3 class="title"><?php print $title ?><?php print $this->get_tooltip($filter) ?></h3>   
                     <div class="acc">
                         <div class="chevron"></div>
                         <div class="chevronup"></div>
@@ -2486,12 +2492,13 @@ class SearchFacets extends AbstractDB {
         }
 
         $title = 'Production';
+        $filter = 'dirsdata';
         if ($content || $main_collapsed) {
             //Show multifacet
             ?>
             <div id="facets-<?php print $main_type ?>" class="facets ajload<?php print $this->cs->hide_facet_class($main_type, $this->filters) ?>">
                 <div class="facet-title">
-                    <h3 class="title"><?php print $title ?></h3>   
+                    <h3 class="title"><?php print $title ?><?php print $this->get_tooltip($filter) ?></h3>   
                     <div class="acc">
                         <div class="chevron"></div>
                         <div class="chevronup"></div>
@@ -3031,7 +3038,7 @@ class SearchFacets extends AbstractDB {
                 <?php if ($icon) { ?>
                     <div class="facet-icon"><?php print $icon; ?></div>
                 <?php } ?>
-                <h3 class="title"><?php print $title ?></h3>   
+                <h3 class="title"><?php print $title ?><?php print $this->get_tooltip($filter) ?></h3>   
                 <div class="acc">
                     <div class="chevron"></div>
                     <div class="chevronup"></div>
@@ -3196,7 +3203,7 @@ class SearchFacets extends AbstractDB {
         ?>
         <div id="facet-<?php print $filter ?>" class="facet ajload<?php print $this->cs->hide_facet_class($filter, $this->filters) ?>" data-type="<?php print $ftype ?>">
             <div class="facet-title">
-                <h3 class="title"><?php print $title ?></h3>   
+                <h3 class="title"><?php print $title ?><?php print $this->get_tooltip($filter) ?></h3>   
                 <div class="acc">
                     <div class="chevron"></div>
                     <div class="chevronup"></div>
@@ -3258,7 +3265,7 @@ class SearchFacets extends AbstractDB {
                 <?php if ($icon) { ?>
                     <div class="facet-icon"><?php print $icon; ?></div>
                 <?php } ?>
-                <h3 class="title"><?php print $title ?></h3>   
+                <h3 class="title"><?php print $title ?><?php print $this->get_tooltip($filter) ?></h3>   
                 <div class="acc">
                     <div class="chevron"></div>
                     <div class="chevronup"></div>
@@ -3673,6 +3680,29 @@ class SearchFacets extends AbstractDB {
         return '<div class="nte"><div class="btn">' . $btn . '</div>'
                 . '<div class="nte_show' . $down_class . '"><div class="nte_in"><div class="nte_cnt">' . $content . '</div></div></div>'
                 . '</div>';
+    }
+
+    public function get_tooltip($filter = '') {
+        $ret = '';
+        $tooltips = $this->get_tooltips();
+
+        if (in_array($filter, $tooltips)) {
+            $ret = ' <span data-value="tooltip_' . $filter . '" class="nte_info"></span>';
+        }
+        return $ret;
+    }
+
+    public function get_tooltips() {
+        if ($this->tool_tips != '') {
+            return $this->tool_tips;
+        }
+        $this->tool_tips = array();
+        $filters_active = $this->get_option('tooltips_filters');
+
+        if ($filters_active) {
+            $this->tool_tips = explode("\n", $filters_active);
+        }
+        return $this->tool_tips;
     }
 
 }

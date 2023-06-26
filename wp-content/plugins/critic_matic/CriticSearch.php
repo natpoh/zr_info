@@ -130,9 +130,9 @@ class CriticSearch extends AbstractDB {
             'childs' => array(
                 'ratingtitle' => array('title' => 'Ratings', 'is_title' => 1, 'group' => 'rating'),
                 'rrwt' => array('title' => 'ZR Rating', 'titlesm' => 'ZR Rating', 'name_pre' => 'ZR Rating ', 'filter_pre' => 'ZR Rating ', 'max_count' => 60, 'multipler' => 10, 'group' => 'rating', 'sorted' => 1, 'icon' => 'zr',),
-                'rating' => array('title' => 'Family Friend Score', 'titlesm' => 'FFS', 'name_pre' => 'FFS ', 'filter_pre' => 'FFS ', 'max_count' => 60, 'multipler' => 10, 'group' => 'woke','icon' => 'zr_family', 'hide' => 1, 'sorted' => 1,),
-                'woke' => array('title' => 'Wokeness', 'titlesm' => 'Wokeness', 'name_pre' => 'Wokeness ', 'filter_pre' => 'Wokeness ', 'max_count' => 60, 'multipler' => 10, 'group' => 'woke', 'icon' => 'zr_woke','hide' => 1, 'sorted' => 1,),
-                'lgbt' => array('title' => 'LGBT', 'titlesm' => 'LGBT', 'name_pre' => 'LGBT ', 'filter_pre' => 'LGBT ', 'max_count' => 60, 'multipler' => 10, 'group' => 'woke','icon' => 'zr_lgbt', 'hide' => 1, 'sorted' => 1,),
+                'rating' => array('title' => 'Family Friend Score', 'titlesm' => 'FFS', 'name_pre' => 'FFS ', 'filter_pre' => 'FFS ', 'max_count' => 60, 'multipler' => 10, 'group' => 'woke', 'icon' => 'zr_family', 'hide' => 1, 'sorted' => 1,),
+                'woke' => array('title' => 'Wokeness', 'titlesm' => 'Wokeness', 'name_pre' => 'Wokeness ', 'filter_pre' => 'Wokeness ', 'max_count' => 50, 'multipler' => 1, 'group' => 'woke', 'icon' => 'zr_woke', 'hide' => 1, 'sorted' => 1,),
+                'lgbt' => array('title' => 'LGBT', 'titlesm' => 'LGBT', 'name_pre' => 'LGBT ', 'filter_pre' => 'LGBT ', 'max_count' => 50, 'multipler' => 1, 'group' => 'woke', 'icon' => 'zr_lgbt', 'hide' => 1, 'sorted' => 1,),
                 'rimdb' => array('title' => 'IMDb', 'titlesm' => 'IMDb', 'name_pre' => 'IMDb ', 'filter_pre' => 'IMDb Rating ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'imdb', 'hide' => 1, 'sorted' => 1,),
                 'rmc' => array('title' => 'Metacritic MetaScore', 'titlesm' => 'MetaScore', 'name_pre' => 'MetaScore ', 'filter_pre' => 'MetaScore ', 'max_count' => 110, 'multipler' => 1, 'group' => 'rating', 'icon' => 'mtcr', 'hide' => 1, 'sorted' => 1,),
                 'rmu' => array('title' => 'Metacritic UserScore', 'titlesm' => 'UserScore', 'name_pre' => 'UserScore ', 'filter_pre' => 'UserScore ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'mtcr', 'hide' => 1, 'sorted' => 1,),
@@ -321,13 +321,14 @@ class CriticSearch extends AbstractDB {
             'weight' => 110,
             'childs' => array(
                 'poptitle' => array('title' => 'Most Talked About', 'is_title' => 1, 'group' => 'pop'),
-                'cfn' => array('title' => '4chan', 'titlesm' => '4chan', 'name_pre' => '4chan ', 'filter_pre' => '4chan ', 'group' => 'pop', 'icon' => 'fchan', 'sorted' => 1,),
+                'crwt' => array('title' => 'Popularity Total', 'titlesm' => 'Popularity', 'name_pre' => 'Pop ', 'filter_pre' => 'Popularity ', 'group' => 'pop','icon' => 'zr', 'sorted' => 1,),
                 'cimdb' => array('title' => 'IMDb', 'titlesm' => 'IMDb', 'name_pre' => 'IMDb ', 'filter_pre' => 'IMDb Rating ', 'group' => 'pop', 'icon' => 'imdb', 'sorted' => 1,),
                 'canl' => array('title' => 'MyAnimeList', 'titlesm' => 'MyAnimeList', 'name_pre' => 'MyAnLi ', 'filter_pre' => 'MyAnLi ', 'group' => 'pop', 'icon' => 'mal', 'sorted' => 1,),
                 'crt' => array('title' => 'Rotten Tomatoes', 'titlesm' => 'RT', 'name_pre' => 'RT ', 'filter_pre' => 'Rotten Tomatoes ', 'group' => 'pop', 'icon' => 'rt', 'sorted' => 1,),
                 'crta' => array('title' => 'Rotten Tomatoes Audience', 'titlesm' => 'RT Audience', 'name_pre' => 'RTA ', 'filter_pre' => 'Rotten Tomatoes Audience ', 'group' => 'pop', 'icon' => 'rt', 'sorted' => 1,),
                 'pop' => array('title' => 'ZR Critics', 'titlesm' => 'Reviews', 'name_pre' => 'Reviews ', 'filter_pre' => 'Reviews ', 'group' => 'pop', 'icon' => 'zr', 'sorted' => 1,),
-                'crwt' => array('title' => 'Popularity Total', 'titlesm' => 'Popularity', 'name_pre' => 'Pop ', 'filter_pre' => 'Popularity ', 'group' => 'pop', 'sorted' => 1,),
+                'cfn' => array('title' => '4chan', 'titlesm' => '4chan', 'name_pre' => '4chan ', 'filter_pre' => '4chan ', 'group' => 'pop', 'icon' => 'fchan', 'sorted' => 1,),
+
                 // Global
                 'gpoptitle' => array('title' => 'Global Popularity', 'is_title' => 1, 'group' => 'pop'),
                 'cdb' => array('title' => 'Douban', 'name_pre' => 'DB ', 'titlesm' => 'Douban', 'filter_pre' => 'Douban ', 'group' => 'pop', 'icon' => 'douban', 'sorted' => 1,),
