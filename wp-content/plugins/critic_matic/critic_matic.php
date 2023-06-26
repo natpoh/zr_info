@@ -473,7 +473,20 @@ function critic_matic_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('cid', 'pid', 'status', 'link_hash'), $table_prefix . "critic_parser_url");
+    
+    $sql = "ALTER TABLE `" . $table_prefix . "critic_parser_url` ADD `date` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
+    $sql = "ALTER TABLE `" . $table_prefix . "critic_parser_url` ADD `last_upd` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
+    $sql = "ALTER TABLE `" . $table_prefix . "critic_parser_url` ADD `arhive_date` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
+    $sql = "ALTER TABLE `" . $table_prefix . "critic_parser_url` ADD `arhive_hash` varchar(255) NOT NULL default ''";
+    Pdo_an::db_query($sql);
+    
+    critic_matic_create_index_an(array('cid', 'pid', 'status', 'link_hash', 'arhive_date', 'arhive_hash', 'date', 'last_upd'), $table_prefix . "critic_parser_url");
 
     //$sql = "ALTER TABLE `" . $table_prefix . "critic_matic_posts` ADD `blur` int(11) NOT NULL DEFAULT '0'";
     //Pdo_an::db_query($sql);

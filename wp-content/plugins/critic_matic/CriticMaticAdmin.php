@@ -2001,6 +2001,32 @@ class CriticMaticAdmin {
                     $cron_preivew_data = $this->cp->cron_urls($campaign, true);
                 }
                 include(CRITIC_MATIC_PLUGIN_DIR . 'includes/parser_find_urls.php');
+            }  else if ($curr_tab == 'arhive') {
+                // Create arhive
+                if (isset($_POST['id'])) {
+                    $valid = $this->cp->campaign_edit_validate($_POST);
+                    if ($valid === true) {
+                        $result_id = $this->cp->arhive_edit_submit($_POST);
+                        $result = __('Campaign') . ' [' . $result_id . '] ' . __('updated');
+                        print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                    } else {
+                        print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                    }
+                }
+                $preivew_data = array();
+                if (isset($_POST['arhive_preview'])) {
+                    $campaign = $this->cp->get_campaign($cid);                   
+                    $valid = $this->cp->campaign_edit_validate($_POST);
+                    if ($valid) {
+                        $posturl = $_POST['url'];
+                        if ($posturl) {
+                            $preivew_data = $this->cp->preview_arhive($posturl, $campaign);
+                        }
+                    }
+                }
+
+                $campaign = $this->cp->get_campaign($cid);
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/edit_arhive.php');
             } else if ($curr_tab == 'update') {
                 // Update
                 $campaign = $this->cp->get_campaign($cid);

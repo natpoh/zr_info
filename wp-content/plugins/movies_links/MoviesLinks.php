@@ -1,5 +1,9 @@
 <?php
-
+/*
+ * TODO
+ * parsing runtime mask 1h 23 min
+ * check weight urls for campaigns
+ *  */
 class MoviesLinks extends MoviesAbstractDB {
 
     private $db;

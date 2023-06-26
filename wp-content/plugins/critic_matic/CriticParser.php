@@ -68,8 +68,9 @@ class CriticParser extends AbstractDBWp {
         'home' => 'Veiw',
         'urls' => 'URLs',
         'find' => '1. Find URLs',
-        'edit' => '2. Edit Parsing',
-        'preview' => '3. Preview',
+        'arhive' => '2. Arhive',
+        'edit' => '3. Edit Parsing',
+        'preview' => '4. Preview',
         'log' => 'Log',
         'update' => 'Force Update',
         'trash' => 'Trash',
@@ -182,6 +183,16 @@ class CriticParser extends AbstractDBWp {
         1 => 'Tor',
         2 => 'Proxy',
     );
+    public $remove_interval = array(
+        1440 => 'Day',
+        10080 => 'Week',
+        20160 => 'Two weeks',
+        43200 => 'Mounth',
+    );
+    public $parsing_type = array(
+        0 => 'Id ASC',
+        1 => 'Random',
+    );
     public $parse_number = array(1 => 1, 2 => 2, 3 => 3, 5 => 5, 7 => 7, 10 => 10, 20 => 20, 35 => 35, 50 => 50, 75 => 75, 100 => 100, 200 => 200, 500 => 500, 1000 => 1000);
 
     public function __construct($cm = '') {
@@ -262,6 +273,23 @@ class CriticParser extends AbstractDBWp {
                     'tor_mode' => 2,
                     'progress' => 0,
                     'weight' => 0,
+                ),
+                'arhive' => array(
+                    'last_update' => 0,
+                    'interval' => 60,
+                    'num' => 10,
+                    'status' => 0,
+                    'proxy' => 0,
+                    'webdrivers' => 0,
+                    'random' => 1,
+                    'progress' => 0,
+                    'del_pea' => 0,
+                    'del_pea_int' => 1440,
+                    'tor_h' => 20,
+                    'tor_d' => 100,
+                    'tor_mode' => 0,
+                    'body_len' => 500,
+                    'chd' => '',
                 ),
                 'yt_playlists' => array(),
             ),
@@ -385,6 +413,12 @@ class CriticParser extends AbstractDBWp {
             $active = $type_opt['status'];
             $update_interval = $type_opt['interval'];
             $update_last_time = $type_opt['last_update'];
+        } else if ($type_name == 'arhive') {
+            // Custom options
+            $type_opt = $options[$type_name];
+            $active = $type_opt['status'];
+            $update_interval = $type_opt['interval'];
+            $update_last_time = $type_opt['last_update'];
         } else {
             return $count;
         }
@@ -401,7 +435,7 @@ class CriticParser extends AbstractDBWp {
                     $this->update_campaign_last_update($campaign->id, $currtime);
                 } else {
                     $options[$type_name]['last_update'] = $currtime;
-                    if ($campaign->type == 1) {
+                    if ($type_name == 'yt_urls') {
                         if (!$options[$type_name]['last_update_all']) {
                             $options[$type_name]['last_update_all'] = $currtime;
                         }
@@ -419,8 +453,292 @@ class CriticParser extends AbstractDBWp {
             $count = $this->process_parser($campaign, $force, $debug);
         } else if ($type_name == 'cron_urls' || $type_name == 'yt_urls') {
             $count = $this->proccess_cron_urls($campaign, $force, $debug);
+        } else if ($type_name == 'arhive') {
+            $count = $this->proccess_arhive_urls($campaign, $force, $debug);
         }
         return $count;
+    }
+
+    public function proccess_arhive_urls($campaign = '', $force = false, $debug = false) {
+        $type_name = 'arhive';
+        $options = $this->get_options($campaign);
+        $type_opt = $options[$type_name];
+
+        // Already progress
+        $progress = isset($type_opt['progress']) ? $type_opt['progress'] : 0;
+        $currtime = $this->curr_time();
+        if ($progress && !$force) {
+            // Ignore old last update            
+            $wait = 180; // 3 min
+            if ($currtime < $progress + $wait) {
+                $message = 'Archiving is in progress already.';
+                if ($debug) {
+                    print $message;
+                }
+                $this->log_warn($message, $campaign->id, 0, 6);
+                return 0;
+            }
+        }
+
+        // Update progress
+        $options_upd = array();
+        $options_upd[$type_name]['progress'] = $currtime;
+        $this->update_campaign_options($campaign->id, $options_upd);
+
+
+        // Get posts (last is first)        
+        $urls_count = $type_opt['num'];
+
+        // Random urls
+        $random_urls = $type_opt['random'];
+
+        // Get last urls
+        $status = 0;
+        $count = $this->get_urls_count($status, $campaign->id);
+
+
+        if ($debug) {
+            print "Urls count: " . $count . "\n";
+        }
+
+        if ($count) {
+            $this->get_async_cron($campaign, $type_name);
+        } else {
+            // Campaign done
+            // Status auto-stop
+            $options_upd = array();
+            $options_upd[$type_name]['status'] = 2;
+            $this->update_campaign_options($campaign->id, $options_upd);
+            $message = 'All URLs parsed to arhive';
+            $this->log_info($message, $campaign->id, 0, 6);
+        }
+        return $count;
+    }
+
+    public function get_async_cron($campaign, $type_name = '') {
+        $site_url = get_site_url();
+        $url = $site_url . '/wp-content/plugins/critic_matic/cron/async_cron.php?p=8ggD_23_2D0DSF-F&type=' . $type_name . '&cid=' . $campaign->id;
+
+        $this->send_curl_no_responce($url);
+    }
+
+    /*
+     * Cron async
+     */
+
+    public function run_cron_async($cid = 0, $type_name = '', $debug = false, $custom_url_id = 0) {
+
+        if (!$cid) {
+            return;
+        }
+
+        if ($type_name == 'arhive') {
+            $campaign = $this->get_campaign($cid);
+            $options = $this->get_options($campaign);
+            $type_opt = $options[$type_name];
+            $urls_count = $type_opt['num'];
+
+            // Get last urls in status NEW
+            $status = 0;
+
+            // Random urls
+            $random_urls = $type_opt['random'];
+            $urls = $this->get_last_urls($urls_count, $status, $campaign->id, $random_urls, $debug, $custom_url_id);
+            if ($debug) {
+                print_r($urls);
+            }
+            $count = count((array) $urls);
+
+            if ($debug) {
+                print_r(array('Arhive count' => $count));
+            }
+
+            if ($count) {
+                $this->arhive_urls($campaign, $options, $urls);
+            }
+
+            // TODO Delete garbage
+            // Delete error arhives
+            $del_pea = $type_opt['del_pea'];
+            if ($del_pea == 1) {
+                // Delete arhives witch error posts
+            }
+
+            // Delete error urls
+            $service_opt = $options['service_urls'];
+            $del_pea = $service_opt['del_pea'];
+            if ($del_pea == 1) {
+                // Delete arhives witch error url                
+            }
+
+            return;
+        }
+    }
+
+    private function arhive_urls($campaign, $options, $urls = array(), $expired = false) {
+        $type_name = 'arhive';
+        $type_opt = $options[$type_name];
+        if ($urls) {
+            foreach ($urls as $item) {
+                $this->arhive_url($item, $campaign, $type_opt, $expired);
+            }
+        }
+
+        // Unpaused parsing            
+        $this->start_paused_module($campaign, 'parsing', $options);
+
+        // Remove proggess flag
+        $options_upd = array();
+        $options_upd[$type_name]['progress'] = 0;
+        $this->update_campaign_options($campaign->id, $options_upd);
+    }
+
+    private function start_paused_module($campaign, $module, $options = array()) {
+        $options_upd = array();
+        if (!$options) {
+            $options = $this->get_options($campaign);
+        }
+        if (isset($options[$module])) {
+            $status = $options[$module]['status'];
+            // Update status
+            if ($status == 3) {
+                $options_upd[$module]['status'] = 1;
+            }
+        }
+
+        /*if ($options_upd) {
+            $this->update_campaign_options($campaign->id, $options_upd);
+            $message = 'Module unpaused: ' . $module;
+            $mtype = $this->mp->log_modules[$module] ? $this->mp->log_modules[$module] : 0;
+            $this->mp->log_info($message, $campaign->id, 0, $mtype);
+        }*/
+    }
+
+    private function arhive_url($item, $campaign, $type_opt, $expired = false) {
+
+        /*
+          [id] => 21
+          [cid] => 2
+          [pid] => 0
+          [status] => 0
+          [link_hash] => 3b70b8c52eb19970befb224f69fda669e02c430e
+          [link] => https://www.the-numbers.com/movie/Saphead-The#tab=summary
+         */
+/*
+        //1. Url item exist?
+        $arhive_exist = $this->mp->get_arhive_by_url_id($item->id);
+
+        if ($arhive_exist && !$expired) {
+            return;
+        }
+
+        //2. Parse Url
+        // Status - Parsing
+        $status = 5;
+        $this->mp->change_url_state($item->id, $status, true);
+
+        $url = $item->link;
+        $link_hash = $item->link_hash;
+        $first_letter = substr($link_hash, 0, 1);
+        $settings = $this->ml->get_settings();
+
+
+        // Get posts (last is first)       
+        $code = $this->mp->get_code_by_current_driver($url, $headers, $settings, $type_opt);
+
+        // Validate headers
+        $header_status = $this->mp->get_header_status($headers);
+
+        if ($header_status == 403) {
+            // Status - 403 error
+            $status = 4;
+            $this->mp->change_url_state($item->id, $status, true);
+            $message = 'Error 403 Forbidden';
+            $this->mp->log_error($message, $item->cid, $item->id, 2);
+            return;
+        } else if ($header_status == 500) {
+            // Status - 500 error
+            $status = 4;
+            $this->mp->change_url_state($item->id, $status, true);
+            $message = 'Error 500 Internal Server Error';
+            $this->mp->log_error($message, $item->cid, $item->id, 2);
+            return;
+        } else if ($header_status == 404) {
+            // Status - 404
+            $status = 4;
+            $this->mp->change_url_state($item->id, $status, true);
+            $message = 'Error 404 Not found';
+            $this->mp->log_error($message, $item->cid, $item->id, 2);
+            return;
+        }
+        // Other statuses
+        $error_statuses = array(401, 402, 429);
+        if (in_array($header_status, $error_statuses)) {
+            // Status - 404
+            $status = 4;
+            $this->mp->change_url_state($item->id, $status, true);
+            $message = 'Error ' . $header_status;
+            $this->mp->log_error($message, $item->cid, $item->id, 2);
+            return;
+        }
+
+        if ($code) {
+            // Validate body
+            $valid_body_len = $this->mp->validate_body_len($code, $type_opt['body_len']);
+            if (!$valid_body_len) {
+                $status = 4;
+                $this->mp->change_url_state($item->id, $status, true);
+                $message = 'Error validate body length: ' . strlen($code);
+                $this->mp->log_error($message, $item->cid, $item->id, 2);
+                return;
+            }
+        } else {
+            // Status - error
+            $status = 4;
+            $this->mp->change_url_state($item->id, $status, true);
+            $message = 'Can not get code from URL';
+            $this->mp->log_error($message, $item->cid, $item->id, 2);
+            return;
+        }
+
+        $arhive_path = $this->ml->arhive_path;
+        $cid_path = $arhive_path . $item->cid . '/';
+        $first_letter_path = $cid_path . $first_letter . '/';
+
+        $full_path = $first_letter_path . $link_hash;
+
+
+        $this->mp->check_and_create_dir($first_letter_path);
+
+        if (file_exists($full_path)) {
+            unlink($full_path);
+        }
+
+        // Save code to arhive folder
+        $gzdata = gzencode($code, 9);
+
+        file_put_contents($full_path, $gzdata);
+
+
+        $data = array(
+            'status' => 1
+        );
+        // Add arhive db object
+        if ($arhive_exist) {
+            $this->mp->update_arhive($item);
+            $message = 'Update expired arhive';
+            $this->mp->log_info($message, $item->cid, $item->id, 2);
+            // Update expire state
+            $data['exp_status'] = 2;
+        } else {
+            $message = 'Add arhive';
+            $this->mp->add_arhive($item);
+            $this->mp->log_info($message, $item->cid, $item->id, 2);
+        }
+        // Status - exist
+        $this->mp->update_url($data, $item->id);
+ * 
+ */
     }
 
     public function process_parser($campaign = '', $force = false, $debug = false) {
@@ -1092,20 +1410,25 @@ class CriticParser extends AbstractDBWp {
           `link_hash` varchar(255) NOT NULL default '',
           `link` text default NULL,
          */
-        $sql = sprintf("UPDATE {$this->db['url']} SET                 
-                cid=%d,
-                pid=%d,
-                status=%d,
-                link='%s', 
-                link_hash='%s'              
-                WHERE id = %d", (int) $item->cid, (int) $item->pid, (int) $item->status, $this->escape($item->link), $item->link_hash, (int) $item->id
-        );
-        $this->cm->db_query($sql);
+
+        $data = array();
+        foreach ($item as $key => $value) {
+            if ($key == 'id') {
+                continue;
+            }
+            $data[$key] = $value;
+        }
+        $data['last_upd'] = $this->curr_time();
+
+        $this->cm->db_update($data, $this->db['url'], $item->id);
     }
 
     public function update_url_campaing($id, $cid) {
-        $sql = sprintf("UPDATE {$this->db['url']} SET cid=%d WHERE id = %d", (int) $cid, (int) $id);
-        $this->cm->db_query($sql);
+        $data = array(
+            'cid' => $cid,
+            'last_upd' => $this->curr_time(),
+        );
+        $this->cm->db_update($data, $this->db['url'], $id);
     }
 
     private function get_dom($rule, $match_str, $code) {
@@ -1375,8 +1698,49 @@ class CriticParser extends AbstractDBWp {
     }
 
     public function update_campaign_options($id, $options) {
-        $opt_str = serialize($options);
-        $this->db_query(sprintf("UPDATE {$this->db['campaign']} SET options='%s' WHERE id = %d", $opt_str, (int) $id));
+
+        // 1. Get options
+        $campaign = $this->get_campaign($id, false);
+        $opt_prev = $this->get_options($campaign);
+        $update = false;
+        // 2. Get new options
+        if ($options) {
+            foreach ($options as $key => $value) {
+                if (!isset($opt_prev[$key])) {
+                    $opt_prev[$key] = $value;
+                    $update = true;
+                } else {
+                    if (is_array($opt_prev[$key])) {
+                        // Value with childs
+                        foreach ($options[$key] as $ckey => $cvalue) {
+                            if (!isset($opt_prev[$key][$ckey])) {
+                                // Add child
+                                $opt_prev[$key][$ckey] = $cvalue;
+                                $update = true;
+                            } else {
+                                // Update child
+                                if ($opt_prev[$key][$ckey] != $cvalue) {
+                                    $opt_prev[$key][$ckey] = $cvalue;
+                                    $update = true;
+                                }
+                            }
+                        }
+                    } else {
+                        // String value
+                        if ($opt_prev[$key] != $value) {
+                            $opt_prev[$key] = $value;
+                            $update = true;
+                        }
+                    }
+                }
+            }
+        }
+        if ($update) {
+            // 3. Update options
+            $opt_str = serialize($opt_prev);
+            $sql = sprintf("UPDATE {$this->db['campaign']} SET options='%s' WHERE id = %d", $opt_str, (int) $id);
+            $this->db_query($sql);
+        }
     }
 
     public function get_campaign($id, $cache = false) {
@@ -1424,8 +1788,12 @@ class CriticParser extends AbstractDBWp {
 
     public function campaign_edit_validate($form_state) {
 
-        if (isset($form_state['trash']) || isset($form_state['add_urls']) || isset($form_state['yt_urls']) || isset($form_state['service_urls'])) {
-            // Trash
+
+        if (isset($form_state['title'])) {
+            // Edit
+            if ($form_state['title'] == '') {
+                return __('Enter the title');
+            }
         } else if (isset($form_state['find_urls']) || isset($form_state['cron_urls'])) {
             // Find urls
             if ($form_state['match'] == '') {
@@ -1433,11 +1801,6 @@ class CriticParser extends AbstractDBWp {
             }
             if ($form_state['first'] == '' && $form_state['page'] == '') {
                 return __('Enter the any page');
-            }
-        } else {
-            // Edit
-            if ($form_state['title'] == '') {
-                return __('Enter the title');
             }
         }
 
@@ -2006,6 +2369,80 @@ class CriticParser extends AbstractDBWp {
     }
 
     /*
+     * Arhive urls
+     */
+
+    public function arhive_edit_submit($form_state) {
+        $result = 0;
+
+        if ($form_state['id']) {
+
+            $id = $form_state['id'];
+            $campaign = $this->get_campaign($id);
+            $opt_prev = unserialize($campaign->options);
+
+            $arhive = array(
+                'interval' => isset($form_state['interval']) ? $form_state['interval'] : $opt_prev['arhive']['interval'],
+                'num' => isset($form_state['num']) ? $form_state['num'] : $opt_prev['arhive']['num'],
+                'status' => isset($form_state['status']) ? $form_state['status'] : 0,
+                'proxy' => isset($form_state['proxy']) ? $form_state['proxy'] : 0,
+                'webdrivers' => isset($form_state['webdrivers']) ? $form_state['webdrivers'] : 0,
+                'random' => isset($form_state['random']) ? $form_state['random'] : 0,
+                'del_pea' => isset($form_state['del_pea']) ? $form_state['del_pea'] : 0,
+                'del_pea_int' => isset($form_state['del_pea_int']) ? $form_state['del_pea_int'] : $opt_prev['arhive']['del_pea_int'],
+                'tor_h' => isset($form_state['tor_h']) ? $form_state['tor_h'] : $opt_prev['arhive']['tor_h'],
+                'tor_d' => isset($form_state['tor_d']) ? $form_state['tor_d'] : $opt_prev['arhive']['tor_d'],
+                'tor_mode' => isset($form_state['tor_mode']) ? $form_state['tor_mode'] : $opt_prev['arhive']['tor_mode'],
+                'body_len' => isset($form_state['body_len']) ? $form_state['body_len'] : $opt_prev['arhive']['body_len'],
+                'chd' => isset($form_state['chd']) ? base64_encode(stripslashes($form_state['chd'])) : '',
+            );
+
+            $options = $opt_prev;
+            $options['arhive'] = $arhive;
+
+            $this->update_campaign_options($id, $options);
+            $result = $id;
+        }
+        return $result;
+    }
+
+    public function preview_arhive($url, $campaign, $debug = false) {
+        // Get posts (last is first)      
+        $headers = '';
+        $headers_status = '';
+        $options = $this->get_options($campaign);
+
+        $type_name = 'arhive';
+        $type_opt = $options[$type_name];
+
+        if ($campaign->type == 1) {
+            // Youtube                
+            $id = str_replace($this->youtube_url, '', $url);
+            $ids = array('ids' => array($id));
+            $code = gzdecode($this->yt_listVideos($ids));
+            $headers = "
+in_quota: {$this->yt_in_quota}\n
+error_msg: {$this->yt_error_msg}\n
+            ";
+            $valid_body_len = $this->yt_error_msg ? false : true;
+        } else {
+            // Parser
+            $mp = $this->get_mp();
+            $mp_settings = $mp->get_settings();
+            $code = $mp->get_code_by_current_driver($url, $headers, $mp_settings, $type_opt);
+            $valid_body_len = $mp->validate_body_len($code, $type_opt['body_len']);
+            $headers_status = $mp->get_header_status($headers);
+        }
+
+        $ret['content'] = $code;
+        $ret['headers'] = $headers;
+        $ret['headers_status'] = $headers_status;
+        $ret['valid_body'] = $valid_body_len;
+
+        return $ret;
+    }
+
+    /*
      * URLs
      */
 
@@ -2069,14 +2506,17 @@ class CriticParser extends AbstractDBWp {
             $status = 1;
         }
 
-        $sql = sprintf("INSERT INTO {$this->db['url']} (cid,pid,status,link_hash,link) "
-                . "VALUES ('%d','%d','%d','%s','%s')", (int) $cid, (int) $pid, (int) $status, $link_hash, $this->escape($link));
-
-        $this->cm->db_query($sql);
+        $data = array(
+            'cid' => $cid,
+            'pid' => $pid,
+            'date' => $this->curr_time(),
+            'status' => $status,
+            'link_hash' => $link_hash,
+            'link' => $link,
+        );
 
         // Return id
-        $id = $this->cm->getInsertId('id', $this->db['url']);
-
+        $id = $this->cm->db_insert($data, $this->db['url']);
 
         return $id;
     }
@@ -2191,21 +2631,69 @@ class CriticParser extends AbstractDBWp {
         return $result;
     }
 
-    public function get_last_urls($count = 10, $status = -1, $cid = 0) {
-        $status_trash = 2;
-        $status_query = " WHERE status != " . $status_trash;
-        if ($status != -1) {
-            $status_query = " WHERE status = " . (int) $status;
-        }
+    public function get_last_urls($count = 10, $status = -1, $cid = 0, $random = 0, $debug = false, $custom_url_id = 0) {
 
-        // Company id
-        $cid_and = '';
-        if ($cid > 0) {
-            $cid_and = sprintf(" AND cid=%d", (int) $cid);
-        }
+        if ($custom_url_id > 0) {
+            $query = sprintf("SELECT * FROM {$this->db['url']} WHERE id=%d", $custom_url_id);
+            $result = $this->cm->db_results($query);
+        } else {
 
-        $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " ORDER BY id DESC LIMIT %d", $count);
-        $result = $this->cm->db_results($query);
+            $status_trash = 2;
+            $status_query = " WHERE status != " . $status_trash;
+            if ($status != -1) {
+                $status_query = " WHERE status = " . (int) $status;
+            }
+
+            // Company id
+            $cid_and = '';
+            if ($cid > 0) {
+                $cid_and = sprintf(" AND cid=%d", (int) $cid);
+            }
+
+            if ($random == 1) {
+                if ($debug) {
+                    print "Random URLs\n";
+                }
+                // Get all urls
+                $query = "SELECT id FROM {$this->db['url']}" . $status_query . $cid_and;
+                if ($debug) {
+                    print $query . "\n";
+                }
+                $items = $this->db_results($query);
+                if ($items) {
+                    $ids = array();
+                    foreach ($items as $item) {
+                        $ids[] = $item->id;
+                    }
+                    shuffle($ids);
+                    $i = 1;
+                    $random_ids = array();
+                    foreach ($ids as $id) {
+                        $random_ids[] = $id;
+                        if ($i >= $count) {
+                            break;
+                        }
+                        $i += 1;
+                    }
+                    // Get random urls
+                    $query = "SELECT * FROM {$this->db['url']} WHERE id IN(" . implode(",", $random_ids) . ")";
+                    if ($debug) {
+                        print $query . "\n";
+                    }
+                    $result = $this->db_results($query);
+                }
+            } else {
+
+                $query = sprintf("SELECT * FROM {$this->db['url']}" . $status_query . $cid_and . " ORDER BY id DESC LIMIT %d", $count);
+                $result = $this->cm->db_results($query);
+            }
+        }
+        return $result;
+    }
+
+    public function get_last_url($cid = 0) {
+        $query = sprintf("SELECT link FROM {$this->db['url']} WHERE cid=%d ORDER BY id DESC", $cid);
+        $result = $this->cm->db_get_var($query);
         return $result;
     }
 
@@ -2262,8 +2750,11 @@ class CriticParser extends AbstractDBWp {
         $sql = sprintf("SELECT status FROM {$this->db['url']} WHERE id=%d", $id);
         $old_status = $this->cm->db_get_var($sql);
         if ($old_status != $status) {
-            $sql = sprintf("UPDATE {$this->db['url']} SET status=%d WHERE id=%d", $status, $id);
-            $this->cm->db_query($sql);
+            $data = array(
+                'status' => $status,
+                'last_upd' => $this->curr_time(),
+            );
+            $this->cm->db_update($data, $this->db['url'], $id);
             return true;
         }
         return false;
@@ -2441,342 +2932,342 @@ class CriticParser extends AbstractDBWp {
                     <?php } ?>
                 </tbody>
             </table>    <?php
-        }
-    }
-
-    public function sort_rules_by_weight($rules) {
-        $sort_rules = $rules;
-        if ($rules) {
-            $rules_w = array();
-            foreach ($rules as $key => $value) {
-                $rules_w[$key] = $value['w'];
-            }
-            asort($rules_w);
-            $sort_rules = array();
-            foreach ($rules_w as $key => $value) {
-                $sort_rules[$key] = $rules[$key];
-            }
-        }
-        return $sort_rules;
-    }
-
-    private function rules_form($form_state) {
-        $rule_exists = array();
-
-        $to_remove = isset($form_state['remove_rule']) ? $form_state['remove_rule'] : array();
-
-        // Exists rules
-        foreach ($form_state as $name => $value) {
-            if (strstr($name, 'rule_id_')) {
-                $key = $value;
-                if (in_array($key, $to_remove)) {
-                    continue;
                 }
-                $upd_rule = array(
-                    'r' => base64_encode(stripslashes($form_state['rule_r_' . $key])),
-                    'c' => $form_state['rule_c_' . $key],
-                    'f' => $form_state['rule_f_' . $key],
-                    'a' => $form_state['rule_a_' . $key],
-                    'w' => $form_state['rule_w_' . $key]
-                );
-                $rule_exists[$key] = $upd_rule;
             }
-        }
 
-        // New rule
-        if ($form_state['new_rule_r']) {
-
-            $old_key = 0;
-            if ($rule_exists) {
-                krsort($rule_exists);
-                $old_key = array_key_first($rule_exists);
-            }
-            $new_rule_key = $old_key + 1;
-            $new_rule = array(
-                'r' => base64_encode(stripslashes($form_state['new_rule_r'])),
-                'c' => $form_state['new_rule_c'],
-                'f' => $form_state['new_rule_f'],
-                'a' => $form_state['new_rule_a'],
-                'w' => $form_state['new_rule_w']
-            );
-            $rule_exists[$new_rule_key] = $new_rule;
-        }
-
-        ksort($rule_exists);
-
-        return $rule_exists;
-    }
-
-    private function check_post_rules($rules, $status, $test_post, $all = false) {
-        $check = '';
-        if ($rules && $test_post) {
-            $check = $this->check_post($rules, $test_post, $all);
-            if ($check) {
-                foreach ($check as $key => $action) {
-                    if ($action != $status) {
-                        // Change post status
-                        $status = $action;
-                        break;
+            public function sort_rules_by_weight($rules) {
+                $sort_rules = $rules;
+                if ($rules) {
+                    $rules_w = array();
+                    foreach ($rules as $key => $value) {
+                        $rules_w[$key] = $value['w'];
+                    }
+                    asort($rules_w);
+                    $sort_rules = array();
+                    foreach ($rules_w as $key => $value) {
+                        $sort_rules[$key] = $rules[$key];
                     }
                 }
+                return $sort_rules;
             }
-        }
-        return array('data' => $check, 'status' => $status);
-    }
 
-    public function check_post($rules, $post, $all = false) {
-        $results = array();
-        if ($rules && sizeof($rules)) {
-            $rules_w = $this->sort_rules_by_weight($rules);
-            foreach ($rules_w as $key => $rule) {
-                if ($rule['r']) {
-                    $reg = base64_decode($rule['r']);
-                    $fields = isset($rule['f']) ? $rule['f'] : array();
-                    if ($fields) {
-                        foreach ($fields as $field) {
-                            if (isset($post[$field])) {
-                                $content = $post[$field];
-                                $match = preg_match($reg, $content);
-                                $condition = isset($rule['c']) && $rule['c'] == 1 ? true : false;
-                                $result = -1;
-                                if ($match && $condition) {
-                                    $result = $rule['a'];
-                                } else if (!$match && !$condition) {
-                                    $result = $rule['a'];
+            private function rules_form($form_state) {
+                $rule_exists = array();
+
+                $to_remove = isset($form_state['remove_rule']) ? $form_state['remove_rule'] : array();
+
+                // Exists rules
+                foreach ($form_state as $name => $value) {
+                    if (strstr($name, 'rule_id_')) {
+                        $key = $value;
+                        if (in_array($key, $to_remove)) {
+                            continue;
+                        }
+                        $upd_rule = array(
+                            'r' => base64_encode(stripslashes($form_state['rule_r_' . $key])),
+                            'c' => $form_state['rule_c_' . $key],
+                            'f' => $form_state['rule_f_' . $key],
+                            'a' => $form_state['rule_a_' . $key],
+                            'w' => $form_state['rule_w_' . $key]
+                        );
+                        $rule_exists[$key] = $upd_rule;
+                    }
+                }
+
+                // New rule
+                if ($form_state['new_rule_r']) {
+
+                    $old_key = 0;
+                    if ($rule_exists) {
+                        krsort($rule_exists);
+                        $old_key = array_key_first($rule_exists);
+                    }
+                    $new_rule_key = $old_key + 1;
+                    $new_rule = array(
+                        'r' => base64_encode(stripslashes($form_state['new_rule_r'])),
+                        'c' => $form_state['new_rule_c'],
+                        'f' => $form_state['new_rule_f'],
+                        'a' => $form_state['new_rule_a'],
+                        'w' => $form_state['new_rule_w']
+                    );
+                    $rule_exists[$new_rule_key] = $new_rule;
+                }
+
+                ksort($rule_exists);
+
+                return $rule_exists;
+            }
+
+            private function check_post_rules($rules, $status, $test_post, $all = false) {
+                $check = '';
+                if ($rules && $test_post) {
+                    $check = $this->check_post($rules, $test_post, $all);
+                    if ($check) {
+                        foreach ($check as $key => $action) {
+                            if ($action != $status) {
+                                // Change post status
+                                $status = $action;
+                                break;
+                            }
+                        }
+                    }
+                }
+                return array('data' => $check, 'status' => $status);
+            }
+
+            public function check_post($rules, $post, $all = false) {
+                $results = array();
+                if ($rules && sizeof($rules)) {
+                    $rules_w = $this->sort_rules_by_weight($rules);
+                    foreach ($rules_w as $key => $rule) {
+                        if ($rule['r']) {
+                            $reg = base64_decode($rule['r']);
+                            $fields = isset($rule['f']) ? $rule['f'] : array();
+                            if ($fields) {
+                                foreach ($fields as $field) {
+                                    if (isset($post[$field])) {
+                                        $content = $post[$field];
+                                        $match = preg_match($reg, $content);
+                                        $condition = isset($rule['c']) && $rule['c'] == 1 ? true : false;
+                                        $result = -1;
+                                        if ($match && $condition) {
+                                            $result = $rule['a'];
+                                        } else if (!$match && !$condition) {
+                                            $result = $rule['a'];
+                                        }
+                                        if ($result >= 0) {
+                                            $results[$key] = $result;
+                                            break;
+                                        }
+                                    }
                                 }
-                                if ($result >= 0) {
-                                    $results[$key] = $result;
-                                    break;
+                            }
+                        }
+                        if (!$all && $results) {
+                            break;
+                        }
+                    }
+                }
+
+                return $results;
+            }
+
+            /*
+             * Rules parser
+             */
+
+            public function sort_reg_rules_by_weight($rules) {
+                $sort_rules = $rules;
+                if ($rules) {
+                    $rules_w = array();
+                    foreach ($rules as $key => $value) {
+                        $rules_w[$key] = $value['w'];
+                    }
+                    asort($rules_w);
+                    $sort_rules = array();
+                    foreach ($this->parser_rules_fields as $id => $item) {
+                        foreach ($rules_w as $key => $value) {
+                            if ($rules[$key]['f'] == $id) {
+                                $sort_rules[$key] = $this->get_valid_parser_rule($rules[$key]);
+                            }
+                        }
+                    }
+                }
+                return $sort_rules;
+            }
+
+            public function get_valid_parser_rule($rule) {
+                foreach ($this->def_reg_rule as $key => $value) {
+                    if (!isset($rule[$key])) {
+                        $rule[$key] = $value;
+                    }
+                }
+
+                return $rule;
+            }
+
+            public function check_reg_post($rules, $content, $rule_type = '', $link = '') {
+                $results = array();
+                $rule_type_exist = 0;
+                if ($rules && sizeof($rules)) {
+                    $rules_w = $this->sort_reg_rules_by_weight($rules);
+
+                    /*
+                     * (
+                      [f] => a
+                      [t] => x
+                      [r] => Ly9kaXZbQGNsYXNzPSdhcnRpY2xlLWhlYWRlcl9fbWV0YS1hdXRob3ItY29udGFpbmVyJ10vYQ==
+                      [m] =>
+                      [c] =>
+                      [w] => 0
+                      [a] => 1
+                      )
+                     */
+
+                    $clear_content = array();
+                    foreach ($this->parser_rules_fields as $type => $title) {
+                        if ($rule_type && $type != $rule_type) {
+                            continue;
+                        }
+                        $i = 0;
+                        foreach ($rules_w as $key => $rule) {
+                            // Clear content logic
+                            $data_field = isset($rule['d']) ? $rule['d'] : 'r';
+                            if ($data_field == 'r') {
+                                $rule_content = $content;
+                            } else {
+                                // Get clear content
+                                if (!$clear_content) {
+                                    // $content = force_balance_tags($content);
+                                    $clear_content = $this->clear_read($link, $content);
+                                }
+                                if ($data_field == 'ca') {
+                                    $rule_content = isset($clear_content['author']) ? $clear_content['author'] : '';
+                                } else if ($data_field == 'ct') {
+                                    $rule_content = isset($clear_content['title']) ? $clear_content['title'] : '';
+                                } else if ($data_field == 'cc') {
+                                    $rule_content = isset($clear_content['content']) ? $clear_content['content'] : '';
+                                }
+                            }
+
+                            if ($type == $rule['f']) {
+                                if ($rule['a'] != 1) {
+                                    continue;
+                                }
+                                if ($rule['n'] == 1) {
+                                    $i += 1;
+                                }
+
+                                if (!isset($results[$type][$i])) {
+                                    $results[$type][$i] = $rule_content;
+                                }
+                                $results[$type][$i] = $this->use_reg_rule($rule, $results[$type][$i]);
+
+                                if ($rule_type && $rule_type == $type) {
+                                    $rule_type_exist = 1;
                                 }
                             }
                         }
                     }
                 }
-                if (!$all && $results) {
-                    break;
+
+                //implode results
+                $ret = array();
+                foreach ($results as $type => $items) {
+                    $ret[$type] = implode('', $items);
                 }
+
+                if ($rule_type && $rule_type_exist == 0) {
+                    $ret[$rule_type] = $content;
+                }
+
+                return $ret;
             }
-        }
 
-        return $results;
-    }
-
-    /*
-     * Rules parser
-     */
-
-    public function sort_reg_rules_by_weight($rules) {
-        $sort_rules = $rules;
-        if ($rules) {
-            $rules_w = array();
-            foreach ($rules as $key => $value) {
-                $rules_w[$key] = $value['w'];
-            }
-            asort($rules_w);
-            $sort_rules = array();
-            foreach ($this->parser_rules_fields as $id => $item) {
-                foreach ($rules_w as $key => $value) {
-                    if ($rules[$key]['f'] == $id) {
-                        $sort_rules[$key] = $this->get_valid_parser_rule($rules[$key]);
+            public function check_reg_post_yt($rules, $item) {
+                /*
+                  $item = array(
+                  'u' => $link,
+                  'd' => $desc,
+                  't' => $title,
+                  );
+                 */
+                foreach ($item as $key => $content) {
+                    if ($key == 'u') {
+                        continue;
                     }
+                    $check_key = $this->check_reg_post($rules, $content, $key);
+                    $item[$key] = $check_key[$key];
                 }
+                return $item;
             }
-        }
-        return $sort_rules;
-    }
 
-    public function get_valid_parser_rule($rule) {
-        foreach ($this->def_reg_rule as $key => $value) {
-            if (!isset($rule[$key])) {
-                $rule[$key] = $value;
-            }
-        }
+            private function use_reg_rule($rule, $content) {
+                $reg = base64_decode($rule['r']);
 
-        return $rule;
-    }
-
-    public function check_reg_post($rules, $content, $rule_type = '', $link = '') {
-        $results = array();
-        $rule_type_exist = 0;
-        if ($rules && sizeof($rules)) {
-            $rules_w = $this->sort_reg_rules_by_weight($rules);
-
-            /*
-             * (
-              [f] => a
-              [t] => x
-              [r] => Ly9kaXZbQGNsYXNzPSdhcnRpY2xlLWhlYWRlcl9fbWV0YS1hdXRob3ItY29udGFpbmVyJ10vYQ==
-              [m] =>
-              [c] =>
-              [w] => 0
-              [a] => 1
-              )
-             */
-
-            $clear_content = array();
-            foreach ($this->parser_rules_fields as $type => $title) {
-                if ($rule_type && $type != $rule_type) {
-                    continue;
+                if ($rule['t'] == 'x') {
+                    $content = $this->get_dom($reg, $rule['m'], $content);
+                } else if ($rule['t'] == 'm') {
+                    $content = $this->get_reg_match($reg, $rule['m'], $content);
+                } else if ($rule['t'] == 'r') {
+                    $content = $this->get_reg($reg, $rule['m'], $content);
                 }
-                $i = 0;
-                foreach ($rules_w as $key => $rule) {
-                    // Clear content logic
-                    $data_field = isset($rule['d']) ? $rule['d'] : 'r';
-                    if ($data_field == 'r') {
-                        $rule_content = $content;
-                    } else {
-                        // Get clear content
-                        if (!$clear_content) {
-                            // $content = force_balance_tags($content);
-                            $clear_content = $this->clear_read($link, $content);
-                        }
-                        if ($data_field == 'ca') {
-                            $rule_content = isset($clear_content['author']) ? $clear_content['author'] : '';
-                        } else if ($data_field == 'ct') {
-                            $rule_content = isset($clear_content['title']) ? $clear_content['title'] : '';
-                        } else if ($data_field == 'cc') {
-                            $rule_content = isset($clear_content['content']) ? $clear_content['content'] : '';
-                        }
-                    }
 
-                    if ($type == $rule['f']) {
-                        if ($rule['a'] != 1) {
+                return $content;
+            }
+
+            private function parser_rules_form($form_state) {
+                $rule_exists = array();
+
+                $to_remove = isset($form_state['remove_reg_rule']) ? $form_state['remove_reg_rule'] : array();
+
+                // Exists rules
+                foreach ($form_state as $name => $value) {
+                    if (strstr($name, 'rule_reg_id_')) {
+                        $key = $value;
+                        if (in_array($key, $to_remove)) {
                             continue;
                         }
-                        if ($rule['n'] == 1) {
-                            $i += 1;
-                        }
-
-                        if (!isset($results[$type][$i])) {
-                            $results[$type][$i] = $rule_content;
-                        }
-                        $results[$type][$i] = $this->use_reg_rule($rule, $results[$type][$i]);
-
-                        if ($rule_type && $rule_type == $type) {
-                            $rule_type_exist = 1;
-                        }
+                        $upd_rule = array(
+                            'f' => $form_state['rule_reg_f_' . $key],
+                            't' => $form_state['rule_reg_t_' . $key],
+                            'r' => base64_encode(stripslashes($form_state['rule_reg_r_' . $key])),
+                            'm' => $form_state['rule_reg_m_' . $key],
+                            'c' => $form_state['rule_reg_c_' . $key],
+                            'w' => $form_state['rule_reg_w_' . $key],
+                            'a' => $form_state['rule_reg_a_' . $key],
+                            'n' => $form_state['rule_reg_n_' . $key],
+                            'd' => $form_state['rule_reg_d_' . $key]
+                        );
+                        $rule_exists[$key] = $upd_rule;
                     }
                 }
-            }
-        }
 
-        //implode results
-        $ret = array();
-        foreach ($results as $type => $items) {
-            $ret[$type] = implode('', $items);
-        }
+                // New rule
+                if ($form_state['reg_new_rule_r'] || $form_state['reg_new_rule_t'] == 'n') {
 
-        if ($rule_type && $rule_type_exist == 0) {
-            $ret[$rule_type] = $content;
-        }
-
-        return $ret;
-    }
-
-    public function check_reg_post_yt($rules, $item) {
-        /*
-          $item = array(
-          'u' => $link,
-          'd' => $desc,
-          't' => $title,
-          );
-         */
-        foreach ($item as $key => $content) {
-            if ($key == 'u') {
-                continue;
-            }
-            $check_key = $this->check_reg_post($rules, $content, $key);
-            $item[$key] = $check_key[$key];
-        }
-        return $item;
-    }
-
-    private function use_reg_rule($rule, $content) {
-        $reg = base64_decode($rule['r']);
-
-        if ($rule['t'] == 'x') {
-            $content = $this->get_dom($reg, $rule['m'], $content);
-        } else if ($rule['t'] == 'm') {
-            $content = $this->get_reg_match($reg, $rule['m'], $content);
-        } else if ($rule['t'] == 'r') {
-            $content = $this->get_reg($reg, $rule['m'], $content);
-        }
-
-        return $content;
-    }
-
-    private function parser_rules_form($form_state) {
-        $rule_exists = array();
-
-        $to_remove = isset($form_state['remove_reg_rule']) ? $form_state['remove_reg_rule'] : array();
-
-        // Exists rules
-        foreach ($form_state as $name => $value) {
-            if (strstr($name, 'rule_reg_id_')) {
-                $key = $value;
-                if (in_array($key, $to_remove)) {
-                    continue;
+                    $old_key = 0;
+                    if ($rule_exists) {
+                        krsort($rule_exists);
+                        $old_key = array_key_first($rule_exists);
+                    }
+                    $new_rule_key = $old_key + 1;
+                    $new_rule = array(
+                        'f' => $form_state['reg_new_rule_f'],
+                        't' => $form_state['reg_new_rule_t'],
+                        'r' => base64_encode(stripslashes($form_state['reg_new_rule_r'])),
+                        'm' => $form_state['reg_new_rule_m'],
+                        'c' => $form_state['reg_new_rule_c'],
+                        'w' => $form_state['reg_new_rule_w'],
+                        'a' => $form_state['reg_new_rule_a'],
+                        'n' => $form_state['reg_new_rule_n'],
+                        'd' => $form_state['reg_new_rule_d']
+                    );
+                    $rule_exists[$new_rule_key] = $new_rule;
                 }
-                $upd_rule = array(
-                    'f' => $form_state['rule_reg_f_' . $key],
-                    't' => $form_state['rule_reg_t_' . $key],
-                    'r' => base64_encode(stripslashes($form_state['rule_reg_r_' . $key])),
-                    'm' => $form_state['rule_reg_m_' . $key],
-                    'c' => $form_state['rule_reg_c_' . $key],
-                    'w' => $form_state['rule_reg_w_' . $key],
-                    'a' => $form_state['rule_reg_a_' . $key],
-                    'n' => $form_state['rule_reg_n_' . $key],
-                    'd' => $form_state['rule_reg_d_' . $key]
-                );
-                $rule_exists[$key] = $upd_rule;
-            }
-        }
 
-        // New rule
-        if ($form_state['reg_new_rule_r'] || $form_state['reg_new_rule_t'] == 'n') {
+                ksort($rule_exists);
 
-            $old_key = 0;
-            if ($rule_exists) {
-                krsort($rule_exists);
-                $old_key = array_key_first($rule_exists);
-            }
-            $new_rule_key = $old_key + 1;
-            $new_rule = array(
-                'f' => $form_state['reg_new_rule_f'],
-                't' => $form_state['reg_new_rule_t'],
-                'r' => base64_encode(stripslashes($form_state['reg_new_rule_r'])),
-                'm' => $form_state['reg_new_rule_m'],
-                'c' => $form_state['reg_new_rule_c'],
-                'w' => $form_state['reg_new_rule_w'],
-                'a' => $form_state['reg_new_rule_a'],
-                'n' => $form_state['reg_new_rule_n'],
-                'd' => $form_state['reg_new_rule_d']
-            );
-            $rule_exists[$new_rule_key] = $new_rule;
-        }
-
-        ksort($rule_exists);
-
-        return $rule_exists;
-    }
-
-    public function show_parser_rules($rules = array(), $edit = true, $type = 0, $check = array()) {
-        if ($rules || $edit) {
-            $rules = $this->sort_reg_rules_by_weight($rules);
-            $disabled = '';
-
-            $parser_rules_fields = $this->parser_rules_fields;
-            if ($type == 1) {
-                unset($parser_rules_fields['a']);
-                unset($parser_rules_fields['y']);
+                return $rule_exists;
             }
 
-            $data_fields = $this->parser_data_fields;
+            public function show_parser_rules($rules = array(), $edit = true, $type = 0, $check = array()) {
+                if ($rules || $edit) {
+                    $rules = $this->sort_reg_rules_by_weight($rules);
+                    $disabled = '';
 
-            if (!$edit) {
-                $disabled = ' disabled ';
-                $title = __('Rules parser');
-                ?>
+                    $parser_rules_fields = $this->parser_rules_fields;
+                    if ($type == 1) {
+                        unset($parser_rules_fields['a']);
+                        unset($parser_rules_fields['y']);
+                    }
+
+                    $data_fields = $this->parser_data_fields;
+
+                    if (!$edit) {
+                        $disabled = ' disabled ';
+                        $title = __('Rules parser');
+                        ?>
                 <h2><?php print $title ?></h2>            
             <?php } ?>
             <table id="rules" class="wp-list-table widefat striped table-view-list">
@@ -2972,780 +3463,787 @@ class CriticParser extends AbstractDBWp {
                     <?php } ?>
                 </tbody>
             </table>    <?php
-        }
-    }
-
-    public function show_check($check) {
-        $ret = '';
-        if ($check['data']) {
-            foreach ($check['data'] as $key => $value) {
-                $ret = 'Result: <b>' . $this->rules_actions[$value] . '</b>. Rule id: ' . $key;
-                break;
-            }
-        }
-        return $ret;
-    }
-
-    public function find_movies_queue($ids) {
-        $ret = false;
-        if ($ids) {
-            // get options
-            $opt_key = 'feed_matic_search_ids';
-            $ids_str = $this->get_option($opt_key, '');
-            $opt_ids = array();
-            if ($ids_str) {
-                $opt_ids = unserialize($ids_str);
+                }
             }
 
-            foreach ($ids as $id) {
-                $url = $this->get_url($id);
-                if ($url->pid) {
-                    if (!in_array($url->pid, $opt_ids)) {
-                        $opt_ids[] = $url->pid;
-                        $ret = true;
+            public function show_check($check) {
+                $ret = '';
+                if ($check['data']) {
+                    foreach ($check['data'] as $key => $value) {
+                        $ret = 'Result: <b>' . $this->rules_actions[$value] . '</b>. Rule id: ' . $key;
+                        break;
                     }
                 }
+                return $ret;
             }
-            if ($ret) {
-                $ids_str = serialize($opt_ids);
-                $this->update_option($opt_key, $ids_str);
-            }
-        }
 
-        return $ret;
-    }
-
-    private function append_id($id) {
-        // Append a new id to search queue
-        $opt_key = 'feed_matic_search_ids';
-        $ids_str = $this->get_option($opt_key, '');
-        $ids = array();
-        if ($ids_str) {
-            $ids = unserialize($ids_str);
-        }
-        if (!in_array($id, $ids)) {
-            $ids[] = $id;
-            $ids_str = serialize($ids);
-            $this->update_option($opt_key, $ids_str);
-        }
-    }
-
-    public function url_update_link_hash($id, $link) {
-        if ($link) {
-            $link_hash = $this->link_hash($link);
-            $sql = sprintf("UPDATE {$this->db['url']} SET link_hash='%s' WHERE id=%d", $link_hash, (int) $id);
-            $this->cm->db_query($sql);
-            return $link_hash;
-        }
-        return '';
-    }
-
-    public function update_dublicate_post($item) {
-        // UNUSED
-        $link_post = $this->cm->get_post_by_link_hash_type($item->link_hash, array(), array(3));
-        $link_post_parser = $this->cm->get_post_by_link_hash_type($item->link_hash, array(3), array());
-        if ($link_post) {
-            $item_type = $this->cm->get_post_type($link_post->type);
-            print 'Other:' . $item_type;
-        }
-        if ($link_post_parser) {
-            $item_type = $this->cm->get_post_type($link_post_parser->type);
-            if ($link_post) {
-                // remove dublicate post
-                if ($link_post_parser->status != 2) {
-                    print ' Trash dublicate - ';
-                    $this->cm->trash_post_by_id($link_post_parser->id);
-                }
-                // change url status
-                if ($item->status == 5) {
-                    print ' Update URL ';
-                    $new_item = $item;
-                    // exist
-                    $new_item->status = 1;
-                    $new_item->pid = $link_post->id;
-                    $this->update_url($new_item);
-                }
-            }
-            print 'Parser:' . $item_type;
-        }
-    }
-
-    /*
-     * Log
-     * message - string
-     * cid - campaign id
-     * type:
-      0 => 'Info',
-      1 => 'Warning',
-      2 => 'Error'
-
-      status:
-      0 => 'Ignore post',
-      1 => 'Add post',
-      2 => 'Error',
-      3 => 'Auto stop',
-      4 => 'Done',
-      5 => 'Add URLs',
-     */
-
-    public function log($message, $cid = 0, $uid = 0, $type = 0, $status = 0) {
-        $time = $this->curr_time();
-        $this->db_query(sprintf("INSERT INTO {$this->db['log']} (date, cid, uid, type, status, message) VALUES (%d, %d, %d, %d, %d, '%s')", $time, $cid, $uid, $type, $status, $this->escape($message)));
-    }
-
-    public function get_log($page = 1, $cid = 0, $uid = 0, $status = -1, $type = -1, $perpage = 30) {
-        $page -= 1;
-        $start = $page * $perpage;
-
-        $limit = '';
-        if ($perpage > 0) {
-            $limit = " LIMIT $start, " . $perpage;
-        }
-        $and_cid = '';
-        if ($cid) {
-            $and_cid = sprintf(" AND cid=%d", (int) $cid);
-        }
-
-        $and_uid = '';
-        if ($uid) {
-            $and_uid = sprintf(" AND uid=%d", (int) $uid);
-        }
-
-        $and_status = '';
-        if ($status != -1) {
-            $and_status = sprintf(" AND status=%d", (int) $status);
-        }
-
-        $and_type = '';
-        if ($type != -1) {
-            $and_type = sprintf(" AND type=%d", (int) $type);
-        }
-
-        $order = " ORDER BY id DESC";
-        $sql = sprintf("SELECT id, date, cid, uid, type, status, message FROM {$this->db['log']} WHERE id>0" . $and_cid . $and_uid . $and_status . $and_type . $order . $limit);
-
-        $result = $this->db_results($sql);
-
-        return $result;
-    }
-
-    public function get_log_count($cid = 0, $status = -1, $type = -1) {
-
-        $and_cid = '';
-        if ($cid) {
-            $and_cid = sprintf(" AND cid=%d", (int) $cid);
-        }
-
-        $and_status = '';
-        if ($status != -1) {
-            $and_status = sprintf(" AND status=%d", (int) $status);
-        }
-
-        $and_type = '';
-        if ($type != -1) {
-            $and_type = sprintf(" AND type=%d", (int) $type);
-        }
-
-        $query = "SELECT COUNT(id) FROM {$this->db['log']} WHERE id>0" . $and_cid . $and_status . $and_type;
-
-        $result = $this->db_get_var($query);
-        return $result;
-    }
-
-    public function get_last_log($url_id = 0, $parser_id = 0) {
-
-        $and_uid = '';
-        if ($url_id > 0) {
-            $and_uid = sprintf(' AND uid=%d', $url_id);
-        }
-
-        $and_cid = '';
-        if ($parser_id > 0) {
-            $and_cid = sprintf(' AND cid=%d', $parser_id);
-        }
-
-        $query = sprintf("SELECT type, status, message FROM {$this->db['log']} WHERE id>0" . $and_uid . $and_cid . " ORDER BY id DESC", $url_id);
-        $result = $this->db_fetch_row($query);
-        $str = '';
-        if ($result) {
-            $str = $this->get_log_type($result->type) . ': ' . $this->get_log_status($result->status);
-            if ($result->message) {
-                $str = $str . ' | ' . $result->message;
-            }
-        }
-        return $str;
-    }
-
-    /*
-      0 => 'Other',
-      1 => 'Find URLs',
-      3 => 'Parsing',
-     */
-
-    public function log_info($message, $cid, $uid, $status) {
-        $this->log($message, $cid, $uid, 0, $status);
-    }
-
-    public function log_warn($message, $cid, $uid, $status) {
-        $this->log($message, $cid, $uid, 1, $status);
-    }
-
-    public function log_error($message, $cid, $uid, $status) {
-        $this->log($message, $cid, $uid, 2, $status);
-    }
-
-    public function get_log_type($type) {
-        return isset($this->log_type[$type]) ? $this->log_type[$type] : 'None';
-    }
-
-    public function get_log_status($type) {
-        return isset($this->log_status[$type]) ? $this->log_status[$type] : 'None';
-    }
-
-    public function log_campaign_add_urls($message, $cid) {
-        $this->log($message, $cid, 0, 0, 5);
-    }
-
-    public function get_post_log_status($cid = 0) {
-
-        $count = $this->get_log_count($cid);
-        $states = array(
-            '-1' => array(
-                'title' => 'All',
-                'count' => $count
-            )
-        );
-        foreach ($this->log_status as $key => $value) {
-            $states[$key] = array(
-                'title' => $value,
-                'count' => $this->get_log_count($cid, $key));
-        }
-        return $states;
-    }
-
-    public function get_post_log_types($cid = 0, $status = -1) {
-
-        $count = $this->get_log_count($cid, $status);
-        $states = array(
-            '-1' => array(
-                'title' => 'All',
-                'count' => $count
-            )
-        );
-        foreach ($this->log_type as $key => $value) {
-            $states[$key] = array(
-                'title' => $value,
-                'count' => $this->get_log_count($cid, $status, $key));
-        }
-        return $states;
-    }
-
-    public function clear_all_logs() {
-        $sql = "DELETE FROM {$this->db['log']} WHERE id>0";
-        $this->db_query($sql);
-    }
-
-    public function clear_read($url, $content = '', $proxy = '') {
-        if (!$content) {
-            $content = $this->get_proxy($url, $proxy, $header);
-        }
-
-        $result = false;
-        $ret = array();
-
-        if ($content) {
-            // $content = "<body>Look at this cat: <img src='./cat.jpg'> 123 <img src=x onerror=alert(1)//></body>";
-            // TODO move service and pass to options
-            $pass = 'sdDclSPMF_32sd-s';
-            $service = 'http://148.251.54.53:8980/';
-
-            $data = array('p' => $pass, 'u' => $url, 'c' => $content);
-
-            // use key 'http' even if you send the request to https://...
-            $options = array(
-                'http' => array(
-                    'header' => "Content-type: application/x-www-form-urlencoded\r\n",
-                    'method' => 'POST',
-                    'content' => http_build_query($data)
-                )
-            );
-            $context = stream_context_create($options);
-            $result = file_get_contents($service, false, $context);
-        }
-
-        if ($result) {
-            $result_data = json_decode($result);
-
-            if ($result_data) {
-                $ret = array('title' => $result_data->title, 'author' => $result_data->author, 'content' => $result_data->content);
-            }
-        }
-
-        return $ret;
-    }
-
-    /*
-     * Youtube API
-     */
-
-    public function yt_video_data($url) {
-
-        $keyword = $url;
-        //Get youtube urls
-        if ((strstr($keyword, 'youtube') || strstr($keyword, 'youtu.be'))) {
-            if (preg_match('#//www\.youtube\.com/embed/([a-zA-Z0-9\-_]+)#', $keyword, $match) ||
-                    preg_match('#//(?:www\.|)youtube\.com/(?:v/|watch\?v=|watch\?.*v=|embed/)([a-zA-Z0-9\-_]+)#', $keyword, $match) ||
-                    preg_match('#//youtu\.be/([a-zA-Z0-9\-_]+)#', $keyword, $match)) {
-                if (count($match) > 1) {
-                    $video_id = $match[1];
-                }
-            }
-        }
-
-        $ret = array();
-
-        if ($video_id) {
-            $result = $this->find_youtube_data_api(array($video_id));
-            if (isset($result[$video_id])) {
-                $ret = $result[$video_id];
-            }
-        }
-
-        return $ret;
-    }
-
-    public function yt_total_posts($options) {
-
-        $total = -1;
-        $cid = base64_decode($options['yt_page']);
-        $cnt = 5;
-
-        $playlists_checked = $options['yt_playlists'] ? $options['yt_playlists'] : array();
-
-        if ($cid) {
-            try {
-                if (!$playlists_checked) {
-                    // All posts
-                    $responce = $this->youtube_get_videos($cid, $cnt);
-                    if ($this->yt_in_quota && $responce) {
-                        $total = $responce->pageInfo->totalResults;
+            public function find_movies_queue($ids) {
+                $ret = false;
+                if ($ids) {
+                    // get options
+                    $opt_key = 'feed_matic_search_ids';
+                    $ids_str = $this->get_option($opt_key, '');
+                    $opt_ids = array();
+                    if ($ids_str) {
+                        $opt_ids = unserialize($ids_str);
                     }
-                } else {
-                    $total_arr = array();
-                    foreach ($playlists_checked as $play_list_id) {
-                        $item = $this->youtube_get_playlist_videos($play_list_id, $cnt);
 
-                        if ($this->yt_in_quota && $item) {
-                            $total_arr[] = $item->pageInfo->totalResults;
+                    foreach ($ids as $id) {
+                        $url = $this->get_url($id);
+                        if ($url->pid) {
+                            if (!in_array($url->pid, $opt_ids)) {
+                                $opt_ids[] = $url->pid;
+                                $ret = true;
+                            }
                         }
                     }
-                    $total = implode(', ', $total_arr);
-                }
-            } catch (Exception $exc) {
-                print $exc->getTraceAsString();
-            }
-        }
-        return $total;
-    }
-
-    public function yt_playlists_select($options) {
-        $ret = array();
-        $playlists = $this->yt_get_playlists($options);
-        if ($this->yt_in_quota && $playlists->items) {
-            foreach ($playlists->items as $item) {
-                $ret[$item->id] = $item->snippet->title;
-            }
-        }
-        return $ret;
-    }
-
-    public function yt_get_playlists($options) {
-
-        $playlists = array();
-        $cid = base64_decode($options['yt_page']);
-        $cnt = 50;
-
-        if ($cid) {
-            try {
-                $playlists = $this->youtube_get_playlists($cid, $cnt);
-            } catch (Exception $exc) {
-                print $exc->getTraceAsString();
-            }
-        }
-        return $playlists;
-    }
-
-    public function youtube_get_videos($cid = 0, $count = 50, $pageToken = '') {
-        if (!$cid) {
-            return;
-        }
-        $arg = array();
-        $arg['cid'] = $cid;
-        $arg['count'] = $count;
-        if ($pageToken) {
-            $arg['pageToken'] = $pageToken;
-        }
-
-        $filename = "ls-$cid-$count-$pageToken";
-        $str = ThemeCache::cache('yt_listSearch', false, $filename, 'def', $this, $arg);
-        $responce = json_decode(gzdecode($str));
-
-        return $responce;
-    }
-
-    public function youtube_get_playlist_videos($play_list_id = 0, $count = 50, $pageToken = '') {
-        if (!$play_list_id) {
-            return;
-        }
-        $arg = array();
-        $arg['pid'] = $play_list_id;
-        $arg['count'] = $count;
-        if ($pageToken) {
-            $arg['pageToken'] = $pageToken;
-        }
-
-        $filename = "lps-$play_list_id-$count-$pageToken";
-        $str = ThemeCache::cache('yt_playlistItems', false, $filename, 'def', $this, $arg);
-        $responce = json_decode(gzdecode($str));
-
-        return $responce;
-    }
-
-    public function youtube_get_playlists($cid = 0, $count = 50) {
-        if (!$cid) {
-            return;
-        }
-        $arg = array();
-        $arg['cid'] = $cid;
-        $arg['count'] = $count;
-
-        $filename = "lp-$cid-$count";
-        $str = ThemeCache::cache('yt_playlists', false, $filename, 'def', $this, $arg);
-        $responce = json_decode(gzdecode($str));
-
-        return $responce;
-    }
-
-    public function youtube_get_channel_info($cid = 0) {
-        if (!$cid) {
-            return;
-        }
-        $arg = array();
-        $arg['cid'] = $cid;
-
-        $filename = "yci-$cid";
-        $str = ThemeCache::cache('yt_channel_info', false, $filename, 'def', $this, $arg);
-        $responce = json_decode(gzdecode($str));
-
-        return $responce;
-    }
-
-    public function find_youtube_data_api($ids, $debug = false) {
-        if (!$ids) {
-            return;
-        }
-
-        $arg = array();
-        $arg['ids'] = $ids;
-
-        $id_name = md5(implode('-', $ids));
-        $filename = "lv-$id_name";
-        $str = ThemeCache::cache('yt_listVideos', false, $filename, 'def', $this, $arg);
-        $response = json_decode(gzdecode($str));
-
-        if ($debug) {
-            print_r($response);
-        }
-
-        $ret = array();
-        if ($response && isset($response->items)) {
-            foreach ($response->items as $item) {
-                $ret[$item->id] = $item->snippet;
-            }
-        }
-
-        return $ret;
-    }
-
-    public function yt_listSearch($arg = array()) {
-        $service = $this->init_gs();
-
-        $queryParams = array(
-            'channelId' => $arg['cid'],
-            'maxResults' => $arg['count'],
-            'order' => 'date',
-            'type' => 'video'
-        );
-
-        if ($arg['pageToken']) {
-            $queryParams['pageToken'] = $arg['pageToken'];
-        }
-
-        try {
-            $response = $service->search->listSearch('snippet', $queryParams);
-        } catch (Exception $exc) {
-            $message = $exc->getMessage();
-            $this->log_error($message, $arg['cid'], 0, 3);
-            $response = array();
-            $this->yt_in_quota = false;
-            $this->yt_error_msg = $message;
-        }
-        return gzencode(json_encode($response));
-    }
-
-    public function yt_playlistItems($arg = array()) {
-        $service = $this->init_gs();
-
-        $queryParams = array(
-            'playlistId' => $arg['pid'],
-            'maxResults' => $arg['count'],
-        );
-
-        if ($arg['pageToken']) {
-            $queryParams['pageToken'] = $arg['pageToken'];
-        }
-
-        try {
-            $response = $service->playlistItems->listPlaylistItems('snippet', $queryParams);
-        } catch (Exception $exc) {
-            $message = $exc->getMessage();
-            $this->log_error($message, $arg['cid'], 0, 3);
-            $response = array();
-            $this->yt_in_quota = false;
-            $this->yt_error_msg = $message;
-        }
-        return gzencode(json_encode($response));
-    }
-
-    public function yt_listVideos($arg = array()) {
-        $service = $this->init_gs();
-
-        $queryParams = [
-            'id' => implode(',', $arg['ids'])
-        ];
-
-        try {
-            $response = $service->videos->listVideos('snippet', $queryParams);
-        } catch (Exception $exc) {
-            $message = $exc->getMessage();
-            $this->log_error($message, $arg['cid'], 0, 3);
-            $response = array();
-            $this->yt_in_quota = false;
-            $this->yt_error_msg = $message;
-        }
-        return gzencode(json_encode($response));
-    }
-
-    public function yt_playlists($arg = array()) {
-        $service = $this->init_gs();
-
-        $queryParams = [
-            'channelId' => $arg['cid'],
-            'maxResults' => $arg['count']
-        ];
-
-        try {
-            $response = $service->playlists->listPlaylists('snippet', $queryParams);
-        } catch (Exception $exc) {
-            $message = $exc->getMessage();
-            $this->log_error($message, $arg['cid'], 0, 3);
-            $response = array();
-            $this->yt_in_quota = false;
-            $this->yt_error_msg = $message;
-        }
-        return gzencode(json_encode($response));
-    }
-
-    public function yt_channel_info($arg = array()) {
-        $service = $this->init_gs();
-
-        $queryParams = [
-            'id' => $arg['cid'],
-        ];
-
-        try {
-            $response = $service->channels->listChannels('snippet', $queryParams);
-        } catch (Exception $exc) {
-            $message = $exc->getMessage();
-            $this->log_error($message, $arg['cid'], 0, 3);
-            $response = array();
-            $this->yt_in_quota = false;
-            $this->yt_error_msg = $message;
-        }
-        return gzencode(json_encode($response));
-    }
-
-    /*
-     * Other functions
-     */
-
-    public function get_proxy($url, $proxy = '', &$header = '') {
-
-        $ch = curl_init();
-        $ss = $this->cm->get_settings();
-        $curl_user_agent = $ss['parser_user_agent'];
-
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_HEADER, 1);
-        curl_setopt($ch, CURLOPT_ENCODING, 'deflate');
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 25);
-        curl_setopt($ch, CURLOPT_USERAGENT, $curl_user_agent);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-
-        $cookie_path = $ss['parser_cookie_path'];
-
-        if ($cookie_path) {
-            curl_setopt($ch, CURLOPT_COOKIEJAR, $cookie_path);
-            curl_setopt($ch, CURLOPT_COOKIEFILE, $cookie_path);
-        }
-
-        if ($proxy)
-            curl_setopt($ch, CURLOPT_PROXY, "$proxy");
-
-        $response = curl_exec($ch);
-
-        $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-        $header = substr($response, 0, $header_size);
-        $body = substr($response, $header_size);
-
-        curl_close($ch);
-
-        return $body;
-    }
-
-    public function get_webdriver($url, &$header = '', $settings = '', $use_driver = -1) {
-
-        $webdrivers_text = base64_decode($settings['web_drivers']);
-        //http://165.227.101.220:8110/?p=ds1bfgFe_23_KJDS-F&url= http://185.135.80.156:8110/?p=ds1bfgFe_23_KJDS-F&url= http://148.251.54.53:8110/?p=ds1bfgFe_23_KJDS-F&url=
-        $web_arr = array();
-        if ($webdrivers_text) {
-            if (strstr($webdrivers_text, "\n")) {
-                $web_arr = explode("\n", $webdrivers_text);
-            } else {
-                $web_arr = array($webdrivers_text);
-            }
-        }
-
-        if (!$web_arr) {
-            return 'No webdrivers found';
-        }
-
-        if ($use_driver != -1) {
-            if (!isset($web_arr[$use_driver])) {
-                return 'Webdriver not found, ' . $use_driver;
-            }
-        }
-
-        $current_driver = trim($web_arr[array_rand($web_arr, 1)]);
-        $url = $current_driver . $url;
-
-        $ch = curl_init();
-        $ss = $settings ? $settings : array();
-        $curl_user_agent = isset($ss['parser_user_agent']) ? $ss['parser_user_agent'] : '';
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_HEADER, 1);
-        curl_setopt($ch, CURLOPT_ENCODING, 'deflate');
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 60);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
-        if ($curl_user_agent) {
-            curl_setopt($ch, CURLOPT_USERAGENT, $curl_user_agent);
-        }
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-
-        curl_setopt($ch, CURLINFO_HEADER_OUT, true); // enable tracking
-
-
-        $response = curl_exec($ch);
-        $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-        $headerSent = curl_getinfo($ch, CURLINFO_HEADER_OUT); // request headers
-        $header_responce = substr($response, 0, $header_size);
-
-        $header = "RESPONCE:\n" . $header_responce . "\nREQUEST:\n" . $headerSent;
-        $body = substr($response, $header_size);
-
-        curl_close($ch);
-
-        return $body;
-    }
-
-    public function send_curl_no_responce($url) {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_ENCODING, 'deflate');
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        $response = curl_exec($ch);
-        curl_close($ch);
-    }
-
-    public function absoluteUrlFilter($domain, $content) {
-        // $content = '<a href="/example.com"></a><a href=/example.com ></a><img src="/testimg"><img src=/testimg2.jpg >';    
-        $reg = "#(?:src|href)[ ]*=[ ]*(?:\"|'|)(/[^/]+[^\"' >]+)(?:\"|'|)(?: |>)#";
-        if (preg_match_all($reg, $content, $match)) {
-            if (count($match[1]) > 0) {
-                for ($i = 0; $i < count($match[1]); $i++) {
-                    $newlink = str_replace($match[1][$i], $domain . $match[1][$i], $match[0][$i]);
-                    $content = str_replace($match[0][$i], $newlink, $content);
-                }
-            }
-        }
-        return $content;
-    }
-
-    private function get_dom_commands($text) {
-        $ret = array();
-        $text = preg_replace('/##.*/', '', $text);
-        if ($text) {
-            if (strstr($text, "\n")) {
-                $list = explode("\n", $text);
-            } else {
-                $list = array($text);
-            }
-
-            foreach ($list as $item) {
-                $command = trim($item);
-                if ($command) {
-                    $ret[] = $command;
-                }
-            }
-        }
-        return $ret;
-    }
-
-    private function get_regexps($text) {
-        $text = preg_replace('/##.*/', '', $text);
-        $ret = array();
-        if ($text) {
-            if (strstr($text, "\n")) {
-                $list = explode("\n", $text);
-            } else {
-                $list = array($text);
-            }
-            foreach ($list as $item) {
-                if ($item) {
-                    if (strstr($item, ";")) {
-                        $command = explode(";", $item);
-                    } else {
-                        $command = array($item, '');
+                    if ($ret) {
+                        $ids_str = serialize($opt_ids);
+                        $this->update_option($opt_key, $ids_str);
                     }
-                    $ret[] = array(trim($command[0]), trim($command[1]));
+                }
+
+                return $ret;
+            }
+
+            private function append_id($id) {
+                // Append a new id to search queue
+                $opt_key = 'feed_matic_search_ids';
+                $ids_str = $this->get_option($opt_key, '');
+                $ids = array();
+                if ($ids_str) {
+                    $ids = unserialize($ids_str);
+                }
+                if (!in_array($id, $ids)) {
+                    $ids[] = $id;
+                    $ids_str = serialize($ids);
+                    $this->update_option($opt_key, $ids_str);
                 }
             }
-        }
-        return $ret;
-    }
 
-}
+            public function url_update_link_hash($id, $link) {
+                if ($link) {
+                    $link_hash = $this->link_hash($link);
+
+                    $data = array(
+                        'link_hash' => $link_hash,
+                        'last_upd' => $this->curr_time(),
+                    );
+                    $this->cm->db_update($data, $this->db['url'], $id);
+
+                    return $link_hash;
+                }
+                return '';
+            }
+
+            public function update_dublicate_post($item) {
+                // UNUSED
+                $link_post = $this->cm->get_post_by_link_hash_type($item->link_hash, array(), array(3));
+                $link_post_parser = $this->cm->get_post_by_link_hash_type($item->link_hash, array(3), array());
+                if ($link_post) {
+                    $item_type = $this->cm->get_post_type($link_post->type);
+                    print 'Other:' . $item_type;
+                }
+                if ($link_post_parser) {
+                    $item_type = $this->cm->get_post_type($link_post_parser->type);
+                    if ($link_post) {
+                        // remove dublicate post
+                        if ($link_post_parser->status != 2) {
+                            print ' Trash dublicate - ';
+                            $this->cm->trash_post_by_id($link_post_parser->id);
+                        }
+                        // change url status
+                        if ($item->status == 5) {
+                            print ' Update URL ';
+                            $new_item = $item;
+                            // exist
+                            $new_item->status = 1;
+                            $new_item->pid = $link_post->id;
+                            $this->update_url($new_item);
+                        }
+                    }
+                    print 'Parser:' . $item_type;
+                }
+            }
+
+            /*
+             * Log
+             * message - string
+             * cid - campaign id
+             * type:
+              0 => 'Info',
+              1 => 'Warning',
+              2 => 'Error'
+
+              status:
+              0 => 'Ignore post',
+              1 => 'Add post',
+              2 => 'Error',
+              3 => 'Auto stop',
+              4 => 'Done',
+              5 => 'Add URLs',
+              6 => 'Arhive URLs',
+             */
+
+            public function log($message, $cid = 0, $uid = 0, $type = 0, $status = 0) {
+                $time = $this->curr_time();
+                $this->db_query(sprintf("INSERT INTO {$this->db['log']} (date, cid, uid, type, status, message) VALUES (%d, %d, %d, %d, %d, '%s')", $time, $cid, $uid, $type, $status, $this->escape($message)));
+            }
+
+            public function get_log($page = 1, $cid = 0, $uid = 0, $status = -1, $type = -1, $perpage = 30) {
+                $page -= 1;
+                $start = $page * $perpage;
+
+                $limit = '';
+                if ($perpage > 0) {
+                    $limit = " LIMIT $start, " . $perpage;
+                }
+                $and_cid = '';
+                if ($cid) {
+                    $and_cid = sprintf(" AND cid=%d", (int) $cid);
+                }
+
+                $and_uid = '';
+                if ($uid) {
+                    $and_uid = sprintf(" AND uid=%d", (int) $uid);
+                }
+
+                $and_status = '';
+                if ($status != -1) {
+                    $and_status = sprintf(" AND status=%d", (int) $status);
+                }
+
+                $and_type = '';
+                if ($type != -1) {
+                    $and_type = sprintf(" AND type=%d", (int) $type);
+                }
+
+                $order = " ORDER BY id DESC";
+                $sql = sprintf("SELECT id, date, cid, uid, type, status, message FROM {$this->db['log']} WHERE id>0" . $and_cid . $and_uid . $and_status . $and_type . $order . $limit);
+
+                $result = $this->db_results($sql);
+
+                return $result;
+            }
+
+            public function get_log_count($cid = 0, $status = -1, $type = -1) {
+
+                $and_cid = '';
+                if ($cid) {
+                    $and_cid = sprintf(" AND cid=%d", (int) $cid);
+                }
+
+                $and_status = '';
+                if ($status != -1) {
+                    $and_status = sprintf(" AND status=%d", (int) $status);
+                }
+
+                $and_type = '';
+                if ($type != -1) {
+                    $and_type = sprintf(" AND type=%d", (int) $type);
+                }
+
+                $query = "SELECT COUNT(id) FROM {$this->db['log']} WHERE id>0" . $and_cid . $and_status . $and_type;
+
+                $result = $this->db_get_var($query);
+                return $result;
+            }
+
+            public function get_last_log($url_id = 0, $parser_id = 0) {
+
+                $and_uid = '';
+                if ($url_id > 0) {
+                    $and_uid = sprintf(' AND uid=%d', $url_id);
+                }
+
+                $and_cid = '';
+                if ($parser_id > 0) {
+                    $and_cid = sprintf(' AND cid=%d', $parser_id);
+                }
+
+                $query = sprintf("SELECT type, status, message FROM {$this->db['log']} WHERE id>0" . $and_uid . $and_cid . " ORDER BY id DESC", $url_id);
+                $result = $this->db_fetch_row($query);
+                $str = '';
+                if ($result) {
+                    $str = $this->get_log_type($result->type) . ': ' . $this->get_log_status($result->status);
+                    if ($result->message) {
+                        $str = $str . ' | ' . $result->message;
+                    }
+                }
+                return $str;
+            }
+
+            /*
+              0 => 'Other',
+              1 => 'Find URLs',
+              3 => 'Parsing',
+             */
+
+            public function log_info($message, $cid, $uid, $status) {
+                $this->log($message, $cid, $uid, 0, $status);
+            }
+
+            public function log_warn($message, $cid, $uid, $status) {
+                $this->log($message, $cid, $uid, 1, $status);
+            }
+
+            public function log_error($message, $cid, $uid, $status) {
+                $this->log($message, $cid, $uid, 2, $status);
+            }
+
+            public function get_log_type($type) {
+                return isset($this->log_type[$type]) ? $this->log_type[$type] : 'None';
+            }
+
+            public function get_log_status($type) {
+                return isset($this->log_status[$type]) ? $this->log_status[$type] : 'None';
+            }
+
+            public function log_campaign_add_urls($message, $cid) {
+                $this->log($message, $cid, 0, 0, 5);
+            }
+
+            public function get_post_log_status($cid = 0) {
+
+                $count = $this->get_log_count($cid);
+                $states = array(
+                    '-1' => array(
+                        'title' => 'All',
+                        'count' => $count
+                    )
+                );
+                foreach ($this->log_status as $key => $value) {
+                    $states[$key] = array(
+                        'title' => $value,
+                        'count' => $this->get_log_count($cid, $key));
+                }
+                return $states;
+            }
+
+            public function get_post_log_types($cid = 0, $status = -1) {
+
+                $count = $this->get_log_count($cid, $status);
+                $states = array(
+                    '-1' => array(
+                        'title' => 'All',
+                        'count' => $count
+                    )
+                );
+                foreach ($this->log_type as $key => $value) {
+                    $states[$key] = array(
+                        'title' => $value,
+                        'count' => $this->get_log_count($cid, $status, $key));
+                }
+                return $states;
+            }
+
+            public function clear_all_logs() {
+                $sql = "DELETE FROM {$this->db['log']} WHERE id>0";
+                $this->db_query($sql);
+            }
+
+            public function clear_read($url, $content = '', $proxy = '') {
+                if (!$content) {
+                    $content = $this->get_proxy($url, $proxy, $header);
+                }
+
+                $result = false;
+                $ret = array();
+
+                if ($content) {
+                    // $content = "<body>Look at this cat: <img src='./cat.jpg'> 123 <img src=x onerror=alert(1)//></body>";
+                    // TODO move service and pass to options
+                    $pass = 'sdDclSPMF_32sd-s';
+                    $service = 'http://148.251.54.53:8980/';
+
+                    $data = array('p' => $pass, 'u' => $url, 'c' => $content);
+
+                    // use key 'http' even if you send the request to https://...
+                    $options = array(
+                        'http' => array(
+                            'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+                            'method' => 'POST',
+                            'content' => http_build_query($data)
+                        )
+                    );
+                    $context = stream_context_create($options);
+                    $result = file_get_contents($service, false, $context);
+                }
+
+                if ($result) {
+                    $result_data = json_decode($result);
+
+                    if ($result_data) {
+                        $ret = array('title' => $result_data->title, 'author' => $result_data->author, 'content' => $result_data->content);
+                    }
+                }
+
+                return $ret;
+            }
+
+            /*
+             * Youtube API
+             */
+
+            public function yt_video_data($url) {
+
+                $keyword = $url;
+                //Get youtube urls
+                if ((strstr($keyword, 'youtube') || strstr($keyword, 'youtu.be'))) {
+                    if (preg_match('#//www\.youtube\.com/embed/([a-zA-Z0-9\-_]+)#', $keyword, $match) ||
+                            preg_match('#//(?:www\.|)youtube\.com/(?:v/|watch\?v=|watch\?.*v=|embed/)([a-zA-Z0-9\-_]+)#', $keyword, $match) ||
+                            preg_match('#//youtu\.be/([a-zA-Z0-9\-_]+)#', $keyword, $match)) {
+                        if (count($match) > 1) {
+                            $video_id = $match[1];
+                        }
+                    }
+                }
+
+                $ret = array();
+
+                if ($video_id) {
+                    $result = $this->find_youtube_data_api(array($video_id));
+                    if (isset($result[$video_id])) {
+                        $ret = $result[$video_id];
+                    }
+                }
+
+                return $ret;
+            }
+
+            public function yt_total_posts($options) {
+
+                $total = -1;
+                $cid = base64_decode($options['yt_page']);
+                $cnt = 5;
+
+                $playlists_checked = $options['yt_playlists'] ? $options['yt_playlists'] : array();
+
+                if ($cid) {
+                    try {
+                        if (!$playlists_checked) {
+                            // All posts
+                            $responce = $this->youtube_get_videos($cid, $cnt);
+                            if ($this->yt_in_quota && $responce) {
+                                $total = $responce->pageInfo->totalResults;
+                            }
+                        } else {
+                            $total_arr = array();
+                            foreach ($playlists_checked as $play_list_id) {
+                                $item = $this->youtube_get_playlist_videos($play_list_id, $cnt);
+
+                                if ($this->yt_in_quota && $item) {
+                                    $total_arr[] = $item->pageInfo->totalResults;
+                                }
+                            }
+                            $total = implode(', ', $total_arr);
+                        }
+                    } catch (Exception $exc) {
+                        print $exc->getTraceAsString();
+                    }
+                }
+                return $total;
+            }
+
+            public function yt_playlists_select($options) {
+                $ret = array();
+                $playlists = $this->yt_get_playlists($options);
+                if ($this->yt_in_quota && $playlists->items) {
+                    foreach ($playlists->items as $item) {
+                        $ret[$item->id] = $item->snippet->title;
+                    }
+                }
+                return $ret;
+            }
+
+            public function yt_get_playlists($options) {
+
+                $playlists = array();
+                $cid = base64_decode($options['yt_page']);
+                $cnt = 50;
+
+                if ($cid) {
+                    try {
+                        $playlists = $this->youtube_get_playlists($cid, $cnt);
+                    } catch (Exception $exc) {
+                        print $exc->getTraceAsString();
+                    }
+                }
+                return $playlists;
+            }
+
+            public function youtube_get_videos($cid = 0, $count = 50, $pageToken = '') {
+                if (!$cid) {
+                    return;
+                }
+                $arg = array();
+                $arg['cid'] = $cid;
+                $arg['count'] = $count;
+                if ($pageToken) {
+                    $arg['pageToken'] = $pageToken;
+                }
+
+                $filename = "ls-$cid-$count-$pageToken";
+                $str = ThemeCache::cache('yt_listSearch', false, $filename, 'def', $this, $arg);
+                $responce = json_decode(gzdecode($str));
+
+                return $responce;
+            }
+
+            public function youtube_get_playlist_videos($play_list_id = 0, $count = 50, $pageToken = '') {
+                if (!$play_list_id) {
+                    return;
+                }
+                $arg = array();
+                $arg['pid'] = $play_list_id;
+                $arg['count'] = $count;
+                if ($pageToken) {
+                    $arg['pageToken'] = $pageToken;
+                }
+
+                $filename = "lps-$play_list_id-$count-$pageToken";
+                $str = ThemeCache::cache('yt_playlistItems', false, $filename, 'def', $this, $arg);
+                $responce = json_decode(gzdecode($str));
+
+                return $responce;
+            }
+
+            public function youtube_get_playlists($cid = 0, $count = 50) {
+                if (!$cid) {
+                    return;
+                }
+                $arg = array();
+                $arg['cid'] = $cid;
+                $arg['count'] = $count;
+
+                $filename = "lp-$cid-$count";
+                $str = ThemeCache::cache('yt_playlists', false, $filename, 'def', $this, $arg);
+                $responce = json_decode(gzdecode($str));
+
+                return $responce;
+            }
+
+            public function youtube_get_channel_info($cid = 0) {
+                if (!$cid) {
+                    return;
+                }
+                $arg = array();
+                $arg['cid'] = $cid;
+
+                $filename = "yci-$cid";
+                $str = ThemeCache::cache('yt_channel_info', false, $filename, 'def', $this, $arg);
+                $responce = json_decode(gzdecode($str));
+
+                return $responce;
+            }
+
+            public function find_youtube_data_api($ids, $debug = false) {
+                if (!$ids) {
+                    return;
+                }
+
+                $arg = array();
+                $arg['ids'] = $ids;
+
+                $id_name = md5(implode('-', $ids));
+                $filename = "lv-$id_name";
+                $str = ThemeCache::cache('yt_listVideos', false, $filename, 'def', $this, $arg);
+                $response = json_decode(gzdecode($str));
+
+                if ($debug) {
+                    print_r($response);
+                }
+
+                $ret = array();
+                if ($response && isset($response->items)) {
+                    foreach ($response->items as $item) {
+                        $ret[$item->id] = $item->snippet;
+                    }
+                }
+
+                return $ret;
+            }
+
+            public function yt_listSearch($arg = array()) {
+                $service = $this->init_gs();
+
+                $queryParams = array(
+                    'channelId' => $arg['cid'],
+                    'maxResults' => $arg['count'],
+                    'order' => 'date',
+                    'type' => 'video'
+                );
+
+                if ($arg['pageToken']) {
+                    $queryParams['pageToken'] = $arg['pageToken'];
+                }
+
+                try {
+                    $response = $service->search->listSearch('snippet', $queryParams);
+                } catch (Exception $exc) {
+                    $message = $exc->getMessage();
+                    $this->log_error($message, $arg['cid'], 0, 3);
+                    $response = array();
+                    $this->yt_in_quota = false;
+                    $this->yt_error_msg = $message;
+                }
+                return gzencode(json_encode($response));
+            }
+
+            public function yt_playlistItems($arg = array()) {
+                $service = $this->init_gs();
+
+                $queryParams = array(
+                    'playlistId' => $arg['pid'],
+                    'maxResults' => $arg['count'],
+                );
+
+                if ($arg['pageToken']) {
+                    $queryParams['pageToken'] = $arg['pageToken'];
+                }
+
+                try {
+                    $response = $service->playlistItems->listPlaylistItems('snippet', $queryParams);
+                } catch (Exception $exc) {
+                    $message = $exc->getMessage();
+                    $this->log_error($message, $arg['cid'], 0, 3);
+                    $response = array();
+                    $this->yt_in_quota = false;
+                    $this->yt_error_msg = $message;
+                }
+                return gzencode(json_encode($response));
+            }
+
+            public function yt_listVideos($arg = array()) {
+                $service = $this->init_gs();
+
+                $queryParams = [
+                    'id' => implode(',', $arg['ids'])
+                ];
+
+                try {
+                    $response = $service->videos->listVideos('snippet', $queryParams);
+                } catch (Exception $exc) {
+                    $message = $exc->getMessage();
+                    $this->log_error($message, $arg['cid'], 0, 3);
+                    $response = array();
+                    $this->yt_in_quota = false;
+                    $this->yt_error_msg = $message;
+                }
+                return gzencode(json_encode($response));
+            }
+
+            public function yt_playlists($arg = array()) {
+                $service = $this->init_gs();
+
+                $queryParams = [
+                    'channelId' => $arg['cid'],
+                    'maxResults' => $arg['count']
+                ];
+
+                try {
+                    $response = $service->playlists->listPlaylists('snippet', $queryParams);
+                } catch (Exception $exc) {
+                    $message = $exc->getMessage();
+                    $this->log_error($message, $arg['cid'], 0, 3);
+                    $response = array();
+                    $this->yt_in_quota = false;
+                    $this->yt_error_msg = $message;
+                }
+                return gzencode(json_encode($response));
+            }
+
+            public function yt_channel_info($arg = array()) {
+                $service = $this->init_gs();
+
+                $queryParams = [
+                    'id' => $arg['cid'],
+                ];
+
+                try {
+                    $response = $service->channels->listChannels('snippet', $queryParams);
+                } catch (Exception $exc) {
+                    $message = $exc->getMessage();
+                    $this->log_error($message, $arg['cid'], 0, 3);
+                    $response = array();
+                    $this->yt_in_quota = false;
+                    $this->yt_error_msg = $message;
+                }
+                return gzencode(json_encode($response));
+            }
+
+            /*
+             * Other functions
+             */
+
+            public function get_proxy($url, $proxy = '', &$header = '') {
+
+                $ch = curl_init();
+                $ss = $this->cm->get_settings();
+                $curl_user_agent = $ss['parser_user_agent'];
+
+                curl_setopt($ch, CURLOPT_URL, $url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_HEADER, 1);
+                curl_setopt($ch, CURLOPT_ENCODING, 'deflate');
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+                curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 25);
+                curl_setopt($ch, CURLOPT_USERAGENT, $curl_user_agent);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+
+                $cookie_path = $ss['parser_cookie_path'];
+
+                if ($cookie_path) {
+                    curl_setopt($ch, CURLOPT_COOKIEJAR, $cookie_path);
+                    curl_setopt($ch, CURLOPT_COOKIEFILE, $cookie_path);
+                }
+
+                if ($proxy)
+                    curl_setopt($ch, CURLOPT_PROXY, "$proxy");
+
+                $response = curl_exec($ch);
+
+                $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+                $header = substr($response, 0, $header_size);
+                $body = substr($response, $header_size);
+
+                curl_close($ch);
+
+                return $body;
+            }
+
+            public function get_webdriver($url, &$header = '', $settings = '', $use_driver = -1) {
+
+                $webdrivers_text = base64_decode($settings['web_drivers']);
+                //http://165.227.101.220:8110/?p=ds1bfgFe_23_KJDS-F&url= http://185.135.80.156:8110/?p=ds1bfgFe_23_KJDS-F&url= http://148.251.54.53:8110/?p=ds1bfgFe_23_KJDS-F&url=
+                $web_arr = array();
+                if ($webdrivers_text) {
+                    if (strstr($webdrivers_text, "\n")) {
+                        $web_arr = explode("\n", $webdrivers_text);
+                    } else {
+                        $web_arr = array($webdrivers_text);
+                    }
+                }
+
+                if (!$web_arr) {
+                    return 'No webdrivers found';
+                }
+
+                if ($use_driver != -1) {
+                    if (!isset($web_arr[$use_driver])) {
+                        return 'Webdriver not found, ' . $use_driver;
+                    }
+                }
+
+                $current_driver = trim($web_arr[array_rand($web_arr, 1)]);
+                $url = $current_driver . $url;
+
+                $ch = curl_init();
+                $ss = $settings ? $settings : array();
+                $curl_user_agent = isset($ss['parser_user_agent']) ? $ss['parser_user_agent'] : '';
+                curl_setopt($ch, CURLOPT_URL, $url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_HEADER, 1);
+                curl_setopt($ch, CURLOPT_ENCODING, 'deflate');
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+                curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 60);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+                if ($curl_user_agent) {
+                    curl_setopt($ch, CURLOPT_USERAGENT, $curl_user_agent);
+                }
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+
+                curl_setopt($ch, CURLINFO_HEADER_OUT, true); // enable tracking
+
+
+                $response = curl_exec($ch);
+                $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+                $headerSent = curl_getinfo($ch, CURLINFO_HEADER_OUT); // request headers
+                $header_responce = substr($response, 0, $header_size);
+
+                $header = "RESPONCE:\n" . $header_responce . "\nREQUEST:\n" . $headerSent;
+                $body = substr($response, $header_size);
+
+                curl_close($ch);
+
+                return $body;
+            }
+
+            public function send_curl_no_responce($url) {
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_HEADER, 0);
+                curl_setopt($ch, CURLOPT_ENCODING, 'deflate');
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 1);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                $response = curl_exec($ch);
+                curl_close($ch);
+            }
+
+            public function absoluteUrlFilter($domain, $content) {
+                // $content = '<a href="/example.com"></a><a href=/example.com ></a><img src="/testimg"><img src=/testimg2.jpg >';    
+                $reg = "#(?:src|href)[ ]*=[ ]*(?:\"|'|)(/[^/]+[^\"' >]+)(?:\"|'|)(?: |>)#";
+                if (preg_match_all($reg, $content, $match)) {
+                    if (count($match[1]) > 0) {
+                        for ($i = 0; $i < count($match[1]); $i++) {
+                            $newlink = str_replace($match[1][$i], $domain . $match[1][$i], $match[0][$i]);
+                            $content = str_replace($match[0][$i], $newlink, $content);
+                        }
+                    }
+                }
+                return $content;
+            }
+
+            private function get_dom_commands($text) {
+                $ret = array();
+                $text = preg_replace('/##.*/', '', $text);
+                if ($text) {
+                    if (strstr($text, "\n")) {
+                        $list = explode("\n", $text);
+                    } else {
+                        $list = array($text);
+                    }
+
+                    foreach ($list as $item) {
+                        $command = trim($item);
+                        if ($command) {
+                            $ret[] = $command;
+                        }
+                    }
+                }
+                return $ret;
+            }
+
+            private function get_regexps($text) {
+                $text = preg_replace('/##.*/', '', $text);
+                $ret = array();
+                if ($text) {
+                    if (strstr($text, "\n")) {
+                        $list = explode("\n", $text);
+                    } else {
+                        $list = array($text);
+                    }
+                    foreach ($list as $item) {
+                        if ($item) {
+                            if (strstr($item, ";")) {
+                                $command = explode(";", $item);
+                            } else {
+                                $command = array($item, '');
+                            }
+                            $ret[] = array(trim($command[0]), trim($command[1]));
+                        }
+                    }
+                }
+                return $ret;
+            }
+
+        }
+        

@@ -23,6 +23,7 @@ class CriticAudience extends AbstractDb {
     public $prefix = 'wpcr3';
     private $cm = '';
     private $p = '';
+    public $min_review_len = 1;
     public $vote_data = array(
         'vote' => array(
             'title' => 'Support',
@@ -248,9 +249,8 @@ class CriticAudience extends AbstractDb {
             if (!$posted->ftext) {
                 $rtn->err[] = 'Review Text is required.';
             } else {
-                $min_len = 50;
                 $clear_text = trim(preg_replace("/[^A-Za-z0-9 ]/", '', strip_tags($posted->ftext)));
-                if (strlen($clear_text) < $min_len) {
+                if (strlen($clear_text) < $this->min_review_len) {
                     $rtn->err[] = 'Review Text is too small.';
                 }
             }
