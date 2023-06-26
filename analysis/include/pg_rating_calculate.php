@@ -258,7 +258,7 @@ class PgRatingCalculate {
             $value = OptionData::get_options('', 'movies_raiting_weight');
 
             if ($value) {
-                $value = unserialize($value);
+                $value = json_decode($value,1);
                 $rwt_array = $value["rwt"];
             }
         }

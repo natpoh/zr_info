@@ -88,7 +88,7 @@ public function movie_logs()
 
         !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
 
-        Crowdsource::Show_admin_table('movies_log',$array_rows,1,'movies_log');
+        Crowdsource::Show_admin_table('movies_log',$array_rows,1,'movies_log',0,1,1,0,0);
 
 
 ?>
@@ -120,7 +120,7 @@ tr.jqgrow>td
             'val' =>array('w'=>50, 'type' => 'textarea','textarea_rows' => 20),
         );
 
-        Crowdsource::Show_admin_table('options',$array_rows,1,'options','',1,1);
+        Crowdsource::Show_admin_table('options',$array_rows,1,'options','',1,1,1,0);
 
 ?>
 <style type="text/css">
@@ -359,7 +359,7 @@ check_request();
             'enable'=>array('type'=>'select','options'=>'1:Enable;0:Disable'),
         );
 
-        Crowdsource::Show_admin_table('meta_compilation_links',$array_rows,1,'meta_compilation_links','',1,1);
+        Crowdsource::Show_admin_table('meta_compilation_links',$array_rows,1,'meta_compilation_links','',1,1,1,0);
 
 
 
@@ -390,7 +390,7 @@ check_request();
             'enable'=>array('type'=>'select','options'=>'1:Enable;0:Disable'),
         );
 
-        Crowdsource::Show_admin_table('meta_piracy_links',$array_rows,1,'meta_piracy_links','',1,1);
+        Crowdsource::Show_admin_table('meta_piracy_links',$array_rows,1,'meta_piracy_links','',1,1,1,0);
 
 
     }

@@ -246,23 +246,20 @@ class CustomRating
         !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
         $value  =OptionData::get_options('','movies_raiting_weight');
         if ($value) {
-            $array = unserialize($value);
+            $array = json_decode($value,1);
         }
 
         if (!$array)
         {
-            $array=array(  'total_rwt_staff' => 5,  'total_rwt_audience' => 5, 'total_imdb' => 5, 'total_tomatoes' => 5, 'total_tmdb' => 5);
+            $array=array(   'total_rwt_audience' => 5, 'total_imdb' => 5, 'total_tomatoes' => 5);
             !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-             OptionData::set_option('',serialize($array),'movies_raiting_weight',1);
+             OptionData::set_option('',json_encode($array),'movies_raiting_weight',1);
         }
         else
         {
             $array = $array['rwt'];
         }
-        if (!$array['total_tomatoes_audience'] ){$array['total_tomatoes_audience'] =1;}
 
-        if (!$array['total_kinopoisk'] ){$array['total_kinopoisk'] =1;}
-        if (!$array['total_douban'] ){$array['total_douban'] =1;}
 
         echo self::rating_to_table('rwt', $array);
 
@@ -272,10 +269,26 @@ class CustomRating
 <input type="button" class="button button-primary rwt_rating_update" value="Update all ZR rating"></p>';
         echo '<h4>Rating table</h4>';
 
-        echo '<table id="jqGrid"></table><div id="jqGridPager"></div>';
-
 
         self::rwt_rating_script();
+
+
+        !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
+
+        if (isset($_POST['action']))
+        {
+            return;
+        }
+
+        $array_rows = array(
+            'id'=>array('w'=>5),
+            'movie_id'=>array('w'=>15),
+          'title'=>array('w'=>20)
+        );
+
+
+        Crowdsource::Show_admin_table('movie_erating',$array_rows,1,'data_movie_erating','',1,0,0,0);
+
 
 
     }
@@ -357,7 +370,7 @@ class CustomRating
                 $data = json_decode($data, 1);
                 //var_dump($data);
                 !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-                OptionData::set_option('',serialize($data),'movies_raiting_weight',1);
+                OptionData::set_option('',json_encode($data),'movies_raiting_weight',1);
                 echo 'ok';
 
                 return;
@@ -690,24 +703,9 @@ class CustomRating
     {
 
         ?>
-        <script type="text/ecmascript" src="<?php echo home_url(); ?>/analysis/jqgrid/js/i18n/grid.locale-en.js"></script>
-        <!-- This is the Javascript file of jqGrid -->
-        <script type="text/ecmascript" src="<?php echo home_url(); ?>/analysis/jqgrid/js/jquery.jqGrid.min.js"></script>
-        <script>
-            jQuery.jgrid.defaults.responsive = true;
-            jQuery.jgrid.defaults.styleUI = 'Bootstrap';
-        </script>
-        <script src="https://code.highcharts.com/stock/highstock.js"></script>
-
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
-        <link rel="stylesheet" type="text/css" media="screen" href="<?php echo home_url(); ?>/analysis/jqgrid/css/ui.jqgrid-bootstrap4.css" />
-        <link rel="stylesheet" href="<?php echo home_url(); ?>/wp-content/themes/custom_twentysixteen/css/movie_single.css?<?php echo LASTVERSION; ?>">
-        <link rel="stylesheet" href="<?php echo home_url(); ?>/wp-content/themes/custom_twentysixteen/css/colums_template.css?<?php echo LASTVERSION; ?>">
-        <script type="text/javascript">
+           <script type="text/javascript">
 
             jQuery(document).ready(function () {
-
-
 
                 jQuery('.rwt_rating_update').click(function () {
 
@@ -758,151 +756,6 @@ class CustomRating
                 });
 
 
-                //////rating table
-
-
-                function getSubgrid(subgrid_id, row_id){
-
-                    ////check select grig
-
-
-                    var movie  = jQuery("#jqGrid").jqGrid('getCell',row_id,'movie_id');
-
-
-                    jQuery.ajax({
-                        type: "POST",
-                        url: window.location.protocol+"/analysis/get_data.php",
-
-                        data: ({
-                            oper: 'movie_data',
-                            refresh_rwt_rating:1,
-                            rwt_id: movie,
-                        }),
-                        success: function (html) {
-                            jQuery('#'+subgrid_id).html(html);
-                        }
-                    });
-
-                }
-
-////rwt_audience 	rwt_staff 	imdb 	rotten_tomatoes 	tmdb 	total_rating 	last_update
-
-                jQuery("#jqGrid").jqGrid({
-                    url: window.location.protocol+'/analysis/jqgrid/get.php?data=movie_rating',
-                    mtype: "POST",
-                    datatype: "json",
-                    page: 1,
-                    colModel: [
-                        {   label : 'id',
-                            name: 'id',
-                            key: true,
-                            width: 10,
-                            editable:true,
-                            hidden:true
-
-                        },      {   label : 'movie_id',
-                            name: 'movie_id',
-                            key: true,
-                            width: 10,
-                            editable:true
-
-                        },
-                        {   label : 'title',
-                            name: 'title',
-                            key: true,
-                            width: 40,
-                            editable:true
-
-                        },      {   label : 'rwt_audience',
-                            name: 'rwt_audience',
-                            key: true,
-                            width: 10,
-                            editable:true
-
-                        },      {   label : 'rwt_staff',
-                            name: 'rwt_staff',
-                            key: true,
-                            width: 10,
-                            editable:true
-
-                        },      {   label : 'imdb',
-                            name: 'imdb',
-                            key: true,
-                            width: 10,
-                            editable:true
-
-                        },
-                        {   label : 'rotten_tomatoes',
-                            name: 'rotten_tomatoes',
-                            key: true,
-                            width: 10,
-                            editable:true
-
-                        },
-                        {   label : 'rotten_tomatoes_audience',
-                            name: 'rotten_tomatoes_audience',
-                            key: true,
-                            width: 10,
-                            editable:true
-
-                        },
-
-                        {   label : 'tmdb',
-                            name: 'tmdb',
-                            key: true,
-                            width: 10,
-                            editable:true,
-                            hidden:true
-
-                        },
-                        {   label : 'total_rating',
-                            name: 'total_rating',
-                            key: true,
-                            width: 10,
-                            editable:true
-
-                        },
-                        {   label : 'last_update',
-                            name: 'last_update',
-                            key: true,
-                            width: 15,
-                            editable:true
-
-                        },                ],
-                    // editurl:  window.location.protocol+'/analysis/jqgrid/get.php?data=pg_rating',
-                    loadonce: false,
-                    viewrecords: true,
-                    width: (window.innerWidth-200),
-                    height: (window.innerHeight-200),
-                    rowNum: 100,
-                    pager: "#jqGridPager",
-                    subGrid: true,
-                    subGridRowExpanded: function(subgrid_id, row_id) {
-                        getSubgrid(subgrid_id, row_id);
-                    },
-                    afterInsertRow: function(row_id, row_data){
-                        ///  console.log(row_id,row_data);
-                    },
-                });
-                // activate the toolbar searching
-                jQuery('#jqGrid').jqGrid('filterToolbar', {stringResult: true, searchOnEnter: false, defaultSearch: 'cn', ignoreCase: true});
-                jQuery('#jqGrid').jqGrid('navGrid',"#jqGridPager", {
-                    search: true, // show search button on the toolbar
-                    add: false,
-                    edit: false,
-                    del: false,
-                    refresh: true
-                },{
-                    onclickSubmit: function() {
-                        setTimeout(function () {
-                            $('#edithdjqGrid .ui-jqdialog-titlebar-close').click();
-                        },500);
-                    },
-                });
-
-
-
-
             });
         </script>
         <style type="text/css">
@@ -916,6 +769,16 @@ class CustomRating
             .nte_show{
                 display: none;
             }
+
+            .ui-jqgrid .ui-jqgrid-htable .ui-th-div {
+                font-size: 12px;
+                word-wrap: break-word;
+                white-space: break-spaces;
+            }
+            .ui-jqgrid .ui-jqgrid-htable thead th {
+                padding: 10px 1px;
+            }
+
         </style>
         <?php
 

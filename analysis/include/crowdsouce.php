@@ -739,10 +739,12 @@ public static function prepare_array($options,$addsplash='')
 
 
 
-public static function Show_admin_table($datatype,$array_rows,$WP_include,$custom_table='',$refresh_rating='',$no_status='',$no_subgrid='')
+public static function Show_admin_table($datatype,$array_rows,$WP_include,$custom_table='',$refresh_rating='',$no_status='',$no_subgrid='',$edit =1,$select=1)
 {
-    $subgrid = 1;
-    $edit =1;
+
+
+
+
 
 
     if ($custom_table)
@@ -750,11 +752,6 @@ public static function Show_admin_table($datatype,$array_rows,$WP_include,$custo
         $sql = "SHOW COLUMNS FROM ".$custom_table;
         $doptable='&doptable='.$custom_table;
 
-
-        if ($custom_table=='commit'){
-            $subgrid = 0;
-            $edit =0;
-        }
     }
     else
     {
@@ -1086,7 +1083,17 @@ var first_run = 0;
             rowNum: 100,
             pager: "#jqGridPager",
             gridview : false,
+
+            <?php if ($select==1)  {    ?>
+
+
             multiselect: true,
+
+
+            <?php }   ?>
+
+
+
             beforeRequest:function(){
 
 
@@ -1127,19 +1134,7 @@ var first_run = 0;
 
                 var data_type = '<?php echo  $datatype; ?>';
 
-            ///console.log( row_id, rowdata, rawdata);
-            //     if (rowdata.add_time) {
-            //         let timeStampCon = convertTimestamp(rowdata.add_time);
-            //         $('#jqGrid').jqGrid('setCell', row_id, 'add_time', timeStampCon);
-            //     }
-            //     if (rowdata.last_update) {
-            //         let timeStampCon = convertTimestamp(rowdata.last_update);
-            //         $('#jqGrid').jqGrid('setCell', row_id, 'last_update', timeStampCon);
-            //     }
 
-                //if (rowdata.id) {
-                  ///  $('#jqGrid').jqGrid('setCell', row_id, 'id', '<input id="check_'+rowdata.id+'" class="ocheck" type="checkbox"> '+rowdata.id);
-                //}
 
 
                 if (data_type =='critic_crowd')
@@ -1164,7 +1159,7 @@ var first_run = 0;
             },
 
 
-            <?php if($subgrid && !$no_subgrid) { ?>
+            <?php if(!$no_subgrid) { ?>
             subGrid: true,
             subGridRowExpanded: function(subgrid_id, row_id) {
                 getSubgrid(subgrid_id, row_id);

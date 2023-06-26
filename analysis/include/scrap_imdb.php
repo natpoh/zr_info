@@ -1135,7 +1135,7 @@ function update_all_rwt_rating()
 
     if ($value)
     {
-        $value= unserialize($value);
+        $value= json_decode($value,1);
         $rwt_array= $value["rwt"];
       ///  var_dump($rwt_array);
     }

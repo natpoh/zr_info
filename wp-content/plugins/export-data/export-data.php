@@ -289,7 +289,7 @@ AND table_schema='imdbvisualization'";
 
         !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
         $this->graph();
-        Crowdsource::Show_admin_table('commit',$array_rows,1,'commit','',1,1);
+        Crowdsource::Show_admin_table('commit',$array_rows,1,'commit','',1,1,0,0);
 
 
 
