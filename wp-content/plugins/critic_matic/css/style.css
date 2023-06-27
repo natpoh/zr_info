@@ -171,3 +171,22 @@ i.sticn.st-3{
 i.sticn.st-4{
     background: #99CCFF;
 }
+
+.av_action {
+    display: none;
+}
+
+.av_action.active {
+    display: block;
+}
+
+
+#upload-image, #avatar_file, .cropped_images {
+    display: none;
+}
+
+#select_av_type {
+    margin-bottom: 0.5rem;
+    display: inline-block;
+    min-width: 200px;
+}
