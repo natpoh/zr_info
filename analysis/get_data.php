@@ -1144,6 +1144,8 @@ else if ($_POST['oper'] === 'get_actordata') {
 
 
 ////////get actor data
+        !class_exists('INTCONVERT') ? include ABSPATH . "analysis/include/intconvert.php" : '';
+        $array_ints = INTCONVERT::get_array_ints();
 
         !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
         $vd_data = unserialize(unserialize(OptionData::get_options('','critic_matic_settings')));
@@ -1158,23 +1160,23 @@ else if ($_POST['oper'] === 'get_actordata') {
 
 ///	tmdb_id	gender	ethnic	jew	kairos	bettaface	placebirth	surname	familysearch	forebears	crowdsource	verdict	verdict_weight	n_ethnic	n_jew	n_kairos	n_bettaface	n_surname	n_familysearch	n_forebears	n_crowdsource	n_verdict	n_verdict_weight	img	tmdb_img	last_update
 
-        $face2 = $av['bettaface'];
-        $face = $av['kairos'];
-        $surname = $av['surname'];
-        $etn = $av['ethnic'];
-        $jew = $av['jew'];
-        $crowd = $av['crowdsource'];
-        $forebears = $av['forebears'];
-        $familysearch = $av['familysearch'];
+        $face2 = $array_ints[$av['n_bettaface']];
+        $face = $array_ints[$av['n_kairos']];
+        $surname = $array_ints[$av['n_surname']];
+        $etn = $array_ints[$av['n_ethnic']];
+        $jew = $array_ints[$av['n_jew']];
+        $crowd = $array_ints[$av['n_crowdsource']];
+        $forebears = $array_ints[$av['n_forebears']];
+        $familysearch = $array_ints[$av['n_familysearch']];
 
-        $verdict = $av['verdict'];
+        $verdict =$array_ints[ $av['n_verdict']];
 
         if ($verdict_method==1)
         {
-            $verdict = $av['verdict_weight'];
+            $verdict = $array_ints[$av['n_verdict_weight']];
             if (!$verdict)
             {
-                $verdict = $av['verdict'];
+                $verdict = $array_ints[$av['n_verdict']];
             }
         }
 

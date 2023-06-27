@@ -5,8 +5,6 @@ set_time_limit(0);
 if (!defined('ABSPATH'))
     define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
 
-if (!defined('ABSPATH'))
-    define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
 //DB config
 !defined('DB_HOST_AN') ? include ABSPATH . 'analysis/db_config.php' : '';
 //Abstract DB

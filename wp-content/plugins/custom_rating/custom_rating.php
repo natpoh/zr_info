@@ -205,7 +205,7 @@ class CustomRating
         );
 
 
-        Crowdsource::Show_admin_table('woke',$array_rows,1,'',1);
+        Crowdsource::Show_admin_table('woke',$array_rows,1,'',1,1,0,0,0);
 
 
     ?>
@@ -770,11 +770,7 @@ class CustomRating
                 display: none;
             }
 
-            .ui-jqgrid .ui-jqgrid-htable .ui-th-div {
-                font-size: 12px;
-                word-wrap: break-word;
-                white-space: break-spaces;
-            }
+
             .ui-jqgrid .ui-jqgrid-htable thead th {
                 padding: 10px 1px;
             }

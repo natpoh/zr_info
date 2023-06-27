@@ -327,22 +327,22 @@ if ($originalimg==1)
     return;
 }
 
-
+$array_int_convert = array(1=>'W',2=>'EA',3=>'H',4=>'B',5=>'I',6=>'M',7=>'MIX',8=>'JW',9=>'NJW',10=>'IND');
 
 $array_compare_cache = array('Sadly, not'  => 'N/A','1' => 'N/A', '2' => 'N/A', 'NJW' => 'N/A','W' => 'White', 'B' => 'Black', 'EA' => 'Asian', 'H' => 'Latino', 'JW' => 'Jewish', 'I' => 'Indian', 'M' => 'Arab', 'MIX' => 'Mixed / Other', 'IND' => 'Indigenous');
 
 $array_convert = array('2' => 'Male', '1' => 'Female', '0' => 'NA');
 
 $array_type=array(
-    "crowd"=>'CROWDSOURCE:' ,
-    "jew"=>'JEWORNOTJEW:' ,
-    "ethnic"=>'ETHNICELEBS:',
-"kairos"=>'KAIROS FACIAL RECOGNITION:'  ,
-"bettaface"=>'BETAFACE FACIAL RECOGNITION:'
+    "n_crowd"=>'CROWDSOURCE:' ,
+    "n_jew"=>'JEWORNOTJEW:' ,
+    "n_ethnic"=>'ETHNICELEBS:',
+"n_kairos"=>'KAIROS FACIAL RECOGNITION:'  ,
+"n_bettaface"=>'BETAFACE FACIAL RECOGNITION:'
 
-,"familysearch"=>'FAMILYSEARCH:'
-,"forebears"=>'FOREBEARS:',
-"surname"=>'SURNAME ANALYSIS:'
+,"n_familysearch"=>'FAMILYSEARCH:'
+,"n_forebears"=>'FOREBEARS:',
+"n_surname"=>'SURNAME ANALYSIS:'
  );
 
 $id =intval($id);
@@ -358,32 +358,32 @@ $verdict_method=0; if ($vd_data["an_verdict_type"]=='w'){$verdict_method=1;}
 
         if ($r['gender'])$gender = $array_convert[$r['gender']];
 
-
-        if ($r['jew']) $result['jew'] = $r['jew'];
-        if ($r['bettaface'] && $r['bettaface']!=2 && $r['bettaface']!=1) $result['bettaface'] = $r['bettaface'];
-        if ($r['surname']) $result['surname'] = $r['surname'];
-        if ($r['ethnic']) $result['ethnic'] = $r['ethnic'];
-        if ($r['familysearch']) $result['familysearch'] = $r['familysearch'];
-        if ($r['forebears']) $result['forebears'] = $r['forebears'];
-        if ($r['kairos']) $result['kairos'] = $r['kairos'];
-        if ($r['crowdsource']) $result['crowd'] = $r['crowdsource'];
+        $result=$r;
+//        if ($r['jew']) $result['jew'] = $r['jew'];
+//        if ($r['bettaface'] && $r['bettaface']!=2 && $r['bettaface']!=1) $result['bettaface'] = $r['bettaface'];
+//        if ($r['surname']) $result['surname'] = $r['surname'];
+//        if ($r['ethnic']) $result['ethnic'] = $r['ethnic'];
+//        if ($r['familysearch']) $result['familysearch'] = $r['familysearch'];
+//        if ($r['forebears']) $result['forebears'] = $r['forebears'];
+//        if ($r['kairos']) $result['kairos'] = $r['kairos'];
+//        if ($r['crowdsource']) $result['crowd'] = $r['crowdsource'];
 
 
         if ($verdict_method==1)
         {
-            $verdict = $r['verdict_weight'];
+            $verdict = $r['n_verdict_weight'];
         }
         if ($verdict_method==0 || !$verdict)
         {
 
-            $verdict = $r['verdict'];
+            $verdict = $r['n_verdict'];
         }
 
 
     }
     if ($verdict)
     {
-        $verdict = $array_compare_cache[$verdict];
+        $verdict = $array_compare_cache[$array_int_convert[$verdict]];
     }
 
 $verdict =strtoupper($verdict);
@@ -437,9 +437,9 @@ foreach ($array_type as $type=>$title)
 {
     $data = $result[$type];
 
-    if ($array_compare_cache[$data])
+    if ($array_compare_cache[$array_int_convert[$data]])
     {
-        $data = $array_compare_cache[$data];
+        $data =$array_compare_cache[$array_int_convert[$data]];
     }
     if (!$data)
     {

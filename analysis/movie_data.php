@@ -124,23 +124,28 @@ class MOVIE_DATA
 
     public static function get_actor_race($id)
     {
+        !class_exists('INTCONVERT') ? include ABSPATH . "analysis/include/intconvert.php" : '';
+        $array_ints = INTCONVERT::get_array_ints();
+
+
         $array_convert = array('2' => 'Male', '1' => 'Female', '0' => 'NA');
         $array_compare_cache = array('Sadly, not' => 'N/A', '1' => 'N/A', '2' => 'N/A', 'NJW' => 'N/A', 'W' => 'White', 'B' => 'Black', 'EA' => 'Asian', 'H' => 'Latino', 'JW' => 'Jewish', 'I' => 'Indian', 'M' => 'Arab', 'MIX' => 'Mixed / Other', 'IND' => 'Indigenous');
+        $array_ints = INTCONVERT::get_array_ints();
 
-       $meta = self::get_actor_meta($id);
+        $meta = self::get_actor_meta($id);
         $gender = $array_convert[$meta['gender']];
         $verdict_method=   self::get_verdict_method();
         if ($verdict_method==1)
         {
-            $verdict = $meta['verdict_weight'];
+            $verdict = $meta['n_verdict_weight'];
             if (!$verdict)
             {
-                $verdict = $meta['verdict'];
+                $verdict = $meta['n_verdict'];
             }
         }
 
-        if (!$verdict)$verdict=1;
-        $race = $array_compare_cache[$verdict];
+        if (!$verdict)$verdict=0;
+        $race = $array_compare_cache[$array_ints[$verdict]];
         return $race.' '.$gender;
     }
 
@@ -309,6 +314,9 @@ class MOVIE_DATA
         }
         $year = self::get_movie_year($id);
 
+        !class_exists('INTCONVERT') ? include ABSPATH . "analysis/include/intconvert.php" : '';
+        $array_ints = INTCONVERT::get_array_ints();
+
         !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
         $vd_data = unserialize(unserialize(OptionData::get_options('','critic_matic_settings')));
         $verdict_method=0; if ($vd_data["an_verdict_type"]=='w'){$verdict_method=1;}
@@ -365,30 +373,30 @@ class MOVIE_DATA
                 //}
 
 
-                if ($r['jew']) $ethnic['jew'][$r['actor_id']] = $r['jew'];
-                if ($r['bettaface']) $ethnic['bettaface'][$r['actor_id']] = $r['bettaface'];
-                if ($r['surname']) $ethnic['surname'][$r['actor_id']] = $r['surname'];
-                if ($r['ethnic']) $ethnic['ethnic'][$r['actor_id']] = $r['ethnic'];
-                if ($r['kairos']) $ethnic['kairos'][$r['actor_id']] = $r['kairos'];
-                if ($r['crowdsource']) $ethnic['crowd'][$r['actor_id']] = $r['crowdsource'];
-                if ($r['forebears']) $ethnic['forebears'][$r['actor_id']] = $r['forebears'];
-                if ($r['familysearch']) $ethnic['familysearch'][$r['actor_id']] = $r['familysearch'];
+                if ($r['n_jew']) $ethnic['jew'][$r['actor_id']] = $array_ints[$r['n_jew']];
+                if ($r['n_bettaface']) $ethnic['bettaface'][$r['actor_id']] = $array_ints[$r['n_bettaface']];
+                if ($r['n_surname']) $ethnic['surname'][$r['actor_id']] = $array_ints[$r['n_surname']];
+                if ($r['n_ethnic']) $ethnic['ethnic'][$r['actor_id']] = $array_ints[$r['n_ethnic']];
+                if ($r['n_kairos']) $ethnic['kairos'][$r['actor_id']] =$array_ints[ $r['n_kairos']];
+                if ($r['n_crowdsource']) $ethnic['crowd'][$r['actor_id']] = $array_ints[$r['n_crowdsource']];
+                if ($r['n_forebears']) $ethnic['forebears'][$r['actor_id']] = $array_ints[$r['n_forebears']];
+                if ($r['n_familysearch']) $ethnic['familysearch'][$r['actor_id']] = $array_ints[$r['n_familysearch']];
 
                 if ($verdict_method)
                 {
-                    if ($r['verdict_weight'])
+                    if ($r['n_verdict_weight'])
                     {
-                        $verdict_data[$r['actor_id']] =$r['verdict_weight'];
+                        $verdict_data[$r['actor_id']] =$array_ints[$r['n_verdict_weight']];
                     }
                     else
                     {
-                        $verdict_data[$r['actor_id']] =$r['verdict'];
+                        $verdict_data[$r['actor_id']] =$array_ints[$r['n_verdict']];
                     }
 
                 }
                 else
                 {
-                    $verdict_data[$r['actor_id']] =$r['verdict'];
+                    $verdict_data[$r['actor_id']] =$array_ints[$r['n_verdict']];
                 }
 
 

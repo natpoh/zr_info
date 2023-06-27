@@ -1830,7 +1830,7 @@ class CriticFront extends SearchFacets {
         return $haystack;
     }
 
-    public function active_links($content, $find_video = false, $find_images = false) {
+    public function active_links($content, $find_video = false, $find_images = false, $no_follow=false) {
         // $pattern = '# (https://[\w\d-_\.]+)( |\n) #i';
 
         $pattern = '/(((http|https)\:\/\/)|(www\.|))[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\:[0-9]+)?(\/\S*)?/';
@@ -1861,7 +1861,11 @@ class CriticFront extends SearchFacets {
                     }
                 } else {
                     if ($need_replace) {
-                        $theme_link = '<a href="' . $valid_link . '" target="_blank">' . $valid_link . '</a>';
+                        $no_follow_rel = '';
+                        if ($no_follow){
+                            $no_follow_rel = ' rel="nofollow"';
+                        }
+                        $theme_link = '<a href="' . $valid_link . '" target="_blank"'.$no_follow_rel.'>' . $valid_link . '</a>';
                     }
                 }
 

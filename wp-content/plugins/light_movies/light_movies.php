@@ -413,7 +413,7 @@ check_request();
        $total_data_actors_ethnicolr = self::get_data_count_an('data_actors_ethnicolr');
        $total_data_actors_ethnicolr_filled = self::get_filled($total_actors,$total_data_actors_ethnicolr,'data_actors_ethnicolr',1,'date_upd');
 
-       $total_actors_meta_surname = self::get_data_count_an('data_actors_meta',"WHERE `surname` IS NOT NULL");
+       $total_actors_meta_surname = self::get_data_count_an('data_actors_meta',"WHERE `n_surname` IS NOT NULL");
        $total_actors_meta_surname_filled = self::get_filled($total_actors,$total_actors_meta_surname,'');
 
 
@@ -443,10 +443,10 @@ check_request();
        $total_actors_meta_kairos_imdb_filled = self::get_filled($total_actors_image,$total_actors_meta_kairos_imdb,'kairos_add');
 
 
-       $total_actors_meta_kairos = self::get_data_count_an('data_actors_meta',"WHERE `kairos` IS NOT NULL");
+       $total_actors_meta_kairos = self::get_data_count_an('data_actors_meta',"WHERE `n_kairos` IS NOT NULL");
        $total_actors_meta_kairos_filled = self::get_filled($total_actors,$total_actors_meta_kairos,'kairos');
 
-       $total_actors_meta_bettaface = self::get_data_count_an('data_actors_meta',"WHERE `bettaface` IS NOT NULL and `bettaface`!=2");
+       $total_actors_meta_bettaface = self::get_data_count_an('data_actors_meta',"WHERE `n_bettaface` IS NOT NULL and `bettaface`!=2");
        $total_actors_meta_bettaface_filled = self::get_filled($total_actors,$total_actors_meta_bettaface,'bettaface');
 
 
@@ -456,7 +456,7 @@ check_request();
        $total_actors_meta_gender = self::get_data_count_an('data_actors_meta',"WHERE `gender` IS NOT NULL");
        $total_actors_meta_gender_filled = self::get_filled($total_actors,$total_actors_meta_gender,'gender');
 
-       $total_actors_meta_verdict = self::get_data_count_an('data_actors_meta',"WHERE `verdict` IS NOT NULL");
+       $total_actors_meta_verdict = self::get_data_count_an('data_actors_meta',"WHERE `n_verdict` IS NOT NULL");
        $total_actors_meta_verdict_filled = self::get_filled($total_actors,$total_actors_meta_verdict,'verdict');
 
 

@@ -81,7 +81,7 @@ class Ethinc
             {
                 //echo $verdict.'=>'.$verdict_result.' '.PHP_EOL;
 
-                $sql1 = "UPDATE `data_actors_meta` SET `ethnic` = '" . $verdict_result . "' , n_ethnic ='".self::intconvert($verdict_result)."' ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $actor_id . "'";
+                $sql1 = "UPDATE `data_actors_meta` SET  n_ethnic ='".self::intconvert($verdict_result)."' ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $actor_id . "'";
                 Pdo_an::db_query($sql1);
 
                 update_actors_verdict($actor_id);

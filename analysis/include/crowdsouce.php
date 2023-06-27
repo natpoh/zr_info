@@ -274,7 +274,7 @@ return $result;
 
             if ($verdict)
             {
-                $sql =" UPDATE `data_actors_meta` SET `crowdsource` = '".$verdict."' ,`n_crowdsource` = '".(self::intconvert($verdict))."' ,
+                $sql =" UPDATE `data_actors_meta` SET `n_crowdsource` = '".(self::intconvert($verdict))."' ,
                 `last_update` = ".time()." WHERE `data_actors_meta`.`actor_id` =".$actor;
                 Pdo_an::db_query($sql);
 
@@ -1157,6 +1157,19 @@ var first_run = 0;
                     $('#jqGrid').jqGrid('setCell', row_id, 'image', '<a target="_blank" href="'+rowdata.image+'"><img style="height: 100px;" src="'+rowdata.image+'"></a>', {'color': 'blue'});
                 }
             },
+            gridComplete:function(){
+                jQuery('.ui-jqgrid-htable .ui-th-div').each(function (){
+                   let ts = jQuery(this);
+                   let hm=ts.html();
+                   let trim =  hm.split('<')[0].trim();
+                    ts.attr('title',trim);
+
+                    hm  = hm.replace(/_/g, "_<wbr>");
+                    ts.html(hm);
+
+                });
+
+            },
 
 
             <?php if(!$no_subgrid) { ?>
@@ -1353,7 +1366,7 @@ var first_run = 0;
 <?php
 }
 
-    if (!$custom_table)
+    if (!$custom_table && $select)
     {
     ?>
 

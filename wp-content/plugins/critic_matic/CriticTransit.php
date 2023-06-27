@@ -406,21 +406,18 @@ class CriticTransit extends AbstractDB {
 
                     return $n_verdict;
                 }
-                $s_verdict = '';
-                if ($n_verdict > 0) {
-                    $s_verdict = $array_int_convert[$n_verdict];
-                }
+
 
                 if ($debug) {
-                    print "Race verdict: " . $n_verdict . "; " . $s_verdict . "\n";
+                    print "Race verdict: " . $n_verdict . "\n";
                 }
 
                 // Update verdict
 
-                if ($item->verdict_weight != $s_verdict && $item->n_verdict_weight != $n_verdict) {
+                if ( $item->n_verdict_weight != $n_verdict) {
                     $data = array(
                         'last_update' => $this->curr_time(),
-                        'verdict_weight' => $s_verdict,
+
                         'n_verdict_weight' => $n_verdict
                     );
                     $this->sync_update_data($data, $item->id, $this->db['actors_meta'], $sinch, 15);
