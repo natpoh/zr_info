@@ -78,7 +78,7 @@ class CriticMatic extends AbstractDB {
         7 => 'Last week',
         30 => 'Last Mounth',
     );
-    public $sort_pages = array('author_name', 'free','ftype', 'id', 'ip', 'date', 'date_add', 'title', 'last_update', 'update_interval', 'name', 'pid', 'slug', 'status', 'type', 'weight', 'wp_uid', 'show_type');
+    public $sort_pages = array('author_name', 'free', 'ftype', 'id', 'ip', 'date', 'date_add', 'title', 'last_update', 'update_interval', 'name', 'pid', 'slug', 'status', 'type', 'weight', 'wp_uid', 'show_type');
 
     /*
      * Authors
@@ -464,7 +464,6 @@ class CriticMatic extends AbstractDB {
             // Clear comments
             $cc = $this->get_cc();
             $cc->check_post($pa);
-            
         } else {
             // Find movies from critic
             if ($pa->top_movie == 0 && $pa->status == 1 && $this->sync_server) {
@@ -2205,7 +2204,7 @@ class CriticMatic extends AbstractDB {
             $result_id = $id;
 
             //Tags. Remove old meta and add new
-            $this->remove_author_tags($id);
+            // $this->remove_author_tags($id);
         } else {
             //ADD
             /*
@@ -2230,11 +2229,23 @@ class CriticMatic extends AbstractDB {
         }
 
         //Add tag meta
-        if ($tags && sizeof($tags)) {
+
+
+        $old_tags = $this->get_author_tags($result_id);
+
+        if ($old_tags) {
+            foreach ($old_tags as $old_tag) {
+                if (!in_array($old_tag->id, $tags)) {
+                    $this->remove_author_tag($result_id, $old_tag->id);
+                }
+            }
+        }
+        if ($tags) {
             foreach ($tags as $tag_id) {
                 $this->add_author_tag($result_id, $tag_id);
             }
         }
+
 
         return $result_id;
     }
@@ -2366,14 +2377,14 @@ class CriticMatic extends AbstractDB {
         return $result;
     }
 
-    public function get_author_tags($aid = 0, $status = -1) {
+    public function get_author_tags($aid = 0, $status = -1, $cache = true) {
         //Get from cache
         static $dict;
         if (is_null($dict)) {
             $dict = array();
         }
 
-        if (isset($dict[$aid])) {
+        if (isset($dict[$aid]) && $cache) {
             return $dict[$aid];
         }
 
@@ -2496,6 +2507,15 @@ class CriticMatic extends AbstractDB {
             return true;
         }
         return false;
+    }
+
+    public function remove_author_tag($aid, $tid) {
+
+        $data = array(
+            'tid' => $tid,
+            'cid' => $aid,
+        );
+        $this->sync_delete_multi($data, $this->db['tag_meta'], $sync_data = $this->sync_data, 10);
     }
 
     public function remove_author_tags($aid) {

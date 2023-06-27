@@ -1830,7 +1830,7 @@ class CriticFront extends SearchFacets {
         return $haystack;
     }
 
-    public function active_links($content, $find_video = false, $find_images = false, $no_follow=false) {
+    public function active_links($content, $find_video = false, $find_images = false, $no_follow = false) {
         // $pattern = '# (https://[\w\d-_\.]+)( |\n) #i';
 
         $pattern = '/(((http|https)\:\/\/)|(www\.|))[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\:[0-9]+)?(\/\S*)?/';
@@ -1862,10 +1862,10 @@ class CriticFront extends SearchFacets {
                 } else {
                     if ($need_replace) {
                         $no_follow_rel = '';
-                        if ($no_follow){
+                        if ($no_follow) {
                             $no_follow_rel = ' rel="nofollow"';
                         }
-                        $theme_link = '<a href="' . $valid_link . '" target="_blank"'.$no_follow_rel.'>' . $valid_link . '</a>';
+                        $theme_link = '<a href="' . $valid_link . '" target="_blank"' . $no_follow_rel . '>' . $valid_link . '</a>';
                     }
                 }
 
@@ -2624,8 +2624,8 @@ class CriticFront extends SearchFacets {
                         <div class="meta">
                             <span class="p-date block">
                                 <time><?php
-                            print date('d.m.Y H:i', $item->date);
-                            ?></time>
+                                    print date('d.m.Y H:i', $item->date);
+                                    ?></time>
                             </span>
 
                             <span class="p-cat block">
@@ -2643,8 +2643,8 @@ class CriticFront extends SearchFacets {
                             <?php } ?>
                         </div>
                     </div><?php
-                        }
-                        ?>
+                }
+                ?>
                 <?php if ($total_count > $view_rows) { ?>
                     <h3 class="ns_all"><a href="<?php print $ns_link ?>">Show all related posts: <?php print $total_count ?></a></h3>
                     <?php
@@ -3042,5 +3042,73 @@ class CriticFront extends SearchFacets {
 
         return $data;
     }
+    
+    /*
+     * Wp user tags
+     */
+    
+    public function get_user_tags($wp_uid) {
+        $author = $this->cm->get_author_by_wp_uid($wp_uid);
 
-}
+         // Tags
+        $catdata = '';
+        $tags = $this->cm->get_author_tags($author->id);
+        if (sizeof($tags)) {
+            foreach ($tags as $tag) {
+                $catdata .= $this->get_tag_link($tag->slug, $tag->name);
+            }
+        }
+        return $catdata;
+    }
+
+    public function update_author_tags($wp_uid, $tags) {
+        $author = $this->cm->get_author_by_wp_uid($wp_uid);
+
+        $old_tags = $this->cm->get_author_tags($author->id);
+
+        foreach ($old_tags as $old_tag) {
+
+            if (!in_array($old_tag->id, $tags)) {
+                $this->cm->remove_author_tag($author->id, $old_tag->id);
+            }
+        }
+        foreach ($tags as $tag_id) {
+            $this->cm->add_author_tag($author->id, $tag_id);
+        }
+    }
+
+    public function edit_author_tags($wp_uid) {
+        ?>
+        <input type="hidden" name="post_category[]" value="0">
+        <ul class="cat-checklist category-checklist">
+        <?php
+        $author = $this->cm->get_author_by_wp_uid($wp_uid);
+        $tags = $this->cm->get_tags();
+        $author_tags = $this->cm->get_author_tags($author->id,-1,false);
+        $tag_arr = array();
+        if (sizeof($author_tags)) {
+            foreach ($author_tags as $tag) {
+                $tag_arr[] = $tag->id;
+            }
+        }
+
+        if (sizeof($tags)) {
+            foreach ($tags as $tag) {
+                $checked = '';
+                if (in_array($tag->id, $tag_arr)) {
+                    $checked = 'checked="checked"';
+                }
+                ?>
+                    <li id="category-<?php print $tag->id ?>">
+                        <label class="selectit"><input value="<?php print $tag->id ?>" <?php print $checked ?> type="checkbox" name="post_category[]" id="in-category-<?php print $tag->id ?>"> <?php print $tag->name ?></label>
+                    </li>
+                <?php
+            }
+        }
+        ?>
+        </ul>
+            <?php
+        }
+
+    }
+    

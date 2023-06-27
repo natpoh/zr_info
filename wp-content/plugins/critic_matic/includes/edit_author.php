@@ -89,7 +89,7 @@ if ($aid) {
                 <input type="hidden" name="post_category[]" value="0">
                 <ul class="cat-checklist category-checklist">
                     <?php
-                    $author_tags = $this->cm->get_author_tags($aid);
+                    $author_tags = $this->cm->get_author_tags($aid,-1,false);
                     $tag_arr = array();
                     if (sizeof($author_tags)) {
                         foreach ($author_tags as $tag) {
