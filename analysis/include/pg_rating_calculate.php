@@ -297,6 +297,7 @@ class PgRatingCalculate {
 
         ///get option
         $rating_array =[];
+        $array_convert=[];
 
             !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
             $value = OptionData::get_options('', 'movies_raiting_weight');
