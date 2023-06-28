@@ -534,7 +534,7 @@ class PgRatingCalculate {
 
         if ($update || $force_sync)
         {
-            if (!$pos_id && $sync)
+            if (!$pos_id && ($sync || DB_SYNC_MODE==1))
             {
                 //add
                 if ($total_rating)
@@ -545,7 +545,7 @@ class PgRatingCalculate {
                 $data_current_array['movie_id']=$id;
                 $data_current_array['last_upd']=time();
 
-                self::sync_update($data_current_array,'','data_movie_erating','insert',$sync);
+                self::sync_update($data_current_array,'','data_movie_erating','insert',1);
 
 
 
