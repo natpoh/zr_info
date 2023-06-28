@@ -357,20 +357,20 @@ class SearchFacets extends AbstractDB {
         return $ret;
     }
 
-    public function find_results($ids = array(), $show_facets = true, $only_curr_tab = false) {
+    public function find_results($ids = array(), $show_facets = true, $only_curr_tab = false, $limit = -1, $page = -1) {
         gmi('find_results');
         $result = array();
         $start = 0;
-        $page = $this->get_search_page();
-        if ($page > 1) {
-            $start = ($page - 1) * $this->search_limit;
+        $search_page = ($page != -1) ? $page : $this->get_search_page();
+
+        $search_limit = ($limit != -1) ? $limit : $this->search_limit;
+
+        if ($search_page > 1) {
+            $start = ($search_page - 1) * $search_limit;
         }
 
         $tab_key = $this->get_tab_key();
-
         $filters = $this->get_search_filters();
-
-
 
         gmi('get_search_filters');
 
@@ -386,17 +386,17 @@ class SearchFacets extends AbstractDB {
         if ($is_movie && $only_curr_tab || !$only_curr_tab) {
             // Find movies in AN base
             $type = 'Movie';
-            $sort = $this->get_search_sort('movies');
+            $sort = $this->get_search_sort('movies');            
             if ($show_facets) {
                 $facets = $is_movie ? true : false;
             }
-            $result['movies'] = $this->cs->front_search_movies_multi($this->keywords, $this->search_limit, $start, $sort, $filters, $facets);
+            $result['movies'] = $this->cs->front_search_movies_multi($this->keywords, $search_limit, $start, $sort, $filters, $facets);
             $movies_count = $result['movies']['count'];
 
             if ($movies_count == 0 && $this->keywords) {
                 if ($this->get_clear_filters($filters)) {
                     // Try to find without filters
-                    $no_filters = $this->cs->front_search_movies_multi($this->keywords, $this->search_limit, $start, $sort, array(), false);
+                    $no_filters = $this->cs->front_search_movies_multi($this->keywords, $search_limit, $start, $sort, array(), false);
                     if ($no_filters['count'] > 0) {
                         $result['movies']['no_filters_count'] = $no_filters['count'];
                     }
@@ -412,13 +412,13 @@ class SearchFacets extends AbstractDB {
             if ($show_facets) {
                 $facets = $is_critic ? true : false;
             }
-            $result['critics'] = $this->cs->front_search_critics_multi($this->keywords, $this->search_limit, $start, $sort, $filters, $facets);
+            $result['critics'] = $this->cs->front_search_critics_multi($this->keywords, $search_limit, $start, $sort, $filters, $facets);
             $critics_count = $result['critics']['count'];
 
             if ($critics_count == 0 && $this->keywords) {
                 if ($this->get_clear_filters($filters)) {
                     // Try to find without filters
-                    $no_filters = $this->cs->front_search_critics_multi($this->keywords, $this->search_limit, $start, $sort, array(), false);
+                    $no_filters = $this->cs->front_search_critics_multi($this->keywords, $search_limit, $start, $sort, array(), false);
                     if ($no_filters['count'] > 0) {
                         $result['critics']['no_filters_count'] = $no_filters['count'];
                     }
@@ -428,7 +428,7 @@ class SearchFacets extends AbstractDB {
             gmi('front_search_critics_multi');
             // Movie weight logic        
             if ($sort['sort'] == 'mw') {
-                $result['critics']['list'] = $this->sort_critic_mv_result($result['critics']['list'], $this->search_limit, $start, $filters, $sort);
+                $result['critics']['list'] = $this->sort_critic_mv_result($result['critics']['list'], $search_limit, $start, $filters, $sort);
             }
         }
 

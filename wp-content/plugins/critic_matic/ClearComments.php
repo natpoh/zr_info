@@ -405,7 +405,7 @@ class ClearComments extends AbstractDB {
             return $this->settings;
         }
         // Get settings from options
-        $settings = unserialize($this->get_option('clear_comments_settings', false));
+        $settings = unserialize($this->get_option('clear_comments_settings','', false));
 
         $valid_settings = array();
         if ($settings && sizeof($settings)) {
@@ -427,7 +427,7 @@ class ClearComments extends AbstractDB {
 
     public function update_settings($form) {
 
-        $settings_prev = unserialize($this->get_option('clear_comments_settings', false));
+        $settings_prev = unserialize($this->get_option('clear_comments_settings','', false));
 
         $ss = $settings_prev;
         foreach ($form as $key => $value) {
