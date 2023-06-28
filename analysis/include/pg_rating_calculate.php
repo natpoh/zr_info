@@ -10,6 +10,7 @@ if (!defined('ABSPATH'))
 class PgRatingCalculate {
 
      static $ma =null;
+     static $rwt_array=[];
 
 
     public static function getMa()
@@ -293,12 +294,15 @@ class PgRatingCalculate {
 
     }
 
-    public static function add_movie_rating($id, $rwt_array = '', $debug = '', $update = 1,$check_fields=0,$sync=1) {
+    public static function add_movie_rating($id, $rwt_array_last = '', $debug = '', $update = 1,$check_fields=0,$sync=1) {
 
         ///get option
         $rating_array =[];
         $array_convert=[];
+        $force_sync=0;
 
+        if (!self::$rwt_array)
+        {
             !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
             $value = OptionData::get_options('', 'movies_raiting_weight');
 
@@ -306,13 +310,23 @@ class PgRatingCalculate {
                 $rwt_array_data = json_decode($value,1);
                 $rwt_array = $rwt_array_data['rwt'];
             }
-
-        $value = OptionData::get_options('', 'movies_raiting_weight_convert');
-
-        if ($value) {
-            $value = json_decode($value,1);
-            $array_convert = $value;
+            self::$rwt_array= $rwt_array;
         }
+        else
+        {
+            $rwt_array=self::$rwt_array;
+
+        }
+
+//
+//
+//
+//        $value = OptionData::get_options('', 'movies_raiting_weight_convert');
+//
+//        if ($value) {
+//            $value = json_decode($value,1);
+//            $array_convert = $value;
+//        }
 
 
         $sql = "SELECT * FROM `data_movie_erating` where `movie_id` = " . $id;
@@ -324,16 +338,18 @@ class PgRatingCalculate {
             $pos_id = $main_data_ext['id'];
         }
 
-
-
+        $data_current_array=[];
         if ($check_fields && $pos_id) {
+
+
+
             if (!$main_data_ext['imdb_rating']) {
                 $imdb = self::get_data_in_movie('rating', '', $id);
 
                 if ($imdb) {
                     $main_data_ext['imdb_rating'] = $imdb * 10;
 
-                    $data['imdb_rating'] = $main_data_ext['imdb_rating'];
+                    $data_current_array['imdb_rating'] = $main_data_ext['imdb_rating'];
 
 
                 }
@@ -342,7 +358,11 @@ class PgRatingCalculate {
             }
             if (!$main_data_ext['title']) {
                 $title = self::get_data_in_movie('title', '', $id);
-                $data['title'] = $title;
+                if ($title)
+                {
+                    $data_current_array['title'] = $title;
+                }
+
             }
 
             if (!$main_data_ext['audience_rating']) {
@@ -352,12 +372,25 @@ class PgRatingCalculate {
                 if ($aud) {
                     $main_data_ext['audience_rating'] = $aud * 20;
 
-                    $data['audience_rating'] = $main_data_ext['audience_rating'];
-                    $data['audience_date'] =time();
+                    $data_current_array['audience_rating'] = $main_data_ext['audience_rating'];
+                    $data_current_array['audience_date'] =time();
                 }
             }
 
-            if ($data)self::sync_update($data,$pos_id,'data_movie_erating','update',$sync);
+            if ($data_current_array)
+
+            {
+
+                if ($pos_id)
+                {
+                    self::sync_update($data_current_array,$pos_id,'data_movie_erating','update',0);
+                    $force_sync =1;
+                }
+
+
+
+            }
+
 
         }
 
@@ -468,7 +501,7 @@ class PgRatingCalculate {
 
         if ($total_rating) {
             // $total_rating = ($total_rating)/$count;
-            $total_rating = round($total_rating, 2);
+            $total_rating = round($total_rating, 0);
         }
 
         $converted_rating = round($total_rating/20,1);
@@ -490,25 +523,30 @@ class PgRatingCalculate {
         if ($debug)
             self::debug_table('e'); ///end of table
 
-        if ($update)
+        if ($update || $force_sync)
         {
-            if (!$pos_id)
+            if (!$pos_id && $sync)
             {
                 //add
                 if ($total_rating)
                 {
-                    $data['total_rating']=$total_rating;
+                    $data_current_array['total_rating']=$total_rating;
 
                 }
-                $data['last_upd']=time();
-                self::sync_update($data,'','data_movie_erating','insert',$sync);
+                $data_current_array['movie_id']=$id;
+                $data_current_array['last_upd']=time();
 
+                self::sync_update($data_current_array,'','data_movie_erating','insert',$sync);
+
+
+
+                echo 'add<br>';
             }
-            else if ($total_rating!=$main_data_ext['total_rating'])
+            else if ($total_rating!=$main_data_ext['total_rating'] || $force_sync)
             {
-
-                $data =['total_rating'=>$total_rating,'last_upd'=>time()];
-                self::sync_update($data,$pos_id,'data_movie_erating','update',$sync);
+                echo 'update '.$total_rating.'!=' .$main_data_ext['total_rating'].' f='.$force_sync.'<br>';
+                $data_current_array =['total_rating'=>$total_rating,'last_upd'=>time()];
+                self::sync_update($data_current_array,$pos_id,'data_movie_erating','update',$sync);
             }
 
 

@@ -18,7 +18,7 @@ if (!function_exists('add_action')) {
 define('CRITIC_MATIC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CRITIC_MATIC_PLUGIN_URL', plugin_dir_url(__FILE__));
 
-$version = '1.0.100';
+$version = '1.0.99';
 if (defined('LASTVERSION')) {
     define('CRITIC_MATIC_VERSION', $version . LASTVERSION);
 } else {
@@ -1659,6 +1659,13 @@ Stars witch foto
 SELECT m.mid, count(*) FROM meta_movie_actor m INNER JOIN data_actors_meta r ON m.aid = r.actor_id WHERE m.type = 1 AND r.n_kairos=0 GROUP by m.mid
  * 
  * 
- * 
+ *  
  * DELETE FROM `data_actors_country` WHERE result=232
+ * 
+ * 
+ * 
+ * // 28.06.2023 - TODO remove empty date rating
+ * UPDATE `data_movie_erating` SET animelist_date=0 WHERE animelist_date >0;
+ * DELETE FROM `meta_movie_genre` WHERE `gid` = 29
+ * 
  */

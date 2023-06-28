@@ -321,14 +321,13 @@ class CriticSearch extends AbstractDB {
             'weight' => 110,
             'childs' => array(
                 'poptitle' => array('title' => 'Most Talked About', 'is_title' => 1, 'group' => 'pop'),
-                'crwt' => array('title' => 'Popularity Total', 'titlesm' => 'Popularity', 'name_pre' => 'Pop ', 'filter_pre' => 'Popularity ', 'group' => 'pop','icon' => 'zr', 'sorted' => 1,),
+                'crwt' => array('title' => 'Popularity Total', 'titlesm' => 'Popularity', 'name_pre' => 'Pop ', 'filter_pre' => 'Popularity ', 'group' => 'pop', 'icon' => 'zr', 'sorted' => 1,),
                 'cimdb' => array('title' => 'IMDb', 'titlesm' => 'IMDb', 'name_pre' => 'IMDb ', 'filter_pre' => 'IMDb Rating ', 'group' => 'pop', 'icon' => 'imdb', 'sorted' => 1,),
                 'canl' => array('title' => 'MyAnimeList', 'titlesm' => 'MyAnimeList', 'name_pre' => 'MyAnLi ', 'filter_pre' => 'MyAnLi ', 'group' => 'pop', 'icon' => 'mal', 'sorted' => 1,),
                 'crt' => array('title' => 'Rotten Tomatoes', 'titlesm' => 'RT', 'name_pre' => 'RT ', 'filter_pre' => 'Rotten Tomatoes ', 'group' => 'pop', 'icon' => 'rt', 'sorted' => 1,),
                 'crta' => array('title' => 'Rotten Tomatoes Audience', 'titlesm' => 'RT Audience', 'name_pre' => 'RTA ', 'filter_pre' => 'Rotten Tomatoes Audience ', 'group' => 'pop', 'icon' => 'rt', 'sorted' => 1,),
                 'pop' => array('title' => 'ZR Critics', 'titlesm' => 'Reviews', 'name_pre' => 'Reviews ', 'filter_pre' => 'Reviews ', 'group' => 'pop', 'icon' => 'zr', 'sorted' => 1,),
                 'cfn' => array('title' => '4chan', 'titlesm' => '4chan', 'name_pre' => '4chan ', 'filter_pre' => '4chan ', 'group' => 'pop', 'icon' => 'fchan', 'sorted' => 1,),
-
                 // Global
                 'gpoptitle' => array('title' => 'Global Popularity', 'is_title' => 1, 'group' => 'pop'),
                 'cdb' => array('title' => 'Douban', 'name_pre' => 'DB ', 'titlesm' => 'Douban', 'filter_pre' => 'Douban ', 'group' => 'pop', 'icon' => 'douban', 'sorted' => 1,),
@@ -391,7 +390,6 @@ class CriticSearch extends AbstractDB {
         'movies' => array(
             'title' => array('title' => 'Title', 'def' => 'asc', 'main' => 1, 'group' => 'def'),
             'date' => array('title' => 'Date', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
-            
             'ratingsort' => array('title' => 'Ratings', 'group' => 'rating', 'main' => 1, 'sorted' => 1,),
             'rating' => array('title' => 'Family Friend Score', 'def' => 'desc', 'group' => 'woke'),
             'popsort' => array('title' => 'Popularity', 'group' => 'pop', 'main' => 1, 'sorted' => 1,),
@@ -399,7 +397,6 @@ class CriticSearch extends AbstractDB {
             'finsort' => array('title' => 'Finances', 'group' => 'indie', 'main' => 1, 'sorted' => 1,),
             'woke' => array('title' => 'Wokeness', 'def' => 'desc', 'group' => 'woke'),
             'woketitle' => array('title' => 'Forced Diversity', 'is_title' => 1, 'group' => 'woke'),
-            
             'div' => array('title' => 'Diversity %', 'def' => 'desc', 'group' => 'woke'),
             'fem' => array('title' => 'Female %', 'def' => 'desc', 'group' => 'woke'),
             'lgbt' => array('title' => 'LGBT', 'def' => 'desc', 'group' => 'woke'),
@@ -407,7 +404,7 @@ class CriticSearch extends AbstractDB {
         ),
         'critics' => array(
             'title' => array('title' => 'Title', 'def' => 'asc', 'main' => 1, 'group' => 'def'),
-            'date' => array('title' => 'Date', 'def' => 'desc', 'main' => 1, 'group' => 'def'),            
+            'date' => array('title' => 'Date', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
             'rel' => array('title' => 'Relevance', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
             'titlepop' => array('title' => 'Rating', 'group' => 'woke', 'main' => 1,),
             'pop' => array('title' => 'Emotions', 'def' => 'desc', 'group' => 'woke',),
@@ -416,7 +413,6 @@ class CriticSearch extends AbstractDB {
         'international' => array(
             'title' => array('title' => 'Title', 'def' => 'asc', 'main' => 1, 'group' => 'def'),
             'date' => array('title' => 'Date', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
-            
             'ratingsort' => array('title' => 'Ratings', 'group' => 'rating', 'main' => 1, 'sorted' => 1,),
             'rating' => array('title' => 'Family Friend Score', 'def' => 'desc', 'group' => 'woke'),
             'popsort' => array('title' => 'Popularity', 'group' => 'pop', 'main' => 1, 'sorted' => 1,),
@@ -424,7 +420,6 @@ class CriticSearch extends AbstractDB {
             'finsort' => array('title' => 'Finances', 'group' => 'indie', 'main' => 1, 'sorted' => 1,),
             'woke' => array('title' => 'Wokeness', 'def' => 'desc', 'group' => 'woke'),
             'woketitle' => array('title' => 'Forced Diversity', 'is_title' => 1, 'group' => 'woke'),
-            
             'div' => array('title' => 'Diversity %', 'def' => 'desc', 'group' => 'woke'),
             'fem' => array('title' => 'Female %', 'def' => 'desc', 'group' => 'woke'),
             'rating' => array('title' => 'Family Friend Score', 'def' => 'desc', 'group' => 'woke'),
@@ -434,7 +429,6 @@ class CriticSearch extends AbstractDB {
         'ethnicity' => array(
             'title' => array('title' => 'Title', 'def' => 'asc', 'main' => 1, 'group' => 'def'),
             'date' => array('title' => 'Date', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
-            
             'ratingsort' => array('title' => 'Ratings', 'group' => 'rating', 'main' => 1, 'sorted' => 1,),
             'rating' => array('title' => 'Family Friend Score', 'def' => 'desc', 'group' => 'woke'),
             'popsort' => array('title' => 'Popularity', 'group' => 'pop', 'main' => 1, 'sorted' => 1,),
@@ -442,7 +436,6 @@ class CriticSearch extends AbstractDB {
             'finsort' => array('title' => 'Finances', 'group' => 'indie', 'main' => 1, 'sorted' => 1,),
             'woke' => array('title' => 'Wokeness', 'def' => 'desc', 'group' => 'woke'),
             'woketitle' => array('title' => 'Forced Diversity', 'is_title' => 1, 'group' => 'woke'),
-            
             'div' => array('title' => 'Diversity %', 'def' => 'desc', 'group' => 'woke'),
             'fem' => array('title' => 'Female %', 'def' => 'desc', 'group' => 'woke'),
             'rating' => array('title' => 'Family Friend Score', 'def' => 'desc', 'group' => 'woke'),
@@ -2718,6 +2711,8 @@ class CriticSearch extends AbstractDB {
                 $order = ' ORDER BY post_date ' . $sort_type;
             } else if ($sort_key == 'rel') {
                 $order = ' ORDER BY w ' . $sort_type;
+            } else if ($sort_key == 'id') {
+                $order = ' ORDER BY id ' . $sort_type;
             } else if ($sort_key == 'mw') {
                 $order = ' ORDER BY id DESC';
             } else if (in_array($sort_key, $audience_facets) || $sort_key == 'pop') {
@@ -2763,6 +2758,8 @@ class CriticSearch extends AbstractDB {
                 }
             } else if ($sort_key == 'rel') {
                 $order = ' ORDER BY w ' . $sort_type;
+            } else if ($sort_key == 'id') {
+                $order = ' ORDER BY id ' . $sort_type;
             } else if ($sort_key == 'rating') {
                 $order = ' ORDER BY rating ' . $sort_type;
             } else if ($sort_key == 'div') {
@@ -2991,6 +2988,9 @@ class CriticSearch extends AbstractDB {
                     } else if ($key == 'type') {
                         // Type
                         $filters_and .= $this->filter_multi_value('type', $value);
+                    } else if ($key == 'id') {
+                        // id
+                        $filters_and .= sprintf(" AND id>%d", $value);
                     } else if ($key == 'release') {
                         // Release
                         $dates = explode('-', $value);

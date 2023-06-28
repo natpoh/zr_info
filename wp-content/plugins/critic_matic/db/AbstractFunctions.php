@@ -149,7 +149,7 @@ class AbstractFunctions {
         return $commit_id;
     }
 
-    public function get_option($option, $cache = true) {
+    public function get_option($option, $def = '', $cache = true) {
         if ($cache) {
             static $dict;
             if (is_null($dict)) {
@@ -191,9 +191,13 @@ class AbstractFunctions {
             }
         }
 
-        if ($cache) {
+        if ($cache && $data) {
             $dict[$option] = $data;
         }
+        if (!$data){
+            $data = $def;
+        }
+        
         return $data;
     }
 
@@ -378,9 +382,9 @@ class AbstractFunctions {
         return true;
     }
 
-    public function validate_varchar($string='', $len = 255) {
+    public function validate_varchar($string = '', $len = 255) {
         if (strlen($string) > $len) {
-            $string = substr($string, 0, ($len-1));
+            $string = substr($string, 0, ($len - 1));
         }
         return $string;
     }

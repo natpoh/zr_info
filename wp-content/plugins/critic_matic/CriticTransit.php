@@ -86,6 +86,65 @@ class CriticTransit extends AbstractDB {
     }
 
     /*
+     * Anime genre
+     */
+
+    public function anime_genre_cron($count = 10, $debug = false, $force = false) {
+        $option_name = 'anime_filter_last_id';
+        $last_id = $this->get_option($option_name, 0);
+        if ($force) {
+            $last_id = 0;
+        }
+
+        if ($debug) {
+            p_r(array('last_id', $last_id));
+        }
+
+
+        // anime_filter_url
+        $def_url = '/search/type_movies_tv/genre_animation/countrystar_china_japan/country_china_japan';
+        $url = $this->get_option('anime_filter_url', $def_url);
+
+
+        // Init url
+        $last_req = $_SERVER['REQUEST_URI'];
+
+        $_SERVER['REQUEST_URI'] = $url;
+        $search_front = new CriticFront();
+        $search_front->init_search_filters();
+
+        // Sort by id
+        $search_front->filters['sort'] = 'id-asc';
+        $search_front->filters['id'] = $last_id;
+        $search_front->search_sort['movies']['id'] = true;
+
+        $result = $search_front->find_results(array(), false, true, $count, 1);
+        if ($debug) {
+            print_r($result);
+        }
+        // Deinit url        
+        $_SERVER['REQUEST_URI'] = $last_req;
+
+        // Anime
+        $gid = 29;
+
+        if ($result['movies']['list']) {
+            $last = end($result['movies']['list']);
+            if ($debug) {
+                print 'last id: ' . $last->id . "\n";
+            }
+            if ($last) {
+                $this->update_option($option_name, $last->id);
+            }
+            $ma = $this->get_ma();
+            foreach ($result['movies']['list'] as $item) {
+                $mid = $item->id;
+                $ma->add_movie_genre($mid, $gid);
+            }
+        }
+    }
+
+    /*
      * Transit ne tags to indie meta
      */
 
@@ -133,7 +192,7 @@ class CriticTransit extends AbstractDB {
             if ($debug) {
                 print_r(array(sizeof($to_update), $to_update));
             }
-            if ($to_update){
+            if ($to_update) {
                 foreach ($to_update as $mid => $data) {
                     $this->update_indie($mid, $data);
                 }
@@ -414,10 +473,9 @@ class CriticTransit extends AbstractDB {
 
                 // Update verdict
 
-                if ( $item->n_verdict_weight != $n_verdict) {
+                if ($item->n_verdict_weight != $n_verdict) {
                     $data = array(
                         'last_update' => $this->curr_time(),
-
                         'n_verdict_weight' => $n_verdict
                     );
                     $this->sync_update_data($data, $item->id, $this->db['actors_meta'], $sinch, 15);

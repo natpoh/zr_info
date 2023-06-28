@@ -289,7 +289,7 @@ function start_cron_time($time)
 }
 
 
-function check_cron_time()
+function check_cron_time($last_time_result=0)
 {
     $result = '';
     if (class_exists('Cronjob'))
@@ -299,9 +299,13 @@ function check_cron_time()
         {
             $last_time = $cron->check_time();
             $result =$last_time['result'];
-            ///var_dump($last_time);
+
 
         }
+    }
+    if ($last_time_result)
+    {
+        return $last_time['curtime'];
     }
     return $result;
 }
@@ -1093,7 +1097,7 @@ if (!$rating_update)
 function update_all_rwt_rating()
 {
 
-
+    start_cron_time(0);
     $force = intval($_GET['force']);
 
 
@@ -1132,14 +1136,17 @@ $debug=1;
         $id = $r2['id'];
 
         if ($force) {
-            PgRatingCalculate::add_movie_rating($id,'','',1,1,1);
+          PgRatingCalculate::add_movie_rating($id,'','',1,1,0);
+          //  PgRatingCalculate::add_movie_rating($id,'','',1,1,0);
         }
         else
         {
-
-            PgRatingCalculate::add_movie_rating($id);
+            PgRatingCalculate::add_movie_rating($id,'','',1,1,1);
         }
-        echo $i.' of '.$count.' id='.$id.'<br>'.PHP_EOL;
+
+        $timeleft = check_cron_time(1);
+
+        echo $i.' of '.$count.' '.$timeleft.' id='.$id.'<br>'.PHP_EOL;
     }
 
 }

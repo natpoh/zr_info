@@ -3524,7 +3524,7 @@ class CriticMatic extends AbstractDB {
             return $this->settings;
         }
         // Get settings from options
-        $settings = unserialize($this->get_option('critic_matic_settings', false));
+        $settings = unserialize($this->get_option('critic_matic_settings','', false));
 
         if ($settings && sizeof($settings)) {
             foreach ($this->settings_def as $key => $value) {
@@ -3553,7 +3553,7 @@ class CriticMatic extends AbstractDB {
 
     public function update_settings($form) {
 
-        $settings_prev = unserialize($this->get_option('critic_matic_settings', false));
+        $settings_prev = unserialize($this->get_option('critic_matic_settings', '',false));
 
         $ss = $settings_prev;
         foreach ($form as $key => $value) {

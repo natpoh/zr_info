@@ -121,7 +121,7 @@ class MoviesAbstractFunctions {
         return $commit_id;
     }
 
-    public function get_option($option, $cache = true) {
+    public function get_option($option, $def = '', $cache = true) {
         if ($cache) {
             static $dict;
             if (is_null($dict)) {
@@ -163,8 +163,12 @@ class MoviesAbstractFunctions {
             }
         }
 
-        if ($cache) {
+        if ($cache && $data) {
             $dict[$option] = $data;
+        }
+
+        if (!$data) {
+            $data = $def;
         }
         return $data;
     }
