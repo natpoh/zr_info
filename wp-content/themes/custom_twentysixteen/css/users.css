@@ -1021,7 +1021,14 @@ body.theme_dark .simple .items{
     min-width: 200px;
 }
 
+.category-checklist li {
+    list-style: none;
+}
 
+.user-widget .utags a {
+    display: inline-block;
+    margin-right: 10px;
+}
 
 @media (min-width: 720px) {
 

@@ -123,7 +123,7 @@ class AbstractFunctions {
             include ABSPATH . "analysis/export/import_db.php";
         }
         $request = array('id' => $id);
-        $commit_id = Import::create_commit($commit_id, 'update', $db, $request, $db, $priority);
+        $commit_id = Import::create_commit('', 'update', $db, $request, $db, $priority);
         return $commit_id;
     }
 

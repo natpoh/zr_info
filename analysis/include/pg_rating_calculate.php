@@ -9,6 +9,26 @@ if (!defined('ABSPATH'))
 
 class PgRatingCalculate {
 
+     static $ma =null;
+
+
+    public static function getMa()
+    {
+        if (!self::$ma)
+        {
+            if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
+                define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
+            }
+            if (!class_exists('CriticFront')) {
+                require_once(CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php');
+            }
+            $cfront = new CriticFront();
+
+            self::$ma = $cfront->get_ma();
+        }
+
+        return self::$ma;
+    }
 
 
     public  function ckeck_cms_pg_rating($id)
@@ -248,53 +268,112 @@ class PgRatingCalculate {
         return $data;
     }
 
-    public static function add_movie_rating($id, $rwt_array = '', $debug = '', $update = 1) {
+    public static function sync_update($data,$id,$db,$type='update',$sync=true,$sync_client=false){
+
+        if (!$sync_client)
+        {
+             if (DB_SYNC_MODE==2)
+             {
+                 $sync_client=1;
+             }
+        }
+
+        $ma = self::getMa();
+
+
+        if ($type=='update')
+        {
+            $ma->sync_update_data($data, $id, $db, $sync, 10);
+
+        }
+        else  if ($type=='insert')
+        {
+            $ma->sync_insert_data($data, $db, $sync_client,$sync , 10);
+        }
+
+    }
+
+    public static function add_movie_rating($id, $rwt_array = '', $debug = '', $update = 1,$check_fields=0,$sync=1) {
 
         ///get option
-
-        if (!$rwt_array) {
+        $rating_array =[];
 
             !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
             $value = OptionData::get_options('', 'movies_raiting_weight');
 
             if ($value) {
-                $value = json_decode($value,1);
-                $rwt_array = $value["rwt"];
+                $rwt_array_data = json_decode($value,1);
+                $rwt_array = $rwt_array_data['rwt'];
             }
-        }
 
-        $sql = "SELECT * FROM `data_movie_rating` where `movie_id` = " . $id;
-        $main_data = Pdo_an::db_fetch_row($sql);
+        $value = OptionData::get_options('', 'movies_raiting_weight_convert');
+
+        if ($value) {
+            $value = json_decode($value,1);
+            $array_convert = $value;
+        }
 
 
         $sql = "SELECT * FROM `data_movie_erating` where `movie_id` = " . $id;
-        $main_data_ext = Pdo_an::db_fetch_row($sql);
+        $row_movie_erating= Pdo_an::db_results_array($sql);
+        $main_data_ext  = $row_movie_erating[0];
 
-        $array_convert = array('total_rwt_staff' => 1, 'total_rwt_audience' => 1, 'total_imdb' => 0.5, 'total_tomatoes_audience' => 0.05, 'total_tomatoes' => 0.05, 'total_tmdb' => 0.05,
-            'total_kinopoisk' => 0.05, 'total_douban' => 0.05);
-
-        $title = self::get_data_in_movie('title', '', $id);
-        $array_db = [];
-        ////add rating
-        $audience = self::rwt_audience($id, 1, 1);
-        ///$audience = self::get_audience_rating_in_movie($id, 1);
-        $staff = []; // self::get_audience_rating_in_movie($id, 2);
-        $imdb = self::get_data_in_movie('rating', '', $id);
-
-        $total_tomatoes = '';
-        $total_tomatoes_audience = '';
-        $total_tmdb = '';
-        $total_metacritic = '';
-        $total_kinopoisk = '';
-        $total_douban = '';
-        if ($main_data) {
-            $total_tomatoes = $main_data->rotten_tomatoes;
-            $total_tomatoes_audience = $main_data->rotten_tomatoes_audience;
-            $total_tmdb = $main_data->tmdb;
+        if ($main_data_ext)
+        {
+            $pos_id = $main_data_ext['id'];
         }
-        if ($main_data_ext) {
-            $total_kinopoisk = $main_data_ext->kinop_rating;
-            $total_douban = $main_data_ext->douban_rating;
+
+
+
+        if ($check_fields && $pos_id) {
+            if (!$main_data_ext['imdb_rating']) {
+                $imdb = self::get_data_in_movie('rating', '', $id);
+
+                if ($imdb) {
+                    $main_data_ext['imdb_rating'] = $imdb * 10;
+
+                    $data['imdb_rating'] = $main_data_ext['imdb_rating'];
+
+
+                }
+
+
+            }
+            if (!$main_data_ext['title']) {
+                $title = self::get_data_in_movie('title', '', $id);
+                $data['title'] = $title;
+            }
+
+            if (!$main_data_ext['audience_rating']) {
+                $aud_array = self::get_audience_rating_in_movie($id);
+
+                $aud = $aud_array['rating'];
+                if ($aud) {
+                    $main_data_ext['audience_rating'] = $aud * 20;
+
+                    $data['audience_rating'] = $main_data_ext['audience_rating'];
+                    $data['audience_date'] =time();
+                }
+            }
+
+            if ($data)self::sync_update($data,$pos_id,'data_movie_erating','update',$sync);
+
+        }
+
+
+
+        $array_db = [];
+        foreach ($rwt_array as $i=>$v)
+        {
+            if (!$array_convert[$i]){
+                $array_convert[$i]=1;
+            }
+
+            if ($main_data_ext[$i])
+            {
+                $array_db[$i]=$main_data_ext[$i];
+            }
+
         }
 
         if ($debug)
@@ -302,45 +381,6 @@ class PgRatingCalculate {
 
         if ($debug)
             self::debug_table('ZR Rating');
-
-
-
-
-
-        $total_rating = '';
-        if ($audience['rating']) {
-            $array_db["total_rwt_audience"] = $audience['rating'];
-        }
-        if ($staff['rating']) {
-            $array_db["total_rwt_staff"] = $staff['rating'];
-        }
-        if ($imdb) {
-            $array_db["total_imdb"] = $imdb;
-        }
-        if ($total_tomatoes) {
-            $array_db["total_tomatoes"] = $total_tomatoes;
-        }
-        if ($total_tomatoes_audience) {
-            $array_db["total_tomatoes_audience"] = $total_tomatoes_audience;
-        }
-        $total_tomatoes_gap = '';
-
-        if ($total_tomatoes_audience > 0 && $total_tomatoes > 0) {
-            $total_tomatoes_gap = $total_tomatoes_audience - $total_tomatoes;
-        }
-        if ($total_kinopoisk) {
-            $array_db["total_kinopoisk"] = $total_kinopoisk;
-        }
-        if ($total_douban) {
-            $array_db["total_douban"] = $total_douban;
-        }
-
-
-
-        if ($total_tmdb) {
-            $array_db["total_tmdb"] = $total_tmdb;
-        }
-
 
         $count = count($array_db);
 
@@ -362,21 +402,21 @@ class PgRatingCalculate {
             self::debug_table('Get the initial data rating', '', 'gray');
         if ($debug)
             self::debug_table('Array rating', $array_db);
-        if ($debug)
-            self::debug_table('Convert all data into the same format 5 points', '', 'gray');
-        if ($debug)
-            self::debug_table('Array convert', $array_convert, 'red');
-
-
-
-        if ($debug)
-            self::debug_table('We get an intermediate result', $comment_converted);
-        if ($debug) {
-            foreach ($array_converted as $key => $data) {
-
-                self::debug_table('Converted ' . $key . ': ', $data, 'green');
-            }
-        }
+//        if ($debug)
+//            self::debug_table('Convert all data into the same format 5 points', '', 'gray');
+//        if ($debug)
+//            self::debug_table('Array convert', $array_convert, 'red');
+//
+//
+//
+//        if ($debug)
+//            self::debug_table('We get an intermediate result', $comment_converted);
+//        if ($debug) {
+//            foreach ($array_converted as $key => $data) {
+//
+//                self::debug_table('Converted ' . $key . ': ', $data, 'green');
+//            }
+//        }
 
         if ($debug)
             self::debug_table('Calculate the proportion of each rating using the ZR correction coefficients', '', 'gray');
@@ -430,6 +470,9 @@ class PgRatingCalculate {
             $total_rating = round($total_rating, 2);
         }
 
+        $converted_rating = round($total_rating/20,1);
+
+
         if ($debug) {
 
             self::debug_table('Multiply the rating data on the weight coefficient: ', $comment_converted);
@@ -438,44 +481,44 @@ class PgRatingCalculate {
                 $comment_converted_summ = substr($comment_converted_summ, 3) . '  = ' . $total_rating;
             }
             self::debug_table('Add them to each other: ', $comment_converted_summ);
-            self::debug_table('Total ZR Rating: ', $total_rating, 'green');
+            self::debug_table('Total result: ', $total_rating.' / 20 = '.$converted_rating);
+
+            self::debug_table('Total ZR Rating: ', $converted_rating, 'green');
         }
 
         if ($debug)
             self::debug_table('e'); ///end of table
 
-        if ($update) {
-            ///update
+        if ($update)
+        {
+            if (!$pos_id)
+            {
+                //add
+                if ($total_rating)
+                {
+                    $data['total_rating']=$total_rating;
 
-            $sql = "SELECT * FROM `data_movie_rating` where `movie_id` = " . $id;
-            $r = Pdo_an::db_results_array($sql);
-            if (!$r) {
-                $sql = "INSERT INTO `data_movie_rating`(`id`, `movie_id`,`title`, `rwt_audience`, `rwt_staff`, `imdb`, `rotten_tomatoes`,`rotten_tomatoes_audience`,
-                                `rotten_tomatoes_gap`,`metacritic`,`tmdb`, `total_rating`, `last_update`) 
-VALUES (NULL,'{$id}',?,?,?,'{$imdb}','{$total_tomatoes}','{$total_tomatoes_audience}','{$total_tomatoes_gap}','{$total_metacritic}','{$total_tmdb}','{$total_rating}'," . time() . ")";
-                Pdo_an::db_results_array($sql, array($title, $array_db["total_rwt_audience"], $array_db["total_rwt_staff"]));
-
-                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', 'data_movie_rating', array('movie_id' => $id), 'movie_rating', 11, ['skip' => ['id']]);
-            } else {
-
-                ////update
-                $sql = "UPDATE `data_movie_rating` 
-SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rating}',`rotten_tomatoes_gap`='{$total_tomatoes_gap}',
-    
-    `last_update`=" . time() . " WHERE `movie_id`={$id}";
-                Pdo_an::db_results_array($sql, array($array_db["total_rwt_audience"], $array_db["total_rwt_staff"]));
-
-
-                if ($r[0]['rwt_audience'] != $array_db["total_rwt_audience"] || $r[0]['imdb'] != $imdb || $r[0]['total_rating'] != $total_rating || $r[0]['rotten_tomatoes_gap'] != $total_tomatoes_gap) {
-                    // echo 'updated data ';
-                    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                    Import::create_commit('', 'update', 'data_movie_rating', array('movie_id' => $id), 'movie_rating', 11, ['skip' => ['id']]);
                 }
+                $data['last_upd']=time();
+                self::sync_update($data,'','data_movie_erating','insert',$sync);
+
             }
+            else if ($total_rating!=$main_data_ext['total_rating'])
+            {
+
+                $data =['total_rating'=>$total_rating,'last_upd'=>time()];
+                self::sync_update($data,$pos_id,'data_movie_erating','update',$sync);
+            }
+
+
+
+
         }
 
-        return $total_rating;
+
+
+
+        return $converted_rating;
     }
 
     public static function rating_to_comment($imdb, $imdbdesc, $maxrating = '') {
@@ -1765,6 +1808,29 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
         return $result_summ_rating;
     }
 
+    public static function check_audience_meta($rid,$audience)
+    {
+        if ($audience)
+        {
+            $audience_calc = $audience*20;
+
+            $q = "SELECT `audience_rating` FROM `data_movie_erating` WHERE`movie_id` = ".$rid;
+            $rat = Pdo_an::db_get_data($q,'audience_rating');
+            if ($rat!=$audience_calc)
+            {
+                //update
+                $q ="UPDATE `data_movie_erating` SET `audience_rating` =? `audience_date` =? WHERE `movie_id` = ".$rid;
+                Pdo_an::db_results_array($q,[$audience_calc,time()]);
+
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                Import::create_commit('', 'update', 'data_movie_erating', array('movie_id' => $rid), 'data_movie_erating', 20, ['skip' => ['id']]);
+
+            }
+
+        }
+
+    }
+
     public function update_rating_db($rid, $ar, $type = 1) {
 
         $dop = '';
@@ -1816,6 +1882,12 @@ SET `rwt_audience`=?,`rwt_staff`=?,`imdb`='{$imdb}', `total_rating`='{$total_rat
                 Import::create_commit('', 'update', 'cache_rwt_rating', array('movie_id' => $rid), 'cache_rwt_rating', 20, ['skip' => ['id']]);
             }
         }
+
+
+        ////check audience meta
+        self::check_audience_meta($rid,$ar['rating']);
+
+
     }
 
     public function get_wpcdata($movie_id, $audience_type) {

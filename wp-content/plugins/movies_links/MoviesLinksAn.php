@@ -250,8 +250,9 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
                     $exist->$rn = $data[$rn];
                 }
             }
-            $total = $this->calculate_total($exist);
-            $data['total_rating'] = $total;
+
+           //$total = $this->calculate_total($exist);
+            //$data['total_rating'] = $total;
 
             // Calculate total votes
 
@@ -276,7 +277,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
                 }
             }
 
-            $data['total_rating'] = $total;
+           // $data['total_rating'] = $total;
             $data['total_count'] = $total_count;
 
 
@@ -288,9 +289,15 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             $data['movie_id'] = $mid;
             $data['date'] = $data['last_upd'];
 
+            $m_data = $this->get_movie_by_id($mid);
+            $title = $m_data->title;
+            $data['title'] = $title;
+
             $this->sync_insert_data($data, $this->db['erating'], false, true, 10);
             CustomHooks::do_action('add_erating', ['mid' => $mid, 'data' => $data]);
         }
+        !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
+        PgRatingCalculate::add_movie_rating($mid,'','',0,0,0);
     }
 
     public function five_to_ten($camp_rating = 0) {

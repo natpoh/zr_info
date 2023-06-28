@@ -1099,20 +1099,10 @@ function update_all_rwt_rating()
 
     !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
 
-    ///get option
-//
-    $value  =OptionData::get_options('','movies_raiting_weight');
-
-    if ($value)
-    {
-        $value= json_decode($value,1);
-        $rwt_array= $value["rwt"];
-      ///  var_dump($rwt_array);
-    }
     if (isset($_GET['id']))
     {
         $rwt_id = intval($_GET['id']);
-        $result = PgRatingCalculate::add_movie_rating($rwt_id,$rwt_array,1);
+        $result = PgRatingCalculate::add_movie_rating($rwt_id,'',1);
 
         return;
     }
@@ -1130,7 +1120,7 @@ function update_all_rwt_rating()
 global $debug;
 $debug=1;
             $rating_update = array( 50=> 86400*3, 40 =>86400*7, 30=> 86400*30 , 20=> 86400*60, 10=> 86400*90, 0=>86400*120);
-            $rows =get_weight_list('data_movie_rating','last_update',"movie_id",1000,$rating_update);
+            $rows =get_weight_list('data_movie_erating','last_upd',"movie_id",1000,$rating_update);
         }
 
     }
@@ -1141,8 +1131,14 @@ $debug=1;
         $i++;
         $id = $r2['id'];
 
-        PgRatingCalculate::add_movie_rating($id,$rwt_array);
+        if ($force) {
+            PgRatingCalculate::add_movie_rating($id,'','',1,1,1);
+        }
+        else
+        {
 
+            PgRatingCalculate::add_movie_rating($id);
+        }
         echo $i.' of '.$count.' id='.$id.'<br>'.PHP_EOL;
     }
 

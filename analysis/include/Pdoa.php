@@ -21,7 +21,7 @@ class Pdoa {
      * Get pdo instance
      */
 
-    public static function connect($new_connect = -1) {
+    public static function connect($new_connect = -1,$option = null) {
         
         if ($new_connect==-1){
             $new_connect = self::$new_connect;
@@ -37,7 +37,7 @@ class Pdoa {
                 }
             }
 
-            $pdo = new PDO("mysql:host=" . static::$db_host . ";dbname=" . static::$db_name, static::$db_user, static::$db_pass);
+            $pdo = new PDO("mysql:host=" . static::$db_host . ";dbname=" . static::$db_name, static::$db_user, static::$db_pass,$option);
             $pdo->exec("SET NAMES '" . static::$db_charset . "' ");
 
             static::$pdo = $pdo;
@@ -87,6 +87,29 @@ class Pdoa {
         
         return $data;
     }
+    public static function db_results_array_check($sql, $array = [], $new_connect = -1) {
+        try {
+            $options = array(
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+            );
+
+        $pdo = self::connect($new_connect,$options);
+        $sth = $pdo->prepare($sql);
+
+
+            if ($sth->execute()) {
+                echo "ok";
+            } else {
+
+                echo "false";
+            }
+        } catch (PDOException $e) {
+
+            echo "error: " . $e->getMessage();
+        }
+
+    }
+
 
     public static function db_results_array($sql, $array = [], $new_connect = -1) {
         $pdo = self::connect($new_connect);

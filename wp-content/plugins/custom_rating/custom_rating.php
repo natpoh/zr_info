@@ -252,8 +252,7 @@ class CustomRating
         if (!$array)
         {
             $array=array(   'total_rwt_audience' => 5, 'total_imdb' => 5, 'total_tomatoes' => 5);
-            !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-             OptionData::set_option('',json_encode($array),'movies_raiting_weight',1);
+
         }
         else
         {

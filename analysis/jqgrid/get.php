@@ -188,6 +188,9 @@ AND table_schema='".DB_NAME_AN."'";
             $countval = count($array);
 
             $sql = "SELECT *  FROM `INFORMATION_SCHEMA`.`COLUMNS`  WHERE `TABLE_SCHEMA`='".DB_NAME_AN."' AND `TABLE_NAME`='" . $table_data . "'   ORDER BY `COLUMNS`.`ORDINAL_POSITION` ASC";
+
+           //echo $sql;
+
             $rows = Pdo_an::db_results_array($sql);
             foreach ($rows as $r) {
 
@@ -225,6 +228,7 @@ AND table_schema='".DB_NAME_AN."'";
 
                                 $qres .= ", `" . $val . "` = ? ";
 
+                                $qcheck .= ", `" . $val . "` = '".time()."' ";
                         }
 
                         else {
@@ -232,6 +236,8 @@ AND table_schema='".DB_NAME_AN."'";
                             if (isset( $array[str_replace(' ', '_', $val)])) {
                                 $qres .= ", `" . $val . "` = ? ";
                                 $arrayrequest[] = $array[str_replace(' ', '_', $val)];
+
+                                $qcheck .= ", `" . $val . "` = '".$array[str_replace(' ', '_', $val)]."' ";
                             }
                         }
                     }
@@ -259,14 +265,21 @@ AND table_schema='".DB_NAME_AN."'";
             if ($qres) {
                 $qres = substr($qres, 1);
             }
+            if ($qcheck) {
+                $qcheck = substr($qcheck, 1);
+            }
+
             if ($_POST['oper'] == 'edit') {
 
 
                 $sql = "UPDATE `" . $table_data . "` SET " . $qres . "  WHERE `id` = '" . $array['parent'] . "'";
-                //echo $sql;
+
+
+                $sql_check = "UPDATE `" . $table_data . "` SET " . $qcheck . "  WHERE `id` = '" . $array['parent'] . "'";
+               /// echo $sql_check;
                // print_r($arrayrequest);
                 //echo $sql;
-               // var_dump($arrayrequest);
+             //  var_dump($arrayrequest);
 
                 $result = Pdo_an::db_results_array($sql, $arrayrequest);
 
@@ -516,4 +529,8 @@ AND table_schema='".DB_NAME_AN."'";
 
     }
 
+}
+else
+{
+    echo 'pd';
 }

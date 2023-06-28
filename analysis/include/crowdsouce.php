@@ -931,7 +931,26 @@ var first_run = 0;
             var review_id  = jQuery("#jqGrid").jqGrid('getCell',row_id,'id');
 
 
-        if (data_type =='movies_pg_crowd')
+
+        if (data_type =='movie_erating')
+        {
+
+            jQuery.ajax({
+                type: "POST",
+                url: "<?php echo $home_url ?>analysis/get_data.php",
+
+                data: ({
+                    oper: 'movie_data',
+                    rwt_id: movie,
+                    refresh_rwt_rating:1,
+                }),
+                success: function (html) {
+                    jQuery('#'+subgrid_id).html(html);
+                }
+            });
+
+        }
+        else if (data_type =='movies_pg_crowd')
         {
 
             jQuery.ajax({
