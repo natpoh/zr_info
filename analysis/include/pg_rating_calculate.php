@@ -11,7 +11,7 @@ class PgRatingCalculate {
 
      static $ma =null;
      static $rwt_array=[];
-
+     static $array_convert=[];
 
     public static function getMa()
     {
@@ -318,15 +318,24 @@ class PgRatingCalculate {
 
         }
 
-//
-//
-//
-//        $value = OptionData::get_options('', 'movies_raiting_weight_convert');
-//
-//        if ($value) {
-//            $value = json_decode($value,1);
-//            $array_convert = $value;
-//        }
+        if (!self::$array_convert) {
+            !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+            $value = OptionData::get_options('', 'movies_raiting_weight_convert');
+
+
+
+            if ($value) {
+                $value = json_decode($value, 1);
+                $array_convert = $value;
+
+                self::$array_convert =$array_convert;
+            }
+
+        }
+        else
+        {
+            $array_convert =  self::$array_convert;
+        }
 
 
         $sql = "SELECT * FROM `data_movie_erating` where `movie_id` = " . $id;
@@ -436,21 +445,21 @@ class PgRatingCalculate {
             self::debug_table('Get the initial data rating', '', 'gray');
         if ($debug)
             self::debug_table('Array rating', $array_db);
-//        if ($debug)
-//            self::debug_table('Convert all data into the same format 5 points', '', 'gray');
-//        if ($debug)
-//            self::debug_table('Array convert', $array_convert, 'red');
-//
-//
-//
-//        if ($debug)
-//            self::debug_table('We get an intermediate result', $comment_converted);
-//        if ($debug) {
-//            foreach ($array_converted as $key => $data) {
-//
-//                self::debug_table('Converted ' . $key . ': ', $data, 'green');
-//            }
-//        }
+        if ($debug)
+            self::debug_table('Convert all data into the same format 5 points', '', 'gray');
+        if ($debug)
+            self::debug_table('Array convert', $array_convert, 'red');
+
+
+
+        if ($debug)
+            self::debug_table('We get an intermediate result', $comment_converted);
+        if ($debug) {
+            foreach ($array_converted as $key => $data) {
+
+                self::debug_table('Converted ' . $key . ': ', $data, 'green');
+            }
+        }
 
         if ($debug)
             self::debug_table('Calculate the proportion of each rating using the ZR correction coefficients', '', 'gray');
@@ -540,11 +549,11 @@ class PgRatingCalculate {
 
 
 
-                echo 'add<br>';
+                if (!$debug) echo 'add<br>';
             }
             else if ($total_rating!=$main_data_ext['total_rating'] || $force_sync)
             {
-                echo 'update '.$total_rating.'!=' .$main_data_ext['total_rating'].' f='.$force_sync.'<br>';
+                if (!$debug) echo 'update '.$total_rating.'!=' .$main_data_ext['total_rating'].' f='.$force_sync.'<br>';
                 $data_current_array =['total_rating'=>$total_rating,'last_upd'=>time()];
                 self::sync_update($data_current_array,$pos_id,'data_movie_erating','update',$sync);
             }
