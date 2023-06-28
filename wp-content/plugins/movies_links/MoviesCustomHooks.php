@@ -105,7 +105,7 @@ class MoviesCustomHooks {
             );
             // Add anime genre
             $ma = $this->ml->get_ma();
-            $ma->add_genre_meta($post->top_movie, 'anime');
+            $ma->add_genre_meta($post->top_movie, 'anime');            
         } else if ($campaign->id == 20 || $campaign->id == 21) {
             // rt movies (20) and tv (21)
             $curr_camp = 'rt';

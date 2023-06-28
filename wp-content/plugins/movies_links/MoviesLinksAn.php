@@ -398,6 +398,18 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
     /*
      * Genre
      */
+    
+    public function get_genres_names() {
+        $sql = "SELECT id, name, slug, status, weight FROM {$this->db['data_genre']}";
+        $result = $this->db_results($sql);
+        $ret = array();
+        if ($result){
+            foreach ($result as $value) {
+                $ret[$value->name]=$value;
+            }
+        }
+        return $ret;
+    }
 
     public function add_genre_meta($mid = 0, $slug = '') {
         $genre = $this->get_genre_by_slug($slug);
