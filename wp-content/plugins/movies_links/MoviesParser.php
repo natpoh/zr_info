@@ -194,6 +194,7 @@ class MoviesParser extends MoviesAbstractDB {
         'm' => 'URL Movie ID',
         'em' => 'Exist Movie',
         'et' => 'Exist TV',
+        'g' => 'Genre',
     );
     public $links_rules_actor_fields = array(
         'f' => 'Firstname',
@@ -242,7 +243,7 @@ class MoviesParser extends MoviesAbstractDB {
     public function get_tp() {
         return $this->ml->get_tp();
     }
-    
+
     /*
      * Campaign
      */
@@ -575,11 +576,11 @@ class MoviesParser extends MoviesAbstractDB {
     }
 
     public function get_url_by_top_movie($mid = 0, $cid = 0) {
-        $sql = sprintf("SELECT u.id, u.pid, u.link, u.link_hash, p.top_movie, p.options FROM {$this->db['url']} u INNER JOIN {$this->db['posts']} p ON p.uid = u.id WHERE u.cid = %d AND p.top_movie=%d", (int) $cid, (int) $mid);       
+        $sql = sprintf("SELECT u.id, u.pid, u.link, u.link_hash, p.top_movie, p.options FROM {$this->db['url']} u INNER JOIN {$this->db['posts']} p ON p.uid = u.id WHERE u.cid = %d AND p.top_movie=%d", (int) $cid, (int) $mid);
         $result = $this->db_fetch_row($sql);
         return $result;
     }
-    
+
     public function update_urls_status($id, $status) {
         $sql = sprintf("UPDATE {$this->db['url']} SET status=%d WHERE id = %d", (int) $status, (int) $id);
         $this->db_query($sql);
@@ -1314,10 +1315,10 @@ class MoviesParser extends MoviesAbstractDB {
         $count = $ret['total'];
         return $count;
     }
-    
+
     public function get_settings() {
-         $settings = $this->ml->get_settings();
-         return $settings;
+        $settings = $this->ml->get_settings();
+        return $settings;
     }
 
     private function find_urls_in_progress($campaign, $options) {
@@ -2716,7 +2717,6 @@ class MoviesParser extends MoviesAbstractDB {
                         $post_actors_name_arr = array($post_actors_name);
                     }
 
-
                     foreach ($movies as $movie) {
                         $actors = array();
                         if (isset($facets[$movie->id]['actor']['data'])) {
@@ -2726,15 +2726,18 @@ class MoviesParser extends MoviesAbstractDB {
                             }
                         }
                         foreach ($post_actors_name_arr as $actor_name) {
-                            $first = '';
-                            $find_actors = $ms->find_actors($actor_name, $actors);
-                            if ($find_actors) {
-                                $first = array_shift($find_actors);
-                                $results[$movie->id]['actors']['match'] += 1;
-                                $results[$movie->id]['actors']['rating'] += $actor_rule['ra'];
-                                $results[$movie->id]['actors']['data'][] = $first;
-                                $results[$movie->id]['total']['match'] += 1;
-                                $results[$movie->id]['total']['rating'] += $actor_rule['ra'];
+                            $actor_name = trim($actor_name);
+                            if ($actor_name) {
+                                $first = '';
+                                $find_actors = $ms->find_actors($actor_name, $actors);
+                                if ($find_actors) {
+                                    $first = array_shift($find_actors);
+                                    $results[$movie->id]['actors']['match'] += 1;
+                                    $results[$movie->id]['actors']['rating'] += $actor_rule['ra'];
+                                    $results[$movie->id]['actors']['data'][] = $first;
+                                    $results[$movie->id]['total']['match'] += 1;
+                                    $results[$movie->id]['total']['rating'] += $actor_rule['ra'];
+                                }
                             }
                         }
                     }
@@ -2769,14 +2772,17 @@ class MoviesParser extends MoviesAbstractDB {
                         }
                         foreach ($post_actors_name_arr as $actor_name) {
                             $first = '';
-                            $find_actors = $ms->find_actors($actor_name, $actors, false);
-                            if ($find_actors) {
-                                $first = array_shift($find_actors);
-                                $results[$movie->id]['directors']['match'] += 1;
-                                $results[$movie->id]['directors']['rating'] += $director_rule['ra'];
-                                $results[$movie->id]['directors']['data'][] = $first;
-                                $results[$movie->id]['total']['match'] += 1;
-                                $results[$movie->id]['total']['rating'] += $director_rule['ra'];
+                            $actor_name = trim($actor_name);
+                            if ($actor_name) {
+                                $find_actors = $ms->find_actors($actor_name, $actors, false);
+                                if ($find_actors) {
+                                    $first = array_shift($find_actors);
+                                    $results[$movie->id]['directors']['match'] += 1;
+                                    $results[$movie->id]['directors']['rating'] += $director_rule['ra'];
+                                    $results[$movie->id]['directors']['data'][] = $first;
+                                    $results[$movie->id]['total']['match'] += 1;
+                                    $results[$movie->id]['total']['rating'] += $director_rule['ra'];
+                                }
                             }
                         }
                     }
@@ -2784,6 +2790,60 @@ class MoviesParser extends MoviesAbstractDB {
             }
             if (is_array($search_fields['directors'])) {
                 $search_fields['directors'] = implode('; ', $search_fields['directors']);
+            }
+
+
+            // Genre
+            if ($active_rules['g']) {
+                $ma = $this->ml->get_ma();
+                $all_genres = $ma->get_genres_names();
+
+                foreach ($active_rules['g'] as $genre_rule) {
+                    $post_genre_name = $genre_rule['content'];
+                    if (!$post_genre_name) {
+                        continue;
+                    }
+                    $search_fields['genres'][] = $post_genre_name;
+                    if ($genre_rule['mu']) {
+                        $post_genre_name_arr = explode($genre_rule['mu'], $post_genre_name);
+                    } else {
+                        $post_genre_name_arr = array($post_genre_name);
+                    }
+
+
+
+
+                    foreach ($movies as $movie) {
+                        $genre_ids = array();
+                        if (isset($facets[$movie->id]['genre']['data'])) {
+                            $genre_data = $facets[$movie->id]['genre']['data'];
+                            foreach ($genre_data as $item) {
+                                $genre_ids[] = $item->id;
+                            }
+                        }
+
+                        foreach ($post_genre_name_arr as $genre_name) {
+                            $first = '';
+                            $genre_name = trim($genre_name);
+                            $found_genre = isset($all_genres[$genre_name]) ? $all_genres[$genre_name] : '';
+
+                            if ($found_genre) {
+                                $found_id = $found_genre->id;
+
+                                if (in_array($found_id, $genre_ids)) {
+                                    $results[$movie->id]['genres']['match'] += 1;
+                                    $results[$movie->id]['genres']['rating'] += $genre_rule['ra'];
+                                    $results[$movie->id]['genres']['data'][] = $genre_name;
+                                    $results[$movie->id]['total']['match'] += 1;
+                                    $results[$movie->id]['total']['rating'] += $genre_rule['ra'];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (is_array($search_fields['genres'])) {
+                $search_fields['genres'] = implode('; ', $search_fields['genres']);
             }
         }
 
