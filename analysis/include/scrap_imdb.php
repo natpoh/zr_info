@@ -1325,7 +1325,7 @@ function migration_actors_description()
 }
 
 
-function addto_db_actors($actor_id, $array_result, $update = 0)
+function addto_db_actors($actor_id, $array_result, $update = 0,$debug)
 {
 
 
@@ -1367,30 +1367,29 @@ function addto_db_actors($actor_id, $array_result, $update = 0)
     if (isset($array_result['image'])) {
         $image_url = $array_result['image'];
 
+        $image = 'Y';
 
-        if (check_image_on_server($actor_id, $image_url)) {
-            $image = 'Y';
+        if (DB_SYNC_MODE ==1) {
+            if (check_image_on_server($actor_id, $image_url)) {
 
-            if ($t['image']!=$image )
-            {
-                !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
-                ACTIONLOG::update_actor_log('image','data_actors_imdb',$actor_id);
 
+                if ($t['image'] != $image) {
+                    !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
+                    ACTIONLOG::update_actor_log('image', 'data_actors_imdb', $actor_id);
+
+                }
+
+            } else {
+                $image = 'N';
             }
-
-        } else {
-            $image = 'N';
         }
-
-
         unset($array_result['image']);
+
     } else {
         $image = 'N';
     }
 
       add_actors_description($actor_id,$description);
-
-
 
     if ($t) {
 
@@ -1407,14 +1406,14 @@ WHERE `data_actors_imdb`.`id` = " . $actor_id;
 
             !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
             Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $actor_id), 'actor_update',4);
-            echo 'updated ' . $actor_id .' '.$name. '<br>' . PHP_EOL;
+            if ($debug)echo 'updated ' . $actor_id .' '.$name. '<br>' . PHP_EOL;
         }
         else
         {
             $sql = "UPDATE `data_actors_imdb` SET `lastupdate`=".time()." WHERE `data_actors_imdb`.`id` = " . $actor_id;
             Pdo_an::db_results_array($sql);
 
-            echo 'skip no new data ' . $actor_id .' '.$name. '<br>' . PHP_EOL;
+            if ($debug)echo 'skip no new data ' . $actor_id .' '.$name. '<br>' . PHP_EOL;
         }
 
     }
@@ -1423,12 +1422,30 @@ WHERE `data_actors_imdb`.`id` = " . $actor_id;
         $array_request = array($name, $burn_name, $burn_place, $birthDate, '',$image_url, $image, time());
         $sql = "INSERT INTO `data_actors_imdb` VALUES ( '" . $actor_id . "' ,?, ?, ?, ?, ?, ?, ?, ?)";
         Pdo_an::db_results_array($sql,$array_request);
-        echo 'adedded ' . $actor_id .' '.$name. '<br>' . PHP_EOL;
+        if ($debug)echo 'adedded ' . $actor_id .' '.$name. '<br>' . PHP_EOL;
         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
         Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $actor_id), 'actor_update',4);
     }
+    ///check actor meta
 
 
+    if ($image == 'Y')
+    {
+
+        $array_insert = check_enable_actor_meta($actor_id);
+
+        $q = "SELECT `id` FROM `data_actors_meta` WHERE ( `img` IS NULL OR `img` = 0) and `actor_id` = ".$actor_id;
+        $r = Pdo_an::db_results_array($q);
+        if ($r)
+        {
+            //updata
+            $q="UPDATE `data_actors_meta` SET `last_update` =".time().",`img` =1 WHERE `actor_id`=".$actor_id;
+            //echo $q;
+            Pdo_an::db_query($q);
+            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+            Import::create_commit('', 'update', 'data_actors_meta', array('actor_id' => $actor_id), 'actor_meta',9,['skip'=>['id']]);
+        }
+    }
     return 1;
 }
 
@@ -1449,7 +1466,7 @@ function add_actors_to_db($id, $update = 0)
     if  ($debug)var_dump($array_result);
     if ($array_result) {
 
-        return addto_db_actors($id, $array_result, $update);
+        return addto_db_actors($id, $array_result, $update,$debug);
 
 
     } else {
@@ -1577,10 +1594,33 @@ function add_empty_actors($id='')
 
 }
 
+function check_enable_actor_meta($id='',$commit_actors=[],$debug=0)
+{
+    $dop='';
+    if ($id){$dop = ' and `data_actors_imdb`.id = '.$id.' ';}
+
+    $sql = "SELECT `data_actors_imdb`.id FROM `data_actors_imdb`
+        LEFT JOIN `data_actors_meta` ON `data_actors_imdb`.id=`data_actors_meta`.actor_id
+        WHERE `data_actors_meta`.actor_id IS NULL ".$dop." LIMIT 10000";
+
+    $i = 0;
+    $result= Pdo_an::db_results_array($sql);
+    foreach ($result as $r) {
+        $i++;
+        $sql1 = "INSERT INTO `data_actors_meta` (`id`, `actor_id`)  VALUES (NULL, '" . $r['id'] . "')";
+        Pdo_an::db_query($sql1);
+
+        ACTIONLOG::update_actor_log('data_actors_meta','data_actors_meta',$r['id']);
+        $commit_actors[$r['id']]=1;
+    }
+    if ($debug)echo 'check actors meta (' . $i . ')' . PHP_EOL;
+
+    return $commit_actors;
+
+}
 
 
-
-function check_last_actors()
+function check_last_actors($aid ='',$debug=1)
 {
 
     !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
@@ -1590,6 +1630,24 @@ function check_last_actors()
     set_time_limit(600);
 
     $commit_actors = [];
+
+
+    //////check actors meta
+
+
+
+    $commit_actors = check_enable_actor_meta($aid,$commit_actors,$debug);
+
+
+    if (check_cron_time())
+    {
+        commit_actors($commit_actors);
+        return;
+    }
+    //////check actors surname
+
+
+
 
     //check actor gender
     $sql = "SELECT data_actors_gender.actor_id,  data_actors_gender.Gender 	  FROM `data_actors_gender`
@@ -1676,42 +1734,7 @@ function check_last_actors()
 
 
 
-
-
-
-    //////check actors meta
-
-    $sql = "SELECT `data_actors_imdb`.id FROM `data_actors_imdb`
-        LEFT JOIN `data_actors_meta` ON `data_actors_imdb`.id=`data_actors_meta`.actor_id
-        WHERE `data_actors_meta`.actor_id IS NULL LIMIT 10000";
-    $i = 0;
-    $result= Pdo_an::db_results_array($sql);
-    foreach ($result as $r) {
-        $i++;
-        $sql1 = "INSERT INTO `data_actors_meta` (`id`, `actor_id`)  VALUES (NULL, '" . $r['id'] . "')";
-        Pdo_an::db_query($sql1);
-
-        ACTIONLOG::update_actor_log('data_actors_meta','data_actors_meta',$r['id']);
-        $commit_actors[$r['id']]=1;
-    }
-    echo 'check actors meta (' . $i . ')' . PHP_EOL;
-
-
-
-
-    if (check_cron_time())
-    {
-        commit_actors($commit_actors);
-        return;
-    }
-    //////check actors surname
-
-
-
     check_verdict_surname();
-
-
-
 
     $array_face = array('white' => 'W', 'hispanic' => 'H', 'black' => 'B', 'mideast' => 'M', 'indian' => 'I', 'asian' => 'EA');
 
@@ -1843,8 +1866,7 @@ function check_last_actors()
 
     $i = 0;
     ////check actor ethnic
-    ///
-    ///
+
 
 
     $sql = "SELECT data_actors_ethnic.*  FROM `data_actors_ethnic` LEFT JOIN data_actors_meta ON data_actors_ethnic.actor_id=data_actors_meta.actor_id
@@ -3066,14 +3088,7 @@ if (isset($_GET['get_imdb_movie_id'])) {
         $debug=1;
     }
 
-        $id = intval($_GET['get_imdb_movie_id']);
-
-        $array_movie =  TMDB::get_content_imdb($id);
-
-
-        if ($debug){var_dump($array_movie);}
-
-        $add =  TMDB::addto_db_imdb($id, $array_movie,'','','get_imdb_movie_id');
+    $add= TMDB::reload_from_imdb($_GET['get_imdb_movie_id'],$debug);
 
     echo $add;
     return;
@@ -3551,5 +3566,5 @@ if (isset($_GET['add_movie_production'])) {
     return;
 }
 
-echo 'ok';
+//echo 'ok';
 
