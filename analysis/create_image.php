@@ -289,6 +289,22 @@ if (!file_exists($imgsource)) {
 if (!file_exists($imgsource)) {
     $imgsource =$_SERVER['DOCUMENT_ROOT'].'/analysis/img_final_crowd/'.$number.'.jpg';
 }
+if (!file_exists($imgsource)) {
+    ///check from db
+$q="SELECT `image_url` FROM `data_actors_imdb` WHERE `id`=".$id;
+    $image = Pdo_an::db_get_data($q,'image_url');
+if ($image)
+{
+    !class_exists('KAIROS') ? include ABSPATH . "analysis/include/kairos.php" : '';
+    $uploaded =    KAIROS::check_image_on_server($id, $image);
+
+    if ($uploaded)
+    {
+        $imgsource =$_SERVER['DOCUMENT_ROOT'].'/analysis/img_final/'.$number.'.jpg';
+    }
+
+}
+}
 
 if ($originalimg==1)
 {

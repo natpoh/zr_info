@@ -3319,7 +3319,7 @@ jQuery(document).ready(function () {
         jQuery.ajax({
             type: 'post',
             data: {
-                'oper': 'ckeck_imdb_pg_rating',
+                'oper': 'ckeck_update_cowd_data',
                 'id': id,
                 'data_type':type
             },
@@ -3327,7 +3327,11 @@ jQuery(document).ready(function () {
             success: function (html) {
                 if (html)   {
                     ths.removeClass('rotate');
-                    if (html==1)  ths.html('updated');
+                    if (html==1)  {
+
+                        ths.after(' updated');
+                        ths.remove();
+                    }
 
 
                     if (html==2) {

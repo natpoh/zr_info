@@ -1820,6 +1820,15 @@ if($array_meta["countriesOfOrigin"]["countries"])
 
     }
 
+public static function reload_from_imdb($id,$debug=0)
+{
+    $id = intval($id);
+    $array_movie =  self::get_content_imdb($id);
+    if ($debug){var_dump($array_movie);}
+    $add =  self::addto_db_imdb($id, $array_movie,'','','get_imdb_movie_id');
+    return $add;
+}
+
 public static function get_content_imdb($id,$showdata='',$enable_actors=1,$from_archive=0)
 {
     $final_value = sprintf('%07d', $id);

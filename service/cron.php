@@ -31,13 +31,14 @@ $array_jobs = array(
 'disqus_comments'=>30, ///disquss count comments
 
 'download_crowd_images'=>60,///load image to server from crowdsource status 1
-'update_actors_verdict'=>120,///update verdict actors
+
 
 'check_face'=>120,///add bettaface verdict
 
 'update_crowd_verdict'=>60,    ///crowdsource udate actor verdict
 
-'update_all_rwt_rating'=>30,////update all rating
+
+
 'add_pgrating'=>60*2,////add pg rating
 //'add_gender_rating_for_new_movies'=>(60),///add gender rating to new movies
 
@@ -72,6 +73,10 @@ $array_jobs = array(
     'set_tmdb_actors_for_movies'=>30,////update tmdb actors from japan anime
 
     'set_actors_ethnic'=>60, ///add ethnic verdict
+
+
+  //  'update_all_rwt_rating'=>240,////update all rating
+  //  'update_actors_verdict'=>120,///update verdict actors
 
      ///'add_empty_actors'=>30, //add new empty actors
 

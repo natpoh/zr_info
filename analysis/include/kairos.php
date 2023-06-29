@@ -252,7 +252,7 @@ return $base64;
 
 $dir = $_SERVER['DOCUMENT_ROOT'] . "/analysis/" . $path . "/" . $final_value . ".jpg";
 if (file_exists($dir)) {
-    echo ' file already exists ';
+    //echo ' file already exists ';
     return 1;
 } else if ($image) {
     ///add image

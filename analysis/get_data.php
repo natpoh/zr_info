@@ -802,7 +802,8 @@ if ($_POST['oper'] == 'get_country_data') {
             $cur_year = $end;
         } else {
 
-            $cur_year = end(array_keys($populatin_result));
+            $array1 = array_keys($populatin_result);
+            $cur_year = end($array1);
 
         }
         /// echo $cur_year;
@@ -1130,6 +1131,7 @@ else if ($_POST['oper'] === 'get_actordata') {
         $r = $q->fetch();
         $name = $r['name'];
 
+        $actor_updated = $r['lastupdate'];
 
 /////name
 
@@ -1510,6 +1512,23 @@ else if ($_POST['oper'] === 'get_actordata') {
             echo '<p><a href="#" data-actor="'.$id.'" class="calculate_actor_data">Methodology</a></p>';
 
          }
+
+         ///update data info
+
+
+         $update_array = ['actror_data_update'=>['time'=>$actor_updated,'comment'=>'Actor IMDB data:']];
+
+         foreach ($update_array as $i=>$v)
+         {
+
+             $asctor_u.= MOVIE_DATA::last_update_container($id,$i,$v['time'],$v['comment'],1);
+
+         }
+         $update_container = '<div class="actor_update_data"><p>Last updated: </p>'.$asctor_u.'</div>';
+         echo $update_container;
+
+
+
 
 
         if ($debug) {

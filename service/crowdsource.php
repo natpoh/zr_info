@@ -585,29 +585,45 @@ if (isset($_POST['oper'])) {
         echo $movie_tmpl;
     }
 
-     else if ($oper == 'ckeck_imdb_pg_rating') {
+     else if ($oper == 'ckeck_update_cowd_data') {
          $id = intval($_POST['id']);
         ///check pg rating
          !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
          $pg = new PgRatingCalculate();
          $type =  $_POST['data_type'];
 
+         if ($type =='last_movie_update')
+         {
+             !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+             $imdb_id = TMDB::get_imdb_id_from_id($id);
+             $result= TMDB::reload_from_imdb($imdb_id);
 
+         }
          if ($type =='last_cms_pg_update')
          {
              $result = $pg->ckeck_cms_pg_rating($id);
          }
-         else
+         else   if ($type =='last_pg_update' || $type =='last_imdb_pg_update')
          {
              $result = $pg->ckeck_imdb_pg_rating($id,$type);
          }
+         else if ($type =='actror_data_update')
+         {
 
+             if (!function_exists('add_actors_to_db'))
+             {
+                 include ABSPATH . "analysis/include/scrap_imdb.php";
+             }
+             add_actors_to_db($id, 1);
+             $result =1;
+
+         }
 
 
          echo $result;
 
          ///clear page cache
-         if ($result==2)
+         if ($result==2 || $type =='last_movie_update')
          {
              if (!function_exists('wp_custom_cache')) {
                  require(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/include/custom_cahe.php');

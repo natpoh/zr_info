@@ -10,6 +10,27 @@ if (!defined('ABSPATH'))
 class MOVIE_DATA
 {
 
+    public static  function last_update_container($id,$class,$time,$comment='Last updated:',$update_period=86400)
+    {
+        if ($time==0)
+        {
+            $last_imdb_updated_string= 'newer';
+        }
+        else
+        {
+            $last_imdb_updated_string = date('Y-m-d',$time);
+        }
+
+        $update_link='';
+
+        if ($time < time()-$update_period)
+        {
+            $update_link = '<a href="#" id="'.$class.'" data-value="'.$id.'" class="update_data">update</a>';
+        }
+        return '<p class="last_updated_desc">'.$comment.' '.$last_imdb_updated_string. $update_link.'</p>';
+
+    }
+
     private static $debug=0;
     private static $verdct_method='';
 

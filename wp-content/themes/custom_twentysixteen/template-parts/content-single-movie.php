@@ -50,6 +50,8 @@ if ($movie_list) {
 <?php
 template_single_movie($post_id, $post_title, '', 1);
 
+
+
 //////movie rating
 ///  get_movie_rating(get_the_ID());
 /////movie actors
@@ -57,6 +59,22 @@ template_single_movie($post_id, $post_title, '', 1);
 include get_template_directory() . '/template/actors_template_single.php';
 
 show_actors_template_single_cache();
+
+///update data for admin
+if ( current_user_can( 'administrator' ) ) {
+
+    $last_imdb_updated_string = date('Y-m-d',$post_an->add_time);
+    $update_link='';
+
+    if ($post_an->add_time < time()-86400)
+    {
+        $update_link = '<a href="#" id="last_movie_update" data-value="'.$post_id.'" class="update_data">Update data</a>';
+
+    }
+    echo '<p class="last_updated_desc">Last updated: '.$last_imdb_updated_string. $update_link.'</p>';
+    }
+
+
 ?>
 
     <?php
