@@ -2171,7 +2171,7 @@ class CriticMatic extends AbstractDB {
         $status = $form_state['status'];
         $from = $form_state['type'];
         $name = $form_state['name'];
-        $show_type = $form_state['show_type'];
+        $show_type = isset($form_state['show_type'])?$form_state['show_type']:0;
         $tags = isset($form_state['post_category']) ? $form_state['post_category'] : array();
 
         $options = array();
