@@ -2168,10 +2168,10 @@ class CriticMatic extends AbstractDB {
 
     public function author_edit_submit($form_state) {
         $result_id = 0;
-        $status = $form_state['status'];
-        $from = $form_state['type'];
+        $status = (int) $form_state['status'];
+        $from = (int) $form_state['type'];
         $name = $form_state['name'];
-        $show_type = isset($form_state['show_type'])?$form_state['show_type']:0;
+        $show_type = (int) isset($form_state['show_type'])?$form_state['show_type']:0;
         $tags = isset($form_state['post_category']) ? $form_state['post_category'] : array();
 
         $options = array();
