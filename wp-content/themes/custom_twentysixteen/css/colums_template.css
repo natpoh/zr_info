@@ -2684,6 +2684,58 @@ body.theme_dark  .rating_block .imdb_rating {
     color: #9f9f9f;
 }
 
+
+
+.rating_block .big_rating  {
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    color: #9f9f9f;
+}
+
+.rating_block .big_rating::before {
+    content: "";
+    display: inline-block;
+    width: 37px;
+    height: 28px;
+    box-shadow: 0 0 2px 2px rgb(0 0 0 / 9%);
+    margin-right: 10px;
+}
+
+.rating_block .kinop_rating::before {
+    content: "";
+    background: url(../images/flags/4x3/ru.svg) no-repeat left 0 top 0 transparent;
+    background-size: contain;
+
+}
+
+.rating_block .douban_rating::before {
+    background: url("../images/flags/4x3/cn.svg") no-repeat left 0 top 0 transparent;
+    background-size: contain;
+}
+
+.rating_block .eiga_rating::before {
+    background: url("../images/flags/4x3/jp.svg") no-repeat left 0 top 0 transparent;
+    background-size: contain;
+}
+
+.rating_block .moviemeter_rating::before {
+    background: url("../images/flags/4x3/nl.svg") no-repeat left 0 top 0 transparent;
+    background-size: contain;
+}
+
+.rating_block .animelist_rating::before {
+    background: url("../images/mal.svg") no-repeat left 0 top 0 transparent;
+    background-size: 37px 37px;
+    background-position-y: -3px;
+}
+
+.rating_block .metacritic_rating::before {
+    background: url("../images/metacritic-logo.svg") no-repeat left 0 top 0 transparent;
+    background-size: contain;
+    box-shadow: none;
+}
+
 .rating_block .imdb_rating::before {
     content: "";
     background: url("../images/imdb_star.svg") no-repeat left 0 top 0 transparent;
@@ -2691,30 +2743,12 @@ body.theme_dark  .rating_block .imdb_rating {
     width: 32px;
     height: 32px;
     background-size: contain;
+    box-shadow: none;
 }
 
-.rating_block .kinopoisk_rating , .rating_block .douban_rating {
-    font-size: 20px;
-    display: flex;
-    align-items: center;
-    color: #9f9f9f;
-}
 
-.rating_block .kinopoisk_rating::before, .rating_block .douban_rating::before {
-    content: "";
-    background: url(../images/flags/4x3/ru.svg) no-repeat left 0 top 0 transparent;
-    display: inline-block;
-    width: 37px;
-    height: 28px;
-    box-shadow: 0 0 2px 2px rgb(0 0 0 / 9%);
-    background-size: contain;
-    margin-right: 10px;
-}
 
-.rating_block .douban_rating::before {
-    background: url("../images/flags/4x3/cn.svg") no-repeat left 0 top 0 transparent;
-    background-size: contain;
-}
+
 
 .exlink{
     cursor: pointer;
@@ -3109,6 +3143,14 @@ body.theme_dark  .open_rating_container.note_show::after {
     overflow-y: auto;
     max-height: 158px;
 }
+
+.scroller .note_show_content_rwt_rt
+{
+    max-height: 256px;
+    overflow-y: auto;
+}
+
+
 .note_show .note_show_content_4, .nte_cnt .note_show_content_4 {
     display: block;
     overflow-y: auto;
@@ -3266,6 +3308,13 @@ body.theme_dark  .note_show::after {
 .actor_popup .actor_crowdsource{
     padding-left: 55px;
 }
+
+
+.actor_popup  div.actor_update_data{
+    margin-top: 20px;
+    opacity: 0.6;
+}
+
 .actor_popup p.verdict{
     color: #ffef00;
 }

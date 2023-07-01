@@ -1074,6 +1074,31 @@ var first_run = 0;
     //     console.log(data);
     // }
 
+
+<?php
+$min_width = count($rows)*100;
+ if ($WP_include) {
+ ?>
+var width = (window.innerWidth-190);
+<?php
+ } else { ?>
+var width = (window.innerWidth-1);
+
+<?php }  ?>
+
+
+var min_width = '<?php echo $min_width; ?>';
+
+
+
+
+if (Number(min_width)>Number(width)){
+
+    width=min_width;
+}
+
+
+
     jQuery(document).ready(function () {
         jQuery("#jqGrid").jqGrid({
             url: '<?php echo $home_url ?>analysis/jqgrid/get.php?data=<?php echo $datatype.$doptable ?>',
@@ -1092,12 +1117,8 @@ var first_run = 0;
             sortorder : "desc",
             loadonce: false,
             viewrecords: true,
+            width: width,
 
-            <?php if ($WP_include) { ?>
-            width: (window.innerWidth-190),
-            <?php } else { ?>
-            width: (window.innerWidth-1),
-            <?php }  ?>
             height: (window.innerHeight-220),
             rowNum: 100,
             pager: "#jqGridPager",

@@ -285,8 +285,9 @@ function create_total_rating(obj, only_tomatoes,rt_gap)
     }
 
 
-    if (Number(obj.rotten_tomatoes) > 0 || Number(obj.rotten_tomatoes_audience) > 0)
+    if (Number(obj.rt_rating) > 0 || Number(obj.rt_aurating) > 0)
     {
+
 
         if (rt_gap != 0) {
             var ttcomment = '';
@@ -309,40 +310,79 @@ function create_total_rating(obj, only_tomatoes,rt_gap)
         }
 
 
-        if (Number(obj.rotten_tomatoes) > 0)
+        if (Number(obj.rt_rating) > 0)
         {
-            if (Number(obj.rotten_tomatoes) >= 60)
+            if (Number(obj.rt_rating) >= 60)
             {
                 rt_class = '_max_tomatoes';
             }
 
-            content_rating += create_rating_star(obj.rotten_tomatoes, 'rotten_tomatoes' + rt_class);
+            content_rating += create_rating_star(obj.rt_rating, 'rotten_tomatoes' + rt_class);
 
         }
 
 
-        if (Number(obj.rotten_tomatoes_audience) > 0)
+        if (Number(obj.rt_aurating) > 0)
         {
-            if (Number(obj.rotten_tomatoes_audience) >= 60)
+            if (Number(obj.rt_aurating) >= 60)
             {
                 rt_class = '_max_tomatoes';
             }
-            content_rating += create_rating_star(obj.rotten_tomatoes_audience, 'rotten_tomatoes_audience' + rt_class);
+            content_rating += create_rating_star(obj.rt_aurating, 'rotten_tomatoes_audience' + rt_class);
 
         }
         content_rating += '</div></div>';
     }
 
     if (!only_tomatoes) {
-        if (Number(obj.tmdb) > 0) {
-            content_rating += '<div class="exlink" id="tmdb"><span>TMDb:</span>' + create_rating_star(obj.tmdb, 'tmdb') + '</div>';
-        }
+
+        function formatWordsList(word) {
+                let formattedWord = word.replace('_rating', '');
+                formattedWord = formattedWord.charAt(0).toUpperCase() + formattedWord.slice(1);
+                return formattedWord;
+          }
 
 
-        if (obj.kinop_rating > 0)
-            content_rating += '<div class="exlink" id="kinop"><span>Kinopoisk:</span>' + create_rating_star(obj.kinop_rating, 'kinopoisk') + '</div>';
-        if (obj.douban_rating > 0)
-            content_rating += '<div class="exlink" id="douban"><span>Douban:</span>' + create_rating_star(obj.douban_rating, 'douban') + '</div>';
+        Object.keys(obj).forEach(function(key) {
+
+            var value = obj[key];
+
+            let name =key;
+
+            if (key=='imdb_rating')
+            {
+                name ='IMDb';
+            }
+            else if (key=='kinop_rating')
+            {
+                name ='Kinopoisk';
+            }
+            else
+            {
+                name = formatWordsList(key);
+            }
+
+
+            if (Number(value) > 0) {
+               if (key.indexOf('rt_') == -1 && key!='total_rating' ) {
+
+                   content_rating += '<div class="exlink" id="'+key+'"><span>'+name+':</span>' + create_rating_star(value, key) + '</div>';
+                }
+
+
+            }
+
+        });
+
+
+        // if (obj.kinop_rating > 0)
+        //     content_rating += '<div class="exlink" id="kinop"><span>Kinopoisk:</span>' + create_rating_star(obj.kinop_rating, 'kinopoisk') + '</div>';
+        //
+        // if (obj.douban_rating > 0)
+        //     content_rating += '<div class="exlink" id="douban"><span>Douban:</span>' + create_rating_star(obj.douban_rating, 'douban') + '</div>';
+
+
+
     }
 
 
@@ -685,11 +725,11 @@ function create_rating_content(object, m_id, search_block = 0)
 
 
 if (object['type']!='videogame') {
-    if (object.total_rating && (object.total_rating.rotten_tomatoes_gap > 0 || object.total_rating.rotten_tomatoes > 0 || object.total_rating.rotten_tomatoes_audience > 0)) {
+    if (object.total_rating && (object.total_rating.rt_gap > 0 || object.total_rating.rt_rating > 0 || object.total_rating.rt_aurating > 0)) {
 
         let total_gap_str = 'N/A';
 
-        var total_gap = object.total_rating.rotten_tomatoes_gap;
+        var total_gap = object.total_rating.rt_gap;
         let rating_color = '';
         if (total_gap) {
             total_gap = Number(total_gap);
@@ -1004,28 +1044,23 @@ function  add_rating_row(title, content, id, content_text)
 }
 function create_rating_star(rating, type)
 {
-    if (type == 'kinopoisk') {
-        if (rating)
+
+    if (type.indexOf('_rating') !=-1 && type!='audience_rating'  && type!='total_rating')  {
+
+        let num =10;
+
+        if (type=='eiga_rating' || type=='moviemeter_rating')
         {
-            rating = Number(rating) / 10;
-
-            return '<span class="kinopoisk_rating"><strong>' + rating + '</strong>/10</span>';
+            num =5;
         }
-
-
-    }
-    if (type == 'douban') {
 
         if (rating) {
-            rating = Number(rating) / 10;
-            return '<span class="douban_rating"><strong>' + rating + '</strong>/10</span>';
+            return '<span class="big_rating '+type+'"><strong>' + rating + '</strong>/'+num+'</span>';
         }
-    }
-    if (type == 'imdb') {
-        rating = Number(rating);
-        return '<span class="imdb_rating"><strong>' + rating + '</strong>/10</span>';
 
-    } else if (type.indexOf('rotten_tomatoes') != -1) {
+    }
+
+    else if (type.indexOf('rotten_tomatoes') != -1  ) {
         rating = Number(rating);
         if (rating > 0)
         {
@@ -1035,6 +1070,8 @@ function create_rating_star(rating, type)
 
     } else if (type == 'vote')
     {
+
+
         //  console.log(rating[1]);
         let array = {};
         if (rating[1] == 'tvseries' || rating[1] == 'movie')

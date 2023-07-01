@@ -1521,7 +1521,7 @@ else if ($_POST['oper'] === 'get_actordata') {
          foreach ($update_array as $i=>$v)
          {
 
-             $asctor_u.= MOVIE_DATA::last_update_container($id,$i,$v['time'],$v['comment'],1);
+             $asctor_u.= MOVIE_DATA::last_update_container($id,$i,$v['time'],$v['comment'],86400);
 
          }
          $update_container = '<div class="actor_update_data"><p>Last updated: </p>'.$asctor_u.'</div>';

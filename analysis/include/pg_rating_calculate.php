@@ -131,7 +131,7 @@ class PgRatingCalculate {
     }
 
     public static function get_curl_rating($mid, $type) {
-        $array_cid = array('thenumbers' => 1, 'rotten_mv' => 20, 'rotten_tv' => 21, 'douban' => 22, 'metacritic' => 23, 'kinop' => 24, 'myanimelist' => 27);
+        $array_cid = array('thenumbers' => 1, 'rotten_mv' => 20, 'rotten_tv' => 21, 'douban' => 22, 'metacritic' => 23, 'kinop' => 24, 'animelist' => 27, 'moviemeter' => 38, 'eiga' => 35);
 
         if ($type == 'rt') {
 
@@ -241,31 +241,49 @@ class PgRatingCalculate {
 
         $data = [];
 
-        $sql = "SELECT rwt_audience,	rwt_staff,	imdb,	metacritic , tmdb	,total_rating,  	last_update	FROM `data_movie_rating` where `movie_id` = " . $id . " limit 1";
-        //echo $sql;
-        $r = Pdo_an::db_results_array($sql);
-        if ($r) {
-            $data = $r[0];
+        !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+        $value = OptionData::get_options('', 'movies_raiting_weight_convert');
+        if ($value) {
+            $value = json_decode($value, 1);
+            $array_convert = $value;
         }
+
+        $array_exlude =['reviews_rating','fchan_rating'];
 
         $sql = "SELECT * FROM `data_movie_erating`  where `movie_id` = " . $id . " limit 1";
         //echo $sql;
         $r = Pdo_an::db_results_array($sql);
         if ($r) {
-            $data['kinop_rating'] = $r[0]['kinop_rating'];
-            $data['douban_rating'] = $r[0]['douban_rating'];
-            
-            // Add rotten tomatoes
-
-            $data['rotten_tomatoes'] = $r[0]['rt_rating'];
-            $data['rotten_tomatoes_audience'] = $r[0]['rt_aurating'];
-
-            if ($r[0]['rt_rating'])
+            foreach (  $r[0] as $i=>$v)
             {
-                $data['rotten_tomatoes_gap'] = $r[0]['rt_gap'];
-            }
+                if ((strstr($i,'rating') || strstr($i,'_gap')) && !in_array($i,$array_exlude))
+                {
+                    if ($v)
+                    {
+                    if ($array_convert[$i])
+                    {
+                      //  $v = $v* $array_convert[$i];
 
-        }
+                    }
+                        if ($i!='rt_rating' &&  $i!='rt_aurating' &&  $i!='rt_gap')
+                        {
+
+                            $v= $v/10;
+                        }
+
+
+                        if ($i=='audience_rating' || $i=='total_rating')
+                        {
+                            $v= $v/2;
+                        }
+
+                        $data[$i]=$v;
+                    }
+
+
+                }
+            }
+           }
         return $data;
     }
 

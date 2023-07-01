@@ -1063,8 +1063,15 @@ class Import
 
         ///$array_update_status = self::last_commits_updated($data);////check status 2
 
-        ///check status 6
+        ///check status 6 1
 
+        $send_request  = self::check_status(1);
+
+        if ($send_request>1000)
+        {
+            ///wait
+            return 'A request is already executed';
+        }
 
         $send_request  = self::check_status(6);
         if ($send_request>1000)

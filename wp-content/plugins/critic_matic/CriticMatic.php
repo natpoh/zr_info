@@ -2168,10 +2168,10 @@ class CriticMatic extends AbstractDB {
 
     public function author_edit_submit($form_state) {
         $result_id = 0;
-        $status = $form_state['status'];
-        $from = $form_state['type'];
+        $status = (int) $form_state['status'];
+        $from = (int) $form_state['type'];
         $name = $form_state['name'];
-        $show_type = $form_state['show_type'];
+        $show_type = (int) isset($form_state['show_type'])?$form_state['show_type']:0;
         $tags = isset($form_state['post_category']) ? $form_state['post_category'] : array();
 
         $options = array();
@@ -3553,7 +3553,7 @@ class CriticMatic extends AbstractDB {
 
     public function update_settings($form) {
 
-        $settings_prev = unserialize($this->get_option('critic_matic_settings', '',false));
+        $settings_prev = unserialize($this->get_option('critic_matic_settings', false));
 
         $ss = $settings_prev;
         foreach ($form as $key => $value) {
@@ -3566,11 +3566,9 @@ class CriticMatic extends AbstractDB {
             $ss['posts_type_1'] = $form['posts_type_1'] ? 1 : 0;
             $ss['posts_type_2'] = $form['posts_type_2'] ? 1 : 0;
             $ss['posts_type_3'] = $form['posts_type_3'] ? 1 : 0;
+            $ss['audience_unique'] = $form['audience_unique'] ? 1 : 0;
+            $ss['audience_top_unique'] = $form['audience_top_unique'] ? 1 : 0;
         }
-
-        $ss['audience_unique'] = $form['audience_unique'] ? 1 : 0;
-        $ss['audience_top_unique'] = $form['audience_top_unique'] ? 1 : 0;
-
 
         if (isset($form['parser_proxy'])) {
             $ss['parser_proxy'] = base64_encode($form['parser_proxy']);

@@ -880,7 +880,7 @@ a#cl.open_ul:hover {
     margin-right: 15px;
 }
 
-body.theme_dark .imdb_rating, body.theme_dark .rotten_tomatoes_score, body.theme_dark .kinopoisk_rating  , body.theme_dark .douban_rating{
+body.theme_dark .big_rating, body.theme_dark .rotten_tomatoes_score{
 
     color: #919191;
 }
