@@ -2315,11 +2315,16 @@ class MoviesParserAdmin extends ItemAdmin {
         }
 
         $total_add = 0;
+        $campaign = $this->mp->get_campaign($id);
+        $options = $this->mp->get_options($campaign);
+        $lo = $options['links'];
+           
+        $new_url_weight = $lo['weight'];
 
         foreach ($list as $url) {
             $url = trim($url);
             if ($url) {
-                if ($this->mp->add_url($id, $url)) {
+                if ($this->mp->add_url($id, $url,0,$new_url_weight)) {
                     $total_add += 1;
                 }
             }
@@ -2493,7 +2498,7 @@ class MoviesParserAdmin extends ItemAdmin {
                 $options['cron_urls'] = $urls;
                 $this->mp->update_campaign_options($id, $options);
             } else if ($form_state['add_urls']) {
-                // Add URLs
+                // Add URLs                
                 $this->add_urls($id, $form_state['add_urls']);
             } else if ($form_state['generate_urls']) {
                 // Generage URLs

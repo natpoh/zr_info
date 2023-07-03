@@ -489,7 +489,7 @@ class MoviesParser extends MoviesAbstractDB {
                 // Update post pid
                 $this->update_url_pid($url_exist->id, $pid);
             }
-            // URL already exist in another campaign            
+            // URL already exist in another campaign     
             if ($weight > 0 && $cid != $url_exist->cid) {
                 // Check old campaign weight
                 $old_weight = $this->get_campaign_weight($url_exist->cid);
