@@ -28,9 +28,18 @@ class WOKE
             $male = $gender['male'];
             $female = $gender['female'];
         }
+        if ($female)
+        {
+            $gender_count = ($female + $male);
+            $gender_data = round(100 * $female / ($gender_count), 0);
 
-        $gender_count = ($female + $male);
-        $gender_data = round(100 * $female / ($gender_count), 0);
+        }
+        else
+        {
+            $gender_data =0;
+        }
+
+
 
         return array('diversity' => $diversity, 'gender' => $gender_data);
     }
@@ -575,15 +584,21 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
 
             /// diversity	female	woke	lgbt	audience	boycott	oweralbs	rtgap  rtaudience 	imdb	kino	douban	year result	last_update
 
+            if (!is_numeric($result)  || !$result)$result=0;
+            if (is_nan($result)) {$result=0;}
+
+
          if (!$r)
          {
 
+
+
              if (!$total)
              {
-                 if (!$result)$result=0;
+
 
                  $q = "INSERT INTO `data_woke`(`id`, `mid`,`title`, `country`, `result`, `last_update`) 
-                VALUES (NULL,'" . $mid . "',?, ?   '" . $result . "','" . time() . "')";
+                VALUES (NULL,'" . $mid . "',?, ?  , '" . $result . "','" . time() . "')";
              }
              else {
 
@@ -601,10 +616,6 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
                  if (!$array['douban'])$array['douban']=0;
                  if (!$woke)$woke=0;
                  if (!$lgbt)$lgbt=0;
-                 if (!$result)$result=0;
-
-
-
 
 
 
@@ -617,7 +628,7 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
              }
              $rid  = Pdo_an::db_insert_sql($q,[$array['title'],$array['country']]);
 
-             echo ' inserted '.$q;
+             //echo ' inserted '.$q;
 
              if ($sync)
              {
