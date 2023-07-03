@@ -503,10 +503,10 @@ class MoviesParser extends MoviesAbstractDB {
                     $arhive = $this->get_arhive_by_url_id($url_exist->id);
                     if ($arhive) {
                         // Move arhive
-                        $arhive_hash = $arhive->arhive_hash;
-                        $full_path_old = $this->mp->get_arhive_path($url_exist->cid, $arhive_hash, true);  
-                        $full_path_new = $this->mp->get_arhive_path($cid, $arhive_hash, true);  
                         try {
+                            $arhive_hash = $arhive->arhive_hash;
+                            $full_path_old = $this->get_arhive_path($url_exist->cid, $arhive_hash, true);  
+                            $full_path_new = $this->get_arhive_path($cid, $arhive_hash, true);                          
                             rename($full_path_old, $full_path_new);
                             $message = 'Move arhive '.$url_exist->id.' from ' . $url_exist->cid . ' to ' . $cid;
                             $this->log_info($message, $cid, $url_exist->id, 1);
