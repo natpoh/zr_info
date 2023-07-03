@@ -1293,9 +1293,10 @@ function add_actors_description($actor_id,$description,$sync=1)
         $q="INSERT INTO `data_actors_description`(`id`, `actor_id`, `description`, `last_updata`) VALUES (NULL,?,?,?)";
         Pdo_an::db_results_array($q,[$actor_id,$description,time()]);
 
-        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-        Import::create_commit('', 'update', 'data_actors_description', array('actor_id' => $actor_id), 'actor_update_desc',29);
-
+        if ($sync) {
+            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+            Import::create_commit('', 'update', 'data_actors_description', array('actor_id' => $actor_id), 'actor_update_desc', 29);
+        }
     }
 
 
