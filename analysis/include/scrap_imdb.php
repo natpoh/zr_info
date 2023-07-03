@@ -1273,7 +1273,7 @@ function add_actors_description($actor_id,$description,$sync=1)
             if ($sync)
             {
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', 'data_actors_description', array('actor_id' => $actor_id), 'actor_update_desc',30);
+                Import::create_commit('', 'update', 'data_actors_description', array('actor_id' => $actor_id), 'actor_desc_update',50);
 
             }
 
@@ -1295,7 +1295,7 @@ function add_actors_description($actor_id,$description,$sync=1)
 
         if ($sync) {
             !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-            Import::create_commit('', 'update', 'data_actors_description', array('actor_id' => $actor_id), 'actor_update_desc', 29);
+            Import::create_commit('', 'update', 'data_actors_description', array('actor_id' => $actor_id), 'actor_desc_insert', 49);
         }
     }
 
