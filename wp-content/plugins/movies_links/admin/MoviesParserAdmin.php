@@ -2316,10 +2316,11 @@ class MoviesParserAdmin extends ItemAdmin {
 
         $total_add = 0;
         $campaign = $this->mp->get_campaign($id);
+        
         $options = $this->mp->get_options($campaign);
-        $lo = $options['links'];
+        $so = $options['service_urls'];
            
-        $new_url_weight = $lo['weight'];
+        $new_url_weight = $so['weight'];
 
         foreach ($list as $url) {
             $url = trim($url);

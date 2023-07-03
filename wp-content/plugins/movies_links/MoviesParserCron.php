@@ -517,9 +517,10 @@ class MoviesParserCron extends MoviesAbstractDB {
             $lo = $options['links'];
             $urls = $this->mp->find_url_posts_links($items, $lo, $debug);
             $ms = $this->ml->get_ms();
-
             $cid_dst = $lo['camp'];
-            $new_url_weight = $lo['weight'];
+            
+            $so = $options['service_urls'];           
+            $new_url_weight = $so['weight'];
 
             if ($debug) {
                 print_r($urls);
@@ -823,7 +824,7 @@ class MoviesParserCron extends MoviesAbstractDB {
 
         $url = $item->link;
         $link_hash = $item->link_hash;
-        $first_letter = substr($link_hash, 0, 1);
+
         $settings = $this->ml->get_settings();
 
 
@@ -884,15 +885,8 @@ class MoviesParserCron extends MoviesAbstractDB {
             $this->mp->log_error($message, $item->cid, $item->id, 2);
             return;
         }
-
-        $arhive_path = $this->ml->arhive_path;
-        $cid_path = $arhive_path . $item->cid . '/';
-        $first_letter_path = $cid_path . $first_letter . '/';
-
-        $full_path = $first_letter_path . $link_hash;
-
-
-        $this->mp->check_and_create_dir($first_letter_path);
+     
+        $full_path = $this->mp->get_arhive_path($item->cid, $link_hash, true);        
 
         if (file_exists($full_path)) {
             unlink($full_path);
