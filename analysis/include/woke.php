@@ -580,10 +580,32 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
 
              if (!$total)
              {
+                 if (!$result)$result=0;
+
                  $q = "INSERT INTO `data_woke`(`id`, `mid`,`title`, `country`, `result`, `last_update`) 
                 VALUES (NULL,'" . $mid . "',?, ?   '" . $result . "','" . time() . "')";
              }
              else {
+
+                 if (!$array['diversity'])$array['diversity']=0;
+                 if (!$array['female'])$array['female']=0;
+                 if (!$array['woke'])$array['woke']=0;
+                 if (!$array['lgbt'])$array['lgbt']=0;
+                 if (!$array['boycott'])$array['boycott']=0;
+                 if (!$array['oweralbs'])$array['oweralbs']=0;
+                 if (!$array['rtgap'])$array['rtgap']=0;
+                 if (!$array['year'])$array['year']=0;
+                 if (!$array['rtaudience'])$array['rtaudience']=0;
+                 if (!$array['imdb'])$array['imdb']=0;
+                 if (!$array['kino'])$array['kino']=0;
+                 if (!$array['douban'])$array['douban']=0;
+                 if (!$woke)$woke=0;
+                 if (!$lgbt)$lgbt=0;
+                 if (!$result)$result=0;
+
+
+
+
 
 
                  $q = "INSERT INTO `data_woke`(`id`, `mid`,`title`, `country`, `diversity`, `female`, `woke`, `lgbt`, `audience`, `boycott`, `oweralbs`, `rtgap`, `year`, `rtaudience`, `imdb`, `kino`, `douban`,
