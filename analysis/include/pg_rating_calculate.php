@@ -274,7 +274,7 @@ class PgRatingCalculate {
 
                         if ($i=='audience_rating' || $i=='total_rating')
                         {
-                            $v= $v/2;
+                            $v= round($v/2,1);
                         }
 
                         $data[$i]=$v;

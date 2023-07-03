@@ -619,7 +619,7 @@ class Import
                 $count_array+= count($array);
             }
             $result[$i]=$r;
-            if ($count_array>100)
+            if ($count_array>120)
             {
                 break;
             }
@@ -1037,10 +1037,19 @@ class Import
         }
     }
 
-    public static function check_status($status)
+    public static function check_status($status,$current_server =0)
     {
 
-        $sql ="SELECT COUNT(*) as cnt  FROM `commit` WHERE `status` = '".$status."'";
+        if ($current_server)
+        {
+            $site_id = self::generate_id();
+            $sql ="SELECT COUNT(*) as cnt  FROM `commit` WHERE `status` = '".$status."' and site_id = ".$site_id;
+        }
+        else
+        {
+            $sql ="SELECT COUNT(*) as cnt  FROM `commit` WHERE `status` = '".$status."'";
+        }
+
         $rows = Pdo_an::db_fetch_row($sql);
         if ($rows)
         {
@@ -1065,7 +1074,7 @@ class Import
 
         ///check status 6 1
 
-        $send_request  = self::check_status(1);
+        $send_request  = self::check_status(1,1);
 
         if ($send_request>1000)
         {
@@ -1205,7 +1214,7 @@ class Import
 
         if ($action == 'sync') { ////curl sinc
 
-            self::service();///delete and change status for old commit
+
 
 
             $result['sync'] = self::sync($data);             ///sync - send data to remote server and change status to 1
@@ -1214,6 +1223,8 @@ class Import
 
             $result['sync_complete'] = self::sync_complete($data);
             $result['sync_empty'] = self::sync_complete($data,7,7);
+
+            self::service();///delete and change status for old commit
 
         }
 

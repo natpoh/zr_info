@@ -1256,7 +1256,7 @@ function check_image_on_server($actor_id, $image = '', $tmdb = '')
 
 }
 
-function add_actors_description($actor_id,$description)
+function add_actors_description($actor_id,$description,$sync=1)
 {
 
     $q = "SELECT `id`, `description`, `last_updata` FROM `data_actors_description` WHERE `actor_id` = ".$actor_id." limit 1";
@@ -1270,8 +1270,13 @@ function add_actors_description($actor_id,$description)
             $q = "UPDATE `data_actors_description` SET `description`=?,`last_updata`=? WHERE `actor_id`= ".$actor_id;
             Pdo_an::db_results_array($q,[$description,time()]);
 
-            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-            Import::create_commit('', 'update', 'data_actors_description', array('actor_id' => $actor_id), 'actor_update_desc',30);
+            if ($sync)
+            {
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                Import::create_commit('', 'update', 'data_actors_description', array('actor_id' => $actor_id), 'actor_update_desc',30);
+
+            }
+
 
 
         }
@@ -1307,7 +1312,7 @@ function migration_actors_description()
     foreach ($rows as $t)
     {
         $count++;
-        add_actors_description($t['id'],$t['description']);
+        add_actors_description($t['id'],$t['description'],0);
         $sql = "UPDATE `data_actors_imdb` SET `description`='' WHERE `data_actors_imdb`.`id` = " . $t['id'];
         Pdo_an::db_results_array($sql);
 
