@@ -595,13 +595,13 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
              }
              $rid  = Pdo_an::db_insert_sql($q,[$array['title'],$array['country']]);
 
-            // echo ' inserted ';
+             echo ' inserted '.$q;
 
              if ($sync)
              {
 
                  !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                 Import::create_commit('', 'update', 'data_woke', array('mid' => $mid), 'woke',10,['skip'=>['id']]);
+                 Import::create_commit('', 'update', 'data_woke_insert', array('mid' => $mid), 'woke',10,['skip'=>['id']]);
 
              }
 
@@ -639,7 +639,7 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
                      if ($sync)
                      {
                          !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                         Import::create_commit('', 'update', 'data_woke', array('mid' => $mid), 'woke',10,['skip'=>['id']]);
+                         Import::create_commit('', 'update', 'data_woke_update', array('mid' => $mid), 'woke',10,['skip'=>['id']]);
                      }
                  }
              }
@@ -648,7 +648,7 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
                  if ($sync)
                  {
                      !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                     Import::create_commit('', 'update', 'data_woke', array('mid' => $mid), 'woke',10,['skip'=>['id']]);
+                     Import::create_commit('', 'update', 'data_woke_update', array('mid' => $mid), 'woke',10,['skip'=>['id']]);
                  }
              }
          }
