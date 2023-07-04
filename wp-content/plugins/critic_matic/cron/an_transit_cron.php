@@ -70,6 +70,9 @@ if ($cm->cron_already_run($cron_name, 10, $debug, $force)) {
 }
 $cm->register_cron($cron_name);
 
+// Remove old erating animelist. One time task
+$cr->remove_old_animelist($count, $debug);
+
 
 // Indie tags
 $force_indie = isset($_GET['force_indie']) ? true : false;

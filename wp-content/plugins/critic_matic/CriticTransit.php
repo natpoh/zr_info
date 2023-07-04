@@ -35,6 +35,7 @@ class CriticTransit extends AbstractDB {
 
     private $cm;
     private $ma;
+    private $ml;
     private $db = array();
     public $post_category = array(
         0 => 'None',
@@ -83,6 +84,50 @@ class CriticTransit extends AbstractDB {
             $this->ma = new MoviesAn($this->cm);
         }
         return $this->ma;
+    }
+
+    public function get_ml() {
+        // Get movies links
+        if (!$this->ml) {
+            if (!class_exists('MoviesLinks')) {
+                !defined('MOVIES_LINKS_PLUGIN_DIR') ? define('MOVIES_LINKS_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/movies_links/') : '';
+                require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractFunctions.php' );
+                require_once( MOVIES_LINKS_PLUGIN_DIR . 'db/MoviesAbstractDB.php' );
+                require_once( MOVIES_LINKS_PLUGIN_DIR . 'MoviesLinks.php' );
+            }
+
+            $this->ml = new MoviesLinks();
+        }
+        return $this->ml;
+    }
+
+    public function remove_old_animelist($count = 10, $debug = false) {
+
+        # 1. Get old anime
+        $sql = sprintf("SELECT * FROM `data_movie_erating` WHERE animelist_date=0 AND animelist_count>0 LIMIT %d", $count);
+        $result = $this->db_results($sql);
+        if ($debug) {
+            print_r($result);
+        }
+        # 2. Recalculate rating
+        if ($result) {
+            $ml = $this->get_ml();
+            $ma = $ml->get_ma();
+            foreach ($result as $item) {
+                $data = array();
+                // Clear
+                $data['animelist_rating'] = 0;
+                $data['animelist_count'] = 0;
+                // Total
+                $data['total_count'] = 0;
+                $data['total_rating'] = 0;
+
+                if ($debug) {
+                    p_r($data);
+                }
+                $ma->update_erating($item->movie_id, $data);
+            }
+        }
     }
 
     /*
