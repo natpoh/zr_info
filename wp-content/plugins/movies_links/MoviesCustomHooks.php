@@ -222,13 +222,16 @@ class MoviesCustomHooks {
             } else if ($curr_camp == 'mediaversity') {
 
                 $rating = (int) (20 * ((float) str_replace('/5', '', $to_update['rating'])));
+                if ($rating > 100) {
+                    $rating = 100;
+                }
                 $grade = $to_update['grade'];
-                
+
                 // mediaversity
                 $data[$curr_camp . '_rating'] = $rating;
                 $data[$curr_camp . '_grade'] = $grade;
                 $data[$curr_camp . '_date'] = $this->mp->curr_time();
-          
+
                 // Total
                 $data['total_rating'] = $rating;
 
