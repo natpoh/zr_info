@@ -233,7 +233,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         $data['last_upd'] = $this->curr_time();
         if ($exist) {
             // Calculate total rating                         
-            $rating_names = array(
+            /*$rating_names = array(
                 'kinop_rating',
                 'douban_rating',
                 'animelist_rating',
@@ -249,7 +249,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
                 if (isset($data[$rn])) {
                     $exist->$rn = $data[$rn];
                 }
-            }
+            }*/
 
            //$total = $this->calculate_total($exist);
             //$data['total_rating'] = $total;

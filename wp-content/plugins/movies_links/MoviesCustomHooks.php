@@ -105,7 +105,7 @@ class MoviesCustomHooks {
             );
             // Add anime genre
             $ma = $this->ml->get_ma();
-            $ma->add_genre_meta($post->top_movie, 'anime');            
+            $ma->add_genre_meta($post->top_movie, 'anime');
         } else if ($campaign->id == 20 || $campaign->id == 21) {
             // rt movies (20) and tv (21)
             $curr_camp = 'rt';
@@ -121,6 +121,19 @@ class MoviesCustomHooks {
             $score_opt = array(
                 'metascore' => 'rating',
                 'userscore' => 'userscore'
+            );
+        } else if ($campaign->id == 41 || $campaign->id == 42) {
+            // www.mediaversityreviews.com
+            $curr_camp = 'mediaversity';
+            $score_opt = array(
+                'grade' => 'rating',
+                'gradew' => 'grade'
+            );
+        } else if ($campaign->id == 39 || $campaign->id == 40) {
+            // thecherrypicks
+            $curr_camp = 'thecherrypicks';
+            $score_opt = array(
+                'rating' => 'rating',
             );
         }
 
@@ -208,6 +221,39 @@ class MoviesCustomHooks {
 
                 // Total
                 $data['total_rating'] = $total_rating;
+
+                if ($data['total_rating'] > 0) {
+                    $update_rating = true;
+                }
+            } else if ($curr_camp == 'mediaversity') {
+
+                $rating = (int) (20 * ((float) str_replace('/5', '', $to_update['rating'])));
+                if ($rating > 100) {
+                    $rating = 100;
+                }
+                $grade = $to_update['grade'];
+
+                // mediaversity
+                $data[$curr_camp . '_rating'] = $rating;
+                $data[$curr_camp . '_grade'] = $grade;
+                $data[$curr_camp . '_date'] = $this->mp->curr_time();
+
+                // Total
+                $data['total_rating'] = $rating;
+
+                if ($data['total_rating'] > 0) {
+                    $update_rating = true;
+                }
+            } else if ($curr_camp == 'thecherrypicks') {
+
+                $rating = (int) $to_update['rating'];
+
+                // thecherrypicks
+                $data[$curr_camp . '_rating'] = $rating;
+                $data[$curr_camp . '_date'] = $this->mp->curr_time();
+
+                // Total
+                $data['total_rating'] = $rating;
 
                 if ($data['total_rating'] > 0) {
                     $update_rating = true;

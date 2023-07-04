@@ -489,7 +489,8 @@ class MoviesParser extends MoviesAbstractDB {
                 // Update post pid
                 $this->update_url_pid($url_exist->id, $pid);
             }
-            // URL already exist in another campaign            
+            // URL already exist in another campaign     
+            // p_r(array($weight, $cid, $url_exist->cid));
             if ($weight > 0 && $cid != $url_exist->cid) {
                 // Check old campaign weight
                 $old_weight = $this->get_campaign_weight($url_exist->cid);
@@ -497,6 +498,22 @@ class MoviesParser extends MoviesAbstractDB {
                     $this->update_url_campaing($url_exist->id, $cid);
                     $message = 'Update URL campaign from ' . $url_exist->cid . ' to ' . $cid;
                     $this->log_info($message, $cid, $url_exist->id, 1);
+
+                    // Check and move arhive
+                    $arhive = $this->get_arhive_by_url_id($url_exist->id);
+                    if ($arhive) {
+                        // Move arhive
+                        try {
+                            $arhive_hash = $arhive->arhive_hash;
+                            $full_path_old = $this->get_arhive_path($url_exist->cid, $arhive_hash, true);  
+                            $full_path_new = $this->get_arhive_path($cid, $arhive_hash, true);                          
+                            rename($full_path_old, $full_path_new);
+                            $message = 'Move arhive '.$url_exist->id.' from ' . $url_exist->cid . ' to ' . $cid;
+                            $this->log_info($message, $cid, $url_exist->id, 1);
+                        } catch (Exception $exc) {
+                            //echo $exc->getTraceAsString();
+                        }
+                    }
                 }
             }
             return 0;
@@ -1617,13 +1634,25 @@ class MoviesParser extends MoviesAbstractDB {
             }
         }
     }
-
-    public function get_arhive_file($cid, $link_hash) {
+    
+    public function get_arhive_path($cid, $link_hash, $create_dir=false) {
+         
         $arhive_path = $this->ml->arhive_path;
         $first_letter = substr($link_hash, 0, 1);
         $cid_path = $arhive_path . $cid . '/';
         $first_letter_path = $cid_path . $first_letter . '/';
+        
+        if ($create_dir){
+            $this->check_and_create_dir($first_letter_path);
+        }
         $full_path = $first_letter_path . $link_hash;
+        
+        return $full_path;
+    }
+
+    public function get_arhive_file($cid, $link_hash) {        
+        $full_path = $this->get_arhive_path($cid, $link_hash);
+        
         $gzcontent = '';
         if (file_exists($full_path)) {
             $gzcontent = file_get_contents($full_path);
@@ -1638,11 +1667,8 @@ class MoviesParser extends MoviesAbstractDB {
     }
 
     public function delete_arhive_file($cid, $link_hash) {
-        $arhive_path = $this->ml->arhive_path;
-        $first_letter = substr($link_hash, 0, 1);
-        $cid_path = $arhive_path . $cid . '/';
-        $first_letter_path = $cid_path . $first_letter . '/';
-        $full_path = $first_letter_path . $link_hash;
+        $full_path = $this->get_arhive_path($cid, $link_hash);
+               
         $remove = true;
         if (file_exists($full_path)) {
             $remove = unlink($full_path);
