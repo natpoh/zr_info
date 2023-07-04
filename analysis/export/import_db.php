@@ -23,6 +23,7 @@ class Import
         return 0;
     }
 
+    static $timing =[];
 
     public static function timer_start_data()
     { // if called liketimer_stop_data(1), will echo $timetotal
@@ -598,8 +599,10 @@ class Import
 
     public static function last_sinc_commits($data)
     {
+        $timing = self::get_timing();
+
         $site_id = self::generate_id();
-        $count=1000;
+        $count=$timing['count_array'];
         if ($data['count'])
         {
             $count =intval($data['count']);
@@ -619,7 +622,7 @@ class Import
                 $count_array+= count($array);
             }
             $result[$i]=$r;
-            if ($count_array>150)
+            if ($count_array>$timing['count_array'])
             {
                 break;
             }
@@ -646,7 +649,8 @@ class Import
     public static function last_commits($data,$status =0)
     {
 
-        $count=500;
+        $timing = self::get_timing();
+        $count=$timing['last_commits'];
         if ($data['count'])
         {
             $count =intval($data['count']);
@@ -1026,6 +1030,8 @@ class Import
     public static function service()
     {
 
+        $timing =self::get_timing();
+        $rsynh = $timing['reverse_to_synh'];
         ////delete old comlete request
 
         $sql = "DELETE FROM `commit` WHERE `complete` = 1 and `last_update` < ".(time()-86400*8);
@@ -1038,11 +1044,11 @@ class Import
         $site_id = self::generate_id();
 
 
-        $sql = "UPDATE `commit` SET `status` = 0 , `complete` = NULL  where (`status` = 1 OR `status` = 2 OR `status` = 3 OR `status` = 4 OR `status` = 6 ) and site_id='".$site_id."' and `last_update` < ".(time()-86400);
+        $sql = "UPDATE `commit` SET `status` = 0 , `complete` = NULL  where (`status` = 1 OR `status` = 2 OR `status` = 3 OR `status` = 4 OR `status` = 6 ) and site_id='".$site_id."' and `last_update` < ".(time()-$rsynh);
 
         Pdo_an::db_query($sql);
 
-        $sql = "UPDATE `commit` SET `status` = 1 , `complete` = NULL  where (`status` = 2 OR `status` = 3 OR `status` = 4 ) and site_id!='".$site_id."' and `last_update` < ".(time()-86400);
+        $sql = "UPDATE `commit` SET `status` = 1 , `complete` = NULL  where (`status` = 2 OR `status` = 3 OR `status` = 4 ) and site_id!='".$site_id."' and `last_update` < ".(time()-$rsynh);
 
         Pdo_an::db_query($sql);
 
@@ -1101,16 +1107,18 @@ class Import
 
         ///check status 6 1
 
+        $timing = self::get_timing();
+
         $send_request  = self::check_status(1,1);
 
-        if ($send_request>1000)
+        if ($send_request>$timing['check_status'])
         {
             ///wait
             return 'A request is already executed';
         }
 
         $send_request  = self::check_status(6);
-        if ($send_request>1000)
+        if ($send_request>$timing['check_status'])
         {
             ///wait
             return 'A request is already executed';
@@ -1153,9 +1161,41 @@ class Import
         return $res_return;
 
     }
+
+    public static function get_timing()
+    {
+        if (self::$timing)
+        {
+            return self::$timing;
+
+        }
+
+
+      !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+      $timing =   OptionData::get_options('','export_timing');
+      if ($timing)
+      {
+          $timing = json_decode($timing,1);
+      }
+      else
+      {
+          $timing =['send_request'=>200,'count_array'=>120,'check_status'=>1000,'last_commits'=>500,'reverse_to_synh'=>86400];
+
+          $timing =   OptionData::set_option('',json_encode($timing),'export_timing');
+
+      }
+      self::$timing = $timing;
+
+      return $timing;
+
+    }
+
     public  static function sync_last_commit($data)
     {
         ///get data status 1 (sync)
+
+        $timing = self::get_timing();
+
 
         self::timer_start_data();
 
@@ -1164,7 +1204,7 @@ class Import
         $res_return['last_sinc_commits']=count($array_sql);
 
         $send_request  = self::check_status(2);
-        if ($send_request>300)
+        if ($send_request>$timing['send_request'])
         {
             ///wait
            return 'A request is already executed';
@@ -1289,7 +1329,9 @@ class Import
 //        if ($action == 'delete') {
 //            $result = self::delete_data($data);
 //        }
+        $timing = self::get_timing();
 
+        $result['timing'] =$timing;
         return $result;
     }
 
