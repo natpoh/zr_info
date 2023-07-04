@@ -1272,8 +1272,8 @@ function add_actors_description($actor_id,$description,$sync=1)
 
             if ($sync)
             {
-                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', 'data_actors_description', array('actor_id' => $actor_id), 'actor_desc_update',50);
+              //  !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+              //  Import::create_commit('', 'update', 'data_actors_description', array('actor_id' => $actor_id), 'actor_desc_update',50);
 
             }
 
@@ -1294,8 +1294,8 @@ function add_actors_description($actor_id,$description,$sync=1)
         Pdo_an::db_results_array($q,[$actor_id,$description,time()]);
 
         if ($sync) {
-            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-            Import::create_commit('', 'update', 'data_actors_description', array('actor_id' => $actor_id), 'actor_desc_insert', 49);
+           // !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+           /// Import::create_commit('', 'update', 'data_actors_description', array('actor_id' => $actor_id), 'actor_desc_insert', 49);
         }
     }
 
