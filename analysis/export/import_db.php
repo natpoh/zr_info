@@ -619,7 +619,7 @@ class Import
                 $count_array+= count($array);
             }
             $result[$i]=$r;
-            if ($count_array>120)
+            if ($count_array>150)
             {
                 break;
             }
@@ -1164,7 +1164,7 @@ class Import
         $res_return['last_sinc_commits']=count($array_sql);
 
         $send_request  = self::check_status(2);
-        if ($send_request>200)
+        if ($send_request>300)
         {
             ///wait
            return 'A request is already executed';
