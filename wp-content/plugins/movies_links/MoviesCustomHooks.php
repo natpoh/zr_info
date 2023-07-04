@@ -129,6 +129,12 @@ class MoviesCustomHooks {
                 'grade' => 'rating',
                 'gradew' => 'grade'
             );
+        } else if ($campaign->id == 39 || $campaign->id == 40) {
+            // thecherrypicks
+            $curr_camp = 'thecherrypicks';
+            $score_opt = array(
+                'rating' => 'rating',
+            );
         }
 
         $to_update = array();
@@ -230,6 +236,20 @@ class MoviesCustomHooks {
                 // mediaversity
                 $data[$curr_camp . '_rating'] = $rating;
                 $data[$curr_camp . '_grade'] = $grade;
+                $data[$curr_camp . '_date'] = $this->mp->curr_time();
+
+                // Total
+                $data['total_rating'] = $rating;
+
+                if ($data['total_rating'] > 0) {
+                    $update_rating = true;
+                }
+            } else if ($curr_camp == 'thecherrypicks') {
+
+                $rating = (int) $to_update['rating'];
+
+                // thecherrypicks
+                $data[$curr_camp . '_rating'] = $rating;
                 $data[$curr_camp . '_date'] = $this->mp->curr_time();
 
                 // Total
