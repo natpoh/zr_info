@@ -432,8 +432,18 @@ if (!function_exists('template_single_movie')) {
 
             if ($trailer_data) {
 
+
+                if ($movie_t == 'videogame') {
+                  $plb =   'Gameplay';
+                }
+                else
+                {
+                    $plb    ='Play Trailer';
+                }
+
+
                 $class = 'ready_to_load';
-                $button = '<a href="#" class="button_play_trailer" id="' . $trailer_data . '">Play Trailer</a>';
+                $button = '<a href="#" class="button_play_trailer" id="' . $trailer_data . '">'.$plb.'</a>';
             } else {
                 $class = 'check_load';
             }

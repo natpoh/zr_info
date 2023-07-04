@@ -2416,6 +2416,16 @@ jQuery(document).ready(function () {
 
         var id = jQuery(this).attr('id');
 
+        if (id.indexOf('search_query')==0)
+        {
+
+
+            let url = 'https://www.youtube.com/results?'+id;
+
+            window.open(url, '_blank');
+            return  false;
+        }
+
         add_popup();
         let content = `<iframe style="  width: 100%;    height: 90vh;max-width: 800px; max-height: 440px" src="https://www.youtube.com/embed/${id}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
         jQuery('.popup-content').html(content);

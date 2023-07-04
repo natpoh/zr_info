@@ -45,6 +45,45 @@ function sort_data($array)
     return $array[$keys[0]]['key'];
 }
 
+function generate_trailer_link($movie_type,$movie_id,$enable)
+{
+
+    $sql ="select title from `data_movie_imdb` where  id = ".intval($movie_id)." limit 1";
+    $title = Pdo_an::db_get_data($sql,'title');
+
+    if ($movie_type=='VideoGame')
+    {
+        $title_encoded = urlencode($title.' gameplay');
+
+        $link = 'search_query='.$title_encoded;
+
+
+
+    }
+    $link_data = ["Trailer"=>["key"=>$link]];
+    $data  = json_encode($link_data);
+
+    if ($enable)
+    {
+        $sql="UPDATE `cache_movie_trailers` SET  `data`=?, `status`=?, `last_update`=? WHERE `id`=? ";
+
+        Pdo_an::db_results_array($sql,array($data ,1,time(),$movie_id));
+    }
+    else
+    {
+        $sql="INSERT INTO `cache_movie_trailers` (`id`, `rwt_id`, `data`, `status`, `last_update`) 
+                                                VALUES (NULL, ?, ?, ?, ?);";
+
+       Pdo_an::db_insert_sql($sql,array($movie_id,$data,1,time()));
+    }
+
+
+
+    return $link;
+
+}
+
+
 function get_movie_trailer($movie_id=0)
 {
     $data  =check_movie_trailer($movie_id);
@@ -63,6 +102,16 @@ function get_movie_trailer($movie_id=0)
 //            return '';
 //        }
     }
+    $movie_type=TMDB::get_movie_type_from_id($movie_id);
+
+    if ($movie_type=='VideoGame')
+    {
+
+       return generate_trailer_link($movie_type,$movie_id,$data);
+
+
+    }
+
 
     $api_key ='1dd8ba78a36b846c34c76f04480b5ff0';
 
@@ -71,7 +120,7 @@ function get_movie_trailer($movie_id=0)
     if ($tmdb_id)
     {
         $array_type = array('Movie' => 'movie', 'TVSeries' => 'tv', 'TVEpisode' => 'tv');
-        $movie_type=TMDB::get_movie_type_from_id($movie_id);
+
         $type= $array_type[$movie_type];
 
         $url='https://api.themoviedb.org/3/'.$type.'/'.$tmdb_id.'/videos?api_key='.$api_key.'&language=en-US';
@@ -137,8 +186,8 @@ $array_data = [];
 
     }
 
-    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-    Import::create_commit('', 'update', 'cache_movie_trailers', array('id' => $id), 'movie_trailers',20);
+    //!class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+   // Import::create_commit('', 'update', 'cache_movie_trailers', array('id' => $id), 'movie_trailers',20);
 
 
     if ($array_data_string) {

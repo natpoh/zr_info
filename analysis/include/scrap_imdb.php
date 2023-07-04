@@ -1411,7 +1411,7 @@ WHERE `data_actors_imdb`.`id` = " . $actor_id;
 
 
             !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-            Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $actor_id), 'actor_update',4);
+            Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $actor_id), 'actor_update',40);
             if ($debug)echo 'updated ' . $actor_id .' '.$name. '<br>' . PHP_EOL;
         }
         else
@@ -1430,7 +1430,7 @@ WHERE `data_actors_imdb`.`id` = " . $actor_id;
         Pdo_an::db_results_array($sql,$array_request);
         if ($debug)echo 'adedded ' . $actor_id .' '.$name. '<br>' . PHP_EOL;
         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-        Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $actor_id), 'actor_update',4);
+        Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $actor_id), 'actor_update',40);
     }
     ///check actor meta
 

@@ -657,6 +657,33 @@ class Import
         return $rows;
     }
 
+    public static function check_table_access($table)
+    {
+
+        if (DB_SYNC_MODE == 2) {
+
+                    ///get remote id
+                    $array = array('table' => $table, 'column' => 'id');
+                    $id_array = self::get_remote_id($array);
+
+                    $id = $id_array['id'];
+                    if ($id) {
+                        $last_id_array = self::get_last_id($table);
+
+                        $last_id = $last_id_array['id'] + 1;
+                        if ($last_id > $id) {
+                            $id = $last_id;
+                        }
+                        return [1,$id];
+                    }
+
+            return [0,0];
+        }
+        else return [1,0];
+
+
+    }
+
     public static function get_table_access($table_name)
     {
 

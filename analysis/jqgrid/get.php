@@ -304,23 +304,49 @@ AND table_schema='".DB_NAME_AN."'";
                     TMDB::add_log('',$movie_id,'update movies',$comment,1,'admin');
                 }
                 $res_id = $array['parent'] ;
-
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                Import::create_commit('', 'update', $table_data, array('id' => intval($res_id)), 'user_'.$table_data,6);
             } else if ($_POST['oper'] == 'add') {
 
                 $array_index = implode(',', $array_index);
 
-                print_r($arrayrequest);
+                //print_r($arrayrequest);
                 ///$qres = implode(',',$arrayrequest);
 
-                $sql = "INSERT INTO  `" . $table_data . "` (" . $array_index . ") values ( " . $qres . " ) ";
 
-                $res_id= Pdo_an::db_insert_sql($sql, $arrayrequest);
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                [$enable,$id_insert] = Import::check_table_access($table_data);
+
+                echo $enable.' : '.$id_insert;
+                if ($enable)
+                {
+
+
+                if ($enable && $id_insert)
+                {
+                    $sql = "INSERT INTO  `" . $table_data . "` ( `id` , " . $array_index . ") values ( '".$id_insert."', " . $qres . " ) ";
+                }
+                else
+                {
+                    $sql = "INSERT INTO  `" . $table_data . "` (" . $array_index . ") values ( " . $qres . " ) ";
+                }
+                    $res_id= Pdo_an::db_insert_sql($sql, $arrayrequest);
+
+
+                    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                    Import::create_commit('', 'update', $table_data, array('id' => intval($res_id)), 'user_'.$table_data,6);
+
+
+                }
+                else
+                {
+                    echo 'Permission denied';
+                }
 
 
 
             }
-            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-            Import::create_commit('', 'update', $table_data, array('id' => intval($res_id)), 'user_'.$table_data,6);
+
 
         }
     }

@@ -38,11 +38,21 @@ class OptionData {
                 {
                     $id=null;
                 }
+                ///check server
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                [$enable,$id_insert] = Import::check_table_access('options');
+                if ($enable)
+                {
 
-                $sql = "INSERT INTO `options`(`id`, `val`, `type`) VALUES (?,?,?)";
-                $id =Pdo_an::db_insert_sql($sql,array($id,$option,$type));
+                    if ( $id_insert)
+                    {
+                        $id = $id_insert;
+                    }
+                    $sql = "INSERT INTO `options`(`id`, `val`, `type`) VALUES (?,?,?)";
 
+                    $id =Pdo_an::db_insert_sql($sql,array($id,$option,$type));
 
+                }
 
             }
 

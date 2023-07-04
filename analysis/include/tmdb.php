@@ -1036,7 +1036,7 @@ public static function add_todb_actor($id,$name='')
         if ($debug) echo 'insert '.$id.' '.$name.'<br>'.PHP_EOL;
 
         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-        Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $id),'actor_update',4);
+        Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $id),'actor_update',40);
     }
     else if ($name && $name!=$name_db)
     {
@@ -1046,7 +1046,7 @@ public static function add_todb_actor($id,$name='')
         if ($debug) echo 'updated '.$id.' '.$name.'<br>'.PHP_EOL;
 
         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-        Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $id),'actor_update',4);
+        Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $id),'actor_update',40);
     }
 }
 private function insert_production($id,$name,$synch)
