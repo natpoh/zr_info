@@ -267,6 +267,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
                 'reviews_posts',
                 'eiga_count',
                 'moviemeter_count',
+                'ofdb_count',
             );
             $total_count = 0;
             foreach ($count_names as $rn) {
