@@ -40,7 +40,6 @@ class MoviesWeight extends AbstractDB {
                 $title = $item->title;
                 $clear_title = $this->clear_title_second($title);
                 $words = explode(' ', $clear_title);
-
                 $total_weight = 0;
                 $multipler = 1;
                 $weights = array();
