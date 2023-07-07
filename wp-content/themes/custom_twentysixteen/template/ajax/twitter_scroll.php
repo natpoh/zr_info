@@ -24,7 +24,10 @@ function get_chan_data($id, $title)
 
     $file = ABSPATH . 'temp/tag_cloud/' . $id;
     $display = '';
-    $gzcontent = file_get_contents($file);
+    $gzcontent='';
+    if (file_exists($file)){
+        $gzcontent = file_get_contents($file);    
+    }
     if ($gzcontent) {
         $content = gzdecode($gzcontent);
     } else {
@@ -56,7 +59,7 @@ function get_chan_data($id, $title)
         $array_genre[] = $block;
         $i = 0;
         $link = 'https://archive.4plebs.org/_/search/boards/'.$block.'/text/%22' . urlencode($title) . '%22/';
-        $content_data .= '<a id="' . $block . '" class="wordcloud" ' . $display . ' src="'.$link.'" target="_blank">';
+        $content_data .= '<a id="' . $block . '" class="wordcloud" ' . $display . ' href="'.$link.'" target="_blank">';
 
         if (!$display) {
             $display = ' style="display:none" ';
@@ -96,7 +99,7 @@ function get_chan_data($id, $title)
         $link = 'https://archive.4plebs.org/_/search/boards/'.$link_data.'/text/%22' . urlencode($title) . '%22/';
         $i = 0;
         arsort($array_all);
-        $content_data .= '<a id="all" class="wordcloud" ' . $display . ' src="'.$link.'" target="_blank">';
+        $content_data .= '<a id="'.$link_data.'" class="wordcloud" ' . $display . ' href="'.$link.'" target="_blank">';
         foreach ($array_all as $name => $weight) {
             $i++;
             $weight = $weight * $k;
@@ -120,7 +123,7 @@ function get_chan_data($id, $title)
 
     }
     if ($content_data) {
-        $content_data = '<div class="s_container forchan">' . $content_data . '</div>';
+        $content_data = '<a class="open_popup gl_zr_extlink" target="_blank" href="'.$link.'"></a><div class="s_container forchan">' . $content_data . '</div>';
     }
 
     $genre = '';
@@ -133,7 +136,8 @@ function get_chan_data($id, $title)
                 $selected = '';
             }
         }
-        $genre .= '<input class="blue_btn" type="button" dataid="all"  value="All" >';
+        $all = implode('.',$array_genre);
+        $genre .= '<input class="blue_btn" type="button" dataid="'.$all.'"  value="All" >';
 
     }
 
@@ -151,18 +155,45 @@ if (isset($_GET['id'])) {
 
     $movie_title = $r->title;
     $year = $r->year;
+    $type=  $r->type;
+
+    $prefix = 'tv';
+
+    $array_btn = ['pol','tv'];
+
+    $link = 'https://archive.4plebs.org/_/search/boards/'.$prefix.'/text/%22' . urlencode($movie_title) . '%22/';
+    if ($type=='VideoGame')
+    {
+        $prefix = 'v';
+
+        $array_btn = ['v','vg','vm'];
+        $link = 'https://arch.b4k.co/_/search/boards/'.$prefix.'/text/%22' . urlencode($movie_title) . '%22/';
+
+    }
 //filter:verified
 
 
-    $link = 'https://archive.4plebs.org/_/search/boards/pol/text/%22' . urlencode($movie_title) . '%22/';
+    $genre = '';
+    $selected = ' selected ';
+
+        foreach ($array_btn as $g) {
+
+            $genre .= '<input class="blue_btn' . $selected . '" type="button" dataid="' . $g . '" value="/' . $g . '/" >';
+            if ($selected) {
+                $selected = '';
+            }
+        }
+        $all = implode('.',$array_btn);
+        $genre .= '<input class="blue_btn" type="button" dataid="'.$all.'"  value="All" >';
+
 
     ///4chan
     $clud = get_chan_data($movie_id, $movie_title);
     if (!$clud) {
         $clud['content'] =
-            '<div class="s_container forchan smoched"><a id="pol" class="wordcloud"  src="'.$link.'" target="_blank"></a></div>';
+            '<a class="open_popup gl_zr_extlink" target="_blank" href="'.$link.'"></a><div class="s_container forchan smoched"><a id="no_cloud" class="wordcloud"  href="'.$link.'" target="_blank"></a></div>';
 
-        $clud['genre'] = '';
+        $clud['genre'] = $genre;
     }
 
 
@@ -182,7 +213,8 @@ if (isset($_GET['id'])) {
 
     if (strstr($tw_content, 'Unable to load Tweets')) {
 
-    } else {
+    }
+    else {
 
         $content .= '<div class="column_inner_content twitter_content">
 <div class="twitter_content_main">

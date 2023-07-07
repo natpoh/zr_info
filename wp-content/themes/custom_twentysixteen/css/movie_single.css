@@ -858,27 +858,7 @@ a#cl.open_ul:hover {
     filter:none;
 }
 
-.rating_row .rating_result {
-    display: inline-block;
-    left: 0;
-    width: 250px;
-    float: none;
-    position: relative;
-}
 
-
-.rotten_tomatoes_score {
-    font-size: 30px;
-    display: flex;
-    align-items: center;
-    color: #0b0b0b;
-    height: 50px;
-}
-.rotten_tomatoes_score>span {
-    display: flex;
-    align-items: center;
-    margin-right: 15px;
-}
 
 body.theme_dark .big_rating, body.theme_dark .rotten_tomatoes_score{
 
@@ -920,6 +900,33 @@ body.theme_dark .big_rating, body.theme_dark .rotten_tomatoes_score{
 }
 .ext_links a{
     display: inline-block;
+}
+
+.gl_small_block.rating_block {
+    position: relative;
+    left: unset;
+    top: unset;
+    width: 150px;
+    height: 90px;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+.gl_small_block.rating_block .gl_rating_img {
+    height: 50px;
+    width: 70px;
+    text-align: center;
+}
+.gl_small_block.rating_block .gl_rating_img img{
+    height: 100%;
+}
+.gl_small_block.rating_block > .rwt_stars {
+    position: relative;
+    top: unset;
+    right: unset;
+    width: 100px;
 }
 
 .note_show a {

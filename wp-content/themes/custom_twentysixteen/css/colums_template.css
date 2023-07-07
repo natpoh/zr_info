@@ -619,12 +619,13 @@ body.theme_dark .inner_content.secton_gray {
 }
 
 
-#global_zeitgeist{
+#global_zeitgeist {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
-    justify-content: left;
+    justify-content: center;
 }
+
 #global_zeitgeist .gl_zr_block {
     display: flex;
     padding: 1rem;
@@ -653,6 +654,25 @@ details details summary {
     background-size: contain;
     margin-left: 12px;
     margin-top: -10px;
+}
+
+
+.gl_zr_extlink.open_popup
+{
+    width: 50px;
+    height: 44px;
+    position: absolute;
+    right: 30px;
+    top: 28px;
+    z-index: 1000;
+    display: block;
+    margin: 0;
+    padding: 0;
+}
+
+#twitter_scroll .gl_zr_extlink.open_popup{
+    right: 70px;
+    top: 55px;
 }
 
 #global_zeitgeist  .in_fl_cnt{
@@ -2693,57 +2713,80 @@ body.theme_dark  .rating_block .imdb_rating {
     color: #9f9f9f;
 }
 
-.rating_block .big_rating::before {
+.rating_block .note_show_content_rwt_rt .exlink::before {
     content: "";
     display: inline-block;
-    width: 37px;
+    width: 32px;
     height: 28px;
-    box-shadow: 0 0 2px 2px rgb(0 0 0 / 9%);
-    margin-right: 10px;
+    margin-right: 0px;
 }
 
-.rating_block .kinop_rating::before {
+.rating_block .exlink#kinop_rating::before {
     content: "";
     background: url(../images/flags/4x3/ru.svg) no-repeat left 0 top 0 transparent;
-    background-size: contain;
+    background-size: cover;
+    box-shadow: 0 0 2px 2px rgb(0 0 0 / 9%);
+
+}
+.rating_block .exlink#audience_rating::before {
+    content: "";
+    background: url(../images/zr_small_logo.png) no-repeat left 0 top 0 transparent;
+    background-size: cover;
+    box-shadow: 0 0 2px 2px rgb(0 0 0 / 9%);
 
 }
 
-.rating_block .douban_rating::before {
+.rating_block .note_show_content_rwt_rt .exlink#rt::before {
+    content: "";
+    display: inline-block;
+    background: url(../images/rt_64.svg) no-repeat left 0 top 0 transparent;
+    background-size: contain;
+    box-shadow: none;
+    min-width: 28px;
+}
+
+
+.rating_block .exlink#douban_rating::before {
+    content: "";
+    display: inline-block;
     background: url("../images/flags/4x3/cn.svg") no-repeat left 0 top 0 transparent;
-    background-size: contain;
+    background-size: cover;
+    box-shadow: 0 0 2px 2px rgb(0 0 0 / 9%);
 }
 
-.rating_block .eiga_rating::before {
-    background: url("../images/flags/4x3/jp.svg") no-repeat left 0 top 0 transparent;
-    background-size: contain;
+.rating_block .exlink#eiga_rating::before {
+    background: url("../images/flags/4x3/jp.svg") no-repeat left -4px top 0 transparent;
+    background-size: cover;
+    box-shadow: 0 0 2px 2px rgb(0 0 0 / 9%);
 }
 
-.rating_block .moviemeter_rating::before {
+.rating_block .exlink#moviemeter_rating::before {
     background: url("../images/flags/4x3/nl.svg") no-repeat left 0 top 0 transparent;
-    background-size: contain;
+    background-size: cover;
+    box-shadow: 0 0 2px 2px rgb(0 0 0 / 9%);
 }
 
-.rating_block .animelist_rating::before {
+.rating_block .exlink#animelist_rating::before {
     background: url("../images/mal.svg") no-repeat left 0 top 0 transparent;
-    background-size: 37px 37px;
+    background-size: cover;
+    box-shadow: 0 0 2px 2px rgb(0 0 0 / 9%);
     background-position-y: -3px;
 }
 
-.rating_block .metacritic_rating::before {
+.rating_block .exlink#metacritic_rating::before, .rating_block .exlink#metacritic_userscore::before {
     background: url("../images/metacritic-logo.svg") no-repeat left 0 top 0 transparent;
     background-size: contain;
     box-shadow: none;
 }
 
-.rating_block .imdb_rating::before {
+
+
+.rating_block .exlink#imdb_rating::before {
     content: "";
-    background: url("../images/imdb_star.svg") no-repeat left 0 top 0 transparent;
-    display: inline-block;
-    width: 32px;
-    height: 32px;
-    background-size: contain;
-    box-shadow: none;
+    background: url("../images/imdbicon.svg") no-repeat left 0 top -1px  transparent;
+    background-size: cover;
+    box-shadow: 0 0 2px 2px rgb(0 0 0 / 9%);
+
 }
 
 
@@ -2752,6 +2795,7 @@ body.theme_dark  .rating_block .imdb_rating {
 
 .exlink{
     cursor: pointer;
+    font-family: 'Encode Sans Condensed',Lato;
 }
  .exlink:hover {
     color: #007acc;
@@ -4211,4 +4255,10 @@ body.theme_dark .highcharts-legend-title tspan{
     section.inner_content.single .column_header h2 {
         font-size: 22px;
     }
+
+    #twitter_scroll .gl_zr_extlink.open_popup {
+        right: 18px;
+        top: 67px;
+    }
+
 }

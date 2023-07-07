@@ -1248,13 +1248,22 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     $sql = "ALTER TABLE `data_movie_erating` ADD `mediaversity_date` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
-    
+        
     // thecherrypicks
     $sql = "ALTER TABLE `data_movie_erating` ADD `thecherrypicks_rating` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);        
     $sql = "ALTER TABLE `data_movie_erating` ADD `thecherrypicks_date` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
+    
+    
+    // ofdb
+    $sql = "ALTER TABLE `data_movie_erating` ADD `ofdb_rating` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `ofdb_count` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `ofdb_date` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
     
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('movie_id', 'date', 'last_upd', 'total_rating'), "data_movie_erating");
@@ -1558,7 +1567,19 @@ WHERE
  UPDATE `data_actors_meta` SET n_crowdsource=0 WHERE n_crowdsource IS NULL;
  UPDATE `data_actors_meta` SET n_verdict=0 WHERE n_verdict IS NULL;
  UPDATE `data_actors_meta` SET gender=0 WHERE gender IS NULL;
- 
+
+ALTER TABLE `data_actors_meta` CHANGE `n_ethnic` `n_ethnic` TINYINT NULL DEFAULT '0';
+ALTER TABLE `data_actors_meta` CHANGE `n_jew` `n_jew` TINYINT NULL DEFAULT '0';
+ALTER TABLE `data_actors_meta` CHANGE `n_kairos` `n_kairos` TINYINT NULL DEFAULT '0';
+ALTER TABLE `data_actors_meta` CHANGE `n_bettaface` `n_bettaface` TINYINT NULL DEFAULT '0';
+ALTER TABLE `data_actors_meta` CHANGE `n_surname` `n_surname` TINYINT NULL DEFAULT '0';
+ALTER TABLE `data_actors_meta` CHANGE `n_familysearch` `n_familysearch` TINYINT NULL DEFAULT '0';
+ALTER TABLE `data_actors_meta` CHANGE `n_forebears` `n_forebears` TINYINT NULL DEFAULT '0';
+ALTER TABLE `data_actors_meta` CHANGE `n_crowdsource` `n_crowdsource` TINYINT NULL DEFAULT '0';
+ALTER TABLE `data_actors_meta` CHANGE `n_verdict` `n_verdict` TINYINT NULL DEFAULT '0';
+ALTER TABLE `data_actors_meta` CHANGE `gender` `gender` TINYINT NULL DEFAULT '0';
+
+ * 
  * 
  * Clear post scripts
 UPDATE wp_bcw98b_critic_matic_posts SET content = REPLACE(content, '<!--Taboola:V2-->  window', '<!--Taboola:V2--><script>window')

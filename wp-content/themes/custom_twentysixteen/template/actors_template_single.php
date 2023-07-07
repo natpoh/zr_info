@@ -13,7 +13,7 @@ function show_actors_template_single()
     {
         $post_id = $_GET['id'];
     }
-
+    global $section;
     global $post_type;
 
 
@@ -27,6 +27,7 @@ function show_actors_template_single()
     );
 
     $content_actors = '';
+
     foreach ($array_list as $array_type => $value) {
         $content_inner = $section;
         foreach ($value as $id => $name) {
@@ -113,12 +114,7 @@ add_movie_rating("movie_rating", movie_rating_data);
 </section>
 </details>
 </details>
-<details class="dark actor_details" >
-   <summary>Global Consensus</summary>
-<section class="dmg_content inner_content" id="actor_data_dop" >
-        <div  id="global_zeitgeist" data-value="' . $post_id . '" class="not_load"></div>
-</section>
-</details>
+
 
 <details class="dark actor_details" >
    <summary>Family Friendly Breakdown</summary>
@@ -129,9 +125,17 @@ add_movie_rating("movie_rating", movie_rating_data);
 
 </div>
 ';
-
+    $content.='<section class="inner_content no_pad"><div class="column_header">
+                    <h2>Global Zeitgest:</h2>
+                </div><div  id="global_zeitgeist" data-value="' . $post_id . '" class="not_load"></div></section>';
     echo $content;
 }
+//<details class="dark actor_details" >
+//   <summary>Global Consensus</summary>
+//<section class="dmg_content inner_content" id="actor_data_dop" >
+//        <div  id="global_zeitgeist" data-value="' . $post_id . '" class="not_load"></div>
+//</section>
+//</details>
 
 function show_actors_template_single_cache()
 {
@@ -142,10 +146,9 @@ function show_actors_template_single_cache()
         require(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/include/custom_cahe.php');
     }
 
-    $cache = wp_custom_cache('p-'.$post_id.'_show_actors_template_single_1', 'fastcache', 3600);
-   echo $cache;
-
-   // show_actors_template_single();
+   $cache = wp_custom_cache('p-'.$post_id.'_show_actors_template_single_1', 'fastcache', 3600);
+   //echo $cache;
+   show_actors_template_single();
 }
 
 

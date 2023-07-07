@@ -276,15 +276,6 @@ function create_total_rating(obj, only_tomatoes,rt_gap)
     let rt_class = '';
 
 
-    if (!only_tomatoes) {
-        if (obj.rwt_audience > 0)
-            content_rating += '<div><span>ZR Audience:</span>' + create_rating_star(obj.rwt_audience, '') + '</div>';
-
-        if (obj.imdb)
-            content_rating += '<div class="exlink" id="imdb" ><span >IMDb:</span>' + create_rating_star(obj.imdb, 'imdb') + '</div>';
-    }
-
-
     if (Number(obj.rt_rating) > 0 || Number(obj.rt_aurating) > 0)
     {
 
@@ -338,6 +329,7 @@ function create_total_rating(obj, only_tomatoes,rt_gap)
 
         function formatWordsList(word) {
                 let formattedWord = word.replace('_rating', '');
+                formattedWord = formattedWord.replace('_', ' ');
                 formattedWord = formattedWord.charAt(0).toUpperCase() + formattedWord.slice(1);
                 return formattedWord;
           }
@@ -349,7 +341,15 @@ function create_total_rating(obj, only_tomatoes,rt_gap)
 
             let name =key;
 
-            if (key=='imdb_rating')
+            if (key=='metacritic_userscore')
+            {
+                name ='Metacritic User';
+            }
+            else if (key=='audience_rating')
+            {
+                name ='ZR Audience';
+            }
+            else if (key=='imdb_rating')
             {
                 name ='IMDb';
             }
@@ -357,6 +357,11 @@ function create_total_rating(obj, only_tomatoes,rt_gap)
             {
                 name ='Kinopoisk';
             }
+            else if (key=='Animelist')
+            {
+                name ='MyAnimeList';
+            }
+
             else
             {
                 name = formatWordsList(key);
@@ -756,7 +761,7 @@ if (object['type']!='videogame') {
     } else {
         let rating_color = 'gray_rt';
         let total_gap_str = 'N/A';
-        let total_tomatoes_content = 'No <b class="exlink" id="rt">RottenTomatoes</b> ratings imported yet.';
+        let total_tomatoes_content = 'No <b class="exlink" id="rt">Rotten Tomatoes</b> ratings imported yet.';
 
         content += add_rating_block('rt_gap ' + rating_color, total_gap_str, total_tomatoes_content, 4, true);
     }
@@ -1045,22 +1050,22 @@ function  add_rating_row(title, content, id, content_text)
 function create_rating_star(rating, type)
 {
 
-    if (type.indexOf('_rating') !=-1 && type!='audience_rating'  && type!='total_rating')  {
+    // if (type.indexOf('_rating') !=-1 && type!='audience_rating'  && type!='total_rating')  {
+    //
+    //     let num =10;
+    //
+    //     if (type=='eiga_rating' || type=='moviemeter_rating')
+    //     {
+    //         num =5;
+    //     }
+    //
+    //     if (rating) {
+    //         return '<span class="big_rating '+type+'"><strong>' + rating + '</strong>/'+num+'</span>';
+    //     }
+    //
+    // }
 
-        let num =10;
-
-        if (type=='eiga_rating' || type=='moviemeter_rating')
-        {
-            num =5;
-        }
-
-        if (rating) {
-            return '<span class="big_rating '+type+'"><strong>' + rating + '</strong>/'+num+'</span>';
-        }
-
-    }
-
-    else if (type.indexOf('rotten_tomatoes') != -1  ) {
+     if (type.indexOf('rotten_tomatoes') != -1  ) {
         rating = Number(rating);
         if (rating > 0)
         {
@@ -1099,7 +1104,7 @@ function create_rating_star(rating, type)
         }
 
         str_widt = str_widt.toFixed(0);
-        return '<span class="rating_result btn ' + type + '"><span style="width: ' + str_widt + '%;background-size: ' + bg + '%;" class="rating_result_total btn" title="' + rating + '/5"></span></span>';
+        return '<span class="rating_result btn"><span style="width: ' + str_widt + '%;background-size: ' + bg + '%;" class="rating_result_total btn" title="' + rating + '/5"></span></span>';
 
     }
 
@@ -1264,7 +1269,7 @@ function ff_content(data,id)
 
 function global_zeitgeist_content(data)
 {
-
+    console.log(data);
 
     let result ='';
 
@@ -1303,16 +1308,23 @@ function global_zeitgeist_content(data)
 
                     if (item.flag=='mtcr'){
 
-                        flag = `<img style="width:40px;height:40px" src="https://zeitgeistreviews.com/wp-content/themes/custom_twentysixteen/images/metacritic-logo.svg">`;
+                        flag = `<img src="https://zeitgeistreviews.com/wp-content/themes/custom_twentysixteen/images/metacritic-logo.svg">`;
                     }
                     else
                     {
-                        flag = `<img style="width:40px;height:40px" src="https://zeitgeistreviews.com/wp-content/themes/custom_twentysixteen/images/flags/4x3/${item.flag}.svg">`;
+                        flag = `<img src="https://zeitgeistreviews.com/wp-content/themes/custom_twentysixteen/images/flags/4x3/${item.flag}.svg">`;
                     }
 
                 }
 
-                result += `<div class="gl_zr_block" id="${item.ekey}"><div class="gl_zr_title">${flag+item.name} <span class="gl_rating">${rating}</span><a class="gl_zr_extlink" target="_blank" href="${item.link}" ></a></div>${img_container}</div>`;
+                let converted_rating = item.rating / (item.ratmax*2);
+
+                let star_rating = create_rating_star(converted_rating,'gl_'+item.ekey);
+
+
+                result += `<div class="gl_small_block rating_block" id="${item.ekey}"><div class="gl_rating_img">${flag}</div><div class="gl_star_rating rwt_stars">${star_rating}</div></div>`;
+
+              ///  result += `<div class="gl_zr_block" id="${item.ekey}"><div class="gl_zr_title">${flag+item.name} <span class="gl_rating">${rating}</span><a class="gl_zr_extlink" target="_blank" href="${item.link}" ></a></div>${img_container}</div>`;
             }
 
         }
@@ -1414,7 +1426,7 @@ function load_ajax_block(block_id) {
         url = 'https://newsfilter.biz/service/ns_related.php?pid=' + parent_id;
     }
     if (block_id == 'global_zeitgeist') {
-        url = 'https://info.antiwoketomatoes.com/service/global_consensus.php?mid=' + parent_id;
+        //url = 'https://info.antiwoketomatoes.com/service/global_consensus.php?mid=' + parent_id;
     }
 
     jQuery.ajax({
@@ -3716,10 +3728,10 @@ jQuery(document).ready(function () {
 
     jQuery('body').on('click', '.s_container a.wordcloud', function () {
 
-        let src = jQuery(this).attr('src');
+        let src = jQuery(this).attr('href');
         add_popup();
 
-        jQuery('.popup-content').html('<div class="white_popup maxcontent"><iframe src="' + src + '"></iframe></div>');
+        jQuery('.popup-content').html('<div class="white_popup maxcontent"><a class="open_popup gl_zr_extlink" target="_blank" href="' + src + '"></a><iframe src="' + src + '"></iframe></div>');
         jQuery('input[id="action-popup"]').click();
 
         return false;
@@ -3888,13 +3900,43 @@ jQuery(document).ready(function () {
         let id = $(this).attr('dataid');
         let bigprnt = $(this).parents('.column_inner_content');
         let target_contaner = bigprnt.find('.s_container a[id="' + id + '"]');
-        bigprnt.find('.s_container>a').hide();
-        target_contaner.show();
-        let canvs = target_contaner.find('canvas');
-        if (!canvs.attr('id'))
-        {
-            word_cloud(id);
+
+        let link_ext = bigprnt.find('a.gl_zr_extlink');
+        let link_int = bigprnt.find('a[id="no_cloud"]');
+        let url = link_ext.attr('href');
+
+        jQuery('.fchan_btn input').each(function (){
+            let inid = $(this).attr('dataid');
+            if (url.indexOf('/'+inid+'/') !== -1) {
+                url=url.replace('/'+inid+'/', '/'+id+'/' );
+                link_ext.attr('href',url);
+
+                if (link_int.length)
+                {
+                    link_int.attr('href',url);
+
+                }
+
+                return;
+            }
+
+        });
+
+
+
+
+
+        if (target_contaner.length) {
+
+            bigprnt.find('.s_container>a').hide();
+            target_contaner.show();
+            let canvs = target_contaner.find('canvas');
+            if (!canvs.attr('id')) {
+                word_cloud(id);
+            }
         }
+
+
 
         // iframe.attr('src',link);
 

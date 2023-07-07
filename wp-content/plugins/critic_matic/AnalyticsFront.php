@@ -364,7 +364,7 @@ class AnalyticsFront extends SearchFacets {
         return $tags;
     }
 
-    public function find_results($ids = array(), $facets = true, $only_curr_tab = false) {
+    public function find_results($ids = array(), $show_facets = true, $only_curr_tab = false, $limit = -1, $page = -1) {
         $result = array();
         $start = 0;
         $page = $this->get_search_page();
@@ -377,15 +377,15 @@ class AnalyticsFront extends SearchFacets {
 
         if ($tab_key == 'international') {
             $sort = $this->get_search_sort($tab_key);
-            $data = $this->cs->front_search_international($this->keywords, $this->search_limit, $start, $sort, $filters, $facets);
+            $data = $this->cs->front_search_international($this->keywords, $this->search_limit, $start, $sort, $filters, $show_facets);
         } else if ($tab_key == 'ethnicity') {
             // Claster facets
-            if (!$facets && !$ids) {
+            if (!$show_facets && !$ids) {
                 $curr_filter = $this->get_filter('current');
                 if ($curr_filter) {
                     $current = $this->cs->get_current_type($curr_filter);
                     if ($current['type'] == 'c') {
-                        $facets = true;
+                        $show_facets = true;
                     }
                 }
             }
@@ -394,9 +394,9 @@ class AnalyticsFront extends SearchFacets {
             $diversity = $this->get_filter('diversity');
             $xaxis = $this->get_filter('xaxis', $this->xaxis_def);
             $yaxis = $this->get_filter('yaxis', $this->yaxis_def);
-            $data = $this->cs->front_search_ethnicity_xy($this->keywords, $this->search_limit, $start, $sort, $filters, $ids, $vis, $diversity, $xaxis, $yaxis, $facets);
+            $data = $this->cs->front_search_ethnicity_xy($this->keywords, $this->search_limit, $start, $sort, $filters, $ids, $vis, $diversity, $xaxis, $yaxis, $show_facets);
             gmi('find data');
-            if ($facets) {
+            if ($show_facets) {
                 $data['facets'][$tab_key]['data'] = $this->calculate_facet_ethnicity_xy($data['facets'][$tab_key]['data'], $xaxis, $yaxis);
                 gmi('calculate data');
             }
@@ -1281,6 +1281,10 @@ class AnalyticsFront extends SearchFacets {
 
     public function theme_axis_data($axis = '', $data = '', $inflation = false) {
         $ret = $data;
+        if (!is_array($data)){            
+            return $ret;
+        }
+        
         if ($axis == 'release') {
             // Date
             $ret = date('Y-m-d', array_pop($data) / 1000);

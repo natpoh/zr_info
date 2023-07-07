@@ -1329,9 +1329,8 @@ class Import
 //        if ($action == 'delete') {
 //            $result = self::delete_data($data);
 //        }
-        $timing = self::get_timing();
-
-        $result['timing'] =$timing;
+//        $timing = self::get_timing();
+//        $result['timing'] =$timing;
         return $result;
     }
 

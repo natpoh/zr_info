@@ -55,7 +55,7 @@ class MoviesCustomHooks {
 
     private function update_erating($post, $options, $campaign, $debug = false) {
 
-        $simple_camps = array('kinop', 'douban', 'imdb', 'animelist', 'eiga', 'moviemeter');
+        $simple_camps = array('kinop', 'douban', 'imdb', 'animelist', 'eiga', 'moviemeter', 'ofdb');
 
         // Kinopoisk
         $curr_camp = '';
@@ -135,6 +135,13 @@ class MoviesCustomHooks {
             $score_opt = array(
                 'rating' => 'rating',
             );
+        } else if ($campaign->id == 44) {
+            // douban
+            $curr_camp = 'ofdb';
+            $score_opt = array(
+                'rating' => 'rating',
+                'count' => 'count'
+            );
         }
 
         $to_update = array();
@@ -155,6 +162,9 @@ class MoviesCustomHooks {
             if (in_array($curr_camp, $simple_camps)) {
                 // Update rating     
                 $camp_rating = $to_update['rating'] * 10;
+                if ($camp_rating > 100) {
+                    $camp_rating = 100;
+                }
                 $total_rating = $camp_rating;
 
                 if ($one_five) {
@@ -227,9 +237,9 @@ class MoviesCustomHooks {
                 }
             } else if ($curr_camp == 'mediaversity') {
 
-                $rating = (int) (20 * ((float) str_replace('/5', '', $to_update['rating'])));
-                if ($rating > 100) {
-                    $rating = 100;
+                $rating = (int) (10 * ((float) str_replace('/5', '', $to_update['rating'])));
+                if ($rating > 50) {
+                    $rating = 50;
                 }
                 $grade = $to_update['grade'];
 
@@ -238,8 +248,11 @@ class MoviesCustomHooks {
                 $data[$curr_camp . '_grade'] = $grade;
                 $data[$curr_camp . '_date'] = $this->mp->curr_time();
 
+                $total_rating = $rating;
+                $total_rating = $ma->five_to_ten($total_rating);
+                
                 // Total
-                $data['total_rating'] = $rating;
+                $data['total_rating'] = $total_rating;
 
                 if ($data['total_rating'] > 0) {
                     $update_rating = true;

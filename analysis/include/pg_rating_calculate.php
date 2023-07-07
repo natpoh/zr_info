@@ -248,7 +248,12 @@ class PgRatingCalculate {
             $array_convert = $value;
         }
 
-        $array_exlude =['reviews_rating','fchan_rating'];
+
+        $rating_weight_str = OptionData::get_options('','movies_raiting_weight');
+        $rating_weight_ob = json_decode($rating_weight_str,1);
+        $rating_weight = $rating_weight_ob['rwt'];
+
+        //var_dump($rating_weight);
 
         $sql = "SELECT * FROM `data_movie_erating`  where `movie_id` = " . $id . " limit 1";
         //echo $sql;
@@ -256,26 +261,31 @@ class PgRatingCalculate {
         if ($r) {
             foreach (  $r[0] as $i=>$v)
             {
-                if ((strstr($i,'rating') || strstr($i,'_gap')) && !in_array($i,$array_exlude))
+
+                if ($rating_weight[$i]>0 || $i=='total_rating' || $i=='rt_gap')
                 {
+                    //echo $i.' : ';
+                   // echo $rating_weight[$i].'<br>';
+
+
                     if ($v)
                     {
                     if ($array_convert[$i])
                     {
-                      //  $v = $v* $array_convert[$i];
+                        $v = $v* $array_convert[$i];
 
                     }
                         if ($i!='rt_rating' &&  $i!='rt_aurating' &&  $i!='rt_gap')
                         {
+                            $v= $v/20;
 
-                            $v= $v/10;
                         }
 
 
-                        if ($i=='audience_rating' || $i=='total_rating')
-                        {
-                            $v= round($v/2,1);
-                        }
+//                        if ($i=='audience_rating' || $i=='total_rating')
+//                        {
+//                            $v= round($v/2,1);
+//                        }
 
                         $data[$i]=$v;
                     }
@@ -284,6 +294,9 @@ class PgRatingCalculate {
                 }
             }
            }
+       /// var_dump($data);
+        ksort($data);
+
         return $data;
     }
 
@@ -567,11 +580,11 @@ class PgRatingCalculate {
 
 
 
-                if (!$debug) echo 'add<br>';
+               // if (!$debug) echo 'add<br>';
             }
             else if ($total_rating!=$main_data_ext['total_rating'] || $force_sync)
             {
-                if (!$debug) echo 'update '.$total_rating.'!=' .$main_data_ext['total_rating'].' f='.$force_sync.'<br>';
+                //if (!$debug) echo 'update '.$total_rating.'!=' .$main_data_ext['total_rating'].' f='.$force_sync.'<br>';
                 $data_current_array =['total_rating'=>$total_rating,'last_upd'=>time()];
                 self::sync_update($data_current_array,$pos_id,'data_movie_erating','update',$sync);
             }
