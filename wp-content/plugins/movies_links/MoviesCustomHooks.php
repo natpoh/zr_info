@@ -250,12 +250,24 @@ class MoviesCustomHooks {
 
                 $total_rating = $rating;
                 $total_rating = $ma->five_to_ten($total_rating);
-                
+
                 // Total
                 $data['total_rating'] = $total_rating;
 
                 if ($data['total_rating'] > 0) {
                     $update_rating = true;
+
+                    // Add woke grade
+                    $grade_clear = strtolower($grade);
+                    $grade_clear = preg_replace('/[^a-z]+/', '', $grade_clear);
+                    $grade_arr = array('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i');
+                    if (in_array($grade_clear, $grade_arr)) {
+                        $grade_num = array_search($grade_clear, $grade_arr);
+                        $grade_data = array(
+                            'mediaversity' => (int) $grade_num,
+                        );
+                        $ma->update_woke($post->top_movie, $grade_data);
+                    }
                 }
             } else if ($curr_camp == 'thecherrypicks') {
 
