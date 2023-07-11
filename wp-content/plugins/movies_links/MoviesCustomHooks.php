@@ -322,15 +322,15 @@ class MoviesCustomHooks {
                  * 3 - Non-Woke
                  */
                 $tags_woke = array(
-                    1 => 'Woke',
-                    2 => 'Woke-ish',
-                    3 => 'Non-Woke',
+                    'Woke' => 1,
+                    'Woke-ish' => 2,
+                    'Non-Woke' => 3,
                 );
                 $tag_key = 0;
-                foreach ($tags_woke as $key => $tag) {
+                foreach ($tags_arr as $tag) {
                     $tag = trim($tag);
-                    if (in_array($tag, $tags_arr)) {
-                        $tag_key = $key;
+                    if (isset($tags_woke[$tag])) {
+                        $tag_key = $tags_woke[$tag];
                         break;
                     }
                 }
