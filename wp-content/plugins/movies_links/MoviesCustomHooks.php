@@ -328,6 +328,7 @@ class MoviesCustomHooks {
                 );
                 $tag_key = 0;
                 foreach ($tags_woke as $key => $tag) {
+                    $tag = trim($tag);
                     if (in_array($tag, $tags_arr)) {
                         $tag_key = $key;
                         break;
