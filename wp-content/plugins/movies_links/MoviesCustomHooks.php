@@ -343,6 +343,31 @@ class MoviesCustomHooks {
                     $ma->update_woke($post->top_movie, $woke_data);
                 }
             }
+        } else if ($campaign->id == 4) {
+            // bechdeltest.com
+            $upd_opt = array(
+                'rating' => 'rating',
+            );
+
+            $to_update = array();
+            foreach ($upd_opt as $post_key => $db_key) {
+                $field_value = '';
+                if (isset($options[$post_key])) {
+                    $field_value = base64_decode($options[$post_key]);
+                }
+                $to_update[$db_key] = $field_value;
+            }
+            if ($to_update) {
+                $rating = (int) trim($to_update['rating']);
+                if ($rating>0){
+                    $ma = $this->ml->get_ma();
+                    # Update woke
+                    $woke_data = array(
+                        'bechdeltest' => (int) $rating,
+                    );
+                    $ma->update_woke($post->top_movie, $woke_data);
+                }
+            }
         }
     }
 
