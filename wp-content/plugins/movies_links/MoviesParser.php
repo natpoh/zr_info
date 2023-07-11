@@ -226,7 +226,7 @@ class MoviesParser extends MoviesAbstractDB {
         'a' => 'Regexp match all',
         'r' => 'Regexp replace',
     );
-    private $movie_type = array(
+    public $movie_type = array(
         'a' => 'Movie,TVSeries',
         'm' => 'Movie',
         't' => 'TVSeries',        
@@ -1405,8 +1405,9 @@ class MoviesParser extends MoviesAbstractDB {
                 $post = array_shift($actors);
             } else {
                 // Movies
-                //Get last URL to test            
-                $posts = $ma->get_posts($type, $get_keys, 1);
+                //Get last URL to test      
+                $movie_type = $this->movie_type[$type];
+                $posts = $ma->get_posts($movie_type, $get_keys, 1);
                 $post = array_shift($posts);
                 $post = $this->get_post_custom_fields($post);
             }
@@ -1449,7 +1450,8 @@ class MoviesParser extends MoviesAbstractDB {
         } else {
             // Movies
             // Get all URLs
-            $posts = $ma->get_posts($type, $get_keys, $num, $last_id);
+            $movie_type = $this->movie_type[$type];
+            $posts = $ma->get_posts($movie_type, $get_keys, $num, $last_id);
         }
 
         if ($debug) {

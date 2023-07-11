@@ -2562,9 +2562,11 @@ class MoviesParserAdmin extends ItemAdmin {
      * Generate URLs
      */
 
-    public function get_name_templates() {
-        $ma = $this->ml->get_ma();
-        $posts = $ma->get_posts();
+    public function get_name_templates($gen_urls) {
+        $ma = $this->ml->get_ma();       
+        $type = $gen_urls['type'];
+        $movie_type = $this->mp->movie_type[$type];
+        $posts = $ma->get_posts($movie_type);
         $post = array_shift($posts);
         $post = $this->mp->get_post_custom_fields($post);
         $ret = array();

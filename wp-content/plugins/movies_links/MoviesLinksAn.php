@@ -35,12 +35,15 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         );
     }
 
-    public function get_posts($type = 'a', $get_keys = array(), $limit = 1, $last_id = 0) {
-        $type_query = '';
-        if ($type == 'm') {
-            $type_query = " AND type='Movie'";
-        } else if ($type == 't') {
-            $type_query = " AND type='TVSeries'";
+    public function get_posts($type = '', $get_keys = array(), $limit = 1, $last_id = 0) {
+
+        $type_and = '';
+        if ($type) {
+            if (strstr($type, ',')) {
+                $type_and = " AND type IN ('".implode("','",explode(',', $type))."')" ;
+            } else {
+                $type_and = sprintf(" AND type='%s'", $type);
+            }
         }
 
         $select = '*';
@@ -58,7 +61,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             $and_last_id = sprintf(" id > %d", (int) $last_id);
         }
 
-        $sql = "SELECT " . $select . " FROM {$this->db['movie_imdb']} WHERE " . $and_last_id . $type_query . " ORDER BY id ASC" . $and_limit;
+        $sql = "SELECT " . $select . " FROM {$this->db['movie_imdb']} WHERE " . $and_last_id . $type_and . " ORDER BY id ASC" . $and_limit;
         $result = $this->db_results($sql);
         return $result;
     }

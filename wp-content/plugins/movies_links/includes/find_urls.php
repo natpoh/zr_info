@@ -453,7 +453,7 @@ if ($cid) {
                     $tpl_data = $this->get_actors_templates();
                 } else {
                     // Movies tpl
-                    $tpl_data = $this->get_name_templates();
+                    $tpl_data = $this->get_name_templates($gen_urls);
                 }
                 if ($tpl_data) {
                     ?>
