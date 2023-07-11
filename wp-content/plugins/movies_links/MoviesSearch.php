@@ -41,7 +41,11 @@ class MoviesSearch extends MoviesAbstractDB {
 
         $type_and = '';
         if ($type) {
-            $type_and = sprintf(" AND type='%s'", $type);
+            if (strstr($type, ',')) {
+                $type_and = " AND type IN ('".implode("','",explode(',', $type))."')" ;
+            } else {
+                $type_and = sprintf(" AND type='%s'", $type);
+            }
         }
 
         $this->connect();
@@ -49,8 +53,8 @@ class MoviesSearch extends MoviesAbstractDB {
         // Main sql
         $sql = sprintf("SELECT id, title, release, year, runtime, movie_id, tmdb_id, type, weight() w"
                 . " FROM movie_an WHERE id>0" . $match_title . $match_year . $type_and . " LIMIT %d ", $limit);
-        
 
+        
         //Get result
         $stmt = $this->sps->prepare($sql);
 
@@ -86,7 +90,7 @@ class MoviesSearch extends MoviesAbstractDB {
         }
         return $ret;
     }
-    
+
     public function search_movies_by_imdb($keyword = '') {
         // Main sql
         $sql = sprintf("SELECT id, title, release, year, runtime, movie_id, tmdb_id, type, weight() w"
@@ -117,10 +121,10 @@ class MoviesSearch extends MoviesAbstractDB {
         return $ret;
     }
 
-    public function get_movie_facets($mid=0) {
-        if ($mid<=0){
+    public function get_movie_facets($mid = 0) {
+        if ($mid <= 0) {
             return array();
-        }       
+        }
         // Facets logic
         $sql_arr = array();
         $facets_arr = array();
@@ -136,16 +140,16 @@ class MoviesSearch extends MoviesAbstractDB {
                 $limit = 100;
                 $sql_arr[] = sprintf("SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id=%d GROUP BY director_all ORDER BY cnt DESC LIMIT 0,%d", $mid, $limit);
                 $sql_arr[] = "SHOW META";
-            }else if ($facet == 'genre') {
+            } else if ($facet == 'genre') {
                 $limit = 100;
                 $sql_arr[] = sprintf("SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id=%d GROUP BY genre ORDER BY cnt DESC LIMIT 0,%d", $mid, $limit);
                 $sql_arr[] = "SHOW META";
-            }            
-        }        
+            }
+        }
 
         if (sizeof($sql_arr)) {
             $sql = implode('; ', $sql_arr);
-            
+
             $this->connect();
 
             $this->sps->setAttribute(PDO::ATTR_EMULATE_PREPARES, 1);
@@ -202,8 +206,6 @@ class MoviesSearch extends MoviesAbstractDB {
         return $results;
     }
 
-
- 
     //Abstract DB
     public function sdb_query($sql) {
         $this->connect();

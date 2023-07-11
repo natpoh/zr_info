@@ -227,9 +227,10 @@ class MoviesParser extends MoviesAbstractDB {
         'r' => 'Regexp replace',
     );
     private $movie_type = array(
-        'a' => '',
+        'a' => 'Movie,TVSeries',
         'm' => 'Movie',
-        't' => 'TVSeries'
+        't' => 'TVSeries',        
+        'g' => 'VideoGame',
     );
     public $rating_update = array(
         7 => [50, 100],

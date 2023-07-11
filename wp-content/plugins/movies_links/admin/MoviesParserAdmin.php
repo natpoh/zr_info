@@ -194,9 +194,10 @@ class MoviesParserAdmin extends ItemAdmin {
 
     /* Generate urls */
     public $rwt_movie_type = array(
-        'a' => 'All',
+        'a' => 'Movies and Tv',
         'm' => 'Movies',
-        't' => 'Tv Series'
+        't' => 'Tv Series',
+        'g' => 'Video Game',
     );
     public $rwt_actor_type = array(
         'a' => 'All',
