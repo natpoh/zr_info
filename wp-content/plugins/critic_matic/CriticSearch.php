@@ -126,12 +126,11 @@ class CriticSearch extends AbstractDB {
                 'rrev' => array('title' => 'ZR Critics (beta)', 'titlesm' => 'Critic Reviews', 'name_pre' => 'RW ', 'filter_pre' => 'Reviews ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'zr', 'hide' => 1, 'sorted' => 1,),
                 // Global
                 'gratingtitle' => array('title' => 'Global Ratings', 'is_title' => 1, 'group' => 'rating'),
-
-                'rdb' => array('title' => 'Douban', 'titlesm' => 'Douban', 'name_pre' => 'DB ', 'filter_pre' => 'Douban ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'douban', 'hide' => 1, 'sorted' => 1,),
                 'reiga' => array('title' => 'Eiga', 'titlesm' => 'Eiga', 'name_pre' => 'Eiga ', 'filter_pre' => 'Eiga ', 'max_count' => 60, 'multipler' => 10, 'group' => 'rating', 'icon' => 'jp', 'hide' => 1, 'sorted' => 1,),
+                'rdb' => array('title' => 'Douban', 'titlesm' => 'Douban', 'name_pre' => 'DB ', 'filter_pre' => 'Douban ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'douban', 'hide' => 1, 'sorted' => 1,),
                 'rkp' => array('title' => 'Kinopoisk', 'titlesm' => 'Kinopoisk', 'name_pre' => 'KP ', 'filter_pre' => 'Kinopoisk ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'kinop', 'hide' => 1, 'sorted' => 1,),
                 'rmm' => array('title' => 'MovieMeter', 'titlesm' => 'MovieMeter', 'name_pre' => 'MovieMeter ', 'filter_pre' => 'MovieMeter ', 'max_count' => 60, 'multipler' => 10, 'group' => 'rating', 'icon' => 'nl', 'hide' => 1, 'sorted' => 1,),
-                'rofdb' => array('title' => 'OFDb', 'titlesm' => 'OFDb', 'name_pre' => 'OFDb ', 'filter_pre' => 'OFDb ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'hide' => 1,'icon' => 'de', 'sorted' => 1,),
+                'rofdb' => array('title' => 'OFDb', 'titlesm' => 'OFDb', 'name_pre' => 'OFDb ', 'filter_pre' => 'OFDb ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'hide' => 1, 'sorted' => 1,),
             ),
         ),
         'actorsdata' => array(
