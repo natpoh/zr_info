@@ -473,19 +473,19 @@ function critic_matic_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `" . $table_prefix . "critic_parser_url` ADD `date` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `" . $table_prefix . "critic_parser_url` ADD `last_upd` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `" . $table_prefix . "critic_parser_url` ADD `arhive_date` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `" . $table_prefix . "critic_parser_url` ADD `arhive_hash` varchar(255) NOT NULL default ''";
     Pdo_an::db_query($sql);
-    
+
     critic_matic_create_index_an(array('cid', 'pid', 'status', 'link_hash', 'arhive_date', 'arhive_hash', 'date', 'last_upd'), $table_prefix . "critic_parser_url");
 
     //$sql = "ALTER TABLE `" . $table_prefix . "critic_matic_posts` ADD `blur` int(11) NOT NULL DEFAULT '0'";
@@ -1232,7 +1232,7 @@ function critic_matic_plugin_activation() {
     $sql = "ALTER TABLE `data_movie_erating` ADD `moviemeter_date` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
 
-    
+
     // Audience rating
     $sql = "ALTER TABLE `data_movie_erating` ADD `audience_rating` int(11) NOT NULL DEFAULT '0' AFTER last_upd";
     Pdo_an::db_query($sql);
@@ -1243,19 +1243,19 @@ function critic_matic_plugin_activation() {
 
     // mediaversity
     $sql = "ALTER TABLE `data_movie_erating` ADD `mediaversity_rating` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);        
+    Pdo_an::db_query($sql);
     $sql = "ALTER TABLE `data_movie_erating` ADD `mediaversity_grade` varchar(255) NOT NULL default ''";
     Pdo_an::db_query($sql);
     $sql = "ALTER TABLE `data_movie_erating` ADD `mediaversity_date` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-        
+
     // thecherrypicks
     $sql = "ALTER TABLE `data_movie_erating` ADD `thecherrypicks_rating` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);        
+    Pdo_an::db_query($sql);
     $sql = "ALTER TABLE `data_movie_erating` ADD `thecherrypicks_date` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
-    
+
+
     // ofdb
     $sql = "ALTER TABLE `data_movie_erating` ADD `ofdb_rating` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
@@ -1263,8 +1263,8 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     $sql = "ALTER TABLE `data_movie_erating` ADD `ofdb_date` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
-    
+
+
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('movie_id', 'date', 'last_upd', 'total_rating'), "data_movie_erating");
 
@@ -1409,6 +1409,39 @@ function critic_matic_plugin_activation() {
      * Ethic img
      */
     $sql = "ALTER TABLE `data_actors_ethnic` ADD `Img` text default NULL";
+    Pdo_an::db_query($sql);
+
+    /*
+     * Woke
+     * 
+     * worthit
+     * 0 - none
+     * 1 - Woke
+     * 2 - Woke-ish
+     * 3 - Non-Woke
+     */
+    $sql = "ALTER TABLE `data_woke` ADD `worthit` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+
+    /* mediaversity
+     * 0 - none
+     * 1 - A
+     * 2 - B
+     * 3 - C
+     * 4 - D
+     * 6 - E
+     * 7 - F     
+     */
+    $sql = "ALTER TABLE `data_woke` ADD `mediaversity` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    /*
+     * bechdeltest
+      0 - none
+      1. It has to have at least two [named] women in it
+      2. Who talk to each other
+      3. About something besides a man
+     */
+    $sql = "ALTER TABLE `data_woke` ADD `bechdeltest` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
 }
 

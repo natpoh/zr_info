@@ -31,15 +31,19 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             'distributors_meta' => 'meta_movie_distributors',
             'franchises' => 'data_movie_franchises',
             'indie' => 'data_movie_indie',
+            'woke' =>'data_woke',
         );
     }
 
-    public function get_posts($type = 'a', $get_keys = array(), $limit = 1, $last_id = 0) {
-        $type_query = '';
-        if ($type == 'm') {
-            $type_query = " AND type='Movie'";
-        } else if ($type == 't') {
-            $type_query = " AND type='TVSeries'";
+    public function get_posts($type = '', $get_keys = array(), $limit = 1, $last_id = 0) {
+
+        $type_and = '';
+        if ($type) {
+            if (strstr($type, ',')) {
+                $type_and = " AND type IN ('".implode("','",explode(',', $type))."')" ;
+            } else {
+                $type_and = sprintf(" AND type='%s'", $type);
+            }
         }
 
         $select = '*';
@@ -57,7 +61,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             $and_last_id = sprintf(" id > %d", (int) $last_id);
         }
 
-        $sql = "SELECT " . $select . " FROM {$this->db['movie_imdb']} WHERE " . $and_last_id . $type_query . " ORDER BY id ASC" . $and_limit;
+        $sql = "SELECT " . $select . " FROM {$this->db['movie_imdb']} WHERE " . $and_last_id . $type_and . " ORDER BY id ASC" . $and_limit;
         $result = $this->db_results($sql);
         return $result;
     }
@@ -233,27 +237,26 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         $data['last_upd'] = $this->curr_time();
         if ($exist) {
             // Calculate total rating                         
-            /*$rating_names = array(
-                'kinop_rating',
-                'douban_rating',
-                'animelist_rating',
-                'imdb_rating',
-                'rt_rating',
-                'rt_aurating',
-                'eiga_rating',
-                'moviemeter_rating',
-                'metacritic_rating',
-                'metacritic_userscore',
-            );
-            foreach ($rating_names as $rn) {
-                if (isset($data[$rn])) {
-                    $exist->$rn = $data[$rn];
-                }
-            }*/
+            /* $rating_names = array(
+              'kinop_rating',
+              'douban_rating',
+              'animelist_rating',
+              'imdb_rating',
+              'rt_rating',
+              'rt_aurating',
+              'eiga_rating',
+              'moviemeter_rating',
+              'metacritic_rating',
+              'metacritic_userscore',
+              );
+              foreach ($rating_names as $rn) {
+              if (isset($data[$rn])) {
+              $exist->$rn = $data[$rn];
+              }
+              } */
 
-           //$total = $this->calculate_total($exist);
+            //$total = $this->calculate_total($exist);
             //$data['total_rating'] = $total;
-
             // Calculate total votes
 
             $count_names = array(
@@ -278,7 +281,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
                 }
             }
 
-           // $data['total_rating'] = $total;
+            // $data['total_rating'] = $total;
             $data['total_count'] = $total_count;
 
 
@@ -298,7 +301,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             CustomHooks::do_action('add_erating', ['mid' => $mid, 'data' => $data]);
         }
         !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
-        PgRatingCalculate::add_movie_rating($mid,'','',0,0,0);
+        PgRatingCalculate::add_movie_rating($mid, '', '', 0, 0, 0);
     }
 
     public function five_to_ten($camp_rating = 0) {
@@ -399,14 +402,14 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
     /*
      * Genre
      */
-    
+
     public function get_genres_names() {
         $sql = "SELECT id, name, slug, status, weight FROM {$this->db['data_genre']}";
         $result = $this->db_results($sql);
         $ret = array();
-        if ($result){
+        if ($result) {
             foreach ($result as $value) {
-                $ret[$value->name]=$value;
+                $ret[$value->name] = $value;
             }
         }
         return $ret;
@@ -611,6 +614,28 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             $data['movie_id'] = $mid;
             $this->sync_insert_data($data, $this->db['indie'], false, true, 10);
             CustomHooks::do_action('add_indie', ['mid' => $mid, 'data' => $data]);
+        }
+    }
+
+    /*
+     * Woke
+     */
+
+    public function update_woke($mid = 0, $data = array()) {
+        // Get rating      
+
+        $sql = sprintf("SELECT * FROM {$this->db['woke']} WHERE mid = %d", (int) $mid);
+        $exist = $this->db_fetch_row($sql);
+        $data['last_update'] = $this->curr_time();
+        if ($exist) {
+            // Update post            
+            $this->sync_update_data($data, $exist->id, $this->db['woke'], true, 10);
+            CustomHooks::do_action('update_woke', ['mid' => $mid, 'data' => $data]);
+        } else {
+            // Add post            
+            $data['mid'] = $mid;
+            $this->sync_insert_data($data, $this->db['woke'], false, true, 10);
+            CustomHooks::do_action('add_woke', ['mid' => $mid, 'data' => $data]);
         }
     }
 

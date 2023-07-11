@@ -97,7 +97,7 @@ class Pdoa {
         $sth = $pdo->prepare($sql);
 
 
-            if ($sth->execute()) {
+            if ($sth->execute($array)) {
                 echo "ok";
             } else {
 

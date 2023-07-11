@@ -1269,7 +1269,6 @@ function ff_content(data,id)
 
 function global_zeitgeist_content(data)
 {
-    console.log(data);
 
     let result ='';
 
@@ -1317,12 +1316,12 @@ function global_zeitgeist_content(data)
 
                 }
 
-                let converted_rating = item.rating / (item.ratmax*2);
+                let converted_rating = item.rating / (item.rateconvert);
 
                 let star_rating = create_rating_star(converted_rating,'gl_'+item.ekey);
 
 
-                result += `<div class="gl_small_block rating_block" id="${item.ekey}"><div class="gl_rating_img">${flag}</div><div class="gl_star_rating rwt_stars">${star_rating}</div></div>`;
+                result += `<a  target="_blank" href="${item.link}" ><div class="gl_small_block rating_block" id="${item.ekey}"><div class="gl_rating_img">${flag}</div><div class="gl_star_rating rwt_stars">${star_rating}</div></div></a>`;
 
               ///  result += `<div class="gl_zr_block" id="${item.ekey}"><div class="gl_zr_title">${flag+item.name} <span class="gl_rating">${rating}</span><a class="gl_zr_extlink" target="_blank" href="${item.link}" ></a></div>${img_container}</div>`;
             }
@@ -1426,7 +1425,7 @@ function load_ajax_block(block_id) {
         url = 'https://newsfilter.biz/service/ns_related.php?pid=' + parent_id;
     }
     if (block_id == 'global_zeitgeist') {
-        //url = 'https://info.antiwoketomatoes.com/service/global_consensus.php?mid=' + parent_id;
+        url = 'https://info.antiwoketomatoes.com/service/global_consensus.php?mid=' + parent_id;
     }
 
     jQuery.ajax({
@@ -1537,11 +1536,32 @@ function load_ajax_block(block_id) {
                     let gzobj = JSON.parse(data);
 
 
-                   let gz_content =  global_zeitgeist_content(gzobj);
 
+                    if (gzobj.result.length != 0)
+                    {
+                        let gz_content =  global_zeitgeist_content(gzobj);
+                        jQuery('#' + block_id).html(gz_content);
 
+                    }
+                  else
+                  {
 
-                    jQuery('#' + block_id).html(gz_content);
+                      jQuery('.global_zeitgeist_container').remove();
+
+                      if (gzobj.other)
+                      {
+
+                          jQuery('.detail_container').append(`<details class="dark actor_details" >
+   <summary>Global Consensus</summary>
+<section class="dmg_content inner_content" id="actor_data_dop" >
+        <div  id="global_zeitgeist" >${gzobj.other}</div>
+</section>
+</details>`);
+
+                      }
+
+                  }
+
 
                 }
             }

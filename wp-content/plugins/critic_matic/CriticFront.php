@@ -686,6 +686,8 @@ class CriticFront extends SearchFacets {
                 $original_link = '<a class="original_link" target="_blank" href="' . $permalink . '">Full review >></a>';
             }
 
+            // Embed
+            $embed = $this->find_embed($permalink, $critic->id);
 
             $video_embed = isset($video_link['video']) ? $video_link['video'] : '';
 
@@ -703,10 +705,10 @@ class CriticFront extends SearchFacets {
             }
 
             if ($fullsize == 2) {
-                $actorsresult = $video_embed . $title_str . $content . $review_bottom . $original_link .
+                $actorsresult = $video_embed . $embed . $title_str . $content . $review_bottom . $original_link .
                         '<div class="amsg_aut">' . $actorsdata_link . '<div class="review_autor_name">' . $author_title_link . '<div class="a_cat">' . $catdata . '</div></div></div>';
             } else {
-                $actorsresult = '<div class="full_review_content_block' . $largest . '">' . $video_embed . $title_str . $content . '</div>' . $after_content . $review_bottom . $original_link . '
+                $actorsresult = '<div class="full_review_content_block' . $largest . '">' . $video_embed . $embed . $title_str . $content . '</div>' . $after_content . $review_bottom . $original_link . '
  <div class="amsg_aut">' . $actorsdata_link . '<div class="review_autor_name">' . $author_title_link . '<div class="a_cat">' . $catdata . '</div></div></div>';
             }
             // }
@@ -841,6 +843,22 @@ class CriticFront extends SearchFacets {
 
         $link = '<div data-value="' . $cid . '" data-movie="' . $mid . '" class="a_info' . $add_class . '" title="' . $title . '"></div>';
         return $link;
+    }
+
+    public function find_embed($link='', $cid = 0) {
+        $ret = '';
+        if (strstr($link, 'twitter.com')) {
+            // Try to get embed for crowdsource
+            $link_hash = $this->link_hash($link);
+            $crowd_data = $this->cm->get_critic_crowd($link_hash);
+            if ($crowd_data) {
+                $embed = $crowd_data->embed_content;
+                if ($embed) {
+                    $ret = $embed;
+                }
+            }
+        }
+        return $ret;
     }
 
     public function find_video_link($link, $cid = 0) {
@@ -1548,6 +1566,11 @@ class CriticFront extends SearchFacets {
 
     public function format_content($content = '', $crop_len = 0, $max_p = 0) {
         // Remove tags
+        $content = preg_replace('/<script.*\/script>/Uis', '', $content);
+        $content = preg_replace('/<style.*\/style>/Uis', '', $content);
+        $content = preg_replace('/<!--.*-->/Uis', '', $content);
+        $content = preg_replace('/<!\[CDATA\[.*\]\]>/Uis', '', $content);
+        
         $content = str_replace('<br>', '\n', $content);
         $content = str_replace('<br/>', '\n', $content);
         $content = str_replace('<br />', '\n', $content);
@@ -3042,15 +3065,15 @@ class CriticFront extends SearchFacets {
 
         return $data;
     }
-    
+
     /*
      * Wp user tags
      */
-    
+
     public function get_user_tags($wp_uid) {
         $author = $this->cm->get_author_by_wp_uid($wp_uid);
 
-         // Tags
+        // Tags
         $catdata = '';
         $tags = $this->cm->get_author_tags($author->id);
         if (sizeof($tags)) {
@@ -3081,34 +3104,33 @@ class CriticFront extends SearchFacets {
         ?>
         <input type="hidden" name="post_category[]" value="0">
         <ul class="cat-checklist category-checklist">
-        <?php
-        $author = $this->cm->get_author_by_wp_uid($wp_uid);
-        $tags = $this->cm->get_tags();
-        $author_tags = $this->cm->get_author_tags($author->id,-1,false);
-        $tag_arr = array();
-        if (sizeof($author_tags)) {
-            foreach ($author_tags as $tag) {
-                $tag_arr[] = $tag->id;
-            }
-        }
-
-        if (sizeof($tags)) {
-            foreach ($tags as $tag) {
-                $checked = '';
-                if (in_array($tag->id, $tag_arr)) {
-                    $checked = 'checked="checked"';
+            <?php
+            $author = $this->cm->get_author_by_wp_uid($wp_uid);
+            $tags = $this->cm->get_tags();
+            $author_tags = $this->cm->get_author_tags($author->id, -1, false);
+            $tag_arr = array();
+            if (sizeof($author_tags)) {
+                foreach ($author_tags as $tag) {
+                    $tag_arr[] = $tag->id;
                 }
-                ?>
+            }
+
+            if (sizeof($tags)) {
+                foreach ($tags as $tag) {
+                    $checked = '';
+                    if (in_array($tag->id, $tag_arr)) {
+                        $checked = 'checked="checked"';
+                    }
+                    ?>
                     <li id="category-<?php print $tag->id ?>">
                         <label class="selectit"><input value="<?php print $tag->id ?>" <?php print $checked ?> type="checkbox" name="post_category[]" id="in-category-<?php print $tag->id ?>"> <?php print $tag->name ?></label>
                     </li>
-                <?php
+                    <?php
+                }
             }
-        }
-        ?>
+            ?>
         </ul>
-            <?php
-        }
-
+        <?php
     }
-    
+
+}

@@ -3,7 +3,7 @@
 function show_actors_template_single()
 {
 
-
+    global $section;
 
     !class_exists('Data_Loaded') ? include ABSPATH . "wp-content/themes/custom_twentysixteen/template/include/dataloaded.php" : '';
     require('section_home_template.php');
@@ -13,7 +13,7 @@ function show_actors_template_single()
     {
         $post_id = $_GET['id'];
     }
-    global $section;
+
     global $post_type;
 
 
@@ -40,6 +40,9 @@ function show_actors_template_single()
 
 
         $video_items = Data_Loaded::get_data_content($post_id, $array_type, 'actor_data');
+
+
+
         $content_inner = str_replace('{content}', $video_items, $content_inner);
         if ($array_type == 'extra') {
             $content_actors .= '<details  class="dark actor_details" >
@@ -125,17 +128,12 @@ add_movie_rating("movie_rating", movie_rating_data);
 
 </div>
 ';
-    $content.='<section class="inner_content no_pad"><div class="column_header">
+    $content.='<section class="inner_content no_pad global_zeitgeist_container"><div class="column_header">
                     <h2>Global Zeitgest:</h2>
                 </div><div  id="global_zeitgeist" data-value="' . $post_id . '" class="not_load"></div></section>';
     echo $content;
 }
-//<details class="dark actor_details" >
-//   <summary>Global Consensus</summary>
-//<section class="dmg_content inner_content" id="actor_data_dop" >
-//        <div  id="global_zeitgeist" data-value="' . $post_id . '" class="not_load"></div>
-//</section>
-//</details>
+
 
 function show_actors_template_single_cache()
 {
@@ -147,8 +145,8 @@ function show_actors_template_single_cache()
     }
 
    $cache = wp_custom_cache('p-'.$post_id.'_show_actors_template_single_1', 'fastcache', 3600);
-   //echo $cache;
-   show_actors_template_single();
+   echo $cache;
+   //show_actors_template_single();
 }
 
 

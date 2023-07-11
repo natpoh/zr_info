@@ -1,6 +1,16 @@
 <?php
+
+
+if (strstr($_SERVER['DOCUMENT_ROOT'], 'service')) {
+    $root = str_replace('/service', '', $_SERVER['DOCUMENT_ROOT']);
+} else {
+    $root = $_SERVER['DOCUMENT_ROOT'];
+}
+
 if (!defined('ABSPATH'))
-    define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
+    define('ABSPATH', $root . '/');
+
+
 //DB config
 !defined('DB_HOST_AN') ? include ABSPATH . 'analysis/db_config.php' : '';
 //Abstract DB
@@ -18,6 +28,12 @@ if (!defined('CROWDSOURCEURL')) {
 class Crowdsource
 {
 
+    public function link_hash($link) {
+        $link = preg_replace('/^http(?:s|)\:\/\//', '', $link);
+        return sha1($link);
+    }
+
+
 public static function get_search_block($content_input,$movie_block='',$class='')
 {
     $content= '<div class="check_container_main">'.$movie_block.'</div>
@@ -28,6 +44,20 @@ public static function get_search_block($content_input,$movie_block='',$class=''
 
     return $content;
 }
+
+
+    public static function get_embeded($url)
+    {
+
+
+        if (!function_exists('wp_oembed_get'))
+        {
+            require(ABSPATH.'wp-load.php');
+        }
+
+        $embed = wp_oembed_get($url);
+        return $embed;
+    }
 
 
     public static  function crop_text($text = '', $length = 10, $tchk = true) {
@@ -63,7 +93,9 @@ public static function get_search_block($content_input,$movie_block='',$class=''
                         // Move IP to list
                         if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
                             define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
-                            require_once( CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php' );
+                        }
+                        if (!class_exists('CriticFront')) {
+                            require_once(CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php');
                         }
                         $cfront = new CriticFront();
                         $cfront->cm->bulk_change_ip_list_type_crowd($array, $request['action'],$request['table']);
@@ -324,7 +356,9 @@ public static function get_user()
 
     if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
         define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
-        require_once( CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php' );
+    }
+    if (!class_exists('CriticFront')) {
+        require_once(CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php');
     }
 
     $cfront = new CriticFront();

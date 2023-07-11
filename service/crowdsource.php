@@ -19,11 +19,16 @@ if (!defined('ABSPATH'))
 
 !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
 
-
 // Critic matic
 if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
     define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
-    require_once(CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php');
+}
+
+function get_first_five_words($string) {
+    $words = str_word_count($string, 1);
+    $first_five_words = array_slice($words, 0, 5);
+    $result = implode(' ', $first_five_words);
+    return $result;
 }
 
 function critic_crowd_validation($link, $row = []) {
@@ -52,11 +57,23 @@ function critic_crowd_validation($link, $row = []) {
             $cid = $row->review_id;
         } else {
 
+            $embeded = Crowdsource::get_embeded($link);
+
+
+
+
+
+            if (!class_exists('CriticFront')) {
+                require_once(CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php');
+            }
+
             $cm = new CriticMatic();
             $cp = $cm->get_cp();
 
             ///validate link
             ///1 check link on critic bd
+
+
 
             $youtube = false;
             $reg_v = '#youtu(\.)*be(\.com)*\/(watch\?v\=)*([a-zA-Z0-9_-]+)#';
@@ -115,7 +132,11 @@ function critic_crowd_validation($link, $row = []) {
 
                 //add data
                 ///2 get content
-                if ($youtube) {
+
+
+
+
+                 if ($youtube) {
                     $link = 'https://www.youtube.com/watch?v=' . $match[4];
                     ///get youtube data
                     $result = $cp->yt_video_data($link);
@@ -127,11 +148,41 @@ function critic_crowd_validation($link, $row = []) {
                             // author valid
                             $author_id = $author_obj->id;
                         }
-                        $content = '<iframe width="560" height="315" src="https://www.youtube.com/embed/' . $match[4] . '" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+                        if ($result->description) {
+                         $content = str_replace("\n", '<br />', $result->description);
+                        }
+                        $embed_content = '<iframe width="560" height="315" src="https://www.youtube.com/embed/' . $match[4] . '" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
                     } else {
                         $error['link'] = 'Can not get the data from Youtube URL';
                     }
-                } else {
+                 }
+                 else if ($embeded)
+                     {
+
+
+
+                         $embed_content = $embeded;
+                         $content='';
+
+                         if (strstr($link,'twitter.com'))
+                         {
+                             $regv='#\<blockquote [^\>]+\>\<p [^\>]+\>(.+)\<\/p\>&mdash; ([^\<]+)\<a [^\>]+>([^\<]+)\<\/a\>\<\/blockquote\>#';
+
+                             if (preg_match($regv,$embeded,$match))
+                             {
+                                 $content =$match[1];
+                                 $content = str_replace('\n',' ',$content);
+                                 $content = str_replace('<br>',' ',$content);
+                                 $content = strip_tags($content);
+                                 $title = get_first_five_words($content );
+                                 $author = strip_tags($match[2]);
+                                 $adeded = strip_tags($match[3]);
+                             }
+                         }
+
+
+                     }
+                 else {
                     ///get main data
                     // $result = $cp->clear_read($link);
                    
@@ -178,8 +229,22 @@ function critic_crowd_validation($link, $row = []) {
             }
         }
 
-        if ($content) {
-            ////create data
+        if ( $youtube)
+        {
+            $ctype = 'html';
+            $embed_type ='html';
+        }
+            else if ($embeded )
+            {
+                $ctype = 'hidden';
+                $embed_type ='html';
+            }
+            else
+            {
+                $ctype = 'wpform';
+                $embed_type ='hidden';
+            }
+
 
             include(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/movie_single_template.php');
 
@@ -193,14 +258,16 @@ function critic_crowd_validation($link, $row = []) {
                 'critic_name' => array('type' => $critic_name_type, 'placeholer' => 'Critic name', 'title' => 'Critic\'s Name:', 'default_value' => $author),
                 'critic_id' => array('type' => 'hidden', 'default_value' => $author_id),
                 'review_id' => array('type' => 'hidden', 'default_value' => $cid),
-                'content' => array('type' => 'wpform', 'title' => 'Review Content:', 'default_value' => $content),
+                'embed_content'=> array('type' => $embed_type, 'title' => 'Embed Content:', 'default_value' => $embed_content),
+                'content' => array('type' => $ctype, 'title' => 'Review Content:', 'default_value' => $content),
+
             );
 
 
             $content = Crowdsource::front('critic_crowd_result', $array_rows, $array_user, $id);
             $array_result['critic_data'] = $chead . $content;
         }
-    }
+
     if ($error) {
         $array_result['error'] = $error;
     }
@@ -217,6 +284,12 @@ if (isset($_POST['action']) && $_POST['action'] == 'author_autocomplite') {
         $limit = 6;
         // Only pro authors
         $author_type = 1;
+
+        if (!class_exists('CriticFront')) {
+            require_once(CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php');
+        }
+
+
         $cm = new CriticMatic();
         $results = $cm->find_authors($cm->escape($keyword), $limit, $author_type);
 
@@ -358,12 +431,25 @@ if (isset($_POST['oper'])) {
 
         $error = [];
 
-        $array_user = Crowdsource::get_user();
-        $user_id = $array_user['id'];
+
 
         if ($array_crowd[$type]) {
 
             $data_obj = json_decode($data, 1);
+
+
+
+        if ($array_crowd[$type] == 'critic_crowd') {
+                if ($data_obj['embed_content']) {
+                    $data_obj['embed_content'] = Crowdsource::get_embeded($data_obj['link']);
+                }
+
+            $data_obj['link_hash'] = Crowdsource::link_hash($data_obj['link']);
+            }
+
+            $array_user = Crowdsource::get_user();
+            $user_id = $array_user['id'];
+
 
             $comment = $data_obj['comment'];
             if ($comment) {
@@ -388,8 +474,7 @@ if (isset($_POST['oper'])) {
                 }
             }
 
-            $oper_insert_colums = "";
-            $oper_insert_data = "";
+
             $data_array = [];
             $oper_update = "";
             $reqest_field = '';
@@ -417,7 +502,8 @@ if (isset($_POST['oper'])) {
                 $reqest_field = 'review_id';
 
                 $data_obj['movies'] = json_encode($array_movies);
-            } else if ($array_crowd[$type] == 'actors_crowd') {
+            }
+            else if ($array_crowd[$type] == 'actors_crowd') {
                 ///add name from authors
 
                 $sql = "SELECT `name` FROM `data_actors_imdb` where id = " . $id;
@@ -427,7 +513,8 @@ if (isset($_POST['oper'])) {
                 $data_obj['actor_name'] = $actor_name;
                 $data_obj['actor_id'] = $id;
                 $reqest_field = 'actor_id';
-            } else if ($array_crowd[$type] == 'movies_pg_crowd') {
+            }
+            else if ($array_crowd[$type] == 'movies_pg_crowd') {
                 ///add name from authors
 
                 $sql = "SELECT * FROM `data_movie_imdb` where id = " . $id;
@@ -439,7 +526,8 @@ if (isset($_POST['oper'])) {
                 $data_obj['movie_id'] = $imdb_id;
                 $data_obj['rwt_id'] = $id;
                 $reqest_field = 'rwt_id';
-            } else if ($array_crowd[$type] == 'critic_crowd') {
+            }
+            else if ($array_crowd[$type] == 'critic_crowd') {
                 ///add name from authors
 
                 $sql = "SELECT * FROM `data_movie_imdb` where id = " . $id;
@@ -449,15 +537,21 @@ if (isset($_POST['oper'])) {
 
                 $data_obj['movie_title'] = $title;
                 $data_obj['rwt_id'] = $id;
-                $reqest_field = '';
+
                 $data_obj['review_id'] = intval($data_obj['review_id']);
                 $data_obj['critic_id'] = intval($data_obj['critic_id']);
+
+
+
+
 
                 $reqest_field = 'rwt_id';
                 $reqest_field_dop = array('r' => 'and link = ? ', 'a' => strip_tags($data_obj['link']));
             }
 
-
+            if (!class_exists('CriticFront')) {
+                require_once(CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php');
+            }
             $cm = new CriticMatic();
             $remote_ip = $cm->get_remote_ip();
 
@@ -499,14 +593,20 @@ if (isset($_POST['oper'])) {
 //            $data_obj['status']=$status;
 //        }
 
-
+            $oper_insert_colums = "";
+            $oper_insert_data = "";
+            $data_array=[];
 
             if ($data_obj) {
                 foreach ($data_obj as $row => $value) {
+
                     if ($row != 'button submit_user_data' && $row != 'button close') {
                         $oper_insert_colums .= ",`" . $row . "`";
                         $oper_insert_data .= ",?";
                         $data_array[] = $value;
+
+                        $oper_insert_data_debug.= ",'".$value."'";
+
                         $oper_update .= ",`" . $row . "`=?";
                     }
                 }
@@ -541,7 +641,12 @@ if (isset($_POST['oper'])) {
                     Pdo_an::db_results_array($inser_sql, $data_array);
                 } else {
                     $inser_sql = "INSERT INTO `data_" . $array_crowd[$type] . "`(`id` " . $oper_insert_colums . " ) VALUES (NULL " . $oper_insert_data . " )";
-                    $uddate_id = Pdo_an::db_insert_sql($inser_sql, $data_array);
+
+                    $inser_sql_debug = "INSERT INTO `data_" . $array_crowd[$type] . "`(`id` " . $oper_insert_colums . " ) VALUES (NULL " . $oper_insert_data_debug . " )";
+
+
+
+                   $uddate_id = Pdo_an::db_insert_sql($inser_sql, $data_array);
                 }
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
                 Import::create_commit('', 'update', "data_" . $array_crowd[$type], array('id' => $uddate_id), 'crowsource', 5);

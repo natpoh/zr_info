@@ -27,10 +27,11 @@ class MoviesCustomHooks {
 
             // Distributors
             $this->update_distributors($post, $options, $campaign, $debug);
+
+            // Woke
+            $this->update_woke($post, $options, $campaign, $debug);
         }
-        // Tomatoes logic
-        // UNUSED DEPRECATED
-        // $this->update_rotten_tomatoes($post, $options);
+
         // Dove.org
         if ($campaign->id == 3) {
             $this->update_dove($post, $options, $campaign, $debug);
@@ -250,12 +251,24 @@ class MoviesCustomHooks {
 
                 $total_rating = $rating;
                 $total_rating = $ma->five_to_ten($total_rating);
-                
+
                 // Total
                 $data['total_rating'] = $total_rating;
 
                 if ($data['total_rating'] > 0) {
                     $update_rating = true;
+
+                    // Add woke grade
+                    $grade_clear = strtolower($grade);
+                    $grade_clear = preg_replace('/[^a-z]+/', '', $grade_clear);
+                    $grade_arr = array('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i');
+                    if (in_array($grade_clear, $grade_arr)) {
+                        $grade_num = array_search($grade_clear, $grade_arr);
+                        $grade_data = array(
+                            'mediaversity' => (int) $grade_num,
+                        );
+                        $ma->update_woke($post->top_movie, $grade_data);
+                    }
                 }
             } else if ($curr_camp == 'thecherrypicks') {
 
@@ -284,13 +297,83 @@ class MoviesCustomHooks {
         }
     }
 
+    private function update_woke($post, $options, $campaign, $debug = false) {
+        if ($campaign->id == 45) {
+            // worthitorwoke            
+
+            $upd_opt = array(
+                'tags' => 'tags',
+            );
+
+            $to_update = array();
+            foreach ($upd_opt as $post_key => $db_key) {
+                $field_value = '';
+                if (isset($options[$post_key])) {
+                    $field_value = base64_decode($options[$post_key]);
+                }
+                $to_update[$db_key] = $field_value;
+            }
+            if ($to_update) {
+                $tags_str = $to_update['tags'];
+                $tags_arr = explode(';', $tags_str);
+                /* worthit
+                 * 1 - Woke
+                 * 2 - Woke-ish
+                 * 3 - Non-Woke
+                 */
+                $tags_woke = array(
+                    'Woke' => 1,
+                    'Woke-ish' => 2,
+                    'Non-Woke' => 3,
+                );
+                $tag_key = 0;
+                foreach ($tags_arr as $tag) {
+                    $tag = trim($tag);
+                    if (isset($tags_woke[$tag])) {
+                        $tag_key = $tags_woke[$tag];
+                        break;
+                    }
+                }
+                if ($tag_key > 0) {
+                    $ma = $this->ml->get_ma();
+                    # Update woke
+                    $woke_data = array(
+                        'worthit' => (int) $tag_key,
+                    );
+                    $ma->update_woke($post->top_movie, $woke_data);
+                }
+            }
+        } else if ($campaign->id == 4) {
+            // bechdeltest.com
+            $upd_opt = array(
+                'rating' => 'rating',
+            );
+
+            $to_update = array();
+            foreach ($upd_opt as $post_key => $db_key) {
+                $field_value = '';
+                if (isset($options[$post_key])) {
+                    $field_value = base64_decode($options[$post_key]);
+                }
+                $to_update[$db_key] = $field_value;
+            }
+            if ($to_update) {
+                $rating = (int) trim($to_update['rating']);
+                if ($rating>0){
+                    $ma = $this->ml->get_ma();
+                    # Update woke
+                    $woke_data = array(
+                        'bechdeltest' => (int) $rating,
+                    );
+                    $ma->update_woke($post->top_movie, $woke_data);
+                }
+            }
+        }
+    }
+
     private function update_franchises($post, $options, $campaign, $debug = false) {
         if ($campaign->id == 33) {
-
             $ma = $this->ml->get_ma();
-
-
-
             $upd_opt = array(
                 'Distributor' => 'dist_name',
                 'Distributor link' => 'dist_link',

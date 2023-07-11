@@ -120,7 +120,19 @@ details.dark {
     border-radius: 0;
     padding: 0;
 }
-.detail_container{
+
+
+
+.theme_dark summary {
+    padding: 10px;
+    color: #cacaca;
+    cursor: pointer;
+    background-color: transparent;
+    border: none;
+    border-radius: 4px;
+}
+
+.inner_content  .detail_container{
 
 
     display: block;
@@ -3183,6 +3195,9 @@ i.nl{
 }
 i.jp{
     background: transparent url(images/flags/4x3/jp.svg) 0px 3px no-repeat;
+}
+i.de{
+    background: transparent url(images/flags/4x3/de.svg) 0px 3px no-repeat;
 }
 .theme_white i.jp{
     border: 1px solid #818181;

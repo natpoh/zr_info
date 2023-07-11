@@ -17,6 +17,7 @@ class SiteImg extends AbstractDB {
         //27 => array('ekey' => 'animelist_rating', 'name' => 'MyAnimeList', 'flag' => 'jp', 'ratmax' => 10, 'multipler' => 10,'rateconvert'=>20),
         36 => array('ekey' => 'eiga_rating', 'name' => 'Eiga', 'flag' => 'jp', 'ratmax' => 5, 'multipler' => 10,'rateconvert'=>10),
         38 => array('ekey' => 'moviemeter_rating', 'name' => 'MovieMeter', 'flag' => 'nl', 'ratmax' => 5, 'multipler' => 10,'rateconvert'=>10),
+        44 => array('ekey' => 'ofdb_rating', 'name' => 'OFDb', 'flag' => 'de', 'ratmax' => 10, 'multipler' => 10,'rateconvert'=>20),
     );
 
     public function __construct($cm = '') {

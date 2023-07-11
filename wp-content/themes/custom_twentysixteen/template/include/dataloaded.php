@@ -62,6 +62,9 @@ class Data_Loaded
         !class_exists('MOVIE_DATA') ? include ABSPATH . "analysis/movie_data.php" : '';
 
         $content_array = MOVIE_DATA::get_actors_template($movie_id, $actor_type);
+
+
+
         foreach ($content_array as $i=> $data)
         {
 
