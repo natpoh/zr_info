@@ -216,6 +216,7 @@ class CriticMatic extends AbstractDB {
             // TS
             'transcriptions' => $table_prefix . 'critic_transcritpions',
             'reviews_rating' => 'meta_reviews_rating',
+            'critic_crowd' => 'data_critic_crowd',
         );
         $this->timer_start();
 
@@ -3675,6 +3676,12 @@ class CriticMatic extends AbstractDB {
 
     private function get_cron_name($cron_name) {
         return 'cm_cron_' . $cron_name;
+    }
+    
+    public function get_critic_crowd($link_hash='') {
+        $sql = sprintf("SELECT * FROM {$this->db['critic_crowd']} WHERE link_hash='%s'", $link_hash);
+        $result = $this->db_fetch_row($sql);
+        return $result;
     }
 
     /*
