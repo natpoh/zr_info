@@ -1434,6 +1434,15 @@ function critic_matic_plugin_activation() {
      */
     $sql = "ALTER TABLE `data_woke` ADD `mediaversity` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
+    /*
+     * bechdeltest
+      0 - none
+      1. It has to have at least two [named] women in it
+      2. Who talk to each other
+      3. About something besides a man
+     */
+    $sql = "ALTER TABLE `data_woke` ADD `bechdeltest` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {
