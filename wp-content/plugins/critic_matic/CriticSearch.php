@@ -126,11 +126,12 @@ class CriticSearch extends AbstractDB {
                 'rrev' => array('title' => 'ZR Critics (beta)', 'titlesm' => 'Critic Reviews', 'name_pre' => 'RW ', 'filter_pre' => 'Reviews ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'zr', 'hide' => 1, 'sorted' => 1,),
                 // Global
                 'gratingtitle' => array('title' => 'Global Ratings', 'is_title' => 1, 'group' => 'rating'),
-                'reiga' => array('title' => 'Eiga', 'titlesm' => 'Eiga', 'name_pre' => 'Eiga ', 'filter_pre' => 'Eiga ', 'max_count' => 60, 'multipler' => 10, 'group' => 'rating', 'icon' => 'jp', 'hide' => 1, 'sorted' => 1,),
+
                 'rdb' => array('title' => 'Douban', 'titlesm' => 'Douban', 'name_pre' => 'DB ', 'filter_pre' => 'Douban ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'douban', 'hide' => 1, 'sorted' => 1,),
+                'reiga' => array('title' => 'Eiga', 'titlesm' => 'Eiga', 'name_pre' => 'Eiga ', 'filter_pre' => 'Eiga ', 'max_count' => 60, 'multipler' => 10, 'group' => 'rating', 'icon' => 'jp', 'hide' => 1, 'sorted' => 1,),
                 'rkp' => array('title' => 'Kinopoisk', 'titlesm' => 'Kinopoisk', 'name_pre' => 'KP ', 'filter_pre' => 'Kinopoisk ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'kinop', 'hide' => 1, 'sorted' => 1,),
                 'rmm' => array('title' => 'MovieMeter', 'titlesm' => 'MovieMeter', 'name_pre' => 'MovieMeter ', 'filter_pre' => 'MovieMeter ', 'max_count' => 60, 'multipler' => 10, 'group' => 'rating', 'icon' => 'nl', 'hide' => 1, 'sorted' => 1,),
-                'rofdb' => array('title' => 'OFDb', 'titlesm' => 'OFDb', 'name_pre' => 'OFDb ', 'filter_pre' => 'OFDb ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'hide' => 1, 'sorted' => 1,),
+                'rofdb' => array('title' => 'OFDb', 'titlesm' => 'OFDb', 'name_pre' => 'OFDb ', 'filter_pre' => 'OFDb ', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'hide' => 1,'icon' => 'de', 'sorted' => 1,),
             ),
         ),
         'actorsdata' => array(
@@ -316,7 +317,7 @@ class CriticSearch extends AbstractDB {
                 'ceiga' => array('title' => 'Eiga', 'titlesm' => 'Eiga', 'name_pre' => 'Eiga ', 'filter_pre' => 'Eiga ', 'group' => 'pop', 'icon' => 'jp', 'sorted' => 1,),
                 'ckp' => array('title' => 'Kinopoisk', 'name_pre' => 'KP ', 'titlesm' => 'Kinopoisk', 'filter_pre' => 'Kinopoisk ', 'group' => 'pop', 'icon' => 'kinop', 'sorted' => 1,),
                 'cmm' => array('title' => 'MovieMeter', 'titlesm' => 'MovieMeter', 'name_pre' => 'MovieMeter ', 'filter_pre' => 'MovieMeter ', 'group' => 'pop', 'icon' => 'nl', 'sorted' => 1,),
-                'cofdb' => array('title' => 'OFDb', 'titlesm' => 'OFDb', 'name_pre' => 'OFDb ', 'filter_pre' => 'OFDb ', 'group' => 'pop', 'sorted' => 1,),
+                'cofdb' => array('title' => 'OFDb', 'titlesm' => 'OFDb', 'name_pre' => 'OFDb ', 'filter_pre' => 'OFDb ', 'group' => 'pop','icon' => 'de', 'sorted' => 1,),
             ),
         ),
         'mkw' => array(
@@ -345,19 +346,23 @@ class CriticSearch extends AbstractDB {
                 'lgbt' => array('title' => 'LGBT', 'facet' => 'rating', 'titlesm' => 'LGBT', 'name_pre' => 'LGBT ', 'filter_pre' => 'LGBT ', 'max_count' => 50, 'multipler' => 1, 'group' => 'woke', 'icon' => 'zr_lgbt', 'hide' => 1, 'sorted' => 1,),
                 'rmedia' => array('title' => 'MediaVersity', 'facet' => 'rating', 'titlesm' => 'MediaVersity', 'name_pre' => 'MediaVersity ', 'filter_pre' => 'MediaVersity ', 'max_count' => 60, 'multipler' => 10, 'group' => 'woke', 'hide' => 1, 'sorted' => 1,),
                 'rcherry' => array('title' => 'CherryPicks', 'facet' => 'rating', 'titlesm' => 'CherryPicks', 'name_pre' => 'CherryPicks ', 'filter_pre' => 'CherryPicks ', 'max_count' => 110, 'multipler' => 10, 'group' => 'woke', 'hide' => 1, 'sorted' => 1,),
-                // Force 
+                // Other
+                'worthit' => array('title' => 'WorthItOrWoke', 'facet' => 'select', 'titlesm' => 'WorthIt', 'name_pre' => 'WorthItOrWoke ', 'filter_pre' => 'WorthItOrWoke ', 'max_count' => 5, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'sorted' => 1,'minus' => 1,),
+                'mediaversity' => array('title' => 'MediaVersity', 'facet' => 'select', 'titlesm' => 'MediaVersity', 'name_pre' => 'MediaVersity ', 'filter_pre' => 'MediaVersity ', 'max_count' => 20, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'sorted' => 1,'minus' => 1,),
+                'bechdeltest' => array('title' => 'BechdelTest', 'facet' => 'select', 'titlesm' => 'BechdelTest', 'name_pre' => 'BechdelTest ', 'filter_pre' => 'BechdelTest ', 'max_count' => 4, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'sorted' => 1,'minus' => 1,),
+                // Filetrs
                 'woketitle' => array('title' => 'Forced Diversity', 'is_title' => 1, 'group' => 'woke'),
                 'div' => array('title' => 'Diversity %', 'def' => 'desc', 'group' => 'woke', 'no_data' => 1, 'sorted' => 1,),
                 'fem' => array('title' => 'Female %', 'def' => 'desc', 'group' => 'woke', 'no_data' => 1, 'sorted' => 1,),
                 // Audience  
                 'auratingtitle' => array('title' => 'Audience Ratings', 'is_title' => 1, 'group' => 'woke'),
-                'auvote' => array('title' => 'SUGGESTION', 'facet' => 'au', 'titlesm' => 'SUGGESTION', 'name_pre' => 'AU ', 'filter_pre' => 'Audience SUGGESTION ', 'icon' => 'vote', 'hide' => 1, 'group' => 'woke'),
-                'aurating' => array('title' => 'OVERALL', 'facet' => 'au', 'titlesm' => 'OVERALL', 'name_pre' => 'AU OVERALL ', 'filter_pre' => 'Audience OVERALL ', 'icon' => 'rating', 'group' => 'woke', 'hide' => 1, 'sorted' => 1,),
-                'auneo' => array('title' => 'NEO-MARXISM', 'facet' => 'au', 'titlesm' => 'NEO-MARXISM', 'name_pre' => 'AU NEO-MARXISM ', 'filter_pre' => 'Audience NEO-MARXISM ', 'icon' => 'patriotism', 'group' => 'woke', 'hide' => 1, 'sorted' => 1,),
-                'aumisandry' => array('title' => 'FEMINISM', 'facet' => 'au', 'titlesm' => 'FEMINISM', 'name_pre' => 'AU FEMINISM ', 'filter_pre' => 'Audience FEMINISM ', 'icon' => 'misandry', 'group' => 'woke', 'hide' => 1, 'sorted' => 1,),
-                'auaffirmative' => array('title' => 'AFFIRMATIVE ACTION', 'facet' => 'au', 'titlesm' => 'AFF ACT', 'name_pre' => 'AU AA ', 'filter_pre' => 'Audience AFFIRMATIVE ACTION ', 'icon' => 'affirmative', 'group' => 'woke', 'hide' => 1, 'sorted' => 1,),
-                'aulgbtq' => array('title' => 'GAY STUFF', 'facet' => 'au', 'titlesm' => 'GAY STUFF', 'name_pre' => 'GAY STUFF ', 'filter_pre' => 'Audience GAY STUFF ', 'icon' => 'lgbtq', 'group' => 'woke', 'hide' => 1, 'sorted' => 1,),
-                'augod' => array('title' => 'FEDORA TIPPING', 'facet' => 'au', 'titlesm' => 'FEDORA T', 'name_pre' => 'FEDORA TIPPING ', 'filter_pre' => 'Audience FEDORA TIPPING ', 'icon' => 'god', 'group' => 'woke', 'hide' => 1, 'sorted' => 1,),
+                'auvote' => array('title' => 'SUGGESTION', 'facet' => 'select', 'block' => 'au', 'titlesm' => 'SUGGESTION', 'name_pre' => 'AU ', 'filter_pre' => 'Audience SUGGESTION ', 'icon' => 'vote', 'hide' => 1, 'group' => 'woke'),
+                'aurating' => array('title' => 'OVERALL', 'facet' => 'rating', 'block' => 'au', 'titlesm' => 'OVERALL', 'name_pre' => 'AU OVERALL ', 'filter_pre' => 'Audience OVERALL ', 'icon' => 'rating', 'group' => 'woke', 'hide' => 1, 'sorted' => 1,),
+                'auneo' => array('title' => 'NEO-MARXISM', 'facet' => 'rating', 'block' => 'au', 'titlesm' => 'NEO-MARXISM', 'name_pre' => 'AU NEO-MARXISM ', 'filter_pre' => 'Audience NEO-MARXISM ', 'icon' => 'patriotism', 'group' => 'woke', 'hide' => 1, 'sorted' => 1,),
+                'aumisandry' => array('title' => 'FEMINISM', 'facet' => 'rating', 'block' => 'au', 'titlesm' => 'FEMINISM', 'name_pre' => 'AU FEMINISM ', 'filter_pre' => 'Audience FEMINISM ', 'icon' => 'misandry', 'group' => 'woke', 'hide' => 1, 'sorted' => 1,),
+                'auaffirmative' => array('title' => 'AFFIRMATIVE ACTION', 'facet' => 'rating', 'block' => 'au', 'titlesm' => 'AFF ACT', 'name_pre' => 'AU AA ', 'filter_pre' => 'Audience AFFIRMATIVE ACTION ', 'icon' => 'affirmative', 'group' => 'woke', 'hide' => 1, 'sorted' => 1,),
+                'aulgbtq' => array('title' => 'GAY STUFF', 'facet' => 'rating', 'block' => 'au', 'titlesm' => 'GAY STUFF', 'name_pre' => 'GAY STUFF ', 'filter_pre' => 'Audience GAY STUFF ', 'icon' => 'lgbtq', 'group' => 'woke', 'hide' => 1, 'sorted' => 1,),
+                'augod' => array('title' => 'FEDORA TIPPING', 'facet' => 'rating', 'block' => 'au', 'titlesm' => 'FEDORA T', 'name_pre' => 'FEDORA TIPPING ', 'filter_pre' => 'Audience FEDORA TIPPING ', 'icon' => 'god', 'group' => 'woke', 'hide' => 1, 'sorted' => 1,),
             // Rf TODO REFACTOR 
             /* 'rf' => array('title' => 'Rating filters', 'minus' => 1,),
               'rflgbt' => array('title' => 'LGBT', 'facet' => 'rf', 'titlesm' => 'LGBT', 'name_pre' => 'LGBT ', 'filter_pre' => 'LGBT ',),
@@ -449,9 +454,6 @@ class CriticSearch extends AbstractDB {
             'popsort' => array('title' => 'Popularity', 'group' => 'pop', 'main' => 1, 'sorted' => 1,),
             'wokesort' => array('title' => 'Wokeness', 'group' => 'woke', 'main' => 1, 'sorted' => 1,),
             'finsort' => array('title' => 'Finances', 'group' => 'indie', 'main' => 1, 'sorted' => 1,),
-            'woke' => array('title' => 'Wokeness', 'def' => 'desc', 'group' => 'woke'),
-            'rating' => array('title' => 'Family Friendly Score', 'def' => 'desc', 'group' => 'woke'),
-            'lgbt' => array('title' => 'LGBT', 'def' => 'desc', 'group' => 'woke'),
             'rel' => array('title' => 'Relevance', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
         ),
         'ethnicity' => array(
@@ -462,9 +464,6 @@ class CriticSearch extends AbstractDB {
             'popsort' => array('title' => 'Popularity', 'group' => 'pop', 'main' => 1, 'sorted' => 1,),
             'wokesort' => array('title' => 'Wokeness', 'group' => 'woke', 'main' => 1, 'sorted' => 1,),
             'finsort' => array('title' => 'Finances', 'group' => 'indie', 'main' => 1, 'sorted' => 1,),
-            'woke' => array('title' => 'Wokeness', 'def' => 'desc', 'group' => 'woke'),
-            'rating' => array('title' => 'Family Friendly Score', 'def' => 'desc', 'group' => 'woke'),
-            'lgbt' => array('title' => 'LGBT', 'def' => 'desc', 'group' => 'woke'),
             'rel' => array('title' => 'Relevance', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
         ),
     );
@@ -526,6 +525,24 @@ class CriticSearch extends AbstractDB {
         'rf' => array(
             'lgbt' => array('key' => 'rflgbt', 'title' => 'LGBT'),
             'woke' => array('key' => 'rfwoke', 'title' => 'Woke'),
+        ),
+        'mediaversity' => array(
+            'a' => array('key' => 1, 'title' => 'A'),
+            'b' => array('key' => 2, 'title' => 'B'),
+            'c' => array('key' => 3, 'title' => 'C'),
+            'd' => array('key' => 4, 'title' => 'D'),
+            'e' => array('key' => 5, 'title' => 'E'),
+            'f' => array('key' => 6, 'title' => 'F'),
+        ),
+        'worthit' => array(
+            'woke' => array('key' => 1, 'title' => 'Woke'),
+            'wokeish' => array('key' => 2, 'title' => 'Woke-ish'),
+            'nonwoke' => array('key' => 3, 'title' => 'Non-Woke'),
+        ),
+        'bechdeltest' => array(
+            '1' => array('key' => 1, 'title' => '1'),
+            '2' => array('key' => 2, 'title' => '2'),
+            '3' => array('key' => 3, 'title' => '3'),
         ),
     );
     public $facet_parent = array();
@@ -2634,12 +2651,8 @@ class CriticSearch extends AbstractDB {
                   $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
                   . " GROUP BY " . $facet . " ORDER BY cnt DESC LIMIT 0,10";
                   } else { */
-                // Audience
-                $max_count = 6;
-                if ($active_facet['facet'] == 'rating') {
-                    // Rating
-                    $max_count = isset($active_facet['max_count']) ? $active_facet['max_count'] : 100;
-                }
+
+                $max_count = isset($active_facet['max_count']) ? $active_facet['max_count'] : 6;
                 $filters_and = $this->get_filters_query($filters, $facet);
                 $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt FROM movie_an WHERE id>0" . $filters_and . $match
                         . " GROUP BY " . $facet . " ORDER BY " . $facet . " ASC LIMIT 0," . $max_count;
@@ -2681,6 +2694,8 @@ class CriticSearch extends AbstractDB {
             }
         }
 
+       // p_r($sql_arr);
+       // exit;
         return $sql_arr;
     }
 
@@ -3121,7 +3136,7 @@ class CriticSearch extends AbstractDB {
                             // Gender dirs
                             $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
                         }
-                    } else if (isset($this->facet_data['ratings']['childs'][$key]) || in_array($key, array('rating', 'lgbt', 'woke'))) {
+                    } else if (isset($this->facet_data['ratings']['childs'][$key])) {
                         $dates = explode('-', $value);
                         $from = (int) $dates[0];
                         $to = (int) $dates[1];
@@ -3133,6 +3148,21 @@ class CriticSearch extends AbstractDB {
                         }
                         if ($key == 'rrtg') {
                             $filters_and .= " AND rrta>0 AND rrt>0";
+                        }
+                    } else if (isset($this->facet_data['wokedata']['childs'][$key])) {
+                        $active_facet = $this->facet_data['wokedata']['childs'][$key];
+                        if (isset($active_facet['facet']) && $active_facet['facet'] == 'rating') {
+                            $dates = explode('-', $value);
+                            $from = (int) $dates[0];
+                            $to = (int) $dates[1];
+
+                            if ($from == $to) {
+                                $filters_and .= sprintf(" AND " . $key . "=%d", $from);
+                            } else {
+                                $filters_and .= sprintf(" AND " . $key . " >%d AND " . $key . " <= %d", $from, $to);
+                            }
+                        } else {
+                            $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
                         }
                     } else if ($key == 'indie') {
                         $value = is_array($value) ? $value : array($value);
@@ -4010,58 +4040,58 @@ class CriticSearch extends AbstractDB {
     }
 
     public function is_hide_facet($facet = '', $filters = array()) {
-        // Get def facet
-        $is_hide = false;
-
 
         if (isset($this->hide_facets[$facet])) {
+            // In hide list
 
-            $is_hide = true;
             if (!isset($filters['show'])) {
-                $filters['show'] = array();
-            } else if (is_string($filters['show'])) {
-                $filters['show'] = array($filters['show']);
+                return true;
+            } 
+            
+            if (is_string($filters['show']) && $facet==$filters['show']) {
+                return false;
             }
+            
             if (in_array($facet, $filters['show'])) {
-                $is_hide = false;
+                return false;
             }
+            
+            // Def hide
+            return true;
+      
         } else {
+            // No hide list
+            
             if (!isset($filters['hide'])) {
-                $filters['hide'] = array();
-            } else if (is_string($filters['hide'])) {
-                $filters['hide'] = array($filters['hide']);
+                return false;
+            }
+            if (is_string($filters['hide'])&&$facet == $filters['hide']) {
+                return true;
             }
             if (in_array($facet, $filters['hide'])) {
-                $is_hide = true;
+                return true;
             }
+            // Def show
+            return false;
         }
-
-        return $is_hide;
+        
     }
 
     public function hide_facet_class($facet = '', $filters = array()) {
         // Get def facet
         $hide_facet = '';
+        $is_hide = $this->is_hide_facet($facet, $filters);
 
         if (isset($this->hide_facets[$facet])) {
             $hide_facet = ' defhide';
-            if (!isset($filters['show'])) {
-                $filters['show'] = array();
-            } else if (!is_array($filters['show'])) {
-                $filters['show'] = array($filters['show']);
-            }
-            if (!in_array($facet, $filters['show'])) {
+            
+            if ($is_hide) {
                 $hide_facet .= ' collapsed';
             }
         } else {
             $hide_facet = ' defshow';
-            if (!isset($filters['hide'])) {
-                $filters['hide'] = array();
-            } else if (!is_array($filters['hide'])) {
-                $filters['hide'] = array($filters['hide']);
-            }
-
-            if (in_array($facet, $filters['hide'])) {
+           
+            if ($is_hide) {
                 $hide_facet .= ' collapsed';
             }
         }

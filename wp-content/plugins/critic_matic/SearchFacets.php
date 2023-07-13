@@ -112,12 +112,13 @@ class SearchFacets extends AbstractDB {
             $this->filters['year'] = $this->validate_release_value($this->filters['year']);
         }
 
-        foreach ($this->filters as $key => $value) {            
+        foreach ($this->filters as $key => $value) {
             if (isset($this->cs->facet_data['ratings']['childs'][$key])) {
                 // Rating
                 $this->filters[$key] = $this->validate_rating_value($key);
             } else if (isset($this->cs->facet_data['wokedata']['childs'][$key])) {
-                if ($key == 'auvote') {
+                $active_facet = $this->cs->facet_data['wokedata']['childs'][$key];
+                if (isset($active_facet['facet']) && $active_facet['facet'] == 'select') {
                     continue;
                 }
                 $this->filters[$key] = $this->validate_rating_value($key);
@@ -550,6 +551,13 @@ class SearchFacets extends AbstractDB {
                     $name = isset($this->cs->search_filters['type'][$slug]['title']) ? $this->cs->search_filters['type'][$slug]['title'] : $slug;
                     $tags[] = array('name' => $name, 'type' => $key, 'id' => $slug, 'tab' => 'all', 'minus' => $minus);
                 }
+            } else if ($key == 'show' || $key == 'hide') {
+                $value = is_array($value) ? $value : array($value);
+                foreach ($value as $slug) {
+                    $name = ucfirst($slug);
+                    $name_pre = ucfirst($key) . ' ';
+                    $tags[] = array('name' => $name, 'type' => $key, 'name_pre' => $name_pre, 'id' => $slug, 'tab' => 'all', 'minus' => $minus);
+                }
             } else if ($key == 'release') {
                 $name = $value;
                 $slug = $value;
@@ -587,8 +595,8 @@ class SearchFacets extends AbstractDB {
                 $name_pre = $active_facet['name_pre'];
                 $filter_pre = $active_facet['filter_pre'];
 
-                if ($key == 'auvote') {
-                    $name = isset($this->cs->search_filters['auvote'][$slug]['title']) ? $this->cs->search_filters['auvote'][$slug]['title'] : $slug;
+                if (isset($active_facet['facet']) && $active_facet['facet'] == 'select') {
+                    $name = isset($this->cs->search_filters[$key][$slug]['title']) ? $this->cs->search_filters[$key][$slug]['title'] : $slug;
                 }
                 $tags[] = array('name' => $name, 'type' => $key, 'type_title' => $filter_pre, 'name_pre' => $name_pre, 'id' => $slug, 'tab' => 'all', 'minus' => $minus);
             } else if (isset($this->cs->facet_data['auratings']['childs'][$key])) {
@@ -1567,7 +1575,7 @@ class SearchFacets extends AbstractDB {
                         </div>
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $first_item ?>">
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $max_item ?>">
-                        <?php //unset($items[count($items) - 1]);                    ?>
+                        <?php //unset($items[count($items) - 1]);                     ?>
                         <script type="text/javascript">var <?php print $type ?>_arr =<?php print json_encode($items) ?></script>
                     </div>  
                 <?php endif; ?>
@@ -1608,8 +1616,9 @@ class SearchFacets extends AbstractDB {
         $filter = 'auratings';
         if ($content || $main_collapsed) {
             //Show multifacet
+            $tab_key = $this->get_tab_key();
             ?>
-            <div id="facets-<?php print $main_type ?>" class="facets ajload<?php print $this->cs->hide_facet_class($main_type, $this->filters) ?>">
+            <div id="facets-<?php print $main_type ?>" class="facets ajload<?php print $this->cs->hide_facet_class($main_type, $this->filters) ?>" data-type="<?php print $tab_key ?>">
                 <div class="facet-title">
                     <h3 class="title"><?php print $title ?><?php print $this->get_tooltip($filter) ?></h3>   
                     <div class="acc">
@@ -1657,8 +1666,9 @@ class SearchFacets extends AbstractDB {
         $filter = 'ratings';
         if ($content || $main_collapsed) {
             //Show multifacet            
+            $tab_key = $this->get_tab_key();
             ?>
-            <div id="facets-<?php print $main_type ?>" class="facets ajload<?php print $this->cs->hide_facet_class($main_type, $this->filters) ?>">
+            <div id="facets-<?php print $main_type ?>" class="facets ajload<?php print $this->cs->hide_facet_class($main_type, $this->filters) ?>" data-type="<?php print $tab_key ?>">
                 <div class="facet-title">
                     <h3 class="title"><?php print $title ?><?php print $this->get_tooltip($filter) ?></h3>   
                     <div class="acc">
@@ -1779,8 +1789,9 @@ class SearchFacets extends AbstractDB {
         $filter = 'indiedata';
         if ($content || $main_collapsed) {
             //Show multifacet
+            $tab_key = $this->get_tab_key();
             ?>
-            <div id="facets-<?php print $main_type ?>" class="facets ajload<?php print $this->cs->hide_facet_class($main_type, $this->filters) ?>">
+            <div id="facets-<?php print $main_type ?>" class="facets ajload<?php print $this->cs->hide_facet_class($main_type, $this->filters) ?>" data-type="<?php print $tab_key ?>">
                 <div class="facet-title">
                     <h3 class="title"><?php print $title ?><?php print $this->get_tooltip($filter) ?></h3>   
                     <div class="acc">
@@ -1800,7 +1811,6 @@ class SearchFacets extends AbstractDB {
         $main_type = 'wokedata';
         $main_collapsed = $this->cs->is_hide_facet($main_type, $this->filters);
 
-
         ob_start();
         if (!$main_collapsed) {
             // p_r($this->facet_filters);
@@ -1809,20 +1819,58 @@ class SearchFacets extends AbstractDB {
                 if (isset($value['no_data'])) {
                     continue;
                 }
-                if ($value['facet'] != 'rating') {
+                if (isset($value['block']) && $value['block'] == 'au') {
                     continue;
                 }
+                if ($value['facet'] == 'rating') {
+                    $rating_data = isset($data[$key]['data']) ? $data[$key]['data'] : array();
+                    if ($rating_data || $this->cs->is_hide_facet($key, $this->filters) || $facet == $key) {
+                        $count = sizeof($rating_data);
+                        $icon = isset($value['icon']) ? '<i class="' . $value['icon'] . '"></i>' : '';
+                        $name_pre = $value['name_pre'];
+                        $filter_pre = $value['filter_pre'];
+                        $max_count = isset($value['max_count']) ? $value['max_count'] : 100;
+                        $multipler = isset($value['multipler']) ? $value['multipler'] : 0;
+                        $shift = isset($value['shift']) ? $value['shift'] : 0;
+                        $this->show_slider_facet($rating_data, $count, $key, 'movies', $value['title'], $name_pre, $filter_pre, $icon, $max_count, $multipler, $shift);
+                    }
+                } else if ($value['facet'] == 'select') {
 
-                $rating_data = isset($data[$key]['data']) ? $data[$key]['data'] : array();
-                if ($rating_data || $this->cs->is_hide_facet($key, $this->filters) || $facet == $key) {
-                    $count = sizeof($rating_data);
-                    $icon = isset($value['icon']) ? '<i class="' . $value['icon'] . '"></i>' : '';
-                    $name_pre = $value['name_pre'];
-                    $filter_pre = $value['filter_pre'];
-                    $max_count = isset($value['max_count']) ? $value['max_count'] : 100;
-                    $multipler = isset($value['multipler']) ? $value['multipler'] : 0;
-                    $shift = isset($value['shift']) ? $value['shift'] : 0;
-                    $this->show_slider_facet($rating_data, $count, $key, 'movies', $value['title'], $name_pre, $filter_pre, $icon, $max_count, $multipler, $shift);
+                    $rating_data = isset($data[$key]['data']) ? $data[$key]['data'] : array();
+
+                    if ($rating_data || $this->cs->is_hide_facet($key, $this->filters) || $facet == $key) {
+                        $valid_data = array();
+                        if ($rating_data) {
+                            foreach ($rating_data as $item) {
+                                if ($item->id == 0) {
+                                    continue;
+                                }
+                                $valid_data[$item->id] = $item->cnt;
+                            }
+                        }
+
+                        $count = sizeof($valid_data);
+
+                        $icon = isset($value['icon']) ? '<i class="' . $value['icon'] . '"></i>' : '';
+                        $name_pre = $value['name_pre'];
+                        $filter_pre = $value['filter_pre'];
+                        $minus = true;
+                        $title = $value['title'];
+
+                        $dates = array();
+                        foreach ($this->cs->search_filters[$key] as $name => $item) {
+                            if (isset($valid_data[$item['key']])) {
+                                $dates[$name] = array(
+                                    'title' => $item['title'],
+                                    'count' => $valid_data[$item['key']],
+                                    'type_title' => $filter_pre,
+                                    'name_pre' => $name_pre,
+                                    'filter' => $key
+                                );
+                            }
+                        }
+                        $this->theme_facet_multi($key, $dates, $title, 0, 'movies', $minus);
+                    }
                 }
             }
 
@@ -1862,20 +1910,20 @@ class SearchFacets extends AbstractDB {
                 if (isset($value['no_data'])) {
                     continue;
                 }
-                if ($value['facet'] != 'au') {
-                    continue;
-                }
-                $rating_data = isset($data[$key]['data']) ? $data[$key]['data'] : array();
-                if ($rating_data || $this->cs->is_hide_facet($key, $this->filters) || $facet == $key) {
-                    $count = sizeof($rating_data);
-                    $icon = '<i class="' . $value['icon'] . '"></i>';
-                    $name_pre = $value['name_pre'];
-                    $filter_pre = $value['filter_pre'];
+                if (isset($value['block']) && $value['block'] == 'au') {
 
-                    if ($key == 'auvote') {
-                        $this->show_suggestion_facet($rating_data, $count, $key, 'all', $value['title'], $name_pre, $filter_pre, $icon);
-                    } else {
-                        $this->show_slider_facet($rating_data, $count, $key, 'all', $value['title'], $name_pre, $filter_pre, $icon);
+                    $rating_data = isset($data[$key]['data']) ? $data[$key]['data'] : array();
+                    if ($rating_data || $this->cs->is_hide_facet($key, $this->filters) || $facet == $key) {
+                        $count = sizeof($rating_data);
+                        $icon = '<i class="' . $value['icon'] . '"></i>';
+                        $name_pre = $value['name_pre'];
+                        $filter_pre = $value['filter_pre'];
+
+                        if ($key == 'auvote') {
+                            $this->show_suggestion_facet($rating_data, $count, $key, 'all', $value['title'], $name_pre, $filter_pre, $icon);
+                        } else {
+                            $this->show_slider_facet($rating_data, $count, $key, 'all', $value['title'], $name_pre, $filter_pre, $icon);
+                        }
                     }
                 }
             }
@@ -1890,8 +1938,9 @@ class SearchFacets extends AbstractDB {
         $filter = 'wokedata';
         if ($content || $main_collapsed) {
             //Show multifacet
+            $tab_key = $this->get_tab_key();
             ?>
-            <div id="facets-<?php print $main_type ?>" class="facets ajload<?php print $this->cs->hide_facet_class($main_type, $this->filters) ?>">
+            <div id="facets-<?php print $main_type ?>" class="facets ajload<?php print $this->cs->hide_facet_class($main_type, $this->filters) ?>" data-type="<?php print $tab_key ?>">
                 <div class="facet-title">
                     <h3 class="title"><?php print $title ?><?php print $this->get_tooltip($filter) ?></h3>   
                     <div class="acc">
@@ -1935,8 +1984,9 @@ class SearchFacets extends AbstractDB {
         $filter = 'findata';
         if ($content || $main_collapsed) {
             //Show multifacet            
+            $tab_key = $this->get_tab_key();
             ?>
-            <div id="facets-<?php print $main_type ?>" class="facets ajload<?php print $this->cs->hide_facet_class($main_type, $this->filters) ?>">
+            <div id="facets-<?php print $main_type ?>" class="facets ajload<?php print $this->cs->hide_facet_class($main_type, $this->filters) ?>" data-type="<?php print $tab_key ?>">
                 <div class="facet-title">
                     <h3 class="title"><?php print $title ?><?php print $this->get_tooltip($filter) ?></h3>   
                     <div class="acc">
@@ -2093,7 +2143,7 @@ class SearchFacets extends AbstractDB {
                         </div>
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $first_item ?>">
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $max_item ?>">
-                        <?php //unset($items[count($items) - 1]);                                                     ?>
+                        <?php //unset($items[count($items) - 1]);                                                         ?>
                         <script type="text/javascript">var <?php print $type ?>_arr =<?php print json_encode($items) ?></script>
                     </div>  
                 <?php endif ?>
@@ -2442,8 +2492,9 @@ class SearchFacets extends AbstractDB {
         $title = 'Actors';
         if ($content || $main_collapsed) {
             //Show multifacet
+            $tab_key = $this->get_tab_key();
             ?>
-            <div id="facets-<?php print $main_type ?>" class="facets ajload<?php print $this->cs->hide_facet_class($main_type, $this->filters) ?>">
+            <div id="facets-<?php print $main_type ?>" class="facets ajload<?php print $this->cs->hide_facet_class($main_type, $this->filters) ?>" data-type="<?php print $tab_key ?>">
                 <div class="facet-title">
                     <h3 class="title"><?php print $title ?><?php print $this->get_tooltip($filter) ?></h3>   
                     <div class="acc">
@@ -2609,8 +2660,9 @@ class SearchFacets extends AbstractDB {
         $filter = 'dirsdata';
         if ($content || $main_collapsed) {
             //Show multifacet
+            $tab_key = $this->get_tab_key();
             ?>
-            <div id="facets-<?php print $main_type ?>" class="facets ajload<?php print $this->cs->hide_facet_class($main_type, $this->filters) ?>">
+            <div id="facets-<?php print $main_type ?>" class="facets ajload<?php print $this->cs->hide_facet_class($main_type, $this->filters) ?>" data-type="<?php print $tab_key ?>">
                 <div class="facet-title">
                     <h3 class="title"><?php print $title ?><?php print $this->get_tooltip($filter) ?></h3>   
                     <div class="acc">

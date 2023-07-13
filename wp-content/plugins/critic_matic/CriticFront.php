@@ -520,7 +520,7 @@ class CriticFront extends SearchFacets {
     }
 
     public function get_feed_templ($critic = '', $top_movie = '', $stuff = false, $fullsize = false) {
-
+        
         $permalink = $critic->link;
         if (!$permalink) {
             // Create local permalink
@@ -536,7 +536,7 @@ class CriticFront extends SearchFacets {
         if (!$content) {
             $content = $title;
         }
-
+        
         // Find transcriptions
         $time_codes = array();
         $desc_results = array();
@@ -917,8 +917,14 @@ class CriticFront extends SearchFacets {
             // Parse data
             $cp = $this->cm->get_cp();
             //$proxy = '107.152.153.239:9942';
-            $proxy = '';
-            $data = $cp->get_proxy($link, $proxy, $headers);
+           
+            $proxy = $this->cm->get_parser_proxy(true);
+            $proxy_text = '';
+            if ($proxy) {
+                $proxy_num = array_rand($proxy);
+                $proxy_text = trim($proxy[$proxy_num]);
+            }
+            $data = $cp->get_proxy($link, $proxy_text, $headers);
 
             if ($data) {
                 // Embed
@@ -960,10 +966,16 @@ class CriticFront extends SearchFacets {
         if (!$img) {
             // Parse thumb
             $cp = $this->cm->get_cp();
-            //$proxy = '107.152.153.239:9942';
-            $proxy = '';
+            //$proxy = '107.152.153.239:9942';            
+            $proxy = $this->cm->get_parser_proxy(true);
+            $proxy_text = '';
+            if ($proxy) {
+                $proxy_num = array_rand($proxy);
+                $proxy_text = trim($proxy[$proxy_num]);
+            }
+            
             $b_link = 'https://www.bitchute.com/video/' . $code . '/';
-            $data = $cp->get_proxy($b_link, $proxy, $headers);
+            $data = $cp->get_proxy($b_link, $proxy_text, $headers);
 
             if ($data) {
                 if (preg_match('/<meta property="og:image" content="([^"]+)"/', $data, $match)) {

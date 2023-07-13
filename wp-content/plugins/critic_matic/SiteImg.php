@@ -228,7 +228,8 @@ class SiteImg extends AbstractDB {
                     $turl = $turl . 'votes/?_x_tr_sl=ru&_x_tr_tl=en&_x_tr_hl=en';
                     $url = $turl;
                 }
-            } else {
+            } else
+            {
                 # Other
                 $url = $url_data->link;
             }
