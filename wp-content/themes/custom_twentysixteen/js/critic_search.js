@@ -70,8 +70,9 @@ jQuery(function ($) {
                     return false;
                 }
                 critic_search.menu();
-                return false;
+
             }
+            return false;
         });
 
         // Close search
@@ -97,26 +98,10 @@ jQuery(function ($) {
     });
 });
 
-critic_search.collapse = [];
 critic_search.autocomplite = [];
 critic_search.no_submit_filters = [];
 critic_search.enable_submit = true;
 critic_search.last_submit = 0;
-
-
-critic_search.remove_collapse = function (id) {
-    const index = critic_search.collapse.indexOf(id);
-    if (index > -1) {
-        critic_search.collapse.splice(index, 1);
-    }
-}
-
-critic_search.add_collapse = function (id) {
-    const index = critic_search.collapse.indexOf(id);
-    if (index === -1) {
-        critic_search.collapse.push(id);
-    }
-}
 
 critic_search.in_no_submit = function (id) {
     const index = critic_search.no_submit_filters.indexOf(id);
@@ -207,6 +192,7 @@ critic_search.init_facet = function (v) {
             }
         }
         critic_search.submit();
+        return false;
     });
 
     if (typeof search_extend !== 'undefined') {
@@ -321,6 +307,11 @@ critic_search.init = function ($custom_id = '') {
 
             var id = $this.attr('data-id');
             critic_search.remove_filter(type, id);
+            if (type == 'show' || type == 'hide') {
+                $('#facet-' + id + ' > .facet-title .acc').click();
+                $('#facets-' + id + ' > .facet-title .acc').click();
+                return false;
+            }
             critic_search.autocomplite = [];
             critic_search.submit();
             return false;
@@ -498,16 +489,27 @@ critic_search.init_more = function (v) {
             $this.addClass('active');
         }
         critic_search.submit('facets');
+        return false;
     });
 }
 
 critic_search.init_collapse = function (id, v) {
     var cc = 'collapsed';
+    var facet_id = id.split('-')[1];
+
     $('#' + id + ' > .facet-title .acc').click(function () {
+
         if (v.hasClass(cc)) {
+            // Collapsed
             // Load facet data
             v.removeClass(cc);
-            critic_search.remove_collapse(id);
+
+            if (v.hasClass('defshow')) {
+                critic_search.remove_filter('hide', facet_id);
+            } else {
+                critic_search.add_filter('show', facet_id, facet_id.capitalize(), 'all', '', 'Show ');
+            }
+
 
             if ($('#' + id + ' > .facet-ch > .blockload').length || $('#' + id + ' > .facets-ch > .blockload').length) {
                 critic_search.submit('blockload', '', id);
@@ -521,15 +523,20 @@ critic_search.init_collapse = function (id, v) {
 
         } else {
             v.addClass('collapsed');
-            critic_search.add_collapse(id);
+
+            if (v.hasClass('defshow')) {
+                critic_search.add_filter('hide', facet_id, facet_id.capitalize(), 'all', '', 'Hide ');
+            } else {
+                critic_search.remove_filter('show', facet_id);
+            }
+
             // Change url
             critic_search.submit('none');
 
         }
+        return false;
     });
-    if (v.hasClass(cc)) {
-        critic_search.add_collapse(id);
-    }
+
 }
 
 critic_search.slider_facet = function (type, data_arr, ftype = 'all') {
@@ -758,8 +765,6 @@ critic_search.update_facets = function ($rtn = [], $holder = '#facets', $is_chil
             $($holder + " > #" + id).remove();
         }
 
-        critic_search.facet_collapse_update(id, v);
-
         // add
         $($holder).append(v);
 
@@ -796,18 +801,6 @@ critic_search.update_facets = function ($rtn = [], $holder = '#facets', $is_chil
     } else {
         $($holder).html('<p id="no-facets">No available filters found.</p>');
 }
-}
-
-critic_search.facet_collapse_update = function (id, v) {
-    var cc = 'collapsed';
-    const index = critic_search.collapse.indexOf(id);
-    if (index > -1) {
-        v.addClass(cc);
-    } else {
-        if (v.hasClass(cc)) {
-            v.removeClass(cc);
-        }
-    }
 }
 
 critic_search.submit = function (inc = '', target = '', facetid = '') {
@@ -925,32 +918,6 @@ critic_search.submit = function (inc = '', target = '', facetid = '') {
 
     });
 
-    // Hide facets
-    $('.defhide:not(.collapsed)').each(function (i, v) {
-        var v = $(v), id = v.attr('id'), type = 'show[]';
-        var facet_name = id.replace('facet-', '');
-        var facet_name = facet_name.replace('facets-', '');
-        if (typeof data[type] === "undefined") {
-            data[type] = [];
-        }
-        if (data[type].indexOf(facet_name) === -1) {
-            data[type].push(facet_name);
-        }
-    });
-
-    // Show facets
-    $('.defshow.collapsed').each(function (i, v) {
-        var v = $(v), id = v.attr('id'), type = 'hide[]';
-        var facet_name = id.replace('facet-', '');
-        var facet_name = facet_name.replace('facets-', '');
-        if (typeof data[type] === "undefined") {
-            data[type] = [];
-        }
-        if (data[type].indexOf(facet_name) === -1) {
-            data[type].push(facet_name);
-        }
-    });
-
     critic_search.ajax(data, function (rtn) {
 
         var ac_facet = '';
@@ -1000,9 +967,9 @@ critic_search.submit = function (inc = '', target = '', facetid = '') {
 
         if (critic_search.debug) {
             console.log(ts, critic_search.last_submit);
-        }               
-        
-        if (ts != ''&& ts != critic_search.last_submit) {                        
+        }
+
+        if (ts != '' && ts != critic_search.last_submit) {
             return false;
         }
 

@@ -18,7 +18,7 @@ $array_list = array(
     'Pro' => array(  'title' => 'Critic Reviews: <a href="#" id-data="'.$post_id.'" class="add_critic" >+add</a><span data-value="critics_reviews_popup" class="critic_popup nte_info nte_right"></span>', 'id' => 'review_scroll', 'class' => 'single pro_review'),
    // 'Staff' => array('title' => 'Staff Reviews:', 'id' => 'stuff_scroll', 'class' => 'single stuff_review widthed secton_gray'),
 
-   '4chan' => array( 'title_desc'=> '<p class="content_warning"><span class="content_red_warning">CONTENT WARNING:</span> Foul language, offensive images, & possible spoilers.</p>',  'title' => 'Internet Zeitgest:', 'id' => 'twitter_scroll', 'class' => '4chan_review')
+   //'4chan' => array( 'title_desc'=> '<p class="content_warning"><span class="content_red_warning">CONTENT WARNING:</span> Foul language, offensive images, & possible spoilers.</p>',  'title' => 'Internet Zeitgest:', 'id' => 'twitter_scroll', 'class' => '4chan_review')
 );
 
 $video_items = '';

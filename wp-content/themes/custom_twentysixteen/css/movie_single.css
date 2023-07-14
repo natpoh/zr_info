@@ -354,6 +354,38 @@ body .ready_to_load .button_play_trailer {
     right: 0px;
     top: 7px;
 }
+
+a.outr_link:after {
+    content: "";
+    display: inline-block;
+    position: relative;
+    width: 21px;
+    height: 18px;
+    background: url(../images/link-external_b.svg);
+    background-repeat: no-repeat;
+    background-size: contain;
+    top: 2px;
+    margin-left: 7px;
+}
+
+a.outr_link
+{
+    font-size: 20px;
+    display: block;
+    padding: 8px 0px;
+    color: #2e2e2e;
+}
+
+body.theme_dark  a.outr_link
+{
+
+    color: #d8d8d8;
+}
+body.theme_dark  a.outr_link:after {
+    filter: invert();
+}
+
+
 body.theme_dark  body .ready_to_load .button_play_trailer {
     color: #fff;
     text-shadow: 0px 0px 2px #0167a4,0px 0px 4px #0167a4,0px 0px 8px #0167a4,0px 0px 10px #0167a4;
@@ -859,12 +891,190 @@ a#cl.open_ul:hover {
 }
 
 
+.page_custom_block .tab-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    padding-bottom: 15px;
 
-body.theme_dark .big_rating, body.theme_dark .rotten_tomatoes_score{
-
-    color: #919191;
 }
 
+.page_custom_block .tab-list {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+    gap: 14px;
+    overflow-x: auto;
+}
+
+.page_custom_block .tab-list button {
+    background-color: #ddd;
+    color: #000;
+    outline: none;
+}
+
+body.theme_dark .page_custom_block .tab-list button{
+    background-color: #4b4b4b;
+    color: #fff;
+}
+
+.page_custom_block .tab-list button.selected,body.theme_dark  .page_custom_block .tab-list button.selected  {
+    background-color: #0a4f7e;
+    color: #fff;
+}
+
+body.theme_dark   .gsc-adBlock {
+    background-color: #232323;
+    color: #b6b6b6;
+}
+
+
+
+.page_custom_block .tab_button_child button {
+    text-transform: unset;
+    padding: 5px 10px;
+    letter-spacing: unset;
+    font-size: 16px;
+    font-weight: normal;
+    font-family: 'Courier Prime', Courier;
+}
+
+.page_custom_block .tab_content_gs_block {
+    width: 100%;
+
+    height: 600px;
+    max-height: calc(100vh - 150px);
+    position: relative;
+}
+
+.page_custom_block  .tab_content_gs_block>iframe{
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.page_custom_block .tab-list-child {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 35px;
+    margin-top: 20px;
+    justify-content: center;
+    margin-bottom: 30px;
+    border-bottom:  1px solid #e3e3e3;
+    padding-bottom: 12px;
+    overflow-x:unset ;
+}
+a.tab_button_child_btn{
+
+    color: #000;
+
+}
+ a.button_child_extlink {
+    display: inline-block;
+    position: relative;
+    width: 21px;
+    height: 18px;
+    background: url(../images/link-external_b.svg);
+    background-repeat: no-repeat;
+    background-size: contain;
+    top: 2px;
+    margin-left: 7px;
+}
+body.theme_dark  a.button_child_extlink {
+    filter: invert();
+}
+
+.page_custom_block .tab-content {
+    width: 100%;
+    height: auto;
+    border-top: 1px solid #e3e3e3;
+    margin-top: 10px;
+    padding-top: 16px;
+}
+.page_custom_block table.gsc-search-box td.gsc-input {
+    width: 90%;
+}
+
+
+body.theme_dark  .page_custom_block .tab-content {
+
+    border-top: unset;
+
+}
+
+body.theme_dark .page_custom_block .tab-list-child {
+    border-bottom:  unset;
+}
+
+
+.page_custom_block table.gsc-search-box td {
+    vertical-align: middle;
+    width: 10%;
+    min-width: 70px;
+}
+.page_custom_block .gsc-control-cse {
+    background-color: transparent;
+    border: none;
+}
+
+
+.page_custom_block  .gsc-input-box {
+    border: none;
+    background: transparent;
+}
+.page_custom_block   .gsc-input{
+    background-color: transparent!important;
+}
+body.theme_dark  .page_custom_block .gsc-completion-container {
+    font-family: Roboto, sans-serif;
+    font-size: 16px;
+    background: #1f1f1f!important;
+    border: 1px solid #232323;
+}
+body.theme_dark  .gs-no-results-result .gs-snippet,body.theme_dark  .gs-error-result .gs-snippet {
+    background-color: rgb(83 77 48);
+    border: 1px solid rgb(44 40 29);
+
+}
+.page_custom_block  .gsc-modal-background-image-visible {
+    display: none;
+}
+.page_custom_block .gsc-results-wrapper-overlay {
+    width: 100%;
+    position: absolute!important;
+    left: 0;
+    top: 0;
+    margin-top: 70px;
+}
+body.gsc-overflow-hidden {
+   overflow:visible;
+}
+
+.page_custom_block  .cse_block_container {
+    display: none;
+}
+
+body.theme_dark .page_custom_block .gsc-results-wrapper-overlay {
+    background-color: #171717;
+
+}
+
+body.theme_dark .gs-webResult .gs-snippet, body.theme_dark  .gs-fileFormatType {
+    color: #cbcbcb;
+}
+body.theme_dark .gsc-webResult.gsc-result {
+    border: 1px solid #2f2f2f;
+}
+
+body.theme_dark .gsc-above-wrapper-area {
+    border-bottom:  1px solid #2f2f2f;
+ }
+
+body.theme_dark  .gs-result .gs-title *, body.theme_dark  .gsc-cursor-page, .gs-spelling a {
+    color: #5da8e7;
+}
 .rotten_tomatoes_score>span::before{
     margin: 0 6px;
     content: "";
@@ -919,6 +1129,13 @@ body.theme_dark .big_rating, body.theme_dark .rotten_tomatoes_score{
     height: 50px;
     width: 70px;
     text-align: center;
+}
+
+.gl_small_block.rating_block .gl_rating_title
+{
+    width: 100%;
+    text-align: center;
+    color: #838383;
 }
 .gl_small_block.rating_block .gl_rating_img img{
     height: 100%;

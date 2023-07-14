@@ -192,12 +192,14 @@ AND table_schema='".DB_NAME_AN."'";
            //echo $sql;
 
             $rows = Pdo_an::db_results_array($sql);
+            $arrdb_type=[];
+
             foreach ($rows as $r) {
 
 
                 $arrdb[$r["ORDINAL_POSITION"]] = $r["COLUMN_NAME"];
 
-
+                $arrdb_type[$r["ORDINAL_POSITION"]] =$r["DATA_TYPE"];
             }
             //  ksort($arrdb);
 
@@ -235,9 +237,14 @@ AND table_schema='".DB_NAME_AN."'";
 
                             if (isset( $array[str_replace(' ', '_', $val)])) {
                                 $qres .= ", `" . $val . "` = ? ";
-                                $arrayrequest[] = $array[str_replace(' ', '_', $val)];
 
-                                $qcheck .= ", `" . $val . "` = '".$array[str_replace(' ', '_', $val)]."' ";
+
+                                $data = $array[str_replace(' ', '_', $val)];
+                                if (!$data  && $arrdb_type[$index] =='int' )$data = 0;
+
+                                $arrayrequest[] = $data;
+
+                                $qcheck .= ", `" . $val . "` = '".$data."' ";
                             }
                         }
                     }
@@ -252,7 +259,10 @@ AND table_schema='".DB_NAME_AN."'";
                         if ($val == 'add_time' || $val == 'last_update'  || $val == 'lastupdate' ) {
                             $arrayrequest[] = time();
                         } else {
-                            $arrayrequest[] = $array[str_replace(' ', '_', $val)];
+                            $data =  $array[str_replace(' ', '_', $val)];
+                            if (!$data  && $arrdb_type[$index] =='int' )$data = 0;
+                            $arrayrequest[] = $data;
+
                         }
 
 
@@ -276,7 +286,7 @@ AND table_schema='".DB_NAME_AN."'";
 
 
                 $sql_check = "UPDATE `" . $table_data . "` SET " . $qcheck . "  WHERE `id` = '" . $array['parent'] . "'";
-               /// echo $sql_check;
+               // echo $sql_check;
                // print_r($arrayrequest);
                 //echo $sql;
              //  var_dump($arrayrequest);
@@ -317,7 +327,7 @@ AND table_schema='".DB_NAME_AN."'";
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
                 [$enable,$id_insert] = Import::check_table_access($table_data);
 
-                echo $enable.' : '.$id_insert;
+              //  echo $enable.' : '.$id_insert;
                 if ($enable)
                 {
 
@@ -330,6 +340,9 @@ AND table_schema='".DB_NAME_AN."'";
                 {
                     $sql = "INSERT INTO  `" . $table_data . "` (" . $array_index . ") values ( " . $qres . " ) ";
                 }
+
+                ///echo  "INSERT INTO  `" . $table_data . "` (" . $array_index . ") values ( " . $qcheck . " ) ";
+
                     $res_id= Pdo_an::db_insert_sql($sql, $arrayrequest);
 
 

@@ -605,8 +605,7 @@ body.theme_dark .review_autor_name ,body.theme_dark  .review_autor_name a  {
 body.theme_dark .inner_content {
     background: #1c1c1c;
     color: #c4c4c4;
-    padding: 30px 0 20px 0;
-    margin-bottom: 20px;
+
 }
 
 body.theme_dark .inner_content.secton_gray {
@@ -695,16 +694,27 @@ details details summary {
     flex: 100%;
 }
 .gl_image img{
-    max-width: 300px;
+    max-width: 100%;
 }
 #global_zeitgeist .gl_zr_title >img{
-    display: inline-block;
-    margin-right: 10px;
+    display: block;
+
 
 }
 #global_zeitgeist .gl_rating {
-    margin-left: 10px;
-    display: inline-block;
+    display: block;
+    margin: 10px 0;
+    font-size: 18px;
+    color: #2e2e2e;
+}
+
+
+body.theme_dark #global_zeitgeist .gl_rating {
+    color: #a9a9a9;
+}
+body.theme_dark .big_rating, body.theme_dark .rotten_tomatoes_score{
+
+    color: #d8d8d8;
 }
 
 section.inner_content.widthed div.column_content div.card.style_1 {
@@ -4138,7 +4148,15 @@ body.theme_dark .highcharts-legend-title tspan{
         margin-right: 0;
         margin-top: 1.12em;
     }
+    .gl_small_block.rating_block > .rwt_stars {
 
+        margin-top: 0px;
+    }
+    .gl_small_block.rating_block {
+
+        height: 110px;
+
+    }
     .movie_total_rating>.rating_block>.note .rwt_stars {
         margin: 0;
 

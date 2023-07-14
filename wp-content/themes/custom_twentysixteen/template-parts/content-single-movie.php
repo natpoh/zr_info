@@ -92,11 +92,12 @@ if ( current_user_can( 'administrator' ) ) {
 
     require get_template_directory() . '/template/video_colums_template_single.php';
     require get_template_directory() . '/template/include/emotiondata.php';
-    
 
-    ?>
-
-
+?>
+        <div class="column_header">
+            <h2>Internet Zeitgest:</h2>
+        </div>
+        <div id="google_search"  data-value="<?php print $post_id ?>" class="page_custom_block not_load"></div>
         <div id="ns_related_scroll" data-value="<?php print $post_id ?>" class="not_load"></div>
 
 <?php

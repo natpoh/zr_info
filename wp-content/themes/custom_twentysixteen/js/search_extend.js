@@ -974,10 +974,10 @@ search_extend.init_more = function (selector, data, col = 0) {
 
     });
 
-    $('#select-current .facet').each(function (i, v) {
+    /*$('#select-current .facet').each(function (i, v) {
         var v = $(v), id = v.attr('id');
         critic_search.facet_collapse_update(id, v);
-    });
+    });*/
 }
 
 search_extend.change_sort = function (id) {
@@ -1301,7 +1301,7 @@ search_extend.update_facets = function ($rtn) {
     $rtn.find('#page-facet').each(function (i, v) {
         var v = $(v), id = v.attr('id');
         if ($("#" + id).length !== 0) {
-// update
+            // update
             $("#" + id).replaceWith(v);
         }
     });

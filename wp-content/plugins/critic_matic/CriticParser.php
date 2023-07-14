@@ -11,7 +11,7 @@
  * 
  */
 
-class CriticParser extends AbstractDBWp {
+class CriticParser extends AbstractDB {
 
     // Critic matic
     private $cm;
@@ -197,13 +197,13 @@ class CriticParser extends AbstractDBWp {
 
     public function __construct($cm = '') {
         $this->cm = $cm ? $cm : new CriticMatic();
-        $table_prefix = DB_PREFIX_WP;
+        //$table_prefix = DB_PREFIX_WP;
         $this->db = array(
             'posts' => DB_PREFIX_WP_AN . 'critic_matic_posts',
             'url' => DB_PREFIX_WP_AN . 'critic_parser_url',
             // Critic Parser
-            'campaign' => $table_prefix . 'critic_parser_campaign',
-            'log' => $table_prefix . 'critic_parser_log',
+            'campaign' => DB_PREFIX_WP_AN . 'critic_parser_campaign',
+            'log' => DB_PREFIX_WP_AN . 'critic_parser_log',
         );
 
         $this->parser_settings_def = array(

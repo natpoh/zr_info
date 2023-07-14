@@ -1,30 +1,33 @@
-1.0.99 - 01.06.2022
+1.0.100 - 12.07.2023
+Move show/hide facets to filters
+
+1.0.99 - 01.06.2023
 Add rating filters: MovieMeter, Eiga, Metacritic.
 Add actor country filter.
 
-1.0.98 - 31.05.2022
+1.0.98 - 31.05.2023
 No reset filters on type a new keyword
 
-1.0.97 - 26.05.2022
+1.0.97 - 26.05.2023
 Cancel search load if click to new item
 
-1.0.96 - 25.05.2022
+1.0.96 - 25.05.2023
 Add source site filter for reviews
 
-1.0.95 - 16.05.2022
+1.0.95 - 16.05.2023
 Search ajax GET->POST
 
-1.0.94 - 26.04.2022
+1.0.94 - 26.04.2023
 Critic parser clear read
 
-1.0.93 - 25.04.2022
+1.0.93 - 25.04.2023
 Refactor search facets
 Add facets ajax loading
 
-1.0.92 - 01.02.2022
+1.0.92 - 01.02.2023
 Add rating, popular, woke search sort
 
-1.0.91 - 18.01.2022
+1.0.91 - 18.01.2023
 Keywords filters. New ratings
 
 1.0.90 - 17.12.2022

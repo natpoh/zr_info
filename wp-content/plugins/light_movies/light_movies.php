@@ -25,6 +25,7 @@ class LightMovies{
         add_submenu_page($this->parrent_slug, __('Piracy links'), __('Custom links'), $this->access_level, $this->parrent_slug. '_piracy_links', array($this, 'piracy_links'));
         add_submenu_page($this->parrent_slug, __('Compilation Links'), __('Compilation Links'), $this->access_level, $this->parrent_slug. '_compilation_links', array($this, 'compilation_links'));
         add_submenu_page($this->parrent_slug, __('Custom fields'), __('Custom fields'), $this->access_level, $this->parrent_slug. '_custom_fields', array($this, 'custom_fields'));
+        add_submenu_page($this->parrent_slug, __('Google search'), __('Google search'), $this->access_level, $this->parrent_slug. '_google_search', array($this, 'google_search'));
         add_submenu_page($this->parrent_slug, __('Ethnic data'), __('Ethnic data'), $this->access_level, $this->parrent_slug. '_custom_options', array($this, 'option'));
 
 
@@ -105,7 +106,40 @@ tr.jqgrow>td
 
 
 }
+   public function google_search()
+    {
 
+
+ echo '<h1>Google search</h1>';
+
+        !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
+
+    $typedata_string = $this->get_zr_type();
+        $array_rows = array(
+            'id'=>array('w'=>5),
+             'content_type'=>array('type'=>'select','options'=>'0:google cse;1:iframe'),
+             'type'=>array('type'=>'select','options'=>$typedata_string),
+            'dop_content' =>array('w'=>50, 'type' => 'textarea','textarea_rows' => 20),
+        );
+
+        Crowdsource::Show_admin_table('search_tabs',$array_rows,1,'options_search_tabs','',1,1,1,0);
+
+?>
+<style type="text/css">
+.ui-jqgrid .ui-jqgrid-btable tbody tr.jqgrow td {
+    overflow: hidden;
+    white-space: nowrap;
+    padding-right: 2px;
+    max-height: 40px;
+}
+.EditTable td textarea {
+    width: 100%;
+}
+</style>
+<?php
+
+
+    }
     public function custom_fields()
     {
 
@@ -340,7 +374,25 @@ check_request();
     <?php
 
 }
+    private function get_zr_type()
+    {
+                   $arrtypes =$this->get_option('','zr_content_type');
+                 $typedata = [];
 
+                 if ($arrtypes)
+                     {
+                         $arrtypes_ob =json_decode($arrtypes,1);
+                         foreach ($arrtypes_ob as $t=>$v)
+                             {
+                               $typedata[]=$t.':'.  $v['title'];
+
+                             }
+
+                        $typedata_string = implode(';',$typedata) ;
+                     }
+
+                 return $typedata_string;
+    }
 
     public function compilation_links()
     {
@@ -349,18 +401,19 @@ check_request();
 
                  !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
 
+                $typedata_string = $this->get_zr_type();
+
 
         $array_rows = array(
             'id'=>array('w'=>5),
 
-            'type'=>array('type'=>'select','options'=>'0:Movies and TV;1:All;2:Games;3:Music;4:Books;5:Movies;6:TV'),
+            'type'=>array('type'=>'select','options'=>$typedata_string),
 
             'last_update' =>array('w'=>10, 'type' => 'textarea','editfalse'=>1),
             'enable'=>array('type'=>'select','options'=>'1:Enable;0:Disable'),
         );
 
         Crowdsource::Show_admin_table('meta_compilation_links',$array_rows,1,'meta_compilation_links','',1,1,1,0);
-
 
 
 
@@ -373,12 +426,12 @@ check_request();
 
 
         !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
-
+            $typedata_string = $this->get_zr_type();
 
         $array_rows = array(
             'id'=>array('w'=>5),
 
-            'type'=>array('type'=>'select','options'=>'0:Movies and TV;1:All;2:Games;3:Music;4:Books;5:Movies;6:TV'),
+            'type'=>array('type'=>'select','options'=>$typedata_string),
 
 
 

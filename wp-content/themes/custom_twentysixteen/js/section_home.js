@@ -1047,25 +1047,19 @@ function  add_rating_row(title, content, id, content_text)
     let row = `<div class="rating_row" ${id_ins}><span class="rating_row_title">${title}</span><span class="rating_row_content">${content}${open_rating}</span>${open_rating_container}</div>`;
     return row;
 }
-function create_rating_star(rating, type)
+function create_rating_star(rating, type,num=10)
 {
 
-    // if (type.indexOf('_rating') !=-1 && type!='audience_rating'  && type!='total_rating')  {
-    //
-    //     let num =10;
-    //
-    //     if (type=='eiga_rating' || type=='moviemeter_rating')
-    //     {
-    //         num =5;
-    //     }
-    //
-    //     if (rating) {
-    //         return '<span class="big_rating '+type+'"><strong>' + rating + '</strong>/'+num+'</span>';
-    //     }
-    //
-    // }
+    if (type=='big_rating')  {
 
-     if (type.indexOf('rotten_tomatoes') != -1  ) {
+
+        if (rating) {
+            return '<span class="big_rating '+type+'"><strong>' + rating + '</strong>/'+num+'</span>';
+        }
+
+    }
+
+     else if (type.indexOf('rotten_tomatoes') != -1  ) {
         rating = Number(rating);
         if (rating > 0)
         {
@@ -1266,6 +1260,15 @@ function ff_content(data,id)
 
   return content;
 }
+function transformURL(url) {
+    const parts = url.split('/');
+    const domain = parts[2].replace(/\./g, '-');
+    const path = '/' + parts.slice(3).join('/');
+
+    const transformedURL = `https://${domain}.translate.goog${path}?_x_tr_sl=auto&_x_tr_tl=en&_x_tr_hl=en`;
+    return transformedURL;
+}
+
 
 function global_zeitgeist_content(data)
 {
@@ -1292,7 +1295,7 @@ function global_zeitgeist_content(data)
                 if (rating) {
                     rating = rating / item.multipler;
 
-                    rating = rating + '/' + item.ratmax;
+                   // rating = rating + '/' + item.ratmax;
                 } else {
                     rating = '';
                 }
@@ -1317,14 +1320,23 @@ function global_zeitgeist_content(data)
                 }
 
                 let converted_rating = item.rating / (item.rateconvert);
-
                 let star_rating = create_rating_star(converted_rating,'gl_'+item.ekey);
 
+                let rating_converted = create_rating_star(rating,'big_rating',item.multipler);
 
-                result += `<a  target="_blank" href="${item.link}" ><div class="gl_small_block rating_block" id="${item.ekey}"><div class="gl_rating_img">${flag}</div><div class="gl_star_rating rwt_stars">${star_rating}</div></div></a>`;
+                let rdata =`<div class="gl_small_block rating_block" id="${item.ekey}"><div class="gl_rating_img">${flag}</div><div class="gl_rating_title">${item.name}</div><div class="gl_star_rating rwt_stars">${star_rating}</div></div>`;
 
-              ///  result += `<div class="gl_zr_block" id="${item.ekey}"><div class="gl_zr_title">${flag+item.name} <span class="gl_rating">${rating}</span><a class="gl_zr_extlink" target="_blank" href="${item.link}" ></a></div>${img_container}</div>`;
-            }
+
+                let trans_link ='';// `<a class="outr_link"  target="_blank" href="${transformURL(item.link)}" >${item.name} (en)</a>` ;
+
+
+                let incntnt =`<a class="outr_link"  target="_blank" href="${item.link}" >${item.name}</a>${trans_link}<div class="gl_rating">rating: ${rating_converted}</div>${img_container}</div>`
+
+                let rblock = add_rating_block('glob_zr',rdata,incntnt,'',true);
+
+                result += rblock;
+
+              }
 
         }
     }
@@ -1337,6 +1349,214 @@ function global_zeitgeist_content(data)
 
 
 return result;
+}
+
+
+var currentScript = null;
+var gs_ob = {};
+
+
+
+function loadGScript(src) {
+    //console.log(src);
+
+    var script = document.createElement("script");
+    script.async = true;
+    script.src = src;
+    script.addEventListener("load", function() {
+    });
+
+    document.head.appendChild(script);
+    currentScript = script;
+
+}
+
+function check_new_data(title)
+{
+
+    var gsContent = document.getElementById("gs_cotntent");
+
+
+    var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function (mutation) {
+            if (mutation.addedNodes) {
+                mutation.addedNodes.forEach(function (addedNode) {
+
+                    if (addedNode.classList && addedNode.classList.contains('gsc-input')) {
+                        addedNode.value = title;
+                        document.querySelector('button.gsc-search-button').click();
+                        observer.disconnect();
+                    }
+                });
+            }
+        });
+    });
+
+    var config = { childList: true, subtree: true };
+    observer.observe(gsContent, config);
+}
+function  get_subcontent_gs(parent,data)
+{
+
+  //  const sortedArray = Object.values(data).sort((a, b) => Number(a.data.weight) - Number(b.data.weight));
+    const sortedArray = Object.values(data).sort((a, b) => {
+        const titleA = a.data.title.toLowerCase();
+        const titleB = b.data.title.toLowerCase();
+        if (titleA < titleB) {
+            return -1;
+        }
+        if (titleA > titleB) {
+            return 1;
+        }
+        return 0;
+    });
+    let buttons ='';
+    let sub_content ='';
+
+    sortedArray.forEach(item => {
+        //console.log(item);
+        buttons+=`<span class="tab_button_child"><button class="tab_button_child_btn" data-parent="${parent}"  data-tab="${item.data.id}" onclick="showTab(this)">${item.data.title}</button><a target="_blank" class="button_child_extlink" href="${item.data.link}"></a></span>`;
+    });
+
+    let content =`<div class="tab-list tab-list-child">${buttons}</div>`;
+
+    return content;
+
+
+
+}
+
+function showTab(button) {
+    if (gs_ob)
+    {
+
+     let gs_ob_current =null;
+     let tabName = button.dataset.tab;
+    let contentDiv = document.getElementById("gs_cotntent");
+    let sub_content='';
+
+    let sub_procces=null;
+    let prnt =null;
+
+    if (button.classList.contains('tab_button_child_btn'))
+    {
+        sub_procces=1;
+        prnt = button.dataset.parent;
+        gs_ob_current =  gs_ob.data[prnt].sub;
+
+
+        sub_content =document.querySelector(".tab-list-child").outerHTML;
+    }else
+    {
+        gs_ob_current =   gs_ob.data;
+    }
+        ///console.log(prnt,gs_ob_current);
+
+
+        if (!sub_procces && gs_ob_current[tabName].sub)
+        {
+            sub_content = get_subcontent_gs(tabName,gs_ob_current[tabName].sub);
+        }
+
+    contentDiv.innerHTML = "<h3>" + gs_ob_current[tabName].data.title + ": <a target='_blank' href=\"" + gs_ob_current[tabName].data.link + "\" class=\"button_child_extlink\"></a></h3><div class=\"tab_content_gs_block\"><div class=\"gcse-search\"></div></div><p>" +sub_content+ gs_ob_current[tabName].data.dop_content + "</p>";
+
+        if (!sub_procces) {
+            var tabButtons = document.getElementsByClassName("tab-button");
+            for (var i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove("selected");
+            }
+            button.classList.add("selected");
+        }
+
+    ///contentDiv.style.display = "block";
+
+        let content_type = gs_ob_current[tabName].data.content_type;
+
+
+        if (content_type==0)
+        {
+
+            if (currentScript !== null) {
+                currentScript.remove();
+            }
+            check_new_data(gs_ob.title);
+            if (gs_ob_current[tabName].data.script) {
+                loadGScript(gs_ob_current[tabName].data.script);
+            }
+        }
+        else if (content_type==1)
+        {
+         let srcdata =    gs_ob_current[tabName].data.script
+
+            let tabContentBlock = document.querySelector('.tab_content_gs_block');
+
+
+            let htmlCode = '<iframe src="' + srcdata + '"></iframe>';
+
+
+            tabContentBlock.innerHTML = htmlCode;
+
+
+        }
+
+
+
+    }
+
+    return false;
+}
+
+
+
+function   prepare_search_data(block_id,data_str)
+{
+    let content ='';
+    //console.log(data_str);
+    let data ={};
+
+    if (data_str)
+    {
+        if (typeof(data_str)=='object' )
+        {
+            data = data_str;
+
+        }
+        else if (typeof(data_str)=='string' )
+        {
+            data = JSON.parse(data_str);
+        }
+
+        gs_ob =data;
+
+        const sortedArray = Object.values(data.data).sort((a, b) => a.data.weight - b.data.weight);
+
+        let buttons ='';
+        let sub_content ='';
+
+        sortedArray.forEach(item => {
+           // console.log(item);
+            buttons+=`<button class="tab-button" data-tab="${item.data.id}" onclick="showTab(this)">${item.data.title}</button>`;
+        });
+
+        content =`<div class="tab-container">
+    <div class="tab-list">
+        ${buttons}
+    </div>
+   
+     <div id="gs_cotntent" class="tab-content"></div>
+
+</div>`;
+
+
+
+    }
+
+
+    jQuery('#' + block_id).html(content);
+
+    jQuery('.tab-list button.tab-button:first-of-type').click();
+
+
 }
 
 function load_ajax_block(block_id) {
@@ -1505,7 +1725,16 @@ function load_ajax_block(block_id) {
 
                 }
 
-            } else if (block_id == 'ns_related_scroll') {
+            }
+            else if (block_id == 'google_search') {
+                if (data) {
+                    prepare_search_data(block_id,data);
+
+                }
+            }
+
+
+            else if (block_id == 'ns_related_scroll') {
                 if (data) {
                     jQuery('#' + block_id).html(data);
                 }
