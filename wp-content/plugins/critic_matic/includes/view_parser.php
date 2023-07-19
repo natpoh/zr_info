@@ -13,7 +13,7 @@
 print $tabs;
 
 if ($cid) {
-    $options = unserialize($campaign->options);
+    $options = $this->cp->get_options($campaign);
     ?>
     <br />
     <table class="wp-list-table widefat striped table-view-list">

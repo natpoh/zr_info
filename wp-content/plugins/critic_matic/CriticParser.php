@@ -364,13 +364,17 @@ class CriticParser extends AbstractDB {
 
     public function get_options($campaign) {
         $options = unserialize($campaign->options);
-        foreach ($this->def_options['options'] as $key => $value) {
-            if (!isset($options[$key])) {
-                // replace empty settings to default
-                $options[$key] = $value;
+        $result = $this->def_options['options'];
+        foreach ($options as $key => $value) {
+            if (is_array($value)) {
+                foreach ($value as $ckey => $cvalue) {
+                    $result[$key][$ckey]=$cvalue;
+                }
+            } else {
+                $result[$key] = $value;
             }
         }
-        return $options;
+        return $result;
     }
 
     public function update_campaign($id, $data = array()) {
@@ -2224,7 +2228,7 @@ class CPCron {
     }
 
     public function check_time_campaign($campaign, $type_name = '', $force = false, $debug = false, $cid = 0) {
-     
+
         $options = $this->cp->get_options($campaign);
         $active = 0;
 
@@ -2248,8 +2252,8 @@ class CPCron {
             $active = $type_opt['status'];
             $update_interval = $type_opt['interval'];
             $update_last_time = $type_opt['last_update'];
-        } 
-        
+        }
+
         $next_key = -1;
         if ($active == 1) {
             $next_update = $update_last_time + $update_interval * 60;
@@ -2349,7 +2353,7 @@ class CPCron {
         $type_name = 'cron_urls';
         $options_upd = array();
         $time = $this->cp->curr_time();
-                
+
         if ($campaign->type == 1) {
             $type_name = 'yt_urls';
             // Youtube campaign
@@ -2378,9 +2382,8 @@ class CPCron {
                     }
                 }
             }
-            
+
             $options_upd[$type_name]['last_update_all'] = $time;
-            
         } else {
             $cron_urls = $options[$type_name];
 
@@ -2392,8 +2395,6 @@ class CPCron {
             $reg = isset($cron_urls['match']) ? base64_decode($cron_urls['match']) : '';
             $wait = 0;
             $ret = $find->parse_urls($cid, $reg, $urls, $options, $wait, $preview);
-            
-            
         }
 
         $options_upd[$type_name]['last_update'] = $time;
@@ -2505,14 +2506,14 @@ class CPCron {
 
             if ($count) {
                 $arhive->arhive_urls($campaign, $options, $urls, false, $debug);
-            }          
-            
+            }
+
             // Remove proggess flag
             $options_upd = array();
             $options_upd[$type_name]['progress'] = 0;
             $options_upd[$type_name]['last_update'] = $this->cp->curr_time();
             $this->cp->update_campaign_options($campaign->id, $options_upd);
-        
+
             // TODO Delete garbage
             // Delete error arhives
             $del_pea = $type_opt['del_pea'];
@@ -2837,7 +2838,6 @@ class CPArhive {
             $parser_status = 1;
             $this->cp->update_campaign($campaign->id, array('parser_status' => $parser_status));
         }
-
     }
 
     public function preview_arhive($url, $campaign) {
@@ -4194,24 +4194,24 @@ class CPRules {
                         <th><?php print __('Field') ?></th>
                         <th><?php print __('Action') ?></th>                 
                         <th><?php print __('Weight') ?></th>  
-                        <?php if ($edit): ?>
+            <?php if ($edit): ?>
                             <th><?php print __('Remove') ?></th> 
-                        <?php endif ?>
+            <?php endif ?>
                         <?php if ($check): ?>
                             <th><?php print __('Check') ?></th> 
                         <?php endif ?>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php
-                    if ($rules) {
-                        $rules = $this->sort_rules_by_weight($rules);
-                        ?>
+                        <?php
+                        if ($rules) {
+                            $rules = $this->sort_rules_by_weight($rules);
+                            ?>
                         <?php foreach ($rules as $rid => $rule) {
                             ?>
                             <tr>
                                 <td>
-                                    <?php print $rid ?>
+                            <?php print $rid ?>
                                     <input type="hidden" name="rule_id_<?php print $rid ?>" value="<?php print $rid ?>">
                                 </td>
                                 <td>
@@ -4219,11 +4219,11 @@ class CPRules {
                                 </td>
                                 <td>
                                     <select name="rule_c_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
-                                        <?php
-                                        $con = $rule['c'];
-                                        foreach ($this->rules_condition as $key => $name) {
-                                            $selected = ($key == $con) ? 'selected' : '';
-                                            ?>
+                    <?php
+                    $con = $rule['c'];
+                    foreach ($this->rules_condition as $key => $name) {
+                        $selected = ($key == $con) ? 'selected' : '';
+                        ?>
                                             <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
                                             <?php
                                         }
@@ -4232,33 +4232,33 @@ class CPRules {
                                 </td>
                                 <td>
                                     <div class="flex-row">
-                                        <?php
-                                        foreach ($this->rules_fields as $key => $value) {
-                                            if ($ctype == 1 && $key == 'a') {
-                                                continue;
+                    <?php
+                    foreach ($this->rules_fields as $key => $value) {
+                        if ($ctype == 1 && $key == 'a') {
+                            continue;
+                        }
+                        ?>
+                                            <label class="inline-edit-field flex-column">                
+                                            <?php
+                                            $checked = '';
+                                            $fields = isset($rule['f']) ? $rule['f'] : array();
+                                            if (in_array($key, $fields)) {
+                                                $checked = 'checked="checked"';
                                             }
                                             ?>
-                                            <label class="inline-edit-field flex-column">                
-                                                <?php
-                                                $checked = '';
-                                                $fields = isset($rule['f']) ? $rule['f'] : array();
-                                                if (in_array($key, $fields)) {
-                                                    $checked = 'checked="checked"';
-                                                }
-                                                ?>
                                                 <input type="checkbox" name="rule_f_<?php print $rid ?>[]" value="<?php print $key ?>" <?php print $checked ?> <?php print $disabled ?>>
                                                 <span class="checkbox-title"><?php print $value ?></span>
                                             </label>  
-                                        <?php } ?>
+                                            <?php } ?>
                                     </div>
                                 </td>
                                 <td>
                                     <select name="rule_a_<?php print $rid ?>" class="interval"<?php print $disabled ?>>
-                                        <?php
-                                        $action = $rule['a'];
-                                        foreach ($this->rules_actions as $key => $name) {
-                                            $selected = ($key == $action) ? 'selected' : '';
-                                            ?>
+                    <?php
+                    $action = $rule['a'];
+                    foreach ($this->rules_actions as $key => $name) {
+                        $selected = ($key == $action) ? 'selected' : '';
+                        ?>
                                             <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
                                             <?php
                                         }
@@ -4268,26 +4268,26 @@ class CPRules {
                                 <td>
                                     <input type="text" name="rule_w_<?php print $rid ?>" class="rule_w" value="<?php print $rule['w'] ?>"<?php print $disabled ?>>
                                 </td>
-                                <?php if ($edit): ?>
+                    <?php if ($edit): ?>
                                     <td>
                                         <input type="checkbox" name="remove_rule[]" value="<?php print $rid ?>">
                                     </td>
                                 <?php endif ?>
-                                <?php if ($check): ?>
+                    <?php if ($check): ?>
                                     <td>
-                                        <?php
-                                        if (isset($check[$rid])) {
-                                            print 'Match';
-                                        }
-                                        ?>
+                                    <?php
+                                    if (isset($check[$rid])) {
+                                        print 'Match';
+                                    }
+                                    ?>
                                     </td>
-                                <?php endif ?>
+                                    <?php endif ?>
                             </tr> 
-                        <?php } ?>
-                        <?php
-                    }
-                    if ($edit) {
-                        ?>
+                                <?php } ?>
+                            <?php
+                        }
+                        if ($edit) {
+                            ?>
                         <tr>                            
                             <td colspan="7"><b><?php print __('Add a new regexp rule') ?></b></td>        
                         </tr>
@@ -4299,35 +4299,35 @@ class CPRules {
                             </td>
                             <td>
                                 <select name="new_rule_c" class="condition">
-                                    <?php foreach ($this->rules_condition as $key => $name) { ?>
+                <?php foreach ($this->rules_condition as $key => $name) { ?>
                                         <option value="<?php print $key ?>"><?php print $name ?></option>                                
-                                        <?php
-                                    }
-                                    ?>                          
+                    <?php
+                }
+                ?>                          
                                 </select> 
                             </td>
                             <td>
                                 <div class="flex-row">
-                                    <?php
-                                    foreach ($this->rules_fields as $key => $value) {
-                                        if ($ctype == 1 && $key == 'a') {
-                                            continue;
-                                        }
-                                        ?>
+                <?php
+                foreach ($this->rules_fields as $key => $value) {
+                    if ($ctype == 1 && $key == 'a') {
+                        continue;
+                    }
+                    ?>
                                         <label class="inline-edit-field flex-column"> 
                                             <input type="checkbox" name="new_rule_f[]" value="<?php print $key ?>">
                                             <span class="checkbox-title"><?php print $value ?></span>
                                         </label> 
-                                    <?php } ?>
+                <?php } ?>
                                 </div>
                             </td>
                             <td>
                                 <select name="new_rule_a" class="interval">
-                                    <?php foreach ($this->rules_actions as $key => $name) { ?>
+                <?php foreach ($this->rules_actions as $key => $name) { ?>
                                         <option value="<?php print $key ?>"><?php print $name ?></option>                                
-                                        <?php
-                                    }
-                                    ?>                          
+                    <?php
+                }
+                ?>                          
                                 </select>     
                             </td>
                             <td>
@@ -4336,7 +4336,7 @@ class CPRules {
                             <td>
                             </td>
                         </tr>
-                    <?php } ?>
+            <?php } ?>
                 </tbody>
             </table>    <?php
         }
@@ -4621,30 +4621,30 @@ class CPRules {
                         <th><?php print __('Comment') ?></th>                        
                         <th><?php print __('Weight') ?></th> 
                         <th><?php print __('Active') ?></th>
-                        <?php if ($edit): ?>
+            <?php if ($edit): ?>
                             <th><?php print __('Remove') ?></th> 
-                        <?php endif ?>
+            <?php endif ?>
                         <?php if ($check): ?>
                             <th><?php print __('Check') ?></th> 
                         <?php endif ?>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if ($rules) { ?>
-                        <?php foreach ($rules as $rid => $rule) {
-                            ?>
+                        <?php if ($rules) { ?>
+                <?php foreach ($rules as $rid => $rule) {
+                    ?>
                             <tr>
                                 <td>
-                                    <?php print $rid ?>
+                            <?php print $rid ?>
                                     <input type="hidden" name="rule_reg_id_<?php print $rid ?>" value="<?php print $rid ?>">
                                 </td>
                                 <td>
                                     <select name="rule_reg_f_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
-                                        <?php
-                                        $con = $rule['f'];
-                                        foreach ($parser_rules_fields as $key => $name) {
-                                            $selected = ($key == $con) ? 'selected' : '';
-                                            ?>
+                    <?php
+                    $con = $rule['f'];
+                    foreach ($parser_rules_fields as $key => $name) {
+                        $selected = ($key == $con) ? 'selected' : '';
+                        ?>
                                             <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
                                             <?php
                                         }
@@ -4653,11 +4653,11 @@ class CPRules {
                                 </td>
                                 <td>
                                     <select name="rule_reg_t_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
-                                        <?php
-                                        $con = $rule['t'];
-                                        foreach ($this->parser_rules_type as $key => $name) {
-                                            $selected = ($key == $con) ? 'selected' : '';
-                                            ?>
+                    <?php
+                    $con = $rule['t'];
+                    foreach ($this->parser_rules_type as $key => $name) {
+                        $selected = ($key == $con) ? 'selected' : '';
+                        ?>
                                             <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
                                             <?php
                                         }
@@ -4671,23 +4671,23 @@ class CPRules {
                                     <input type="text" name="rule_reg_m_<?php print $rid ?>" class="rule_m" value="<?php print $rule['m'] ?>"<?php print $disabled ?>>
                                 </td>
                                 <td>
-                                    <?php
-                                    $checked = '';
-                                    $active = isset($rule['n']) ? $rule['n'] : '';
-                                    if ($active) {
-                                        $checked = 'checked="checked"';
-                                    }
-                                    ?>
+                    <?php
+                    $checked = '';
+                    $active = isset($rule['n']) ? $rule['n'] : '';
+                    if ($active) {
+                        $checked = 'checked="checked"';
+                    }
+                    ?>
                                     <input type="checkbox" name="rule_reg_n_<?php print $rid ?>" value="1" <?php print $checked ?> <?php print $disabled ?>>                                    
                                 </td>
                                 <td>
                                     <select name="rule_reg_d_<?php print $rid ?>" class="condition"<?php print $disabled ?>>
-                                        <?php
-                                        if ($data_fields) {
-                                            $con = isset($rule['d']) ? $rule['d'] : 'r';
-                                            foreach ($data_fields as $key => $name) {
-                                                $selected = ($key == $con) ? 'selected' : '';
-                                                ?>
+                    <?php
+                    if ($data_fields) {
+                        $con = isset($rule['d']) ? $rule['d'] : 'r';
+                        foreach ($data_fields as $key => $name) {
+                            $selected = ($key == $con) ? 'selected' : '';
+                            ?>
                                                 <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
                                                 <?php
                                             }
@@ -4702,36 +4702,36 @@ class CPRules {
                                     <input type="text" name="rule_reg_w_<?php print $rid ?>" class="rule_w" value="<?php print $rule['w'] ?>"<?php print $disabled ?>>
                                 </td>
                                 <td>
-                                    <?php
-                                    $checked = '';
-                                    $active = isset($rule['a']) ? $rule['a'] : '';
-                                    if ($active) {
-                                        $checked = 'checked="checked"';
-                                    }
-                                    ?>
+                    <?php
+                    $checked = '';
+                    $active = isset($rule['a']) ? $rule['a'] : '';
+                    if ($active) {
+                        $checked = 'checked="checked"';
+                    }
+                    ?>
                                     <input type="checkbox" name="rule_reg_a_<?php print $rid ?>" value="1" <?php print $checked ?> <?php print $disabled ?>>                                    
                                 </td>
 
-                                <?php if ($edit): ?>
+                                    <?php if ($edit): ?>
                                     <td>
                                         <input type="checkbox" name="remove_reg_rule[]" value="<?php print $rid ?>">
                                     </td>
                                 <?php endif ?>
-                                <?php if ($check): ?>
+                    <?php if ($check): ?>
                                     <td>
-                                        <?php
-                                        if (isset($check[$rid])) {
-                                            print 'Match';
-                                        }
-                                        ?>
+                                    <?php
+                                    if (isset($check[$rid])) {
+                                        print 'Match';
+                                    }
+                                    ?>
                                     </td>
-                                <?php endif ?>
+                                    <?php endif ?>
                             </tr> 
-                        <?php } ?>
-                        <?php
-                    }
-                    if ($edit) {
-                        ?>
+                                <?php } ?>
+                            <?php
+                        }
+                        if ($edit) {
+                            ?>
                         <tr>                            
                             <td colspan="10"><b><?php print __('Add a new rule') ?></b></td>        
                         </tr>
@@ -4739,20 +4739,20 @@ class CPRules {
                             <td></td>
                             <td>
                                 <select name="reg_new_rule_f" class="condition">
-                                    <?php foreach ($parser_rules_fields as $key => $name) { ?>
+                <?php foreach ($parser_rules_fields as $key => $name) { ?>
                                         <option value="<?php print $key ?>"><?php print $name ?></option>                                
-                                        <?php
-                                    }
-                                    ?>                          
+                    <?php
+                }
+                ?>                          
                                 </select> 
                             </td>
                             <td>
                                 <select name="reg_new_rule_t" class="condition">
-                                    <?php foreach ($this->parser_rules_type as $key => $name) { ?>
+                <?php foreach ($this->parser_rules_type as $key => $name) { ?>
                                         <option value="<?php print $key ?>"><?php print $name ?></option>                                
-                                        <?php
-                                    }
-                                    ?>                          
+                    <?php
+                }
+                ?>                          
                                 </select> 
                             </td>
                             <td>
@@ -4776,10 +4776,10 @@ class CPRules {
                             </td>
                             <td>
                                 <select name="reg_new_rule_d" class="condition">
-                                    <?php
-                                    if ($data_fields) {
-                                        foreach ($data_fields as $key => $name) {
-                                            ?>
+                <?php
+                if ($data_fields) {
+                    foreach ($data_fields as $key => $name) {
+                        ?>
                                             <option value="<?php print $key ?>"><?php print $name ?></option>                                
                                             <?php
                                         }
@@ -4798,7 +4798,7 @@ class CPRules {
                             </td>
                             <td></td>
                         </tr>
-                    <?php } ?>
+            <?php } ?>
                 </tbody>
             </table>    <?php
         }
