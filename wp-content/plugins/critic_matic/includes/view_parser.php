@@ -115,7 +115,7 @@ if ($cid) {
                     </tr>
                     <tr>
                         <td><?php print __('Status') ?></td>
-                        <td><i class="sticn st-<?php print $item['status'] ?>"></i><?php print $this->cp->camp_state[$item['status']]; ?></td>
+                        <td><i class="sticn st-<?php print $item['status'] ?>"></i><?php print $this->cp->parser_state[$item['status']]; ?></td>
                     </tr>
                     <tr>
                         <td><?php print __('Last log') ?></td>

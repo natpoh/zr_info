@@ -2180,7 +2180,7 @@ class CPCron {
     private $max_cron_time = 20;
     private $cron_types = array(
         2 => 'cron_urls',
-        3 => 'arhive_urls',
+        3 => 'arhive',
         1 => 'parsing',
     );
 
@@ -2210,6 +2210,7 @@ class CPCron {
         if ($debug) {
             print_r($next_keys);
         }
+
         if ($next_keys) {
             foreach ($next_keys as $campaign) {
                 $count += $this->process_campaign($campaign, $type_name, $force, $debug);
@@ -2223,8 +2224,7 @@ class CPCron {
     }
 
     public function check_time_campaign($campaign, $type_name = '', $force = false, $debug = false, $cid = 0) {
-
-        $count = 0;
+     
         $options = $this->cp->get_options($campaign);
         $active = 0;
 
@@ -2248,10 +2248,8 @@ class CPCron {
             $active = $type_opt['status'];
             $update_interval = $type_opt['interval'];
             $update_last_time = $type_opt['last_update'];
-        } else {
-            return $count;
-        }
-
+        } 
+        
         $next_key = -1;
         if ($active == 1) {
             $next_update = $update_last_time + $update_interval * 60;
@@ -2273,7 +2271,7 @@ class CPCron {
             $count = $this->process_cron_parser($campaign, $force, $debug);
         } else if ($type_name == 'cron_urls' || $type_name == 'yt_urls') {
             $count = $this->proccess_cron_urls($campaign, $force, $debug);
-        } else if ($type_name == 'arhive_urls') {
+        } else if ($type_name == 'arhive') {
             $count = $this->proccess_cron_arhive_urls($campaign, $force, $debug);
         }
 
@@ -2507,8 +2505,14 @@ class CPCron {
 
             if ($count) {
                 $arhive->arhive_urls($campaign, $options, $urls, false, $debug);
-            }
-
+            }          
+            
+            // Remove proggess flag
+            $options_upd = array();
+            $options_upd[$type_name]['progress'] = 0;
+            $options_upd[$type_name]['last_update'] = $this->cp->curr_time();
+            $this->cp->update_campaign_options($campaign->id, $options_upd);
+        
             // TODO Delete garbage
             // Delete error arhives
             $del_pea = $type_opt['del_pea'];
@@ -2834,11 +2838,6 @@ class CPArhive {
             $this->cp->update_campaign($campaign->id, array('parser_status' => $parser_status));
         }
 
-        // Remove proggess flag
-        $options_upd = array();
-        $options_upd[$type_name]['progress'] = 0;
-        $options_upd[$type_name]['last_update'] = $this->cp->curr_time();
-        $this->cp->update_campaign_options($campaign->id, $options_upd);
     }
 
     public function preview_arhive($url, $campaign) {

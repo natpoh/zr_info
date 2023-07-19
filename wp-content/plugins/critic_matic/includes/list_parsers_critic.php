@@ -78,10 +78,10 @@ if (sizeof($campaigns) > 0) {
 
                     // Arhive
                     $arhivekey = 'arhive';
-                    $arhive_state = $options[$arhivekey]['status'] ? 'Active' : 'Inactive';
-                    $arhive_state_int = $options[$arhivekey]['status'] ? 1 : 0;
                     $arhive_interval = $options[$arhivekey]['interval'];
                     $arhive_last_update = $options[$arhivekey]['last_update'];
+                    
+                    
                     ?>
                     <tr> 
                         <th  class="check-column" ><input type="checkbox" name="bulk-<?php print $parser->id ?>"></th>
@@ -113,7 +113,7 @@ if (sizeof($campaigns) > 0) {
                         </td>
 
                         <td class="nowrap">
-                            <i class="sticn st-<?php print $arhive_state_int ?>"></i><?php print $arhive_state ?>
+                            <i class="sticn st-<?php print $options[$arhivekey]['status'] ?>"></i><?php print $this->cp->parser_state[(int)$options[$arhivekey]['status']];  ?>
                             <?php if ($arhive_interval) { ?>
                                 <br /><?php print $this->cp->update_interval[$arhive_interval] ?> -  Update interval
                             <?php } ?>
