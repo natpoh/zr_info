@@ -74,7 +74,7 @@ if ($cid) {
     ?>
 
     <?php $cprules->show_parser_rules($options['parser_rules'], false, $campaign->type); ?>
-    
+
     <h2>Parsers status</h2>
     <table class="wp-list-table widefat striped table-view-list">
         <thead>
@@ -85,13 +85,12 @@ if ($cid) {
         </thead>
         <tbody>
             <?php
-           
-            foreach ($this->cp->campaign_modules as $module=>$camp_types) {
-         
-                if (!in_array($campaign->type, $camp_types)){
+            foreach ($this->cp->campaign_modules as $module => $camp_types) {
+
+                if (!in_array($campaign->type, $camp_types)) {
                     continue;
                 }
-                
+
                 if (isset($options[$module])) {
                     $item = $options[$module];
                     $log_name = $this->cp->option_names[$module]['log'];
@@ -117,11 +116,27 @@ if ($cid) {
                         <td><?php print __('Status') ?></td>
                         <td><i class="sticn st-<?php print $item['status'] ?>"></i><?php print $this->cp->parser_state[$item['status']]; ?></td>
                     </tr>
+                    <?php
+                    if ($module == 'arhive') {
+                        $item_num = $item['num'];
+                        if ($campaign->type == 1) {
+                            $item_num = $item['yt_num'];
+                        }
+                        ?>
+
+                        <tr>
+                            <td><?php print __('Num') ?></td>
+                            <td><?php print $item_num ?></td>
+                        </tr>
+                        <?php
+                    }
+                    ?>
+
                     <tr>
                         <td><?php print __('Last log') ?></td>
                         <td><?php
-                            print $this->cp->get_last_log(0, $cid, $log_name);
-                        ?></td>
+            print $this->cp->get_last_log(0, $cid, $log_name);
+                    ?></td>
                     </tr>
 
                     <?php
