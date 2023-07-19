@@ -12,10 +12,24 @@ $p = '8ggD_23_2D0DSF-F';
 if ($_GET['p'] != $p) {
     return;
 }
-// Cron type
+
+/*
+  Cron type
+  сron_types = array(
+    1 => 'parsing',
+    2 => 'cron_urls',
+    3 => 'arhive_urls',
+  );
+ */
 $cron_type = 1;
 if ($_GET['t']) {
     $cron_type = (int) $_GET['t'];
+}
+
+// Custom company id
+$cid = 0;
+if ($_GET['cid']) {
+    $cid = (int) $_GET['cid'];
 }
 
 $debug = false;
@@ -48,6 +62,11 @@ $cm = new CriticMatic();
 
 
 $cron_name = 'critic_parser_' . $cron_type;
+
+if ($cid) {
+    $cron_name .= '_' . $cid;
+}
+
 if ($cm->cron_already_run($cron_name, 10, $debug, $force)) {
     exit();
 }
@@ -55,6 +74,9 @@ if ($cm->cron_already_run($cron_name, 10, $debug, $force)) {
 $cm->register_cron($cron_name);
 
 $cp = new CriticParser($cm);
-$cp->run_cron($cron_type, $force, $debug);
+if ($debug) {
+    print "Run cron: $cron_name\n";
+}
+$cp->run_cron($cron_type, $force, $debug, $cid);
 
 $cm->unregister_cron($cron_name);

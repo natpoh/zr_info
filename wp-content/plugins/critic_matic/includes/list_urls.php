@@ -37,6 +37,7 @@ if (sizeof($posts) > 0) {
             <thead>
             <td class="manage-column column-cb check-column" ><input type="checkbox" id="cb-select-all-1"></td>
             <?php $this->sorted_head('id', 'id', $orderby, $order, $page_url) ?>             
+            <?php $this->sorted_head('date', 'date', $orderby, $order, $page_url) ?>  
             <th><?php print __('Link') ?></th>                                
             <?php $this->sorted_head('status', 'Status', $orderby, $order, $page_url) ?>                                     
             <th><?php print __('Post') ?></th>                 
@@ -51,6 +52,7 @@ if (sizeof($posts) > 0) {
             </thead>
             <tbody>
                 <?php
+                $campaigns = $this->cp->get_campaigns(0);
                 foreach ($posts as $item) {
 
                     //Post links     
@@ -77,10 +79,14 @@ if (sizeof($posts) > 0) {
                         $author_link = $this->theme_author_link($post->aid, $author_name);
                     }
                     $preview_link = $url . '&tab=preview&cid=' . $item->cid . '&uid=' . $item->id;
+                    $camp =  $campaigns[$item->cid];
+                    $camp_title = '['.$item->cid.'] '.$camp->title;
+                    $parser_link = $this->theme_parser_link($item->cid,$camp_title);
                     ?>
                     <tr>           
-                        <th  class="check-column" ><input type="checkbox" name="bulk-<?php print $item->id ?>"></th>
+                        <th  class="check-column" ><input type="checkbox" name="bulk-<?php print $item->id ?>"></th>                        
                         <td><?php print $url_link ?></td>                             
+                        <td><?php print  $this->cm->curr_date($item->date) ?></td> 
                         <td class="wrap">                            
                             <a href="<?php print $item->link ?>" target="_blank" title="<?php print $item->link ?>"><?php print $item->link ?></a>                    
                             <?php /*
@@ -120,7 +126,7 @@ if (sizeof($posts) > 0) {
                             ?>
                         </td>
                         <td>
-                            <a href="/wp-admin/admin.php?page=critic_matic_parser&cid=<?php print $item->cid ?>"><?php print $item->cid ?></a>
+                            <?php print $parser_link ?>
                         </td>
                         <td><?php print $this->cp->get_last_log($item->id); ?></td>
                         <td>

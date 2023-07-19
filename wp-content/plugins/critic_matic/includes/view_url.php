@@ -54,8 +54,20 @@ if ($uid) {
         </tbody>        
     </table>
 
-
+    
     <?php
+    
+    if ($url_data->arhive_date) {
+        $arhive = new CPArhive($this->cp);
+        $content = $arhive->get_arhive_file($url_data->cid, $url_data->link_hash);
+        ?>
+        <h2>Arhive</h2>
+        <p>Date: <?php print $this->cp->curr_date($url_data->arhive_date) ?></p>
+        <textarea style="width: 90%; height: 300px;"><?php print htmlspecialchars($content) ?></textarea>      
+        <?php
+    }
+
+    
     if ($url_data->pid) {
         $post = $this->cm->get_post($url_data->pid);
     } else {

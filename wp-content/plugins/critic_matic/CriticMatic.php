@@ -240,6 +240,7 @@ class CriticMatic extends AbstractDB {
             'parser_cookie_path' => ABSPATH . 'wp-content/uploads/critic_parser_cookies.txt',
             'parser_gdk' => '',
             'parser_gapp' => '',
+            'parser_arhive_async' => 0,
             'audience_post_status' => 1,
             'posts_type_1' => 1,
             'posts_type_2' => 0,
@@ -335,17 +336,13 @@ class CriticMatic extends AbstractDB {
         // Get CriticParser
         if (!$this->cp) {
             if (!class_exists('CriticParser')) {
-                if (!class_exists('AbstractDBWp')) {
-                    require_once( CRITIC_MATIC_PLUGIN_DIR . 'db/AbstractDBWp.php' );
-                }
                 require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticParser.php' );
             }
-
             $this->cp = new CriticParser($this);
         }
         return $this->cp;
     }
-
+   
     public function get_cc() {
         // Get ClearCommetns
         if (!$this->cc) {
@@ -3569,10 +3566,12 @@ class CriticMatic extends AbstractDB {
             $ss['posts_type_3'] = $form['posts_type_3'] ? 1 : 0;
             $ss['audience_unique'] = $form['audience_unique'] ? 1 : 0;
             $ss['audience_top_unique'] = $form['audience_top_unique'] ? 1 : 0;
+            
         }
 
         if (isset($form['parser_proxy'])) {
             $ss['parser_proxy'] = base64_encode($form['parser_proxy']);
+             $ss['parser_arhive_async'] = $form['parser_arhive_async'] ? 1 : 0;
         }
 
         if (isset($form['games_tags'])) {
@@ -3589,7 +3588,7 @@ class CriticMatic extends AbstractDB {
 
         // Upadate cookie content
         if (isset($form['parser_cookie_text'])) {
-            $cookie_path = $ss['parser_cookie_path'] ? $ss['parser_cookie_path'] : $this->settings_def['parser_cookie_path'];
+            $cookie_path = $this->settings_def['parser_cookie_path'];
             if (file_exists($cookie_path)) {
                 unlink($cookie_path);
             }

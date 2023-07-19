@@ -37,7 +37,7 @@ if ($cid) {
                     </tr> 
                     <tr>
                         <td><?php print __('Descripion') ?></td>
-                        <td><?php print $item['desc'] ?></td>                 
+                        <td><?php print $item['content'] ?></td>                 
                     </tr> 
 
                     <?php if ($options['use_rules']) { ?>

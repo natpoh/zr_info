@@ -47,6 +47,23 @@
 
 
 
+            <h2><?php print __('Arhive settings') ?></h2>
+
+            <label class="inline-edit-status">                
+                <?php
+                $checked = '';
+                $type_name = 'parser_arhive_async';
+                $type = isset($ss[$type_name]) ? $ss[$type_name] : 0;
+                if ($type == 1) {
+                    $checked = 'checked="checked"';
+                }
+                ?>
+                <input type="checkbox" name="<?php print $type_name ?>" value="1" <?php print $checked ?> >
+                <span class="checkbox-title">Async parser arhive.</span>
+            </label>
+
+            <br />
+
             <?php wp_nonce_field('critic-feeds-options', 'critic-feeds-nonce'); ?>
             <br />
             <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save') ?>" class="button-primary">  

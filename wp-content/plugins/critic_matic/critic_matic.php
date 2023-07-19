@@ -55,20 +55,11 @@ function critic_matic_init() {
 
     if (is_admin()) {
         // Admin pages
-        // Critic feeds
-        require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticFeeds.php' );
-        require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticParser.php' );
-        $cf = new CriticFeeds($cm);
-        $cp = new CriticParser($cm);
 
         require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticMaticAdmin.php' );
-        $cma = new CriticMaticAdmin($cm, $cs, $cf, $cp);
+        $cma = new CriticMaticAdmin($cm, $cs);
 
-        // One time import feeds and authors
-        if (isset($_GET['cm_import_feeds']) && $_GET['cm_import_feeds'] == 1) {
-            // Import feeds (One time task)
-            // $cf->import_feeds();
-        }
+
         if (isset($_GET['cm_add_counter']) && $_GET['cm_add_counter'] == 1) {
             $cm->add_sphinx_counter();
         }
@@ -483,10 +474,7 @@ function critic_matic_plugin_activation() {
     $sql = "ALTER TABLE `" . $table_prefix . "critic_parser_url` ADD `arhive_date` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
 
-    $sql = "ALTER TABLE `" . $table_prefix . "critic_parser_url` ADD `arhive_hash` varchar(255) NOT NULL default ''";
-    Pdo_an::db_query($sql);
-
-    critic_matic_create_index_an(array('cid', 'pid', 'status', 'link_hash', 'arhive_date', 'arhive_hash', 'date', 'last_upd'), $table_prefix . "critic_parser_url");
+    critic_matic_create_index_an(array('cid', 'pid', 'status', 'link_hash', 'arhive_date', 'date', 'last_upd'), $table_prefix . "critic_parser_url");
 
     //$sql = "ALTER TABLE `" . $table_prefix . "critic_matic_posts` ADD `blur` int(11) NOT NULL DEFAULT '0'";
     //Pdo_an::db_query($sql);

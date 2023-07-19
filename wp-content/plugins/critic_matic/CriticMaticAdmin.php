@@ -11,7 +11,7 @@ class CriticMaticAdmin {
     private $cs;
     //Critic feeds
     private $cf;
-    //Critic parser
+    //Critic parser admin
     private $cp;
     //Movies an
     private $ma;
@@ -107,11 +107,11 @@ class CriticMaticAdmin {
     );
     public $per_pages = array(30, 100, 500, 1000);
 
-    public function __construct($cm, $cs, $cf, $cp) {
-        $this->cm = $cm;
-        $this->cs = $cs;
-        $this->cf = $cf;
-        $this->cp = $cp;
+    public function __construct($cm = '', $cs = '') {
+        $this->cm = $cm ? $cm : new CriticMatic();
+        $this->cs = $cs ? $cs : new CriticSearch();
+        $this->cf = $this->cm->get_cf();
+        $this->cp = $this->get_cp_admin();
 
         $this->authors_url = $this->parrent_slug . '_authors';
         $this->audience_url = $this->parrent_slug . '_audience';
@@ -192,6 +192,17 @@ class CriticMaticAdmin {
             $this->ca = new CriticAudience($this->cm);
         }
         return $this->ca;
+    }
+
+    public function get_cp_admin() {
+        // Get CriticParser Admin
+        if (!$this->cp) {
+            if (!class_exists('CriticParser')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticParser.php' );
+            }
+            $this->cp = new CPAdmin($this->cm);
+        }
+        return $this->cp;
     }
 
     public function get_cfront() {
@@ -335,7 +346,8 @@ class CriticMaticAdmin {
         }
 
         if (!$channel && $video_id) {
-            $result = $this->cp->find_youtube_data_api(array($video_id));
+            $cpyoutube = $this->cp->get_cpyoutube();
+            $result = $cpyoutube->find_youtube_data_api(array($video_id));
             if (isset($result[$video_id])) {
                 $channel = $result[$video_id]->channelId;
                 $title = $result[$video_id]->channelTitle;
@@ -344,7 +356,8 @@ class CriticMaticAdmin {
 
         if ($channel) {
             try {
-                $responce = $this->cp->youtube_get_videos($channel, 5);
+                $cpyoutube = $this->cp->get_cpyoutube();
+                $responce = $cpyoutube->youtube_get_videos($channel, 5);
 
                 if ($responce) {
                     $total = $responce->pageInfo->totalResults;
@@ -1886,22 +1899,24 @@ class CriticMaticAdmin {
     }
 
     /*
-     * The feeds page
+     * The parser page
      */
 
     public function parser() {
 
+
+        $cm = $this->cm;
+
         $curr_tab = $this->get_tab();
         $cid = isset($_GET['cid']) ? (int) $_GET['cid'] : '';
         $uid = isset($_GET['uid']) ? (int) $_GET['uid'] : '';
-        $page = $this->get_page();
-        $per_page = $this->get_perpage();
-
+        // $page = $this->get_page();
+        // $per_page = $this->get_perpage();
         //Bulk actions
         $this->bulk_submit();
 
         //Sort
-        $sort_pages = $this->cm->sort_pages;
+        $sort_pages = $cm->sort_pages;
         $orderby = $this->get_orderby($sort_pages);
         $order = $this->get_order();
 
@@ -1928,7 +1943,7 @@ class CriticMaticAdmin {
                 $parser_state = $this->cp->camp_state;
 
                 if ($campaign) {
-                    $author = $this->cm->get_author($campaign->author, true);
+                    $author = $cm->get_author($campaign->author, true);
                     if ($_GET['export']) {
                         $urls = $this->cp->get_all_urls($cid);
                         print '<h2>Export campaign URLs</h2>';
@@ -1949,7 +1964,8 @@ class CriticMaticAdmin {
                         exit;
                     } else if ($_GET['find_urls_yt']) {
                         print '<h2>Find YouTuebe URLs</h2>';
-                        $preivew_data = $this->cp->find_all_urls_yt($campaign, false);
+                        $find = new CPFind($this->cp);
+                        $preivew_data = $find->find_all_urls_yt($campaign, false);
 
                         if ($preivew_data) {
                             print '<p>Total found:' . $preivew_data['found'] . '</p>';
@@ -1989,7 +2005,8 @@ class CriticMaticAdmin {
 
                 $yt_preivew = array();
                 if (isset($_POST['yt_preview'])) {
-                    $yt_preivew = $this->cp->find_all_urls_yt($campaign, true);
+                    $find = new CPFind($this->cp);
+                    $yt_preivew = $find->find_all_urls_yt($campaign, true);
                 }
 
                 $preivew_data = array();
@@ -1998,10 +2015,11 @@ class CriticMaticAdmin {
                 }
 
                 if (isset($_POST['cron_preview'])) {
-                    $cron_preivew_data = $this->cp->cron_urls($campaign, true);
+                    $cron = new CPCron($this->cp);
+                    $cron_preivew_data = $cron->cron_urls($campaign, true);
                 }
                 include(CRITIC_MATIC_PLUGIN_DIR . 'includes/parser_find_urls.php');
-            }  else if ($curr_tab == 'arhive') {
+            } else if ($curr_tab == 'arhive') {
                 // Create arhive
                 if (isset($_POST['id'])) {
                     $valid = $this->cp->campaign_edit_validate($_POST);
@@ -2015,7 +2033,7 @@ class CriticMaticAdmin {
                 }
                 $preivew_data = array();
                 if (isset($_POST['arhive_preview'])) {
-                    $campaign = $this->cp->get_campaign($cid);                   
+                    $campaign = $this->cp->get_campaign($cid);
                     $valid = $this->cp->campaign_edit_validate($_POST);
                     if ($valid) {
                         $posturl = $_POST['url'];
@@ -2032,30 +2050,39 @@ class CriticMaticAdmin {
                 $campaign = $this->cp->get_campaign($cid);
                 $options = $this->cp->get_options($campaign);
 
+                ob_start();
+
                 //Update URLs
                 $type_name = 'cron_urls';
                 if ($campaign->type == 1) {
                     $type_name = 'yt_urls';
                 }
-
-                // Custom options
                 $type_opt = $options[$type_name];
-                $active = $type_opt['status'];
+                $active_find = $type_opt['status'];
 
-                if ($active == 1) {
-                    $count_urls = $this->cp->process_campaign($campaign, 'cron_urls');
-                } else {
-                    $count_urls = -1;
+                $cron = new CPCron($this->cp);
+                $count_urls = -1;
+                if ($active_find == 1) {
+                    $count_urls = $cron->process_campaign($campaign, 'cron_urls', true, true);
                 }
 
-                // Parser interval
+                // Arhive
+                $active_arhive = $options['arhive']['status'];
+                $count_arhive = -1;
+                if ($active_arhive == 1) {
+                    $count_arhive = $cron->process_campaign($campaign, 'arhive_urls', true, true);
+                }
+
+                // Parser
                 $active = $campaign->parser_status;
-
+                $count = -1;
                 if ($active == 1) {
-                    $count = $this->cp->process_campaign($campaign, 'parsing');
-                } else {
-                    $count = -1;
+                    $count = $cron->process_campaign($campaign, 'parsing', true, true);
                 }
+
+                $debug_content = ob_get_contents();
+                ob_end_clean();
+
                 include(CRITIC_MATIC_PLUGIN_DIR . 'includes/parser_update.php');
             } else if ($curr_tab == 'log') {
                 //Log
@@ -2072,7 +2099,7 @@ class CriticMaticAdmin {
                         print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
                     }
                 }
-                $authors = $this->cm->get_all_authors(1);
+                $authors = $cm->get_all_authors(1);
                 $def_options = $this->cp->def_options;
                 $campaign = $this->cp->get_campaign($cid);
                 $options = $this->cp->get_options($campaign);
@@ -2110,16 +2137,17 @@ class CriticMaticAdmin {
                 if (isset($_GET['uid'])) {
                     $urls[] = $this->cp->get_url((int) $_GET['uid']);
                 } else {
-                    $urls = $this->cp->get_last_urls($options['pr_num'], -1, $cid);
+                    // $urls_count, $status, $campaign->id, $random_urls, $debug, $custom_url_id, $arhive_date)
+                    $urls = $this->cp->get_last_urls($options['pr_num'], -1, $cid, 0, false, 0, 1);
                 }
 
-                if ($campaign->type == 1) {
-                    $preview = $this->cp->get_urls_content_yt($campaign, $urls, false);
-                    include(CRITIC_MATIC_PLUGIN_DIR . 'includes/parser_preview_yt.php');
-                } else {
-                    $preview = $this->cp->preview($campaign, $urls);
-                    include(CRITIC_MATIC_PLUGIN_DIR . 'includes/parser_preview.php');
+                $preview = '';
+                if ($urls) {
+                    $preview = $this->cp->preview_parser($campaign, $urls);
                 }
+
+
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/parser_preview.php');
             }
             return;
         } else if ($uid) {
@@ -2147,8 +2175,8 @@ class CriticMaticAdmin {
             $this->parser_urls($tabs, $url, 0);
         } else if ($curr_tab == 'update') {
             // Update
-            $force = false;
-            $count = $this->cp->process_all($force);
+            $cron = new CPCron($this->cp);
+            $count = $cron->proccess_all();
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/parser_update.php');
         } else if ($curr_tab == 'log') {
             // Log
@@ -2180,7 +2208,8 @@ class CriticMaticAdmin {
             $settings = $this->cp->get_parser_settings();
             $test_post = $this->cp->get_parser_test_post($settings);
             $rules = isset($settings['rules']) ? $settings['rules'] : array();
-            $check = $this->cp->check_post($rules, $test_post, true);
+            $cprules = $this->cp->get_cprules();
+            $check = $cprules->check_post($rules, $test_post, true);
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/parser_rules_global.php');
         } else if ($curr_tab == 'add') {
             // Add
@@ -2194,7 +2223,7 @@ class CriticMaticAdmin {
                     print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
                 }
             }
-            $authors = $this->cm->get_all_authors(1);
+            $authors = $cm->get_all_authors(1);
             $def_options = $this->cp->def_options;
             $update_interval = $this->cp->update_interval;
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/add_parser.php');
@@ -2473,8 +2502,6 @@ class CriticMaticAdmin {
         $orderby = $this->get_orderby($sort_pages);
         $order = $this->get_order();
 
-
-
         $page_url = $url;
 
         // Author id
@@ -2657,6 +2684,10 @@ class CriticMaticAdmin {
 
         $page_url = $url;
         $page_url .= '&tab=log';
+
+        if ($cid) {
+            $page_url .= '&cid=' . $cid;
+        }
 
         // Filter by status
         $home_log_status = -1;
@@ -3221,24 +3252,14 @@ class CriticMaticAdmin {
                 if ($b == 'parsenew' || $b == 'parseforce') {
                     // Apply feed rules
                     $changelog = array();
+                    $parser = new CPParsing($this->cp);
                     foreach ($ids as $id) {
                         $force = false;
                         if ($b == 'parseforce') {
                             $force = true;
                         }
-                        $item = $this->cp->get_url($id);
-                        $campaign = $this->cp->get_campaign($item->cid, true);
 
-                        if ($campaign->type == 1) {
-                            //YouTube campaign
-                            $options = $this->cp->get_options($campaign);
-                            $urls = array($item->id => $item);
-                            $this->cp->parse_urls_yt($urls, $campaign, $force);
-                        } else {
-
-                            $changed = $this->cp->parse_url($id, $force);
-                        }
-
+                        $changed = $parser->parse_url($id, $force);
 
                         if ($changed) {
                             $changelog[] = $changed;
@@ -3254,7 +3275,7 @@ class CriticMaticAdmin {
                     // URL filter
                     $changelog = array();
                     foreach ($ids as $id) {
-                        $changed = $this->cp->url_filter($id);
+                        $changed = $this->cp->bulk_url_filter($id);
                         if ($changed) {
                             $changelog[] = $changed;
                         }
@@ -3275,9 +3296,13 @@ class CriticMaticAdmin {
                 } else if ($b == 'statusnew') {
                     // Change status
                     $updated = false;
-                    $status = 0;
+
+                    $data = array(
+                        'status' => 0,
+                        'arhive_date' => 0,
+                    );
                     foreach ($ids as $id) {
-                        if ($this->cp->change_url_state($id, $status)) {
+                        if ($this->cp->change_url($id, $data)) {
                             $updated = true;
                         }
                     }
@@ -3359,6 +3384,15 @@ class CriticMaticAdmin {
         $link = $id;
         if ($id > 0) {
             $url = $this->admin_page . $this->parser_url . '&uid=' . $id;
+            $link = '<a href="' . $url . '">' . $name . '</a>';
+        }
+        return $link;
+    }
+
+    public function theme_parser_link($id, $name) {
+        $link = $id;
+        if ($id > 0) {
+            $url = $this->admin_page . $this->parser_url . '&cid=' . $id;
             $link = '<a href="' . $url . '">' . $name . '</a>';
         }
         return $link;

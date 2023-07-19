@@ -8,9 +8,7 @@
 print $tabs;
 ?>
 
-<h3>UNDER CONSRUCTION</h3>
 <?php
-return;
 if ($cid) {
     $options = $this->cp->get_options($campaign);
     $ao = $options['arhive'];
@@ -41,11 +39,21 @@ if ($cid) {
                 <label class="inline-edit-interval"> 
                     <span class="title"><?php print __('URLs count') ?></span>         
                     <?php
-                    $parse_num = $ao['num'];
-                    $previews_number = $this->cp->parse_number;
+                    /*
+                      'yt_force_update' => 1,
+                      'yt_page' => '',
+                      'yt_parse_num' => 50,
+                      'yt_pr_num' => 50,
+                     */
+                    $num_key = 'num';
+                    $previews_number = $this->cp->previews_number;
+                    if ($campaign->type == 1) {
+                        $num_key = 'yt_num';
+                        $previews_number = $this->cp->yt_per_page;
+                    }
+                    $parse_num = $ao[$num_key];
                     ?>
-
-                    <select name="num" class="interval">
+                    <select name="<?php print $num_key ?>" class="interval">
                         <?php
                         foreach ($previews_number as $key => $name) {
                             $selected = ($key == $parse_num) ? 'selected' : '';
@@ -157,55 +165,59 @@ if ($cid) {
                         <span class="inline-edit"><?php print __('Logic for getting URL for parsing') ?></span> 
                     </label>
 
-                    <label class="inline-edit-status">                
-                        <?php
-                        $checked = '';
-                        if ($ao['status'] == 1 || $ao['status'] == 3) {
-                            $checked = 'checked="checked"';
-                        }
-                        ?>
-                        <input type="checkbox" name="status" value="1" <?php print $checked ?> >
-                        <span class="checkbox-title"><?php print __('Arhive parser is active') ?></span>
-                    </label>
+
                     <p><b>Custom headers</b> (for Curl)</p>
 
                     <textarea name="chd" style="width:100%" rows="3"><?php
-                if ($ao['chd']) {
-                    print htmlspecialchars(base64_decode($ao['chd']));
-                }
+                        if ($ao['chd']) {
+                            print htmlspecialchars(base64_decode($ao['chd']));
+                        }
                         ?></textarea>
                     <span class="inline-edit">One command per line. Example: "accept: application/json".</span>                        
 
 
                 <?php endif ?>
-                <h3>Garbage collector</h3>
+
                 <label class="inline-edit-status">                
                     <?php
                     $checked = '';
-                    if ($ao['del_pea'] == 1) {
+                    if ($ao['status'] == 1 || $ao['status'] == 3) {
                         $checked = 'checked="checked"';
                     }
                     ?>
-                    <input type="checkbox" name="del_pea" value="1" <?php print $checked ?> >
-                    <span class="checkbox-title"><?php print __('Delete archives with parsing errors') ?></span>
+                    <input type="checkbox" name="status" value="1" <?php print $checked ?> >
+                    <span class="checkbox-title"><?php print __('Arhive parser is active') ?></span>
                 </label>
-                <br />
-                <label class="inline-edit-interval">
-                    <select name="del_pea_int" class="interval">
-                        <?php
-                        $inetrval = $ao['del_pea_int'];
-                        foreach ($this->cp->remove_interval as $key => $name) {
-                            $selected = ($key == $inetrval) ? 'selected' : '';
-                            ?>
-                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
-                            <?php
-                        }
-                        ?>                          
-                    </select> 
-                    <span class="inline-edit"><?php print __('Delete archives after timeout') ?></span>                    
-                </label>
-                <br />
 
+                <?php /* ?>
+                  <h3>Garbage collector</h3>
+                  <label class="inline-edit-status">
+                  <?php
+                  $checked = '';
+                  if ($ao['del_pea'] == 1) {
+                  $checked = 'checked="checked"';
+                  }
+                  ?>
+                  <input type="checkbox" name="del_pea" value="1" <?php print $checked ?> >
+                  <span class="checkbox-title"><?php print __('Delete archives with parsing errors') ?></span>
+                  </label>
+                  <br />
+                  <label class="inline-edit-interval">
+                  <select name="del_pea_int" class="interval">
+                  <?php
+                  $inetrval = $ao['del_pea_int'];
+                  foreach ($this->cp->remove_interval as $key => $name) {
+                  $selected = ($key == $inetrval) ? 'selected' : '';
+                  ?>
+                  <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>
+                  <?php
+                  }
+                  ?>
+                  </select>
+                  <span class="inline-edit"><?php print __('Delete archives after timeout') ?></span>
+                  </label>
+                  <br />
+                  <?php */ ?>
                 <?php wp_nonce_field('critic-feeds-options', 'critic-feeds-nonce'); ?>
                 <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save') ?>" class="button-primary">                  
             </fieldset>

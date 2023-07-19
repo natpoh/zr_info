@@ -349,7 +349,7 @@ class CriticFront extends SearchFacets {
             if (!class_exists('CriticMaticAdmin')) {
                 require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticMaticAdmin.php' );
             }
-            $cma = new CriticMaticAdmin($this->cm, array(), array(), array());
+            $cma = new CriticMaticAdmin($this->cm, array());
 
             if ($type == 'critic') {
                 $link = $cma->theme_post_link($id, 'Edit');
@@ -2949,7 +2949,7 @@ class CriticFront extends SearchFacets {
 
     private function user_random_avatar() {
         ?>
-        <button id="change_avatar" class="btn-small" title="Get another random avatar">Change avatar</button>
+        <button id="change_avatar" class="btn-small" title="Get another random avatar">Change avatar</button><span data-value="change_user_avatar" class="nte_info"></span>
         <?php
     }
 

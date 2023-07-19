@@ -10,6 +10,7 @@ print $tabs;
 
 if ($cid) {
     $options = $this->cp->get_options($campaign);
+    $cprules = $this->cp->get_cprules();
     ?>
     <form accept-charset="UTF-8" method="post" id="campaign">
 
@@ -121,9 +122,8 @@ if ($cid) {
                     <span class="title"><?php print __('URL status') ?></span>               
                     <?php
                     $url_status = $options['url_status'];
-                    $url_statuses = $this->cp->rules_actions;
+                    $url_statuses = $cprules->rules_actions;
                     ?>
-
                     <select name="url_status" class="interval">
                         <?php
                         foreach ($url_statuses as $key => $name) {
@@ -166,21 +166,18 @@ if ($cid) {
                     </select>                     
                     <span class="inline-edit"><?php print __('Number of URLs for cron parsing') ?></span> 
                 </label>
-
-                <label class="inline-edit-interval">
-                    <span class="title"><?php print __('Parser status') ?></span>
-                    <select name="parser_status" class="parser_status">
-                        <?php
-                        foreach ($this->cp->parser_state as $key => $name) {
-                            $selected = ($key == $campaign->parser_status) ? 'selected' : '';
-                            ?>
-                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
-                            <?php
-                        }
-                        ?>                          
-                    </select> 
-                    <span class="inline-edit"><?php print __('Select "Active" for activate parser. If the status is "Paused", the parser is auto activated when new urls are added.') ?></span>                    
+               
+                <label class="inline-edit-status">                
+                    <?php
+                    $checked = '';
+                    if ($campaign->parser_status == 1 || $campaign->parser_status == 3) {
+                        $checked = 'checked="checked"';
+                    }
+                    ?>
+                    <input type="checkbox" name="parser_status" value="1" <?php print $checked ?> >
+                    <span class="checkbox-title"><?php print __('Parser is active') ?></span>
                 </label>
+                
                 <br />
                 <?php
                 if ($campaign->type == 1) {
@@ -228,7 +225,7 @@ if ($cid) {
                 <p><?php print __('Rules that determine whether to parse the address or not.') ?></p>
                 <?php
                 $rules = isset($options['rules']) ? $options['rules'] : $def_options['options']['rules'];
-                $this->cp->show_rules($rules, true, array(), $campaign->type);
+                $cprules->show_rules($rules, true, array(), $campaign->type);
                 ?> 
                 <br />
                 <h2>Parser rules</h2>
@@ -246,7 +243,7 @@ if ($cid) {
                 <?php } ?>
                 <?php
                 $parser_rules = $options['parser_rules'];
-                $this->cp->show_parser_rules($parser_rules, true, $campaign->type);
+                $cprules->show_parser_rules($parser_rules, true, $campaign->type);
                 ?> 
                 <p><b>Export</b> Rules to <a target="_blank" href="<?php print $url ?>&cid=<?php print $cid ?>&export_parser_rules=1">JSON array</a>.</p>
                 <p><b>Import</b> Rules from JSON array:</p>

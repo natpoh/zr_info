@@ -1696,7 +1696,7 @@ class MoviesParser extends MoviesAbstractDB {
         return $ret;
     }
 
-    public function get_code_by_current_driver($url, &$headers, $settings, $type_opt) {
+    public function get_code_by_current_driver($url, &$headers, $settings=array(), $type_opt=array()) {
         $use_webdriver = $type_opt['webdrivers'];
         $ip_limit = array('h' => $type_opt['tor_h'], 'd' => $type_opt['tor_d']);
         $tor_mode = $type_opt['tor_mode'];

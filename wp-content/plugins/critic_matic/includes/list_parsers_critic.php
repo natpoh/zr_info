@@ -24,14 +24,15 @@ if (sizeof($campaigns) > 0) {
         </div>
         <table id="feeds" class="wp-list-table widefat striped table-view-list">
             <thead>
-                <td class="manage-column column-cb check-column" ><input type="checkbox" id="cb-select-all-1"></td>
-                <?php $this->sorted_head('id', 'id', $orderby, $order, $page_url) ?>                                
-                <?php $this->sorted_head('date', 'Date', $orderby, $order, $page_url) ?> 
-                <?php $this->sorted_head('title', 'Title', $orderby, $order, $page_url) ?>
-                <?php $this->sorted_head('author_name', 'Author', $orderby, $order, $page_url) ?>
-                <?php $this->sorted_head('type', 'Type', $orderby, $order, $page_url) ?>
-                <?php $this->sorted_head('status', 'State', $orderby, $order, $page_url) ?>            
+            <td class="manage-column column-cb check-column" ><input type="checkbox" id="cb-select-all-1"></td>
+            <?php $this->sorted_head('id', 'id', $orderby, $order, $page_url) ?>                                
+            <?php $this->sorted_head('date', 'Date', $orderby, $order, $page_url) ?> 
+            <?php $this->sorted_head('title', 'Title', $orderby, $order, $page_url) ?>
+            <?php $this->sorted_head('author_name', 'Author', $orderby, $order, $page_url) ?>
+            <?php $this->sorted_head('type', 'Type', $orderby, $order, $page_url) ?>
+            <?php $this->sorted_head('status', 'State', $orderby, $order, $page_url) ?>            
             <th><?php print __('Find URLs') ?></th> 
+            <th><?php print __('Arhive') ?></th> 
             <?php $this->sorted_head('parser_status', 'Parser', $orderby, $order, $page_url) ?>
 
             <th><?php print __('URL') ?></th> 
@@ -39,8 +40,9 @@ if (sizeof($campaigns) > 0) {
             <th><?php print __('Post count') ?></th>         
             <th><?php print __('Parsed') ?></th>  
             <th><?php print __('Linked') ?></th>
+             <?php /* ?>
             <th><?php print __('Last log') ?></th> 
-
+            <?php */ ?>
             </thead>
             <tbody>
                 <?php
@@ -72,6 +74,14 @@ if (sizeof($campaigns) > 0) {
                     $find_state_int = $options[$optkey]['status'] ? 1 : 0;
                     $find_interval = $options[$optkey]['interval'];
                     $find_last_update = $options[$optkey]['last_update'];
+
+
+                    // Arhive
+                    $arhivekey = 'arhive';
+                    $arhive_state = $options[$arhivekey]['status'] ? 'Active' : 'Inactive';
+                    $arhive_state_int = $options[$arhivekey]['status'] ? 1 : 0;
+                    $arhive_interval = $options[$arhivekey]['interval'];
+                    $arhive_last_update = $options[$arhivekey]['last_update'];
                     ?>
                     <tr> 
                         <th  class="check-column" ><input type="checkbox" name="bulk-<?php print $parser->id ?>"></th>
@@ -101,6 +111,20 @@ if (sizeof($campaigns) > 0) {
                                 <br /><?php print $this->cp->get_next_update($find_last_update, $find_interval) ?> - Next
                             <?php } ?>
                         </td>
+
+                        <td class="nowrap">
+                            <i class="sticn st-<?php print $arhive_state_int ?>"></i><?php print $arhive_state ?>
+                            <?php if ($arhive_interval) { ?>
+                                <br /><?php print $this->cp->update_interval[$arhive_interval] ?> -  Update interval
+                            <?php } ?>
+                            <?php if ($arhive_last_update) { ?>
+                                <br /><?php print $this->cp->curr_date($arhive_last_update) ?> - Last
+                            <?php } ?>
+                            <?php if ($options[$arhivekey]['status']) { ?>
+                                <br /><?php print $this->cp->get_next_update($arhive_last_update, $arhive_interval) ?> - Next
+                            <?php } ?>
+                        </td>
+
                         <td class="nowrap">
                             <i class="sticn st-<?php print $parser_parser_status_int ?>"></i><?php print $this->cp->parser_state[$parser->parser_status] ?>
                             <br /><?php print $this->cp->update_interval[$parser->update_interval] ?> -  Update interval
@@ -116,8 +140,9 @@ if (sizeof($campaigns) > 0) {
                         <td><?php print $this->cp->get_urls_count(-1, $parser->id, 1) ?></td>
                         <td><?php print $this->cp->get_urls_count(5, $parser->id, 1) ?></td>
                         <td><?php print $this->cp->get_urls_count(-1, $parser->id, 1, true) ?></td>
+                        <?php /*?>
                         <td><?php print $this->cp->get_last_log(0, $parser->id) ?></td>
-
+                        <?php*/ ?>
 
                     </tr> 
                 <?php } ?>

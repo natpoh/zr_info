@@ -118,7 +118,8 @@ if ($cid) {
 
 
                         <?php
-                        $playlists = $this->cp->yt_playlists_select($options);
+                        $cpyoutube = $this->cp->get_cpyoutube();
+                        $playlists = $cpyoutube->yt_playlists_select($options);
                         if ($playlists) {
                             ?><h3>Playlists</h3><?php
                             $playlists_checked = $options['yt_playlists'] ? $options['yt_playlists'] : array();
@@ -156,7 +157,7 @@ if ($cid) {
 
 
                         <?php
-                        $yt_posts = $this->cp->yt_total_posts($options);
+                        $yt_posts = $cpyoutube->yt_total_posts($options);
 
                         if ($yt_posts != -1) {
                             ?>

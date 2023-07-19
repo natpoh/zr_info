@@ -162,12 +162,13 @@ i.sticn {
 i.sticn.st-1{
     background: #4bc94b;
 }
-i.sticn.st-2{
-    background: #d75454;
-}
-i.sticn.st-3{
+i.sticn.st-2, i.sticn.st-3{
     background: #FFAD17;
 }
+
 i.sticn.st-4{
     background: #99CCFF;
+}
+i.sticn.st-5{
+    background: #d75454;
 }

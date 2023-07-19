@@ -11,9 +11,8 @@ print $tabs;
 <?php print $filters_type ?> 
 <p><a href="<?php print $url ?>&clear_logs=1">Clear</a> all logs.</p>
 <?php
-
-
 if (sizeof($log) > 0) {
+    $campaigns = $this->cp->get_campaigns(0);
     ?>
     <style>
         .tablenav-pages .pagination-links .button {
@@ -32,20 +31,24 @@ if (sizeof($log) > 0) {
         <th><?php print __('URL') ?></th>
     </thead>
     <tbody>
-        <?php
-        $log = array_reverse($log);
-        foreach ($log as $item) {
-            ?>
+    <?php
+    $log = array_reverse($log);
+    foreach ($log as $item) {
+        $camp = $campaigns[$item->cid];
+        $camp_title = '[' . $item->cid . '] ' . $camp->title;
+        $parser_link = $this->theme_parser_link($item->cid, $camp_title);
+        $url_link =  $this->theme_parser_url_link($item->uid,$item->uid);
+        ?>
             <tr> 
                 <td><?php print $item->id ?></td>
                 <td><?php print $this->cp->curr_date($item->date) ?></td>
                 <td><?php print $this->cp->get_log_type($item->type) ?></td>
                 <td><?php print $this->cp->get_log_status($item->status) ?></td>
                 <td><?php print $item->message ?></td>
-                <td><?php print $item->cid ?></td> 
-                <td><?php print $item->uid ?></td>
+                <td><?php print $parser_link ?></td> 
+                <td><?php print $url_link ?></td>
             </tr> 
-        <?php } ?>
+    <?php } ?>
     </tbody>
     </table>    
     <?php print $pager ?>

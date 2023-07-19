@@ -31,9 +31,11 @@ if ($cid) {
                             <td><?php
                                 $check = $item['check_url'];
                                 if ($check) {
-                                    foreach ($check['data'] as $key => $value) {
-                                        print 'Result: <b>' . $this->cp->rules_actions[$value] . '</b>. Rule id: ' . $key;
-                                        break;
+                                    if ($check['data']) {
+                                        foreach ($check['data'] as $key => $value) {
+                                            print 'Result: <b>' . $this->cp->rules_actions[$value] . '</b>. Rule id: ' . $key;
+                                            break;
+                                        }
                                     }
                                 } else {
                                     print "<b>No changes</b>. ";
@@ -47,9 +49,11 @@ if ($cid) {
                             <td><?php
                                 $check = $item['check_content'];
                                 if ($check) {
-                                    foreach ($check['data'] as $key => $value) {
-                                        print 'Result: <b>' . $this->cp->rules_actions[$value] . '</b>. Rule id: ' . $key;
-                                        break;
+                                    if ($check['data']) {
+                                        foreach ($check['data'] as $key => $value) {
+                                            print 'Result: <b>' . $this->cp->rules_actions[$value] . '</b>. Rule id: ' . $key;
+                                            break;
+                                        }
                                     }
                                 } else {
                                     print "<b>No changes</b>. ";
@@ -69,48 +73,49 @@ if ($cid) {
                     </tr> 
                     <tr>
                         <td><?php print __('Found date') ?></td>
-                        <td><?php 
-                        
-                        $date_raw = $item['date_raw']?$item['date_raw']:'Not found';
-                        print "Date raw: ".$date_raw.'<br />';
-                        print "Date: ". gmdate('d.m.Y H:i:s', $item['date']); 
-                        ?></td>                 
+                        <td><?php
+                            $date_raw = $item['date_raw'] ? $item['date_raw'] : 'Not found';
+                            print "Date raw: " . $date_raw . '<br />';
+                            print "Date: " . gmdate('d.m.Y H:i:s', $item['date']);
+                            ?></td>                 
                     </tr> 
                 </tbody>
             </table>  
             <br />
             <h2><?php print $item['title'] ?></h2>
-            <?php if ($item['headers']) { ?>
-                <table class="wp-list-table widefat fixed striped table-view-list">
-                    <thead>
-                        <tr>
-                            <th><?php print __('Content html') ?></th>                
-                            <th><?php print __('Content view') ?></th>    
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <h2>Headers</h2>
-                                <?php print str_replace("\n", '<br />', $item['headers']) ?>
-                                <h2>Content filtered</h2>
-                                <div class="content-preview">
-                                    <?php print $item['content'] ? htmlspecialchars(stripslashes($item['content'])) : ""  ?>
-                                </div>
-                                <h2>Content raw</h2>
-                                <div class="content-preview">
-                                    <?php print $item['raw'] ? htmlspecialchars(stripslashes($item['raw'])) : ""  ?>                                
-                                </div>
-                            </td>
-                            <td><?php print $item['content'] ?></td>
-                        </tr>           
 
-                    </tbody>        
-                </table>
-                <br />
-            <?php } ?>
+            <table class="wp-list-table widefat fixed striped table-view-list">
+                <thead>
+                    <tr>
+                        <th><?php print __('Content html') ?></th>                
+                        <th><?php print __('Content view') ?></th>    
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <h2>Content filtered</h2>
+                            <div class="content-preview">
+                                <?php print $item['content'] ? htmlspecialchars(stripslashes($item['content'])) : ""  ?>
+                            </div>
+                            <h2>Content raw</h2>
+                            <div class="content-preview">
+                                <?php print $item['raw'] ? htmlspecialchars(stripslashes($item['raw'])) : ""  ?>                                
+                            </div>
+                        </td>
+                        <td><?php print $item['content'] ?></td>
+                    </tr>           
+
+                </tbody>        
+            </table>
+            <br />
+
             <?php
         }
+    } else {
+        ?>
+        <p>Arhive URLs not found</p>
+    <?php
     }
 }
 ?>
