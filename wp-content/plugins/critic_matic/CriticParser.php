@@ -364,13 +364,21 @@ class CriticParser extends AbstractDB {
 
     public function get_options($campaign) {
         $options = unserialize($campaign->options);
-        
+
         foreach ($this->def_options['options'] as $key => $value) {
             if (!isset($options[$key])) {
                 // replace empty settings to default
                 $options[$key] = $value;
             }
+            if ($key == 'arhive') {
+                foreach ($this->def_options['options'][$key] as $ckey => $cvalue) {
+                    if (!isset($options[$key][$ckey])) {
+                        $options[$key][$ckey] = $cvalue;
+                    }
+                }
+            }
         }
+
         return $options;
     }
 
@@ -2225,7 +2233,7 @@ class CPCron {
     }
 
     public function check_time_campaign($campaign, $type_name = '', $force = false, $debug = false, $cid = 0) {
-     
+
         $options = $this->cp->get_options($campaign);
         $active = 0;
 
@@ -2249,8 +2257,8 @@ class CPCron {
             $active = $type_opt['status'];
             $update_interval = $type_opt['interval'];
             $update_last_time = $type_opt['last_update'];
-        } 
-        
+        }
+
         $next_key = -1;
         if ($active == 1) {
             $next_update = $update_last_time + $update_interval * 60;
@@ -2350,7 +2358,7 @@ class CPCron {
         $type_name = 'cron_urls';
         $options_upd = array();
         $time = $this->cp->curr_time();
-                
+
         if ($campaign->type == 1) {
             $type_name = 'yt_urls';
             // Youtube campaign
@@ -2379,9 +2387,8 @@ class CPCron {
                     }
                 }
             }
-            
+
             $options_upd[$type_name]['last_update_all'] = $time;
-            
         } else {
             $cron_urls = $options[$type_name];
 
@@ -2393,8 +2400,6 @@ class CPCron {
             $reg = isset($cron_urls['match']) ? base64_decode($cron_urls['match']) : '';
             $wait = 0;
             $ret = $find->parse_urls($cid, $reg, $urls, $options, $wait, $preview);
-            
-            
         }
 
         $options_upd[$type_name]['last_update'] = $time;
@@ -2506,14 +2511,14 @@ class CPCron {
 
             if ($count) {
                 $arhive->arhive_urls($campaign, $options, $urls, false, $debug);
-            }          
-            
+            }
+
             // Remove proggess flag
             $options_upd = array();
             $options_upd[$type_name]['progress'] = 0;
             $options_upd[$type_name]['last_update'] = $this->cp->curr_time();
             $this->cp->update_campaign_options($campaign->id, $options_upd);
-        
+
             // TODO Delete garbage
             // Delete error arhives
             $del_pea = $type_opt['del_pea'];
@@ -2838,7 +2843,6 @@ class CPArhive {
             $parser_status = 1;
             $this->cp->update_campaign($campaign->id, array('parser_status' => $parser_status));
         }
-
     }
 
     public function preview_arhive($url, $campaign) {
