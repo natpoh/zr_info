@@ -2281,6 +2281,7 @@ class CPCron {
         if ($type_name == 'parsing') {
             $this->cp->update_campaign($campaign->id, array('last_update' => $currtime));
         } else {
+            $options = $this->cp->get_options($campaign);
             $options[$type_name]['last_update'] = $currtime;
             if ($type_name == 'yt_urls') {
                 if (!$options[$type_name]['last_update_all']) {
