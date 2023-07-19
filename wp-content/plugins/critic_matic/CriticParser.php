@@ -178,7 +178,7 @@ class CriticParser extends AbstractDB {
         $count = $cron->proccess_all($cron_type, $force, $debug, $cid);
         return $count;
     }
-    
+
     public function stop_module($campaign, $module, $options = array()) {
         $options_upd = array();
         if (!$options) {
@@ -266,7 +266,7 @@ class CriticParser extends AbstractDB {
             $this->log_info($message, $campaign->id, 0, $mtype);
         }
     }
-    
+
     public function get_parser_settings() {
         if ($this->parser_settings) {
             return $this->parser_settings;
@@ -1097,19 +1097,19 @@ class CriticParser extends AbstractDB {
       3 => 'Parsing',
      */
 
-    public function log_info($message='', $cid=0, $uid=0, $status=0) {
+    public function log_info($message = '', $cid = 0, $uid = 0, $status = 0) {
         $this->log($message, $cid, $uid, 0, $status);
     }
 
-    public function log_warn($message='', $cid=0, $uid=0, $status=0) {
+    public function log_warn($message = '', $cid = 0, $uid = 0, $status = 0) {
         $this->log($message, $cid, $uid, 1, $status);
     }
 
-    public function log_error($message='', $cid=0, $uid=0, $status=0) {
+    public function log_error($message = '', $cid = 0, $uid = 0, $status = 0) {
         $this->log($message, $cid, $uid, 2, $status);
     }
 
-    public function log_campaign_add_urls($message='', $cid=0) {
+    public function log_campaign_add_urls($message = '', $cid = 0) {
         $this->log($message, $cid, 0, 0, 5);
     }
 
@@ -1528,7 +1528,7 @@ class CPAdmin extends CriticParser {
                 $this->update_campaign($id, array('parser_status' => $status));
             } else if ($b == 'active_arhive') {
                 $campaign = $this->get_campaign($id);
-                $this->start_module($campaign,'arhive');
+                $this->start_module($campaign, 'arhive');
             } else if ($b == 'inactive_arhive') {
                 $campaign = $this->get_campaign($id);
                 $this->stop_module($campaign, 'arhive');
@@ -2276,20 +2276,7 @@ class CPCron {
         } else if ($type_name == 'arhive_urls') {
             $count = $this->proccess_cron_arhive_urls($campaign, $force, $debug);
         }
-        // Update timer
-        $currtime = $this->cp->curr_time();
-        if ($type_name == 'parsing') {
-            $this->cp->update_campaign($campaign->id, array('last_update' => $currtime));
-        } else {
-            $options = $this->cp->get_options($campaign);
-            $options[$type_name]['last_update'] = $currtime;
-            if ($type_name == 'yt_urls') {
-                if (!$options[$type_name]['last_update_all']) {
-                    $options[$type_name]['last_update_all'] = $currtime;
-                }
-            }
-            $this->cp->update_campaign_options($campaign->id, $options);
-        }
+
         return $count;
     }
 
@@ -2327,6 +2314,10 @@ class CPCron {
             $this->cp->log_info($message, $campaign->id, 0, 0);
         }
 
+        // Update date
+        $currtime = $this->cp->curr_time();
+        $this->cp->update_campaign($campaign->id, array('last_update' => $currtime));
+
         return $count;
     }
 
@@ -2347,6 +2338,7 @@ class CPCron {
             $this->cp->start_paused_module($campaign, 'arhive');
         }
 
+
         return $count;
     }
 
@@ -2356,7 +2348,12 @@ class CPCron {
 
         $find = new CPFind($this->cp);
 
+        $type_name = 'cron_urls';
+        $options_upd = array();
+        $time = $this->cp->curr_time();
+                
         if ($campaign->type == 1) {
+            $type_name = 'yt_urls';
             // Youtube campaign
             // Playlists
             $playlists = $options['yt_playlists'] ? $options['yt_playlists'] : array();
@@ -2370,7 +2367,7 @@ class CPCron {
                     }
                 }
             } else {
-                $last_update_all = isset($options['yt_urls']['last_update_all']) ? $options['yt_urls']['last_update_all'] : 0;
+                $last_update_all = isset($options[$type_name]['last_update_all']) ? $options[$type_name]['last_update_all'] : 0;
                 if ($last_update_all > 0) {
                     $ret = $find->find_urls_yt($cid, $options, '', $preview);
                     if ($debug) {
@@ -2383,8 +2380,11 @@ class CPCron {
                     }
                 }
             }
+            
+            $options_upd[$type_name]['last_update_all'] = $time;
+            
         } else {
-            $cron_urls = $options['cron_urls'];
+            $cron_urls = $options[$type_name];
 
             $urls = array();
             if (isset($cron_urls['page']) && $cron_urls['page'] != '') {
@@ -2394,7 +2394,12 @@ class CPCron {
             $reg = isset($cron_urls['match']) ? base64_decode($cron_urls['match']) : '';
             $wait = 0;
             $ret = $find->parse_urls($cid, $reg, $urls, $options, $wait, $preview);
+            
+            
         }
+
+        $options_upd[$type_name]['last_update'] = $time;
+        $this->cp->update_campaign_options($campaign->id, $options_upd);
 
         return $ret;
     }
@@ -2832,6 +2837,7 @@ class CPArhive {
         // Remove proggess flag
         $options_upd = array();
         $options_upd[$type_name]['progress'] = 0;
+        $options_upd[$type_name]['last_update'] = $this->cp->curr_time();
         $this->cp->update_campaign_options($campaign->id, $options_upd);
     }
 
