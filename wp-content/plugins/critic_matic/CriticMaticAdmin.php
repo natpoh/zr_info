@@ -100,6 +100,8 @@ class CriticMaticAdmin {
         'start_campaign' => 'Start campaigns',
         'stop_campaign' => 'Stop campaigns',
         'trash_campaign' => 'Trash campaigns',
+        'active_arhive' => 'Active arhive',
+        'inactive_arhive' => 'Inactive arhive',
         'active_parser' => 'Active parser',
         'inactive_parser' => 'Inactive parser',
             /* 'active_find' => 'Active find urls',

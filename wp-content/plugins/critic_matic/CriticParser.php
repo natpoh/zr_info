@@ -178,6 +178,28 @@ class CriticParser extends AbstractDB {
         $count = $cron->proccess_all($cron_type, $force, $debug, $cid);
         return $count;
     }
+    
+    public function stop_module($campaign, $module, $options = array()) {
+        $options_upd = array();
+        if (!$options) {
+            $options = $this->get_options($campaign);
+        }
+        if (isset($options[$module])) {
+            $status = $options[$module]['status'];
+            // Update status
+            if ($status != 0) {
+                $options_upd[$module]['status'] = 0;
+            }
+        }
+
+        if ($options_upd) {
+            $this->update_campaign_options($campaign->id, $options_upd);
+            $message = 'Stop module: ' . $module;
+            $mtype = $this->log_modules[$module] ? $this->log_modules[$module] : 0;
+
+            $this->log_info($message, $campaign->id, 0, $mtype);
+        }
+    }
 
     public function pause_module($campaign, $module, $options = array()) {
         $options_upd = array();
@@ -219,10 +241,32 @@ class CriticParser extends AbstractDB {
             $message = 'Module unpaused: ' . $module;
             $mtype = $this->log_modules[$module] ? $this->log_modules[$module] : 0;
 
-            $this->cp->log_info($message, $campaign->id, 0, $mtype);
+            $this->log_info($message, $campaign->id, 0, $mtype);
         }
     }
 
+    public function start_module($campaign, $module, $options = array()) {
+        $options_upd = array();
+        if (!$options) {
+            $options = $this->get_options($campaign);
+        }
+        if (isset($options[$module])) {
+            $status = $options[$module]['status'];
+            // Update status
+            if ($status != 1) {
+                $options_upd[$module]['status'] = 1;
+            }
+        }
+
+        if ($options_upd) {
+            $this->update_campaign_options($campaign->id, $options_upd);
+            $message = 'Module start: ' . $module;
+            $mtype = $this->log_modules[$module] ? $this->log_modules[$module] : 0;
+
+            $this->log_info($message, $campaign->id, 0, $mtype);
+        }
+    }
+    
     public function get_parser_settings() {
         if ($this->parser_settings) {
             return $this->parser_settings;
@@ -1482,6 +1526,12 @@ class CPAdmin extends CriticParser {
             } else if ($b == 'inactive_parser') {
                 $status = 0;
                 $this->update_campaign($id, array('parser_status' => $status));
+            } else if ($b == 'active_arhive') {
+                $campaign = $this->get_campaign($id);
+                $this->start_module($campaign,'arhive');
+            } else if ($b == 'inactive_arhive') {
+                $campaign = $this->get_campaign($id);
+                $this->stop_module($campaign, 'arhive');
             }
         }
     }
