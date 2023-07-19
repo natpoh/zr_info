@@ -2418,7 +2418,7 @@ class CPCron {
                 if ($debug) {
                     print $message;
                 }
-                $this->cp->log_warn($message, $campaign->id, 0, 6);
+                // $this->cp->log_warn($message, $campaign->id, 0, 6);
                 return 0;
             }
         }
