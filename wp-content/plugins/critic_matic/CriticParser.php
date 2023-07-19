@@ -1097,19 +1097,19 @@ class CriticParser extends AbstractDB {
       3 => 'Parsing',
      */
 
-    public function log_info($message, $cid, $uid, $status) {
+    public function log_info($message='', $cid=0, $uid=0, $status=0) {
         $this->log($message, $cid, $uid, 0, $status);
     }
 
-    public function log_warn($message, $cid, $uid, $status) {
+    public function log_warn($message='', $cid=0, $uid=0, $status=0) {
         $this->log($message, $cid, $uid, 1, $status);
     }
 
-    public function log_error($message, $cid, $uid, $status) {
+    public function log_error($message='', $cid=0, $uid=0, $status=0) {
         $this->log($message, $cid, $uid, 2, $status);
     }
 
-    public function log_campaign_add_urls($message, $cid) {
+    public function log_campaign_add_urls($message='', $cid=0) {
         $this->log($message, $cid, 0, 0, 5);
     }
 
