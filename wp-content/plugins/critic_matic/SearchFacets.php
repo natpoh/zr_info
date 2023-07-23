@@ -1934,7 +1934,7 @@ class SearchFacets extends AbstractDB {
         $content = ob_get_contents();
         ob_end_clean();
 
-        $title = 'ZR Wokness';
+        $title = 'ZR Wokness<span data-value="tooltip_zr_woke_search" class="nte_info"></span>';
         $filter = 'wokedata';
         if ($content || $main_collapsed) {
             //Show multifacet

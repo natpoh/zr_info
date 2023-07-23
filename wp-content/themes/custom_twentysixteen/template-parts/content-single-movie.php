@@ -98,7 +98,7 @@ if ( current_user_can( 'administrator' ) ) {
             <h2>Internet Zeitgest:</h2>
         </div>
         <div id="google_search"  data-value="<?php print $post_id ?>" class="page_custom_block not_load"></div>
-        <div id="ns_related_scroll" data-value="<?php print $post_id ?>" class="not_load"></div>
+
 
 <?php
 $post_type = strtolower($post_type);

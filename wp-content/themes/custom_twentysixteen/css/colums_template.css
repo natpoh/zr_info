@@ -638,10 +638,6 @@ body.theme_dark .inner_content.secton_gray {
     width: min-content;
 }
 
-details details summary {
-
-    margin-left: 15px;
-}
 
 .gl_zr_extlink {
     display: block;
@@ -1018,6 +1014,8 @@ section.inner_content.single div.column_content.flex {
     opacity:.8;
     text-align:justify!important;
     padding: 5px 10px;
+    position: relative;
+    z-index: 10;
 }
 .actor_details  .desc a{
     color:grey;
@@ -1052,6 +1050,7 @@ section.inner_content.single.loaded
 
 section.inner_content.single.pro_review{
     overflow: unset;
+    height: auto;
 }
 section.inner_content.single .column_header h2 {
     font-size: 30px;
@@ -1084,9 +1083,9 @@ section.inner_content div.column_content div.card.loading {
     overflow: hidden;
 }
 .full_review {
-    background: #fff url(https://zeitgeistreviews.com/wp-content/uploads/2020/09/rwt_screenplay_paper_reviews.jpg) repeat;
-    padding: 25px;
+    background-image: url(https://zeitgeistreviews.com/wp-content/uploads/2022/06/paper_texture_RWT_.jpg);
     background-size: 100%;
+    padding: 25px;
     box-shadow: inset 0px 0px 45px #cab9a7;
     border-radius: 3px;
     margin: 0 auto;
@@ -3046,8 +3045,8 @@ body.theme_white .nte_info{
 .wpcr3_respond_2 .wpcr3_div_2 {
     padding-top: 15px;
     box-shadow: .09em .1em .4em #484646;
-    background: #fff url(https://zeitgeistreviews.com/wp-content/uploads/2020/09/rwt_screenplay_paper_reviews.jpg) repeat;
-    background-size: auto;
+    background-image: url(https://zeitgeistreviews.com/wp-content/uploads/2022/06/paper_texture_RWT_.jpg);
+    background-size: 100%;
 }
 body .wpcr3_table_2 .column_header {
     margin: 1.1em;
@@ -4287,5 +4286,12 @@ body.theme_dark .highcharts-legend-title tspan{
         right: 18px;
         top: 67px;
     }
+    .a_msg {
+        min-width: unset;
 
+    }
+    .review_autor_name {
+        width: calc(100% - 135px);
+        min-width: 160px;
+    }
 }

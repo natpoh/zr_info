@@ -57,6 +57,7 @@ div.wpcr3_review div.wpcr3_review_custom { font-size:12px; float:left; margin-ri
 	max-width: 900px;
 	margin: 0 auto 30px auto;
 	text-align: center;
+	overflow: hidden;
 }
 .wpcr3_respond_1 p, .wpcr3_respond_2 p {
 	clear: both !important;

@@ -4,10 +4,10 @@ var lastload = '';
 var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
 var crowdsource_url = window.location.protocol + "/service/crowdsource.php"
 var debug_mode = 0;
-if (window.location.host == 'zeitgeistreviews.com')
-{
+if (window.location.host == 'zeitgeistreviews.com') {
     crowdsource_url = 'https://service.' + window.location.host + "/crowdsource.php";
 }
+
 //crowdsource_url=  'https://service.zeitgeistreviews.com/crowdsource.php';
 
 
@@ -22,29 +22,24 @@ function attachScroller(distance, scroller, hasScrolled, scrollLeft) {
         }
     }
 }
-function recomendations_resset()
-{
+
+function recomendations_resset() {
     /// console.log(window.DISQUS_RECOMMENDATIONS);
     //window.DISQUS_RECOMMENDATIONS.reset();
 }
 
 
-function scroll_block(block_id){
-    if (window.innerWidth <= 450)
-    {
-        let scrollWrapper = document.querySelector('.single div#'+block_id+'  div.scroller');
+function scroll_block(block_id) {
+    if (window.innerWidth <= 450) {
+        let scrollWrapper = document.querySelector('.single div#' + block_id + '  div.scroller');
         ///console.log(scrollWrapper);
-        if (scrollWrapper)
-        {
+        if (scrollWrapper) {
             scrollWrapper.scrollLeft = 40;
-        }
-        else
-        {
+        } else {
 
-             scrollWrapper = document.querySelector('.home div#'+block_id+'  div.scroller');
+            scrollWrapper = document.querySelector('.home div#' + block_id + '  div.scroller');
             ///console.log(scrollWrapper);
-            if (scrollWrapper)
-            {
+            if (scrollWrapper) {
                 scrollWrapper.scrollLeft = 10;
             }
         }
@@ -89,10 +84,8 @@ function discuss_config(data_object) {
 
     }
 
-    if (data_object['data_comments'])
-    {
-        if (jQuery('div[id="disqus_recommendations"]').attr('id'))
-        {
+    if (data_object['data_comments']) {
+        if (jQuery('div[id="disqus_recommendations"]').attr('id')) {
             var third_scripts = {omendations: 'https://' + data_object['data_comments'] + '.disqus.com/recommendations.js'};
             use_ext_js(recomendations_resset, third_scripts);
 
@@ -145,8 +138,7 @@ function initializeScroller(mobile, scroller) {
     }, 250);
 }
 
-function add_rating_duoble_block(type, value_female, data, desc, usescroll, new_api = false)
-{
+function add_rating_duoble_block(type, value_female, data, desc, usescroll, new_api = false) {
 
     $api = `<div class="note nte ${type}"><div class="btn"><span  class="num_1">${value_female}</span><span  class="num_2">${data}</span></div>
                  <div class="nte_show"><div class="nte_in"><div class="nte_cnt"><div class="note_show_content_${usescroll}" >${desc}</div></div></div></div>
@@ -155,8 +147,8 @@ function add_rating_duoble_block(type, value_female, data, desc, usescroll, new_
     return $api;
 
 }
-function add_rating_block(type, data, desc, usescroll, new_api = false, dwn = '')
-{
+
+function add_rating_block(type, data, desc, usescroll, new_api = false, dwn = '') {
 
     $api = `<div class="note nte ${type}"><div class="btn">${data}</div>
                  <div class="nte_show ${dwn}"><div class="nte_in"><div class="nte_cnt"><div class="note_show_content_${usescroll}" >${desc}</div></div></div></div>
@@ -165,11 +157,10 @@ function add_rating_block(type, data, desc, usescroll, new_api = false, dwn = ''
     return $api;
 
 }
-function popup_cusomize(type, a, b)
-{
 
-    if (type == 'row_main' || type == 'row_inner')
-    {
+function popup_cusomize(type, a, b) {
+
+    if (type == 'row_main' || type == 'row_inner') {
         return '<span class="pp_row ' + type + '"><span class="pp_rl">' + a + '</span><span class="pp_rr">' + b + '</span></span>';
     }
 
@@ -179,8 +170,7 @@ function popup_cusomize(type, a, b)
 
 }
 
-function family_rating(family_data)
-{
+function family_rating(family_data) {
 
     var family_data_result = '';
 
@@ -230,16 +220,14 @@ function family_rating(family_data)
                                 d = '<span  class="color_rating ' + data_class + '">' + d + '</span>';
                                 d_content += popup_cusomize('row_inner', c.toUpperCase(), d);
 
-                            } else
-                            {
+                            } else {
 
                             }
                         } else if (Number(d) > 0) {
                             var data_class = cms_rating_colors[d];
-                            if (cms_rating_plus[c]==1) {
+                            if (cms_rating_plus[c] == 1) {
                                 data_class = 'green';
-                            }
-                            else if (cms_rating_plus[c]==2) {
+                            } else if (cms_rating_plus[c] == 2) {
                                 data_class = 'gray';
                             }
                             if (c == 'role_model') {
@@ -269,15 +257,13 @@ function family_rating(family_data)
     return family_data_result;
 }
 
-function create_total_rating(obj, only_tomatoes,rt_gap)
-{
+function create_total_rating(obj, only_tomatoes, rt_gap) {
     let content_rating = '';
 
     let rt_class = '';
 
 
-    if (Number(obj.rt_rating) > 0 || Number(obj.rt_aurating) > 0)
-    {
+    if (Number(obj.rt_rating) > 0 || Number(obj.rt_aurating) > 0) {
 
 
         if (rt_gap != 0) {
@@ -294,17 +280,14 @@ function create_total_rating(obj, only_tomatoes,rt_gap)
             content_rating += popup_cusomize('popup_header', ttcomment);
 
             content_rating += '<div><div class="rotten_tomatoes_score">';
-        } else
-        {
+        } else {
             content_rating += '<div class="exlink" id="rt"><span>RottenTomatoes:</span><div class="rotten_tomatoes_score">';
 
         }
 
 
-        if (Number(obj.rt_rating) > 0)
-        {
-            if (Number(obj.rt_rating) >= 60)
-            {
+        if (Number(obj.rt_rating) > 0) {
+            if (Number(obj.rt_rating) >= 60) {
                 rt_class = '_max_tomatoes';
             }
 
@@ -313,10 +296,8 @@ function create_total_rating(obj, only_tomatoes,rt_gap)
         }
 
 
-        if (Number(obj.rt_aurating) > 0)
-        {
-            if (Number(obj.rt_aurating) >= 60)
-            {
+        if (Number(obj.rt_aurating) > 0) {
+            if (Number(obj.rt_aurating) >= 60) {
                 rt_class = '_max_tomatoes';
             }
             content_rating += create_rating_star(obj.rt_aurating, 'rotten_tomatoes_audience' + rt_class);
@@ -328,50 +309,38 @@ function create_total_rating(obj, only_tomatoes,rt_gap)
     if (!only_tomatoes) {
 
         function formatWordsList(word) {
-                let formattedWord = word.replace('_rating', '');
-                formattedWord = formattedWord.replace('_', ' ');
-                formattedWord = formattedWord.charAt(0).toUpperCase() + formattedWord.slice(1);
-                return formattedWord;
-          }
+            let formattedWord = word.replace('_rating', '');
+            formattedWord = formattedWord.replace('_', ' ');
+            formattedWord = formattedWord.charAt(0).toUpperCase() + formattedWord.slice(1);
+            return formattedWord;
+        }
 
 
-        Object.keys(obj).forEach(function(key) {
+        Object.keys(obj).forEach(function (key) {
 
             var value = obj[key];
 
-            let name =key;
+            let name = key;
 
-            if (key=='metacritic_userscore')
-            {
-                name ='Metacritic User';
-            }
-            else if (key=='audience_rating')
-            {
-                name ='ZR Audience';
-            }
-            else if (key=='imdb_rating')
-            {
-                name ='IMDb';
-            }
-            else if (key=='kinop_rating')
-            {
-                name ='Kinopoisk';
-            }
-            else if (key=='Animelist')
-            {
-                name ='MyAnimeList';
-            }
-
-            else
-            {
+            if (key == 'metacritic_userscore') {
+                name = 'Metacritic User';
+            } else if (key == 'audience_rating') {
+                name = 'ZR Audience';
+            } else if (key == 'imdb_rating') {
+                name = 'IMDb';
+            } else if (key == 'kinop_rating') {
+                name = 'Kinopoisk';
+            } else if (key == 'Animelist') {
+                name = 'MyAnimeList';
+            } else {
                 name = formatWordsList(key);
             }
 
 
             if (Number(value) > 0) {
-               if (key.indexOf('rt_') == -1 && key!='total_rating' ) {
+                if (key.indexOf('rt_') == -1 && key != 'total_rating') {
 
-                   content_rating += '<div class="exlink" id="'+key+'"><span>'+name+':</span>' + create_rating_star(value, key) + '</div>';
+                    content_rating += '<div class="exlink" id="' + key + '"><span>' + name + ':</span>' + create_rating_star(value, key) + '</div>';
                 }
 
 
@@ -387,7 +356,6 @@ function create_total_rating(obj, only_tomatoes,rt_gap)
         //     content_rating += '<div class="exlink" id="douban"><span>Douban:</span>' + create_rating_star(obj.douban_rating, 'douban') + '</div>';
 
 
-
     }
 
 
@@ -395,8 +363,7 @@ function create_total_rating(obj, only_tomatoes,rt_gap)
 }
 
 
-function create_context_rating(obj, hollywood)
-{
+function create_context_rating(obj, hollywood) {
 
     let content_rating = '';
 
@@ -419,16 +386,15 @@ function create_context_rating(obj, hollywood)
 }
 
 
-function create_gender_desc(value)
-{
+function create_gender_desc(value) {
 
     let fcontent = '<div class="gray_comment">We love women at ZR!<br>' + 'We just grow tired of feminist quotas. The \"<a href="https://en.wikipedia.org/wiki/F-rating" target="_blank"><u>F rated</u></a>\" label is a good proxy for that, and the <a href="https://en.wikipedia.org/wiki/Bechdel_test" target="_blank"><u>Bechdel Test</u></a> sometimes can be. But both are scarcely applied. Thus, a scan of the cast\'s gender is more ubiquitous.</div>';
     let hcontent = popup_cusomize('popup_header', value + '% of the Stars & Main Cast are Female.');
 
     return hcontent;
 }
-function create_diversity(diversity_data, value)
-{
+
+function create_diversity(diversity_data, value) {
 
     diversity_data_content = popup_cusomize('popup_header', `${value}% of the Stars & Main Cast are <a href="https://www.facebook.com/868164246578472/posts/the-cast-of-black-panther-is-hella-diverse/1236999296361630/" target="_blank:"><u>"diverse."</u></a>`);
 
@@ -452,6 +418,7 @@ function create_diversity(diversity_data, value)
 
     return diversity_data_content;
 }
+
 function abbreviateNumber(number) {
     const abbreviations = [
         {value: 1e18, symbol: "E"},
@@ -465,34 +432,31 @@ function abbreviateNumber(number) {
     for (let i = 0; i < abbreviations.length; i++) {
         if (number >= abbreviations[i].value) {
             return (
-                    (number / abbreviations[i].value).toFixed(1).replace(/\.0$/, "") +
-                    abbreviations[i].symbol
-                    );
+                (number / abbreviations[i].value).toFixed(1).replace(/\.0$/, "") +
+                abbreviations[i].symbol
+            );
         }
     }
 
     return number.toString();
 }
-function create_rating_content(object, m_id, search_block = 0)
-{
+
+function create_rating_content(object, m_id, search_block = 0) {
     let content = '';
 
 
-    if (object['type'])
-    {
+    if (object['type']) {
         var movie_type = object['type'];
     }
     //console.log(movie_type);
 
-    if (object['indie'])
-    {
+    if (object['indie']) {
         //console.log(object['indie']);
         let data = '';
         if (object['indie']['productionBudget'] > 0 || object['indie']['box_usa'] > 0 || object['indie']['box_intern'] || object['indie']['box_world'] > 0) {
 
 
-            if (object['indie']['box_usa'] > 0 || object['indie']['box_world'] > 0)
-            {
+            if (object['indie']['box_usa'] > 0 || object['indie']['box_world'] > 0) {
                 data = popup_cusomize('row_text_head', 'Box office:');
             }
 
@@ -511,21 +475,17 @@ function create_rating_content(object, m_id, search_block = 0)
 
 
         let recycle = '';
-        if (object['indie']['recycle'])
-        {
+        if (object['indie']['recycle']) {
 
 
-            if (object['indie']['recycle']['enabled'])
-            {
+            if (object['indie']['recycle']['enabled']) {
                 recycle = ' recycle ';
             }
 
             if (object['indie']['recycle']['enabled'] || (object['indie']['recycle']['keywords'] && object['indie']['recycle']['keywords']['lasy_grab'])) {
 
-                data += popup_cusomize('row_text_head row_margin l_c_g', 'Possible lazy cash grab:')+  '<span data-value="lazy_cash_grab_popup" class="nte_info nte_right"></span>';
+                data += popup_cusomize('row_text_head row_margin l_c_g', 'Possible lazy cash grab:') + '<span data-value="lazy_cash_grab_popup" class="nte_info nte_right"></span>';
             }
-
-
 
 
             if (object['indie']['recycle']['keywords']) {
@@ -553,20 +513,17 @@ function create_rating_content(object, m_id, search_block = 0)
             }
 
 
-
-
         }
         let big_b = '';
 
 
-        if (object['indie']['production'])
-        {
+        if (object['indie']['production']) {
 
             if (object['indie']['production'][1]) {
                 big_b = ' big_business ';
             }
             if (object['indie']['production'][1] || object['indie']['production'][2]) {
-                data += popup_cusomize('row_text_head row_margin big_b_i', 'Possible Big Business:')+'<span data-value="big_business_popup" class="nte_info nte_right"></span>';
+                data += popup_cusomize('row_text_head row_margin big_b_i', 'Possible Big Business:') + '<span data-value="big_business_popup" class="nte_info nte_right"></span>';
             }
             data += popup_cusomize('row_text_head ', 'Production:');
 
@@ -584,24 +541,59 @@ function create_rating_content(object, m_id, search_block = 0)
 
 
         let dwn = 'dwn';
-        if (search_block)
-        {
+        if (search_block) {
             dwn = '';
         }
 
         content += add_rating_block('indie' + recycle + big_b, ' ', data, 2, true, dwn);
     }
 
+    if (object['type'] != 'videogame') {
+        if (object.total_rating && (object.total_rating.rt_gap > 0 || object.total_rating.rt_rating > 0 || object.total_rating.rt_aurating > 0)) {
 
-    if ((object['diversity'] || object['diversity_data'] || object['female'] || object['male']) && object['type']!='videogame')
-    {
+            let total_gap_str = 'N/A';
+
+            var total_gap = object.total_rating.rt_gap;
+            let rating_color = '';
+            if (total_gap) {
+                total_gap = Number(total_gap);
+
+                if (total_gap > 0 || total_gap < 0) {
+
+
+                    let rating_color = '';
+
+                    if ((total_gap) > 10) {
+                        rating_color = 'green_rt';
+                    }
+                    if ((total_gap) < -10) {
+                        rating_color = 'red_rt';
+                    }
+                }
+                total_gap_str = total_gap + '%'
+            }
+
+            let total_tomatoes_content = create_total_rating(object.total_rating, 1, total_gap);
+
+            content += add_rating_block('rt_gap ' + rating_color, total_gap_str, total_tomatoes_content, 4, true);
+
+        } else {
+            let rating_color = 'gray_rt';
+            let total_gap_str = 'N/A';
+            let total_tomatoes_content = 'No <b class="exlink" id="rt">Rotten Tomatoes</b> ratings imported yet.';
+
+            content += add_rating_block('rt_gap ' + rating_color, total_gap_str, total_tomatoes_content, 4, true);
+        }
+    }
+
+
+    if ((object['diversity'] || object['diversity_data'] || object['female'] || object['male']) && object['type'] != 'videogame') {
 
         let fem_desk = '';
-        let  diversity_data_content = '';
+        let diversity_data_content = '';
         let value_female = 'N/A';
         let value = 'N/A';
-        if (object['female'] || object['male'])
-        {
+        if (object['female'] || object['male']) {
             // block_class = 'gender';
 
             // content += add_rating_block(block_class, value + '%', hcontent, 2, true);
@@ -611,8 +603,6 @@ function create_rating_content(object, m_id, search_block = 0)
 
             value_female = value_female + '%';
         }
-
-
 
 
         if (object['diversity_data']) {
@@ -631,174 +621,121 @@ function create_rating_content(object, m_id, search_block = 0)
 
     }
 
-        ///family rating
+    ///family rating
 
-        block_class = 'family_friendly';
-        let value = '';
+    block_class = 'family_friendly';
+    let value = '';
 
-        ///LGBTQ content included  console.log(object);
+    ///LGBTQ content included  console.log(object);
 
-        let lgbt_class = '';
-        let woke_class = '';
-        let lgbt_warning_text = '';
-        let woke_warning_text = '';
-
-
+    let lgbt_class = '';
+    let woke_class = '';
+    let lgbt_warning_text = '';
+    let woke_warning_text = '';
 
 
-        value = Number(object['family']);
+    value = Number(object['family']);
 
-        value = value.toFixed(2);
+    value = value.toFixed(2);
 
-        let rating_color = 'noffrating';
+    let rating_color = 'noffrating';
 
-        if (value>0)
-        {
-            rating_color = 'green';
-            if (value < 3) {
-                rating_color = 'orange';
-            }
-            if (value < 2) {
-                rating_color = 'red';
-            }
-            let family_data_result = '';
+    if (value > 0) {
+        rating_color = 'green';
+        if (value < 3) {
+            rating_color = 'orange';
         }
-
-
-        let family_data_result='';
-
-        if (object['family_data']) {
-
-            var family_data = object['family_data'];
-
-            family_data = JSON.parse(family_data);
-            family_data_result = family_rating(family_data);
+        if (value < 2) {
+            rating_color = 'red';
         }
-        lgbt_warning_text = '';
-
-        if (object['lgbt_warning'] == 1) {
-            let ltext = '';
-            if (object['lgbt_text'])
-            {
-                ltext = '<span class="bg_rainbow">' + object['lgbt_text'] + '</span>';
-            }
-
-            lgbt_class = ' lgbt ';
-
-            lgbt_warning_text = popup_cusomize('row_text_head', 'LGBTQ content included:<span data-value="lgbt_popup" class="nte_info"></span>') + popup_cusomize('row_text', ltext);
-        }
-        woke_warning_text = '';
-
-        if (object['woke'] == 1) {
-            let woketext = '';
-            if (object['woke_text'])
-            {
-                woketext = '<span class="bg_woke">' + object['woke_text'] + '</span>';
-            }
-            woke_class = ' woke ';
-            woke_warning_text = popup_cusomize('row_text_head', 'Possibly woke elements:<span data-value="woke_popup" class="nte_info"></span>') + popup_cusomize('row_text', woketext);
-        }
-
-
-        /// console.log(movie_type);
-
-        let array_title = {'movie': 'film', 'tvseries': 'show', 'videogame': 'game'};
-        let name = 'film';
-        if (array_title[movie_type])
-        {
-            name = array_title[movie_type];
-        }
-    let scorecontent='';
-    if (value>0) {
-         scorecontent = popup_cusomize('popup_header', `This ${name} gets a ${value}/5 family friendly score `);
+        let family_data_result = '';
     }
-    else if (value==0)
-    {
-        value='N/A';
+
+
+    let family_data_result = '';
+
+    if (object['family_data']) {
+
+        var family_data = object['family_data'];
+
+        family_data = JSON.parse(family_data);
+        family_data_result = family_rating(family_data);
+    }
+    lgbt_warning_text = '';
+
+    if (object['lgbt_warning'] == 1) {
+        let ltext = '';
+        if (object['lgbt_text']) {
+            ltext = '<span class="bg_rainbow">' + object['lgbt_text'] + '</span>';
+        }
+
+        lgbt_class = ' lgbt ';
+
+        lgbt_warning_text = popup_cusomize('row_text_head', 'LGBTQ content included:<span data-value="lgbt_popup" class="nte_info"></span>') + popup_cusomize('row_text', ltext);
+    }
+    woke_warning_text = '';
+
+    if (object['woke'] == 1) {
+        let woketext = '';
+        if (object['woke_text']) {
+            woketext = '<span class="bg_woke">' + object['woke_text'] + '</span>';
+        }
+        woke_class = ' woke ';
+        woke_warning_text = popup_cusomize('row_text_head', 'Possibly woke elements:<span data-value="woke_popup" class="nte_info"></span>') + popup_cusomize('row_text', woketext);
+    }
+
+
+    /// console.log(movie_type);
+
+    let array_title = {'movie': 'film', 'tvseries': 'show', 'videogame': 'game'};
+    let name = 'film';
+    if (array_title[movie_type]) {
+        name = array_title[movie_type];
+    }
+    let scorecontent = '';
+    if (value > 0) {
+        scorecontent = popup_cusomize('popup_header', `This ${name} gets a ${value}/5 family friendly score `);
+    } else if (value == 0) {
+        value = 'N/A';
         scorecontent = 'No MPAA or IMDb parental guidance data has been imported yet.<br>Please help improve our site and <div class="add_pg_rating_button"><a href="#" class="empty_ff_rating">add a Family Friendly Rating.</a></div>';
 
     }
 
 
-            let rating_link = popup_cusomize('row_link', '<a href="#" class="read_more_rating">CONTENT BREAKDOWN</a>');
-            rating_link += popup_cusomize('row_link', '<a href="#" class="how_calculate_rating">Methodology</a>')
+    let rating_link = popup_cusomize('row_link', '<a href="#" class="read_more_rating">CONTENT BREAKDOWN</a>');
+    rating_link += popup_cusomize('row_link', '<a href="#" class="how_calculate_rating">Methodology</a>')
 
-            content += add_rating_block(block_class + ' ' + lgbt_class + woke_class + rating_color, value,  scorecontent + lgbt_warning_text + woke_warning_text + family_data_result + rating_link, 1, true);
-
-
+    content += add_rating_block(block_class + ' ' + lgbt_class + woke_class + rating_color, value, scorecontent + lgbt_warning_text + woke_warning_text + family_data_result + rating_link, 1, true);
 
 
-
-if (object['type']!='videogame') {
-    if (object.total_rating && (object.total_rating.rt_gap > 0 || object.total_rating.rt_rating > 0 || object.total_rating.rt_aurating > 0)) {
-
-        let total_gap_str = 'N/A';
-
-        var total_gap = object.total_rating.rt_gap;
-        let rating_color = '';
-        if (total_gap) {
-            total_gap = Number(total_gap);
-
-            if (total_gap > 0 || total_gap < 0) {
+    if (object.total_rating && object.total_rating.total_rating > 0) {
+        let total_rating_star = create_rating_star(object.total_rating.total_rating, '');
 
 
-                let rating_color = '';
+        let rating_link_t = popup_cusomize('row_link', '<a href="#" class="how_calculate_rwt_rating">Methodology</a>');
 
-                if ((total_gap) > 10) {
-                    rating_color = 'green_rt';
-                }
-                if ((total_gap) < -10) {
-                    rating_color = 'red_rt';
-                }
-            }
-            total_gap_str = total_gap + '%'
-        }
+        var content_rating_adata = create_total_rating(object.total_rating, '', '') + rating_link_t;
 
-        let total_tomatoes_content = create_total_rating(object.total_rating, 1, total_gap);
-
-        content += add_rating_block('rt_gap ' + rating_color, total_gap_str, total_tomatoes_content, 4, true);
+        var rdata = '<div class="rwt_stars" title="ZR Rating">' + total_rating_star + '</div>';
+        content += add_rating_block('rwt_stars', rdata, content_rating_adata, 'rwt_rt', true);
 
     } else {
-        let rating_color = 'gray_rt';
-        let total_gap_str = 'N/A';
-        let total_tomatoes_content = 'No <b class="exlink" id="rt">Rotten Tomatoes</b> ratings imported yet.';
-
-        content += add_rating_block('rt_gap ' + rating_color, total_gap_str, total_tomatoes_content, 4, true);
+        var rdata = '<div class="rwt_stars not_rated" title="ZR Rating"><span class="rating_result btn raitng_empty"></span></div>';
+        let rcontent = 'No ratings imported yet,<br> <b class="edit_review">Write a review?</b>';
+        content += add_rating_block('rwt_stars', rdata, rcontent, 'rwt_rt', true);
     }
-}
-
-        if (object.total_rating && object.total_rating.total_rating > 0) {
-            let total_rating_star = create_rating_star(object.total_rating.total_rating, '');
-
-
-            let rating_link_t = popup_cusomize('row_link', '<a href="#" class="how_calculate_rwt_rating">Methodology</a>');
-
-            var content_rating_adata = create_total_rating(object.total_rating, '','') + rating_link_t;
-
-            var rdata = '<div class="rwt_stars" title="ZR Rating">' + total_rating_star + '</div>';
-            content += add_rating_block('rwt_stars', rdata, content_rating_adata, 'rwt_rt', true);
-
-        }
-        else
-        {
-            var rdata = '<div class="rwt_stars not_rated" title="ZR Rating"><span class="rating_result btn raitng_empty"></span></div>';
-            let rcontent ='No ratings imported yet,<br> <b class="edit_review">Write a review?</b>';
-            content += add_rating_block('rwt_stars', rdata, rcontent, 'rwt_rt', true);
-        }
 
 
     content += '<div id="' + m_id + '"  class="note edit"><div class="note_togle">' +
-            '<div  class="edit_area  note_show">' +
-            '<div class="edit_comment"><div class="desc">Add Comment</div></div>' +
-            '<div   class="edit_review"><div class="desc">Add Review</div></div>' +
-            '<div   class="edit_critic"><div class="desc">Add Critic review</div></div>' +
-            '<div class="edit_family_rating"><span class="f_name"></span><div class="desc">Edit Family Friendly Rating</div></div>' +
-            '</div></div>';
+        '<div  class="edit_area  note_show">' +
+        '<div class="edit_comment"><div class="desc">Add Comment</div></div>' +
+        '<div   class="edit_review"><div class="desc">Add Review</div></div>' +
+        '<div   class="edit_critic"><div class="desc">Add Critic review</div></div>' +
+        '<div class="edit_family_rating"><span class="f_name"></span><div class="desc">Edit Family Friendly Rating</div></div>' +
+        '</div></div>';
 
 
-
-    if (content)
-    {
+    if (content) {
         content = `<div id="${m_id}"  class="rating_block">${content}</div>`;
     }
 
@@ -812,39 +749,22 @@ function set_video_scroll(data, block_id, append = '') {
 
         data = JSON.parse(data);
 
-
-        if (data['other'])
-        {
-            if (block_id == 'review_scroll')
-            {
-                let prnt = jQuery('div[id="' + block_id + '"]').parents('section.inner_content');
-                prnt.css('height', '340px');
-
-                var block = jQuery('div[id="' + block_id + '"]');
-                block.html(data['other']).show();
-                return;
-            }
-
-        } else if (data['count'] > 0 && data['tmpl']) {
+        if (data['count'] > 0 && data['tmpl']) {
             if (!append) {
                 jQuery('div[id="' + block_id + '"]').parents('section').addClass('loaded');
             }
             var content = '';
             var tmpl = data['tmpl'];
             var tmpl_type = data['type'];
-            if (tmpl_type == 'actors_data')
-            {
+            if (tmpl_type == 'actors_data') {
 
-                if (data['result'])
-                {
+                if (data['result']) {
 
 
                     jQuery.each(data['result'], function (a, b) {
 
-                        if (b)
-                        {
-                            if (b['content_data'])
-                            {
+                        if (b) {
+                            if (b['content_data']) {
                                 content += b['content_data'];
                             }
 
@@ -871,8 +791,7 @@ function set_video_scroll(data, block_id, append = '') {
                     jQuery('div[id="' + block_id + '"]').html('<div class="column_content flex scroller">' + content + '</div>');
                 }
 
-                if (data['rating'] && typeof (data['rating']) == 'string')
-                {
+                if (data['rating'] && typeof (data['rating']) == 'string') {
                     data['rating'] = JSON.parse(data['rating']);
                 }
 
@@ -885,8 +804,7 @@ function set_video_scroll(data, block_id, append = '') {
                         array_movie.push(b);
 
                     });
-                    if (block_id == 'video_scroll')
-                    {
+                    if (block_id == 'video_scroll') {
                         array_movie.sort((a, b) => a.release < b.release ? 1 : -1);
                     }
 
@@ -902,14 +820,13 @@ function set_video_scroll(data, block_id, append = '') {
                         } else {
                             let array_title = {'movies': 'Movie', 'tvseries': 'TV Show', 'videogame': 'Game'};
                             let mtitle = 'Movie';
-                            if (array_title[b.type])
-                            {
+                            if (array_title[b.type]) {
                                 mtitle = array_title[b.type];
                             }
                             var image = '<a class="image" href="' + b.link + '/" title="' + b.title + '">' +
-                                    '<span class="card_movie_type ctype_' + b.type + '" title="' + mtitle + '"></span>\n' +
-                                    '<img loading="lazy" class="poster"  srcset="' + b.poster_link_small + ' 1x, ' + b.poster_link_big + ' 2x" alt="">\n' +
-                                    '</a>';
+                                '<span class="card_movie_type ctype_' + b.type + '" title="' + mtitle + '"></span>\n' +
+                                '<img loading="lazy" class="poster"  srcset="' + b.poster_link_small + ' 1x, ' + b.poster_link_big + ' 2x" alt="">\n' +
+                                '</a>';
                             block.find('.wrapper').html(image);
                             block.find('.content h2').html('<a href="' + b.link + '/" title="' + b.title + '">' + b.title + '</a>');
                             block.find('.content p').html(b.genre);
@@ -944,12 +861,10 @@ function set_video_scroll(data, block_id, append = '') {
                                 }
 
                                 var disquss_class = '';
-                                if (ccount)
-                                {
+                                if (ccount) {
                                     disquss_class = ' comment_count';
                                     ccount_data = '<span  class="disquss_coment_count">' + ccount + '</span>';
-                                } else
-                                {
+                                } else {
                                     ccount_data = ' ';
                                 }
 
@@ -963,11 +878,9 @@ function set_video_scroll(data, block_id, append = '') {
 
 
                             }
-                            if (data['rating'])
-                            {
+                            if (data['rating']) {
                                 if (b.content_pro) {
-                                    if (b['m_id'])
-                                    {
+                                    if (b['m_id']) {
                                         a = b['m_id'];
                                     }
                                 }
@@ -996,8 +909,47 @@ function set_video_scroll(data, block_id, append = '') {
 
                 }
             }
+
+
+            if (block_id == 'review_scroll') {
+
+                if (data['mid'] && data['mid'] > 0) {
+
+                    let custom_ctntn = `<div class="review_details"><a href="#" id-data="${data['mid']}" class="add_critic">Submit a review link</a></div>
+<details class="actor_details review_details">
+   <summary>Search blogosphere & vlogosphere</summary>
+<section class="dmg_content inner_content" id="actor_data_dop">
+        <div id="google_search_review" data-name="reviews_search" data-value="${data['mid']}" class="page_custom_block not_load"></div>
+</section>
+</details>`;
+
+                    jQuery('div[id="' + block_id + '"]').append(custom_ctntn);
+
+                }
+
+
+            }
+
         } else {
 
+
+            if (block_id == 'review_scroll') {
+
+                if (data['mid'] && data['mid'] > 0) {
+                    let prnt = jQuery('div[id="' + block_id + '"]').parents('section.inner_content');
+                    var block = jQuery('div[id="' + block_id + '"]');
+
+                    let custom_ctntn = `<a href="#" id-data="${data['mid']}" class="add_critic">Submit a review link</a><div class="page_custom_block reviews_gs_block" id="reviews_gs_block"></div>`;
+
+                    block.html(custom_ctntn).show().addClass('loaded');
+
+                    if (data['gdata']) {
+
+                        prepare_search_data('reviews_gs_block', data['gdata']);
+                    }
+                    return;
+                }
+            }
 
 
             if (!append) {
@@ -1006,15 +958,15 @@ function set_video_scroll(data, block_id, append = '') {
                 prnt.remove();
                 var tmpl_type = data['type'];
 
-                if (tmpl_type == 'actors_data')
-                {
+                if (tmpl_type == 'actors_data') {
                     //  jQuery('.actor_details>div').html('  Sorry. No actor data available yet. Stay tuned.').addClass('dmg_content');
                 }
 
             }
         }
-    } else
-    {
+
+
+    } else {
 
 
         if (!append) {
@@ -1023,22 +975,19 @@ function set_video_scroll(data, block_id, append = '') {
         }
 
 
-}
+    }
 }
 
-function  add_rating_row(title, content, id, content_text)
-{
+function add_rating_row(title, content, id, content_text) {
     let id_ins = '';
     let open_rating = '';
     let open_rating_container = '';
 
-    if (id)
-    {
+    if (id) {
         id_ins = `id="${id}"`;
         open_rating = `<a id="op"  class="open_rating open_ul" href="#"></a>`;
 
-        if (content_text)
-        {
+        if (content_text) {
             open_rating_container = `<div style="display: none" class="open_rating_container note_show"><div class="note_show_content_1">${content_text}</div></div>`;
         }
     }
@@ -1047,53 +996,55 @@ function  add_rating_row(title, content, id, content_text)
     let row = `<div class="rating_row" ${id_ins}><span class="rating_row_title">${title}</span><span class="rating_row_content">${content}${open_rating}</span>${open_rating_container}</div>`;
     return row;
 }
-function create_rating_star(rating, type,num=10)
-{
 
-    if (type=='big_rating')  {
+function create_rating_star(rating, type, num = 10) {
+
+    if (type == 'big_rating') {
 
 
         if (rating) {
-            return '<span class="big_rating '+type+'"><strong>' + rating + '</strong>/'+num+'</span>';
+            return '<span class="big_rating ' + type + '"><strong>' + rating + '</strong>/' + num + '</span>';
         }
 
-    }
-
-     else if (type.indexOf('rotten_tomatoes') != -1  ) {
+    } else if (type.indexOf('rotten_tomatoes') != -1) {
         rating = Number(rating);
-        if (rating > 0)
-        {
+        if (rating > 0) {
             return '<span class="' + type + '_rating"><strong>' + rating + '%</strong></span>';
         } else
             return '';
 
-    } else if (type == 'vote')
-    {
+    } else if (type == 'vote') {
 
 
         //  console.log(rating[1]);
         let array = {};
-        if (rating[1] == 'tvseries' || rating[1] == 'movie')
-        {
-            array = {1: ['pay_to_watch', 'Pay To Watch!'], 2: ['skip_it', 'Skip It'], 3: ['watch_if_free', 'Watch If Free.']};
-        } else if (rating[1] == 'videogame')
-        {
-            array = {1: ['pay_to_watch', 'Pay to play it!'], 2: ['skip_it', 'Skip It'], 3: ['watch_if_free', 'Play if Free.']};
-        } else
-        {
-            array = {1: ['pay_to_watch', 'Pay To Consume'], 2: ['skip_it', 'Skip It'], 3: ['watch_if_free', 'Consume if Free']};
+        if (rating[1] == 'tvseries' || rating[1] == 'movie') {
+            array = {
+                1: ['pay_to_watch', 'Pay To Watch!'],
+                2: ['skip_it', 'Skip It'],
+                3: ['watch_if_free', 'Watch If Free.']
+            };
+        } else if (rating[1] == 'videogame') {
+            array = {
+                1: ['pay_to_watch', 'Pay to play it!'],
+                2: ['skip_it', 'Skip It'],
+                3: ['watch_if_free', 'Play if Free.']
+            };
+        } else {
+            array = {
+                1: ['pay_to_watch', 'Pay To Consume'],
+                2: ['skip_it', 'Skip It'],
+                3: ['watch_if_free', 'Consume if Free']
+            };
         }
 
 
-
-        return  '<span title="' + array[rating[0]][1] + '" style="background-size: 30%" class="rating_result ' + array[rating[0]][0] + '"><span class="verdict_text">' + array[rating[0]][1] + '</span></span>';
-    } else
-    {
+        return '<span title="' + array[rating[0]][1] + '" style="background-size: 30%" class="rating_result ' + array[rating[0]][0] + '"><span class="verdict_text">' + array[rating[0]][1] + '</span></span>';
+    } else {
         rating = Number(rating);
         let bg = 20;
         let str_widt = rating * 20;
-        if (rating)
-        {
+        if (rating) {
             bg = 100 / rating;
         }
 
@@ -1103,18 +1054,17 @@ function create_rating_star(rating, type,num=10)
     }
 
 
-
 }
 
-function add_movie_rating(block_id, data)
-{
+function add_movie_rating(block_id, data) {
     let parent_id = jQuery('div[id="' + block_id + '"]').attr('data-value');
-    let rating_content = create_rating_content(data,parent_id,1);
+    let rating_content = create_rating_content(data, parent_id, 1);
 
     jQuery('div.movie_total_rating[id="' + block_id + '"]').html(rating_content);
-return;
+    return;
 
 }
+
 function load_actor_representation(movie_id) {
     var data = new Object();
     var ethnycity = new Object();
@@ -1132,8 +1082,7 @@ function load_actor_representation(movie_id) {
     });
     var a_type = new Array();
     jQuery('.r_row input').each(function () {
-        if (jQuery(this).is(":checked"))
-        {
+        if (jQuery(this).is(":checked")) {
             a_type.push(jQuery(this).attr('id'));
         }
 
@@ -1148,7 +1097,8 @@ function load_actor_representation(movie_id) {
     jQuery.ajax({
         type: "post",
         url: url,
-        data: {ethnic: JSON.stringify(data),
+        data: {
+            ethnic: JSON.stringify(data),
             id: movie_id
         },
 
@@ -1157,16 +1107,15 @@ function load_actor_representation(movie_id) {
             jQuery('.r_content').html(data);
             jQuery('.main_ethnic_graph').click();
 
-        }});
+        }
+    });
 
 
 }
 
-function word_cloud(id)
-{
+function word_cloud(id) {
     var factor = '0.5';
-    if (jQuery('.wordcloud[id="' + id + '"]').width() > 600)
-    {
+    if (jQuery('.wordcloud[id="' + id + '"]').width() > 600) {
         factor = 1;
     }
 
@@ -1202,64 +1151,54 @@ function word_cloud(id)
 }
 
 
-function ff_content(data,id)
-{
-    let content ='<div class="column_header"><h2>Family Friendly Breakdown: <a href="#" data-value="'+id+'" class="empty_ff_rating empty_ff_popup_rating">+add</a></h2></div>';
+function ff_content(data, id) {
+    let content = '<div class="column_header"><h2>Family Friendly Breakdown: <a href="#" data-value="' + id + '" class="empty_ff_rating empty_ff_popup_rating">+add</a></h2></div>';
 
- if (data)
- {
-     let data_ob = JSON.parse(data);
+    if (data) {
+        let data_ob = JSON.parse(data);
 
 //     console.log(data_ob);
 
-     if (data_ob.rating)
-     {
+        if (data_ob.rating) {
 
 
-         let movie_type = data_ob.type;
+            let movie_type = data_ob.type;
 
-         let array_title = {'movie': 'film', 'tvseries': 'show', 'videogame': 'game'};
-         let name = 'film';
-         if (array_title[movie_type])
-         {
-             name = array_title[movie_type];
-         }
-         let scorecontent='';
-
+            let array_title = {'movie': 'film', 'tvseries': 'show', 'videogame': 'game'};
+            let name = 'film';
+            if (array_title[movie_type]) {
+                name = array_title[movie_type];
+            }
+            let scorecontent = '';
 
 
-         if (data_ob.rating > 0)
-         {
-             scorecontent = `This ${name} gets a ${data_ob.rating }/5 family friendly score `;
-             content += '<div class="ff_rating_contaner">' + create_rating_star(data_ob.rating, 'ff_total') + '<p class="ff_rating_desc">'+scorecontent+'</p></div>';
-         }
+            if (data_ob.rating > 0) {
+                scorecontent = `This ${name} gets a ${data_ob.rating}/5 family friendly score `;
+                content += '<div class="ff_rating_contaner">' + create_rating_star(data_ob.rating, 'ff_total') + '<p class="ff_rating_desc">' + scorecontent + '</p></div>';
+            }
 
-     }
+        }
 
-     if (data_ob.content)
-     {
-      content += '<div class="ff_other_content">'+data_ob.content + '</div><a href="#" class="ff_other_content_calculate how_calculate_rating">Methodology</a>';
+        if (data_ob.content) {
+            content += '<div class="ff_other_content">' + data_ob.content + '</div><a href="#" class="ff_other_content_calculate how_calculate_rating">Methodology</a>';
 
 
-         if (data_ob.other)
-         {
-             content+= '<details style="margin-top: 15px" class="trsprnt"><summary>Other sources</summary><div>' + data_ob.other + '</div></details>';
-         }
-     }
-     else
-     {
+            if (data_ob.other) {
+                content += '<details style="margin-top: 15px" class="trsprnt"><summary>Other sources</summary><div>' + data_ob.other + '</div></details>';
+            }
+        } else {
 
-         if (data_ob.other)
-         {
-             content+=  data_ob.other;
-         }
-     }
+            if (data_ob.other) {
+                content += data_ob.other;
+            }
+        }
 
 
- }
+    }
 
-  return content;
+    return content;
 }
+
 function transformURL(url) {
     const parts = url.split('/');
     const domain = parts[2].replace(/\./g, '-');
@@ -1270,91 +1209,85 @@ function transformURL(url) {
 }
 
 
-function global_zeitgeist_content(data)
-{
+function global_zeitgeist_content(data) {
 
-    let result ='';
+    let result = '';
 
-    if (data.result)
-    {
-    let gzobj = data.result;
+    if (data.result) {
+        let gzobj = data.result;
 
-    for (var key in gzobj) {
+        for (var key in gzobj) {
 
-        if (gzobj.hasOwnProperty(key)) {
-            let item = gzobj[key];
+            if (gzobj.hasOwnProperty(key)) {
+                let item = gzobj[key];
 
-            if (item.link) {
-                if (!item.multipler) {
-                    item.multipler = 10;
-                }
-
-
-                let rating = item.rating;
-
-                if (rating) {
-                    rating = rating / item.multipler;
-
-                   // rating = rating + '/' + item.ratmax;
-                } else {
-                    rating = '';
-                }
-                let img_container = '';
-
-
-                if (item.img) {
-                    img_container = '<div class="gl_image"><img src="https://info.antiwoketomatoes.com/wp-content/uploads/sites_img/' + item.img + '.png" alt="' + item.name + '"></div>';
-                }
-                let flag='';
-                if (item.flag) {
-
-                    if (item.flag=='mtcr'){
-
-                        flag = `<img src="https://zeitgeistreviews.com/wp-content/themes/custom_twentysixteen/images/metacritic-logo.svg">`;
-                    }
-                    else
-                    {
-                        flag = `<img src="https://zeitgeistreviews.com/wp-content/themes/custom_twentysixteen/images/flags/4x3/${item.flag}.svg">`;
+                if (item.link) {
+                    if (!item.multipler) {
+                        item.multipler = 10;
                     }
 
+
+                    let rating = item.rating;
+
+                    if (rating) {
+                        rating = rating / item.multipler;
+
+                        // rating = rating + '/' + item.ratmax;
+                    } else {
+                        rating = '';
+                    }
+                    let img_container = '';
+
+
+                    if (item.img) {
+                        img_container = '<div class="gl_image"><img src="https://info.antiwoketomatoes.com/wp-content/uploads/sites_img/' + item.img + '.png" alt="' + item.name + '"></div>';
+                    }
+                    let flag = '';
+                    if (item.flag) {
+
+                        if (item.flag == 'mtcr') {
+
+                            flag = `<img src="https://zeitgeistreviews.com/wp-content/themes/custom_twentysixteen/images/metacritic-logo.svg">`;
+                        } else {
+                            flag = `<img src="https://zeitgeistreviews.com/wp-content/themes/custom_twentysixteen/images/flags/4x3/${item.flag}.svg">`;
+                        }
+
+                    }
+
+                    let converted_rating = item.rating / (item.rateconvert);
+                    let star_rating = create_rating_star(converted_rating, 'gl_' + item.ekey);
+
+                    let rating_converted = create_rating_star(rating, 'big_rating', item.multipler);
+
+                    let rdata = `<div class="gl_small_block rating_block" id="${item.ekey}"><div class="gl_rating_img">${flag}</div><div class="gl_rating_title">${item.name}</div><div class="gl_star_rating rwt_stars">${star_rating}</div></div>`;
+
+
+                    let trans_link = '';// `<a class="outr_link"  target="_blank" href="${transformURL(item.link)}" >${item.name} (en)</a>` ;
+
+
+                    let incntnt = `<a class="outr_link"  target="_blank" href="${item.link}" >${item.name}</a>${trans_link}<div class="gl_rating">rating: ${rating_converted}</div>${img_container}</div>`
+
+                    let rblock = add_rating_block('glob_zr', rdata, incntnt, '', true);
+
+                    result += rblock;
+
                 }
 
-                let converted_rating = item.rating / (item.rateconvert);
-                let star_rating = create_rating_star(converted_rating,'gl_'+item.ekey);
-
-                let rating_converted = create_rating_star(rating,'big_rating',item.multipler);
-
-                let rdata =`<div class="gl_small_block rating_block" id="${item.ekey}"><div class="gl_rating_img">${flag}</div><div class="gl_rating_title">${item.name}</div><div class="gl_star_rating rwt_stars">${star_rating}</div></div>`;
-
-
-                let trans_link ='';// `<a class="outr_link"  target="_blank" href="${transformURL(item.link)}" >${item.name} (en)</a>` ;
-
-
-                let incntnt =`<a class="outr_link"  target="_blank" href="${item.link}" >${item.name}</a>${trans_link}<div class="gl_rating">rating: ${rating_converted}</div>${img_container}</div>`
-
-                let rblock = add_rating_block('glob_zr',rdata,incntnt,'',true);
-
-                result += rblock;
-
-              }
-
+            }
         }
-    }
 
     }
-    if (data.other)
-    {
-        result +=data.other;
-    }
+    // if (data.other) {
+    //     result += data.other;
+    // }
 
 
-return result;
+    return result;
 }
 
 
 var currentScript = null;
 var gs_ob = {};
-
 
 
 function loadGScript(src) {
@@ -1363,7 +1296,7 @@ function loadGScript(src) {
     var script = document.createElement("script");
     script.async = true;
     script.src = src;
-    script.addEventListener("load", function() {
+    script.addEventListener("load", function () {
     });
 
     document.head.appendChild(script);
@@ -1371,13 +1304,12 @@ function loadGScript(src) {
 
 }
 
-function check_new_data(title)
-{
+function check_new_data(title, block_id) {
 
-    var gsContent = document.getElementById("gs_cotntent");
+    var gsContent = document.querySelector('#' + block_id + ' #gs_cotntent'); ///document.getElementById("gs_cotntent");
 
 
-    var observer = new MutationObserver(function(mutations) {
+    var observer = new MutationObserver(function (mutations) {
         mutations.forEach(function (mutation) {
             if (mutation.addedNodes) {
                 mutation.addedNodes.forEach(function (addedNode) {
@@ -1392,16 +1324,16 @@ function check_new_data(title)
         });
     });
 
-    var config = { childList: true, subtree: true };
+    var config = {childList: true, subtree: true};
     observer.observe(gsContent, config);
 }
-function  get_subcontent_gs(parent,data)
-{
 
-  //  const sortedArray = Object.values(data).sort((a, b) => Number(a.data.weight) - Number(b.data.weight));
+function get_subcontent_gs(parent, data, block_id) {
+
+    //  const sortedArray = Object.values(data).sort((a, b) => Number(a.data.weight) - Number(b.data.weight));
     const sortedArray = Object.values(data).sort((a, b) => {
-        const titleA = a.data.title.toLowerCase();
-        const titleB = b.data.title.toLowerCase();
+        const titleA = a.data.name.toLowerCase();
+        const titleB = b.data.name.toLowerCase();
         if (titleA < titleB) {
             return -1;
         }
@@ -1410,88 +1342,100 @@ function  get_subcontent_gs(parent,data)
         }
         return 0;
     });
-    let buttons ='';
-    let sub_content ='';
-
+    let buttons = '';
+    let sub_content = '';
+    //console.log(sortedArray);
     sortedArray.forEach(item => {
         //console.log(item);
-        buttons+=`<span class="tab_button_child"><button class="tab_button_child_btn" data-parent="${parent}"  data-tab="${item.data.id}" onclick="showTab(this)">${item.data.title}</button><a target="_blank" class="button_child_extlink" href="${item.data.link}"></a></span>`;
+        buttons += `<span class="tab_button_child button_child_${item.data.id}"><button class="tab_button_child_btn" data-parent="${parent}" data-block="${block_id}"   data-tab="${item.data.id}" onclick="showTab(this)">${item.data.name}</button><a target="_blank" class="button_child_extlink" href="${item.data.link}"></a><span class="tab_child_title">${item.data.title}</span></span>`;
     });
 
-    let content =`<div class="tab-list tab-list-child">${buttons}</div>`;
+    let content = `<div class="tab-list-main-child"><div class="tab-list tab-list-child">${buttons}</div></div>`;
 
     return content;
-
 
 
 }
 
 function showTab(button) {
-    if (gs_ob)
-    {
+    if (gs_ob) {
 
-     let gs_ob_current =null;
-     let tabName = button.dataset.tab;
-    let contentDiv = document.getElementById("gs_cotntent");
-    let sub_content='';
+        let gs_ob_current = null;
+        let tabName = button.dataset.tab;
 
-    let sub_procces=null;
-    let prnt =null;
+        let sub_content = '';
 
-    if (button.classList.contains('tab_button_child_btn'))
-    {
-        sub_procces=1;
-        prnt = button.dataset.parent;
-        gs_ob_current =  gs_ob.data[prnt].sub;
+        let sub_procces = null;
+        let prnt = null;
 
 
-        sub_content =document.querySelector(".tab-list-child").outerHTML;
-    }else
-    {
-        gs_ob_current =   gs_ob.data;
-    }
+        let block_id = button.dataset.block;
+        let contentDiv = document.querySelector("#" + block_id + " #gs_cotntent");
+        if (button.classList.contains('tab_button_child_btn')) {
+            sub_procces = 1;
+            prnt = button.dataset.parent;
+            gs_ob_current = gs_ob[block_id].data[prnt].sub;
+
+
+            sub_content = document.querySelector("#" + block_id + " .tab-list-child").outerHTML;
+        } else {
+            gs_ob_current = gs_ob[block_id].data;
+        }
         ///console.log(prnt,gs_ob_current);
 
 
-        if (!sub_procces && gs_ob_current[tabName].sub)
-        {
-            sub_content = get_subcontent_gs(tabName,gs_ob_current[tabName].sub);
+        if (!sub_procces && gs_ob_current[tabName].sub) {
+            sub_content = get_subcontent_gs(tabName, gs_ob_current[tabName].sub, block_id);
         }
 
-    contentDiv.innerHTML = "<h3>" + gs_ob_current[tabName].data.title + ": <a target='_blank' href=\"" + gs_ob_current[tabName].data.link + "\" class=\"button_child_extlink\"></a></h3><div class=\"tab_content_gs_block\"><div class=\"gcse-search\"></div></div><p>" +sub_content+ gs_ob_current[tabName].data.dop_content + "</p>";
+        contentDiv.innerHTML = "<h3 class = \"gs_head gs_head_" + tabName + "\">" + gs_ob_current[tabName].data.name + ": <a target='_blank' href=\"" + gs_ob_current[tabName].data.link + "\" class=\"button_child_extlink\"></a></h3><div class=\"tab_content_gs_block\"><div class=\"gcse-search\"></div></div><p>" + sub_content + gs_ob_current[tabName].data.dop_content + "</p>";
 
         if (!sub_procces) {
-            var tabButtons = document.getElementsByClassName("tab-button");
-            for (var i = 0; i < tabButtons.length; i++) {
-                tabButtons[i].classList.remove("selected");
+            var tabButtons = document.querySelector("#" + block_id + " .tab-button.selected");
+
+            if (tabButtons) {
+                tabButtons.classList.remove("selected");
             }
+
+
             button.classList.add("selected");
         }
 
-    ///contentDiv.style.display = "block";
+        ///contentDiv.style.display = "block";
 
         let content_type = gs_ob_current[tabName].data.content_type;
 
 
-        if (content_type==0)
-        {
+        if (content_type == 0) {
 
             if (currentScript !== null) {
                 currentScript.remove();
             }
-            check_new_data(gs_ob.title);
+
+
+            check_new_data(gs_ob[block_id].title, block_id);
             if (gs_ob_current[tabName].data.script) {
                 loadGScript(gs_ob_current[tabName].data.script);
             }
-        }
-        else if (content_type==1)
-        {
-         let srcdata =    gs_ob_current[tabName].data.script
+        } else if (content_type == 1) {
+            let srcdata = gs_ob_current[tabName].data.script
 
-            let tabContentBlock = document.querySelector('.tab_content_gs_block');
+            let tabContentBlock = document.querySelector('#' + block_id + ' .tab_content_gs_block');
 
 
-            let htmlCode = '<iframe src="' + srcdata + '"></iframe>';
+            let htmlCode = '<div class="spin_bg"><i class="icon icon-loader"></i></div><iframe src="' + srcdata + '"></iframe>';
+
+
+            tabContentBlock.innerHTML = htmlCode;
+
+
+        } else if (content_type == 2) {
+            let srcdata = gs_ob_current[tabName].data.script
+
+            let tabContentBlock = document.querySelector('#' + block_id + ' .tab_content_gs_block');
+
+
+            let htmlCode = '<div class="spin_bg"><i class="icon icon-loader"></i></div><iframe style="max-width: 1020px;" src="' + srcdata + '"></iframe>';
 
 
             tabContentBlock.innerHTML = htmlCode;
@@ -1500,53 +1444,55 @@ function showTab(button) {
         }
 
 
-
     }
 
     return false;
 }
 
 
+function prepare_search_data(block_id, data_str) {
+    let content = '';
+    //console.log(typeof(data_str));
 
-function   prepare_search_data(block_id,data_str)
-{
-    let content ='';
-    //console.log(data_str);
-    let data ={};
-
-    if (data_str)
-    {
-        if (typeof(data_str)=='object' )
-        {
-            data = data_str;
-
-        }
-        else if (typeof(data_str)=='string' )
-        {
-            data = JSON.parse(data_str);
+    if (data_str) {
+        if (typeof (data_str) == 'object') {
+            gs_ob[block_id] = data_str;
+        } else {
+            gs_ob[block_id] = JSON.parse(data_str);
         }
 
-        gs_ob =data;
 
-        const sortedArray = Object.values(data.data).sort((a, b) => a.data.weight - b.data.weight);
+        //console.log(data);
 
-        let buttons ='';
-        let sub_content ='';
-
-        sortedArray.forEach(item => {
-           // console.log(item);
-            buttons+=`<button class="tab-button" data-tab="${item.data.id}" onclick="showTab(this)">${item.data.title}</button>`;
+        const sortedArray = Object.values(gs_ob[block_id].data).sort((a, b) => {
+            const titleA = a.data.weight;
+            const titleB = b.data.weight;
+            if (titleA < titleB) {
+                return -1;
+            }
+            if (titleA > titleB) {
+                return 1;
+            }
+            return 0;
         });
 
-        content =`<div class="tab-container">
-    <div class="tab-list">
+
+        let buttons = '';
+        let sub_content = '';
+
+        sortedArray.forEach(item => {
+            // console.log(item);
+            buttons += `<button class="tab-button" data-tab="${item.data.id}" data-block="${block_id}" onclick="showTab(this)">${item.data.title}</button>`;
+        });
+
+        content = `<div class="tab-container">
+    <div class="tab-list_main"><div class="tab-list">
         ${buttons}
-    </div>
+    </div></div>
    
      <div id="gs_cotntent" class="tab-content"></div>
 
 </div>`;
-
 
 
     }
@@ -1572,13 +1518,11 @@ function load_ajax_block(block_id) {
         request = "";
     }
 
-    if (request == '?id=none')
-    {
+    if (request == '?id=none') {
         return;
     }
 
-    if (block_id.indexOf('?') > 0)
-    {
+    if (block_id.indexOf('?') > 0) {
         let pos = block_id.indexOf('?');
         request_block = block_id.substr(pos + 1);
         var block_id_sub = block_id.substr(0, pos);
@@ -1636,8 +1580,7 @@ function load_ajax_block(block_id) {
     // Ajax load
     var url = window.location.protocol + template_path + block_id + ".php" + request;
 
-    if (request_block)
-    {
+    if (request_block) {
         url = window.location.protocol + template_path + block_id_sub + ".php" + request + '&' + request_block;
     }
 
@@ -1657,22 +1600,19 @@ function load_ajax_block(block_id) {
                 let title = jQuery('div[id="' + block_id + '"]').attr('data-name');
                 if (data) {
                     let obj = JSON.parse(data);
-                    if (obj)
-                    {
-                        if (obj.content)
-                        {
+                    if (obj) {
+                        if (obj.content) {
                             let dto = '';
                             if (obj.data) {
                                 dto = '<details style="margin-top: 15px" class="trsprnt"><summary>Other sources</summary><div>' + obj.data + '</div></details>';
                             }
 
                             jQuery('div[id="' + block_id + '"]').html('<div class="column_header">\n' +
-                                    '                    <h2>Similar ' + title + ':</h2>\n' +
-                                    '                </div><div class="movie_scroller scroller_wrap"><div class="column_content flex scroller flex_movies_block">' + obj.content + '</div>' +
-                                    '</div>' + dto);
+                                '                    <h2>Similar ' + title + ':</h2>\n' +
+                                '                </div><div class="movie_scroller scroller_wrap"><div class="column_content flex scroller flex_movies_block">' + obj.content + '</div>' +
+                                '</div>' + dto);
 
-                            if (obj['rating'])
-                            {
+                            if (obj['rating']) {
                                 jQuery.each(obj['rating'], function (a, b) {
                                     ///console.log(a,b);
                                     let rating_content = create_rating_content(b, a);
@@ -1690,15 +1630,13 @@ function load_ajax_block(block_id) {
                 if (data) {
                     //  jQuery('div.column_header_main').prepend(data);
                     jQuery('div[id="' + block_id + '"]').html('<div class="column_content flex scroller">' + data + '</div>');
-                    if (typeof ctf_init != 'undefined')
-                    {
+                    if (typeof ctf_init != 'undefined') {
                         ctf_init();
                     }
 
 
                     let af = jQuery('.s_container a:first-of-type').attr('id');
-                    if (af)
-                    {
+                    if (af) {
                         word_cloud(af);
                     }
 
@@ -1715,8 +1653,7 @@ function load_ajax_block(block_id) {
                     }
 
                     let chandata = Object_data['chandata'];
-                    if (chandata)
-                    {
+                    if (chandata) {
                         ///console.log(link);
 
                         jQuery('div[id="' + block_id + '"]').html(chandata);
@@ -1725,16 +1662,11 @@ function load_ajax_block(block_id) {
 
                 }
 
-            }
-            else if (block_id == 'google_search') {
+            } else if (block_id == 'google_search' || block_id == 'google_search_review' || block_id == 'google_global_zeitgeist') {
                 if (data) {
-                    prepare_search_data(block_id,data);
-
+                    prepare_search_data(block_id, data);
                 }
-            }
-
-
-            else if (block_id == 'ns_related_scroll') {
+            } else if (block_id == 'ns_related_scroll') {
                 if (data) {
                     jQuery('#' + block_id).html(data);
                 }
@@ -1745,61 +1677,48 @@ function load_ajax_block(block_id) {
                     jQuery('#' + block_id).html(data);
 
                 }
-            }
-            else if (block_id == 'family_friendly') {
+            } else if (block_id == 'family_friendly') {
                 if (data) {
 
-                    let ffcontent = ff_content(data,block_id);
+                    let ffcontent = ff_content(data, block_id);
 
                     jQuery('#' + block_id).html(ffcontent);
 
 
-
-
-
                 }
-            }
-
-            else if (block_id == 'global_zeitgeist') {
+            } else if (block_id == 'global_zeitgeist') {
                 if (data) {
                     let gzobj = JSON.parse(data);
 
 
+                    if (gzobj.result.length != 0) {
+                        let gz_content = global_zeitgeist_content(gzobj);
 
-                    if (gzobj.result.length != 0)
-                    {
-                        let gz_content =  global_zeitgeist_content(gzobj);
+                        gz_content += `<details style="margin-top: 15px; width: 100%" class="trsprnt actor_details">
+   <summary>Search the globe</summary>
+  <div  id="google_global_zeitgeist" data-value="${parent_id}" class="not_load page_custom_block"></div>
+
+</details>`;
                         jQuery('#' + block_id).html(gz_content);
 
-                    }
-                  else
-                  {
+                    } else {
 
-                      jQuery('.global_zeitgeist_container').remove();
+                        jQuery('.global_zeitgeist_container').remove();
 
-                      if (gzobj.other)
-                      {
-
-                          jQuery('.detail_container').append(`<details class="dark actor_details" >
+                        jQuery('.detail_container').append(`<details class="dark actor_details" >
    <summary>Global Consensus</summary>
 <section class="dmg_content inner_content" id="actor_data_dop" >
-        <div  id="global_zeitgeist" >${gzobj.other}</div>
+        <div  id="google_global_zeitgeist" data-value="${parent_id}" class="not_load page_custom_block"></div>
 </section>
 </details>`);
 
-                      }
-
-                  }
+                    }
 
 
                 }
-            }
-
-
-            else if (block_id == 'movie_rating') {
+            } else if (block_id == 'movie_rating') {
                 add_movie_rating(block_id, data);
-            }
-            else if (block_id == 'last_donations') {
+            } else if (block_id == 'last_donations') {
                 jQuery('div[id="' + block_id + '"]').html(data);
             } else if (block_id == 'mailpoet_form') {
                 jQuery('div[id="' + block_id + '"]').html(data);
@@ -1821,8 +1740,6 @@ function load_ajax_block(block_id) {
                     });
 
                 });
-
-
 
 
                 jQuery('body').on('change', '.r_row_item  input', function () {
@@ -1874,8 +1791,7 @@ function load_ajax_block(block_id) {
 
                     jQuery('div[id="' + block_id + '"]').html(Object_data['content']);
 
-                    if (Object_data['rating'] && typeof (Object_data['rating']) == 'string')
-                    {
+                    if (Object_data['rating'] && typeof (Object_data['rating']) == 'string') {
 
                         Object_data['rating'] = JSON.parse(Object_data['rating']);
 
@@ -1891,6 +1807,8 @@ function load_ajax_block(block_id) {
 
                 }
             } else {
+
+
                 set_video_scroll(data, block_id);
                 initializeScroller(0, 'div[id="' + block_id + '"]');
             }
@@ -1971,18 +1889,16 @@ function update_scrool_Title(event) {
 
     let title = jQuery('.rand_scroll .column_header>h2 span.block_title')
     title.html(selectedText);
-    jQuery('#compilation_scroll').attr('data-value',selectedValue);
+    jQuery('#compilation_scroll').attr('data-value', selectedValue);
 
     ///jQuery('#compilation_scroll').removeClass('loaded').addClass('not_load');
     load_ajax_block('compilation_scroll');
 }
+
 var update_scrool = document.getElementById("myList");
-if (update_scrool)
-{
+if (update_scrool) {
     update_scrool.addEventListener("click", update_scrool_Title);
 }
-
-
 
 
 function get_Top(block) {
@@ -1994,8 +1910,7 @@ function get_Top(block) {
 function load_next_block(block_id) {
 
 
-    if (!block_id)
-    {
+    if (!block_id) {
         var block_id = jQuery('.not_load:visible').attr('id');
     }
 
@@ -2031,7 +1946,6 @@ function load_next_block(block_id) {
             data_object['page_identifier'] = block.attr('data_idn');
             data_object['title'] = block.attr('data_title');
             data_object['data_comments'] = block.attr('data_comments');
-
 
 
             ///console.log(data_object);
@@ -2096,15 +2010,15 @@ var run = 1;
 function add_popup() {
     if (!jQuery('.popup-container').html()) {
         var popup = '<div class="popup-container">\n' +
-                '\t<input type="checkbox" id="action-popup">\n' +
-                '\t<div class="popup">\n' +
-                '\t\t<label for="action-popup" class="transparent-label"></label>\n' +
-                '\t\t<label for="action-popup" class="popup-close"></label><div class="popup-inner">\n' +
-                '\t\t\t<div class="popup-content">\n' +
-                '\t\t\t</div>\n' +
-                '\t\t</div>\n' +
-                '\t</div>\n' +
-                '</div>';
+            '\t<input type="checkbox" id="action-popup">\n' +
+            '\t<div class="popup">\n' +
+            '\t\t<label for="action-popup" class="transparent-label"></label>\n' +
+            '\t\t<label for="action-popup" class="popup-close"></label><div class="popup-inner">\n' +
+            '\t\t\t<div class="popup-content">\n' +
+            '\t\t\t</div>\n' +
+            '\t\t</div>\n' +
+            '\t</div>\n' +
+            '</div>';
         jQuery('body').append(popup);
     }
 
@@ -2141,8 +2055,7 @@ function generate_watch_content(data, title, year, type) {
     }
     ///console.log(Object_data);
 
-    if (type == 'Movie')
-    {
+    if (type == 'Movie') {
 
         Object_data['data'].push({
             'monetization_type': "irl",
@@ -2159,8 +2072,6 @@ function generate_watch_content(data, title, year, type) {
             'i': window.location.protocol + "/wp-content/themes/custom_twentysixteen/images/showtimes-logo.png"
         };
     }
-
-
 
 
     //console.log(Object_data['data']);
@@ -2239,13 +2150,11 @@ function generate_watch_content(data, title, year, type) {
                 current_data.presentation_type = '';
             }
             let cls = '';
-            if (provider.s)
-            {
+            if (provider.s) {
                 cls = '  ' + provider.s;
             }
             let res_price = '';
-            if (provider_currency || current_data.presentation_type)
-            {
+            if (provider_currency || current_data.presentation_type) {
                 res_price = `<div class="povider_price">${provider_currency}<span class="provider_type">${current_data.presentation_type}</span></div>`;
             }
 
@@ -2258,8 +2167,7 @@ function generate_watch_content(data, title, year, type) {
                 current_data.monetization_type = 'stream'
             }
 
-            if (current_data.monetization_type == 'ads')
-            {
+            if (current_data.monetization_type == 'ads') {
                 current_data.monetization_type = 'free';
             }
             if (!content_array[current_data.monetization_type]) {
@@ -2295,10 +2203,9 @@ function generate_watch_content(data, title, year, type) {
     Object.keys(content_array).forEach((key) => {
 
 
-        let dop ='';
-        if (key=='"Free"')
-        {
-            dop ='<span data-value="piracy_disclaimer_popup" class="nte_info nte_providers"></span>';
+        let dop = '';
+        if (key == '"Free"') {
+            dop = '<span data-value="piracy_disclaimer_popup" class="nte_info nte_providers"></span>';
         }
 
         content += `${dop}<div class="providers_colum"><div class='providers_desc providers_${key}'>${key}</div><div class="providers_colum_data">${content_array[key]}</div></div>`;
@@ -2311,25 +2218,21 @@ function generate_watch_content(data, title, year, type) {
 
 
 }
-function create_Highcharts_colomn_single(data, block)
-{
+
+function create_Highcharts_colomn_single(data, block) {
 
 
-
-    if (typeof Highcharts !== 'undefined')
-    {
+    if (typeof Highcharts !== 'undefined') {
 
 
-        if (data)
-        {
+        if (data) {
             data = JSON.parse(data);
             var data_series = data['series'];
             var prefix = data['prefix'];
 
         }
 
-        if (data)
-        {
+        if (data) {
             Highcharts.chart('container_' + block, {
                 chart: {
                     plotBackgroundColor: null,
@@ -2356,54 +2259,49 @@ function create_Highcharts_colomn_single(data, block)
                     }
                 },
                 yAxis: [{
-                        title: {
-                            text: 'Percentage'
-                        },
-                        showFirstLabel: false
-                    }],
+                    title: {
+                        text: 'Percentage'
+                    },
+                    showFirstLabel: false
+                }],
                 series: [{
-                        name: data['name'],
-                        colorByPoint: true,
-                        dataSorting: {
-                            enabled: true,
-                            matchByName: true
-                        },
-                        dataLabels: [{
-                                enabled: true,
-                                inside: true,
-                                style: {
-                                    fontSize: '14px'
-                                }
-                            }],
-                        data: data_series
-                    }]
+                    name: data['name'],
+                    colorByPoint: true,
+                    dataSorting: {
+                        enabled: true,
+                        matchByName: true
+                    },
+                    dataLabels: [{
+                        enabled: true,
+                        inside: true,
+                        style: {
+                            fontSize: '14px'
+                        }
+                    }],
+                    data: data_series
+                }]
             });
-        } else
-        {
+        } else {
             console.log('data error');
             console.log(data);
         }
-    } else
-    {
+    } else {
         console.log('cant load Highcharts');
     }
 }
-function create_Highcharts_columns(data, block)
-{
+
+function create_Highcharts_columns(data, block) {
 
 
     if (typeof Highcharts !== 'undefined') {
 
 
-
-        if (data)
-        {
+        if (data) {
             data = JSON.parse(data);
             var data_series = data['series'];
             var data_series_cast = data['cast'];
         }
-        if (data)
-        {
+        if (data) {
             Highcharts.chart('container_' + block, {
                 chart: {
                     plotBackgroundColor: null,
@@ -2437,49 +2335,46 @@ function create_Highcharts_columns(data, block)
                     }
                 },
                 yAxis: [{
-                        title: {
-                            text: 'Percentage'
-                        },
-                        showFirstLabel: false
-                    }],
+                    title: {
+                        text: 'Percentage'
+                    },
+                    showFirstLabel: false
+                }],
                 series: [{
-                        color: 'rgb(44,47,66)',
-                        pointPlacement: -0.2,
-                        linkedTo: 'main',
-                        name: data['name'],
-                        data: data_series,
+                    color: 'rgb(44,47,66)',
+                    pointPlacement: -0.2,
+                    linkedTo: 'main',
+                    name: data['name'],
+                    data: data_series,
 
-                    }, {
-                        name: 'Cast Percentages',
-                        id: 'main',
-                        dataSorting: {
-                            enabled: true,
-                            matchByName: true
-                        },
-                        dataLabels: [{
-                                enabled: true,
-                                inside: true,
-                                style: {
-                                    fontSize: '14px'
-                                }
-                            }],
-                        data: data_series_cast
-                    }
+                }, {
+                    name: 'Cast Percentages',
+                    id: 'main',
+                    dataSorting: {
+                        enabled: true,
+                        matchByName: true
+                    },
+                    dataLabels: [{
+                        enabled: true,
+                        inside: true,
+                        style: {
+                            fontSize: '14px'
+                        }
+                    }],
+                    data: data_series_cast
+                }
                 ]
             });
         }
     }
 }
-function set_point_format(series, point, block, prefix)
-{
-    if (block == 'main_movie_graph')
-    {
+
+function set_point_format(series, point, block, prefix) {
+    if (block == 'main_movie_graph') {
         var data = '<span style="color:{point.color}">\u25CF</span> {series.name}: <b>{point.percentage:.1f}%</b>'
 
-    } else
-    {
-        if (!prefix)
-        {
+    } else {
+        if (!prefix) {
             prefix = '';
         }
 
@@ -2493,25 +2388,20 @@ function set_point_format(series, point, block, prefix)
 }
 
 
-function create_Highcharts(data, block)
-{
+function create_Highcharts(data, block) {
 
 
-
-    if (typeof Highcharts !== 'undefined')
-    {
+    if (typeof Highcharts !== 'undefined') {
 
 
-        if (data)
-        {
+        if (data) {
             data = JSON.parse(data);
             var data_series = data['series'];
             var prefix = data['prefix'];
 
         }
 
-        if (data)
-        {
+        if (data) {
             Highcharts.chart('container_' + block, {
                 chart: {
                     plotBackgroundColor: null,
@@ -2562,18 +2452,16 @@ function create_Highcharts(data, block)
 
                 },
                 series: [{
-                        name: data['name'],
-                        colorByPoint: true,
-                        data: data_series
-                    }]
+                    name: data['name'],
+                    colorByPoint: true,
+                    data: data_series
+                }]
             });
-        } else
-        {
+        } else {
             console.log('data error');
             console.log(data);
         }
-    } else
-    {
+    } else {
         console.log('cant load Highcharts');
     }
 }
@@ -2581,13 +2469,10 @@ function create_Highcharts(data, block)
 jQuery(document).ready(function () {
 
 
-
-
     jQuery('.not_load:visible').each(function () {
-        let prnts =jQuery(this).parents('details').html();
+        let prnts = jQuery(this).parents('details').html();
         let block_id = jQuery(this).attr('id');
-        if (!prnts)
-        {
+        if (!prnts) {
             load_next_block(block_id);
         }
         /// check_load_block();
@@ -2605,8 +2490,7 @@ jQuery(document).ready(function () {
 
         let id = prnt.find('.not_load').attr('id');
 
-        if (id)
-        {
+        if (id) {
             load_next_block(id);
         }
 
@@ -2663,13 +2547,12 @@ jQuery(document).ready(function () {
     });
     jQuery('body').on('change', '.popup-container > input:not(:checked)', function () {
 
-        if (jQuery('.popup-content').html())
-        {
+        if (jQuery('.popup-content').html()) {
             jQuery('.popup-content').html('');
         }
 
 
-      //  console.log('ok');
+        //  console.log('ok');
 
     });
 
@@ -2677,14 +2560,13 @@ jQuery(document).ready(function () {
 
         var id = jQuery(this).attr('id');
 
-        if (id.indexOf('search_query')==0)
-        {
+        if (id.indexOf('search_query') == 0) {
 
 
-            let url = 'https://www.youtube.com/results?'+id;
+            let url = 'https://www.youtube.com/results?' + id;
 
             window.open(url, '_blank');
-            return  false;
+            return false;
         }
 
         add_popup();
@@ -2753,20 +2635,19 @@ jQuery(document).ready(function () {
     jQuery(document).on("click", function (e) {
         var div = jQuery(".user-reaction");
 
-        if ((!div.is(e.target) && div.has(e.target).length === 0))
-        {
+        if ((!div.is(e.target) && div.has(e.target).length === 0)) {
             jQuery('.card .user-reactions').remove();
 
         }
     });
 
 
-
     jQuery(document).on('click', '.user-reactions-box>span.user-reaction', function (e) {
 
         e.preventDefault();
 
-        var t = jQuery(this), $class = t.attr('class'), main = t.parent().parent().parent(), text = t.find('strong').text();
+        var t = jQuery(this), $class = t.attr('class'), main = t.parent().parent().parent(),
+            text = t.find('strong').text();
 
         var big_prnt = jQuery(this).parents('.amsg_aut');
 
@@ -2778,8 +2659,7 @@ jQuery(document).ready(function () {
 
 
         var voted = jQuery(this).hasClass('voted');
-        if (voted)
-        {
+        if (voted) {
             vote_type = 'unvote';
             jQuery(this).removeClass('voted');
 
@@ -2789,14 +2669,11 @@ jQuery(document).ready(function () {
                 cnt = 0;
             jQuery(this).find('.count').html(cnt);
 
-        } else
-        {
-            if (voted_before)
-            {
+        } else {
+            if (voted_before) {
                 voted_before_count = Number(voted_before_count);
                 voted_before_count--;
-                if (voted_before_count <= 0)
-                {
+                if (voted_before_count <= 0) {
                     voted_before_count = '';
                 }
                 voted_before_container.find('.count').html(voted_before_count);
@@ -2858,19 +2735,16 @@ jQuery(document).ready(function () {
 
                         emotions.attr('class', 'emotions');
                         // console.log(vote_type,voted_before);
-                        if (vote_type == 'vote')
-                        {
+                        if (vote_type == 'vote') {
                             emotions.addClass('emotions_custom');
                             emotions.addClass('user-reaction-' + type[2]);
 
-                            if (!voted_before)
-                            {
+                            if (!voted_before) {
                                 count++;
                                 emotions.find('.emotions_count').html(count);
                             }
 
-                        } else
-                        {
+                        } else {
                             count--;
                             if (count == 0)
                                 count = '';
@@ -2888,7 +2762,6 @@ jQuery(document).ready(function () {
     });
 
     jQuery('body').on('click', 'a.emotions', function (e) {
-
 
 
         e.preventDefault();
@@ -2939,12 +2812,10 @@ jQuery(document).ready(function () {
         data_object['title'] = pid_title;
 
         let contenttext = big_prnt.find('.vote_content').html();
-        if (!contenttext)
-        {
+        if (!contenttext) {
             contenttext = big_prnt.find('a.icntn').html();
         }
-        if (!contenttext)
-        {
+        if (!contenttext) {
             contenttext = ' ';
         }
 
@@ -2969,20 +2840,19 @@ jQuery(document).ready(function () {
 
         add_popup();
         var whait_html = '<div class="cssload-circle">\n' +
-                '\t\t<div class="cssload-up">\n' +
-                '\t\t\t\t<div class="cssload-innera"></div>\n' +
-                '\t\t</div>\n' +
-                '\t\t<div class="cssload-down">\n' +
-                '\t\t\t\t<div class="cssload-innerb"></div>\n' +
-                '\t\t</div>\n' +
-                '</div>';
+            '\t\t<div class="cssload-up">\n' +
+            '\t\t\t\t<div class="cssload-innera"></div>\n' +
+            '\t\t</div>\n' +
+            '\t\t<div class="cssload-down">\n' +
+            '\t\t\t\t<div class="cssload-innerb"></div>\n' +
+            '\t\t</div>\n' +
+            '</div>';
         jQuery('.popup-content').html(whait_html);
         jQuery('input[id="action-popup"]').click();
 
         var data = '';
 
-        if (typeof get_data == 'function')
-        {
+        if (typeof get_data == 'function') {
             data = get_data();
             data = JSON.stringify(data);
         }
@@ -3003,12 +2873,10 @@ jQuery(document).ready(function () {
         });
 
 
-
         return false;
     });
 
-    jQuery("body").on("keyup", '.crowd_movie_autoinput', function (e)
-    {
+    jQuery("body").on("keyup", '.crowd_movie_autoinput', function (e) {
 
         if (e.which == 13) {
             jQuery(".customsearch_button_advanced").click();
@@ -3039,35 +2907,30 @@ jQuery(document).ready(function () {
     jQuery('body').on('change', '.review_crowd .big_checkbox>input', function (e) {
 
 
-        let min_prnt = jQuery(this).parents('.big_checkbox');
-        let sconainer = min_prnt.find('.check_container');
+            let min_prnt = jQuery(this).parents('.big_checkbox');
+            let sconainer = min_prnt.find('.check_container');
 
-        if (jQuery(this).is(":checked"))
-        {
-            sconainer.show();
-        } else
-        {
-            sconainer.hide();
-        }
+            if (jQuery(this).is(":checked")) {
+                sconainer.show();
+            } else {
+                sconainer.hide();
+            }
 
 
+            let th = jQuery(this).parents('.review_crowd');
 
-        let th = jQuery(this).parents('.review_crowd');
 
+            if (th.hasClass('active')) {
+                return;
+            } else {
+                th.addClass('active');
+                setTimeout(function () {
+                    th.removeClass('active');
+                }, 2980);
 
-        if (th.hasClass('active'))
-        {
-            return;
-        } else
-        {
-            th.addClass('active');
-            setTimeout(function () {
-                th.removeClass('active');
-            }, 2980);
+            }
 
         }
-
-    }
     );
 
     jQuery('.ajaxlogin').click(function () {
@@ -3083,11 +2946,8 @@ jQuery(document).ready(function () {
                 jQuery('input[id="action-popup"]').click();
 
 
-
                 var third_scripts = {login_ajax: 'wp-content/plugins/login-with-ajax/templates/login-with-ajax.min.js'};
                 use_ext_js('', third_scripts);
-
-
 
 
             }
@@ -3098,7 +2958,7 @@ jQuery(document).ready(function () {
     });
 
     jQuery('.primary-menu a[href="#add_movie"],' +
-            ' .primary-menu a[href="#add_review"], .primary-menu a[href="#add_audience_review"]').click(function () {
+        ' .primary-menu a[href="#add_review"], .primary-menu a[href="#add_audience_review"]').click(function () {
 
         let href = jQuery(this).attr('href');
 
@@ -3118,7 +2978,6 @@ jQuery(document).ready(function () {
                 let hclass = href.substr(1);
 
 
-
                 jQuery('.popup-content').html('<div class="default_popup custom_crowd ' + hclass + '">' + html + '</div>');
 
                 jQuery('input[id="action-popup"]').click();
@@ -3133,25 +2992,23 @@ jQuery(document).ready(function () {
     });
 
 
-
     jQuery('body').on('click', '.a_info', function () {
 
         var id = jQuery(this).attr('data-value');
         var movie = jQuery(this).attr('data-movie');
-        if (jQuery(this).hasClass('a_state'))
-        {
+        if (jQuery(this).hasClass('a_state')) {
             var enable_robot = 1;
         }
         var popup_enable = '';
         var popup = jQuery(this).parents('.popup-content');
-        if (popup.html())
-        {
+        if (popup.html()) {
             popup_enable = 1;
         }
 
         jQuery.ajax({
             type: 'post',
-            data: {'oper': 'review_crowd',
+            data: {
+                'oper': 'review_crowd',
                 'id': id,
                 'movie': movie,
                 'robot': enable_robot
@@ -3161,8 +3018,7 @@ jQuery(document).ready(function () {
                 if (debug_mode) {
                     console.log('review_crowd', html);
                 }
-                if (!popup_enable)
-                {
+                if (!popup_enable) {
                     add_popup();
                 }
 
@@ -3171,8 +3027,7 @@ jQuery(document).ready(function () {
                     jQuery('input[id="action-popup"]').click();
                 }
 
-                if (enable_robot)
-                {
+                if (enable_robot) {
                     jQuery.ajax({
                         type: 'get',
                         dataType: 'html',
@@ -3195,59 +3050,53 @@ jQuery(document).ready(function () {
     });
 
 
-
     jQuery('body').on('click', '.movie_touch', function () {
         var id = jQuery(this).attr('id');
         var r_id = jQuery('.review_crowd').attr('id');
         var only_movie = 0;
         let prnt = jQuery(this).parents('.crowd_items');
-        if (prnt.hasClass('crowd_select_movie'))
-        {
+        if (prnt.hasClass('crowd_select_movie')) {
             var only_movie = 1;
         }
         let bigprnt = jQuery(this).parents('.custom_crowd');
 
 
-
         jQuery('.advanced_search_first').html('').hide();
 
         jQuery.ajax({
-            type: 'post',
-            data: {'oper': 'get_search_movie',
-                'id': id,
-                'r_id': r_id,
-                'only_movie': only_movie
-            },
-            url: crowdsource_url,
-            success: function (html) {
-                if (debug_mode) {
-                    console.log('get_search_movie', html);
-                }
-                if (only_movie)
-                {
-                    jQuery('.check_container_main').html(html);
+                type: 'post',
+                data: {
+                    'oper': 'get_search_movie',
+                    'id': id,
+                    'r_id': r_id,
+                    'only_movie': only_movie
+                },
+                url: crowdsource_url,
+                success: function (html) {
+                    if (debug_mode) {
+                        console.log('get_search_movie', html);
+                    }
+                    if (only_movie) {
+                        jQuery('.check_container_main').html(html);
 
-                    if (bigprnt.hasClass('add_audience_review'))
-                    {
-                        let mid = jQuery('div.custom_crowd_movie').attr('data-value');
+                        if (bigprnt.hasClass('add_audience_review')) {
+                            let mid = jQuery('div.custom_crowd_movie').attr('data-value');
 
-                        jQuery('input[name="wpcr3_postid"]').val(mid);
-                        jQuery('div.wpcr3_respond_1').attr('data-value', mid).attr('data-postid', mid);
-                        load_ajax_block('audience_form');
+                            jQuery('input[name="wpcr3_postid"]').val(mid);
+                            jQuery('div.wpcr3_respond_1').attr('data-value', mid).attr('data-postid', mid);
+                            load_ajax_block('audience_form');
+
+                        }
+                    } else {
+                        if (!jQuery('.check_inner_container[id="' + id + '"]').html()) {
+                            jQuery('.check_container_main').append(html);
+                        }
 
                     }
-                } else
 
-                {
-                    if (!jQuery('.check_inner_container[id="' + id + '"]').html())
-                    {
-                        jQuery('.check_container_main').append(html);
-                    }
 
                 }
-
-
-            }}
+            }
         );
 
 
@@ -3258,19 +3107,16 @@ jQuery(document).ready(function () {
 
     jQuery('body').on('click', '.note_big .note, .rating_block .note,  .r_content .note', function () {
 
-        if (jQuery(this).hasClass('.nte'))
-        {
+        if (jQuery(this).hasClass('.nte')) {
             return;
         }
 
 
-        if (jQuery(this).hasClass('togle_show'))
-        {
+        if (jQuery(this).hasClass('togle_show')) {
             jQuery('.note_big .note, .rating_block .note, .r_content .note').removeClass('togle_show');
             jQuery('.note_show').hide();
 
-        } else
-        {
+        } else {
 
             jQuery('.note_big .note, .rating_block .note').removeClass('togle_show');
             jQuery('.note_show').hide();
@@ -3282,8 +3128,7 @@ jQuery(document).ready(function () {
 
     jQuery('body').on('click', '.flex_movies_block .movie_container .movie_poster>a', function () {
 
-        if (jQuery('body').width() <= 550)
-        {
+        if (jQuery('body').width() <= 550) {
             var parent = jQuery(this).parents('.movie_container');
             parent.toggleClass('opened');
 
@@ -3302,16 +3147,14 @@ jQuery(document).ready(function () {
 
         let pr = jQuery(this).parents('tr.container_for_add_movies');
 
-        if (pr.html())
-        {
+        if (pr.html()) {
 
             movie = pr.find('input.addmoviesfrom_id');
 
 
             movie = movie.val();
 
-            if (!movie)
-            {
+            if (!movie) {
                 button.attr('disabled', false);
                 return false;
             }
@@ -3324,8 +3167,7 @@ jQuery(document).ready(function () {
             data: ({'add_movie': movie}),
             url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/template/ajax/search_ajax.php",
             success: function (html) {
-                if (html == 1)
-                {
+                if (html == 1) {
                     button.after('<div class="add_succ">Successfully added to the queue. Check back soon!</div>');
                 }
                 button.remove();
@@ -3348,8 +3190,7 @@ jQuery(document).ready(function () {
 
         var closep = 0;
         let prnt = jQuery(this).parents('.crowd_data');
-        if (!prnt.hasClass('crowd_data'))
-        {
+        if (!prnt.hasClass('crowd_data')) {
             prnt = jQuery(this).parents('.default_popup');
             closep = 1;
 
@@ -3358,17 +3199,13 @@ jQuery(document).ready(function () {
         prnt.find('input, select, textarea').each(function () {
 
 
-
             let cls = jQuery(this).attr('data-id');
             let data = jQuery(this).val();
             //console.log(cls+' '+jQuery(this).attr('class'));
-            if (jQuery(this).attr('type') == 'checkbox')
-            {
-                if (jQuery(this).is(":checked"))
-                {
+            if (jQuery(this).attr('type') == 'checkbox') {
+                if (jQuery(this).is(":checked")) {
                     data = '1';
-                } else
-                {
+                } else {
                     data = '0';
                 }
             }
@@ -3385,12 +3222,10 @@ jQuery(document).ready(function () {
             result[cls] = data;
         });
 
-        if (closep)
-        {
+        if (closep) {
             var type = jQuery(this).attr('id');
             var id = prnt.attr('id');
-        } else
-        {
+        } else {
             var link = prnt.prev('a.actor_crowdsource');
             var id = link.attr('data-value');
             var type = link.attr('class');
@@ -3418,7 +3253,8 @@ jQuery(document).ready(function () {
 
         jQuery.ajax({
             type: 'post',
-            data: {'oper': 'crowd_submit',
+            data: {
+                'oper': 'crowd_submit',
                 'id': id,
                 'type': type,
                 'data': JSON.stringify(result),
@@ -3435,12 +3271,10 @@ jQuery(document).ready(function () {
                     jQuery.progress_interval = '';
                 }
 
-                if (html)
-                {
+                if (html) {
                     var data = JSON.parse(html);
 
-                    if (data.critic_data)
-                    {
+                    if (data.critic_data) {
 
                         prnt.html(data.critic_data);
                         // Init author autocomplite
@@ -3464,26 +3298,21 @@ jQuery(document).ready(function () {
                         }
                     }
 
-                    if (data.error && data.error.link)
-                    {
+                    if (data.error && data.error.link) {
                         var error_msg = '<div class="alert alert-danger">' + data.error.link + '</div>';
                         jQuery('.form_msg').html(error_msg);
 
                     }
 
-                } else
-                {
+                } else {
                     let msg = '<p class="user_message_info">Thank you for your help, we\'ll check it soon.</p>';
-                    if (closep)
-                    {
+                    if (closep) {
                         prnt.html(msg + '<div class="submit_data"><button class="button close" >Close</button></div>');
-                    } else
-                    {
+                    } else {
                         prnt.html('<div class="open_rating_container note_show">' + msg + '<div class="submit_data"><button class="button close" >Close</button></div></div>');
                     }
 
                 }
-
 
 
             }
@@ -3499,8 +3328,7 @@ jQuery(document).ready(function () {
 
         let prnt = jQuery(this).parents('.crowd_data');
         //  console.log(prnt);
-        if (!prnt.hasClass('crowd_data'))
-        {
+        if (!prnt.hasClass('crowd_data')) {
             prnt = jQuery(this).parents('.popup-content');
             prnt.html('');
             jQuery('.popup-close').click();
@@ -3511,7 +3339,6 @@ jQuery(document).ready(function () {
         prnt.html('');
         return false;
     });
-
 
 
     jQuery('body').on('click', '.edit_comment, .edit_review', function (e) {
@@ -3530,8 +3357,7 @@ jQuery(document).ready(function () {
             var image = prntbig.find('a.image').html();
             var link = big_prnt.attr('href');
             var block_summary = '';
-        } else
-        {
+        } else {
             let prntbig = jQuery(this).parents('.movie_container');
 
 
@@ -3542,10 +3368,7 @@ jQuery(document).ready(function () {
         }
 
 
-
-
-        if (link.indexOf(window.location.host) == -1)
-        {
+        if (link.indexOf(window.location.host) == -1) {
             link = window.location.protocol + '//' + window.location.host + link;
         }
 
@@ -3566,12 +3389,11 @@ jQuery(document).ready(function () {
             jQuery('input[id="action-popup"]').click();
             discuss_config(data_object);
             jQuery('div[id="disquss_container"]').removeClass('loaded').addClass('not_load');
-        } else if (jQuery(this).hasClass('edit_review'))
-        {
+        } else if (jQuery(this).hasClass('edit_review')) {
 
             let content = '<div class="sub_content" ><div class="sub_content_text" >' + contenttext + '</div>' +
-                    '<div id="audience_form" class="wpcr3_respond_1" data-value="' + id + '" data-postid="' + id + '"></div>' +
-                    '</div><label style="margin-top: -85px;margin-right: 15px;" for="action-popup" class="popup-close-btn">Close</label>';
+                '<div id="audience_form" class="wpcr3_respond_1" data-value="' + id + '" data-postid="' + id + '"></div>' +
+                '</div><label style="margin-top: -85px;margin-right: 15px;" for="action-popup" class="popup-close-btn">Close</label>';
 
             jQuery('.popup-content').html(content);
             jQuery('input[id="action-popup"]').click();
@@ -3584,15 +3406,12 @@ jQuery(document).ready(function () {
 
     jQuery('body').on('click', '.add_critic, .edit_critic', function (e) {
 
-        if (jQuery(this).hasClass('edit_critic'))
-        {
+        if (jQuery(this).hasClass('edit_critic')) {
             var prnt = jQuery(this).parents('.note.edit');
             var id = prnt.attr('id');
-        } else
-        {
+        } else {
             var id = jQuery(this).attr('id-data');
         }
-
 
 
         jQuery.ajax({
@@ -3620,7 +3439,7 @@ jQuery(document).ready(function () {
 
         let ths = jQuery(this);
 
-        let type =ths.attr('id');
+        let type = ths.attr('id');
         ths.addClass('rotate');
         var id = ths.attr('data-value');
 
@@ -3629,37 +3448,33 @@ jQuery(document).ready(function () {
             data: {
                 'oper': 'ckeck_update_cowd_data',
                 'id': id,
-                'data_type':type
+                'data_type': type
             },
             url: crowdsource_url,
             success: function (html) {
-                if (html)   {
+                if (html) {
                     ths.removeClass('rotate');
-                    if (html==1)  {
+                    if (html == 1) {
 
                         ths.after(' updated');
                         ths.remove();
                     }
 
 
-                    if (html==2) {
-                        if (type=='last_imdb_pg_update' || type=='last_cms_pg_update')
-                        {
+                    if (html == 2) {
+                        if (type == 'last_imdb_pg_update' || type == 'last_cms_pg_update') {
                             let prnt = jQuery(this).parents('#family_friendly');
-                            if (prnt.hasClass('loaded'))
-                            {
+                            if (prnt.hasClass('loaded')) {
                                 prnt.removeClass('loaded').addClass('not_load');
                                 load_next_block('family_friendly');
                                 return;
                             }
 
                             jQuery('input[id="action-popup"]').click();
-                            jQuery('.rating_block[id="'+id+'"] a.read_more_rating').click();
-                        }
-                        else   if (type=='last_pg_update')
-                        {
+                            jQuery('.rating_block[id="' + id + '"] a.read_more_rating').click();
+                        } else if (type == 'last_pg_update') {
                             jQuery('input[id="action-popup"]').click();
-                            jQuery('.rating_block[id="'+id+'"] a.how_calculate_rating').click();
+                            jQuery('.rating_block[id="' + id + '"] a.how_calculate_rating').click();
                         }
 
 
@@ -3676,27 +3491,19 @@ jQuery(document).ready(function () {
 
     jQuery('body').on('click', '.add_pg_rating_button, .edit_family_rating, .empty_ff_rating', function (e) {
 
-        if (jQuery(this).hasClass('edit_family_rating'))
-        {
+        if (jQuery(this).hasClass('edit_family_rating')) {
             var prnt = jQuery(this).parents('.note.edit');
             var id = prnt.attr('id');
-        }
-        else if (jQuery(this).hasClass('empty_ff_popup_rating'))
-        {
-           var id = jQuery(this).attr('data-value');
+        } else if (jQuery(this).hasClass('empty_ff_popup_rating')) {
+            var id = jQuery(this).attr('data-value');
             jQuery('input[id="action-popup"]').click();
-        }
-
-        else if (jQuery(this).hasClass('empty_ff_rating'))
-        {
+        } else if (jQuery(this).hasClass('empty_ff_rating')) {
             var prnt = jQuery(this).parents('.rating_block');
             var id = prnt.attr('id');
-        } else
-        {
+        } else {
             var prnt = jQuery(this).parents('.movie_total_rating');
             var id = prnt.attr('data-value');
         }
-
 
 
         jQuery.ajax({
@@ -3726,13 +3533,10 @@ jQuery(document).ready(function () {
         let val = jQuery(this).val();
         jQuery(this).attr('id', val);
 
-        if (jQuery(this).hasClass('movie_link'))
-        {
-            if (val == 'remove')
-            {
+        if (jQuery(this).hasClass('movie_link')) {
+            if (val == 'remove') {
                 let prnt = jQuery(this).parents('.check_inner_container:not(.main)');
-                if (prnt.html())
-                {
+                if (prnt.html()) {
                     prnt.remove();
                 }
             }
@@ -3748,8 +3552,7 @@ jQuery(document).ready(function () {
         var op = jQuery(this).attr('id');
         var id = jQuery(this).attr('data-value');
         var cont = '';
-        if (jQuery(this).hasClass('button_edit'))
-        {
+        if (jQuery(this).hasClass('button_edit')) {
             cont = 'popup';
             var prnt = jQuery(this).parents('.card');
 
@@ -3757,13 +3560,11 @@ jQuery(document).ready(function () {
 
         if (op == 'cl') {
 
-            if (!cont)
-            {
+            if (!cont) {
 
                 prnt.find('.crowd_data').hide();
                 jQuery(this).attr('id', 'op');
             }
-
 
 
         } else {
@@ -3776,7 +3577,8 @@ jQuery(document).ready(function () {
 
             jQuery.ajax({
                 type: 'post',
-                data: {'oper': 'actor_crowd',
+                data: {
+                    'oper': 'actor_crowd',
                     'id': id
                 },
                 url: crowdsource_url,
@@ -3784,29 +3586,23 @@ jQuery(document).ready(function () {
                     if (debug_mode) {
                         console.log('actor_crowd', html);
                     }
-                    if (cont)
-                    {
+                    if (cont) {
 
                         var aname = prnt.find('.a_data_n').html();
 
                         add_popup();
-                        if (html.indexOf('user_message_info') > 0)
-                        {
+                        if (html.indexOf('user_message_info') > 0) {
                             jQuery('.popup-content').html('<div id="' + id + '" class="default_popup">' + html + '</div>');
-                        } else
-                        {
+                        } else {
                             jQuery('.popup-content').html('<div id="' + id + '" class="default_popup"><h2>Edit Actor Data</h2><span data-value="actor_popup" class="nte_info nte_right nte_open_down"></span><p class="center">Please help improve ZR by correcting & adding data.</p><h1>' + aname + '</h1>' + html + '</div>');
                         }
 
 
                         jQuery('input[id="action-popup"]').click();
-                    } else
-
-                    {
+                    } else {
 
                         prnt.find('.crowd_data').show().html('<div class="open_rating_container note_show">' + html + '</div>');
                     }
-
 
 
                 }
@@ -3817,14 +3613,11 @@ jQuery(document).ready(function () {
     });
 
 
-
-
     jQuery('body').on('click', '.open_rating', function (e) {
 
         var prnt = jQuery(this).parents('div.rating_row');
 
         var op = jQuery(this).attr('id');
-
 
 
         if (op == 'cl') {
@@ -3850,12 +3643,10 @@ jQuery(document).ready(function () {
 
         let type = jQuery(this).attr('id');
         let id = jQuery(this).parents('.rating_block').attr('id');
-        if (!id)
-        {
+        if (!id) {
             id = jQuery(this).parents('.movie_total_rating').attr('data-value');
         }
-        if (!id)
-        {
+        if (!id) {
             id = jQuery(this).parents('#global_zeitgeist').attr('data-value');
         }
         jQuery.ajax({
@@ -3864,11 +3655,9 @@ jQuery(document).ready(function () {
             url: window.location.protocol + template_path + "movie_rating.php",
             data: {"action": "get_link", "type": type, "id": id},
             success: function (data) {
-                if (data)
-                {
+                if (data) {
                     let ob = JSON.parse(data);
-                    if (ob['url'])
-                    {
+                    if (ob['url']) {
                         window.open(ob['url']);
 
                     }
@@ -3881,19 +3670,13 @@ jQuery(document).ready(function () {
     });
 
 
-
-
-
     jQuery('body').on('click', '.how_calculate_rating, .read_more_rating, .how_calculate_rwt_rating, .calculate_actor_data', function () {
-
 
 
         var post = {};
 
 
-
-        if (jQuery(this).hasClass('calculate_actor_data'))
-        {
+        if (jQuery(this).hasClass('calculate_actor_data')) {
             var a_id = jQuery(this).attr('data-actor');
 
 
@@ -3919,8 +3702,7 @@ jQuery(document).ready(function () {
             if (jQuery(this).hasClass('how_calculate_rating')) {
 
 
-                if (!rwt_id && jQuery(this).hasClass('ff_other_content_calculate'))
-                {
+                if (!rwt_id && jQuery(this).hasClass('ff_other_content_calculate')) {
                     rwt_id = jQuery(this).parents('#family_friendly').attr('data-value');
                 }
 
@@ -3953,10 +3735,8 @@ jQuery(document).ready(function () {
         });
 
 
-
         return false;
     });
-
 
 
     jQuery('body').on('click', '.s_container_load', function () {
@@ -4006,8 +3786,7 @@ jQuery(document).ready(function () {
         //loaddata();
     });
 
-    function load_main_graph()
-    {
+    function load_main_graph() {
 
         var data = jQuery('.ethnic_graph.main_ethnic_graph').next('.ethnic_graph_data').html();
         create_Highcharts(data, 'main_movie_graph');
@@ -4021,15 +3800,12 @@ jQuery(document).ready(function () {
 
         var data = jQuery(this).next('.ethnic_graph_data').html();
 
-        if (jQuery(this).hasClass('main_ethnic_graph'))
-        {
+        if (jQuery(this).hasClass('main_ethnic_graph')) {
 
             var big_parent = jQuery('div.section_chart[id="container_main_movie_graph"]');
 
-            if (!big_parent.html())
-            {
-                if (typeof Highcharts == 'undefined')
-                {
+            if (!big_parent.html()) {
+                if (typeof Highcharts == 'undefined') {
                     var third_scripts = {
                         hrts: 'https://code.highcharts.com/highcharts.js'
                     };
@@ -4040,50 +3816,35 @@ jQuery(document).ready(function () {
 
                 }
 
-            } else
-            {
-                if (jQuery(this).hasClass('activated'))
-                {
+            } else {
+                if (jQuery(this).hasClass('activated')) {
                     big_parent.slideDown();
-                } else
-                {
+                } else {
                     big_parent.slideUp();
                 }
 
             }
 
 
-
-
-
-
-
-
-        } else
-        {
+        } else {
             var big_parent = jQuery(this).parents('tr.actor_data');
 
             var count_col = big_parent.find('td').length;
 
             var graph_block = big_parent.next('tr.graph_block').html();
-            if (!graph_block)
-            {
+            if (!graph_block) {
                 var id = Math.random().toString(36).substring(7);
 
 
-
-                if (jQuery(this).hasClass('ethnic_graph_column'))
-                {
+                if (jQuery(this).hasClass('ethnic_graph_column')) {
                     big_parent.after('<tr class="graph_block"><td colspan="' + count_col + '"><div class="section_chart_big section_chart section_ethnic" id="container_' + id + '"></div></td></tr>');
 
                     create_Highcharts_columns(data, id);
-                } else if (jQuery(this).hasClass('ethnic_graph_column_single'))
-                {
+                } else if (jQuery(this).hasClass('ethnic_graph_column_single')) {
                     big_parent.after('<tr class="graph_block"><td colspan="' + count_col + '"><div class="section_chart_main section_chart section_ethnic" id="container_' + id + '"></div></td></tr>');
 
                     create_Highcharts_colomn_single(data, id);
-                } else
-                {
+                } else {
                     big_parent.after('<tr class="graph_block"><td colspan="' + count_col + '"><div class="section_chart section_ethnic" id="container_' + id + '"></div></td></tr>');
 
 
@@ -4091,16 +3852,10 @@ jQuery(document).ready(function () {
                 }
 
 
-
-
-
-            } else
-            {
-                if (jQuery(this).hasClass('activated'))
-                {
+            } else {
+                if (jQuery(this).hasClass('activated')) {
                     big_parent.next('tr.graph_block').find('div.section_chart').slideDown();
-                } else
-                {
+                } else {
                     big_parent.next('tr.graph_block').find('div.section_chart').slideUp();
                 }
 
@@ -4154,15 +3909,14 @@ jQuery(document).ready(function () {
         let link_int = bigprnt.find('a[id="no_cloud"]');
         let url = link_ext.attr('href');
 
-        jQuery('.fchan_btn input').each(function (){
+        jQuery('.fchan_btn input').each(function () {
             let inid = $(this).attr('dataid');
-            if (url.indexOf('/'+inid+'/') !== -1) {
-                url=url.replace('/'+inid+'/', '/'+id+'/' );
-                link_ext.attr('href',url);
+            if (url.indexOf('/' + inid + '/') !== -1) {
+                url = url.replace('/' + inid + '/', '/' + id + '/');
+                link_ext.attr('href', url);
 
-                if (link_int.length)
-                {
-                    link_int.attr('href',url);
+                if (link_int.length) {
+                    link_int.attr('href', url);
 
                 }
 
@@ -4170,9 +3924,6 @@ jQuery(document).ready(function () {
             }
 
         });
-
-
-
 
 
         if (target_contaner.length) {
@@ -4186,89 +3937,114 @@ jQuery(document).ready(function () {
         }
 
 
-
         // iframe.attr('src',link);
 
     });
 
+
+    jQuery('body').on('click', 'summary', function () {
+            const details = jQuery(this).parent();
+             let  firstDiv = details.find('section');
+
+            if (!firstDiv)firstDiv = details.find('div');
+
+            if (details.prop('open')) {
+
+            }
+            else {
+                let height = firstDiv.height();
+                if (height<200)height=200;
+
+                const targetHeight = height;
+                const startHeight = 0;
+                const duration = 200;
+                const startTime = performance.now();
+                let animationFrame = null;
+
+                firstDiv.css('overflow','hidden');
+
+                function animate() {
+                    const currentTime = performance.now();
+                    const progress = (currentTime - startTime) / duration;
+
+                    if (progress < 1) {
+                        const newHeight = startHeight + (targetHeight - startHeight) * progress;
+                        firstDiv.css('height', newHeight + 'px');
+                        animationFrame = requestAnimationFrame(animate);
+                    } else {
+
+                        firstDiv.css('height','auto');
+                        firstDiv.css('overflow','unset');
+                    }
+                }
+
+                cancelAnimationFrame(animationFrame);
+                animate();
+            }
+        });
+
+
+
     jQuery('body').on('click', '.nte_info', function () {
-        let ts =jQuery(this);
+        let ts = jQuery(this);
 
 
         let prnt_popup = ts.parents('.nte_cnt').length;
         let inner_content;
-        if (prnt_popup)
-        {
-        inner_content = ts.next('div.tlp_cnt').length;
-        }
-        else
-        {
+        if (prnt_popup) {
+            inner_content = ts.next('div.tlp_cnt').length;
+        } else {
 
-        inner_content =ts.find('.nte').length;
+            inner_content = ts.find('.nte').length;
         }
 
 
+        if (!inner_content) {
+            let type = ts.attr('data-value');
 
 
-     if (!inner_content){
-        let type = ts.attr('data-value');
+            if (prnt_popup) {
+                ts.after('<div class="tlp_cnt"><div class="nte_ajax_loading icon-loader"></div></div>');
+            } else {
+                let dopclass = '';
+                if (ts.hasClass('nte_open_down')) {
+                    dopclass = 'dwn';
+                }
+                let data = add_rating_block('nte_ajax', ' ', '<div class="nte_ajax_loading icon-loader"></div>', type, true, dopclass);
+                ts.html(data);
+
+            }
 
 
+            //  ts.find('.nte').addClass('open');
+            //  init_nte();
+            ///load data
+            jQuery.ajax({
+                type: "GET",
+                url: '/wp-content/themes/custom_twentysixteen/template/ajax/tooltips.php',
+                data: {'type': type},
 
-         if (prnt_popup)
-         {
-             ts.after('<div class="tlp_cnt"><div class="nte_ajax_loading icon-loader"></div></div>');
-         }
-         else
-         {
-             let dopclass ='';
-             if (ts.hasClass('nte_open_down'))
-             {
-                 dopclass ='dwn';
-             }
-             let data = add_rating_block('nte_ajax', ' ', '<div class="nte_ajax_loading icon-loader"></div>', type, true,dopclass);
-             ts.html(data);
-
-         }
+                success: function (html) {
 
 
+                    if (prnt_popup) {
+                        ts.next('div.tlp_cnt').html(html);
+                    } else {
+                        ts.find('.nte .nte_cnt').html(html);
+                        ts.find('.btn').click();
+                    }
 
+                }
+            });
 
-       //  ts.find('.nte').addClass('open');
-       //  init_nte();
-         ///load data
-         jQuery.ajax({
-             type: "GET",
-             url: '/wp-content/themes/custom_twentysixteen/template/ajax/tooltips.php',
-             data:{'type':type},
+        } else {
 
-             success: function (html) {
+            if (prnt_popup) {
+                ts.next('div.tlp_cnt').toggleClass('tlp_hidden');
+            }
 
-
-                 if (prnt_popup)
-                 {
-                     ts.next('div.tlp_cnt').html(html);
-                 }
-                 else
-                 {
-                     ts.find('.nte .nte_cnt').html(html);
-                     ts.find('.btn').click();
-                 }
-
-             }
-         });
-
-     }
-     else
-     {
-
-         if (prnt_popup)
-         {
-             ts.next('div.tlp_cnt').toggleClass('tlp_hidden');
-         }
-
-        ///console.log('already added');
-     }
+            ///console.log('already added');
+        }
 
     });
 
@@ -4281,8 +4057,7 @@ jQuery('body').on('click', '.hide_left_sidebar', function () {
 
     if (prnt.hasClass('hidden_left')) {
         localStorage.setItem('left_sidebar', 'hidden');
-    } else
-    {
+    } else {
         localStorage.setItem('left_sidebar', 'open');
     }
 
@@ -4391,7 +4166,7 @@ function author_autocomplete(form_class = '') {
                 });
             }
         });
-}
+    }
 }
 
 function init_tags() {
@@ -4470,8 +4245,7 @@ function use_ext_js(f, third_scripts) {
         }
     }
 
-    if (typeof f == 'function')
-    {
+    if (typeof f == 'function') {
         f();
     }
 
@@ -4501,7 +4275,7 @@ jQuery.fn.upScrollButton = function (options) {
         upScrollButtonFadeOutTime: 300
 
     }, options);
-    return this.each(function ( ) {
+    return this.each(function () {
 
         $('body').append('<a id="' + options.upScrollButtonId + '" href="#"></a>');
         $(window).scroll(function () {
@@ -4510,7 +4284,7 @@ jQuery.fn.upScrollButton = function (options) {
             else
                 $('a#' + options.upScrollButtonId).fadeOut(options.upScrollButtonFadeOutTime);
         });
-        $('a#' + options.upScrollButtonId).click(function ( ) {
+        $('a#' + options.upScrollButtonId).click(function () {
             $('body,html').animate({
                 scrollTop: options.heightForScrollUpTo
             }, options.scrollTopTime);

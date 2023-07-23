@@ -12,8 +12,7 @@ if (!defined('ABSPATH'))
 if (isset($_GET['id'])) {
     $movie_id = intval($_GET['id']);
     $Gsearch = new Gsearch();
-    $result = $Gsearch->get_data($movie_id);
+    $result = $Gsearch->get_data($movie_id,1);
     echo json_encode($result);
 
 }
-

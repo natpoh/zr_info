@@ -3572,5 +3572,74 @@ if (isset($_GET['add_movie_production'])) {
     return;
 }
 
+
+
+
+if (isset($_GET['convert_tables'])) {
+
+check_load(59,0);
+
+$tablesQuery = "SHOW TABLES";
+    $row = Pdo_an::db_results_array($tablesQuery);
+
+
+
+        foreach ($row as $tableNames) {
+
+            sort($tableNames);
+
+            $tableName =$tableNames[0];
+
+
+
+            $tableStatusQuery = "SHOW TABLE STATUS LIKE '$tableName'";
+            $tableStatusRow = Pdo_an::db_results_array($tableStatusQuery);
+
+            $tableCollation = $tableStatusRow[0]['Collation'];
+
+
+
+            // ��������, ����� �� �������� ��������� ��� �������
+            if (stripos($tableCollation, 'utf8mb4_general_ci') === false) {
+
+                $alterTableQuery = "ALTER TABLE `$tableName` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
+                Pdo_an::db_query($alterTableQuery);
+                echo 'ok '. $tableName . ' :'.$tableCollation.' <br>';
+            }
+            else
+            {
+                echo 'skip '. $tableName . ' :'.$tableCollation.' <br>';
+            }
+
+            if (check_cron_time())
+            {
+
+                break;
+            }
+
+//            // ��������� ������ �������� � �������
+//            $columnsQuery = "SHOW COLUMNS FROM `$tableName`";
+//            $columnRows = Pdo_an::db_results_array($columnsQuery);
+//
+//            foreach ($columnRows as $columnRow) {
+//
+//                $columnType = $columnRow['Type'];
+//                $columnName = $columnRow['Field'];
+//                $columnCollation = $columnRow['Collation'];
+//
+//                if (stripos($columnType, 'text') !== false || stripos($columnType, 'varchar') !== false) {
+//                    if (stripos($columnCollation, 'utf8mb4_general_ci') === false) {
+//                        echo $tableName.' - ' . $columnName . ' ' . $columnType . ' '.$columnCollation.'<br>';
+//                        // ��������� ��������� ��� �������
+//                        $alterColumnQuery = "ALTER TABLE `$tableName` MODIFY `$columnName` $columnType CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
+//                        Pdo_an::db_query($alterColumnQuery);
+//                    }
+//                }
+//            }
+
+        }
+    echo "ok";
+}
+
 //echo 'ok';
 
