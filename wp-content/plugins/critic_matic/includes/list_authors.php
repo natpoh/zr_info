@@ -48,7 +48,7 @@ if (sizeof($authors) > 0) {
             <tbody>
                 <?php
                 $cav = $this->cm->get_cav();
-                $cp = $this->cm->get_cp();
+                $cp = $this->get_cp_admin();
 
                 foreach ($authors as $author) {
                     $author_name = $author->name;
