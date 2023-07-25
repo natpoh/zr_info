@@ -682,7 +682,7 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
              {
 
                  !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                 Import::create_commit('', 'update', 'data_woke_insert', array('mid' => $mid), 'woke',10,['skip'=>['id']]);
+                 Import::create_commit('', 'update', 'data_woke', array('mid' => $mid), 'woke_insert',10,['skip'=>['id']]);
 
              }
 
@@ -720,7 +720,7 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
                      if ($sync)
                      {
                          !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                         Import::create_commit('', 'update', 'data_woke_update', array('mid' => $mid), 'woke',10,['skip'=>['id']]);
+                         Import::create_commit('', 'update', 'data_woke', array('mid' => $mid), 'woke_update',10,['skip'=>['id']]);
                      }
                  }
              }
@@ -729,7 +729,7 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
                  if ($sync)
                  {
                      !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                     Import::create_commit('', 'update', 'data_woke_update', array('mid' => $mid), 'woke',10,['skip'=>['id']]);
+                     Import::create_commit('', 'update', 'data_woke', array('mid' => $mid), 'woke_update',10,['skip'=>['id']]);
                  }
              }
          }
@@ -772,7 +772,7 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
         }
 
 
-        $q = "SELECT data_movie_imdb.id FROM `data_movie_imdb` LEFT JOIN data_woke ON (data_movie_imdb.id = data_woke.mid) WHERE " . $where . " LIMIT 1000";
+        $q = "SELECT data_movie_imdb.id FROM `data_movie_imdb` LEFT JOIN data_woke ON (data_movie_imdb.id = data_woke.mid) WHERE " . $where . " LIMIT 10000";
         if (isset($_GET['force'])) {
             $q = " SELECT * FROM `data_woke` ORDER BY `mid` ASC ";
         }

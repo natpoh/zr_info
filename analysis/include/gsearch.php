@@ -20,7 +20,8 @@ $sql = "SELECT * from data_movie_imdb where id =".intval($id);
 $r = Pdo_an::db_results_array($sql);
 $title = $r[0]['title'];
 $type = $r[0]['type'];
-return [$title,$type];
+$year = $r[0]['year'];
+return [$title,$type,$year];
 
 }
 private function check_anime($mid)
@@ -32,7 +33,7 @@ if ($r)return 'anime';
 }
 
 
-private function get_tabs($id,$type,$title,$main_block)
+private function get_tabs($id,$type,$title,$main_block,$year='')
 {
 $content_type_str = OptionData::get_options('','zr_content_type');
 if ($content_type_str)$content_type = json_decode($content_type_str,1);
@@ -57,10 +58,7 @@ $array_genres = $content_type[$m_type]['genre'];
 if (($array_types && in_array($type,$array_types)) || ($genre && $array_genres && in_array($genre,$array_genres)))
 {
 
-if ($row['link'])
-{
-$row['link'] = str_replace('$',$title_coded,$row['link']);
-}
+
 
 if ($row['dop_content'])
 {
@@ -75,8 +73,15 @@ $row['script'] = str_replace('$',$title_coded,$row['script']);
 if ($row['content_type']==2)//news
 {
 $row['script'] = str_replace('$mid',$id,$row['script']);
+$row['script'] = str_replace('$year',$year,$row['script']);
 $row['script'] = str_replace('$',$title_coded,$row['script']);
 
+    if ($row['link'])
+    {
+        $row['link'] = str_replace('$mid',$id,$row['link']);
+        $row['link'] = str_replace('$year',$year,$row['link']);
+        $row['link'] = str_replace('$',$title_coded,$row['link']);
+    }
 }
 
 if ($row['sub_from']==0)
@@ -94,7 +99,10 @@ $result[$row['sub_from']]['sub'][$row['id']]['data'] =  $row;
 
 
 }
-
+    if ($row['link'])
+    {
+        $row['link'] = str_replace('$',$title_coded,$row['link']);
+    }
 
 }
 
@@ -108,8 +116,8 @@ return $result;
 
 public  function get_data($id,$main_block=0)
 {
-[$title,$type] = $this->get_title($id);
-$result['data'] = $this->get_tabs($id,$type,$title,$main_block);
+[$title,$type,$year] = $this->get_title($id);
+$result['data'] = $this->get_tabs($id,$type,$title,$main_block,$year);
 
 if ($main_block==1)
 {

@@ -3578,7 +3578,6 @@ $tablesQuery = "SHOW TABLES";
 
 
 
-            // Проверка, нужно ли изменять кодировку для таблицы
             if (stripos($tableCollation, 'utf8mb4_general_ci') === false) {
 
                 $alterTableQuery = "ALTER TABLE `$tableName` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
@@ -3596,25 +3595,7 @@ $tablesQuery = "SHOW TABLES";
                 break;
             }
 
-//            // Получение списка столбцов в таблице
-//            $columnsQuery = "SHOW COLUMNS FROM `$tableName`";
-//            $columnRows = Pdo_an::db_results_array($columnsQuery);
-//
-//            foreach ($columnRows as $columnRow) {
-//
-//                $columnType = $columnRow['Type'];
-//                $columnName = $columnRow['Field'];
-//                $columnCollation = $columnRow['Collation'];
-//
-//                if (stripos($columnType, 'text') !== false || stripos($columnType, 'varchar') !== false) {
-//                    if (stripos($columnCollation, 'utf8mb4_general_ci') === false) {
-//                        echo $tableName.' - ' . $columnName . ' ' . $columnType . ' '.$columnCollation.'<br>';
-//                        // Изменение кодировки для столбца
-//                        $alterColumnQuery = "ALTER TABLE `$tableName` MODIFY `$columnName` $columnType CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
-//                        Pdo_an::db_query($alterColumnQuery);
-//                    }
-//                }
-//            }
+
 
         }
     echo "ok";

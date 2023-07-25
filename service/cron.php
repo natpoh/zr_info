@@ -23,7 +23,7 @@ $array_jobs = array(
 
 'check_tmdb_data'=>15,///update country and poster from tmdb
 
-'zr_woke'=>15,///empty woke
+'zr_woke'=>30,///empty woke
 
 
 'add_providers'=>30,
