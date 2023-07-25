@@ -172,7 +172,8 @@ if ($pid) {
     <?php
     if ($autor_type != 2):
         // Find parser data
-        $cp = $this->cm->get_cp();
+        
+        $cp = $this->get_cp_admin();
         $url_data = $cp->get_url_by_post($pid);
         $url_link = $this->theme_parser_url_link($url_data->id, $url_data->id);
         if ($url_data):

@@ -70,24 +70,24 @@ class Global_zeitgeist{
         [$title,$type] = $this->get_title($id);
 
 
-        !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-        $data =  OptionData::get_options('','global_zeitgeist');
-        $data =  str_replace('\\','',$data);
+//        !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+//        $data =  OptionData::get_options('','global_zeitgeist');
+//        $data =  str_replace('\\','',$data);
+//
+//        $data =str_replace('$',$title,$data);
+//
+//
+//        if (!$results)
+//        {
+//            $content= '<div class="in_fl_cnt"><p style="margin: 15px auto;">Global Reviews will be imported soon...</p><p>In the meantime try exploring these links:</p>'.$data.'</div>';
+//        }
+//        else
+//        {
+//
+//            $content= '<details style="margin-top: 15px; width: 100%" class="trsprnt"><summary>Other sources</summary><div>'.$data.'</div></details>';
+//        }
 
-        $data =str_replace('$',$title,$data);
-
-
-        if (!$results)
-        {
-            $content= '<div class="in_fl_cnt"><p style="margin: 15px auto;">Global Reviews will be imported soon...</p><p>In the meantime try exploring these links:</p>'.$data.'</div>';
-        }
-        else
-        {
-
-            $content= '<details style="margin-top: 15px; width: 100%" class="trsprnt"><summary>Other sources</summary><div>'.$data.'</div></details>';
-        }
-
-        return ['result'=>$results,'other'=>$content];
+        return ['result'=>$results];
     }
 
 }

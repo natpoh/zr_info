@@ -81,26 +81,29 @@ add_movie_rating("movie_rating", movie_rating_data);
     }
 
 
+if ($post_type!='VideoGame') {
+
     $content .= '<div class="detail_container" >
 <details  class="dark actor_details" >
-   <summary>Cast Demographics</summary>
+   <summary>Cast</summary>
 <div>
-
 <div class="desc"> <span data-value="cast_demographic_popup" class="nte_info nte_right nte_open_down"></span>
-'.$cast_demographic_note.'
+' . $cast_demographic_note . '
 </div>
-
-' . $content_actors . '</div>
+' . $content_actors . '
+</div>
 </details>';
-
-
     $content .= '<details class="dark actor_details" >
    <summary>Representation</summary>
 <div class="dmg_content" id="actor_data_dop" ><div id="actor_representation"  data-value="' . $post_id . '" class="not_load"></div></div>
 </details>
-
-
 </details>';
+
+}
+
+
+
+
 
     $keyword_data = Data_Loaded::get_keywords($post_id);
 
@@ -128,9 +131,13 @@ add_movie_rating("movie_rating", movie_rating_data);
 
 </div>
 ';
-    $content.='<section class="inner_content no_pad global_zeitgeist_container"><div class="column_header">
+
+if ($post_type!='VideoGame') {
+    $content .= '<section class="inner_content no_pad global_zeitgeist_container"><div class="column_header">
                     <h2>Global Zeitgest:</h2>
                 </div><div  id="global_zeitgeist" data-value="' . $post_id . '" class="not_load"></div></section>';
+
+}
     echo $content;
 }
 

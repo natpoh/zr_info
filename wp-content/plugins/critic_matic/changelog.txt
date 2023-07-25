@@ -1,3 +1,6 @@
+1.0.103 - 24.07.2023
++- Ratings
+
 1.0.100 - 12.07.2023
 Move show/hide facets to filters
 

@@ -447,8 +447,9 @@ class CriticCrowd extends AbstractDB {
         $cp = $this->cm->get_cp();
 
         if ($youtube) {
+            $cpyoutube = $cp->get_cpyoutube();
             // Get youtube data
-            $result = $cp->yt_video_data($link);
+            $result = $cpyoutube->yt_video_data($link);
             if ($result) {
                 $channelId = $result->channelId;
                 if ($result->description) {
@@ -535,7 +536,8 @@ class CriticCrowd extends AbstractDB {
                     $options = unserialize($author_ob->options);
                     if (!$options['image']) {
                         // Add author avatar
-                        $channel_info = $cp->youtube_get_channel_info($channelId);
+                        $cpyoutube = $cp->get_cpyoutube();
+                        $channel_info = $cpyoutube->youtube_get_channel_info($channelId);
                         if ($channel_info->items[0]->snippet->thumbnails->medium->url) {
                             $avatar = $channel_info->items[0]->snippet->thumbnails->medium->url;
                             if ($avatar) {

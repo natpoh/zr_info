@@ -160,10 +160,33 @@ critic_search.init_facet = function (v) {
                         fthis.prop('checked', false);
                         flabel.removeClass('active');
                         var ftype = fthis.attr('data-name');
-                        critic_search.remove_filter(ftype, id);
+                        console.log('remove filter')
+
+                        if (parrent.hasClass('slider')) {
+                            var filter = $('#search-filters [data-type="' + type + '"]');
+                            if (filter.length) {
+                                var fid = filter.attr('id');
+                                var fname = fid.replace(type + '-', '');
+                                critic_search.remove_filter(type, fname);
+                            }
+                        } else {
+                            critic_search.remove_filter(ftype, id);
+                        }
                     }
                 }
             });
+            /* if (parrent.hasClass('slider')) {
+             
+             var filter = $('#search-filters [data-type="' + type + '"]');
+             console.log(filter);
+             // Filter exist?
+             if (filter.length) {
+             var id = filter.attr('id');
+             var fname = id.replace(type + '-', '');
+             critic_search.remove_filter(type, fname);
+             }
+             
+             }*/
         }
 
         if ($this.prop('checked')) {
@@ -175,8 +198,9 @@ critic_search.init_facet = function (v) {
 
             critic_search.add_filter(type, id, title, ftype, type_title, title_pre);
             //Plus logic
-            var plus = $this.hasClass('plus');
-            var minus = $this.hasClass('minus');
+            /* var plus = $this.hasClass('plus');
+             var minus = $this.hasClass('minus');*/
+
             label.addClass('active');
         } else {
             $this.closest('label').removeClass('active');
@@ -228,7 +252,6 @@ critic_search.init = function ($custom_id = '') {
             var facet_name = id.replace('facet-', '');
             var facet_type = v.attr('data-type');
             critic_search.slider_facet(facet_name, window[facet_name + "_arr"], facet_type);
-            return;
         }
 
         critic_search.init_facet(v);
@@ -595,18 +618,25 @@ critic_search.slider_facet = function (type, data_arr, ftype = 'all') {
         var filter = $('#search-filters [data-type="' + type + '"]');
         //Filter exist?
         if (filter.length) {
-            var id = filter.attr('id');
-            var ids = id.split('-');
-            var f_from = ids[1];
-            var f_to = ids[2];
 
-            if (f_from == from && f_to == to) {
-                //no change, continue
-                return false;
-            } else {
+            var id = filter.attr('id');
+
+            var ids = id.split('-');
+            if (ids[1] == 'use') {
                 //remove old filter
-                var key = f_from + '-' + f_to;
-                critic_search.remove_filter(type, key);
+                critic_search.remove_filter(type, ids[1]);
+            } else {
+                var f_from = ids[1];
+                var f_to = ids[2];
+
+                if (f_from == from && f_to == to) {
+                    //no change, continue
+                    return false;
+                } else {
+                    //remove old filter
+                    var key = f_from + '-' + f_to;
+                    critic_search.remove_filter(type, key);
+                }
             }
         }
         // Add new filter

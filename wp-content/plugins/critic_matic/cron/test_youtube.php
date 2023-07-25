@@ -34,11 +34,11 @@ if (!class_exists('CriticParser')) {
 }
 
 $cp = new CriticParser();
-
+$cpyoutube = $cp->get_cpyoutube();
 if ($url) {
-    $data = $cp->yt_video_data($url);
+    $data = $cpyoutube->yt_video_data($url);
 } else if ($cid) {
-    $data = $cp->youtube_get_channel_info($cid);
+    $data = $cpyoutube->youtube_get_channel_info($cid);
 }
 if ($data) {
 

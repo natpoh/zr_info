@@ -61,14 +61,13 @@ function critic_crowd_validation($link, $row = []) {
 
 
 
-
-
             if (!class_exists('CriticFront')) {
                 require_once(CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php');
             }
 
             $cm = new CriticMatic();
             $cp = $cm->get_cp();
+            
 
             ///validate link
             ///1 check link on critic bd
@@ -139,7 +138,8 @@ function critic_crowd_validation($link, $row = []) {
                  if ($youtube) {
                     $link = 'https://www.youtube.com/watch?v=' . $match[4];
                     ///get youtube data
-                    $result = $cp->yt_video_data($link);
+                    $cpyoutube = $cp->get_cpyoutube();
+                    $result = $cpyoutube->yt_video_data($link);
                     if ($result) {
                         $title = $result->title;
                         $author = $result->channelTitle;
@@ -645,11 +645,14 @@ if (isset($_POST['oper'])) {
                     $inser_sql_debug = "INSERT INTO `data_" . $array_crowd[$type] . "`(`id` " . $oper_insert_colums . " ) VALUES (NULL " . $oper_insert_data_debug . " )";
 
 
-
                    $uddate_id = Pdo_an::db_insert_sql($inser_sql, $data_array);
                 }
-                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', "data_" . $array_crowd[$type], array('id' => $uddate_id), 'crowsource', 5);
+                if ($uddate_id)
+                {
+                    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                    Import::create_commit('', 'update', "data_" . $array_crowd[$type], array('id' => $uddate_id), 'crowsource', 5);
+                }
+
 
 
 

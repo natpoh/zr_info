@@ -1510,7 +1510,7 @@ class PgRatingCalculate {
 
         $v = $rating_array['lgbt_warning']['text'];
 
-        $l_array = self::custom_rating_lgbt($keywords, $v, $rating_array, $array_family, $debug, $total, 'lgbt_warning');
+        $l_array = self::custom_rating_lgbt($keywords, $v, $rating_array, $array_family, $debug, $total, 'lgbt_warning','LGB Warning');
 
         if ($l_array[0]) {
             $total = $l_array[0];
@@ -1528,7 +1528,29 @@ class PgRatingCalculate {
 
 
         }
+        /////////qtia warning
 
+
+        $v = $rating_array['qtia_warning']['text'];
+
+        $l_array = self::custom_rating_lgbt($keywords, $v, $rating_array, $array_family, $debug, $total, 'qtia_warning','QTIA+ Warning');
+
+        if ($l_array[0]) {
+            $total = $l_array[0];
+        }
+
+        if ($update) {
+
+            $lgbt_enable = $l_array[1];
+            $lgbt_text_string = $l_array[2];
+
+            if ($array_family['qtia_warning']!=$lgbt_enable || $array_family['qtia_text']!= $lgbt_text_string) {
+                $sql = "UPDATE `data_pg_rating` SET  `qtia_warning` = '" . $lgbt_enable . "', `qtia_text` = ?  WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
+                Pdo_an::db_results_array($sql, array($lgbt_text_string));
+            }
+
+
+        }
         ///////woke
         $v = $rating_array['woke']['text'];
 

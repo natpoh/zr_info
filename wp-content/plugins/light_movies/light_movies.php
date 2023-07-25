@@ -119,7 +119,7 @@ tr.jqgrow>td
             'id'=>array('w'=>5),
              'content_type'=>array('type'=>'select','options'=>'0:google cse;1:iframe;2:news'),
              'type'=>array('type'=>'select','options'=>$typedata_string),
-            'main_block'=>array('type'=>'select','options'=>'0:Internet Zeitgest;1:Critic Reviews;2:Global Consensus'),
+            'main_block'=>array('type'=>'select','options'=>'0:Internet Zeitgest;1:Critic Reviews;2:Global Consensus;3:Characters;4:Global Games;5:Similar show'),
             'dop_content' =>array('w'=>50, 'type' => 'textarea','textarea_rows' => 20),
         );
 

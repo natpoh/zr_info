@@ -438,8 +438,14 @@ class CustomRating
 
         echo '<h4>Keywords limit</h4>';
         echo self::rating_to_table('words_limit', $rating_data['words_limit']);
-        echo '<h4>LGBT Warning</h4>';
+        echo '<h4>LGBTQ Warning</h4>';
+
+        echo '<p>LGB</p>';
         echo self::rating_to_table('lgbt_warning', $rating_data['lgbt_warning'],"fullwidth ");
+
+
+        echo '<p>QTIA+</p>';
+        echo self::rating_to_table('qtia_warning', $rating_data['qtia_warning'],"fullwidth ");
 
         echo '<h4>Woke conclusions</h4>';
         echo self::rating_to_table('woke', $rating_data['woke'],"fullwidth ");
@@ -450,6 +456,17 @@ class CustomRating
         echo '<h4>Rating table</h4>';
 
         echo '<table id="jqGrid"></table><div id="jqGridPager"></div>';
+
+
+        !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
+
+
+
+        $array_rows = array(
+            'id'=>array('w'=>5)
+        );
+
+        Crowdsource::Show_admin_table('pg_rating',$array_rows,1,'',1,1,0,0,0);
 
 
         self::rating_script();
@@ -488,6 +505,7 @@ class CustomRating
             OptionData::set_option('',serialize($rating),'custom_rating_data',1);
 
         }
+       if (! $rating['qtia_warning']) $rating['qtia_warning'] = array('text' => 'gay relationship,homosexuality,gay sex,lesbian,gay subtext,gay man,transgender,lgbt,bisexual,gay dog','max_rating'=>'0-3.5');
 
 
         if (!$rating['Commonsensemedia']["diverse"])$rating['Commonsensemedia']["diverse"] = '0.7';
@@ -782,19 +800,19 @@ class CustomRating
     {
 
         ?>
-        <script type="text/ecmascript" src="<?php echo home_url(); ?>/analysis/jqgrid/js/i18n/grid.locale-en.js"></script>
-        <!-- This is the Javascript file of jqGrid -->
-        <script type="text/ecmascript" src="<?php echo home_url(); ?>/analysis/jqgrid/js/jquery.jqGrid.min.js"></script>
-        <script>
-            jQuery.jgrid.defaults.responsive = true;
-            jQuery.jgrid.defaults.styleUI = 'Bootstrap';
-        </script>
-        <script src="https://code.highcharts.com/stock/highstock.js"></script>
+<!--        <script type="text/ecmascript" src="--><?php //echo home_url(); ?><!--/analysis/jqgrid/js/i18n/grid.locale-en.js"></script>-->
 
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
-        <link rel="stylesheet" type="text/css" media="screen" href="<?php echo home_url(); ?>/analysis/jqgrid/css/ui.jqgrid-bootstrap4.css" />
-        <link rel="stylesheet" href="<?php echo home_url(); ?>/wp-content/themes/custom_twentysixteen/css/movie_single.css?<?php echo LASTVERSION; ?>">
-        <link rel="stylesheet" href="<?php echo home_url(); ?>/wp-content/themes/custom_twentysixteen/css/colums_template.css?<?php echo LASTVERSION; ?>">
+<!--        <script type="text/ecmascript" src="--><?php //echo home_url(); ?><!--/analysis/jqgrid/js/jquery.jqGrid.min.js"></script>-->
+<!--        <script>-->
+<!--            jQuery.jgrid.defaults.responsive = true;-->
+<!--            jQuery.jgrid.defaults.styleUI = 'Bootstrap';-->
+<!--        </script>-->
+<!--        <script src="https://code.highcharts.com/stock/highstock.js"></script>-->
+<!---->
+<!--        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">-->
+<!--        <link rel="stylesheet" type="text/css" media="screen" href="--><?php //echo home_url(); ?><!--/analysis/jqgrid/css/ui.jqgrid-bootstrap4.css" />-->
+<!--        <link rel="stylesheet" href="--><?php //echo home_url(); ?><!--/wp-content/themes/custom_twentysixteen/css/movie_single.css?--><?php //echo LASTVERSION; ?><!--">-->
+<!--        <link rel="stylesheet" href="--><?php //echo home_url(); ?><!--/wp-content/themes/custom_twentysixteen/css/colums_template.css?--><?php //echo LASTVERSION; ?><!--">-->
         <script type="text/javascript">
 
             jQuery(document).ready(function () {
@@ -851,7 +869,7 @@ class CustomRating
 
 
                 //////rating table
-
+/*
 
                 function getSubgrid(subgrid_id, row_id){
 
@@ -1085,7 +1103,7 @@ class CustomRating
                     },
                 });
 
-
+*/
 
 
             });

@@ -2151,27 +2151,6 @@ function update_all_pg_rating()
         $i++;
 
 
-//        ///check rwt id
-//        $sql1 = "SELECT `rwt_id` FROM `data_movie_imdb` WHERE `movie_id` = ".$movie_id;
-//        $r2 = Pdo_an::db_fetch_row($sql1);
-//        $rwt_id_original = $r2->rwt_id;
-//        if ($rwt_id_original!= $rwt_id)
-//        {
-//            $sql2 ="UPDATE `data_pg_rating` SET `rwt_id` = ? WHERE `data_pg_rating`.`movie_id` = ".$movie_id;
-//            Pdo_an::db_results_array($sql2,array($rwt_id_original));
-//        }
-
-//
-//        if (!$r['movie_title'])
-//        {
-//            ///add title
-//          $sql1 = "SELECT `title` FROM `data_movie_imdb` WHERE `movie_id` = ".$movie_id;
-//            $r2 = Pdo_an::db_fetch_row($sql1);
-//            $title = $r2->title;
-//            $sql2 ="UPDATE `data_pg_rating` SET `movie_title` = ? WHERE `data_pg_rating`.`movie_id` = ".$movie_id;
-//            Pdo_an::db_results_array($sql2,array($title));
-//        }
-
 
     }
 
@@ -3599,7 +3578,7 @@ $tablesQuery = "SHOW TABLES";
 
 
 
-            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+            // Проверка, нужно ли изменять кодировку для таблицы
             if (stripos($tableCollation, 'utf8mb4_general_ci') === false) {
 
                 $alterTableQuery = "ALTER TABLE `$tableName` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
@@ -3617,7 +3596,7 @@ $tablesQuery = "SHOW TABLES";
                 break;
             }
 
-//            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+//            // Получение списка столбцов в таблице
 //            $columnsQuery = "SHOW COLUMNS FROM `$tableName`";
 //            $columnRows = Pdo_an::db_results_array($columnsQuery);
 //
@@ -3630,7 +3609,7 @@ $tablesQuery = "SHOW TABLES";
 //                if (stripos($columnType, 'text') !== false || stripos($columnType, 'varchar') !== false) {
 //                    if (stripos($columnCollation, 'utf8mb4_general_ci') === false) {
 //                        echo $tableName.' - ' . $columnName . ' ' . $columnType . ' '.$columnCollation.'<br>';
-//                        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+//                        // Изменение кодировки для столбца
 //                        $alterColumnQuery = "ALTER TABLE `$tableName` MODIFY `$columnName` $columnType CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
 //                        Pdo_an::db_query($alterColumnQuery);
 //                    }

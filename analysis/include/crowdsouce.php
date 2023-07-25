@@ -28,7 +28,7 @@ if (!defined('CROWDSOURCEURL')) {
 class Crowdsource
 {
 
-    public function link_hash($link) {
+    public static function link_hash($link) {
         $link = preg_replace('/^http(?:s|)\:\/\//', '', $link);
         return sha1($link);
     }
@@ -966,6 +966,9 @@ var first_run = 0;
 
 
 
+
+
+
         if (data_type =='movie_erating')
         {
 
@@ -1001,7 +1004,23 @@ var first_run = 0;
                 }
             });
         }
+        else if (data_type =='pg_rating')
+        {
 
+            jQuery.ajax({
+                type: "POST",
+                url: "<?php echo $home_url ?>analysis/get_data.php",
+
+                data: ({
+                    oper: 'movie_data',
+                    refresh_rating:1,
+                    id: movie
+                }),
+                success: function (html) {
+                    jQuery('#'+subgrid_id).html(html);
+                }
+            });
+        }
 
 
         else if (data_type =='woke')

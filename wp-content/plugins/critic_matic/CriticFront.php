@@ -2218,26 +2218,36 @@ class CriticFront extends SearchFacets {
             $rating = $RWT_RATING->get_rating_data($array_movies, 0);
 
             $content['rating'] = $rating;
+
             $content['count'] = count($content['result']);
             $content['tmpl'] = $video_template;
             $content['reaction'] = $this->ce->get_emotions_counts_all($pids);
 
             // Print json
-            return json_encode($content);
-        } else {
-            $title = $this->get_movie_title($movie_id);
-            $title = urlencode($title);
-
-            $sql = "SELECT val FROM `options` where `type` = 'critic_empty'";
-            $rows = Pdo_an::db_fetch_row($sql);
-            $content_data = $rows->val;
-            $content_data = str_replace('\\', '', $content_data);
-            $content_data = str_replace('$', $title, $content_data);
-            $content['other'] = $content_data;
-
-
-            return json_encode($content);
+        //    return json_encode($content);
         }
+        $content['mid'] = $movie_id;
+        ///google cse
+        !class_exists('Gsearch') ? include ABSPATH . "analysis/include/gsearch.php" : '';
+        $gserch = new Gsearch();
+        $content['gdata'] = $gserch->get_data($movie_id,1);
+
+//        else {
+//            $title = $this->get_movie_title($movie_id);
+//            $title = urlencode($title);
+//
+//            $sql = "SELECT val FROM `options` where `type` = 'critic_empty'";
+//            $rows = Pdo_an::db_fetch_row($sql);
+//            $content_data = $rows->val;
+//            $content_data = str_replace('\\', '', $content_data);
+//            $content_data = str_replace('$', $title, $content_data);
+//            $content['other'] = $content_data;
+//
+//
+//
+//        }
+
+        return json_encode($content);
         return '';
     }
 

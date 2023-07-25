@@ -378,7 +378,6 @@ class CriticParser extends AbstractDB {
                 }
             }
         }
-
         return $options;
     }
 
