@@ -289,7 +289,17 @@ class CriticSearch extends AbstractDB {
                 'boxusa' => array('title' => 'Domestic Box Office', 'titlesm' => 'Domestic', 'name_pre' => 'Domestic ', 'filter_pre' => 'Domestic Box Office ', 'group' => 'indie', 'hide' => 1, 'sorted' => 1,),
             ),
         ),
-
+        /* 'rf' => array(
+          'title' => 'Rating filters',
+          'tabs' => array('movies', 'international', 'ethnicity'),
+          'is_parent' => 1,
+          'minus' => 1,
+          'weight' => 100,
+          'childs' => array(
+          'rflgbt' => array('title' => 'LGBT', 'titlesm' => 'LGBT', 'name_pre' => 'LGBT ', 'filter_pre' => 'LGBT ',),
+          'rfwoke' => array('title' => 'Woke', 'titlesm' => 'Woke', 'name_pre' => 'Woke ', 'filter_pre' => 'Woke ',),
+          ),
+          ), */
         'popdata' => array(
             'title' => 'Popularity',
             'tabs' => array('movies', 'international', 'ethnicity'),
@@ -346,8 +356,8 @@ class CriticSearch extends AbstractDB {
                 'bechdeltest' => array('title' => 'BechdelTest', 'facet' => 'select', 'titlesm' => 'BechdelTest', 'name_pre' => 'BechdelTest ', 'filter_pre' => 'BechdelTest ', 'max_count' => 4, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'sorted' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
                 // Filetrs
                 'woketitle' => array('title' => 'Forced Diversity', 'is_title' => 1, 'group' => 'woke', 'no_data' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
-                'div' => array('title' => 'Diversity %', 'def' => 'desc',  'group' => 'woke', 'no_data' => 1, 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
-                'fem' => array('title' => 'Female %', 'def' => 'desc',  'group' => 'woke', 'no_data' => 1, 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
+                'div' => array('title' => 'Diversity %', 'def' => 'desc', 'group' => 'woke', 'no_data' => 1, 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
+                'fem' => array('title' => 'Female %', 'def' => 'desc', 'group' => 'woke', 'no_data' => 1, 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
                 // Audience  
                 'auratingtitle' => array('title' => 'Audience Ratings', 'is_title' => 1, 'group' => 'woke'),
                 'auvote' => array('title' => 'SUGGESTION', 'facet' => 'select', 'titlesm' => 'SUGGESTION', 'name_pre' => 'AU ', 'filter_pre' => 'Audience SUGGESTION ', 'icon' => 'vote', 'hide' => 1, 'group' => 'woke'),
@@ -359,7 +369,21 @@ class CriticSearch extends AbstractDB {
                 'augod' => array('title' => 'FEDORA TIPPING', 'facet' => 'rating', 'parent' => 'eaugod', 'titlesm' => 'FEDORA T', 'name_pre' => 'FEDORA TIPPING ', 'filter_pre' => 'Audience FEDORA TIPPING ', 'icon' => 'god', 'group' => 'woke', 'sorted' => 1,),
             ),
         ),
-
+        /* 'auratings' => array(
+          'title' => 'Audience',
+          'tabs' => array('critics'),
+          'is_parent' => 1,
+          'weight' => 50,
+          'childs' => array(
+          'auratingtitle' => array('title' => 'Audience Ratings', 'is_title' => 1, 'group' => 'woke', 'no_data' => 1,),
+          'auvote' => array('title' => 'SUGGESTION', 'facet' => 'select', 'titlesm' => 'SUGGESTION', 'name_pre' => 'AU ', 'filter_pre' => 'Audience SUGGESTION ', 'icon' => 'vote', 'hide' => 1, 'group' => 'woke'),
+          'aurating' => array('title' => 'OVERALL', 'facet' => 'rating', 'parent' => 'eaurating', 'titlesm' => 'OVERALL', 'name_pre' => 'AU OVERALL ', 'filter_pre' => 'Audience OVERALL ', 'icon' => 'rating', 'group' => 'woke', 'sorted' => 1,),
+          'auneo' => array('title' => 'NEO-MARXISM', 'facet' => 'rating', 'parent' => 'eauneo', 'titlesm' => 'NEO-MARXISM', 'name_pre' => 'AU NEO-MARXISM ', 'filter_pre' => 'Audience NEO-MARXISM ', 'icon' => 'patriotism', 'group' => 'woke', 'sorted' => 1,),
+          'aumisandry' => array('title' => 'FEMINISM', 'facet' => 'rating', 'parent' => 'eaumisandry', 'titlesm' => 'FEMINISM', 'name_pre' => 'AU FEMINISM ', 'filter_pre' => 'Audience FEMINISM ', 'icon' => 'misandry', 'group' => 'woke', 'sorted' => 1,),
+          'auaffirmative' => array('title' => 'AFFIRMATIVE ACTION', 'facet' => 'rating', 'parent' => 'eauaffirmative', 'titlesm' => 'AFF ACT', 'name_pre' => 'AU AA ', 'filter_pre' => 'Audience AFFIRMATIVE ACTION ', 'icon' => 'affirmative', 'group' => 'woke', 'sorted' => 1,),
+          'aulgbtq' => array('title' => 'GAY STUFF', 'facet' => 'rating', 'parent' => 'eaulgbtq', 'titlesm' => 'GAY STUFF', 'name_pre' => 'GAY STUFF ', 'filter_pre' => 'Audience GAY STUFF ', 'icon' => 'lgbtq', 'group' => 'woke', 'sorted' => 1,),
+          'augod' => array('title' => 'FEDORA TIPPING', 'facet' => 'rating', 'parent' => 'eaugod', 'titlesm' => 'FEDORA T', 'name_pre' => 'FEDORA TIPPING ', 'filter_pre' => 'Audience FEDORA TIPPING ', 'icon' => 'god', 'group' => 'woke', 'sorted' => 1,),),
+          ), */
         'price' => array(
             'title' => 'Price',
             'tabs' => array('movies', 'critics'),
@@ -2449,8 +2473,8 @@ class CriticSearch extends AbstractDB {
             }
         }
 
-        // p_r($sql_arr);
-        // exit;
+       // p_r($sql_arr);
+       // exit;
 
         return $sql_arr;
     }
@@ -2804,7 +2828,7 @@ class CriticSearch extends AbstractDB {
              */
             $sort_key = $sort['sort'];
             $sort_type = $sort['type'] == 'desc' ? 'DESC' : 'ASC';
-            $simple_facets = array_keys($this->facet_data['wokedata']['childs']);
+            $audience_facets = array_keys($this->facet_data['auratings']['childs']);
             if ($sort_key == 'id') {
                 $order = ' ORDER BY id ' . $sort_type;
             } else if ($sort_key == 'title') {
@@ -2817,7 +2841,7 @@ class CriticSearch extends AbstractDB {
                 $order = ' ORDER BY id ' . $sort_type;
             } else if ($sort_key == 'mw') {
                 $order = ' ORDER BY id DESC';
-            } else if (in_array($sort_key, $simple_facets) || $sort_key == 'pop') {
+            } else if (in_array($sort_key, $audience_facets) || $sort_key == 'pop') {
                 if ($sort_type == 'DESC') {
                     $order = ' ORDER BY ' . $sort_key . ' DESC';
                 } else {
@@ -2844,7 +2868,7 @@ class CriticSearch extends AbstractDB {
             $sort_key = $sort['sort'];
             $sort_type = $sort['type'] == 'desc' ? 'DESC' : 'ASC';
 
-            $simple_facets = array_keys($this->facet_data['ratings']['childs']);
+            $simple_facets = array_merge(array_keys($this->facet_data['auratings']['childs']), array_keys($this->facet_data['ratings']['childs']));
             $simple_facets = array_merge($simple_facets, array_keys($this->facet_data['popdata']['childs']));
             $simple_facets = array_merge($simple_facets, array_keys($this->facet_data['findata']['childs']));
             $simple_facets = array_merge($simple_facets, array_keys($this->facet_data['wokedata']['childs']));
@@ -3107,6 +3131,28 @@ class CriticSearch extends AbstractDB {
                         } else {
                             $filters_and .= sprintf(" AND year_int >=%d AND year_int < %d", $release_from, $release_to);
                         }
+                    } else if (isset($this->facet_data['auratings']['childs'][$key])) {
+                        // AU Rating
+                        $active_facet = $this->facet_data['auratings']['childs'][$key];
+                        if ($key == 'auvote') {
+                            $filters_and .= $this->filter_multi_value($key, $value);
+                        } else if ($value == 'use' || $value == 'minus') {
+                            $parent_key = $active_facet['parent'];
+                            if ($value == 'use') {
+                                $filters_and .= " AND " . $parent_key . "=1";
+                            } else {
+                                $filters_and .= " AND " . $parent_key . "=0";
+                            }
+                        } else {
+                            $dates = explode('-', $value);
+                            $from = (int) $dates[0];
+                            $to = (int) $dates[1];
+                            if ($from == $to) {
+                                $filters_and .= sprintf(" AND " . $key . " =%d", $from);
+                            } else {
+                                $filters_and .= sprintf(" AND " . $key . " >%d AND " . $key . " <= %d", $from, $to);
+                            }
+                        }
                     }
                 }
 
@@ -3258,30 +3304,6 @@ class CriticSearch extends AbstractDB {
                     } else if ($key == 'movie') {
                         // Movie                 
                         $filters_and .= $this->filter_multi_value('movies', $value, true);
-                    } else if (isset($this->facet_data['wokedata']['childs'][$key])) {
-                        // AU Rating
-                        $active_facet = $this->facet_data['wokedata']['childs'][$key];
-                        if (!isset($active_facet['tabs']) || isset($active_facet['tabs']) && in_array('critics', $active_facet['tabs'])) {
-                            if ($key == 'auvote') {
-                                $filters_and .= $this->filter_multi_value($key, $value);
-                            } else if ($value == 'use' || $value == 'minus') {
-                                $parent_key = $active_facet['parent'];
-                                if ($value == 'use') {
-                                    $filters_and .= " AND " . $parent_key . "=1";
-                                } else {
-                                    $filters_and .= " AND " . $parent_key . "=0";
-                                }
-                            } else {
-                                $dates = explode('-', $value);
-                                $from = (int) $dates[0];
-                                $to = (int) $dates[1];
-                                if ($from == $to) {
-                                    $filters_and .= sprintf(" AND " . $key . " =%d", $from);
-                                } else {
-                                    $filters_and .= sprintf(" AND " . $key . " >%d AND " . $key . " <= %d", $from, $to);
-                                }
-                            }
-                        }
                     }
                 }
             }
