@@ -289,7 +289,6 @@ class CriticSearch extends AbstractDB {
                 'boxusa' => array('title' => 'Domestic Box Office', 'titlesm' => 'Domestic', 'name_pre' => 'Domestic ', 'filter_pre' => 'Domestic Box Office ', 'group' => 'indie', 'hide' => 1, 'sorted' => 1,),
             ),
         ),
-
         'popdata' => array(
             'title' => 'Popularity',
             'tabs' => array('movies', 'international', 'ethnicity'),
@@ -338,16 +337,20 @@ class CriticSearch extends AbstractDB {
                 'rating' => array('title' => 'Family Friendly Score', 'facet' => 'rating', 'parent' => 'erating', 'titlesm' => 'FFS', 'name_pre' => 'FFS ', 'filter_pre' => 'FFS ', 'max_count' => 60, 'multipler' => 10, 'group' => 'woke', 'icon' => 'zr_family', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
                 'rmedia' => array('title' => 'MediaVersity', 'facet' => 'rating', 'parent' => 'emedia', 'titlesm' => 'MediaVersity', 'name_pre' => 'MediaVersity ', 'filter_pre' => 'MediaVersity ', 'max_count' => 60, 'multipler' => 10, 'group' => 'woke', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
                 'rcherry' => array('title' => 'CherryPicks', 'facet' => 'rating', 'parent' => 'echerry', 'titlesm' => 'CherryPicks', 'name_pre' => 'CherryPicks ', 'filter_pre' => 'CherryPicks ', 'max_count' => 110, 'multipler' => 10, 'group' => 'woke', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
-                'woke' => array('title' => 'Wokeness', 'facet' => 'rating', 'parent' => 'rfwoke', 'titlesm' => 'Wokeness', 'name_pre' => 'Wokeness ', 'filter_pre' => 'Wokeness ', 'max_count' => 50, 'multipler' => 1, 'group' => 'woke', 'icon' => 'zr_woke', 'sorted' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
-                'lgbt' => array('title' => 'LGBT', 'facet' => 'rating', 'parent' => 'rflgbt', 'titlesm' => 'LGBT', 'name_pre' => 'LGBT ', 'filter_pre' => 'LGBT ', 'max_count' => 50, 'multipler' => 1, 'group' => 'woke', 'icon' => 'zr_lgbt', 'sorted' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
                 // Other
                 'worthit' => array('title' => 'WorthItOrWoke', 'facet' => 'select', 'titlesm' => 'WorthIt', 'name_pre' => 'WorthItOrWoke ', 'filter_pre' => 'WorthItOrWoke ', 'max_count' => 5, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'sorted' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
                 'mediaversity' => array('title' => 'MediaVersity', 'facet' => 'select', 'titlesm' => 'MediaVersity', 'name_pre' => 'MediaVersity ', 'filter_pre' => 'MediaVersity ', 'max_count' => 20, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'sorted' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
                 'bechdeltest' => array('title' => 'BechdelTest', 'facet' => 'select', 'titlesm' => 'BechdelTest', 'name_pre' => 'BechdelTest ', 'filter_pre' => 'BechdelTest ', 'max_count' => 4, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'sorted' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
                 // Filetrs
                 'woketitle' => array('title' => 'Forced Diversity', 'is_title' => 1, 'group' => 'woke', 'no_data' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
-                'div' => array('title' => 'Diversity %', 'def' => 'desc',  'group' => 'woke', 'no_data' => 1, 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
-                'fem' => array('title' => 'Female %', 'def' => 'desc',  'group' => 'woke', 'no_data' => 1, 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
+                'div' => array('title' => 'Diversity %', 'def' => 'desc', 'group' => 'woke', 'no_data' => 1, 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
+                'fem' => array('title' => 'Female %', 'def' => 'desc', 'group' => 'woke', 'no_data' => 1, 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
+                // IMDB Keywords
+                'imdbratingtitle' => array('title' => 'IMDB Keywords', 'is_title' => 1, 'group' => 'woke'),
+                'woke' => array('title' => 'Wokeness', 'facet' => 'rating', 'parent' => 'ewoke', 'titlesm' => 'Wokeness', 'name_pre' => 'Wokeness ', 'filter_pre' => 'Wokeness ', 'max_count' => 50, 'multipler' => 1, 'group' => 'woke', 'icon' => 'zr_woke', 'sorted' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
+                'lgbt' => array('title' => 'LGBT', 'facet' => 'rating', 'parent' => 'elgbt', 'titlesm' => 'LGBT', 'name_pre' => 'LGBT ', 'filter_pre' => 'LGBT ', 'max_count' => 50, 'multipler' => 1, 'group' => 'woke', 'icon' => 'zr_lgbt', 'sorted' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
+                'lgb' => array('title' => 'LGB', 'facet' => 'rating', 'parent' => 'elgb', 'titlesm' => 'LGB', 'name_pre' => 'LGB ', 'filter_pre' => 'LGB ', 'max_count' => 50, 'multipler' => 1, 'group' => 'woke', 'icon' => 'zr_lgbt', 'sorted' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
+                'qtia' => array('title' => 'QTIA', 'facet' => 'rating', 'parent' => 'eqtia', 'titlesm' => 'QTIA', 'name_pre' => 'QTIA ', 'filter_pre' => 'QTIA ', 'max_count' => 50, 'multipler' => 1, 'group' => 'woke', 'icon' => 'zr_lgbt', 'sorted' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
                 // Audience  
                 'auratingtitle' => array('title' => 'Audience Ratings', 'is_title' => 1, 'group' => 'woke'),
                 'auvote' => array('title' => 'SUGGESTION', 'facet' => 'select', 'titlesm' => 'SUGGESTION', 'name_pre' => 'AU ', 'filter_pre' => 'Audience SUGGESTION ', 'icon' => 'vote', 'hide' => 1, 'group' => 'woke'),
@@ -359,7 +362,6 @@ class CriticSearch extends AbstractDB {
                 'augod' => array('title' => 'FEDORA TIPPING', 'facet' => 'rating', 'parent' => 'eaugod', 'titlesm' => 'FEDORA T', 'name_pre' => 'FEDORA TIPPING ', 'filter_pre' => 'Audience FEDORA TIPPING ', 'icon' => 'god', 'group' => 'woke', 'sorted' => 1,),
             ),
         ),
-
         'price' => array(
             'title' => 'Price',
             'tabs' => array('movies', 'critics'),
@@ -410,8 +412,8 @@ class CriticSearch extends AbstractDB {
             'popsort' => array('title' => 'Popularity', 'group' => 'pop', 'main' => 1, 'sorted' => 1,),
             'wokesort' => array('title' => 'Wokeness', 'group' => 'woke', 'main' => 1, 'sorted' => 1,),
             'finsort' => array('title' => 'Finances', 'group' => 'indie', 'main' => 1, 'sorted' => 1,),
-            'woke' => array('title' => 'Wokeness', 'def' => 'desc', 'group' => 'woke'),
-            'lgbt' => array('title' => 'LGBT', 'def' => 'desc', 'group' => 'woke'),
+           /* 'woke' => array('title' => 'Wokeness', 'def' => 'desc', 'group' => 'woke'),
+            'lgbt' => array('title' => 'LGBT', 'def' => 'desc', 'group' => 'woke'),*/
             'rel' => array('title' => 'Relevance', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
         ),
         'critics' => array(
@@ -498,10 +500,6 @@ class CriticSearch extends AbstractDB {
             'meddist' => array('key' => 'meddist', 'title' => 'Mini-majors'),
             'indidist' => array('key' => 'bigdist', 'title' => 'Independent Studios (USA)'),
         ),
-        /* 'rf' => array(
-          'lgbt' => array('key' => 'rflgbt', 'title' => 'LGBT'),
-          'woke' => array('key' => 'rfwoke', 'title' => 'Woke'),
-          ), */
         'mediaversity' => array(
             'a' => array('key' => 1, 'title' => 'A'),
             'b' => array('key' => 2, 'title' => 'B'),

@@ -161,6 +161,7 @@ class MoviesParser extends MoviesAbstractDB {
     );
     public $parser_rules_fields = array(
         'r' => 'Release',
+        's' => 'Score',
         't' => 'Title',
         'y' => 'Year',
         'c' => 'Custom',
