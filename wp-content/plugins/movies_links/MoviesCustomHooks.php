@@ -359,14 +359,13 @@ class MoviesCustomHooks {
             }
             if ($to_update) {
                 $rating = (int) trim($to_update['rating']);
-                if ($rating>0){
-                    $ma = $this->ml->get_ma();
-                    # Update woke
-                    $woke_data = array(
-                        'bechdeltest' => (int) $rating,
-                    );
-                    $ma->update_woke($post->top_movie, $woke_data);
-                }
+                $rating += 1;
+                $ma = $this->ml->get_ma();
+                # Update woke
+                $woke_data = array(
+                    'bechdeltest' => $rating,
+                );
+                $ma->update_woke($post->top_movie, $woke_data);
             }
         }
     }

@@ -348,7 +348,7 @@ class CriticSearch extends AbstractDB {
                 // Ratings
 
                 'reviewwoketitle' => array('title' => 'Review Sites<span data-value="tooltip_zr_woke_search" class="nte_info"></span>', 'is_title' => 1, 'group' => 'woke', 'tabs' => array('movies', 'international', 'ethnicity'),),
-                'bechdeltest' => array('title' => 'BechdelTest', 'facet' => 'select', 'titlesm' => 'BechdelTest', 'name_pre' => 'BechdelTest ', 'filter_pre' => 'BechdelTest ', 'max_count' => 4, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'sorted' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
+                //'bechdeltest' => array('title' => 'BechdelTest', 'facet' => 'select', 'titlesm' => 'BechdelTest', 'name_pre' => 'BechdelTest ', 'filter_pre' => 'BechdelTest ', 'max_count' => 4, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'sorted' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
                 'rcherry' => array('title' => 'CherryPicks', 'facet' => 'rating', 'parent' => 'echerry', 'titlesm' => 'CherryPicks', 'name_pre' => 'CherryPicks ', 'filter_pre' => 'CherryPicks ', 'max_count' => 110, 'multipler' => 10, 'group' => 'woke', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
                 'rmedia' => array('title' => 'MediaVersity', 'facet' => 'rating', 'parent' => 'emedia', 'titlesm' => 'MediaVersity', 'name_pre' => 'MediaVersity ', 'filter_pre' => 'MediaVersity ', 'max_count' => 60, 'multipler' => 10, 'group' => 'woke', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
                 'mediaversity' => array('title' => 'MediaVersity A-E', 'facet' => 'select', 'titlesm' => 'MediaVersity', 'name_pre' => 'MediaVersity ', 'filter_pre' => 'MediaVersity ', 'max_count' => 20, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity'),),
@@ -517,9 +517,16 @@ class CriticSearch extends AbstractDB {
             'nonwoke' => array('key' => 3, 'title' => 'Non-Woke'),
         ),
         'bechdeltest' => array(
+<<<<<<< HEAD
             '1' => array('key' => 1, 'title' => '1'),
             '2' => array('key' => 2, 'title' => '2'),
             '3' => array('key' => 3, 'title' => '3'),
+=======
+            '0' => array('key' => 0, 'title' => 'No 2 women'),
+            '1' => array('key' => 1, 'title' => 'No talking'),
+            '2' => array('key' => 2, 'title' => 'Talk about a man'),
+            '3' => array('key' => 3, 'title' => 'Passed!'),
+>>>>>>> e22cffe1 (refactor)
         ),
     );
     public $facet_parent = array();
