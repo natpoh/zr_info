@@ -48,8 +48,18 @@ class ActorsCron extends MoviesAbstractDBAn {
 
         if ($actors) {
             foreach ($actors as $actor) {
-
+                // Source name 
+                // 1 - default
+                // 2 - birth
+                if ($debug){
+                    print_r($actor);
+                }
+                $source_name = 1;
                 $raw_name = $actor->name;
+                if ($actor->birth_name && ($actor->name != $actor->birth_name)) {
+                    $source_name = 2;
+                    $raw_name = $actor->birth_name;
+                }
                 $name = $raw_name;
                 $id = $actor->id;
 
@@ -64,7 +74,7 @@ class ActorsCron extends MoviesAbstractDBAn {
                 while (preg_match($ab_reg, $name, $match)) {
                     $name = preg_replace($ab_reg, ' ', $name);
                 }
-                
+
                 // 3. Remove jr.
                 $ab_reg = '/(^| )mr(|\.)($| )/i';
                 while (preg_match($ab_reg, $name, $match)) {
@@ -75,9 +85,11 @@ class ActorsCron extends MoviesAbstractDBAn {
 
                 $name = trim(preg_replace('/  /', ' ', $name));
 
+                
                 if ($debug) {
                     $result[$id] = array('raw' => $raw_name, 'filter' => $name);
                 }
+                $result[$id]['source_name'] = $source_name;
                 // Get last name
                 if (strstr($name, ' ')) {
                     $name_arr = explode(' ', $name);
@@ -104,32 +116,47 @@ class ActorsCron extends MoviesAbstractDBAn {
 
              */
             foreach ($result as $aid => $item) {
-                $firstname = isset($item['first']) ? $item['first'] : '';
-                $lastname = isset($item['last']) ? $item['last'] : '';
-                $this->insert_actor($aid, $firstname, $lastname);
+
+                $data = array(
+                    'aid' => $aid,
+                    'firstname' => isset($item['first']) ? $item['first'] : '',
+                    'lastname' => isset($item['last']) ? $item['last'] : '',
+                    'source_name' => $item['source_name'],
+                );
+                
+                $this->update_actor($aid, $data);
+
                 if ($debug) {
-                    print_r(array($aid, $firstname, $lastname));
+                    print_r(array($aid, $data));
                 }
-                
-                $insert_id = $this->getInsertId('id', $this->db['actors_normalize']);
-                
+
+                // $insert_id = $this->getInsertId('id', $this->db['actors_normalize']);
             }
         }
     }
 
     private function get_last_actors($count) {
-        $sql = sprintf("SELECT a.id, a.name "
+        $sql = sprintf("SELECT a.id, a.name, a.birth_name "
                 . "FROM {$this->db['actors_imdb']} a "
                 . "LEFT JOIN {$this->db['actors_normalize']} an ON an.aid = a.id "
-                . "WHERE an.id is NULL ORDER BY a.id DESC limit %d", (int) $count);
+                . "WHERE (an.id is NULL OR an.last_upd=0) AND name!='' ORDER BY a.id DESC limit %d", (int) $count);
         $results = $this->db_results($sql);
         return $results;
     }
+    
+    private function update_actor($aid = 0, $data = array()) {
+        // Get rating      
 
-    private function insert_actor($aid, $firstname, $lastname) {
-        $sql = sprintf("INSERT INTO {$this->db['actors_normalize']} (aid,firstname,lastname) "
-                . "VALUES (%d,'%s','%s')", (int) $aid, $this->escape($firstname), $this->escape($lastname));
-        $this->db_query($sql);
+        $sql = sprintf("SELECT * FROM {$this->db['actors_normalize']} WHERE aid = %d", (int) $aid);
+        $exist = $this->db_fetch_row($sql);
+        $data['last_upd'] = $this->curr_time();
+        if ($exist) {
+            // Update       
+            $this->db_update($data, $this->db['actors_normalize'], $exist->id);
+        } else {
+            // Add             
+            $this->db_insert($data, $this->db['actors_normalize']);
+        }
     }
 
 }
