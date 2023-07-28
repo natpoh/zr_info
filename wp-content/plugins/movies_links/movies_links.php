@@ -9,10 +9,7 @@
   Version: 1.0.2
   License: GPLv2
  */
-
-
 !defined('MOVIES_LINKS_PLUGIN_DIR') ? define('MOVIES_LINKS_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/movies_links/') : '';
-
 
 function include_movies_links() {
     //DB config
@@ -270,8 +267,15 @@ function movies_links_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_actors_normalize` ADD `last_upd` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_actors_normalize` ADD `source_name` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+
     if (function_exists('critic_matic_create_index_an')) {
-        critic_matic_create_index_an(array('aid', 'firstname', 'lastname'), 'data_actors_normalize');
+        critic_matic_create_index_an(array('aid', 'firstname', 'lastname', 'last_upd'), 'data_actors_normalize');
     }
 
     /*
@@ -459,10 +463,10 @@ function movies_links_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_fchan_workers` ADD `cid` int(11) NOT NULL DEFAULT '0'";
     Pdo_ml::db_query($sql);
-    
+
     movies_links_create_index(array('date', 'proxy', 'cid'), 'data_fchan_workers');
 }
 
