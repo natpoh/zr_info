@@ -420,6 +420,7 @@ class MoviesParserCron extends MoviesAbstractDB {
             $title = '';
             $year = '';
             $release = '';
+            $score='';
             $post_options = array();
             foreach ($item as $key => $value) {
                 if ($key == 't') {
@@ -428,6 +429,8 @@ class MoviesParserCron extends MoviesAbstractDB {
                     $year = $value;
                 } else if ($key == 'r') {
                     $release = $value;
+                } else if ($key == 's') {
+                    $score = $value;
                 } else {
                     $post_options[$key] = base64_encode($value);
                 }
@@ -464,6 +467,7 @@ class MoviesParserCron extends MoviesAbstractDB {
                 'version' => (int) $version,
                 'title' => $this->mp->max_len($title),
                 'rel' => $release,
+                'score' => (int) (((float) $score)*10),
                 'options' => serialize($post_options),
             );
 

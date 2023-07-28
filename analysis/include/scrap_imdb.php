@@ -755,63 +755,24 @@ function get_family($data='')
 );
 
 
-    if ($data)
-    {
 
-        $data = intval($data);
-        $sql =  "SELECT * FROM `data_familysearch_verdict` WHERE `id` = {$data} ";
-        $rows = Pdo_an::db_results_array($sql);
+        $q = "SELECT data_actors_meta.actor_id, data_familysearch_verdict.verdict FROM data_actors_normalize, data_actors_meta , data_familysearch_verdict 
+         WHERE  data_actors_normalize.aid=data_actors_meta.actor_id
+         and data_actors_meta.n_familysearch = 0
+           and data_actors_normalize.lastname = data_familysearch_verdict.lastname limit 1000";
 
-    }
-    else {
+    $rows = Pdo_an::db_results_array($q);
 
-        $last_id = get_last_options(19);
+              foreach ($rows as $val) {
+                  $i = $val['actor_id'];
+                  $fm = $val['verdict'];
 
-        if (!$last_id) $last_id = 0;
-
-        $sql = "SELECT * FROM `data_familysearch_verdict` WHERE `id` > {$last_id} limit 200";
-        $rows = Pdo_an::db_results_array($sql);
-
-    }
-
-
-        foreach ($rows as $r)
-        {
-
-          $family_id = $r['id'];
-          $lastname =  $r['lastname'];
-          $verdict  =  $r['verdict'];
-
-          echo $family_id.' lastname='.$lastname.'<br>';
-
-
-          if ($lastname) {
-
-              /////get all actors
-              $sql = "SELECT aid FROM `data_actors_normalize` WHERE  `lastname` = '" . $lastname . "' order by id ASC";
-              $result = Pdo_an::db_results_array($sql);
-              foreach ($result as $val) {
-                  $i = $val['aid'];
-
-
-                  ///update data
-                  $fm = $race_small[$verdict];
-
-                  $sql1 = "UPDATE `data_actors_meta` SET `familysearch` = '" . $fm . "'  , `n_familysearch` = '" . intconvert($fm) . "',
+                  $sql = "UPDATE `data_actors_meta` SET  `n_familysearch` = '" .$fm . "',
                  `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $i. "'";
 
-                  //echo $sql1.'<br>';
-
-                  Pdo_an::db_query($sql1);
-
+                  Pdo_an::db_query($sql);
                   update_actors_verdict($i,1);
               }
-          }
-
-          set_option(19, $family_id);
-        }
-
-
 
 }
 function get_forebears($data='')
@@ -845,15 +806,12 @@ where  m.n_forebears = 0 and v.`verdict`>0 limit 1000";
         $verdict  =  $r['verdict_rank'];
 
 
-
-
         ///update data
         $fm = $race_small[$verdict];
 
         echo $aid.' '.$fm.' lastname='.$lastname.'<br>';
 
-        $sql1 = "UPDATE `data_actors_meta` SET  `n_forebears` = '" . intconvert($fm) . "',
-                 `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $aid. "'";
+        $sql1 = "UPDATE `data_actors_meta` SET  `n_forebears` = '" . $verdict. "',  `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $aid. "'";
 
         //echo $sql1.'<br>';
         Pdo_an::db_query($sql1);
@@ -3551,7 +3509,14 @@ if (isset($_GET['add_movie_production'])) {
     return;
 }
 
+if (isset($_GET['actor_logs'])) {
 
+    !class_exists('ActorsInfo') ? include ABSPATH . "analysis/include/actor_last_update.php" : '';
+
+    ActorsInfo::info(intval($_GET['actor_logs']));
+
+    return;
+}
 
 
 if (isset($_GET['convert_tables'])) {
@@ -3575,7 +3540,6 @@ $tablesQuery = "SHOW TABLES";
             $tableStatusRow = Pdo_an::db_results_array($tableStatusQuery);
 
             $tableCollation = $tableStatusRow[0]['Collation'];
-
 
 
             if (stripos($tableCollation, 'utf8mb4_general_ci') === false) {

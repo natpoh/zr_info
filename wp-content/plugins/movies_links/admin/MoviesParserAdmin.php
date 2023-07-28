@@ -68,9 +68,10 @@ class MoviesParserAdmin extends ItemAdmin {
         'trash' => 'Trash',
     );
     public $parser_rules_names = array(
-        't' => 'Title',
+        't' => 'Title',        
         'r' => 'Release',
         'y' => 'Year',
+        's' => 'Score',
         'u' => 'URL',
     );
     public $parser_types = array(

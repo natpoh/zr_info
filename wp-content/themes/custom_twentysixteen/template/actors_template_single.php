@@ -100,6 +100,15 @@ if ($post_type!='VideoGame') {
 </details>';
 
 }
+else
+{
+    $content .= '<details class="dark actor_details" >
+   <summary>Characters</summary>
+<div class="dmg_content" id="actor_data_dop" ><div id="google_characters"  data-value="' . $post_id . '" class="page_custom_block not_load"></div></div>
+</details>
+</details>';
+
+}
 
 
 
@@ -131,11 +140,33 @@ if ($post_type!='VideoGame') {
 
 </div>
 ';
+if ($post_type=='VideoGame') {
 
-if ($post_type!='VideoGame') {
-    $content .= '<section class="inner_content no_pad global_zeitgeist_container"><div class="column_header">
-                    <h2>Global Zeitgest:</h2>
-                </div><div  id="global_zeitgeist" data-value="' . $post_id . '" class="not_load"></div></section>';
+
+    $content .= '<details class="dark actor_details" >
+   <summary>Global Consensus</summary>
+<section class="dmg_content inner_content" id="actor_data_dop" >
+        <div  id="google_global_games" data-value="' . $post_id . '" class="page_custom_block not_load"></div>
+</section>
+</details>';
+
+
+}
+else if ($post_type!='VideoGame') {
+
+    $content .= '<details class="dark actor_details global_zr" open >
+   <summary>Global Consensus</summary>
+<section class="dmg_content inner_content" id="actor_data_dop" >
+        <div  id="global_zeitgeist" data-value="' . $post_id . '" class="page_custom_block not_load"></div>
+</section>
+</details>';
+
+
+
+
+//    $content .= '<section class="inner_content no_pad global_zeitgeist_container"><div class="column_header">
+//                    <h2>Global Zeitgest:</h2>
+//                </div><div  id="global_zeitgeist" data-value="' . $post_id . '" class="not_load"></div></section>';
 
 }
     echo $content;
@@ -151,9 +182,9 @@ function show_actors_template_single_cache()
         require(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/include/custom_cahe.php');
     }
 
-   $cache = wp_custom_cache('p-'.$post_id.'_show_actors_template_single_1', 'fastcache', 3600);
-   echo $cache;
-   //show_actors_template_single();
+   //$cache = wp_custom_cache('p-'.$post_id.'_show_actors_template_single_1', 'fastcache', 3600);
+   //echo $cache;
+   show_actors_template_single();
 }
 
 

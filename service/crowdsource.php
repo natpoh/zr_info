@@ -151,10 +151,11 @@ function critic_crowd_validation($link, $row = []) {
                         if ($result->description) {
                          $content = str_replace("\n", '<br />', $result->description);
                         }
-                        $embed_content = '<iframe width="560" height="315" src="https://www.youtube.com/embed/' . $match[4] . '" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
-                    } else {
-                        $error['link'] = 'Can not get the data from Youtube URL';
-                    }
+
+                      }
+
+                     $embed_content = '<iframe width="560" height="315" src="https://www.youtube.com/embed/' . $match[4] . '" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+
                  }
                  else if ($embeded)
                      {

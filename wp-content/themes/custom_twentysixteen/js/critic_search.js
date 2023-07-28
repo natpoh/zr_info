@@ -70,9 +70,8 @@ jQuery(function ($) {
                     return false;
                 }
                 critic_search.menu();
-
+                return false;
             }
-            return false;
         });
 
         // Close search

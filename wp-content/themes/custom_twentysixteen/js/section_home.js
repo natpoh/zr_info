@@ -1662,7 +1662,7 @@ function load_ajax_block(block_id) {
 
                 }
 
-            } else if (block_id == 'google_search' || block_id == 'google_search_review' || block_id == 'google_global_zeitgeist') {
+            } else if (block_id == 'google_search' || block_id == 'google_search_review' || block_id == 'google_global_zeitgeist'|| block_id == 'google_global_games'|| block_id == 'google_characters') {
                 if (data) {
                     prepare_search_data(block_id, data);
                 }
@@ -1703,7 +1703,8 @@ function load_ajax_block(block_id) {
 
                     } else {
 
-                        jQuery('.global_zeitgeist_container').remove();
+
+                        jQuery('.global_zr').remove();
 
                         jQuery('.detail_container').append(`<details class="dark actor_details" >
    <summary>Global Consensus</summary>
@@ -1711,7 +1712,7 @@ function load_ajax_block(block_id) {
         <div  id="google_global_zeitgeist" data-value="${parent_id}" class="not_load page_custom_block"></div>
 </section>
 </details>`);
-
+                        jQuery('#' + block_id).html(gz_content);
                     }
 
 
@@ -2470,9 +2471,10 @@ jQuery(document).ready(function () {
 
 
     jQuery('.not_load:visible').each(function () {
-        let prnts = jQuery(this).parents('details').html();
+        let prnts = jQuery(this).parents('details');
         let block_id = jQuery(this).attr('id');
-        if (!prnts) {
+
+        if (!prnts.length || (prnts.length && prnts.prop('open'))) {
             load_next_block(block_id);
         }
         /// check_load_block();

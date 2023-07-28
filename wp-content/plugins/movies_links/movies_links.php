@@ -155,18 +155,17 @@ function movies_links_plugin_activation() {
                                 `rel` varchar(255) NOT NULL default '',   
                                 `year` int(11) NOT NULL DEFAULT '0',                                                                  
                                 `options` text default NULL,      
-                                `status_links` int(11) NOT NULL DEFAULT '0' 
+                                `status_links` int(11) NOT NULL DEFAULT '0',
+                                `multi` int(11) NOT NULL DEFAULT '0',
+                                `version` int(11) NOT NULL DEFAULT '0' 
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
 
-    $sql = "ALTER TABLE `movies_links_posts` ADD `multi` int(11) NOT NULL DEFAULT '0'";
+    $sql = "ALTER TABLE `movies_links_posts` ADD `score` int(11) NOT NULL DEFAULT '0'";
     Pdo_ml::db_query($sql);
 
-    $sql = "ALTER TABLE `movies_links_posts` ADD `version` int(11) NOT NULL DEFAULT '0'";
-    Pdo_ml::db_query($sql);
-
-    movies_links_create_index(array('version', 'date', 'last_upd', 'uid', 'status', 'top_movie', 'rating', 'title', 'rel', 'year', 'status_links', 'multi'), 'movies_links_posts');
+    movies_links_create_index(array('version', 'date', 'last_upd', 'uid', 'status', 'top_movie', 'rating', 'score', 'title', 'rel', 'year', 'status_links', 'multi'), 'movies_links_posts');
 
     /*
      * Actors names meta

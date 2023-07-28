@@ -1057,7 +1057,7 @@ body.theme_dark .page_custom_block .tab-list-child {
     background: transparent;
 }
 .page_custom_block   .gsc-input{
-    background-color: transparent!important;
+    background: transparent!important;
 }
 body.theme_dark  .page_custom_block .gsc-completion-container {
     font-family: Roboto, sans-serif;

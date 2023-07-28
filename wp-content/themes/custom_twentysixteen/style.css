@@ -159,7 +159,10 @@ list-style: none;
 details{
     position: relative;
 }
-details::after {
+details >summary{
+    position: relative;
+}
+details >summary::after {
     content: "";
     position: absolute;
     right: 10px;
@@ -185,7 +188,7 @@ body.theme_dark  details {
     border: 1px solid #292929;
 }
 
-details[open]::after {
+details[open]>summary::after {
     transform: rotate(0deg);
 }
 
@@ -1384,6 +1387,7 @@ body.theme_dark .sort-more li.nav-tab.title {
 
 .sort-wrapper li.nav-tab {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
 }
 
@@ -3399,7 +3403,9 @@ i.mtcr{
     bottom: 60px;
     top: auto;
 }
-
+.card.style_1:first-of-type .rwt_stars  .nte_show{
+    margin-left: 16px;
+}
 .nte.open .nte_show{
     display: block;
 }

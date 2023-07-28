@@ -3012,6 +3012,7 @@ height: 100%;
     font-family: 'Encode Sans Condensed',Lato;
     background-color: #e8e6e6;
     position: relative;
+    white-space: break-spaces;
 }
 .tlp_cnt::before {
     content: "";
