@@ -265,7 +265,7 @@ class ActorsInfo{
         //forebears
         $forebears = self::actor_data($name['lastname'],'data_forebears_verdict','lastname');
         $array_actors['forebears']=self::array_to_content($forebears,'Forebears: '. self::todate($forebears['last_upd']),'db: data_forebears_verdict',1,['forebears_verdict'],'last_upd',$forebears['lastname']);
-        $array_actors['forebears_verdict']=self::array_to_content($actors_meta,'Forebears Verdict: '. $acc[$rsm[$actors_meta['n_forebears']]],'db: data_actors_meta',1,'','last_update',$acc[$rsm[$forebears['verdict']]],'n_forebears');
+        $array_actors['forebears_verdict']=self::array_to_content($actors_meta,'Forebears Verdict: '. $acc[$rsm[$actors_meta['n_forebears_rank']]],'db: data_actors_meta',1,'','last_update',$acc[$rsm[$forebears['verdict']]],'n_forebears_rank');
 
         ///ethnic
 
