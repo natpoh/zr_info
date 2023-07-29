@@ -1168,7 +1168,7 @@ else if ($_POST['oper'] === 'get_actordata') {
         $etn = $array_ints[$av['n_ethnic']];
         $jew = $array_ints[$av['n_jew']];
         $crowd = $array_ints[$av['n_crowdsource']];
-        $forebears = $array_ints[$av['n_forebears']];
+        $forebears = $array_ints[$av['n_forebears_rank']];
         $familysearch = $array_ints[$av['n_familysearch']];
 
         $verdict =$array_ints[ $av['n_verdict']];

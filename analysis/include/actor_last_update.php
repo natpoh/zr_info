@@ -203,6 +203,23 @@ class ActorsInfo{
         $data=[];
         $array_parents=[];
 
+        ////normalize name
+
+        $name = self::actor_data($aid,'data_actors_normalize','aid');
+
+        $source_name= $name['source_name'];
+        $source_name_birth_name=null;
+        $source_name_name=null;
+
+        if ($source_name==2)
+        {
+            $source_name_birth_name=['data_actors_normalize'];
+        }
+        else
+        {
+            $source_name_name=['data_actors_normalize'];
+        }
+
 
         $array_actors = [$aid=>['name'=>'Actor ID  '.$aid,
                 'sub'=>['actor_imdb']],
@@ -216,19 +233,18 @@ class ActorsInfo{
 
             'sub'=> [['birth_place',3],['burn_date',3],'name','birth_name','image_url','image']
         ],
-           'name'=>self::to_content($adata['name'],'',['data_actors_normalize']),
-            'birth_name'=>self::to_content($adata['birth_name'],'',['data_actors_normalize']),'birth_place'=>self::to_content($adata['birth_place'],1,[['ethnic',1]]),'burn_date'=>self::to_content($adata['burn_date'],'',[['ethnic',1]])
+           'name'=>self::to_content($adata['name'],'',$source_name_name),
+            'birth_name'=>self::to_content($adata['birth_name'],'',$source_name_birth_name),
+            'birth_place'=>self::to_content($adata['birth_place'],1,[['ethnic',1]]),'burn_date'=>self::to_content($adata['burn_date'],'',[['ethnic',1]])
             ,'image_url'=>self::to_content($adata['image_url'],1,['image_download']),'image'=>self::to_content($adata['image'],'',['image_download'])
         ];
 
 
 
-        ////normalize name
-
-        $name = self::actor_data($aid,'data_actors_normalize','aid');
 
 
-      $array_actors['data_actors_normalize']=self::array_to_content($name,'Normalize:'. $name['firstname'].' '.$name['lastname'],'db: data_actors_normalize',1,['ethnic','familysearch',['familysearch_verdict',2],'forebears',['forebears_verdict',2],'surname']);
+
+      $array_actors['data_actors_normalize']=self::array_to_content($name,'Normalize:'. self::todate($name['last_upd']),'db: data_actors_normalize',1,['ethnic','familysearch',['familysearch_verdict',2],'forebears',['forebears_verdict',2],'surname']);
 
         ///actor meta
         $actors_meta = self::actor_data($aid,'data_actors_meta','actor_id');

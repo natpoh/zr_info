@@ -357,7 +357,10 @@ $array_type=array(
 "n_bettaface"=>'BETAFACE FACIAL RECOGNITION:'
 
 ,"n_familysearch"=>'FAMILYSEARCH:'
-,"n_forebears"=>'FOREBEARS:',
+,
+  //  "n_forebears"=>'FOREBEARS:',
+    "n_forebears_rank"=>'FOREBEARS:',
+
 "n_surname"=>'SURNAME ANALYSIS:'
  );
 
