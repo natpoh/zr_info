@@ -803,7 +803,7 @@ class SearchFacets extends AbstractDB {
                 $title = $this->cs->facet_data['popdata']['childs'][$curr_sort]['titlesm'];
                 $value = $this->theme_count_value($sort_val);
                 $ret = "$value - $title";
-            } else if (isset($this->cs->facet_data['ratings']['childs'][$curr_sort])) {
+            } else if (isset($this->cs->facet_data['ratings']['childs'][$curr_sort]['titlesm'])) {
                 // Rating
                 $title = $this->cs->facet_data['ratings']['childs'][$curr_sort]['titlesm'];
                 $multipler = $this->cs->facet_data['ratings']['childs'][$curr_sort]['multipler'];
@@ -818,7 +818,12 @@ class SearchFacets extends AbstractDB {
                 $ret = "$rating - $title";
             } else if (isset($this->cs->facet_data['wokedata']['childs'][$curr_sort]['titlesm'])) {
                 $title = $this->cs->facet_data['wokedata']['childs'][$curr_sort]['titlesm'];
-                $ret = "$sort_val - $title";
+                $multipler = $this->cs->facet_data['wokedata']['childs'][$curr_sort]['multipler'];
+                $rating = $sort_val;
+                if ($multipler) {
+                    $rating = round($rating / $multipler, 2);
+                }
+                $ret = "$rating - $title";
             }
         }
 

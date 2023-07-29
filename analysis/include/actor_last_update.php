@@ -26,12 +26,162 @@ class ActorsInfo{
         {
             return 'Never';
         }
-        return date('H:i d-m-Y',$time);
+        return date('d-m-Y',$time);
     }
+
+    private static function structure_array($array_actors)
+    {
+        $gray_color='#cccccc';
+
+        $nodes=[];
+        $links=[];
+
+        foreach ($array_actors as $from=>$data)
+        {
+            if ($data['sub'])
+            {
+                foreach ($data['sub'] as $subnames)
+                {
+                  // ["White", "Grey", 1, "White", "Grey", "",'#ff0000'],
+
+                    if (is_array($subnames))
+                    {
+                        $line_width=$subnames[1];
+                        $subnames=$subnames[0];
+                    }
+                    else
+                    {
+                        $line_width=10;
+                    }
+
+                    $content = $array_actors[$subnames]['content'];
+
+
+
+
+                    if (!$array_actors[$subnames]['enable'])
+                    {
+
+                        $links[]=[$from,$subnames,$line_width,$subnames,$content,'',$gray_color];
+                    }
+                    else
+                    {
+                        $links[]=[$from,$subnames,$line_width,$subnames,$content,''];
+                    }
+
+                }
+
+            }
+
+
+           // {"id":"White","name":"White","surname":"White","images":1,"date_birth":"actors","url":"https://example.com/actor1","status":"active","lastupdate":"2023-07-28","desc":"Actor description 1"}
+
+            $tonodes = $data;
+            $tonodes['id']=$from;
+            $nodes[]=$tonodes;
+
+        }
+
+
+
+
+
+
+
+
+            return [$nodes,$links];
+    }
+
+    private static function arrayToTable($data,$row='') {
+        $table = "<table class='styled-table'>";
+        $table .= "<tr><th>Field</th><th>Value</th></tr>";
+
+        foreach ($data as $field => $value) {
+
+               if ($row && $row ==$field)
+               {
+                   $table .= "<tr class='highlighted'><td>$field</td><td>$value</td></tr>";
+               }
+
+           else
+           {
+               $table .= "<tr><td>$field</td><td>$value</td></tr>";
+           }
+
+
+        }
+
+        $table .= "</table>";
+
+        return $table;
+    }
+
+    private static function to_content($adata,$only_enable='',$sub='')
+    {
+        $enable=0;
+        if ($adata)
+        {
+            $enable =1;
+        }
+        if ($only_enable)
+        {
+            if ($enable)
+            {
+                $adata='Y';
+            }
+            else
+            {
+                $adata='';
+            }
+        }
+        if (!$adata)$adata='Null';
+
+        if ($sub)
+        {
+            return ['enable'=>$enable,'content'=>$adata,'sub'=>$sub];
+        }
+        else
+        {
+            return ['enable'=>$enable,'content'=>$adata];
+        }
+
+
+    }
+    private static function check_enable($data,$row='')
+    {
+        $enable ='';
+        if ($row)
+        {
+        if ($data[$row])$enable=1;
+        }
+        else if ($data)$enable=1;
+
+        return $enable;
+    }
+
+    private static function array_to_content($data,$title,$desc,$show_tabe='',$sub='',$time='',$content='',$row='')
+    {
+        $array=[];
+
+        $array=[
+            'name'=>$title,
+            'enable'=>self::check_enable($data,$row),
+               ];
+
+        $array['content']=$content;
+        if ($desc) $array['desc']=$desc;
+        if ($show_tabe && $data) $array['desc'].='<br>'.self::arrayToTable($data,$row);
+
+        if ($sub) $array['sub']=$sub;
+        if ($time) $array['time']=self::todate($data[$time]);
+     return $array;
+
+    }
+
 
     public static function info($aid)
     {
-        $race_small = array(
+        $rsm = array(
             1 =>'W',
             2 => 'EA',
             3 =>'H',
@@ -42,58 +192,325 @@ class ActorsInfo{
             8 =>'JW' ,
             9 => 'IND',
         );
+        $acc = array('Sadly, not'  => 'N/A','1' => 'N/A', '2' => 'N/A', 'NJW' => 'N/A','W' => 'White', 'B' => 'Black', 'EA' => 'Asian', 'H' => 'Latino', 'JW' => 'Jewish', 'I' => 'Indian', 'M' => 'Arab', 'MIX' => 'Mixed / Other', 'IND' => 'Indigenous');
 
-//lastupdate
-        $array_rows = ['actor_imdb'=>['name','birth_name','birth_place','burn_date','image_url','image']];
+        $array_convert = array('2' => 'Male', '1' => 'Female', '0' => 'NA');
+
 
         $adata = self::actor_data($aid);
+
+
         $data=[];
         $array_parents=[];
 
-        $data[]=['id'=>'0.0','parent'=>'','name'=>$aid.'<br>('.self::todate($adata['lastupdate']).')'];
-        $i =0;
-        $array_parents['actor_imdb'] = [];
-        foreach ($adata as $row =>$val)
-        {
-        if (in_array($row,$array_rows['actor_imdb']))
-        {
 
-            if ($val)
-            {
-                if ($row=='image_url'){$val='Y';}
+        $array_actors = [$aid=>['name'=>'Actor ID  '.$aid,
+                'sub'=>['actor_imdb']],
+                'actor_imdb'=>[
+                    'name'=>'Actor IMDb '.self::todate($adata['lastupdate']),
+                    'content'=>'',
+                    'time'=>self::todate($adata['lastupdate']),
+                    'desc'=>'db = actor_imdb<br>'.self::arrayToTable($adata),
+                    'enable'=>self::check_enable($adata),
 
-                $res = $row.'<br>'.$val;
-            }
-            else
-            {
-                $res = $row.'<br>none';
-            }
-            $array_parents['actor_imdb'][$row]=$i;
-            $data[]=['id'=>'1.'.$i,'parent'=>'0.0','name'=>$res];
 
-        }
+            'sub'=> [['birth_place',3],['burn_date',3],'name','birth_name','image_url','image']
+        ],
+           'name'=>self::to_content($adata['name'],'',['data_actors_normalize']),
+            'birth_name'=>self::to_content($adata['birth_name'],'',['data_actors_normalize']),'birth_place'=>self::to_content($adata['birth_place'],1,[['ethnic',1]]),'burn_date'=>self::to_content($adata['burn_date'],'',[['ethnic',1]])
+            ,'image_url'=>self::to_content($adata['image_url'],1,['image_download']),'image'=>self::to_content($adata['image'],'',['image_download'])
+        ];
 
-         $i+=1;
-        }
+
+
         ////normalize name
 
         $name = self::actor_data($aid,'data_actors_normalize','aid');
-        $data[]=['id'=>'2.1','parent'=>'1.'.$array_parents['actor_imdb']['name'],'name'=>'normalize:<br>'.$name['firstname'].' '.$name['lastname']];
+
+
+      $array_actors['data_actors_normalize']=self::array_to_content($name,'Normalize:'. $name['firstname'].' '.$name['lastname'],'db: data_actors_normalize',1,['ethnic','familysearch',['familysearch_verdict',2],'forebears',['forebears_verdict',2],'surname']);
+
+        ///actor meta
+        $actors_meta = self::actor_data($aid,'data_actors_meta','actor_id');
+
+
 
         ///surname
         $surname = self::actor_data($aid,'data_actors_ethnicolr','aid');
-        $data[]=['id'=>'3.1','parent'=>'2.1','name'=>'Surname <br>'.self::todate($surname['date_upd'])];
-        $data[]=['id'=>'4.1','parent'=>'3.1','name'=>'verdict:'.$surname['verdict']];
+        $array_actors['surname']=self::array_to_content($surname,'Surname: '. self::todate($surname['date_upd']),'db: data_actors_ethnicolr',1,['surname_verdict'],'date_upd');
+        $array_actors['surname_verdict']=self::array_to_content($actors_meta,'Surname Verdict: '. $acc[$rsm[$actors_meta['n_surname']]],'db: data_actors_meta',1,'','last_update',$acc[$surname['verdict']],'n_surname');
+
 
         //familysearch
-
         $familysearch = self::actor_data($name['lastname'],'data_familysearch_verdict','lastname');
+        $array_actors['familysearch']=self::array_to_content($familysearch,'Familysearch: '. self::todate($familysearch['last_upd']),'db: data_familysearch_verdict',1,['familysearch_verdict'],'last_upd',$familysearch['lastname']);
+        $array_actors['familysearch_verdict']=self::array_to_content($actors_meta,'Familysearch Verdict: '. $acc[$rsm[$actors_meta['n_familysearch']]],'db: data_actors_meta',1,'','last_update',$acc[$rsm[$familysearch['verdict']]],'n_familysearch');
 
-        $data[]=['id'=>'3.2','parent'=>'2.1','name'=>'Familysearch<br>'.self::todate($familysearch['last_upd'])];
-        $data[]=['id'=>'4.2','parent'=>'3.2','name'=>'name:'.$familysearch['lastname']];
-        $data[]=['id'=>'4.3','parent'=>'3.2','name'=>'verdict:'.$race_small[$familysearch['verdict']]];
+        //forebears
+        $forebears = self::actor_data($name['lastname'],'data_forebears_verdict','lastname');
+        $array_actors['forebears']=self::array_to_content($forebears,'Forebears: '. self::todate($forebears['last_upd']),'db: data_forebears_verdict',1,['forebears_verdict'],'last_upd',$forebears['lastname']);
+        $array_actors['forebears_verdict']=self::array_to_content($actors_meta,'Forebears Verdict: '. $acc[$rsm[$actors_meta['n_forebears']]],'db: data_actors_meta',1,'','last_update',$acc[$rsm[$forebears['verdict']]],'n_forebears');
+
+        ///ethnic
+
+        $ethnic = self::actor_data($aid,'data_actors_ethnic','actor_id');
+        $array_actors['ethnic']=self::array_to_content($ethnic,'Ethnicelebs: '. self::todate($ethnic['last_update']),'db: data_actors_ethnic',1,['ethnic_verdict'],'last_update');
+        $array_actors['ethnic_verdict']=self::array_to_content($actors_meta,'Ethnicelebs Verdict: '. $acc[$rsm[$actors_meta['n_ethnic']]],'db: data_actors_meta',1,'','last_update',$ethnic['verdict'],'n_ethnic');
 
 
+
+        $array_actors['image_download'] = self::array_to_content([],'Image: ','',0,['kairos']);
+        //kairos
+        $kairos = self::actor_data($aid,'data_actors_race','actor_id');
+
+        $array_actors['kairos']=self::array_to_content($kairos,'Kairos: '. self::todate($kairos['last_update']),'db: data_actors_race',1,['kairos_verdict'],'last_update');
+        $array_actors['kairos_verdict']=self::array_to_content($actors_meta,'Kairos Verdict: '. $acc[$rsm[$actors_meta['n_kairos']]],'db: data_actors_meta',1,'','last_update',$kairos['kairos_verdict'],'n_kairos');
+
+
+        [$nodes,$links]  = self::structure_array($array_actors);
+
+
+
+
+
+
+
+
+
+
+
+        ?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Highcharts Sankey Diagram</title>
+  <!-- Include the Highcharts library -->
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+  <script src="https://code.highcharts.com/modules/sankey.js"></script>
+  <style>
+    /* Custom CSS for the popup */
+    .popup-container {
+      position: absolute;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      padding: 10px;
+      z-index: 9999;
+        display: none;
+        max-width: 80vw;
+    }
+    .styled-table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid #ddd;
+        font-size: 16px;
+    }
+
+    .styled-table th, .styled-table td {
+        padding: 10px;
+        text-align: left;
+        white-space: break-spaces;
+        word-break: break-all;
+        min-width: 100px;
+    }
+
+    .styled-table th {
+        background-color: #f2f2f2;
+    }
+
+    .styled-table tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    .styled-table tr:hover {
+        background-color: #ddd;
+    }
+
+    .styled-table tr.highlighted {
+        background-color: #98ffa4;
+    }
+
+
+  </style>
+</head>
+<body>
+<div class="popup-container"></div>
+  <div id="container" style="min-width: 300px; height:1000px; margin: 0 auto;"></div>
+
+  <script>
+
+      function enableDraggablePopup() {
+          // ѕолучаем ссылку на popup контейнер
+          const popupContainer = document.querySelector('.popup-container');
+
+          // ѕеременные дл€ отслеживани€ состо€ни€ перетаскивани€
+          let isDragging = false;
+          let offset = { x: 0, y: 0 };
+
+          // ‘ункци€ дл€ начала перетаскивани€
+          function startDrag(e) {
+              isDragging = true;
+
+              // ¬ычисл€ем смещение между координатами мыши и положением контейнера
+              const rect = popupContainer.getBoundingClientRect();
+              offset = {
+                  x: e.clientX - rect.left,
+                  y: e.clientY - rect.top
+              };
+          }
+
+          // ‘ункци€ дл€ окончани€ перетаскивани€
+          function stopDrag() {
+              isDragging = false;
+          }
+
+          // ‘ункци€ дл€ обновлени€ положени€ контейнера при перетаскивании
+          function drag(e) {
+              if (isDragging) {
+                  // ѕолучаем новые координаты мыши и обновл€ем положение контейнера
+                  const x = e.clientX - offset.x;
+                  const y = e.clientY - offset.y;
+                  const maxX = window.innerWidth - popupContainer.offsetWidth;
+                  const maxY = window.innerHeight - popupContainer.offsetHeight;
+
+                  // ќграничиваем положение контейнера внутри границ диспле€
+                  const newX = Math.max(0, Math.min(x, maxX));
+                  const newY = Math.max(0, Math.min(y, maxY));
+
+                  // ”станавливаем новое положение контейнера
+                  popupContainer.style.left = newX + 'px';
+                  popupContainer.style.top = newY + 'px';
+              }
+          }
+
+          // ƒобавл€ем обработчики событий дл€ перетаскивани€
+          popupContainer.addEventListener('mousedown', startDrag);
+          document.addEventListener('mouseup', stopDrag);
+          document.addEventListener('mousemove', drag);
+      }
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+      let popupVisible = false; // Track if the popup is visible
+
+
+        Highcharts.chart('container', {
+                 chart: {
+                    inverted: true,
+                    marginBottom: 100
+                },
+        title: {
+          text: 'Highcharts Sankey Diagram'
+        },
+        accessibility: {
+          point: {
+            valueDescriptionFormat: '{index}. {point.from} to {point.to}, {point.weight}.'
+          }
+        },
+        series: [
+          {
+              keys: ['from', 'to', 'weight', 'name', 'desc', 'lastupdate','color'],
+            data:   <?php  echo json_encode($links); ?>
+                //["White", "Grey", 1, "White", "Grey", "",'#ff0000'],
+              //  ["White", "Cryan", 1, "White", "Cryan", "2023-07-27"],
+            ,
+            type: 'sankey',
+            name: 'Sankey demo series',
+        //  colors: ['#939393', '#00ff00', '#4ca8de'],
+              dataLabels: {
+                  enabled: true,
+                  style: {
+                      fontSize: '12px',
+                  },
+                  formatter: function() {
+                      return  this.point.desc + '<br>' +
+                          this.point.lastupdate;
+                  }
+              },
+            linkOpacity: 0.5,
+            nodes: <?php  echo json_encode($nodes);?>
+          }
+        ],
+        plotOptions: {
+          sankey: {
+            point: {
+              events: {
+                click: function () {
+
+                  // Toggle the visibility of the popup on click
+                  if (popupVisible) {
+                    hidePopup();
+                  } else {
+
+                    showPopup(this.tooltipPos[0], this.tooltipPos[1], this);
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // Function to show the popup
+      function showPopup(x, y, nodeData) {
+
+
+        if (!popupVisible) {
+          const popupContent = `
+            <div class="popup-container-inner">
+              <b>${nodeData.name}</b><br>
+              Status: ${nodeData.enable}<br>
+              Last Update: ${nodeData.time}<br>
+              Description: ${nodeData.desc}<br>
+             </div>
+          `;
+
+          const popup = document.querySelector('.popup-container');
+          popup.innerHTML = popupContent;
+          popup.style.left = x + 'px';
+          popup.style.top = y + 'px';
+          popupVisible = true;
+            popup.style.display = "block";
+          // Add a click event to the document to hide the popup when clicking outside it
+            enableDraggablePopup();
+
+            setTimeout(function() {
+           document.addEventListener('click', hidePopupOnClick);
+                 }, 200);
+        }
+
+      }
+
+      // Function to hide the popup
+      function hidePopup() {
+
+        const popup = document.querySelector('.popup-container');
+        if (popup) {
+            popup.style.display = "none";
+        }
+        popupVisible = false;
+
+        // Remove the click event to hide the popup when clicking outside it
+        document.removeEventListener('click', hidePopupOnClick);
+      }
+
+      // Function to hide the popup when clicking outside it
+      function hidePopupOnClick(event) {
+
+        if (!event.target.closest('.popup-container')) {
+          hidePopup();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
+            <?php
+
+
+        return;
         ?>
 
 
@@ -340,7 +757,8 @@ class ActorsInfo{
                     }
                 ]
             });
-console.log(data);
+
+
         </script>
 
         <?php
