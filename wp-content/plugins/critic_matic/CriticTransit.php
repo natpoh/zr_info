@@ -552,7 +552,7 @@ class CriticTransit extends AbstractDB {
         $n_jew = $item->n_jew > 8 ? 7 : $item->n_jew;
         $n_ethnic = $item->n_ethnic > 8 ? 7 : $item->n_ethnic;
         $n_familysearch = $item->n_familysearch > 8 ? 7 : $item->n_familysearch;
-        $n_forebears = $item->n_forebears > 8 ? 7 : $item->n_forebears;
+        $n_forebears = $item->n_forebears_rank > 8 ? 7 : $item->n_forebears_rank;
         $n_aid = substr($item->actor_id, -3);
 
         if ($debug) {
