@@ -368,7 +368,7 @@ class ActorsInfo{
         $img_number = str_pad($aid, 7, '0', STR_PAD_LEFT);
         $imgsource =ABSPATH.'analysis/img_final/'.$img_number.'.jpg';
         $img_content='not load';
-        if (file_exists($imgsource)) {$img_enable=1; $img_content ='<img src="'.WP_SITEURL.'/analysis/img_final/'.$img_number.'.jpg">';}
+        if (file_exists($imgsource)) {$img_enable=1; $img_content ='<img src="/analysis/img_final/'.$img_number.'.jpg">';}
         $array_actors['image_download'] = self::array_to_content([],'Image download',$img_content,0,['kairos','bettaface']);
         $array_actors['image_download']['enable']=$img_enable;
 
