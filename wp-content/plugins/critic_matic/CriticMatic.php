@@ -3654,7 +3654,7 @@ class CriticMatic extends AbstractDB {
             if ($curr_time < ($progress + $wait_sec)) {
                 // Cron already progress;                    
                 if ($debug) {
-                    print "Cron " . $cron_name . " already progess.";
+                    print "Cron " . $cron_name . " already progress.";
                 }
                 return true;
             }

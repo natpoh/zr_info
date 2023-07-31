@@ -1286,12 +1286,19 @@ function global_zeitgeist_content(data) {
 }
 
 
-var currentScript = null;
+
 var gs_ob = {};
 
 
 function loadGScript(src) {
-    //console.log(src);
+
+    // var scripts = document.head.getElementsByTagName("script");
+    // for (let i = scripts.length - 1; i >= 0; i--) {
+    //     let script = scripts[i];
+    //     if (script.src.includes("cse.google.com")) {
+    //         script.parentNode.removeChild(script);
+    //     }
+    // }
 
     var script = document.createElement("script");
     script.async = true;
@@ -1300,23 +1307,26 @@ function loadGScript(src) {
     });
 
     document.head.appendChild(script);
-    currentScript = script;
 
 }
 
-function check_new_data(title, block_id) {
+function check_new_data(title, block_id,tabName) {
 
-    var gsContent = document.querySelector('#' + block_id + ' #gs_cotntent'); ///document.getElementById("gs_cotntent");
+    let gsContent = document.querySelector("#" + block_id + " #gs_cotntent div.tab-content-inner#i_"+tabName);
 
+   /// var gsContent = document.querySelector('#' + block_id + ' #gs_cotntent'); ///document.getElementById("gs_cotntent");
 
     var observer = new MutationObserver(function (mutations) {
         mutations.forEach(function (mutation) {
             if (mutation.addedNodes) {
+
                 mutation.addedNodes.forEach(function (addedNode) {
 
-                    if (addedNode.classList && addedNode.classList.contains('gsc-input')) {
+                    if (addedNode.classList && addedNode.classList.contains('gsc-input')  && addedNode.nodeName === 'INPUT') {
                         addedNode.value = title;
-                        document.querySelector('button.gsc-search-button').click();
+
+                        document.querySelector("#" + block_id + " #gs_cotntent div.tab-content-inner#i_"+tabName+' button.gsc-search-button').click();
+
                         observer.disconnect();
                     }
                 });
@@ -1370,7 +1380,26 @@ function showTab(button) {
 
 
         let block_id = button.dataset.block;
-        let contentDiv = document.querySelector("#" + block_id + " #gs_cotntent");
+
+
+        let visibleBlocks = document.querySelectorAll("#" + block_id + " #gs_cotntent div.tab-content-inner.visible");
+        for (var j = 0; j < visibleBlocks.length; j++) {
+            visibleBlocks[j].classList.remove("visible");
+        }
+
+
+        let parentBlock = document.querySelector("#" + block_id + " #gs_cotntent");
+        let contentDiv = document.querySelector("#" + block_id + " #gs_cotntent div.tab-content-inner#i_"+tabName);
+        if (!contentDiv){
+
+            contentDiv = document.createElement("div");
+            contentDiv.id = "i_" + tabName;
+            contentDiv.classList.add('tab-content-inner');
+            contentDiv.classList.add(block_id);
+            parentBlock.appendChild(contentDiv);
+        }
+
+
         if (button.classList.contains('tab_button_child_btn')) {
             sub_procces = 1;
             prnt = button.dataset.parent;
@@ -1387,8 +1416,25 @@ function showTab(button) {
         if (!sub_procces && gs_ob_current[tabName].sub) {
             sub_content = get_subcontent_gs(tabName, gs_ob_current[tabName].sub, block_id);
         }
+        else if (sub_procces && prnt)
+        {
 
-        contentDiv.innerHTML = "<h3 class = \"gs_head gs_head_" + tabName + "\">" + gs_ob_current[tabName].data.name + ": <a target='_blank' href=\"" + gs_ob_current[tabName].data.link + "\" class=\"button_child_extlink\"></a></h3><div class=\"tab_content_gs_block\"><div class=\"gcse-search\"></div></div><p>" + sub_content + gs_ob_current[tabName].data.dop_content + "</p>";
+            sub_content = get_subcontent_gs(prnt, gs_ob_current, block_id);
+        }
+
+
+
+        let isContentDivEmpty = !contentDiv.innerHTML.trim();
+
+        if (isContentDivEmpty)
+        {
+            contentDiv.innerHTML = "<h3 class = \"gs_head gs_head_" + tabName + "\">" + gs_ob_current[tabName].data.name + ": <a target='_blank' href=\"" + gs_ob_current[tabName].data.link + "\" class=\"button_child_extlink\"></a></h3><div class=\"tab_content_gs_block\"><div class=\"gcse-search\"></div></div><p>" + sub_content + gs_ob_current[tabName].data.dop_content + "</p>";
+
+        }
+
+
+        contentDiv.classList.add("visible");
+
 
         if (!sub_procces) {
             var tabButtons = document.querySelector("#" + block_id + " .tab-button.selected");
@@ -1403,24 +1449,27 @@ function showTab(button) {
 
         ///contentDiv.style.display = "block";
 
+
+        if (!isContentDivEmpty) {
+            return false;
+        }
+
         let content_type = gs_ob_current[tabName].data.content_type;
 
 
         if (content_type == 0) {
 
-            if (currentScript !== null) {
-                currentScript.remove();
-            }
 
 
-            check_new_data(gs_ob[block_id].title, block_id);
+            check_new_data(gs_ob[block_id].title, block_id,tabName);
             if (gs_ob_current[tabName].data.script) {
-                loadGScript(gs_ob_current[tabName].data.script);
+             loadGScript(gs_ob_current[tabName].data.script);
             }
+
         } else if (content_type == 1) {
             let srcdata = gs_ob_current[tabName].data.script
 
-            let tabContentBlock = document.querySelector('#' + block_id + ' .tab_content_gs_block');
+            let tabContentBlock = document.querySelector("#" + block_id + " #gs_cotntent div.tab-content-inner#i_"+tabName + ' .tab_content_gs_block');
 
 
             let htmlCode = '<div class="spin_bg"><i class="icon icon-loader"></i></div><iframe src="' + srcdata + '"></iframe>';
@@ -1432,7 +1481,7 @@ function showTab(button) {
         } else if (content_type == 2) {
             let srcdata = gs_ob_current[tabName].data.script
 
-            let tabContentBlock = document.querySelector('#' + block_id + ' .tab_content_gs_block');
+            let tabContentBlock = document.querySelector("#" + block_id + " #gs_cotntent div.tab-content-inner#i_"+tabName + ' .tab_content_gs_block');
 
 
             let htmlCode = '<div class="spin_bg"><i class="icon icon-loader"></i></div><iframe style="max-width: 1020px;" src="' + srcdata + '"></iframe>';
@@ -1479,20 +1528,20 @@ function prepare_search_data(block_id, data_str) {
 
         let buttons = '';
         let sub_content = '';
+        let gs_div ='';
 
         sortedArray.forEach(item => {
             // console.log(item);
             buttons += `<button class="tab-button" data-tab="${item.data.id}" data-block="${block_id}" onclick="showTab(this)">${item.data.title}</button>`;
+
         });
 
-        content = `<div class="tab-container">
-    <div class="tab-list_main"><div class="tab-list">
+    content = `<div class="tab-container">
+    <div class="tab-list_main">
+    <div class="tab-list">
         ${buttons}
-    </div></div>
-   
-     <div id="gs_cotntent" class="tab-content"></div>
-
-</div>`;
+    </div>
+    </div><div id="gs_cotntent" class="tab-content"></div></div>`;
 
 
     }

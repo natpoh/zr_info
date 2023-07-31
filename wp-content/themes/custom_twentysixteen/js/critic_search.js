@@ -215,7 +215,6 @@ critic_search.init_facet = function (v) {
             }
         }
         critic_search.submit();
-        return false;
     });
 
     if (typeof search_extend !== 'undefined') {

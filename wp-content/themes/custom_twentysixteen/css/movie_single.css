@@ -1028,6 +1028,12 @@ body.theme_dark  a.button_child_extlink {
 .page_custom_block table.gsc-search-box td.gsc-input {
     width: 90%;
 }
+.page_custom_block .tab-content .tab-content-inner{
+    display: none;
+}
+.page_custom_block .tab-content .tab-content-inner.visible{
+    display: block;
+}
 
 
 body.theme_dark  .page_custom_block .tab-content {

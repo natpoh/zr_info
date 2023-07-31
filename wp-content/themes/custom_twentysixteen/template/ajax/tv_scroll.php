@@ -227,7 +227,7 @@ class TV_Scroll {
                     $title = 'Load more Streaming';
                 }
                 else if ($type== 'VideoGame') {
-                    $link = '/search/type_videogame';
+                    $link = '/search/tab_games';
                     $title = 'Load more Games';
                 }
                 else if ($type== 'compilation') {
