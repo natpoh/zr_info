@@ -1,4 +1,4 @@
-<?php
+<?php session_start();
 error_reporting(E_ERROR);
 if (!defined('ABSPATH'))
     define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
@@ -12,6 +12,69 @@ if (!defined('ABSPATH'))
 
 
 class ActorsInfo{
+
+
+
+    private static  function generateShade($color = '')
+    {
+
+
+        if (empty($color)) {
+
+            return self::generateRandomBrightColor();
+        }
+
+
+        $red = hexdec(substr($color, 1, 2));
+        $green = hexdec(substr($color, 3, 2));
+        $blue = hexdec(substr($color, 5, 2));
+
+        $change1 = rand(-200, 150);
+        $change2 = rand(-200, 150);
+
+        if ($red >= $green && $red >= $blue) {
+            $newRed = $red;
+            $newGreen = max(0, min(255, $green + $change1));
+            $newBlue = max(0, min(255, $blue + $change2));
+        } elseif ($green >= $red && $green >= $blue) {
+            $newRed = max(0, min(255, $red + $change1));
+            $newGreen = $green;
+            $newBlue = max(0, min(255, $blue + $change2));
+        } else {
+            $newRed = max(0, min(255, $red + $change1));
+            $newGreen = max(0, min(255, $green + $change2));
+            $newBlue = $blue;
+        }
+
+        $newShade = sprintf("#%02x%02x%02x", $newRed, $newGreen, $newBlue);
+
+
+        while (in_array($newShade, $_SESSION['shades'] ?? [])) {
+            $newShade =  self::generateRandomBrightColor();
+        }
+
+        if ($color)
+        {
+        ///    echo '<div><span style="background-color: '.$color.'">'.$color.'</span>=><span style="background-color: '.$newShade.'">'.$newShade.'</span></div>';
+        }
+
+        return $newShade;
+    }
+
+    private static    function generateRandomBrightColor()
+    {
+        $red = rand(200, 255);
+        $green = rand(200, 255);
+        $blue = rand(200, 255);
+
+        return sprintf("#%02x%02x%02x", $red, $green, $blue);
+    }
+
+
+
+
+
+
 
     private static function actor_data($aid,$db='data_actors_imdb',$val='id')
     {
@@ -31,17 +94,53 @@ class ActorsInfo{
 
     private static function structure_array($array_actors)
     {
+       // var_dump($array_actors);
+
+
+        $array_colors = [];
         $gray_color='#cccccc';
+        $colors_rows=[];
 
         $nodes=[];
         $links=[];
 
         foreach ($array_actors as $from=>$data)
         {
+         if ($data['color'])
+        {
+            $color=$data['color'];
+        }
+           else  if ( $colors_rows[$from])
+            {
+                $color=self::generateShade($colors_rows[$from]);
+            }
+            else
+            {
+                $color=self::generateShade();
+            }
+
+
+            if (!$data['enable'])
+            {
+                $data['color'] =$gray_color;
+            }
+            else
+            {
+                $data['color'] =$color;
+            }
+
+
+
+
+
             if ($data['sub'])
             {
                 foreach ($data['sub'] as $subnames)
                 {
+
+
+
+
                   // ["White", "Grey", 1, "White", "Grey", "",'#ff0000'],
 
                     if (is_array($subnames))
@@ -56,7 +155,7 @@ class ActorsInfo{
 
                     $content = $array_actors[$subnames]['content'];
 
-
+                    $colors_rows[$subnames]=$color;
 
 
                     if (!$array_actors[$subnames]['enable'])
@@ -80,9 +179,11 @@ class ActorsInfo{
             $tonodes['id']=$from;
             $nodes[]=$tonodes;
 
+
+
+
+           // echo '<div style="background-color: '.$color.'">'.$color.': '.$from.'</div>';
         }
-
-
 
 
 
@@ -116,10 +217,11 @@ class ActorsInfo{
         return $table;
     }
 
-    private static function to_content($adata,$only_enable='',$sub='')
+    private static function to_content($adata,$only_enable='',$sub='',$color='')
     {
+        $adata_r=$adata;
         $enable=0;
-        if ($adata)
+        if ($adata_r)
         {
             $enable =1;
         }
@@ -127,22 +229,24 @@ class ActorsInfo{
         {
             if ($enable)
             {
-                $adata='Y';
+                $adata_r='Y';
             }
             else
             {
-                $adata='';
+                $adata_r='';
             }
         }
-        if (!$adata)$adata='Null';
+        if (!$adata_r)$adata_r='Null';
+
+        if (!$color)$color= self::generateShade();
 
         if ($sub)
         {
-            return ['enable'=>$enable,'content'=>$adata,'sub'=>$sub];
+            return ['enable'=>$enable,'content'=>$adata_r,'sub'=>$sub,'color'=>$color,'desc'=>$adata];
         }
         else
         {
-            return ['enable'=>$enable,'content'=>$adata];
+            return ['enable'=>$enable,'content'=>$adata_r,'color'=>$color];
         }
 
 
@@ -159,7 +263,7 @@ class ActorsInfo{
         return $enable;
     }
 
-    private static function array_to_content($data,$title,$desc,$show_tabe='',$sub='',$time='',$content='',$row='')
+    private static function array_to_content($data,$title,$desc,$show_tabe='',$sub='',$time='',$content='',$row='',$color='')
     {
         $array=[];
 
@@ -169,6 +273,9 @@ class ActorsInfo{
                ];
 
         $array['content']=$content;
+
+
+        if ($color) $array['color']=$color;
         if ($desc) $array['desc']=$desc;
         if ($show_tabe && $data) $array['desc'].='<br>'.self::arrayToTable($data,$row);
 
@@ -181,6 +288,8 @@ class ActorsInfo{
 
     public static function info($aid)
     {
+
+
         $rsm = array(
             1 =>'W',
             2 => 'EA',
@@ -195,6 +304,8 @@ class ActorsInfo{
         $acc = array('Sadly, not'  => 'N/A','1' => 'N/A', '2' => 'N/A', 'NJW' => 'N/A','W' => 'White', 'B' => 'Black', 'EA' => 'Asian', 'H' => 'Latino', 'JW' => 'Jewish', 'I' => 'Indian', 'M' => 'Arab', 'MIX' => 'Mixed / Other', 'IND' => 'Indigenous');
 
         $array_convert = array('2' => 'Male', '1' => 'Female', '0' => 'NA');
+        $array_convert_auto = array('1' => 'Male', '2' => 'Female', '0' => 'NA');
+        $array_convert_imdb = array('m' => 'Male', 'f' => 'Female');
 
 
         $adata = self::actor_data($aid);
@@ -221,22 +332,26 @@ class ActorsInfo{
         }
 
 
-        $array_actors = [$aid=>['name'=>'Actor ID  '.$aid,
-                'sub'=>['actor_imdb']],
+        $array_actors = [$aid=>['name'=>'Actor ID  '.$aid,  'sub'=>[['actor_imdb',30],['imdb_gender',5]] ,'color'=>'#008afe','enable'=>1],
                 'actor_imdb'=>[
                     'name'=>'Actor IMDb '.self::todate($adata['lastupdate']),
                     'content'=>'',
+                    'color'=>'#a58aff',
                     'time'=>self::todate($adata['lastupdate']),
                     'desc'=>'db = actor_imdb<br>'.self::arrayToTable($adata),
                     'enable'=>self::check_enable($adata),
 
 
-            'sub'=> [['birth_place',3],['burn_date',3],'name','birth_name','image_url','image']
+            'sub'=> ['image_url','image','name','birth_name',['birth_place',3],['burn_date',3]]
         ],
-           'name'=>self::to_content($adata['name'],'',$source_name_name),
-            'birth_name'=>self::to_content($adata['birth_name'],'',$source_name_birth_name),
-            'birth_place'=>self::to_content($adata['birth_place'],1,[['ethnic',1]]),'burn_date'=>self::to_content($adata['burn_date'],'',[['ethnic',1]])
-            ,'image_url'=>self::to_content($adata['image_url'],1,['image_download']),'image'=>self::to_content($adata['image'],'',['image_download'])
+
+            'image_url'=>self::to_content($adata['image_url'],1,['image_download'],'#ff0000'),
+            'image'=>self::to_content($adata['image'],'',['image_download'],'#ff0000'),
+
+           'name'=>self::to_content($adata['name'],'',$source_name_name,'#00ff00'),
+            'birth_name'=>self::to_content($adata['birth_name'],'',$source_name_birth_name,'#02af02'),
+
+
         ];
 
 
@@ -244,44 +359,75 @@ class ActorsInfo{
 
 
 
-      $array_actors['data_actors_normalize']=self::array_to_content($name,'Normalize:'. self::todate($name['last_upd']),'db: data_actors_normalize',1,['ethnic','familysearch',['familysearch_verdict',2],'forebears',['forebears_verdict',2],'surname']);
 
         ///actor meta
         $actors_meta = self::actor_data($aid,'data_actors_meta','actor_id');
 
 
+        $img_enable=0;
+        $img_number = str_pad($aid, 7, '0', STR_PAD_LEFT);
+        $imgsource =ABSPATH.'analysis/img_final/'.$img_number.'.jpg';
+        $img_content='not load';
+        if (file_exists($imgsource)) {$img_enable=1; $img_content ='<img src="'.WP_SITEURL.'/analysis/img_final/'.$img_number.'.jpg">';}
+        $array_actors['image_download'] = self::array_to_content([],'Image download',$img_content,0,['kairos','bettaface']);
+        $array_actors['image_download']['enable']=$img_enable;
+
+        //kairos
+        $kairos = self::actor_data($aid,'data_actors_race','actor_id');
+
+        $array_actors['kairos']=self::array_to_content($kairos,'Kairos: '. self::todate($kairos['last_update']),'db: data_actors_race',1,['kairos_verdict'],'last_update');
+        $array_actors['kairos_verdict']=self::array_to_content($actors_meta,'Kairos Verdict: '. $acc[$rsm[$actors_meta['n_kairos']]],'db: data_actors_meta',1,[['verdict',2]],'last_update',$kairos['kairos_verdict'],'n_kairos');
+
+        //bettaface
+        $bettaface = self::actor_data($aid,'data_actors_face','actor_id');
+
+        $array_actors['bettaface']=self::array_to_content($bettaface,'Bettaface: '. self::todate($bettaface['last_update']),'db: data_actors_face',1,['bettaface_verdict'],'last_update');
+        $array_actors['bettaface_verdict']=self::array_to_content($actors_meta,'bettaface Verdict: '. $acc[$rsm[$actors_meta['n_bettaface']]],'db: data_actors_meta',1,[['verdict',2]],'last_update',$bettaface['race'],'n_bettaface');
+
+        $array_actors['data_actors_normalize']=self::array_to_content($name,'Normalize:'. self::todate($name['last_upd']),'db: data_actors_normalize',1,['familysearch',['familysearch_verdict',2],'forebears',['forebears_verdict',2],'surname','ethnic',['auto_gender',4]]);
+
 
         ///surname
         $surname = self::actor_data($aid,'data_actors_ethnicolr','aid');
         $array_actors['surname']=self::array_to_content($surname,'Surname: '. self::todate($surname['date_upd']),'db: data_actors_ethnicolr',1,['surname_verdict'],'date_upd');
-        $array_actors['surname_verdict']=self::array_to_content($actors_meta,'Surname Verdict: '. $acc[$rsm[$actors_meta['n_surname']]],'db: data_actors_meta',1,'','last_update',$acc[$surname['verdict']],'n_surname');
+        $array_actors['surname_verdict']=self::array_to_content($actors_meta,'Surname Verdict: '. $acc[$rsm[$actors_meta['n_surname']]],'db: data_actors_meta',1,[['verdict',2]],'last_update',$acc[$surname['verdict']],'n_surname');
 
 
         //familysearch
         $familysearch = self::actor_data($name['lastname'],'data_familysearch_verdict','lastname');
         $array_actors['familysearch']=self::array_to_content($familysearch,'Familysearch: '. self::todate($familysearch['last_upd']),'db: data_familysearch_verdict',1,['familysearch_verdict'],'last_upd',$familysearch['lastname']);
-        $array_actors['familysearch_verdict']=self::array_to_content($actors_meta,'Familysearch Verdict: '. $acc[$rsm[$actors_meta['n_familysearch']]],'db: data_actors_meta',1,'','last_update',$acc[$rsm[$familysearch['verdict']]],'n_familysearch');
+        $array_actors['familysearch_verdict']=self::array_to_content($actors_meta,'Familysearch Verdict: '. $acc[$rsm[$actors_meta['n_familysearch']]],'db: data_actors_meta',1,[['verdict',2]],'last_update',$acc[$rsm[$familysearch['verdict']]],'n_familysearch');
 
         //forebears
         $forebears = self::actor_data($name['lastname'],'data_forebears_verdict','lastname');
         $array_actors['forebears']=self::array_to_content($forebears,'Forebears: '. self::todate($forebears['last_upd']),'db: data_forebears_verdict',1,['forebears_verdict'],'last_upd',$forebears['lastname']);
-        $array_actors['forebears_verdict']=self::array_to_content($actors_meta,'Forebears Verdict: '. $acc[$rsm[$actors_meta['n_forebears_rank']]],'db: data_actors_meta',1,'','last_update',$acc[$rsm[$forebears['verdict_rank']]],'n_forebears_rank');
+        $array_actors['forebears_verdict']=self::array_to_content($actors_meta,'Forebears Verdict: '. $acc[$rsm[$actors_meta['n_forebears_rank']]],'db: data_actors_meta',1,[['verdict',2]],'last_update',$acc[$rsm[$forebears['verdict_rank']]],'n_forebears_rank');
 
         ///ethnic
 
+        $array_actors['birth_place'] =self::to_content($adata['birth_place'],1,[['ethnic',1]],self::generateShade());
+        $array_actors['burn_date'] =self::to_content($adata['burn_date'],'',[['ethnic',1]],self::generateShade());
+
+
         $ethnic = self::actor_data($aid,'data_actors_ethnic','actor_id');
-        $array_actors['ethnic']=self::array_to_content($ethnic,'Ethnicelebs: '. self::todate($ethnic['last_update']),'db: data_actors_ethnic',1,['ethnic_verdict'],'last_update');
-        $array_actors['ethnic_verdict']=self::array_to_content($actors_meta,'Ethnicelebs Verdict: '. $acc[$rsm[$actors_meta['n_ethnic']]],'db: data_actors_meta',1,'','last_update',$ethnic['verdict'],'n_ethnic');
+        $array_actors['ethnic']=self::array_to_content($ethnic,'Ethnicelebs: '. self::todate($ethnic['last_update']),'db: data_actors_ethnic',1,['ethnic_verdict'],'last_update','','',self::generateShade('#00ff00'));
+        $array_actors['ethnic_verdict']=self::array_to_content($actors_meta,'Ethnicelebs Verdict: '. $acc[$rsm[$actors_meta['n_ethnic']]],'db: data_actors_meta',1,[['verdict',2]],'last_update',$ethnic['verdict'],'n_ethnic');
 
 
 
-        $array_actors['image_download'] = self::array_to_content([],'Image: ','',0,['kairos']);
-        //kairos
-        $kairos = self::actor_data($aid,'data_actors_race','actor_id');
 
-        $array_actors['kairos']=self::array_to_content($kairos,'Kairos: '. self::todate($kairos['last_update']),'db: data_actors_race',1,['kairos_verdict'],'last_update');
-        $array_actors['kairos_verdict']=self::array_to_content($actors_meta,'Kairos Verdict: '. $acc[$rsm[$actors_meta['n_kairos']]],'db: data_actors_meta',1,'','last_update',$kairos['kairos_verdict'],'n_kairos');
+        ///gender
 
+       $data_actors_gender = self::actor_data($aid,'data_actors_gender','actor_id');
+       $array_actors['imdb_gender']=self::array_to_content($data_actors_gender,'Gender IMDb ','db: data_actors_gender',1,[['gender_verdict',3]],'',$array_convert_imdb[$data_actors_gender['Gender']]);
+
+
+        $data_actor_gender_auto = self::actor_data($aid,'data_actor_gender_auto','actor_id');
+        $array_actors['auto_gender']=self::array_to_content($data_actor_gender_auto,'Gender auto','db: data_actor_gender_auto',1,[['gender_verdict',4]],'',$array_convert_auto[$data_actor_gender_auto['gender']]);
+
+        $array_actors['gender_verdict']=self::array_to_content($actors_meta,'Gender Verdict: '. $array_convert[$actors_meta['gender']],'db: data_actors_meta',1,'','last_update','','gender');
+
+        $array_actors['verdict']=self::array_to_content($actors_meta,'Verdict: '. $acc[$rsm[$actors_meta['n_verdict_weight']]],'db: data_actors_meta',1,'','last_update','','n_verdict_weight');
 
         [$nodes,$links]  = self::structure_array($array_actors);
 
@@ -347,13 +493,19 @@ class ActorsInfo{
     .styled-table tr.highlighted {
         background-color: #98ffa4;
     }
-
-
+        .img_container{
+            text-align: center;
+        }
+    .img_container img{
+        width: 326px;
+        height: auto;
+    }
   </style>
 </head>
 <body>
 <div class="popup-container"></div>
   <div id="container" style="min-width: 300px; height:1000px; margin: 0 auto;"></div>
+<div class="img_container" ><img src="https://info.antiwoketomatoes.com/analysis/create_image/<?php echo $aid.'_v'.time(); ?>.jpg"></div>
 
   <script>
 
@@ -415,7 +567,7 @@ class ActorsInfo{
         Highcharts.chart('container', {
                  chart: {
                     inverted: true,
-                    marginBottom: 100
+
                 },
         title: {
           text: 'Highcharts Sankey Diagram'
@@ -434,7 +586,6 @@ class ActorsInfo{
             ,
             type: 'sankey',
             name: 'Sankey demo series',
-        //  colors: ['#939393', '#00ff00', '#4ca8de'],
               dataLabels: {
                   enabled: true,
                   style: {
@@ -525,259 +676,6 @@ class ActorsInfo{
 </html>
             <?php
 
-
-        return;
-        ?>
-
-
-        <script src="https://code.highcharts.com/highcharts.js"></script>
-        <script src="https://code.highcharts.com/modules/treemap.js"></script>
-        <script src="https://code.highcharts.com/modules/treegraph.js"></script>
-        <script src="https://code.highcharts.com/modules/exporting.js"></script>
-        <script src="https://code.highcharts.com/modules/accessibility.js"></script>
-
-        <div id="container"></div>
-
-        <script type="text/javascript">
-            const data = <?php echo json_encode($data)?>;
-            const data2 = [
-                {
-                    id: '0.0',
-                    parent: '',
-                    name: 'The Actor<br>(26.06.2023)'
-                },
-
-                {
-                    id: '1.1',
-                    parent: '0.0',
-                    name: 'Name'
-                },
-                {
-                    id: '1.2',
-                    parent: '0.0',
-                    name: 'Birth Name'
-                },
-                {
-                    id: '1.3',
-                    parent: '0.0',
-                    name: 'Image'
-                },
-                {
-                    id: '1.4',
-                    parent: '0.0',
-                    name: 'Birth date'
-                },
-                {
-                    id: '1.5',
-                    parent: '0.0',
-                    name: 'Birth place'
-                },
-                {
-                    id: '1.6',
-                    parent: '0.0',
-                    name: 'Actor meta'
-                },
-                {
-                    id: '2.1',
-                    parent: '1.1',
-                    name: 'Surname'
-                },
-
-                {
-                    id: '2.2',
-                    parent: '1.1',
-                    name: 'Western Africa'
-                },
-
-                {
-                    id: '2.3',
-                    parent: '1.1',
-                    name: 'North Africa'
-                },
-
-                {
-                    id: '2.2',
-                    parent: '1.1',
-                    name: 'Central Africa'
-                },
-
-                {
-                    id: '2.4',
-                    parent: '1.1',
-                    name: 'South America'
-                },
-
-                /* America */
-                {
-                    id: '2.9',
-                    parent: '1.2',
-                    name: 'South America'
-                },
-
-                {
-                    id: '2.8',
-                    parent: '1.2',
-                    name: 'Northern America'
-                },
-
-                {
-                    id: '2.7',
-                    parent: '1.2',
-                    name: 'Central America'
-                },
-
-                {
-                    id: '2.6',
-                    parent: '1.2',
-                    name: 'Caribbean'
-                },
-
-                /* Asia */
-                {
-                    id: '2.13',
-                    parent: '1.3',
-                    name: 'Southern Asia'
-                },
-
-                {
-                    id: '2.11',
-                    parent: '1.3',
-                    name: 'Eastern Asia'
-                },
-
-                {
-                    id: '2.12',
-                    parent: '1.3',
-                    name: 'South-Eastern Asia'
-                },
-
-                {
-                    id: '2.14',
-                    parent: '1.3',
-                    name: 'Western Asia'
-                },
-
-                {
-                    id: '2.10',
-                    parent: '1.3',
-                    name: 'Central Asia'
-                },
-
-                /* Europe */
-                {
-                    id: '2.15',
-                    parent: '1.4',
-                    name: 'Eastern Europe'
-                },
-
-                {
-                    id: '2.16',
-                    parent: '1.4',
-                    name: 'Northern Europe'
-                },
-
-                {
-                    id: '2.17',
-                    parent: '1.4',
-                    name: 'Southern Europe'
-                },
-
-                {
-                    id: '2.18',
-                    parent: '1.4',
-                    name: 'Western Europe'
-                },
-                /* Oceania */
-                {
-                    id: '2.19',
-                    parent: '1.4',
-                    name: 'Australia and New Zealand'
-                },
-
-                {
-                    id: '2.20',
-                    parent: '1.5',
-                    name: 'Melanesia'
-                },
-
-                {
-                    id: '2.21',
-                    parent: '1.5',
-                    name: 'Micronesia'
-                },
-
-                {
-                    id: '2.22',
-                    parent: '1.5',
-                    name: 'Polynesia'
-                }
-            ];
-
-            Highcharts.chart('container', {
-                chart: {
-                    inverted: true,
-                    marginBottom: 170
-                },
-                title: {
-                    text: 'Actor info',
-                    align: 'left'
-                },
-                series: [
-                    {
-                        type: 'treegraph',
-                        data,
-                        tooltip: {
-                            pointFormat: '{point.name}'
-                        },
-                        dataLabels: {
-                            pointFormat: '{point.name}',
-                            style: {
-                                whiteSpace: 'nowrap',
-                                color: '#000000',
-                                textOutline: '3px contrast'
-                            },
-                            crop: false
-                        },
-                        marker: {
-                            radius: 6
-                        },
-                        levels: [
-                            // {
-                            //     level: 1,
-                            //     dataLabels: {
-                            //         align: 'left',
-                            //         x: 20
-                            //     }
-                            // },
-                            // {
-                            //     level: 2,
-                            //     colorByPoint: true,
-                            //     dataLabels: {
-                            //         verticalAlign: 'bottom',
-                            //         y: -20
-                            //     }
-                            // },
-                            // {
-                            //     level: 3,
-                            //     colorVariation: {
-                            //         key: 'brightness',
-                            //         to: -0.5
-                            //     },
-                            //     dataLabels: {
-                            //         align: 'left',
-                            //         rotation: 90,
-                            //         y: 20
-                            //     }
-                            // }
-                        ]
-                    }
-                ]
-            });
-
-
-        </script>
-
-        <?php
     }
 
 

@@ -80,9 +80,11 @@ $row['script'] = str_replace('$',$title_coded,$row['script']);
     {
         $row['link'] = str_replace('$mid',$id,$row['link']);
         $row['link'] = str_replace('$year',$year,$row['link']);
-        $row['link'] = str_replace('$',$title_coded,$row['link']);
+
     }
 }
+
+    $row['link'] = str_replace('$',$title_coded,$row['link']);
 
 if ($row['sub_from']==0)
 {
