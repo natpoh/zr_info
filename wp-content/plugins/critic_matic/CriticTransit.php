@@ -1997,7 +1997,7 @@ class CriticTransit extends AbstractDB {
     public function actor_gender_auto($count = 10, $debug = false, $force = false) {
         $sql = sprintf("SELECT d.id, d.aid, d.firstname, d.lastname FROM {$this->db['actors_normalize']} d"
                 . " LEFT JOIN {$this->db['actors_gender_auto']} g ON g.actor_id = d.id"
-                . " WHERE g.id is null OR g.last_upd=0 ORDER BY d.id ASC limit %d", (int) $count);
+                . " WHERE (g.id is null OR g.last_upd=0) AND d.firstname!='' ORDER BY d.id ASC limit %d", (int) $count);
         $dbresults = $this->db_results($sql);
 
         if ($debug) {
