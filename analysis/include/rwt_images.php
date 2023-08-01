@@ -19,6 +19,20 @@ class RWTimages
         return $r->add_time;
     }
 
+    public static function get_meta_img($id)
+    {
+        $sql = "SELECT `img` FROM `data_actors_meta` WHERE `actor_id`=".intval($id)." limit 1";
+        $r = Pdo_an::db_fetch_row($sql);
+        if ($r)
+        {
+        $result =  $r->img;
+        }
+        if (!$result)$result=0;
+        return $result;
+
+    }
+
+
     public static function get_last_updete($id)
     {
 $sql = "SELECT `last_update` FROM `data_actors_meta` WHERE `actor_id`=".intval($id)." limit 1";
@@ -97,7 +111,8 @@ $sql = "SELECT `last_update` FROM `data_actors_meta` WHERE `actor_id`=".intval($
 
         if ($original)
         {
-            $result = $cache_site.'/webp/'.$resolution.'/'.$current_site.'/analysis/create_image/' . $id .'_o'.$las_update.'.jpg.webp';
+            $img_type = self::get_meta_img($id);
+            $result = $cache_site.'/webp/'.$resolution.'/'.$current_site.'/analysis/create_image/' . $id .'_o'.$img_type.'.jpg.webp';
 
             return $result;
 

@@ -44,10 +44,6 @@ if ($load['loaded']) {
 
 $cm = new CriticMatic();
 
-//One time transit data
-require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticTransit.php' );
-$cr = new CriticTransit($cm);
-
 $secret = false;
 if ($_GET['export']) {
    // Transit authors secret key
@@ -56,5 +52,17 @@ if ($_GET['export']) {
    // exit;
 }
 
+$cron_name = 'actor_gender_auto';
+if ($cm->cron_already_run($cron_name, 10, $debug, $force)) {
+    exit();
+}
+$cm->register_cron($cron_name);
+
+//One time transit data
+require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticTransit.php' );
+$cr = new CriticTransit($cm);
+$cr->actor_gender_auto($count,$debug,$force);
 //$cr->actor_transit_first_name($count,$debug,$force);
-$cr->actor_gener_auto($count,$debug,$force);
+
+
+$cm->unregister_cron($cron_name);

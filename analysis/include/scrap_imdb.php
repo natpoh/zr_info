@@ -1337,16 +1337,13 @@ function addto_db_actors($actor_id, $array_result, $update = 0,$debug)
             if (check_image_on_server($actor_id, $image_url)) {
 
 
-                if ($t['image'] != $image) {
+                if (!$t['image']) {
                     !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
                     ACTIONLOG::update_actor_log('image', 'data_actors_imdb', $actor_id);
-
                 }
-
-            } else {
-                $image = 'N';
             }
         }
+
         unset($array_result['image']);
 
     } else {
@@ -1427,7 +1424,7 @@ function add_actors_to_db($id, $update = 0)
 
     $array_result = get_imdb_actor_parse_inner($result);
 
-    if  ($debug)var_dump($array_result);
+    if  ($debug)var_dump_table($array_result);
     if ($array_result) {
 
         return addto_db_actors($id, $array_result, $update,$debug);
@@ -1440,7 +1437,29 @@ function add_actors_to_db($id, $update = 0)
     }
 
 }
+ function var_dump_table($data,$row='') {
+    $table = "<table class='styled-table' border='1' cellpadding='5px' cellspacing='0'>";
+    $table .= "<tr><th>Field</th><th>Value</th></tr>";
 
+    foreach ($data as $field => $value) {
+
+        if ($row && $row ==$field)
+        {
+            $table .= "<tr class='highlighted'><td>$field</td><td>$value</td></tr>";
+        }
+
+        else
+        {
+            $table .= "<tr><td>$field</td><td>$value</td></tr>";
+        }
+
+
+    }
+
+    $table .= "</table>";
+
+    echo $table;
+}
 function intconvert($data)
 {
     !class_exists('INTCONVERT') ? include ABSPATH . "analysis/include/intconvert.php" : '';
@@ -1519,6 +1538,9 @@ $imdb_id = TMDB::get_imdb_id_from_id($id);
     !class_exists('PgRating') ? include ABSPATH . "analysis/include/pg_rating.php" : '';
     PgRating::update_pg_rating_cms($imdb_id ,1);
 }
+
+
+
 function add_empty_actors($id='')
 {
 
@@ -1538,7 +1560,7 @@ function add_empty_actors($id='')
 
 
             $sql = "SELECT id FROM `data_actors_imdb` where  ".$where."  limit 60";
-             if ($debug)echo $sql.PHP_EOL;
+          //   if ($debug)echo $sql.PHP_EOL;
             $result= Pdo_an::db_results_array($sql);
 
             foreach ($result as $r) {

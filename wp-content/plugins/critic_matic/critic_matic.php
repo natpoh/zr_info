@@ -970,7 +970,11 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('actor_id', 'gender', 'k'), "data_actor_gender_auto");
+    
+    $sql = "ALTER TABLE `data_actor_gender_auto` ADD `last_upd` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
+    critic_matic_create_index_an(array('actor_id', 'gender', 'k', 'last_upd'), "data_actor_gender_auto");
 
     /*
      * Indexes: 
@@ -1711,5 +1715,7 @@ SELECT m.mid, count(*) FROM meta_movie_actor m INNER JOIN data_actors_meta r ON 
  * // 28.06.2023 - TODO remove empty date rating
  * UPDATE `data_movie_erating` SET animelist_date=0 WHERE animelist_date >0;
  * DELETE FROM `meta_movie_genre` WHERE `gid` = 29
+ * 
+ * DELETE FROM `data_actor_gender_auto` WHERE `gender` = 0
  * 
  */

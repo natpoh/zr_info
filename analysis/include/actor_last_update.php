@@ -338,7 +338,7 @@ class ActorsInfo{
                     'content'=>'',
                     'color'=>'#a58aff',
                     'time'=>self::todate($adata['lastupdate']),
-                    'desc'=>'db = actor_imdb<br>'.self::arrayToTable($adata),
+                    'desc'=>'db = actor_imdb<br><a target="_blank" href="/analysis/include/scrap_imdb.php?add_empty_actors='.$aid.'&debug=1">update data</a><br>'.self::arrayToTable($adata),
                     'enable'=>self::check_enable($adata),
 
 

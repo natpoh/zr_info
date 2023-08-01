@@ -1335,7 +1335,8 @@ body.theme_dark  .tab-wrapper li.nav-tab a {
 }
 
 
-body.theme_dark .nav-tab.group {
+body.theme_dark .nav-tab.group,
+body.theme_dark .sort-more .btn {
     border-color: #444;
 }
 
@@ -1349,7 +1350,7 @@ body.theme_dark .nav-tab.group {
     margin-left: 7px;
     width: 10px;
     height: 10px;
-    background: #d75454;
+    background: rgb(160 160 160 / 50%);
     display: inline-block;
     border-radius: 50%;
 }
@@ -2869,7 +2870,8 @@ body.theme_dark #search-filters .filter {
 }
 
 
-#search-filters .filter.fminus {
+#search-filters .filter.fminus,
+#search-filters .filter[data-id="minus"]{
     background: #ff5959;
 }
 
@@ -2900,6 +2902,11 @@ body.theme_dark #search-filters .filter {
 #search-filters.tab-critics .f-movies  {
     background: #d4d4d4;
     color: #565656;
+}
+
+#search-filters .filter[data-type="hide"],
+#search-filters .filter[data-type="show"] {
+    display: none;
 }
 
 .facet .facet-title,
