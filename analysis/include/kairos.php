@@ -82,6 +82,7 @@ return $array_result;
 
     public static  function create_image_64($imgid,$imgsource='',$type = 'imdb')
     {
+        global $debug;
         $base64='';
 
         $number = str_pad($imgid, 7, '0', STR_PAD_LEFT);
@@ -106,6 +107,37 @@ if (file_exists($imgsource)) {
     $data = file_get_contents($imgsource);
     $base64 = base64_encode($data);
 }
+else if ($type == 'imdb'){
+
+    if ($debug)echo 'try copy image: ';
+    $q="SELECT `image_url` FROM `data_actors_imdb` WHERE `id`=".$imgid;
+    $image = Pdo_an::db_get_data($q,'image_url');
+    if ($image)
+    {
+     if ($debug)echo ' '.$image.' ';
+
+
+        $uploaded =    self::check_image_on_server($imgid, $image);
+
+        if ($uploaded)
+        {
+            echo 'success<br>';
+            $imgsource = $_SERVER['DOCUMENT_ROOT'] . '/analysis/img_final/' . $number . '.jpg';
+            $data = file_get_contents($imgsource);
+            $base64 = base64_encode($data);
+        }
+        else
+        {
+            echo  'false<br>';
+        }
+
+    }else
+    {
+        if ($debug)echo 'image not found <br>';
+    }
+
+
+}
 else if ($type == 'tmdb')
 {
     ///try get file
@@ -126,6 +158,7 @@ return $base64;
 }
     public function get_actor_race($base64)
     {
+        global $debug;
         $arrayhead = array(
             'Host: demo.kairos.com',
             'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
@@ -156,6 +189,9 @@ return $base64;
 
         $result = static::getCurlCookieface($url, $pos_data, $arrayhead,0);
 
+
+        if ($debug)var_dump($result);
+
         if ($result) {
             $arraay = json_decode($result);
         }
@@ -185,8 +221,13 @@ return $base64;
     }
     public static function get_actor_id($id,$result_image)
     {
+        global $debug;
+
         $img_64 = static::create_image_64($id,'',$result_image);
         if ($img_64) {
+
+            if ($debug)echo '<img style="width:100px" src="data:image/png;base64,'.$img_64.'" alt="'.$id.'">';
+
             sleep(1);
             $array_race = static::get_actor_race($img_64);
             return $array_race;
@@ -354,18 +395,20 @@ return;
 
     public static function prepare_arrays($rows,$result_image='imdb')
     {
+            global $debug;
 
             foreach ($rows as $row) {
                 $error_message = array();
 
                 $id = $row->id;
 
-                echo 'id='.$id.'<br>';
+                if ($debug)echo $result_image.' id='.$id.'<br>';
 
 
                 $kairos =  KAIROS::get_actor_id($id,$result_image);
 
 
+                if ($debug) var_dump($kairos);
 
                 ///////////update kairos data
                 if ($kairos)
@@ -379,6 +422,7 @@ return;
                     {
                         $error_message[$result_image] = $kairos['error'];
                         $kairos=[];
+                        if ($debug) echo ($kairos['error']);
                     }
 
                 }
@@ -399,7 +443,7 @@ return;
 
     public  static function check_actors($id)
     {
-////!!!
+global $debug;
         $kairos=[];
         $dop='';
         if ($id)
@@ -433,6 +477,9 @@ return;
                     data_actors_tmdb.profile_path IS NOT NULL and data_actors_tmdb.status =1 
                     and data_actors_tmdb_race.id IS NULL ) ".$dop." limit 10";
         $rows = Pdo_an::db_results($sql);
+
+
+
         self::prepare_arrays($rows,'tmdb');
 
         if (function_exists('check_cron_time'))
@@ -446,8 +493,11 @@ return;
         $sql = "SELECT `data_actors_imdb`.id  FROM `data_actors_imdb` 
         LEFT JOIN data_actors_race ON data_actors_race.actor_id=data_actors_imdb.id
         WHERE (data_actors_race.id IS NULL and (`data_actors_imdb`.`image`= 'Y' OR `data_actors_imdb`.`image_url` IS NOT NULL) ) ".$dop." limit 30";
-        //echo $sql;
+        if ($debug)echo $sql;
+
+
         $rows = Pdo_an::db_results($sql);
+
         self::prepare_arrays($rows,'imdb');
 
 

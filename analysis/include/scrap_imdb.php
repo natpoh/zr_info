@@ -2828,6 +2828,8 @@ function add_imdb_data_to_options()
 }
 function check_kairos($id='')
 {
+    global $debug;
+    $debug = $_GET['debug'];
 
     !class_exists('CPULOAD') ? include ABSPATH . "service/cpu_load.php" : '';
     $load = CPULOAD::check_load();
