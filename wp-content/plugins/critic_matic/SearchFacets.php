@@ -1550,11 +1550,11 @@ class SearchFacets extends AbstractDB {
                             </span>
 
                             <label class="plus<?php print $checked ? ' active' : ''  ?>">
-                                <input type="checkbox" name="<?php print $type ?>[]" data-name="<?php print $type ?>" class="plus" data-title="Use" data-title-pre="<?php print $name_pre ?>" value="use" <?php print $checked ? 'checked' : ''  ?> >                                                      
+                                <input type="checkbox" name="<?php print $type ?>[]" data-name="<?php print $type ?>" class="plus" data-title="use" data-title-pre="<?php print $name_pre ?>" value="use" <?php print $checked ? 'checked' : ''  ?> >                                                      
                             </label>
                             <?php if ($minus): ?>   
                                 <label class="minus<?php print $checked_minus ? ' active' : ''  ?>">
-                                    <input type="checkbox" name="<?php print $type ?>[]" data-name="<?php print $type ?>" class="minus" data-title="Minus" data-title-pre="<?php print $name_pre ?>" value="minus" <?php print $checked_minus ? 'checked' : ''  ?> >                          
+                                    <input type="checkbox" name="<?php print $type ?>[]" data-name="<?php print $type ?>" class="minus" data-title="minus" data-title-pre="<?php print $name_pre ?>" value="minus" <?php print $checked_minus ? 'checked' : ''  ?> >                          
                                 </label>
                             <?php endif ?>      
                         </div>
@@ -2076,7 +2076,7 @@ class SearchFacets extends AbstractDB {
         $content = ob_get_contents();
         ob_end_clean();
 
-        $title = 'ZR Indie Meter';
+        $title = 'Indie-ness';
         $filter = 'indiedata';
         if ($content || $main_collapsed) {
             //Show multifacet
@@ -2204,7 +2204,7 @@ class SearchFacets extends AbstractDB {
         $content = ob_get_contents();
         ob_end_clean();
 
-        $title = 'ZR Wokeness';
+        $title = 'Wokeness';
         $filter = 'wokedata';
         if ($content || $main_collapsed) {
             //Show multifacet

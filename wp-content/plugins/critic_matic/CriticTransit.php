@@ -71,6 +71,7 @@ class CriticTransit extends AbstractDB {
             'actors_meta' => 'data_actors_meta',
             'indie' => 'data_movie_indie',
             'meta_movie_keywords' => 'meta_movie_keywords',
+            'actors_normalize' => 'data_actors_normalize',
         );
     }
 
@@ -1993,9 +1994,10 @@ class CriticTransit extends AbstractDB {
 
     /* Actor transit */
 
-    public function actor_gener_auto($count = 10, $debug = false, $force = false) {
-        $sql = sprintf("SELECT a.id, a.name FROM {$this->db['actors_imdb']} a LEFT JOIN {$this->db['actors_gender_auto']} g ON g.actor_id = a.id"
-                . " WHERE g.id is null AND a.id>0 ORDER BY a.id ASC limit %d", (int) $count);
+    public function actor_gender_auto($count = 10, $debug = false, $force = false) {
+        $sql = sprintf("SELECT d.id, d.aid, d.firstname, d.lastname FROM {$this->db['actors_normalize']} d"
+                . " LEFT JOIN {$this->db['actors_gender_auto']} g ON g.actor_id = d.id"
+                . " WHERE g.id is null OR g.last_upd=0 ORDER BY d.id ASC limit %d", (int) $count);
         $dbresults = $this->db_results($sql);
 
         if ($debug) {
@@ -2004,15 +2006,22 @@ class CriticTransit extends AbstractDB {
 
         $ma = $this->get_ma();
         $names = array();
-        if (sizeof($dbresults)) {
-            foreach ($dbresults as $item) {
-                if ($item->name) {
-                    $first_name_arr = explode(' ', $item->name);
-                    $first_name = isset($first_name_arr[0]) ? $first_name_arr[0] : $first_name;
-                    $first_name_clear = trim($ma->create_slug($first_name, '-'));
+        if (!$dbresults) {
+            return;
+        }
+
+        foreach ($dbresults as $item) {
+            $name = $item->firstname . ' ' . $item->lastname;
+
+            $first_name_arr = explode(' ', $name);
+            foreach ($first_name_arr as $first) {
+                $first = trim($first);
+                if ($first) {
+                    $first_name_clear = trim($ma->create_slug($first, '-'));
                     $first_name_clear = preg_replace('/[^a-z]+/', '', $first_name_clear);
                     if ($first_name_clear) {
                         $names[$item->id] = $first_name_clear;
+                        break;
                     }
                 }
             }
@@ -2089,8 +2098,38 @@ class CriticTransit extends AbstractDB {
                 }
             }
 
-            $sql = sprintf("INSERT INTO {$this->db['actors_gender_auto']} (actor_id,gender,k) VALUES (%d,%d,%d)", $aid, (int) $gender, (int) $k);
-            $this->db_query($sql);
+            $upd_data = array(
+                'actor_id' => (int) $aid,
+                'gender' => (int) $gender,
+                'k' => (int) $k,
+            );
+
+            $this->actors_gender_update($aid, $upd_data, $debug);
+        }
+    }
+
+    public function actors_gender_update($aid = 0, $data = array(), $debug = false) {
+
+        $sql = sprintf("SELECT * FROM {$this->db['actors_gender_auto']} WHERE actor_id = %d", (int) $aid);
+        $exist = $this->db_fetch_row($sql);
+        $data['last_upd'] = $this->curr_time();
+
+        if ($debug) {
+            print_r($data);
+        }
+
+        if ($exist) {
+            // Update       
+            $this->db_update($data, $this->db['actors_gender_auto'], $exist->id);
+            if ($debug) {
+                print "update: {$exist->id}\n";
+            }
+        } else {
+            // Add 
+            $this->db_insert($data, $this->db['actors_gender_auto']);
+            if ($debug) {
+                print "add\n";
+            }
         }
     }
 
@@ -2098,7 +2137,8 @@ class CriticTransit extends AbstractDB {
         $option_name = 'name_unique_id';
         $last_id = $this->get_option($option_name, 0);
 
-        $sql = sprintf("SELECT id, primaryName, gender FROM {$this->db['actors']} WHERE id>%d AND gender is not null ORDER BY id ASC limit %d", (int) $last_id, (int) $count);
+        $sql = sprintf("SELECT id, primaryName, gender FROM {$this->db['actors']
+                } WHERE id>%d AND gender is not null ORDER BY id ASC limit %d", (int) $last_id, (int) $count);
         $results = $this->db_results($sql);
 
         $last = end($results);
@@ -2155,7 +2195,9 @@ class CriticTransit extends AbstractDB {
         $add = 'Exist';
         $ret = false;
         if (!$id_exist) {
-            $sql = sprintf("INSERT INTO {$this->db['actor_name']} (name,gender) VALUES ('%s',%d)", $name, (int) $gender);
+            $sql = sprintf("INSERT INTO  {
+        $this->db['actor_name']
+    } (name,gender) VALUES ('%s',%d)", $name, (int) $gender);
             $this->db_query($sql);
             $add = 'Add';
             $ret = true;
@@ -2179,7 +2221,9 @@ class CriticTransit extends AbstractDB {
             }
         }
         //Get author id
-        $sql = sprintf("SELECT id FROM {$this->db['actor_name']} WHERE name='%s'", $name);
+        $sql = sprintf("SELECT id FROM  {
+        $this->db['actor_name']
+    } WHERE name='%s'", $name);
         $author = $this->db_get_var($sql);
 
         if ($cache && $author) {
@@ -2189,7 +2233,9 @@ class CriticTransit extends AbstractDB {
     }
 
     public function export_csv() {
-        $sql = "SELECT name, gender FROM {$this->db['actor_name']}";
+        $sql = "SELECT name, gender FROM  {
+        $this->db['actor_name']
+    }";
         $results = $this->db_results($sql);
         print sizeof($results);
         $path = ABSPATH . 'wp-content/uploads/actor_gender.csv';
@@ -2205,7 +2251,11 @@ class CriticTransit extends AbstractDB {
         // UNUSED
         // import images from critcs pluggin
         global $wpdb;
-        $sql = "SELECT p.post_title, p.ID, m.meta_value FROM {$this->db['wp_posts']} p, {$this->db['wp_postmeta']} m "
+        $sql = "SELECT p.post_title, p.ID, m.meta_value FROM  {
+        $this->db['wp_posts']
+    } p,  {
+        $this->db['wp_postmeta']
+    } m "
                 . "WHERE p.post_type = 'wprss_feed' AND p.ID = m.post_id AND m.meta_key = 'wprss_html_before' ";
         $result = $this->db_results($sql);
         //print_r($result);
@@ -2230,7 +2280,7 @@ class CriticTransit extends AbstractDB {
                 }
             }
         }
-        //$regv = "#\<img.+title=\".+src=\"([^\"]+)\"#";
+//$regv = "#\<img.+title=\".+src=\"([^\"]+)\"#";
     }
 
 }
