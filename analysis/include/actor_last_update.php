@@ -384,7 +384,7 @@ class ActorsInfo{
         $array_actors['bettaface']=self::array_to_content($bettaface,'Bettaface: '. self::todate($bettaface['last_update']),'db: data_actors_face',1,['bettaface_verdict'],'last_update');
         $array_actors['bettaface_verdict']=self::array_to_content($actors_meta,'bettaface Verdict: '. $acc[$rsm[$actors_meta['n_bettaface']]],'db: data_actors_meta',1,[['verdict',2]],'last_update',$bettaface['race'],'n_bettaface');
 
-        $array_actors['data_actors_normalize']=self::array_to_content($name,'Normalize:'. self::todate($name['last_upd']),'db: data_actors_normalize',1,['familysearch',['familysearch_verdict',2],'forebears',['forebears_verdict',2],'surname','ethnic',['auto_gender',4]]);
+        $array_actors['data_actors_normalize']=self::array_to_content($name,'Normalize: '.$name['firstname'].' '.$name['lastname'].' '. self::todate($name['last_upd']),'db: data_actors_normalize',1,['familysearch',['familysearch_verdict',2],'forebears',['forebears_verdict',2],'surname','ethnic',['auto_gender',4]]);
 
 
         ///surname
@@ -405,8 +405,8 @@ class ActorsInfo{
 
         ///ethnic
 
-        $array_actors['birth_place'] =self::to_content($adata['birth_place'],1,[['ethnic',1]],self::generateShade());
-        $array_actors['burn_date'] =self::to_content($adata['burn_date'],'',[['ethnic',1]],self::generateShade());
+        $array_actors['birth_place'] =self::to_content($adata['birth_place'],1,[['ethnic',1]]);
+        $array_actors['burn_date'] =self::to_content($adata['burn_date'],'',[['ethnic',1]]);
 
 
         $ethnic = self::actor_data($aid,'data_actors_ethnic','actor_id');
@@ -419,15 +419,15 @@ class ActorsInfo{
         ///gender
 
        $data_actors_gender = self::actor_data($aid,'data_actors_gender','actor_id');
-       $array_actors['imdb_gender']=self::array_to_content($data_actors_gender,'Gender IMDb ','db: data_actors_gender',1,[['gender_verdict',3]],'',$array_convert_imdb[$data_actors_gender['Gender']]);
+       $array_actors['imdb_gender']=self::array_to_content($data_actors_gender,'Gender IMDb ','db: data_actors_gender',1,[['gender_verdict',3]],'',$array_convert_imdb[$data_actors_gender['Gender']],'','#aaddff');
 
 
         $data_actor_gender_auto = self::actor_data($aid,'data_actor_gender_auto','actor_id');
         $array_actors['auto_gender']=self::array_to_content($data_actor_gender_auto,'Gender auto','db: data_actor_gender_auto',1,[['gender_verdict',4]],'',$array_convert_auto[$data_actor_gender_auto['gender']]);
 
-        $array_actors['gender_verdict']=self::array_to_content($actors_meta,'Gender Verdict: '. $array_convert[$actors_meta['gender']],'db: data_actors_meta',1,'','last_update','','gender');
+        $array_actors['gender_verdict']=self::array_to_content($actors_meta,'Gender Verdict: '. $array_convert[$actors_meta['gender']],'db: data_actors_meta',1,[['verdict',2]],'last_update','','gender');
 
-        $array_actors['verdict']=self::array_to_content($actors_meta,'Verdict: '. $acc[$rsm[$actors_meta['n_verdict_weight']]],'db: data_actors_meta',1,'','last_update','','n_verdict_weight');
+        $array_actors['verdict']=self::array_to_content($actors_meta,'Verdict: '. $acc[$rsm[$actors_meta['n_verdict_weight']]].' '.$array_convert[$actors_meta['gender']],'db: data_actors_meta',1,'','last_update','','n_verdict_weight');
 
         [$nodes,$links]  = self::structure_array($array_actors);
 
@@ -570,7 +570,7 @@ class ActorsInfo{
 
                 },
         title: {
-          text: 'Highcharts Sankey Diagram'
+          text: '<?php echo $adata['name'] ?>'
         },
         accessibility: {
           point: {
@@ -585,7 +585,7 @@ class ActorsInfo{
               //  ["White", "Cryan", 1, "White", "Cryan", "2023-07-27"],
             ,
             type: 'sankey',
-            name: 'Sankey demo series',
+            name: '',
               dataLabels: {
                   enabled: true,
                   style: {
