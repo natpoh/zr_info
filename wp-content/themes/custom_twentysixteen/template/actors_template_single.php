@@ -182,9 +182,9 @@ function show_actors_template_single_cache()
         require(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/include/custom_cahe.php');
     }
 
-   //$cache = wp_custom_cache('p-'.$post_id.'_show_actors_template_single_1', 'fastcache', 3600);
-   //echo $cache;
-   show_actors_template_single();
+   $cache = wp_custom_cache('p-'.$post_id.'_show_actors_template_single_1', 'fastcache', 3600);
+   echo $cache;
+   //show_actors_template_single();
 }
 
 

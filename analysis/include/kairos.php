@@ -445,7 +445,7 @@ return;
         ////default request for emtpy data
         $sql = "SELECT `data_actors_imdb`.id  FROM `data_actors_imdb` 
         LEFT JOIN data_actors_race ON data_actors_race.actor_id=data_actors_imdb.id
-        WHERE (data_actors_race.id IS NULL and `data_actors_imdb`.`image`= 'Y' ) ".$dop." limit 30";
+        WHERE (data_actors_race.id IS NULL and (`data_actors_imdb`.`image`= 'Y' OR `data_actors_imdb`.`image_url` IS NOT NULL) ) ".$dop." limit 30";
         //echo $sql;
         $rows = Pdo_an::db_results($sql);
         self::prepare_arrays($rows,'imdb');
