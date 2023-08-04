@@ -66,7 +66,7 @@ class CriticCrowd extends AbstractDB {
     }
 
     private function publish_new_crowd($count = 100, $debug = false) {
-        $sql = sprintf("SELECT * FROM {$this->db['critic_crowd']} WHERE critic_status=0 ORDER BY id ASC LIMIT %d", $count);
+        $sql = sprintf("SELECT * FROM {$this->db['critic_crowd']} WHERE critic_status=0 AND critic_id>0 ORDER BY id ASC LIMIT %d", $count);
         $results = $this->db_results($sql);
         if ($debug) {
             print_r($results);
@@ -407,7 +407,7 @@ class CriticCrowd extends AbstractDB {
     }
 
     public function update_crowd($id = 0, $data) {
-        $this->sync_update_data($data, $id, $this->db['critic_crowd'], $this->cm->sync_data, 10);
+        $this->sync_update_data($data, $id, $this->db['critic_crowd'], $this->cm->sync_data, 3);
     }
 
     private function add_post($crowd_item, $log_status = 0, $debug = false) {
