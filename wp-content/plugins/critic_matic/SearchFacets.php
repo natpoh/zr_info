@@ -981,7 +981,7 @@ class SearchFacets extends AbstractDB {
             if (sizeof($valid_tags) == 0) {
                 $hide_class = ' hide ';
             }
-            $ret = '<div id="search-filters" class="tab-' . $curr_tab . $hide_class . '"><span>Filters: </span>';
+            $ret = '<div id="search-filters" class="tab-' . $curr_tab . $hide_class . '"><span id="fs-name">Filters: </span>';
             $ret .= '<ul class="filters-wrapper">';
             foreach ($tags as $tag) {
                 $minus_class = '';

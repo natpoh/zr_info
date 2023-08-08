@@ -1379,7 +1379,6 @@ function critic_matic_plugin_activation() {
     critic_matic_create_index_an(array('mid', 'mlcid', 'date', 'views', 'expired', 'link_hash'), "data_site_img");
 
 
-
     /*
      * Clear comments
      */
@@ -1397,6 +1396,28 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('type', 'date'), "log_clear_comments");
 
+    
+     /*
+     * User filters
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_user_filters`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                                                
+                                `publish` int(11) NOT NULL DEFAULT '0',
+                                `uid` int(11) NOT NULL DEFAULT '0',
+                                `date` int(11) NOT NULL DEFAULT '0',
+                                `last_upd` int(11) NOT NULL DEFAULT '0',
+                                `type` int(11) NOT NULL DEFAULT '0',
+                                `rating` int(11) NOT NULL DEFAULT '0',
+                                `filter` text default NULL,
+                                `title` text default NULL,
+                                `desc` text default NULL,                                
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('uid', 'date', 'last_upd', 'type', 'rating', 'publish'), "data_user_filters");
+    
+    
     /*
      * Ethic img
      */

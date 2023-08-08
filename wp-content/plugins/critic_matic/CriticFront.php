@@ -189,6 +189,7 @@ class CriticFront extends SearchFacets {
 
         // Vote type:
         $vote_type_and = '';
+        $and_select = '';
 
         if ($vote_type > 0) {
             if (!$vote_inner) {
@@ -197,12 +198,19 @@ class CriticFront extends SearchFacets {
 
             if ($vote_type == 1) {
                 /*
+                    1 => array('title' => 'Pay To Watch!'),
+                    2 => array('title' => 'Skip It'),
+                    3 => array('title' => 'Watch If Free')
                   Positive
-                  5 stars
-                  4 stars
-                  3 stars (pay to watch)
+                    5                        (watch if free or pay to watch )
+                    4                        (watch if free or pay to watch )
+                    ≥3.5                     (watch if free or pay to watch )
+                    2.9 - 3.2            (pay to watch only)
+                 * 
                  */
-                $vote_type_and = " AND(r.rating IN (4,5) OR (r.rating=3 AND r.vote=1))";
+
+                $vote_type_and = " AND IF(r.rating>=3.5 AND r.vote IN (1,3),1,IF(r.rating>=3 AND r.vote=1,1,0))=1 ";
+                
             } if ($vote_type == 2) {
                 /*
                   Negative
@@ -214,7 +222,9 @@ class CriticFront extends SearchFacets {
                   1 stars
                   0 stars
                  */
-                $vote_type_and = " AND r.rating IN (0,1,2)";
+                $vote_type_and = " AND r.rating < 3";
+                // $and_select = ", IF(r.rating < 3,1,0) AS filter ";
+                // $vote_type_and = " AND filter=1";
             }
         }
 
@@ -224,11 +234,12 @@ class CriticFront extends SearchFacets {
             $author_show_type = ' AND a.show_type!=1';
         }
 
-        $sql = sprintf("SELECT p.id, p.date_add, p.top_movie, a.name AS author_name FROM {$this->db['posts']} p"
+        $sql = sprintf("SELECT p.id, p.date_add, p.top_movie, a.name AS author_name".$and_select." FROM {$this->db['posts']} p"
                 . " INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
                 . " INNER JOIN {$this->db['authors']} a ON a.id = am.aid" . $movie_inner . $tag_inner . $vote_inner
                 . " WHERE p.top_movie > 0 AND p.status=1" . $mtype_and . $and_author . $author_show_type . $movie_and . $tag_and . $min_rating_and . $meta_type_and . $vote_and . $vote_type_and . " ORDER BY" . $custom_order . " p.date DESC LIMIT %d, %d", (int) $start, (int) $limit);
-
+      
+                //print $sql;
 
         $results = $this->db_results($sql);
         //p_r(array($sql, $results));
@@ -293,7 +304,9 @@ class CriticFront extends SearchFacets {
                   4 stars
                   3 stars (pay to watch)
                  */
-                $vote_type_and = " AND(r.rating IN(4,5) OR (r.rating=3 AND r.vote=1))";
+                //$vote_type_and = " AND(r.rating IN(4,5) OR (r.rating=3 AND r.vote=1))";
+                // $vote_type_and = " AND (r.rating >=3.5 AND r.vote IN(1,2)) OR (r.rating >= 3 AND r.vote=3))";
+                $vote_type_and = " AND IF(r.rating>=3.5 AND r.vote IN (1,3),1,IF(r.rating>=3 AND r.vote=1,1,0))=1 ";
             } if ($vote_type == 2) {
                 /*
                   Negative
@@ -303,7 +316,8 @@ class CriticFront extends SearchFacets {
                   1 stars
                   0 stars
                  */
-                $vote_type_and = " AND(r.rating IN(0,1,2) OR (r.rating=3 AND r.vote!=1))";
+                //$vote_type_and = " AND(r.rating IN(0,1,2) OR (r.rating=3 AND r.vote!=1))";
+                $vote_type_and = " AND r.rating < 3";
             }
         }
         $sql = "SELECT COUNT(p.id) FROM {$this->db['posts']} p"
@@ -520,7 +534,7 @@ class CriticFront extends SearchFacets {
     }
 
     public function get_feed_templ($critic = '', $top_movie = '', $stuff = false, $fullsize = false) {
-        
+
         $permalink = $critic->link;
         if (!$permalink) {
             // Create local permalink
@@ -536,7 +550,7 @@ class CriticFront extends SearchFacets {
         if (!$content) {
             $content = $title;
         }
-        
+
         // Find transcriptions
         $time_codes = array();
         $desc_results = array();
@@ -845,7 +859,7 @@ class CriticFront extends SearchFacets {
         return $link;
     }
 
-    public function find_embed($link='', $cid = 0) {
+    public function find_embed($link = '', $cid = 0) {
         $ret = '';
         if (strstr($link, 'twitter.com')) {
             // Try to get embed for crowdsource
@@ -917,7 +931,7 @@ class CriticFront extends SearchFacets {
             // Parse data
             $cp = $this->cm->get_cp();
             //$proxy = '107.152.153.239:9942';
-           
+
             $proxy = $this->cm->get_parser_proxy(true);
             $proxy_text = '';
             if ($proxy) {
@@ -973,7 +987,7 @@ class CriticFront extends SearchFacets {
                 $proxy_num = array_rand($proxy);
                 $proxy_text = trim($proxy[$proxy_num]);
             }
-            
+
             $b_link = 'https://www.bitchute.com/video/' . $code . '/';
             $data = $cp->get_proxy($b_link, $proxy_text, $headers);
 
@@ -1582,7 +1596,7 @@ class CriticFront extends SearchFacets {
         $content = preg_replace('/<style.*\/style>/Uis', '', $content);
         $content = preg_replace('/<!--.*-->/Uis', '', $content);
         $content = preg_replace('/<!\[CDATA\[.*\]\]>/Uis', '', $content);
-        
+
         $content = str_replace('<br>', '\n', $content);
         $content = str_replace('<br/>', '\n', $content);
         $content = str_replace('<br />', '\n', $content);
@@ -2224,13 +2238,13 @@ class CriticFront extends SearchFacets {
             $content['reaction'] = $this->ce->get_emotions_counts_all($pids);
 
             // Print json
-        //    return json_encode($content);
+            //    return json_encode($content);
         }
         $content['mid'] = $movie_id;
         ///google cse
         !class_exists('Gsearch') ? include ABSPATH . "analysis/include/gsearch.php" : '';
         $gserch = new Gsearch();
-        $content['gdata'] = $gserch->get_data($movie_id,1);
+        $content['gdata'] = $gserch->get_data($movie_id, 1);
 
 //        else {
 //            $title = $this->get_movie_title($movie_id);

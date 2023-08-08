@@ -340,7 +340,7 @@ class CriticSearch extends AbstractDB {
                 'rcherry' => array('title' => 'CherryPicks', 'facet' => 'rating', 'eid' => 'echerry', 'titlesm' => 'CherryPicks', 'name_pre' => 'CherryPicks ', 'filter_pre' => 'CherryPicks ', 'max_count' => 110, 'multipler' => 10, 'group' => 'woke', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
                 'rmedia' => array('title' => 'MediaVersity', 'facet' => 'rating', 'eid' => 'emedia', 'titlesm' => 'MediaVersity', 'name_pre' => 'MediaVersity ', 'filter_pre' => 'MediaVersity ', 'max_count' => 60, 'multipler' => 10, 'group' => 'woke', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
                 'mediaversity' => array('title' => 'MediaVersity A-E', 'facet' => 'select', 'titlesm' => 'MediaVersity', 'name_pre' => 'MediaVersity ', 'filter_pre' => 'MediaVersity ', 'max_count' => 20, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity')),
-                'worthit' => array('title' => 'WorthItOrWoke', 'facet' => 'select', 'titlesm' => 'WorthIt', 'name_pre' => 'WorthItOrWoke ', 'filter_pre' => 'WorthItOrWoke ', 'max_count' => 5, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'sorted' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity')),
+                // 'worthit' => array('title' => 'WorthItOrWoke', 'facet' => 'select', 'titlesm' => 'WorthIt', 'name_pre' => 'WorthItOrWoke ', 'filter_pre' => 'WorthItOrWoke ', 'max_count' => 5, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'sorted' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity')),
                 // Audience  
                 'auratingtitle' => array('title' => 'Audience Warnings<span data-value="tooltip_zr_audience_warnings" class="nte_info"></span>', 'is_title' => 1, 'group' => 'woke',),
                 'auvote' => array('title' => 'SUGGESTION', 'facet' => 'select', 'titlesm' => 'SUGGESTION', 'name_pre' => 'AU ', 'filter_pre' => 'Audience SUGGESTION ', 'max_count' => 6, 'multipler' => 1, 'icon' => 'vote', 'hide' => 1, 'group' => 'woke',),
@@ -2157,7 +2157,7 @@ class CriticSearch extends AbstractDB {
           $meta = $this->sdb_results("SHOW META");
           p_r($meta);
           exit;
-        */
+         */
         //Get result
         $ret = $this->movie_results($sql, $match, $search_query);
 
@@ -2479,9 +2479,9 @@ class CriticSearch extends AbstractDB {
                 $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1" . $filters_and['filter'] . $match
                         . " GROUP BY state ORDER BY cnt DESC LIMIT 0,10";
             } else if (isset($woke_facets[$facet])) {
-              
+
                 $active_facet = $woke_facets[$facet];
-              
+
                 if (isset($active_facet['no_data'])) {
                     continue;
                 }
@@ -3918,24 +3918,20 @@ class CriticSearch extends AbstractDB {
             if ($vote_type == 1) {
                 /*
                   Positive
-                  5 stars
-                  4 stars
-                  3 stars (pay to watch)
+                 * 
+                 *  IF(r.rating>=3.5 AND r.vote IN (1,3),1,IF(r.rating>=3 AND r.vote=1,1,0))
                  */
-                $and_select = ", IF(aurating=4 OR aurating=5,1,IF(aurating=3 AND auvote=1,1,0)) AS filter ";
+                $and_select = ", IF(aurating>=3.5 AND auvote !=2,1,IF(aurating>=3 AND auvote=1,1,0)) AS filter ";
                 $filters_and .= " AND filter=1";
             } if ($vote_type == 2) {
                 /*
                   Negative
-                  3 stars (Watch If Free)
-                  3 stars (skip it)
-                 * IF(aurating=3 AND auvote!=1,1,0)
-                  2 stars
-                  1 stars
-                  0 stars
+                  $vote_type_and = " AND r.rating < 3";
                  */
-                $and_select = ", IF(aurating=0 OR aurating=1 OR aurating=2,1,0) AS filter ";
-                $filters_and .= " AND filter=1";
+                // $and_select = ", IF(aurating=0 OR aurating=1 OR aurating=2,1,0) AS filter ";
+                // $and_select = ", IF(aurating < 3,1,0) AS filter ";
+                // $filters_and .= " AND filter=1";
+                $filters_and .= " AND aurating>0 AND aurating<3";
             }
         }
 
