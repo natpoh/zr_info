@@ -970,10 +970,10 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_actor_gender_auto` ADD `last_upd` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     critic_matic_create_index_an(array('actor_id', 'gender', 'k', 'last_upd'), "data_actor_gender_auto");
 
     /*
@@ -1396,28 +1396,38 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('type', 'date'), "log_clear_comments");
 
-    
-     /*
+
+    /*
      * User filters
      */
-    $sql = "CREATE TABLE IF NOT EXISTS  `data_user_filters`(
-				`id` int(11) unsigned NOT NULL auto_increment,                                                                
-                                `publish` int(11) NOT NULL DEFAULT '0',
-                                `uid` int(11) NOT NULL DEFAULT '0',
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_link_filters`(
+				`id` int(11) unsigned NOT NULL auto_increment,
                                 `date` int(11) NOT NULL DEFAULT '0',
-                                `last_upd` int(11) NOT NULL DEFAULT '0',
                                 `type` int(11) NOT NULL DEFAULT '0',
-                                `rating` int(11) NOT NULL DEFAULT '0',
-                                `filter` text default NULL,
-                                `title` text default NULL,
-                                `desc` text default NULL,                                
-				PRIMARY KEY  (`id`)				
+                                `link_hash` varchar(255) NOT NULL default '',
+                                `link` text default NULL,
+				PRIMARY KEY  (`id`)
 				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('uid', 'date', 'last_upd', 'type', 'rating', 'publish'), "data_user_filters");
-    
-    
+    critic_matic_create_index_an(array('date', 'last_upd', 'link_hash'), "data_link_filters");
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_user_filters`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `publish` int(11) NOT NULL DEFAULT '0',
+                                `uid` int(11) NOT NULL DEFAULT '0',
+                                `fid` int(11) NOT NULL DEFAULT '0',
+                                `date` int(11) NOT NULL DEFAULT '0',
+                                `last_upd` int(11) NOT NULL DEFAULT '0',                                
+                                `rating` int(11) NOT NULL DEFAULT '0',
+                                `title` text default NULL,
+                                `desc` text default NULL,
+				PRIMARY KEY  (`id`)
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('uid', 'date', 'last_upd', 'fid'), "data_user_filters");
+
     /*
      * Ethic img
      */

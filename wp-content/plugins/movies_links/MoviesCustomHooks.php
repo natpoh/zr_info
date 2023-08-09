@@ -264,8 +264,9 @@ class MoviesCustomHooks {
                     $grade_arr = array('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i');
                     if (in_array($grade_clear, $grade_arr)) {
                         $grade_num = array_search($grade_clear, $grade_arr);
+                        $grade_num_valid = $grade_num+1;
                         $grade_data = array(
-                            'mediaversity' => (int) $grade_num,
+                            'mediaversity' => (int) $grade_num_valid,
                         );
                         $ma->update_woke($post->top_movie, $grade_data);
                     }

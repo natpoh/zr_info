@@ -22,7 +22,7 @@ class CriticMatic extends AbstractDB {
     private $mw;
     private $ts;
     private $uc;
-    private $si;
+    private $si;    
 
 
     /*
