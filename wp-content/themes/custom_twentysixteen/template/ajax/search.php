@@ -157,7 +157,7 @@ if (isset($search_data['search_type']) && $search_data['search_type'] == 'ajax')
         $search_tabs = $search_front->search_tabs($results);
 
         // Sort
-        $sort = $search_front->search_sort($tab_key);
+        $sort = $search_front->search_sort($tab_key, $results);
     }
     // Facets
     $facets = $results[$tab_key]['facets'];

@@ -1,3 +1,6 @@
+1.0.107 - 03.08.2023
+Include/Exclude ratings
+
 1.0.103 - 24.07.2023
 +- Ratings
 

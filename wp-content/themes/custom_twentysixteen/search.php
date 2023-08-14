@@ -133,7 +133,7 @@ if (isset($_POST['filters'])) {
         $tab_key = $cfront->get_tab_key();
 
         $fiters = $cfront->search_filters($tab_key);
-        $sort = $cfront->search_sort($tab_key);
+        $sort = $cfront->search_sort($tab_key, $results);
         $facets = $results[$tab_key]['facets'];
 
         // Lodad facets css and js
@@ -186,7 +186,7 @@ if (isset($_POST['filters'])) {
         $tab_key = $search_front->get_tab_key();
 
         $fiters = $search_front->search_filters($tab_key);
-        $sort = $search_front->search_sort($tab_key);
+        $sort = $search_front->search_sort($tab_key, $results);
         $facets = $results[$tab_key]['facets'];
 
         //Lodad facets css and js

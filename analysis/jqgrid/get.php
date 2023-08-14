@@ -53,6 +53,18 @@ if ( $curent_user) {
     !class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
 
 
+    if ($_POST['oper'] == 'get_graph')
+    {
+
+        !class_exists('Last_update') ? include ABSPATH . "analysis/include/last_update_graph.php" : '';
+        $Last_update = new Last_update();
+
+        $Last_update->show_data();
+
+        return;
+    }
+
+
     function getWhereClause($col, $oper, $val)
     {
 
@@ -122,7 +134,8 @@ AND table_schema='".DB_NAME_AN."'";
     }
 
 
-    if ($_POST['oper'] == 'del' || $_POST['oper'] == 'edit' || $_POST['oper'] == 'add') {
+
+     else if ($_POST['oper'] == 'del' || $_POST['oper'] == 'edit' || $_POST['oper'] == 'add') {
 
 
         if ($_POST['oper'] == 'del') {
@@ -224,7 +237,7 @@ AND table_schema='".DB_NAME_AN."'";
 
 
 
-                        if ($val == 'add_time' || $val == 'last_update'  || $val == 'lastupdate'  ) {
+                        if ($val == 'add_time' || $val == 'last_update'  || $val == 'lastupdate'  || $val == 'last_upd' ) {
                             $arrayrequest[] = time();
 
 
@@ -256,7 +269,7 @@ AND table_schema='".DB_NAME_AN."'";
                         $qres .= ", ? ";
                         ///$qres .= ",'".$array[str_replace(' ','_',$val)]."' ";
                         //
-                        if ($val == 'add_time' || $val == 'last_update'  || $val == 'lastupdate' ) {
+                        if ($val == 'add_time' || $val == 'last_update'  || $val == 'lastupdate' || $val == 'last_upd') {
                             $arrayrequest[] = time();
                         } else {
                             $data =  $array[str_replace(' ', '_', $val)];
@@ -549,6 +562,7 @@ AND table_schema='".DB_NAME_AN."'";
             if ($row['last_update']){$row['last_update'] = date('H:i d:m:Y',$row['last_update']);}
             if ($row['lastupdate']){$row['lastupdate'] = date('H:i d:m:Y',$row['lastupdate']);}
             if ($row['add_time']){$row['add_time'] = date('H:i d:m:Y',$row['add_time']);}
+            if ($row['last_upd']){$row['last_upd'] = date('H:i d:m:Y',$row['last_upd']);}
 
             if ($row['ip']){$row['ip'] = get_flag($row['ip']).$row['ip'];}
 

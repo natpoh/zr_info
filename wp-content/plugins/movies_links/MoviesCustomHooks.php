@@ -264,8 +264,9 @@ class MoviesCustomHooks {
                     $grade_arr = array('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i');
                     if (in_array($grade_clear, $grade_arr)) {
                         $grade_num = array_search($grade_clear, $grade_arr);
+                        $grade_num_valid = $grade_num+1;
                         $grade_data = array(
-                            'mediaversity' => (int) $grade_num,
+                            'mediaversity' => (int) $grade_num_valid,
                         );
                         $ma->update_woke($post->top_movie, $grade_data);
                     }
@@ -317,14 +318,16 @@ class MoviesCustomHooks {
                 $tags_str = $to_update['tags'];
                 $tags_arr = explode(';', $tags_str);
                 /* worthit
-                 * 1 - Woke
-                 * 2 - Woke-ish
-                 * 3 - Non-Woke
+                 * 1 - Worth it
+                 * 2 - Non-Woke
+                 * 3 - Woke-ish
+                 * 4 - Woke
                  */
                 $tags_woke = array(
-                    'Woke' => 1,
-                    'Woke-ish' => 2,
-                    'Non-Woke' => 3,
+                    'Worth it'=>1,
+                    'Non-Woke' => 2,
+                    'Woke-ish' => 3,
+                    'Woke' => 4,
                 );
                 $tag_key = 0;
                 foreach ($tags_arr as $tag) {

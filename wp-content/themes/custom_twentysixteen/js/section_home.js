@@ -1367,7 +1367,8 @@ function get_subcontent_gs(parent, data, block_id) {
 
 }
 
-function showTab(button) {
+
+function showTab_inner(button) {
     if (gs_ob) {
 
         let gs_ob_current = null;
@@ -1498,6 +1499,36 @@ function showTab(button) {
     return false;
 }
 
+function  showTab(button) {
+
+
+    const initialBlock = document.querySelector(".gcse-search");
+    if (initialBlock) {
+
+        const observer = new MutationObserver((mutationsList) => {
+            for (const mutation of mutationsList) {
+                if (mutation.type === 'childList') {
+                    for (const removedNode of mutation.removedNodes) {
+                        if (removedNode.classList && removedNode.classList.contains("gcse-search")) {
+
+                            showTab_inner(button);
+                            observer.disconnect();
+                            return;
+                        }
+                    }
+                }
+            }
+        });
+
+
+        const targetNode = document.body;
+        const config = { childList: true, subtree: true };
+        observer.observe(targetNode, config);
+    } else {
+
+        showTab_inner(button);
+    }
+}
 
 function prepare_search_data(block_id, data_str) {
     let content = '';

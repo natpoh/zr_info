@@ -184,6 +184,7 @@ return $base64;
         $pos_data =http_build_query(array('imgObj' => $pos_data));
 
 
+
         $url = "https://demo.kairos.com/detect/send-to-api";
 
 

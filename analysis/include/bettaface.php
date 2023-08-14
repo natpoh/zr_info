@@ -202,7 +202,6 @@ class BETTAFACE {
 
         $sql = "SELECT `data_actors_imdb`.id  FROM `data_actors_imdb` 
         LEFT JOIN data_actors_face ON (data_actors_face.actor_id=data_actors_imdb.id)
-
         WHERE ( `data_actors_imdb`.image='Y' ) 
         " . $dop . "  order by data_actors_imdb.id limit 10";
 

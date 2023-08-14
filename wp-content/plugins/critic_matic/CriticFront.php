@@ -18,6 +18,7 @@ class CriticFront extends SearchFacets {
     // Movies an    
     private $ma = '';
     public $ca;
+    public $uf;
     public $thumb_class;
     private $db = array();
     // Show hollywood bs rating
@@ -69,6 +70,17 @@ class CriticFront extends SearchFacets {
             $this->ca = new CriticAudience($this->cm);
         }
         return $this->ca;
+    }
+
+    public function get_uf() {
+        // Get user filters
+        if (!$this->uf) {
+            if (!class_exists('UserFilters')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'UserFilters.php' );
+            }
+            $this->uf = new UserFilters($this->cm);
+        }
+        return $this->uf;
     }
 
     /*
@@ -189,6 +201,7 @@ class CriticFront extends SearchFacets {
 
         // Vote type:
         $vote_type_and = '';
+        $and_select = '';
 
         if ($vote_type > 0) {
             if (!$vote_inner) {
@@ -197,12 +210,18 @@ class CriticFront extends SearchFacets {
 
             if ($vote_type == 1) {
                 /*
+                  1 => array('title' => 'Pay To Watch!'),
+                  2 => array('title' => 'Skip It'),
+                  3 => array('title' => 'Watch If Free')
                   Positive
-                  5 stars
-                  4 stars
-                  3 stars (pay to watch)
+                  5                        (watch if free or pay to watch )
+                  4                        (watch if free or pay to watch )
+                  ≥3.5                     (watch if free or pay to watch )
+                  2.9 - 3.2            (pay to watch only)
+                 * 
                  */
-                $vote_type_and = " AND(r.rating IN (4,5) OR (r.rating=3 AND r.vote=1))";
+
+                $vote_type_and = " AND IF(r.rating>=3.5 AND r.vote IN (1,3),1,IF(r.rating>=3 AND r.vote=1,1,0))=1 ";
             } if ($vote_type == 2) {
                 /*
                   Negative
@@ -214,7 +233,9 @@ class CriticFront extends SearchFacets {
                   1 stars
                   0 stars
                  */
-                $vote_type_and = " AND r.rating IN (0,1,2)";
+                $vote_type_and = " AND r.rating < 3";
+                // $and_select = ", IF(r.rating < 3,1,0) AS filter ";
+                // $vote_type_and = " AND filter=1";
             }
         }
 
@@ -224,11 +245,12 @@ class CriticFront extends SearchFacets {
             $author_show_type = ' AND a.show_type!=1';
         }
 
-        $sql = sprintf("SELECT p.id, p.date_add, p.top_movie, a.name AS author_name FROM {$this->db['posts']} p"
+        $sql = sprintf("SELECT p.id, p.date_add, p.top_movie, a.name AS author_name" . $and_select . " FROM {$this->db['posts']} p"
                 . " INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
                 . " INNER JOIN {$this->db['authors']} a ON a.id = am.aid" . $movie_inner . $tag_inner . $vote_inner
                 . " WHERE p.top_movie > 0 AND p.status=1" . $mtype_and . $and_author . $author_show_type . $movie_and . $tag_and . $min_rating_and . $meta_type_and . $vote_and . $vote_type_and . " ORDER BY" . $custom_order . " p.date DESC LIMIT %d, %d", (int) $start, (int) $limit);
 
+        //print $sql;
 
         $results = $this->db_results($sql);
         //p_r(array($sql, $results));
@@ -293,7 +315,9 @@ class CriticFront extends SearchFacets {
                   4 stars
                   3 stars (pay to watch)
                  */
-                $vote_type_and = " AND(r.rating IN(4,5) OR (r.rating=3 AND r.vote=1))";
+                //$vote_type_and = " AND(r.rating IN(4,5) OR (r.rating=3 AND r.vote=1))";
+                // $vote_type_and = " AND (r.rating >=3.5 AND r.vote IN(1,2)) OR (r.rating >= 3 AND r.vote=3))";
+                $vote_type_and = " AND IF(r.rating>=3.5 AND r.vote IN (1,3),1,IF(r.rating>=3 AND r.vote=1,1,0))=1 ";
             } if ($vote_type == 2) {
                 /*
                   Negative
@@ -303,7 +327,8 @@ class CriticFront extends SearchFacets {
                   1 stars
                   0 stars
                  */
-                $vote_type_and = " AND(r.rating IN(0,1,2) OR (r.rating=3 AND r.vote!=1))";
+                //$vote_type_and = " AND(r.rating IN(0,1,2) OR (r.rating=3 AND r.vote!=1))";
+                $vote_type_and = " AND r.rating < 3";
             }
         }
         $sql = "SELECT COUNT(p.id) FROM {$this->db['posts']} p"
@@ -520,7 +545,7 @@ class CriticFront extends SearchFacets {
     }
 
     public function get_feed_templ($critic = '', $top_movie = '', $stuff = false, $fullsize = false) {
-        
+
         $permalink = $critic->link;
         if (!$permalink) {
             // Create local permalink
@@ -536,7 +561,7 @@ class CriticFront extends SearchFacets {
         if (!$content) {
             $content = $title;
         }
-        
+
         // Find transcriptions
         $time_codes = array();
         $desc_results = array();
@@ -845,7 +870,7 @@ class CriticFront extends SearchFacets {
         return $link;
     }
 
-    public function find_embed($link='', $cid = 0) {
+    public function find_embed($link = '', $cid = 0) {
         $ret = '';
         if (strstr($link, 'twitter.com')) {
             // Try to get embed for crowdsource
@@ -917,7 +942,7 @@ class CriticFront extends SearchFacets {
             // Parse data
             $cp = $this->cm->get_cp();
             //$proxy = '107.152.153.239:9942';
-           
+
             $proxy = $this->cm->get_parser_proxy(true);
             $proxy_text = '';
             if ($proxy) {
@@ -973,7 +998,7 @@ class CriticFront extends SearchFacets {
                 $proxy_num = array_rand($proxy);
                 $proxy_text = trim($proxy[$proxy_num]);
             }
-            
+
             $b_link = 'https://www.bitchute.com/video/' . $code . '/';
             $data = $cp->get_proxy($b_link, $proxy_text, $headers);
 
@@ -1582,7 +1607,7 @@ class CriticFront extends SearchFacets {
         $content = preg_replace('/<style.*\/style>/Uis', '', $content);
         $content = preg_replace('/<!--.*-->/Uis', '', $content);
         $content = preg_replace('/<!\[CDATA\[.*\]\]>/Uis', '', $content);
-        
+
         $content = str_replace('<br>', '\n', $content);
         $content = str_replace('<br/>', '\n', $content);
         $content = str_replace('<br />', '\n', $content);
@@ -2224,13 +2249,13 @@ class CriticFront extends SearchFacets {
             $content['reaction'] = $this->ce->get_emotions_counts_all($pids);
 
             // Print json
-        //    return json_encode($content);
+            //    return json_encode($content);
         }
         $content['mid'] = $movie_id;
         ///google cse
         !class_exists('Gsearch') ? include ABSPATH . "analysis/include/gsearch.php" : '';
         $gserch = new Gsearch();
-        $content['gdata'] = $gserch->get_data($movie_id,1);
+        $content['gdata'] = $gserch->get_data($movie_id, 1);
 
 //        else {
 //            $title = $this->get_movie_title($movie_id);
@@ -2499,64 +2524,64 @@ class CriticFront extends SearchFacets {
             ?>
             <div class="simple">
                 <div class="items">
-                    <?php
-                    foreach ($posts as $post) {
+            <?php
+            foreach ($posts as $post) {
 
-                        $critic = $this->cm->get_post_and_author($post->id);
+                $critic = $this->cm->get_post_and_author($post->id);
 
-                        $permalink = $critic->link;
-                        if (!$permalink) {
-                            // Create local permalink
-                            $permalink = $this->get_critic_url($critic);
+                $permalink = $critic->link;
+                if (!$permalink) {
+                    // Create local permalink
+                    $permalink = $this->get_critic_url($critic);
+                }
+                $title = $critic->title;
+                $top_movie = $critic->top_movie;
+
+                if ($top_movie) {
+                    $meta_state = $this->cm->get_critic_meta_state($critic->id, $top_movie);
+                    $info_link = $this->get_info_link($critic->id, $top_movie, $meta_state->state);
+                    $meta_type = $this->cm->get_post_category_name($meta_state->type);
+                }
+
+
+                // Link to full post
+                $link = $this->get_critic_url($critic);
+
+                // Time
+                $ptime = $critic->date;
+                $critic_addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+
+                // Title
+                $title_str = '';
+                $title = strip_tags($title);
+                $title = $this->pccf_filter($title);
+
+
+                // Movie
+                $ma = $this->get_ma();
+                if ($top_movie) {
+                    $movie = $ma->get_post($top_movie);
+
+                    // Title
+                    $mtitle = $movie->title;
+
+                    $slug = $ma->get_post_slug($movie->type);
+
+                    // release
+                    $release = $movie->release;
+                    if ($release) {
+                        $release = strtotime($release);
+                        $release = date('Y', $release);
+                        if (strstr($mtitle, $release)) {
+                            $release = '';
+                        } else {
+                            $release = ' (' . $release . ')';
                         }
-                        $title = $critic->title;
-                        $top_movie = $critic->top_movie;
+                    }
 
-                        if ($top_movie) {
-                            $meta_state = $this->cm->get_critic_meta_state($critic->id, $top_movie);
-                            $info_link = $this->get_info_link($critic->id, $top_movie, $meta_state->state);
-                            $meta_type = $this->cm->get_post_category_name($meta_state->type);
-                        }
-
-
-                        // Link to full post
-                        $link = $this->get_critic_url($critic);
-
-                        // Time
-                        $ptime = $critic->date;
-                        $critic_addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
-
-                        // Title
-                        $title_str = '';
-                        $title = strip_tags($title);
-                        $title = $this->pccf_filter($title);
-
-
-                        // Movie
-                        $ma = $this->get_ma();
-                        if ($top_movie) {
-                            $movie = $ma->get_post($top_movie);
-
-                            // Title
-                            $mtitle = $movie->title;
-
-                            $slug = $ma->get_post_slug($movie->type);
-
-                            // release
-                            $release = $movie->release;
-                            if ($release) {
-                                $release = strtotime($release);
-                                $release = date('Y', $release);
-                                if (strstr($mtitle, $release)) {
-                                    $release = '';
-                                } else {
-                                    $release = ' (' . $release . ')';
-                                }
-                            }
-
-                            $poster_link_90 = $this->get_thumb_path_full(90, 120, $top_movie);
-                        }
-                        ?>
+                    $poster_link_90 = $this->get_thumb_path_full(90, 120, $top_movie);
+                }
+                ?>
                         <div class="item">
                             <a href="<?php print $link ?>" title="<?php print $title ?>" >
                                 <img srcset="<?php print $poster_link_90 ?>" alt="<?php print $mtitle ?>">
@@ -2566,7 +2591,7 @@ class CriticFront extends SearchFacets {
                                 </div>
                             </a>
                         </div>
-                    <?php } ?>
+            <?php } ?>
                 </div>
             </div>
             <?php
@@ -2644,52 +2669,52 @@ class CriticFront extends SearchFacets {
                     <h2>NewsFilter.biz</h2>
                     <h3><a href="<?php print $ns_link ?>">"<?php print $movie_data->title ?>"</a></h3>
                 </div>                        
-                <?php
-                // Bias facet
-                $this->show_bias_facet($results['facets']);
+            <?php
+            // Bias facet
+            $this->show_bias_facet($results['facets']);
 
-                foreach ($results['list'] as $item) {
-                    $theme_url = $this->theme_item_url($item);
+            foreach ($results['list'] as $item) {
+                $theme_url = $this->theme_item_url($item);
 
-                    $cats_arr = array('bias', 'biastag');
+                $cats_arr = array('bias', 'biastag');
 
-                    $cats_arr = array(
-                        'bias' => array('title' => 0),
-                        'biastag' => array('title' => 0, 'show_tags' => 1),
-                    );
+                $cats_arr = array(
+                    'bias' => array('title' => 0),
+                    'biastag' => array('title' => 0, 'show_tags' => 1),
+                );
 
-                    $tags = $this->theme_search_tags($item, $cats_arr, $ns_link);
-                    ?>
+                $tags = $this->theme_search_tags($item, $cats_arr, $ns_link);
+                ?>
                     <div class="ns_item">
                         <h3 class="tile"><?php print $item->t ?></h3>
                         <div class="url">
-                            <?php print $theme_url ?>
+                <?php print $theme_url ?>
                         </div>  
                         <p class="content"><?php print $item->c ?></p>  
                         <div class="meta">
                             <span class="p-date block">
                                 <time><?php
-                                    print date('d.m.Y H:i', $item->date);
-                                    ?></time>
+                print date('d.m.Y H:i', $item->date);
+                ?></time>
                             </span>
 
                             <span class="p-cat block">
-                                <?php
-                                if ($tags) {
-                                    print implode(' ', $tags);
-                                }
-                                ?>
+                <?php
+                if ($tags) {
+                    print implode(' ', $tags);
+                }
+                ?>
                             </span>
 
-                            <?php if ($item->nresult) { ?>
+                <?php if ($item->nresult) { ?>
                                 <span class="p-rating block">
                                     Rating: <span class="rt_color-<?php print $item->nresult ?>"><?php print $item->nresult ?></span>/5
                                 </span>
-                            <?php } ?>
+                <?php } ?>
                         </div>
                     </div><?php
-                }
-                ?>
+            }
+            ?>
                 <?php if ($total_count > $view_rows) { ?>
                     <h3 class="ns_all"><a href="<?php print $ns_link ?>">Show all related posts: <?php print $total_count ?></a></h3>
                     <?php
@@ -2782,167 +2807,167 @@ class CriticFront extends SearchFacets {
         }
         ?>
         <div class="bias_info rspv-table">
-            <?php
-            $rows = array(
-            );
-            foreach ($dates as $key => $value) {
-                $rating = $value['rating'];
-                $rating_text = $rating > 0 ? $rating : 'None';
+        <?php
+        $rows = array(
+        );
+        foreach ($dates as $key => $value) {
+            $rating = $value['rating'];
+            $rating_text = $rating > 0 ? $rating : 'None';
 
-                $rating_after = '';
-                if ($rating > 0) {
-                    $rating_after = '/5';
-                }
-
-                $rows['title'][] = '<span class="title">' . $value['title'] . '</span> <span class="cnt">(' . $value['count'] . ')</span>';
-                $rows['rating'][] = '<span class="rating"><span class="rt_color-' . $rating . '">' . $rating_text . '</span>' . $rating_after . '</span>';
+            $rating_after = '';
+            if ($rating > 0) {
+                $rating_after = '/5';
             }
-            ?>
+
+            $rows['title'][] = '<span class="title">' . $value['title'] . '</span> <span class="cnt">(' . $value['count'] . ')</span>';
+            $rows['rating'][] = '<span class="rating"><span class="rt_color-' . $rating . '">' . $rating_text . '</span>' . $rating_after . '</span>';
+        }
+        ?>
             <?php
             $ir = 1;
             foreach ($rows as $row) {
                 $ic = 1;
                 ?>
                 <div class="rspv-row row-<?php print $ir ?>">
-                    <?php foreach ($row as $clmn) { ?>
+                <?php foreach ($row as $clmn) { ?>
                         <div class="rspv-clm clm-<?php print $ic ?>"><?php print $clmn ?></div>
                         <?php
                         $ic++;
                     }
                     ?>
                 </div>                    
-                <?php
-                $ir++;
-            }
-            ?>
-        </div>
-        <?php
-    }
-
-    public function theme_search_tags($item, $cats_arr, $link = '') {
-        $tags = array();
-        $facet_data = array(
-            'bias' => array(
-                'title' => 'Bias rating',
-                'facet_titles' => array(
-                    0 => 'Not rated',
-                    1 => 'Extreme left',
-                    2 => 'Far left',
-                    3 => 'Left',
-                    4 => 'Left-center',
-                    5 => 'Least biased',
-                    6 => 'Right-center',
-                    7 => 'Right',
-                    8 => 'Far right',
-                    9 => 'Extreme right'
-                )
-            ),
-            'biastag' => array(
-                'title' => 'Bias tags',
-                'facet_titles' => array(
-                    1 => 'Conpiracy-pseudoscience',
-                    2 => 'Pro-science',
-                    3 => 'Satire',
-                ),
-            ),);
-
-        foreach ($cats_arr as $tag => $tag_data) {
-            if ($item->$tag >= 0) {
-                $tag_tile = '';
-                if ($tag_data['title']) {
-                    $tag_tile = $facet_data[$tag]['title'];
-                    $tag_tile .= ': ';
+                    <?php
+                    $ir++;
                 }
+                ?>
+        </div>
+            <?php
+        }
 
-                $title = $item->$tag;
-                if (isset($facet_data[$tag]['facet_titles'][$item->$tag])) {
-                    $title = $facet_data[$tag]['facet_titles'][$item->$tag];
-                } else {
-                    if ($tag_data['show_tags']) {
-                        $title = null;
+        public function theme_search_tags($item, $cats_arr, $link = '') {
+            $tags = array();
+            $facet_data = array(
+                'bias' => array(
+                    'title' => 'Bias rating',
+                    'facet_titles' => array(
+                        0 => 'Not rated',
+                        1 => 'Extreme left',
+                        2 => 'Far left',
+                        3 => 'Left',
+                        4 => 'Left-center',
+                        5 => 'Least biased',
+                        6 => 'Right-center',
+                        7 => 'Right',
+                        8 => 'Far right',
+                        9 => 'Extreme right'
+                    )
+                ),
+                'biastag' => array(
+                    'title' => 'Bias tags',
+                    'facet_titles' => array(
+                        1 => 'Conpiracy-pseudoscience',
+                        2 => 'Pro-science',
+                        3 => 'Satire',
+                    ),
+                ),);
+
+            foreach ($cats_arr as $tag => $tag_data) {
+                if ($item->$tag >= 0) {
+                    $tag_tile = '';
+                    if ($tag_data['title']) {
+                        $tag_tile = $facet_data[$tag]['title'];
+                        $tag_tile .= ': ';
+                    }
+
+                    $title = $item->$tag;
+                    if (isset($facet_data[$tag]['facet_titles'][$item->$tag])) {
+                        $title = $facet_data[$tag]['facet_titles'][$item->$tag];
+                    } else {
+                        if ($tag_data['show_tags']) {
+                            $title = null;
+                        }
+                    }
+
+                    if (isset($title)) {
+                        $theme_tag = '<a href="' . $link . '/' . $tag . '_' . $item->$tag . '" rel="category tag">#' . $title . '</a>';
+                        $tags[] = $theme_tag;
                     }
                 }
-
-                if (isset($title)) {
-                    $theme_tag = '<a href="' . $link . '/' . $tag . '_' . $item->$tag . '" rel="category tag">#' . $title . '</a>';
-                    $tags[] = $theme_tag;
-                }
             }
+            return $tags;
         }
-        return $tags;
-    }
 
-    public function theme_item_url($item) {
-        $url = $item->link;
-        if ($item->type == 0) {
-            $url = $item->site . substr($item->link, 1);
+        public function theme_item_url($item) {
+            $url = $item->link;
+            if ($item->type == 0) {
+                $url = $item->site . substr($item->link, 1);
+            }
+            $text_url = $url;
+            $domain = $url;
+            if (preg_match('#(http[s]*://)([^/]+)/#', $url, $match)) {
+                $text_url = str_replace($match[2], '<b>' . $match[2] . '</b>', $text_url);
+                $domain = $match[1] . $match[2];
+            }
+            $icon = 'https://www.google.com/s2/favicons?domain=' . $domain;
+            $theme_url = '<img srcset="' . $icon . '" width="16" height="16"> <a target="_blank" href="' . $url . '">' . $text_url . '</a>';
+            return $theme_url;
         }
-        $text_url = $url;
-        $domain = $url;
-        if (preg_match('#(http[s]*://)([^/]+)/#', $url, $match)) {
-            $text_url = str_replace($match[2], '<b>' . $match[2] . '</b>', $text_url);
-            $domain = $match[1] . $match[2];
-        }
-        $icon = 'https://www.google.com/s2/favicons?domain=' . $domain;
-        $theme_url = '<img srcset="' . $icon . '" width="16" height="16"> <a target="_blank" href="' . $url . '">' . $text_url . '</a>';
-        return $theme_url;
-    }
 
-    /*
-     * User avatars
-     */
+        /*
+         * User avatars
+         */
 
-    public function select_user_avatar($wp_id = 0, $user_rating = 0) {
-        $ss = $this->cm->get_settings();
-        $score_avatar = $ss['score_avatar'];
-        $cav = $this->cm->get_cav();
+        public function select_user_avatar($wp_id = 0, $user_rating = 0) {
+            $ss = $this->cm->get_settings();
+            $score_avatar = $ss['score_avatar'];
+            $cav = $this->cm->get_cav();
 
-        if ($user_rating >= $score_avatar) {
-            // Enable to upload avatar
-            // Check avatar type
-            $author = $this->cm->get_author_by_wp_uid($wp_id, true);
-            ?>
+            if ($user_rating >= $score_avatar) {
+                // Enable to upload avatar
+                // Check avatar type
+                $author = $this->cm->get_author_by_wp_uid($wp_id, true);
+                ?>
             <div id="author_id" data-id="<?php print $author->id ?>"></div>
             <fieldset id="select_av_type">
                 <legend>Avatar type:</legend>
-                <?php
-                foreach ($this->cm->author_av_types as $key => $value) {
-                    $checked = $key == $author->avatar_type ? 'checked' : '';
-                    ?>
+            <?php
+            foreach ($this->cm->author_av_types as $key => $value) {
+                $checked = $key == $author->avatar_type ? 'checked' : '';
+                ?>
                     <div>
                         <input type="radio" id="<?php print $key ?>" name="avtype" value="<?php print $key ?>" <?php print $checked ?>>
                         <label for="<?php print $key ?>"><?php print $value ?></label>
                     </div>
-                    <?php
-                }
-                ?>              
+                <?php
+            }
+            ?>              
             </fieldset>
             <div class="av_actions">
-                <?php
-                foreach ($this->cm->author_av_types as $key => $value) {
-                    $checked = $key == $author->avatar_type ? ' active' : '';
-                    ?>
-                    <div id="av_action_<?php print $key ?>" class="av_action<?php print $checked ?>" >
-                        <?php
-                        if ($key == 0) {
-                            $this->user_random_avatar();
-                        } else {
-                            $this->user_upload_avatar();
-                        }
-                        ?>
-                    </div>
-                    <?php
-                }
-                ?>                
-            </div>
             <?php
-        } else {
-            $this->user_random_avatar();
+            foreach ($this->cm->author_av_types as $key => $value) {
+                $checked = $key == $author->avatar_type ? ' active' : '';
+                ?>
+                    <div id="av_action_<?php print $key ?>" class="av_action<?php print $checked ?>" >
+                    <?php
+                    if ($key == 0) {
+                        $this->user_random_avatar();
+                    } else {
+                        $this->user_upload_avatar();
+                    }
+                    ?>
+                    </div>
+                        <?php
+                    }
+                    ?>                
+            </div>
+                <?php
+            } else {
+                $this->user_random_avatar();
+            }
         }
-    }
 
-    private function user_upload_avatar() {
-        ?>
+        private function user_upload_avatar() {
+            ?>
         <div class="upload-holder">
             <div id="upload-image"></div>
         </div>
@@ -3126,33 +3151,34 @@ class CriticFront extends SearchFacets {
         ?>
         <input type="hidden" name="post_category[]" value="0">
         <ul class="cat-checklist category-checklist">
-            <?php
-            $author = $this->cm->get_author_by_wp_uid($wp_uid);
-            $tags = $this->cm->get_tags();
-            $author_tags = $this->cm->get_author_tags($author->id, -1, false);
-            $tag_arr = array();
-            if (sizeof($author_tags)) {
-                foreach ($author_tags as $tag) {
-                    $tag_arr[] = $tag->id;
-                }
+        <?php
+        $author = $this->cm->get_author_by_wp_uid($wp_uid);
+        $tags = $this->cm->get_tags();
+        $author_tags = $this->cm->get_author_tags($author->id, -1, false);
+        $tag_arr = array();
+        if (sizeof($author_tags)) {
+            foreach ($author_tags as $tag) {
+                $tag_arr[] = $tag->id;
             }
+        }
 
-            if (sizeof($tags)) {
-                foreach ($tags as $tag) {
-                    $checked = '';
-                    if (in_array($tag->id, $tag_arr)) {
-                        $checked = 'checked="checked"';
-                    }
-                    ?>
+        if (sizeof($tags)) {
+            foreach ($tags as $tag) {
+                $checked = '';
+                if (in_array($tag->id, $tag_arr)) {
+                    $checked = 'checked="checked"';
+                }
+                ?>
                     <li id="category-<?php print $tag->id ?>">
                         <label class="selectit"><input value="<?php print $tag->id ?>" <?php print $checked ?> type="checkbox" name="post_category[]" id="in-category-<?php print $tag->id ?>"> <?php print $tag->name ?></label>
                     </li>
-                    <?php
-                }
+                <?php
             }
-            ?>
+        }
+        ?>
         </ul>
-        <?php
-    }
+            <?php
+        }
 
-}
+    }
+    

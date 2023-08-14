@@ -78,15 +78,30 @@ AND table_schema='".DB_NAME_AN."'";
         }
     }
 
+    $currant_table = $array_meta[$datatype];
 
+    $sql = "SHOW COLUMNS FROM " . $currant_table;
 
-    $sql = "SHOW COLUMNS FROM " . $array_meta[$datatype];
-
-
+    $update_row='';
     $rows = Pdo_an::db_results_array($sql);
+
+
+
 
     foreach ($rows as $r) {
         $name = $r["Field"];
+
+
+        if (!$update_row)
+        {
+            if ($name == 'add_time'){$update_row = 'add_time';}
+            else   if ($name == 'last_update'){$update_row = 'last_update';}
+            else   if ($name == 'lastupdate'){$update_row = 'lastupdate';}
+            else   if ($name == 'last_upd'){$update_row = 'last_upd';}
+
+        }
+
+
 
         if ($name == 'id') {
             $colums .= "      {   label : '" . $name . "',
@@ -428,7 +443,18 @@ AND table_schema='".DB_NAME_AN."'";
           <script type="text/ecmascript" src="../../../js/bootstrap3-typeahead.js"></script>
           <link rel="stylesheet" type="text/css" media="screen" href="../../../css/bootstrap-datepicker.css" />
             -->
+<?php
+!class_exists('Last_update') ? include ABSPATH . "analysis/include/last_update_graph.php" : '';
+$Last_update = new Last_update();
 
+if ($currant_table && $update_row)
+{
+    $Last_update->show_graph($currant_table,$update_row);
+}
+
+
+
+?>
 
             <style type="text/css">
                 .notice_edit a,   .notice_edit #cb_jqGrid{

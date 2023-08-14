@@ -941,10 +941,16 @@ search_extend.init_change_stack = function (chart, chart2 = '') {
     });
 }
 
-search_extend.remove_filter_no_submit = function (type) {
+search_extend.remove_filter_no_submit = function (type, id) {
     if (type == 'stacking') {
         var change_stack = $('.change_stack');
-        change_stack.click();
+        if (change_stack.length) {
+            change_stack.click();
+        } else {
+            critic_search.remove_filter(type, id);
+            // Update URL
+            critic_search.submit('none');
+        }
     }
 }
 
@@ -975,9 +981,9 @@ search_extend.init_more = function (selector, data, col = 0) {
     });
 
     /*$('#select-current .facet').each(function (i, v) {
-        var v = $(v), id = v.attr('id');
-        critic_search.facet_collapse_update(id, v);
-    });*/
+     var v = $(v), id = v.attr('id');
+     critic_search.facet_collapse_update(id, v);
+     });*/
 }
 
 search_extend.change_sort = function (id) {
@@ -1128,7 +1134,7 @@ search_extend.init_facet = function (v) {
             type_calc += '<option value="' + i + '" ' + checked + '>' + type_calc_arr[i] + '</option>';
         }
         type_calc += '</select> Calculate type.</div><br />';
-       
+
         var type_desc = '<div>*Summ - add up all results of the "datasets" and choose the one with the highest score.<br />\n\
 **Top - find the best score over a "dataset".</div>';
 
@@ -1155,11 +1161,11 @@ search_extend.init_facet = function (v) {
             for (var i = 0; i < len; i++) {
                 var k = keys[i];
                 var date = new Date(parseInt(k));
-                var checked ='';
-                if (curr_filter==tdata[k][0]){
-                    checked ="selected";
+                var checked = '';
+                if (curr_filter == tdata[k][0]) {
+                    checked = "selected";
                 }
-                mode_select += '<option value="' + tdata[k][0] + '" '+checked+'>Weigth id: ' + tdata[k][0] + '; from ' + date.toLocaleString() + '</option>';
+                mode_select += '<option value="' + tdata[k][0] + '" ' + checked + '>Weigth id: ' + tdata[k][0] + '; from ' + date.toLocaleString() + '</option>';
             }
             mode_select += '</select> Last saved settings</div><br />';
         }
@@ -1167,12 +1173,12 @@ search_extend.init_facet = function (v) {
         // Popup logic
         add_popup();
         $('.popup-content').html('<div id="more-popup" class="default_popup"><h2>Race verdict weight settings</h2>' + mode_select + '\n\
-Choose the number of points for each type of verdict.<br />' + ctable + type_calc + buttons + type_desc+'</div>');
+Choose the number of points for each type of verdict.<br />' + ctable + type_calc + buttons + type_desc + '</div>');
 
         // Select click
         $('#mode-select').click(function () {
             var sval = $(this).val();
-            if (sval===''){
+            if (sval === '') {
                 return false;
             }
             var fm = sdata[sval][1];
@@ -1243,8 +1249,8 @@ Choose the number of points for each type of verdict.<br />' + ctable + type_cal
                 if (!(mode_id in sdata)) {
                     sdata[mode_id] = [currentdate, vdata];
                     var sdata_str = JSON.stringify(sdata);
-                    localStorage.setItem('an_werdict_weight', sdata_str);          
-                } 
+                    localStorage.setItem('an_werdict_weight', sdata_str);
+                }
                 $('.popup-close').click();
             });
 
