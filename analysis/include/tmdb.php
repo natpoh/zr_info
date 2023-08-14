@@ -777,7 +777,11 @@ global $debug;
         {
             echo 'mid='.$mid.'; ';
             echo  $sql;
-            var_dump($array_request);
+
+            if (function_exists('var_dump_table'))
+            {
+                if ($debug)var_dump_table($array_request);
+            }
         }
 
         if ($mid)
@@ -815,9 +819,14 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
         Pdo_an::db_results_array($sql,$array_request);
         if ($debug)
         {
-
             echo  $sql;
-            var_dump($array_request);
+
+            if (function_exists('var_dump_table'))
+            {
+                if ($debug)var_dump_table($array_request);
+            }
+
+            //var_dump($array_request);
         }
 
 
@@ -860,7 +869,10 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
 
     $commit_id='';
 
-
+if (function_exists('var_dump_table'))
+{
+    if ($debug)var_dump_table($actors_data);
+}
 
 
 
@@ -876,11 +888,14 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
         foreach ($actors_data as $type => $data) {
             foreach ($data as $id => $name) {
 
+                if ($debug) echo 'add_movie_actor ' .$id.'<br>';
+
                 self::add_todb_actor($id,$name);
 
                 //add actor meta
                 $pos = $actor_pos[$id];
-                ////check for tmdb actors
+
+
                 self::add_movie_actor($mid, $id, $actor_types[$type], 'meta_movie_actor', $pos);
 
                 if ($array_actors[$id])
@@ -1018,7 +1033,12 @@ public static function add_todb_actor($id,$name='')
 {
     global $debug;
 
+
+
+
         [$enable,$name_db] = self::check_enable_actors($id,$name);
+
+    if ($debug) var_dump_table(  ['enable'=>$enable,'name'=>$name_db]) ;
 
 
     if (!$enable) {
@@ -1043,6 +1063,10 @@ public static function add_todb_actor($id,$name='')
 
         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
         Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $id),'actor_update',40);
+    }
+    else {
+        if ($debug) echo 'skip<br>';
+
     }
 }
 private function insert_production($id,$name,$synch)
@@ -1116,6 +1140,15 @@ if ($string)
 
 }
 public static function add_movie_actor($mid = 0, $id = 0, $type = 0,$table='meta_movie_actor',$pos=0) {
+        global $debug;
+        if($debug)
+        {
+            if (function_exists('var_dump_table'))
+            {
+                var_dump_table(array($mid, $id , $type,$table,$pos));
+            }
+
+        }
 
         // Validate values
         if ($mid > 0 && $id > 0) {
@@ -1133,7 +1166,7 @@ public static function add_movie_actor($mid = 0, $id = 0, $type = 0,$table='meta
             }
 
             $meta_exist = Pdo_an::db_fetch_row($sql);
-
+            if ($debug) echo $sql.'<br>';
             if ($meta_exist)
             {
                 if ($meta_exist->type!=$type && $table=='meta_movie_actor')
@@ -1163,7 +1196,7 @@ public static function add_movie_actor($mid = 0, $id = 0, $type = 0,$table='meta
 
 
                $sql = sprintf("INSERT INTO {$table} (mid,aid,pos,type) VALUES (%d,%d,%d,%d)", (int) $mid, (int) $id, (int) $pos, (int) $type);
-
+                if ($debug) echo $sql.'<br>';
                ///echo $sql.PHP_EOL;
                 $aid =Pdo_an::db_insert_sql($sql);
 
@@ -1820,7 +1853,13 @@ public static function reload_from_imdb($id,$debug=0)
 {
     $id = intval($id);
     $array_movie =  self::get_content_imdb($id);
-    if ($debug){var_dump($array_movie);}
+    if ($debug){
+        if (function_exists('var_dump_table'))
+        {
+            var_dump_table($array_movie);
+        }
+
+    }
     $add =  self::addto_db_imdb($id, $array_movie,'','','get_imdb_movie_id');
     return $add;
 }
