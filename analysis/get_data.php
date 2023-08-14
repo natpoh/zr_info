@@ -1090,6 +1090,8 @@ else if ($_POST['oper'] === 'get_actordata') {
     $array_compare_cache = array('Sadly, not' => 'N/A', '1' => 'N/A', '2' => 'N/A', 'NJW' => 'N/A', 'W' => 'White', 'B' => 'Black', 'EA' => 'Asian', 'H' => 'Latino', 'JW' => 'Jewish', 'I' => 'Indian', 'M' => 'Arab', 'MIX' => 'Mixed / Other', 'IND' => 'Indigenous');
 
 
+
+
     !class_exists('RWTimages') ? include ABSPATH . "analysis/include/rwt_images.php" : '';
     global $debug;
     if ($debug) {
@@ -1527,9 +1529,19 @@ else if ($_POST['oper'] === 'get_actordata') {
          $update_container = '<div class="actor_update_data"><p>Last updated: </p>'.$asctor_u.'</div>';
          echo $update_container;
 
+         if (!function_exists('is_user_logged_in'))
+         {
+             include (ABSPATH.'wp-config.php');
+         }
 
+        if (function_exists('current_user_can')) {
+            $curent_user = current_user_can("administrator");
+            if ($curent_user)
+            {
 
-
+               echo '<a target="_blank" href="https://info.antiwoketomatoes.com/analysis/include/scrap_imdb.php?actor_logs='.$id.'">Actor info</a>';
+            }
+        }
 
         if ($debug) {
             $array_timer[] = 'end  ' .timer_stop_data();

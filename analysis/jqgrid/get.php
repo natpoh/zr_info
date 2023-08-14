@@ -92,7 +92,7 @@ if ( $curent_user) {
         if ($oper == 'cn' || $oper == 'nc' || $oper == 'in' || $oper == 'ni') $val = '%' . $val . '%';
         return "  $col {$ops[$oper]} '$val' ";
     }
-
+    $table_data='';
 
     if ($_GET['data']) {
 
@@ -103,39 +103,36 @@ AND table_schema='".DB_NAME_AN."'";
 
         $rows = Pdo_an::db_results_array($sql);
 
+
+
+        if (isset($_GET['data'])) {
+            $table_data = $_GET['data'];
+        }
+       else if (isset($_GET['doptable'])) {
+            $table_data = $_GET['doptable'];
+        }
+        $table_data = preg_replace("/[^a-zA-Z0-9_]/", "",$table_data);
+
         foreach ($rows as $r) {
 
             $link = $r["TABLE_NAME"];
-            if (strstr($link, 'data') ) {
+            if ($link==$table_data) {
 
-                $array_meta[substr($link, 5)] = $link;
-
+                $te=1;
+                break;
             }
         }
-//        foreach ($rows as $r) {
-//
-//            $link = $r["TABLE_NAME"];
-//            if ( strstr($link, 'meta') && !$array_meta[substr($link, 5)] ) {
-//
-//                $array_meta[substr($link, 5)] = $link;
-//
-//            }
-//        }
-
-        $datatype = $_GET['data'];
 
 
-        $table_data = $array_meta[$datatype];
 
-        if (isset($_GET['doptable'])) {
-            $table_data = $_GET['doptable'];
-        }
+        if (!$te)return;
+
 
     }
 
 
 
-     else if ($_POST['oper'] == 'del' || $_POST['oper'] == 'edit' || $_POST['oper'] == 'add') {
+      if ($_POST['oper'] == 'del' || $_POST['oper'] == 'edit' || $_POST['oper'] == 'add') {
 
 
         if ($_POST['oper'] == 'del') {

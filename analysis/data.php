@@ -26,59 +26,67 @@ if ($curent_user) {
     !class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
 
 
-    $datatype = $_GET['table'];
-    if (!$datatype)
-        $datatype = 'movie_imdb';
 
 
+    if (isset($_GET['onlytable']))
+    {
+        $currant_table =  $_GET['onlytable'];
+        $table = preg_replace("/[^a-zA-Z0-9_]/", "",$currant_table);
 
 
+    echo '<h4>Table: '.$table.'</h4>';
+    }
+    else {
 
-    $links = '';
+        $datatype = $_GET['table'];
+        if (!$datatype)
+            $datatype = 'movie_imdb';
 
 
-    $sql = "SELECT *
+        $links = '';
+
+
+        $sql = "SELECT *
 FROM information_schema.tables
 WHERE table_type='BASE TABLE'
-AND table_schema='".DB_NAME_AN."'";
+AND table_schema='" . DB_NAME_AN . "'";
 
-    $rows = Pdo_an::db_results_array($sql);
+        $rows = Pdo_an::db_results_array($sql);
 
-    if ($WP_include) {
-        $links = '';
-    }
-    foreach ($rows as $r) {
+        if ($WP_include) {
+            $links = '';
+        }
+        foreach ($rows as $r) {
 ///var_dump($r);
-        $link = $r["TABLE_NAME"];
-        if (strstr($link, 'data_')) {
+            $link = $r["TABLE_NAME"];
+            if (strstr($link, 'data_')) {
 
-            $array_meta[substr($link, 5)] = $link;
-
-
+                $array_meta[substr($link, 5)] = $link;
 
 
-            $link = substr($link, 5);
-            $selected = '';
-            if ($datatype == $link) {
-                $selected = ' selected ';
-            }
-            if ($WP_include) {
-                $links .= '<a class="' . $selected . '"  href="' . $home_url . 'wp-admin/admin.php?page=light_movies&table=' . $link . '">' . $link . '</a>';
-            } else {
-                $links .= '<a class="' . $selected . '"  href="?table=' . $link . '">' . $link . '</a>';
+                $link = substr($link, 5);
+                $selected = '';
+                if ($datatype == $link) {
+                    $selected = ' selected ';
+                }
+                if ($WP_include) {
+                    $links .= '<a class="' . $selected . '"  href="' . $home_url . 'wp-admin/admin.php?page=light_movies&table=' . $link . '">' . $link . '</a>';
+                } else {
+                    $links .= '<a class="' . $selected . '"  href="?table=' . $link . '">' . $link . '</a>';
+                }
             }
         }
-    }
-    if ($WP_include) {
-        echo '<div class="header_menu" style="display: flex;margin: 10px;">' . $links . '</div>';
-    } else {
+        if ($WP_include) {
+            echo '<div class="header_menu" style="display: flex;margin: 10px;">' . $links . '</div>';
+        } else {
 
-        if ($links) {
-            echo '<div class="header_menu" style="display: flex;margin: 10px;">' . $links . '<a href="index.php">Graph</a> </div>';
+            if ($links) {
+                echo '<div class="header_menu" style="display: flex;margin: 10px;">' . $links . '<a href="index.php">Graph</a> </div>';
+            }
         }
-    }
 
-    $currant_table = $array_meta[$datatype];
+        $currant_table = $array_meta[$datatype];
+    }
 
     $sql = "SHOW COLUMNS FROM " . $currant_table;
 
@@ -226,7 +234,7 @@ AND table_schema='".DB_NAME_AN."'";
                 $(document).ready(function () {
 
                 jQuery("#jqGrid").jqGrid({
-                url: '<?php echo $home_url ?>analysis/jqgrid/get.php?data=<?php echo $datatype; ?>',
+                url: '<?php echo $home_url ?>analysis/jqgrid/get.php?data=<?php echo $currant_table; ?>',
                             mtype: "POST",
                             datatype: "json",
                             page: 1,
@@ -235,7 +243,7 @@ AND table_schema='".DB_NAME_AN."'";
                             ],
     <?php if ($WP_include) { ?>
 
-                        editurl: '<?php echo $home_url ?>analysis/jqgrid/get.php?data=<?php echo $datatype; ?>',
+                        editurl: '<?php echo $home_url ?>analysis/jqgrid/get.php?data=<?php echo $currant_table; ?>',
     <?php } ?>
 
                         loadonce: false,
@@ -431,7 +439,7 @@ AND table_schema='".DB_NAME_AN."'";
             </select>
             <span class="notice_edit">
             </span>
-            <input type="submit" id="edit-submit" data-value="<?php echo $datatype ?>" value="Submit" class="update_crowd button-primary">
+            <input type="submit" id="edit-submit" data-value="<?php echo $currant_table ?>" value="Submit" class="update_crowd button-primary">
         </div>
 <?php } ?>
 

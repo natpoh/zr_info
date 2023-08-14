@@ -285,6 +285,15 @@ class ActorsInfo{
 
     }
 
+    private static function link_db($table)
+    {
+        $link = WP_SITEURL.'/analysis/data.php?onlytable='.$table;
+
+        return '<a target="_blank" href="'.$link.'">'.$table.'</a>';
+
+
+    }
+
 
     public static function info($aid)
     {
@@ -338,7 +347,7 @@ class ActorsInfo{
                     'content'=>'',
                     'color'=>'#a58aff',
                     'time'=>self::todate($adata['lastupdate']),
-                    'desc'=>'db = actor_imdb<br><a target="_blank" href="/analysis/include/scrap_imdb.php?add_empty_actors='.$aid.'&debug=1">update data</a><br>'.self::arrayToTable($adata),
+                    'desc'=>'db = '.self::link_db('data_actors_imdb').'<br><a target="_blank" href="/analysis/include/scrap_imdb.php?add_empty_actors='.$aid.'&debug=1">update data</a><br>'.self::arrayToTable($adata),
                     'enable'=>self::check_enable($adata),
 
 
@@ -375,33 +384,33 @@ class ActorsInfo{
         //kairos
         $kairos = self::actor_data($aid,'data_actors_race','actor_id');
 
-        $array_actors['kairos']=self::array_to_content($kairos,'Kairos: '. self::todate($kairos['last_update']),'db: data_actors_race',1,['kairos_verdict'],'last_update');
-        $array_actors['kairos_verdict']=self::array_to_content($actors_meta,'Kairos Verdict: '. $acc[$rsm[$actors_meta['n_kairos']]],'db: data_actors_meta',1,[['verdict',2]],'last_update',$kairos['kairos_verdict'],'n_kairos');
+        $array_actors['kairos']=self::array_to_content($kairos,'Kairos: '. self::todate($kairos['last_update']),'db: '.self::link_db('data_actors_race').' ',1,['kairos_verdict'],'last_update');
+        $array_actors['kairos_verdict']=self::array_to_content($actors_meta,'Kairos Verdict: '. $acc[$rsm[$actors_meta['n_kairos']]],'db: '.self::link_db('data_actors_meta').' ',1,[['verdict',2]],'last_update',$kairos['kairos_verdict'],'n_kairos');
 
         //bettaface
         $bettaface = self::actor_data($aid,'data_actors_face','actor_id');
 
-        $array_actors['bettaface']=self::array_to_content($bettaface,'Bettaface: '. self::todate($bettaface['last_update']),'db: data_actors_face',1,['bettaface_verdict'],'last_update');
-        $array_actors['bettaface_verdict']=self::array_to_content($actors_meta,'bettaface Verdict: '. $acc[$rsm[$actors_meta['n_bettaface']]],'db: data_actors_meta',1,[['verdict',2]],'last_update',$bettaface['race'],'n_bettaface');
+        $array_actors['bettaface']=self::array_to_content($bettaface,'Bettaface: '. self::todate($bettaface['last_update']),'db: '.self::link_db('data_actors_face').' ',1,['bettaface_verdict'],'last_update');
+        $array_actors['bettaface_verdict']=self::array_to_content($actors_meta,'bettaface Verdict: '. $acc[$rsm[$actors_meta['n_bettaface']]],'db: '.self::link_db('data_actors_meta').'  ',1,[['verdict',2]],'last_update',$bettaface['race'],'n_bettaface');
 
-        $array_actors['data_actors_normalize']=self::array_to_content($name,'Normalize: '.$name['firstname'].' '.$name['lastname'].' '. self::todate($name['last_upd']),'db: data_actors_normalize',1,['familysearch',['familysearch_verdict',2],'forebears',['forebears_verdict',2],'surname','ethnic',['auto_gender',4]]);
+        $array_actors['data_actors_normalize']=self::array_to_content($name,'Normalize: '.$name['firstname'].' '.$name['lastname'].' '. self::todate($name['last_upd']),'db: '.self::link_db('data_actors_normalize').' ',1,['familysearch',['familysearch_verdict',2],'forebears',['forebears_verdict',2],'surname','ethnic',['auto_gender',4]]);
 
 
         ///surname
         $surname = self::actor_data($aid,'data_actors_ethnicolr','aid');
-        $array_actors['surname']=self::array_to_content($surname,'Surname: '. self::todate($surname['date_upd']),'db: data_actors_ethnicolr',1,['surname_verdict'],'date_upd');
-        $array_actors['surname_verdict']=self::array_to_content($actors_meta,'Surname Verdict: '. $acc[$rsm[$actors_meta['n_surname']]],'db: data_actors_meta',1,[['verdict',2]],'last_update',$acc[$surname['verdict']],'n_surname');
+        $array_actors['surname']=self::array_to_content($surname,'Surname: '. self::todate($surname['date_upd']),'db: '.self::link_db('data_actors_ethnicolr').' ',1,['surname_verdict'],'date_upd');
+        $array_actors['surname_verdict']=self::array_to_content($actors_meta,'Surname Verdict: '. $acc[$rsm[$actors_meta['n_surname']]],'db: '.self::link_db('data_actors_meta').' ',1,[['verdict',2]],'last_update',$acc[$surname['verdict']],'n_surname');
 
 
         //familysearch
         $familysearch = self::actor_data($name['lastname'],'data_familysearch_verdict','lastname');
-        $array_actors['familysearch']=self::array_to_content($familysearch,'Familysearch: '. self::todate($familysearch['last_upd']),'db: data_familysearch_verdict',1,['familysearch_verdict'],'last_upd',$familysearch['lastname']);
-        $array_actors['familysearch_verdict']=self::array_to_content($actors_meta,'Familysearch Verdict: '. $acc[$rsm[$actors_meta['n_familysearch']]],'db: data_actors_meta',1,[['verdict',2]],'last_update',$acc[$rsm[$familysearch['verdict']]],'n_familysearch');
+        $array_actors['familysearch']=self::array_to_content($familysearch,'Familysearch: '. self::todate($familysearch['last_upd']),'db: '.self::link_db('data_familysearch_verdict').' ',1,['familysearch_verdict'],'last_upd',$familysearch['lastname']);
+        $array_actors['familysearch_verdict']=self::array_to_content($actors_meta,'Familysearch Verdict: '. $acc[$rsm[$actors_meta['n_familysearch']]],'db: '.self::link_db('data_actors_meta').' ',1,[['verdict',2]],'last_update',$acc[$rsm[$familysearch['verdict']]],'n_familysearch');
 
         //forebears
         $forebears = self::actor_data($name['lastname'],'data_forebears_verdict','lastname');
-        $array_actors['forebears']=self::array_to_content($forebears,'Forebears: '. self::todate($forebears['last_upd']),'db: data_forebears_verdict',1,['forebears_verdict'],'last_upd',$forebears['lastname']);
-        $array_actors['forebears_verdict']=self::array_to_content($actors_meta,'Forebears Verdict: '. $acc[$rsm[$actors_meta['n_forebears_rank']]],'db: data_actors_meta',1,[['verdict',2]],'last_update',$acc[$rsm[$forebears['verdict_rank']]],'n_forebears_rank');
+        $array_actors['forebears']=self::array_to_content($forebears,'Forebears: '. self::todate($forebears['last_upd']),'db: '.self::link_db('data_forebears_verdict').' ',1,['forebears_verdict'],'last_upd',$forebears['lastname']);
+        $array_actors['forebears_verdict']=self::array_to_content($actors_meta,'Forebears Verdict: '. $acc[$rsm[$actors_meta['n_forebears_rank']]],'db: '.self::link_db('data_actors_meta').' ' ,1,[['verdict',2]],'last_update',$acc[$rsm[$forebears['verdict_rank']]],'n_forebears_rank');
 
         ///ethnic
 
@@ -410,8 +419,8 @@ class ActorsInfo{
 
 
         $ethnic = self::actor_data($aid,'data_actors_ethnic','actor_id');
-        $array_actors['ethnic']=self::array_to_content($ethnic,'Ethnicelebs: '. self::todate($ethnic['last_update']),'db: data_actors_ethnic',1,['ethnic_verdict'],'last_update','','',self::generateShade('#00ff00'));
-        $array_actors['ethnic_verdict']=self::array_to_content($actors_meta,'Ethnicelebs Verdict: '. $acc[$rsm[$actors_meta['n_ethnic']]],'db: data_actors_meta',1,[['verdict',2]],'last_update',$ethnic['verdict'],'n_ethnic');
+        $array_actors['ethnic']=self::array_to_content($ethnic,'Ethnicelebs: '. self::todate($ethnic['last_update']),'db: '.self::link_db('data_actors_ethnic').' ',1,['ethnic_verdict'],'last_update','','',self::generateShade('#00ff00'));
+        $array_actors['ethnic_verdict']=self::array_to_content($actors_meta,'Ethnicelebs Verdict: '. $acc[$rsm[$actors_meta['n_ethnic']]],'db: '.self::link_db('data_actors_meta').' ',1,[['verdict',2]],'last_update',$ethnic['verdict'],'n_ethnic');
 
 
 
@@ -419,15 +428,15 @@ class ActorsInfo{
         ///gender
 
        $data_actors_gender = self::actor_data($aid,'data_actors_gender','actor_id');
-       $array_actors['imdb_gender']=self::array_to_content($data_actors_gender,'Gender IMDb ','db: data_actors_gender',1,[['gender_verdict',3]],'',$array_convert_imdb[$data_actors_gender['Gender']],'','#aaddff');
+       $array_actors['imdb_gender']=self::array_to_content($data_actors_gender,'Gender IMDb ','db: '.self::link_db('data_actors_gender').' ',1,[['gender_verdict',3]],'',$array_convert_imdb[$data_actors_gender['Gender']],'','#aaddff');
 
 
         $data_actor_gender_auto = self::actor_data($aid,'data_actor_gender_auto','actor_id');
-        $array_actors['auto_gender']=self::array_to_content($data_actor_gender_auto,'Gender auto','db: data_actor_gender_auto',1,[['gender_verdict',4]],'',$array_convert_auto[$data_actor_gender_auto['gender']]);
+        $array_actors['auto_gender']=self::array_to_content($data_actor_gender_auto,'Gender auto','db: '.self::link_db('data_actor_gender_auto').' ',1,[['gender_verdict',4]],'',$array_convert_auto[$data_actor_gender_auto['gender']]);
 
-        $array_actors['gender_verdict']=self::array_to_content($actors_meta,'Gender Verdict: '. $array_convert[$actors_meta['gender']],'db: data_actors_meta',1,[['verdict',2]],'last_update','','gender');
+        $array_actors['gender_verdict']=self::array_to_content($actors_meta,'Gender Verdict: '. $array_convert[$actors_meta['gender']],'db: '.self::link_db('data_actors_meta').' ',1,[['verdict',2]],'last_update','','gender');
 
-        $array_actors['verdict']=self::array_to_content($actors_meta,'Verdict: '. $acc[$rsm[$actors_meta['n_verdict_weight']]].' '.$array_convert[$actors_meta['gender']],'db: data_actors_meta',1,'','last_update','','n_verdict_weight');
+        $array_actors['verdict']=self::array_to_content($actors_meta,'Verdict: '. $acc[$rsm[$actors_meta['n_verdict_weight']]].' '.$array_convert[$actors_meta['gender']],'db: '.self::link_db('data_actors_meta').' ',1,'','last_update','','n_verdict_weight');
 
         [$nodes,$links]  = self::structure_array($array_actors);
 
@@ -448,7 +457,7 @@ class ActorsInfo{
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Highcharts Sankey Diagram</title>
+  <title<?php echo $adata['name'] ?></title>
   <!-- Include the Highcharts library -->
   <script src="https://code.highcharts.com/highcharts.js"></script>
   <script src="https://code.highcharts.com/modules/sankey.js"></script>
