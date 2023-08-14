@@ -1038,7 +1038,9 @@ public static function add_todb_actor($id,$name='')
 
         [$enable,$name_db] = self::check_enable_actors($id,$name);
 
-    if ($debug) var_dump_table(  ['enable'=>$enable,'name'=>$name_db]) ;
+    if ($debug) {
+if (function_exists('var_dump_table'))     var_dump_table(  ['enable'=>$enable,'name'=>$name_db]) ;
+    }
 
 
     if (!$enable) {
