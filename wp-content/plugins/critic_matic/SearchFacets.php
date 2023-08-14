@@ -863,27 +863,13 @@ class SearchFacets extends AbstractDB {
                 }
                 $ret = "$rating - $title";
             } else if (isset($this->cs->facet_data['wokedata']['childs'][$curr_sort]['titlesm'])) {
-                $active_facet = $this->cs->facet_data['wokedata']['childs'][$curr_sort];
-                $title = $active_facet['titlesm'];
-                $multipler = $active_facet['multipler'];
+                $title = $this->cs->facet_data['wokedata']['childs'][$curr_sort]['titlesm'];
+                $multipler = $this->cs->facet_data['wokedata']['childs'][$curr_sort]['multipler'];
                 $rating = $sort_val;
-                if ($curr_sort == 'bechdeltest' || $curr_sort == 'worthit') {
-                    $sort_val_title = '';
-                    foreach ($this->cs->search_filters[$curr_sort] as $item) {
-                        if ($item['key'] == $sort_val) {
-                            $sort_val_title = $item['title'];
-                        }
-                        $rating = $sort_val_title;
-                    }
-                } else {
-                    if ($multipler) {
-                        $rating = round($rating / $multipler, 2);
-                    }
+                if ($multipler) {
+                    $rating = round($rating / $multipler, 2);
                 }
                 $ret = "$rating - $title";
-            } else if (isset($this->cs->facet_data['findata']['childs'][$curr_sort]['titlesm'])) {
-                $title = $this->cs->facet_data['findata']['childs'][$curr_sort]['titlesm'];
-                $ret = $this->theme_count_value($sort_val) . " - $title";
             }
         }
 
@@ -891,7 +877,7 @@ class SearchFacets extends AbstractDB {
     }
 
     public function theme_count_value($num) {
-        $sizes = array("", "k", "m", "b");
+        $sizes = array("", "k", "m", "mm");
         $ret = '';
         foreach ($sizes as $uint) {
             if ($num < 1000) {
@@ -1042,7 +1028,7 @@ class SearchFacets extends AbstractDB {
         return $filters;
     }
 
-    public function search_sort($curr_tab = '', $results = array()) {
+    public function search_sort($curr_tab = '') {
         if (!$curr_tab) {
             $curr_tab = 'movies';
         }
@@ -1064,19 +1050,7 @@ class SearchFacets extends AbstractDB {
         $tab_class = '';
         if ($sort_available) {
 
-            // print_r(array_keys($results[$curr_tab]['facets']));
-
             foreach ($sort_available as $slug => $item) {
-                // Check exist sort eid
-                $eid = $item['eid'];
-                if ($eid) {
-                    if (isset($results[$curr_tab]['facets'][$eid]['data'][0])) {
-                        $facet_data = $results[$curr_tab]['facets'][$eid]['data'][0];
-                        if (!$facet_data->cnt)
-                            continue;
-                    }
-                }
-
                 $title = $item['title'];
                 if (isset($item['is_title']) && $item['is_title'] == 1) {
                     //title                    
@@ -1168,7 +1142,7 @@ class SearchFacets extends AbstractDB {
                     $more_sort_content = '<ul class="sort-wrapper more ' . $key . '">' . $group_childs . '</ul>';
                     $more_sort_type = isset($more_active[$key]) ? $more_active[$key] : '<span class="desc"></span>';
                     $more_active_class = isset($more_active[$key]) ? ' mact' : '';
-                    $sort_title = $title . $more_sort_type;
+                    $sort_title = $title.$more_sort_type;
                     $more = '<div class="sort-more' . $more_active_class . '" title="' . $title . '">' . $this->get_nte($sort_title, $more_sort_content, true) . '</div>';
 
                     $group_item = $group[0];
@@ -1619,11 +1593,6 @@ class SearchFacets extends AbstractDB {
                 $data_min = $first_item;
             }
         }
-        
-        if (count($items)==1 && $items[0]==0){
-            $items=array();
-        }
-
         ?>
         <div id="facet-<?php print $type ?>" class="facet slider-facet ajload<?php print $this->cs->hide_facet_class($type, $this->filters) ?>" data-type="<?php print $ftype ?>">
             <div class="facet-title wacc">                    
@@ -2164,6 +2133,91 @@ class SearchFacets extends AbstractDB {
         <?php
     }
 
+    public function show_audience_facet($data, $facet = '') {
+        $main_type = 'auratings';
+        $main_collapsed = $this->cs->is_hide_facet($main_type, $this->filters);
+
+        ob_start();
+        if (!$main_collapsed) {
+
+            $childs = $this->cs->facet_data['auratings']['childs'];
+            foreach ($childs as $key => $value) {
+                if (isset($value['no_data'])) {
+                    continue;
+                }
+
+                if (isset($value['is_title'])) {
+                    $this->theme_title_facet($key, $value['title']);
+                    continue;
+                }
+
+                if ($key == 'auvote') {
+                    $rating_data = $data[$key]['data'];
+                    $count = sizeof($rating_data);
+                    $icon = '<i class="' . $value['icon'] . '"></i>';
+                    $name_pre = $value['name_pre'];
+                    $filter_pre = $value['filter_pre'];
+                    $this->show_suggestion_facet($rating_data, $count, $key, 'all', $value['title'], $name_pre, $filter_pre, $icon);
+                } else {
+
+                    $parent = $value['eid'];
+                    $parent_data = isset($data[$parent]['data']) ? $data[$parent]['data'] : array();
+
+                    $parent_item = isset($parent_data[1]) ? $parent_data[1] : array();
+                    $parent_cnt = 0;
+                    if ($parent_item) {
+                        $parent_cnt = $parent_item->cnt;
+                    }
+                    $minus = isset($value['minus']) ? true : false;
+
+
+                    if ($parent_cnt || $facet == $parent) {
+
+                        $slider_data = array(
+                            'cnt' => $parent_cnt,
+                            'minus' => $minus,
+                            'data' => isset($data[$key]['data']) ? $data[$key]['data'] : array(),
+                            'type' => $key,
+                            'icon' => isset($value['icon']) ? '<i class="' . $value['icon'] . '"></i>' : '',
+                            'name_pre' => $value['name_pre'],
+                            'filter_pre' => $value['filter_pre'],
+                            'max_count' => isset($value['max_count']) ? $value['max_count'] : 100,
+                            'multipler' => isset($value['multipler']) ? $value['multipler'] : 0,
+                            'shift' => isset($value['shift']) ? $value['shift'] : 0,
+                            'title' => $value['title'],
+                        );
+                        $this->show_slider_plus_facet($slider_data);
+                    }
+                }
+            }
+        } else {
+            $content = $this->theme_block_loading();
+        }
+        $content = ob_get_contents();
+        ob_end_clean();
+
+        $title = 'Audience';
+        $filter = 'auratings';
+        if ($content || $main_collapsed) {
+            //Show multifacet
+            $tab_key = $this->get_tab_key();
+            ?>
+            <div id="facets-<?php print $main_type ?>" class="facets ajload<?php print $this->cs->hide_facet_class($main_type, $this->filters) ?>" data-type="<?php print $tab_key ?>">
+                <div class="facet-title wacc">
+                    <h3 class="title"><?php print $title ?><?php print $this->get_tooltip($filter) ?></h3>   
+                    <div class="acc">
+                        <div class="chevron"></div>
+                        <div class="chevronup"></div>
+                    </div>
+                </div>
+                <div class="facets-ch"> 
+                    <?php print $content; ?>
+                </div>                    
+            </div>
+            <?php
+        }
+    }
+
     public function show_rating_facet($data, $facet = '') {
         $main_type = 'ratings';
         $main_collapsed = $this->cs->is_hide_facet($main_type, $this->filters);
@@ -2182,13 +2236,13 @@ class SearchFacets extends AbstractDB {
                 if ($value['facet'] == 'rating') {
                     $parent = isset($value['eid']) ? $value['eid'] : '';
                     $parent_cnt = 0;
-                    /* if ($parent) {
-                      $parent_data = isset($data[$parent]['data']) ? $data[$parent]['data'] : array();
-                      $parent_item = isset($parent_data[1]) ? $parent_data[1] : array();
-                      if ($parent_item) {
-                      $parent_cnt = $parent_item->cnt;
-                      }
-                      } */
+                    if ($parent) {
+                        $parent_data = isset($data[$parent]['data']) ? $data[$parent]['data'] : array();
+                        $parent_item = isset($parent_data[1]) ? $parent_data[1] : array();
+                        if ($parent_item) {
+                            $parent_cnt = $parent_item->cnt;
+                        }
+                    }
                     $minus = isset($value['minus']) ? true : false;
 
 
@@ -2396,17 +2450,16 @@ class SearchFacets extends AbstractDB {
                 if ($value['facet'] == 'rating') {
                     $parent = isset($value['eid']) ? $value['eid'] : '';
                     $parent_cnt = 0;
-                    /* if ($parent) {
-                      $parent_data = isset($data[$parent]['data']) ? $data[$parent]['data'] : array();
-                      $parent_item = isset($parent_data[1]) ? $parent_data[1] : array();
-                      if ($parent_item) {
-                      $parent_cnt = $parent_item->cnt;
-                      }
-                      } */
+                    if ($parent) {
+                        $parent_data = isset($data[$parent]['data']) ? $data[$parent]['data'] : array();
+                        $parent_item = isset($parent_data[1]) ? $parent_data[1] : array();
+                        if ($parent_item) {
+                            $parent_cnt = $parent_item->cnt;
+                        }
+                    }
                     $minus = isset($value['minus']) ? true : false;
 
                     $rating_data = isset($data[$key]['data']) ? $data[$key]['data'] : array();
-
                     if ($rating_data || $this->cs->is_hide_facet($key, $this->filters) || $facet == $key) {
                         $slider_data = array(
                             'cnt' => $parent_cnt,
