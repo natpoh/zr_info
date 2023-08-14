@@ -512,6 +512,7 @@ class ActorsInfo{
   </style>
 </head>
 <body>
+<div style="display: flex;gap: 20px"><a href="https://info.antiwoketomatoes.com/analysis/include/scrap_imdb.php?actor_logs=<?php echo $aid ?>">Server</a><a href="https://zeitgeistreviews.com/analysis/include/scrap_imdb.php?actor_logs=<?php echo $aid ?>">ZR</a></div>
 <div class="popup-container"></div>
   <div id="container" style="min-width: 300px; height:1000px; margin: 0 auto;"></div>
 <div class="img_container" ><img src="https://info.antiwoketomatoes.com/analysis/create_image/<?php echo $aid.'_v'.time(); ?>.jpg"></div>

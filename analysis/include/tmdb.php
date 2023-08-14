@@ -1023,20 +1023,16 @@ public static function add_todb_actor($id,$name='')
 
     if (!$enable) {
 
-        if ($name)
-        {
-            $sql = "INSERT INTO `data_actors_imdb`  VALUES (?, ?, '', '', '', '', '', '0')";
-            Pdo_an::db_results_array($sql, array($id, $name));
-        }
-        else
-        {
-            $sql = "INSERT INTO `data_actors_imdb`  VALUES (?, '', '', '', '', '', '', '0')";
-            Pdo_an::db_results_array($sql, array($id));
-        }
+        if (!$name)$name='';
+
+            $sql =  "INSERT INTO `data_actors_imdb`(`id`, `name`,  `lastupdate`) VALUES (?,?,?)";
+            Pdo_an::db_results_array($sql, array($id, $name,0));
+
+
         if ($debug) echo 'insert '.$id.' '.$name.'<br>'.PHP_EOL;
 
         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-        Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $id),'actor_update',40);
+        Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $id),'actor_add',40);
     }
     else if ($name && $name!=$name_db)
     {

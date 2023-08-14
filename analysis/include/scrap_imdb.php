@@ -1560,8 +1560,25 @@ function add_empty_actors($id='')
 
 
             $sql = "SELECT id FROM `data_actors_imdb` where  ".$where."  limit 60";
-          //   if ($debug)echo $sql.PHP_EOL;
+            // if ($debug)echo $sql.PHP_EOL;
             $result= Pdo_an::db_results_array($sql);
+
+            if ($id && !$result)
+            {
+                if ($debug) echo '  actor not found, try add ' . $id . PHP_EOL;
+                $sql =  "INSERT INTO `data_actors_imdb`(`id`, `name`,  `lastupdate`) VALUES (?,?,?)";
+                Pdo_an::db_results_array($sql, array($id, '',0));
+
+                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $id),'actor_add',40);
+
+                $sql = "SELECT id FROM `data_actors_imdb` where  ".$where."  limit 60";
+                // if ($debug)echo $sql.PHP_EOL;
+                $result= Pdo_an::db_results_array($sql);
+            }
+
+
+
 
             foreach ($result as $r) {
                 $id = $r['id'];
