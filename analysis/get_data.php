@@ -1529,19 +1529,10 @@ else if ($_POST['oper'] === 'get_actordata') {
          $update_container = '<div class="actor_update_data"><p>Last updated: </p>'.$asctor_u.'</div>';
          echo $update_container;
 
-         if (!function_exists('is_user_logged_in'))
-         {
-             include (ABSPATH.'wp-config.php');
-         }
 
-        if (function_exists('current_user_can')) {
-            $curent_user = current_user_can("administrator");
-            if ($curent_user)
-            {
 
-               echo '<a target="_blank" href="https://info.antiwoketomatoes.com/analysis/include/scrap_imdb.php?actor_logs='.$id.'">Actor info</a>';
-            }
-        }
+               echo '<a  target="_blank" class="admin_link" href="https://info.antiwoketomatoes.com/analysis/include/scrap_imdb.php?actor_logs='.$id.'">Actor info</a>';
+
 
         if ($debug) {
             $array_timer[] = 'end  ' .timer_stop_data();

@@ -23,7 +23,36 @@ class TMDB
     public static $api_key = '1dd8ba78a36b846c34c76f04480b5ff0';
 
 
+    public static function var_dump_table($data,$row='',$return ='') {
+        $table = "<table class='styled-table' border='1' cellpadding='5px' cellspacing='0'>";
+        $table .= "<tr><th>Field</th><th>Value</th></tr>";
 
+        foreach ($data as $field => $value) {
+            if (is_array($value))
+            {
+                $value =   self::var_dump_table($value,'',1);
+            }
+            if ($row && $row ==$field)
+            {
+
+
+
+                $table .= "<tr class='highlighted'><td>$field</td><td>$value</td></tr>";
+            }
+
+            else
+            {
+                $table .= "<tr><td>$field</td><td>$value</td></tr>";
+            }
+
+
+        }
+
+        $table .= "</table>";
+
+        if ($return)return $table;
+        echo $table;
+    }
 
     public static function add_tmdb_without_id($tmdb_id_input='')
     {
@@ -776,12 +805,11 @@ global $debug;
         if ($debug)
         {
             echo 'mid='.$mid.'; ';
-            echo  $sql;
+            //echo  $sql;
 
-            if (function_exists('var_dump_table'))
-            {
-                if ($debug)var_dump_table($array_request);
-            }
+
+                if ($debug)self::var_dump_table($array_request);
+
         }
 
         if ($mid)
@@ -819,12 +847,11 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
         Pdo_an::db_results_array($sql,$array_request);
         if ($debug)
         {
-            echo  $sql;
+           // echo  $sql;
 
-            if (function_exists('var_dump_table'))
-            {
-                if ($debug)var_dump_table($array_request);
-            }
+
+                if ($debug)self::var_dump_table($array_request);
+
 
             //var_dump($array_request);
         }
@@ -869,10 +896,9 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
 
     $commit_id='';
 
-if (function_exists('var_dump_table'))
-{
-    if ($debug)var_dump_table($actors_data);
-}
+
+    if ($debug)self::var_dump_table($actors_data);
+
 
 
 
@@ -1039,7 +1065,7 @@ public static function add_todb_actor($id,$name='')
         [$enable,$name_db] = self::check_enable_actors($id,$name);
 
     if ($debug) {
-if (function_exists('var_dump_table'))     var_dump_table(  ['enable'=>$enable,'name'=>$name_db]) ;
+  self::var_dump_table(  ['enable'=>$enable,'name'=>$name_db]) ;
     }
 
 
@@ -1145,10 +1171,9 @@ public static function add_movie_actor($mid = 0, $id = 0, $type = 0,$table='meta
         global $debug;
         if($debug)
         {
-            if (function_exists('var_dump_table'))
-            {
-                var_dump_table(array($mid, $id , $type,$table,$pos));
-            }
+
+                self::var_dump_table(array($mid, $id , $type,$table,$pos));
+
 
         }
 
@@ -1168,7 +1193,7 @@ public static function add_movie_actor($mid = 0, $id = 0, $type = 0,$table='meta
             }
 
             $meta_exist = Pdo_an::db_fetch_row($sql);
-            if ($debug) echo $sql.'<br>';
+          //  if ($debug) echo $sql.'<br>';
             if ($meta_exist)
             {
                 if ($meta_exist->type!=$type && $table=='meta_movie_actor')
@@ -1198,7 +1223,7 @@ public static function add_movie_actor($mid = 0, $id = 0, $type = 0,$table='meta
 
 
                $sql = sprintf("INSERT INTO {$table} (mid,aid,pos,type) VALUES (%d,%d,%d,%d)", (int) $mid, (int) $id, (int) $pos, (int) $type);
-                if ($debug) echo $sql.'<br>';
+               // if ($debug) echo $sql.'<br>';
                ///echo $sql.PHP_EOL;
                 $aid =Pdo_an::db_insert_sql($sql);
 
@@ -1853,13 +1878,13 @@ if($array_meta["countriesOfOrigin"]["countries"])
 
 public static function reload_from_imdb($id,$debug=0)
 {
+
     $id = intval($id);
     $array_movie =  self::get_content_imdb($id);
     if ($debug){
-        if (function_exists('var_dump_table'))
-        {
-            var_dump_table($array_movie);
-        }
+
+            self::var_dump_table($array_movie);
+
 
     }
     $add =  self::addto_db_imdb($id, $array_movie,'','','get_imdb_movie_id');

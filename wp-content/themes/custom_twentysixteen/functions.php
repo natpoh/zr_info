@@ -570,7 +570,9 @@ function twentysixteen_body_classes($classes) {
     if (!is_singular()) {
         $classes[] = 'hfeed';
     }
-
+    if ( current_user_can("administrator")) {
+        $classes[] = 'is_admin';
+    }
     return $classes;
 }
 

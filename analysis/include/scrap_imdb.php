@@ -1438,34 +1438,9 @@ function add_actors_to_db($id, $update = 0)
 
 }
  function var_dump_table($data,$row='',$return ='') {
-    $table = "<table class='styled-table' border='1' cellpadding='5px' cellspacing='0'>";
-    $table .= "<tr><th>Field</th><th>Value</th></tr>";
 
-    foreach ($data as $field => $value) {
-        if (is_array($value))
-        {
-            $value =   var_dump_table($value,'',1);
-        }
-        if ($row && $row ==$field)
-        {
-
-
-
-            $table .= "<tr class='highlighted'><td>$field</td><td>$value</td></tr>";
-        }
-
-        else
-        {
-            $table .= "<tr><td>$field</td><td>$value</td></tr>";
-        }
-
-
-    }
-
-    $table .= "</table>";
-
-    if ($return)return $table;
-    echo $table;
+    $result = TMDB::var_dump_table($data,$row,$return);
+    return $result;
 }
 function intconvert($data)
 {

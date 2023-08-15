@@ -68,7 +68,7 @@ if ( current_user_can( 'administrator' ) ) {
 
     if ($post_an->add_time < time()-86400)
     {
-        $update_link = '<a href="#" id="last_movie_update" data-value="'.$post_id.'" class="update_data">Update data</a>';
+        $update_link = ' <a target="_blanc" class="admin_link" href="'.WP_SITEURL.'/analysis/include/scrap_imdb.php?get_imdb_movie_id='.$post_id.'&debug=1"  >update data</a> <a  target="_blanc" class="admin_link"  href="https://info.antiwoketomatoes.com/analysis/include/scrap_imdb.php?get_imdb_movie_id='.$post_id.'&debug=1"  >update server data</a>';
 
     }
     echo '<p class="last_updated_desc">Last updated: '.$last_imdb_updated_string. $update_link.'</p>';

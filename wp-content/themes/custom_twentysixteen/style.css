@@ -5061,7 +5061,14 @@ p > video {
     top: 0.7142857143em;
 }
 
+.admin_link{
+    display: none;
+}
 
+body.is_admin .admin_link{
+    display: inline-block;
+    margin-right: 15px;
+}
 /**
  * 12.1 - Captions
  */

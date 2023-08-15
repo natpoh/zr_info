@@ -24,6 +24,7 @@ if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
     define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
 }
 
+
 function get_first_five_words($string) {
     $words = str_word_count($string, 1);
     $first_five_words = array_slice($words, 0, 5);
@@ -310,7 +311,17 @@ if (isset($_POST['action']) && $_POST['action'] == 'author_autocomplite') {
     }
     exit();
 }
+if (isset($_GET['oper']) && isset($_GET['debug'])) {
 
+
+
+
+    $_POST= $_GET;
+    global $debug;
+    $debug = $_GET['debug'];
+
+
+}
 if (isset($_POST['oper'])) {
 
     $oper = $_POST['oper'];
@@ -703,9 +714,12 @@ if (isset($_POST['oper'])) {
 
          if ($type =='last_movie_update')
          {
+
+
+
              !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
              $imdb_id = TMDB::get_imdb_id_from_id($id);
-             $result= TMDB::reload_from_imdb($imdb_id);
+             $result= TMDB::reload_from_imdb($imdb_id,$debug);
 
          }
          if ($type =='last_cms_pg_update')
