@@ -107,6 +107,7 @@ AND table_schema='".DB_NAME_AN."'";
 
         if (isset($_GET['data'])) {
             $table_data = $_GET['data'];
+            $table_data_main = 'data_'.$_GET['data'];
         }
        else if (isset($_GET['doptable'])) {
             $table_data = $_GET['doptable'];
@@ -122,7 +123,18 @@ AND table_schema='".DB_NAME_AN."'";
                 break;
             }
         }
+        if (!$te){
+            foreach ($rows as $r) {
 
+                $link = $r["TABLE_NAME"];
+                if ($link==$table_data_main) {
+                    $table_data=$table_data_main;
+                    $te=1;
+                    break;
+                }
+            }
+
+        }
 
 
         if (!$te)return;

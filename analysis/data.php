@@ -32,7 +32,7 @@ if ($curent_user) {
     {
         $currant_table =  $_GET['onlytable'];
         $table = preg_replace("/[^a-zA-Z0-9_]/", "",$currant_table);
-
+        $datatype=$table;
 
     echo '<h4>Table: '.$table.'</h4>';
     }
@@ -234,7 +234,7 @@ AND table_schema='" . DB_NAME_AN . "'";
                 $(document).ready(function () {
 
                 jQuery("#jqGrid").jqGrid({
-                url: '<?php echo $home_url ?>analysis/jqgrid/get.php?data=<?php echo $currant_table; ?>',
+                url: '<?php echo $home_url ?>analysis/jqgrid/get.php?data=<?php echo $datatype; ?>',
                             mtype: "POST",
                             datatype: "json",
                             page: 1,
@@ -243,7 +243,7 @@ AND table_schema='" . DB_NAME_AN . "'";
                             ],
     <?php if ($WP_include) { ?>
 
-                        editurl: '<?php echo $home_url ?>analysis/jqgrid/get.php?data=<?php echo $currant_table; ?>',
+                        editurl: '<?php echo $home_url ?>analysis/jqgrid/get.php?data=<?php echo $datatype; ?>',
     <?php } ?>
 
                         loadonce: false,
