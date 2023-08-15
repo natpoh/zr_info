@@ -290,8 +290,12 @@ function movies_links_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_lastnames` ADD `add_time` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+
     if (function_exists('critic_matic_create_index_an')) {
-        critic_matic_create_index_an(array('lastname', 'topcountry'), 'data_lastnames');
+        critic_matic_create_index_an(array('add_time', 'lastname', 'topcountry'), 'data_lastnames');
     }
 
     $sql = "CREATE TABLE IF NOT EXISTS  `data_familysearch_country`(
@@ -351,8 +355,11 @@ function movies_links_plugin_activation() {
     $sql = "ALTER TABLE `data_forebears_lastnames` ADD `topcountry_rank` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
 
+    $sql = "ALTER TABLE `data_forebears_lastnames` ADD `add_time` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+
     if (function_exists('critic_matic_create_index_an')) {
-        critic_matic_create_index_an(array('lastname', 'topcountry', 'topcountry_rank'), 'data_forebears_lastnames');
+        critic_matic_create_index_an(array('add_time', 'lastname', 'topcountry', 'topcountry_rank'), 'data_forebears_lastnames');
     }
 
     $sql = "CREATE TABLE IF NOT EXISTS  `data_forebears_country`(

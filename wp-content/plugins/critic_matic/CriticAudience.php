@@ -769,7 +769,7 @@ class CriticAudience extends AbstractDb {
             $post_queue = $this->get_post_queue($queue_id);
             // Post exist?
             if ($post_queue->status == 1) {
-                    // Author is voted?
+                // Author is voted?
                 if ($wp_uid) {
                     $cid = $this->get_author_post_by_wpuid($wp_uid, $post_id);
                 } else {
@@ -1055,12 +1055,12 @@ class CriticAudience extends AbstractDb {
                                 <h3 class="column_header"><?php print $submit_text ?></h3>
                             </td>
                         </tr>                        
-        <?php
-        if ($au_data) {
-            if ($au_data->status != 1) {
-                ?>
+                        <?php
+                        if ($au_data) {
+                            if ($au_data->status != 1) {
+                                ?>
                             <p class="redtext">Your review is awaiting an anti-troll check.</p>
-                            <?php } ?>
+                        <?php } ?>
                         <input id="unic_id" type="hidden" name="unic_id" value="<?php print $au_data->unic_id ?>" />
                     <?php } ?>
                     <tr class="msg-holder"><td colspan="2"><div class="msg-data"></div></td></tr>
@@ -1073,106 +1073,106 @@ class CriticAudience extends AbstractDb {
                     if ($user_identity) {
                         $user_profile = get_author_posts_url($user->ID, $user->user_nicename);
                         ?><tr><td colspan="2"><?php
-                        $logged_in_as = '<p class="logged-in-as">' .
-                                sprintf(__('You are logged in as <a href="%1$s">%2$s</a>. <a href="%3$s" title="Sign out of this account">Sign out?</a>'), $user_profile, $user_identity, wp_logout_url($post_link)) . '</p>';
-                        print apply_filters('comment_form_logged_in', $logged_in_as, $commenter, $user_identity);
-                        do_action('comment_form_logged_in_after', $commenter, $user_identity);
-                        ?></td></tr><?php
-                                    } else {
-                                        /* if (!$au_data) {
-                                          ?>
-                                          <tr><td colspan="2">
-                                          <div class="big_checkbox">
-                                          <input type="checkbox"<?php print $checked ?> name="wpcr3_fanon_review" value="on" class="review_type" id="anon_review">
-                                          <label for="anon_review">Send review anonymously</label>
-                                          </div>
-                                          </td></tr>
-                                          <?php
-                                          } */
-                                    }
-                                    //do_action('comment_form', $post_id); 
+                                        $logged_in_as = '<p class="logged-in-as">' .
+                                                sprintf(__('You are logged in as <a href="%1$s">%2$s</a>. <a href="%3$s" title="Sign out of this account">Sign out?</a>'), $user_profile, $user_identity, wp_logout_url($post_link)) . '</p>';
+                                        print apply_filters('comment_form_logged_in', $logged_in_as, $commenter, $user_identity);
+                                        do_action('comment_form_logged_in_after', $commenter, $user_identity);
+                                        ?></td></tr><?php
+                    } else {
+                        /* if (!$au_data) {
+                          ?>
+                          <tr><td colspan="2">
+                          <div class="big_checkbox">
+                          <input type="checkbox"<?php print $checked ?> name="wpcr3_fanon_review" value="on" class="review_type" id="anon_review">
+                          <label for="anon_review">Send review anonymously</label>
+                          </div>
+                          </td></tr>
+                          <?php
+                          } */
+                    }
+                    //do_action('comment_form', $post_id); 
 
-                                    $vote_fields = array(
-                                        'name' => array('title' => 'Critic Name', 'required' => 0, 'class' => ''),
-                                        'email' => array('title' => 'Password', 'required' => $required, 'class' => ' noanon'),
-                                        'title' => array('title' => 'Review Title', 'required' => 0, 'class' => ''),
-                                    );
+                    $vote_fields = array(
+                        'name' => array('title' => 'Critic Name', 'required' => 0, 'class' => ''),
+                        'email' => array('title' => 'Password', 'required' => $required, 'class' => ' noanon'),
+                        'title' => array('title' => 'Review Title', 'required' => 0, 'class' => ''),
+                    );
 
-                                    foreach ($vote_fields as $key => $value):
-                                        if ($au_data) {
-                                            if ($key == 'name' || $key == 'email') {
-                                                continue;
-                                            }
-                                        }
-                                        if ($user_identity) {
-                                            // No name data for users
-                                            if ($key == 'name' || $key == 'email') {
-                                                continue;
-                                            }
-                                        }
-                                        $title = $value['title'];
-                                        $required = '';
-                                        if ($value['required']) {
-                                            $required = ' wpcr3_required';
-                                        }
+                    foreach ($vote_fields as $key => $value):
+                        if ($au_data) {
+                            if ($key == 'name' || $key == 'email') {
+                                continue;
+                            }
+                        }
+                        if ($user_identity) {
+                            // No name data for users
+                            if ($key == 'name' || $key == 'email') {
+                                continue;
+                            }
+                        }
+                        $title = $value['title'];
+                        $required = '';
+                        if ($value['required']) {
+                            $required = ' wpcr3_required';
+                        }
 
-                                        $desc = '';
-                                        $vote_data = isset($audience_desc[$key]) ? $audience_desc[$key] : '';
-                                        if ($vote_data) {
-                                            $desc = $cfront->get_nte('i', '<div class="nte_cnt_toltip">' . stripslashes($vote_data) . '</div>');
-                                        }
-                                        ?>
+                        $desc = '';
+                        $vote_data = isset($audience_desc[$key]) ? $audience_desc[$key] : '';
+                        if ($vote_data) {
+                            $desc = $cfront->get_nte('i', '<div class="nte_cnt_toltip">' . stripslashes($vote_data) . '</div>');
+                        }
+                        ?>
                         <tr class="wpcr3_review_form_text_field<?php print $value['class'] ?>">
                             <td>
                                 <label for="wpcr3_f<?php print $key ?>" class="comment-field"><span class="rtitle"><?php print $title ?></span>: <?php print $desc ?></label>
                             </td>
                             <td>
                                 <input maxlength="150" class="text-input<?php print $required ?>" type="text" id="wpcr3_f<?php print $key ?>" name="wpcr3_f<?php print $key ?>" value="<?php
-            if ($au_data) {
-                if ($key == 'title') {
-                    print htmlspecialchars($au_data->title);
-                }
-            }
-            if ($key == 'name' && $comment_author) {
-                print htmlspecialchars($comment_author);
-            } else if ($key == 'email' && $comment_author_pass) {
-                print htmlspecialchars($comment_author_pass);
-            }
-                                        ?>"<?php
-                                if ($key == 'name') {
-                                    print ' placeholder="Anon"';
+                                if ($au_data) {
+                                    if ($key == 'title') {
+                                        print htmlspecialchars($au_data->title);
+                                    }
                                 }
-                                ?> />
+                                if ($key == 'name' && $comment_author) {
+                                    print htmlspecialchars($comment_author);
+                                } else if ($key == 'email' && $comment_author_pass) {
+                                    print htmlspecialchars($comment_author_pass);
+                                }
+                                ?>"<?php
+                                       if ($key == 'name') {
+                                           print ' placeholder="Anon"';
+                                       }
+                                       ?> />
                             </td>
                         </tr>
-                                   <?php endforeach; ?> 
-        <?php
-        $rating_order = array('rating', 'vote', 'patriotism', 'misandry', 'affirmative', 'lgbtq', 'god');
+                    <?php endforeach; ?> 
+                    <?php
+                    $rating_order = array('rating', 'vote', 'patriotism', 'misandry', 'affirmative', 'lgbtq', 'god');
 
-        foreach ($rating_order as $key) {
+                    foreach ($rating_order as $key) {
 
-            $vote_data = isset($audience_desc[$key]) ? $audience_desc[$key] : '';
-            $desc = $cfront->get_nte('i', '<div class="nte_cnt_toltip">' . stripslashes($vote_data) . '</div>');
+                        $vote_data = isset($audience_desc[$key]) ? $audience_desc[$key] : '';
+                        $desc = $cfront->get_nte('i', '<div class="nte_cnt_toltip">' . stripslashes($vote_data) . '</div>');
 
-            if ($key == 'vote') {
-                $rating_val = 3;
-                if ($au_data) {
-                    if ($au_data->$key) {
-                        $rating_val = $au_data->$key;
+                        if ($key == 'vote') {
+                            $rating_val = 3;
+                            if ($au_data) {
+                                if ($au_data->$key) {
+                                    $rating_val = $au_data->$key;
+                                }
+                            }
+                            $this->audience_revew_form_boycott($desc, $rating_val);
+                        } else {
+                            $rating_val = 0;
+                            if ($au_data) {
+                                if ($au_data->$key) {
+                                    $rating_val = $au_data->$key;
+                                }
+                            }
+                            $this->audience_revew_form_item($key, $desc, $rating_val);
+                        }
                     }
-                }
-                $this->audience_revew_form_boycott($desc, $rating_val);
-            } else {
-                $rating_val = 0;
-                if ($au_data) {
-                    if ($au_data->$key) {
-                        $rating_val = $au_data->$key;
-                    }
-                }
-                $this->audience_revew_form_item($key, $desc, $rating_val);
-            }
-        }
-        ?>                         
+                    ?>                         
                     <tr id="review-text" class="wpcr3_review_form_review_field_textarea">
                         <td colspan="2">
                             <label for="id_wpcr3_ftext" class="comment-field sub_red_b"><span class="rtitle">Review text</span>: </label>
@@ -1186,10 +1186,10 @@ class CriticAudience extends AbstractDb {
                                 <div id="wp-id_wpcr3_ftext-editor-container" class="wp-editor-container">
                                     <div id="qt_id_wpcr3_ftext_toolbar" class="quicktags-toolbar"></div>
                                     <textarea class="wp-editor-area wpcr3_required" rows="20" autocomplete="off" cols="40" name="wpcr3_ftext" id="id_wpcr3_ftext"><?php
-            if ($au_data) {
-                print htmlspecialchars($au_data->content);
-            }
-        ?></textarea>
+                                        if ($au_data) {
+                                            print htmlspecialchars($au_data->content);
+                                        }
+                                        ?></textarea>
                                 </div>
                             </div>
                         </td>
@@ -1226,14 +1226,14 @@ class CriticAudience extends AbstractDb {
             <td >
                 <div class="sug_buttons_wrapper <?php echo $post_slug; ?>">
                     <select class="wpcr3_vote" name="wpcr3_review_form_rating_field_vote">
-        <?php
-        foreach ($vote_order as $value) {
-            if (isset($vote_data[$value])) {
-                $selected = '';
-                if ($rating_val == $value) {
-                    $selected = ' selected';
-                }
-                ?>
+                        <?php
+                        foreach ($vote_order as $value) {
+                            if (isset($vote_data[$value])) {
+                                $selected = '';
+                                if ($rating_val == $value) {
+                                    $selected = ' selected';
+                                }
+                                ?>
                                 <option class="s<?php print $value ?><?php print $selected ?>" value="<?php print $value ?>"><?php print $vote_data[$value]['title'] ?></option>
                                 <?php
                             }
@@ -1295,45 +1295,45 @@ class CriticAudience extends AbstractDb {
                 </tr>
             </thead>
             <tbody><?php
-        foreach ($rating_full as $key => $value) {
-            if (!isset($this->rating_form[$key])) {
-                continue;
-            }
+                foreach ($rating_full as $key => $value) {
+                    if (!isset($this->rating_form[$key])) {
+                        continue;
+                    }
 
-            if ($key == 'r') {
-                continue;
-            }
+                    if ($key == 'r') {
+                        continue;
+                    }
 
-            $name = $this->rating_form[$key];
+                    $name = $this->rating_form[$key];
 
-            if (!isset($this->vote_data[$name])) {
-                continue;
-            }
-            $title = $this->vote_data[$name]['title'];
-            $keys = array(0 => 'None', 1 => '1 star', 2 => '2 stars', 3 => '3 stars', 4 => '4 stars', 5 => '5 stars');
-            $colspan = 1;
-            if ($name == 'vote') {
-                $colspan = 2;
-                $keys = array();
-                foreach ($this->vote_data[$name]['options'] as $k => $v) {
-                    $keys[$k] = $v['title'];
-                }
-            }
-            ?>
-                    <tr>
-                        <td><?php print $title ?></td>
-                    <?php foreach ($keys as $item => $title) { ?>
-                            <td colspan="<?php print $colspan ?>">
-                            <?php
-                            $selected = ($value == $item) ? 'checked' : '';
-                            ?>
-                                <input name="<?php print 'rating_' . $key ?>" type="radio" value="<?php print $item ?>" <?php print $selected ?> > <?php print $title ?>                               
-                            </td>
-                            <?php } ?>                  
-                    </tr>
-                        <?php
+                    if (!isset($this->vote_data[$name])) {
+                        continue;
+                    }
+                    $title = $this->vote_data[$name]['title'];
+                    $keys = array(0 => 'None', 1 => '1 star', 2 => '2 stars', 3 => '3 stars', 4 => '4 stars', 5 => '5 stars');
+                    $colspan = 1;
+                    if ($name == 'vote') {
+                        $colspan = 2;
+                        $keys = array();
+                        foreach ($this->vote_data[$name]['options'] as $k => $v) {
+                            $keys[$k] = $v['title'];
+                        }
                     }
                     ?>
+                    <tr>
+                        <td><?php print $title ?></td>
+                        <?php foreach ($keys as $item => $title) { ?>
+                            <td colspan="<?php print $colspan ?>">
+                                <?php
+                                $selected = ($value == $item) ? 'checked' : '';
+                                ?>
+                                <input name="<?php print 'rating_' . $key ?>" type="radio" value="<?php print $item ?>" <?php print $selected ?> > <?php print $title ?>                               
+                            </td>
+                        <?php } ?>                  
+                    </tr>
+                    <?php
+                }
+                ?>
             </tbody>       
         </table>       
         <br />

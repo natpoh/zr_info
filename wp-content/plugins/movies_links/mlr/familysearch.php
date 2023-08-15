@@ -69,7 +69,7 @@ class Familysearch extends MoviesAbstractDBAn {
         );
     }
 
-    public function hook_update_post($campaign=array(), $post=array(), $options=array(), $debug=false) {
+    public function hook_update_post($campaign = array(), $post = array(), $options = array(), $debug = false) {
 
         $score_opt = array(
             'topcountry' => 'topcountry',
@@ -199,10 +199,12 @@ class Familysearch extends MoviesAbstractDBAn {
     }
 
     public function create_lastname($name = '', $country = 0) {
-        $sql = sprintf("INSERT INTO {$this->db['lastnames']} (lastname,topcountry) VALUES ('%s',%d)", $this->escape($name), $country);
-        $this->db_query($sql);
-        //Get the id
-        $id = $this->getInsertId('id', $this->db['lastnames']);
+        $data = array(
+            'add_time' => $this->curr_time(),
+            'lastname' => $name,
+            'topcountry' => $country,
+        );
+        $id = $this->db_insert($data, $this->db['lastnames']);
         return $id;
     }
 
@@ -471,7 +473,6 @@ class Familysearch extends MoviesAbstractDBAn {
                 print_r($sql);
             }
             $this->db_query($sql);
-
         }
     }
 

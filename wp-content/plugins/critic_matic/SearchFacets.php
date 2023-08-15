@@ -262,10 +262,10 @@ class SearchFacets extends AbstractDB {
         return $this->keywords;
     }
 
-    public function theme_search_url($search_url = '', $search_text = '', $inc = '') {
+    public function theme_search_url($search_url = '', $search_text = '', $inc = '', $user_filter_id=0) {
         if ($search_url) {
             ?>
-            <div id="search-url" data-id="<?php print $search_url ?>" data-title="<?php print $search_text ?>" data-inc="<?php print $inc ?>"></div>      
+            <div id="search-url" data-id="<?php print $search_url ?>" data-title="<?php print $search_text ?>" data-inc="<?php print $inc ?>" data-uf="<?php print $user_filter_id ?>"></div>      
             <?php
         }
     }

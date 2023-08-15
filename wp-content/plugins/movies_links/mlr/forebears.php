@@ -152,11 +152,12 @@ class Forebears extends MoviesAbstractDBAn {
             }
 
             $user_data = array(
+                'add_time' => $this->curr_time(),
                 'lastname' => $lastname,
                 'topcountry' => $top_country_id,
                 'topcountry_rank' => $top_country_rank_id,
             );
-
+            
             $name_exist = false;
             if (!$last_name_id) {
                 // Add lastname
