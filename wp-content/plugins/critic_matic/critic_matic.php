@@ -1421,7 +1421,7 @@ function critic_matic_plugin_activation() {
                                 `last_upd` int(11) NOT NULL DEFAULT '0',                                
                                 `rating` int(11) NOT NULL DEFAULT '0',
                                 `title` text default NULL,
-                                `desc` text default NULL,
+                                `content` text default NULL,
 				PRIMARY KEY  (`id`)
 				) DEFAULT COLLATE utf8mb4_general_ci;";
 
