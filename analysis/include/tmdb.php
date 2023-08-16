@@ -1880,6 +1880,7 @@ public static function reload_from_imdb($id,$debug=0)
 {
 
     $id = intval($id);
+
     $array_movie =  self::get_content_imdb($id);
     if ($debug){
 

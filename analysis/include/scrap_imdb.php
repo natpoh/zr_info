@@ -3053,8 +3053,9 @@ if (isset($_GET['get_imdb_movie_id'])) {
     {
         $debug=1;
     }
-
-    $add= TMDB::reload_from_imdb($_GET['get_imdb_movie_id'],$debug);
+    $id =intval($_GET['get_imdb_movie_id']);
+    $imdb_id = TMDB::get_imdb_id_from_id($id);
+    $add= TMDB::reload_from_imdb($imdb_id,$debug);
 
     echo $add;
     return;

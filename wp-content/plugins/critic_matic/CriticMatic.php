@@ -22,7 +22,7 @@ class CriticMatic extends AbstractDB {
     private $mw;
     private $ts;
     private $uc;
-    private $si;    
+    private $si;
 
 
     /*
@@ -342,7 +342,7 @@ class CriticMatic extends AbstractDB {
         }
         return $this->cp;
     }
-   
+
     public function get_cc() {
         // Get ClearCommetns
         if (!$this->cc) {
@@ -2169,7 +2169,7 @@ class CriticMatic extends AbstractDB {
         $status = (int) $form_state['status'];
         $from = (int) $form_state['type'];
         $name = $form_state['name'];
-        $show_type = (int) isset($form_state['show_type'])?$form_state['show_type']:0;
+        $show_type = (int) isset($form_state['show_type']) ? $form_state['show_type'] : 0;
         $tags = isset($form_state['post_category']) ? $form_state['post_category'] : array();
 
         $options = array();
@@ -3522,7 +3522,7 @@ class CriticMatic extends AbstractDB {
             return $this->settings;
         }
         // Get settings from options
-        $settings = unserialize($this->get_option('critic_matic_settings','', false));
+        $settings = unserialize($this->get_option('critic_matic_settings', '', false));
 
         if ($settings && sizeof($settings)) {
             foreach ($this->settings_def as $key => $value) {
@@ -3566,12 +3566,11 @@ class CriticMatic extends AbstractDB {
             $ss['posts_type_3'] = $form['posts_type_3'] ? 1 : 0;
             $ss['audience_unique'] = $form['audience_unique'] ? 1 : 0;
             $ss['audience_top_unique'] = $form['audience_top_unique'] ? 1 : 0;
-            
         }
 
         if (isset($form['parser_proxy'])) {
             $ss['parser_proxy'] = base64_encode($form['parser_proxy']);
-             $ss['parser_arhive_async'] = $form['parser_arhive_async'] ? 1 : 0;
+            $ss['parser_arhive_async'] = $form['parser_arhive_async'] ? 1 : 0;
         }
 
         if (isset($form['games_tags'])) {
@@ -3676,8 +3675,8 @@ class CriticMatic extends AbstractDB {
     private function get_cron_name($cron_name) {
         return 'cm_cron_' . $cron_name;
     }
-    
-    public function get_critic_crowd($link_hash='') {
+
+    public function get_critic_crowd($link_hash = '') {
         $sql = sprintf("SELECT * FROM {$this->db['critic_crowd']} WHERE link_hash='%s'", $link_hash);
         $result = $this->db_fetch_row($sql);
         return $result;
@@ -3745,6 +3744,14 @@ class CriticMatic extends AbstractDB {
         $ts_dir = ABSPATH . "wp-content/uploads/docker_sphinx.txt";
         if (file_exists($ts_dir)) {
             unlink($ts_dir);
+        }
+
+        try {
+            //SyncHost
+            !class_exists('SyncHost') ? include ABSPATH . "analysis/include/SyncHost.php" : '';
+            SyncHost::critic_delta_cron();
+        } catch (Exception $ex) {
+            
         }
     }
 

@@ -10,7 +10,7 @@ if (!defined('ABSPATH'))
  * @author brahman
  */
 class SyncHost {
-
+       
     public static function push_file_analysis($path = '', $debug=false) {
         $data = array(
             'cmd' => 'rsync_file_analysis',
@@ -26,6 +26,18 @@ class SyncHost {
         return self::post($data, $host);
     }
 
+    public static function critic_delta_cron() {
+        $data = array(
+            'cmd' => 'critic_delta',
+        );
+
+        if (!defined('SYNC_HOST')) {
+            return false;
+        }
+        $host = SYNC_HOST;        
+        return self::post($data, $host);
+    }
+    
     public static function post($data = array(), $host='') {
 
 
