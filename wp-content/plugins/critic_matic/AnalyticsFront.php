@@ -4576,10 +4576,14 @@ class AnalyticsFront extends SearchFacets {
 
         if (defined('LOCALCACHEIMAGES')) {
             if (LOCALCACHEIMAGES == 1) {
-                $cache_site = 'https://img.4aoc.ru/webp/' . $resolution . '/';
+                $cache_site = 'https://img.4aoc.ru';
+                $current_site ='https://zeitgeistreviews.com';
+            }
+            else if (LOCALCACHEIMAGES ==2)
+            {
+                $cache_site  ='https://img2.zeitgeistreviews.com';
+                $current_site ='https://zeitgeistreviews.com';
 
-                $result = $cache_site . WP_SITEURL . '/analysis/create_image.php?id=m_' . $id . '_v' . $last_update . '.webp';
-                return $result;
             }
         }
 

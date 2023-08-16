@@ -28,7 +28,8 @@ if (!defined('ABSPATH'))
 !class_exists('GETCURL') ? include ABSPATH . "analysis/include/get_curl.php" : '';
 
 !class_exists('CPULOAD') ? include ABSPATH . "service/cpu_load.php" : '';
-
+//SyncHost
+!class_exists('SyncHost') ? include ABSPATH . "analysis/include/SyncHost.php" : '';
 
 require_once(ABSPATH . 'analysis/export/import_db.php');
 // Database
@@ -37,7 +38,13 @@ require_once(ABSPATH . 'analysis/export/import_db.php');
 /// /service/import.php?key=1R3W5T8s13t21a34f&action=sync
 //////service/import.php?key=1R3W5T8s13t21a34f&action=last_commit&count=10
 //////service/import.php?key=1R3W5T8s13t21a34f&action=get_commit&uid=t_add_movies1643729961,t_actor_meta1643729962
-
+if (isset($_REQUEST['test_sync'])) {
+    $path = 'img_final_crowd/0000547.jpg';
+    $debug =1;
+    $ret = SyncHost::push_file_analysis($path, $debug);
+    print_r($ret);
+    exit;
+}
 
 
 if (isset($_REQUEST['key'])) {
