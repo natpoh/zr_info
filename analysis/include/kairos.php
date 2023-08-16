@@ -244,12 +244,19 @@ return $base64;
    public  function curl_save($actor_id, $url, $path = 'img_final')
    {
        $final_value = sprintf('%07d', $actor_id);
-       $dir = $_SERVER['DOCUMENT_ROOT'] . "/analysis/" . $path . "/" . $final_value . ".jpg";
+       $dir = ABSPATH . "analysis/" . $path . "/" . $final_value . ".jpg";
 
        $result = static::getCurlCookieface($url);
        if ($result!='Not Found')
        {
            file_put_contents($dir, $result);
+
+           ///sync
+
+           !class_exists('SyncHost') ? include ABSPATH . "analysis/include/SyncHost.php" : '';
+           $path =  $path . "/" . $final_value . ".jpg";
+           SyncHost::push_file_analysis($path);
+
            return 1;
        }
        else

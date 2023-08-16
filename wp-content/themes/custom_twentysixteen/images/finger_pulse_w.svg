@@ -7,7 +7,7 @@
    viewBox="0 0 63.499999 19.84375"
    version="1.1"
    id="svg5"
-   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
    sodipodi:docname="finger_pulse_w.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -24,21 +24,24 @@
      inkscape:document-units="px"
      showgrid="false"
      units="px"
-     inkscape:zoom="1.6680498"
-     inkscape:cx="86.328358"
-     inkscape:cy="-36.869403"
-     inkscape:window-width="1600"
-     inkscape:window-height="847"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
+     inkscape:zoom="3.3360996"
+     inkscape:cx="77.635572"
+     inkscape:cy="-50.208333"
+     inkscape:window-width="2560"
+     inkscape:window-height="1351"
+     inkscape:window-x="-9"
+     inkscape:window-y="1341"
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1"
      showguides="true"
-     inkscape:guide-bbox="true">
+     inkscape:guide-bbox="true"
+     inkscape:showpageshadow="0"
+     inkscape:deskcolor="#b8b8b8">
     <sodipodi:guide
        position="-1.744802,12.817154"
        orientation="1,0"
-       id="guide43449" />
+       id="guide43449"
+       inkscape:locked="false" />
   </sodipodi:namedview>
   <defs
      id="defs2">
@@ -147,16 +150,17 @@
          id="tspan36352" /></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:2.84913px;line-height:1.25;font-family:sans-serif;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.0712284"
-       x="22.992811"
-       y="4.3155046"
-       id="text38783"><tspan
+       style="font-style:normal;font-weight:normal;font-size:2.6891px;line-height:1.25;font-family:sans-serif;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.0672277"
+       x="24.375921"
+       y="4.073113"
+       id="text38783"
+       transform="scale(0.94383241,1.0595101)"><tspan
          sodipodi:role="line"
          id="tspan38781"
-         style="fill:#ffffff;fill-opacity:1;stroke-width:0.0712284"
-         x="22.992811"
-         y="4.3155046">What's the world <tspan
-   style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:sans-serif;-inkscape-font-specification:'sans-serif Italic'"
+         style="fill:#ffffff;fill-opacity:1;stroke-width:0.0672277"
+         x="24.375921"
+         y="4.073113">What does the world <tspan
+   style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:sans-serif;-inkscape-font-specification:'sans-serif Italic';stroke-width:0.0672277"
    id="tspan12291">really</tspan> think?</tspan></text>
   </g>
 </svg>

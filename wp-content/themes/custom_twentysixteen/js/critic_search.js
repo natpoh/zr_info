@@ -101,6 +101,7 @@ critic_search.autocomplite = [];
 critic_search.no_submit_filters = [];
 critic_search.enable_submit = true;
 critic_search.last_submit = 0;
+critic_search.uid = 0;
 
 critic_search.in_no_submit = function (id) {
     const index = critic_search.no_submit_filters.indexOf(id);
@@ -216,6 +217,12 @@ critic_search.init = function ($custom_id = '') {
         console.log('init', $custom_id);
     }
     var $ = jQuery;
+
+    critic_search.uid = 0;
+    if ($('body.logged-in #ucnt').length) {
+        critic_search.uid = $('#ucnt').attr('data-id');
+    }
+
     // Facets
     $('.facet:not(.init)').each(function (i, v) {
         var v = $(v);
@@ -488,7 +495,9 @@ critic_search.init = function ($custom_id = '') {
                 }
             }
         }
-}
+    }
+    // Save filters
+    critic_search.init_save_filters();
 }
 
 critic_search.init_more = function (v) {
@@ -827,13 +836,9 @@ critic_search.add_clear_all = function () {
         clear_url = clear_url + '/tab_' + tab
     }
 
+    critic_search.init_save_filters();
+    
     var filter_len = $('.filters-wrapper .filter:not(.sohf)').length;
-
-    if (filter_len > 0 && !$(".filters-wrapper .save-filters").length) {
-        $('.filters-wrapper').append('<li class="filter save-filters sohf" title="Save filters">Save <i class="icon icon-star"></i></li>');
-        critic_search.init_save_filters();
-    }
-
     if (filter_len >= 3 && !$(".filters-wrapper .clear-all").length) {
         $('.filters-wrapper .save-filters').before('<li class="filter clear-all" title="Clear filters"><a href="' + clear_url + '">Clear <span class="close"></span></a></li>');
     }
@@ -863,16 +868,104 @@ critic_search.remove_filter = function (type, id) {
 
 critic_search.init_save_filters = function () {
     var $ = jQuery;
+    
+    var filter_len = $('.filters-wrapper .filter:not(.sohf)').length;
+    if (filter_len > 0 && !$(".filters-wrapper .save-filters").length) {
+        // Append save
+        $('.filters-wrapper').append('<li class="filter save-filters sohf" title="Save filter">Save <i class="icon icon-star"></i></li>');
+    }
+
+    var save_filter = $(".filters-wrapper .save-filters");
+
+    if (save_filter.length) {
+        var data_uf = 0;
+        var edit = false;
+
+        if ($('#search-url').length > 0) {
+            data_uf = $('#search-url').attr('data-uf');
+        }
+        if (data_uf > 0) {
+            edit = true;
+        }
+
+        if (!edit && save_filter.hasClass('edit')) {
+            save_filter.removeClass('edit');
+            save_filter.attr('title', 'Save filter');
+            save_filter.html('Save <i class="icon icon-star"></i>');
+
+        } else if (edit && !save_filter.hasClass('edit')) {
+            save_filter.addClass('edit');
+            save_filter.attr('title', 'Edit filter');
+            save_filter.html('Edit <i class="icon icon-star"></i>');
+        }
+
+    }
+
     $(".filters-wrapper .save-filters:not(.init)").each(function () {
         var $this = $(this);
         $this.addClass('init');
-        $this.click(function () {           
+        $this.click(function () {
+            if (critic_search.uid == 0) {
+                return false;
+            }
             if (typeof add_popup !== "undefined") {
                 add_popup();
-                var content ='popup form';
+                var filter_title = $(".filters-wrapper .save-filters").attr('title');
+                var content = '<div class="default_popup"><h2>' + filter_title + '</h2><div id="link_form"><div class="loading"><i class="icon icon-loader"></i></div><div class="form"></div></div></div>';
                 jQuery('.popup-content').html(content);
-                jQuery('.popup-content').append('<label for="action-popup" class="popup-close-btn">Close</label>');
                 jQuery('input[id="action-popup"]').click();
+
+                var data = {
+                    'link_form': 1,
+                    'wpapi': 1,
+                    'url': window.location.pathname,
+                }
+                critic_search.ajax(data, function (rtn) {
+                    $('#link_form').addClass('load');
+                    $('#link_form .form').html(rtn);
+                    // Add title
+                    var filter_placeholder = '';
+                    $('.filters-wrapper .filter.init:not(.sohf)').each(function () {
+                        var title = $(this).attr('title');
+
+                        if (filter_placeholder == '') {
+                            filter_placeholder = title;
+                        } else {
+                            filter_placeholder += ' and ' + title;
+                        }
+                    });
+                    $('.col_input .title').attr('placeholder', filter_placeholder).focus();
+                    $('#submit-filter').click(function () {
+                        var title = $('#link_form .col_input .title').val();
+                        if (!title) {
+                            title = $('#link_form .col_input .title').attr('placeholder');
+                        }
+                        var publish = 0;
+                        if ($('#link_form input#publish').prop('checked')) {
+                            publish = 1;
+                        }
+                        var send_data = {
+                            'wpapi': 1,
+                            'link_form': 1,
+                            'submit': 1,
+                            'link': $('#link_form .col_input .link').val(),
+                            'title': title,
+                            'content': $('#link_form .col_input .content').val(),
+                            'publish': publish,
+                        }
+
+                        $('#link_form').removeClass('load');
+                        critic_search.ajax(send_data, function (rtn) {
+                            $('#link_form').addClass('load');
+                            $('#link_form .form').html(rtn);
+                            if ($('#link_form .form .success').length) {
+                                $('#search-url').attr('data-uf', 1);
+                                critic_search.init_save_filters();
+                            }
+                        });
+                        return false;
+                    })
+                });
             }
             return false;
         });
@@ -944,6 +1037,7 @@ critic_search.submit = function (inc = '', target = '', facetid = '') {
     var data = {};
 
     data['inc'] = inc;
+    data['uid'] = critic_search.uid;
 
     critic_search.last_submit = Date.now();
     data['ts'] = critic_search.last_submit;
@@ -1104,6 +1198,7 @@ critic_search.submit = function (inc = '', target = '', facetid = '') {
         //Url and Title
         $rtn.find('#search-url').each(function (i, v) {
             var v = $(v), id = v.attr('data-id');
+            $('#search-url').replaceWith(v);
             history.pushState({path: id}, "", id);
             $('title').html(v.attr('data-title'));
             inc = v.attr('data-inc');

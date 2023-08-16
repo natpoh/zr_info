@@ -11,7 +11,8 @@ if (!defined('ABSPATH'))
 !class_exists('GETCURL') ? include ABSPATH . "analysis/include/get_curl.php" : '';
 
 !class_exists('METALOG') ? include ABSPATH . "analysis/include/meta_log.php" : '';
-
+//SyncHost
+!class_exists('SyncHost') ? include ABSPATH . "analysis/include/SyncHost.php" : '';
 
 
 

@@ -46,7 +46,7 @@
 //                                $logo = get_custom_logo();
 //                            }
 
-                            $logo ='<a class="zr_logo" href="'.esc_url(home_url('/')).'" ><div class="zr_logo_img"><span class="zr_logo_description">What\'s the world <i>really</i> think?</span></div><span class="zr_logo_site_name">Zeitgeist<span class="zr_logo_ws">Reviews</span></span></a>';
+                            $logo ='<a class="zr_logo" href="'.esc_url(home_url('/')).'" ><div class="zr_logo_img"><span class="zr_logo_description">What does the world <i>really</i> think?</span></div><span class="zr_logo_site_name">Zeitgeist<span class="zr_logo_ws">Reviews</span></span></a>';
                             if ($logo) {
                                 echo $logo;
                             } else {
@@ -144,7 +144,7 @@
                                 }
                                 ?>
 
-                                <div id="ucnt" class="collapse">
+                                <div id="ucnt" class="collapse" data-id="<?php print $uid?>">
                                     <ul class="userlinks dropdown-menu">
                                         <li class="uname">
                                             <?php if ($uid) { ?>

@@ -15,7 +15,7 @@
                 <div class="filters_btn">
                     <a id="fiters-btn" class="search-filters-btn" href="#filters" title="Advanced search filters"><span class="filters-icon"></span> Search filters</a>                    
                 </div>
-                <?php $search_front->theme_search_url($search_url, $search_text, $inc); ?>
+                <?php $search_front->theme_search_url($search_url, $search_text, $inc, $user_filter_id); ?>
                 <?php
                 ///var_dump($search_front->cs->search_filters);
                 $sfilters = $search_front->cs->search_filters;

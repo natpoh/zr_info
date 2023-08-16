@@ -314,8 +314,6 @@ if (isset($_POST['action']) && $_POST['action'] == 'author_autocomplite') {
 if (isset($_GET['oper']) && isset($_GET['debug'])) {
 
 
-
-
     $_POST= $_GET;
     global $debug;
     $debug = $_GET['debug'];
@@ -378,8 +376,7 @@ if (isset($_POST['oper'])) {
     }
 
 
-
-    if ($oper == 'crowd_submit') {
+    else if ($oper == 'crowd_submit') {
 
 
 
@@ -681,7 +678,8 @@ if (isset($_POST['oper'])) {
                 }
             }
         }
-    } else if ($oper == 'get_search_movie') {
+    }
+    else if ($oper == 'get_search_movie') {
         $m_id = intval($_POST['id']);
         $r_id = intval($_POST['r_id']);
         $only_movie = intval($_POST['only_movie']);
@@ -942,7 +940,8 @@ if (isset($_POST['oper'])) {
 
 
         echo $content;
-    } else if ($oper == 'actor_crowd') {
+    }
+    else if ($oper == 'actor_crowd') {
 
         ///get ethnic array
         $sql = "SELECT val  FROM `options` where id = 4";
@@ -974,7 +973,8 @@ if (isset($_POST['oper'])) {
         $content = Crowdsource::front('actor_crowdsource', $array_rows, $array_user, $id);
 
         echo $content;
-    } else if ($oper == 'pg_rating') {
+    }
+    else if ($oper == 'pg_rating') {
 //`message`, `message_comment`, `nudity`, `nudity_comment`, `violence`, `violence_comment`, `language`, `language_comment`,
 // `drugs`, `drugs_comment`, `other`, `other_comment`
         ///get movie header
@@ -1007,7 +1007,8 @@ if (isset($_POST['oper'])) {
 
         $content = Crowdsource::front('moviespgcrowd', $array_rows, $array_user, $id);
         echo $chead . $content;
-    } else if ($oper == 'add_critic') {
+    }
+    else if ($oper == 'add_critic') {
 
 
         include(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/movie_single_template.php');

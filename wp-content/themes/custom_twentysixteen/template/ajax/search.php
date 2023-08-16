@@ -4,18 +4,24 @@
  * Ajax search for critic matic api
  */
 
-if (!defined('ABSPATH')) {
-    define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
-}
-
-if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
-    define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
-    require_once( CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php' );
-}
-
 $search_data = $_POST;
 $ts = $search_data['ts'];
 
+if (isset($search_data['wpapi'])) {
+    // Wp api
+    require_once($_SERVER['DOCUMENT_ROOT'] . '/wp-config.php');
+} else {
+    // no wp api
+    
+    if (!defined('ABSPATH')) {
+        define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
+    }
+
+    if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
+        define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
+        require_once( CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php' );
+    }
+}
 
 if (isset($search_data['search_type']) && $search_data['search_type'] == 'ajax') {
     unset($search_data['search_type']);
@@ -161,6 +167,10 @@ if (isset($search_data['search_type']) && $search_data['search_type'] == 'ajax')
     }
     // Facets
     $facets = $results[$tab_key]['facets'];
+    
+    // User filter
+    $uid = $search_data['uid']? (int) $search_data['uid']:0;
+    $user_filter_id = $search_front->get_user_search_filter($uid, $search_url);
 
     if ($analytics) {
         include (ABSPATH . 'wp-content/themes/custom_twentysixteen/template-parts/analytics-inner.php');
@@ -197,6 +207,18 @@ if (isset($search_data['search_type']) && $search_data['search_type'] == 'ajax')
         $rules = $search_data['data'];
         $rules_id = $search_front->get_id_by_rules($rules);
         print $rules_id;
+    }
+} else if (isset($search_data['link_form'])) {
+    global $cfront;
+
+    $uf = $cfront->get_uf();
+    
+    // Get form
+    if (isset($search_data['submit'])){
+        $uf->submit($search_data);
+    } else if (isset($search_data['url'])) {
+        $url = $search_data['url'];
+        $uf->link_form($url);        
     }
 }
 exit;

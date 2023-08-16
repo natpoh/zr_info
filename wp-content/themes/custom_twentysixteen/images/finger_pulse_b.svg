@@ -24,13 +24,13 @@
      inkscape:document-units="px"
      showgrid="false"
      units="px"
-     inkscape:zoom="1.6680498"
-     inkscape:cx="86.92786"
-     inkscape:cy="-36.869403"
+     inkscape:zoom="3.3360996"
+     inkscape:cx="63.847015"
+     inkscape:cy="-4.346393"
      inkscape:window-width="2560"
      inkscape:window-height="1351"
      inkscape:window-x="-9"
-     inkscape:window-y="-9"
+     inkscape:window-y="1341"
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1"
      showguides="true"
@@ -150,16 +150,17 @@
          id="tspan36352" /></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:2.84913px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.0712284"
-       x="22.992811"
-       y="4.3155046"
-       id="text38783"><tspan
+       style="font-style:normal;font-weight:normal;font-size:2.69409px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.0673524"
+       x="24.330334"
+       y="4.0806699"
+       id="text38783"
+       transform="scale(0.94558348,1.0575481)"><tspan
          sodipodi:role="line"
          id="tspan38781"
-         style="fill:#000000;fill-opacity:1;stroke-width:0.0712284"
-         x="22.992811"
-         y="4.3155046">What's the world <tspan
-   style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:sans-serif;-inkscape-font-specification:'sans-serif Italic';fill:#000000;fill-opacity:1"
+         style="fill:#000000;fill-opacity:1;stroke-width:0.0673524"
+         x="24.330334"
+         y="4.0806699">What does the world <tspan
+   style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:sans-serif;-inkscape-font-specification:'sans-serif Italic';fill:#000000;fill-opacity:1;stroke-width:0.0673524"
    id="tspan12291">really</tspan> think?</tspan></text>
   </g>
 </svg>

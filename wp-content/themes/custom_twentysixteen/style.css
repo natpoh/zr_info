@@ -154,7 +154,7 @@ body.theme_dark  details.dark {
     background-color: #000;
 }
 details >summary, details[open] >summary {
-list-style: none;
+    list-style: none;
 }
 details{
     position: relative;
@@ -227,86 +227,86 @@ details.dark summary {
 
 
 body.theme_dark details.dark summary {
-color: #fff;
+    color: #fff;
     background-color: #111111;
 }
 details.dark>div{
-padding: 0px;
+    padding: 0px;
 }
 audio,
 canvas,
 progress,
 video {
-display: inline-block;
-vertical-align: baseline;
+    display: inline-block;
+    vertical-align: baseline;
 }
 
 audio:not([controls]) {
-display: none;
-height: 0;
+    display: none;
+    height: 0;
 }
 
 [hidden],
 template {
-display: none;
+    display: none;
 }
 
 a {
-background-color: transparent;
+    background-color: transparent;
 }
 
 abbr[title] {
-border-bottom: 1px dotted;
+    border-bottom: 1px dotted;
 }
 
 b,
 strong {
-font-weight: 700;
+    font-weight: 700;
 }
 
 small {
-font-size: 80%;
+    font-size: 80%;
 }
 
 sub,
 sup {
-font-size: 75%;
-line-height: 0;
-position: relative;
-vertical-align: baseline;
+    font-size: 75%;
+    line-height: 0;
+    position: relative;
+    vertical-align: baseline;
 }
 
 sup {
-top: -0.5em;
+    top: -0.5em;
 }
 
 sub {
-bottom: -0.25em;
+    bottom: -0.25em;
 }
 
 img {
-border: 0;
+    border: 0;
 }
 
 svg:not(:root) {
-overflow: hidden;
+    overflow: hidden;
 }
 
 figure {
-margin: 0;
+    margin: 0;
 }
 
 hr {
--webkit-box-sizing: content-box;
--moz-box-sizing: content-box;
-box-sizing: content-box;
+    -webkit-box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    box-sizing: content-box;
 }
 
 code,
 kbd,
 pre,
 samp {
-font-size: 1em;
+    font-size: 1em;
 }
 
 button,
@@ -314,53 +314,53 @@ input,
 optgroup,
 select,
 textarea {
-color: inherit;
-font: inherit;
-margin: 0;
+    color: inherit;
+    font: inherit;
+    margin: 0;
 }
 
 select {
-text-transform: none;
+    text-transform: none;
 }
 
 button {
-overflow: visible;
+    overflow: visible;
 }
 
 button,
 input,
 select,
 textarea {
-max-width: 100%;
+    max-width: 100%;
 }
 
 button,
 html input[type="button"],
 input[type="reset"],
 input[type="submit"] {
--webkit-appearance: button;
-cursor: pointer;
+    -webkit-appearance: button;
+    cursor: pointer;
 }
 
 button[disabled],
 html input[disabled] {
-cursor: default;
-opacity: .5;
+    cursor: default;
+    opacity: .5;
 }
 
 button::-moz-focus-inner,
 input::-moz-focus-inner {
-border: 0;
-padding: 0;
+    border: 0;
+    padding: 0;
 }
 
 input[type="checkbox"],
 input[type="radio"] {
--webkit-box-sizing: border-box;
--moz-box-sizing: border-box;
-box-sizing: border-box;
-margin-right: 0.4375em;
-padding: 0;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    margin-right: 0.4375em;
+    padding: 0;
 }
 
 input[type="date"]::-webkit-inner-spin-button,
@@ -375,41 +375,41 @@ input[type="month"]::-webkit-inner-spin-button,
 input[type="month"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
-height: auto;
+    height: auto;
 }
 
 input[type="search"] {
--webkit-appearance: textfield;
+    -webkit-appearance: textfield;
 }
 
 input[type="search"]::-webkit-search-cancel-button,
 input[type="search"]::-webkit-search-decoration {
--webkit-appearance: none;
+    -webkit-appearance: none;
 }
 
 fieldset {
-border: 1px solid #d1d1d1;
-margin: 0 0 1.75em;
-min-width: inherit;
-padding: 0.875em;
+    border: 1px solid #d1d1d1;
+    margin: 0 0 1.75em;
+    min-width: inherit;
+    padding: 0.875em;
 }
 
 fieldset > :last-child {
-margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 legend {
-border: 0;
-padding: 0;
+    border: 0;
+    padding: 0;
 }
 
 textarea {
-overflow: auto;
-vertical-align: top;
+    overflow: auto;
+    vertical-align: top;
 }
 
 optgroup {
-font-weight: bold;
+    font-weight: bold;
 }
 
 
@@ -1183,6 +1183,40 @@ input.radio {
     visibility: visible!important;
 }
 
+#link_form .loading {
+    text-align: center;
+}
+
+#link_form .form {
+    display: none;
+}
+
+#link_form.load .form {
+    display: block;
+}
+#link_form.load .loading {
+    display: none;
+}
+
+#link_form .logged-in-as {
+    margin: 0;
+}
+
+.form-check {
+    display: flex;
+    user-select:none;
+}
+
+.form-check input {
+    width: 16px;
+    height: 16px;
+    margin-top: 4px;
+}
+
+.row-form .row {
+    margin-bottom: 0.5rem;
+}
+
 /**
  * 6.0 - Navigation
  */
@@ -1339,8 +1373,9 @@ body.theme_dark  .tab-wrapper li.nav-tab a {
 }
 
 .sort-wrapper.more .nav-tab.title + :not(.nav-tab:not(.title)) {
-  display: none;
+    display: none;
 }
+
 
 .nav-tab.group {
     display: inline-block; 
@@ -2937,15 +2972,23 @@ body.theme_dark #search-filters .filter {
     display: none;
 }
 
-#search-filters .sohf.save-filters {
-   /* display: inline-block;*/
+body.logged-in #search-filters .sohf.save-filters {
+    /*display: inline-block;*/
+    display: none;
+}
+
+#search-filters .sohf.save-filters {    
     background: #b90303;
     color: #fff;
     padding-right: 5px;
 }
 
+#search-filters .sohf.save-filters.edit {    
+    background: #777777;
+}
+
 #search-filters .sohf.save-filters:hover {
-    background: #000;
+    background: #424242;
 }
 
 .facet .facet-title,
@@ -2992,8 +3035,8 @@ body.theme_dark #search-filters .filter {
 }
 
 .wacc {
-     cursor: pointer;
-     user-select: none;
+    cursor: pointer;
+    user-select: none;
 }
 
 .facet .acc,
@@ -3005,7 +3048,7 @@ body.theme_dark #search-filters .filter {
     border: 1px solid #afafaf;
     border-radius: 4px;
     padding: 3px;
-   
+
     margin: 2px;
     min-width: 28px;
     background:  #f1f1f1;
@@ -3386,7 +3429,7 @@ i.mtcr{
 }
 
 .multi_pm label {
-        cursor: pointer;
+    cursor: pointer;
 }
 
 .multi_pm label {
@@ -8319,11 +8362,11 @@ body.theme_dark .site_theme_switch::before {
         display: inline-block;
         font-size: 13px;
         white-space: nowrap;
-        padding-left: 8px;
         color: #ccc;
         line-height: 13px;
         padding-top: 3px;
         opacity: 0;
+        transform: scaleX(0.9);
     }
 
 
