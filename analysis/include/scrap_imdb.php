@@ -978,12 +978,13 @@ $sql ="SELECT * FROM `data_actors_crowd` WHERE `image`!='' and `loaded` IS NULL 
         $sql ="UPDATE `data_actors_crowd` SET `loaded`={$loaded} WHERE `id`=".$r['id'];
         Pdo_an::db_query($sql);
 
-        ///update actor meta
-        $sql2 = "UPDATE `data_actors_meta` SET `last_update` = '".time()."' WHERE `data_actors_meta`.`actor_id` = '".$r['actor_id']."'";
-        Pdo_an::db_query($sql2);
-
-        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-        Import::create_commit('', 'update', 'data_actors_meta', array('actor_id' => $r['actor_id']), 'actor_meta',9,['skip'=>['id']]);
+        if ($loaded) {
+            ///update actor meta
+            $sql2 = "UPDATE `data_actors_meta` SET `last_update` = '" . time() . "', `crowd_img` = 1 WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
+            Pdo_an::db_query($sql2);
+            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+            Import::create_commit('', 'update', 'data_actors_meta', array('actor_id' => $r['actor_id']), 'actor_meta', 9, ['skip' => ['id']]);
+        }
 
     }
 

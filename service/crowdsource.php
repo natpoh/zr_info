@@ -744,13 +744,16 @@ if (isset($_POST['oper'])) {
          echo $result;
 
          ///clear page cache
-         if ($result==2 || $type =='last_movie_update')
+         if ($result==2 || $type =='last_movie_update' || $type =='clear_page_cache')
          {
              if (!function_exists('wp_custom_cache')) {
                  require(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/include/custom_cahe.php');
              }
 
               clear_wp_custom_cache('p-'.$id.'_show_actors_template_single_1', 'fastcache');
+              clear_wp_custom_cache('p-'.$id.'_single_movie_list_1', 'fastcache');
+
+             if ( $type =='clear_page_cache')echo  1;
          }
         return;
     }

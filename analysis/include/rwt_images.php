@@ -21,11 +21,16 @@ class RWTimages
 
     public static function get_meta_img($id)
     {
-        $sql = "SELECT `img` FROM `data_actors_meta` WHERE `actor_id`=".intval($id)." limit 1";
+        $sql = "SELECT `img`, `tmdb_img` ,`crowd_img` FROM `data_actors_meta` WHERE `actor_id`=".intval($id)." limit 1";
         $r = Pdo_an::db_fetch_row($sql);
         if ($r)
         {
         $result =  $r->img;
+        $result_tmdb =  $r->tmdb_img;
+
+        if ($result_tmdb)$result=2;
+
+        if (!$result && $r->crowd_img==1)$result=3;
         }
         if (!$result)$result=0;
         return $result;

@@ -71,7 +71,7 @@ if ( current_user_can( 'administrator' ) ) {
         $update_link = ' <a target="_blanc" class="admin_link" href="'.WP_SITEURL.'/analysis/include/scrap_imdb.php?get_imdb_movie_id='.$post_id.'&debug=1"  >update data</a> <a  target="_blanc" class="admin_link"  href="https://info.antiwoketomatoes.com/analysis/include/scrap_imdb.php?get_imdb_movie_id='.$post_id.'&debug=1"  >update server data</a>';
 
     }
-    echo '<p class="last_updated_desc">Last updated: '.$last_imdb_updated_string. $update_link.'</p>';
+    echo '<p class="last_updated_desc">Last updated: '.$last_imdb_updated_string. $update_link.' <a href="#" id="clear_page_cache" data-value="'.$post_id.'" class="update_data">Clear cache</a></p>';
     }
 
 
