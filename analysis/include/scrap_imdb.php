@@ -2150,7 +2150,7 @@ function set_actors_ethnic($id)
 {
     !class_exists('Ethinc') ? include ABSPATH . "analysis/include/ethnic.php" : '';
 
-
+global $debug;
 
 
         if (isset($_GET['debug']))$debug =1;
@@ -2163,7 +2163,7 @@ function set_actors_ethnic($id)
 //
 //    if (isset($_GET['update']))
 //    {
-//        Ethinc::update_verdict_meta($id);
+//       Ethinc::update_verdict_meta($id);
 //    }
 
 }

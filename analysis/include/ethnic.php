@@ -50,7 +50,7 @@ class Ethinc
 
     public static function update_verdict_meta($id='')
     {
-
+        global $debug;
         self::check_verdict($id);
 
         $array_min = array('Asian' => 'EA', 'White' => 'W', 'Latino' => 'H', 'Black' => 'B', 'Arab' => 'M', 'Dark Asian' => 'I', 'Jewish' => 'JW', 'Other' => 'MIX', 'Mixed / Other' => 'MIX', 'Indigenous' => 'IND', 'Not a Jew' => 'NJW', 'Sadly, not' => 'NJW');
@@ -79,7 +79,13 @@ class Ethinc
 
             if ($verdict_result)
             {
-                //echo $verdict.'=>'.$verdict_result.' '.PHP_EOL;
+
+
+
+                if ($debug)
+                {
+                    echo 'update meta: '.$verdict.'=>'.$verdict_result.' '.PHP_EOL;
+                }
 
                 $sql1 = "UPDATE `data_actors_meta` SET  n_ethnic ='".self::intconvert($verdict_result)."' ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $actor_id . "'";
                 Pdo_an::db_query($sql1);
@@ -88,6 +94,10 @@ class Ethinc
             }
             else
             {
+                if ($debug)
+            {
+                 echo 'not found '.$verdict.PHP_EOL;
+            }
                // echo 'not found '.$verdict.PHP_EOL;
             }
 
@@ -272,9 +282,15 @@ class Ethinc
 
 
             $race = trim($race);
-            $race = preg_replace('#([0-9\/]+)#',' ',$race);
+            $race = preg_replace('#([\*0-9\/]+)#',' ',$race);
             $race = ucfirst($race);
 
+            global $debug;
+
+            if ($debug)
+            {
+                echo $race.'<br>';
+            }
 
 
             if ($array_compare[$race]) {
@@ -291,12 +307,12 @@ class Ethinc
         return array($result_array, $array_notfound);
     }
 
-    public static function set_actors_ethnic($id='',$force =0,$debug=0)
+    public static function set_actors_ethnic($aid='',$force =0,$debug=0)
     {
         if ($force)
         {
             $sql = "UPDATE `data_actors_ethnic` SET `verdict` ='' ";
-            Pdo_an::db_results_array($sql);
+           Pdo_an::db_results_array($sql);
 
         }
 
@@ -307,9 +323,9 @@ class Ethinc
         }
         $where='';
 
-        if ($id)
+        if ($aid)
         {
-            $where = " where actor_id = {$id} ";
+            $where = " where actor_id = {$aid} ";
         }
         else if ($force){
             $where = '';
@@ -323,7 +339,7 @@ class Ethinc
 //var_dump($array_compare);
         $array_notfound = [];
         $sql = "select * from data_actors_ethnic ".$where;
-        if ($debug) echo $sql;
+        if ($debug) echo $sql.'<br>';
         $array_movie = Pdo_an::db_results_array($sql);
         $array_ethnic_result = [];
         foreach ($array_movie as $movie_data) {
@@ -410,14 +426,22 @@ class Ethinc
 
             if ($debug)
             {
+
+                !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
                 echo 'ethnic_result_data: <br>';
-                var_dump($ethnic);
+                TMDB::var_dump_table($ethnic);
                 echo '<br>';
             }
 
                 $ethnic_result_data=$array_ethnic_result[$id] ;
                 $result_array = [];
 
+            if ($debug)
+            {
+
+                TMDB::var_dump_table($ethnic_result_data);
+
+            }
 
                 if ($ethnic_result_data['tags']) {
 
@@ -470,7 +494,12 @@ class Ethinc
             if ($debug)
             {
                 echo 'result_array: <br>';
-                var_dump($result_array);
+                if ($debug)
+                {
+
+                    TMDB::var_dump_table($result_array);
+
+                }
                 echo '<br>';
             }
 
@@ -482,7 +511,7 @@ class Ethinc
 
                     self::addverdict($id,$result_array,$debug);
 
-                   /// self::update_verdict_meta($id);
+                   self::update_verdict_meta($aid);
                 }
                 else
                 {
@@ -496,12 +525,19 @@ class Ethinc
 
         echo '<br>' . PHP_EOL;
         arsort($array_notfound);
-        print_r($array_notfound);
+
+
+        if ($debug && $array_notfound)
+        {
+            echo 'not found';
+            TMDB::var_dump_table($array_notfound);
+        }
 
 
         ///create verdict
-
-       // self::update_verdict_meta();
+//        if ($force) {
+//            self::update_verdict_meta($id);
+//        }
     }
 
 

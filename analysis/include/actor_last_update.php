@@ -419,7 +419,7 @@ class ActorsInfo{
 
 
         $ethnic = self::actor_data($aid,'data_actors_ethnic','actor_id');
-        $array_actors['ethnic']=self::array_to_content($ethnic,'Ethnicelebs: '. self::todate($ethnic['last_update']),'db: '.self::link_db('data_actors_ethnic').' ',1,['ethnic_verdict'],'last_update','','',self::generateShade('#00ff00'));
+        $array_actors['ethnic']=self::array_to_content($ethnic,'Ethnicelebs: '. self::todate($ethnic['last_update']),'db: '.self::link_db('data_actors_ethnic').' <a target="_blank" href="/analysis/include/scrap_imdb.php?set_actors_ethnic=4399227&debug=1">update</a>',1,['ethnic_verdict'],'last_update','','',self::generateShade('#00ff00'));
         $array_actors['ethnic_verdict']=self::array_to_content($actors_meta,'Ethnicelebs Verdict: '. $acc[$rsm[$actors_meta['n_ethnic']]],'db: '.self::link_db('data_actors_meta').' ',1,[['verdict',2]],'last_update',$ethnic['verdict'],'n_ethnic');
 
 
