@@ -2878,6 +2878,13 @@ if (isset($_GET['check_imdb'])) {
 }
 if (isset($_GET['check_face'])) {
 
+    if (isset($_GET['debug']))
+    {
+        global $debug;
+        $debug=$_GET['debug'];
+    }
+
+
 check_face($_GET['check_face']);
     return;
 }
