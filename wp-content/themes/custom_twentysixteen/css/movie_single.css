@@ -1036,13 +1036,13 @@ body.theme_dark  a.button_child_extlink {
 }
 
 
-body.theme_dark  .page_custom_block .tab-content {
+.theme_dark  .page_custom_block .tab-content {
 
     border-top: unset;
 
 }
 
-body.theme_dark .page_custom_block .tab-list-child {
+.theme_dark .page_custom_block .tab-list-child {
     border-bottom:  unset;
 }
 
@@ -1065,13 +1065,13 @@ body.theme_dark .page_custom_block .tab-list-child {
 .page_custom_block   .gsc-input{
     background: transparent!important;
 }
-body.theme_dark  .page_custom_block .gsc-completion-container {
+.theme_dark  .page_custom_block .gsc-completion-container {
     font-family: Roboto, sans-serif;
     font-size: 16px;
     background: #1f1f1f!important;
     border: 1px solid #232323;
 }
-body.theme_dark  .gs-no-results-result .gs-snippet,body.theme_dark  .gs-error-result .gs-snippet {
+.theme_dark  .gs-no-results-result .gs-snippet,.theme_dark  .gs-error-result .gs-snippet {
     background-color: rgb(83 77 48);
     border: 1px solid rgb(44 40 29);
 
@@ -1103,23 +1103,23 @@ body.gsc-overflow-hidden {
     display: none;
 }
 
-body.theme_dark .page_custom_block .gsc-results-wrapper-overlay {
+.theme_dark .page_custom_block .gsc-results-wrapper-overlay {
     background-color: #171717;
 
 }
 
-body.theme_dark .gs-webResult .gs-snippet, body.theme_dark  .gs-fileFormatType {
+.theme_dark .gs-webResult .gs-snippet, .theme_dark  .gs-fileFormatType {
     color: #cbcbcb;
 }
-body.theme_dark .gsc-webResult.gsc-result {
+.theme_dark .gsc-webResult.gsc-result {
     border: 1px solid #2f2f2f;
 }
 
-body.theme_dark .gsc-above-wrapper-area {
+.theme_dark .gsc-above-wrapper-area {
     border-bottom:  1px solid #2f2f2f;
  }
 
-body.theme_dark  .gs-result .gs-title *, body.theme_dark  .gsc-cursor-page, .gs-spelling a {
+.theme_dark  .gs-result .gs-title *, .theme_dark  .gsc-cursor-page, .gs-spelling a {
     color: #5da8e7;
 }
 .rotten_tomatoes_score>span::before{

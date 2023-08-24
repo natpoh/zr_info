@@ -1426,10 +1426,47 @@ function showTab_inner(button) {
 
 
         let isContentDivEmpty = !contentDiv.innerHTML.trim();
+        let content_type = gs_ob_current[tabName].data.content_type;
+        let search_block = '<div class=\"gcse-search\"></div>';
+        if (content_type == 0) {
+            let script_src='';
+            if (gs_ob_current[tabName].data.script) {
+                script_src = (gs_ob_current[tabName].data.script);
+            }
+
+            let sublass ='';
+            if (document.querySelector('body').classList.contains('theme_dark'))
+            {
+                sublass = ' theme_dark';
+            }
+
+            search_block = `<iframe class="gcse-search-main" srcdoc='<meta name="viewport" content="width=device-width, initial-scale=1"><body class="${sublass}"><div class="page_custom_block"><div class="gcse-search"></div></div></div><script type="text/javascript" src="${script_src}"></script>
+<script type="text/javascript" >
+    let gsContent = document.querySelector("div.page_custom_block");
+    var observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+            if (mutation.addedNodes) {
+                mutation.addedNodes.forEach(function (addedNode) {
+                    if (addedNode.classList && addedNode.classList.contains("gsc-input")  && addedNode.nodeName === "INPUT") {
+                        addedNode.value = "${gs_ob[block_id].title}";
+                        document.querySelector("button.gsc-search-button").click();
+                        observer.disconnect();
+                    }
+                });
+            }
+        });
+    });
+
+    var config = {childList: true, subtree: true};
+    observer.observe(gsContent, config);
+
+</script>
+<link rel="stylesheet"  href="/wp-content/themes/custom_twentysixteen/css/google_cse.css" type="text/css" />' ></iframe>`;
+        }
 
         if (isContentDivEmpty)
         {
-            contentDiv.innerHTML = "<h3 class = \"gs_head gs_head_" + tabName + "\">" + gs_ob_current[tabName].data.name + ": <a target='_blank' href=\"" + gs_ob_current[tabName].data.link + "\" class=\"button_child_extlink\"></a></h3><div class=\"tab_content_gs_block\"><div class=\"gcse-search\"></div></div><p>" + sub_content + gs_ob_current[tabName].data.dop_content + "</p>";
+            contentDiv.innerHTML = "<h3 class = \"gs_head gs_head_" + tabName + "\">" + gs_ob_current[tabName].data.name + ": <a target='_blank' href=\"" + gs_ob_current[tabName].data.link + "\" class=\"button_child_extlink\"></a></h3><div class=\"tab_content_gs_block\">"+search_block+"</div><p>" + sub_content + gs_ob_current[tabName].data.dop_content + "</p>";
 
         }
 
@@ -1455,17 +1492,17 @@ function showTab_inner(button) {
             return false;
         }
 
-        let content_type = gs_ob_current[tabName].data.content_type;
+
 
 
         if (content_type == 0) {
 
 
 
-            check_new_data(gs_ob[block_id].title, block_id,tabName);
-            if (gs_ob_current[tabName].data.script) {
-             loadGScript(gs_ob_current[tabName].data.script);
-            }
+           //  check_new_data(gs_ob[block_id].title, block_id,tabName);
+            // if (gs_ob_current[tabName].data.script) {
+            //  loadGScript(gs_ob_current[tabName].data.script);
+            // }
 
         } else if (content_type == 1) {
             let srcdata = gs_ob_current[tabName].data.script
@@ -4375,3 +4412,24 @@ jQuery.fn.upScrollButton = function (options) {
     });
 
 }
+
+// let previousHistoryLength = history.length;
+//
+// // Функция для удаления строки начиная с #gsc.tab= из URL
+// function removeGscTabFromURL() {
+//     console.log(history);
+//
+//     if (window.location.hash.startsWith('#gsc.tab=')) {
+//         history.replaceState({}, document.title, window.location.href.split('#')[0]);
+//     }
+// }
+//
+//
+// function checkAndRemove() {
+//     if (history.length !== previousHistoryLength) {
+//         previousHistoryLength = history.length;
+//         removeGscTabFromURL();
+//     }
+// }
+//
+// setInterval(checkAndRemove, 500);

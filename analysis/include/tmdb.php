@@ -891,7 +891,7 @@ WHERE `data_movie_imdb`.`movie_id` = ? ";
 
     $actor_pos = $array_movie['actor_pos'];
 
-    $tmdb_actors = self::check_tmdb_actors_in_movie($mid);
+   // $tmdb_actors = self::check_tmdb_actors_in_movie($mid);
 
 
     $commit_id='';

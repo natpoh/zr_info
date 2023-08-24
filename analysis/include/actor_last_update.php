@@ -341,7 +341,7 @@ class ActorsInfo{
         }
 
 
-        $array_actors = [$aid=>['name'=>'Actor ID  '.$aid,  'sub'=>[['actor_imdb',30],['imdb_gender',5]] ,'color'=>'#008afe','enable'=>1],
+        $array_actors = [$aid=>['name'=>'Actor ID  '.$aid,  'sub'=>[['actor_imdb',30],['imdb_gender',5],['actors_tmdb',2],['actors_crowd',2]] ,'color'=>'#008afe','enable'=>1],
                 'actor_imdb'=>[
                     'name'=>'Actor IMDb '.self::todate($adata['lastupdate']),
                     'content'=>'',
@@ -377,8 +377,8 @@ class ActorsInfo{
         $img_number = str_pad($aid, 7, '0', STR_PAD_LEFT);
         $imgsource =ABSPATH.'analysis/img_final/'.$img_number.'.jpg';
         $img_content='not load';
-        if (file_exists($imgsource)) {$img_enable=1; $img_content ='<img src="/analysis/img_final/'.$img_number.'.jpg">';}
-        $array_actors['image_download'] = self::array_to_content([],'Image download',$img_content,0,['kairos','bettaface']);
+        if (file_exists($imgsource)) {$img_enable=1; $img_content ='<img style="width:200px" src="/analysis/img_final/'.$img_number.'.jpg">';}
+        $array_actors['image_download'] = self::array_to_content([],'Image download','<a target="_blank" href="/analysis/include/scrap_imdb.php?check_image_on_server='. $aid.'">update</a></br>'.$img_content,0,['kairos','bettaface']);
         $array_actors['image_download']['enable']=$img_enable;
 
         //kairos
@@ -437,6 +437,53 @@ class ActorsInfo{
         $array_actors['gender_verdict']=self::array_to_content($actors_meta,'Gender Verdict: '. $array_convert[$actors_meta['gender']],'db: '.self::link_db('data_actors_meta').' ',1,[['verdict',2]],'last_update','','gender');
 
         $array_actors['verdict']=self::array_to_content($actors_meta,'Verdict: '. $acc[$rsm[$actors_meta['n_verdict_weight']]].' '.$array_convert[$actors_meta['gender']],'db: '.self::link_db('data_actors_meta').' ',1,'','last_update','','n_verdict_weight');
+
+
+        ///tmdb
+        $data_actors_tmdb = self::actor_data($aid,'data_actors_tmdb','actor_id');
+        $array_actors['actors_tmdb']=self::array_to_content($data_actors_tmdb,'Actor TMDB ','db: '.self::link_db('data_actors_tmdb').' ',1,[['tmdb_image_download',4]],'last_update','','','#ffcc22');
+        //tmdb images
+
+
+        $img_enable=0;
+        $imgsource =ABSPATH.'analysis/img_final_tmdb/'.$img_number.'.jpg';
+        $img_content='not load';
+        if (file_exists($imgsource)) {$img_enable=1; $img_content ='<img style="width:200px" src="/analysis/img_final_tmdb/'.$img_number.'.jpg">';}
+        $array_actors['tmdb_image_download'] = self::array_to_content([],'Image download','<a target="_blank" href="/analysis/include/scrap_imdb.php?check_tmdb_image_on_server='. $aid.'">update</a></br>'.$img_content,0,[['tmdb_kairos',4]]);
+        $array_actors['tmdb_image_download']['enable']=$img_enable;
+
+
+        //tmdb kairos
+        $tmdb_kairos = self::actor_data($aid,'data_actors_tmdb_race','actor_id');
+
+        $array_actors['tmdb_kairos']=self::array_to_content($tmdb_kairos,'Kairos: '. self::todate($tmdb_kairos['last_update']),'db: '.self::link_db('data_actors_tmdb_race').' ',1,[['kairos_verdict',2]],'last_update');
+
+        //tmdb bettaface
+       // $bettaface = self::actor_data($aid,'data_actors_face','actor_id');
+       // $array_actors['bettaface']=self::array_to_content($bettaface,'Bettaface: '. self::todate($bettaface['last_update']),'db: '.self::link_db('data_actors_face').' <br><a target="_blank" href="/analysis/include/scrap_imdb.php?check_face='.$aid.'&debug=1">update</a>',1,['bettaface_verdict'],'last_update');
+
+
+        ///crowd
+        $data_actors_crowd = self::actor_data($aid,'data_actors_crowd','actor_id');
+        $array_actors['actors_crowd']=self::array_to_content($data_actors_crowd,'Actor Crowd ','db: '.self::link_db('data_actors_crowd').' ',1,[['crowd_image_download',4],['crowd_verdict',4]],'add_time','','','#aaff22');
+
+        $img_enable=0;
+        $imgsource =ABSPATH.'analysis/img_final_crowd/'.$img_number.'.jpg';
+        $img_content='not load';
+        if (file_exists($imgsource)) {$img_enable=1; $img_content ='<img style="width:200px" src="/analysis/img_final_crowd/'.$img_number.'.jpg">';}
+        $array_actors['crowd_image_download'] = self::array_to_content([],'Image download','<a target="_blank" href="/analysis/include/scrap_imdb.php?download_crowd_images='. $aid.'">update</a></br>'.$img_content,0,[['crowd_kairos',4]]);
+        $array_actors['crowd_image_download']['enable']=$img_enable;
+
+
+        //crowd kairos
+        $crowd_kairos = self::actor_data($aid,'data_actors_crowd_race','actor_id');
+
+        $array_actors['crowd_kairos']=self::array_to_content($crowd_kairos,'Kairos: '. self::todate($crowd_kairos['last_update']),'db: '.self::link_db('data_actors_crowd_race').' ',1,[['kairos_verdict',2]],'last_update');
+
+        $array_actors['crowd_verdict']=self::array_to_content($actors_meta,'Crowd Verdict: '. $acc[$rsm[$actors_meta['n_crowdsource']]],'db: '.self::link_db('data_actors_meta').' ',1,[['verdict',2]],'last_update',$acc[$data_actors_crowd['verdict']],'n_crowdsource');
+
+
+
 
         [$nodes,$links]  = self::structure_array($array_actors);
 

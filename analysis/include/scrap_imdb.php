@@ -946,11 +946,18 @@ function update_crowd_verdict($id='')
 }
 
 
-function download_crowd_images()
+function download_crowd_images($id)
 {
     echo 'download_crowd_images<br>';
+if ($id)
+{
+    $sql ="SELECT * FROM `data_actors_crowd` WHERE `actor_id`=".$id;
+}
+else
+{
+    $sql ="SELECT * FROM `data_actors_crowd` WHERE `image`!='' and `loaded` IS NULL and `status` = 1 limit 10";
+}
 
-$sql ="SELECT * FROM `data_actors_crowd` WHERE `image`!='' and `loaded` IS NULL and `status` = 1 limit 10";
     $row = Pdo_an::db_results_array($sql);
 
     $count = count($row);
@@ -980,7 +987,7 @@ $sql ="SELECT * FROM `data_actors_crowd` WHERE `image`!='' and `loaded` IS NULL 
 
         if ($loaded) {
             ///update actor meta
-            $sql2 = "UPDATE `data_actors_meta` SET `last_update` = '" . time() . "', `crowd_img` = 1 WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
+            $sql2 = "UPDATE `data_actors_meta` SET `last_update` = '" . time() . "', `crowd_img` = 1 WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "' and `crowd_img` = 0 ";
             Pdo_an::db_query($sql2);
             !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
             Import::create_commit('', 'update', 'data_actors_meta', array('actor_id' => $r['actor_id']), 'actor_meta', 9, ['skip' => ['id']]);
@@ -1210,6 +1217,8 @@ function get_imdb_actor_parse($content)
 
 function check_image_on_server($actor_id, $image = '', $tmdb = '')
 {
+
+
  !class_exists('KAIROS') ? include ABSPATH . "analysis/include/kairos.php" : '';
  return   KAIROS::check_image_on_server($actor_id, $image, $tmdb);
 
@@ -2516,10 +2525,7 @@ function check_best_games($last_id = 0)
 
 }
 
-function check_actor_image($actor_id)
-{
-    check_image_on_server($actor_id);
-}
+
 function add_tv_shows_to_options()
 {
 
@@ -3284,7 +3290,7 @@ if (isset($_GET['add_tmdb_without_id'])) {
 
 if (isset($_GET['download_crowd_images'])) {
 
-    download_crowd_images();
+    download_crowd_images(intval($_GET['download_crowd_images']));
 
     return;
 }
@@ -3551,6 +3557,28 @@ if (isset($_GET['actor_logs'])) {
 }
 
 
+if (isset($_GET['check_tmdb_image_on_server'])) {
+
+    $actor_id=intval($_GET['check_tmdb_image_on_server']);
+
+    !class_exists('KAIROS') ? include ABSPATH . "analysis/include/kairos.php" : '';
+    return   KAIROS::load_tmd_image($actor_id);
+
+}
+if (isset($_GET['check_image_on_server'])) {
+
+    $actor_id=intval($_GET['check_image_on_server']);
+
+    $q="SELECT `image_url` FROM `data_actors_imdb` WHERE `id`=".$actor_id;
+    $image = Pdo_an::db_get_data($q,'image_url');
+    if ($image)
+    {
+        !class_exists('KAIROS') ? include ABSPATH . "analysis/include/kairos.php" : '';
+      echo  KAIROS::check_image_on_server($actor_id, $image);
+
+    }
+    return;
+}
 if (isset($_GET['convert_tables'])) {
 
 check_load(59,0);

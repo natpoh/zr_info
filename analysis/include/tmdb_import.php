@@ -5,11 +5,11 @@ class TMDBIMPORT
     public static function add_data_to_tmdb_table()
     {
         ///get movie list
-        ///country japan
+
 
         $sql = "select data_movie_imdb.id , data_movie_imdb.movie_id,  	data_movie_imdb.title  from data_movie_imdb LEFT JOIN data_movies_tmdb_actors 
     ON `data_movie_imdb`.id=data_movies_tmdb_actors.rwt_id
-        WHERE  data_movies_tmdb_actors.id IS NULL and data_movie_imdb.`country` LIKE '%Japan%' and data_movie_imdb.`genre` LIKE '%Animation%' limit 10000";
+        WHERE  data_movies_tmdb_actors.id IS NULL and (data_movie_imdb.type ='Movie' OR data_movie_imdb.type ='TVSeries') limit 10000";
         $row = Pdo_an::db_results_array($sql);
 
         foreach ($row as $r)
@@ -1065,7 +1065,6 @@ class TMDBIMPORT
                 $sql="INSERT INTO `data_actors_tmdb`(`id`, `actor_id`, `tmdb_id`, `gender`, `known_for_department`, `name`, `original_name`, `profile_path`, `popularity`, `status`, `last_update`) 
                         VALUES (NULL,?,?,?,?,?,?,?,?,?,?)";
                 Pdo_an::db_results_array($sql,array($data["imdb_id"],$data["id"],$data["gender"],$data["known_for_department"],$data["name"],$data["original_name"],$data["profile_path"],$data["popularity"],$status,time()));
-
 
             }
 

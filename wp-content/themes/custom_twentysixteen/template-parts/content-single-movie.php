@@ -29,6 +29,7 @@ global $site_url;
 if (!$site_url)
     $site_url = WP_SITEURL . '/';
 ?>
+
 <script type="text/javascript">
     var ctfOptions = {"ajax_url": "<?php echo $site_url; ?>wp-admin\/admin-ajax.php", "font_method": "svg", "placeholder": "<?php echo $site_url; ?>wp-content\/plugins\/custom-twitter-feeds-pro\/img\/placeholder.png", "resized_url": "<?php echo $site_url; ?>wp-content\/uploads\/sb-twitter-feed-images\/"};
 
