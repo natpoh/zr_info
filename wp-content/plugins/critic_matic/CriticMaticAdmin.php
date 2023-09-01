@@ -111,7 +111,7 @@ class CriticMaticAdmin {
 
     public function __construct($cm = '', $cs = '') {
         $this->cm = $cm ? $cm : new CriticMatic();
-        $this->cs = $cs ? $cs : new CriticSearch();
+        $this->cs = $cs ? $cs : new CriticSearch($this->cm);
         $this->cf = $this->cm->get_cf();
         $this->cp = $this->get_cp_admin();
 

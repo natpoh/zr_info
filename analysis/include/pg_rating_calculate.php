@@ -309,7 +309,11 @@ class PgRatingCalculate {
                  $sync_client=1;
              }
         }
+        global $debug;
+        if ($debug){
 
+            TMDB::var_dump_table(['sync_update',$data, $id, $db, $type, $sync]);
+        }
         $ma = self::getMa();
 
 
@@ -915,8 +919,112 @@ class PgRatingCalculate {
             return $movie_id;
         }
     }
+    private function compare_words($array_v,$comment_content)
+    {
+        $lgbt_text=[];
+        foreach ($array_v as $word) {
 
-    public function custom_rating_lgbt($keywords, $v, $rating_array, $array_family, $debug, $total, $row_type = 'lgbt_warning', $comment = 'LGBT Warning') {
+            $word = trim($word);
+            $pattern = '/(?<=^|\s|[.,!?()])' . (strpos($word, '*') !== false ? (substr($word,0,strlen($word)-1)).'\w*' : preg_quote($word, '/')) . '(?=\s|[.,!?()]|$)/i';
+
+
+            $count = preg_match_all($pattern, $comment_content, $matches);
+            if ($count > 0) {
+
+                if (!empty($matches[0])) {
+                    $lgbt_text = array_merge($lgbt_text, $matches[0]);
+                }
+            }
+        }
+
+        $lgbt_text = array_filter($lgbt_text, function($value) {
+            return trim($value) !== "";
+        });
+        $unique_keywords = array_unique($lgbt_text);
+        return [$unique_keywords,count($lgbt_text)];
+
+    }
+
+    public function custom_rating_lgbt($keywords, $multiple, $max_rating, $array_family, $debug, $total, $row_type = 'lgbt_warning', $comment = 'LGBT Warning') {
+
+
+        $total_lgbt_result=0;
+        $lgbt_enable=0;
+        $lgbt_text_total=[];
+        $counts =0;
+
+        $array_result =[];
+
+        if ($keywords) {
+
+            $keywords_string = implode(', ', $keywords);
+            $keywords_string = strtolower($keywords_string);
+        }
+
+
+        $comment_content = $keywords_string;
+        if ($array_family['imdb_rating_desc']) {
+            $comment_content .= $array_family['imdb_rating_desc'];
+        }
+        if ($array_family['cms_rating_desk']) {
+            $comment_content .= $array_family['cms_rating_desk'];
+        }
+        if ($array_family['dove_rating_desc']) {
+            $comment_content .= $array_family['dove_rating_desc'];
+        }
+        if ($array_family['crowd']) {
+            $comment_content .= json_encode($array_family['crowd']);
+        }
+
+
+
+        if ($multiple['multiple'])
+        {
+            foreach ($multiple['multiple'] as $m=>$data)
+            {
+                $v = $data['text'];
+                if (strstr($v, ',')) {
+                    $array_v = explode(',', $v);
+                }
+                else if ($v)
+                {
+                    $array_v[]= $v;
+                }
+
+                $max_rating = $data['max_rating'];
+
+
+                if ($comment_content) {
+                    [$lgbt_text,$total_count] =  self::compare_words($array_v,$comment_content);
+                    if ($total_count && $lgbt_text)
+                    {
+                        $counts+=$total_count;
+
+                        //$lgbt_text_string = implode(',', $lgbt_text);
+                        $total_lgbt = self::check_pg_limit('',$max_rating, $total, 0, $comment);
+                        $lgbt_enable=1;
+                        $lgbt_text_total = array_merge($lgbt_text_total,$lgbt_text);
+
+
+                        $array_result[$total_lgbt]=[$lgbt_text,$max_rating];
+                    }
+                }
+
+            }
+
+
+        }
+
+        ksort($array_result);
+        $keys = array_keys($array_result);
+
+        $str = implode(',', $array_result[$keys[0]][0]);
+        self::check_pg_limit($str,$array_result[$keys[0]][1], $keys[0], 1, $comment);
+
+        $total_lgbt_result = $keys[0];
+            $lgbt_text_string_total = implode(',', $lgbt_text_total);
+        return array($total_lgbt_result, $lgbt_enable, $lgbt_text_string_total,$counts);
+
 
         $lgbt_text = [];
         $lgbt_enable = 0;
@@ -924,64 +1032,61 @@ class PgRatingCalculate {
 
         if (strstr($v, ',')) {
             $array_v = explode(',', $v);
-
-            if ($keywords) {
-                $intersection = array_intersect($array_v, $keywords);
-                if ($intersection) {
-                    $lgbt_enable = 1;
-
-                    foreach ($intersection as $i => $v) {
-                        if (!in_array($v, $lgbt_text)) {
-                            $lgbt_text[] = $v;
-                        }
-                    }
-
-
-                    if (!$total_lgbt) {
-                        $key = array_keys($intersection);
-                        if ($debug)
-                            self::debug_table($comment . ' in keywords');
-                        $total_lgbt = self::check_pg_limit($intersection[$key[0]], $rating_array[$row_type]['max_rating'], $total, $debug, $comment);
-                    }
-                }
-            }
-
-            $comment_content = '';
-            if ($array_family['imdb_rating_desc']) {
-                $comment_content .= $array_family['imdb_rating_desc'];
-            }
-            if ($array_family['cms_rating_desk']) {
-                $comment_content .= $array_family['cms_rating_desk'];
-            }
-            if ($array_family['dove_rating_desc']) {
-                $comment_content .= $array_family['dove_rating_desc'];
-            }
-            if ($array_family['crowd']) {
-                $comment_content .= json_encode($array_family['crowd']);
-            }
-            if ($comment_content) {
-                foreach ($array_v as $word) {
-                    $word = trim($word);
-                    if ($word){
-                    if (strstr($comment_content, $word)) {
-
-                        if (!in_array($word, $lgbt_text)) {
-                            $lgbt_text[] = $word;
-                        }
-
-
-                        $lgbt_enable = 1;
-                        if (!$total_lgbt) {
-                            if ($debug)
-                                self::debug_table($comment . ' in comments');
-                            $total_lgbt = self::check_pg_limit($word, $rating_array[$row_type]['max_rating'], $total, $debug, $comment);
-                        }
-                    }
-                }
-                }
-            }
+        }
+        else if ($v)
+        {
+            $array_v[]= $v;
         }
 
+        ///search in keywords
+
+            if ($keywords) {
+
+                $keywords_string = implode(',',$keywords);
+                $keywords_string = strtolower($keywords_string);
+
+
+
+
+
+//                    if (!$total_lgbt) {
+//                        $key = array_keys($intersection);
+//                        if ($debug)
+//                            self::debug_table($comment . ' in keywords');
+//                        $total_lgbt = self::check_pg_limit($intersection[$key[0]], $max_rating, $total, $debug, $comment);
+//                    }
+                }
+
+
+
+            ///search in content
+
+
+
+
+
+
+            if ($comment_content) {
+              [$lgbt_text,$total_count] =  self::compare_words($array_v,$comment_content);
+            }
+
+
+        if ($lgbt_text)
+        {
+            $lgbt_enable = 1;
+            if (!$total_lgbt) {
+                if ($debug)
+                    self::debug_table($comment . ' in comments');
+
+             foreach ($lgbt_text as $word)
+             {
+                 $total_lgbt = self::check_pg_limit($word,$max_rating, $total, $debug, $comment);
+             }
+
+            }
+
+
+        }
         if (!$lgbt_enable) {
             $lgbt_enable = '';
         }
@@ -990,7 +1095,7 @@ class PgRatingCalculate {
         if ($lgbt_text) {
             $lgbt_text_string = implode(',', $lgbt_text);
         }
-
+        ///echo 'lgbt result: '.$lgbt_enable.'; '.$lgbt_text_string.' '.$comment.'<br>';
         return array($total_lgbt, $lgbt_enable, $lgbt_text_string);
     }
 
@@ -1463,7 +1568,7 @@ class PgRatingCalculate {
 
         $keywords  = $keywords_class->get_keywors_array($id);
 
-       // var_dump($keywords);
+      // var_dump($keywords);
 
         ///$keywords = self::get_data_in_movie('keywords', $imdb_id);
         if ($keywords) {
@@ -1487,6 +1592,7 @@ class PgRatingCalculate {
         }
 
         $genre = self::get_data_in_movie('genre', $imdb_id);
+
         if ($genre) {
             $genre = explode(',', $genre);
             $words = $rating_array['words_limit'];
@@ -1508,42 +1614,27 @@ class PgRatingCalculate {
         /////////lgbt warning
 
 
-        $v = $rating_array['lgbt_warning']['text'];
+        $v_m = $rating_array['lgbt_warning'];
 
-        $l_array = self::custom_rating_lgbt($keywords, $v, $rating_array, $array_family, $debug, $total, 'lgbt_warning','LGB Warning');
-
-        if ($l_array[0]) {
-            $total = $l_array[0];
-        }
+        [$total,$lgbt_enable,$lgbt_text_string ,$counts] = self::custom_rating_lgbt($keywords, $v_m, [], $array_family, $debug, $total, 'lgbt_warning','LGB Warning');
 
         if ($update) {
-
-            $lgbt_enable = $l_array[1];
-            $lgbt_text_string = $l_array[2];
-
             if ($array_family['lgbt_warning']!=$lgbt_enable || $array_family['lgbt_text']!= $lgbt_text_string) {
                 $sql = "UPDATE `data_pg_rating` SET  `lgbt_warning` = '" . $lgbt_enable . "', `lgbt_text` = ?  WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
                 Pdo_an::db_results_array($sql, array($lgbt_text_string));
             }
 
-
         }
         /////////qtia warning
 
 
-        $v = $rating_array['qtia_warning']['text'];
+        $v_m = $rating_array['qtia_warning'];
 
-        $l_array = self::custom_rating_lgbt($keywords, $v, $rating_array, $array_family, $debug, $total, 'qtia_warning','QTIA+ Warning');
 
-        if ($l_array[0]) {
-            $total = $l_array[0];
-        }
+        [$total,$lgbt_enable,$lgbt_text_string ,$counts] = self::custom_rating_lgbt($keywords, $v_m, [], $array_family, $debug, $total, 'qtia_warning','QTIA+ Warning');
+
 
         if ($update) {
-
-            $lgbt_enable = $l_array[1];
-            $lgbt_text_string = $l_array[2];
-
             if ($array_family['qtia_warning']!=$lgbt_enable || $array_family['qtia_text']!= $lgbt_text_string) {
                 $sql = "UPDATE `data_pg_rating` SET  `qtia_warning` = '" . $lgbt_enable . "', `qtia_text` = ?  WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
                 Pdo_an::db_results_array($sql, array($lgbt_text_string));
@@ -1552,17 +1643,11 @@ class PgRatingCalculate {
 
         }
         ///////woke
-        $v = $rating_array['woke']['text'];
+        $v_m = $rating_array['woke'];
 
-        $l_array = self::custom_rating_lgbt($keywords, $v, $rating_array, $array_family, $debug, $total, 'woke', 'Woke conclusions');
-
-        if ($l_array[0]) {
-            $total = $l_array[0];
-        }
+        [$total,$lgbt_enable,$lgbt_text_string ,$counts] = self::custom_rating_lgbt($keywords, $v_m, [], $array_family, $debug, $total, 'woke', 'Woke conclusions');
 
         if ($update) {
-            $lgbt_enable = $l_array[1];
-            $lgbt_text_string = $l_array[2];
 
             if ($array_family['woke']!=$lgbt_enable || $array_family['woke_text']!= $lgbt_text_string) {
                 $sql = "UPDATE `data_pg_rating` SET  `woke` = '" . $lgbt_enable . "', `woke_text` = ?  WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
@@ -1570,9 +1655,6 @@ class PgRatingCalculate {
             }
 
         }
-
-
-
 
 
         if ($update) {
@@ -1817,7 +1899,7 @@ class PgRatingCalculate {
     }
 
     public function rwt_audience($movie_id, $audience_type = 1, $update = '') {
-
+        global $debug;
         if (!$update) {
             $result_summ_rating = self::get_audience_rating_in_movie($movie_id, $audience_type);
 
@@ -1825,11 +1907,25 @@ class PgRatingCalculate {
                 return $result_summ_rating;
             }
         }
+
+        if ($debug)
+        {
+            TMDB::var_dump_table(['result_summ_rating',$result_summ_rating]);
+        }
+
+
 //critic_matic_posts_meta
         $hollywood_total = [];
         $review_data = self::get_wpcdata($movie_id, $audience_type);
         ///echo '<br>review_data<br>'.PHP_EOL;
 ///var_dump($review_data);
+
+        if ($debug)
+        {
+            TMDB::var_dump_table(['review_data',$review_data]);
+        }
+
+
         $total_audience = [];
 
         if (is_array($review_data)) {
@@ -1904,6 +2000,12 @@ class PgRatingCalculate {
 
             //var_dump($result_summ_rating);
 
+
+            if ($debug)
+            {
+                TMDB::var_dump_table(['result_summ_rating',$result_summ_rating]);
+            }
+
             self::update_rating_db($movie_id, $result_summ_rating, $audience_type);
         }
         return $result_summ_rating;
@@ -1911,22 +2013,67 @@ class PgRatingCalculate {
 
     public static function check_audience_meta($rid,$audience)
     {
+        global $debug;
+
+        if ($debug)
+        {
+            TMDB::var_dump_table(['check_audience_meta',$rid,$audience]);
+        }
+
         if ($audience)
         {
             $audience_calc = $audience*20;
 
-            $q = "SELECT `audience_rating` FROM `data_movie_erating` WHERE`movie_id` = ".$rid;
-            $rat = Pdo_an::db_get_data($q,'audience_rating');
-            if ($rat!=$audience_calc)
-            {
-                //update
-                $q ="UPDATE `data_movie_erating` SET `audience_rating` =? `audience_date` =? WHERE `movie_id` = ".$rid;
-                Pdo_an::db_results_array($q,[$audience_calc,time()]);
+            $q = "SELECT `id`,`audience_rating` FROM `data_movie_erating` WHERE`movie_id` = ".$rid;
+            $rw = Pdo_an::db_results_array($q);
 
-                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', 'data_movie_erating', array('movie_id' => $rid), 'data_movie_erating', 20, ['skip' => ['id']]);
+            $data_current_array['audience_rating']=$audience_calc;
+            $data_current_array['movie_id'] = $rid;
+            $data_current_array['audience_date'] = time();
+
+            if (!$rw)
+            {
+
+                if ($debug){
+                    TMDB::var_dump_table(['insert data_movie_erating',$audience_calc,$rid]);
+                }
+
+                        self::sync_update($data_current_array, '', 'data_movie_erating', 'insert', 1);
+
+
 
             }
+            else {
+
+
+             $rat =  $rw[0]['audience_rating'];
+
+                if ($audience_calc >0  && $rat!=$audience_calc)
+                {
+                    //update
+                    if ($debug){
+                        TMDB::var_dump_table(['update data_movie_erating',$audience_calc,$rid]);
+                    }
+                    self::sync_update($data_current_array, $rw[0]['id'], 'data_movie_erating', 'update', 1);
+
+
+
+                }
+                else
+                {
+                    TMDB::var_dump_table(['skip update data_movie_erating',$audience_calc]);
+
+                }
+            }
+
+
+
+
+
+
+
+
+
 
         }
 

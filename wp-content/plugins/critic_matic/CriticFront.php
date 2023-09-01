@@ -72,17 +72,6 @@ class CriticFront extends SearchFacets {
         return $this->ca;
     }
 
-    public function get_uf() {
-        // Get user filters
-        if (!$this->uf) {
-            if (!class_exists('UserFilters')) {
-                require_once( CRITIC_MATIC_PLUGIN_DIR . 'UserFilters.php' );
-            }
-            $this->uf = new UserFilters($this->cm);
-        }
-        return $this->uf;
-    }
-
     /*
      * Critic functions
      */
@@ -221,7 +210,7 @@ class CriticFront extends SearchFacets {
                  * 
                  */
 
-                $vote_type_and = " AND IF(r.rating>=3.5 AND r.vote IN (1,3),1,IF(r.rating>=3 AND r.vote=1,1,0))=1 ";
+                $vote_type_and = " AND IF(r.rating > 3.7 AND r.vote IN (1,3),1,IF(r.rating>=3 AND r.vote=1,1,0))=1 ";
             } if ($vote_type == 2) {
                 /*
                   Negative
@@ -233,7 +222,7 @@ class CriticFront extends SearchFacets {
                   1 stars
                   0 stars
                  */
-                $vote_type_and = " AND r.rating < 3";
+                $vote_type_and = " AND r.rating < 2.3";
                 // $and_select = ", IF(r.rating < 3,1,0) AS filter ";
                 // $vote_type_and = " AND filter=1";
             }
@@ -666,10 +655,16 @@ class CriticFront extends SearchFacets {
 
         // Tags
         $catdata = '';
+        $max_tags = 3;
         $tags = $this->cm->get_author_tags($author->id);
         if (sizeof($tags)) {
+            $tags_count = 1;
             foreach ($tags as $tag) {
                 $catdata .= $this->get_tag_link($tag->slug, $tag->name);
+                $tags_count += 1;
+                if ($tags_count > 3) {
+                    break;
+                }
             }
         }
 
@@ -731,10 +726,10 @@ class CriticFront extends SearchFacets {
 
             if ($fullsize == 2) {
                 $actorsresult = $video_embed . $embed . $title_str . $content . $review_bottom . $original_link .
-                        '<div class="amsg_aut">' . $actorsdata_link . '<div class="review_autor_name">' . $author_title_link . '<div class="a_cat">' . $catdata . '</div></div></div>';
+                        '<div class="em_hold"></div><div class="amsg_aut">' . $actorsdata_link . '<div class="review_autor_name">' . $author_title_link . '<div class="a_cat">' . $catdata . '</div></div></div>';
             } else {
                 $actorsresult = '<div class="full_review_content_block' . $largest . '">' . $video_embed . $embed . $title_str . $content . '</div>' . $after_content . $review_bottom . $original_link . '
- <div class="amsg_aut">' . $actorsdata_link . '<div class="review_autor_name">' . $author_title_link . '<div class="a_cat">' . $catdata . '</div></div></div>';
+ <div class="em_hold"></div><div class="amsg_aut">' . $actorsdata_link . '<div class="review_autor_name">' . $author_title_link . '<div class="a_cat">' . $catdata . '</div></div></div>';
             }
             // }
         } else if ($link) {
@@ -764,7 +759,7 @@ class CriticFront extends SearchFacets {
                     . '<a class="icntn' . $wp_core . '" href="' . $link . '">' . $video_img . $title_str . $content . '</a>'
                     . $review_bottom
                     . '<div class="ugol"><div></div></div></div>
-        <div class="amsg_aut">' . $actorsdata_link . '<div class="review_autor_name">' . $author_title_link . '<div class="a_cat">' . $catdata . '</div>'
+        <div class="em_hold"></div><div class="amsg_aut">' . $actorsdata_link . '<div class="review_autor_name">' . $author_title_link . '<div class="a_cat">' . $catdata . '</div>'
                     . '</div>' . $reaction_data . '</div></div>';
         }
         return $actorsresult;
@@ -1091,10 +1086,16 @@ class CriticFront extends SearchFacets {
 
         // Tags
         $catdata = '';
+        $max_tags = 3;
         $tags = $this->cm->get_author_tags($author->id);
         if (sizeof($tags)) {
+            $tags_count = 1;
             foreach ($tags as $tag) {
                 $catdata .= $this->get_tag_link($tag->slug, $tag->name);
+                $tags_count += 1;
+                if ($tags_count > 3) {
+                    break;
+                }
             }
         }
 
@@ -1265,7 +1266,7 @@ class CriticFront extends SearchFacets {
         if ($fullsize) {
 
             $actorsresult = '
-' . $content . $review_bottom . '<div class="amsg_aut">' . $actorsdata_link . '
+' . $content . $review_bottom . '<div class="em_hold"></div><div class="amsg_aut">' . $actorsdata_link . '
         <div class="review_autor_name">' . $author_title_link . $umeta . $catdata . '</div>
        
     </div>';
@@ -1276,7 +1277,7 @@ class CriticFront extends SearchFacets {
     <div class="a_msg_i">
         ' . $content . $review_bottom . '<div class="ugol"><div></div></div>
     </div>
-        
+        <div class="em_hold"></div>
         <div class="amsg_aut">
             ' . $actorsdata_link . '
             <div class="review_autor_name">' . $author_title_link . $umeta . $catdata . '</div>
@@ -3005,11 +3006,11 @@ class CriticFront extends SearchFacets {
         return $ca->rating_images($type, $rating, $subrating);
     }
 
-    public function get_user_reactions($cid) {
+    public function get_user_reactions($cid, $post_type = 0, $allow_cmt = true) {
         if ($this->enable_reactions) {
-            $reaction_data = $this->ce->get_user_reactions($cid);
+            $reaction_data = $this->ce->get_user_reactions($cid, $post_type, $allow_cmt);
         } else {
-            $reaction_data = '<div class="review_comment_data"></div>';
+            $reaction_data = '<div class="review_comment_data" data-ptype="' . $post_type . '"></div>';
         }
         return $reaction_data;
     }
@@ -3163,7 +3164,7 @@ class CriticFront extends SearchFacets {
     public function get_user_search_filter($uid = 0, $search_url = '') {
         $ret = 0;
         if ($uid > 0 && $search_url != '/search') {
-            $uf = $this->get_uf();
+            $uf = $this->cm->get_uf();
             $ret = $uf->get_user_filter($uid, $search_url);
         }
         return $ret;
@@ -3200,6 +3201,232 @@ class CriticFront extends SearchFacets {
             ?>
         </ul>
         <?php
+    }
+
+    /* Theme filters */
+
+    public function theme_filter_item($item) {
+        if ($this->cache_results) {
+            $item_theme = $this->cache_theme_filter_item_get($item);
+        } else {
+            $item_theme = $this->theme_filter_item_get($item);
+        }
+        return $item_theme;
+    }
+
+    public function cache_theme_filter_item_get($item) {
+        $arg = (array) $item;
+        $filename = "f-{$item->id}-{$item->last_upd}";
+        $str = ThemeCache::cache('theme_filter_item_get', false, $filename, 'filters', $this, $arg);
+        return $str;
+    }
+
+    public function theme_filter_item_get($item) {
+        if (is_array($item)){
+            $item = (object) $item;
+        }
+
+        $title = $item->title;
+
+        if (!$title) {
+            $title = ' ';
+        }
+        $content = $item->content;
+
+
+        $aid = $item->aid;
+        $author = $this->cm->get_author($aid);
+
+        // Author name
+        $author_title = $author->name;
+        $author_title = $this->pccf_filter($author_title);
+        $wp_uid = $item->wp_uid;
+
+        // WP avatar
+        $cav = $this->cm->get_cav();
+        $wp_avatar = $cav->get_author_avatar($author, 64);
+
+        $author_admin_img = '';
+
+        if (!$wp_avatar) {
+            // Author image
+
+            $author_options = unserialize($author->options);
+            $author_img = $author_options['image'];
+
+            if ($author_img) {
+                try {
+                    $image = $this->get_local_thumb(100, 100, $author_img);
+                    $author_admin_img = '<div class="a_img_container" style="background: url(' . $image . '); background-size: cover;"></div>';
+                } catch (Exception $exc) {
+                    
+                }
+            }
+        }
+
+        $umeta = '';
+
+        // User profile link
+        $uc = $this->cm->get_uc();
+        $wp_user = $uc->getUserById($wp_uid);
+
+        $author_link = $uc->get_user_profile_link($wp_user->url);
+        $ucarma_class = ($wp_user->carma < 0) ? " minus" : " plus";
+        $umeta = '<div class="umeta' . $ucarma_class . '">
+                    <span class="urating" ><i class="icon-star"></i>' . (int) $wp_user->rating . '</span>                   
+                </div>';
+
+        $author_title_link = '<a href="' . $author_link . '">' . $author_title . '</a>';
+
+        // Tags
+        $catdata = '';
+        $max_tags = 3;
+        $tags = $this->cm->get_author_tags($author->id);
+        if (sizeof($tags)) {
+            $tags_count = 1;
+            foreach ($tags as $tag) {
+                $catdata .= $this->get_tag_link($tag->slug, $tag->name);
+                $tags_count += 1;
+                if ($tags_count > 3) {
+                    break;
+                }
+            }
+        }
+
+        if ($catdata) {
+            $catdata = '<div class="a_cat">' . $catdata . '</div>';
+        }
+
+        // Time
+        $ptime = $item->date;
+        $critic_addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+
+        // User filter
+        $uf = $this->cm->get_uf();
+        $fdata = $uf->get_filters_by_url($item->link, true);
+
+        $publish = $item->publish;
+
+        if ($publish == 0) {
+            $pub_icon = '<i class="icon-eye-off"></i> ';
+        }
+
+        // Link to full post
+        $link = $uf->get_filter_link($item->id);
+
+
+        // Country
+        $country_img = '';
+
+
+        $short_codes_exist_class = '';
+        $wp_core = '';
+
+        $content = $this->pccf_filter($content);
+        if ($content) {
+            $content = '<div class="sfilter-content">' . $content . '</div>';
+        }
+        $title = $this->pccf_filter($title);
+
+
+        $filter_content = '';
+        if ($content || $title) {
+
+
+            $filter_content = '
+                    <div class="sfilter-item">'
+                    . '<h3 class="sfilter-title"><a href="' . $link . '">' . $title . '</a></h3>' . $content
+                    . '<div class="sfliter-link">Link: ' . $pub_icon . '<a href="' . $link . '">' . $link . '</a></div>'
+                    . '<div>' . $fdata['tags'] . "</div></div>";
+        }
+
+        $stars_data = 0;
+        $actorsdata = '';
+
+        if ($wp_avatar) {
+            $actorsdata = $wp_avatar;
+        } else if ($author_admin_img) {
+            $actorsdata = $author_admin_img;
+        }
+
+        if (!$actorsdata) {
+            $actorsdata = '<span></span>';
+        }
+
+        $actorsdata_link = '<a href="' . $author_link . '">' . $actorsdata . '</a>';
+
+
+        $review_bottom = '<div class="review_bottom"><div class="r_type"></div><div class="r_right"><div class="r_date">' . $critic_addtime . '</div>' . $country_img . '</div></div>';
+
+
+        $reaction_data = $this->get_user_reactions($item->id, 1, false);
+
+        $actorsresult = '<div class="a_msg">
+    <div class="a_msg_i">
+        ' . $filter_content . $review_bottom . '<div class="ugol"><div></div></div>
+    </div>
+        <div class="em_hold"></div>
+        <div class="amsg_aut">
+            ' . $actorsdata_link . '
+            <div class="review_autor_name">' . $author_title_link . $umeta . $catdata . '</div>
+            ' . $reaction_data . '
+        </div>
+</div>';
+
+        return $actorsresult;
+    }
+
+    public function get_filters_count_by_wpuser($wp_uid = 0, $owner = 0) {
+        $uf = $this->cm->get_uf();
+        return $uf->get_filters_count_by_wpuser($wp_uid, $owner);
+    }
+
+    public function get_filters_widget_by_wpuid($wp_uid = 0, $owner = 0, $perpage = 10) {
+        $uf = $this->cm->get_uf();
+        $posts = $uf->get_filters_by_wpuser($wp_uid, $owner);
+
+        $content = '';
+        if ($posts) {
+            ob_start();
+            ?>
+            <div class="simple">
+                <div class="items">
+                    <?php
+                    foreach ($posts as $post) {
+
+                        // Link to filter
+                        $link = $uf->get_filter_link($post->id);
+
+                        // Time
+                        $ptime = $post->date;
+                        $addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+
+                        // Title
+                        $title = strip_tags($post->title);
+                        $title = $this->pccf_filter($title);
+
+                        $publish = $post->publish;
+                        $pub_icon = '';
+                        if ($publish == 0) {
+                            $pub_icon = '<i class="icon-eye-off"></i> ';
+                        }
+                        ?>
+                        <div class="item">
+                            <a href="<?php print $link ?>" title="<?php print $title ?>" >                           
+                                <div class="desc">
+                                    <h5><?php print $title ?></h5>
+                                    <p><?php print $addtime ?> Link: <?php print $pub_icon ?><?php print $link ?></p>
+                                </div>
+                            </a>
+                        </div>
+                    <?php } ?>
+                </div>
+            </div>
+            <?php
+            $content = ob_get_contents();
+            ob_end_clean();
+        }
+        return $content;
     }
 
 }

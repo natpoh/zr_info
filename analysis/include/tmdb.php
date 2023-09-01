@@ -28,7 +28,7 @@ class TMDB
         $table .= "<tr><th>Field</th><th>Value</th></tr>";
 
         foreach ($data as $field => $value) {
-            if (is_array($value))
+            if (is_array($value) || is_object($value))
             {
                 $value =   self::var_dump_table($value,'',1);
             }

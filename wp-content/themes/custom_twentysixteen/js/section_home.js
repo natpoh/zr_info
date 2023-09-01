@@ -1,8 +1,10 @@
 var disqus_config = function () {
 };
 var lastload = '';
-var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
-var crowdsource_url = window.location.protocol + "/service/crowdsource.php"
+var template_path =  "/wp-content/themes/custom_twentysixteen/template/ajax/";
+var site_url = window.location.protocol +"//"+window.location.host;
+
+var crowdsource_url = site_url+"/service/crowdsource.php"
 var debug_mode = 0;
 if (window.location.host == 'zeitgeistreviews.com') {
     crowdsource_url = 'https://service.' + window.location.host + "/crowdsource.php";
@@ -797,7 +799,7 @@ function set_video_scroll(data, block_id, append = '') {
 
                 if (data['result']) {
 
-                    array_movie = [];
+                    var array_movie = [];
                     jQuery.each(data['result'], function (a, b) {
 
                         b.mid = a;
@@ -861,12 +863,11 @@ function set_video_scroll(data, block_id, append = '') {
                                 }
 
                                 var disquss_class = '';
+                                var ccount_data = ' ';
                                 if (ccount) {
                                     disquss_class = ' comment_count';
                                     ccount_data = '<span  class="disquss_coment_count">' + ccount + '</span>';
-                                } else {
-                                    ccount_data = ' ';
-                                }
+                                } 
 
                                 let ptitle = b.pid_title;
                                 if (!ptitle)
@@ -874,7 +875,7 @@ function set_video_scroll(data, block_id, append = '') {
                                 if (!ecount)
                                     ecount = '';
 
-                                block.find('.review_comment_data').html('<a  href="#" data_title="' + ptitle + '" class="disquss_coment' + disquss_class + '">' + ccount_data + '</a><a href="#"   class="emotions  ' + user_class + '  "><span class="emotions_count">' + ecount + '</span></a>').attr('id', b.pid);
+                                block.find('.review_comment_data').html('<a  href="#" data_title="' + ptitle + '" class="disquss_coment' + disquss_class + '">' + ccount_data + '</a><a href="#"   class="emotions  ' + user_class + '  "><span class="emotions_count">' + ecount + '</span></a>').attr('data-id', b.pid);
 
 
                             }
@@ -1092,7 +1093,7 @@ function load_actor_representation(movie_id) {
     data['ethnycity'] = ethnycity;
     data['actor_type'] = a_type;
 
-    var url = window.location.protocol + template_path + "actor_representation.php";
+    var url =  site_url+template_path + "actor_representation.php";
 
     jQuery.ajax({
         type: "post",
@@ -1439,6 +1440,8 @@ function showTab_inner(button) {
             {
                 sublass = ' theme_dark';
             }
+            let title = gs_ob[block_id].title;
+            title =title.replace(/'/g, '&#39;');
 
             search_block = `<iframe class="gcse-search-main" srcdoc='<meta name="viewport" content="width=device-width, initial-scale=1"><body class="${sublass}"><div class="page_custom_block"><div class="gcse-search"></div></div></div><script type="text/javascript" src="${script_src}"></script>
 <script type="text/javascript" >
@@ -1448,7 +1451,7 @@ function showTab_inner(button) {
             if (mutation.addedNodes) {
                 mutation.addedNodes.forEach(function (addedNode) {
                     if (addedNode.classList && addedNode.classList.contains("gsc-input")  && addedNode.nodeName === "INPUT") {
-                        addedNode.value = "${gs_ob[block_id].title}";
+                        addedNode.value = "${title}";
                         document.querySelector("button.gsc-search-button").click();
                         observer.disconnect();
                     }
@@ -1695,10 +1698,10 @@ function load_ajax_block(block_id) {
 
 
     // Ajax load
-    var url = window.location.protocol + template_path + block_id + ".php" + request;
+    var url =  site_url+template_path + block_id + ".php" + request;
 
     if (request_block) {
-        url = window.location.protocol + template_path + block_id_sub + ".php" + request + '&' + request_block;
+        url =  site_url+template_path + block_id_sub + ".php" + request + '&' + request_block;
     }
 
     if (block_id == 'ns_related_scroll') {
@@ -1846,7 +1849,7 @@ function load_ajax_block(block_id) {
                 jQuery('div[id="' + block_id + '"]').html(data);
                 load_actor_representation(parent_id);
 
-                var srcs = window.location.protocol + '/wp-content/themes/custom_twentysixteen/js/jquery-ui-sortable.min.js';
+                var srcs = window.location.protocol +"//"+window.location.host+ '/wp-content/themes/custom_twentysixteen/js/jquery-ui-sortable.min.js';
 
                 jQuery.getScript(srcs).done(function (script, textStatus) {
                     jQuery('div[id="Ethnycity_container"]').sortable({
@@ -1979,7 +1982,7 @@ function init_audience_tabs(block_id, parent_id) {
                 if (parent_id) {
                     and_parent = "&id=" + parent_id;
                 }
-                var url = window.location.protocol + template_path + block_id + ".php" + "?vote=" + vote + and_parent;
+                var url =  site_url+template_path + block_id + ".php" + "?vote=" + vote + and_parent;
 
                 jQuery.ajax({
                     type: "GET",
@@ -2187,7 +2190,7 @@ function generate_watch_content(data, title, year, type) {
         Object_data['providers']['showtimes'] = {
             's': 'fullsize fullsizebig',
             'n': 'Showtimes',
-            'i': window.location.protocol + "/wp-content/themes/custom_twentysixteen/images/showtimes-logo.png"
+            'i': window.location.protocol  +"//"+window.location.host+"/wp-content/themes/custom_twentysixteen/images/showtimes-logo.png"
         };
     }
 
@@ -2653,7 +2656,7 @@ jQuery(document).ready(function () {
         jQuery.ajax({
             type: 'post',
             data: {id: id},
-            url: window.location.protocol + template_path + "get_wach.php",
+            url:  site_url+template_path + "get_wach.php",
             success: function (html) {
 
                 var content = generate_watch_content(html, title, year, type);
@@ -2712,7 +2715,7 @@ jQuery(document).ready(function () {
 
         jQuery.ajax({
             type: "GET",
-            url: window.location.protocol + template_path + "get_review.php?id=" + link + wp_core,
+            url:  site_url+template_path + "get_review.php?id=" + link + wp_core,
             success: function (data) {
                 if (data) {
                     jQuery('div[id="disqus_thread"]').remove();
@@ -2765,13 +2768,9 @@ jQuery(document).ready(function () {
 
         e.preventDefault();
 
-        var t = jQuery(this), $class = t.attr('class'), main = t.parent().parent().parent(),
-            text = t.find('strong').text();
-
-        var big_prnt = jQuery(this).parents('.amsg_aut');
+        var t = jQuery(this), $class = t.attr('class'), main = t.parent().parent().parent();
 
         var vote_type = 'vote';
-
         let voted_before_container = main.find('.voted');
         var voted_before = voted_before_container.html();
         let voted_before_count = voted_before_container.find('.count').html();
@@ -2807,8 +2806,9 @@ jQuery(document).ready(function () {
             jQuery(this).addClass('voted');
         }
 
-        res = $class.split(' ');
-        type = res[1].split('-');
+        var res = $class.split(' ');
+        var data_type = res[1].split('-');
+        var ptype = main.attr('data-ptype');
 
         jQuery('.card  .user-reactions-button.reaction-show').addClass('linked');
 
@@ -2817,21 +2817,22 @@ jQuery(document).ready(function () {
 
         $.ajax({
 
-            url: window.location.protocol + template_path + "get_emotions.php",
+            url:  site_url+template_path + "get_emotions.php",
             type: 'POST',
             data: {
 
                 nonce: main.data('nonce'),
-                type: type[2],
+                type: data_type[2],
                 post: main.data('post'),
                 vote_type: vote_type,
+                ptype: ptype,
                 request: 'set_emtns'
             },
             success: function ($data) {
                 window.setTimeout(function () {
 
                     jQuery('.card .user-reactions').remove();
-                    var emotions = jQuery('.review_comment_data[id="' + pid + '"]>a.emotions');
+                    var emotions = jQuery('.review_comment_data[data-id="' + pid + '"]>a.emotions');
                     emotions.attr('class', 'emotions');
 
                     if (typeof $data !== "undefined") {
@@ -2886,7 +2887,7 @@ jQuery(document).ready(function () {
         e.preventDefault();
         var ts = jQuery(this);
         let prnt = ts.parents('.review_comment_data');
-        let big_prnt = ts.parents('.amsg_aut');
+        let big_prnt = ts.closest('.a_msg').find('.em_hold');
 
         if (big_prnt.find('.user-reactions').html()) {
             big_prnt.find('.user-reactions').remove();
@@ -2894,16 +2895,21 @@ jQuery(document).ready(function () {
 
             jQuery('.card .user-reactions').remove();
 
-            var id = prnt.attr('id');
+            var id = prnt.attr('data-id');
+            var ptype = prnt.attr('data-ptype');
             jQuery.ajax({
                 type: 'post',
-                data: {id: id, request: 'get_emtns'},
-                url: window.location.protocol + template_path + "get_emotions.php",
+
+                data: {
+                    id: id, 
+                    request: 'get_emtns',
+                    ptype: ptype,
+                },
+                url:  site_url+template_path + "get_emotions.php",
+
                 success: function (data) {
                     if (data) {
-
                         big_prnt.prepend(data);
-
                     }
                 }
             });
@@ -2918,7 +2924,7 @@ jQuery(document).ready(function () {
 
 
         let prnt = jQuery(this).parents('.review_comment_data');
-        var id = prnt.attr('id');
+        var id = prnt.attr('data-id');
         var pid_title = jQuery(this).attr('data_title');
         let big_prnt = jQuery(this).parents('.a_msg');
         let link = big_prnt.find('a.icntn').attr('href');
@@ -2978,7 +2984,7 @@ jQuery(document).ready(function () {
 
         $.ajax({
             type: "POST",
-            url: window.location.protocol + "/analysis/get_data.php",
+            url: window.location.protocol +"//"+window.location.host+ "/analysis/get_data.php",
             data: ({
                 oper: 'get_actordata',
                 id: actor_id,
@@ -3010,7 +3016,7 @@ jQuery(document).ready(function () {
             jQuery.ajax({
                 type: 'POST',
                 ///context: this,
-                url: window.location.protocol + template_path + "ajax_data.php",
+                url:  site_url+template_path + "ajax_data.php",
                 data: {"action": "ajax_search", "keyword": keyword, "type": "movie", 'nolinks': 1},
                 success: function (data) {
                     // console.log(data);
@@ -3058,14 +3064,15 @@ jQuery(document).ready(function () {
         jQuery.ajax({
             type: 'post',
 
-            url: template_path + 'loginajax.php',
+            url: site_url+template_path + 'loginajax.php',
             success: function (html) {
                 add_popup();
                 jQuery('.popup-content').html('<div class="default_popup login_popup">' + html + '</div>');
                 jQuery('input[id="action-popup"]').click();
 
+                let url = window.location.protocol +"//"+window.location.host+'/wp-content/plugins/login-with-ajax/templates/login-with-ajax.min.js';
 
-                var third_scripts = {login_ajax: 'wp-content/plugins/login-with-ajax/templates/login-with-ajax.min.js'};
+                var third_scripts = {login_ajax: url};
                 use_ext_js('', third_scripts);
 
 
@@ -3150,7 +3157,7 @@ jQuery(document).ready(function () {
                     jQuery.ajax({
                         type: 'get',
                         dataType: 'html',
-                        url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/images/roboto.svg",
+                        url: window.location.protocol +"//"+window.location.host+ "/wp-content/themes/custom_twentysixteen/images/roboto.svg",
                         success: function (html) {
                             jQuery('.review_crowd').append(html);
 
@@ -3284,7 +3291,7 @@ jQuery(document).ready(function () {
         jQuery.ajax({
             type: 'post',
             data: ({'add_movie': movie}),
-            url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/template/ajax/search_ajax.php",
+            url: window.location.protocol +"//"+window.location.host+ "/wp-content/themes/custom_twentysixteen/template/ajax/search_ajax.php",
             success: function (html) {
                 if (html == 1) {
                     button.after('<div class="add_succ">Successfully added to the queue. Check back soon!</div>');
@@ -3771,7 +3778,7 @@ jQuery(document).ready(function () {
         jQuery.ajax({
             type: 'POST',
             ///context: this,
-            url: window.location.protocol + template_path + "movie_rating.php",
+            url:  site_url+template_path + "movie_rating.php",
             data: {"action": "get_link", "type": type, "id": id},
             success: function (data) {
                 if (data) {
@@ -3843,7 +3850,7 @@ jQuery(document).ready(function () {
         jQuery.ajax({
             type: 'post',
             data: (post),
-            url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/template/ajax/search_ajax.php",
+            url: window.location.protocol +"//"+window.location.host+ "/wp-content/themes/custom_twentysixteen/template/ajax/search_ajax.php",
             success: function (html) {
 
                 add_popup();

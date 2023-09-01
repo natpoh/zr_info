@@ -18,7 +18,7 @@ if (!function_exists('add_action')) {
 define('CRITIC_MATIC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CRITIC_MATIC_PLUGIN_URL', plugin_dir_url(__FILE__));
 
-$version = '1.0.110';
+$version = '1.0.116';
 if (defined('LASTVERSION')) {
     define('CRITIC_MATIC_VERSION', $version . LASTVERSION);
 } else {
@@ -285,7 +285,11 @@ function critic_matic_plugin_activation() {
 
     /*
      * Carma log
-     * Type 1 - emotions
+     * Type:
+     *  1 - emotions
+     * Post type: 
+     *  0 - critic
+     *  1 - filters
      */
 
     $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "carma_log`(
@@ -303,7 +307,11 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8_general_ci;";
     dbDelta($sql);
 
-    critic_matic_create_index(array('uid', 'date_added', 'type', 'dst_uid', 'dst_ip', 'post_id'), $table_prefix . "carma_log");
+    //$sql = "ALTER TABLE `" . $table_prefix . "carma_log` ADD `post_type` int(11) NOT NULL DEFAULT '0'";
+    //ALTER TABLE `wp_bcw98b_carma_log` ADD `post_type` int(11) NOT NULL DEFAULT '0'
+    //dbDelta($sql);
+    
+    critic_matic_create_index(array('uid', 'date_added', 'type', 'post_type','dst_uid', 'dst_ip', 'post_id'), $table_prefix . "carma_log");
 
 
 
@@ -753,13 +761,17 @@ function critic_matic_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('date', 'pid', 'aid', 'vote'), $table_prefix . "critic_emotions");
-
-
+    
     // 1.11.2022 Wp user id
     $sql = "ALTER TABLE `" . $table_prefix . "critic_emotions` ADD `wp_uid` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('wp_uid'), $table_prefix . "critic_emotions");
+    
+    // 24.08.2023 Type
+   $sql = "ALTER TABLE `" . $table_prefix . "critic_emotions` ADD `type` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
+    critic_matic_create_index_an(array('date', 'pid', 'aid', 'vote', 'wp_uid','type'), $table_prefix . "critic_emotions");
+    
 
     $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_emotions_authors`(
 				`id` int(11) unsigned NOT NULL auto_increment, 
@@ -1403,7 +1415,7 @@ function critic_matic_plugin_activation() {
     $sql = "CREATE TABLE IF NOT EXISTS  `data_link_filters`(
 				`id` int(11) unsigned NOT NULL auto_increment,
                                 `date` int(11) NOT NULL DEFAULT '0',
-                                `type` int(11) NOT NULL DEFAULT '0',
+                                `tab` int(11) NOT NULL DEFAULT '0',
                                 `link_hash` varchar(255) NOT NULL default '',
                                 `link` text default NULL,
 				PRIMARY KEY  (`id`)
@@ -1415,7 +1427,8 @@ function critic_matic_plugin_activation() {
     $sql = "CREATE TABLE IF NOT EXISTS  `data_user_filters`(
 				`id` int(11) unsigned NOT NULL auto_increment,
                                 `publish` int(11) NOT NULL DEFAULT '0',
-                                `uid` int(11) NOT NULL DEFAULT '0',
+                                `aid` int(11) NOT NULL DEFAULT '0',
+                                `wp_uid` int(11) NOT NULL DEFAULT '0',                                
                                 `fid` int(11) NOT NULL DEFAULT '0',
                                 `date` int(11) NOT NULL DEFAULT '0',
                                 `last_upd` int(11) NOT NULL DEFAULT '0',                                
@@ -1426,7 +1439,7 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('uid', 'date', 'last_upd', 'fid'), "data_user_filters");
+    critic_matic_create_index_an(array('date', 'last_upd', 'fid'), "data_user_filters");
 
     /*
      * Ethic img

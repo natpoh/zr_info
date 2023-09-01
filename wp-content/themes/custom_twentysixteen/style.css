@@ -2870,7 +2870,7 @@ body #menu-top-right a {
 .facets {
     border: 1px solid #afafaf;
     padding: 5px;
-    margin-bottom: 20px; 
+    margin: -5px -5px 15px -5px; 
 }
 
 body.theme_dark .facets {
@@ -2878,7 +2878,7 @@ body.theme_dark .facets {
 }
 
 
-.facet, .facets, #search-filters, #search-sort, #search-tabs{
+.facet, .facets, #search-filters, .show-filters, #search-sort, #search-tabs{
     font-family: 'Encode Sans Condensed',Lato;
 }
 
@@ -2911,6 +2911,12 @@ body.theme_dark .facet .more-popup{
     user-select:none;
 }
 
+.show-filters {
+    padding: 0;
+    margin: 0;
+    user-select:none;
+}
+
 #search-filters.hide {
     display: none;
 }
@@ -2919,7 +2925,8 @@ body.theme_dark .facet .more-popup{
     display: inline-block;    
 }
 
-#search-filters .filter {
+#search-filters .filter,
+.show-filters .filter{
     display: inline-block;
     list-style: none;
     padding: 0 25px 0 10px;
@@ -2929,13 +2936,60 @@ body.theme_dark .facet .more-popup{
     cursor: pointer;
 }
 
-body.theme_dark #search-filters .filter {
+.show-filters .filter{
+    padding: 0 10px;
+    cursor: default;
+}
+
+.show-filters .filter.tab-name {
+    background: #000;
+    color: #fff;
+}
+
+.sfilter-item {
+    max-height: 20em;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: block;
     color: #000;
 }
 
 
+.sfilter-title a,
+.sfilter-content{
+    color: #000;
+    margin: 1.5rem 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;  
+    overflow: hidden;
+}
+
+body.theme_dark .sfilter-item,
+body.theme_dark .sfilter-title a{
+    color: #c4c4c4;
+}
+
+.sfliter-link {
+    font-size: 1rem;
+    margin: 0 0 1rem 0;
+}
+
+body.theme_dark #search-filters .filter,
+body.theme_dark .show-filters .filter{
+    color: #000;
+}
+
+body.theme_dark .show-filters .filter.tab-name {
+    color: #fff;
+    background: #384df7;
+}
+
+
 #search-filters .filter.fminus,
-#search-filters .filter[data-id="minus"]{
+#search-filters .filter[data-id="minus"],
+.show-filters .filter.fminus,
+.show-filters .filter[data-id="minus"]{
     background: #ff5959;
 }
 
@@ -2962,8 +3016,7 @@ body.theme_dark #search-filters .filter {
     display: inline-block;
 }
 
-#search-filters.tab-movies .f-critics, 
-#search-filters.tab-critics .f-movies  {
+#search-filters .filter.inactive {
     background: #d4d4d4;
     color: #565656;
 }
@@ -2973,7 +3026,14 @@ body.theme_dark #search-filters .filter {
 }
 
 body.logged-in #search-filters .sohf.save-filters {
-    /*display: inline-block;*/
+    display: inline-block;
+}
+
+body.logged-in #search-filters.tab-filters .sohf.save-filters {
+    display: none;
+}
+
+body.search_submit #page #content #search-filters .sohf.save-filters {
     display: none;
 }
 
@@ -2989,6 +3049,10 @@ body.logged-in #search-filters .sohf.save-filters {
 
 #search-filters .sohf.save-filters:hover {
     background: #424242;
+}
+
+.facet, .facets {
+    position: relative;
 }
 
 .facet .facet-title,
@@ -3012,17 +3076,17 @@ body.logged-in #search-filters .sohf.save-filters {
     font-weight: normal;
 }
 
-.facets .facet-title {
+.facets.collapsed .facet-title {
     margin-bottom: 0;
 }
 
-.facets-ch .facet-title {
+.facets-ch .facet.collapsed .facet-title {
     margin-bottom: 0;
 }
 
 .facet.single-title .facet-title h3.title {
     font-weight: bold;
-    margin: 1rem 0 0.5rem;
+    margin: 1rem 0 0 0;
 }
 
 .facets-ch .big.title {
@@ -3031,12 +3095,31 @@ body.logged-in #search-filters .sohf.save-filters {
 
 .facets .facet .facet-ch {
     margin-bottom: 0;
-    padding-top: 0.5rem;
+    /* padding-top: 0.5rem;*/
 }
 
 .wacc {
     cursor: pointer;
     user-select: none;
+}
+
+.facet-title.wacc.wtt .title {
+    margin-right: 30px;
+}
+
+#facets .title-tt {
+    display: flex;
+    width: 28px;
+    height: 28px;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    right: 31px;
+    top: 2px;
+}
+
+.title-tt .nte_info {
+    margin: 0;
 }
 
 .facet .acc,
@@ -3048,10 +3131,11 @@ body.logged-in #search-filters .sohf.save-filters {
     border: 1px solid #afafaf;
     border-radius: 4px;
     padding: 3px;
-
     margin: 2px;
     min-width: 28px;
     background:  #f1f1f1;
+    align-items: center;
+    justify-content: center;
 }
 body.theme_dark .facet .acc, body.theme_dark .facets .acc, body.theme_dark .more .acc {
 
@@ -3085,12 +3169,15 @@ body.theme_dark .facet .acc, body.theme_dark .facets .acc, body.theme_dark .more
 .facet .flex-row input {
     width: 16px;
     height: 16px;
-    margin: 0 2px 2px 6px;
+    margin: 0 6px 0 0;
 }
 .facet .flex-row.with-img input {
-    margin: 0 2px 2px 6px;
+    margin: 0 2px 0 6px;
 }
 
+.facet .flex-row:hover {
+    color: #f00;
+}
 
 .facet .flex-row span.t {
     flex:1;
@@ -3118,6 +3205,11 @@ body.theme_dark .facet .acc, body.theme_dark .facets .acc, body.theme_dark .more
     border: 1px solid #646464;
     border-radius: 7px;
     padding: 0.4375em;
+}
+
+.facet-ch .local_title {
+    display: block;
+    margin: 1rem 0 0.5rem 0;
 }
 
 body.theme_dark .facet .autocomplite {
@@ -3152,40 +3244,25 @@ body.theme_dark .ac-result {
 
 
 
-.chevron, .chevronup{
+.chevron, 
+.chevronup{
     position:relative;
     display:block;
     height:20px;
+    font-size: 20px;
+    line-height: 20px;
+    margin-top: -4px;
 }
 
-.chevron::before,
-.chevron::after,
-.chevronup::before,
-.chevronup::after{
-    position:absolute;
-    display:block;
-    content:"";
-    border:10px solid transparent;
+.chevron {
+    color: #afafaf;
+
 }
 
-.chevron::before{
-    top:7px;
-    border-top-color:#afafaf;
-}
-.chevron::after{
-    top:2px;
-    border-top-color:#f1f1f1;
+.chevronup{
+    color: #f14939;
 }
 
-.chevronup::before{
-    top:-7px;
-    border-bottom-color:#f14939;
-}
-
-.chevronup::after{
-    top:-2px;
-    border-bottom-color:#f1f1f1;
-}
 body.theme_dark .chevronup::after {
     border-bottom-color: #656565;
 }
@@ -3199,6 +3276,9 @@ body.theme_dark .chevron::after {
     display: none;
 }
 
+.include-btns .btn:first-child {
+    margin-left: 0;
+}
 
 .include-btns .btn {
     cursor: pointer;
@@ -3206,6 +3286,20 @@ body.theme_dark .chevron::after {
 
 .include-btns .active{
     font-weight: bold;
+}
+
+.include-btns .btn {
+    opacity: 0.7;
+    margin: 0 0.2rem;
+}
+
+.include-btns .btn i {
+    margin-left: -0.2rem;
+}
+
+.include-btns .btn.active {
+    opacity: 1;
+    color: #0175ff;
 }
 
 .noUi-connect {
@@ -3235,7 +3329,7 @@ body.theme_dark  .noUi-handle::before,body.theme_dark  .noUi-handle::after {
     -webkit-appearance: searchfield-cancel-button;
 }
 
-.facet .flex-row.multi_pm{
+.facet .multi_pm{
     cursor: initial;
 }
 
@@ -3424,6 +3518,18 @@ i.mtcr{
     padding-bottom: 5px;
 }
 
+.multi_pm {
+    position: relative;
+} 
+
+.multi_pm > .flex-row {
+    margin-bottom: 0;
+}
+
+.flex-row.with-img {
+    margin-bottom: 0.25rem;
+}
+
 .multi_pm input{
     display: none;
 }
@@ -3432,26 +3538,48 @@ i.mtcr{
     cursor: pointer;
 }
 
-.multi_pm label {
-    display: flex;    
-    align-items: center;
+.multi_pm label:hover {
+    color: #f00;
 }
 
-.multi_pm label.plus {
-    justify-content: space-between;
-    flex: 1;
-} 
+.multi_pm label {
+    display: flex;    
+    align-items: flex-start;
+}
+
 
 .multi_pm .label {
     display: inline-block;
     position: relative;
     width: 16px;
     height: 16px;
-    margin: 0 2px 0 8px;
+    margin: 6px;
     border: 1px solid;
     background: #fff;
     border-radius: 3px;
     border-color: #777;
+}
+
+.multi_pm label.plus {
+    margin-left: 50px;
+}
+
+.multi_pm .label.plus {
+    position: absolute;
+    left: -5px;
+}
+
+.multi_pm label.minus {
+    position: absolute;
+    left: 20px;
+} 
+
+.multi_pm .label.check{
+    margin-left: 0;
+}
+
+.multi_pm .label.check:before {
+    color: #fff;
 }
 
 .multi_pm.slider {
@@ -3462,34 +3590,24 @@ i.mtcr{
     margin: 0 2px 0 10px;
 }
 
-
-.multi_pm .label:before,
-.multi_pm .label:after {
-    content: '';
-    position: absolute;
-    background: #777;    
+.multi_pm .label::before {
+    font-size: 16px;
+    line-height: 16px;
+    margin: 0;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    background: none;
+    display: block;
+    color: #777;
+    margin: -1px;
 }
 
-.multi_pm .label:before {
-    top: 6px;
-    left: 2px;
-    right: 2px;
-    height: 2px;
-}
-
-.multi_pm .label.plus:after {
-    top: 2px;
-    left: 6px;
-    bottom: 2px;
-    width: 2px;
-}
-
-.multi_pm label:hover .label.plus,
-.multi_pm label.active .label.plus{
+.multi_pm label:hover .label,
+.multi_pm label.active .label{
     border-color: #0075ff;
     background: #0075ff;
 }
-
 
 .multi_pm label:hover .label.minus,
 .multi_pm label.active .label.minus{
@@ -3501,8 +3619,9 @@ i.mtcr{
 .multi_pm label:hover .label:after,
 .multi_pm label.active .label:before,
 .multi_pm label.active .label:after{    
-    background: #fff;    
+    color: #fff;    
 }
+
 
 /*
 * Notes popup
@@ -4090,7 +4209,7 @@ body.theme_dark .ns_item .meta{
     display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
-    max-width: 1170px;
+    max-width: 1230px;
     margin: 0 auto;
     justify-content: space-between;
     align-items: center;
@@ -4952,7 +5071,7 @@ body.error404 .page-header  {
 }
 
 .flex-page .sidebar-left {
-    width: 234px;
+    width: 280px;
     background: #f1f1f1;
     order: 0;
 }
@@ -7303,8 +7422,8 @@ body.theme_dark .site_theme_switch::before {
 }
 
 .site {
-    margin: 0 auto 0 310px;
-    max-width: 1170px;
+    margin: 0 auto 0 300px;
+    max-width: 1230px;
 }
 
 /**
@@ -9275,11 +9394,11 @@ body.theme_dark .site_theme_switch::before {
 @media screen and (min-width: 1780px) {
     .site, .site-footer {
         margin: 0 auto;
-        max-width: 1170px;
+        max-width: 1230px;
     }
     .site-header-main {
         margin: 0 auto;
-        max-width: 1170px;
+        max-width: 1230px;
     }
 }
 /**
@@ -10658,17 +10777,8 @@ strong {
 
 
 
-/* staff reviews emoji reacts are now popping up in the wrong spot because of the content max width this is a temporary fix to the symptom of that fix */
-
-.type-Movie .stuff_review .user-reactions-box {
-    left:12em;
-}
 
 
-
-.search-results .search_review .user-reactions-box {
-    left:7em;
-}
 
 /* important permanent fix for the line breaks users and staff type in their reviews */
 
@@ -10851,17 +10961,10 @@ strong {
 }
 
 
-/* temporary fix to make emoji reactions centered on view more pro pages & movie pages */
-
-.search-results .user-reactions-box {
-    margin-left:-2em;
-}
 
 
 
-.type-Movie .mbp_f .user-reactions-box {
-    margin-left:0em;
-}
+
 
 /* temporary fix for the front page audience names being too long and overlapping onto the comment and emoji react icons */
 

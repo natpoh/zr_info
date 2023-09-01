@@ -384,7 +384,7 @@ class ActorsInfo{
         //kairos
         $kairos = self::actor_data($aid,'data_actors_race','actor_id');
 
-        $array_actors['kairos']=self::array_to_content($kairos,'Kairos: '. self::todate($kairos['last_update']),'db: '.self::link_db('data_actors_race').' ',1,['kairos_verdict'],'last_update');
+        $array_actors['kairos']=self::array_to_content($kairos,'Kairos: '. self::todate($kairos['last_update']),'db: '.self::link_db('data_actors_race').' <br><a target="_blank" href="/analysis/include/scrap_imdb.php?kairos_prepare_arrays='.$aid.'&debug=1">update</a>',1,['kairos_verdict'],'last_update');
         $array_actors['kairos_verdict']=self::array_to_content($actors_meta,'Kairos Verdict: '. $acc[$rsm[$actors_meta['n_kairos']]],'db: '.self::link_db('data_actors_meta').' ',1,[['verdict',2]],'last_update',$kairos['kairos_verdict'],'n_kairos');
 
         //bettaface
@@ -456,7 +456,7 @@ class ActorsInfo{
         //tmdb kairos
         $tmdb_kairos = self::actor_data($aid,'data_actors_tmdb_race','actor_id');
 
-        $array_actors['tmdb_kairos']=self::array_to_content($tmdb_kairos,'Kairos: '. self::todate($tmdb_kairos['last_update']),'db: '.self::link_db('data_actors_tmdb_race').' ',1,[['kairos_verdict',2]],'last_update');
+        $array_actors['tmdb_kairos']=self::array_to_content($tmdb_kairos,'Kairos: '. self::todate($tmdb_kairos['last_update']),'db: '.self::link_db('data_actors_tmdb_race').' <br><a target="_blank" href="/analysis/include/scrap_imdb.php?kairos_prepare_arrays='.$aid.'&debug=1&type=tmdb">update</a>',1,[['kairos_verdict',2]],'last_update');
 
         //tmdb bettaface
        // $bettaface = self::actor_data($aid,'data_actors_face','actor_id');
@@ -478,7 +478,7 @@ class ActorsInfo{
         //crowd kairos
         $crowd_kairos = self::actor_data($aid,'data_actors_crowd_race','actor_id');
 
-        $array_actors['crowd_kairos']=self::array_to_content($crowd_kairos,'Kairos: '. self::todate($crowd_kairos['last_update']),'db: '.self::link_db('data_actors_crowd_race').' ',1,[['kairos_verdict',2]],'last_update');
+        $array_actors['crowd_kairos']=self::array_to_content($crowd_kairos,'Kairos: '. self::todate($crowd_kairos['last_update']),'db: '.self::link_db('data_actors_crowd_race').' <br><a target="_blank" href="/analysis/include/scrap_imdb.php?kairos_prepare_arrays='.$aid.'&debug=1&type=crowd">update</a>',1,[['kairos_verdict',2]],'last_update');
 
         $array_actors['crowd_verdict']=self::array_to_content($actors_meta,'Crowd Verdict: '. $acc[$rsm[$actors_meta['n_crowdsource']]],'db: '.self::link_db('data_actors_meta').' ',1,[['verdict',2]],'last_update',$acc[$data_actors_crowd['verdict']],'n_crowdsource');
 

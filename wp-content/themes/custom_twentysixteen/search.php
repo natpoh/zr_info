@@ -95,6 +95,33 @@ if (isset($_POST['filters'])) {
       }
       }
      */
+    if (isset($filters['sfilter'])) {
+        // Load custom search filter
+        $uf = $cfront->cm->get_uf();
+        $req = $_SERVER['REQUEST_URI'];
+        $sfilter = $uf->load_filter_by_url($req);
+        if ($sfilter) {
+
+            if (in_array($sfilter->tab, $uf->an_tabs)) {
+                // Analytics
+                $filters['analytics']=1;
+                $_SERVER['REQUEST_URI'] = $sfilter->link;
+            } else {
+                // Search
+                $filters['search'] = 1;
+                $_SERVER['REQUEST_URI'] = $sfilter->link;
+                $cfront = new CriticFront();
+            }
+        } else {
+            // Redirect to 404
+            global $wp_query;
+            $wp_query->set_404();
+            status_header(404);
+            get_template_part(404);
+            exit();
+        }
+    }
+
     if (isset($filters['search'])) {
         // Search page
         if ($cfront->need_redirect()) {
@@ -104,7 +131,7 @@ if (isset($_POST['filters'])) {
             exit();
         }
         gmi('search pre');
-        
+
         // Include content parts logic for ajax
         $inc = '';
         $show_content = true;
@@ -113,10 +140,12 @@ if (isset($_POST['filters'])) {
         // Init filters
         $cfront->init_search_filters();
         gmi('init_search_filters');
+
+        $uid = $cfront->get_uid();
         
         // Get current tab
         $curr_tab = $cfront->get_search_tab();
-        $results = $cfront->find_results();
+        $results = $cfront->find_results($uid);
         $keywords = $cfront->get_search_keywords();
         $search_tabs = $cfront->search_tabs($results);
 
@@ -133,8 +162,8 @@ if (isset($_POST['filters'])) {
         $tab_key = $cfront->get_tab_key();
         // Create url
         $search_url = $cfront->get_current_search_url();
-        $uid = $cfront->get_uid();
-        $user_filter_id = $cfront->get_user_search_filter($uid,$search_url);
+
+        $user_filter_id = $cfront->get_user_search_filter($uid, $search_url);
 
         $fiters = $cfront->search_filters($tab_key);
         $sort = $cfront->search_sort($tab_key, $results);
@@ -169,10 +198,12 @@ if (isset($_POST['filters'])) {
         // Init filters
         $search_front->init_search_filters();
 
+        $uid = $cfront->get_uid();
+        
         // Get current tab
         $curr_tab = $search_front->get_search_tab();
         $tab_key = $search_front->get_tab_key();
-        $results = $search_front->find_results();
+        $results = $search_front->find_results($uid);
         $keywords = $search_front->get_search_keywords();
         $search_tabs = $search_front->search_tabs($results);
         gmi('search results');
@@ -188,7 +219,12 @@ if (isset($_POST['filters'])) {
         }
 
         $tab_key = $search_front->get_tab_key();
-
+        
+        // Create url
+        $search_url = $search_front->get_current_search_url();
+        $uid = $search_front->get_uid();
+        $user_filter_id = $search_front->get_user_search_filter($uid, $search_url);
+        
         $fiters = $search_front->search_filters($tab_key);
         $sort = $search_front->search_sort($tab_key, $results);
         $facets = $results[$tab_key]['facets'];

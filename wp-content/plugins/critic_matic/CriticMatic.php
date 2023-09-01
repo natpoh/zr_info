@@ -23,6 +23,7 @@ class CriticMatic extends AbstractDB {
     private $ts;
     private $uc;
     private $si;
+    private $uf;
 
 
     /*
@@ -424,6 +425,17 @@ class CriticMatic extends AbstractDB {
         }
         return $this->si;
     }
+    
+    public function get_uf() {
+        // Get user filters
+        if (!$this->uf) {
+            if (!class_exists('UserFilters')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'UserFilters.php' );
+            }
+            $this->uf = new UserFilters($this);
+        }
+        return $this->uf;
+    }
 
     function admin_bar_render($wp_admin_bar) {
         if ($this->new_audience_count > 0 && $this->user_can) {
@@ -448,6 +460,8 @@ class CriticMatic extends AbstractDB {
         // Audience. Calculate movie rating
         if ($author_type == 2) {
             $movies_meta = $this->get_movies_data($id);
+
+
             if ($movies_meta && sizeof($movies_meta)) {
                 !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
                 $audiencetype = 1;
@@ -1733,7 +1747,18 @@ class CriticMatic extends AbstractDB {
         return $author;
     }
 
-    public function get_authors_by_ids($ids) {
+    public function get_authors_by_ids($ids, $cache=true) {
+        $key = md5(implode(',', $ids));
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$key])) {
+                return $dict[$key];
+            }
+        }
         $sql = sprintf("SELECT id, name, type, status, options, wp_uid, wp_uid, show_type, avatar, avatar_name, avatar_type FROM {$this->db['authors']} WHERE id IN(%s)", implode(',', $ids));
         $result = $this->db_results($sql);
         $arr = array();
@@ -1742,6 +1767,7 @@ class CriticMatic extends AbstractDB {
                 $arr[$tag->id] = $tag;
             }
         }
+        $dict[$key] = $arr;
         return $arr;
     }
 
@@ -2326,13 +2352,13 @@ class CriticMatic extends AbstractDB {
         return $tags_arr;
     }
 
-    public function get_tag_by_slug($slug) {
+    public function get_tag_by_slug($slug, $cache=true) {
         //Get from cache
         static $dict;
         if (is_null($dict)) {
             $dict = array();
         }
-        if (isset($dict[$slug])) {
+        if ($cache && isset($dict[$slug])) {
             return $dict[$slug];
         }
         $sql = sprintf("SELECT id, status, name FROM {$this->db['tags']} WHERE slug='%s'", $this->escape($slug));
@@ -3682,6 +3708,12 @@ class CriticMatic extends AbstractDB {
         return $result;
     }
 
+    public function unic_id() {
+        $ip = $this->get_remote_ip();
+        $unic_id = md5($_SERVER["HTTP_USER_AGENT"] . $ip);
+        return $unic_id;
+    }
+
     /*
      * Other
      */
@@ -4272,6 +4304,20 @@ class CriticMatic extends AbstractDB {
     public function get_domain_by_url($url = '') {
         $domain = preg_replace('#^([a-z]+\:\/\/[^\/]+)(\/|\?|\#).*#', '$1', $url . '/');
         return $domain;
+    }
+
+    public function post($data = array(), $host = '') {
+
+        $fields_string = http_build_query($data);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $host);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        $result = curl_exec($ch);
+
+        return $result;
     }
 
 }

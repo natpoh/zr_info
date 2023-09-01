@@ -152,6 +152,38 @@
                                 ?>
                             </div>
                             <?php
+                        elseif ($tab_key == 'filters'):
+                            ?>
+                            <div class="flex_content_block">
+                                <?php
+                                if (sizeof($results['filters']['list'])):
+                                    foreach ($results['filters']['list'] as $post):                 
+                                        ?>
+                                        <div class="card search_review">                                            
+                                            <?php 
+                                            print $search_front->theme_filter_item($post);
+                                            ?>                                            
+                                        </div>
+                                        <?php
+                                    endforeach;
+                                    print $search_front->pagination($results['filters']['count']);
+                                else:
+                                    ?>
+                                    <h2 style="width: 100%; text-align: center" >No results found</h2>
+                                    <?php
+                                    if (isset($results[$tab_key]['no_filters_count'])) {
+                                        $found_results = $results[$tab_key]['no_filters_count'];
+                                        $clean_search = $search_front->get_current_search_url(array(),array(),true);
+                                        ?>
+                                        <p style="width: 100%; text-align: center; margin-bottom: 20px;" >
+                                            If you <a href="<?php print $clean_search ?>">reset the filters</a> you'll get <?php print $found_results ?> result<?php print $found_results > 1 ? 's' : ''  ?>, though.
+                                        </p>
+                                        <?php
+                                    }
+                                endif;
+                                ?>
+                            </div>
+                            <?php
                         else:
                             ?>
                             <div class="flex_movies_block">

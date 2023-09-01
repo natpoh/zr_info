@@ -1,3 +1,6 @@
+26.08.2023
+Add search filters
+
 1.0.107 - 03.08.2023
 Include/Exclude ratings
 

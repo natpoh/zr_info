@@ -2,6 +2,7 @@
  * Search script for critic matic
  */
 var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
+var site_url = window.location.protocol + "//" + window.location.host;
 var critic_search = critic_search || {};
 
 critic_search.debug = false;
@@ -23,7 +24,7 @@ jQuery(function ($) {
                 $.ajax({
                     type: 'POST',
                     ///context: this,
-                    url: window.location.protocol + template_path + "ajax_data.php",
+                    url: site_url + template_path + "ajax_data.php",
                     data: {"action": "ajax_search", "keyword": keyword, "type": "movie"},
                     success: function (data) {
                         $('.advanced_search_first').html(data).show();
@@ -148,7 +149,7 @@ critic_search.init_facet = function (v) {
         var id = $this.val();
 
         //Multi logic
-        var parrent = $this.closest('.flex-row');
+        var parrent = $this.closest('.row');
         if (parrent.hasClass('multi_pm')) {
             var tclass = $this.attr('class');
             parrent.find('input').each(function () {
@@ -365,6 +366,10 @@ critic_search.init = function ($custom_id = '') {
     $('#search-tabs:not(.init)').each(function (i, v) {
         var v = $(v);
         v.addClass('init');
+        $('#search-filters').attr('class', 'tab-' + $('#search-tabs .nav-tab.active a').attr('data-tab'));
+        if ($('.filters-wrapper .filter:not(.sohf)').length == 0) {
+            $("#search-filters:not(.hide)").addClass('hide');
+        }
         v.find('a').click(function () {
             var $this = $(this);
             var holder = $this.closest('.nav-tab');
@@ -481,7 +486,7 @@ critic_search.init = function ($custom_id = '') {
             if (count == '(0)') {
                 if ($('#facet-state li input[value="related"]').length) {
                     var related = $('#facet-state li input[value="related"]');
-                    var fr = related.closest('.flex-row');
+                    var fr = related.closest('.row');
                     var text = fr.find('span.cnt').first().text()
                     var articles = 'articles';
                     if (text == '(1)') {
@@ -496,6 +501,26 @@ critic_search.init = function ($custom_id = '') {
             }
         }
     }
+    // Inactive tabs
+    $('#search-filters .filter').each(function () {
+        var $this = $(this);
+        var data_parent = $this.attr('data-parent');
+        if (data_parent) {
+
+            if ($('#facet-' + data_parent).length || $('#facets-' + data_parent).length) {
+                if ($this.hasClass('inactive')) {
+                    $this.removeClass('inactive');
+                }
+                ;
+            } else {
+                if (!$this.hasClass('inactive')) {
+                    $this.addClass('inactive');
+                }
+                ;
+            }
+        }
+    });
+
     // Save filters
     critic_search.init_save_filters();
 }
@@ -529,7 +554,7 @@ critic_search.init_collapse = function (id, v) {
             if (v.hasClass('defshow')) {
                 critic_search.remove_filter('hide', facet_id);
             } else {
-                critic_search.add_filter('show', facet_id, facet_id.capitalize(), 'all', '', 'Show ', 'sohf');
+                critic_search.add_filter('show', facet_id, facet_id.capitalize(), '', '', 'Show ', 'sohf');
             }
 
 
@@ -547,7 +572,7 @@ critic_search.init_collapse = function (id, v) {
             v.addClass('collapsed');
 
             if (v.hasClass('defshow')) {
-                critic_search.add_filter('hide', facet_id, facet_id.capitalize(), 'all', '', 'Hide ', 'sohf');
+                critic_search.add_filter('hide', facet_id, facet_id.capitalize(), '', '', 'Hide ', 'sohf');
             } else {
                 critic_search.remove_filter('show', facet_id);
             }
@@ -699,8 +724,6 @@ critic_search.slider_facet = function (type, data_arr, ftype = 'all') {
             title = extend_title;
         }
 
-
-
         critic_search.add_filter(custom_type, key, title, ftype, title_type, title_pre);
         critic_search.submit();
     });
@@ -801,7 +824,7 @@ critic_search.add_filter = function (type, id, title = '', ftype, type_title = '
         custom_class = ' ' + custom_class;
     }
 
-    var filter = '<li id="' + type + '-' + id + '" class="filter f-' + ftype + minus_class + custom_class + '" data-type="' + type + '" data-id="' + id + '" title="' + hover_title + '" >' + title_pre + title + '<span class="close"></span></li>';
+    var filter = '<li id="' + type + '-' + id + '" class="filter ' + minus_class + custom_class + '" data-type="' + type + '" data-parent="' + ftype + '" data-id="' + id + '" title="' + hover_title + '" >' + title_pre + title + '<span class="close"></span></li>';
 
     if ($("#search-filters").length == 0) {
         $('#search-tabs').after('<div id="search-filters"><span>Filters: </span><ul class="filters-wrapper"></ul></div>');
@@ -814,6 +837,7 @@ critic_search.add_filter = function (type, id, title = '', ftype, type_title = '
     } else {
         $('.filters-wrapper').append(filter);
     }
+
     critic_search.add_clear_all();
 
     if ($('.filters-wrapper .filter:not(.sohf)').length > 0) {
@@ -821,6 +845,7 @@ critic_search.add_filter = function (type, id, title = '', ftype, type_title = '
     } else {
         $("#search-filters:not(.hide)").addClass('hide');
 }
+
 }
 
 critic_search.add_clear_all = function () {
@@ -837,9 +862,9 @@ critic_search.add_clear_all = function () {
     }
 
     critic_search.init_save_filters();
-    
+
     var filter_len = $('.filters-wrapper .filter:not(.sohf)').length;
-    if (filter_len >= 3 && !$(".filters-wrapper .clear-all").length) {
+    if (filter_len >= 1 && !$(".filters-wrapper .clear-all").length) {
         $('.filters-wrapper .save-filters').before('<li class="filter clear-all" title="Clear filters"><a href="' + clear_url + '">Clear <span class="close"></span></a></li>');
     }
 }
@@ -852,13 +877,17 @@ critic_search.remove_filter = function (type, id) {
 
     var filter_len = $('.filters-wrapper .filter:not(.sohf)').length;
 
+    if (filter_len <= 1) {
+        $("#search-filters .clear-all").remove();
+
+        if (filter_len == 1) {
+            filter_len = 0;
+        }
+    }
+
     if (filter_len == 0) {
         $("#search-filters:not(.hide)").addClass('hide');
         $("#search-filters .save-filters").remove();
-    }
-
-    if (filter_len <= 3) {
-        $("#search-filters .clear-all").remove();
     }
 
     if ($('.filters-wrapper .filter').length === 0) {
@@ -868,7 +897,7 @@ critic_search.remove_filter = function (type, id) {
 
 critic_search.init_save_filters = function () {
     var $ = jQuery;
-    
+
     var filter_len = $('.filters-wrapper .filter:not(.sohf)').length;
     if (filter_len > 0 && !$(".filters-wrapper .save-filters").length) {
         // Append save
@@ -908,6 +937,10 @@ critic_search.init_save_filters = function () {
             if (critic_search.uid == 0) {
                 return false;
             }
+            if ($('#search-filters').hasClass('tab-filters')) {
+                return false;
+            }
+
             if (typeof add_popup !== "undefined") {
                 add_popup();
                 var filter_title = $(".filters-wrapper .save-filters").attr('title');
@@ -926,7 +959,11 @@ critic_search.init_save_filters = function () {
                     // Add title
                     var filter_placeholder = '';
                     $('.filters-wrapper .filter.init:not(.sohf)').each(function () {
-                        var title = $(this).attr('title');
+                        var $filter = $(this);
+                        if ($filter.hasClass('clear-all')) {
+                            return;
+                        }
+                        var title = $filter.attr('title');
 
                         if (filter_placeholder == '') {
                             filter_placeholder = title;
@@ -1033,6 +1070,8 @@ critic_search.submit = function (inc = '', target = '', facetid = '') {
 
     var $ = jQuery;
     var kw = $('#sbar').val();
+
+    $('body').addClass('search_submit');
 
     var data = {};
 
@@ -1141,6 +1180,7 @@ critic_search.submit = function (inc = '', target = '', facetid = '') {
 
     critic_search.ajax(data, function (rtn) {
 
+        $('body').removeClass('search_submit');
         var ac_facet = '';
         $('.facet .autocomplite.process').each(function (i, v) {
             ac_facet = $(v);

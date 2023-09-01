@@ -119,7 +119,7 @@ class TV_Scroll {
               
               $search_front = new CriticFront();
               $search_front->init_search_filters();              
-              $array_data= $search_front->find_results(array(),false, true);
+              $array_data= $search_front->find_results(0,array(),false, true);
               
               //var_dump($array_data["movies"]["list"]);
 

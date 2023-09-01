@@ -156,45 +156,89 @@ else if ($type == 'tmdb')
 
 return $base64;
 }
+
+
+public function kairos_api($image)
+{
+
+    // set variables
+    $queryUrl = "http://api.kairos.com/detect";
+    $imageObject = '{"image":"'.$image.'"}';
+    $APP_ID = "66b12c87";
+    $APP_KEY = "2a04a82fb7224cf9861de88ee9c2b3ee";
+
+    $request = curl_init($queryUrl);
+
+// set curl options
+    curl_setopt($request, CURLOPT_POST, true);
+    curl_setopt($request,CURLOPT_POSTFIELDS, $imageObject);
+    curl_setopt($request, CURLOPT_HTTPHEADER, array(
+            "Content-type: application/json",
+            "app_id:" . $APP_ID,
+            "app_key:" . $APP_KEY
+        )
+    );
+
+    curl_setopt($request, CURLOPT_RETURNTRANSFER, true);
+
+    $response = curl_exec($request);
+
+// show the API response
+    //echo $response;
+
+// close the session
+    curl_close($request);
+    return $response;
+}
+
     public function get_actor_race($base64)
     {
         global $debug;
-        $arrayhead = array(
-            'Host: demo.kairos.com',
-            'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
-            'Accept: text/plain, */*; q=0.01',
-            'Accept-Language: ru',
-            'Referer: https://demo.kairos.com/detect',
-            'Content-Type: application/x-www-form-urlencoded; charset=UTF-8',
-            'X-Requested-With: XMLHttpRequest',
-            'Origin: https://demo.kairos.com',
-            'Alt-Used: demo.kairos.com',
-            'Connection: keep-alive'
-        );
 
-        $urlImageSrc=$base64;
+        $result =  self::kairos_api($base64);
 
-        $pos_data = array(
-            "image"   => $urlImageSrc,
-            "minHeadScale" =>'.015',
-            "selector"=> 'frontal'
-        );
+//        $arrayhead = array(
+//            'Host: demo.kairos.com',
+//            'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
+//            'Accept: text/plain, */*; q=0.01',
+//            'Accept-Language: ru',
+//            'Referer: https://demo.kairos.com/detect',
+//            'Content-Type: application/x-www-form-urlencoded; charset=UTF-8',
+//            'X-Requested-With: XMLHttpRequest',
+//            'Origin: https://demo.kairos.com',
+//            'Alt-Used: demo.kairos.com',
+//            'Connection: keep-alive'
+//        );
+//
+//        $urlImageSrc=$base64;
+//
+//        $pos_data = array(
+//            "image"   => $urlImageSrc,
+//            "minHeadScale" =>'.015',
+//            "selector"=> 'frontal'
+//        );
+//
+//        $pos_data = json_encode($pos_data);
+//        $pos_data =http_build_query(array('imgObj' => $pos_data));
+//
+//
+//
+//        $url = "https://demo.kairos.com/detect/send-to-api";
+//
+//
+//        $result = static::getCurlCookieface($url, $pos_data, $arrayhead,0);
 
-        $pos_data = json_encode($pos_data);
-        $pos_data =http_build_query(array('imgObj' => $pos_data));
 
 
 
-        $url = "https://demo.kairos.com/detect/send-to-api";
-
-
-        $result = static::getCurlCookieface($url, $pos_data, $arrayhead,0);
-
-
-        if ($debug)var_dump($result);
 
         if ($result) {
             $arraay = json_decode($result);
+        }
+        if ($debug)
+        {
+            !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+            TMDB::var_dump_table($arraay);
         }
 
         $race = $arraay->images[0]->faces[0]->attributes;
@@ -416,7 +460,12 @@ return;
                 $kairos =  KAIROS::get_actor_id($id,$result_image);
 
 
-                if ($debug) var_dump($kairos);
+                if ($debug)
+                {
+                    !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+                    TMDB::var_dump_table($kairos);
+                }
+
 
                 ///////////update kairos data
                 if ($kairos)
@@ -445,6 +494,7 @@ return;
                 {
                     if (check_cron_time())break;
                 }
+
             }
     }
 
@@ -458,6 +508,7 @@ global $debug;
         {
             $dop = " and data_actors_imdb.id='".$id."' ";
         }
+
 
         //////requst update crowd data
         $sql="SELECT `data_actors_imdb`.id  FROM `data_actors_imdb` 
@@ -547,6 +598,7 @@ public function get_verdict($kairos)
 }
 public static function save_data_to_db($id,$kairos,$result_image,$error_message)
 {
+    global $debug;
 
     if ($error_message)
     {
@@ -590,24 +642,34 @@ if ($kairos['asian']){  $asian=  $kairos['asian'];  }
         $table ='data_actors_race';
     }
 
-    if ($result_image =='imdb' && !$verdict)
+    $q ="SELECT * FROM `data_actors_race` WHERE`actor_id`=".$id;
+    $r = Pdo_an::db_results_array($q);
+    if ($r)
     {
+        $sql="UPDATE `".$table."` SET `actor_id`=?,`Asian`=?,`Black`=?,`Hispanic`=?,`White`=?,`kairos_verdict`=?,`img_type`=?,`error_msg`=?,`last_update`=? WHERE `actor_id`=".$id;
 
-        $sql="UPDATE `data_actors_imdb` SET `image` = 'NA' WHERE `data_actors_imdb`.`id` = ".$id;
-        Pdo_an::db_results($sql);
-
-        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-        Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $id), 'kairos_race',9);
-        return;
+        if ($debug)echo 'update<br>';
     }
-
-    $sql ="INSERT INTO `".$table."` (`id`, `actor_id`, `Asian`, `Black`, `Hispanic`, `White`, `kairos_verdict`, `img_type`, `error_msg`, `last_update`) 
+    else
+    {
+        $sql ="INSERT INTO `".$table."` (`id`, `actor_id`, `Asian`, `Black`, `Hispanic`, `White`, `kairos_verdict`, `img_type`, `error_msg`, `last_update`) 
 VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
-//echo $sql;
+        if ($debug)
 
+        {
+            echo 'insert<br>';
+        }
+
+    }
     $array_result = array($id,$asian,$black,$hispanic,$white,$verdict,$result_image,$error_message,time());
+    if ($debug)
 
-   // var_dump($array_result);
+    {
+        !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+        echo $sql.'<br>';
+        TMDB::var_dump_table([$sql,$array_result]);
+    }
+    // var_dump($array_result);
     Pdo_an::db_results($sql,$array_result);
 
     ///commit

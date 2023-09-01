@@ -1,7 +1,7 @@
 var curent_load = 0;
 var last_date = 0;
 var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
-
+var site_url = window.location.protocol +"//"+window.location.host;
 var analysis_path =window.location.protocol + "/analysis/";
 
 
@@ -373,7 +373,7 @@ if (id)
         jQuery.ajax({
             type: 'post',
             data: {id: id,'request':'get_trailer'},
-            url: window.location.protocol + template_path + "get_movie_data.php",
+            url: site_url + template_path + "get_movie_data.php",
             success: function (html) {
 
                 if (html)

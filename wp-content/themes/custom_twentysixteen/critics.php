@@ -79,7 +79,7 @@ get_header();
                     <?php print $critic_content ?>                    
                 </div>
 
-                <?php print $cfront->ce->get_emotions($post->id, true); ?>
+                <?php print $cfront->ce->get_emotions($post->id, 0, true); ?>
 
                 <div id="comments">                                    
                     <?php

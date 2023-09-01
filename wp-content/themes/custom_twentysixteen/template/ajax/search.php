@@ -151,8 +151,10 @@ if (isset($search_data['search_type']) && $search_data['search_type'] == 'ajax')
 
     print '<div>';
 
+    $uid = $search_data['uid']? (int) $search_data['uid']:0;
+        
     //Find results
-    $results = $search_front->find_results(array(), $show_facets);
+    $results = $search_front->find_results($uid, array(), $show_facets);
 
 
     global $total;
@@ -169,7 +171,6 @@ if (isset($search_data['search_type']) && $search_data['search_type'] == 'ajax')
     $facets = $results[$tab_key]['facets'];
     
     // User filter
-    $uid = $search_data['uid']? (int) $search_data['uid']:0;
     $user_filter_id = $search_front->get_user_search_filter($uid, $search_url);
 
     if ($analytics) {
@@ -211,7 +212,7 @@ if (isset($search_data['search_type']) && $search_data['search_type'] == 'ajax')
 } else if (isset($search_data['link_form'])) {
     global $cfront;
 
-    $uf = $cfront->get_uf();
+    $uf = $cfront->cm->get_uf();
     
     // Get form
     if (isset($search_data['submit'])){

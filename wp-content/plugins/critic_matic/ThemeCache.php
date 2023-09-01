@@ -18,13 +18,19 @@ class ThemeCache {
         'critics' => array(
             'folder' => 'critics',
             'cache' => array(
-                'c-' => 129600, // 3 mounth        
+                'c-' => 129600, // 3 mounth   
             )
         ),
         'critic_posts' => array(
             'folder' => 'critic_posts',
             'cache' => array(
                 'p-' => 129600, // 3 mounth        
+            )
+        ),
+        'filters' => array(
+            'folder' => 'filters',
+            'cache' => array(
+                'f-' => 129600, // 3 mounth     
             )
         ),
         'user' => array(

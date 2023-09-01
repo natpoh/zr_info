@@ -68,6 +68,13 @@ class AbstractFunctions {
 
     public function sync_update_data($data, $id, $db, $sync_data = true, $priority = 5) {
 
+
+        global $debug;
+        if ($debug){
+            !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+            TMDB::var_dump_table(['sync_update_data',$data, $id, $db, $sync_data, $priority]);
+        }
+
         $this->db_update($data, $db, $id);
 
         if ($sync_data) {

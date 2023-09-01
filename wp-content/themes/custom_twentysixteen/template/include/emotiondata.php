@@ -1,4 +1,5 @@
 <?php
+// UNUSED DEPRECATED
 
 function get_user_reactions($rpid) {
 
@@ -49,7 +50,7 @@ function get_user_reactions($rpid) {
     return $reaction_data;
 }
 
-function get_emotions($id, $single = '') {
+function get_emotions($id,$ptype=0, $single = '') {
 
 
     $reactions = new User_Reactions_Custom();

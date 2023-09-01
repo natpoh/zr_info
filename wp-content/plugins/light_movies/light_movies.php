@@ -882,7 +882,7 @@ display: none;
                     var movie = button.attr('id');
                     jQuery.ajax({
                         type: 'get',
-                        url: window.location.protocol+"/analysis/include/scrap_imdb.php?debug=1&get_imdb_movie_id="+movie,
+                        url: window.location.protocol+"/analysis/include/scrap_imdb.php?get_imdb_movie_id&imdb_id="+movie,
                         success: function (html) {
 
                             if (html==1)

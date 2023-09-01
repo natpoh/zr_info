@@ -107,7 +107,7 @@ function single_movie($curent_user='')
 
 
 
-    echo '<div class="movie_load_grid"><a class="button" target="_blank" href="/analysis/include/scrap_imdb.php?get_imdb_movie_id='.$imdb_id.'">Update data</a></div>';
+    echo '<div class="movie_load_grid"><a class="button" target="_blank" href="/analysis/include/scrap_imdb.php?get_imdb_movie_id&imdb_id='.$imdb_id.'">Update data</a></div>';
 
 
 

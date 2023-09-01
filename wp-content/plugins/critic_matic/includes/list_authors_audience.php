@@ -104,7 +104,7 @@ if (sizeof($authors) > 0) {
                         <th  class="check-column" ><input type="checkbox" name="bulk-<?php print $author->id ?>"></th>
                         <td ><?php print $image ?></td>  
                         <td><?php print $author->id ?></td>     
-                        <td><?php print $wp_uid ?></td>
+                        <td><?php print $author->wp_uid ?></td>
                         <td><a href="<?php print $author_url ?>"><?php print $author_name ?></a>
                             <?php
                             if ($author->type == 2 && isset($options['audience'])) {

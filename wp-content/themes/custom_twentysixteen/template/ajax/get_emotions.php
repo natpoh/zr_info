@@ -25,7 +25,8 @@ if ($cfront) {
         $data = '';
         if ($_POST['request'] == 'get_emtns') {
             $id = intval($_POST['id']);
-            print $cfront->ce->get_emotions($id);
+            $ptype = intval($_POST['ptype']);
+            print $cfront->ce->get_emotions($id, $ptype);
         } else if ($_POST['request'] == 'set_emtns') {
             $cfront->ce->get_ajax();
         }

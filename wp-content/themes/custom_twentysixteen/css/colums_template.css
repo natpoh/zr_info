@@ -808,6 +808,7 @@ body.theme_dark .sub_content_text::after {
     gap: 8px;
     margin-left: 5px;
     width: 85px;
+    justify-content: right;
 }
 .review_comment_data .disquss_coment{
     background: url(../images/comment.svg) no-repeat;
@@ -1880,30 +1881,15 @@ body.theme_dark .disqus_reply, .disqus_view {
 }
 
 .user-reactions {
-    font-family: Arial, sans-serif;
-    margin: 10px 0;
-    border:solid #eee;
-    border-width: 1px 0;
-    padding: 5px 0;
-}
-.style_1 .user-reactions {
-    right: 307px;
-    position: absolute;
-}
-.user-reactions:before,
-.user-reactions:after {
-    content: " ";
-    display: table;
+
 }
 
-.user-reactions:after {
-    clear: both;
-}
+
+
 
 .user-reactions-button {
     position: relative;
     cursor: pointer;
-    float: left;
 }
 
 .user-reactions-main-button {
@@ -1972,20 +1958,24 @@ body.theme_dark .disqus_reply, .disqus_view {
 
 .user-reactions-box {
     position: absolute;
-    top: -100px;
-    left: 0;
+    top: -65px;
+    left: 50%;
+    margin-left: -207px;
     background: #fff;
     padding: 10px;
     border: 1px solid rgba(0,0,0,0.2);
     border-radius: 40px;
     box-shadow: 0 2px 5px 0 rgba(0,0,0,.1);
     box-sizing: border-box;
-    width: 314px;
+    width: 414px;
     height: 72px;
     display: none;
     z-index: -1;
     transition: opacity 0.7s ease-in-out 0.2s, transform 0.5s ease-in-out 0s, top 0.7s ease-in-out 0s;
 
+}
+.scroller .style_1:nth-of-type(1) .user-reactions-box {
+    margin-left: -155px;
 }
 body.theme_dark  .user-reactions-box {
     background: #686868;
@@ -2075,6 +2065,18 @@ body.theme_dark  .user-reactions-box {
     background-image: url(../images/icons/angry.png)!important;
 }
 
+.user-reaction-hmm {
+    left: 312px;
+    transition-delay: .25s;
+    background-image: url(../images/icons/hmm.png)!important;
+}
+
+.user-reaction-dislike {
+    left: 362px;
+    transition-delay: .25s;
+    background-image: url(../images/icons/dislike.png)!important;
+}
+
 .user-reactions-button.reaction-show .user-reaction {
     animation-delay: 0s;
 }
@@ -2134,17 +2136,16 @@ body .user-reactions-single .user-reactions-button.reaction-show .user-reactions
     box-shadow: none;
     position: relative;
     top: 0px;
-    margin: 0 auto;
+    left: 0;
+    margin: 0 auto 1rem auto;
     display: flex;
     width: 100%;
     max-width: 465px;
     justify-content: space-around;
     background-color: transparent;
+    
 }
-.user-reactions-single  .user-reactions-button {
-    float: none;
 
-}
 
 .user-reactions-single  .user-reaction{
     position: relative;

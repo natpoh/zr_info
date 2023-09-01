@@ -237,6 +237,9 @@ class CustomRating
                 width: 100%;
             }
         </style>
+
+
+
     <?php
     }
     public function movies_rating()
@@ -498,15 +501,20 @@ class CustomRating
             $rating['Positive'] = array('imdb_weight' => 5, 'cms_weight' => 1, 'dove_weight' => 3,'rwt_weight' => 1);
             $rating['PG_limit'] = array('G,0+,TV-Y,TV-G,U,ATP' => '3-5', 'PG,6+,TV-Y7,TV-PG,A,T' => '2-4.5', 'PG-13,12+,TV-14,12,12A' => '1-3.5','R,16+,TV-MA,15,16'=>'0-2.4','NC-17,18+,18,R18'=>'0-2');
             $rating['words_limit'] = array('2-5' => '', '1-4' => '', '0-3' => 'gay relationship,male nudity', '0-2'=>'homosexuality,anal sex,gay sex');
-            $rating['lgbt_warning'] = array('text' => 'gay relationship,homosexuality,gay sex,lesbian,gay subtext,gay man,transgender,lgbt,bisexual,gay dog','max_rating'=>'0-3.5');
-            $rating['woke'] = array('text' => 'feminism,female protoganist,misogyny,female buisnes owner,male secretary,f rated,interracial','max_rating'=>'0-4');
 
             !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
             OptionData::set_option('',serialize($rating),'custom_rating_data',1);
 
         }
-       if (! $rating['qtia_warning']) $rating['qtia_warning'] = array('text' => 'gay relationship,homosexuality,gay sex,lesbian,gay subtext,gay man,transgender,lgbt,bisexual,gay dog','max_rating'=>'0-3.5');
-
+       if (! $rating['qtia_warning']['multiple']) $rating['qtia_warning'] = array('multiple'=>[
+           1=>['text' => 'gay relationship,homosexuality,gay sex,lesbian,gay subtext,gay man,transgender,lgbt,bisexual,gay dog','max_rating'=>'0-1.5'],
+           ]);
+        if (! $rating['lgbt_warning']['multiple']) $rating['lgbt_warning'] = array('multiple'=>[
+            1=>['text' => 'gay relationship,homosexuality,gay sex,lesbian,gay subtext,gay man,transgender,lgbt,bisexual,gay dog','max_rating'=>'0-1.5'],
+        ]);
+        if (! $rating['woke']['multiple']) $rating['woke'] = array('multiple'=>[
+            1=>['text' => 'gay relationship,homosexuality,gay sex,lesbian,gay subtext,gay man,transgender,lgbt,bisexual,gay dog','max_rating'=>'0-1.5'],
+        ]);
 
         if (!$rating['Commonsensemedia']["diverse"])$rating['Commonsensemedia']["diverse"] = '0.7';
         if (!$rating['Commonsensemedia']["drinking"])$rating['Commonsensemedia']["drinking"] = '0.6';
@@ -542,14 +550,48 @@ class CustomRating
     public function rating_to_table($rating_name, $rating_data,$fulwidth='')
     {
         foreach ($rating_data as $index => $val) {
-            $result_head .= '<th>' . $index . '</th>';
-            $style='';
-            if ($fulwidth ){$style=' style="width:100%"';}
-            $result_body .= '<td><input autocomplete="Off" '.$style.' class="' .$index . '" value="' . $val . '"></td>';
+
+            if ($index== 'multiple')
+            {
+                $result_head = '<th>text</th><th>max_rating</th>';
+                foreach ($val as $m=>$data)
+                {
+                foreach ($data as $i=>$v)
+                {
+
+                    $style='';
+                    if ($fulwidth ){$style=' style="width:100%"';}
+                    $result_body .= '<td><input autocomplete="Off" '.$style.' class="' .$i . '" data-multiple="'.$m.'" value="' . $v . '"></td>';
+
+
+                }
+
+                       $result_body = $result_body.'</tr><tr>';
+
+                }
+
+                $result_body=substr($result_body,0, strlen($result_body)-9);
+            }
+            else
+            {
+                $result_head .= '<th>' . $index . '</th>';
+                $style='';
+                if ($fulwidth ){$style=' style="width:100%"';}
+                $result_body .= '<td><input autocomplete="Off" '.$style.' class="' .$index . '" value="' . $val . '"></td>';
+
+            }
+
+
+
         }
 
-        $rating_result = '<table class="wp-list-table widefat fixed striped posts rating_table_inputs" id="' . $rating_name . '"><thead><tr>' . $result_head . '</tr></thead><tbody><tr>' . $result_body . '</tr></tbody></table>';
 
+        $rating_result = '<table class="wp-list-table widefat fixed striped posts rating_table_inputs" id="' . $rating_name . '"><thead><tr>' . $result_head . '</tr></thead><tbody><tr>' . $result_body . '</tr></tbody></table>';
+        if ($index== 'multiple')
+        {
+            $rating_result.='<button data-id="' . $rating_name . '" class="addRow button">add row</button>
+                        <button data-id="' . $rating_name . '" class="deleteRow button">delete row</button>';
+        }
         return $rating_result;
     }
 
@@ -815,6 +857,39 @@ class CustomRating
 <!--        <link rel="stylesheet" href="--><?php //echo home_url(); ?><!--/wp-content/themes/custom_twentysixteen/css/colums_template.css?--><?php //echo LASTVERSION; ?><!--">-->
         <script type="text/javascript">
 
+                document.addEventListener("DOMContentLoaded", function () {
+                const addRowButtons = document.querySelectorAll(".addRow");
+                const deleteRowButtons = document.querySelectorAll(".deleteRow");
+
+                addRowButtons.forEach(function(button) {
+                button.addEventListener("click", function() {
+
+                const tableId = button.getAttribute("data-id");
+                const table = document.getElementById(tableId);
+                const lastRow = table.querySelector("tbody tr:last-child");
+                const lastDataMultiple = parseInt(lastRow.querySelector(".text").getAttribute("data-multiple"));
+
+                const newRow = document.createElement("tr");
+                newRow.innerHTML = `
+        <td><input autocomplete="Off" style="width:100%" class="text" data-multiple="${lastDataMultiple + 1}" value=""></td>
+        <td><input autocomplete="Off" style="width:100%" class="max_rating" data-multiple="${lastDataMultiple + 1}" value=""></td>
+      `;
+                table.querySelector("tbody").appendChild(newRow);
+            });
+            });
+
+                deleteRowButtons.forEach(function(button) {
+                button.addEventListener("click", function() {
+                const tableId = button.getAttribute("data-id");
+                const table = document.getElementById(tableId);
+                const rows = table.querySelectorAll("tbody tr");
+                if (rows.length > 1) {
+                table.querySelector("tbody").removeChild(rows[rows.length - 1]);
+            }
+            });
+            });
+            });
+
             jQuery(document).ready(function () {
 
 
@@ -837,10 +912,23 @@ class CustomRating
                         jQuery(this).find('input').each(function () {
                             var index = jQuery(this).attr('class');
                             var val = jQuery(this).val();
+                            var multiple = jQuery(this).attr('data-multiple');
                             if (!val) {
                                 val = 0
                             }
-                            rating[id][index] = val;
+                            if (multiple)
+                            {
+                                if (!rating[id]['multiple']) rating[id]['multiple'] = {};
+                                if (!rating[id]['multiple'][multiple]) rating[id]['multiple'][multiple] = {};
+
+
+                                rating[id]['multiple'][multiple][index] = val;
+                            }
+                            else
+                            {
+                                rating[id][index] = val;
+                            }
+
 
                         });
 

@@ -94,7 +94,7 @@ class UserCarma extends AbstractDBWp {
         return $result;
     }
     
-    function emotions_rating($wp_uid = 0, $vote_value = 1, $post_id=0, $ratingback = false) {
+    function emotions_rating($wp_uid = 0, $post_type=0, $vote_value = 1, $post_id=0, $ratingback = false) {
 
         $data = $this->getUserById($wp_uid);
         $rating = $data->rating + abs($vote_value);
@@ -114,8 +114,11 @@ class UserCarma extends AbstractDBWp {
         if ($ratingback) {
             $vote_value = - abs($vote_value);
         }
+        
+        // 1 - emotions
+        $log_type = 1;
 
-        $this->add_rating_log($wp_uid, $vote_log_value, 0, 1, $post_id, $ratingback);
+        $this->add_rating_log($wp_uid, $vote_log_value, 0, $log_type, $post_id, $post_type, $ratingback);
     }
 
     function updateUserRating($uid, $rating = 0, $carma = 0) {
@@ -151,7 +154,7 @@ class UserCarma extends AbstractDBWp {
         $this->db_insert($data, $this->db['carma_trend']);
     }
 
-    public function add_rating_log($uid, $rating = 0, $carma = 0, $type = 0, $post_id = 0, $ratingback = false) {
+    public function add_rating_log($uid, $rating = 0, $carma = 0, $type = 0, $post_id = 0, $post_type =0, $ratingback = false) {
         // Dst user
         $user_id = 0;
         if (function_exists('wp_get_current_user')) {
@@ -177,6 +180,7 @@ class UserCarma extends AbstractDBWp {
             'carma' => (int) $carma,
             'date_added' => (int) $date_added,
             'type' => (int) $type,
+            'post_type' => (int) $post_type,            
             'dst_uid' => (int) $user_id,
             'dst_ip' => (int) $ip_id,
             'rating_back' => $ratingback ? 1 : 0,

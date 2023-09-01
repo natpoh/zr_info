@@ -2849,8 +2849,26 @@ function check_kairos($id='')
     KAIROS::check_actors($id);
 
 }
+function kairos_prepare_arrays($id='')
+{
 
+    global $debug;
+    $debug = $_GET['debug'];
+    $type =  $_GET['type'];
+    if (!$type)$type ='imdb';
 
+    !class_exists('KAIROS') ? include ABSPATH . "analysis/include/kairos.php" : '';
+    $rows=[];
+
+    $rows[0]->id = intval($id);
+    if ($id)
+    {
+        KAIROS::prepare_arrays($rows, $type);
+
+    }
+return;
+
+}
 
 
 global $included;
@@ -3067,8 +3085,16 @@ if (isset($_GET['get_imdb_movie_id'])) {
     {
         $debug=1;
     }
-    $id =intval($_GET['get_imdb_movie_id']);
-    $imdb_id = TMDB::get_imdb_id_from_id($id);
+
+    if (isset($_GET['imdb_id'])) {
+        $imdb_id =intval($_GET['imdb_id']);
+    }
+    else if ($_GET['get_imdb_movie_id'])
+    {
+        $id =intval($_GET['get_imdb_movie_id']);
+        $imdb_id = TMDB::get_imdb_id_from_id($id);
+    }
+
     $add= TMDB::reload_from_imdb($imdb_id,$debug);
 
     echo $add;
@@ -3128,6 +3154,12 @@ if (isset($_GET['check_kairos'])) {
     check_kairos($_GET['check_kairos']);
     return;
 }
+if (isset($_GET['kairos_prepare_arrays'])) {
+    kairos_prepare_arrays($_GET['kairos_prepare_arrays']);
+    return;
+}
+
+
 
 if (isset($_GET['force_surname_update'])) {
     force_surname_update();
@@ -3578,6 +3610,41 @@ if (isset($_GET['check_image_on_server'])) {
 
     }
     return;
+}
+
+if (isset($_GET['check_audience_movie'])) {
+    $fid = intval($_GET['check_audience_movie']);
+
+    $audiencetype=1;
+
+    global $debug;
+    $debug = $_GET['debug'];
+
+    !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
+
+    PgRatingCalculate::rwt_audience($fid, $audiencetype, 1);
+    PgRatingCalculate::CalculateRating('', $fid, 0, 1);
+    PgRatingCalculate::add_movie_rating($fid,'',$debug);
+
+
+}
+
+
+
+if (isset($_GET['test_update_audience_post'])) {
+    $pid = intval($_GET['test_update_audience_post']);
+    ///critic_matic_posts_meta
+    global $debug;
+    $debug = $_GET['debug'];
+
+    if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
+        define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
+
+    }
+    require_once( CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php' );
+    $cm = new CriticMatic();
+    $cm->hook_update_post($pid);
+
 }
 if (isset($_GET['convert_tables'])) {
 

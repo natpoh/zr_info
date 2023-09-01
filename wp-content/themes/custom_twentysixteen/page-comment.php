@@ -55,7 +55,8 @@ function loadArticle(){
         jQuery('.next_cursor').remove();
 
         var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
-        url =window.location.protocol + template_path + "disqus_last_comments.php?count=20&cursor="+last_num;
+        var site_url = window.location.protocol +"//"+window.location.host;
+        url =site_url + template_path + "disqus_last_comments.php?count=20&cursor="+last_num;
 
     jQuery.ajax({
         type: "GET",

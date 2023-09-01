@@ -36,6 +36,8 @@ jQuery(document).ready(function () {
 var  arraymetastring = new Object();
 var  array_poviders = new Object();
 var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
+var site_url = window.location.protocol +"//"+window.location.host;
+
 
     function enable_moble()
     {
@@ -69,7 +71,7 @@ var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
             jQuery.ajax({
                 type: 'POST',
                 ///context: this,
-                url:window.location.protocol+template_path+"ajax_data.php",
+                url:site_url+template_path+"ajax_data.php",
                 data: { "action": "ajax_search", "keyword": keyword, "type": "movie" },
             success: function (data) {
                 // console.log(data);
@@ -331,7 +333,7 @@ var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
             jQuery.ajax({
                 type: "POST",
                 context: this,
-                url:window.location.protocol+template_path+"ajax_data.php",
+                url:site_url+template_path+"ajax_data.php",
                 data: { "action": "ajax_search", "type": "grid", "filters": data, "home": home, "page": page },
                 success: function (data) {
                     // console.log(data);
@@ -552,7 +554,7 @@ var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
             jQuery.ajax({
                 type: 'post',
             data: { action: "advanced_search_data" },
-                url:window.location.protocol+template_path+"advanced_search.php",
+                url:site_url+template_path+"advanced_search.php",
             success: function (html) {
 
 
@@ -637,7 +639,7 @@ var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
                     });
                     jQuery(".advanced_select_cast").select2({
                         ajax: {
-                            url:window.location.protocol+template_path+"ajax_data.php",
+                            url:site_url+template_path+"ajax_data.php",
                             type: 'post',
                     data: function (params) {
                         var query = {
@@ -663,7 +665,7 @@ var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
                 });
                     jQuery(".advanced_select_director").select2({
                         ajax: {
-                            url:window.location.protocol+template_path+"ajax_data.php",
+                            url:site_url+template_path+"ajax_data.php",
                             type: 'post',
                             data: function (params) {
                                 var query = {
@@ -907,7 +909,7 @@ jQuery('.play_trailer.check_load').each(function ()
         jQuery.ajax({
             type: 'post',
             data: {id: id,'request':'get_trailer'},
-            url: window.location.protocol + template_path + "get_movie_data.php",
+            url: site_url + template_path + "get_movie_data.php",
             success: function (html) {
                 if (html)
                 {
