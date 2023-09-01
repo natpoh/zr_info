@@ -104,14 +104,14 @@ AND table_schema='".DB_NAME_AN."'";
         $rows = Pdo_an::db_results_array($sql);
 
 
-
-        if (isset($_GET['data'])) {
+     if (isset($_GET['doptable'])) {
+            $table_data = $_GET['doptable'];
+        }
+       else  if (isset($_GET['data'])) {
             $table_data = $_GET['data'];
             $table_data_main = 'data_'.$_GET['data'];
         }
-       else if (isset($_GET['doptable'])) {
-            $table_data = $_GET['doptable'];
-        }
+
         $table_data = preg_replace("/[^a-zA-Z0-9_]/", "",$table_data);
 
         foreach ($rows as $r) {
