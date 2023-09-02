@@ -164,9 +164,10 @@ public function kairos_api($image)
     // set variables
     $queryUrl = "http://api.kairos.com/detect";
     $imageObject = '{"image":"'.$image.'"}';
-    $APP_ID = "66b12c87";
-    $APP_KEY = "2a04a82fb7224cf9861de88ee9c2b3ee";
-
+   // $APP_ID = "66b12c87";
+   // $APP_KEY = "2a04a82fb7224cf9861de88ee9c2b3ee";
+    $APP_ID = "a1e68edc";
+    $APP_KEY = "a2241c792541738774d5c9b273a08939";
     $request = curl_init($queryUrl);
 
 // set curl options
