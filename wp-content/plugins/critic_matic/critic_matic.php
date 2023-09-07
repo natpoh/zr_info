@@ -858,6 +858,30 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('mid', 'gid'), "meta_movie_genre");
 
+    // Platform 
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_game_platform`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `status` int(11) NOT NULL DEFAULT '1',
+                                `weight` int(11) NOT NULL DEFAULT '0',
+                                `name` varchar(255) NOT NULL default '',     
+                                `slug` varchar(255) NOT NULL default '',                                
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('status', 'weight', 'name', 'slug'), "data_game_platform");
+
+    // Genres meta
+    $sql = "CREATE TABLE IF NOT EXISTS  `meta_game_platform`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `mid` int(11) NOT NULL DEFAULT '0', 
+                                `gid` int(11) NOT NULL DEFAULT '0',  
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('mid', 'gid'), "meta_game_platform");
+    
     // Provider
     $sql = "CREATE TABLE IF NOT EXISTS  `data_movie_provider`(
 				`id` int(11) unsigned NOT NULL auto_increment,
@@ -1266,6 +1290,14 @@ function critic_matic_plugin_activation() {
     $sql = "ALTER TABLE `data_movie_erating` ADD `ofdb_count` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
     $sql = "ALTER TABLE `data_movie_erating` ADD `ofdb_date` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
+    // opencritic
+    $sql = "ALTER TABLE `data_movie_erating` ADD `opencritic_rating` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `opencritic_count` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `opencritic_date` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
 
 

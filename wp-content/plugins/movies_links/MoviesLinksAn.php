@@ -11,6 +11,8 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             'options' => 'options',
             'data_genre' => 'data_movie_genre',
             'meta_genre' => 'meta_movie_genre',
+            'data_platform' => 'data_game_platform',
+            'meta_platform' => 'meta_game_platform',
             'data_country' => 'data_movie_country',
             'meta_country' => 'meta_movie_country',
             'data_provider' => 'data_movie_provider',
@@ -31,7 +33,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             'distributors_meta' => 'meta_movie_distributors',
             'franchises' => 'data_movie_franchises',
             'indie' => 'data_movie_indie',
-            'woke' =>'data_woke',
+            'woke' => 'data_woke',
         );
     }
 
@@ -40,7 +42,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         $type_and = '';
         if ($type) {
             if (strstr($type, ',')) {
-                $type_and = " AND type IN ('".implode("','",explode(',', $type))."')" ;
+                $type_and = " AND type IN ('" . implode("','", explode(',', $type)) . "')";
             } else {
                 $type_and = sprintf(" AND type='%s'", $type);
             }
@@ -236,28 +238,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         $exist = $this->db_fetch_row($sql);
         $data['last_upd'] = $this->curr_time();
         if ($exist) {
-            // Calculate total rating                         
-            /* $rating_names = array(
-              'kinop_rating',
-              'douban_rating',
-              'animelist_rating',
-              'imdb_rating',
-              'rt_rating',
-              'rt_aurating',
-              'eiga_rating',
-              'moviemeter_rating',
-              'metacritic_rating',
-              'metacritic_userscore',
-              );
-              foreach ($rating_names as $rn) {
-              if (isset($data[$rn])) {
-              $exist->$rn = $data[$rn];
-              }
-              } */
 
-            //$total = $this->calculate_total($exist);
-            //$data['total_rating'] = $total;
-            // Calculate total votes
 
             $count_names = array(
                 'kinop_count',
@@ -271,6 +252,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
                 'eiga_count',
                 'moviemeter_count',
                 'ofdb_count',
+                'opencritic_count',
             );
             $total_count = 0;
             foreach ($count_names as $rn) {
@@ -284,6 +266,14 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             // $data['total_rating'] = $total;
             $data['total_count'] = $total_count;
 
+            if ($exist->date == 0) {
+                // Empty date. Bug from 07.09.2023
+                $data['date'] = $data['last_upd'];
+
+                $m_data = $this->get_movie_by_id($mid);
+                $title = $m_data->title;
+                $data['title'] = $title;
+            }
 
             // Update post            
             $this->sync_update_data($data, $exist->id, $this->db['erating'], true, 10);
@@ -470,6 +460,104 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         return false;
     }
 
+    public function get_genre_by_name($name, $cache = false) {
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$name])) {
+                return $dict[$name];
+            }
+        }
+
+        //Get author id
+        $sql = sprintf("SELECT id FROM {$this->db['data_genre']} WHERE name='%s'", $this->escape($name));
+        $result = $this->db_get_var($sql);
+
+        if ($cache && $result) {
+            $dict[$name] = $result;
+        }
+        return $result;
+    }
+
+    public function get_or_create_genre_by_name($name = '', $cache = false) {
+        $id = $this->get_genre_by_name($name, $cache);
+        if (!$id) {
+            // Create slug
+            $slug = $this->create_slug($name);
+            // Create the genre
+            $data = array(
+                'name' => $name,
+                'slug' => $slug,
+            );
+            $id = $this->sync_insert_data($data, $this->db['data_genre'], false, true);
+        }
+        return $id;
+    }
+
+    public function add_game_platform($mid = 0, $gid = 0) {
+        // Validate values
+        if ($mid > 0 && $gid > 0) {
+            //Get meta
+            $sql = sprintf("SELECT gid FROM {$this->db['meta_platform']} WHERE mid=%d AND gid=%d", (int) $mid, (int) $gid);
+            $meta_exist = $this->db_get_var($sql);
+            if (!$meta_exist) {
+                //Meta not exist
+                $data = array(
+                    'mid' => $mid,
+                    'gid' => $gid,
+                );
+
+                $this->sync_insert_data($data, $this->db['meta_platform'], false, true, 10);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /*
+     * Platform
+     */
+
+    public function get_platform_by_name($name, $cache = false) {
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$name])) {
+                return $dict[$name];
+            }
+        }
+
+        //Get author id
+        $sql = sprintf("SELECT id FROM {$this->db['data_platform']} WHERE name='%s'", $this->escape($name));
+        $result = $this->db_get_var($sql);
+
+        if ($cache && $result) {
+            $dict[$name] = $result;
+        }
+        return $result;
+    }
+
+    public function get_or_create_platform_by_name($name = '', $cache = false) {
+        $id = $this->get_platform_by_name($name, $cache);
+        if (!$id) {
+            // Create slug
+            $slug = $this->create_slug($name);
+            // Create the platform
+            $data = array(
+                'name' => $name,
+                'slug' => $slug,
+            );
+            $id = $this->sync_insert_data($data, $this->db['data_platform'], false, true);
+        }
+        return $id;
+    }
+
     /*
      * Distributors
      */
@@ -637,6 +725,35 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             $this->sync_insert_data($data, $this->db['woke'], false, true, 10);
             CustomHooks::do_action('add_woke', ['mid' => $mid, 'data' => $data]);
         }
+    }
+
+    public function create_slug($string, $glue = '-') {
+        $string = str_replace('&', ' and ', $string);
+        $string = preg_replace("/('|`)/", "", $string);
+
+
+        $table = array(
+            'Š' => 'S', 'š' => 's', 'Đ' => 'Dj', 'đ' => 'dj', 'Ž' => 'Z', 'ž' => 'z', 'Č' => 'C', 'č' => 'c', 'Ć' => 'C', 'ć' => 'c',
+            'À' => 'A', 'Á' => 'A', 'Â' => 'A', 'Ã' => 'A', 'Ä' => 'A', 'Å' => 'A', 'Æ' => 'A', 'Ç' => 'C', 'È' => 'E', 'É' => 'E',
+            'Ê' => 'E', 'Ë' => 'E', 'Ì' => 'I', 'Í' => 'I', 'Î' => 'I', 'Ï' => 'I', 'Ñ' => 'N', 'Ò' => 'O', 'Ó' => 'O', 'Ô' => 'O',
+            'Õ' => 'O', 'Ö' => 'O', 'Ø' => 'O', 'Ù' => 'U', 'Ú' => 'U', 'Û' => 'U', 'Ü' => 'U', 'Ý' => 'Y', 'Þ' => 'B', 'ß' => 'Ss',
+            'à' => 'a', 'á' => 'a', 'â' => 'a', 'ã' => 'a', 'ä' => 'a', 'å' => 'a', 'æ' => 'a', 'ç' => 'c', 'è' => 'e', 'é' => 'e',
+            'ê' => 'e', 'ë' => 'e', 'ì' => 'i', 'í' => 'i', 'î' => 'i', 'ï' => 'i', 'ð' => 'o', 'ñ' => 'n', 'ò' => 'o', 'ó' => 'o',
+            'ô' => 'o', 'õ' => 'o', 'ö' => 'o', 'ø' => 'o', 'ù' => 'u', 'ü' => 'u', 'ú' => 'u', 'û' => 'u', 'ý' => 'y', 'ý' => 'y', 'þ' => 'b',
+            'ÿ' => 'y', 'Ŕ' => 'R', 'ŕ' => 'r', '/' => '-', ' ' => '-'
+        );
+
+        // -- Remove duplicated spaces
+        $stripped = preg_replace(array('/\s{2,}/', '/[\t\n]/'), ' ', trim($string));
+
+        // -- Returns the slug
+        $slug = strtolower(strtr($stripped, $table));
+        $slug = preg_replace('~[^\pL\d]+~u', $glue, $slug);
+
+        $slug = preg_replace('/^-/', '', $slug);
+        $slug = preg_replace('/-$/', '', $slug);
+
+        return $slug;
     }
 
 }

@@ -143,6 +143,15 @@ class MoviesCustomHooks {
                 'rating' => 'rating',
                 'count' => 'count'
             );
+        } else if ($campaign->id == 46) {
+            // opencritic
+            $curr_camp = 'opencritic';
+            $score_opt = array(
+                'rating' => 'rating',
+                'ratingCount' => 'count',
+                'genre' => 'genre',
+                'gamePlatform' => 'platform',
+            );
         }
 
         $to_update = array();
@@ -264,7 +273,7 @@ class MoviesCustomHooks {
                     $grade_arr = array('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i');
                     if (in_array($grade_clear, $grade_arr)) {
                         $grade_num = array_search($grade_clear, $grade_arr);
-                        $grade_num_valid = $grade_num+1;
+                        $grade_num_valid = $grade_num + 1;
                         $grade_data = array(
                             'mediaversity' => (int) $grade_num_valid,
                         );
@@ -284,6 +293,61 @@ class MoviesCustomHooks {
 
                 if ($data['total_rating'] > 0) {
                     $update_rating = true;
+                }
+            } else if ($curr_camp == 'opencritic') {
+
+                $rating = (int) $to_update['rating'];
+                $camp_count = str_replace(',', '', $to_update['count']);
+
+                // thecherrypicks
+                $data[$curr_camp . '_rating'] = $rating;
+                $data[$curr_camp . '_count'] = (int) $camp_count;
+                $data[$curr_camp . '_date'] = $this->mp->curr_time();
+
+                // Total
+                $data['total_rating'] = $rating;
+
+                if ($data['total_rating'] > 0) {
+                    $update_rating = true;
+                }
+
+                // Add genre
+                // "Action", "Adventure", "Horror"
+                $genre = $to_update['genre'];
+                if ($genre) {
+                    $genre_arr = explode(',', $genre);
+
+                    foreach ($genre_arr as $graw) {
+                        $gclear = trim(str_replace('"', '', $graw));
+                        if ($debug) {
+                            p_r($gclear);
+                        }
+                        if ($gclear) {
+                            $gid = $ma->get_or_create_genre_by_name($gclear);
+                            if ($gid) {
+                                $ma->add_movie_genre($post->top_movie, $gid);
+                            }
+                        }
+                    }
+                }
+                // Add platform
+                // "Xbox Series X/S", "PC", "PlayStation 4", "PlayStation 5", "Nintendo Switch", "Xbox One"
+                $platform = $to_update['platform'];
+                if ($platform) {
+                    $platform_arr = explode(',', $platform);
+
+                    foreach ($platform_arr as $praw) {
+                        $pclear = trim(str_replace('"', '', $praw));
+                        if ($debug) {
+                            p_r($pclear);
+                        }
+                        if ($pclear) {
+                            $pid = $ma->get_or_create_platform_by_name($pclear);
+                            if ($pid) {
+                                $ma->add_game_platform($post->top_movie, $pid);
+                            }
+                        }
+                    }
                 }
             }
 
@@ -324,7 +388,7 @@ class MoviesCustomHooks {
                  * 4 - Woke
                  */
                 $tags_woke = array(
-                    'Worth it'=>1,
+                    'Worth it' => 1,
                     'Non-Woke' => 2,
                     'Woke-ish' => 3,
                     'Woke' => 4,
