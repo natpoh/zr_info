@@ -145,18 +145,18 @@ jQuery(document).ready(function () {
 
     });
 
-    if (typeof check_load_block == "undefined")
-    {
-        ///console.log('check_load_block == "undefined"');
-
-        jQuery.ajax({
-            type: "GET",
-            url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/template/ajax/mailpoet_form.php?id='. $id.'",
-            success: function (data) {
-                jQuery("#mailpoet_form").html(data);
-            }
-        });
-    }
+    // if (typeof check_load_block == "undefined")
+    // {
+    //     ///console.log('check_load_block == "undefined"');
+    //
+    //     jQuery.ajax({
+    //         type: "GET",
+    //         url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/template/ajax/mailpoet_form.php?id="+ $id,
+    //         success: function (data) {
+    //             jQuery("#mailpoet_form").html(data);
+    //         }
+    //     });
+    // }
 
 
     jQuery('.play_trailer.check_load').each(function ()
@@ -367,7 +367,7 @@ function init_nte() {
                                 //resize();
                         }
 
-                        // Обновляем значения первоначальной ширины и высоты окна
+                        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
                         initialWidth = currentWidth;
                         initialHeight = currentHeight;
                     });

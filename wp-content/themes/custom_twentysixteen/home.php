@@ -19,6 +19,7 @@ get_header();
         <?php
         wp_enqueue_script('spoiler.min', get_template_directory_uri() . '/js/spoiler.min.js', array('jquery'));
         include(get_template_directory() . '/template/video_colums_template.php');
+
         ?>
 
         <section class="inner_content no_pad lasted_comments">

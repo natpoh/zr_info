@@ -572,16 +572,16 @@ class PgRatingCalculate {
             if (!$pos_id && ($sync || DB_SYNC_MODE==1))
             {
                 //add
-                if ($total_rating)
-                {
-                    $data_current_array['total_rating']=$total_rating;
+                if ($total_rating>0) {
+                    $data_current_array['total_rating'] = $total_rating;
 
+
+                    $data_current_array['movie_id'] = $id;
+                    $data_current_array['date'] = time();
+                    $data_current_array['last_upd'] = time();
+
+                    self::sync_update($data_current_array, '', 'data_movie_erating', 'insert', 1);
                 }
-                $data_current_array['movie_id']=$id;
-                $data_current_array['last_upd']=time();
-
-                self::sync_update($data_current_array,'','data_movie_erating','insert',1);
-
 
 
                // if (!$debug) echo 'add<br>';
@@ -2031,17 +2031,15 @@ class PgRatingCalculate {
             $data_current_array['movie_id'] = $rid;
             $data_current_array['audience_date'] = time();
 
-            if (!$rw)
+            if (!$rw && $audience_calc>0)
             {
-
+                $data_current_array['date'] = time();
+                $data_current_array['last_upd'] = time();
                 if ($debug){
                     TMDB::var_dump_table(['insert data_movie_erating',$audience_calc,$rid]);
                 }
 
                         self::sync_update($data_current_array, '', 'data_movie_erating', 'insert', 1);
-
-
-
             }
             else {
 

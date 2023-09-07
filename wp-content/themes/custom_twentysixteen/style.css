@@ -3276,28 +3276,28 @@ body.theme_dark .chevron::after {
     display: none;
 }
 
-.include-btns .btn:first-child {
+.facet-btns .btn:first-child {
     margin-left: 0;
 }
 
-.include-btns .btn {
+.facet-btns .btn {
     cursor: pointer;
 }
 
-.include-btns .active{
+.facet-btns .active{
     font-weight: bold;
 }
 
-.include-btns .btn {
+.facet-btns .btn {
     opacity: 0.7;
     margin: 0 0.2rem;
 }
 
-.include-btns .btn i {
+.facet-btns .btn i {
     margin-left: -0.2rem;
 }
 
-.include-btns .btn.active {
+.facet-btns .btn.active {
     opacity: 1;
     color: #0175ff;
 }
@@ -10120,33 +10120,6 @@ div.card.style_1 div.image  {
 
 
 
-/* Audience Staff Disclaimer Responsive */
-
-.audience_review .column_header::after {
-    content: 'ZR does not condone or endorse the views expressed below, nor do our advertisers or any critics featured. We simply are strong supporters of the First Amendment and understand many of the reviews are satirical and sarcastic in nature.';
-    opacity: .1469;
-    position: relative;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    padding: 10px;
-    font-size: 14px;
-    display: block;
-    width: 100%;
-}
-
-.audience_review .column_header:hover:after {
-    content: 'ZR does not condone or endorse the views expressed below, nor do our advertisers or any critics featured. We simply are strong supporters of the First Amendment and understand many of the reviews are satirical and sarcastic in nature.';
-    opacity: .8;
-    position: relative;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    padding: 10px;
-    font-size: 14px;
-    display: block;
-    width: 100%;
-}
-
-
 
 section.inner_content.no_pad div.column_header {
     padding-left: 40px;
@@ -11724,3 +11697,4006 @@ a#move_up:hover {
 #fiters-btn.fixed .filters-icon {
     background-image: url(images/customsearch.svg);
 }
+
+@media screen and (max-width: 990px)
+{
+    body.menu-open .main-navigation .primary-menu > li a {
+        padding: 15px 20px;
+    }
+}
+
+
+
+/* get the crowdsource critic urls to underline */
+
+.add_critic:hover{
+    text-decoration:underline;
+}
+
+
+
+.theme_dark .add_critic  {
+    color:red!important;
+}
+
+
+
+/* Disqus encouragement */
+
+
+#disqus_thread::before {
+    content: "No Disqus account? Just put a fake name, fake email, and post as a guest. Disqus forces manual approval for guest posts though, so expect delay.";
+    opacity:.5;
+    font-size:12px;
+}
+
+
+#disqus_thread:hover:before {
+    content: "No Disqus account? Just put a fake name, fake email, and post as a guest. Disqus forces manual approval for guest posts though, so expect delay.";
+    opacity:1;
+    font-size:12px;
+}
+
+
+/* making urls pop in front page disqus comments */
+
+.big_block_comment .review_block a {
+    color:#3a8ec7!important;
+
+}
+
+.big_block_comment .review_block a:hover {
+    color:#3a8ec7!important;
+    text-decoration: underline;
+}
+
+
+
+
+
+
+
+/* getting tomato to glow on hover without the tooltip to glow too */
+
+.note.nte.rt_gap.init:hover:not(.open) {
+    filter: drop-shadow(.2px .4px 1.8px lightblue);
+    filter: brightness(1.15);
+}
+
+
+
+
+
+
+
+/* fixing view links in dark mode */
+
+.theme_dark .disqus_view {
+    opacity:.57;
+}
+
+.theme_dark .disqus_view:hover {
+    color:white!important;
+    opacity:.69!important;
+}
+
+
+/* softening the play trailer links in light mode */
+
+
+:not(.theme_dark) .button_play_trailer:hover {
+
+    color:white!important;
+}
+
+
+
+
+
+.theme_dark .emotions {
+    opacity:.6!important;
+}
+
+.theme_dark .emotions:hover {
+    opacity:.9!important;
+}
+
+
+
+
+
+
+/* removing the 1st amendment disclaimer. too many disclaimers */
+
+
+.column_header:after {
+    content: "  "!important;
+}
+
+.home #audience_scroll:before {
+    content: " ";
+    opacity:.88;
+    font-size:0px;
+
+}
+
+.home #audience_scroll:hover:before {
+    content: " ";
+    opacity:.88;
+    font-size:0px;
+
+}
+
+
+
+
+
+/* the featured image for this post already has a title, no need to repeat */
+.post-489035 .entry-title {
+    opacity:0;
+}
+
+
+
+/* making things compact and neat after removing disclaimers. */
+
+
+
+.audience_review .column_header::after {
+    display:none!important;}
+
+
+
+/* removing the weird double scroll issue with the audience reviews */
+
+.full_review_content_block {
+    max-height:100%!important;
+}
+
+
+
+/* make the light theme more aesthetic and minimalist. the grey was ugly */
+
+
+body {
+    background-color:white;
+}
+
+
+
+
+
+
+.theme_white  .inner_content.secton_gray {
+    background-color: white!important;
+}
+
+
+
+.theme_white section.inner_content.secton_gray div.scroller_wrap.should_fade::after {
+
+
+    background-image:linear-gradient(to right, rgba(255,255,255,0) 0%, white 100%)!important;
+
+}
+
+
+.theme_white .flex_movies_block {
+    background-color:white!important;
+}
+
+
+
+
+/* making dark theme more aesthetic and minimalist too */
+
+
+.theme_dark .entry-footer {
+    background-color:#272627;
+}
+
+.theme_dark .site-main {
+    background-color:#272627;
+}
+
+.theme_dark #pagination {
+    background-color:#272627;
+}
+
+.theme_dark .flex_movies_block {
+    background-color:#272627!important;
+}
+
+
+.theme_dark #primary {
+    background-color:#272627!important;
+}
+
+
+
+/* making footer extend to border of browser window for aesthetic purposes */
+
+.home .footer_main {
+    outline:130px  solid #292c2f;
+
+}
+
+
+.footer_main_left {
+    background-color:#292c2f;
+}
+
+
+.search.theme_white .footer_main_left {
+    background-color:white;
+}
+
+.search.theme_white .footer_main_right {
+    background-color:white;
+}
+
+
+.search.theme_dark .footer_main_left {
+    background-color:black;
+}
+
+.search.theme_dark .footer_main_right {
+    background-color:black;
+}
+
+
+
+/* touching up stuff for dark mode light mode cutting up unnecessary blocks of color for ultimate minimalist vibeee */
+
+.theme_dark #primary {
+    background-color:black!important;
+}
+
+.theme_dark pre {
+    display:none;
+
+}
+
+
+.theme_dark .column_content{
+    background:none!important;
+}
+
+.type-Movie .entry-footer {
+    display:none;
+}
+
+.home.theme_white .footer_main_left a:hover {
+    color:lightblue;
+}
+
+
+
+
+.entry-footer {
+    display:none;
+}
+
+
+
+
+
+/* touching up dark mode movie page review entry. the pop up pencil option still looks dull but that's okay the blend mode didn't work well and it's not priority */
+
+
+
+.theme_dark .type-Movie .popup-content .wpcr3_table_2 {
+    color:blue;
+}
+
+
+.theme_dark .type-Movie .rating_input .rating_result{
+    filter: brightness(77%);
+}
+
+
+.theme_dark .type-Movie .rating_container {
+    filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));
+}
+
+
+.theme_dark .type-Movie .WORTHWHILE.rating_input {
+    filter: brightness(120%)!important;
+}
+
+
+.theme_dark .type-Movie .wpcr3_table_2 {
+    color:white;
+}
+
+.theme_dark .type-Movie .options{
+    filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));
+
+}
+
+.theme_dark .type-Movie .options .s1.selected {
+    filter: brightness(120%);
+}
+
+.theme_dark .type-Movie .options .s2.selected {
+    filter: brightness(120%);
+}
+
+.theme_dark .type-Movie .options .s3.selected {
+    filter: brightness(120%);
+}
+
+.theme_dark .type-Movie .content_warning {
+    color:white;
+}
+
+.theme_dark .type-Movie .column_header h2 {
+    color:white;
+}
+
+
+/* removing margin issue for pop up audience reviews on home and search pages */
+
+.home .wpcr3_respond_2 {
+    margin:0;
+}
+
+.search .wpcr3_respond_2 {
+    margin:0;
+}
+
+
+
+
+
+/* the texture of the pop ups doesn't fit because it looks like a stone wall or something. the theme is minimalist and papers like we are hollywood execs reading scripts and reviews and notes. and also the cringe matrix gif cuz i like it idk. some cartoony lightheartedness is important. humor + aesthetic + cool visuals balance. If it's trippy looking then it can be an exception.  */
+
+.theme_white .default_popup:not(.actor_popup) {
+    background-image:none!important;
+    background-color:white!important;
+}
+
+.col_input  select {
+
+    opacity:.7;
+}
+
+.col_input .message {
+
+    opacity:.9;
+
+}
+
+
+
+
+
+
+
+.theme_white .block a:hover {
+    color:#0086b3!important;
+}
+
+
+.type-Movie .movie_poster {
+    margin: auto auto;
+}
+
+
+.type-TVSeries .movie_poster {
+    margin: auto auto;
+}
+
+
+
+
+
+
+/* getting the tags to scroll on the front page */
+
+
+@media only screen and (min-width: 800px) {
+
+    .home .sort-wrapper  {
+        display: inline;
+        white-space: pre;
+        overflow-x:scroll;
+        width:70%;
+        margin-left:15%;
+
+    }
+
+    .home .nav-tab {
+
+        display: inline!important;
+        white-space: pre;
+
+    }
+
+}
+
+
+@media only screen and (max-width: 799px) {
+
+    .home .sort-wrapper  {
+        display: inline;
+        white-space: pre;
+        overflow-x:scroll;
+        width:95%;
+        margin-left:2%;
+
+    }
+
+    .home .nav-tab {
+
+        display: inline!important;
+        white-space: pre;
+
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+/* diversity & female double scroll tooltip issue */
+
+.search  .nte_cnt .note_show_content_3 {
+    overflow:hidden;
+}
+
+
+.search .nte_cnt .note_show_content_2 {
+    overflow:hidden;
+}
+
+
+
+/* decoration for bold tags in the audience reviews */
+
+.full_review_content_block b {
+    -webkit-text-stroke: .001em black;
+    text-decoration: underline;
+}
+
+
+
+
+
+/* making all links blue on disqus comments might tweak later*/
+
+.loaded .big_block_comment  a {
+    color:rgb(0, 122, 204) ;
+
+}
+
+.loaded .big_block_comment  a:hover {
+    text-decoration-line: underline;
+}
+
+
+
+
+
+
+
+
+/* centering patreon widget */
+
+.patreon-widget {
+    margin-left:7.8em;
+}
+
+
+
+
+
+
+
+
+/* removing logo */
+
+
+.login form {
+    margin-top: 50px;
+}
+
+.login h1 {
+
+    opacity:0!important;
+    background-image: none;
+}
+
+.login h1 a {
+    display:none!important;
+}
+
+
+
+/* privacy*/
+
+.uCont .urow:nth-of-type(3) {
+    display:none;
+}
+
+/* no man behind curtain wizard of oz */
+
+
+
+
+
+
+/* keeping minimalist aesthetic, and avoiding cringe reddit point system to keep 4chan anonymity culture */
+
+.search .umeta.plus {
+    display:none;
+}
+
+.home .umeta.plus {
+    display:none;
+}
+
+
+
+.uCont .urow:nth-of-type(1) {
+    display:none;
+}
+
+
+
+
+
+/* fixing odysee thumbnails to be centered*/
+
+.odysee .video_img {
+
+    height:100%!important;
+}
+
+
+
+
+/* very subtle paper texture on white background */
+
+.theme_white .inner_content {
+    background-color:rgba(255, 255, 255, 0.95);
+}
+
+
+
+/* to keep minimalist vibe on compact view, and making audience review frontpage widgets squeezed together on mobile too*/
+
+
+.home-tabs {
+    padding:0px!important;
+    margin:0px!important;
+}
+
+.audience_review .column_header {
+    margin-bottom:.7em;
+}
+
+
+
+
+
+
+
+
+
+
+/* user icon light on hover for interactive fun */
+
+.icon-user {
+    opacity:.88;
+}
+
+.icon-user:hover {
+    opacity:1.99;
+}
+
+
+/* site header needs a bit of space for aesthetic vibes, too cramped otherwise */
+
+.zr_logo_description {
+
+    margin-left:.2em;
+}
+
+
+z
+
+
+
+    /* removing auto featured image on game post & moviepicker & lists */
+
+.post-489492 .post-thumbnail {
+    display:none;
+}
+
+.post-489529 .post-thumbnail {
+    display:none;
+}
+
+.post-489543 .post-thumbnail {
+    display:none;
+}
+
+
+/* search bar is cramped and doesn't need any text anyways. search bars are universal. */
+
+
+.customsearch_input::placeholder {
+    opacity:.0;
+}
+
+
+
+/* center the write a review in header in certain width */
+
+@media (min-width: 989px) {
+    .main-navigation {
+        margin-bottom:.5em;
+    }
+}
+
+
+
+/* removing the double scroll issue of the notes cited in the representation tables */
+
+.dmg_content .note_show_content
+
+{
+
+    overflow-y:visible!important;
+}
+
+
+
+
+
+
+
+
+
+
+
+/* header tooltip tweak so they don't overlap */
+
+.nte_cnt_toltip h1 {
+    line-height:.88em;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.type-Movie .section_content {
+
+    -webkit-box-shadow: 0 6px 5px -5px rgb(0 0 0 / 25%);
+    -moz-box-shadow: 0 6px 5px -5px rgba(0,0,0,0.25);
+    box-shadow: 0 6px 5px -5px rgb(0 0 0 / 25%);
+    margin-bottom: 15px;
+    margin-bottom: .9375 rem;
+    padding-bottom: 5px;
+    padding-bottom: .3125 rem;
+
+}
+
+
+
+
+
+
+
+
+.type-Movie .wpcr3_dotline {
+    opacity:.0;
+}
+
+
+.type-Movie .wpcr3_respond_2 {
+    margin-bottom:2em!important;
+}
+
+
+.type-Movie .content_warning {
+    font-size: .9em!important;
+    max-width:90%;
+    margin-left:5%;
+}
+
+.type-Movie .column_header h2 {
+    margin:.5em;
+}
+
+#disqus_thread::before {
+    font-size: .7em!important;
+    word-spacing: -0.09em;
+}
+
+
+.type-Movie .section_content {
+    margin-top:2em;
+    margin-bottom:10em;
+}
+
+.type-Movie .column_header {
+    margin-bottom:2em;
+}
+
+.type-Movie .wpcr3_respond_2 {
+    margin-bottom:8em!important;
+}
+
+
+.type-Movie .column {
+    margin-bottom:2em!important;
+}
+
+
+
+.type-Movie .pro_review {
+    margin-bottom:8em;
+}
+
+
+
+
+
+
+
+
+
+/* mobile */
+@media (min-width: 1091px) {
+
+    #disqus_thread::before {
+        margin-left:7%;
+    }
+}
+
+
+@media (max-width: 420px) {
+
+    .patreon-widget {
+        margin-left:5.5em!important;
+
+    }
+}
+
+
+
+@media (max-width: 350px) {
+
+    .patreon-widget {
+        margin-left:3.5em!important;
+
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+/* new edits for aesthetic and clear dividers and spacing between sections on tv pages. */
+
+
+
+
+.type-TVSeries .no_bottom_pad {
+
+    -webkit-box-shadow: 0 6px 5px -5px rgb(0 0 0 / 25%);
+    -moz-box-shadow: 0 6px 5px -5px rgba(0,0,0,0.25);
+    box-shadow: 0 6px 5px -5px rgb(0 0 0 / 25%);
+    margin-bottom: 15px;
+    margin-bottom: .9375 rem;
+    padding-bottom: 5px;
+    padding-bottom: .3125 rem;
+
+}
+
+
+.type-TVSeries .section_content {
+
+    -webkit-box-shadow: 0 6px 5px -5px rgb(0 0 0 / 25%);
+    -moz-box-shadow: 0 6px 5px -5px rgba(0,0,0,0.25);
+    box-shadow: 0 6px 5px -5px rgb(0 0 0 / 25%);
+    margin-bottom: 15px;
+    margin-bottom: .9375 rem;
+    padding-bottom: 5px;
+    padding-bottom: .3125 rem;
+
+}
+
+
+
+
+
+
+
+
+.type-TVSeries .wpcr3_dotline {
+    opacity:.0;
+}
+
+
+.type-TVSeries .wpcr3_respond_2 {
+    margin-bottom:2em!important;
+}
+
+
+.type-TVSeries .content_warning {
+    font-size: .9em!important;
+    max-width:90%;
+    margin-left:5%;
+}
+
+.type-TVSeries .column_header h2 {
+    margin:.5em;
+}
+
+#disqus_thread::before {
+    font-size: .7em!important;
+    word-spacing: -0.09em;
+}
+
+
+.type-TVSeries .section_content {
+    margin-top:2em;
+    margin-bottom:10em;
+}
+
+.type-TVSeries .column_header {
+    margin-bottom:2em;
+}
+
+.type-TVSeries .wpcr3_respond_2 {
+    margin-bottom:8em!important;
+}
+
+
+.type-TVSeries .no_bottom_pad {
+    margin-bottom:2em!important;
+}
+
+
+
+.type-TVSeries .pro_review {
+    margin-bottom:8em;
+}
+
+
+
+
+
+
+
+
+
+/* mobile */
+@media (min-width: 1091px) {
+
+    #disqus_thread::before {
+        margin-left:7%;
+    }
+}
+
+
+@media (max-width: 420px) {
+
+    .patreon-widget {
+        margin-left:5.5em!important;
+
+    }
+}
+
+
+
+@media (max-width: 350px) {
+
+    .patreon-widget {
+        margin-left:3.5em!important;
+
+    }
+}
+
+
+
+
+
+
+
+
+
+
+.big_desc {
+    padding:.8em
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@media (max-width: 779px) {
+    .section_actors h2 {
+        margin-top:.7em!important;
+    }
+}
+
+
+
+
+
+
+/* making the remember me spaced a bit so it's not cramped */
+
+
+@media (min-width: 400px) {
+
+    .label-body {
+        margin-right:2em;
+    }
+}
+
+
+
+
+
+
+
+/* the rectangle critic reviews was irking me, I am too OCD and it looks like crap to be rectangle. it's hip to be square. */
+
+
+.pro_review .mbp_f {
+    flex:none!important;
+
+
+}
+
+.pro_review .content {
+    align-items: center;
+    justify-content: center;
+}
+
+
+
+
+
+
+/* fixing the margin issue with the front page widgets when swtiching from light to dark */
+
+body.home.blog.theme_dark .inner_content:nth-of-type(1)  {
+    padding:0px;
+
+}
+
+
+
+
+/* fixing spacing and color in patreon widget for footer */
+
+.patreon-widget {
+    margin-bottom:0px;
+}
+
+
+#colorhexDIV a:hover {
+    color:red!important;
+}
+
+
+
+/* changed my mind. let's just leave it as is without a warning */
+
+#disqus_thread:before {
+    display:none;
+}
+
+
+
+
+
+/* fixing audience names */
+
+.type-Movie .audience_review .review_autor_name {
+    padding-right:.1em!important;
+    padding-left:.88em!important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* arrow icon on top for movie pages */
+
+#move_up {
+    z-index:9999999999999!important;
+}
+
+
+
+
+
+
+
+
+/* fixing the dropdown menu more items on search pages being scrunched up */
+
+.search .nte_cnt .nav-tab {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+
+
+
+
+
+
+
+/* the tooltip stars would brighten on hover too, this overrides it */
+
+
+.nte_cnt .rating_result {
+    opacity:.99!important;
+}
+
+
+
+
+
+
+
+/* hiding the automatic featured image on the supporters page */
+
+.page-id-489612 .post-thumbnail {
+    opacity:0;
+    margin:-6em;
+}
+
+
+
+/* fixing the disqus comment links so they are on one line */
+
+.disqus_view {
+    padding-left:2em;
+}
+
+
+
+
+
+
+
+
+/* tweaking the critics crowdsource link view a little */
+
+@media (min-width: 755px) {
+    .ext_links a{
+        padding-left:1em;
+    }
+}
+
+
+.ext_links a{
+    text-decoration:underline;
+    text-decoration-color: rgba(135, 165, 221, 0.54);
+}
+
+
+
+
+
+
+
+
+
+
+
+/* cast arrows didn't show on light mode */
+
+.theme_white .actor_link_block .toggle_show {
+    mix-blend-mode: exclusion;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* removing the stars grey fade if it's not necessary since stars have 3 max */
+
+
+@media only screen and (min-width: 900px) {
+    .section_gray:nth-of-type(1) div.scroller_wrap.should_fade::after  {
+        content:none;
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* it was too light grey in the similar shows widget */
+
+.theme_white .in_fl_cnt {
+    color:black;
+}
+
+
+
+
+
+
+
+
+
+
+/* fixing the similar shows stars being off center on mobile and also removing the weird div wrapper box shadow and making it only the posters */
+
+@media only screen and (max-width: 550px) {
+    .detail_container .rwt_stars.init{
+        opacity:.8;
+        margin-right:-.02px!important;
+    }
+
+}
+
+
+.detail_container .movie_scroller .flex_movies_block .movie_container {
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+    border:none;
+}
+
+
+.detail_container .movie_poster  {
+    box-shadow: 2px 0px 2px grey!important;
+}
+
+
+
+
+
+
+
+
+/* making the similar shows widget aesthetic */
+
+
+.in_fl_cnt p:last-of-type {
+    opacity:.5;
+}
+
+.in_fl_cnt p:last-of-type a{
+    text-decoration: underline;
+}
+
+
+.in_fl_cnt table {
+    background-color:rgb(201, 201, 201, .2);
+}
+
+.in_fl_cnt tr:first-of-type {
+    background-color:rgb(201, 201, 201, .8);
+}
+
+
+
+
+
+
+/* removing the tags because they were super slow and didn't really work. plus, it's a bad first impression for the site. if users want to filter by hashtags they can click the ones below a critic. plus, i will be adding many leftist and neutral critics too to balance things out for first impressions. */
+
+.pro_review .search-sort {
+    display:none;
+}
+
+
+
+/* the blockquote line showed outside the spoiler */
+
+.su-spoiler blockquote {
+    margin-left: 0em!important;
+}
+
+
+
+
+
+
+
+/* fixing the first quote of the newsfilter header to be blue too */
+
+
+#ns_related_scroll .column_header:nth-of-type(1) h3:nth-of-type(1) {
+    color:#0066ff;
+}
+
+
+
+
+
+
+
+
+/* global consensus locked items */
+
+.menu-item-489452, .menu-item-489453, .menu-item-489456, .menu-item-489457, .menu-item-489459, .menu-item-489461, .menu-item-489463, .menu-item-489465, .menu-item-489466, .menu-item-489467, .menu-item-490969 {
+    opacity:.3;
+}
+
+
+/* viewership locked items */
+
+.menu-item-489518, .menu-item-489515, .menu-item-489516, .menu-item-489517, .menu-item-489519 {
+    opacity:.3;
+}
+
+
+/* game locked items */
+
+.menu-item-489500, .menu-item-489501, .menu-item-489502,
+.menu-item-489503, .menu-item-489499 {
+    opacity:.3;
+}
+
+
+
+/* list locked items */
+
+.menu-item-489559, .menu-item-489561, .menu-item-489557 ,
+.menu-item-489558, .menu-item-489560, .menu-item-489611 {
+    opacity:.3;
+}
+
+
+
+
+/* pick a movie locked items */
+
+.menu-item-489537, .menu-item-489536, .menu-item-489538 {
+    opacity:.3;
+}
+
+
+
+
+
+/* games reddit */
+.menu-item-490378 {
+    opacity:.3
+}
+
+/* new media */
+
+.menu-item-490374{
+    opacity:.3
+}
+
+
+/* music */
+
+.menu-item-490376 {
+    opacity:.3
+}
+
+
+/* books */
+
+.menu-item-490375 {
+    opacity:.3
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* removing disclaimer auto featured image */
+
+
+.page-id-461365 .post-thumbnail {
+    display:none;
+}
+
+
+
+
+
+/* making hover effects for the patreon button that replaced the patreon bugged script */
+
+
+.footer_main .widget_text center img:hover {
+    filter: hue-rotate(90deg);
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* the description on mobile looks weird and this is a bandaid solution*/
+
+
+@media only screen and (max-width: 551px) {
+
+
+    .movie_description_container .single_flex, .block.block_main {
+        display:none;
+    }
+
+}
+
+
+
+
+@media only screen and (max-width: 551px) {
+
+    .movie_description {
+        top:16px!important;
+        min-height:74%;
+    }
+
+}
+
+
+@media only screen and (max-width: 552px) {
+
+    .movie_description {
+        top:20px!important;
+        min-height:79%;
+    }
+
+}
+
+
+@media only screen and (max-width: 553px) {
+
+    .movie_description {
+        top:16px!important;
+
+    }
+
+}
+
+
+@media only screen and (max-width: 420px) {
+
+    .movie_description {
+        top:10px!important;
+        min-height:30%!important;
+        padding-top:0px!important;
+
+
+
+
+    }
+
+}
+
+
+
+
+
+/* movie metadata description tweaks */
+
+.movie_description_container .movie_summary span {
+
+    font-weight:bold;
+    margin-right:.3em;
+
+
+}
+
+
+.search .flex_movies_block .movie_description {
+    padding:1.23em;
+    max-height:330px!important;
+}
+
+
+.search-results .movie_button_action {
+    padding-left:0em;
+}
+
+
+
+
+
+
+/* twearking margin issues */
+
+@media only screen and (max-width: 552px) {
+
+    .movie_description {
+        margin-top:1em!important;
+
+    }
+
+}
+
+
+@media only screen and (max-width: 420px) {
+
+    .movie_description {
+        margin-top:1.7em!important;
+
+    }
+
+}
+
+
+
+
+
+
+
+
+
+/* critic crowdsource external link svg hover effect */
+
+
+.theme_white .ext_links a:hover::after {
+    filter: brightness(.01);
+    opacity:.6
+}
+
+
+
+
+
+
+
+
+
+
+
+/* family friendly content breakdown and methodology links were too bunched with other content in the tooltip */
+
+
+.family_friendly .read_more_rating:before {
+    content: "";
+    display:inline-block;
+    margin-top:2em;
+}
+
+
+
+
+
+
+
+/* fine tuning the email sign up page so it looks better */
+
+.post-461962 .mailpoet_submit {
+    max-width:50%;
+}
+
+
+.post-461962 #mailpoet_form_2 {
+    margin-bottom:10%!important;
+    margin-top:5%!important;
+}
+
+.post-461962 .mailpoet_text {
+    margin-bottom:2%!important;
+    max-width:67%!important;
+    margin-right:4%!important;
+}
+
+
+.post-461962 .mailpoet_paragraph:nth-of-type(1) {
+    opacity:.5;
+}
+
+
+
+
+
+
+
+
+
+
+
+/* removing featured image and making all table styles invisible on about team page */
+
+.post-490171 .post-thumbnail {
+    display:none;
+}
+
+
+.post-490171 .su-table .su-even td {
+    background: transparent!important;
+}
+
+.post-490171 .su-table td {
+    background: transparent!important;
+
+}
+
+
+.post-490171 .su-table td {
+    border:0!important;
+}
+
+#post-490171 table{
+    border:transparent!important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* fixing the verdict in the tooltips for writers n cast */
+
+.adtor_r_data {
+    margin:.6em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.globalshz {
+    margin-top:2em;
+}
+
+
+
+
+
+
+
+
+
+
+/*making the plethora of faq links more subtle*/
+
+.post-488039 a {
+    color:navy;
+}
+
+.post-488039 a:hover {
+    color:blue;
+    text-decoration:underline;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* feeds item and margin */
+
+
+
+.menu-item-490387 {
+    opacity:.3;
+}
+
+
+
+
+
+
+
+
+/* lists menu item cuz the nested items opacity messes up. very ghetto bandaid solution will be removed soon */
+
+.theme_white .menu-item-489556 a {
+    color:lightgrey!important;
+}
+
+.theme_dark .menu-item-489556 a {
+    color:#696969!important;
+}
+
+.menu-item-489556 a:hover {
+    color:red!important;
+}
+
+
+.menu-item-489559, .menu-item-489611 , .menu-item-489561 , .menu-item-489557 , .menu-item-489558 , .menu-item-489560 {
+    opacity:.999!important;
+}
+
+
+
+
+
+
+
+
+/* bandaid solution for viewership */
+
+
+.theme_white .menu-item-489514 a {
+    color:lightgrey!important;
+}
+
+.theme_dark .menu-item-489514 a{
+    color:#696969!important;
+}
+
+.menu-item-489514 a:hover {
+    color:red!important;
+}
+
+/* ghetto bandaid solution for the nested viewership links */
+
+
+.menu-item-489518 {
+    opacity:.99!important;
+
+}
+
+.menu-item-489515 {
+    opacity:.99!important;
+
+}
+
+.menu-item-489516 {
+    opacity:.99!important;
+
+}
+
+.menu-item-489517 {
+    opacity:.99!important;
+
+}
+
+
+
+
+
+
+
+
+
+/* bandaid solution for pick a movie */
+
+
+.theme_white .menu-item-489535 a {
+    color:lightgrey!important;
+}
+
+.theme_dark .menu-item-489535 a{
+    color:#696969!important;
+}
+
+.menu-item-489535 a:hover {
+    color:red!important;
+}
+
+
+/* ghetto bandaid solution for the nested pick a movie links */
+
+
+.menu-item-489537 {
+    opacity:.99!important;
+
+}
+
+.menu-item-489536 {
+    opacity:.99!important;
+
+}
+
+.menu-item-489538 {
+    opacity:.99!important;
+
+}
+
+
+
+
+
+
+
+
+/* bandaid reddit transparent */
+
+.menu-item-490434 {
+    opacity:.3;
+}
+
+.menu-item-490436 {
+    opacity:.3;
+}
+
+
+
+/* featured image on feedback page small and reasonable and centered */
+
+.post-490448 .post-thumbnail {
+    width:50%;
+    margin-left:25%;
+}
+
+
+
+
+
+
+
+
+
+/* the custom rating tooltips have images and need a max height so they scroll */
+
+
+
+.wpcr3_respond_1 .nte_cnt {
+    overflow-y:auto;
+    max-height: 300px;
+}
+
+
+
+
+
+/* NA verdicts were on the same line and overflow and whitespace css didnt work */
+
+.adtor_r_data {
+    padding:.39em;
+}
+
+
+
+
+/* global conensus overlaps the light switch without this */
+
+.sub-menu .toggled-on {
+    overflow-y:scroll;
+    max-height:81%;
+}
+
+
+
+/* trying to increase user engagement  */
+
+.menu-item-489374 a {
+    margin-bottom:-.7em;
+    margin-left:2em;
+}
+
+.menu-item-489374:after {
+    content: '( Anonymous, no login required. )';
+    font-size:10px;
+    color:white;
+    opacity:.6
+}
+
+
+
+/* centering the nested tooltips */
+
+.tlp_cnt {
+    margin-right:.8em;
+}
+
+
+
+
+
+
+
+
+
+
+/* Mobile write a review anon encouragement */
+
+@media (max-width: 769px) {
+
+    .menu-item-489295 a {
+        margin-bottom:-1em;
+    }
+
+    .menu-item-489295:after {
+        content: '( Anonymous, no login required. )';
+        font-size:12px;
+        margin-left:.5em;
+
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* bandaid solution so users don't keep getting disappointed with unfinished additions with unfinished accuracy */
+
+
+/* wokeness -> Woke keywords # not %, needs range filter.
+ZR Woke Meter should only be made public when it is finished and actually works successfully at identifying the top most woke movies based on those blogs with lists */
+
+
+
+
+/* LGBT -> LGB & TQIA+ keywords # not %, needs range filter. There should never be a 0-100% LGBT filter. Doesn't matter, no one cares, and it should only be on backend in calculations of the ZR Woke Meter. Other than that, objective IMDb keyword matches, two sections is all that matters for front end. */
+
+
+
+/* Audience review score should be removed permanently from wokeness section */
+
+
+
+
+
+
+/* coming soon kanban */
+
+.page-id-490621 .su-table  {
+    -webkit-box-shadow: 5px 5px 3px 0px rgba(0,0,0,0.15);
+    -moz-box-shadow: 5px 5px 3px 0px rgba(0,0,0,0.15);
+    box-shadow: 5px 5px 3px 0px rgba(0,0,0,0.15);
+}
+
+.page-id-490621 .su-table div {
+    background-color:#ffeab0;
+    border-radius: 10px 10px 10px 10px;
+    -moz-border-radius: 10px 10px 10px 10px;
+    -webkit-border-radius: 10px 10px 10px 10px;
+    border: 0px solid #000000;
+    padding:.5em;
+    font-size:15px;
+    margin-top:.4em;
+
+}
+
+
+
+
+
+
+.page-id-490621 .su-table div {
+    text-align:center!important;
+}
+
+
+.page-id-490621 .su-even td {
+    text-align:center!important;
+}
+
+
+
+@media (max-width: 930px) {
+
+
+    .page-id-490621 .su-table div{
+        font-size:7px;
+    }
+
+
+    .page-id-490621 .su-table {
+        font-size:7px!important;
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* help page styling */
+
+
+.post-488021 .su-tabs-nav span:nth-of-type(4):before{
+
+    background-image: url('https://zeitgeistreviews.com/wp-content/uploads/2023/06/BTCicon-150x150.png');
+    background-size: 25px 25px;
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+    content:" ";
+}
+
+
+.post-488021 .su-tabs-nav span:nth-of-type(1):before{
+
+    background-image: url('https://zeitgeistreviews.com/wp-content/uploads/2023/06/USDicon-298x300.png');
+    background-size: 25px 25px;
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+    content:" ";
+}
+
+
+.post-488021 .su-tabs-nav span:nth-of-type(2):before{
+
+    background-image: url('https://zeitgeistreviews.com/wp-content/uploads/2023/06/USDicon-298x300.png');
+    background-size: 25px 25px;
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+    content:" ";
+}
+
+
+
+.post-488021 .su-tabs-nav span:nth-of-type(3):before{
+
+    background-image: url('https://zeitgeistreviews.com/wp-content/uploads/2023/06/bitcoinnusd.png');
+    background-size: 25px 25px;
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+    content:"  ";
+}
+
+.post-488021 .su-tabs-nav span:nth-of-type(5):before{
+
+    background-image: url('https://zeitgeistreviews.com/wp-content/uploads/2023/06/hrtfrn.png');
+    background-size: 25px 25px;
+    display: inline-block;
+    width: 25px;
+    height: 25px;
+    content:"  ";
+}
+
+
+
+.post-488021 .su-tabs-nav span {
+    font-size:20px!important;
+}
+
+
+.post-488021 .post-thumbnail {
+    width:30%;
+    margin-left:35%;
+
+}
+
+
+
+.post-488021 .su-tabs-nav span:hover {
+    color:darkgreen!important;
+}
+
+
+
+
+
+
+
+
+
+
+
+/*make diversity bubble link more subtle*/
+
+.note.nte.diversity.init u {
+    color:darkblue!important;
+    text-decoration:none;
+}
+
+.note.nte.diversity.init u:hover {
+    color:blue!important;
+    text-decoration:underline;
+}
+
+
+
+
+
+
+
+/* donate bottom right apu */
+
+.footer_main_right img {
+    mix-blend-mode: normal!important;
+    margin-top:1em;
+    margin-bottom:0em!important;
+}
+
+.footer_main_right img:hover {
+    filter: brightness(80%);
+}
+
+
+
+
+
+
+
+
+/* coming soon page link & lightbox css */
+
+.post-490621
+.su-lightbox {
+    color:darkblue;
+}
+
+.post-490621 .su-lightbox:hover {
+    color:blue;
+    text-decoration:underline;
+}
+
+
+
+.post-490621
+a {
+    color:darkblue;
+}
+
+.post-490621 a:hover {
+    color:blue;
+    text-decoration:underline;
+}
+
+
+
+
+
+
+
+
+
+
+/* wordcount for faq page */
+
+/* antiwoke faq*/
+.post-488039 .su-spoiler:nth-of-type(1) .su-spoiler-title:after {
+    content: '222 words /  0 videos /  3 images';
+    float:right;
+    opacity:.3
+}
+
+/*anti corporate faq*/
+.post-488039 .su-spoiler:nth-of-type(2) .su-spoiler-title:after {
+    content: '225 words /  3 videos /  5 images';
+    float:right;
+    opacity:.3
+}
+
+
+/*wokeism or capitalism faq*/
+.post-488039 .su-spoiler:nth-of-type(3) .su-spoiler-title:after {
+    content: '142 words /  0 videos /  7 images';
+    float:right;
+    opacity:.3
+}
+
+/* culture war theories faq*/
+.post-488039 .su-spoiler:nth-of-type(4) .su-spoiler-title:after {
+    content: '1,477 words / 9 videos / 31 images';
+    float:right;
+    opacity:.3
+}
+
+
+/* pro faith faq*/
+.post-488039 .su-spoiler:nth-of-type(5) .su-spoiler-title:after {
+    content: '592 words / 9 videos / 10 images';
+    float:right;
+    opacity:.3
+}
+
+/* welcome leftwingers faq*/
+.post-488039 .su-spoiler:nth-of-type(6) .su-spoiler-title:after {
+    content: '1,336 words / 5 videos / 17 images';
+    float:right;
+    opacity:.3
+}
+
+/* every political faq*/
+.post-488039 .su-spoiler:nth-of-type(7) .su-spoiler-title:after {
+    content: '400 words / 1 video / 11 images';
+    float:right;
+    opacity:.3
+}
+
+/*hypocrite faq*/
+.post-488039 .su-spoiler:nth-of-type(8) .su-spoiler-title:after {
+    content: '204 words / 1 video / 6 images';
+    float:right;
+    opacity:.3
+}
+
+
+/*rainbow faq*/
+.post-488039 .su-spoiler:nth-of-type(9) .su-spoiler-title:after {
+    content: '250 words / 0 videos / 6 images';
+    float:right;
+    opacity:.3
+}
+
+/*illuminati faq*/
+.post-488039 .su-spoiler:nth-of-type(10) .su-spoiler-title:after {
+    content: '219 words / 0 videos / 8 images';
+    float:right;
+    opacity:.3
+}
+
+/*moneybags n eyes faq*/
+.post-488039 .su-spoiler:nth-of-type(11) .su-spoiler-title:after {
+    content: '298 words / 0 videos / 5 images';
+    float:right;
+    opacity:.3
+}
+
+/*piracy faq*/
+.post-488039 .su-spoiler:nth-of-type(12) .su-spoiler-title:after {
+    content: '284 words / 2 videos / 0 images';
+    float:right;
+    opacity:.3
+}
+
+/*recycle faq*/
+.post-488039 .su-spoiler:nth-of-type(13) .su-spoiler-title:after {
+    content: '304 words / 2 videos / 10 images';
+    float:right;
+    opacity:.3
+}
+
+/*monopoly faq*/
+.post-488039 .su-spoiler:nth-of-type(14) .su-spoiler-title:after {
+    content: '542 words / 0 videos / 5 images';
+    float:right;
+    opacity:.3
+}
+
+/*race methodology faq*/
+.post-488039 .su-spoiler:nth-of-type(15) .su-spoiler-title:after {
+    content: '166 words / 0 videos / 7 images';
+    float:right;
+    opacity:.3
+}
+
+/*race categories faq*/
+.post-488039 .su-spoiler:nth-of-type(16) .su-spoiler-title:after {
+    content: '271 words / 1 video / 5 images';
+    float:right;
+    opacity:.3
+}
+
+/*critics faq*/
+.post-488039 .su-spoiler:nth-of-type(17) .su-spoiler-title:after {
+    content: '323 words / 0 videos / 4 images';
+    float:right;
+    opacity:.3
+}
+
+
+
+
+@media only screen and (max-width: 1000px)  { .post-488039 .su-spoiler-title:after {
+    margin-top:.65em;
+}
+
+    .post-488039 .su-spoiler-title {
+        height:50px!important;
+    }
+
+
+    .post-488039 .su-spoiler-title:after {
+
+        display:none;
+    }
+
+}
+
+
+
+/* ^^ wordcount for faq page */
+
+
+
+
+
+
+
+
+
+
+
+/* nightmode css for coming soon */
+
+
+.page-id-490621.theme_dark .su-table td {
+    background-color:black!important;
+}
+
+
+
+
+.page-id-490621.theme_dark .su-table {
+    color:black;
+}
+
+.page-id-490621.theme_dark .su-table a {
+    color:darkblue;
+}
+
+
+.page-id-490621.theme_dark .su-table a:hover {
+    color:blue;
+}
+
+
+
+
+.page-id-490621.theme_dark .su-spoiler  {
+    background-color:grey!important;
+}
+
+
+.page-id-490621.theme_dark .su-box-content {
+    background-color:black!important;
+    color:white!important;
+}
+
+
+
+.page-id-490621.theme_dark .su-box-content .su-lightbox{
+    color:white;
+    text-decoration:underline;
+}
+
+
+.page-id-490621.theme_dark .su-box-content .su-lightbox:hover {
+    color:lightblue;
+}
+
+
+
+
+.page-id-490621.theme_dark .su-table td strong {
+    color:white;
+}
+
+
+
+
+
+
+
+
+
+/* \/ help night mode styling \/  */
+
+.page-id-488021.theme_dark .su-clearfix {
+
+    background-color:black!important;
+
+}
+
+body.page-id-488021.theme_dark td {
+
+    background-color:black!important;
+    color:white;
+}
+
+.page-id-488021 body.theme_dark .su-even td  {
+    background-color:black!important;
+    color:white;
+}
+
+
+.page-id-488021.theme_dark .su-tabs-style-default {
+    background-color:black!important;
+    color:white;
+}
+
+
+
+body.page-id-488021.theme_dark td {
+    background-color:black!important;
+    color:white;
+}
+
+.page-id-488021.theme_dark .su-table .su-even td {
+    background-color:black!important;
+    color:white;
+}
+
+
+.page-id-488021.theme_dark .su-tabs-pane strong {
+    color:white;
+}
+
+
+.page-id-488021.theme_dark .su-tabs-current {
+    background-color:#5c5c5c!important;
+    color:white;
+}
+
+
+.page-id-488021.theme_dark .su-tabs-panes .su-clearfix{
+    background-color:#5c5c5c!important;
+    color:white;
+}
+
+.page-id-488021.theme_dark .su-tabs-panes .su-clearfix a{
+    color:lightblue;
+}
+
+.page-id-488021.theme_dark .su-tabs-panes .su-clearfix a:hover {
+    color:blue;
+}
+
+
+.page-id-488021.theme_dark .su-tabs-nav span{
+    color:white!important;
+}
+
+
+.page-id-488021.theme_dark .post-thumbnail img {
+    filter: invert(100);
+}
+
+
+/* ^ nightmode help page css ^ */
+
+
+
+
+/* nightmode homepage fix margin inconsistency */
+
+
+body.home.blog.theme_dark .inner_content {
+    margin-bottom:-30px!important;
+    padding-bottom:0px!important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* diversity tooltip hyperlink in night mode*/
+
+body.theme_dark .note_show_content_3 a {
+    filter:invert()
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* custom avatar rounded corners */
+.neuro.avatar.upload {
+    border-radius: 100px;
+}
+
+
+
+
+
+
+
+
+
+
+
+/* fixing the css on mobile for the word count on faq page */
+
+
+@media (max-width: 760px)  {
+
+
+    .post-488039 .su-spoiler-title{
+
+        height:50px;
+    }
+
+    .post-488039 .su-spoiler-title:after {
+
+
+        opacity:.09!important;
+    }
+}
+
+
+
+
+
+
+
+@media (max-width: 463px)  {
+    .post-488039 .su-spoiler-title:after {
+        float:left!important;
+    }
+
+
+    .post-488039 .su-spoiler-title{
+
+        height:65px;
+    }
+
+}
+
+
+
+
+
+
+
+/* bandaid fix for footer on author archive pages */
+
+
+.archive.author .footer_main_left {
+    opacity:.0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* making the matrix pop up not blurry and goofy looking but cool and aesthetic */
+
+.actor_image_container {
+    background:url(https://zeitgeistreviews.com/wp-content/themes/custom_twentysixteen/images/matrix.gif)!important;
+    background-position: center!important;
+    width:74%!important;
+    margin-left:13%;
+    background-size:90%!important;
+}
+
+
+
+.popup {
+    background-color:rgba(0,0,0,0.88)!important;
+}
+
+.popup-content {
+    background:rgba(0,0,0,0.88)!important;
+}
+
+
+.default_popup {
+    background:rgba(15,15,15,0.88)!important;
+}
+
+
+
+
+
+.actor_image {
+    mix-blend-mode: luminosity!important;
+    opacity:.88!important;
+}
+
+
+
+
+
+
+/* making zr logo not inverted */
+
+.zr {
+    filter:none!important;
+}
+
+
+
+
+
+
+/* making the empty family friendly tooltip look more fluid with natural margins and paragraphs */
+
+
+.add_pg_rating_button {
+    display:inline;
+}
+
+.note_show_content_1 br
+{   content: "A" !important;
+    display: block !important;
+    margin-bottom: 1.5em !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* adding hover css for crowdsourcing links on cast demographics on dark theme */
+
+
+.theme_dark .actor_b_link a:hover {
+    color:lightblue!important;
+}
+
+
+
+.theme_dark .button_edit:hover {
+    filter:invert(20%);
+
+}
+
+
+
+
+
+
+
+/* making the star tooltip symmetrical and condensed */
+
+
+
+.rwt_stars .nte_in {
+    display:block;
+}
+
+.rwt_stars .nte_cnt {
+    padding-left:.5em!important;
+    padding-right:.2em!important;
+}
+
+.rwt_stars .row_link {
+    margin-top:1em;
+    padding-left:30%;
+}
+
+
+
+
+
+
+
+
+
+
+
+/* global zeitgeist makin the flags show clickable-ness via a subtle shade change */
+
+.gl_rating_img:hover {
+    filter: brightness(94%);
+}
+
+
+/* making lgbtq and woke and indie keyword links change on hover so users know they are clickable */
+
+
+
+.bg_woke a:hover {
+    filter:brightness(39%);
+}
+
+
+.bg_rainbow a:hover {
+    filter:brightness(10%);
+    -webkit-text-stroke-width: .05em;
+    -webkit-text-stroke-color: black;
+}
+
+
+.indie .nte_in .note_show_content_2 a:hover {
+    color:black;
+}
+
+
+
+
+/* completed coming soon stuff: custom avatars, custom user bios, import eiga, import myanimelist, import metacritic, import moviemeter*/
+
+
+.page-id-490621 .usravatr {
+    background-color:lightgrey!important;
+    text-decoration: line-through;
+}
+
+
+.page-id-490621 .usrbio {
+    background-color: lightgrey!important;
+    text-decoration: line-through;
+
+}
+
+
+.page-id-490621 .importeiga {
+    background-color: lightgrey!important;
+    text-decoration: line-through;
+}
+
+
+
+.page-id-490621 .importMAL {
+    background-color: lightgrey!important;
+    text-decoration: line-through;
+}
+
+
+
+.page-id-490621 .importMM {
+    background-color: lightgrey!important;
+    text-decoration: line-through;
+}
+
+
+.page-id-490621 .seplgbtwrd {
+    background-color: lightgrey!important;
+    text-decoration: line-through;
+}
+
+
+
+.page-id-490621 .importmetacritic {
+    background-color: lightgrey!important;
+    text-decoration: line-through;
+}
+
+
+
+
+
+
+
+
+
+/* google cse css to make the search bar visible always and to remove unnecessary borders and crap so everything is minimalist and smooth and cool lookin */
+
+.gsc-results-wrapper-overlay  {
+    margin-top:5em!important;
+}
+
+.gsc-selected-option {
+    width:6em!important;
+}
+
+.gsc-input-box {
+    border:none!important;
+}
+
+.gsc-input {
+    border-bottom:none!important;
+    border-right:none!important;
+}
+
+.gsc-search-button {
+    border:none!important;
+    padding-bottom:2.65em!important;
+    height:35px!important;
+}
+
+.gsib_b {
+    display:none!important;
+}
+
+.gsc-orderby-container {
+    border:none!important;
+}
+
+.gsc-result-info-container {
+    border:none!important;
+}
+
+.gsc-above-wrapper-area-container {
+    border:none!important;
+}
+
+
+
+
+
+
+/* making google cse internet zeitgeist drop down extra links show and have em change on hover so users no they can click*/
+
+
+
+.tab_button_child_btn:hover {
+
+    opacity:.8
+}
+
+.button_child_extlink:hover {
+    opacity:.5;
+}
+
+
+
+
+
+
+/* making the internet zeitgeist more compact */
+
+
+
+.tab-content h3 {
+    margin-bottom:-.7em;
+    text-align:center;
+
+}
+
+
+
+
+
+
+/*removing newsfilter until it is added to the internet zeitgeist and shows properly with a search bar and case sensitive, exact match */
+
+#ns_related_scroll {
+    display:none;
+}
+
+
+
+
+
+
+
+
+
+
+
+/* make the 4chan iframes not overlap the titles */
+
+.tab_content_gs_block iframe {
+    padding-top:2em
+}
+
+
+
+
+
+
+
+/* make the main buttons on the google cse box change on hover */
+
+.tab-button:hover {
+    opacity:.8;
+}
+
+
+
+
+/* centered the newsfilter iframe in the internet zeitgeist section */
+
+.tab_content_gs_block iframe {
+    display:block;
+}
+
+
+
+
+/* centering the submit a link url for critic reviews */
+
+.review_details a{
+    text-align:center;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Membership Tiers css for the table */
+
+
+
+
+.postid-491112 table {
+    font-family: Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.postid-491112 table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+.postid-491112 table tr:nth-child(even){background-color: #f2f2f2;}
+
+
+
+.postid-491112 table th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: left;
+    background-color: #04AA6D;
+    color: white;
+
+}
+
+
+.postid-491112 .firstshiz {
+    background-color:lightblue;
+    text-shadow: .5px .5px black;
+}
+
+
+
+
+
+
+
+
+
+/* centering the critic reviews header */
+
+.pro_review .column_header h2 {
+    margin-left:1.777em!important;
+}
+
+
+
+
+
+/* removing hyhens in titles which may be only on certain browsers and mobile */
+
+
+.entry-title {
+    hyphens: none!important;
+}
+
+
+
+
+
+
+
+/* 4chan content warning */
+
+
+.gs_head_26:after{
+    content: " \A⚠️ Warning! Spoilers, profanity, & offensive images.";
+    color: darkred;
+    font-size:15px;
+    white-space: pre;
+}
+
+
+
+@media (max-width: 850px) {
+    .gs_head_26:after{
+        font-size:10px;
+    }
+
+}
+
+
+/* making the table max width for the woke tooltip in the sidebar on mobile */
+@media (max-width: 850px) {
+
+    .facets .nte_cnt {
+        padding-top:2em!important;
+        padding-right:2px!important;
+        padding-left:2px!important;
+    }
+
+}
+
+
+
+
+/* making the membership tiers table fit on mobile */
+
+@media (max-width: 850px) { .post-491112 table {
+    font-size:9px;
+}
+}
+
+
+
+
+
+
+/* making the dropdown woke tooltips show compact */
+
+.search .tlp_cnt {
+
+    font-size:14px;
+}
+
+.search .tlp_cnt tbody {
+    margin-right:0em!important;
+    padding-right:0px!important;
+}
+
+.search .tlp_cnt table {
+    margin-right:0em!important;
+    padding-right:0px!important;
+
+}
+
+.search .reviewwoketitle .tlp_cnt {
+    padding:1px!important;
+}
+
+
+.search .tlp_cnt tbody {
+
+    vertical-align: text-top!important;
+}
+
+
+
+
+
+
+/* spinning arrows white on light mode */
+
+.theme_white summary:after {
+    filter:invert(100);
+}
+
+
+
+
+/* everything clickable needs to have hover effects so users know. doesn't feel right when they hover and nothing happens. global ratings external links */
+
+.global_zr .nte_cnt .outr_link:hover  {
+    opacity:.7;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* dark mode css for faq page */
+
+
+.theme_dark.page-id-488039 .su-spoiler-content {
+
+    background-color:black;
+    color:grey;
+}
+
+.theme_dark.page-id-488039 .su-spoiler-content a {
+
+    color:lightblue!important;
+    opacity:.7;
+}
+
+
+.theme_dark.page-id-488039 .su-spoiler-content a:hover {
+
+    color:lightblue!important;
+    opacity:.99;
+}
+
+.theme_dark.page-id-488039 .su-spoiler-title {
+    background-color:grey!important;
+}
+
+.theme_dark.page-id-488039 .su-spoiler-title:hover  {
+    color:yellow;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* making the big business icon glow in equal strength to the other icons glow, it was too mild before. hover effects too */
+
+.theme_white .big_business:hover {
+    box-shadow: 0 5px 8px rgba(145, 92, 182, .4)!important;
+}
+
+
+
+
+
+
+
+/* nightmode feels off and these minor drop shadows and contrast changes will hopefully make it less funky */
+
+
+
+.theme_dark .review-title {
+    filter: drop-shadow(2px 2px 2px black);
+}
+
+.theme_dark .vote_main strong {
+    filter: drop-shadow(2px 2px 1px black);
+
+}
+
+
+.theme_dark .poster {
+    filter: drop-shadow(4px 4px 4px black)!important;
+}
+
+
+
+.theme_dark .block_title  {
+    filter: drop-shadow(4px 4px 4px black);
+}
+
+
+
+
+
+.theme_dark  .emotions_count  {
+    color:white;
+}
+
+
+.theme_dark .emotions {
+    filter: drop-shadow(2px 2px 3px black)!important;
+}
+
+
+
+.theme_dark .home-tabs .tab-a a:hover{
+    color:yellow!important;
+}
+
+.theme_dark .home-tabs .tab-n a:hover{
+    color:yellow!important;
+}
+
+
+.theme_dark .home-tabs .tab-p a:hover{
+    color:yellow!important;
+}
+
+
+
+
+
+
+
+
+
+/* hover colors on the actor detail spoiler section */
+
+.theme_white .actor_details summary:hover {
+    color:blue!important;
+}
+
+
+
+.theme_white .actor_details summary:hover:after {
+
+    filter:
+            invert(42%) sepia(93%) saturate(9352%) hue-rotate(187deg) brightness(89%) contrast(49%)
+            drop-shadow(-.5px -.5px 0px #3e68ff)
+            drop-shadow(.5px -.5px 0px #3e68ff)
+            drop-shadow(.5px .5px 0px #3e68ff)
+            drop-shadow(-.5px .5px 0px #3e68ff)
+}
+
+
+
+.theme_dark .actor_details summary:hover {
+    color:yellow!important;
+}
+
+
+
+.theme_dark .actor_details summary:hover:after {
+
+    filter:
+            invert(42%) sepia(93%) saturate(9352%) hue-rotate(187deg) brightness(89%) contrast(49%)
+            drop-shadow(-.5px -.5px 0px yellow)
+            drop-shadow(.5px -.5px 0px yellow)
+            drop-shadow(.5px .5px 0px yellow)
+            drop-shadow(-.5px .5px 0px yellow)
+}
+
+
+
+.theme_white .actor_details summary:hover {
+    color:blue!important;
+}
+
+
+
+
+
+
+
+
+
+/* hiding wordpress logo on login page */
+
+.login h1{
+    display:none;
+}
+
+
+
+
+
+
+/*navigation hover */
+
+
+
+
+.theme_white .nav-tab .btn:hover {
+    color:red!important;
+}
+
+
+
+
+
+
+.theme_dark .nav-tab .btn:hover {
+    color:lightyellow!important;
+}
+
+
+
+
+/* removing the extra borders for google searches on dark mode */
+
+.theme_dark  .gsc-input {
+    border:none!important;
+}
+
+.theme_dark .gsc-search-box {
+    border:none!important;
+}
+
+
+
+
+
+
+
+
+
+
+/* not the best but it's better than the pastel bright weirdness for darkmode audience ratings */
+
+
+.theme_dark .full_review .vote .rating {
+    filter: drop-shadow(1px 1px 1px black) contrast(100%) ;
+    mix-blend-mode:overlay;
+}
+
+
+.theme_dark .full_review  .vote .rating {
+    filter: drop-shadow(1px 1px 1px black) contrast(100%) ;
+    mix-blend-mode:overlay;
+}
+
+
+.theme_dark .full_review
+.rating_inner_row:nth-of-type(2) .rating_result {
+
+    filter: drop-shadow(1px 1px 1px black) contrast(100%) ;
+    mix-blend-mode:overlay;
+}
+
+
+.theme_dark .full_review  .verdict_text
+{
+
+    filter: drop-shadow(1px 1px 1px black) contrast(100%) ;
+    mix-blend-mode:overlay;
+}
+
+
+.theme_dark .full_review
+.rating_inner_row:nth-of-type(3) .rating_result {
+
+    filter: drop-shadow(1px 1px 1px black) contrast(100%) ;
+    mix-blend-mode:overlay;
+}
+
+
+.theme_dark .full_review
+.rating_inner_row:nth-of-type(4) .rating_result {
+
+    filter: drop-shadow(1px 1px 1px black) contrast(100%) ;
+    mix-blend-mode:overlay;
+}
+
+
+.theme_dark .full_review
+.rating_inner_row:nth-of-type(5) .rating_result {
+
+    filter: drop-shadow(1px 1px 1px black) contrast(100%) ;
+    mix-blend-mode:overlay;
+}
+
+.theme_dark .full_review
+.rating_inner_row:nth-of-type(6) .rating_result {
+
+    filter: drop-shadow(1px 1px 1px black) contrast(100%) ;
+    mix-blend-mode:overlay;
+}
+
+.theme_dark .full_review
+.rating_inner_row:nth-of-type(7) .rating_result {
+
+    filter: drop-shadow(1px 1px 1px black) contrast(100%) ;
+    mix-blend-mode:overlay;
+}
+
+
+
+
+
+
+
+
+
+.theme_dark .mbp_f .vote .rating {
+    filter: drop-shadow(1px 1px 1px black) contrast(100%) ;
+    opacity:.7;
+}
+
+
+
+.theme_dark .mbp_f
+.rating_inner_row:nth-of-type(2) .rating_result {
+
+    filter: drop-shadow(1px 1px 1px black) contrast(100%) ;
+    opacity:.7;
+}
+
+
+
+
+
+
+
+
+
+
+/* making the numbers pop */
+
+
+.theme_dark .emotions_count {
+
+    -webkit-text-stroke: 1px white;
+    text-shadow: black .2px -.6px 3px;
+
+}
+
+
+
+
+
+
+
+
+
+
+/* disqus comment drop shadow  */
+
+.theme_dark .disquss_coment {
+    filter: drop-shadow(2px 2px 3px black)!important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* rotten tomatoes score color too dull in dark mode otherwise */
+
+.theme_dark .rotten_tomatoes_score strong {
+    color:white;
+}
+
+
+
+
+
+
+
+
+
+/* making the posters and comment bubbles pop more */
+
+.theme_dark  .a_msg_i {
+    filter: drop-shadow(1px 1px 2px black)!important;
+}
+
+
+.theme_dark  .movie_link img {
+    filter: drop-shadow(2px 2px 2px black)!important;
+}
+
+
+
+
+
+
+
+
+
+
+
+/* making the avatars match the dark vibez in dark mode */
+
+.theme_dark .neuro.avatar.upload {
+    filter:brightness(90%) contrast(130%);
+}
+
+
+.theme_dark .a_img_container_audience {
+    filter:brightness(80%);
+}
+
+
+.theme_dark .neuro.avatar.tomato {
+    filter:brightness(95%) contrast(140%);
+    opacity:.7;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* turning the switch from light to dark has weird margin issues this fixes em so they don't wiggle with the toggles. no togglewigglesmuhnig */
+
+
+body.home.blog.theme_dark .inner_content {
+    margin-bottom: 0px!important;
+
+}
+
+
+
+.dark.actor_details .desc {
+    display:none!important;
+}
+
+
+.theme_white .content-bottom-widgets {
+    margin-bottom:-77px!important;
+
+}
+
+.textwidget.custom-html-widget {
+    display:none!important;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+/* making the links on darkmode fit the aesthetic of the other colors */
+
+
+.theme_dark .nte_cnt .sort-wrapper a{
+    filter:brightness(100000%);
+    opacity:.6;
+}
+
+.theme_dark .nte_cnt .sort-wrapper a:hover {
+    filter:brightness(100%);
+}
+
+
+/* making the question mark tooltips float right for symmetry and OCD aesthetic vibez */
+
+.nte_cnt .nte_info {
+
+    margin-left: auto!important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* hover on audience links and bio hover */
+
+
+.neuro.avatar.upload:hover {
+    filter:brightness(110%);
+}
+
+
+.review_autor_name a:hover{
+    color:red!important;
+}
+
+
+.a_img_container_audience:hover {
+    filter:brightness(140%);
+}
+
+
+.theme_white .neuro.avatar.tomato:hover {
+    filter:contrast(130%);
+}
+
+.theme_dark .neuro.avatar.tomato:hover {
+    filter:contrast(230%);
+}
+
+
+
+
+.a_img_container:hover {
+    filter:brightness(120%);
+}
+
+
+
+.theme_white .a_img_def:hover {
+    opacity:.3;
+}
+
+
+.theme_dark .a_img_def:hover
+{
+    filter:invert(40%);
+    opacity:.3;
+
+}
+
+
+
+
+/* making the description in review lightboxes more subtlte so the title pops and the natural eye flow is logical and smooth */
+
+.full_review p {
+    opacity:.5!important;
+}
+
+
+
+
+
+/* active thing*/
+
+.nav-tab .active a{
+    filter:none!important;
+}
+
+
+
+
+
+
+
+
+
+/*removing the featured image on faq trying to keep with the minimalist vibe. we've rebranded enough that all the rambles and disclaimers are no longer necessary. such stuff can be on private blogs or personal profiles within ZR not for the company as a whole */
+
+.page-id-488039 .post-thumbnail {
+    display:none;
+}
+
+.post-490448 .post-thumbnail {
+    display:none;
+}
+
+
+
+
+
+
+
+
+/* faq style in nightmode */
+
+.theme_dark.page-id-488039 .su-spoiler-title:hover {
+    color:yellow!important;
+    text-shadow: 1px 1px 2px black;
+
+}
+
+
+.theme_dark.page-id-488039 .entry-title {
+    text-shadow: 2px 2px 2px black;
+}
+
+.theme_dark.page-id-488039 .su-spoiler-style-fancy {
+
+    background:black!important;
+
+}
+
+
+
+
+/* tweaking the audience review font so the body text pops out less than the title and rating */
+
+.theme_dark .full_review_content_block .vote_main {
+    color:lightgrey;
+    text-shadow:none;
+    opacity:.7;
+}
+
+
+
+
+/* removing empty footer div that made light switch jiggle the page*/
+
+.content-bottom-widgets {
+    display:none;
+}
+
+
+
+/* re-doing the faq style in dark mode */
+
+.theme_dark.page-id-488021 .su-tabs-panes a {
+    color:lightblue!important;
+
+}
+
+
+.theme_dark.page-id-488021 .su-tabs-panes a:hover {
+    color:lightblue!important;
+    text-decoration:underline!important;
+}
+
+
+
+
+
+
+
+
+
+
+/* making the green links in the big business tooltip change on hover*/
+
+.theme_dark .out_link {
+    filter:invert(100%);
+}
+
+
+.theme_dark .bb_row a:hover {
+    color:green!important;
+}
+
+
+.theme_dark .out_link:hover {
+    filter:invert(70%);
+}
+
+
+.theme_dark .big_business a:hover {
+    color:green!important;
+}
+
+
+
+
+.theme_dark .indie a:hover {
+    color:green!important;
+}
+
+
+
+.theme_dark .bb_row_after:not(.out_link)  a:hover  {
+    color:grey!important;
+}
+
+
+
+
+
+
+
+
+/* hiding socials on other pages because it would not adjust to the sidebar and this is easiest and a minimalist vibe */
+
+.single .footer_main_left {
+    display:none;
+}
+
+.theme_dark.single .footer_main {
+    background-color:black!important;
+}
+
+
+.theme_white.single .footer_main {
+    background-color:white!important;
+}
+
+
+
+
+
+/* making family friendly +add link change on hover for both day n night */
+.column_header .empty_ff_rating.empty_ff_popup_rating:hover {
+    color:darkred!important;
+}
+
+
+
+
+/* dark theme search results bottom block looked weird needs to match*/
+
+.theme_dark #primary {
+
+    background-color: #262626!important;
+}
+
+
+
+
+
+/*the watch free link is too bright red on dark mode */
+
+.theme_dark .free-watch .t{
+    color:darkgrey!important;
+
+}
+
+
+
+
+/* making the active selected dropdown menus pop so the users know which ones are active */
+
+.theme_dark .nav-tab .active {
+    text-shadow: #FC0 .2px .1px .1px;
+    mix-blend-mode:exclude;
+}
+
+
+.theme_white .nav-tab .active {
+    text-shadow: black .2px .1px .1px;
+    mix-blend-mode:exclude;
+}
+
+
+
+
+/* arrows on search hover sidebar */
+
+
+.theme_dark .chevronup::before {
+    border-bottom-color:lightblue!important;
+}
+
+.theme_dark .chevronup:hover:before {
+    border-bottom-color:white!important;
+}
+
+
+
+
+
+/* for some reason the indie search bar */
+
+
+.theme_dark .nav-tab .indie a {
+    color:lightblue!important;
+    text-shadow: lightblue .2px .1px .1px;
+}
+
+
+
+
+
+
+/*active row tab underline */
+
+.theme_white  .nav-tab .active a {
+    text-decoration:underline;
+}
+
+
+.theme_white .sort-more.mact {
+    text-decoration:underline;
+}
+
+
+
+
+
+
+
+
+/* makin faq more subtle */
+
+.theme_dark .yurt {
+    opacity:.4;
+}
+
+
+
+
+
+
+/* the footer text for donations cuts off on mobile */
+
+@media (max-width: 800px)  {
+
+    .footer_main_right {
+        font-size:13px!important;
+    }
+}
+
+
+
+
+
+
+/* hastags removed from audience on front page */
+
+.audience_review .a_cat {
+    display:none!important;
+}
+
+
+
+
+
+/* active button for search bar because it is unclear that exclude and include are clickable */
+
+.search .sidebar-inner  #facets-wokedata .active {
+    text-decoration:underline;
+}
+
+.search .sidebar-inner  #facets-ratings .active {
+    text-decoration:underline;
+}
+
+
+
+

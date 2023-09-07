@@ -6,7 +6,7 @@ var site_url = window.location.protocol +"//"+window.location.host;
 
 var crowdsource_url = site_url+"/service/crowdsource.php"
 var debug_mode = 0;
-if (window.location.host == 'zeitgeistreviews.com') {
+if (window.location.host == 'zeitgeistreviews.com' || window.location.host == 'zgreviews.com') {
     crowdsource_url = 'https://service.' + window.location.host + "/crowdsource.php";
 }
 
@@ -3060,17 +3060,22 @@ jQuery(document).ready(function () {
 
     jQuery('.ajaxlogin').click(function () {
 
+        if (window.location.host == 'zgreviews.com') {
+
+            window.location(window.location.protocol +"//zeitgeistreviews.com/login/");
+        return ;
+        }
 
         jQuery.ajax({
             type: 'post',
 
-            url: site_url+template_path + 'loginajax.php',
+            url: window.location.protocol +"//"+window.location.host+template_path + 'loginajax.php',
             success: function (html) {
                 add_popup();
                 jQuery('.popup-content').html('<div class="default_popup login_popup">' + html + '</div>');
                 jQuery('input[id="action-popup"]').click();
 
-                let url = window.location.protocol +"//"+window.location.host+'/wp-content/plugins/login-with-ajax/templates/login-with-ajax.min.js';
+                let url = site_url+'/wp-content/plugins/login-with-ajax/templates/login-with-ajax.min.js';
 
                 var third_scripts = {login_ajax: url};
                 use_ext_js('', third_scripts);

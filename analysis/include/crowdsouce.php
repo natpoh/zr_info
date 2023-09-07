@@ -1251,16 +1251,16 @@ if (Number(min_width)>Number(width)){
                 }
             },
             gridComplete:function(){
-                jQuery('.ui-jqgrid-htable .ui-th-div').each(function (){
-                   let ts = jQuery(this);
-                   let hm=ts.html();
-                   let trim =  hm.split('<')[0].trim();
-                    ts.attr('title',trim);
-
-                    hm  = hm.replace(/_/g, "_<wbr>");
-                    ts.html(hm);
-
-                });
+                // jQuery('.ui-jqgrid-htable .ui-th-div').each(function (){
+                //    // let ts = jQuery(this);
+                //    // let hm=ts.html();
+                //    // let trim =  hm.split('<')[0].trim();
+                //    //  ts.attr('title',trim);
+                //    //
+                //    //  hm  = hm.replace(/_/g, "_<wbr>");
+                //    //  ts.html(hm);
+                //
+                // });
 
             },
 

@@ -161,7 +161,7 @@ critic_search.init_facet = function (v) {
                         fthis.prop('checked', false);
                         flabel.removeClass('active');
                         var ftype = fthis.attr('data-name');
-                        console.log('remove filter')
+                        //console.log('remove filter')
 
                         if (parrent.hasClass('slider')) {
                             var filter = $('#search-filters [data-type="' + type + '"]');
@@ -176,7 +176,6 @@ critic_search.init_facet = function (v) {
                     }
                 }
             });
-
         }
 
         if ($this.prop('checked')) {
@@ -187,9 +186,6 @@ critic_search.init_facet = function (v) {
             var ftype = v.attr('data-type');
 
             critic_search.add_filter(type, id, title, ftype, type_title, title_pre);
-            //Plus logic
-            /* var plus = $this.hasClass('plus');
-             var minus = $this.hasClass('minus');*/
 
             label.addClass('active');
         } else {
@@ -206,6 +202,25 @@ critic_search.init_facet = function (v) {
             }
         }
         critic_search.submit();
+    });
+
+    v.find('.andor-btns .btn').click(function () {
+        var vl = $(this);
+        var and_def = 'or';
+        if (vl.hasClass('f_and')) {
+            and_def = 'and';
+        }
+
+        if (!vl.hasClass('active')) {
+            var parent = vl.closest('.andor-btns');
+            parent.find('.btn.active').removeClass('active');
+            vl.addClass('active');
+            parent.attr('data-select', and_def);
+            if(vl.closest('.facet-ch').find('.facet-content input[type=checkbox]:checked').length>0){                
+                critic_search.submit();
+            }
+        }
+        return false;
     });
 
     if (typeof search_extend !== 'undefined') {
@@ -511,12 +526,12 @@ critic_search.init = function ($custom_id = '') {
                 if ($this.hasClass('inactive')) {
                     $this.removeClass('inactive');
                 }
-                ;
+
             } else {
                 if (!$this.hasClass('inactive')) {
                     $this.addClass('inactive');
                 }
-                ;
+
             }
         }
     });
@@ -794,7 +809,7 @@ critic_search.slider_facet = function (type, data_arr, ftype = 'all') {
     $('#facet-' + type + ' .include-btns .btn').click(function () {
         var v = $(this);
         if (!v.hasClass('active')) {
-            $('#facet-' + type + ' .include-btns .btn.active').removeClass('active');
+            v.closest('.include-btns').find('.btn.active').removeClass('active');
             v.addClass('active');
             html5Slider.noUiSlider.set([from, to]);
         }
@@ -1103,6 +1118,17 @@ critic_search.submit = function (inc = '', target = '', facetid = '') {
     $('#search-filters .filter').each(function (i, v) {
         var v = $(v), type = v.attr('data-type'), id = v.attr('data-id');
         if (typeof type !== "undefined") {
+            
+            var clear_type = type.replace('minus-','');
+            var andortype = $('#andor-' + clear_type);
+            
+            if (andortype.length) {
+                var andor_select = andortype.attr('data-select');
+                var andor_def = andortype.attr('data-def');
+                if (andor_select !== andor_def) {
+                    type = andor_select+'-'+type;
+                }
+            }
             type = type + '[]';
             if (typeof data[type] === "undefined") {
                 data[type] = [];

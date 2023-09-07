@@ -878,24 +878,24 @@ var site_url = window.location.protocol +"//"+window.location.host;
 
     });
 
-        if ( typeof check_load_block == "undefined" )
-        {
-            ///console.log('check_load_block == "undefined"');
-
-
-            jQuery.ajax({
-                type: "GET",
-                url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/template/ajax/mailpoet_form.php?id='. $id.'",
-                success: function (data) {
-
-
-
-                    jQuery("#mailpoet_form").html(data);
-
-                }
-
-            });
-        }
+        // if ( typeof check_load_block == "undefined" )
+        // {
+        //     ///console.log('check_load_block == "undefined"');
+        //
+        //
+        //     jQuery.ajax({
+        //         type: "GET",
+        //         url: window.location.protocol + "/wp-content/themes/custom_twentysixteen/template/ajax/mailpoet_form.php?id="+ id,
+        //         success: function (data) {
+        //
+        //
+        //
+        //             jQuery("#mailpoet_form").html(data);
+        //
+        //         }
+        //
+        //     });
+        // }
 
 
 
