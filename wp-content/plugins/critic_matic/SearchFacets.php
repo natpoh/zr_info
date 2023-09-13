@@ -628,12 +628,12 @@ class SearchFacets extends AbstractDB {
                     $this->cs->search_filters['genre'][$slug]['key'] = $genre->id;
                     $tags[] = array('name' => $genre->name, 'type' => $key, 'id' => $slug, 'parent' => $key, 'minus' => $minus);
                 }
-            } else if ($key == 'genreand') {
+            } else if ($key == 'platform') {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
-                    $genre = $ma->get_genre_by_slug($slug, true);
-                    $this->cs->search_filters['genre'][$slug]['key'] = $genre->id;
-                    $tags[] = array('name' => $genre->name, 'type' => $key, 'id' => $slug, 'parent' => $key, 'minus' => $minus);
+                    $platform = $ma->get_platform_by_slug($slug, true);
+                    $this->cs->search_filters[$key][$slug]['key'] = $platform->id;
+                    $tags[] = array('name' => $platform->name, 'type' => $key, 'id' => $slug, 'parent' => $key, 'minus' => $minus);
                 }
             } else if (isset($this->cs->facet_data['wokedata']['childs'][$key])) {
                 $active_facet = $this->cs->facet_data['wokedata']['childs'][$key];
@@ -1481,8 +1481,8 @@ class SearchFacets extends AbstractDB {
                     $this->show_slider_facet($rel_data);
                 } else if ($key == 'genre') {
                     $this->show_genre_facet($data, $view_more);
-                } else if ($key == 'genreand') {
-                    $this->show_genreand_facet($data, $view_more);
+                } else if ($key == 'platform') {                    
+                    $this->show_platform_facet($data, $view_more);
                 } else if ($key == 'type') {
                     $this->show_type_facet($data);
                 }
@@ -2935,36 +2935,34 @@ class SearchFacets extends AbstractDB {
         $this->theme_facet_multi($filter_data);
     }
 
-    public function show_genreand_facet($data, $more) {
-
+    public function show_platform_facet($data, $more) {
+        
         // Get genres
         $ma = $this->get_ma();
         $keys = array();
         foreach ($data as $value) {
             $keys[] = $value->id;
         }
-        $genres = $ma->get_genres_by_ids($keys);
+        $platforms = $ma->get_platforms_by_ids($keys);
         $dates = array();
         foreach ($data as $value) {
             $key = $value->id;
-            if (isset($genres[$key])) {
-                $item = $genres[$key];
+            if (isset($platforms[$key])) {
+                $item = $platforms[$key];
                 $dates[$item->slug] = array('title' => $item->name, 'count' => $value->cnt);
             }
         }
         ksort($dates);
-        $filter = 'genreand';
-        $title = 'Genres and';
-        $andor = isset($this->cs->facet_data[$filter]['andor']) ? $this->cs->facet_data[$filter]['andor'] : 0;
-
+        $filter = 'platform';
+        $title = 'Platform';
+       
         $filter_data = array(
             'filter' => $filter,
             'data' => $dates,
             'title' => $title,
             'more' => $more,
             'ftype' => $filter,
-            'minus' => true,
-            'andor' => $andor,
+            'minus' => true,            
         );
         $this->theme_facet_multi($filter_data);
     }

@@ -116,8 +116,13 @@ class CriticFront extends SearchFacets {
                     // $top_movie = $this->cm->get_top_movie($item->id);
                 }
                 $item_theme = '';
-                if ($this->cache_results) {
-                    $item_theme = $this->cache_get_top_movie_critic($item->id, $item->date_add, $top_movie);
+                
+                if ($this->cache_results) {   
+                   // print_r($item->aid);
+                    $author_last_upd = isset($item->author_last_upd) ? $item->author_last_upd : $this->cm->get_author_last_upd($item->aid);                    
+                   // print_r($author_last_upd);
+                   // exit;
+                    $item_theme = $this->cache_get_top_movie_critic($item->id, $item->date_add, $top_movie, $author_last_upd);
                 } else {
                     $item_theme = $this->get_top_movie_critic($item->id, $item->date_add, $top_movie);
                 }
@@ -234,7 +239,7 @@ class CriticFront extends SearchFacets {
             $author_show_type = ' AND a.show_type!=1';
         }
 
-        $sql = sprintf("SELECT p.id, p.date_add, p.top_movie, a.name AS author_name" . $and_select . " FROM {$this->db['posts']} p"
+        $sql = sprintf("SELECT p.id, p.date_add, p.top_movie, a.name AS author_name, a.last_upd AS author_last_upd, a.date_add AS author_date_add" . $and_select . " FROM {$this->db['posts']} p"
                 . " INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
                 . " INNER JOIN {$this->db['authors']} a ON a.id = am.aid" . $movie_inner . $tag_inner . $vote_inner
                 . " WHERE p.top_movie > 0 AND p.status=1" . $mtype_and . $and_author . $author_show_type . $movie_and . $tag_and . $min_rating_and . $meta_type_and . $vote_and . $vote_type_and . " ORDER BY" . $custom_order . " p.date DESC LIMIT %d, %d", (int) $start, (int) $limit);
@@ -372,12 +377,13 @@ class CriticFront extends SearchFacets {
         return $link;
     }
 
-    public function cache_get_top_movie_critic($critic_id, $date_add, $movie_id = 0) {
+    public function cache_get_top_movie_critic($critic_id, $date_add, $movie_id = 0, $author_upd = 0) {
         $arg = array();
         $arg['critic_id'] = $critic_id;
         $arg['date_add'] = $date_add;
         $arg['movie_id'] = $movie_id;
-        $filename = "c-$critic_id-$date_add-$movie_id";
+        $filename = "c-$critic_id-$date_add-$movie_id-$author_upd";
+
         $str = ThemeCache::cache('get_top_movie_critic_string', false, $filename, 'critics', $this, $arg);
         return unserialize($str);
     }
@@ -488,12 +494,12 @@ class CriticFront extends SearchFacets {
         return $ret;
     }
 
-    public function cache_single_critic_content($critic_id, $movie_id = 0, $date_add = 0) {
+    public function cache_single_critic_content($critic_id, $movie_id = 0, $date_add = 0, $author_upd = 0) {
         $arg = array();
         $arg['critic_id'] = $critic_id;
         $arg['date_add'] = $date_add;
         $arg['movie_id'] = $movie_id;
-        $filename = "p-$critic_id-$date_add-$movie_id";
+        $filename = "p-$critic_id-$date_add-$movie_id-$author_upd";
         if ($this->cache_results) {
             $str = ThemeCache::cache('get_single_critic_content_arg', false, $filename, 'critic_posts', $this, $arg);
         } else {
@@ -2062,6 +2068,7 @@ class CriticFront extends SearchFacets {
 
         static $last_posts_id = '';
         static $last_movies_id = '';
+        static $last_author_id = '';
 
         $content = '';
 
@@ -2099,20 +2106,25 @@ class CriticFront extends SearchFacets {
                 $last_posts_id = $this->cm->get_posts_last_update();
             }
 
+            if (!$last_author_id) {
+                $last_author_id = $this->cm->get_author_last_update();
+            }
+
+
             $arg = array(
                 'movie_id' => $movie_id
             );
 
             if ($type == 'review_scroll') {
                 if ($this->cache_results) {
-                    $filename = "scroll-rev-$last_posts_id-$movie_id";
+                    $filename = "scroll-rev-$last_posts_id-$movie_id-$last_author_id";
                     $content = ThemeCache::cache('get_review_scroll', false, $filename, 'def', $this, $arg);
                 } else {
                     $content = $this->get_review_scroll($arg);
                 }
             } else if ($type == 'stuff_scroll') {
                 if ($this->cache_results) {
-                    $filename = "scroll-stf-$last_posts_id-$movie_id";
+                    $filename = "scroll-stf-$last_posts_id-$movie_id-$last_author_id";
                     $content = ThemeCache::cache('get_stuff_scroll', false, $filename, 'def', $this, $arg);
                 } else {
                     $content = $this->get_stuff_scroll($arg);
@@ -2123,7 +2135,7 @@ class CriticFront extends SearchFacets {
                     $arg['search'] = 1;
                 }
                 if ($this->cache_results) {
-                    $filename = "scroll-aud-$last_posts_id-$vote-$movie_id";
+                    $filename = "scroll-aud-$last_posts_id-$vote-$movie_id-$last_author_id";
                     $content = ThemeCache::cache('get_audience_scroll', false, $filename, 'def', $this, $arg);
                 } else {
                     $content = $this->get_audience_scroll($arg);
@@ -2632,6 +2644,166 @@ class CriticFront extends SearchFacets {
         return $count;
     }
 
+    public function get_movie_data($title = '', $year = 0, $debug = false) {
+        $mid = $this->cs->get_zr_movie_id($title, $year, $debug);
+
+        $data = array();
+        if ($mid) {
+            $ma = $this->get_ma();
+            $post = $ma->get_post($mid);
+
+            if ($post) {
+                $keywords = $this->get_nf_keywords($post, $debug);
+                // Weight logic
+                $weight = $this->get_min_weight($post);
+                $data = array(
+                    'mid' => $mid,
+                    'keywords' => $keywords,
+                    'weight' => $weight
+                );
+            }
+        }
+        return $data;
+    }
+
+    public function get_nf_keywords($post, $debug = false) {
+        /*
+         * stdClass Object
+          (
+          [id] => 72749
+          [movie_id] => 12530246
+          [rwt_id] => 0
+          [tmdb_id] => 715931
+          [title] => Emancipation
+          [post_name] => emancipation
+          [type] => Movie
+          [genre] => Action,Thriller
+          [release] => 2022-12-09
+          [year] => 2022
+          [country] => United States
+          [language] => English
+          [production] => {"co0546168":"Apple TV+","co0719257":"CAA Media Finance","co0035535":"Escape Artists"}
+          [actors] =>
+          [producers] =>
+          [director] =>
+          [cast_director] =>
+          [writer] =>
+          [box_usa] =>
+          [box_world] =>
+          [productionBudget] => 120000000
+          [keywords] => psychological thriller,killed,freedom
+          [description] => A runaway slave forges through the swamps of Louisiana on a tortuous journey to escape plantation owners that nearly killed him.
+          [data] => {"imdb_title":"Emancipation (2022)","image":"https:\/\/m.media-amazon.com\/images\/M\/MV5BN2RiY2RmMjItMDc1My00ZmViLWJkM2YtZjExNDI5MGM2ZWNiXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_.jpg","year":2022,"creator":{"Organization":"546168,719257,35535,","Person":"171651,"}}
+          [contentrating] => R
+          [rating] => 5.4
+          [add_time] => 1670774410
+          [runtime] => 7920
+          [weight] => 0
+          [weight_upd] => 0
+          )
+         */
+
+        $keywords = '';
+        $filter_title = $this->filter_text($post->title);
+
+        if (strstr($filter_title, ' ')) {
+            $title_arr = explode(" ", $filter_title);
+            $filter_title = "=" . implode(" =", $title_arr);
+        } else {
+            $filter_title = "=" . $filter_title;
+        }
+        $title = '"' . $filter_title . '"';
+
+        //$title = $this->filter_text($post->title);
+
+        $keywords = $title;
+
+        $filelds = array('review');
+        // Year
+        $year = (int) $post->year;
+        if ($year) {
+            $filelds[$year] = $year;
+        }
+
+        $ma = $this->get_ma();
+
+        // Search Director
+        $directors = $ma->get_directors($post->id);
+        if ($directors) {
+            $max_directors = 3;
+            foreach ($directors as $director) {
+                $name = $director->name;
+                $i = 0;
+                if ($name) {
+                    if ($i > $max_directors) {
+                        break;
+                    }
+                    $filelds[$name] = $this->filter_text($name);
+                    $i += 1;
+                }
+            }
+        }
+
+
+        // Actors
+        $actors = $ma->get_actors($post->id);
+
+        if ($actors) {
+            $max_actors = 3;
+            foreach ($actors as $actor) {
+                $name = isset($actor->name) ? $actor->name : '';
+                $i = 0;
+                if ($name) {
+                    if ($i > $max_actors) {
+                        break;
+                    }
+                    $filelds[$name] = $this->filter_text($name);
+                    $i += 1;
+                }
+            }
+        }
+
+
+        $production = array();
+        if ($post->production) {
+            $p_obj = json_decode($post->production);
+            if ($p_obj) {
+                $i = 0;
+                $max_prod = 3;
+                foreach ($p_obj as $p) {
+                    if ($i > $max_prod) {
+                        break;
+                    }
+                    $filelds[$p] = '"' . $this->filter_text($p) . '"';
+                    $i += 1;
+                }
+            }
+        }
+
+        if ($filelds) {
+            $keywords .= ' MAYBE (' . implode('|', $filelds) . ')';
+        }
+
+        return $keywords;
+    }
+
+    public function filter_text($text = '') {
+        $text = strip_tags($text);
+        $text = preg_replace('/[^a-zA-Z0-9\']+/', ' ', $text);
+        $text = trim(preg_replace('/  /', ' ', $text));
+        return $text;
+    }
+
+    private function get_min_weight($post) {
+        $min_title_weight = 20;
+        $min_weight = 1000;
+        $title_weight = $post->title_weight;
+        if ($title_weight < $min_title_weight) {
+            $min_weight = 3000;
+        }
+        return $min_weight;
+    }
+
     public function related_newsfilter_movies($movie_id, $debug = false) {
         $ma = $this->get_ma();
         $movie_data = $ma->get_post($movie_id);
@@ -3114,6 +3286,14 @@ class CriticFront extends SearchFacets {
         return $data;
     }
 
+    public function update_author_name($wp_id = 0, $name = '') {
+        if ($wp_id) {
+            $author = $this->cm->get_author_by_wp_uid($wp_id, true);
+            $author->name = $name;
+            $this->cm->update_author($author);
+        }
+    }
+
     /*
      * Wp user tags
      */
@@ -3216,13 +3396,15 @@ class CriticFront extends SearchFacets {
 
     public function cache_theme_filter_item_get($item) {
         $arg = (array) $item;
-        $filename = "f-{$item->id}-{$item->last_upd}";
+        $aid = $item->aid;
+        $author = $this->cm->get_author($aid, true);
+        $filename = "f-{$item->id}-{$item->last_upd}-{$author->last_upd}";
         $str = ThemeCache::cache('theme_filter_item_get', false, $filename, 'filters', $this, $arg);
         return $str;
     }
 
     public function theme_filter_item_get($item) {
-        if (is_array($item)){
+        if (is_array($item)) {
             $item = (object) $item;
         }
 

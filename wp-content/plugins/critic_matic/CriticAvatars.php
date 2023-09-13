@@ -745,6 +745,7 @@ class CriticAvatars extends AbstractDB {
                     $data = array(
                         'avatar' => 1,
                         'avatar_name' => $filename,
+                        'last_upd'=>$this->curr_time(),
                     );
 
                     $id = $this->sync_update_data($data, $author->id, $this->db['authors']);
@@ -851,6 +852,7 @@ class CriticAvatars extends AbstractDB {
             'avatar' => 1,
             'avatar_type' => 1,
             'avatar_name' => $filename,
+            'last_upd'=>$this->curr_time(),
         );
 
         $this->sync_update_data($data, $author_id, $this->db['authors']);
@@ -864,6 +866,7 @@ class CriticAvatars extends AbstractDB {
             'avatar' => 1,
             'avatar_type' => 1,
             'avatar_name' => $filename,
+            'last_upd'=>$this->curr_time(),
         );
 
         $this->sync_update_data($data, $author_id, $this->db['authors']);
@@ -878,6 +881,7 @@ class CriticAvatars extends AbstractDB {
         // Add avatar to db
         $data = array(
             'avatar_type' => $av_type,
+            'last_upd'=>$this->curr_time(),
         );
 
         $this->sync_update_data($data, $author_id, $this->db['authors']);

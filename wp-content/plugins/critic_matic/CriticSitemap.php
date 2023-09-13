@@ -568,7 +568,7 @@ class CriticSitemap extends AbstractDB {
     }
 
     private function get_critics_by_date($from, $to) {
-        $sql = sprintf("SELECT p.id, p.date_add, p.title, a.name AS author_name, a.type AS author_type "
+        $sql = sprintf("SELECT p.id, p.date_add, p.title, a.name AS author_name, a.type AS author_type, a.last_upd AS author_last_upd, a.date_add AS author_date_add "
                 . "FROM {$this->db['posts']} p "
                 . "INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id "
                 . "INNER JOIN {$this->db['authors']} a ON a.id = am.aid "

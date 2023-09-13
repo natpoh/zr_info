@@ -2287,6 +2287,7 @@ class CriticTransit extends AbstractDB {
 
                         $data = array(
                             'options' => $opt_str,
+                            'last_upd'=>$this->curr_time(),
                         );
 
                         $this->sync_update_data($data, $author->id, $this->db['authors'], $this->sync_data);

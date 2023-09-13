@@ -109,6 +109,8 @@ class MoviesAn extends AbstractDBAn {
             'options' => 'options',
             'data_genre' => 'data_movie_genre',
             'meta_genre' => 'meta_movie_genre',
+            'data_platform' => 'data_game_platform',
+            'meta_platform' => 'meta_game_platform',
             'data_country' => 'data_movie_country',
             'meta_country' => 'meta_movie_country',
             'data_provider' => 'data_movie_provider',
@@ -587,7 +589,6 @@ class MoviesAn extends AbstractDBAn {
             } else {
                 return false;
             }
-            
         }
         return false;
     }
@@ -606,6 +607,44 @@ class MoviesAn extends AbstractDBAn {
             );
             $this->sync_delete_multi($data, $this->db['meta_genre'], true, 10);
         }
+    }
+
+    /*
+     * Platform
+     */
+
+    public function get_platform_by_slug($slug, $cache = false) {
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$slug])) {
+                return $dict[$slug];
+            }
+        }
+
+        //Get author id
+        $sql = sprintf("SELECT id, name FROM {$this->db['data_platform']} WHERE slug='%s'", $this->escape($slug));
+        $result = $this->db_fetch_row($sql);
+
+        if ($cache) {
+            $dict[$slug] = $result;
+        }
+        return $result;
+    }
+
+    public function get_platforms_by_ids($ids = array()) {
+        $sql = sprintf("SELECT id, name, slug FROM {$this->db['data_platform']} WHERE id IN(%s)", implode(',', $ids));
+        $result = $this->db_results($sql);
+        $ret = array();
+        if (sizeof($result)) {
+            foreach ($result as $item) {
+                $ret[$item->id] = $item;
+            }
+        }
+        return $ret;
     }
 
     /*
@@ -899,7 +938,6 @@ class MoviesAn extends AbstractDBAn {
             } else {
                 return false;
             }
-            
         }
         return false;
     }
@@ -1416,8 +1454,9 @@ class MoviesAn extends AbstractDBAn {
     /*
      * Franchise
      */
+
     public function get_franchises() {
-        
+
         $sql = "SELECT id, name FROM {$this->db['franchises']}";
         $result = $this->db_results($sql);
         $ret = array();
@@ -1428,7 +1467,7 @@ class MoviesAn extends AbstractDBAn {
         }
         return $ret;
     }
-    
+
     public function get_franchises_by_ids($ids, $cache = true) {
         $ids_str = implode(',', $ids);
         if ($cache) {
@@ -1456,11 +1495,13 @@ class MoviesAn extends AbstractDBAn {
         }
         return $ret;
     }
+
     /*
      * Distributor
      */
+
     public function get_distributors() {
-        
+
         $sql = "SELECT id, name FROM {$this->db['distributors']}";
         $result = $this->db_results($sql);
         $ret = array();
@@ -1471,7 +1512,7 @@ class MoviesAn extends AbstractDBAn {
         }
         return $ret;
     }
-    
+
     public function get_distributors_by_ids($ids, $cache = true) {
         $ids_str = implode(',', $ids);
         if ($cache) {

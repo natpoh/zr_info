@@ -425,7 +425,7 @@ class CriticMatic extends AbstractDB {
         }
         return $this->si;
     }
-    
+
     public function get_uf() {
         // Get user filters
         if (!$this->uf) {
@@ -563,7 +563,7 @@ class CriticMatic extends AbstractDB {
 
     public function get_post_and_author($id) {
         $sql = sprintf("SELECT p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, "
-                . "a.id AS aid, a.name AS author_name, a.type AS author_type, a.options AS author_options "
+                . "a.id AS aid, a.name AS author_name, a.type AS author_type, a.options AS author_options, a.last_upd AS author_last_upd, a.date_add AS author_date_add "
                 . "FROM {$this->db['posts']} p "
                 . "INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id "
                 . "INNER JOIN {$this->db['authors']} a ON a.id = am.aid "
@@ -789,7 +789,7 @@ class CriticMatic extends AbstractDB {
         //Post type filter
         $type_and = '';
         if ($type != -1) {
-            $type_and = sprintf(" AND p.type =%d", (int) $type);
+            $type_and = sprintf(" AND type =%d", (int) $type);
         }
 
         $sql = "SELECT date_add FROM {$this->db['posts']} WHERE id>0" . $type_and . " ORDER by date_add DESC limit 1";
@@ -1372,7 +1372,7 @@ class CriticMatic extends AbstractDB {
 
         $sql = "SELECT m.id, m.fid, m.type, m.state, m.cid, m.rating, "
                 . "p.title AS post_title, p.date AS post_date, "
-                . "a.id AS author_id, a.name AS author_name, a.type AS author_type "
+                . "a.id AS author_id, a.name AS author_name, a.type AS author_type, a.last_upd AS author_last_upd, a.date_add AS author_date_add "
                 . "FROM {$this->db['meta']} m "
                 . "INNER JOIN {$this->db['posts']} p ON m.cid = p.id "
                 . "INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id "
@@ -1648,7 +1648,7 @@ class CriticMatic extends AbstractDB {
             }
         }
         //Get author id
-        $sql = sprintf("SELECT id, name, type, status, options, wp_uid, show_type, avatar, avatar_name, avatar_type FROM {$this->db['authors']} WHERE id=%d", (int) $id);
+        $sql = sprintf("SELECT * FROM {$this->db['authors']} WHERE id=%d", (int) $id);
         $author = $this->db_fetch_row($sql);
 
         if ($cache) {
@@ -1688,7 +1688,7 @@ class CriticMatic extends AbstractDB {
         }
 
         //Get author id
-        $sql = sprintf("SELECT id, name, type, status, options, wp_uid, show_type, avatar, avatar_name, avatar_type  FROM {$this->db['authors']} WHERE name='%s'" . $type_and . $wpuid_and, $this->escape($name));
+        $sql = sprintf("SELECT * FROM {$this->db['authors']} WHERE name='%s'" . $type_and . $wpuid_and, $this->escape($name));
 
         if ($multi) {
             $author = $this->db_results($sql);
@@ -1713,7 +1713,7 @@ class CriticMatic extends AbstractDB {
             }
         }
         //Get author id
-        $sql = sprintf("SELECT id, name, type, status, options, wp_uid, show_type, avatar, avatar_name, avatar_type FROM {$this->db['authors']} WHERE wp_uid=%d", (int) $id);
+        $sql = sprintf("SELECT * FROM {$this->db['authors']} WHERE wp_uid=%d", (int) $id);
         $author = $this->db_fetch_row($sql);
 
         if ($cache) {
@@ -1747,7 +1747,7 @@ class CriticMatic extends AbstractDB {
         return $author;
     }
 
-    public function get_authors_by_ids($ids, $cache=true) {
+    public function get_authors_by_ids($ids, $cache = true) {
         $key = md5(implode(',', $ids));
         if ($cache) {
             static $dict;
@@ -1759,7 +1759,7 @@ class CriticMatic extends AbstractDB {
                 return $dict[$key];
             }
         }
-        $sql = sprintf("SELECT id, name, type, status, options, wp_uid, wp_uid, show_type, avatar, avatar_name, avatar_type FROM {$this->db['authors']} WHERE id IN(%s)", implode(',', $ids));
+        $sql = sprintf("SELECT * FROM {$this->db['authors']} WHERE id IN(%s)", implode(',', $ids));
         $result = $this->db_results($sql);
         $arr = array();
         if (sizeof($result)) {
@@ -1769,6 +1769,24 @@ class CriticMatic extends AbstractDB {
         }
         $dict[$key] = $arr;
         return $arr;
+    }
+
+    public function get_author_last_upd($key, $cache = true) {
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$key])) {
+                return $dict[$key];
+            }
+        }
+        $sql = sprintf("SELECT last_upd FROM {$this->db['authors']} WHERE id=%d", $key);
+        $result = $this->db_get_var($sql);
+
+        $dict[$key] = $result;
+        return $result;
     }
 
     public function find_authors($name_or_id, $limit = 10, $type = -1, $status = 1) {
@@ -1797,7 +1815,7 @@ class CriticMatic extends AbstractDB {
             $and_limit = sprintf(' LIMIT %d', $limit);
         }
 
-        $sql = "SELECT id, name, type, wp_uid, show_type, avatar, avatar_name, avatar_type FROM {$this->db['authors']} WHERE id>0 " . $and_type . $and_status . $and_id . $and_limit;
+        $sql = "SELECT * FROM {$this->db['authors']} WHERE id>0 " . $and_type . $and_status . $and_id . $and_limit;
         $results = $this->db_results($sql);
         return $results;
     }
@@ -1909,7 +1927,7 @@ class CriticMatic extends AbstractDB {
                 $limit = " LIMIT $start, " . $perpage;
             }
 
-            $select = 'a.id, a.status, a.type, a.name, a.options, a.wp_uid, a.show_type, a.avatar, a.avatar_name, a.avatar_type';
+            $select = 'a.id, a.status, a.type, a.name, a.options, a.wp_uid, a.show_type, a.avatar, a.avatar_name, a.avatar_type, a.last_upd AS author_last_upd, a.date_add AS author_date_add';
         } else {
             $select = " COUNT(a.id)";
         }
@@ -1969,7 +1987,7 @@ class CriticMatic extends AbstractDB {
             $limit = " LIMIT $start, " . $this->perpage;
         }
 
-        $sql = "SELECT a.id, a.status, a.type, a.name, a.options, a.wp_uid, a.show_type FROM {$this->db['authors']} a" . $tags_inner . $status_query . $tags_and . $type_and . $and_orderby . $limit;
+        $sql = "SELECT a.id, a.status, a.type, a.name, a.options, a.wp_uid, a.show_type, a.last_upd AS author_last_upd, a.date_add AS author_date_add FROM {$this->db['authors']} a" . $tags_inner . $status_query . $tags_and . $type_and . $and_orderby . $limit;
 
         $result = $this->db_results($sql);
 
@@ -1987,7 +2005,7 @@ class CriticMatic extends AbstractDB {
         if ($exclude_type != -1) {
             $ex_type_and = sprintf(" AND type != %d", (int) $exclude_type);
         }
-        $sql = "SELECT id, name, type, options, wp_uid, show_type, avatar, avatar_name, avatar_type FROM {$this->db['authors']} WHERE id>0" . $type_and . $ex_type_and . " ORDER BY name ASC";
+        $sql = "SELECT * FROM {$this->db['authors']} WHERE id>0" . $type_and . $ex_type_and . " ORDER BY name ASC";
         $result = $this->db_results($sql);
         return $result;
     }
@@ -2155,12 +2173,15 @@ class CriticMatic extends AbstractDB {
     public function create_author_by_name($name, $author_type = 0, $status = 1, $options = array(), $wp_uid = 0) {
         $opt_str = serialize($options);
         // Create the author
+        $curr_time = $this->curr_time();
         $data = array(
             'status' => $status,
             'type' => $author_type,
             'name' => $name,
             'options' => $opt_str,
             'wp_uid' => $wp_uid,
+            'date_add' => $curr_time,
+            'last_upd' => $curr_time,
         );
 
         $id = $this->sync_insert_data($data, $this->db['authors'], $this->sync_client, $this->sync_data);
@@ -2204,6 +2225,7 @@ class CriticMatic extends AbstractDB {
         $options['secret'] = $form_state['secret'];
 
         $opt_str = serialize($options);
+        $curr_time = $this->curr_time();
 
         if ($form_state['id']) {
             // UPDATE
@@ -2221,6 +2243,7 @@ class CriticMatic extends AbstractDB {
                 'name' => stripslashes($name),
                 'options' => $opt_str,
                 'show_type' => $show_type,
+                'last_upd' => $curr_time,
             );
 
             $this->sync_update_data($data, $id, $this->db['authors'], $this->sync_data);
@@ -2244,6 +2267,8 @@ class CriticMatic extends AbstractDB {
                 'name' => $name,
                 'options' => $opt_str,
                 'show_type' => $show_type,
+                'date_add' => $curr_time,
+                'last_upd' => $curr_time,
             );
 
             //Return id
@@ -2287,7 +2312,8 @@ class CriticMatic extends AbstractDB {
             'status' => $author->status,
             'type' => $author->type,
             'name' => $author->name,
-            'options' => $opt_str
+            'options' => $opt_str,
+            'last_upd' => $this->curr_time(),
         );
 
         $this->sync_update_data($data, $author->id, $this->db['authors'], $this->sync_data);
@@ -2298,6 +2324,7 @@ class CriticMatic extends AbstractDB {
         $old_status = $this->db_get_var($sql);
         if ($old_status != $status) {
             $data = array(
+                'last_upd' => $this->curr_time(),
                 'status' => $status,
             );
             $this->sync_update_data($data, $aid, $this->db['authors'], $this->sync_data);
@@ -2309,6 +2336,7 @@ class CriticMatic extends AbstractDB {
     public function update_author_wp_uid($id = 0, $wp_uid = 0) {
         $data = array(
             'wp_uid' => $wp_uid,
+            'last_upd' => $this->curr_time(),
         );
 
         $this->sync_update_data($data, $id, $this->db['authors'], $this->sync_data);
@@ -2322,11 +2350,26 @@ class CriticMatic extends AbstractDB {
             // To trash
             $id = $form_state['id'];
             $data = array(
-                'status' => $status
+                'status' => $status,
+                'last_upd' => $this->curr_time(),
             );
             $this->sync_update_data($data, $id, $this->db['authors'], $this->sync_data);
             $result = $id;
         }
+        return $result;
+    }
+
+    public function get_author_last_update($type = -1) {
+
+        //Post type filter
+        $type_and = '';
+        if ($type != -1) {
+            $type_and = sprintf(" AND type=%d", (int) $type);
+        }
+
+        $sql = "SELECT last_upd FROM {$this->db['authors']} WHERE id>0" . $type_and . " ORDER by last_upd DESC limit 1";
+
+        $result = $this->db_get_var($sql);
         return $result;
     }
 
@@ -2352,7 +2395,7 @@ class CriticMatic extends AbstractDB {
         return $tags_arr;
     }
 
-    public function get_tag_by_slug($slug, $cache=true) {
+    public function get_tag_by_slug($slug, $cache = true) {
         //Get from cache
         static $dict;
         if (is_null($dict)) {

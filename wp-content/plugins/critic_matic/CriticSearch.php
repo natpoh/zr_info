@@ -106,12 +106,12 @@ class CriticSearch extends AbstractDB {
             'andor' => 'or',
             'weight' => 30,
         ),
-        /* 'genreand' => array(
-          'title' => 'Genres',
-          'tabs' => array('movies', 'critics', 'games', 'international', 'ethnicity'),
-          'minus' => 1,
-          'weight' => 30,
-          ), */
+        'platform' => array(
+            'title' => 'Platform',
+            'tabs' => array('games', 'international', 'ethnicity'),
+            'minus' => 1,
+            'weight' => 30,
+        ),
         'provider' => array(
             'title' => 'Provider',
             'tabs' => array('movies', 'international', 'ethnicity'),
@@ -132,6 +132,7 @@ class CriticSearch extends AbstractDB {
                 'ratingtitle' => array('title' => 'Ratings', 'is_title' => 1, 'group' => 'rating'),
                 'rrwt' => array('title' => 'ZR Rating', 'facet' => 'rating', 'eid' => 'erwt', 'titlesm' => 'ZR Rating', 'name_pre' => 'ZR Rating ', 'filter_pre' => 'ZR Rating', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'sorted' => 1, 'icon' => 'zr', 'hide' => 1, 'minus' => 1, 'zero' => 1,),
                 'rimdb' => array('title' => 'IMDb', 'facet' => 'rating', 'eid' => 'eimdb', 'titlesm' => 'IMDb', 'name_pre' => 'IMDb ', 'filter_pre' => 'IMDb Rating', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'imdb', 'sorted' => 1, 'hide' => 1, 'minus' => 1, 'zero' => 1,),
+                'ropencritic' => array('title' => 'OpenCritic', 'facet' => 'rating', 'eid' => 'eopencritic', 'titlesm' => 'OpenCritic', 'name_pre' => 'OpenCritic ', 'filter_pre' => 'OpenCritic Rating', 'max_count' => 110, 'multipler' => 1, 'group' => 'rating', 'icon' => 'opencritic', 'sorted' => 1, 'tabs' => array('games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
                 'rmc' => array('title' => 'Metacritic MetaScore', 'facet' => 'rating', 'eid' => 'emc', 'titlesm' => 'MetaScore', 'name_pre' => 'MetaScore ', 'filter_pre' => 'MetaScore', 'max_count' => 110, 'multipler' => 1, 'group' => 'rating', 'icon' => 'mtcr', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
                 'rmu' => array('title' => 'Metacritic UserScore', 'facet' => 'rating', 'eid' => 'emu', 'titlesm' => 'UserScore', 'name_pre' => 'UserScore ', 'filter_pre' => 'UserScore', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'mtcr', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
                 'ranl' => array('title' => 'MyAnimeList', 'facet' => 'rating', 'eid' => 'eanl', 'titlesm' => 'MyAnimeList', 'name_pre' => 'MyAnLi ', 'filter_pre' => 'MyAnLi', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'mal', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
@@ -303,6 +304,7 @@ class CriticSearch extends AbstractDB {
                 'poptitle' => array('title' => 'Most Talked About', 'is_title' => 1, 'group' => 'pop', 'no_data' => 1,),
                 'crwt' => array('title' => 'Popularity Total', 'eid' => 'erwt', 'titlesm' => 'Popularity', 'name_pre' => 'Pop ', 'filter_pre' => 'Popularity', 'group' => 'pop', 'icon' => 'zr', 'sorted' => 1, 'no_data' => 1,),
                 'cimdb' => array('title' => 'IMDb', 'eid' => 'eimdb', 'titlesm' => 'IMDb', 'name_pre' => 'IMDb ', 'filter_pre' => 'IMDb Rating', 'group' => 'pop', 'icon' => 'imdb', 'sorted' => 1, 'no_data' => 1,),
+                'copencritic' => array('title' => 'OpenCritic', 'eid' => 'eopencritic', 'titlesm' => 'OpenCritic', 'name_pre' => 'OpenCritic ', 'filter_pre' => 'OpenCritic Rating', 'group' => 'pop', 'icon' => 'opencritic', 'sorted' => 1, 'tabs' => array('games', 'international', 'ethnicity'), 'no_data' => 1,),
                 'canl' => array('title' => 'MyAnimeList', 'eid' => 'eanl', 'titlesm' => 'MyAnimeList', 'name_pre' => 'MyAnLi ', 'filter_pre' => 'MyAnLi', 'group' => 'pop', 'icon' => 'mal', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'no_data' => 1,),
                 'crt' => array('title' => 'Rotten Tomatoes', 'eid' => 'ert', 'titlesm' => 'RT', 'name_pre' => 'RT ', 'filter_pre' => 'Rotten Tomatoes', 'group' => 'pop', 'icon' => 'rt', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'no_data' => 1,),
                 'crta' => array('title' => 'Rotten Tomatoes Audience', 'eid' => 'erta', 'titlesm' => 'RT Audience', 'name_pre' => 'RTA ', 'filter_pre' => 'Rotten Tomatoes Audience', 'group' => 'pop', 'icon' => 'rt', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'no_data' => 1,),
@@ -2766,11 +2768,11 @@ class CriticSearch extends AbstractDB {
                 $filters_and = $this->get_filters_query($filters, 'genre');
                 $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
                         . " GROUP BY genre ORDER BY cnt DESC LIMIT 0,$limit";
-            } else if ($facet == 'genreand') {
+            } else if ($facet == 'platform') {
                 $limit = $expand == $facet ? $this->facet_max_limit : $this->facet_limit;
-                $filters_and = $this->get_filters_query($filters, array());
+                $filters_and = $this->get_filters_query($filters, $facet);
                 $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
-                        . " GROUP BY genre ORDER BY cnt DESC LIMIT 0,$limit";
+                        . " GROUP BY {$facet} ORDER BY cnt DESC LIMIT 0,$limit";
             } else if ($facet == 'mkw') {
                 $limit = $expand == 'mkw' ? $this->facet_max_limit : $this->facet_limit;
                 $filters_and = $this->get_filters_query($filters, array('mkw'), 'movies', $facet);
@@ -3250,13 +3252,21 @@ class CriticSearch extends AbstractDB {
                             $this->search_filters[$key][$slug] = array('key' => $slug, 'title' => $title);
                         }
                     }
-                } else if ($key == 'genre' || $key == 'genreand') {
+                } else if ($key == 'genre') {
                     // Genre
                     $ma = $this->get_ma();
                     $value = is_array($value) ? $value : array($value);
                     foreach ($value as $slug) {
                         $genre = $ma->get_genre_by_slug($slug, true);
                         $this->search_filters['genre'][$slug] = array('key' => $genre->id, 'title' => $genre->name);
+                    }
+                } else if ($key == 'platform') {
+                    // Platform
+                    $ma = $this->get_ma();
+                    $value = is_array($value) ? $value : array($value);
+                    foreach ($value as $slug) {
+                        $genre = $ma->get_platform_by_slug($slug, true);
+                        $this->search_filters[$key][$slug] = array('key' => $genre->id, 'title' => $genre->name);
                     }
                 } else if ($key == 'provider') {
                     // Provider
@@ -3382,10 +3392,9 @@ class CriticSearch extends AbstractDB {
                         } else {
                             $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
                         }
-                    } else if ($key == 'genreand') {
-                        // Genre and        
-                        //$key, $value, $multi = false, $not = false, $any = true, $not_all = true, $not_and = true, $split_all = false
-                        $filters_and .= $this->filter_multi_value('genre', $value, true, $minus, false, false, true, true);
+                    } else if ($key == 'platform') {
+                        // Platform                        
+                        $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
                     } else if ($key == 'type') {
                         // Type
                         $filters_and .= $this->filter_multi_value('type', $value);
@@ -4141,7 +4150,7 @@ class CriticSearch extends AbstractDB {
     }
 
     public function get_last_critics($a_type = -1, $limit = 10, $movie_id = 0, $start = 0, $tags = array(), $meta_type = array(), $min_rating = 0, $vote = 0, $min_au = 0, $max_au = 0, $vote_type = 0) {
-
+ 
         $filters_and = '';
 
         if ($a_type != -1) {
@@ -4214,10 +4223,10 @@ class CriticSearch extends AbstractDB {
             $filters_and .= ' AND author_show_type!=1';
         }
 
-        $sql = sprintf("SELECT id, date_add, top_movie, author_name, aurating" . $and_select . " FROM critic WHERE status=1 AND top_movie>0" . $filters_and . $order . " LIMIT %d,%d", $start, $limit);
+        $sql = sprintf("SELECT id, date_add, top_movie, aid, author_name, aurating" . $and_select . " FROM critic WHERE status=1 AND top_movie>0" . $filters_and . $order . " LIMIT %d,%d", $start, $limit);
         $results = $this->sdb_results($sql);
-        // $meta = $this->sdb_results("SHOW META");
-        //print_r($results);
+        /*$meta = $this->sdb_results("SHOW META");
+        print_r(array($results,$meta));*/
         //exit;
         return $results;
     }
@@ -4932,6 +4941,34 @@ class CriticSearch extends AbstractDB {
         }
         if ($cache) {
             $dict[$key] = $ret;
+        }
+        return $ret;
+    }
+
+    public function get_zr_movie_id($title = '', $year = '', $debug = false) {
+        $ret = 0;
+
+        $title = str_replace("'", "\'", $title);
+        $search_query = sprintf("'@title \"%s\" @year %d'", $title, $year);
+
+        $sql = sprintf("SELECT id, title FROM movie_an "
+                . "WHERE id>0 AND MATCH(:match) LIMIT 1");
+
+        if ($debug){
+            print_r(array($search_query, $sql));
+        }
+        
+        $this->connect();
+        $stmt = $this->sps->prepare($sql);
+        $stmt->bindValue(':match', $search_query, PDO::PARAM_STR);
+        $stmt->execute();
+        $data = $stmt->fetchAll(PDO::FETCH_OBJ);
+        if ($debug){
+            print_r($data);
+        }
+
+        if (isset($data[0]->id)) {
+            $ret = $data[0]->id;
         }
         return $ret;
     }
