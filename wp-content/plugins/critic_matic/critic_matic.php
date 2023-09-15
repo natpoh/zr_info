@@ -1495,6 +1495,21 @@ function critic_matic_plugin_activation() {
      */
     $sql = "ALTER TABLE `data_woke` ADD `worthit` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
+    
+    /*
+     * Simpson
+     */
+    $sql = "ALTER TABLE `data_woke` ADD `simpson_all` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
+    $sql = "ALTER TABLE `data_woke` ADD `simpson_star` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
+    $sql = "ALTER TABLE `data_woke` ADD `simpson_main` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
+    $sql = "ALTER TABLE `data_woke` ADD `simpson_extra` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
 
     /* mediaversity
      * 0 - none

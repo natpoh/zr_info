@@ -19,6 +19,7 @@ class CriticMatic extends AbstractDB {
     private $cp;
     private $cs;
     private $ma;
+    private $ms;
     private $mw;
     private $ts;
     private $uc;
@@ -331,6 +332,18 @@ class CriticMatic extends AbstractDB {
             $this->mw = new MoviesWeight($this);
         }
         return $this->mw;
+    }
+    
+        public function get_ms() {
+        // Get MoviesSimpson
+        if (!$this->ms) {
+            if (!class_exists('MoviesSimpson')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'MoviesSimpson.php' );
+            }
+
+            $this->ms = new MoviesSimpson($this);
+        }
+        return $this->ms;
     }
 
     public function get_cp() {
@@ -3820,14 +3833,16 @@ class CriticMatic extends AbstractDB {
         if (file_exists($ts_dir)) {
             unlink($ts_dir);
         }
+        
+        $data = array(
+            'cmd' => 'critic_delta',
+        );
 
-        try {
-            //SyncHost
-            !class_exists('SyncHost') ? include ABSPATH . "analysis/include/SyncHost.php" : '';
-            SyncHost::critic_delta_cron();
-        } catch (Exception $ex) {
-            
+        if (!defined('SYNC_HOST')) {
+            return false;
         }
+        $host = SYNC_HOST;
+        return $this->post($data, $host);       
     }
 
     public function get_post_view_type($url = '') {
@@ -4357,6 +4372,10 @@ class CriticMatic extends AbstractDB {
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 
         $result = curl_exec($ch);
 
