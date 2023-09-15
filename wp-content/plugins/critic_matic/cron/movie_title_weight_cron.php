@@ -1,7 +1,16 @@
 <?php
+/*
+ * /wp-content/plugins/critic_matic/cron/movie_title_weight_cron.php?p=8ggD_23sdf_DSF&debug=1
+ */
 
-require_once($_SERVER['DOCUMENT_ROOT'] . '/wp-config.php');
-nocache_headers();
+if (!defined('ABSPATH')) {
+    define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
+}
+
+if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
+    define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
+    require_once( CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php' );
+}
 
 if (!class_exists('CriticMatic')) {
     return;
@@ -34,7 +43,7 @@ if ($_GET['c']) {
 $load = CPULOAD::check_load();
 if ($load['loaded']) {
     if ($debug) {
-        p_r($load);
+        print_r($load);
     }
     exit();
 }

@@ -19,14 +19,14 @@ class MoviesWeight extends AbstractDB {
         }
 
         if ($debug) {
-            p_r(array('last_id', $last_id));
+            print_r(array('last_id', $last_id));
         }
 
         // 1. Get posts
         $sql = sprintf("SELECT id, title FROM {$this->db['movie_imdb']} WHERE id>%d limit %d", $last_id, $count);
         $results = $this->db_results($sql);
         if ($debug) {
-            p_r($results);
+            print_r($results);
         }
 
         if ($results) {
@@ -56,7 +56,7 @@ class MoviesWeight extends AbstractDB {
                 }
                 $total_weight = (int) round($total_weight, 0);
                 if ($debug) {
-                    p_r(array($title, $words, $weights, $total_weight, $multipler));
+                    print_r(array($title, $words, $weights, $total_weight, $multipler));
                 }
                 // Update weight
                 $data = array(
@@ -64,7 +64,7 @@ class MoviesWeight extends AbstractDB {
                     'title_weight_upd' => $curr_time,
                 );
                 if ($debug) {
-                    p_r($data);
+                    print_r($data);
                 }
                 $this->sync_update_data($data, $item->id, $this->db['movie_imdb'], true, 10);
             }
