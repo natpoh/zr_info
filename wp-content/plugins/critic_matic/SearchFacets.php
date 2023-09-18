@@ -119,20 +119,11 @@ class SearchFacets extends AbstractDB {
             $filter = $this->cs->getSearchFilter($key);
             $clear_key = $filter->filter;
 
-            if (isset($this->cs->facet_data['ratings']['childs'][$clear_key])) {
-                // Rating
-                $this->filters[$key] = $this->validate_rating_value($key);
-            } else if (isset($this->cs->facet_data['wokedata']['childs'][$clear_key])) {
-                if ($key == 'auvote') {
-                    continue;
-                }
-                $active_facet = $this->cs->facet_data['wokedata']['childs'][$clear_key];
-                if (isset($active_facet['facet']) && $active_facet['facet'] == 'select') {
-                    continue;
-                }
-                $this->filters[$key] = $this->validate_rating_value($key);
-            } else if (isset($this->cs->facet_data['findata']['childs'][$clear_key])) {
-                // budget
+            // Get current facet                
+            $curr_facet = isset($this->cs->facets_data[$clear_key]) ? $this->cs->facets_data[$clear_key] : array();
+
+            if (isset($curr_facet['facet']) && $curr_facet['facet'] == 'rating') {
+                // All rating facets
                 $this->filters[$key] = $this->validate_rating_value($key);
             }
         }
@@ -360,7 +351,7 @@ class SearchFacets extends AbstractDB {
             }
             $ret = implode('-', $value);
         } else if ($value[0] == 'use' || $value[0] == 'minus') {
-            // DEPRECATED
+            // UNUSED
             $ret = $value[0];
         }
         return $ret;
@@ -599,12 +590,47 @@ class SearchFacets extends AbstractDB {
             $key = $filter->filter;
             $minus = $filter->minus;
 
+            // Get current facet                
+            $curr_facet = isset($this->cs->facets_data[$key]) ? $this->cs->facets_data[$key] : array();
+
             // Show valid fiter
             $ma = $this->get_ma();
             /*
              * All
              */
-            if ($key == 'type') {
+            if (isset($curr_facet['facet']) && $curr_facet['facet'] == 'rating') {
+                // All ratings
+                $name = $value;
+                $active_facet = $curr_facet;
+                $multipler = isset($active_facet['multipler']) ? $active_facet['multipler'] : 0;
+                $max_count = isset($active_facet['max_count']) ? $active_facet['max_count'] : 0;
+                $shift = isset($active_facet['shift']) ? $active_facet['shift'] : 0;
+                if ($name && strstr($name, '-')) {
+                    $name_arr = explode('-', $value);
+                    $name_from = (int) $name_arr[0];
+                    $name_to = (int) $name_arr[1];
+
+                    if ($multipler) {
+                        $name_from = $name_from / $multipler;
+                        $name_to = $name_to / $multipler;
+                    }
+                    if ($shift) {
+                        $name_from = $name_from + $shift;
+                        $name_to = $name_to + $shift;
+                    }
+
+                    $name = $name_from . '-' . $name_to;
+                }
+                $name = $this->get_rating_tag_name($name, $max_count, $multipler);
+                $slug = $value;
+                $name_pre = $active_facet['name_pre'];
+                $filter_pre = $active_facet['filter_pre'];
+
+                if ($name == $value) {
+                    $name = isset($this->cs->search_filters[$key][$slug]['title']) ? $this->cs->search_filters[$key][$slug]['title'] : $slug;
+                }
+                $tags[] = array('name' => $name, 'type' => $key, 'type_title' => $filter_pre, 'name_pre' => $name_pre, 'id' => $slug, 'parent' => 'ratings', 'minus' => $minus);
+            } else if ($key == 'type') {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
                     $name = isset($this->cs->search_filters['type'][$slug]['title']) ? $this->cs->search_filters['type'][$slug]['title'] : $slug;
@@ -637,46 +663,18 @@ class SearchFacets extends AbstractDB {
                 }
             } else if (isset($this->cs->facet_data['wokedata']['childs'][$key])) {
                 $active_facet = $this->cs->facet_data['wokedata']['childs'][$key];
-                $name = $value;
+                $slug = $value;
+
                 $multipler = isset($active_facet['multipler']) ? $active_facet['multipler'] : 0;
                 $max_count = isset($active_facet['max_count']) ? $active_facet['max_count'] : 0;
                 $shift = isset($active_facet['shift']) ? $active_facet['shift'] : 0;
 
-                if ($name && strstr($name, '-')) {
-                    $name_arr = explode('-', $value);
-                    $name_from = (int) $name_arr[0];
-                    $name_to = (int) $name_arr[1];
-
-                    if ($multipler) {
-                        $name_from = $name_from / $multipler;
-                        $name_to = $name_to / $multipler;
-                    }
-                    if ($shift) {
-                        $name_from = $name_from + $shift;
-                        $name_to = $name_to + $shift;
-                    }
-
-                    $name = $name_from . '-' . $name_to;
-                }
-                $slug = $value;
                 $name_pre = $active_facet['name_pre'];
                 $filter_pre = $active_facet['filter_pre'];
 
-                $name = $this->get_rating_tag_name($name, $max_count, $multipler);
+                $name = isset($this->cs->search_filters[$key][$slug]['title']) ? $this->cs->search_filters[$key][$slug]['title'] : $slug;
 
-                if ($key == 'auvote') {                    
-                    $value = is_array($value) ? $value : array($value);
-                    foreach ($value as $slug) {                        
-                        $name = isset($this->cs->search_filters['auvote'][$slug]['title']) ? $this->cs->search_filters['auvote'][$slug]['title'] : $slug;
-                        $tags[] = array('name' => $name, 'type' => $key, 'type_title' => $filter_pre, 'name_pre' => $name_pre, 'id' => $slug, 'parent' => 'wokedata', 'minus' => $minus);
-                    }
-                } else {
-
-                    if (isset($active_facet['facet']) && $active_facet['facet'] == 'select') {
-                        $name = isset($this->cs->search_filters[$key][$slug]['title']) ? $this->cs->search_filters[$key][$slug]['title'] : $slug;
-                    }
-                    $tags[] = array('name' => $name, 'type' => $key, 'type_title' => $filter_pre, 'name_pre' => $name_pre, 'id' => $slug, 'parent' => 'wokedata', 'minus' => $minus);
-                }
+                $tags[] = array('name' => $name, 'type' => $key, 'type_title' => $filter_pre, 'name_pre' => $name_pre, 'id' => $slug, 'parent' => 'wokedata', 'minus' => $minus);
             }
             /*
              * Movies
@@ -695,16 +693,20 @@ class SearchFacets extends AbstractDB {
                 }
             } else if (isset($this->cs->facet_data['actorsdata']['childs'][$key])) {
                 $value = is_array($value) ? $value : array($value);
+                $active_facet = $this->cs->facet_data['actorsdata']['childs'][$key];
+                $type_title = isset($active_facet) ? $active_facet['title'] : '';
+                $name_pre = isset($active_facet) ? $active_facet['name_pre'] : '';
                 if ($key == 'actor' || $key == 'actorstar' || $key == 'actormain' || $key == 'sphoto') {
-                    $type_title = isset($this->cs->facet_data['actorsdata']['childs'][$key]) ? $this->cs->facet_data['actorsdata']['childs'][$key]['title'] : '';
-                    $name_pre = isset($this->cs->facet_data['actorsdata']['childs'][$key]) ? $this->cs->facet_data['actorsdata']['childs'][$key]['name_pre'] : '';
+                    foreach ($value as $slug) {
+                        $name = isset($this->cs->search_filters[$key][$slug]['title']) ? $this->cs->search_filters[$key][$slug]['title'] : $slug;
+                        $tags[] = array('name' => $name, 'type' => $key, 'id' => $slug, 'type_title' => $type_title, 'name_pre' => $name_pre, 'parent' => 'actorsdata', 'minus' => $minus);
+                    }
+                } else if ($key == 'simall' || $key == 'simstar' || $key == 'simmain') {
                     foreach ($value as $slug) {
                         $name = isset($this->cs->search_filters[$key][$slug]['title']) ? $this->cs->search_filters[$key][$slug]['title'] : $slug;
                         $tags[] = array('name' => $name, 'type' => $key, 'id' => $slug, 'type_title' => $type_title, 'name_pre' => $name_pre, 'parent' => 'actorsdata', 'minus' => $minus);
                     }
                 } else if ($key == 'countryall' || $key == 'countrystar' || $key == 'countrymain') {
-                    $type_title = isset($this->cs->facet_data['actorsdata']['childs'][$key]) ? $this->cs->facet_data['actorsdata']['childs'][$key]['title'] : '';
-                    $name_pre = isset($this->cs->facet_data['actorsdata']['childs'][$key]) ? $this->cs->facet_data['actorsdata']['childs'][$key]['name_pre'] : '';
                     foreach ($value as $slug) {
                         $name = isset($this->cs->search_filters[$key][$slug]['title']) ? $this->cs->search_filters[$key][$slug]['title'] : $slug;
                         $tags[] = array('name' => $name, 'type' => $key, 'id' => $slug, 'type_title' => $type_title, 'name_pre' => $name_pre, 'parent' => 'actorsdata', 'minus' => $minus);
@@ -714,8 +716,7 @@ class SearchFacets extends AbstractDB {
                     // Gender
                     foreach ($value as $slug) {
                         $name = isset($this->cs->search_filters['race'][$slug]['title']) ? $this->cs->search_filters['race'][$slug]['title'] : $slug;
-                        $name_pre = isset($this->cs->facet_data['actorsdata']['childs'][$key]) ? $this->cs->facet_data['actorsdata']['childs'][$key]['name_pre'] : '';
-                        $type_title = isset($this->cs->facet_data['actorsdata']['childs'][$key]) ? $this->cs->facet_data['actorsdata']['childs'][$key]['title'] : ucfirst($key);
+                        $type_title = isset($active_facet) ? $active_facet['title'] : ucfirst($key);
                         $tags[] = array('name' => $name, 'type' => $key, 'id' => $slug, 'parent' => 'actorsdata', 'type_title' => $type_title, 'minus' => $minus, 'name_pre' => $name_pre);
                     }
                 }
@@ -745,34 +746,6 @@ class SearchFacets extends AbstractDB {
                     $this->cs->search_filters['country'][$slug]['key'] = $genre->id;
                     $tags[] = array('name' => $country->name, 'type' => $key, 'id' => $slug, 'parent' => $key, 'minus' => $minus);
                 }
-            } else if (isset($this->cs->facet_data['ratings']['childs'][$key])) {
-                $name = $value;
-                $active_facet = $this->cs->facet_data['ratings']['childs'][$key];
-                $multipler = isset($active_facet['multipler']) ? $active_facet['multipler'] : 0;
-                $max_count = isset($active_facet['max_count']) ? $active_facet['max_count'] : 0;
-                $shift = isset($active_facet['shift']) ? $active_facet['shift'] : 0;
-                if ($name && strstr($name, '-')) {
-                    $name_arr = explode('-', $value);
-                    $name_from = (int) $name_arr[0];
-                    $name_to = (int) $name_arr[1];
-
-                    if ($multipler) {
-                        $name_from = $name_from / $multipler;
-                        $name_to = $name_to / $multipler;
-                    }
-                    if ($shift) {
-                        $name_from = $name_from + $shift;
-                        $name_to = $name_to + $shift;
-                    }
-
-                    $name = $name_from . '-' . $name_to;
-                }
-                $name = $this->get_rating_tag_name($name, $max_count, $multipler);
-                $slug = $value;
-                $name_pre = $active_facet['name_pre'];
-                $filter_pre = $active_facet['filter_pre'];
-
-                $tags[] = array('name' => $name, 'type' => $key, 'type_title' => $filter_pre, 'name_pre' => $name_pre, 'id' => $slug, 'parent' => 'ratings', 'minus' => $minus);
             } else if ($key == 'mkw') {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
@@ -1797,7 +1770,7 @@ class SearchFacets extends AbstractDB {
                         </div>
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $first_item ?>">
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $max_item ?>">
-                        <?php //unset($items[count($items) - 1]);                              ?>
+                        <?php //unset($items[count($items) - 1]);                                 ?>
                         <script type="text/javascript">var <?php print $type ?>_arr =<?php print json_encode($items) ?></script>
 
                     </div>  
@@ -2027,7 +2000,7 @@ class SearchFacets extends AbstractDB {
                             </div>
                             <input type="hidden" name="<?php print $type ?>" value="<?php print $first_item ?>">
                             <input type="hidden" name="<?php print $type ?>" value="<?php print $max_item ?>">
-                            <?php //unset($items[count($items) - 1]);                              ?>
+                            <?php //unset($items[count($items) - 1]);                                 ?>
                             <script type="text/javascript">var <?php print $type ?>_arr =<?php print json_encode($items) ?></script>
 
                         <?php endif; ?>
@@ -2228,7 +2201,7 @@ class SearchFacets extends AbstractDB {
                         </div>
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $first_item ?>">
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $max_item ?>">
-                        <?php //unset($items[count($items) - 1]);                              ?>
+                        <?php //unset($items[count($items) - 1]);                                 ?>
                         <script type="text/javascript">var <?php print $type ?>_arr =<?php print json_encode($items) ?></script>
                     </div>  
                 <?php endif; ?>
@@ -2782,7 +2755,7 @@ class SearchFacets extends AbstractDB {
                         </div>
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $first_item ?>">
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $max_item ?>">
-                        <?php //unset($items[count($items) - 1]);                                                                        ?>
+                        <?php //unset($items[count($items) - 1]);                                                                           ?>
                         <script type="text/javascript">var <?php print $type ?>_arr =<?php print json_encode($items) ?></script>
                     </div>  
                 <?php endif ?>
@@ -3144,6 +3117,37 @@ class SearchFacets extends AbstractDB {
                     'minus' => $minus,
                 );
                 $this->theme_facet_multi($filter_data);
+            }
+
+            // Simpson
+            $simpson_data = array();
+            $simpson_filter = $this->cs->facet_data['actorsdata']['race_simpson'][$active_filter];
+            $simpson_facet = $this->cs->facet_data['actorsdata']['childs'][$simpson_filter];
+            if (isset($facets['actors_simpson'])) {
+                $simpson_data = $facets['actors_simpson']['data'];
+            } else {
+                $simpson_data = array();
+            }
+            $parent_cnt = 0;
+
+            if ($simpson_data || $this->cs->is_hide_facet($simpson_filter, $this->filters) || $facet == $simpson_filter) {
+                $slider_data = array(
+                    'cnt' => $parent_cnt,
+                    'minus' => isset($simpson_facet['minus']) ? true : false,
+                    'data' => $simpson_data,
+                    'type' => $simpson_filter,
+                    'ftype' => 'ratings',
+                    'icon' => isset($simpson_facet['icon']) ? '<i class="' . $simpson_facet['icon'] . '"></i>' : '',
+                    'name_pre' => $simpson_facet['name_pre'],
+                    'zero' => isset($simpson_facet['zero']) ? 1 : 0,
+                    'filter_pre' => $simpson_facet['filter_pre'],
+                    'max_count' => isset($simpson_facet['max_count']) ? $simpson_facet['max_count'] : 100,
+                    'multipler' => isset($simpson_facet['multipler']) ? $simpson_facet['multipler'] : 0,
+                    'shift' => isset($simpson_facet['shift']) ? $simpson_facet['shift'] : 0,
+                    'title' => $simpson_facet['title'],
+                );
+
+                $this->show_slider_include_facet($slider_data);
             }
 
 
@@ -3565,30 +3569,30 @@ class SearchFacets extends AbstractDB {
             print ' column';
         }
         ?>" data-filter="<?php print $filter_name ?>"><?php
-                foreach ($tabs as $slug => $item) {
-                    $is_active = '';
-                    $is_default = '';
+            foreach ($tabs as $slug => $item) {
+                $is_active = '';
+                $is_default = '';
 
-                    if ($inactive && in_array($item[$filter_type], $inactive)) {
-                        continue;
-                    }
+                if ($inactive && in_array($item[$filter_type], $inactive)) {
+                    continue;
+                }
 
-                    if ($item[$filter_type] == $active_facet) {
-                        $is_active = ' active';
-                    }
-                    if ($def_tab == $item[$filter_type]) {
-                        $is_default = ' default';
-                        $include = array();
-                        $exclude = array($filter_name);
-                    } else {
-                        $include = array($filter_name => $slug);
-                        $exclude = array();
-                    }
+                if ($item[$filter_type] == $active_facet) {
+                    $is_active = ' active';
+                }
+                if ($def_tab == $item[$filter_type]) {
+                    $is_default = ' default';
+                    $include = array();
+                    $exclude = array($filter_name);
+                } else {
+                    $include = array($filter_name => $slug);
+                    $exclude = array();
+                }
 
-                    $url = $this->get_current_search_url($include, $exclude);
-                    ?><li class="nav-tab<?php print $is_active . $is_default ?>" data-id="<?php print $slug ?>"><a href="<?php print $url ?>"><?php print $item['title'] ?></a></li><?php }
-                ?></ul>
-        <?php
+                $url = $this->get_current_search_url($include, $exclude);
+                ?><li class="nav-tab<?php print $is_active . $is_default ?>" data-id="<?php print $slug ?>"><a href="<?php print $url ?>"><?php print $item['title'] ?></a></li><?php }
+            ?></ul>
+            <?php
         $content = ob_get_contents();
         ob_end_clean();
         return $content;
@@ -4097,10 +4101,10 @@ class SearchFacets extends AbstractDB {
             <?php if ($quick_find) { ?>
                 <div class="facet-quickfind">
                     <input type="search" class="autocomplite<?php
-                    if ($keyword) {
-                        print ' active';
-                    }
-                    ?>" data-type="<?php print $filter ?>" data-count="<?php print $more ?>" value="<?php print $keyword ?>" placeholder="Quick find" ac-type="qf">
+            if ($keyword) {
+                print ' active';
+            }
+                ?>" data-type="<?php print $filter ?>" data-count="<?php print $more ?>" value="<?php print $keyword ?>" placeholder="Quick find" ac-type="qf">
                 </div>          
             <?php } ?>
             <div class="facet-ch<?php
@@ -4108,14 +4112,14 @@ class SearchFacets extends AbstractDB {
                 print ' custom';
             }
             ?>"><?php
-                     if ($collapsed):
-                         $this->theme_block_loading();
-                     else:
-                         if ($tabs) {
-                             print $tabs;
-                         }
-                         $keys = array();
-                         ?>
+                 if ($collapsed):
+                     $this->theme_block_loading();
+                 else:
+                     if ($tabs) {
+                         print $tabs;
+                     }
+                     $keys = array();
+                     ?>
                          <?php if (sizeof($data)): ?>
                              <?php
                              $andor_filter = '';
