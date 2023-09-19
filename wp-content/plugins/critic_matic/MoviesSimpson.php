@@ -45,23 +45,23 @@ class MoviesSimpson extends AbstractDB {
             }
 
             foreach ($results as $movie) {
-               $this->update_movie($movie, $debug) ;
+                $this->update_movie($movie, $debug);
             }
         }
     }
-    
-    public function hook_update_movie($mid=0, $debug=false){
+
+    public function hook_update_movie($mid = 0, $debug = false) {
         $sql = sprintf("SELECT id, title, country, year FROM {$this->db['movie_imdb']} WHERE id=%d", $mid);
         $movie = $this->db_fetch_row($sql);
         if ($debug) {
             print_r($movie);
         }
-        if ($movie){
-            $this->update_movie($movie, $debug) ;
+        if ($movie) {
+            $this->update_movie($movie, $debug);
         }
     }
 
-    private function update_movie($movie, $debug=false) {
+    private function update_movie($movie, $debug = false) {
 
         $title = $movie->title;
         $country = $movie->country;
@@ -69,7 +69,7 @@ class MoviesSimpson extends AbstractDB {
         $mid = $movie->id;
 
         // Get movie actors
-        $sql_actors = sprintf("SELECT a.aid, a.type, m.n_forebears_rank FROM {$this->db['meta_movie_actor']} a"
+        $sql_actors = sprintf("SELECT a.aid, a.type, m.n_forebears_rank, m.gender FROM {$this->db['meta_movie_actor']} a"
                 . " INNER JOIN {$this->db['data_actors_meta']} m ON m.actor_id = a.aid"
                 . " WHERE a.mid=%d AND m.n_forebears_rank>0", $mid);
         $actors = $this->db_results($sql_actors);
@@ -89,36 +89,48 @@ class MoviesSimpson extends AbstractDB {
              */
 
             $races = array();
+            $races_gender = array();
             /*
              * 0 - all
              */
             foreach ($actors as $actor) {
                 $rank = $actor->n_forebears_rank;
+                $gender = $actor->gender;
                 $type = $actor->type;
                 $races[0][$rank] = isset($races[0][$rank]) ? ($races[0][$rank] + 1) : 1;
-
                 $races[$type][$rank] = isset($races[$type][$rank]) ? ($races[$type][$rank] + 1) : 1;
+                if ($gender > 0) {
+                    $rank_g = $rank . '-' . $gender;
+                    $races_gender[0][$rank_g] = isset($races_gender[0][$rank_g]) ? ($races_gender[0][$rank_g] + 1) : 1;
+                    $races_gender[$type][$rank_g] = isset($races_gender[$type][$rank_g]) ? ($races_gender[$type][$rank_g] + 1) : 1;
+                }
             }
             if ($debug) {
-                print_r($races);
+                print_r(array($races,$races_gender));
             }
+
+
             $simpson = array();
-            foreach ($races as $type => $rank) {
-                $race_total = 0;
-                $race_total_sp = 0;
-                foreach ($rank as $race) {
-                    $race_total += $race;
-                    $race_sp = $race * ($race - 1);
-                    $race_total_sp += $race_sp;
+            $race_types = array('race' => $races, 'race_mf' => $races_gender);
+            foreach ($race_types as $race_type => $race_item) {
+                foreach ($race_item as $type => $rank) {
+                    $race_total = 0;
+                    $race_total_sp = 0;
+                    foreach ($rank as $race) {
+                        $race_total += $race;
+                        $race_sp = $race * ($race - 1);
+                        $race_total_sp += $race_sp;
+                    }
+                    $del = $race_total * ($race_total - 1);
+                    if ($del == 0) {
+                        $sm = 0;
+                    } else {
+                        $sm = 1 - ($race_total_sp / $del);
+                    }
+                    $simpson[$race_type][$type] = (int) ($sm * 100);
                 }
-                $del = $race_total * ($race_total - 1);
-                if ($del == 0) {
-                    $sm = 0;
-                } else {
-                    $sm = 1 - ($race_total_sp / $del);
-                }
-                $simpson[$type] = (int) ($sm * 100);
             }
+
             if ($debug) {
                 /*
                   (
@@ -139,10 +151,14 @@ class MoviesSimpson extends AbstractDB {
             //last_update
             $data = array(
                 'last_update' => $this->curr_time(),
-                'simpson_all' => isset($simpson[0]) ? $simpson[0] : 0,
-                'simpson_star' => isset($simpson[1]) ? $simpson[1] : 0,
-                'simpson_main' => isset($simpson[2]) ? $simpson[2] : 0,
-                'simpson_extra' => isset($simpson[3]) ? $simpson[3] : 0,
+                'simpson_all' => isset($simpson['race'][0]) ? $simpson['race'][0] : 0,
+                'simpson_star' => isset($simpson['race'][1]) ? $simpson['race'][1] : 0,
+                'simpson_main' => isset($simpson['race'][2]) ? $simpson['race'][2] : 0,
+                'simpson_extra' => isset($simpson['race'][3]) ? $simpson['race'][3] : 0,
+                'simpson_mf_all' => isset($simpson['race_mf'][0]) ? $simpson['race_mf'][0] : 0,
+                'simpson_mf_star' => isset($simpson['race_mf'][1]) ? $simpson['race_mf'][1] : 0,
+                'simpson_mf_main' => isset($simpson['race_mf'][2]) ? $simpson['race_mf'][2] : 0,
+                'simpson_mf_extra' => isset($simpson['race_mf'][3]) ? $simpson['race_mf'][3] : 0,
             );
 
             if ($debug) {
@@ -156,7 +172,7 @@ class MoviesSimpson extends AbstractDB {
             }
             if ($exist_id) {
                 // Update woke
-               
+
                 $this->sync_update_data($data, $exist_id, $this->db['data_woke'], true, 10);
             } else {
                 // Insert new woke

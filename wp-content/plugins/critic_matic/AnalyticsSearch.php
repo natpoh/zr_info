@@ -457,7 +457,7 @@ class AnalyticsSearch extends CriticSearch {
         } else if ($axis == 'aurating') {
             $select = ", aurating as rating";
             $filters .= ' AND aurating > 0';
-        } else if ($axis == 'actors' || $axis == 'simpson' || $axis == 'mf' || $axis == 'eth' || $axis == 'wjnw' || $axis == 'wjnwj' || $axis == 'wmjnwm' || $axis == 'wmjnwmj') {
+        } else if ($axis == 'actors' || $axis == 'simpson'|| $axis == 'simpsonmf' || $axis == 'mf' || $axis == 'eth' || $axis == 'ethmf'|| $axis == 'wjnw' || $axis == 'wjnwj' || $axis == 'wmjnwm' || $axis == 'wmjnwmj') {
             // Race axis
             // Cast filter
             $prod = false;
