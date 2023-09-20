@@ -33,7 +33,11 @@
     ?>
 </footer><!-- .site-footer -->
 <?php
-wp_footer();
+
+//wp_footer();
+
+print get_zr_footer();
+
 //if (isset($_GET['check']))
 //{
 //    gmi('footer before print');

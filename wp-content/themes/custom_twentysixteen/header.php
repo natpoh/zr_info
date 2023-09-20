@@ -17,7 +17,10 @@
         <?php if (is_singular() && pings_open(get_queried_object())) : ?>
             <link rel="pingback" href="<?php echo esc_url(get_bloginfo('pingback_url')); ?>">
         <?php endif; ?>
-        <?php wp_head(); ?>
+        <?php 
+        // wp_head();
+        print get_short_zr_url('wp_head');
+        ?>
     </head>
 
     <body <?php body_class(); ?>>
@@ -112,6 +115,7 @@
                             <li class="sep"><a href="<?php echo get_author_posts_url($wpUser->ID, $wpUser->user_nicename) ?>" title="Public profile">Profile</a></li>
                             <?php if (user_can($wpUser, 'administrator')){ ?>
                                 <li class="sep"><a href="/wp-admin/profile.php"  title="Account settings">Settings</a></li>
+                                <li class="sep"><a href="/wp-admin/"  title="Dashboard">Dashboard</a></li>
                             <?php } ?>
                             <li><a href="<?php
                                 $logout = wp_logout_url('/');
@@ -121,6 +125,9 @@
                                 ?>" title="Log out">Log out</a></li>
                         <?php else: ?>
                             <li><a class="sep ajaxlogin" href="/login">Log in</a></li>
+                            <li><a class="sep ajaxlogin" href="/login/?action=register">Register</a></li>
+
+
                             <?php /* ?><li><a href="/login?action=register">Register</a></li><?php */ ?>
                         <?php endif; ?>
 

@@ -104,7 +104,7 @@ class AnalyticsFront extends SearchFacets {
         'boxprofit' => array('name' => 'bop', 'title' => 'Box Office revenue profit', 'atitle' => 'Box Office', 'format' => 'usd', 'min' => -1, 'infl' => 1, 'nte' => 'analytics_budget_popup'),
         'budget' => array('name' => 'budget', 'title' => 'Budget', 'atitle' => 'Budget', 'format' => 'usd', 'infl' => 1),
         /* 'dvddom' => array('title' => 'DVD Sales Domestic'), */
-        'release' => array('name' => 'date', 'title' => 'Movie release date', 'atitle' => 'Movies', 'type' => 'datetime', 'format' => 'date', 'min' => -1),
+        'release' => array('name' => 'date', 'title' => 'Release Date', 'atitle' => 'Movies', 'type' => 'datetime', 'format' => 'date', 'min' => -1),
         'actors' => array('name' => 'actors', 'title' => 'Actors count', 'atitle' => 'Actors', 'races' => 1),
         'rrwt' => array('name' => 'rrwt', 'title' => 'Rating ZR', 'atitle' => 'Rating ZR'),
         'rating' => array('name' => 'rating', 'title' => 'Rating Family Friendly Score', 'atitle' => 'Rating FFS'),
@@ -126,7 +126,7 @@ class AnalyticsFront extends SearchFacets {
     public $setup = array(
         'cwj' => array('title' => 'Combine White & Jew', 'tab' => 'ethnicity'),
         'noclasters' => array('title' => 'No Clusters', 'tab' => 'ethnicity'),
-        'inflation' => array('title' => 'Use inflation', 'tab' => 'all', 'note' => 'Our inflation adjustments are calculated using the official CPI records published by the U.S. Department of Labor.<br /><br />Source:<br /><a rel="nofollow" target="_blank" href="https://www.officialdata.org/us/inflation/">https://www.officialdata.org/us/inflation/</a>'),
+        'inflation' => array('title' => 'Adjust for inflation', 'tab' => 'all', 'note' => 'Our inflation adjustments are calculated using the official CPI records published by the U.S. Department of Labor.<br /><br />Source:<br /><a rel="nofollow" target="_blank" href="https://www.officialdata.org/us/inflation/">https://www.officialdata.org/us/inflation/</a>'),
     );
     public $array_ethnic_data = array(
         // Race

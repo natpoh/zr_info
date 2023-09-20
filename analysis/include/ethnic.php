@@ -90,7 +90,8 @@ class Ethinc
                 $sql1 = "UPDATE `data_actors_meta` SET  n_ethnic ='".self::intconvert($verdict_result)."' ,`last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $actor_id . "'";
                 Pdo_an::db_query($sql1);
 
-                update_actors_verdict($actor_id);
+                !class_exists('ActorWeight') ? include ABSPATH . "analysis/include/actors_weight.php" : '';
+                ActorWeight:: update_actors_verdict($actor_id );
             }
             else
             {

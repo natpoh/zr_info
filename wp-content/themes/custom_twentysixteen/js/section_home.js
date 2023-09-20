@@ -3058,35 +3058,29 @@ jQuery(document).ready(function () {
         }
     );
 
-    jQuery('.ajaxlogin').click(function () {
-
-        if (window.location.host == 'zgreviews.com') {
-
-            window.location(window.location.protocol +"//zeitgeistreviews.com/login/");
-        return ;
-        }
-
-        jQuery.ajax({
-            type: 'post',
-
-            url: window.location.protocol +"//"+window.location.host+template_path + 'loginajax.php',
-            success: function (html) {
-                add_popup();
-                jQuery('.popup-content').html('<div class="default_popup login_popup">' + html + '</div>');
-                jQuery('input[id="action-popup"]').click();
-
-                let url = site_url+'/wp-content/plugins/login-with-ajax/templates/login-with-ajax.min.js';
-
-                var third_scripts = {login_ajax: url};
-                use_ext_js('', third_scripts);
-
-
-            }
-        });
-
-        return false;
-
-    });
+    // jQuery('.ajaxlogin').click(function () {
+    //
+    //     jQuery.ajax({
+    //         type: 'post',
+    //
+    //         url: window.location.protocol +"//"+window.location.host+template_path + 'loginajax.php',
+    //         success: function (html) {
+    //             add_popup();
+    //             jQuery('.popup-content').html('<div class="default_popup login_popup">' + html + '</div>');
+    //             jQuery('input[id="action-popup"]').click();
+    //
+    //             let url = site_url+'/wp-content/plugins/login-with-ajax/templates/login-with-ajax.min.js';
+    //
+    //             var third_scripts = {login_ajax: url};
+    //             use_ext_js('', third_scripts);
+    //
+    //
+    //         }
+    //     });
+    //
+    //     return false;
+    //
+    // });
 
     jQuery('.primary-menu a[href="#add_movie"],' +
         ' .primary-menu a[href="#add_review"], .primary-menu a[href="#add_audience_review"]').click(function () {

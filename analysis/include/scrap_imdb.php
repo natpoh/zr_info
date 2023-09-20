@@ -465,89 +465,10 @@ function check_actors_meta()
     }
 }
 
-function update_actors_verdict($id='',$force='',$sync = 1 )
+function update_actors_verdict($id='',$force=0,$sync = 1 )
 {
-    !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
-    set_time_limit(0);
-
     !class_exists('ActorWeight') ? include ABSPATH . "analysis/include/actors_weight.php" : '';
-
-if ($id)
-{
-  $where ="where actor_id = ".$id." ";
-}
-else
-{
-   $where ="where (n_verdict =0 OR n_verdict_weight =0) limit 100000";
-}
-
-$sql = "select * from data_actors_meta ".$where." ";
-//echo $sql;
-
-    $rows = Pdo_an::db_results_array($sql);
-    ///echo 'count = '.count($rows).'<br>';
-    $array_verdict = array('n_crowdsource','n_ethnic','n_jew','n_kairos','n_bettaface','n_placebirth','n_forebears_rank','n_forebears','n_familysearch','n_surname');
-    $array_exclude = array(9);
-    foreach ($rows as $row)
-    {
-        $sync_data =0;
-
-      // print_r($row);
-        foreach ($array_verdict as $val)
-        {
-            $verdict = $row[$val];
-            if ($verdict  && !in_array($verdict,$array_exclude) )
-            {
-                ///check last verdict
-
-                $q = "SELECT  n_verdict from data_actors_meta where id = ".$row['id'];
-                $rv = Pdo_an::db_results_array($q);
-
-               if ($verdict ==$rv[0]['verdict'] && intconvert($verdict) == $rv[0]['n_verdict'] && !$force)
-               {
-                   ///skip
-
-               }
-               else
-               {
-                   $sql = "update `data_actors_meta` set n_verdict =?  where id = ".$row['id']." ";
-                   Pdo_an::db_results_array($sql,array($verdict));
-                   $sync_data=1;
-
-                }
-
-               /// ACTIONLOG::update_actor_log('verdict');
-                break;
-            }
-
-        }
-
-        ///check grid verdict
-
-
-
-        if ($sync_data || !$sync)
-        {
-            $sync_grid = 0;
-        }
-
-        ActorWeight::update_actor_weight($row['actor_id'],0,$sync_grid);
-
-
-        if ($sync_data && $sync)
-        {
-            !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-            Import::create_commit('', 'update', 'data_actors_meta', array('id' => $row['id']), 'actor_meta',9);
-
-        }
-
-
-    }
-
-
-
-
-
+    ActorWeight:: update_actors_verdict($id,$force,$sync );
 
 }
 
@@ -1774,7 +1695,7 @@ function check_last_actors($aid ='',$debug=1)
     ////check actor kairos imdb
 
     $sql = "SELECT data_actors_race.actor_id , data_actors_race.kairos_verdict  FROM `data_actors_race` LEFT JOIN data_actors_meta ON data_actors_race.actor_id=data_actors_meta.actor_id
-        WHERE data_actors_meta.n_kairos =0 and data_actors_meta.actor_id >0 and  data_actors_race.kairos_verdict !='' limit 300";
+        WHERE data_actors_meta.n_kairos =0 and  data_actors_race.kairos_verdict is not NULL and data_actors_race.kairos_verdict!='' limit 300";
     $result= Pdo_an::db_results_array($sql);
     foreach ($result as $r) {
         $kairos = $r['kairos_verdict'];
@@ -2146,9 +2067,14 @@ function update_all_pg_rating()
 }
 function update_pgrating($imdb_id='')
 {
+    $id='';
+    if (isset($_GET['id']))
+    {
+        $id = intval($_GET['id']);
+    }
     !class_exists('PgRating') ? include ABSPATH . "analysis/include/pg_rating.php" : '';
 
-    PgRatingCalculate::CalculateRating($imdb_id, '', 1);
+    PgRatingCalculate::CalculateRating($imdb_id, $id, 1);
 
 
 }
@@ -3447,6 +3373,11 @@ if (isset($_GET['fix_all_directors_delete'])) {
 
 if (isset($_GET['fix_actors_verdict'])) {
 
+    global $debug;
+    if (isset($_GET['debug']))
+    {
+        $debug = 1;
+    }
 
     fix_actors_verdict($_GET['fix_actors_verdict']);
 

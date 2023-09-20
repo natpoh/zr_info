@@ -337,14 +337,13 @@ private static function update_meta($aid,$verdict)
 
         if ($debug)echo 'update meta: '.$verdict.' =>'.$verdict_n.'<br>';
 
-    if (function_exists('update_actors_verdict'))
-    {
-        update_actors_verdict($aid);
+
+        !class_exists('ActorWeight') ? include ABSPATH . "analysis/include/actors_weight.php" : '';
+        ActorWeight:: update_actors_verdict($aid );
 
         !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
         ACTIONLOG::update_actor_log('n_bettaface','data_actors_meta',$aid);
 
-    }
 
 
 

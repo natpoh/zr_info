@@ -464,7 +464,7 @@ foreach ($total_data as $movie_id => $array_movie_result) {
                         $box = $array_movie_result['box'];
                     }
 
-                    if ($display_xa_axis == 'Movie release date') {
+                    if ($display_xa_axis == 'Release Date') {
                         $array_movie_bell[$name][$r['movie_id']]['x'] = $array_movie_result['movies_date'];
                     }
                     else if ($display_xa_axis == 'Rating') {
@@ -507,7 +507,7 @@ foreach ($total_data as $movie_id => $array_movie_result) {
                 }
 
 
-                if ($display_xa_axis == 'Movie release date') {
+                if ($display_xa_axis == 'Release Date') {
                     $array_movie_bell[$name][$r['movie_id']]['y'] = ($array_movie_result['movies_date']) . '000';
                 }
 
@@ -543,7 +543,7 @@ foreach ($total_data as $movie_id => $array_movie_result) {
         }
 
 
-        if ($display_xa_axis == 'Movie release date') {
+        if ($display_xa_axis == 'Release Date') {
             $box = ($array_movie_result['movies_date']) . '000';
         }
         else if ($display_xa_axis == 'Rating') {
@@ -611,7 +611,7 @@ foreach ($total_data as $movie_id => $array_movie_result) {
         }
 
 
-        if ($display_xa_axis == 'Movie release date') {
+        if ($display_xa_axis == 'Release Date') {
             $box = ($array_movie_result['movies_date']) . '000';
         } else {
 
@@ -1381,7 +1381,7 @@ public static function graph_data($display_select='',$result_data='',$display_xa
 
                     },
 
-                    <?php if ($display_xa_axis == 'Movie release date') { ?>
+                    <?php if ($display_xa_axis == 'Release Date') { ?>
                     type: 'datetime',
 
                     <?php } ?>
@@ -1457,7 +1457,7 @@ public static function graph_data($display_select='',$result_data='',$display_xa
                             <?php if ($display_select == 'bellcurve') {
                                 echo "pointFormat:   '<p>{point.x:.0f}%</p>',";
                             } else if ($display_select == 'plurality_bellcurve') {
-                                if ($display_xa_axis == 'Movie release date') {
+                                if ($display_xa_axis == 'Release Date') {
                                     echo "pointFormat:'<p>%  {point.y:.0f}</p>',";
                                 } else {
                                     echo "pointFormat:'<p>" . $display_xa_axis . "  $  {point.x:.0f}</p>',";
@@ -1593,7 +1593,7 @@ public static function graph_data($display_select='',$result_data='',$display_xa
                         } ?>
                     },
 
-                    <?php if ($display_xa_axis == 'Movie release date') { ?>
+                    <?php if ($display_xa_axis == 'Release Date') { ?>
                     type: 'datetime',
                     <?php } ?>
                     startOnTick: true,

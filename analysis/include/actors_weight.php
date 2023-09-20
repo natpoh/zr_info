@@ -1,4 +1,6 @@
 <?php
+if (!defined('ABSPATH'))
+    define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
 
 class ActorWeight
 {
@@ -175,6 +177,95 @@ private static function get_ctable($result)
 
     return $ctable;
 }
+
+public static function  update_actors_verdict($id='',$force=0,$sync = 1 )
+{
+    global $debug;
+
+    !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
+    set_time_limit(0);
+
+
+
+if ($id)
+{
+  $where ="where actor_id = ".$id." ";
+}
+else
+{
+    $where ="where (n_verdict =0 OR n_verdict_weight =0) limit 100000";
+}
+
+$sql = "select * from data_actors_meta ".$where." ";
+//echo $sql;
+
+$rows = Pdo_an::db_results_array($sql);
+///echo 'count = '.count($rows).'<br>';
+$array_verdict = array('n_crowdsource','n_ethnic','n_jew','n_kairos','n_bettaface','n_placebirth','n_forebears_rank','n_forebears','n_familysearch','n_surname');
+$array_exclude = array(9);
+foreach ($rows as $row)
+{
+    $sync_data =0;
+
+    // print_r($row);
+    foreach ($array_verdict as $val)
+    {
+        $verdict = $row[$val];
+        if ($verdict  && !in_array($verdict,$array_exclude) )
+        {
+            ///check last verdict
+
+            $q = "SELECT  n_verdict from data_actors_meta where id = ".$row['id'];
+            $rv = Pdo_an::db_results_array($q);
+
+            if ($verdict ==$rv[0]['verdict'] && intconvert($verdict) == $rv[0]['n_verdict'] && !$force)
+            {
+                ///skip
+
+            }
+            else
+            {
+                $sql = "update `data_actors_meta` set n_verdict =?  where id = ".$row['id']." ";
+                Pdo_an::db_results_array($sql,array($verdict));
+                $sync_data=1;
+
+            }
+
+            /// ACTIONLOG::update_actor_log('verdict');
+            break;
+        }
+
+    }
+
+    ///check grid verdict
+
+
+
+    if ($sync_data || !$sync)
+    {
+        $sync_grid = 0;
+    }
+
+    self::update_actor_weight($row['actor_id'],$debug,$sync_grid);
+
+
+    if ($sync_data && $sync)
+    {
+        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+        Import::create_commit('', 'update', 'data_actors_meta', array('id' => $row['id']), 'actor_meta',9);
+
+    }
+
+
+}
+
+
+
+
+
+
+}
+
 
 public static function update_actor_weight($actor_id,$debug=0,$sinch = 1,$count = 100, $force=false,$onlydata=0)
 {

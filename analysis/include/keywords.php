@@ -18,7 +18,7 @@ class Movie_Keywords {
         $content ='';
       foreach ($result as $id=>$name)
       {
-          $keylink= WP_SITEURL.'/search/mkw_'.$id;
+          $keylink= '/search/mkw_'.$id;
 
           if (!$notag)
           {$cs='class="keyword"';}

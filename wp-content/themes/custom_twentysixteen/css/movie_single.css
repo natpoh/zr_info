@@ -1686,6 +1686,53 @@ div.sortable {
     {
         min-width: 30%;
     }
+
+
+    .movie_total_rating>.rating_block {
+        padding-bottom: 40px;
+        padding-top: 20px;
+    }
+        .movie_total_rating>.rating_block>div:after {
+            display: flex;
+            position: absolute;
+            bottom: -35px;
+            font-size: 15px;
+            line-height: 16px;
+            min-width: 95px;
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+            height: 30px;
+            color: #2c2c2c;
+        }
+  .theme_dark  .movie_total_rating>.rating_block>div:after {
+        color: #878787;
+    }
+    .movie_total_rating>.rating_block>div.rwt_stars:after{
+
+        content:'Rating';
+    }
+    .movie_total_rating>.rating_block>div.big_business:after{
+
+        content:'Finances';
+    }
+    .movie_total_rating>.rating_block>div.rt_gap:after{
+        bottom: -29px;
+        content:'Audience Sentiment';
+    }
+    .movie_total_rating>.rating_block>div.diversity:after{
+
+        content:'Diversity/Wokeness';
+    }
+    .movie_total_rating>.rating_block>div.family_friendly:after{
+
+        content:'Family Friendly Breackdown';
+    }
+    .movie_total_rating>.rating_block>div.edit:after{
+
+        content:'Crowdsource';
+    }
+
 }
 @media screen and (max-width: 768px) {
 

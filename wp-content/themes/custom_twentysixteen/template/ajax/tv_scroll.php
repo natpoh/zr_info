@@ -92,12 +92,12 @@ class TV_Scroll {
         return $content_result;
     }
 
-    public static function show_scroll($type='TVSeries',$data='') {
+    public static function show_scroll($type='TVSeries',$data='',$custom_data='') {
         $content_result=[];
         $array_movies_dop = [];
         $array_movies = [];
 
-          if ($type== 'compilation') {
+          if ($type== 'compilation' || $custom_data) {
 
               global $cfront;
 
@@ -111,9 +111,20 @@ class TV_Scroll {
                   }                  
               }
 
-              if ($data) $q="SELECT * FROM `meta_compilation_links` WHERE `enable` = 1 and id =".intval($data)." LIMIT 1";
-              $ru=Pdo_an::db_fetch_row($q);
-              $url = $ru->url;
+              if ($custom_data)
+              {
+                  $url =    $custom_data;
+              }
+              else
+              {
+                  if ($data) $q="SELECT * FROM `meta_compilation_links` WHERE `enable` = 1 and id =".intval($data)." LIMIT 1";
+                  $ru=Pdo_an::db_fetch_row($q);
+                  $url = $ru->url;
+
+              }
+
+
+
               $last_req = $_SERVER['REQUEST_URI'];
               $_SERVER['REQUEST_URI'] = $url;
               
@@ -251,9 +262,9 @@ class TV_Scroll {
 
 }
 
-function tv_scroll($type='TVSeries',$data='') {
+function tv_scroll($type='TVSeries',$data='',$custom_data='') {
     global $video_template;
-    $content_result = TV_Scroll::show_scroll($type,$data);
+    $content_result = TV_Scroll::show_scroll($type,$data,$custom_data);
     include(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/video_item_template.php');    
     $content_result['tmpl'] = $video_template;
 
@@ -291,7 +302,10 @@ else {
 //
 //        $cache = wp_custom_cache('tv_scroll', 'fastcache', 3600);
 //    } else {
-        $cache = tv_scroll();
+    $year = date('Y',time());
+    $last_year = $year -1;
+    $custom_data ='/search/sort_crwt-desc/release_'.$last_year.'-'.$year.'/type_tv';
+        $cache = tv_scroll('compilation','',$custom_data);
     //}
 }
 

@@ -38,7 +38,7 @@ class MovieSingle {
                 $q ="SELECT `name` FROM `data_movie_franchises` WHERE `id` =".$fid;
                 $rf =Pdo_an::db_fetch_row($q);
                 $name = $rf->name;
-                $data[]= '<a target="_blank" href="' . WP_SITEURL . '/search/show_franchise/franchise_' .$fid . '">' .$name. '</a>';
+                $data[]= '<a target="_blank" href="/search/show_franchise/franchise_' .$fid . '">' .$name. '</a>';
             }
 
         }
@@ -80,7 +80,7 @@ class MovieSingle {
             }
 
 
-            $data[]= '<a target="_blank" href="' . WP_SITEURL .$l . strtolower($row['id']) . '">' . $row['name'] . '</a>';
+            $data[]= '<a target="_blank" href="' . $l . strtolower($row['id']) . '">' . $row['name'] . '</a>';
 
         }
 
@@ -116,7 +116,7 @@ class MovieSingle {
 
 
                         $actors .= ', <span class="actor_link_block">
-<a target="_blank" href="' . WP_SITEURL . '/search/dirall_' . $aid . '">' . $actor_name . '</a> 
+<a target="_blank" href="/search/dirall_' . $aid . '">' . $actor_name . '</a> 
 <div class="note nte "><div class="btn toggle_show"></div>
                  <div class="nte_show dwn"><div class="nte_in"><div class="nte_cnt"><div class="note_show_content_adata" >' . $pupup_data . '</div></div></div></div>
                  </div>
@@ -245,7 +245,7 @@ if (!function_exists('template_single_movie')) {
             }
 
             if ($name) {
-                $link_before = '<a href="' . WP_SITEURL . '/' . $movie_t . '/' . $name . '/">';
+                $link_before = '<a href="/' . $movie_t . '/' . $name . '/">';
                 $ilin_after = '</a>';
             } else {
                 $link_before = '';
@@ -264,7 +264,7 @@ if (!function_exists('template_single_movie')) {
 
             $date = date('F d', strtotime($_wpmoly_movie_release_date));
             $date_y = date('Y', strtotime($_wpmoly_movie_release_date));
-            $content_release = '<div class="block"><span>Release Date:</span> ' . $date . ', <a href="' . WP_SITEURL . '/search/release_'.$date_y.'-'.$date_y.'">'.$date_y.'</a></div>';
+            $content_release = '<div class="block"><span>Release Date:</span> ' . $date . ', <a href="/search/release_'.$date_y.'-'.$date_y.'">'.$date_y.'</a></div>';
         }
 
 //        $_wpmoly_movie_production_companies = $movie_meta['production_companies'];
@@ -306,7 +306,7 @@ if (!function_exists('template_single_movie')) {
             }
             foreach ($genre_array as $val) {
                 $val = trim($val);
-                $array_genre[] = '<a target="_blank" href="' . WP_SITEURL . '/search/genre_' . strtolower($val) . '">' . $val . '</a>';
+                $array_genre[] = '<a target="_blank" href="/search/genre_' . strtolower($val) . '">' . $val . '</a>';
                 //$array_genre[] = $val;
             }
             $genre_string = implode(', ', $array_genre);
@@ -345,7 +345,7 @@ if (!function_exists('template_single_movie')) {
             $array_wpmoly_movie_country = [];
             foreach ($_wpmoly_movie_country as $val) {
                 if ($val)
-                    $array_wpmoly_movie_country[] = '<a target="_blank" href="' . WP_SITEURL . '/search/country_' . str_replace(' ', '-', strtolower($val)) . '">' . $val . '</a>';
+                    $array_wpmoly_movie_country[] = '<a target="_blank" href="/search/country_' . str_replace(' ', '-', strtolower($val)) . '">' . $val . '</a>';
             }
             $_wpmoly_movie_country = implode(', ', $array_wpmoly_movie_country);
             if (count($array_wpmoly_movie_country) > 1) {

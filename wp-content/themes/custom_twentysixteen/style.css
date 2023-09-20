@@ -2957,7 +2957,7 @@ body.theme_dark .facet .more-popup{
 
 .sfilter-title a,
 .sfilter-content{
-    color: #000;
+
     margin: 1.5rem 0;
     display: -webkit-box;
     -webkit-line-clamp: 3;
@@ -3451,7 +3451,9 @@ i.rt{
 i.imdb{
     background: transparent url("images/imdbicon.svg");
 }
-
+i.opencritic{
+    background: transparent url("images/opencritic.png");
+}
 i.mal{
     background: transparent url("images/mal.svg");
 }
@@ -15220,25 +15222,6 @@ body.theme_dark .note_show_content_3 a {
 
 .theme_dark .rotten_tomatoes_score strong {
     color:white;
-}
-
-
-
-
-
-
-
-
-
-/* making the posters and comment bubbles pop more */
-
-.theme_dark  .a_msg_i {
-    filter: drop-shadow(1px 1px 2px black)!important;
-}
-
-
-.theme_dark  .movie_link img {
-    filter: drop-shadow(2px 2px 2px black)!important;
 }
 
 

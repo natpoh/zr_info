@@ -1963,7 +1963,7 @@ global $pdo;
                             <?php
                             if ($diversity_select == 'diversity' && $display_select == 'ethnicity') {
                                 echo " text: 'Diversity Index'";
-                            } else if ($display_select == 'ethnicity' && $display_xa_axis != 'Movie release date') {
+                            } else if ($display_select == 'ethnicity' && $display_xa_axis != 'Release Date') {
                                 echo "text: '" . $display_xa_axis . "'";
                             } else {
                                 echo "text: 'Total Box Office'";

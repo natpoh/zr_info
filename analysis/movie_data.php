@@ -183,7 +183,7 @@ class MOVIE_DATA
                 $type = 'supporting';
             }
 
-            $filmolink= WP_SITEURL.'/search/actor_'.$id;
+            $filmolink= '/search/actor_'.$id;
 
 
             $dop_string = '<span class="a_data_n_d">' . str_replace('_', ' ', ucfirst($type)) . '</span>';

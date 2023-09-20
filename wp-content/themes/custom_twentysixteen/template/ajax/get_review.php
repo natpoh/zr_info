@@ -56,7 +56,7 @@ if (isset($_GET['id'])) {
                     $top_movie = $get_meta;
                 }
             }            
-            $critic_content = $cfront->cache_single_critic_content($post->id, $top_movie, $post->date_add);
+            $critic_content = $cfront->cache_single_critic_content($post->id, $top_movie, $post->date_add, $post->author_last_upd);
             $link = $cfront->get_critic_url($post);
             
             if (strstr($critic_content, 'short_codes_enabled')) {

@@ -75,6 +75,39 @@ add_action('wp_print_styles', 'custom_styles', 100);
 wp_enqueue_style('users-style', get_template_directory_uri() . '/css/users.css?', array(), $version);
 wp_enqueue_style('fontello', $themepath . '/fontello/css/fontello.css', array(), $version);
 
+
+
+
+function custom_login_logo() {
+
+
+    $logo_url = get_template_directory_uri() . '/images/zrlogo.jpg';
+    ?>
+    <style type="text/css">
+        #login h1 a, .login h1 a {
+            background-image: url('<?php echo $logo_url; ?>');
+            height: 160px;
+            width: 160px;
+            max-height: 160px;
+            background-size: contain;
+            mix-blend-mode: screen;
+        }
+        body.login  {
+            background-color: #1a1a1a;
+         }
+        body.login #backtoblog a, body.login #nav a {
+            text-decoration: none;
+            color: #599ee4;
+            font-size: 16px;
+        }
+        div.language-switcher{
+            display: none;
+        }
+    </style>
+    <?php
+}
+add_action('login_enqueue_scripts', 'custom_login_logo');
+
 function custom_styles() {
     wp_deregister_style('twentysixteen-style');
     $version = '1.2.27';
@@ -89,6 +122,13 @@ add_filter('strip_shortcodes_tagnames', function ($tags_to_remove) {
     $tags_to_remove[] = 'pt_view';
     return $tags_to_remove;
 });
+
+/*
+ * Короткие ссылки
+ */
+
+add_filter('author_link', 'replace_zr_url', 11, 1);
+add_filter('logout_url', 'replace_zr_url', 11, 1);
 
 if (!function_exists('twentysixteen_setup')) :
 
@@ -2147,4 +2187,22 @@ function list_hooked_functions($tag = false) {
     }
     echo '</pre>';
     return;
+}
+
+function replace_zr_url($content) {
+    return preg_replace('/http[^\.]+(zeitgeistreviews\.com|zgreviews\.com|rwt.4aoc\.ru)/', '', $content);
+}
+function get_zr_footer() {
+    return get_short_zr_url('wp_footer');
+}
+
+function get_short_zr_url($function) {
+    ob_start();
+    $function();
+    $content = ob_get_contents();
+    ob_end_clean();
+
+    $content = replace_zr_url($content);
+
+    return $content;
 }

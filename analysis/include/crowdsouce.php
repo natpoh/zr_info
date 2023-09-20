@@ -310,6 +310,9 @@ return $result;
                 `last_update` = ".time()." WHERE `data_actors_meta`.`actor_id` =".$actor;
                 Pdo_an::db_query($sql);
 
+                ///update verdict
+                !class_exists('ActorWeight') ? include ABSPATH . "analysis/include/actors_weight.php" : '';
+                ActorWeight:: update_actors_verdict($actor,0,0 );
 
             }
             ///update gender

@@ -62,3 +62,9 @@ $ms->run_cron($count, $debug, $force);
 
 
 $cm->unregister_cron($cron_name);
+
+// Hook example
+
+//$cm = new CriticMatic();
+//$ms = $cm->get_ms();
+//$ms->hook_update_movie($mid=10637, $debug=true);

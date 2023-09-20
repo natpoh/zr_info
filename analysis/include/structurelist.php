@@ -33,7 +33,7 @@ class STRUCTURELIST{
         $name =$post->post_name;
         if ($name)
         {
-            $url = WP_SITEURL.'/'.$name;
+            $url = '/'.$name;
             $array['url']=$url;
         }
 

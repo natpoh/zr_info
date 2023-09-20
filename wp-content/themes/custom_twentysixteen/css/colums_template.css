@@ -2803,6 +2803,13 @@ body.theme_dark  .rating_block .imdb_rating {
 
 }
 
+.rating_block .exlink#opencritic_rating::before {
+    content: "";
+    background: url("../images/opencritic.png") no-repeat left 0 top 0px  transparent;
+    background-size: cover;
+    box-shadow: none;
+
+}
 
 
 
@@ -4115,12 +4122,14 @@ body.theme_dark .highcharts-legend-title tspan{
     .column_header .dropdown {
         position: absolute;
         display: inline-block;
-        right: -24px;
+        right: -30px;
         top: 0px;
     }
     .column_header h2 {
         position: relative;
         font-size: 21px;
+        width: 100%;
+        max-width: calc(100% - 60px);
     }
 
     .audience_review .column_header::after {

@@ -66,7 +66,7 @@ get_header();
                     }
                 }
 
-                $critic_content = $cfront->cache_single_critic_content($post->id, $top_movie, $post->date_add);
+                $critic_content = $cfront->cache_single_critic_content($post->id, $top_movie, $post->date_add, $post->author_last_upd);
                 // Load short coder js and css
                 if (strstr($critic_content, 'short_codes_enabled')) {
                     if (function_exists('do_shortcode')) {

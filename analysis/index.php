@@ -335,7 +335,7 @@ foreach ($array_type as $i=>$v)
                 <option value="Box Office Domestic">Box Office revenue domestic</option>
                 <option value="Box Office Profit actual">Box Office revenue profit</option>
                 <option value="DVD Sales Domestic">DVD Sales Domestic</option>
-                <option value="Movie release date">Movie release date</option>
+                <option value="Release Date">Release Date</option>
                 <option value="Rating">Rating imdb</option>
             </select>
 <p>
@@ -426,7 +426,7 @@ foreach ($array_type as $i=>$v)
                 <p>Inflation</p>
                 <select autocomplete="off" class="date_range date_range_inflation">
                     <option selected value="0">No inflation</option>
-                    <option value="1">Use inflation</option>
+                    <option value="1">Adjust for inflation</option>
                 </select>
                 <p>Animation</p>
                 <select autocomplete="off" class="date_range date_range_animation">

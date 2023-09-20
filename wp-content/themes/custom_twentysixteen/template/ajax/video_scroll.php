@@ -148,7 +148,7 @@ if (!function_exists('video_scroll')) {
 
                     if ($poster) {
                         $content_result['result'][$rows->id] = array(
-                            'link' => $site_url . $slug . '/' . $post_name,
+                            'link' => '/' . $slug . '/' . $post_name,
                             'title' => $title,
                             'genre' => $rows->genre,
                             'poster_link_small' => $array_tsumb[0],

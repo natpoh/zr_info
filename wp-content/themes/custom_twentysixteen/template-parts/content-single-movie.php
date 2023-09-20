@@ -38,7 +38,7 @@ if (!$site_url)
 <?php
 !class_exists('STRUCTURELIST') ? include ABSPATH . "analysis/include/structurelist.php" : '';
 
-//$movie_list  =STRUCTURELIST::single_movie_to_json($post_id);
+//$movie_list  = single_movie_list($post_id);
 $movie_list = get_cache_single_list($post_id);
 if ($movie_list) {
     echo '<!--json_data-->' . PHP_EOL;

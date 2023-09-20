@@ -816,8 +816,10 @@ class PgRatingCalculate {
 
     public function check_pg_limit($pg, $v, $total, $debug = '', $name = 'PG') {
         $rating_limit = $v;
-        if ($debug)
+        if ($debug && $rating_limit) {
             self::debug_table($name . ' limit ', $pg . ' = ' . $rating_limit);
+        }
+
         if (strstr($rating_limit, '-')) {
             $array_limited = explode('-', $rating_limit);
             if ($total > $array_limited[1]) {
@@ -978,58 +980,58 @@ class PgRatingCalculate {
 
 
 
-        if ($multiple['multiple'])
-        {
-            foreach ($multiple['multiple'] as $m=>$data)
-            {
+        if ($multiple['multiple']) {
+            foreach ($multiple['multiple'] as $m => $data) {
                 $v = $data['text'];
                 if (strstr($v, ',')) {
                     $array_v = explode(',', $v);
-                }
-                else if ($v)
-                {
-                    $array_v[]= $v;
+                } else if ($v) {
+                    $array_v[] = $v;
                 }
 
                 $max_rating = $data['max_rating'];
 
 
                 if ($comment_content) {
-                    [$lgbt_text,$total_count] =  self::compare_words($array_v,$comment_content);
-                    if ($total_count && $lgbt_text)
-                    {
-                        $counts+=$total_count;
+                    [$lgbt_text, $total_count] = self::compare_words($array_v, $comment_content);
+                    if ($total_count && $lgbt_text) {
+                        $counts += $total_count;
 
                         //$lgbt_text_string = implode(',', $lgbt_text);
-                        $total_lgbt = self::check_pg_limit('',$max_rating, $total, 0, $comment);
-                        $lgbt_enable=1;
-                        $lgbt_text_total = array_merge($lgbt_text_total,$lgbt_text);
+                        $total_lgbt = self::check_pg_limit('', $max_rating, $total, 0, $comment);
+                        $lgbt_enable = 1;
+                        $lgbt_text_total = array_merge($lgbt_text_total, $lgbt_text);
 
 
-                        $array_result[$total_lgbt]=[$lgbt_text,$max_rating];
+                        $array_result[$total_lgbt] = [$lgbt_text, $max_rating];
                     }
                 }
 
             }
 
 
-        }
+            ksort($array_result);
+            $keys = array_keys($array_result);
 
-        ksort($array_result);
-        $keys = array_keys($array_result);
+            $str = implode(',', $array_result[$keys[0]][0]);
+            self::check_pg_limit($str, $array_result[$keys[0]][1], $keys[0], 1, $comment);
 
-        $str = implode(',', $array_result[$keys[0]][0]);
-        self::check_pg_limit($str,$array_result[$keys[0]][1], $keys[0], 1, $comment);
-
-        $total_lgbt_result = $keys[0];
+            $total_lgbt_result = $keys[0];
             $lgbt_text_string_total = implode(',', $lgbt_text_total);
-        return array($total_lgbt_result, $lgbt_enable, $lgbt_text_string_total,$counts);
+
+            if (!$total_lgbt_result) $total_lgbt_result = $total;
+
+            return array($total_lgbt_result, $lgbt_enable, $lgbt_text_string_total, $counts);
+
+        }
+        else
+        {
 
 
         $lgbt_text = [];
         $lgbt_enable = 0;
         $total_lgbt = 0;
-
+        $v = $multiple['text'];
         if (strstr($v, ',')) {
             $array_v = explode(',', $v);
         }
@@ -1095,8 +1097,12 @@ class PgRatingCalculate {
         if ($lgbt_text) {
             $lgbt_text_string = implode(',', $lgbt_text);
         }
+
+        if (!$total_lgbt)$total_lgbt =$total;
+
         ///echo 'lgbt result: '.$lgbt_enable.'; '.$lgbt_text_string.' '.$comment.'<br>';
         return array($total_lgbt, $lgbt_enable, $lgbt_text_string);
+        }
     }
 
     public function CalculateRating($imdb_id = '', $id = '', $debug = '', $update = 1)
@@ -1616,6 +1622,7 @@ class PgRatingCalculate {
 
         $v_m = $rating_array['lgbt_warning'];
 
+
         [$total,$lgbt_enable,$lgbt_text_string ,$counts] = self::custom_rating_lgbt($keywords, $v_m, [], $array_family, $debug, $total, 'lgbt_warning','LGB Warning');
 
         if ($update) {
@@ -1908,8 +1915,8 @@ class PgRatingCalculate {
             }
         }
 
-        if ($debug)
-        {
+        if ($debug) { !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+
             TMDB::var_dump_table(['result_summ_rating',$result_summ_rating]);
         }
 
