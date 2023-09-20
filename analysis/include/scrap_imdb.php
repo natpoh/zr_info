@@ -1684,8 +1684,8 @@ function check_last_actors($aid ='')
     }
 
 
+///face
 
-    
     $array_face = array('white' => 'W', 'hispanic' => 'H', 'black' => 'B', 'mideast' => 'M', 'indian' => 'I', 'asian' => 'EA');
 
     $i = 0;
@@ -1716,14 +1716,20 @@ function check_last_actors($aid ='')
             $commit_actors[$r['actor_id']]=1;
         }
     }
+    if ($debug)
+    {
+        $timeleft = check_cron_time(1);
 
+        echo $timeleft.' check  data_actors_face (' . $i . ') <br>'.PHP_EOL;
+
+    }
     if (check_cron_time())
     {
         commit_actors($commit_actors);
         return;
     }
 
-    echo 'check actor face (' . $i . ')' . PHP_EOL;
+
 
     $i = 0;
     ////check actor kairos imdb
@@ -1744,7 +1750,21 @@ function check_last_actors($aid ='')
 
         $commit_actors[$r['actor_id']]=1;
     }
-    echo 'check actor kairos imdb (' . $i . ')' . PHP_EOL;
+
+
+    if ($debug)
+    {
+        $timeleft = check_cron_time(1);
+
+        echo $timeleft.' check actor kairos imdb (' . $i . ') <br>'.PHP_EOL;
+
+    }
+    if (check_cron_time())
+    {
+        commit_actors($commit_actors);
+        return;
+    }
+
 
     $i = 0;
 
@@ -1777,9 +1797,20 @@ function check_last_actors($aid ='')
 
         $commit_actors[$r['actor_id']]=1;
     }
-    echo 'check actor kairos crowd (' . $i . ')' . PHP_EOL;
 
 
+    if ($debug)
+    {
+        $timeleft = check_cron_time(1);
+
+        echo $timeleft.' check actor kairos crowd (' . $i . ') <br>'.PHP_EOL;
+
+    }
+    if (check_cron_time())
+    {
+        commit_actors($commit_actors);
+        return;
+    }
 
     $sql = "SELECT data_actors_tmdb_race.actor_id, data_actors_tmdb_race.kairos_verdict  FROM `data_actors_tmdb_race` 
     LEFT JOIN data_actors_meta ON data_actors_tmdb_race.actor_id=data_actors_meta.actor_id
@@ -1803,9 +1834,15 @@ function check_last_actors($aid ='')
 
         $commit_actors[$r['actor_id']]=1;
     }
-    echo 'check actor kairos tmdb (' . $i . ')' . PHP_EOL;
 
 
+    if ($debug)
+    {
+        $timeleft = check_cron_time(1);
+
+        echo $timeleft.' check actor kairos tmdb (' . $i . ') <br>'.PHP_EOL;
+
+    }
 
 
     if (check_cron_time())
@@ -1847,10 +1884,16 @@ function check_last_actors($aid ='')
         }
 
     }
-    echo 'check actor ethnic (' . $i . ')' . PHP_EOL;
 
 
-    $i = 0;
+
+    if ($debug)
+    {
+        $timeleft = check_cron_time(1);
+        echo $timeleft.' check actor ethnic (' . $i . ') <br>'.PHP_EOL;
+
+    }
+
 
     commit_actors($commit_actors);
 
