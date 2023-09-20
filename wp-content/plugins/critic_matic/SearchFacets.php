@@ -904,6 +904,9 @@ class SearchFacets extends AbstractDB {
             } else if (isset($this->cs->facet_data['findata']['childs'][$curr_sort]['titlesm'])) {
                 $title = $this->cs->facet_data['findata']['childs'][$curr_sort]['titlesm'];
                 $ret = $this->theme_count_value($sort_val) . " - $title";
+            } else if (in_array($curr_sort, array('simall','simstar','simmain'))){
+                $title = $this->cs->facet_data['actorsdata']['childs'][$curr_sort]['titlesm'];
+                $ret = ($sort_val/100) . " - $title";
             }
         }
 
@@ -1096,7 +1099,7 @@ class SearchFacets extends AbstractDB {
         $sort = $sort_tab['sort'];
         $type = $sort_tab['type'];
         $rev_type = $this->reverse_sort_type($type);
-        $sort_available = $this->get_sort_available($curr_tab);
+        $sort_available = $this->get_sort_available($curr_tab);        
         $def_sort = $this->get_default_search_sort($curr_tab);
         $main_sort = array();
         $more_sort = array();
@@ -1125,6 +1128,7 @@ class SearchFacets extends AbstractDB {
                         'slug' => $slug,
                         'title' => $title,
                         'type' => 'title',
+                        'sort_w'=>isset($item['sort_w'])?$item['sort_w']:0,
                     );
                     $more_sort[$item['group']][] = $sort_item;
                     continue;
@@ -1177,6 +1181,7 @@ class SearchFacets extends AbstractDB {
                     'title' => $title,
                     'sort_icon' => $sort_icon,
                     'type' => 'link',
+                    'sort_w'=>isset($item['sort_w'])?$item['sort_w']:0,
                 );
                 if (isset($item['main']) && $item['main'] == 1) {
                     $main_sort[$item['group']][] = $sort_item;
@@ -1201,11 +1206,17 @@ class SearchFacets extends AbstractDB {
                     }
                 }
                 if ($more_sort[$key]) {
-                    $group_childs = '';
+                    $group_childs = array();
+                    $i=0;
                     foreach ($more_sort[$key] as $child) {
-                        $group_childs .= $this->get_sort_link($child);
+                        $w = $child['sort_w']*1000;
+                        $ik = $i+$w;
+                        $group_childs[$ik] = $this->get_sort_link($child);
+                        $i++;
                     }
-                    $more_sort_content = '<ul class="sort-wrapper more ' . $key . '">' . $group_childs . '</ul>';
+                    ksort($group_childs);
+                    //print_r($group_childs);
+                    $more_sort_content = '<ul class="sort-wrapper more ' . $key . '">' . implode('',$group_childs) . '</ul>';
                     $more_sort_type = isset($more_active[$key]) ? $more_active[$key] : '<span class="desc"></span>';
                     $more_active_class = isset($more_active[$key]) ? ' mact' : '';
                     $sort_title = $title . $more_sort_type;

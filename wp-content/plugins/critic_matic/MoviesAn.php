@@ -127,6 +127,7 @@ class MoviesAn extends AbstractDBAn {
             'erating' => 'data_movie_erating',
             'franchises' => 'data_movie_franchises',
             'distributors' => 'data_movie_distributors',
+            'hook_movie_upd' => 'hook_movie_upd',
         );
         $this->timer_start();
         $this->get_perpage();
@@ -1856,6 +1857,65 @@ class MoviesAn extends AbstractDBAn {
         } else {
             $data['mid'] = $mid;
             $this->db_insert($data, $this->db['cache_nf_keywords']);
+        }
+    }
+
+    /*
+     * hook movie upd
+     */
+
+    public function hook_actors_movie($actors_ids = array(), $debug = false) {
+        if (!is_array($actors_ids)) {
+            $actors_ids = array($actors_ids);
+        }
+        if ($debug) {
+            if ($debug) {
+                print_r(array('hook_actors_movie', $actors_ids));
+            }
+        }
+
+        $sql = "SELECT mid FROM {$this->db['meta_actor']} WHERE aid IN(" . implode(',', $actors_ids) . ")";
+        $results = $this->db_results($sql);
+        $mids = array();
+        if ($results) {
+            foreach ($results as $movie) {
+                $mids[$movie->mid] = 1;
+            }
+        }
+        if ($debug) {
+            print_r($mids);
+        }
+        if ($mids) {
+            // Update exist movies
+            $sql = "SELECT mid FROM {$this->db['hook_movie_upd']} WHERE mid IN(" . implode(',', array_keys($mids)) . ")";
+            $results = $this->db_results($sql);
+            $mids_toupd = array();
+
+            if ($results) {
+                foreach ($results as $movie) {
+                    $mids_toupd[$movie->mid] = 1;
+                }
+                if ($debug) {
+                    print_r(array('to update', $mids_toupd));
+                }
+                // Update movies
+                $sql = "UPDATE {$this->db['hook_movie_upd']} SET need_upd=1 WHERE mid IN(" . implode(',', array_keys($mids_toupd)) . ")";
+                $this->db_query($sql);
+            }
+            // Add new movies            
+            foreach ($mids as $mid => $val) {
+                if (!isset($mids_toupd[$mid])) {
+                    // Add a movie
+                    $data = array(
+                        'mid' => $mid,
+                        'need_upd'=>1,
+                    );
+                    if ($debug) {
+                        print_r(array('to add', $mid));
+                    }
+                    $this->db_insert($data, $this->db['hook_movie_upd']);
+                }
+            }
         }
     }
 

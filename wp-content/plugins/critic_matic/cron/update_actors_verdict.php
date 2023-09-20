@@ -1,6 +1,8 @@
 <?php
 
 /*
+ * NOT RUN. RUN FROM ANALYSIS HOOK
+ * 
  * 1. Get actors list
  * 2. Calculate verdicts
  * 3. Update verdicts
@@ -39,7 +41,7 @@ if ($_GET['force']) {
 $load = CPULOAD::check_load();
 if ($load['loaded']) {
     if ($debug) {
-        p_r($load);
+        print_r($load);
     }
     exit();
 }

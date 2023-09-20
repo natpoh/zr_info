@@ -145,6 +145,9 @@ class AnalyticsSearch extends CriticSearch {
             // Filters logic
             $filters['boxworldtrue'] = 1;
             $filters['yearinttrue'] = 1;
+            if (!isset($filters['type'])) {
+                $filters['type'] = array('movies', 'tv', 'videogame');
+            }
             $filters_and = $this->get_filters_query($filters, array(), 'movies', array('current'));
 
             // Main sql
@@ -328,6 +331,10 @@ class AnalyticsSearch extends CriticSearch {
         $filters_and = $filters_and_data['filter'];
         $filters_select_and = $filters_and_data['select'];
 
+        if (!isset($filters['type'])) {
+            $filters['type'] = array('movies', 'tv', 'videogame');
+        }
+
         // Ids logic
         if ($ids) {
             $filters_and .= ' AND id IN(' . implode(',', $ids) . ')';
@@ -385,7 +392,7 @@ class AnalyticsSearch extends CriticSearch {
                 if ($ids) {
                     $filters_and .= ' AND id IN(' . implode(',', $ids) . ')';
                 }
-                $sql = sprintf("SELECT " . $select . $select_and_str .$filters_select_and. " FROM movie_an WHERE id>0" . $filters_and . $filters_need_str . $match . " ORDER BY year_int ASC LIMIT 0,%d OPTION max_matches=%d", $this->max_matches, $this->max_matches);
+                $sql = sprintf("SELECT " . $select . $select_and_str . $filters_select_and . " FROM movie_an WHERE id>0" . $filters_and . $filters_need_str . $match . " ORDER BY year_int ASC LIMIT 0,%d OPTION max_matches=%d", $this->max_matches, $this->max_matches);
 
                 $ethnicity_facet = $this->movies_facet_single_get($sql, $search_query);
 
@@ -457,7 +464,7 @@ class AnalyticsSearch extends CriticSearch {
         } else if ($axis == 'aurating') {
             $select = ", aurating as rating";
             $filters .= ' AND aurating > 0';
-        } else if ($axis == 'actors' || $axis == 'simpson'|| $axis == 'simpsonmf' || $axis == 'mf' || $axis == 'eth' || $axis == 'ethmf'|| $axis == 'wjnw' || $axis == 'wjnwj' || $axis == 'wmjnwm' || $axis == 'wmjnwmj') {
+        } else if ($axis == 'actors' || $axis == 'simpson' || $axis == 'simpsonmf' || $axis == 'mf' || $axis == 'eth' || $axis == 'ethmf' || $axis == 'wjnw' || $axis == 'wjnwj' || $axis == 'wmjnwm' || $axis == 'wmjnwmj') {
             // Race axis
             // Cast filter
             $prod = false;

@@ -4367,9 +4367,16 @@ class AnalyticsFront extends SearchFacets {
     }
 
     public function get_movie_link($type, $post_name) {
-        $link = 'movies';
+        
+        
         if ($type == 'TVSeries') {
             $link = 'tvseries';
+        } else if ($type == 'VideoGame') {
+            $link = 'videogame';
+        } else if ($type == 'Movie') {
+            $link = 'movies';
+        } else {
+            $link = $type;
         }
 
         return "/$link/$post_name/";
