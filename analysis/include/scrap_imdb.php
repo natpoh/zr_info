@@ -1420,8 +1420,8 @@ function check_verdict_surname()
         }
 
     }
-    echo 'check actors surname (' . $i . ')' . PHP_EOL;
 
+return $i;
 }
 
 
@@ -1544,14 +1544,9 @@ function check_last_actors($aid ='')
 
     ACTIONLOG::clear_history();
 
-    set_time_limit(600);
-
     $commit_actors = [];
 
-
     //////check actors meta
-
-
 
     $commit_actors = check_enable_actor_meta($aid,$commit_actors,$debug);
 
@@ -1562,6 +1557,14 @@ function check_last_actors($aid ='')
         return;
     }
     //////check actors surname
+    ///
+    if ($debug)
+    {
+        $timeleft = check_cron_time(1);
+
+        echo $timeleft.' check_enable_actor_meta <br>'.PHP_EOL;
+
+    }
 
 
 
@@ -1592,7 +1595,15 @@ function check_last_actors($aid ='')
         Pdo_an::db_query($sql1);
         ACTIONLOG::update_actor_log('gender','data_actors_meta',$r['actor_id']);
     }
-    echo 'check actor gender (' . $i . ')' . PHP_EOL;
+
+
+    if ($debug)
+    {
+        $timeleft = check_cron_time(1);
+
+        echo $timeleft.'   check actor gender (' . $i . ')<br>'.PHP_EOL;
+
+    }
 
     if (check_cron_time())
     {
@@ -1627,8 +1638,14 @@ function check_last_actors($aid ='')
 
         $commit_actors[$r['actor_id']]=1;
     }
-    echo 'check actor gender auto (' . $i . ')' . PHP_EOL;
 
+    if ($debug)
+    {
+        $timeleft = check_cron_time(1);
+
+        echo $timeleft.'   check actor gender auto (' . $i . ')<br>'.PHP_EOL;
+
+    }
 
     if (check_cron_time())
     {
@@ -1651,8 +1668,24 @@ function check_last_actors($aid ='')
 
 
 
-    check_verdict_surname();
+    $i = check_verdict_surname();
 
+
+    if ($debug)
+    {
+        $timeleft = check_cron_time(1);
+
+        echo $timeleft.'   check_verdict_surname (' . $i . ') <br>'.PHP_EOL;
+
+    }
+    if (check_cron_time())
+    {
+        return;
+    }
+
+
+
+    
     $array_face = array('white' => 'W', 'hispanic' => 'H', 'black' => 'B', 'mideast' => 'M', 'indian' => 'I', 'asian' => 'EA');
 
     $i = 0;
@@ -2813,7 +2846,7 @@ if (isset($_GET['add_rating'])) {
 }
 
 if (isset($_GET['check_last_actors'])) {
-    check_load(120,300);
+    check_load(59,300);
     global $debug;
     if (isset($_GET['debug']))
     {
