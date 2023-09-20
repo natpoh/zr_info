@@ -1684,174 +1684,7 @@ function check_last_actors($aid ='')
     }
 
 
-///face
 
-    $array_face = array('white' => 'W', 'hispanic' => 'H', 'black' => 'B', 'mideast' => 'M', 'indian' => 'I', 'asian' => 'EA');
-
-    $i = 0;
-    ////check actor face
-    $sql = "SELECT data_actors_face.actor_id, data_actors_face.race  FROM `data_actors_face` LEFT JOIN data_actors_meta ON data_actors_face.actor_id=data_actors_meta.actor_id
-        WHERE data_actors_meta.n_bettaface = 0 and data_actors_meta.actor_id >0 and data_actors_face.race IS NOT NULL limit 300";
-    $result= Pdo_an::db_results_array($sql);
-    foreach ($result as $r) {
-
-        $verdict =$r['race'];
-
-        if ($array_face[$verdict]) {
-            $verdict = $array_face[$verdict];
-        }
-
-        if ($verdict) {
-            $enable_image = $verdict;
-
-            $i++;
-            $sql1 = "UPDATE `data_actors_meta` SET
-           `n_bettaface` = '" . intconvert($enable_image) . "',
-           `last_update` = " . time() . "  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
-            Pdo_an::db_query($sql1);
-
-
-            update_actors_verdict($r['actor_id']);
-            ACTIONLOG::update_actor_log('n_bettaface','data_actors_meta',$r['actor_id']);
-            $commit_actors[$r['actor_id']]=1;
-        }
-    }
-    if ($debug)
-    {
-        $timeleft = check_cron_time(1);
-
-        echo $timeleft.' check  data_actors_face (' . $i . ') <br>'.PHP_EOL;
-
-    }
-    if (check_cron_time())
-    {
-        commit_actors($commit_actors);
-        return;
-    }
-
-
-
-    $i = 0;
-    ////check actor kairos imdb
-
-    $sql = "SELECT data_actors_race.actor_id , data_actors_race.kairos_verdict  FROM `data_actors_race` LEFT JOIN data_actors_meta ON data_actors_race.actor_id=data_actors_meta.actor_id
-        WHERE data_actors_meta.n_kairos =0 and  data_actors_race.kairos_verdict is not NULL and data_actors_race.kairos_verdict!='' limit 300";
-    $result= Pdo_an::db_results_array($sql);
-    foreach ($result as $r) {
-        $kairos = $r['kairos_verdict'];
-        $i++;
-        $sql1 = "UPDATE `data_actors_meta` SET 
-        `n_kairos` = '" . intconvert($kairos) . "',
-        
-        `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
-        Pdo_an::db_query($sql1);
-        update_actors_verdict($r['actor_id']);
-        ACTIONLOG::update_actor_log('kairos','data_actors_race',$r['actor_id'] );
-
-        $commit_actors[$r['actor_id']]=1;
-    }
-
-
-    if ($debug)
-    {
-        $timeleft = check_cron_time(1);
-
-        echo $timeleft.' check actor kairos imdb (' . $i . ') <br>'.PHP_EOL;
-
-    }
-    if (check_cron_time())
-    {
-        commit_actors($commit_actors);
-        return;
-    }
-
-
-    $i = 0;
-
-
-    /////////crowd
-    $sql = "SELECT data_actors_crowd_race.actor_id, data_actors_crowd_race.kairos_verdict  FROM `data_actors_crowd_race` 
-    LEFT JOIN data_actors_meta ON data_actors_crowd_race.actor_id=data_actors_meta.actor_id
-        WHERE (data_actors_meta.n_kairos =0) 
-          and data_actors_meta.actor_id >0 
-          and  data_actors_crowd_race.kairos_verdict !=''
-           limit 100";
-
-    $result= Pdo_an::db_results_array($sql);
-    $i =count($result);
-
-    foreach ($result as $r) {
-        $kairos = $r['kairos_verdict'];
-        $i++;
-        $sql1 = "UPDATE `data_actors_meta` SET 
-         `n_kairos` = '" . intconvert($kairos) . "',
-         
-        `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
-
-
-        ///echo $sql1;
-
-        Pdo_an::db_query($sql1);
-        update_actors_verdict($r['actor_id']);
-        ACTIONLOG::update_actor_log('kairos','data_actors_crowd_race',$r['actor_id']);
-
-        $commit_actors[$r['actor_id']]=1;
-    }
-
-
-    if ($debug)
-    {
-        $timeleft = check_cron_time(1);
-
-        echo $timeleft.' check actor kairos crowd (' . $i . ') <br>'.PHP_EOL;
-
-    }
-    if (check_cron_time())
-    {
-        commit_actors($commit_actors);
-        return;
-    }
-
-    $sql = "SELECT data_actors_tmdb_race.actor_id, data_actors_tmdb_race.kairos_verdict  FROM `data_actors_tmdb_race` 
-    LEFT JOIN data_actors_meta ON data_actors_tmdb_race.actor_id=data_actors_meta.actor_id
-        WHERE (data_actors_meta.n_kairos =0 ) 
-          and data_actors_meta.actor_id >0 
-          and  data_actors_tmdb_race.kairos_verdict !=''
-           limit 300";
-
-    $result= Pdo_an::db_results_array($sql);
-    $i =count($result);
-    foreach ($result as $r) {
-        $kairos = $r['kairos_verdict'];
-        $i++;
-        $sql1 = "UPDATE `data_actors_meta` SET 
-         `n_kairos` = '" . intconvert($kairos) . "',
-         
-        `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
-        Pdo_an::db_query($sql1);
-        update_actors_verdict($r['actor_id']);
-        ACTIONLOG::update_actor_log('kairos','data_actors_tmdb_race',$r['actor_id']);
-
-        $commit_actors[$r['actor_id']]=1;
-    }
-
-
-    if ($debug)
-    {
-        $timeleft = check_cron_time(1);
-
-        echo $timeleft.' check actor kairos tmdb (' . $i . ') <br>'.PHP_EOL;
-
-    }
-
-
-    if (check_cron_time())
-    {
-        commit_actors($commit_actors);
-        return;
-    }
-
-    $i = 0;
     ////check actor ethnic
 
 
@@ -1893,7 +1726,194 @@ function check_last_actors($aid ='')
         echo $timeleft.' check actor ethnic (' . $i . ') <br>'.PHP_EOL;
 
     }
+    if (check_cron_time())
+    {
+        commit_actors($commit_actors);
+        return;
+    }
 
+///face
+
+    $array_face = array('white' => 'W', 'hispanic' => 'H', 'black' => 'B', 'mideast' => 'M', 'indian' => 'I', 'asian' => 'EA');
+
+    $i = 0;
+    ////check actor face
+    $sql = "SELECT data_actors_face.actor_id, data_actors_face.race  FROM `data_actors_face` LEFT JOIN data_actors_meta ON data_actors_face.actor_id=data_actors_meta.actor_id
+        WHERE data_actors_meta.n_bettaface = 0 and data_actors_meta.actor_id >0 and data_actors_face.race IS NOT NULL limit 300";
+    $result= Pdo_an::db_results_array($sql);
+    foreach ($result as $r) {
+
+        $verdict =$r['race'];
+
+        if ($array_face[$verdict]) {
+            $verdict = $array_face[$verdict];
+        }
+
+        if ($verdict) {
+            $enable_image = $verdict;
+
+            $i++;
+            $sql1 = "UPDATE `data_actors_meta` SET
+           `n_bettaface` = '" . intconvert($enable_image) . "',
+           `last_update` = " . time() . "  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
+            Pdo_an::db_query($sql1);
+
+
+            update_actors_verdict($r['actor_id']);
+            ACTIONLOG::update_actor_log('n_bettaface','data_actors_meta',$r['actor_id']);
+            $commit_actors[$r['actor_id']]=1;
+        }
+
+        if (check_cron_time())
+        {
+        break;
+        }
+    }
+    if ($debug)
+    {
+        $timeleft = check_cron_time(1);
+
+        echo $timeleft.' check  data_actors_face (' . $i . ') <br>'.PHP_EOL;
+
+    }
+    if (check_cron_time())
+    {
+        commit_actors($commit_actors);
+        return;
+    }
+
+
+
+
+
+
+    $i = 0;
+
+
+    /////////crowd
+    $sql = "SELECT data_actors_crowd_race.actor_id, data_actors_crowd_race.kairos_verdict  FROM `data_actors_crowd_race` 
+    LEFT JOIN data_actors_meta ON data_actors_crowd_race.actor_id=data_actors_meta.actor_id
+        WHERE (data_actors_meta.n_kairos =0) 
+          and data_actors_meta.actor_id >0 
+          and  data_actors_crowd_race.kairos_verdict !=''
+           limit 100";
+
+    $result= Pdo_an::db_results_array($sql);
+    $i =count($result);
+
+    foreach ($result as $r) {
+        $kairos = $r['kairos_verdict'];
+        $i++;
+        $sql1 = "UPDATE `data_actors_meta` SET 
+         `n_kairos` = '" . intconvert($kairos) . "',
+         
+        `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
+
+
+        ///echo $sql1;
+
+        Pdo_an::db_query($sql1);
+        update_actors_verdict($r['actor_id']);
+        ACTIONLOG::update_actor_log('kairos','data_actors_crowd_race',$r['actor_id']);
+
+        $commit_actors[$r['actor_id']]=1;
+
+        if (check_cron_time())
+        {
+            break;
+        }
+    }
+
+
+    if ($debug)
+    {
+        $timeleft = check_cron_time(1);
+
+        echo $timeleft.' check actor kairos crowd (' . $i . ') <br>'.PHP_EOL;
+
+    }
+    if (check_cron_time())
+    {
+        commit_actors($commit_actors);
+        return;
+    }
+
+    $sql = "SELECT data_actors_tmdb_race.actor_id, data_actors_tmdb_race.kairos_verdict  FROM `data_actors_tmdb_race` 
+    LEFT JOIN data_actors_meta ON data_actors_tmdb_race.actor_id=data_actors_meta.actor_id
+        WHERE (data_actors_meta.n_kairos =0 ) 
+          and data_actors_meta.actor_id >0 
+          and  data_actors_tmdb_race.kairos_verdict !=''
+           limit 300";
+
+    $result= Pdo_an::db_results_array($sql);
+    $i =count($result);
+    foreach ($result as $r) {
+        $kairos = $r['kairos_verdict'];
+        $i++;
+        $sql1 = "UPDATE `data_actors_meta` SET 
+         `n_kairos` = '" . intconvert($kairos) . "',
+         
+        `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
+        Pdo_an::db_query($sql1);
+        update_actors_verdict($r['actor_id']);
+        ACTIONLOG::update_actor_log('kairos','data_actors_tmdb_race',$r['actor_id']);
+
+        $commit_actors[$r['actor_id']]=1;
+
+        if (check_cron_time())
+        {
+            break;
+        }
+    }
+
+
+    if ($debug)
+    {
+        $timeleft = check_cron_time(1);
+
+        echo $timeleft.' check actor kairos tmdb (' . $i . ') <br>'.PHP_EOL;
+
+    }
+    if (check_cron_time())
+    {
+        commit_actors($commit_actors);
+        return;
+    }
+
+
+    $i = 0;
+    ////check actor kairos imdb
+
+    $sql = "SELECT data_actors_race.actor_id , data_actors_race.kairos_verdict  FROM `data_actors_race` LEFT JOIN data_actors_meta ON data_actors_race.actor_id=data_actors_meta.actor_id
+        WHERE data_actors_meta.n_kairos =0 and  data_actors_race.kairos_verdict is not NULL and data_actors_race.kairos_verdict!='' limit 300";
+    $result= Pdo_an::db_results_array($sql);
+    foreach ($result as $r) {
+        $kairos = $r['kairos_verdict'];
+        $i++;
+        $sql1 = "UPDATE `data_actors_meta` SET 
+        `n_kairos` = '" . intconvert($kairos) . "',
+        
+        `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['actor_id'] . "'";
+        Pdo_an::db_query($sql1);
+        update_actors_verdict($r['actor_id']);
+        ACTIONLOG::update_actor_log('kairos','data_actors_race',$r['actor_id'] );
+
+        $commit_actors[$r['actor_id']]=1;
+
+        if (check_cron_time())
+        {
+            break;
+        }
+    }
+
+
+    if ($debug)
+    {
+        $timeleft = check_cron_time(1);
+
+        echo $timeleft.' check actor kairos imdb (' . $i . ') <br>'.PHP_EOL;
+
+    }
 
     commit_actors($commit_actors);
 
