@@ -1707,7 +1707,7 @@ function check_last_actors($aid ='')
         {
             //echo $verdict.'=>'.$verdict_result.' '.PHP_EOL;
 
-            $sql1 = "UPDATE `data_actors_meta` SET  n_ethnic ='".intconvert($kairos) ."'  WHERE `data_actors_meta`.`actor_id` = '" . $actor_id . "'";
+            $sql1 = "UPDATE `data_actors_meta` SET  n_ethnic ='".intconvert($verdict_result) ."'  WHERE `data_actors_meta`.`actor_id` = '" . $actor_id . "'";
             Pdo_an::db_query($sql1);
             $i++;
 
