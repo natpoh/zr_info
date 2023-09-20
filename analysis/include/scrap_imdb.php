@@ -2909,7 +2909,7 @@ if (isset($_GET['add_rating'])) {
 }
 
 if (isset($_GET['check_last_actors'])) {
-    check_load(59,300);
+    check_load(55,300);
     global $debug;
     if (isset($_GET['debug']))
     {
