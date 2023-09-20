@@ -164,7 +164,7 @@ class CriticTransit extends AbstractDB {
         $search_front->filters['id'] = $last_id;
         $search_front->search_sort['movies']['id'] = true;
 
-        $result = $search_front->find_results(0,array(), false, true, $count, 1);
+        $result = $search_front->find_results(0, array(), false, true, $count, 1);
         if ($debug) {
             print_r($result);
         }
@@ -436,13 +436,13 @@ class CriticTransit extends AbstractDB {
 
     public function get_actors_meta($count = 1000, $debug = false, $force = false, $actor_id = false, $sinch = true, $onlydata = 0) {
 
+        $actors_upd = array();
+
         if ($actor_id) {
             $sql = sprintf("SELECT * FROM {$this->db['actors_meta']} WHERE actor_id = %d ", (int) $actor_id);
         } else {
-//            $option_name = 'actors_meta_last_id';
-//            $last_id = get_option($option_name, 0);
-            !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-            $last_id = OptionData::get_options('', 'actors_meta_last_id');
+            $option_name = 'actors_meta_last_id';
+            $last_id = $this->get_option($option_name, 0);
 
             if ($force) {
                 $last_id = 0;
@@ -461,9 +461,7 @@ class CriticTransit extends AbstractDB {
                 if ($debug) {
                     print 'last id: ' . $last->id . "\n";
                 }
-                !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-                OptionData::set_option('', $last->id, 'actors_meta_last_id', 0);
-                //update_option($option_name, $last->id);
+                $this->update_option($option_name, $last->id);
             }
 
 
@@ -491,17 +489,15 @@ class CriticTransit extends AbstractDB {
                     print_r($item);
                 }
 
-                $actor_id = $this->get_actor_id_by_data($item, $debug);
+                $actor_code_id = $this->get_actor_id_by_data($item, $debug);
                 if ($debug) {
-                    print "Actor code id: " . $actor_id . "\n";
+                    print "Actor code id: " . $actor_code_id . "\n";
                     //11101000000413
                     //111101110101251
                 //
                 }
 
-
-
-                $n_verdict = $af->custom_weight_race_code($actor_id, $filter_weights, $onlydata, $debug);
+                $n_verdict = $af->custom_weight_race_code($actor_code_id, $filter_weights, $onlydata, $debug);
                 if ($onlydata) {
                     if ($debug) {
                         print "Actor verdict";
@@ -519,18 +515,24 @@ class CriticTransit extends AbstractDB {
 
                 // Update verdict
 
-                if ($item->n_verdict_weight != $n_verdict) {
+                if ($item->n_verdict_weight == $n_verdict) {
                     $data = array(
                         'last_update' => $this->curr_time(),
                         'n_verdict_weight' => $n_verdict
                     );
                     $this->sync_update_data($data, $item->id, $this->db['actors_meta'], $sinch, 15);
+                    $actors_upd[] = $item->actor_id;
                 } else {
                     if ($debug) {
                         print "Skip update \n";
                     }
                 }
             }
+        }
+        if ($actors_upd){
+            // run update movie hook
+            $ma = $this->get_ma();
+            $ma->hook_actors_movie($actors_upd, $debug);
         }
     }
 
@@ -2002,7 +2004,7 @@ class CriticTransit extends AbstractDB {
         $dbresults = $this->db_results($sql);
 
         if ($debug) {
-            print_r(array('no meta',$dbresults));
+            print_r(array('no meta', $dbresults));
         }
 
         if (!$dbresults) {
@@ -2012,7 +2014,7 @@ class CriticTransit extends AbstractDB {
                     . " WHERE g.last_upd=0 AND d.firstname!='' ORDER BY d.id ASC limit %d", (int) $count);
             $dbresults = $this->db_results($sql);
             if ($debug) {
-                print_r(array('old meta',$dbresults));
+                print_r(array('old meta', $dbresults));
             }
         }
 
@@ -2287,7 +2289,7 @@ class CriticTransit extends AbstractDB {
 
                         $data = array(
                             'options' => $opt_str,
-                            'last_upd'=>$this->curr_time(),
+                            'last_upd' => $this->curr_time(),
                         );
 
                         $this->sync_update_data($data, $author->id, $this->db['authors'], $this->sync_data);

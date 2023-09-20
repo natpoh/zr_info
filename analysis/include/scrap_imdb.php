@@ -1536,8 +1536,9 @@ function check_enable_actor_meta($id='',$commit_actors=[],$debug=0)
 }
 
 
-function check_last_actors($aid ='',$debug=1)
+function check_last_actors($aid ='')
 {
+    global $debug;
 
     !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
 
@@ -2812,8 +2813,14 @@ if (isset($_GET['add_rating'])) {
 }
 
 if (isset($_GET['check_last_actors'])) {
+    check_load(120,300);
+    global $debug;
+    if (isset($_GET['debug']))
+    {
+        $debug=1;
+    }
 
-    check_last_actors();
+    check_last_actors($_GET['check_last_actors']);
     return;
 }
 if (isset($_GET['add_imdb_data_to_options'])) {

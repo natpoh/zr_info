@@ -1543,6 +1543,20 @@ function critic_matic_plugin_activation() {
      */
     $sql = "ALTER TABLE `data_woke` ADD `bechdeltest` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
+    
+    /*
+     * Actor data movie upd
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `hook_movie_upd`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `mid` int(11) NOT NULL DEFAULT '0',                                
+                                `last_upd` int(11) NOT NULL DEFAULT '0',                                
+                                `need_upd` int(11) NOT NULL DEFAULT '0',
+				PRIMARY KEY  (`id`)
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('last_upd', 'mid', 'need_upd'), "hook_movie_upd");
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {
