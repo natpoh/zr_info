@@ -1918,5 +1918,33 @@ class MoviesAn extends AbstractDBAn {
             }
         }
     }
+    
+    public function run_movie_hook_cron($count=10, $expire=60, $debug=false, $force=false) {
+        $curr_time = $this->curr_time();
+        $exp_date = $curr_time-$expire*60;
+        $sql = sprintf("SELECT mid FROM {$this->db['hook_movie_upd']} WHERE need_upd=1 AND last_upd < %d ORDER BY last_upd ASC LIMIT %d", $exp_date, $count);
+        $results = $this->db_results($sql);
+        $mids = array();
+        if ($results){
+            foreach ($results as $item) {
+                $mids[]=$item->mid;
+            }
+        }
+        if ($debug){
+            print_r($mids);
+        }
+        
+        if ($mids){
+            // UPDATE mids need_upd
+            $curr_time = $this->curr_time();
+            $sql = sprintf("UPDATE {$this->db['hook_movie_upd']} SET need_upd=0, last_upd=%d WHERE mid IN(" . implode(',', $mids) . ")",$curr_time);
+            $this->db_query($sql);
+        
+            // Add hooks here
+            $ms = $this->cm->get_ms();
+            $ms->hook_update_movies($mids, $debug);
+        }      
+        
+    }
 
 }

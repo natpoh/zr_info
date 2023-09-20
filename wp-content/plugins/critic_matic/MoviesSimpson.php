@@ -50,14 +50,22 @@ class MoviesSimpson extends AbstractDB {
         }
     }
 
-    public function hook_update_movie($mid = 0, $debug = false) {
-        $sql = sprintf("SELECT id, title, country, year FROM {$this->db['movie_imdb']} WHERE id=%d", $mid);
-        $movie = $this->db_fetch_row($sql);
-        if ($debug) {
-            print_r($movie);
+    public function hook_update_movies($mids = array(), $debug = false) {        
+        if (!$mids){
+            return;
         }
-        if ($movie) {
-            $this->update_movie($movie, $debug);
+        if (!is_array($mids)){
+            $mids = array($mids);
+        }
+        $sql = "SELECT id, title, country, year FROM {$this->db['movie_imdb']} WHERE id IN(". implode(',', $mids).")";
+        $movies = $this->db_results($sql);
+        if ($debug) {
+            print_r($movies);
+        }
+        if ($movies) {
+            foreach ($movies as $movie) {
+                $this->update_movie($movie, $debug);
+            }            
         }
     }
 

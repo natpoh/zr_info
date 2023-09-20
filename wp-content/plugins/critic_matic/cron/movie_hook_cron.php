@@ -1,6 +1,6 @@
 <?php
 /*
- * /wp-content/plugins/critic_matic/cron/movie_simpson_cron.php?p=8ggD_23sdf_DSF&debug=1
+ * /wp-content/plugins/critic_matic/cron/movie_hook_cron.php?p=8ggD_23sdf_DSF&debug=1
  */
 
 if (!defined('ABSPATH')) {
@@ -32,9 +32,15 @@ if ($_GET['force']) {
     $force = true;
 }
 
-$count = 100;
+$count = 10;
 if ($_GET['c']) {
     $count = (int) $_GET['c'];
+}
+
+// Expire time, min
+$expire = 60;
+if ($_GET['expire']) {
+    $expire = (int) $_GET['expire'];
 }
 
 
@@ -49,7 +55,7 @@ if ($load['loaded']) {
 }
 
 $cm = new CriticMatic();
-$cron_name = 'movie_simpson_cron';
+$cron_name = 'movie_hook_cron';
 if ($cm->cron_already_run($cron_name, 10, $debug, $force)) {
     exit();
 }
@@ -57,8 +63,8 @@ if ($cm->cron_already_run($cron_name, 10, $debug, $force)) {
 $cm->register_cron($cron_name);
 
 
-$ms = $cm->get_ms();
-$ms->run_cron($count, $debug, $force);
+$ma = $cm->get_ma();
+$ma->run_movie_hook_cron($count, $expire, $debug, $force);
 
 
 $cm->unregister_cron($cron_name);
