@@ -1977,6 +1977,8 @@ public static function get_content_imdb($id,$showdata='',$enable_actors=1,$from_
 
                 $result = self::get_proxy($url);
                 var_dump($result);
+
+                return ;
             }
             else
             {
