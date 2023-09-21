@@ -228,7 +228,7 @@ class TorParser extends MoviesAbstractDB {
                     $ip_error_last_hour_count = $this->get_logs($q_req, 1, 0, 'date', 'DESC', true);
                     if ($debug) {
                         print_r($q_req);
-                        print_r($ip_error_last_hour_count);
+                        print_r( 'Last parsing error: ' .$ip_error_last_hour_count."\n");
                     }
                     if ($ip_error_last_hour_count) {
                         // Get last error ips
