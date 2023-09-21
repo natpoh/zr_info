@@ -154,9 +154,17 @@ class PgRating
             $url = "https://www.imdb.com/title/tt" . $final_value . '/parentalguide';
 
 
-                global $RWT_PROXY;
-                $result1 = GETCURL::getCurlCookie($url,$RWT_PROXY);
 
+            global $RWT_PROXY;
+            if ($RWT_PROXY)
+            {
+                !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+                $result1 = TMDB::get_proxy($url);
+
+            }
+            else {
+                $result1 = GETCURL::getCurlCookie($url);
+            }
 
             $array_result = self::get_imdb_parse_pg($result1, []);
             /////add to db

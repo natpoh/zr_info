@@ -1968,13 +1968,8 @@ public static function get_content_imdb($id,$showdata='',$enable_actors=1,$from_
             $url = "https://www.imdb.com/title/tt" . $final_value . '/fullcredits';
             //echo $url;
 
-                global $RWT_PROXY;
-
-
-
-
-
-            if (isset($_GET['test_proxy']))
+            global $RWT_PROXY;
+            if ($RWT_PROXY)
             {
 
                 $result = self::get_proxy($url);
@@ -1982,7 +1977,7 @@ public static function get_content_imdb($id,$showdata='',$enable_actors=1,$from_
             }
             else
             {
-                $result = GETCURL::getCurlCookie($url,$RWT_PROXY);
+                $result = GETCURL::getCurlCookie($url);
             }
 
 
@@ -2008,8 +2003,8 @@ public static function get_content_imdb($id,$showdata='',$enable_actors=1,$from_
         $url = "https://www.imdb.com/title/tt" . $final_value . '/';
 
 
-
-        if (isset($_GET['test_proxy']))
+        global $RWT_PROXY;
+        if ($RWT_PROXY)
         {
 
             $result1 = self::get_proxy($url);
@@ -2017,8 +2012,8 @@ public static function get_content_imdb($id,$showdata='',$enable_actors=1,$from_
         }
         else
         {
-            global $RWT_PROXY;
-            $result1 = GETCURL::getCurlCookie($url,$RWT_PROXY);
+
+            $result1 = GETCURL::getCurlCookie($url);
 
         }
 

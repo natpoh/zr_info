@@ -373,8 +373,15 @@ class Movie_Keywords {
 
         global $debug;
         global $RWT_PROXY;
-        $result = GETCURL::getCurlCookie($url,$RWT_PROXY);
+        if ($RWT_PROXY)
+        {
+            !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+            $result = TMDB::get_proxy($url);
 
+        }
+        else {
+            $result = GETCURL::getCurlCookie($url);
+        }
         if ($debug)var_dump($result);
 
         $data = TMDB::actor_data_to_object($result,$debug);
