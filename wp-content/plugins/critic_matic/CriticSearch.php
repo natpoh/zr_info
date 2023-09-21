@@ -129,8 +129,8 @@ class CriticSearch extends AbstractDB {
             'hide' => 1,
             'weight' => 60,
             'childs' => array(
-                'ratingtitle' => array('title' => 'Ratings', 'is_title' => 1, 'group' => 'rating'),
-                'rrwt' => array('title' => 'ZR Rating', 'facet' => 'rating', 'eid' => 'erwt', 'titlesm' => 'ZR Rating', 'name_pre' => 'ZR Rating ', 'filter_pre' => 'ZR Rating', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'sorted' => 1, 'icon' => 'zr', 'hide' => 1, 'minus' => 1, 'zero' => 1,),
+                'ratingtitle' => array('title' => 'Ratings <span data-value="tooltip_zr_agregate_rating" class="nte_info"></span>', 'is_title' => 1, 'group' => 'rating'),
+                'rrwt' => array('title' => 'ZR Aggregate Rating', 'facet' => 'rating', 'eid' => 'erwt', 'titlesm' => 'ZR Rating', 'name_pre' => 'ZR Rating ', 'filter_pre' => 'ZR Rating', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'sorted' => 1, 'icon' => 'zr', 'hide' => 1, 'minus' => 1, 'zero' => 1,),
                 'rimdb' => array('title' => 'IMDb', 'facet' => 'rating', 'eid' => 'eimdb', 'titlesm' => 'IMDb', 'name_pre' => 'IMDb ', 'filter_pre' => 'IMDb Rating', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'imdb', 'sorted' => 1, 'hide' => 1, 'minus' => 1, 'zero' => 1,),
                 'ropencritic' => array('title' => 'OpenCritic', 'facet' => 'rating', 'eid' => 'eopencritic', 'titlesm' => 'OpenCritic', 'name_pre' => 'OpenCritic ', 'filter_pre' => 'OpenCritic Rating', 'max_count' => 110, 'multipler' => 1, 'group' => 'rating', 'icon' => 'opencritic', 'sorted' => 1, 'tabs' => array('games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
                 'rmc' => array('title' => 'Metacritic MetaScore', 'facet' => 'rating', 'eid' => 'emc', 'titlesm' => 'MetaScore', 'name_pre' => 'MetaScore ', 'filter_pre' => 'MetaScore', 'max_count' => 110, 'multipler' => 1, 'group' => 'rating', 'icon' => 'mtcr', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),

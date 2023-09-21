@@ -1945,6 +1945,5 @@ class MoviesAn extends AbstractDBAn {
             $ms->hook_update_movies($mids, $debug);
         }      
         
-    }
-
+    }  
 }

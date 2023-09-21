@@ -674,7 +674,15 @@ class SearchFacets extends AbstractDB {
 
                 $name = isset($this->cs->search_filters[$key][$slug]['title']) ? $this->cs->search_filters[$key][$slug]['title'] : $slug;
 
-                $tags[] = array('name' => $name, 'type' => $key, 'type_title' => $filter_pre, 'name_pre' => $name_pre, 'id' => $slug, 'parent' => 'wokedata', 'minus' => $minus);
+                if ($key == 'auvote') {
+                    $value = is_array($value) ? $value : array($value);
+                    foreach ($value as $slug) {
+                        $name = isset($this->cs->search_filters['auvote'][$slug]['title']) ? $this->cs->search_filters['auvote'][$slug]['title'] : $slug;
+                        $tags[] = array('name' => $name, 'type' => $key, 'type_title' => $filter_pre, 'name_pre' => $name_pre, 'id' => $slug, 'parent' => 'wokedata', 'minus' => $minus);
+                    }
+                } else {
+                    $tags[] = array('name' => $name, 'type' => $key, 'type_title' => $filter_pre, 'name_pre' => $name_pre, 'id' => $slug, 'parent' => 'wokedata', 'minus' => $minus);
+                }
             }
             /*
              * Movies
@@ -904,9 +912,9 @@ class SearchFacets extends AbstractDB {
             } else if (isset($this->cs->facet_data['findata']['childs'][$curr_sort]['titlesm'])) {
                 $title = $this->cs->facet_data['findata']['childs'][$curr_sort]['titlesm'];
                 $ret = $this->theme_count_value($sort_val) . " - $title";
-            } else if (in_array($curr_sort, array('simall','simstar','simmain'))){
+            } else if (in_array($curr_sort, array('simall', 'simstar', 'simmain'))) {
                 $title = $this->cs->facet_data['actorsdata']['childs'][$curr_sort]['titlesm'];
-                $ret = ($sort_val/100) . " - $title";
+                $ret = ($sort_val / 100) . " - $title";
             }
         }
 
@@ -1099,7 +1107,7 @@ class SearchFacets extends AbstractDB {
         $sort = $sort_tab['sort'];
         $type = $sort_tab['type'];
         $rev_type = $this->reverse_sort_type($type);
-        $sort_available = $this->get_sort_available($curr_tab);        
+        $sort_available = $this->get_sort_available($curr_tab);
         $def_sort = $this->get_default_search_sort($curr_tab);
         $main_sort = array();
         $more_sort = array();
@@ -1128,7 +1136,7 @@ class SearchFacets extends AbstractDB {
                         'slug' => $slug,
                         'title' => $title,
                         'type' => 'title',
-                        'sort_w'=>isset($item['sort_w'])?$item['sort_w']:0,
+                        'sort_w' => isset($item['sort_w']) ? $item['sort_w'] : 0,
                     );
                     $more_sort[$item['group']][] = $sort_item;
                     continue;
@@ -1181,7 +1189,7 @@ class SearchFacets extends AbstractDB {
                     'title' => $title,
                     'sort_icon' => $sort_icon,
                     'type' => 'link',
-                    'sort_w'=>isset($item['sort_w'])?$item['sort_w']:0,
+                    'sort_w' => isset($item['sort_w']) ? $item['sort_w'] : 0,
                 );
                 if (isset($item['main']) && $item['main'] == 1) {
                     $main_sort[$item['group']][] = $sort_item;
@@ -1207,16 +1215,16 @@ class SearchFacets extends AbstractDB {
                 }
                 if ($more_sort[$key]) {
                     $group_childs = array();
-                    $i=0;
+                    $i = 0;
                     foreach ($more_sort[$key] as $child) {
-                        $w = $child['sort_w']*1000;
-                        $ik = $i+$w;
+                        $w = $child['sort_w'] * 1000;
+                        $ik = $i + $w;
                         $group_childs[$ik] = $this->get_sort_link($child);
                         $i++;
                     }
                     ksort($group_childs);
                     //print_r($group_childs);
-                    $more_sort_content = '<ul class="sort-wrapper more ' . $key . '">' . implode('',$group_childs) . '</ul>';
+                    $more_sort_content = '<ul class="sort-wrapper more ' . $key . '">' . implode('', $group_childs) . '</ul>';
                     $more_sort_type = isset($more_active[$key]) ? $more_active[$key] : '<span class="desc"></span>';
                     $more_active_class = isset($more_active[$key]) ? ' mact' : '';
                     $sort_title = $title . $more_sort_type;
@@ -3580,30 +3588,30 @@ class SearchFacets extends AbstractDB {
             print ' column';
         }
         ?>" data-filter="<?php print $filter_name ?>"><?php
-            foreach ($tabs as $slug => $item) {
-                $is_active = '';
-                $is_default = '';
+                foreach ($tabs as $slug => $item) {
+                    $is_active = '';
+                    $is_default = '';
 
-                if ($inactive && in_array($item[$filter_type], $inactive)) {
-                    continue;
-                }
+                    if ($inactive && in_array($item[$filter_type], $inactive)) {
+                        continue;
+                    }
 
-                if ($item[$filter_type] == $active_facet) {
-                    $is_active = ' active';
-                }
-                if ($def_tab == $item[$filter_type]) {
-                    $is_default = ' default';
-                    $include = array();
-                    $exclude = array($filter_name);
-                } else {
-                    $include = array($filter_name => $slug);
-                    $exclude = array();
-                }
+                    if ($item[$filter_type] == $active_facet) {
+                        $is_active = ' active';
+                    }
+                    if ($def_tab == $item[$filter_type]) {
+                        $is_default = ' default';
+                        $include = array();
+                        $exclude = array($filter_name);
+                    } else {
+                        $include = array($filter_name => $slug);
+                        $exclude = array();
+                    }
 
-                $url = $this->get_current_search_url($include, $exclude);
-                ?><li class="nav-tab<?php print $is_active . $is_default ?>" data-id="<?php print $slug ?>"><a href="<?php print $url ?>"><?php print $item['title'] ?></a></li><?php }
-            ?></ul>
-            <?php
+                    $url = $this->get_current_search_url($include, $exclude);
+                    ?><li class="nav-tab<?php print $is_active . $is_default ?>" data-id="<?php print $slug ?>"><a href="<?php print $url ?>"><?php print $item['title'] ?></a></li><?php }
+                ?></ul>
+        <?php
         $content = ob_get_contents();
         ob_end_clean();
         return $content;
@@ -4112,10 +4120,10 @@ class SearchFacets extends AbstractDB {
             <?php if ($quick_find) { ?>
                 <div class="facet-quickfind">
                     <input type="search" class="autocomplite<?php
-            if ($keyword) {
-                print ' active';
-            }
-                ?>" data-type="<?php print $filter ?>" data-count="<?php print $more ?>" value="<?php print $keyword ?>" placeholder="Quick find" ac-type="qf">
+                    if ($keyword) {
+                        print ' active';
+                    }
+                    ?>" data-type="<?php print $filter ?>" data-count="<?php print $more ?>" value="<?php print $keyword ?>" placeholder="Quick find" ac-type="qf">
                 </div>          
             <?php } ?>
             <div class="facet-ch<?php
@@ -4123,14 +4131,14 @@ class SearchFacets extends AbstractDB {
                 print ' custom';
             }
             ?>"><?php
-                 if ($collapsed):
-                     $this->theme_block_loading();
-                 else:
-                     if ($tabs) {
-                         print $tabs;
-                     }
-                     $keys = array();
-                     ?>
+                     if ($collapsed):
+                         $this->theme_block_loading();
+                     else:
+                         if ($tabs) {
+                             print $tabs;
+                         }
+                         $keys = array();
+                         ?>
                          <?php if (sizeof($data)): ?>
                              <?php
                              $andor_filter = '';
