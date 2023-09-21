@@ -1895,7 +1895,7 @@ public static function reload_from_imdb($id,$debug=0)
 public static function get_proxy($url)
 {
     global $debug;
-//Movies links rating
+    // Movies links rating
     if (!function_exists('include_movies_links')) {
         include ABSPATH . 'wp-content/plugins/movies_links/movies_links.php';
     }
@@ -1935,8 +1935,10 @@ public static function get_proxy($url)
     $tor_agent=1;
 
     $header_array=array();
+    
+    $max_errors = 1000;
 
-    $content = $tp->get_url_content($url, $header, $ip_limit, $curl, $tor_mode, $tor_agent, $is_post, $post_vars, $header_array, $debug);
+    $content = $tp->get_url_content($url, $header, $ip_limit, $curl, $tor_mode, $tor_agent, $is_post, $post_vars, $header_array, $max_errors, $debug);
 
     return $content;
 }
@@ -1976,9 +1978,7 @@ public static function get_content_imdb($id,$showdata='',$enable_actors=1,$from_
             {
 
                 $result = self::get_proxy($url);
-                var_dump($result);
 
-                return ;
             }
             else
             {
@@ -2404,7 +2404,7 @@ public static  function get_data($key,$type,$debug=0)
 //    (
 //        [0] => /title/tt0118767/?ref_=fn_tt_tt_1
 //        [1] => https://m.media-amazon.com/images/M/MV5BOTMyMmIyYjUtYzZkZS00NTIxLTk4ODItNWI4ZWUzNDA5MWY4XkEyXkFqcGdeQXVyMTAzMDg2MjMx._V1_UX32_CR0,0,32,44_AL_.jpg
-//        [2] => Брат
+//        [2] => пїЅпїЅпїЅпїЅ
 //          [3] =>  (1997)
 //        )
 //        $poster =  $data['titlePosterImageModel']['url'];

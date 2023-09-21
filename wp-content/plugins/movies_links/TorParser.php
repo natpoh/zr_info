@@ -90,9 +90,9 @@ class TorParser extends MoviesAbstractDB {
         }
     }
 
-    public function get_url_content($url = '', &$header = '', $ip_limit = array(), $curl = false, $tor_mode = 0, $tor_agent = 0, $is_post = false, $post_vars = array(), $header_array = array(), $debug = false) {
+    public function get_url_content($url = '', &$header = '', $ip_limit = array(), $curl = false, $tor_mode = 0, $tor_agent = 0, $is_post = false, $post_vars = array(), $header_array = array(), $max_errors=10, $debug = false) {
         $content = '';
-        $get_url_data = $this->get_tor_url($url, $ip_limit, $log_data, $tor_mode, $debug);
+        $get_url_data = $this->get_tor_url($url, $ip_limit, $log_data, $tor_mode, $max_errors, $debug);
         $get_url = isset($get_url_data['url']) ? $get_url_data['url'] : '';
         if ($get_url) {
 
@@ -165,7 +165,7 @@ class TorParser extends MoviesAbstractDB {
         return $agent;
     }
 
-    private function get_tor_url($url = '', $ip_limit = array(), &$log_data = array(), $tor_mode = 0, $debug = false) {
+    private function get_tor_url($url = '', $ip_limit = array(), &$log_data = array(), $tor_mode = 0, $max_error_count=10, $debug = false) {
         if (!$ip_limit) {
             $ip_limit = $this->ip_limit;
         }
@@ -225,12 +225,12 @@ class TorParser extends MoviesAbstractDB {
                         'date_gt' => $curr_time - 3600
                     );
 
-                    $ip_error_last_hour_count = $this->get_logs($q_req, 1, 0, 'date', 'DESC', true);
+                    $ip_error_last_hour_count = $this->get_logs($q_req, 1, 0, 'date', 'DESC', true, $debug);
                     if ($debug) {
                         print_r($q_req);
-                        print_r($ip_error_last_hour_count);
+                        print_r( 'Last parsing error: ' .$ip_error_last_hour_count."\n");
                     }
-                    if ($ip_error_last_hour_count) {
+                    if ($max_error_count && $ip_error_last_hour_count>$max_error_count) {
                         // Get last error ips
                         $message = 'Last parsing error: ' . $ip_error_last_hour_count;
 
@@ -1073,7 +1073,7 @@ class TorParser extends MoviesAbstractDB {
      * Log
      */
 
-    public function get_logs($q_req = array(), $page = 1, $perpage = 20, $orderby = '', $order = 'ASC', $count = false) {
+    public function get_logs($q_req = array(), $page = 1, $perpage = 20, $orderby = '', $order = 'ASC', $count = false, $debug = false) {
         $q_def = array(
             'type' => -1,
             'status' => -1,
@@ -1163,6 +1163,9 @@ class TorParser extends MoviesAbstractDB {
                 . " FROM {$this->db['log']} l"
                 . " WHERE l.id>0" . $and_type . $and_url . $and_status . $and_ip . $and_driver . $and_date_gt . $and_date_lt . $and_orderby . $limit;
 
+        if ($debug){
+            print_r($sql."\n");
+        }
 
         if (!$count) {
             $result = $this->db_results($sql);

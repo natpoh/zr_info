@@ -361,8 +361,9 @@ class CriticAvatars extends AbstractDB {
 
             $mp = $this->get_mp();
             $tp = $mp->get_tp();
+            $max_errors=10;
 
-            $file_content = $tp->get_url_content($url, $headers, $ip_limit, true, $tor_mode, false, array(), array(), $debug);
+            $file_content = $tp->get_url_content($url, $headers, $ip_limit, true, $tor_mode, false, array(), array(), $max_errors, $debug);
         } else {
             // 2. Get cm parser
             $cp = $this->cm->get_cp();

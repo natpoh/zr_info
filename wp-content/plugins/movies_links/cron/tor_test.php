@@ -44,10 +44,10 @@ $tp = new TorParser();
 
 
 // Example post vars
-/*$post_vars = array(
-    'id' => 1,
-    'string' => 'test'
-);*/
+/* $post_vars = array(
+  'id' => 1,
+  'string' => 'test'
+  ); */
 $post_vars = array();
 
 
@@ -86,10 +86,15 @@ if ($_GET['mode']) {
  * 1 - random agent
  * 2 - get agent from db
  */
-$tor_agent=1;
+$tor_agent = 1;
 
-$header_array=array();
+$header_array = array();
 
-$content = $tp->get_url_content($url_test, $header, $ip_limit, $curl, $tor_mode, $tor_agent, $is_post, $post_vars, $header_array, $debug);
+/*
+ * Max errors for one site to one ip in hour
+ */
+$max_errors = 10;
+
+$content = $tp->get_url_content($url_test, $header, $ip_limit, $curl, $tor_mode, $tor_agent, $is_post, $post_vars, $header_array, $max_errors, $debug);
 
 print_r($content);
