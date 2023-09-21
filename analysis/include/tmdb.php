@@ -1894,7 +1894,7 @@ public static function reload_from_imdb($id,$debug=0)
 
 public static function get_proxy($url)
 {
-    global $debug;
+     $debug=0;
     // Movies links rating
     if (!function_exists('include_movies_links')) {
         include ABSPATH . 'wp-content/plugins/movies_links/movies_links.php';
@@ -2008,8 +2008,20 @@ public static function get_content_imdb($id,$showdata='',$enable_actors=1,$from_
         $url = "https://www.imdb.com/title/tt" . $final_value . '/';
 
 
+
+        if (isset($_GET['test_proxy']))
+        {
+
+            $result1 = self::get_proxy($url);
+
+        }
+        else
+        {
             global $RWT_PROXY;
             $result1 = GETCURL::getCurlCookie($url,$RWT_PROXY);
+
+        }
+
 
 
         if ($result1)
