@@ -2,7 +2,7 @@
 
 /**
  * PDO abstract
- * Description of Pdoa
+ * Description of Pdoa v 1.1
  *
  * @author brahman
  */

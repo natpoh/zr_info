@@ -523,7 +523,7 @@ body.theme_dark  .crowd_rwt{
     color: #818181;
 }
 body.theme_dark .r_content .note .note_show::after{
-    background-color: #040404;
+    background-color: #424141;
     border-right: 2px solid #333;
     border-top: 2px solid #333;
 }
@@ -1726,7 +1726,7 @@ div.sortable {
     }
     .movie_total_rating>.rating_block>div.family_friendly:after{
 
-        content:'Family Friendly Breackdown';
+        content:'Family Friendly Breakdown';
     }
     .movie_total_rating>.rating_block>div.edit:after{
 

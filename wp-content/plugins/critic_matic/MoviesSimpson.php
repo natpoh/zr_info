@@ -83,7 +83,7 @@ class MoviesSimpson extends AbstractDB {
         $actors = $this->db_results($sql_actors);
 
         if ($debug) {
-            //print_r($actors);
+            print_r(array($sql_actors,$actors));
         }
         if ($actors) {
             // Simpson's Diversity = 1 - (870 / (48*(48-1))) = 0.61

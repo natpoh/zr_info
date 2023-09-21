@@ -1892,6 +1892,56 @@ public static function reload_from_imdb($id,$debug=0)
     return $add;
 }
 
+public static function get_proxy($url)
+{
+    global $debug;
+//Movies links rating
+    if (!function_exists('include_movies_links')) {
+        include ABSPATH . 'wp-content/plugins/movies_links/movies_links.php';
+    }
+
+    include_movies_links();
+
+    if (!class_exists('TorParser')) {
+        require_once( MOVIES_LINKS_PLUGIN_DIR . 'TorParser.php' );
+    }
+
+    $tp = new TorParser();
+
+    $post_vars = array();
+    $is_post = false;
+    $ip_limit = array(
+        'h' => 4000, // 20 requests for one proxy per hour
+        'd' => 200000 // 200 requests for one proxy per day
+    );
+    /*
+     * Curl
+     * True - get from curl
+     * False - get from webdriver
+     */
+    $curl = true;
+
+    $tor_mode = 2;
+    /* Use proxy:
+     * 0 - tor and proxy
+     * 1 - tor
+     * 2 - proxy
+     */
+    /*
+     * $tor_agent
+     * 1 - random agent
+     * 2 - get agent from db
+     */
+    $tor_agent=1;
+
+    $header_array=array();
+
+    $content = $tp->get_url_content($url, $header, $ip_limit, $curl, $tor_mode, $tor_agent, $is_post, $post_vars, $header_array, $debug);
+
+    return $content;
+}
+
+
 public static function get_content_imdb($id,$showdata='',$enable_actors=1,$from_archive=0)
 {
     $final_value = sprintf('%07d', $id);
@@ -1917,7 +1967,22 @@ public static function get_content_imdb($id,$showdata='',$enable_actors=1,$from_
             //echo $url;
 
                 global $RWT_PROXY;
+
+
+
+
+
+            if (isset($_GET['test_proxy']))
+            {
+
+                $result = self::get_proxy($url);
+                var_dump($result);
+            }
+            else
+            {
                 $result = GETCURL::getCurlCookie($url,$RWT_PROXY);
+            }
+
 
 
             if (function_exists('gzencode')) {

@@ -718,11 +718,11 @@ function create_rating_content(object, m_id, search_block = 0) {
 
         var content_rating_adata = create_total_rating(object.total_rating, '', '') + rating_link_t;
 
-        var rdata = '<div class="rwt_stars" title="ZR Rating">' + total_rating_star + '</div>';
+        var rdata = '<div class="rwt_stars" title="ZR Aggregate Rating">' + total_rating_star + '</div>';
         content += add_rating_block('rwt_stars', rdata, content_rating_adata, 'rwt_rt', true);
 
     } else {
-        var rdata = '<div class="rwt_stars not_rated" title="ZR Rating"><span class="rating_result btn raitng_empty"></span></div>';
+        var rdata = '<div class="rwt_stars not_rated" title="ZR Aggregate Rating"><span class="rating_result btn raitng_empty"></span></div>';
         let rcontent = 'No ratings imported yet,<br> <b class="edit_review">Write a review?</b>';
         content += add_rating_block('rwt_stars', rdata, rcontent, 'rwt_rt', true);
     }

@@ -1,4 +1,5 @@
 <?php
+
 /*
  * /wp-content/plugins/critic_matic/cron/movie_simpson_cron.php?p=8ggD_23sdf_DSF&debug=1
  */
@@ -36,7 +37,10 @@ $count = 100;
 if ($_GET['c']) {
     $count = (int) $_GET['c'];
 }
-
+$mid = 0;
+if ($_GET['mid']) {
+    $mid = (int) $_GET['mid'];
+}
 
 // Check server load
 !class_exists('CPULOAD') ? include ABSPATH . "service/cpu_load.php" : '';
@@ -58,7 +62,11 @@ $cm->register_cron($cron_name);
 
 
 $ms = $cm->get_ms();
-$ms->run_cron($count, $debug, $force);
+if (!$mid) {
+    $ms->run_cron($count, $debug, $force);
+} else {
+    $ms->hook_update_movies(array($mid), $debug, $force);
+}
 
 
 $cm->unregister_cron($cron_name);
