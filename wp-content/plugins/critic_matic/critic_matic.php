@@ -1273,6 +1273,8 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     $sql = "ALTER TABLE `data_movie_erating` ADD `title` varchar(255) NOT NULL default '' AFTER movie_id";
     Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_erating` ADD `audience_count` int(11) NOT NULL DEFAULT '0' AFTER audience_rating";
+    Pdo_an::db_query($sql);
 
     // mediaversity
     $sql = "ALTER TABLE `data_movie_erating` ADD `mediaversity_rating` int(11) NOT NULL DEFAULT '0'";
