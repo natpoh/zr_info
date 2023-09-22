@@ -57,8 +57,8 @@ if ($_GET['is_post']) {
 }
 
 $ip_limit = array(
-    'h' => 20, // 20 requests for one proxy per hour
-    'd' => 200 // 200 requests for one proxy per day
+    'h' => 1, // 20 requests for one proxy per hour
+    'd' => 1 // 200 requests for one proxy per day
 );
 
 /*

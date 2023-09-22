@@ -1911,7 +1911,7 @@ public static function get_proxy($url)
     $post_vars = array();
     $is_post = false;
     $ip_limit = array(
-        'h' => 4000, // 20 requests for one proxy per hour
+        'h' => 1000, // 20 requests for one proxy per hour
         'd' => 200000 // 200 requests for one proxy per day
     );
     /*
@@ -1936,7 +1936,7 @@ public static function get_proxy($url)
 
     $header_array=array();
     
-    $max_errors = 1000;
+    $max_errors = 100;
 
     $content = $tp->get_url_content($url, $header, $ip_limit, $curl, $tor_mode, $tor_agent, $is_post, $post_vars, $header_array, $max_errors, $debug);
 

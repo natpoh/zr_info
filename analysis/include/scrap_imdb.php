@@ -547,7 +547,7 @@ function add_to_db_from_userlist()
 
 }
 
-function update_imdb_data($from_archive=0)
+function update_imdb_data($from_archive=0,$force_time=0)
 {
 ////update all imdb movies
 
@@ -573,10 +573,13 @@ function update_imdb_data($from_archive=0)
         $time = time()-$period;
         $where.=" OR (`data_movie_imdb`.add_time < ".$time." and  `data_movie_imdb`.`weight` =".$w." ) ";
     }
+    if ($force_time){
+        $where='data_movie_imdb.add_time < '.$force_time;
+    }
 
 
 ////get movie list
-    $sql ="SELECT `data_movie_imdb`.`movie_id` FROM `data_movie_imdb` WHERE  ".$where." order by `data_movie_imdb`.`weight` desc LIMIT 10";
+    $sql ="SELECT `data_movie_imdb`.`movie_id` FROM `data_movie_imdb` WHERE  ".$where." order by `data_movie_imdb`.`weight` desc LIMIT 25";
 echo $sql;
     $result =Pdo_an::db_results_array($sql);
 
@@ -585,12 +588,18 @@ echo $sql;
         $movie_id = $row['movie_id'];
 
         if ($movie_id) {
-            // sleep(0.5);
+            if ($force_time) {
+                sleep(0.5);
+            }
             $array_movie =  TMDB::get_content_imdb($movie_id,'',1,$from_archive);
             $add =  TMDB::addto_db_imdb($movie_id, $array_movie,'','','update_imdb_data');
             if ($add) {
                 echo $movie_id . ' updated<br> ' . PHP_EOL;
             }
+        }
+        if (check_cron_time())
+        {
+            break;
         }
 
     }
@@ -3195,7 +3204,15 @@ if (isset($_GET['force_surname_update'])) {
     return;
 }
 if (isset($_GET['update_imdb_data'])) {
-    update_imdb_data($_GET['update_imdb_data']);
+    check_load(50,0);
+    $force_time='';
+    if (isset($_GET['ftime']))
+    {
+        $force_time=intval($_GET['ftime']);
+
+    }
+
+    update_imdb_data($_GET['update_imdb_data'],$force_time);
     return;
 }
 if (isset($_GET['update_all_gender_cache'])) {

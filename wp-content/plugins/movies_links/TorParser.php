@@ -90,7 +90,7 @@ class TorParser extends MoviesAbstractDB {
         }
     }
 
-    public function get_url_content($url = '', &$header = '', $ip_limit = array(), $curl = false, $tor_mode = 0, $tor_agent = 0, $is_post = false, $post_vars = array(), $header_array = array(), $max_errors=10, $debug = false) {
+    public function get_url_content($url = '', &$header = '', $ip_limit = array(), $curl = false, $tor_mode = 0, $tor_agent = 0, $is_post = false, $post_vars = array(), $header_array = array(), $max_errors = 10, $debug = false) {
         $content = '';
         $get_url_data = $this->get_tor_url($url, $ip_limit, $log_data, $tor_mode, $max_errors, $debug);
         $get_url = isset($get_url_data['url']) ? $get_url_data['url'] : '';
@@ -165,7 +165,7 @@ class TorParser extends MoviesAbstractDB {
         return $agent;
     }
 
-    private function get_tor_url($url = '', $ip_limit = array(), &$log_data = array(), $tor_mode = 0, $max_error_count=10, $debug = false) {
+    private function get_tor_url($url = '', $ip_limit = array(), &$log_data = array(), $tor_mode = 0, $max_error_count = 10, $debug = false, $force = true) {
         if (!$ip_limit) {
             $ip_limit = $this->ip_limit;
         }
@@ -228,9 +228,9 @@ class TorParser extends MoviesAbstractDB {
                     $ip_error_last_hour_count = $this->get_logs($q_req, 1, 0, 'date', 'DESC', true, $debug);
                     if ($debug) {
                         print_r($q_req);
-                        print_r( 'Last parsing error: ' .$ip_error_last_hour_count."\n");
+                        print_r('Last parsing error: ' . $ip_error_last_hour_count . "\n");
                     }
-                    if ($max_error_count && $ip_error_last_hour_count>$max_error_count) {
+                    if ($max_error_count && $ip_error_last_hour_count > $max_error_count) {
                         // Get last error ips
                         $message = 'Last parsing error: ' . $ip_error_last_hour_count;
 
@@ -269,8 +269,10 @@ class TorParser extends MoviesAbstractDB {
             print "Ips available\n";
             print_r($ips);
         }
-
-
+        
+        if (!$serv_arr){
+            return '';
+        }
 
         // 4. Validate ips
         $ips_valid = array();
@@ -320,60 +322,72 @@ class TorParser extends MoviesAbstractDB {
             print_r($ips_on_limit);
         }
 
-        if (!$ips_valid) {
+        if (!$ips_valid && !$force) {
             return '';
         }
 
-        $ips_valid_count = sizeof($ips_valid);
+        if ($ips_valid) {
+            $ips_valid_count = sizeof($ips_valid);
 
-        if ($ips_valid_count < $this->min_valid_ips) {
-            $need_to_reboot = $this->min_valid_ips - $ips_valid_count;
-            for ($i = 0; $i < $need_to_reboot; $i++) {
-                // Reboot error ips
-                if (sizeof($ips_error)) {
-                    $to_reboot = array_pop($ips_error);
-                    $message = $to_reboot['message'];
-                    $this->reboot_service($to_reboot['service'], $message, false, $debug);
-                } else if (sizeof($ips_on_limit)) {
-                    $to_reboot = array_pop($ips_on_limit);
-                    $message = $to_reboot['message'];
-                    $this->reboot_service($to_reboot['service'], $message, false, $debug);
+            if ($ips_valid_count < $this->min_valid_ips) {
+                $need_to_reboot = $this->min_valid_ips - $ips_valid_count;
+                for ($i = 0; $i < $need_to_reboot; $i++) {
+                    // Reboot error ips
+                    if (sizeof($ips_error)) {
+                        $to_reboot = array_pop($ips_error);
+                        $message = $to_reboot['message'];
+                        $this->reboot_service($to_reboot['service'], $message, false, $debug);
+                    } else if (sizeof($ips_on_limit)) {
+                        $to_reboot = array_pop($ips_on_limit);
+                        $message = $to_reboot['message'];
+                        $this->reboot_service($to_reboot['service'], $message, false, $debug);
+                    }
                 }
             }
+
+            $service_ip = array();
+            foreach ($ips_valid as $item) {
+                $service_ip[$item['service']] = $item['ip_id'];
+            }
+
+            $ip_ids = array_values($service_ip);
+            if ($debug) {
+                print "Ips valid ids\n";
+                print_r($ip_ids);
+            }
+
+            // 5. Get last ip_ids from log
+            $sql = "SELECT ip FROM {$this->db['log']} WHERE status=1 AND type=0 AND IP IN(" . implode(',', $ip_ids) . ") ORDER BY date DESC LIMIT 1";
+            $last_ip = $this->db_get_var($sql);
+            if (!$last_ip) {
+                // Random ip from ids
+                // shuffle($ip_ids);
+                // Get last ip
+                $last_ip = current($ip_ids);
+            }
+
+            if ($debug) {
+                print "Last valid ip $last_ip\n";
+            }
+
+            $service_id = array_search($last_ip, $service_ip);
+            if (!$service_id) {
+                $service_id = current(array_keys($service_ip));
+            }
+
+            // 5. Tor url
+            $service = $serv_arr[$service_id];
+            
+        } else {
+            // Any service
+            if ($debug){
+                print "Any service\n";
+            }
+            $service_ids = array_keys($serv_arr);
+            shuffle($service_ids);
+            $service = $serv_arr[$service_ids[0]];
         }
 
-        $service_ip = array();
-        foreach ($ips_valid as $item) {
-            $service_ip[$item['service']] = $item['ip_id'];
-        }
-
-        $ip_ids = array_values($service_ip);
-        if ($debug) {
-            print "Ips valid ids\n";
-            print_r($ip_ids);
-        }
-
-        // 5. Get last ip_ids from log
-        $sql = "SELECT ip FROM {$this->db['log']} WHERE status=1 AND type=0 AND IP IN(" . implode(',', $ip_ids) . ") ORDER BY date DESC LIMIT 1";
-        $last_ip = $this->db_get_var($sql);
-        if (!$last_ip) {
-            // Random ip from ids
-            // shuffle($ip_ids);
-            // Get last ip
-            $last_ip = current($ip_ids);
-        }
-
-        if ($debug) {
-            print "Last valid ip $last_ip\n";
-        }
-
-        $service_id = array_search($last_ip, $service_ip);
-        if (!$service_id) {
-            $service_id = current(array_keys($service_ip));
-        }
-
-        // 5. Tor url
-        $service = $serv_arr[$service_id];
         if ($debug) {
             print_r($service);
         }
@@ -1163,8 +1177,8 @@ class TorParser extends MoviesAbstractDB {
                 . " FROM {$this->db['log']} l"
                 . " WHERE l.id>0" . $and_type . $and_url . $and_status . $and_ip . $and_driver . $and_date_gt . $and_date_lt . $and_orderby . $limit;
 
-        if ($debug){
-            print_r($sql."\n");
+        if ($debug) {
+            print_r($sql . "\n");
         }
 
         if (!$count) {
