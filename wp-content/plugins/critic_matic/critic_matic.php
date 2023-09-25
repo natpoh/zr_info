@@ -1559,6 +1559,14 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('last_upd', 'mid', 'need_upd'), "hook_movie_upd");
+    
+    /* 
+     * data_population_country
+     * Add top race   
+     */
+    $sql = "ALTER TABLE `data_population_country` ADD `top_race` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {

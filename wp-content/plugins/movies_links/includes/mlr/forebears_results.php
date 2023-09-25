@@ -20,15 +20,10 @@ if (sizeof($posts) > 0) {
             <thead>
                 <?php $this->sorted_head('id', 'id', $orderby, $order, $page_url) ?>
                 <?php $this->sorted_head('lastname', 'Lastname', $orderby, $order, $page_url) ?>                                     
-                <?php $this->sorted_head('topcountryname', 'Top country', $orderby, $order, $page_url) ?>    
-                <?php $this->sorted_head('topcountryrank', 'Top country rank', $orderby, $order, $page_url) ?>  
-            <th><?php print __('Rank races') ?></th>             
-            <th><?php print __('Rank verdict') ?></th>
-            <th><?php print __('Countries') ?></th>             
-            <th><?php print __('Races') ?></th>             
-            <th><?php print __('Verdict') ?></th>
-            <th><?php print __('Races Simpson') ?></th>             
-            <th><?php print __('Verdict Simpson') ?></th>
+            <th><?php print __('Countries') ?></th>   
+            <th><?php print __('Rank races') ?></th>  
+            <th><?php print __('Races') ?></th>  
+            <th><?php print __('Races Simpson') ?></th>  
             <th><?php print __('Meta') ?></th>
             </thead>
             <tbody>
@@ -58,22 +53,37 @@ if (sizeof($posts) > 0) {
                     $top_verdict = $mlr->calculate_top_verdict($item);
                     $rank_names = implode('<br />', $top_verdict['rows_race']);
                     $verdict_rank = $top_verdict['verdict'];
+                    $top_race_name = $top_verdict['top_race_name'];
                     ?>
                     <tr> 
                         <td><?php print $item->id ?></td>                             
                         <td><?php print $item->lastname ?></td>
-                        <td><?php print $item->topcountryname ?></td>
-                        <td><?php print $item->topcountryrank ?></td>  
-                        <td><?php print $rank_names ?></td>  
-                        <td><?php print $verdict_rank; ?></td> 
-                        <td><?php print $country_simpson_names ?></td>    
-                        <td><?php print $race_names ?></td>  
-                        <td><?php print $verdict; ?></td> 
-                        <td><?php print $race_simpson_names ?></td>  
-                        <td><?php print $verdict_simpson; ?></td>  
+                        <td>
+                            <p>Rank: <?php print $item->topcountryrank ?></p>
+                            <p>Top: <?php print $item->topcountryname ?></p>                            
+                            <p><?php print $country_simpson_names ?></p>
+                        </td>    
+                        <td>
+                            <p><?php print $rank_names ?></p>                            
+                            <p><?php print "Verdict: <b>" . $verdict_rank . "</b>"; ?></p>
+                            <?php if ($top_race_name): ?>
+                            <p><?php print "Custom verdict: <b>" . $top_race_name . "</b>"; ?></p>
+                            <?php endif; ?>
+                        </td>  
+                        
+                        
+                        <td>
+                            <p><?php print $race_names ?></p>
+                            <p><?php print "Verdict: <b>" . $verdict . "</b>"; ?></p>
+                        </td>                          
+                        <td>
+                            <p><?php print $race_simpson_names; ?></p>
+                            <p><?php print "Verdict: <b>" . $verdict_simpson . "</b>"; ?></p>
+                        </td>  
+
                         <td><?php print $verdict_meta; ?></td>
                     </tr> 
-    <?php } ?>
+                <?php } ?>
             </tbody>
         </table>  
     </form>

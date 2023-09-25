@@ -157,7 +157,7 @@ class Forebears extends MoviesAbstractDBAn {
                 'topcountry' => $top_country_id,
                 'topcountry_rank' => $top_country_rank_id,
             );
-            
+
             $name_exist = false;
             if (!$last_name_id) {
                 // Add lastname
@@ -362,7 +362,14 @@ class Forebears extends MoviesAbstractDBAn {
                 foreach ($population[$country_name]['ethnic'] as $race => $percent) {
                     $ret[$race] = round(($percent * $count * $simpson) / 100, 2);
                 }
-                return array('country' => $country_name, 'cca2' => $population[$country_name]['cca2'], 'races' => $ret, 'simpson' => $simpson);
+
+                return array(
+                    'country' => $country_name,
+                    'cca2' => $population[$country_name]['cca2'],
+                    'races' => $ret,
+                    'simpson' => $simpson,
+                    'top_race' => $population[$country_name]['top_race'],
+                );
             }
         }
         return array();
@@ -375,11 +382,16 @@ class Forebears extends MoviesAbstractDBAn {
         }
 
         $ret = array();
-        $sql = "SELECT country_name, cca2, ethnic_array_result, simpson FROM {$this->db['population']}";
+        $sql = "SELECT country_name, cca2, ethnic_array_result, simpson, top_race FROM {$this->db['population']}";
         $results = $this->db_results($sql);
         if ($results) {
             foreach ($results as $item) {
-                $ret[$item->country_name] = array('cca2' => $item->cca2, 'ethnic' => json_decode($item->ethnic_array_result), 'simpson' => $item->simpson);
+                $ret[$item->country_name] = array(
+                    'cca2' => $item->cca2,
+                    'ethnic' => json_decode($item->ethnic_array_result),
+                    'simpson' => $item->simpson,
+                    'top_race' => $item->top_race,
+                );
             }
         }
         $population = $ret;
@@ -420,7 +432,7 @@ class Forebears extends MoviesAbstractDBAn {
                     $rows_total_arr[$cca2] = $country_count;
                     $total += $country_count;
 
-                    $rows_total[] = $country . ': ' . $country_count . '<br /> - simpson: ' . $races_arr['simpson'];
+                    $rows_total[] = $country . ': ' . $country_count . '; S(' . round($races_arr['simpson'], 2) . ')';
                 }
             }
             arsort($race_total);
@@ -453,6 +465,8 @@ class Forebears extends MoviesAbstractDBAn {
         $rows_race_arr = array();
         $total = 0;
         $verdict = 0;
+        $top_race = 0;
+        $top_race_name = '';
 
         $country = $item->topcountryrank;
         $country_count = 100;
@@ -465,6 +479,7 @@ class Forebears extends MoviesAbstractDBAn {
             $race_str = array();
             $race_str_arr = array();
             $cca2 = $races_arr['cca2'];
+            $top_race = $races_arr['top_race'];
             foreach ($races_arr['races'] as $race => $count) {
                 if ($count > 0) {
                     $race_str[] = $race . ": " . $count;
@@ -492,6 +507,15 @@ class Forebears extends MoviesAbstractDBAn {
             $rows_race[] = 'Total: ' . implode(', ', $total_str);
         }
 
+        if ($top_race){
+                        
+            foreach ($this->race_small as $key => $value) {
+                if ($value==$top_race){
+                    $top_race_name = $key;
+                    break;
+                }
+            }
+        }
 
         return array(
             'rows_total' => $rows_total,
@@ -499,6 +523,8 @@ class Forebears extends MoviesAbstractDBAn {
             'rows_race_arr' => $rows_race_arr,
             'rows_total_arr' => $rows_total_arr,
             'verdict' => $verdict,
+            'top_race' => $top_race,
+            'top_race_name' => $top_race_name,
         );
     }
 
@@ -571,17 +597,24 @@ class Forebears extends MoviesAbstractDBAn {
             // 2. Calculate vedrict
             $verdict_arr = $this->calculate_fs_verdict($item->id, $simpson);
             if ($debug) {
-                print_r(array('verdict',$verdict_arr));
+                print_r(array('verdict', $verdict_arr));
             }
             $verdict_data = $this->theme_verdict($verdict_arr);
 
             // 3. Calculate top verdict
             $top_arr = $this->calculate_top_verdict($item);
             if ($debug) {
-                print_r(array('top verdict',$top_arr));
+                print_r(array('top verdict', $top_arr));
             }
             $top_data = $this->theme_verdict($top_arr);
 
+                                       
+            $verdict_rank = $top_data['verdict'];
+            // Custom verdict         
+            $top_race = $top_arr['top_race'];
+            if ($top_race) {
+                $verdict_rank = $top_race;
+            }
 
             // 4. Add verdict to db
             $last_upd = time();
