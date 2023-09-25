@@ -3265,17 +3265,18 @@ class SearchFacets extends AbstractDB {
             <div id="facets-<?php print $main_type ?>" class="facets ajload<?php print $this->cs->hide_facet_class($main_type, $this->filters) ?>" data-type="<?php print $main_type ?>">
                 <?php $head_toptip = $this->get_head_tooltip($filter) ?>
                 <div class="facet-title wacc<?php print $head_toptip['class'] ?>">
-                    <h3 class="title"><?php print $title ?></h3>   
+                    <h3 class="title"><?php print $title ?></h3>
                     <div class="acc">
                         <div class="chevron icon-down-open"></div>
                         <div class="chevronup icon-up-open"></div>
                     </div>
                 </div>
+
                 <?php print $head_toptip['content'] ?>
-                <div class="facets-ch"> 
+                <div class="facets-ch">
                     <?php print $tabs; ?>
                     <?php print $content; ?>
-                </div>                    
+                </div>
             </div>
             <?php
         }

@@ -581,7 +581,7 @@ class Forebears extends MoviesAbstractDBAn {
                 . " INNER JOIN {$this->db['country']} c ON c.id=l.topcountry"
                 . " INNER JOIN {$this->db['country']} cr ON cr.id=l.topcountry_rank"
                 . " LEFT JOIN {$this->db['verdict']} v ON v.lastname=l.lastname"
-                . " WHERE v.id is NULL ORDER BY l.id DESC LIMIT %d", (int) $count);
+                . " WHERE v.id is NULL OR v.last_upd=0 ORDER BY l.id DESC LIMIT %d", (int) $count);
         $result = $this->db_results($sql);
 
         if ($debug) {
@@ -621,10 +621,10 @@ class Forebears extends MoviesAbstractDBAn {
             $lastname = $this->escape($item->lastname);
             $data = array(
                 'last_upd' => $last_upd,
-                'verdict' => $verdict_data['verdict'],
+                'verdict' => $verdict_rank,
                 'lastname' => $lastname,
                 'description' => $verdict_data['desc'],
-                'verdict_rank' => $top_data['verdict'],
+                'verdict_rank' => $verdict_rank,
                 'description_rank' => $top_data['desc'],
             );
 
@@ -632,7 +632,21 @@ class Forebears extends MoviesAbstractDBAn {
                 print_r($data);
             }
 
-            $this->db_insert($data, $this->db['verdict']);
+            $exsist_sql = sprintf("SELECT id FROM {$this->db['verdict']} WHERE lastname='%s'", $lastname);
+            $exist_id = $this->db_get_var($exsist_sql);
+            if ($exist_id){
+                if ($debug) {
+                    print "Update: {$exist_id}\n";
+                }
+                // Update
+                $this->db_update($data, $this->db['verdict'], $exist_id);
+            } else {
+                if ($debug) {
+                    print "Insert\n";
+                }
+                // Insert
+                $this->db_insert($data, $this->db['verdict']);
+            }
         }
     }
 
