@@ -77,9 +77,9 @@ class MoviesSimpson extends AbstractDB {
         $mid = $movie->id;
 
         // Get movie actors
-        $sql_actors = sprintf("SELECT a.aid, a.type, m.n_forebears_rank, m.gender FROM {$this->db['meta_movie_actor']} a"
+        $sql_actors = sprintf("SELECT a.aid, a.type, m.verdict_weight, m.gender FROM {$this->db['meta_movie_actor']} a"
                 . " INNER JOIN {$this->db['data_actors_meta']} m ON m.actor_id = a.aid"
-                . " WHERE a.mid=%d AND m.n_forebears_rank>0", $mid);
+                . " WHERE a.mid=%d AND m.verdict_weight>0", $mid);
         $actors = $this->db_results($sql_actors);
 
         if ($debug) {
@@ -92,7 +92,7 @@ class MoviesSimpson extends AbstractDB {
               (
               [aid] => 742550
               [type] => 2
-              [n_forebears_rank] => 8
+              [verdict_weight] => 8
               )
              */
 
@@ -102,7 +102,7 @@ class MoviesSimpson extends AbstractDB {
              * 0 - all
              */
             foreach ($actors as $actor) {
-                $rank = $actor->n_forebears_rank;
+                $rank = $actor->verdict_weight;
                 $gender = $actor->gender;
                 $type = $actor->type;
                 $races[0][$rank] = isset($races[0][$rank]) ? ($races[0][$rank] + 1) : 1;
