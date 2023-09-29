@@ -9,8 +9,8 @@ define('DDOS_MAX_POST', 60);
 define('DDOS_POST_BAN', 600);
 define('ACCESS_LOG_PATH', '/var/log/nginx/access.log');
 
-if (!defined('ABSPATH'))
-    define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
+if (!defined('ABSPATH'))   
+    define('ABSPATH', dirname(__FILE__, 3) . '/');
 
 if (!defined('BAN_INFO_TEMP_FOLDER'))
     define('BAN_INFO_TEMP_FOLDER', ABSPATH . 'wp-content/uploads/baninfo');
@@ -533,7 +533,7 @@ class IpBanService extends AbstractDBi {
                 @wp_mail($email, $subject, $notify_message, $message_headers);
             }
         } else {
-            foreach (EMAIL_TO as $email) {
+            foreach ($this->mail_to as $email) {
                 mail($email, $subject, $notify_message, $message_headers);
             }
         }
