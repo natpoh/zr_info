@@ -1,5 +1,5 @@
 <?php
-if (!defined('ABSPATH'))
+if (!defined('ABSPATH'))   
     define('ABSPATH', dirname(__FILE__, 3) . '/');
 
 if (!defined('BAN_INFO_TEMP_FOLDER'))
