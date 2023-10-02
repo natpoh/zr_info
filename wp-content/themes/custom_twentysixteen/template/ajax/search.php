@@ -3,6 +3,9 @@
 /*
  * Ajax search for critic matic api
  */
+if (empty($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) != 'xmlhttprequest') {
+    exit();
+}
 
 $search_data = $_POST;
 $ts = $search_data['ts'];

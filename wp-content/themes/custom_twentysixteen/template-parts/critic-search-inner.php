@@ -199,10 +199,11 @@
                                     <?php
                                     foreach ($total_list as $movie):
                                         global $post_an, $video_api;
-
+                                       
 
                                         $sortval = $movie->sortval;
-                                        $movie->sort_val_theme = $search_front->theme_sort_val($sortval);
+                                        $sortsecond = isset($movie->sortsecond)?$movie->sortsecond:0;
+                                        $movie->sort_val_theme = $search_front->theme_sort_val($sortval, $sortsecond);
 
                                         $post_an = $ma->get_post($movie->id);
 

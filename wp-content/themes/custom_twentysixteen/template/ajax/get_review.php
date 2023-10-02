@@ -1,4 +1,7 @@
 <?php
+//if (empty($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) != 'xmlhttprequest') {
+//    exit();
+//}
 
 //ini_set('error_reporting', E_ERROR);
 //ini_set('display_errors','On');

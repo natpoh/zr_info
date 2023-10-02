@@ -127,7 +127,7 @@ body.theme_dark .single_post .movie_summary .block span {
     position: relative;
     margin-top: -5px;
     border-radius: 0 0 7px 7px;
-    background-color: #04253f;
+    background-color: var(--blue-default);
     transition: all 0.2s;
     outline: none !important;
     max-width: 220px;
@@ -142,7 +142,7 @@ body.theme_dark .single_post .movie_summary .block span {
     z-index: 110;
 }
 .watch_buttom:hover{
-    background-color: #083764;
+    background-color: var(--blue-light-1);
 }
 
 .movie_button_action .add_succ
@@ -940,7 +940,7 @@ body.theme_dark .page_custom_block .tab-list button{
 }
 
 .page_custom_block .tab-list button.selected,body.theme_dark  .page_custom_block .tab-list button.selected  {
-    background-color: #0a4f7e;
+    background-color: var(--blue-default);
     color: #fff;
 }
 
@@ -1712,7 +1712,7 @@ div.sortable {
 
         content:'Rating';
     }
-    .movie_total_rating>.rating_block>div.big_business:after{
+    .movie_total_rating>.rating_block>div.indie:after{
 
         content:'Finances';
     }

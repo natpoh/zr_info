@@ -752,6 +752,7 @@ class CriticAudience extends AbstractDb {
         $voted = false;
         $queue_id = 0;
         $cid = 0;
+        $time = $this->curr_time();
 
         // Queue user
         $user = wp_get_current_user();
@@ -767,6 +768,7 @@ class CriticAudience extends AbstractDb {
         if ($queue_id) {
             $voted = true;
             $post_queue = $this->get_post_queue($queue_id);
+ 
             // Post exist?
             if ($post_queue->status == 1) {
                 // Author is voted?
@@ -778,22 +780,23 @@ class CriticAudience extends AbstractDb {
                 }
             }
         }
-
+        
         $ret = 0;
         $au_data = new stdClass();
         $au_data->status = 0;
         if ($voted) {
             $ret = 1;
+            $post = '';
+            $date_add = 0;
 
             // User allow edit post
             $ss = $this->cm->get_settings();
-            if ($ss['audience_post_edit']) {
-                $time_to_edit = $ss['audience_post_edit'];
-                $date_add = 0;
+            $time_to_edit = $ss['audience_post_edit'];
 
+            if ($ss['audience_post_edit']) {
+             
                 if ($cid) {
                     $post = $this->cm->get_post($cid);
-
                     if ($post) {
                         $date_add = $post->date_add;
                         $au_data = $this->get_audata_post($post);
@@ -807,7 +810,6 @@ class CriticAudience extends AbstractDb {
                     $au_data = $post_queue;
                 }
                 if ($date_add) {
-                    $time = $this->curr_time();
                     if ($time < ($date_add + ($time_to_edit * 60))) {
                         // Edit mode
                         $ret = 2;
@@ -820,6 +822,25 @@ class CriticAudience extends AbstractDb {
                             }
                         }
                     }
+                }
+            }
+
+            if ($ret != 2) {
+                if (!$date_add) {
+                    if ($cid) {
+                        $post = $this->cm->get_post($cid);
+                        if ($post) {
+                            $date_add = $post->date_add;
+                        }
+                    }
+                }
+                
+                
+
+                if ($date_add>0 && $time > ($date_add + ($time_to_edit * 60))) {
+                    // Edit mode expired, user can add new review
+                    $au_data->status = 0;
+                    $ret = 3;
                 }
             }
         }
@@ -923,7 +944,7 @@ class CriticAudience extends AbstractDb {
         $query = sprintf("SELECT am.cid FROM {$this->db['authors']} a "
                 . "INNER JOIN {$this->db['authors_meta']} am ON am.aid=a.id "
                 . "INNER JOIN {$this->db['meta']} m ON m.cid=am.cid "
-                . "WHERE m.fid=%d AND a.name = '%s'", (int) $fid, $this->escape($author_name));
+                . "WHERE m.fid=%d AND a.name = '%s' ORDER BY am.cid DESC LIMIT 1", (int) $fid, $this->escape($author_name));
         $result = $this->db_get_var($query);
         return $result;
     }
@@ -941,13 +962,13 @@ class CriticAudience extends AbstractDb {
     }
 
     public function get_author_post_queue($unic_id, $fid) {
-        $query = sprintf("SELECT id FROM {$this->db['audience']} WHERE top_movie=%d AND unic_id = '%s'", (int) $fid, $this->escape($unic_id));
+        $query = sprintf("SELECT id FROM {$this->db['audience']} WHERE top_movie=%d AND unic_id = '%s' ORDER BY id DESC LIMIT 1", (int) $fid, $this->escape($unic_id));
         $result = $this->db_get_var($query);
         return $result;
     }
 
     public function get_author_post_queue_by_wpuid($wp_uid, $fid) {
-        $query = sprintf("SELECT id FROM {$this->db['audience']} WHERE top_movie=%d AND wp_uid = '%d'", (int) $fid, $wp_uid);
+        $query = sprintf("SELECT id FROM {$this->db['audience']} WHERE top_movie=%d AND wp_uid = '%d' ORDER BY id DESC LIMIT 1", (int) $fid, $wp_uid);
         $result = $this->db_get_var($query);
         return $result;
     }
@@ -956,7 +977,7 @@ class CriticAudience extends AbstractDb {
         $query = sprintf("SELECT am.cid FROM {$this->db['authors']} a "
                 . "INNER JOIN {$this->db['authors_meta']} am ON am.aid=a.id "
                 . "INNER JOIN {$this->db['meta']} m ON m.cid=am.cid "
-                . "WHERE m.fid=%d AND a.wp_uid = %d", (int) $fid, $wp_uid);
+                . "WHERE m.fid=%d AND a.wp_uid = %d ORDER BY am.cid DESC LIMIT 1", (int) $fid, $wp_uid);
         $result = $this->db_get_var($query);
         return $result;
     }

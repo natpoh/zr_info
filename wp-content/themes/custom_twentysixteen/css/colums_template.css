@@ -224,8 +224,8 @@ body .movie_scroller div.column_content.flex.scroller  .movie_container {
 }
 
 body .movie_scroller .flex_movies_block .movie_poster {
-padding: 0px;
-box-shadow: none;
+    padding: 0px;
+    box-shadow: none;
 }
 
 
@@ -1125,11 +1125,11 @@ body .actor_popup, body.theme_dark .actor_popup {
     font-size: 14px;
 }
 .actor_popup .actor_image{
-opacity: 0.68;
+    opacity: 0.68;
     mix-blend-mode: plus-lighter;
- }
- .actor_popup   .actor_crowdsource{
-margin-top: 15px;
+}
+.actor_popup   .actor_crowdsource{
+    margin-top: 15px;
 }
 .actor_popup a
 {
@@ -1326,7 +1326,7 @@ body.theme_dark .big_block_comment {
     width: auto;
 }
 .movie_touch .item_type{
-   display: block;
+    display: block;
 }
 
 .popup-content #disqus_thread{
@@ -1602,7 +1602,7 @@ a.update_data.rotate::before {
 
 .theme_dark a.update_data::before {
 
-filter: invert(1);
+    filter: invert(1);
 }
 
 .row.hidden {
@@ -1637,7 +1637,7 @@ body section.section_actors  .img_tooltip{
 }
 
 section.inner_content.section_actors div.column_content div.card.style_1 {
-    background: #8a8989;
+    background: #f6f6f6;
     box-shadow: 3px 3px 2px rgba( 0, 0, 0, 0.3 );
 }
 
@@ -1831,9 +1831,9 @@ body.theme_dark  .inner_content .disqus_see_more {
     color: rgb(0, 122, 204) !important;
 }
 .disqus_autor_name  a.disqus_addtime{
-font-weight: 500;
-font-size: 12px;
-color: #687a86!important;
+    font-weight: 500;
+    font-size: 12px;
+    color: #687a86!important;
 }
 
 .disqus_reply, .disqus_view {
@@ -2143,7 +2143,7 @@ body .user-reactions-single .user-reactions-button.reaction-show .user-reactions
     max-width: 465px;
     justify-content: space-around;
     background-color: transparent;
-    
+
 }
 
 
@@ -2195,7 +2195,7 @@ body .audience-tab .tab-a a::after {
 }
 
 body .audience-tab.tab-wrapper .nav-tab.active a::after {
-filter: invert();
+    filter: invert();
 }
 
 .rating_block {
@@ -2374,7 +2374,7 @@ p.l_c_g::before {
 }
 
 .column_header .dropdown-content {
-     display: none;
+    display: none;
     position: absolute;
     background-color: #f9f9f9;
     box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
@@ -2547,7 +2547,7 @@ body.theme_dark  .bg_woke, body.theme_dark  .bg_woke a, body.theme_dark  .bg_wok
     filter: invert() drop-shadow(1px 1px 1px rgb(0, 0, 0));
 }
 .card_movie_type.ctype_tvseries{
-  background: url("../images/tv.svg") 0px 0px no-repeat;
+    background: url("../images/tv.svg") 0px 0px no-repeat;
     background-size: cover;
 }
 .card_movie_type.ctype_movies{
@@ -2590,7 +2590,7 @@ body.theme_dark .row_head {
     padding: 10px 0 0 0;
 }
 .row_margin{
-margin-top: 15px;
+    margin-top: 15px;
 }
 .row_text {
     padding: 2px 0px;
@@ -2609,7 +2609,7 @@ margin-top: 15px;
     display: flex;
 }
 .popup_header{
-margin-bottom: 5px;
+    margin-bottom: 5px;
 }
 .indie .nte_in a, .indie .nte_in a:hover {
     color: green;
@@ -2690,7 +2690,7 @@ body.theme_dark .gray_comment {
 }
 
 .movie_total_rating .rating_block > .rwt_stars .rating_result .rating_result_total {
-  filter:unset;
+    filter:unset;
 }
 .rating_block > .rwt_stars .note_show .rating_result {
     filter: unset;
@@ -2818,7 +2818,7 @@ body.theme_dark  .rating_block .imdb_rating {
     cursor: pointer;
     font-family: 'Encode Sans Condensed',Lato;
 }
- .exlink:hover {
+.exlink:hover {
     color: #007acc;
 }
 body.theme_dark .exlink:hover {
@@ -2983,8 +2983,8 @@ body.theme_dark .tablesorter-blackice .t_column{
     margin-left: 8px;
 }
 .nte_info .nte, .nte_info .nte .btn{
-width: 100%;
-height: 100%;
+    width: 100%;
+    height: 100%;
 }
 .nte_info .nte  .nte_ajax_loading{
     width: 80px;
@@ -3032,6 +3032,11 @@ height: 100%;
     background-color: #e8e6e6;
     transform: rotate(45deg);
     z-index: -1;
+}
+
+
+.tlp_cnt a{
+    text-decoration: underline;
 }
 .theme_dark .tlp_cnt, .theme_dark .tlp_cnt::before {
 
@@ -3098,7 +3103,7 @@ body.theme_dark .popup-content .wpcr3_respond_2 .wpcr3_div_2 {
     margin-bottom: 10px;
 }
 .note_show_content_rwt_rt>div>span{
-width: 50%;
+    width: 50%;
 }
 
 .note_show_content_rwt_rt>div>span:first-of-type{
@@ -3115,7 +3120,7 @@ width: 50%;
     position: relative;
     left: 0;
     margin: 0px 0 0 4px;
-     padding: 0;
+    padding: 0;
 }
 
 .rwt_stars .note_show {
@@ -3580,7 +3585,7 @@ body.theme_dark .row .col_desc {
     border-radius: 3px;
 }
 body.theme_dark .rating select {
-color: #000;
+    color: #000;
 
 }
 .rating select option {
@@ -3588,7 +3593,7 @@ color: #000;
 }
 
 body.theme_dark .popup-content  textarea{
-background-color: rgba(0, 0, 0, 0.45);
+    background-color: rgba(0, 0, 0, 0.45);
 }
 
 
@@ -3758,13 +3763,13 @@ body.theme_dark select.movie_link {
     font-weight: 700;
     color: #000;
     text-align: left;
-    background-color: #b7b7b7;
+    background-color: #f0f0f0;
     border: 1px solid #232323;
     text-shadow:none;
 }
 
 body.theme_dark  .tablesorter-blackice th, body.theme_dark  .tablesorter-blackice thead td {
-;
+    ;
     color: #e5e5e5;
     text-shadow: 0 1px 0 rgba(0,0,0,.7);
     background-color: #111;
@@ -3775,7 +3780,7 @@ body.theme_dark  .tablesorter-blackice th, body.theme_dark  .tablesorter-blackic
     padding: 4px;
     color: #000;
     vertical-align: top;
-    background-color: #e6e6e6;
+    background-color: #fcfcfc;
     border: 1px solid #6f6d6d;
     vertical-align: middle;
 }
@@ -4044,12 +4049,12 @@ body.theme_dark .highcharts-legend-title tspan{
     }
 
 
-        .column_header h2 {
-            font-size: 25px;
-            text-align: center;
-            line-height: 30px;
-            margin-top: 15px;
-        }
+    .column_header h2 {
+        font-size: 25px;
+        text-align: center;
+        line-height: 30px;
+        margin-top: 15px;
+    }
 
     body .align_left {
         text-align: left;
@@ -4150,7 +4155,7 @@ body.theme_dark .highcharts-legend-title tspan{
         font-size: 16px;
     }
 
-.max_with   .s_container {
+    .max_with   .s_container {
         min-height: 250px;
     }
 
@@ -4211,7 +4216,7 @@ body.theme_dark .highcharts-legend-title tspan{
     .sort-more .note_show {
         left:50%;
     }
-    
+
     .note_show::before {
 
         left: 212px;
@@ -4232,15 +4237,14 @@ body.theme_dark .highcharts-legend-title tspan{
     #spform .tab-wrapper {
         display: flex;
     }
-    .tab-wrapper li.nav-tab {
-        text-align: center;
-    }
+
+
     .note_show::after {
 
         left: 214px;
 
     }
-    
+
     .sort-more .note_show::after {
         left:50%;
     }
@@ -4304,5 +4308,17 @@ body.theme_dark .highcharts-legend-title tspan{
     .review_autor_name {
         width: calc(100% - 135px);
         min-width: 160px;
+    }
+}
+
+@media screen and (max-width: 550px) {
+
+    .tab-wrapper li.nav-tab {
+        text-align: center;
+        padding: 0 5px 5px 0;
+
+    }
+    .tab-wrapper li.nav-tab a {
+        border-radius: 4px;
     }
 }

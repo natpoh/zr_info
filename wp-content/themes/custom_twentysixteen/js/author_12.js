@@ -124,7 +124,7 @@ function uploadAvatar() {
                 var author = $('#author_id');
                 var av_size = $('#author_image').attr('data-size');
                 $.ajax({
-                    url: cm_url + "cron/ajax_pro_img.php",
+                    url: cm_url + "ajax/ajax_pro_img.php",
                     type: "POST",
                     data: {"author_id": author.attr('data-id'), "change_type": 1, "av_type": select, "av_size": av_size},
                     success: function (data) {
@@ -219,7 +219,7 @@ function uploadAvatar() {
                     size: 'viewport'
                 }).then(function (response) {
                     $.ajax({
-                        url: server_url + cm_url + "cron/ajax_pro_img.php",
+                        url: server_url + cm_url + "ajax/ajax_pro_img.php",
                         type: "POST",
                         data: {"image": response, "author_id": author.attr('data-id'), "no_upd": 1},
                         success: function (data) {
@@ -249,7 +249,7 @@ function uploadAvatar() {
             function update_author_filename(filename = '') {
                 var author = $('#author_id');
                 $.ajax({
-                    url: cm_url + "/cron/ajax_pro_img.php",
+                    url: cm_url + "/ajax/ajax_pro_img.php",
                     type: "POST",
                     data: {"author_id": author.attr('data-id'), "filename": filename},
                     success: function (data) {

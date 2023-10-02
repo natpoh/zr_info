@@ -178,7 +178,7 @@ AND table_schema='".DB_NAME_AN."'";
 
             unset($array['oper']);
 
-//var_dump($array);
+var_dump($array);
 
             foreach ($array as $i => $v) {
                 if (strstr($v, '\"')) {
@@ -193,7 +193,10 @@ AND table_schema='".DB_NAME_AN."'";
                     $v = str_replace("\\/", "\/", $v);
                     $array[$i] = $v;
                 }
-
+                if (strstr($v, "\\")) {
+                    $v =  preg_replace('/\\\\+/', '\\', $v);
+                    $array[$i] = $v;
+                }
                 if ($i=='ip')
                 {
                     if (strstr($v,'span'))
@@ -206,7 +209,7 @@ AND table_schema='".DB_NAME_AN."'";
 
 
             }
-
+            var_dump($array);
             $countval = count($array);
 
             $sql = "SELECT *  FROM `INFORMATION_SCHEMA`.`COLUMNS`  WHERE `TABLE_SCHEMA`='".DB_NAME_AN."' AND `TABLE_NAME`='" . $table_data . "'   ORDER BY `COLUMNS`.`ORDINAL_POSITION` ASC";

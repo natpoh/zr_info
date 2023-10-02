@@ -193,6 +193,8 @@
                         if (site_theme == 'theme_dark')
                         {
                             document.querySelector('body').classList.add('theme_dark');
+                            document.querySelector('html').setAttribute('theme_dark','');
+
                         } else
                         {
                             document.querySelector('body').classList.add('theme_white');
@@ -200,10 +202,25 @@
 
                         var left_sidebar = localStorage.getItem('left_sidebar');
 
+                        console.log('left_sidebar',left_sidebar);
+                        const siteHeaderMenu = document.querySelector('.site-header-menu');
                         if (left_sidebar == 'hidden')
                         {
-                            const siteHeaderMenu = document.querySelector('.site-header-menu');
+
                             siteHeaderMenu.classList.add('hidden_left');
+
+                        }
+                        else if (!left_sidebar)
+                        {
+
+                            let bodyHasClass = document.body.classList.contains('search-results');
+                            let screenWidth = window.innerWidth;
+                            if (bodyHasClass && screenWidth < 1550) {
+                                siteHeaderMenu.classList.add('hidden_left');
+                            } else  if ( screenWidth < 1300) {
+                                siteHeaderMenu.classList.add('hidden_left');
+                            }
+
 
                         }
 

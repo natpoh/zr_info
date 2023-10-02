@@ -1,5 +1,9 @@
 <?php
 
+if (empty($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) != 'xmlhttprequest') {
+    exit();
+}
+
 // WP api
 require_once($_SERVER['DOCUMENT_ROOT'] . '/wp-config.php');
 /*
@@ -36,6 +40,7 @@ if (isset($_GET['id'])) {
      * 0 - no vote
      * 1 - voted
      * 2 - can edit
+     * 3 - can add new review
      */
     if ($ret == 0) {
         print $ca->audience_form($id);
@@ -45,6 +50,8 @@ if (isset($_GET['id'])) {
     } else if ($ret == 2) {
         // Can edit        
         print $ca->audience_form($id, $avoted['au_data']);
+    } else if ($ret == 3) {
+        print $ca->audience_form($id);
     }
 }
 

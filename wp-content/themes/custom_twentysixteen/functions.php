@@ -78,6 +78,41 @@ wp_enqueue_style('fontello', $themepath . '/fontello/css/fontello.css', array(),
 
 
 
+
+
+function add_custom_css() {
+
+    $color_scheme = array('1'=>'#ff0000','2'=>'#ffff00','3'=>'#0000ff','4'=>'#00ff00');
+
+
+    $primary_colors = array();
+    for ($i = 1; $i <= 4; $i++) {
+        $primary_colors[] = get_theme_mod('primary_color_' . $i, $color_scheme[$i - 1]);
+    }
+
+
+    $custom_css = ":root {";
+    for ($i = 0; $i < 4; $i++) {
+        $custom_css .= "--primary-color-" . ($i + 1) . ": " . $primary_colors[$i] . "; ";
+    }
+    $custom_css.= "}";
+
+    echo '<style type="text/css">' . $custom_css . '</style>';
+}
+
+
+
+
+
+//add_action('wp_head', 'add_custom_css');
+
+if(!class_exists('ThemeColor'))
+{
+
+    wp_enqueue_style('custom-plugin-styles', get_template_directory_uri() . '/css/theme-style-colors.css',LASTVERSION);
+}
+
+
 function custom_login_logo() {
 
 

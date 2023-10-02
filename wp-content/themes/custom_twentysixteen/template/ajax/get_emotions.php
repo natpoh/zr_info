@@ -1,5 +1,9 @@
 <?php
 
+if (empty($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) != 'xmlhttprequest') {
+    exit();
+}
+
 // WP api
 require_once($_SERVER['DOCUMENT_ROOT'] . '/wp-config.php');
 global $cfront;

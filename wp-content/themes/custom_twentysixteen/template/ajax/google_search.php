@@ -1,4 +1,8 @@
 <?php
+if (empty($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) != 'xmlhttprequest') {
+    exit();
+}
+
 error_reporting(E_ERROR);
 if (!defined('ABSPATH'))
     define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');

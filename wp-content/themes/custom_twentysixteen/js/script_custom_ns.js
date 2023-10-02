@@ -168,7 +168,7 @@ jQuery(document).ready(function () {
 
 
         jQuery.ajax({
-            type: 'post',
+            type: 'POST',
             data: {id: id, 'request': 'get_trailer'},
             url: window.location.protocol + template_path + "get_movie_data.php",
             success: function (html) {
@@ -200,11 +200,15 @@ jQuery(document).ready(function () {
         if (jQuery('body').hasClass('theme_dark'))
         {
         jQuery('body').removeClass('theme_dark').addClass('theme_white');
+
+            document.querySelector('html').removeAttribute('theme_dark');
             localStorage.setItem('site_theme','theme_white');
+
         }
         else
         {
          jQuery('body').removeClass('theme_white').addClass('theme_dark');
+            document.querySelector('html').setAttribute('theme_dark','');
             localStorage.setItem('site_theme','theme_dark');
         }
 
@@ -367,7 +371,7 @@ function init_nte() {
                                 //resize();
                         }
 
-                        // Обновляем значения первоначальной ширины и высоты окна
+                        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
                         initialWidth = currentWidth;
                         initialHeight = currentHeight;
                     });

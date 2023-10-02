@@ -880,7 +880,7 @@ critic_search.add_clear_all = function () {
 
     var filter_len = $('.filters-wrapper .filter:not(.sohf)').length;
     if (filter_len >= 1 && !$(".filters-wrapper .clear-all").length) {
-        $('.filters-wrapper .save-filters').before('<li class="filter clear-all" title="Clear filters"><a href="' + clear_url + '">Clear <span class="close"></span></a></li>');
+        $('.filters-wrapper .save-filters').before('<li class="filter clear-all" title="Reset all search filters"><a href="' + clear_url + '">Reset filters <span class="close"></span></a></li>');
     }
 }
 

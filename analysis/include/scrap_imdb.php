@@ -396,9 +396,13 @@ function get_array($id='')
 
 function disqus_comments($data='')
 {
+
     !class_exists('DISQUS_DATA') ? include ABSPATH . "analysis/include/disqus.php" : '';
 
-    DISQUS_DATA::disqus_comments($data);
+    global $debug;
+    if (isset($_GET['debug'])){$debug=$_GET['debug'];}
+
+    DISQUS_DATA::disqus_comments($data,$debug);
 
 
 }
@@ -876,7 +880,7 @@ function update_crowd_verdict($id='')
 }
 
 
-function download_crowd_images($id)
+function download_crowd_images($id='')
 {
     echo 'download_crowd_images<br>';
 if ($id)

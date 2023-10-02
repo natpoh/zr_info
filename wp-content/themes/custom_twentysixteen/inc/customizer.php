@@ -365,6 +365,32 @@ function twentysixteen_customize_register( $wp_customize ) {
 			)
 		)
 	);
+
+    $color_scheme_custom = array('1'=>'#ff0000','2'=>'#ffff00','3'=>'#0000ff','4'=>'#00ff00');
+
+    for ($i = 1; $i <= 4; $i++) {
+        $wp_customize->add_setting(
+            'primary_color_' . $i,
+            array(
+                'default'           => $color_scheme_custom[$i],
+                'sanitize_callback' => 'sanitize_hex_color',
+                'transport'         => 'postMessage',
+            )
+        );
+
+        $wp_customize->add_control(
+            new WP_Customize_Color_Control(
+                $wp_customize,
+                'primary_color_' . $i,
+                array(
+                    'label'   => __( 'Custom Color ' . $i, 'twentysixteen' ),
+                    'section' => 'colors',
+                )
+            )
+        );
+    }
+
+
 }
 add_action( 'customize_register', 'twentysixteen_customize_register', 11 );
 
@@ -671,9 +697,11 @@ function twentysixteen_get_color_scheme_css( $colors ) {
 		)
 	);
 
+
+
 	return <<<CSS
 	/* Color Scheme */
-
+   
 	/* Background Color */
 	body {
 		background-color: {$colors['background_color']};

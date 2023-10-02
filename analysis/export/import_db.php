@@ -667,6 +667,7 @@ class Import
 
         if (DB_SYNC_MODE == 2) {
 
+
                     ///get remote id
                     $array = array('table' => $table, 'column' => 'id');
                     $id_array = self::get_remote_id($array);
@@ -683,6 +684,8 @@ class Import
                     }
 
             return [0,0];
+
+
         }
         else return [1,0];
 

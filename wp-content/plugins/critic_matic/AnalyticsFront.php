@@ -384,7 +384,7 @@ class AnalyticsFront extends SearchFacets {
                 $name = $value;
                 $slug = $value;
                 $tags[] = array('name' => $name, 'type' => $key, 'name_pre' => 'Year ', 'id' => $slug, 'parent' => 'year', 'minus' => $minus);
-            } else if ($key == 'budget') {
+            } /*else if ($key == 'budget') {
                 $name = $value;
                 $slug = $value;
                 if (strstr($name, '-')) {
@@ -394,7 +394,7 @@ class AnalyticsFront extends SearchFacets {
                     $name = $this->get_budget_showkey($value);
                 }
                 $tags[] = array('name' => $name, 'type' => $key, 'name_pre' => 'Budget ', 'id' => $slug, 'parent' => 'budget', 'minus' => $minus);
-            }
+            }*/
         }
         return $tags;
     }

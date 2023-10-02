@@ -3,6 +3,9 @@
 error_reporting('E_ALL');
 ini_set('display_errors', 'On');
 
+if (empty($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) != 'xmlhttprequest') {
+    exit();
+}
 
 /*
  * New api after 23.07.2021

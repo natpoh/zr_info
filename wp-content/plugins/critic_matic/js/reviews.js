@@ -275,9 +275,9 @@ wpcr3a.captchaResponse = "";
 
 wpcr3a.ajaxPost = function (parent, data, cb) {
     //var host = window.location.host;
-    var url = '/service/audience.php';
+    var url = '/service/ajax/audience.php';
     //if (host == "zeitgeistreviews.com") {
-    //    var url = 'https://service.zeitgeistreviews.com/audience.php';
+    //    var url = 'https://service.zeitgeistreviews.com/ajax/audience.php';
     //}
     return jQuery.ajax({
         type: "POST",

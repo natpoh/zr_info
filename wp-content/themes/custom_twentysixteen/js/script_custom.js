@@ -552,7 +552,7 @@ var site_url = window.location.protocol +"//"+window.location.host;
 
 
             jQuery.ajax({
-                type: 'post',
+                type: 'POST',
             data: { action: "advanced_search_data" },
                 url:site_url+template_path+"advanced_search.php",
             success: function (html) {
@@ -640,7 +640,7 @@ var site_url = window.location.protocol +"//"+window.location.host;
                     jQuery(".advanced_select_cast").select2({
                         ajax: {
                             url:site_url+template_path+"ajax_data.php",
-                            type: 'post',
+                            type: 'POST',
                     data: function (params) {
                         var query = {
                             search: params.term,
@@ -666,7 +666,7 @@ var site_url = window.location.protocol +"//"+window.location.host;
                     jQuery(".advanced_select_director").select2({
                         ajax: {
                             url:site_url+template_path+"ajax_data.php",
-                            type: 'post',
+                            type: 'POST',
                             data: function (params) {
                                 var query = {
                                     search: params.term,
@@ -907,7 +907,7 @@ jQuery('.play_trailer.check_load').each(function ()
 
 
         jQuery.ajax({
-            type: 'post',
+            type: 'POST',
             data: {id: id,'request':'get_trailer'},
             url: site_url + template_path + "get_movie_data.php",
             success: function (html) {

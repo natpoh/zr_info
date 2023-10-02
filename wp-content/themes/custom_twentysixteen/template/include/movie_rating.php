@@ -65,8 +65,11 @@ class RWT_RATING
 
 
 
-       $array_result = array('type'=>$type,'male' => $gender['male'], 'female' => $gender['female'], 'diversity' => $gender['diversity'], 'diversity_data' => $gender['diversity_data'], 'family' => $family['pgrating'], 'family_data' => $family['pg_data'],
-                'lgbt_warning'=>$family['lgbt_warning'],'lgbt_text'=>$family['lgbt_text'],'woke'=>$family['woke'],'woke_text'=>$family['woke_text'],'total_rating'=>$total_rwt,'indie'=>$indie);
+       $array_result = array('type'=>$type,'male' => $gender['male'], 'female' => $gender['female'],
+           'diversity' => $gender['diversity'], 'diversity_data' => $gender['diversity_data'], 'family' => $family['pgrating'], 'family_data' => $family['pg_data'],
+           'qtia_warning'=>$family['qtia_warning'],'qtia_text'=>$family['qtia_text'],
+           'lgbt_warning'=>$family['lgbt_warning'],'lgbt_text'=>$family['lgbt_text'],
+           'woke'=>$family['woke'],'woke_text'=>$family['woke_text'],'total_rating'=>$total_rwt,'indie'=>$indie);
 
 
 
@@ -263,7 +266,7 @@ class RWT_RATING
             $data = json_encode($data);
         }
 
-        if ($array_family['lgbt_text'] || $array_family['woke_text'])
+        if ($array_family['lgbt_text'] || $array_family['lgbt_text'] || $array_family['qtia_text'])
         {
             !class_exists('Movie_Keywords') ? include ABSPATH . "analysis/include/keywords.php" : '';
             global $keywords_class;
@@ -274,12 +277,16 @@ class RWT_RATING
             }
 
             if ($array_family['lgbt_text'])            $array_family['lgbt_text'] =   $keywords_class->get_key_link($array_family['lgbt_text']);
+            if ($array_family['qtia_text'])            $array_family['qtia_text'] =   $keywords_class->get_key_link($array_family['qtia_text']);
             if ($array_family['woke_text'])            $array_family['woke_text'] =   $keywords_class->get_key_link($array_family['woke_text']);
         }
 
 
         return array('pgrating'=>$array_family['rwt_pg_result'],'pg_data'=>$data,
         'lgbt_warning'=>$array_family['lgbt_warning'],'lgbt_text'=>$array_family['lgbt_text'] ,
+
+        'qtia_warning'=>$array_family['qtia_warning'],'qtia_text'=>$array_family['qtia_text'] ,
+
         'woke'=>$array_family['woke'],'woke_text'=>$array_family['woke_text'],
         );
 

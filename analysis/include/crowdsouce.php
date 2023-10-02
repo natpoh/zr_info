@@ -20,7 +20,7 @@ if (!defined('CROWDSOURCEURL')) {
 
     global $site_url;
     //define('CROWDSOURCEURL', 'https://service.'.$_SERVER['HTTP_HOST'].'/crowdsource.php');
-    define('CROWDSOURCEURL', $site_url.'service/crowdsource.php');
+    define('CROWDSOURCEURL', $site_url.'service/ajax/crowdsource.php');
 }
 
 
@@ -776,7 +776,7 @@ public static function prepare_array($options,$addsplash='')
 
 
 
-public static function Show_admin_table($datatype,$array_rows,$WP_include,$custom_table='',$refresh_rating='',$no_status='',$no_subgrid='',$edit =1,$select=1)
+public static function Show_admin_table($datatype,$array_rows,$WP_include,$custom_table='',$refresh_rating='',$no_status='',$no_subgrid='',$edit =1,$select=1,$highchar=1,$tab_name ='jqGrid',$loadonce=0,$tableheight=0,$inline_edit =0)
 {
 
 
@@ -899,8 +899,12 @@ public static function Show_admin_table($datatype,$array_rows,$WP_include,$custo
 
 
     $home_url=  site_url().'/';
+
+    if (!$loadonce)
+    {
+
 ?>
-    <script type="text/ecmascript" src="<?php echo $home_url ?>analysis/js/jquery.min.js"></script>
+<script type="text/ecmascript" src="<?php echo $home_url ?>analysis/js/jquery.min.js"></script>
 <script type="text/ecmascript" src="<?php echo $home_url ?>analysis/jqgrid/js/i18n/grid.locale-en.js"></script>
 <!-- This is the Javascript file of jqGrid -->
 <script type="text/ecmascript" src="<?php echo $home_url ?>analysis/jqgrid/js/jquery.jqGrid.min.js"></script>
@@ -908,18 +912,23 @@ public static function Show_admin_table($datatype,$array_rows,$WP_include,$custo
     jQuery.jgrid.defaults.responsive = true;
     jQuery.jgrid.defaults.styleUI = 'Bootstrap';
 </script>
+<?php if ($highchar) { ?>
 <script src="https://code.highcharts.com/stock/highstock.js"></script>
+<?php } ?>
 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
 <link rel="stylesheet" type="text/css" media="screen" href="<?php echo $home_url ?>analysis/jqgrid/css/ui.jqgrid-bootstrap4.css" />
 <link rel="stylesheet" href="<?php echo $home_url.'wp-content/themes/custom_twentysixteen/css/movie_single.css?'.LASTVERSION ?>">
 <link rel="stylesheet" href="<?php echo $home_url.'wp-content/themes/custom_twentysixteen/css/colums_template.css?'.LASTVERSION ?>">
+    <?php } ?>
 <script type="text/javascript">
-var first_run = 0;
+
+    <?php     if (!$loadonce){ ?>
+    var first_run = 0;
 
 
     function getSelectedRows() {
-        var grid = $("#jqGrid");
+        var grid = $("#<?php echo $tab_name;?>");
         var rowKey = grid.getGridParam("selrow");
 
         if (!rowKey)
@@ -930,7 +939,7 @@ var first_run = 0;
             var result = new Array();
             for (var i = 0; i < selectedIDs.length; i++) {
 
-                let id  =jQuery('tr[id="'+selectedIDs[i]+'"] td[aria-describedby="jqGrid_id"]').html();
+                let id  =jQuery('tr[id="'+selectedIDs[i]+'"] td[aria-describedby="<?php echo $tab_name;?>_id"]').html();
 
                 id = Number(id);
                 result.push(id);
@@ -963,9 +972,9 @@ var first_run = 0;
         var data_type ='<?php echo $datatype; ?>';
 
 
-        var actor_id  = jQuery("#jqGrid").jqGrid('getCell',row_id,'actor_id');
-            var movie  = jQuery("#jqGrid").jqGrid('getCell',row_id,'movie_id');
-            var review_id  = jQuery("#jqGrid").jqGrid('getCell',row_id,'id');
+        var actor_id  = jQuery("#<?php echo $tab_name;?>").jqGrid('getCell',row_id,'actor_id');
+            var movie  = jQuery("#<?php echo $tab_name;?>").jqGrid('getCell',row_id,'movie_id');
+            var review_id  = jQuery("#<?php echo $tab_name;?>").jqGrid('getCell',row_id,'id');
 
 
 
@@ -1036,7 +1045,7 @@ var first_run = 0;
                 data: ({
 
                     oper: 'movie_data',
-                    rwt_id: jQuery("#jqGrid").jqGrid('getCell',row_id,'mid'),
+                    rwt_id: jQuery("#<?php echo $tab_name;?>").jqGrid('getCell',row_id,'mid'),
                     woke:	1
 
                 }),
@@ -1084,9 +1093,9 @@ var first_run = 0;
 
                     jQuery('#'+subgrid_id).html(data);
                     //add link to sritic matic
-                    var td = jQuery('td[title="'+review_id+'"][aria-describedby="jqGrid_id"]');
+                    var td = jQuery('td[title="'+review_id+'"][aria-describedby="<?php echo $tab_name;?>_id"]');
                    // var prnt = td.parents('tr.jqgrow');
-                   // var id = prnt.find('td[aria-describedby="jqGrid_review_id"]').html();
+                   // var id = prnt.find('td[aria-describedby="<?php echo $tab_name;?>_review_id"]').html();
 
                     jQuery('#'+subgrid_id+' .submit_data').remove();
 
@@ -1113,9 +1122,9 @@ var first_run = 0;
                 success: function (html) {
                     jQuery('#'+subgrid_id).html(html);
                     //add link to sritic matic
-                    var td = jQuery('td[title="'+review_id+'"][aria-describedby="jqGrid_id"]');
+                    var td = jQuery('td[title="'+review_id+'"][aria-describedby="<?php echo $tab_name;?>_id"]');
                     var prnt = td.parents('tr.jqgrow');
-                    var id = prnt.find('td[aria-describedby="jqGrid_review_id"]').html();
+                    var id = prnt.find('td[aria-describedby="<?php echo $tab_name;?>_review_id"]').html();
 
 
                     jQuery('h2.r_info').after('<a href="<?php echo $home_url ?>wp-admin/admin.php?page=critic_matic&pid='+id+'"> View Review in "Critic Matic"</a>');
@@ -1129,7 +1138,7 @@ var first_run = 0;
     // {
     //     console.log(data);
     // }
-
+    <?php    } ?>
 
 <?php
 $min_width = count($rows)*100;
@@ -1156,12 +1165,15 @@ if (Number(min_width)>Number(width)){
 
 
     jQuery(document).ready(function () {
-        jQuery("#jqGrid").jqGrid({
+        var lastsel2;
+
+        jQuery("#<?php echo $tab_name;?>").jqGrid({
             url: '<?php echo $home_url ?>analysis/jqgrid/get.php?data=<?php echo $datatype.$doptable ?>',
             mtype: "POST",
             datatype: "json",
             page: 1,
             colModel: [
+
                 <?php echo $colums; ?>
             ],
 
@@ -1170,14 +1182,34 @@ if (Number(min_width)>Number(width)){
             editurl: '<?php echo $home_url ?>analysis/jqgrid/get.php?data=<?php echo $datatype.$doptable; ?>',
 
             <?php } ?>
+
+
+
+
             sortorder : "desc",
             loadonce: false,
             viewrecords: true,
             width: width,
 
-            height: (window.innerHeight-220),
+
+            <?php if ($tableheight) {
+
+            ?>
+
+            height:<?php echo $tableheight; ?>,
+            <?php
+
+            } else {
+
+              ?>
+
+                  height: (window.innerHeight-220),
+                  <?php
+            }?>
+
+
             rowNum: 100,
-            pager: "#jqGridPager",
+            pager: "#<?php echo $tab_name;?>Pager",
             gridview : false,
 
             <?php if ($select==1)  {    ?>
@@ -1210,11 +1242,11 @@ if (Number(min_width)>Number(width)){
 
                     if (status!='All')
                     {
-                        var data = jQuery("#jqGrid").jqGrid("getGridParam", "postData");
+                        var data = jQuery("#<?php echo $tab_name;?>").jqGrid("getGridParam", "postData");
                         data._search = 'false';
                         data.search = 'false';
                         data.status = status;
-                        jQuery("#jqGrid").jqGrid("setGridParam", {"postData": data});
+                        jQuery("#<?php echo $tab_name;?>").jqGrid("setGridParam", {"postData": data});
                     }
 
 
@@ -1223,7 +1255,7 @@ if (Number(min_width)>Number(width)){
                     first_run=1;
 
 
-                    //   jQuery("#jqGrid").trigger("reloadGrid");
+                    //   jQuery("#<?php echo $tab_name;?>").trigger("reloadGrid");
                 }
             },
             afterInsertRow : function( row_id, rowdata, rawdata) {
@@ -1237,20 +1269,20 @@ if (Number(min_width)>Number(width)){
                 {
 
                     if (rowdata.review_id && rowdata.review_id!=0) {
-                        $('#jqGrid').jqGrid('setCell', row_id, 'review_id', '<a target="_blank" href="/wp-admin/admin.php?page=critic_matic&pid='+rowdata.review_id+'">'+rowdata.review_id+'</a>', {'color': 'blue'});
+                        $('#<?php echo $tab_name;?>').jqGrid('setCell', row_id, 'review_id', '<a target="_blank" href="/wp-admin/admin.php?page=critic_matic&pid='+rowdata.review_id+'">'+rowdata.review_id+'</a>', {'color': 'blue'});
                     }
                     if (rowdata.critic_id && rowdata.critic_id!=0) {
-                        $('#jqGrid').jqGrid('setCell', row_id, 'critic_name', '<a target="_blank" href="/wp-admin/admin.php?page=critic_matic_authors&aid='+rowdata.critic_id+'">'+rowdata.critic_name+'</a>', {'color': 'blue'});
+                        $('#<?php echo $tab_name;?>').jqGrid('setCell', row_id, 'critic_name', '<a target="_blank" href="/wp-admin/admin.php?page=critic_matic_authors&aid='+rowdata.critic_id+'">'+rowdata.critic_name+'</a>', {'color': 'blue'});
                     }
 
 
                 }
 
                 if (rowdata.link) {
-                    $('#jqGrid').jqGrid('setCell', row_id, 'link', '<a target="_blank" href="'+rowdata.link+'">'+rowdata.link+'</a>', {'color': 'blue'});
+                    $('#<?php echo $tab_name;?>').jqGrid('setCell', row_id, 'link', '<a target="_blank" href="'+rowdata.link+'">'+rowdata.link+'</a>', {'color': 'blue'});
                 }
                 if (rowdata.image) {
-                    $('#jqGrid').jqGrid('setCell', row_id, 'image', '<a target="_blank" href="'+rowdata.image+'"><img style="height: 100px;" src="'+rowdata.image+'"></a>', {'color': 'blue'});
+                    $('#<?php echo $tab_name;?>').jqGrid('setCell', row_id, 'image', '<a target="_blank" href="'+rowdata.image+'"><img style="height: 100px;" src="'+rowdata.image+'"></a>', {'color': 'blue'});
                 }
             },
             gridComplete:function(){
@@ -1275,13 +1307,46 @@ if (Number(min_width)>Number(width)){
             },
             <?php } ?>
 
+            <?php if ($inline_edit) { ?>
 
+                onSelectRow: function(id){
+                    if(id && id!==lastsel2){
+                        $('#<?php echo $tab_name;?>').restoreRow(lastsel2);
+                        var parent  = jQuery('tr.success td[aria-describedby="<?php echo $tab_name;?>_id"]').html();
+
+                        let url =null;
+                        if (debug)url = '#';
+
+                        $('#<?php echo $tab_name;?>').jqGrid('editRow',id,
+
+                            {
+                                "keys" : true,
+                                "oneditfunc" : null,
+                                "successfunc" : null,
+                                "url" : url,
+                                "extraparam" : {id: parent,parent:parent},
+                                "aftersavefunc" : null,
+                                "errorfunc": null,
+                                "afterrestorefunc" : null,
+                                "restoreAfterError" : true,
+                                "mtype" : "POST"
+                            });
+
+                        lastsel2=id;
+                    }
+                },
+            <?php }   ?>
         });
         // activate the toolbar searching
+        function editSuccessful( data, stat) {
+            var response = data;
 
-        jQuery('#jqGrid').jqGrid('filterToolbar', {stringResult: true, searchOnEnter: false, defaultSearch: 'cn', ignoreCase: true});
+            console.log(response);
+            return [true,"",""];
+        }
+        jQuery('#<?php echo $tab_name;?>').jqGrid('filterToolbar', {stringResult: true, searchOnEnter: false, defaultSearch: 'cn', ignoreCase: true});
 
-        jQuery('#jqGrid').jqGrid('navGrid',"#jqGridPager", {
+        jQuery('#<?php echo $tab_name;?>').jqGrid('navGrid',"#<?php echo $tab_name;?>Pager", {
                 search: true, // show search button on the toolbar
 
                 <?php if ($WP_include && $edit) { ?>
@@ -1349,9 +1414,9 @@ if (Number(min_width)>Number(width)){
 
                 onclickSubmit: function () {
                     setTimeout(function () {
-                      jQuery('#edithdjqGrid .ui-jqdialog-titlebar-close').click();
+                      jQuery('#edithd<?php echo $tab_name;?> .ui-jqdialog-titlebar-close').click();
                     },500);
-                    var id  = jQuery('tr.success td[aria-describedby="jqGrid_id"]').html();
+                    var id  = jQuery('tr.success td[aria-describedby="<?php echo $tab_name;?>_id"]').html();
 
                     return {parent:id};
                 },
@@ -1359,10 +1424,10 @@ if (Number(min_width)>Number(width)){
             {
 
                 onclickSubmit: function () {
-                    var id  = jQuery('tr.success td[aria-describedby="jqGrid_id"]').html();
+                    var id  = jQuery('tr.success td[aria-describedby="<?php echo $tab_name;?>_id"]').html();
 
                     setTimeout(function () {
-                        jQuery('#edithdjqGrid .ui-jqdialog-titlebar-close').click();
+                        jQuery('#edithd<?php echo $tab_name;?> .ui-jqdialog-titlebar-close').click();
                     },500);
                     return {parent:id};
                 },
@@ -1370,10 +1435,10 @@ if (Number(min_width)>Number(width)){
             {
                 onclickSubmit: function () {
 
-                    var id  = jQuery('tr.success td[aria-describedby="jqGrid_id"]').html();
+                    var id  = jQuery('tr.success td[aria-describedby="<?php echo $tab_name;?>_id"]').html();
 
                     setTimeout(function () {
-                        jQuery('#edithdjqGrid .ui-jqdialog-titlebar-close').click();
+                        jQuery('#edithd<?php echo $tab_name;?> .ui-jqdialog-titlebar-close').click();
                     },500);
 
                     return {parent:id};
@@ -1395,12 +1460,12 @@ if (Number(min_width)>Number(width)){
             jQuery('select[id="gs_status"]').val(id).change();
 
 
-            // var data = jQuery("#jqGrid").jqGrid("getGridParam", "postData");
+            // var data = jQuery("#<?php echo $tab_name;?>").jqGrid("getGridParam", "postData");
             // data._search = 'false';
             // data.search = 'false';
             // data.status = id;
-            // jQuery("#jqGrid").jqGrid("setGridParam", { "postData": data });
-            // jQuery("#jqGrid").trigger("reloadGrid");
+            // jQuery("#<?php echo $tab_name;?>").jqGrid("setGridParam", { "postData": data });
+            // jQuery("#<?php echo $tab_name;?>").trigger("reloadGrid");
             let href='<?php echo ($_SERVER['REQUEST_URI']) ?>&status='+id;
             history.pushState({path: href}, '', href);
 
@@ -1434,7 +1499,7 @@ if (Number(min_width)>Number(width)){
                     }),
                     success: function () {
                         thiss.attr('disabled',false);
-                        jQuery('#refresh_jqGrid .glyphicon-refresh').click();
+                        jQuery('#refresh_<?php echo $tab_name;?> .glyphicon-refresh').click();
 
                     }
                 });
@@ -1489,8 +1554,8 @@ if (Number(min_width)>Number(width)){
 
     ?>
 
-<table id="jqGrid"></table>
-<div id="jqGridPager"></div>
+<table id="<?php echo $tab_name;?>"></table>
+<div id="<?php echo $tab_name;?>Pager"></div>
 <style type="text/css">
 
   input.cbox[type="checkbox"] {
@@ -1502,7 +1567,7 @@ if (Number(min_width)>Number(width)){
         width: 20px;
         height: 21px;
     }
-  #jqGrid iframe{
+  <?php echo '#'.$tab_name;?> iframe{
       max-height: 100px;
   }
 

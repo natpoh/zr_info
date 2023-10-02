@@ -3,14 +3,13 @@ var disqus_config = function () {
 var lastload = '';
 var template_path =  "/wp-content/themes/custom_twentysixteen/template/ajax/";
 var site_url = window.location.protocol +"//"+window.location.host;
-
-var crowdsource_url = site_url+"/service/crowdsource.php"
+var crowdsource_url = site_url+"/service/ajax/crowdsource.php"
 var debug_mode = 0;
-if (window.location.host == 'zeitgeistreviews.com' || window.location.host == 'zgreviews.com') {
-    crowdsource_url = 'https://service.' + window.location.host + "/crowdsource.php";
-}
+// if (window.location.host == 'zeitgeistreviews.com' || window.location.host == 'zgreviews.com') {
+//     crowdsource_url = 'https://' + window.location.host + "/service/ajax/crowdsource.php";
+// }
 
-//crowdsource_url=  'https://service.zeitgeistreviews.com/crowdsource.php';
+//crowdsource_url=  'https://service.zeitgeistreviews.com/ajax/crowdsource.php';
 
 
 function attachScroller(distance, scroller, hasScrolled, scrollLeft) {
@@ -664,16 +663,36 @@ function create_rating_content(object, m_id, search_block = 0) {
         family_data_result = family_rating(family_data);
     }
     lgbt_warning_text = '';
-
-    if (object['lgbt_warning'] == 1) {
+    // console.log(object);
+    if (object['lgbt_warning'] == 1 || object['qtia_warning'] == 1) {
         let ltext = '';
-        if (object['lgbt_text']) {
-            ltext = '<span class="bg_rainbow">' + object['lgbt_text'] + '</span>';
+        let qtext ='';
+
+        if (object['lgbt_text'] && object['qtia_text'] ) {
+            ltext+= '<span class="bg_rainbow">' + object['lgbt_text']+ '</span>';
+            qtext+= '<span class="bg_rainbow">' +object['qtia_text']+ '</span>';
+
+            lgbt_warning_text = popup_cusomize('row_text_head', 'LGBTQ content included:<span data-value="lgbt_popup" class="nte_info"></span>') ;
+
+            lgbt_warning_text+= popup_cusomize('row_text_head', 'LGB:') + popup_cusomize('row_text', ltext);
+            lgbt_warning_text+= popup_cusomize('row_text_head', 'QTIA+:') + popup_cusomize('row_text', qtext);
+        }
+
+        else if (object['lgbt_text']) {
+            ltext+= '<span class="bg_rainbow">' + object['lgbt_text'] + '</span>';
+            lgbt_warning_text= popup_cusomize('row_text_head', 'LGB content included:<span data-value="lgbt_popup" class="nte_info"></span>') + popup_cusomize('row_text', ltext);
+        }
+        else if (object['qtia_text']) {
+            qtext+= '<span class="bg_rainbow">' + object['qtia_text'] + '</span>';
+            lgbt_warning_text= popup_cusomize('row_text_head', 'QTIA+ content included:<span data-value="lgbt_popup" class="nte_info"></span>') + popup_cusomize('row_text', qtext);
         }
 
         lgbt_class = ' lgbt ';
 
-        lgbt_warning_text = popup_cusomize('row_text_head', 'LGBTQ content included:<span data-value="lgbt_popup" class="nte_info"></span>') + popup_cusomize('row_text', ltext);
+
+
+
+
     }
     woke_warning_text = '';
 
@@ -2654,7 +2673,7 @@ jQuery(document).ready(function () {
         var prnt = jQuery(this).parents('.movie_container');
         jQuery(this).hide();
         jQuery.ajax({
-            type: 'post',
+            type: 'POST',
             data: {id: id},
             url:  site_url+template_path + "get_wach.php",
             success: function (html) {
@@ -2898,7 +2917,7 @@ jQuery(document).ready(function () {
             var id = prnt.attr('data-id');
             var ptype = prnt.attr('data-ptype');
             jQuery.ajax({
-                type: 'post',
+                type: 'POST',
 
                 data: {
                     id: id, 
@@ -3061,7 +3080,7 @@ jQuery(document).ready(function () {
     // jQuery('.ajaxlogin').click(function () {
     //
     //     jQuery.ajax({
-    //         type: 'post',
+    //         type: 'POST',
     //
     //         url: window.location.protocol +"//"+window.location.host+template_path + 'loginajax.php',
     //         success: function (html) {
@@ -3089,7 +3108,7 @@ jQuery(document).ready(function () {
 
 
         jQuery.ajax({
-            type: 'post',
+            type: 'POST',
             data: {
                 'oper': 'add_custom',
                 'type': href
@@ -3131,7 +3150,7 @@ jQuery(document).ready(function () {
         }
 
         jQuery.ajax({
-            type: 'post',
+            type: 'POST',
             data: {
                 'oper': 'review_crowd',
                 'id': id,
@@ -3189,7 +3208,7 @@ jQuery(document).ready(function () {
         jQuery('.advanced_search_first').html('').hide();
 
         jQuery.ajax({
-                type: 'post',
+                type: 'POST',
                 data: {
                     'oper': 'get_search_movie',
                     'id': id,
@@ -3288,7 +3307,7 @@ jQuery(document).ready(function () {
 
 
         jQuery.ajax({
-            type: 'post',
+            type: 'POST',
             data: ({'add_movie': movie}),
             url: window.location.protocol +"//"+window.location.host+ "/wp-content/themes/custom_twentysixteen/template/ajax/search_ajax.php",
             success: function (html) {
@@ -3377,7 +3396,7 @@ jQuery(document).ready(function () {
 
 
         jQuery.ajax({
-            type: 'post',
+            type: 'POST',
             data: {
                 'oper': 'crowd_submit',
                 'id': id,
@@ -3540,7 +3559,7 @@ jQuery(document).ready(function () {
 
 
         jQuery.ajax({
-            type: 'post',
+            type: 'POST',
             data: {
                 'oper': 'add_critic',
                 'id': id
@@ -3569,7 +3588,7 @@ jQuery(document).ready(function () {
         var id = ths.attr('data-value');
 
         jQuery.ajax({
-            type: 'post',
+            type: 'POST',
             data: {
                 'oper': 'ckeck_update_cowd_data',
                 'id': id,
@@ -3632,7 +3651,7 @@ jQuery(document).ready(function () {
 
 
         jQuery.ajax({
-            type: 'post',
+            type: 'POST',
             data: {
                 'oper': 'pg_rating',
                 'id': id
@@ -3701,7 +3720,7 @@ jQuery(document).ready(function () {
 
 
             jQuery.ajax({
-                type: 'post',
+                type: 'POST',
                 data: {
                     'oper': 'actor_crowd',
                     'id': id
@@ -3847,7 +3866,7 @@ jQuery(document).ready(function () {
 
 
         jQuery.ajax({
-            type: 'post',
+            type: 'POST',
             data: (post),
             url: window.location.protocol +"//"+window.location.host+ "/wp-content/themes/custom_twentysixteen/template/ajax/search_ajax.php",
             success: function (html) {
@@ -4175,6 +4194,8 @@ jQuery(document).ready(function () {
 
 
 });
+
+
 
 jQuery('body').on('click', '.hide_left_sidebar', function () {
     let prnt = jQuery(this).parent('.site-header-menu');
