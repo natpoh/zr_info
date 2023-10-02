@@ -770,13 +770,13 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
             $where = " data_woke.id IS NULL ";
 
         }
-
+     ///   SELECT data_movie_imdb.id FROM `data_movie_imdb` LEFT JOIN data_woke ON (data_movie_imdb.id = data_woke.mid) WHERE  data_woke.id IS NULL LIMIT 10000
 
         $q = "SELECT data_movie_imdb.id FROM `data_movie_imdb` LEFT JOIN data_woke ON (data_movie_imdb.id = data_woke.mid) WHERE " . $where . " LIMIT 10000";
         if (isset($_GET['force'])) {
             $q = " SELECT * FROM `data_woke` ORDER BY `mid` ASC ";
         }
-        //echo $q;
+        if ($debug)echo $q;
 
         $r = Pdo_an::db_results_array($q);
         $count =count($r);
