@@ -557,6 +557,13 @@ class TMDBIMPORT
         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
         Import::create_commit('', 'update', 'data_actors_meta', array('id' => $id), 'movie_meta_actor',6);
 
+
+        if (function_exists('check_cron_time'))
+        {
+            if (check_cron_time())      {            break;       }
+
+        }
+
     }
 
 
