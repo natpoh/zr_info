@@ -444,21 +444,45 @@ class TMDBIMPORT
         ///get movie list, add empty data
         self::add_data_to_tmdb_table();
 
+        if (function_exists('check_cron_time'))
+        {
+            if (check_cron_time())      {            return;       }
+
+        }
+
+
+
         //add imdb actors
         self::add_imdb_actors_to_tmdb_table();
+        if (function_exists('check_cron_time'))
+        {
+            if (check_cron_time())      {            return;       }
 
+        }
         ///add tmdb actors
         self::add_tmdb_actors_to_tmdb_table();
 
+        if (function_exists('check_cron_time'))
+        {
+            if (check_cron_time())      {            return;       }
 
+        }
         ///convert tmdb_actors
         self::convert_tmdb_actors_to_tmdb_table();
 
+        if (function_exists('check_cron_time'))
+        {
+            if (check_cron_time())      {            return;       }
 
+        }
         ///check actors empty
         self::check_actors_empty();
 
+        if (function_exists('check_cron_time'))
+        {
+            if (check_cron_time())      {            return;       }
 
+        }
         ///update actor meta
 
         self::update_actors_imdb_to_tmdb();
