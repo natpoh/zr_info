@@ -2568,7 +2568,7 @@ function add_tv_shows_to_options()
     $array_year = [];
     $year_end = date('Y', time());
     $count=1;
-    for ($count = 1;$count<=10000;$count+=50)
+    for ($count = 1;$count<=1000;$count+=50)
     {
         $link = 'https://www.imdb.com/search/title/?title_type=tv_series%2Ctv_miniseries&start='.$count.'&ref_=adv_nxt';
 
@@ -2608,7 +2608,7 @@ function add_games_to_options()
     $array_year = [];
     $year_end = date('Y', time());
     $count=1;
-    for ($count = 1;$count<=10000;$count+=50)
+    for ($count = 1;$count<=1000;$count+=50)
     {
         $link = 'https://www.imdb.com/search/title/?title_type=video_game&start='.$count.'&ref_=adv_nxt';
 
@@ -2837,7 +2837,7 @@ function add_imdb_data_to_options()
         $year = $year_end;
         $mount = strtolower(date('F', time() - 86400 * 7));
 
-        $link = 'https://www.boxofficemojo.com//month/' . $mount . '/' . $year . '/';
+        $link = 'https://www.boxofficemojo.com/month/' . $mount . '/' . $year . '/';
 
         echo $link . PHP_EOL;
         $result = GETCURL::getCurlCookie($link);
