@@ -706,6 +706,12 @@ function get_family($data='')
 
                   Pdo_an::db_query($sql);
                   update_actors_verdict($i,1);
+
+
+                  if (check_cron_time())
+                  {
+                      break;
+                  }
               }
 
 }
