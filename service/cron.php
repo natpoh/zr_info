@@ -1,4 +1,5 @@
 <?php
+set_time_limit(60*25);
 
 if (!defined('ABSPATH'))
     define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
@@ -93,7 +94,7 @@ require_once ABSPATH .'analysis/include/scrap_imdb.php';
 class Cronjob
 {
 
-    public $max_time=300; //sec run process
+    public $max_time=290; //sec run process
     public $timestart=0;
 
 
@@ -252,10 +253,10 @@ class Cronjob
         //var_dump($jobs_data);
 
 
-        if ((($run_cron < time()-3600/2) || $force==1) && !$only_info) {
+        if ((($run_cron < time()-60*30) || $force==1) && !$only_info) {
 
             $this->set_cron_option('run_cron', time());
-            $this->set_cron_option('cron started', time());
+            $this->set_cron_option('cron', time());
 
             $this->timer_start();
 
@@ -275,7 +276,7 @@ class Cronjob
 
                 } else {
                     echo '<br>Ended max time > ' . $this->max_time . '<br>' . PHP_EOL;
-                    $this->set_cron_option('cron', time());
+                    $this->set_cron_option('cron Ended', time());
                     $this->set_cron_option('run_cron', 1);
 
                     break;
@@ -284,7 +285,7 @@ class Cronjob
 
                 $i++;
             }
-            $this->set_cron_option('cron', time());
+            $this->set_cron_option('cron Ended', time());
             $this->set_cron_option('run_cron', 1);
         }
         else
@@ -325,24 +326,22 @@ class Cronjob
             if ($array_jobs[$r['task']])
             {
 
-                $last_run[$r['task']]['end']=$r['time'];
+              $last_run[$r['task']]['start']=$r['time'];
 
             }
-            else if (strpos($r['task'],' started'))
+            else if (strpos($r['task'],' Ended'))
             {
-               $rdata =trim( substr($r['task'],0,strpos($r['task'],' started')));
-                $last_run[$rdata]['start']=$r['time'];
+               $rdata =trim( substr($r['task'],0,strpos($r['task'],' Ended')));
+                $last_run[$rdata]['end']=$r['time'];
 
             }
             else if ($r['task'] =='cron'){
-                $last_run[$r['task']]['end']=$r['time'];
-            }
-            else{
-                $last_run[$r['task']]['end']=$r['time'];
+                $last_run[$r['task']]['start']=$r['time'];
             }
 
+
         }
-      //  var_dump($last_run);
+
             $content='';
         foreach ($last_run as $i=> $v)
             {
@@ -354,18 +353,48 @@ class Cronjob
                 if ($v['start']) $ddata  = date('d.m.Y',$v['start']);
                if ($v['start']) $sdata  = date('H:i:s',$v['start']);
                 if ($v['end']) $edata  = date('H:i:s',$v['end']);
+                $vtotal=0;
 
                 if ($v['start'] && $v['end'])
                 {
                     $vtotal  = $v['end']-$v['start'];
                 }
+                $style ='green';
+                if ($vtotal>300)
+                {
+                    $style ='orange';
+                }
+                if ($vtotal>600)
+                {
+                    $style ='red';
+                }
+                $message='<div class="total_graph '.$style.'" style="width:'.$vtotal.'px">';
+                if ($vtotal<0)
+                {
+                    $message ='Error';
+                }
 
-                $content.= '<tr><td>'.$i.'</td><td>'.$ddata.'</td><td>'.$sdata.'</td><td>'.$edata.'</td><td>'.$vtotal.'</td></tr>';
+                $content.= '<tr><td>'.$i.'</td><td>'.$ddata.'</td><td>'.$sdata.'</td><td>'.$edata.'</td><td>'.$vtotal.'</td><td>'.$message.'</td></tr>';
 
 
             }
 
-            $content = ' <br>last tasks:<br><table border="1" cellspacing="0"><tr><th>Job</th><th>Day</th><th>Start</th><th>End</th><th>Total</th></tr>'.$content.'</table>';
+            $content = ' <br>last tasks:<br><table border="1" cellspacing="0"><tr><th>Job</th><th>Day</th><th>Start</th><th>End</th><th>Total</th><th>Graph</th></tr>'.$content.'</table>
+ <style type="text/css">
+.total_graph {
+    background-color: green;
+    max-width: 100%;
+    height: 16px;
+    min-width: 0px;
+}
+  .total_graph.orange{
+   background-color: orange;
+  }
+    .total_graph.red{
+   background-color: red;
+  }
+</style>
+ ';
 
         echo $content;
         }
@@ -396,7 +425,7 @@ class Cronjob
 
       if (time()>$last_time+$period*60)
       {
-          $this->set_cron_option($fname." started",time());
+          $this->set_cron_option($fname,time());
        echo 'Started '. $this->timer_stop().'<br>'.PHP_EOL;
 
           /////run function
@@ -406,7 +435,7 @@ class Cronjob
             $name();
             }
 
-          $this->set_cron_option($fname,time(),$last_time);
+          $this->set_cron_option($fname." Ended",time(),$last_time);
           echo '<br>Ended  '.$fname.'  '. $this->timer_stop().'<br><br>'.PHP_EOL.PHP_EOL;
       }
       else
