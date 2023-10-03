@@ -1,5 +1,5 @@
 <?php
-set_time_limit(60*25);
+set_time_limit(3600);
 
 if (!defined('ABSPATH'))
     define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
@@ -253,7 +253,7 @@ class Cronjob
         //var_dump($jobs_data);
 
 
-        if ((($run_cron < time()-60*30) || $force==1) && !$only_info) {
+        if ((($run_cron < time()-550) || $force==1) && !$only_info) {
 
             $this->set_cron_option('run_cron', time());
             $this->set_cron_option('cron', time());
@@ -368,9 +368,10 @@ class Cronjob
                 {
                     $style ='red';
                 }
-                $message='<div class="total_graph '.$style.'" style="width:'.$vtotal.'px">';
+                $message='<div class="total_graph '.$style.'" style="width:'.$vtotal.'px"></div>';
                 if ($vtotal<0)
                 {
+                    $message='<div class="total_graph " style="width:'.(-$vtotal).'px">is running, the end time is less than the start time</div>';
                     $message ='Error the end time is less than the start time';
                 }
                 if ($v['start'] && !$v['end'])
@@ -382,10 +383,10 @@ class Cronjob
 
             }
 
-            $content = ' <br>last tasks:<br><table border="1" cellspacing="0"><tr><th>Job</th><th>Day</th><th>Start</th><th>End</th><th>Total</th><th>Graph</th></tr>'.$content.'</table>
+            $content = ' <br>last tasks:<br><table border="1" cellspacing="0"><tr><th>Job</th><th>Day</th><th>Start</th><th>End</th><th>Total</th><th>Graph</th></tr>'.$content. '</table>
  <style type="text/css">
 .total_graph {
-    background-color: green;
+    background-color: #949494;
     max-width: 100%;
     height: 16px;
     min-width: 0px;
