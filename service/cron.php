@@ -371,8 +371,8 @@ class Cronjob
                 $message='<div class="total_graph '.$style.'" style="width:'.$vtotal.'px"></div>';
                 if ($vtotal<0)
                 {
-                    $message='<div class="total_graph " style="width:'.(-$vtotal).'px">is running, the end time is less than the start time</div>';
-                    $message ='Error the end time is less than the start time';
+                    $message='<div class="total_graph gray" style="width:'.(-$vtotal).'px">is running, the end time is less than the start time</div>';
+
                 }
                 if ($v['start'] && !$v['end'])
                 {
@@ -386,7 +386,7 @@ class Cronjob
             $content = ' <br>last tasks:<br><table border="1" cellspacing="0"><tr><th>Job</th><th>Day</th><th>Start</th><th>End</th><th>Total</th><th>Graph</th></tr>'.$content. '</table>
  <style type="text/css">
 .total_graph {
-    background-color: #949494;
+    background-color: green;
     max-width: 100%;
     height: 16px;
     min-width: 0px;
@@ -396,6 +396,9 @@ class Cronjob
   }
     .total_graph.red{
    background-color: red;
+  }
+    .total_graph.gray{
+   background-color: #949494;
   }
 </style>
  ';
