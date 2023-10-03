@@ -371,7 +371,7 @@ class Cronjob
                 $message='<div class="total_graph '.$style.'" style="width:'.$vtotal.'px"></div>';
                 if ($vtotal<0)
                 {
-                    $message='<div class="total_graph gray" style="width:'.(-$vtotal).'px">is running, the end time is less than the start time</div>';
+                    $message='<div class="total_graph gray" style="width:'.(-$vtotal).'px"></div> Is running';
 
                 }
                 if ($v['start'] && !$v['end'])
