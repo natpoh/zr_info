@@ -371,9 +371,12 @@ class Cronjob
                 $message='<div class="total_graph '.$style.'" style="width:'.$vtotal.'px">';
                 if ($vtotal<0)
                 {
-                    $message ='Error';
+                    $message ='Error the end time is less than the start time';
                 }
-
+                if ($v['start'] && !$v['end'])
+                {
+                    $message ='Error endless execution';
+                }
                 $content.= '<tr><td>'.$i.'</td><td>'.$ddata.'</td><td>'.$sdata.'</td><td>'.$edata.'</td><td>'.$vtotal.'</td><td>'.$message.'</td></tr>';
 
 
