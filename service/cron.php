@@ -371,7 +371,15 @@ class Cronjob
                 $message='<div class="total_graph '.$style.'" style="width:'.$vtotal.'px"></div>';
                 if ($vtotal<0)
                 {
-                    $message='<div class="total_graph gray" style="width:'.(-$vtotal).'px"></div> Is running';
+                    if ($vtotal<-3600)
+                    {
+                        $message ='Error endless execution';
+                    }
+                    else
+                    {
+                        $message='<div class="total_graph gray" style="width:'.(-$vtotal).'px"></div> Is running';
+                    }
+
 
                 }
                 if ($v['start'] && !$v['end'])
