@@ -387,7 +387,7 @@ class Cronjob
  <style type="text/css">
 .total_graph {
     background-color: green;
-    max-width: 100%;
+    max-width: 1200px;
     height: 16px;
     min-width: 0px;
 }
