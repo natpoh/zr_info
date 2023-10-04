@@ -130,27 +130,27 @@ class CriticSearch extends AbstractDB {
             'weight' => 60,
             'childs' => array(
                 'ratingtitle' => array('title' => 'Ratings <span data-value="tooltip_zr_agregate_rating" class="nte_info"></span>', 'is_title' => 1, 'group' => 'rating'),
-                'rrwt' => array('title' => 'ZR Aggregate Rating', 'facet' => 'rating', 'eid' => 'erwt', 'titlesm' => 'ZR Rating', 'name_pre' => 'ZR Rating ', 'filter_pre' => 'ZR Rating', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'sorted' => 1, 'sort_second' => 'crwt', 'sort_second_title'=>'votes', 'icon' => 'zr', 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
-                'rimdb' => array('title' => 'IMDb', 'facet' => 'rating', 'eid' => 'eimdb', 'titlesm' => 'IMDb', 'name_pre' => 'IMDb ', 'filter_pre' => 'IMDb Rating', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'imdb', 'sorted' => 1, 'sort_second' => 'cimdb', 'sort_second_title'=>'votes', 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
-                'ropencritic' => array('title' => 'OpenCritic', 'facet' => 'rating', 'eid' => 'eopencritic', 'titlesm' => 'OpenCritic', 'name_pre' => 'OpenCritic ', 'filter_pre' => 'OpenCritic Rating', 'max_count' => 110, 'multipler' => 1, 'group' => 'rating', 'icon' => 'opencritic', 'sorted' => 1,'sort_second' => 'copencritic', 'sort_second_title'=>'votes', 'tabs' => array('games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
+                'rrwt' => array('title' => 'ZR Aggregate Rating', 'facet' => 'rating', 'eid' => 'erwt', 'titlesm' => 'ZR Rating', 'name_pre' => 'ZR Rating ', 'filter_pre' => 'ZR Rating', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'sorted' => 1, 'sort_second' => 'crwt', 'sort_second_title' => 'votes', 'icon' => 'zr', 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
+                'rimdb' => array('title' => 'IMDb', 'facet' => 'rating', 'eid' => 'eimdb', 'titlesm' => 'IMDb', 'name_pre' => 'IMDb ', 'filter_pre' => 'IMDb Rating', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'imdb', 'sorted' => 1, 'sort_second' => 'cimdb', 'sort_second_title' => 'votes', 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
+                'ropencritic' => array('title' => 'OpenCritic', 'facet' => 'rating', 'eid' => 'eopencritic', 'titlesm' => 'OpenCritic', 'name_pre' => 'OpenCritic ', 'filter_pre' => 'OpenCritic Rating', 'max_count' => 110, 'multipler' => 1, 'group' => 'rating', 'icon' => 'opencritic', 'sorted' => 1, 'sort_second' => 'copencritic', 'sort_second_title' => 'votes', 'tabs' => array('games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
                 'rmc' => array('title' => 'Metacritic MetaScore', 'facet' => 'rating', 'eid' => 'emc', 'titlesm' => 'MetaScore', 'name_pre' => 'MetaScore ', 'filter_pre' => 'MetaScore', 'max_count' => 110, 'multipler' => 1, 'group' => 'rating', 'icon' => 'mtcr', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
                 'rmu' => array('title' => 'Metacritic UserScore', 'facet' => 'rating', 'eid' => 'emu', 'titlesm' => 'UserScore', 'name_pre' => 'UserScore ', 'filter_pre' => 'UserScore', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'mtcr', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
-                'ranl' => array('title' => 'MyAnimeList', 'facet' => 'rating', 'eid' => 'eanl', 'titlesm' => 'MyAnimeList', 'name_pre' => 'MyAnLi ', 'filter_pre' => 'MyAnLi', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'mal', 'sorted' => 1, 'sort_second' => 'canl', 'sort_second_title'=>'votes', 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
-                'rrt' => array('title' => 'Rotten Tomatoes', 'facet' => 'rating', 'eid' => 'ert', 'titlesm' => 'RT', 'name_pre' => 'RT ', 'filter_pre' => 'Rotten Tomatoes', 'max_count' => 110, 'group' => 'rating', 'icon' => 'rt', 'sorted' => 1, 'sort_second' => 'crt', 'sort_second_title'=>'votes', 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
-                'rrta' => array('title' => 'Rotten Tomatoes Audience', 'facet' => 'rating', 'eid' => 'erta', 'titlesm' => 'RT Audience', 'name_pre' => 'RTA ', 'filter_pre' => 'Rotten Tomatoes Audience', 'max_count' => 110, 'group' => 'rating', 'icon' => 'rt', 'sorted' => 1, 'sort_second' => 'crta', 'sort_second_title'=>'votes', 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
+                'ranl' => array('title' => 'MyAnimeList', 'facet' => 'rating', 'eid' => 'eanl', 'titlesm' => 'MyAnimeList', 'name_pre' => 'MyAnLi ', 'filter_pre' => 'MyAnLi', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'mal', 'sorted' => 1, 'sort_second' => 'canl', 'sort_second_title' => 'votes', 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
+                'rrt' => array('title' => 'Rotten Tomatoes', 'facet' => 'rating', 'eid' => 'ert', 'titlesm' => 'RT', 'name_pre' => 'RT ', 'filter_pre' => 'Rotten Tomatoes', 'max_count' => 110, 'group' => 'rating', 'icon' => 'rt', 'sorted' => 1, 'sort_second' => 'crt', 'sort_second_title' => 'votes', 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
+                'rrta' => array('title' => 'Rotten Tomatoes Audience', 'facet' => 'rating', 'eid' => 'erta', 'titlesm' => 'RT Audience', 'name_pre' => 'RTA ', 'filter_pre' => 'Rotten Tomatoes Audience', 'max_count' => 110, 'group' => 'rating', 'icon' => 'rt', 'sorted' => 1, 'sort_second' => 'crta', 'sort_second_title' => 'votes', 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
                 'rrtg' => array('title' => 'Rotten Tomatoes % Gap', 'facet' => 'rating', 'eid' => 'ertg', 'titlesm' => 'RT % Gap', 'name_pre' => 'RT%G ', 'filter_pre' => 'Rotten Tomatoes % Gap', 'max_count' => 220, 'shift' => -100, 'group' => 'rating', 'icon' => 'rt', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
                 //// 'rfn' => array('title' => '4chan', 'facet' => 'rating', 'eid' => 'efn',  'titlesm' => '4chan', 'name_pre' => '4chan ', 'filter_pre' => '4chan', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'fchan', 'sorted' => 1, 'minus' => 1,'zero'=>1,),
                 // 'rau' => array('title' => 'ZR Audience', 'titlesm' => 'ZR Audience', 'name_pre' => 'ZR Audience ', 'filter_pre' => 'ZR Audience', 'icon' => 'zr', 'group' => 'rating', 'hide' => 1, 'sorted' => 1, 'minus' => 1,'zero'=>1,),
                 'aurating' => array('title' => 'ZR Audience', 'facet' => 'rating', 'eid' => 'eaurating', 'titlesm' => 'ZR Audience', 'name_pre' => 'ZR Audience ', 'filter_pre' => 'ZR Audience ', 'max_count' => 6, 'multipler' => 1, 'icon' => 'zr', 'group' => 'rating', 'sorted' => 1, 'minus' => 1, 'hide' => 1, 'minus' => 1, 'zero' => 1, 'tabs' => array('movies', 'games', 'critics', 'international', 'ethnicity'),),
                 'emotions' => array('title' => 'Emotions', 'facet' => 'rating', 'titlesm' => 'Emotions', 'name_pre' => 'Emotions ', 'filter_pre' => 'Emotions ', 'max_count' => 100, 'multipler' => 1, 'group' => 'rating', 'sorted' => 1, 'minus' => 1, 'hide' => 1, 'minus' => 1, 'zero' => 1, 'tabs' => array('critics'),),
-                'rrev' => array('title' => 'ZR Critics (beta)', 'facet' => 'rating', 'eid' => 'erev', 'titlesm' => 'Critic Reviews', 'name_pre' => 'RW ', 'filter_pre' => 'Reviews', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'zr', 'sorted' => 1, 'sort_second' => 'pop', 'sort_second_title'=>'votes', 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
+                'rrev' => array('title' => 'ZR Critics (beta)', 'facet' => 'rating', 'eid' => 'erev', 'titlesm' => 'Critic Reviews', 'name_pre' => 'RW ', 'filter_pre' => 'Reviews', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'zr', 'sorted' => 1, 'sort_second' => 'pop', 'sort_second_title' => 'votes', 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
                 // Global
                 'gratingtitle' => array('title' => 'Global Ratings', 'is_title' => 1, 'group' => 'rating', 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1,),
-                'rdb' => array('title' => 'Douban', 'facet' => 'rating', 'eid' => 'edb', 'titlesm' => 'Douban', 'name_pre' => 'DB ', 'filter_pre' => 'Douban', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'douban', 'sorted' => 1, 'sort_second' => 'cdb', 'sort_second_title'=>'votes', 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
-                'reiga' => array('title' => 'Eiga', 'facet' => 'rating', 'eid' => 'eeiga', 'titlesm' => 'Eiga', 'name_pre' => 'Eiga ', 'filter_pre' => 'Eiga', 'max_count' => 60, 'multipler' => 10, 'group' => 'rating', 'icon' => 'jp', 'sorted' => 1, 'sort_second' => 'ceiga', 'sort_second_title'=>'votes','tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
-                'rkp' => array('title' => 'Kinopoisk', 'facet' => 'rating', 'eid' => 'ekp', 'titlesm' => 'Kinopoisk', 'name_pre' => 'KP ', 'filter_pre' => 'Kinopoisk', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'kinop', 'sorted' => 1, 'sort_second' => 'ckp', 'sort_second_title'=>'votes','tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
-                'rmm' => array('title' => 'MovieMeter', 'facet' => 'rating', 'eid' => 'emm', 'titlesm' => 'MovieMeter', 'name_pre' => 'MovieMeter ', 'filter_pre' => 'MovieMeter', 'max_count' => 60, 'multipler' => 10, 'group' => 'rating', 'icon' => 'nl', 'sorted' => 1,'sort_second' => 'cmm', 'sort_second_title'=>'votes', 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
-                'rofdb' => array('title' => 'OFDb', 'facet' => 'rating', 'eid' => 'eofdb', 'titlesm' => 'OFDb', 'name_pre' => 'OFDb ', 'filter_pre' => 'OFDb', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'de', 'sorted' => 1, 'sort_second' => 'cofdb', 'sort_second_title'=>'votes','tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
+                'rdb' => array('title' => 'Douban', 'facet' => 'rating', 'eid' => 'edb', 'titlesm' => 'Douban', 'name_pre' => 'DB ', 'filter_pre' => 'Douban', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'douban', 'sorted' => 1, 'sort_second' => 'cdb', 'sort_second_title' => 'votes', 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
+                'reiga' => array('title' => 'Eiga', 'facet' => 'rating', 'eid' => 'eeiga', 'titlesm' => 'Eiga', 'name_pre' => 'Eiga ', 'filter_pre' => 'Eiga', 'max_count' => 60, 'multipler' => 10, 'group' => 'rating', 'icon' => 'jp', 'sorted' => 1, 'sort_second' => 'ceiga', 'sort_second_title' => 'votes', 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
+                'rkp' => array('title' => 'Kinopoisk', 'facet' => 'rating', 'eid' => 'ekp', 'titlesm' => 'Kinopoisk', 'name_pre' => 'KP ', 'filter_pre' => 'Kinopoisk', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'kinop', 'sorted' => 1, 'sort_second' => 'ckp', 'sort_second_title' => 'votes', 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
+                'rmm' => array('title' => 'MovieMeter', 'facet' => 'rating', 'eid' => 'emm', 'titlesm' => 'MovieMeter', 'name_pre' => 'MovieMeter ', 'filter_pre' => 'MovieMeter', 'max_count' => 60, 'multipler' => 10, 'group' => 'rating', 'icon' => 'nl', 'sorted' => 1, 'sort_second' => 'cmm', 'sort_second_title' => 'votes', 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
+                'rofdb' => array('title' => 'OFDb', 'facet' => 'rating', 'eid' => 'eofdb', 'titlesm' => 'OFDb', 'name_pre' => 'OFDb ', 'filter_pre' => 'OFDb', 'max_count' => 110, 'multipler' => 10, 'group' => 'rating', 'icon' => 'de', 'sorted' => 1, 'sort_second' => 'cofdb', 'sort_second_title' => 'votes', 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1,),
             ),
         ),
         'actorsdata' => array(
@@ -356,7 +356,7 @@ class CriticSearch extends AbstractDB {
                 'zrwoke' => array('title' => 'ZR Woke Meter', 'facet' => 'rating', 'eid' => 'ezrwoke', 'titlesm' => 'ZR Woke', 'name_pre' => 'ZR Woke ', 'filter_pre' => 'ZR Woke', 'max_count' => 110, 'multipler' => 10, 'group' => 'woke', 'icon' => 'zr_woke', 'sorted' => 1, 'minus' => 1, 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'sort_w' => 10),
                 'rating' => array('title' => 'Family Friendly Score', 'facet' => 'rating', 'eid' => 'erating', 'titlesm' => 'FFS', 'name_pre' => 'FFS ', 'filter_pre' => 'FFS', 'max_count' => 60, 'multipler' => 10, 'group' => 'woke', 'icon' => 'zr_family', 'sorted' => 1, 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'sort_w' => 10,),
                 // Filetrs
-                'woketitle' => array('title' => 'Forced Diversity<span data-value="tooltip_zr_forced_diversity" class="nte_info"></span>', 'is_title' => 1, 'group' => 'woke', 'no_data' => 1, 'tabs' => array('movies','games', 'international', 'ethnicity'), 'sort_w' => 20,),
+                'woketitle' => array('title' => 'Forced Diversity<span data-value="tooltip_zr_forced_diversity" class="nte_info"></span>', 'is_title' => 1, 'group' => 'woke', 'no_data' => 1, 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'sort_w' => 20,),
                 'div' => array('title' => '"Diversity" %', 'eid' => 'ediversity', 'def' => 'desc', 'group' => 'woke', 'no_data' => 1, 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'sort_w' => 20,),
                 'fem' => array('title' => 'Female %', 'eid' => 'efemale', 'def' => 'desc', 'group' => 'woke', 'no_data' => 1, 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'sort_w' => 20,),
                 // IMDB Keywords
@@ -371,7 +371,7 @@ class CriticSearch extends AbstractDB {
                 'rcherry' => array('title' => 'CherryPicks', 'facet' => 'rating', 'eid' => 'echerry', 'titlesm' => 'CherryPicks', 'name_pre' => 'CherryPicks ', 'filter_pre' => 'CherryPicks', 'max_count' => 110, 'multipler' => 1, 'group' => 'woke', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'sort_w' => 40,),
                 'rmedia' => array('title' => 'MediaVersity', 'facet' => 'rating', 'eid' => 'emedia', 'titlesm' => 'MediaVersity', 'name_pre' => 'MediaVersity ', 'filter_pre' => 'MediaVersity', 'max_count' => 60, 'multipler' => 10, 'group' => 'woke', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'sort_w' => 40,),
                 'mediaversity' => array('title' => 'MediaVersity A-F', 'eid' => 'emedia', 'facet' => 'select', 'titlesm' => 'MediaVersity', 'name_pre' => 'MediaVersity ', 'filter_pre' => 'MediaVersity', 'max_count' => 20, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'sort_w' => 40,),
-                'worthit' => array('title' => 'WorthItOrWoke', 'eid' => 'eworthit', 'facet' => 'select', 'titlesm' => 'WorthIt', 'name_pre' => 'WorthItOrWoke ', 'filter_pre' => 'WorthItOrWoke', 'max_count' => 5, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'sorted' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'sort_w'=>40,),
+                'worthit' => array('title' => 'WorthItOrWoke', 'eid' => 'eworthit', 'facet' => 'select', 'titlesm' => 'WorthIt', 'name_pre' => 'WorthItOrWoke ', 'filter_pre' => 'WorthItOrWoke', 'max_count' => 5, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'sorted' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'sort_w' => 40,),
                 // Audience  
                 'auratingtitle' => array('title' => 'Audience Warnings<span data-value="tooltip_zr_audience_warnings" class="nte_info"></span>', 'is_title' => 1, 'group' => 'woke', 'sort_w' => 50,),
                 'auvote' => array('title' => 'SUGGESTION', 'eid' => 'eauvote', 'facet' => 'select', 'titlesm' => 'SUGGESTION', 'name_pre' => 'AU ', 'filter_pre' => 'Audience SUGGESTION', 'max_count' => 6, 'multipler' => 1, 'icon' => 'vote', 'hide' => 1, 'group' => 'woke', 'minus' => 1, 'sort_w' => 50,),
@@ -616,6 +616,291 @@ class CriticSearch extends AbstractDB {
             'notalk' => array('key' => 2, 'title' => 'No women talking'),
             'talk' => array('key' => 3, 'title' => 'Talk about a man'),
             'pass' => array('key' => 4, 'title' => 'Passed!'),
+        ),
+    );
+    // Actors cache
+    public $actorscache = array(
+        'race' => array(
+            // Exist All All
+            'all' => array(
+                'eaaa' => array('race'=>'a'),
+                'eaaw' => array('race'=>'w'),
+                'eaaea' => array('race'=>'ea'),
+                'eaah' => array('race'=>'h'),
+                'eaab' => array('race'=>'b'),
+                'eaai' => array('race'=>'i'),
+                'eaam' => array('race'=>'m'),
+                'eaamix' => array('race'=>'mix'),
+                'eaajw' => array('race'=>'jw'),
+            ),
+            'male' => array(
+                // Exist All Male
+                'eama' => array(),
+                'eamw' => array(),
+                'eamea' => array(),
+                'eamh' => array(),
+                'eamb' => array(),
+                'eami' => array(),
+                'eamm' => array(),
+                'eammix' => array(),
+                'eamjw' => array(),
+            ),
+            'female' => array(
+                // Exist All Female
+                'eafa' => array(),
+                'eafw' => array(),
+                'eafea' => array(),
+                'eafh' => array(),
+                'eafb' => array(),
+                'eafi' => array(),
+                'eafm' => array(),
+                'eafmix' => array(),
+                'eafmjw' => array(),
+            ),
+        ),
+        // Exist Stars 
+        'starrace' => array(
+            'all' => array(
+                'esaa' => array('race'=>'a'),
+                'esaw' => array('race'=>'w'),
+                'esaea' => array('race'=>'ea'),
+                'esah' => array('race'=>'h'),
+                'esab' => array('race'=>'b'),
+                'esai' => array('race'=>'i'),
+                'esam' => array('race'=>'m'),
+                'esamix' => array('race'=>'mix'),
+                'esajw' => array('race'=>'jw'),
+            ),
+            'male' => array(
+                // Exist Stars Male
+                'esma' => array(),
+                'esmw' => array(),
+                'esmea' => array(),
+                'esmh' => array(),
+                'esmb' => array(),
+                'esmi' => array(),
+                'esmm' => array(),
+                'esmmix' => array(),
+                'esmjw' => array(),
+            ),
+            'female' => array(
+                // Exist Stars Female
+                'esfa' => array(),
+                'esfw' => array(),
+                'esfea' => array(),
+                'esfh' => array(),
+                'esfb' => array(),
+                'esfi' => array(),
+                'esfm' => array(),
+                'esfmix' => array(),
+                'esfmjw' => array(),
+            ),
+        ),
+        'mainrace' => array(
+            'all' => array(
+                // Exist Main 
+                'emaa' => array('race'=>'a'),
+                'emaw' => array('race'=>'w'),
+                'emaea' => array('race'=>'ea'),
+                'emah' => array('race'=>'h'),
+                'emab' => array('race'=>'b'),
+                'emai' => array('race'=>'i'),
+                'emam' => array('race'=>'m'),
+                'emamix' => array('race'=>'mix'),
+                'emajw' => array('race'=>'jw'),
+            ),
+            'male' => array(
+                // Exist Main Male
+                'emma' => array(),
+                'emmw' => array(),
+                'emmea' => array(),
+                'emmh' => array(),
+                'emmb' => array(),
+                'emmi' => array(),
+                'emmm' => array(),
+                'emmmix' => array(),
+                'emmjw' => array(),
+            ),
+            'female' => array(
+                // Exist Main Female
+                'emfa' => array(),
+                'emfw' => array(),
+                'emfea' => array(),
+                'emfh' => array(),
+                'emfb' => array(),
+                'emfi' => array(),
+                'emfm' => array(),
+                'emfmix' => array(),
+                'emfmjw' => array(),
+            ),
+        ),
+        'number' => array(
+            // Number
+            'naaa' => array(),
+            'naaw' => array(),
+            'naaea' => array(),
+            'naah' => array(),
+            'naab' => array(),
+            'naai' => array(),
+            'naam' => array(),
+            'naamix' => array(),
+            'naajw' => array(),
+            'nama' => array(),
+            'namw' => array(),
+            'namea' => array(),
+            'namh' => array(),
+            'namb' => array(),
+            'nami' => array(),
+            'namm' => array(),
+            'nammix' => array(),
+            'namjw' => array(),
+            'nafa' => array(),
+            'nafw' => array(),
+            'nafea' => array(),
+            'nafh' => array(),
+            'nafb' => array(),
+            'nafi' => array(),
+            'nafm' => array(),
+            'nafmix' => array(),
+            'nafmjw' => array(),
+            'nsaa' => array(),
+            'nsaw' => array(),
+            'nsaea' => array(),
+            'nsah' => array(),
+            'nsab' => array(),
+            'nsai' => array(),
+            'nsam' => array(),
+            'nsamix' => array(),
+            'nsajw' => array(),
+            'nsma' => array(),
+            'nsmw' => array(),
+            'nsmea' => array(),
+            'nsmh' => array(),
+            'nsmb' => array(),
+            'nsmi' => array(),
+            'nsmm' => array(),
+            'nsmmix' => array(),
+            'nsmjw' => array(),
+            'nsfa' => array(),
+            'nsfw' => array(),
+            'nsfea' => array(),
+            'nsfh' => array(),
+            'nsfb' => array(),
+            'nsfi' => array(),
+            'nsfm' => array(),
+            'nsfmix' => array(),
+            'nsfmjw' => array(),
+            'nmaa' => array(),
+            'nmaw' => array(),
+            'nmaea' => array(),
+            'nmah' => array(),
+            'nmab' => array(),
+            'nmai' => array(),
+            'nmam' => array(),
+            'nmamix' => array(),
+            'nmajw' => array(),
+            'nmma' => array(),
+            'nmmw' => array(),
+            'nmmea' => array(),
+            'nmmh' => array(),
+            'nmmb' => array(),
+            'nmmi' => array(),
+            'nmmm' => array(),
+            'nmmmix' => array(),
+            'nmmjw' => array(),
+            'nmfa' => array(),
+            'nmfw' => array(),
+            'nmfea' => array(),
+            'nmfh' => array(),
+            'nmfb' => array(),
+            'nmfi' => array(),
+            'nmfm' => array(),
+            'nmfmix' => array(),
+            'nmfmjw' => array(),
+        ),
+        // Percent
+        'percent' => array(
+            'paaa' => array(),
+            'paaw' => array(),
+            'paaea' => array(),
+            'paah' => array(),
+            'paab' => array(),
+            'paai' => array(),
+            'paam' => array(),
+            'paamix' => array(),
+            'paajw' => array(),
+            'pama' => array(),
+            'pamw' => array(),
+            'pamea' => array(),
+            'pamh' => array(),
+            'pamb' => array(),
+            'pami' => array(),
+            'pamm' => array(),
+            'pammix' => array(),
+            'pamjw' => array(),
+            'pafa' => array(),
+            'pafw' => array(),
+            'pafea' => array(),
+            'pafh' => array(),
+            'pafb' => array(),
+            'pafi' => array(),
+            'pafm' => array(),
+            'pafmix' => array(),
+            'pafmjw' => array(),
+            'psaa' => array(),
+            'psaw' => array(),
+            'psaea' => array(),
+            'psah' => array(),
+            'psab' => array(),
+            'psai' => array(),
+            'psam' => array(),
+            'psamix' => array(),
+            'psajw' => array(),
+            'psma' => array(),
+            'psmw' => array(),
+            'psmea' => array(),
+            'psmh' => array(),
+            'psmb' => array(),
+            'psmi' => array(),
+            'psmm' => array(),
+            'psmmix' => array(),
+            'psmjw' => array(),
+            'psfa' => array(),
+            'psfw' => array(),
+            'psfea' => array(),
+            'psfh' => array(),
+            'psfb' => array(),
+            'psfi' => array(),
+            'psfm' => array(),
+            'psfmix' => array(),
+            'psfmjw' => array(),
+            'pmaa' => array(),
+            'pmaw' => array(),
+            'pmaea' => array(),
+            'pmah' => array(),
+            'pmab' => array(),
+            'pmai' => array(),
+            'pmam' => array(),
+            'pmamix' => array(),
+            'pmajw' => array(),
+            'pmma' => array(),
+            'pmmw' => array(),
+            'pmmea' => array(),
+            'pmmh' => array(),
+            'pmmb' => array(),
+            'pmmi' => array(),
+            'pmmm' => array(),
+            'pmmmix' => array(),
+            'pmmjw' => array(),
+            'pmfa' => array(),
+            'pmfw' => array(),
+            'pmfea' => array(),
+            'pmfh' => array(),
+            'pmfb' => array(),
+            'pmfi' => array(),
+            'pmfm' => array(),
+            'pmfmix' => array(),
+            'pmfmjw' => array(),
         ),
     );
 
@@ -2338,7 +2623,7 @@ class CriticSearch extends AbstractDB {
 
             $ret = $this->movie_results($sql, $match, $search_query);
 
-           /*
+            /*
               print_r($filters_and);
               print_r(array($match, $search_query));
               print_r($sql);
@@ -2830,6 +3115,16 @@ class CriticSearch extends AbstractDB {
                     $filters_and = $this->get_filters_query($filters, $this->facet_data['actorsdata']['childs'][$facet_active]['filter']);
                     $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $this->filter_actor_and . $match
                             . " GROUP BY " . $race_name . " ORDER BY cnt DESC LIMIT 0,$limit";
+
+                    // New api
+                    /*$race_facets = isset($this->actorscache[$facet_active]) ? $this->actorscache[$facet_active] : array();
+                    if ($race_facets) {
+                        foreach ($race_facets['all'] as $rkey => $rval) {
+                            $filters_and = $this->get_filters_query($filters, $rkey);
+                            $sql_arr[$rkey] = "SELECT COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
+                                    . " AND " . $rkey . ">0";
+                        }
+                    }*/
                 }
             } else if ($facet == 'actors_simpson') {
                 // Simpson actor logic
@@ -3191,8 +3486,8 @@ class CriticSearch extends AbstractDB {
                     $second_facet = isset($this->facets_data[$sort_second]) ? $this->facets_data[$sort_second] : array();
                     if ($second_facet) {
                         $select .= ", " . $sort_second . " as sortsecond";
-                        $order.= ', '.$sort_second.' DESC';
-                    }                    
+                        $order .= ', ' . $sort_second . ' DESC';
+                    }
                 }
             } else if ($sort_key == 'title') {
                 $order = ' ORDER BY title ' . $sort_type;

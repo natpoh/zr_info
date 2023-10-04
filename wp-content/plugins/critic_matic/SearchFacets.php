@@ -889,8 +889,8 @@ class SearchFacets extends AbstractDB {
                 $ret = "$rating - $title";
 
                 if ($sortsecond) {
-                    
-                    $title = isset($curr_facet['sort_second_title'])?$curr_facet['sort_second_title']:'';
+
+                    $title = isset($curr_facet['sort_second_title']) ? $curr_facet['sort_second_title'] : '';
                     $ret .= "<br />{$sortsecond} {$title}";
                 }
             } else if (isset($this->cs->facet_data['popdata']['childs'][$curr_sort])) {
@@ -3041,6 +3041,22 @@ class SearchFacets extends AbstractDB {
                     }
                 }
             }
+
+            // New api
+            /*$dates=array();
+            $race_facets = isset($this->cs->actorscache[$active_filter]) ? $this->cs->actorscache[$active_filter] : array();
+            if ($race_facets) {
+                $cnt=0;
+                foreach ($race_facets['all'] as $rkey => $rval) {
+                    $fdata = $facets[$rkey]['data'];
+                    $cnt = isset($fdata[0]->cnt)?$fdata[0]->cnt:0;
+                    foreach ($this->cs->search_filters['race'] as $key => $item) {
+                        if ($key == $rval['race']) {
+                            $dates[$key] = array('title' => $item['title'], 'count' => $cnt, 'type_title' => $type_title, 'name_pre' => $name_pre, 'filter' => $filter);
+                        }
+                    }
+                }
+            }*/
 
             asort($dates);
 

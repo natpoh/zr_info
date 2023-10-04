@@ -310,8 +310,8 @@ function critic_matic_plugin_activation() {
     //$sql = "ALTER TABLE `" . $table_prefix . "carma_log` ADD `post_type` int(11) NOT NULL DEFAULT '0'";
     //ALTER TABLE `wp_bcw98b_carma_log` ADD `post_type` int(11) NOT NULL DEFAULT '0'
     //dbDelta($sql);
-    
-    critic_matic_create_index(array('uid', 'date_added', 'type', 'post_type','dst_uid', 'dst_ip', 'post_id'), $table_prefix . "carma_log");
+
+    critic_matic_create_index(array('uid', 'date_added', 'type', 'post_type', 'dst_uid', 'dst_ip', 'post_id'), $table_prefix . "carma_log");
 
 
 
@@ -576,9 +576,9 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_authors` ADD `date_add` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
-    
-    critic_matic_create_index_an(array('status', 'type', 'name', 'wp_uid', 'show_type', 'avatar', 'avatar_type','date_add','last_upd'), $table_prefix . "critic_matic_authors");
+
+
+    critic_matic_create_index_an(array('status', 'type', 'name', 'wp_uid', 'show_type', 'avatar', 'avatar_type', 'date_add', 'last_upd'), $table_prefix . "critic_matic_authors");
 
     // Authors meta
     $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_matic_authors_meta`(
@@ -766,17 +766,17 @@ function critic_matic_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
-    
+
     // 1.11.2022 Wp user id
     $sql = "ALTER TABLE `" . $table_prefix . "critic_emotions` ADD `wp_uid` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     // 24.08.2023 Type
-   $sql = "ALTER TABLE `" . $table_prefix . "critic_emotions` ADD `type` int(11) NOT NULL DEFAULT '0'";
+    $sql = "ALTER TABLE `" . $table_prefix . "critic_emotions` ADD `type` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
-    critic_matic_create_index_an(array('date', 'pid', 'aid', 'vote', 'wp_uid','type'), $table_prefix . "critic_emotions");
-    
+
+    critic_matic_create_index_an(array('date', 'pid', 'aid', 'vote', 'wp_uid', 'type'), $table_prefix . "critic_emotions");
+
 
     $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_emotions_authors`(
 				`id` int(11) unsigned NOT NULL auto_increment, 
@@ -886,7 +886,7 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('mid', 'gid'), "meta_game_platform");
-    
+
     // Provider
     $sql = "CREATE TABLE IF NOT EXISTS  `data_movie_provider`(
 				`id` int(11) unsigned NOT NULL auto_increment,
@@ -1298,7 +1298,7 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     $sql = "ALTER TABLE `data_movie_erating` ADD `ofdb_date` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     // opencritic
     $sql = "ALTER TABLE `data_movie_erating` ADD `opencritic_rating` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
@@ -1497,33 +1497,33 @@ function critic_matic_plugin_activation() {
      */
     $sql = "ALTER TABLE `data_woke` ADD `worthit` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     /*
      * Simpson
      */
     $sql = "ALTER TABLE `data_woke` ADD `simpson_all` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_woke` ADD `simpson_star` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_woke` ADD `simpson_main` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_woke` ADD `simpson_extra` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
 
     $sql = "ALTER TABLE `data_woke` ADD `simpson_mf_all` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_woke` ADD `simpson_mf_star` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_woke` ADD `simpson_mf_main` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_woke` ADD `simpson_mf_extra` int(11) NOT NULL DEFAULT '0'";
-    
+
     Pdo_an::db_query($sql);
     /* mediaversity
      * 0 - none
@@ -1545,7 +1545,7 @@ function critic_matic_plugin_activation() {
      */
     $sql = "ALTER TABLE `data_woke` ADD `bechdeltest` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     /*
      * Actor data movie upd
      */
@@ -1559,14 +1559,345 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('last_upd', 'mid', 'need_upd'), "hook_movie_upd");
-    
-    /* 
+
+    /*
      * data_population_country
      * Add top race   
      */
     $sql = "ALTER TABLE `data_population_country` ADD `top_race` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
 
+    /*
+     * Actors race cache
+     * a - all
+      'w' => array('key' => 1, 'title' => 'White'),
+      'ea' => array('key' => 2, 'title' => 'Asian'),
+      'h' => array('key' => 3, 'title' => 'Latino'),
+      'b' => array('key' => 4, 'title' => 'Black'),
+      'i' => array('key' => 5, 'title' => 'Indian'),
+      'm' => array('key' => 6, 'title' => 'Arab'),
+      'mix' => array('key' => 7, 'title' => 'Mixed / Other'),
+      'jw' => array('key' => 8, 'title' => 'Jewish'),     
+     * 
+     * Gender
+     * a-all
+     * m-male
+     * f-female
+     * 
+     * Type
+     * a - all
+     * s - star
+     * m - main
+     * 
+     * Count
+     * e - exist
+     * n - num
+     * p - percent
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `cache_movie_actor_meta`(
+				`id` int unsigned NOT NULL auto_increment,
+                                `mid` int NOT NULL DEFAULT '0',
+                                `last_upd` int NOT NULL DEFAULT '0',
+                                `need_upd` int(11) NOT NULL DEFAULT '0',                                
+              
+                                `eaaa` int NOT NULL DEFAULT '0',
+                                `eaaw` int NOT NULL DEFAULT '0',
+                                `eaaea` int NOT NULL DEFAULT '0',
+                                `eaah` int NOT NULL DEFAULT '0',
+                                `eaab` int NOT NULL DEFAULT '0',
+                                `eaai` int NOT NULL DEFAULT '0',
+                                `eaam` int NOT NULL DEFAULT '0',
+                                `eaamix` int NOT NULL DEFAULT '0',
+                                `eaajw` int NOT NULL DEFAULT '0',
+                                
+                                `eama` int NOT NULL DEFAULT '0',
+                                `eamw` int NOT NULL DEFAULT '0',
+                                `eamea` int NOT NULL DEFAULT '0',
+                                `eamh` int NOT NULL DEFAULT '0',
+                                `eamb` int NOT NULL DEFAULT '0',
+                                `eami` int NOT NULL DEFAULT '0',
+                                `eamm` int NOT NULL DEFAULT '0',
+                                `eammix` int NOT NULL DEFAULT '0',
+                                `eamjw` int NOT NULL DEFAULT '0',
+
+                                `eafa` int NOT NULL DEFAULT '0',
+                                `eafw` int NOT NULL DEFAULT '0',
+                                `eafea` int NOT NULL DEFAULT '0',
+                                `eafh` int NOT NULL DEFAULT '0',
+                                `eafb` int NOT NULL DEFAULT '0',
+                                `eafi` int NOT NULL DEFAULT '0',
+                                `eafm` int NOT NULL DEFAULT '0',
+                                `eafmix` int NOT NULL DEFAULT '0',
+                                `eafmjw` int NOT NULL DEFAULT '0',                                
+
+                                `esaa` int NOT NULL DEFAULT '0',
+                                `esaw` int NOT NULL DEFAULT '0',
+                                `esaea` int NOT NULL DEFAULT '0',
+                                `esah` int NOT NULL DEFAULT '0',
+                                `esab` int NOT NULL DEFAULT '0',
+                                `esai` int NOT NULL DEFAULT '0',
+                                `esam` int NOT NULL DEFAULT '0',
+                                `esamix` int NOT NULL DEFAULT '0',
+                                `esajw` int NOT NULL DEFAULT '0',
+                                
+                                `esma` int NOT NULL DEFAULT '0',
+                                `esmw` int NOT NULL DEFAULT '0',
+                                `esmea` int NOT NULL DEFAULT '0',
+                                `esmh` int NOT NULL DEFAULT '0',
+                                `esmb` int NOT NULL DEFAULT '0',
+                                `esmi` int NOT NULL DEFAULT '0',
+                                `esmm` int NOT NULL DEFAULT '0',
+                                `esmmix` int NOT NULL DEFAULT '0',
+                                `esmjw` int NOT NULL DEFAULT '0',
+
+                                `esfa` int NOT NULL DEFAULT '0',
+                                `esfw` int NOT NULL DEFAULT '0',
+                                `esfea` int NOT NULL DEFAULT '0',
+                                `esfh` int NOT NULL DEFAULT '0',
+                                `esfb` int NOT NULL DEFAULT '0',
+                                `esfi` int NOT NULL DEFAULT '0',
+                                `esfm` int NOT NULL DEFAULT '0',
+                                `esfmix` int NOT NULL DEFAULT '0',
+                                `esfmjw` int NOT NULL DEFAULT '0',  
+
+                                `emaa` int NOT NULL DEFAULT '0',
+                                `emaw` int NOT NULL DEFAULT '0',
+                                `emaea` int NOT NULL DEFAULT '0',
+                                `emah` int NOT NULL DEFAULT '0',
+                                `emab` int NOT NULL DEFAULT '0',
+                                `emai` int NOT NULL DEFAULT '0',
+                                `emam` int NOT NULL DEFAULT '0',
+                                `emamix` int NOT NULL DEFAULT '0',
+                                `emajw` int NOT NULL DEFAULT '0',
+                                
+                                `emma` int NOT NULL DEFAULT '0',
+                                `emmw` int NOT NULL DEFAULT '0',
+                                `emmea` int NOT NULL DEFAULT '0',
+                                `emmh` int NOT NULL DEFAULT '0',
+                                `emmb` int NOT NULL DEFAULT '0',
+                                `emmi` int NOT NULL DEFAULT '0',
+                                `emmm` int NOT NULL DEFAULT '0',
+                                `emmmix` int NOT NULL DEFAULT '0',
+                                `emmjw` int NOT NULL DEFAULT '0',
+
+                                `emfa` int NOT NULL DEFAULT '0',
+                                `emfw` int NOT NULL DEFAULT '0',
+                                `emfea` int NOT NULL DEFAULT '0',
+                                `emfh` int NOT NULL DEFAULT '0',
+                                `emfb` int NOT NULL DEFAULT '0',
+                                `emfi` int NOT NULL DEFAULT '0',
+                                `emfm` int NOT NULL DEFAULT '0',
+                                `emfmix` int NOT NULL DEFAULT '0',
+                                `emfmjw` int NOT NULL DEFAULT '0',                                 
+
+                                `naaa` int NOT NULL DEFAULT '0',
+                                `naaw` int NOT NULL DEFAULT '0',
+                                `naaea` int NOT NULL DEFAULT '0',
+                                `naah` int NOT NULL DEFAULT '0',
+                                `naab` int NOT NULL DEFAULT '0',
+                                `naai` int NOT NULL DEFAULT '0',
+                                `naam` int NOT NULL DEFAULT '0',
+                                `naamix` int NOT NULL DEFAULT '0',
+                                `naajw` int NOT NULL DEFAULT '0',
+                                
+                                `nama` int NOT NULL DEFAULT '0',
+                                `namw` int NOT NULL DEFAULT '0',
+                                `namea` int NOT NULL DEFAULT '0',
+                                `namh` int NOT NULL DEFAULT '0',
+                                `namb` int NOT NULL DEFAULT '0',
+                                `nami` int NOT NULL DEFAULT '0',
+                                `namm` int NOT NULL DEFAULT '0',
+                                `nammix` int NOT NULL DEFAULT '0',
+                                `namjw` int NOT NULL DEFAULT '0',
+
+                                `nafa` int NOT NULL DEFAULT '0',
+                                `nafw` int NOT NULL DEFAULT '0',
+                                `nafea` int NOT NULL DEFAULT '0',
+                                `nafh` int NOT NULL DEFAULT '0',
+                                `nafb` int NOT NULL DEFAULT '0',
+                                `nafi` int NOT NULL DEFAULT '0',
+                                `nafm` int NOT NULL DEFAULT '0',
+                                `nafmix` int NOT NULL DEFAULT '0',
+                                `nafmjw` int NOT NULL DEFAULT '0',                                
+
+                                `nsaa` int NOT NULL DEFAULT '0',
+                                `nsaw` int NOT NULL DEFAULT '0',
+                                `nsaea` int NOT NULL DEFAULT '0',
+                                `nsah` int NOT NULL DEFAULT '0',
+                                `nsab` int NOT NULL DEFAULT '0',
+                                `nsai` int NOT NULL DEFAULT '0',
+                                `nsam` int NOT NULL DEFAULT '0',
+                                `nsamix` int NOT NULL DEFAULT '0',
+                                `nsajw` int NOT NULL DEFAULT '0',
+                                
+                                `nsma` int NOT NULL DEFAULT '0',
+                                `nsmw` int NOT NULL DEFAULT '0',
+                                `nsmea` int NOT NULL DEFAULT '0',
+                                `nsmh` int NOT NULL DEFAULT '0',
+                                `nsmb` int NOT NULL DEFAULT '0',
+                                `nsmi` int NOT NULL DEFAULT '0',
+                                `nsmm` int NOT NULL DEFAULT '0',
+                                `nsmmix` int NOT NULL DEFAULT '0',
+                                `nsmjw` int NOT NULL DEFAULT '0',
+
+                                `nsfa` int NOT NULL DEFAULT '0',
+                                `nsfw` int NOT NULL DEFAULT '0',
+                                `nsfea` int NOT NULL DEFAULT '0',
+                                `nsfh` int NOT NULL DEFAULT '0',
+                                `nsfb` int NOT NULL DEFAULT '0',
+                                `nsfi` int NOT NULL DEFAULT '0',
+                                `nsfm` int NOT NULL DEFAULT '0',
+                                `nsfmix` int NOT NULL DEFAULT '0',
+                                `nsfmjw` int NOT NULL DEFAULT '0',  
+
+                                `nmaa` int NOT NULL DEFAULT '0',
+                                `nmaw` int NOT NULL DEFAULT '0',
+                                `nmaea` int NOT NULL DEFAULT '0',
+                                `nmah` int NOT NULL DEFAULT '0',
+                                `nmab` int NOT NULL DEFAULT '0',
+                                `nmai` int NOT NULL DEFAULT '0',
+                                `nmam` int NOT NULL DEFAULT '0',
+                                `nmamix` int NOT NULL DEFAULT '0',
+                                `nmajw` int NOT NULL DEFAULT '0',
+                                
+                                `nmma` int NOT NULL DEFAULT '0',
+                                `nmmw` int NOT NULL DEFAULT '0',
+                                `nmmea` int NOT NULL DEFAULT '0',
+                                `nmmh` int NOT NULL DEFAULT '0',
+                                `nmmb` int NOT NULL DEFAULT '0',
+                                `nmmi` int NOT NULL DEFAULT '0',
+                                `nmmm` int NOT NULL DEFAULT '0',
+                                `nmmmix` int NOT NULL DEFAULT '0',
+                                `nmmjw` int NOT NULL DEFAULT '0',
+
+                                `nmfa` int NOT NULL DEFAULT '0',
+                                `nmfw` int NOT NULL DEFAULT '0',
+                                `nmfea` int NOT NULL DEFAULT '0',
+                                `nmfh` int NOT NULL DEFAULT '0',
+                                `nmfb` int NOT NULL DEFAULT '0',
+                                `nmfi` int NOT NULL DEFAULT '0',
+                                `nmfm` int NOT NULL DEFAULT '0',
+                                `nmfmix` int NOT NULL DEFAULT '0',
+                                `nmfmjw` int NOT NULL DEFAULT '0',  
+                                
+                                `paaa` int NOT NULL DEFAULT '0',
+                                `paaw` int NOT NULL DEFAULT '0',
+                                `paaea` int NOT NULL DEFAULT '0',
+                                `paah` int NOT NULL DEFAULT '0',
+                                `paab` int NOT NULL DEFAULT '0',
+                                `paai` int NOT NULL DEFAULT '0',
+                                `paam` int NOT NULL DEFAULT '0',
+                                `paamix` int NOT NULL DEFAULT '0',
+                                `paajw` int NOT NULL DEFAULT '0',
+                                
+                                `pama` int NOT NULL DEFAULT '0',
+                                `pamw` int NOT NULL DEFAULT '0',
+                                `pamea` int NOT NULL DEFAULT '0',
+                                `pamh` int NOT NULL DEFAULT '0',
+                                `pamb` int NOT NULL DEFAULT '0',
+                                `pami` int NOT NULL DEFAULT '0',
+                                `pamm` int NOT NULL DEFAULT '0',
+                                `pammix` int NOT NULL DEFAULT '0',
+                                `pamjw` int NOT NULL DEFAULT '0',
+
+                                `pafa` int NOT NULL DEFAULT '0',
+                                `pafw` int NOT NULL DEFAULT '0',
+                                `pafea` int NOT NULL DEFAULT '0',
+                                `pafh` int NOT NULL DEFAULT '0',
+                                `pafb` int NOT NULL DEFAULT '0',
+                                `pafi` int NOT NULL DEFAULT '0',
+                                `pafm` int NOT NULL DEFAULT '0',
+                                `pafmix` int NOT NULL DEFAULT '0',
+                                `pafmjw` int NOT NULL DEFAULT '0',                                
+
+                                `psaa` int NOT NULL DEFAULT '0',
+                                `psaw` int NOT NULL DEFAULT '0',
+                                `psaea` int NOT NULL DEFAULT '0',
+                                `psah` int NOT NULL DEFAULT '0',
+                                `psab` int NOT NULL DEFAULT '0',
+                                `psai` int NOT NULL DEFAULT '0',
+                                `psam` int NOT NULL DEFAULT '0',
+                                `psamix` int NOT NULL DEFAULT '0',
+                                `psajw` int NOT NULL DEFAULT '0',
+                                
+                                `psma` int NOT NULL DEFAULT '0',
+                                `psmw` int NOT NULL DEFAULT '0',
+                                `psmea` int NOT NULL DEFAULT '0',
+                                `psmh` int NOT NULL DEFAULT '0',
+                                `psmb` int NOT NULL DEFAULT '0',
+                                `psmi` int NOT NULL DEFAULT '0',
+                                `psmm` int NOT NULL DEFAULT '0',
+                                `psmmix` int NOT NULL DEFAULT '0',
+                                `psmjw` int NOT NULL DEFAULT '0',
+
+                                `psfa` int NOT NULL DEFAULT '0',
+                                `psfw` int NOT NULL DEFAULT '0',
+                                `psfea` int NOT NULL DEFAULT '0',
+                                `psfh` int NOT NULL DEFAULT '0',
+                                `psfb` int NOT NULL DEFAULT '0',
+                                `psfi` int NOT NULL DEFAULT '0',
+                                `psfm` int NOT NULL DEFAULT '0',
+                                `psfmix` int NOT NULL DEFAULT '0',
+                                `psfmjw` int NOT NULL DEFAULT '0',  
+
+                                `pmaa` int NOT NULL DEFAULT '0',
+                                `pmaw` int NOT NULL DEFAULT '0',
+                                `pmaea` int NOT NULL DEFAULT '0',
+                                `pmah` int NOT NULL DEFAULT '0',
+                                `pmab` int NOT NULL DEFAULT '0',
+                                `pmai` int NOT NULL DEFAULT '0',
+                                `pmam` int NOT NULL DEFAULT '0',
+                                `pmamix` int NOT NULL DEFAULT '0',
+                                `pmajw` int NOT NULL DEFAULT '0',
+                                
+                                `pmma` int NOT NULL DEFAULT '0',
+                                `pmmw` int NOT NULL DEFAULT '0',
+                                `pmmea` int NOT NULL DEFAULT '0',
+                                `pmmh` int NOT NULL DEFAULT '0',
+                                `pmmb` int NOT NULL DEFAULT '0',
+                                `pmmi` int NOT NULL DEFAULT '0',
+                                `pmmm` int NOT NULL DEFAULT '0',
+                                `pmmmix` int NOT NULL DEFAULT '0',
+                                `pmmjw` int NOT NULL DEFAULT '0',
+
+                                `pmfa` int NOT NULL DEFAULT '0',
+                                `pmfw` int NOT NULL DEFAULT '0',
+                                `pmfea` int NOT NULL DEFAULT '0',
+                                `pmfh` int NOT NULL DEFAULT '0',
+                                `pmfb` int NOT NULL DEFAULT '0',
+                                `pmfi` int NOT NULL DEFAULT '0',
+                                `pmfm` int NOT NULL DEFAULT '0',
+                                `pmfmix` int NOT NULL DEFAULT '0',
+                                `pmfmjw` int NOT NULL DEFAULT '0',  
+                                
+				PRIMARY KEY  (`id`)
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('id', 'last_upd', 'mid'), "cache_movie_actor_meta");
+    /*
+     * Directors race cache
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `cache_movie_director_meta`(
+				`id` int unsigned NOT NULL auto_increment,
+                                `last_upd` int NOT NULL DEFAULT '0',
+                                `mid` int NOT NULL DEFAULT '0',                               
+                                `dirrace` int NOT NULL DEFAULT '0',
+                                `dirsrace` int NOT NULL DEFAULT '0',
+                                `writersrace` int NOT NULL DEFAULT '0',
+                                `castdirrace` int NOT NULL DEFAULT '0',
+                                `producerrace` int NOT NULL DEFAULT '0',                               
+                                `dirgender` int NOT NULL DEFAULT '0',
+                                `dirsgender` int NOT NULL DEFAULT '0',
+                                `writergender` int NOT NULL DEFAULT '0',
+                                `castgender` int NOT NULL DEFAULT '0',
+                                `producergender` int NOT NULL DEFAULT '0',                                
+                                `draceu` BIGINT NOT NULL DEFAULT '0',
+				PRIMARY KEY  (`id`)
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    // Pdo_an::db_query($sql);
+    // critic_matic_create_index_an(array('id', 'last_upd', 'mid'), "cache_movie_director_meta");
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {
