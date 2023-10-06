@@ -65,7 +65,7 @@ $mac = $cm->get_mac();
 if (!$mid) {
     $mac->run_cron($count, $debug, $force);
 } else {
-    //$mac->hook_update_movies(array($mid), $debug, $force);
+    $mac->hook_update_movies(array($mid), $debug);
 }
 
 

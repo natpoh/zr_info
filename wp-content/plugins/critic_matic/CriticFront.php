@@ -2738,7 +2738,7 @@ class CriticFront extends SearchFacets {
                     if ($i > $max_directors) {
                         break;
                     }
-                    $filelds[$name] = $this->filter_text($name);
+                    $filelds[$name] =  '"' . $this->filter_text($name). '"';
                     $i += 1;
                 }
             }
@@ -2757,7 +2757,7 @@ class CriticFront extends SearchFacets {
                     if ($i > $max_actors) {
                         break;
                     }
-                    $filelds[$name] = $this->filter_text($name);
+                    $filelds[$name] = '"' . $this->filter_text($name). '"';
                     $i += 1;
                 }
             }

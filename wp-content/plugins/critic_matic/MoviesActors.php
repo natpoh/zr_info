@@ -8,6 +8,8 @@
  */
 class MoviesActors extends AbstractDB {
 
+    private $cm;
+    
     public $count = array(
         'e' => array('key' => 0, 'title' => 'Exist'),
         'n' => array('key' => 1, 'title' => 'Number'),
@@ -35,7 +37,8 @@ class MoviesActors extends AbstractDB {
         'jw' => array('key' => 8, 'title' => 'Jewish'),
     );
 
-    public function __construct() {
+    public function __construct($cm='') {
+        $this->cm = $cm ? $cm : new CriticMatic();
         $this->db = array(
             'movie_imdb' => 'data_movie_imdb',
             'meta_movie_actor' => 'meta_movie_actor',
@@ -73,6 +76,25 @@ class MoviesActors extends AbstractDB {
             }
 
             foreach ($results as $movie) {
+                $this->update_movie($movie, $debug);
+            }
+        }
+    }
+
+    public function hook_update_movies($mids = array(), $debug = false) {
+        if (!$mids) {
+            return;
+        }
+        if (!is_array($mids)) {
+            $mids = array($mids);
+        }
+        $sql = "SELECT id, title FROM {$this->db['movie_imdb']} WHERE id IN(" . implode(',', $mids) . ")";
+        $movies = $this->db_results($sql);
+        if ($debug) {
+            print_r($movies);
+        }
+        if ($movies) {
+            foreach ($movies as $movie) {
                 $this->update_movie($movie, $debug);
             }
         }
@@ -121,7 +143,7 @@ class MoviesActors extends AbstractDB {
                         foreach ($this->gender as $gkey => $gvalue) {
                             if ($gender == $gvalue['key'] || $gkey == 'a') {
                                 // Race  
-                                foreach ($this->races as $rkey => $rvalue) {                                    
+                                foreach ($this->races as $rkey => $rvalue) {
                                     if ($rank == $rvalue['key'] || $rkey == 'a') {
                                         // Number
                                         $nkey = "{$number}{$tkey}{$gkey}{$rkey}";
@@ -189,11 +211,11 @@ class MoviesActors extends AbstractDB {
             }
             if ($exist_id) {
                 // Update cache
-                $this->sync_update_data($data, $exist_id, $this->db['cache_actor'], true, 10);
+                $this->sync_update_data($data, $exist_id, $this->db['cache_actor'], $this->cm->sync_data, 10);
             } else {
                 // Insert new cache                
                 $data['mid'] = $mid;
-                $this->sync_insert_data($data, $this->db['cache_actor'], false, true, 10);
+                $this->sync_insert_data($data, $this->db['cache_actor'], $this->cm->sync_client, $this->cm->sync_data, 10);
             }
         }
     }
