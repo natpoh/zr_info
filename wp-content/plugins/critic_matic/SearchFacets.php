@@ -899,16 +899,19 @@ class SearchFacets extends AbstractDB {
                 $value = $this->theme_count_value($sort_val);
                 $ret = "$value - $title";
             } else if (isset($this->cs->facet_data['wokedata']['childs'][$curr_sort]['titlesm'])) {
+                $title = $this->cs->facet_data['wokedata']['childs'][$curr_sort]['titlesm'];
+                $sort_val_title = $sort_val;
                 if ($curr_sort == 'bechdeltest' || $curr_sort == 'worthit') {
-                    $sort_val_title = '';
                     foreach ($this->cs->search_filters[$curr_sort] as $item) {
                         if ($item['key'] == $sort_val) {
                             $sort_val_title = $item['title'];
+                            break;
                         }
-                        $rating = $sort_val_title;
                     }
                 }
-                $ret = "$rating - $title";
+                if ($sort_val > 0) {
+                    $ret = "{$sort_val_title} - {$title}";
+                }
             } else if (isset($this->cs->facet_data['findata']['childs'][$curr_sort]['titlesm'])) {
                 $title = $this->cs->facet_data['findata']['childs'][$curr_sort]['titlesm'];
                 $ret = $this->theme_count_value($sort_val) . " - $title";
@@ -1789,7 +1792,7 @@ class SearchFacets extends AbstractDB {
                         </div>
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $first_item ?>">
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $max_item ?>">
-                        <?php //unset($items[count($items) - 1]);                                   ?>
+                        <?php //unset($items[count($items) - 1]);                                    ?>
                         <script type="text/javascript">var <?php print $type ?>_arr =<?php print json_encode($items) ?></script>
 
                     </div>  
@@ -2019,7 +2022,7 @@ class SearchFacets extends AbstractDB {
                             </div>
                             <input type="hidden" name="<?php print $type ?>" value="<?php print $first_item ?>">
                             <input type="hidden" name="<?php print $type ?>" value="<?php print $max_item ?>">
-                            <?php //unset($items[count($items) - 1]);                                   ?>
+                            <?php //unset($items[count($items) - 1]);                                    ?>
                             <script type="text/javascript">var <?php print $type ?>_arr =<?php print json_encode($items) ?></script>
 
                         <?php endif; ?>
@@ -2220,7 +2223,7 @@ class SearchFacets extends AbstractDB {
                         </div>
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $first_item ?>">
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $max_item ?>">
-                        <?php //unset($items[count($items) - 1]);                                   ?>
+                        <?php //unset($items[count($items) - 1]);                                    ?>
                         <script type="text/javascript">var <?php print $type ?>_arr =<?php print json_encode($items) ?></script>
                     </div>  
                 <?php endif; ?>
@@ -2774,7 +2777,7 @@ class SearchFacets extends AbstractDB {
                         </div>
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $first_item ?>">
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $max_item ?>">
-                        <?php //unset($items[count($items) - 1]);                                                                             ?>
+                        <?php //unset($items[count($items) - 1]);                                                                              ?>
                         <script type="text/javascript">var <?php print $type ?>_arr =<?php print json_encode($items) ?></script>
                     </div>  
                 <?php endif ?>
@@ -3043,20 +3046,20 @@ class SearchFacets extends AbstractDB {
             }
 
             // New api
-            /*$dates=array();
-            $race_facets = isset($this->cs->actorscache[$active_filter]) ? $this->cs->actorscache[$active_filter] : array();
-            if ($race_facets) {
-                $cnt=0;
-                foreach ($race_facets['all'] as $rkey => $rval) {
-                    $fdata = $facets[$rkey]['data'];
-                    $cnt = isset($fdata[0]->cnt)?$fdata[0]->cnt:0;
-                    foreach ($this->cs->search_filters['race'] as $key => $item) {
-                        if ($key == $rval['race']) {
-                            $dates[$key] = array('title' => $item['title'], 'count' => $cnt, 'type_title' => $type_title, 'name_pre' => $name_pre, 'filter' => $filter);
-                        }
-                    }
-                }
-            }*/
+            /* $dates=array();
+              $race_facets = isset($this->cs->actorscache[$active_filter]) ? $this->cs->actorscache[$active_filter] : array();
+              if ($race_facets) {
+              $cnt=0;
+              foreach ($race_facets['all'] as $rkey => $rval) {
+              $fdata = $facets[$rkey]['data'];
+              $cnt = isset($fdata[0]->cnt)?$fdata[0]->cnt:0;
+              foreach ($this->cs->search_filters['race'] as $key => $item) {
+              if ($key == $rval['race']) {
+              $dates[$key] = array('title' => $item['title'], 'count' => $cnt, 'type_title' => $type_title, 'name_pre' => $name_pre, 'filter' => $filter);
+              }
+              }
+              }
+              } */
 
             asort($dates);
 
@@ -3160,6 +3163,38 @@ class SearchFacets extends AbstractDB {
             $simpson_facet = $this->cs->facet_data['actorsdata']['childs'][$simpson_filter];
             if (isset($facets['actors_simpson'])) {
                 $simpson_data = $facets['actors_simpson']['data'];
+            } else {
+                $simpson_data = array();
+            }
+            $parent_cnt = 0;
+
+            if ($simpson_data || $this->cs->is_hide_facet($simpson_filter, $this->filters) || $facet == $simpson_filter) {
+                $slider_data = array(
+                    'cnt' => $parent_cnt,
+                    'minus' => isset($simpson_facet['minus']) ? true : false,
+                    'data' => $simpson_data,
+                    'type' => $simpson_filter,
+                    'ftype' => 'ratings',
+                    'icon' => isset($simpson_facet['icon']) ? '<i class="' . $simpson_facet['icon'] . '"></i>' : '',
+                    'name_pre' => $simpson_facet['name_pre'],
+                    'zero' => isset($simpson_facet['zero']) ? 1 : 0,
+                    'filter_pre' => $simpson_facet['filter_pre'],
+                    'max_count' => isset($simpson_facet['max_count']) ? $simpson_facet['max_count'] : 100,
+                    'multipler' => isset($simpson_facet['multipler']) ? $simpson_facet['multipler'] : 0,
+                    'shift' => isset($simpson_facet['shift']) ? $simpson_facet['shift'] : 0,
+                    'title' => $simpson_facet['title'],
+                );
+
+                $this->show_slider_include_facet($slider_data);
+            }
+
+
+            // Simpson mf
+            $simpson_data = array();
+            $simpson_filter = $this->cs->facet_data['actorsdata']['race_simpson_mf'][$active_filter];
+            $simpson_facet = $this->cs->facet_data['actorsdata']['childs'][$simpson_filter];
+            if (isset($facets['actors_simpson_mf'])) {
+                $simpson_data = $facets['actors_simpson_mf']['data'];
             } else {
                 $simpson_data = array();
             }

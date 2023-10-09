@@ -898,7 +898,14 @@ public static function Show_admin_table($datatype,$array_rows,$WP_include,$custo
 
 
 
-    $home_url=  site_url().'/';
+
+    $home_url=  WP_SITEURL.'/';
+
+
+
+
+    
+
 
     if (!$loadonce)
     {
@@ -1261,10 +1268,14 @@ if (Number(min_width)>Number(width)){
             afterInsertRow : function( row_id, rowdata, rawdata) {
 
                 var data_type = '<?php echo  $datatype; ?>';
+                console.log(data_type);
 
+                if (data_type =='option_sheme') {
+                    if (rowdata.id) {
+                        $('#<?php echo $tab_name;?>').jqGrid('setCell', row_id, 'action', '<a target="_blank" href="?edit_sheme='+rowdata.id+'">edit</a>', {'color': 'blue'});
+                    }
 
-
-
+                }
                 if (data_type =='critic_crowd')
                 {
 

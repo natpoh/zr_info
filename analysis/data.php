@@ -233,7 +233,10 @@ AND table_schema='" . DB_NAME_AN . "'";
 
                 $(document).ready(function () {
 
-                jQuery("#jqGrid").jqGrid({
+                    var theight = window.innerHeight - 220;
+                    if (theight<600)theight=600;
+
+                    jQuery("#jqGrid").jqGrid({
                 url: '<?php echo $home_url ?>analysis/jqgrid/get.php?data=<?php echo $datatype; ?>',
                             mtype: "POST",
                             datatype: "json",
@@ -253,7 +256,7 @@ AND table_schema='" . DB_NAME_AN . "'";
     <?php } else { ?>
                             width: (window.innerWidth - 1),
     <?php } ?>
-                        height: (window.innerHeight - 220),
+                        height: theight,
                                 rowNum: 100,
                                 pager: "#jqGridPager",
                                 multiselect: true,
@@ -429,6 +432,18 @@ AND table_schema='" . DB_NAME_AN . "'";
             </script>
         </head>
         <body>
+        <?php
+        !class_exists('Last_update') ? include ABSPATH . "analysis/include/last_update_graph.php" : '';
+        $Last_update = new Last_update();
+
+        if ($currant_table && $update_row)
+        {
+            $Last_update->show_graph($currant_table,$update_row);
+        }
+
+
+
+        ?>
 
         <?php if ($WP_include) { ?>
         <div class="bulk-actions-holder">
@@ -451,18 +466,6 @@ AND table_schema='" . DB_NAME_AN . "'";
           <script type="text/ecmascript" src="../../../js/bootstrap3-typeahead.js"></script>
           <link rel="stylesheet" type="text/css" media="screen" href="../../../css/bootstrap-datepicker.css" />
             -->
-<?php
-!class_exists('Last_update') ? include ABSPATH . "analysis/include/last_update_graph.php" : '';
-$Last_update = new Last_update();
-
-if ($currant_table && $update_row)
-{
-    $Last_update->show_graph($currant_table,$update_row);
-}
-
-
-
-?>
 
             <style type="text/css">
                 .notice_edit a,   .notice_edit #cb_jqGrid{

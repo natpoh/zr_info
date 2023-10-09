@@ -63,9 +63,11 @@ jQuery(function ($) {
             }
         }
 
-        $('.search-filters-btn').click(function () {
+        $('.search-filters-btn').click(function (e) {
+
             var w = $('body').width();
-            if (w <= 990) {
+            let tid = $(this).attr('id');
+            if (w <= 990 || tid == 'fiters-btn') {
                 if ($("#search-facets").length == 0) {
                     window.location.replace("/search#filters");
                     return false;

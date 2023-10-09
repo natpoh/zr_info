@@ -201,7 +201,7 @@
                                         global $post_an, $video_api;
                                        
 
-                                        $sortval = $movie->sortval;
+                                        $sortval = $movie->sortval;                                        
                                         $sortsecond = isset($movie->sortsecond)?$movie->sortsecond:0;
                                         $movie->sort_val_theme = $search_front->theme_sort_val($sortval, $sortsecond);
 
