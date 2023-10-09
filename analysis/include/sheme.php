@@ -75,8 +75,22 @@ public static function front($data)
     $id = $data['id'];
 
 
+    !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+    $colors = OptionData::get_options('', 'sheme_colors');
+    $options_color='';
+    if ($colors) {
+        $co = json_decode($colors);
+        foreach ($co as $c => $v) {
 
-?>
+            $root_css.= '--' . $c . ': ' . $v . ';' . PHP_EOL;
+            $style.='option[value="'.$c.'"]{ background: '.$v.'!important;} '. PHP_EOL.'body .cube.color_'.$c.' .face{     background-color: '.$v.';}'.PHP_EOL;
+
+        $options_color.='<option value="'.$c.'">'.$c.'</option>';
+        }
+    }
+
+
+    ?>
 
 <div class="popup" id="popup">
     <div class="popup-header">
@@ -110,6 +124,9 @@ public static function front($data)
         <div class="b_row">title <input class="b_title" ></div>
         <div class="b_row">desc <textarea class="b_desc" ></textarea></div>
         <div class="b_row">table <input class="b_table" ></div>
+        <div class="b_row">color <select class="b_color" ><?php echo $options_color; ?></select></div>
+
+
     </div>
 
 
@@ -152,6 +169,10 @@ public static function front($data)
 
     <?php
 
+    if ($root_css)
+        {
+            echo '<style type="text/css">:root{'.$root_css.'}'.$style.'</style>';
+        }
 
     }
 
@@ -336,9 +357,9 @@ function    draw_lines(id,parent){
 
                 let block_html =`<div class="cube" id="cube_${id}" style="left: ${x}px; top: ${y}px;">
                 <div class="face front"></div>
-                <div class="face right"></div>
+<!--                <div class="face right"></div>-->
                 <div class="face left"></div>
-                <div class="face top"></div>
+<!--                <div class="face top"></div>-->
                 <div class="face bottom"></div>
                 <div class="cube_desc">
                     <div class="cube_desc_message">${inner_message_text}</div>
@@ -348,6 +369,16 @@ function    draw_lines(id,parent){
 
                 var isoBlock = document.querySelector('.iso');
                 isoBlock.insertAdjacentHTML('beforeend', block_html);
+
+               if (inner_data)
+               {
+                   if (inner_data.color)
+                   {
+                       document.querySelector('.cube#cube_'+id).classList.add('color_'+inner_data.color);
+                   }
+
+               }
+
 
             }
 
@@ -719,12 +750,13 @@ function    draw_lines(id,parent){
                         var titleInput = document.querySelector('.b_title');
                         var descTextarea = document.querySelector('.b_desc');
                         var tableInput = document.querySelector('.b_table');
+                        var colorInput = document.querySelector('.b_color');
 
                         idElement.textContent = foundData.id !== undefined ? foundData.id : '';
                         titleInput.value = foundData.title !== undefined ? foundData.title : '';
                         descTextarea.value = foundData.desc !== undefined ? foundData.desc : '';
                         tableInput.value = foundData.table !== undefined ? foundData.table : '';
-
+                        colorInput.value = foundData.color !== undefined ? foundData.color : '';
 
                     }
                 }
@@ -751,7 +783,7 @@ function    draw_lines(id,parent){
             var titleInput = document.querySelector('.b_title');
             var descTextarea = document.querySelector('.b_desc');
             var tableInput = document.querySelector('.b_table');
-
+            var colorInput = document.querySelector('.b_color');
 
             function findCubeById(id) {
                 return object_array.cube.find(function(cube) {
@@ -797,6 +829,19 @@ function    draw_lines(id,parent){
                     document.querySelector('.cube#cube_'+id+' .cube_desc_message').innerHTML=imsg;
                 }
             });
+
+            colorInput.addEventListener('change', function(event) {
+                var selectedColor = event.target.value;
+                   let idElement = document.querySelector('.b_id');
+                var id = parseInt(idElement.textContent);
+                var cube = findCubeById(id);
+
+                if (cube) {
+                    cube.color = selectedColor;
+                }
+                document.querySelector('.cube#cube_'+id).classList.add('color_'+selectedColor);
+            });
+
 
             //////update cube
 
@@ -1090,12 +1135,13 @@ function    draw_lines(id,parent){
     }
     public static function styles()
     {
+
+
         ?>
         <style type="text/css">
             :root {
-                --cube_1x1_x: 100px;
-                --cube_1x1_y: 100px;
-                --cube_1x1_z: 100px;
+                --cube_100: 100px;
+
             }
 
             body {
@@ -1193,13 +1239,15 @@ function    draw_lines(id,parent){
             }
 
             .cube {
-                width: var(--cube_1x1_x);
-                height: var(--cube_1x1_x);
+                width: var(--cube_100);
+                height: var(--cube_100);
                 position: absolute;
                 transform-style: preserve-3d;
                 left: 2000px;
                 top: 1000px;
-                transform: translateX(0px) translateY(0px);
+                transform: translateX(-50%) translateY(-50%);
+                margin-left: 50px;
+                margin-top: 50px;
             }
 
             .cube.transparent .face {
@@ -1222,45 +1270,40 @@ function    draw_lines(id,parent){
 
             }
 
-            .cube_2 {
 
-                left: 2000px;
-                top: 1700px;
-
-            }
 
 
             .cube .face {
                 position: absolute;
-                width: var(--cube_1x1_x);
-                height: var(--cube_1x1_x);
-                background-color: #4CAF50;
+                width: var(--cube_100);
+                height: var(--cube_100);
+                background-color: var(--green);
                 border: 1px solid #333;
             }
 
             .cube .front {
-                background-color: #3a7c3d;
-                transform: rotateY(0deg) translateZ(var(--cube_1x1_x));
+                filter: brightness(1.4);
+                transform: rotateY(0deg) translateZ(var(--cube_100));
             }
 
             .cube .right {
-                background-color: #4CAF50;
-                transform: rotateY(90deg) translateZ(calc(var(--cube_1x1_x) / 2)) translateX(calc(var(--cube_1x1_x) / -2));
+
+                transform: rotateY(90deg) translateZ(calc(var(--cube_100) / 2)) translateX(calc(var(--cube_100) / -2));
             }
 
             .cube .left {
-                background-color: #3cd343;
-                transform: rotateY(-90deg) translateZ(calc(var(--cube_1x1_x) / 2)) translateX(calc(var(--cube_1x1_x) / 2));
+                filter: brightness(0.8);
+                transform: rotateY(-90deg) translateZ(calc(var(--cube_100) / 2)) translateX(calc(var(--cube_100) / 2));
             }
 
             .cube .top {
-                background-color: #4CAF50;
-                transform: rotateX(90deg) translateZ(calc(var(--cube_1x1_x) / 2)) translateY(calc(var(--cube_1x1_x) / 2));
+
+                transform: rotateX(90deg) translateZ(calc(var(--cube_100) / 2)) translateY(calc(var(--cube_100) / 2));
             }
 
             .cube .bottom {
-                background-color: #4CAF50;
-                transform: rotateX(-90deg) translateZ(calc(var(--cube_1x1_x) / 2)) translateY(calc(var(--cube_1x1_x) / -2));
+
+                transform: rotateX(-90deg) translateZ(calc(var(--cube_100) / 2)) translateY(calc(var(--cube_100) / -2));
             }
 
             /*popup*/
@@ -1393,7 +1436,7 @@ function    draw_lines(id,parent){
                 justify-content: space-between;
                 align-items: center;
             }
-            .block_edit_menu input,  .block_edit_menu textarea {
+            .block_edit_menu input,.block_edit_menu select,  .block_edit_menu textarea {
                 max-width: 100%;
                 width: 150px;
             }
