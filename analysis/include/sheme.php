@@ -301,7 +301,7 @@ function    draw_lines(id,parent){
 
 }
 
-            function insert_block_to_field(id,x,y,inner_data=[])
+            function inner_message(id,inner_data=[])
             {
 
                 let inner_message ='';
@@ -324,6 +324,15 @@ function    draw_lines(id,parent){
 
                 inner_message+='<p class="mb_edit">id:'+id+' <button data-id="'+id+'" class="edit_cube">Edit</button></p>';
 
+                return inner_message;
+            }
+
+
+            function insert_block_to_field(id,x,y,inner_data=[])
+            {
+
+                let inner_message_text=inner_message(id,inner_data)
+
 
                 let block_html =`<div class="cube" id="cube_${id}" style="left: ${x}px; top: ${y}px;">
                 <div class="face front"></div>
@@ -332,7 +341,7 @@ function    draw_lines(id,parent){
                 <div class="face top"></div>
                 <div class="face bottom"></div>
                 <div class="cube_desc">
-                    <div class="cube_desc_message">${inner_message}</div>
+                    <div class="cube_desc_message">${inner_message_text}</div>
                 </div>
             </div>`;
 
@@ -715,6 +724,8 @@ function    draw_lines(id,parent){
                         titleInput.value = foundData.title !== undefined ? foundData.title : '';
                         descTextarea.value = foundData.desc !== undefined ? foundData.desc : '';
                         tableInput.value = foundData.table !== undefined ? foundData.table : '';
+
+
                     }
                 }
                 else if (event.target.classList.contains('open_btn')) {
@@ -755,6 +766,9 @@ function    draw_lines(id,parent){
                 if (cube) {
                     cube.title = titleInput.value;
 
+                    let imsg =  inner_message(id,cube);
+
+                    document.querySelector('.cube#cube_'+id+' .cube_desc_message').innerHTML=imsg;
                 }
             });
 
@@ -765,7 +779,9 @@ function    draw_lines(id,parent){
                 var cube = findCubeById(id);
                 if (cube) {
                     cube.desc = descTextarea.value;
+                    let imsg =  inner_message(id,cube);
 
+                    document.querySelector('.cube#cube_'+id+' .cube_desc_message').innerHTML=imsg;e;
                 }
             });
 
@@ -776,6 +792,9 @@ function    draw_lines(id,parent){
                 if (cube) {
                     cube.table = tableInput.value;
 
+                    let imsg =  inner_message(id,cube);
+
+                    document.querySelector('.cube#cube_'+id+' .cube_desc_message').innerHTML=imsg;
                 }
             });
 
