@@ -1941,9 +1941,14 @@ class MoviesAn extends AbstractDBAn {
             $this->db_query($sql);
         
             // Add hooks here
+            
+            // Movies Simpson
             $ms = $this->cm->get_ms();
             $ms->hook_update_movies($mids, $debug);
-        }      
-        
+            
+            // Movies Actors
+            $mac = $this->cm->get_mac();
+            $mac->hook_update_movies($mids, $debug);
+        }
     }  
 }

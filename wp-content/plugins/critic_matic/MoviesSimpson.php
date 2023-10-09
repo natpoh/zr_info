@@ -10,8 +10,11 @@
  * @author brahman
  */
 class MoviesSimpson extends AbstractDB {
+    
+    private $cm;
 
-    public function __construct() {
+    public function __construct($cm='') {
+        $this->cm = $cm ? $cm : new CriticMatic();
         $this->db = array(
             'movie_imdb' => 'data_movie_imdb',
             'meta_movie_actor' => 'meta_movie_actor',
@@ -181,7 +184,7 @@ class MoviesSimpson extends AbstractDB {
             if ($exist_id) {
                 // Update woke
 
-                $this->sync_update_data($data, $exist_id, $this->db['data_woke'], true, 10);
+                $this->sync_update_data($data, $exist_id, $this->db['data_woke'], $this->cm->sync_data, 10);
             } else {
                 // Insert new woke
                 $data['title'] = $title;
@@ -189,7 +192,7 @@ class MoviesSimpson extends AbstractDB {
                 $data['country'] = $country;
                 $data['year'] = (int) $year;
 
-                $this->sync_insert_data($data, $this->db['data_woke'], false, true, 10);
+                $this->sync_insert_data($data, $this->db['data_woke'], $this->cm->sync_client, $this->cm->sync_data, 10);
             }
         }
     }

@@ -333,8 +333,8 @@ class CriticMatic extends AbstractDB {
         }
         return $this->mw;
     }
-    
-        public function get_ms() {
+
+    public function get_ms() {
         // Get MoviesSimpson
         if (!$this->ms) {
             if (!class_exists('MoviesSimpson')) {
@@ -344,6 +344,18 @@ class CriticMatic extends AbstractDB {
             $this->ms = new MoviesSimpson($this);
         }
         return $this->ms;
+    }
+
+    public function get_mac() {
+        // Get MoviesActors
+        if (!$this->mac) {
+            if (!class_exists('MoviesActors')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'MoviesActors.php' );
+            }
+
+            $this->mac = new MoviesActors($this);
+        }
+        return $this->mac;
     }
 
     public function get_cp() {
@@ -3833,7 +3845,7 @@ class CriticMatic extends AbstractDB {
         if (file_exists($ts_dir)) {
             unlink($ts_dir);
         }
-        
+
         $data = array(
             'cmd' => 'critic_delta',
         );
@@ -3842,7 +3854,7 @@ class CriticMatic extends AbstractDB {
             return false;
         }
         $host = SYNC_HOST;
-        return $this->post($data, $host);       
+        return $this->post($data, $host);
     }
 
     public function get_post_view_type($url = '') {
