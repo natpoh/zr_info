@@ -34,6 +34,9 @@ public static function edit_data($id)
         $q ="UPDATE `option_sheme` SET `data` = ? WHERE `id`=".intval($id);
         Pdo_an::db_results_array($q,[$data]);
 
+        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+        Import::create_commit('', 'update', 'option_sheme', array('id' => intval($id)), 'option_sheme',6);
+
         header('Content-Type: application/json');
         echo json_encode(['message' => ' ok']);
     }
