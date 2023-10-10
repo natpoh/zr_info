@@ -311,6 +311,16 @@ echo 'error';
                 }
             } else
                 echo 'actor alredy addeded<br>';
+
+            if (function_exists('check_cron_time'))
+            {
+                if (check_cron_time())
+                {
+                    break;
+                }
+
+            }
+
         }
     }
 private static function update_meta($aid,$verdict)
