@@ -520,6 +520,14 @@ class Ethinc
                     Pdo_an::db_results_array($sql, array(time()));
                 }
 
+                if (function_exists('check_cron_time'))
+                {
+                    if (check_cron_time())
+                    {
+                        break;
+                    }
+
+                }
 
         }
 
