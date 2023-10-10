@@ -646,7 +646,7 @@ class SearchFacets extends AbstractDB {
             } else if ($key == 'release') {
                 $name = $value;
                 $slug = $value;
-                $tags[] = array('name' => $name, 'type' => $key, 'name_pre' => 'Release ', 'id' => $slug, 'parent' => $key, 'minus' => $minus);
+                $tags[] = array('name' => $name, 'type' => $key, 'name_pre' => 'Release Date ', 'id' => $slug, 'parent' => $key, 'minus' => $minus);
             } else if ($key == 'genre') {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
@@ -1475,7 +1475,7 @@ class SearchFacets extends AbstractDB {
                         'count' => $count,
                         'type' => $key,
                         'ftype' => 'release',
-                        'title' => 'Release',
+                        'title' => 'Release Date',
                         'name_pre' => 'Release ',
                     );
                     $this->show_slider_facet($rel_data);

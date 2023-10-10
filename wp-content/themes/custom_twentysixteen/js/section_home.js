@@ -750,8 +750,8 @@ function create_rating_content(object, m_id, search_block = 0) {
     content += '<div id="' + m_id + '"  class="note edit"><div class="note_togle">' +
         '<div  class="edit_area  note_show">' +
         '<div class="edit_comment"><div class="desc">Add Comment</div></div>' +
-        '<div   class="edit_review"><div class="desc">Add Review</div></div>' +
-        '<div   class="edit_critic"><div class="desc">Add Critic review</div></div>' +
+        '<div   class="edit_review"><div class="desc">Write a Review</div></div>' +
+        '<div   class="edit_critic"><div class="desc">Submit Review Link</div></div>' +
         '<div class="edit_family_rating"><span class="f_name"></span><div class="desc">Edit Family Friendly Rating</div></div>' +
         '</div></div>';
 

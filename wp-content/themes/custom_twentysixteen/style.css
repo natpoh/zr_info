@@ -120,7 +120,11 @@ nav,
 section {
     display: block;
 }
+
 details {
+    position: relative;
+    box-sizing: border-box;
+    border: 1px solid var(--gray-light-3);
     background-color: #fff;
     margin-bottom: 10px;
     border-radius: 4px;
@@ -129,7 +133,9 @@ details {
 .theme_dark details {
     background-color: #2e2d2d;
 }
-
+.theme_dark details {
+    border: 1px solid var(--gray-dark-2);
+}
 
 details>div{
     padding: 10px;
@@ -155,10 +161,11 @@ details.dark {
     margin-bottom: 0;
     border-radius: 0;
     padding: 0;
-    border-bottom: 1px solid #d9d9d9;
+    border: unset;
+    border-bottom: 1px solid var(--gray-light-3);
 }
 .theme_dark  details.dark {
-    border-bottom: 1px solid #3f3f3f;
+    border-bottom: 1px solid var(--gray-dark-3);
 }
 .theme_dark summary {
     padding: 10px;
@@ -240,11 +247,7 @@ details >summary::after {
     display: block;
     background-size: contain;
 }
-details {
-    position: relative;
-    box-sizing: border-box;
-    border: none;
-}
+
 
 
 body.theme_dark  details {
@@ -2954,7 +2957,7 @@ body.theme_dark .facets {
 }
 .facet .more, 
 .facet .more-popup {
-    background: #c7c7c7;
+    background: var(--blue-light-4);
     text-align: center;
     padding: 3px 10px;
     text-align: center;
@@ -2962,7 +2965,7 @@ body.theme_dark .facets {
 }
 body.theme_dark .facet .more,
 body.theme_dark .facet .more-popup{
-    background: #656565;;
+    background: var(--gray-dark-2);
 }
 #search-filters {
     padding: 0;
@@ -3468,6 +3471,12 @@ body.theme_dark  .noUi-handle::before,body.theme_dark  .noUi-handle::after {
     border-bottom: 1px solid #afafaf;
 }
 
+
+.theme_dark .facet .tab-wrapper.column li.nav-tab:last-child>a,
+.theme_dark .facets .tab-wrapper.column li.nav-tab:last-child>a{
+    border-bottom: 1px solid #444;
+}
+
 .tab-wrapper.column li.nav-tab a{
     margin: 0;
 }
@@ -3486,9 +3495,9 @@ body.theme_dark  .noUi-handle::before,body.theme_dark  .noUi-handle::after {
 
 .facet .tab-wrapper .nav-tab.active a,
 .facets .tab-wrapper .nav-tab.active a{
-    background: #f14939;    
-    color: #fff;    
-    border-color: #cf4b3e;    
+    background: var(--blue-light-1);
+    color: #fff;
+    border-color: var(--blue-light-1);
 }
 
 .facet-content.free-watch {
@@ -15920,6 +15929,11 @@ body.home.blog.theme_dark .inner_content {
 
 
 
+/* Making the full description of user filters visible. */
+
+.sfilter-content {
+    display:block;
+}
 
 
 
