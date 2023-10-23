@@ -1016,7 +1016,18 @@ global $force;
 
 //    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
 //    Import::create_commit($commit_id,'update','meta_movie_director', array('mid'=>$mid),'movie_meta_actor',5);
+    if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
+        define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
+    }
 
+    if (!class_exists('CriticFront')) {
+        require_once( CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php' );
+    }
+    if (class_exists('CriticMatic')) {
+        $cm = new CriticMatic();
+        $ma = $cm->get_ma();
+        $ma->hook_add_movies($mid, $debug);
+    }
 
 
 return 1;

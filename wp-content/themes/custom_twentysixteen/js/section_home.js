@@ -2659,21 +2659,24 @@ jQuery(document).ready(function () {
 
     });
 
-    jQuery("body").on('click', '.watch_buttom', function () {
+    function get_watch(id)
+    {
+        jQuery('.movie_watch').html('').hide();
+        jQuery('.watch_buttom').show();
+        let btn =  jQuery('.watch_buttom[id="'+id+'"]');
+
+        let title = btn.attr('data-title');
+        let year = btn.attr('data-year');
+        let type = btn.attr('data-type');
 
 
-        jQuery('.movie_watch .close_filters').click();
-
-        let id = jQuery(this).attr('id');
-        let title = jQuery(this).attr('data-title');
-        let year = jQuery(this).attr('data-year');
-        let type = jQuery(this).attr('data-type');
-
-
-        var prnt = jQuery(this).parents('.movie_container');
+        var prnt = btn.parents('.movie_container');
         jQuery(this).hide();
+
+        // console.log('ajax');
         jQuery.ajax({
             type: 'POST',
+            async: false,
             data: {id: id},
             url:  site_url+template_path + "get_wach.php",
             success: function (html) {
@@ -2684,8 +2687,17 @@ jQuery(document).ready(function () {
 
             }
         });
-        return false;
+    }
+
+    jQuery("body").on('click', '.watch_buttom', function (e) {
+        e.preventDefault();
+       // console.log('watch_buttom');
+        let id = jQuery(this).attr('id');
+        get_watch(id);
+      //  console.log('after ajax');
+      // return false;
     });
+
     jQuery('body').on('change', '.popup-container > input:not(:checked)', function () {
 
         if (jQuery('.popup-content').html()) {

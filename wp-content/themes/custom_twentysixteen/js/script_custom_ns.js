@@ -260,11 +260,10 @@ function init_nte() {
                     var nte = $(".nte.open");
 
                    // console.log(nte.has(e.target).length );
-
-                    if ((!nte.is(e.target) && nte.has(e.target).length === 0)) {
+                    if ((!nte.is(e.target) && nte.has(e.target).length === 0) && !$(e.target).closest('.tg-dialog').length  && !$(e.target).closest('.tg-backdrop').length) {
                         nte.removeClass('open');
                         $body.removeClass('nte_toggle');
-                    //    console.log('close 262');
+                     // console.log('close 262');
                     }
                 } else {
                //     console.log('not init');

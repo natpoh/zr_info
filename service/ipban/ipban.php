@@ -47,9 +47,9 @@ class IpBanService extends AbstractDBi {
         $this->db = array(
             'blacklist' => 'ipban_blacklist',
         );
-        $this->mail_notifi = defined('EMAIL_NOTIFI_ENABLE')?EMAIL_NOTIFI_ENABLE:0;
-        $this->mail_from = defined('EMAIL_NOTIFI_FROM')?EMAIL_NOTIFI_FROM:'';
-        $this->mail_to = defined('EMAIL_NOTIFI_TO')?EMAIL_NOTIFI_TO:array();
+        $this->mail_notifi = defined('EMAIL_NOTIFI_ENABLE') ? EMAIL_NOTIFI_ENABLE : 0;
+        $this->mail_from = defined('EMAIL_NOTIFI_FROM') ? EMAIL_NOTIFI_FROM : '';
+        $this->mail_to = defined('EMAIL_NOTIFI_TO') ? EMAIL_NOTIFI_TO : array();
     }
 
     public function run_cron($debug = false) {
@@ -515,7 +515,10 @@ class IpBanService extends AbstractDBi {
             'AhrefsBot' => 'AhrefsBot',
             'Miralinks' => 'Miralinks',
             'Sogou' => 'Sogou web spider',
+            'SemrushBot' => 'SemrushBot',
             'DotBot' => 'DotBot',
+            'BLEXBot' => 'BLEXBot',
+            'Amazonbot' => 'Amazonbot',
         );
 
         return $bots;
