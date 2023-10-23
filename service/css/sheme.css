@@ -214,6 +214,25 @@ body.add_block .line_point {
     padding: 0px 3px;
     margin-left: 50px;
 }
+.two_ways.line::after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 26px;
+    background: url(arrow_green.svg) 0px 0px;
+    transform-origin: left center;
+    transform: rotate(180deg);
+    margin-top: 0;
+    transform-origin: left center;
+    transform: rotate(180deg);
+    animation: moveBackground 1s linear infinite;
+    border-radius: 12px;
+    padding: 0px 3px;
+    margin-left: 0;
+    left: 100%;
+    top: 30px;
+}
+
 .line.active
 {
 

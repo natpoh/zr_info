@@ -147,7 +147,7 @@ public static function front($data)
     <button class="add-button add_cube">Add Cube</button>
     <button class="add-button move_cube">Move Cube</button>
     <button class="add-button add-line-button">Add Line</button>
-
+    <button class="add-button line-tw-button">Two ways</button>
     <div class="lines_container">
     <div class="menu_lines"></div>
     <div style="display: flex; gap:2px">

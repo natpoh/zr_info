@@ -131,6 +131,8 @@ class PgRatingCalculate {
     }
 
     public static function get_curl_rating($mid, $type) {
+
+
         $array_cid = array('thenumbers' => 1, 'rotten_mv' => 20, 'rotten_tv' => 21, 'douban' => 22, 'metacritic' => 23, 'kinop' => 24, 'animelist' => 27, 'moviemeter' => 38, 'eiga' => 35);
 
         if ($type == 'rt') {

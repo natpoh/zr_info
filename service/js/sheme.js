@@ -15,11 +15,13 @@ function addLine(x,y) {
 
     var lastId = object_array.line_point.length > 0 ? object_array.line_point[object_array.line_point.length - 1].id : 0;
 
+
     let id = lastId + 1;
     var newCube = {
         id: id,
         x:x,
         y:y,
+        tw:tw_press_line,
         parent:parent
     };
 
@@ -80,6 +82,21 @@ function draw_line(result,block)
     const line = document.querySelector('.line_point#line_'+block+'');
 
     line.style.width = hypotenuse + 'px';
+    // let tx =0;
+    // if (angle<90)
+    // {
+    //     tx =5;
+    // }
+    //  if (angle<0)
+    // {
+    //     tx =-5;
+    // }
+    // if (angle>120)
+    // {
+    //     tx =-5;
+    // }
+
+    //line.style.transform = `rotate(${angle}deg)  translateY(-13px)  translateX(${tx}px)`;
     line.style.transform = `rotate(${angle}deg)`;
     line.style.left = result.previous.x + 'px';
     line.style.top = result.previous.y + 'px';
@@ -206,7 +223,13 @@ function move_line(targetX,targetY,newX,newY)
 
                     document.querySelector('.line_point#line_'+inner_data.id).remove();
 
-                    insert_line_to_field(inner_data.id,inner_data.parent,inner_data.x,inner_data.y);
+
+                    let tw = false;
+                    if (inner_data.tw)
+                    {
+                        tw= inner_data.tw;
+                    }
+                    insert_line_to_field(inner_data.id,inner_data.parent,inner_data.x,inner_data.y,tw);
                 }
             });
         }
@@ -251,10 +274,19 @@ function add_block(x,y){
 }
 
 
-function insert_line_to_field(id,parent,x,y)
+function insert_line_to_field(id,parent,x,y,tw)
 {
 
-    let block_html =`<div class="line_point line" id="line_${id}" style="left: ${x}px; top: ${y}px;"></div>`;
+    if (tw)
+    {
+        tw = ' two_ways ';
+    }
+    else
+    {
+        tw='';
+    }
+
+    let block_html =`<div class="line_point line${tw}" id="line_${id}" style="left: ${x}px; top: ${y}px;"></div>`;
     var isoBlock = document.querySelector('.iso');
     isoBlock.insertAdjacentHTML('beforeend', block_html);
     //draw lines
@@ -268,7 +300,14 @@ function insert_line_to_field(id,parent,x,y)
 
 function add_block_line(x,y){
     let [id,parent]  = addLine(x,y);
-    insert_line_to_field(id,parent,x,y);
+
+    let tw =false;
+    if (tw_press_line)
+    {
+        tw = true;
+    }
+
+    insert_line_to_field(id,parent,x,y,tw);
 
 }
 
@@ -362,7 +401,7 @@ const addButton = document.querySelector('.add_cube');
 let isButtonPressed = false;
 let isButtonMoveBPressed = false;
 let isButtonPressed_line = false;
-
+let tw_press_line = false;
 
 addButton.addEventListener('click', function() {
     isButtonPressed = !isButtonPressed;
@@ -415,7 +454,7 @@ moveButton.addEventListener('click', function() {
 
 const add_line_button = document.querySelector('.add-line-button');
 
-
+const tw_line_button = document.querySelector('.line-tw-button');
 
 
 
@@ -504,6 +543,19 @@ function addNewLine() {
     check_click_linebutton()
 }
 document.querySelector('.add-new-line-button').addEventListener('click', addNewLine);
+
+
+
+tw_line_button.addEventListener('click', function() {
+
+    tw_press_line = !tw_press_line;
+    if (tw_press_line) {
+        tw_line_button.classList.add('active');
+    }
+    else {
+        tw_line_button.classList.remove('active');
+    }
+});
 
 
 
@@ -910,7 +962,13 @@ if (object_array)
         {
             object_array.line_point.forEach(function(inner_data) {
 
-                insert_line_to_field(inner_data.id,inner_data.parent,inner_data.x,inner_data.y);
+                let tw = false;
+                if (inner_data.tw)
+                {
+                    tw= inner_data.tw;
+                }
+
+                insert_line_to_field(inner_data.id,inner_data.parent,inner_data.x,inner_data.y,tw);
 
             });
         }
