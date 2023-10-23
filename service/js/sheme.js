@@ -163,9 +163,16 @@ function insert_block_to_field(id,x,y,inner_data=[])
     }
     if (inner_data)
     {
+        console.log(inner_data);
         if (inner_data.type)
         {
-            document.querySelector('.cube#cube_'+id).classList.add('type_'+inner_data.type);
+            let tclass   = inner_data.type;
+            if (tclass.includes(" ")) {
+                tclass   = tclass.replace(/ /g, "_");
+            }
+
+            console.log(inner_data.type);
+            document.querySelector('.cube#cube_'+id).classList.add('type_'+tclass);
         }
 
     }
@@ -694,7 +701,12 @@ typeInput.addEventListener('change', function(event) {
     var classesToRemove = Array.from(cubeElement.classList).filter(className => className.includes('type_'));
     cubeElement.classList.remove(...classesToRemove);
 
-    cubeElement.classList.add('type_'+selecteddata);
+    let tclass   = selecteddata;
+    if (tclass.includes(" ")) {
+        tclass   = tclass.replace(/ /g, "_");
+    }
+
+    cubeElement.classList.add('type_'+tclass);
 
 
 });

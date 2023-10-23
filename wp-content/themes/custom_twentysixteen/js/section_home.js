@@ -337,11 +337,17 @@ function create_total_rating(obj, only_tomatoes, rt_gap) {
                 name = formatWordsList(key);
             }
 
+            let nolink ='';
+           if (key =='audience_rating')
+           {
+
+               nolink =' no_link '
+           }
 
             if (Number(value) > 0) {
                 if (key.indexOf('rt_') == -1 && key != 'total_rating') {
 
-                    content_rating += '<div class="exlink" id="' + key + '"><span>' + name + ':</span>' + create_rating_star(value, key) + '</div>';
+                    content_rating += '<div class="exlink'+nolink+'" id="' + key + '"><span>' + name + ':</span>' + create_rating_star(value, key) + '</div>';
                 }
 
 
@@ -680,11 +686,11 @@ function create_rating_content(object, m_id, search_block = 0) {
 
         else if (object['lgbt_text']) {
             ltext+= '<span class="bg_rainbow">' + object['lgbt_text'] + '</span>';
-            lgbt_warning_text= popup_cusomize('row_text_head', 'LGB content included:<span data-value="lgbt_popup" class="nte_info"></span>') + popup_cusomize('row_text', ltext);
+            lgbt_warning_text= popup_cusomize('row_text_head', 'LGBTQ content included:<span data-value="lgbt_popup" class="nte_info"></span>') + popup_cusomize('row_text', ltext);
         }
         else if (object['qtia_text']) {
             qtext+= '<span class="bg_rainbow">' + object['qtia_text'] + '</span>';
-            lgbt_warning_text= popup_cusomize('row_text_head', 'QTIA+ content included:<span data-value="lgbt_popup" class="nte_info"></span>') + popup_cusomize('row_text', qtext);
+            lgbt_warning_text= popup_cusomize('row_text_head', 'LGBTQ content included:<span data-value="lgbt_popup" class="nte_info"></span>') + popup_cusomize('row_text', qtext);
         }
 
         lgbt_class = ' lgbt ';
@@ -1018,6 +1024,7 @@ function add_rating_row(title, content, id, content_text) {
 }
 
 function create_rating_star(rating, type, num = 10) {
+
 
     if (type == 'big_rating') {
 
@@ -3796,6 +3803,11 @@ jQuery(document).ready(function () {
     });
 
     jQuery('body').on('click', '.exlink', function () {
+
+        if (jQuery(this).hasClass('no_link'))
+        {
+            return false;;
+        }
 
         let type = jQuery(this).attr('id');
         let id = jQuery(this).parents('.rating_block').attr('id');

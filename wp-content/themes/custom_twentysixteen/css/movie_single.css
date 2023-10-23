@@ -329,15 +329,16 @@ body .ready_to_load .button_play_trailer {
     position: relative;
     padding-left: 50px;
     display: flex;
-    color: #338cff;
+    color: var(--blue-default);
     text-decoration: none;
     font-size: 24px;
     outline: none !important;
-    text-shadow: 0px 0px 2px #338cff;
+    text-shadow: 0px 0px 2px var(--blue-light-2);
     transition: all 0.4s;
     height: 36px;
     box-sizing: border-box;
     align-items: center;
+    margin-top: 9px;
 }
 .ext_links a{
     padding-right: 26px;
@@ -386,26 +387,53 @@ body.theme_dark  a.outr_link:after {
 }
 
 
-body.theme_dark  body .ready_to_load .button_play_trailer {
-    color: #fff;
-    text-shadow: 0px 0px 2px #0167a4,0px 0px 4px #0167a4,0px 0px 8px #0167a4,0px 0px 10px #0167a4;
-
-}
 
 body .ready_to_load .button_play_trailer::before {
-    content: "▲";
-    width: 34px;
-    height: 36px;
+    content: " ";
+    width: 21px;
+    height: 21px;
     display: block;
     position: absolute;
-    left: 23px;
+    left: 20px;
     top: 4px;
-    fill: #fff;
-    font-size: 35px;
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    background-color: var(--blue-default);;
     transform: rotate(90deg);
+    text-shadow: 0px 0px 2px var(--blue-light-2);
+    transition: all 0.4s;
+
 }
+
 body .ready_to_load .button_play_trailer:hover {
-    text-shadow: 0px 0px 2px #29afff,0px 0px 4px #29afff,0px 0px 8px #29afff,0px 0px 10px #29afff;
+    color: var(--blue-light-1);
+
+}
+body  .ready_to_load .button_play_trailer:hover::before {
+    background-color: var(--blue-light-1);
+
+}
+
+
+body.theme_dark  .ready_to_load .button_play_trailer {
+    color: var(--blue-light-1);
+    text-shadow: 0px 0px 2px var(--blue-light-2);
+
+}
+
+body.theme_dark  .ready_to_load .button_play_trailer::before {
+
+    background-color: var(--blue-light-1);
+    text-shadow: 0px 0px 2px r(--blue-light-2);
+}
+
+
+body.theme_dark .ready_to_load .button_play_trailer:hover {
+    color: var(--blue-light-2);
+
+}
+body.theme_dark  .ready_to_load .button_play_trailer:hover::before {
+    background-color: var(--blue-light-2);
+
 }
 .chart_content{
     display: flex;
@@ -1779,7 +1807,11 @@ div.sortable {
 }
 @media screen and (max-width: 550px) {
 
+    body .ready_to_load .button_play_trailer {
+        padding-right: 20px;
+        margin-top: 0px;
 
+    }
     .movie_total_rating>.rating_block {
 
         grid-template-columns: 1fr 1fr 1fr 1fr 1fr;

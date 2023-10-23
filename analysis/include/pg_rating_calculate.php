@@ -204,14 +204,9 @@ class PgRatingCalculate {
             } else {
 
                 $result = self::get_curl_rating($mid, $rating_type);
-
-
                 $link = self::prepare_resuts($rating_type, $result);
-
                 if($link)self::set_rating_to_bd($mid, $rating_type, $link);
-
                 if (!$link){$link = self::create_search_url($mid,$rating_type);}
-
                 return ['url' => $link];
             }
         }

@@ -12188,12 +12188,6 @@ a#move_up:hover {
 /* softening the play trailer links in light mode */
 
 
-:not(.theme_dark) .button_play_trailer:hover {
-
-    color:white!important;
-}
-
-
 
 
 

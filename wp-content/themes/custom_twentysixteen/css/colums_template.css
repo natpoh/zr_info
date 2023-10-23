@@ -2819,12 +2819,20 @@ body.theme_dark  .rating_block .imdb_rating {
     font-family: 'Encode Sans Condensed',Lato;
 }
 .exlink:hover {
-    color: #007acc;
+    color: var(--blue-light-1);
 }
 body.theme_dark .exlink:hover {
-    color: #87b8d8;
+    color: var(--blue-light-2);
 }
 
+
+.exlink.no_link{
+    cursor: default;
+
+}
+.exlink.no_link:hover, body.theme_dark .exlink.no_link:hover{
+    color:unset;
+}
 .rating_block .rotten_tomatoes_score {
     font-size: 18px;
     display: flex;

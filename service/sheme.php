@@ -98,14 +98,21 @@ public static function front($data)
 
         foreach ($otype as $c => $v) {
 
-            if ($v['color'])
+            $options_type.='<option value="'.$c.'">'.$c.'</option>';
+
+            $c_link = $c;
+            if (strstr($c,' '))
             {
-                $style.='body .cube.type_'.$c.' .face{   background-color: '.$v['color'].';}'.PHP_EOL;
+                $c_link = str_replace(' ','_',$c);
             }
 
 
 
-            $options_type.='<option value="'.$c.'">'.$c.'</option>';
+            if ($v['color'])
+            {
+                $style.='body .cube.type_'.$c_link.' .face{   background-color: '.$v['color'].';}'.PHP_EOL;
+            }
+
         }
     }
 
