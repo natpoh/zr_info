@@ -31,7 +31,12 @@ $mp = $ml->get_mp();
 
 
 $url = $mp->get_url_by_mid($mid, $cid);
+if (!$url){
+    $url = $mp->get_url_by_top_movie($mid,$cid);
+}
 
-echo json_encode($url);
+$url_data = new stdClass();
+$url_data->link=$url->link;
+echo json_encode($url_data);
 
 

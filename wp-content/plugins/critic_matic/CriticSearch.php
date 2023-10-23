@@ -154,7 +154,7 @@ class CriticSearch extends AbstractDB {
             ),
         ),
         'actorsdata' => array(
-            'title' => 'Actors',
+            'title' => 'Cast',
             'tabs' => array('movies', 'games', 'international', 'ethnicity'),
             'is_parent' => 1,
             'hide' => 1,
@@ -213,7 +213,7 @@ class CriticSearch extends AbstractDB {
             ),
         ),
         'dirsdata' => array(
-            'title' => 'Production',
+            'title' => 'Crew',
             'tabs' => array('movies', 'games', 'international', 'ethnicity'),
             'is_parent' => 1,
             'hide' => 1,

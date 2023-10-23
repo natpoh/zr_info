@@ -2414,7 +2414,7 @@ class SearchFacets extends AbstractDB {
                 $keyword = $_POST['ackw-facet-' . $filter];
                 $this->movie_quickfilter($keyword, 0, $filter);
             } else {
-                $this->show_distributor_facet($facet_data, $view_more, $filter, $ftype, array(), '', 'Production');
+                $this->show_distributor_facet($facet_data, $view_more, $filter, $ftype, array(), '', 'Production Company');
             }
             //}
 
@@ -3457,7 +3457,7 @@ class SearchFacets extends AbstractDB {
             $content = $this->theme_block_loading(false);
         }
         $filter = 'actorsdata';
-        $title = 'Actors';
+        $title = 'Cast';
         if ($content || $main_collapsed) {
             //Show multifacet
             //$tab_key = $this->get_tab_key();
@@ -3642,7 +3642,7 @@ class SearchFacets extends AbstractDB {
             $content = $this->theme_block_loading(false);
         }
 
-        $title = 'Production';
+        $title = 'Crew';
         $filter = 'dirsdata';
         if ($content || $main_collapsed) {
             //Show multifacet
