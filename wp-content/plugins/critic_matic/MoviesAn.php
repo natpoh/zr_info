@@ -1869,9 +1869,8 @@ class MoviesAn extends AbstractDBAn {
             $actors_ids = array($actors_ids);
         }
         if ($debug) {
-            if ($debug) {
-                print_r(array('hook_actors_movie', $actors_ids));
-            }
+
+            print_r(array('hook_actors_movie', $actors_ids));
         }
 
         $sql = "SELECT mid FROM {$this->db['meta_actor']} WHERE aid IN(" . implode(',', $actors_ids) . ")";
@@ -1879,15 +1878,39 @@ class MoviesAn extends AbstractDBAn {
         $mids = array();
         if ($results) {
             foreach ($results as $movie) {
-                $mids[$movie->mid] = 1;
+                $mids[$movie->mid] = $movie->mid;
             }
         }
         if ($debug) {
             print_r($mids);
         }
+        $this->add_movies_upd(array_keys($mids), $debug);
+    }
+
+    /*
+     * Hook add movie to update list
+     */
+
+    public function hook_add_movies($mids = array(), $debug = false) {
+        if (!is_array($mids)) {
+            $mid_int = (int) $mids;
+            if ($mid_int) {
+                $mids = array($mid_int);
+            }
+        }
+        $this->add_movies_upd($mids, $debug);
+    }
+
+    /*
+     * Add movies to update list
+     */
+    private function add_movies_upd($mids = array(), $debug = false) {
+        if ($debug) {
+            print_r(array('add_movies_upd', $mids));
+        }
         if ($mids) {
             // Update exist movies
-            $sql = "SELECT mid FROM {$this->db['hook_movie_upd']} WHERE mid IN(" . implode(',', array_keys($mids)) . ")";
+            $sql = "SELECT mid FROM {$this->db['hook_movie_upd']} WHERE mid IN(" . implode(',', $mids) . ")";
             $results = $this->db_results($sql);
             $mids_toupd = array();
 
@@ -1903,12 +1926,12 @@ class MoviesAn extends AbstractDBAn {
                 $this->db_query($sql);
             }
             // Add new movies            
-            foreach ($mids as $mid => $val) {
+            foreach ($mids as $mid) {
                 if (!isset($mids_toupd[$mid])) {
                     // Add a movie
                     $data = array(
                         'mid' => $mid,
-                        'need_upd'=>1,
+                        'need_upd' => 1,
                     );
                     if ($debug) {
                         print_r(array('to add', $mid));
@@ -1918,37 +1941,37 @@ class MoviesAn extends AbstractDBAn {
             }
         }
     }
-    
-    public function run_movie_hook_cron($count=10, $expire=60, $debug=false, $force=false) {
+
+    public function run_movie_hook_cron($count = 10, $expire = 60, $debug = false, $force = false) {
         $curr_time = $this->curr_time();
-        $exp_date = $curr_time-$expire*60;
+        $exp_date = $curr_time - $expire * 60;
         $sql = sprintf("SELECT mid FROM {$this->db['hook_movie_upd']} WHERE need_upd=1 AND last_upd < %d ORDER BY last_upd ASC LIMIT %d", $exp_date, $count);
         $results = $this->db_results($sql);
         $mids = array();
-        if ($results){
+        if ($results) {
             foreach ($results as $item) {
-                $mids[]=$item->mid;
+                $mids[] = $item->mid;
             }
         }
-        if ($debug){
+        if ($debug) {
             print_r($mids);
         }
-        
-        if ($mids){
+
+        if ($mids) {
             // UPDATE mids need_upd
             $curr_time = $this->curr_time();
-            $sql = sprintf("UPDATE {$this->db['hook_movie_upd']} SET need_upd=0, last_upd=%d WHERE mid IN(" . implode(',', $mids) . ")",$curr_time);
+            $sql = sprintf("UPDATE {$this->db['hook_movie_upd']} SET need_upd=0, last_upd=%d WHERE mid IN(" . implode(',', $mids) . ")", $curr_time);
             $this->db_query($sql);
-        
+
             // Add hooks here
-            
             // Movies Simpson
             $ms = $this->cm->get_ms();
             $ms->hook_update_movies($mids, $debug);
-            
+
             // Movies Actors
             $mac = $this->cm->get_mac();
             $mac->hook_update_movies($mids, $debug);
         }
-    }  
+    }
+
 }
