@@ -133,7 +133,19 @@ class PgRatingCalculate {
     public static function get_curl_rating($mid, $type) {
 
 
-        $array_cid = array('thenumbers' => 1, 'rotten_mv' => 20, 'rotten_tv' => 21, 'douban' => 22, 'metacritic' => 23, 'kinop' => 24, 'animelist' => 27, 'moviemeter' => 38, 'eiga' => 35);
+
+        !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+        $array_cid = OptionData::get_options('','get_curl_rating');
+
+        if (!$array_cid)
+        {
+            $array_cid = array('thenumbers' => 1, 'rotten_mv' => 20, 'rotten_tv' => 21, 'douban' => 22, 'metacritic' => 23, 'kinop' => 24, 'animelist' => 27, 'moviemeter' => 38, 'eiga' => 35);
+        }
+        else
+        {
+            $array_cid = json_decode($array_cid,1);
+        }
+
 
         if ($type == 'rt') {
 
@@ -149,6 +161,7 @@ class PgRatingCalculate {
         !class_exists('GETCURL') ? include ABSPATH . "analysis/include/get_curl.php" : '';
 
         $link = 'https://info.antiwoketomatoes.com/wp-content/plugins/movies_links/cron/get_url_by_mid.php?p=8ggD_23_2D0DSF-F&cid=' . $array_cid[$type] . '&mid=' . $mid;
+
         $result = GETCURL::getCurlCookie($link);
         return $result;
     }
@@ -180,7 +193,10 @@ class PgRatingCalculate {
         $arating = self::get_rating_from_bd($mid, $rating_type);
         if ($arating[$rating_type]) {
             return ['url' => $arating[$rating_type]];
-        } else {
+        }
+        else
+
+        {
             if ($rating_type == 'imdb') {
                 !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
                 $movie_id = TMDB::get_imdb_id_from_id($mid);
