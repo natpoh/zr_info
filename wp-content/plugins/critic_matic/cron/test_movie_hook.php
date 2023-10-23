@@ -40,7 +40,7 @@ $mid = $_GET['mid'] ? (int) $_GET['mid'] : 0;
 $aid = $_GET['aid'] ? (int) $_GET['aid'] : 0;
 
 $ma = $cm->get_ma();
-$ma->run_movie_hook_cron($count, $expire, $debug, $force);
+
 if ($mid) {
     // Update movie meta
     $ma->hook_add_movies($mid, $debug);
