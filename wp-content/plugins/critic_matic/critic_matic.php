@@ -1276,6 +1276,31 @@ function critic_matic_plugin_activation() {
     $sql = "ALTER TABLE `data_movie_erating` ADD `audience_count` int(11) NOT NULL DEFAULT '0' AFTER audience_rating";
     Pdo_an::db_query($sql);
 
+    $sql = "ALTER TABLE `data_movie_erating` ADD `audience_vote` int(11) NOT NULL DEFAULT '0' AFTER last_upd";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `audience_rating_five` float(5) NOT NULL DEFAULT '0' AFTER last_upd";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `audience_affirmative` float(5) NOT NULL DEFAULT '0' AFTER last_upd";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `audience_god` float(5) NOT NULL DEFAULT '0' AFTER last_upd";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `audience_hollywood` float(5) NOT NULL DEFAULT '0' AFTER last_upd";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `audience_lgbtq` float(5) NOT NULL DEFAULT '0' AFTER last_upd";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `audience_misandry` float(5) NOT NULL DEFAULT '0' AFTER last_upd";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `audience_patriotism` float(5) NOT NULL DEFAULT '0' AFTER last_upd";
+    Pdo_an::db_query($sql);
+
+
     // mediaversity
     $sql = "ALTER TABLE `data_movie_erating` ADD `mediaversity_rating` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
@@ -1577,7 +1602,7 @@ function critic_matic_plugin_activation() {
       'i' => array('key' => 5, 'title' => 'Indian'),
       'm' => array('key' => 6, 'title' => 'Arab'),
       'mix' => array('key' => 7, 'title' => 'Mixed / Other'),
-      'jw' => array('key' => 8, 'title' => 'Jewish'),     
+      'jw' => array('key' => 8, 'title' => 'Jewish'),
      * 
      * Gender
      * a-all
