@@ -2266,11 +2266,9 @@ class PgRatingCalculate {
 
         global $debug;
 
-        if ($audience_type == 1) {
-            $staff_type = "and a.type=2";
-        } else {
-            $staff_type = "and a.type=0";
-        }
+
+        $staff_type = "and a.type=2";
+
 
         if (!$movie_id)
             return;
@@ -2287,7 +2285,7 @@ inner join {$table_prefix}critic_matic_authors as a ON a.id = am.aid
 
 where  m.fid='{$movie_id}' AND m.state!=0  and p.status=1 " . $staff_type;
 
-       if ($debug) {            echo 'get_wpcdata<br>';}
+       if ($debug) {            echo 'get_wpcdata<br>'.$sql.'<br>';}
 
         $rows = Pdo_an::db_results_array($sql);
 
