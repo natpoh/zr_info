@@ -11,8 +11,8 @@ class AnalyticsSearch extends CriticSearch {
     public $budget_min = 100;
     public $budget_max = 500000;
     public $analytics_filters = array(
-        'current' => array('key' => 'year_int', 'name_pre' => 'Current ', 'filter_pre' => 'Current select'),
-        'showcast' => array('key' => 'showcast', 'name_pre' => 'Show cast ', 'filter_pre' => 'Show cast'),
+        'current' => array('key' => 'year_int', 'title' => 'Current select'),
+        'showcast' => array('key' => 'showcast', 'title' => 'Show cast'),
     );
     public $facet_data_extend = array(
         'international' => array(

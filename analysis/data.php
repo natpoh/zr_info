@@ -94,11 +94,12 @@ AND table_schema='" . DB_NAME_AN . "'";
     $rows = Pdo_an::db_results_array($sql);
 
 
-
+    $count_rows = count($rows);
+    $counts_name =0;
 
     foreach ($rows as $r) {
         $name = $r["Field"];
-
+        $counts_name+= mb_strlen($name, 'UTF-8');
 
         if (!$update_row)
         {
@@ -132,6 +133,13 @@ AND table_schema='" . DB_NAME_AN . "'";
                     },";
         }
     }
+
+    $min_width = $counts_name*10+$count_rows*10+80;
+    if (!$min_width)
+    {
+        $min_width=800;
+    }
+
     ?>
     <html>
         <head>
@@ -236,6 +244,20 @@ AND table_schema='" . DB_NAME_AN . "'";
                     var theight = window.innerHeight - 220;
                     if (theight<600)theight=600;
 
+
+                    var t_width;
+                    <?php if ($WP_include) { ?>
+                    t_width= (window.innerWidth - 190);
+                    <?php } else { ?>
+                        t_width= (window.innerWidth - 1);
+                    <?php } ?>
+                    var min_width = <?php echo $min_width; ?>;
+
+                    if (min_width>t_width)
+                    {
+                      t_width  = min_width;
+                    }
+
                     jQuery("#jqGrid").jqGrid({
                 url: '<?php echo $home_url ?>analysis/jqgrid/get.php?data=<?php echo $datatype; ?>',
                             mtype: "POST",
@@ -251,12 +273,9 @@ AND table_schema='" . DB_NAME_AN . "'";
 
                         loadonce: false,
                                 viewrecords: true,
-    <?php if ($WP_include) { ?>
-                            width: (window.innerWidth - 190),
-    <?php } else { ?>
-                            width: (window.innerWidth - 1),
-    <?php } ?>
-                        height: theight,
+
+                           width: t_width,
+                           height: theight,
                                 rowNum: 100,
                                 pager: "#jqGridPager",
                                 multiselect: true,

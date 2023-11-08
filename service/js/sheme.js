@@ -176,11 +176,14 @@ function insert_block_to_field(id,x,y,inner_data=[])
         {
             document.querySelector('.cube#cube_'+id).classList.add('color_'+inner_data.color);
         }
-
+        if (inner_data.method)
+        {
+            document.querySelector('.cube#cube_'+id).classList.add('method_'+inner_data.method);
+        }
     }
     if (inner_data)
     {
-        console.log(inner_data);
+       // console.log(inner_data);
         if (inner_data.type)
         {
             let tclass   = inner_data.type;
@@ -658,6 +661,9 @@ isoBlock.addEventListener('click', function(event) {
             var tableInput = document.querySelector('.b_table');
             var typeInput = document.querySelector('.b_type');
             var colorInput = document.querySelector('.b_color');
+            var methodInput = document.querySelector('.b_method');
+
+
 
             idElement.textContent = foundData.id !== undefined ? foundData.id : '';
             titleInput.value = foundData.title !== undefined ? foundData.title : '';
@@ -665,7 +671,7 @@ isoBlock.addEventListener('click', function(event) {
             tableInput.value = foundData.table !== undefined ? foundData.table : '';
             typeInput.value = foundData.type !== undefined ? foundData.type : '';
             colorInput.value = foundData.color !== undefined ? foundData.color : '';
-
+            methodInput.value = foundData.method !== undefined ? foundData.method : '';
         }
     }
     else if (event.target.classList.contains('open_btn')) {
@@ -693,6 +699,7 @@ var descTextarea = document.querySelector('.b_desc');
 var tableInput = document.querySelector('.b_table');
 var typeInput = document.querySelector('.b_type');
 var colorInput = document.querySelector('.b_color');
+var methodInput = document.querySelector('.b_method');
 
 function findCubeById(id) {
     return object_array.cube.find(function(cube) {
@@ -764,6 +771,23 @@ typeInput.addEventListener('change', function(event) {
 });
 
 
+methodInput.addEventListener('change', function(event) {
+    let data = event.target.value;
+    let idElement = document.querySelector('.b_id');
+    var id = parseInt(idElement.textContent);
+    var cube = findCubeById(id);
+
+    if (cube) {
+        cube.method = data;
+    }
+
+    var cubeElement = document.querySelector('.cube#cube_'+id);
+    var classesToRemove = Array.from(cubeElement.classList).filter(className => className.includes('method_'));
+    cubeElement.classList.remove(...classesToRemove);
+
+    cubeElement.classList.add('method_'+data);
+
+});
 
 
 colorInput.addEventListener('change', function(event) {

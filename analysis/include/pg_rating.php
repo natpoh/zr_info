@@ -312,7 +312,7 @@ class PgRating
 
         foreach ($result as $imdb_id)
         {
-            PgRatingCalculate::CalculateRating($imdb_id);
+            PgRatingCalculate::CalculateRating($imdb_id);//add_pgrating
         }
 
 
@@ -335,7 +335,7 @@ class PgRating
         if ($imdb_id)
         {
             self::check_enable_pg($imdb_id,$debug,$mid);
-            PgRatingCalculate::CalculateRating($imdb_id,$mid,$debug);
+            PgRatingCalculate::CalculateRating($imdb_id,$mid,$debug);///update_pgrating
         }
 
         return;

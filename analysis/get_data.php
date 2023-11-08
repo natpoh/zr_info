@@ -121,7 +121,7 @@ function single_movie($curent_user='')
 
 //PgRatingCalculate
             !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
-            PgRatingCalculate::CalculateRating($imdb_id,$mid,1);
+            PgRatingCalculate::CalculateRating($imdb_id,$mid,1);///refresh_rating
             return;
         }
 

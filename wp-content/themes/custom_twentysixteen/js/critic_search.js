@@ -181,14 +181,12 @@ critic_search.init_facet = function (v) {
         }
 
         if ($this.prop('checked')) {
-            var title = $this.attr('data-title');
-            var title_pre = $this.attr('data-title-pre');
-            var label = $this.closest('label');
-            var type_title = label.attr('data-type');
+            var ftitle = $this.attr('data-ftitle');
+            var fname = $this.attr('data-fname');
             var ftype = v.attr('data-type');
 
-            critic_search.add_filter(type, id, title, ftype, type_title, title_pre);
-
+            critic_search.add_filter(type, id, ftitle, fname, ftype);
+            var label = $this.closest('label');
             label.addClass('active');
         } else {
             $this.closest('label').removeClass('active');
@@ -371,19 +369,45 @@ critic_search.init = function ($custom_id = '') {
                 critic_search.menu();
             }
 
+            var id = $parent.attr('data-id');
             var parent_id = $parent.attr('data-parent');
-            var facet_name = 'facet';
-            if ($('#' + facet_name + '-' + parent_id).length == 0) {
-                var facet_name = 'facets';
+            var facet_name = 'filter-' + id;
+            
+            // Check search_extend
+            if ($('#' + facet_name).length == 0) {
+                var type = $parent.attr('data-type');
+
+                facet_name = 'facet-' + type;
+                var child_view = false;
+                if ($('#' + facet_name).length != 0) {
+                    if ($('#' + facet_name).closest('.collapsed').length == 0) {
+                        child_view = true;
+                    }
+                }
+
+                if (!child_view) {
+                    
+                    facet_name = 'facet-' + parent_id;
+                    if ($('#' + facet_name).length == 0) {
+                        var facet_name = 'facets-' + parent_id;
+                    }
+                }
+            }
+            if (typeof search_extend !== 'undefined') {      
+                facet_name = search_extend.get_facet_name(parent_id, facet_name);
             }
 
-            const block = document.getElementById(facet_name + '-' + parent_id);
-            block.scrollIntoView(true);
+
+            //console.log(facet_name);
+
+
+            const block = document.getElementById(facet_name);
+            block.scrollIntoView({behavior: "smooth", block: "center"});
             block.classList.add('facet-hl');
 
             setTimeout(() => {
                 block.classList.remove('facet-hl');
-            }, 2000);
+            }, 4000);
 
             return false;
         });
@@ -560,7 +584,7 @@ critic_search.init = function ($custom_id = '') {
         var data_parent = $this.attr('data-parent');
         if (data_parent) {
 
-            if ($('#facet-' + data_parent).length || $('#facets-' + data_parent).length) {
+            if ($('#facet-' + data_parent).length || $('#facets-' + data_parent).length|| $('#' + data_parent).length) {
                 if ($this.hasClass('inactive')) {
                     $this.removeClass('inactive');
                 }
@@ -609,7 +633,8 @@ critic_search.init_collapse = function (id) {
                 if (v.hasClass('defshow')) {
                     critic_search.remove_filter('hide', facet_id);
                 } else {
-                    critic_search.add_filter('show', facet_id, facet_id.capitalize(), '', '', 'Show ', 'sohf');
+                    var ftitle = facet_id.capitalize();
+                    critic_search.add_filter('show', facet_id, ftitle, ftitle, 'hide', 'sohf');
                 }
 
 
@@ -627,7 +652,8 @@ critic_search.init_collapse = function (id) {
                 v.addClass('collapsed');
 
                 if (v.hasClass('defshow')) {
-                    critic_search.add_filter('hide', facet_id, facet_id.capitalize(), '', '', 'Hide ', 'sohf');
+                    var ftitle = facet_id.capitalize();
+                    critic_search.add_filter('hide', facet_id, ftitle, ftitle, 'hide','sohf');
                 } else {
                     critic_search.remove_filter('show', facet_id);
                 }
@@ -659,7 +685,8 @@ critic_search.init_collapse = function (id) {
                 if (v.hasClass('defshow')) {
                     critic_search.remove_filter('hide', facet_id_child);
                 } else {
-                    critic_search.add_filter('show', facet_id_child, facet_id_child.capitalize(), '', '', 'Show ', 'sohf');
+                    var ftitle = facet_id.capitalize();
+                    critic_search.add_filter('show', facet_id_child, ftitle, ftitle, 'hide', 'sohf');
                 }
 
                 if ($('#' + id_child + ' .blockload').length) {
@@ -675,7 +702,8 @@ critic_search.init_collapse = function (id) {
             } else {
                 v.addClass('collapsed');
                 if (v.hasClass('defshow')) {
-                    critic_search.add_filter('hide', facet_id_child, facet_id_child.capitalize(), '', '', 'Hide ', 'sohf');
+                    var ftitle = facet_id.capitalize();
+                    critic_search.add_filter('hide', facet_id_child, ftitle, ftitle, 'hide', 'sohf');
                 } else {
                     critic_search.remove_filter('show', facet_id_child);
                 }
@@ -721,9 +749,9 @@ critic_search.slider_facet = function (type, data_arr, ftype = 'all') {
         custom_type = 'minus-' + type;
     }
 
-    var title_pre = slider.attr('data-title-pre');
-    var title_type = slider.attr('data-filter-pre');
-    var title_after = slider.attr('data-name-after');
+    var ftitle = slider.attr('data-ftitle');
+    var fname = slider.attr('data-fname');
+
     var multipler = parseInt(slider.attr('data-multipler'));
     var shift = parseInt(slider.attr('data-shift'));
 
@@ -824,11 +852,17 @@ critic_search.slider_facet = function (type, data_arr, ftype = 'all') {
             title_t = title_t + shift;
         }
         var title = title_f + '-' + title_t;
+        if (from==to){
+             title = title_f;
+        }
         if (extend_title) {
             title = extend_title;
         }
 
-        critic_search.add_filter(custom_type, key, title, ftype, title_type, title_pre, '', title_after);
+        var pftitle = ftitle.replace('RVALUE', title);
+        var pfname = fname.replace('RVALUE', title);
+
+        critic_search.add_filter(custom_type, key, pftitle, pfname, ftype);
         critic_search.submit();
     });
 
@@ -906,29 +940,19 @@ critic_search.slider_facet = function (type, data_arr, ftype = 'all') {
     });
 }
 
-critic_search.add_filter = function (type, id, title = '', ftype, type_title = '', title_pre = '', custom_class = '', title_after = '') {
+critic_search.add_filter = function (type = '', id = '', title = '', name = '', ftype = '', custom_class = '') {
     var $ = jQuery;
 
     var minus_class = '';
     if (type.indexOf("minus-") !== -1) {
         minus_class = ' fminus';
     }
-    var hover_title = type.capitalize();
-    if (title != '') {
-        hover_title += ' is ' + title;
-    }
-    if (typeof type_title !== "undefined" && type_title !== '') {
-        hover_title = type_title;
-        if (title != '') {
-            hover_title += ' is ' + title;
-        }
-    }
 
     if (custom_class != '') {
         custom_class = ' ' + custom_class;
     }
 
-    var filter = '<li id="' + type + '-' + id + '" class="filter ' + minus_class + custom_class + '" data-type="' + type + '" data-parent="' + ftype + '" data-id="' + id + '"><span class="title" title="' + hover_title + title_after + '">' + title_pre + title + title_after + '</span><span class="close"></span></li>';
+    var filter = '<li id="' + type + '-' + id + '" class="filter ' + minus_class + custom_class + '" data-type="' + type + '" data-parent="' + ftype + '" data-id="' + id + '"><span class="title" title="' + title + '">' + name + '</span><span class="close"></span></li>';
 
     if ($("#search-filters").length == 0) {
         $('#search-tabs').after('<div id="search-filters"><span>Filters: </span><ul class="filters-wrapper"></ul></div>');

@@ -2171,7 +2171,7 @@ function update_all_pg_rating()
         $title =$r['movie_title'];
 
 
-        $rating = PgRatingCalculate::CalculateRating($movie_id,$id,0,1);
+        $rating = PgRatingCalculate::CalculateRating($movie_id,$id,0,1);//update_all_pg_rating
 
         echo '<span style="display: inline-block; width: 120px">'.$i.' of '.$count.'</span><span style="display: inline-block; width: 80px">'.$movie_id.'</span><span style="display: inline-block; width: 400px">'.$title.'</span><span style="display: inline-block; width: 100px">'.$rating.'</span><br><hr>'.PHP_EOL;
         $i++;
@@ -2190,7 +2190,7 @@ function update_pgrating($imdb_id='')
     }
     !class_exists('PgRating') ? include ABSPATH . "analysis/include/pg_rating.php" : '';
 
-    PgRatingCalculate::CalculateRating($imdb_id, $id, 1);
+    PgRatingCalculate::CalculateRating($imdb_id, $id, 1);//update_pgrating
 
 
 }
@@ -2729,13 +2729,14 @@ function update_all_gender_cache($pid)
     }
 }
 
-function update_audience_rating($movie_id,$audiencetype=1)
+function update_audience_rating($rwt_id,$audiencetype=1)
 {
+    global $debug;
+    if (isset($_GET['debug'])){$debug=1;}
     !class_exists('RWT_RATING') ? include ABSPATH . "wp-content/themes/custom_twentysixteen/template/include/movie_rating.php" : '';
 
-    $rwt_id = TMDB::get_id_from_imdbid($movie_id);
-    $result =PgRatingCalculate::rwt_audience($rwt_id,$audiencetype,1);
-    var_dump($result);
+    $result =PgRatingCalculate::rwt_audience($rwt_id,1,1);
+
 
 
 }
@@ -2778,7 +2779,7 @@ where  m.state!=0  and p.status=1 ".$staff_type;
         {
             $rwt_id = $r2['fid'];
 
-            $result =PgRatingCalculate::rwt_audience($rwt_id,$type,1);
+            $result =PgRatingCalculate::rwt_audience($rwt_id,1,1);
             PgRatingCalculate::add_movie_rating($rwt_id,'',0,1);
             echo $i.' of '.$count. ' id=' . $rwt_id .' '.$type.'<br>'. PHP_EOL;
             print_r($result);
@@ -3676,15 +3677,15 @@ if (isset($_GET['check_image_on_server'])) {
 if (isset($_GET['check_audience_movie'])) {
     $fid = intval($_GET['check_audience_movie']);
 
-    $audiencetype=1;
+
 
     global $debug;
     $debug = $_GET['debug'];
 
     !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
 
-    PgRatingCalculate::rwt_audience($fid, $audiencetype, 1);
-    PgRatingCalculate::CalculateRating('', $fid, 0, 1);
+    PgRatingCalculate::rwt_audience($fid, 1, 1);
+    PgRatingCalculate::CalculateRating('', $fid, 0, 1);///check_audience_movie
     PgRatingCalculate::add_movie_rating($fid,'',$debug);
 
 

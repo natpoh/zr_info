@@ -386,3 +386,15 @@ svg.hide_left_sidebar_arrow {
 .hidden_left .hide_left_sidebar svg.hide_left_sidebar_arrow {
     transform: rotate(0deg);
 }
+
+.cube.method_get .cube_desc_message {
+    background: url(Up-Arrow.svg) center bottom no-repeat,rgb(255 255 255 / 75%);
+    padding-bottom: 40px;
+    background-size: 50px;
+}
+
+.cube.method_set .cube_desc_message {
+    background: url(Down-Arrow.svg) center bottom no-repeat,rgb(255 255 255 / 75%);
+    padding-bottom: 40px;
+    background-size: 50px;
+}

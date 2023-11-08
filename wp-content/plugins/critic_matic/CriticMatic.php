@@ -489,11 +489,11 @@ class CriticMatic extends AbstractDB {
 
             if ($movies_meta && sizeof($movies_meta)) {
                 !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
-                $audiencetype = 1;
+
                 //fid, type, state, rating 
                 foreach ($movies_meta as $meta) {
-                    PgRatingCalculate::rwt_audience($meta->fid, $audiencetype, 1);
-                    PgRatingCalculate::CalculateRating('', $meta->fid, 0, 1);
+                    PgRatingCalculate::rwt_audience($meta->fid, 1, 1);
+                    PgRatingCalculate::CalculateRating('', $meta->fid, 0, 1);///hook_update_post
                     PgRatingCalculate::add_movie_rating($meta->fid);
                 }
             }

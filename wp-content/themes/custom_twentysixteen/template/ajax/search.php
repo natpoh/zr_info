@@ -93,10 +93,12 @@ if (isset($search_data['search_type']) && $search_data['search_type'] == 'ajax')
         $count = (int) $search_data['facet_count'];
         $facet_ac_type = $search_data['facet_ac_type'];
 
-        if ($facet_ac_type == 'ac') {
+        if ($facet_ac_type == 'ac') {            
             if (in_array($autocomplite_type, $actors_facets)) {
+                // DEPRECATED
                 $search_front->actor_autocomplite($keyword, $count, 'actor');
             } else if (in_array($autocomplite_type, $dirs_facets)) {
+                // DEPRECATED
                 $search_front->actor_autocomplite($keyword, $count, 'dir');
             } else if ($autocomplite_type == 'movie') {
                 $search_front->movie_autocomplite($keyword, $count);

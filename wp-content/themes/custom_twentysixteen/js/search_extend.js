@@ -925,7 +925,9 @@ search_extend.init_change_stack = function (chart, chart2 = '') {
             // Add stack filter
             stacking = stack_data.active.type;
             var title = stacking;
-            critic_search.add_filter(type, active_stacking, title.capitalize(), 'all', type, 'Stacking ');
+            var ftitle = 'Stacking ' + title.capitalize();
+            // TODO refactor click
+            critic_search.add_filter(type, active_stacking, ftitle, ftitle, type, 'sohf');
             $this.html(stack_data.def.title);
         }
 
@@ -993,6 +995,8 @@ search_extend.change_sort = function (id) {
     var sort = $('#' + id);
     var ftype = sort.attr('data-ftype');
     var type = sort.attr('data-name');
+    var ftitle = sort.attr('data-ftitle');
+    var fname = sort.attr('data-fname');
     var result = '';
     sort.find('.sortitem').each(function (i, v) {
         var v = $(v);
@@ -1013,11 +1017,12 @@ search_extend.change_sort = function (id) {
         //remove old filter and add new
         critic_search.remove_filter(type, from);
     }
-    var name_pre = 'Priority ';
-    var title = result;
-    var key = result;
 
-    critic_search.add_filter(type, key, title, ftype, '', name_pre);
+    var key = result;
+    var pftitle = ftitle.replace('RVALUE', result);
+    var pfname = fname.replace('RVALUE', result);
+
+    critic_search.add_filter(type, key, pftitle, pfname, ftype);
 
     critic_search.submit();
 }
@@ -1026,10 +1031,10 @@ search_extend.click_to_graph = function (key, data_type) {
     var select = $('#select-current');
     select.addClass('clicked');
 
-    var type = select.attr('data-name');
     var title = key;
-    var title_pre = select.attr('data-title-pre');
-    var type_title = select.attr('data-title');
+    var type = select.attr('data-name');
+    var ftitle = select.attr('data-ftitle');
+    var fname = select.attr('data-fname');
     var ftype = select.attr('data-ftype');
 
     var filter = $('#search-filters [data-type="' + type + '"]');
@@ -1052,8 +1057,10 @@ search_extend.click_to_graph = function (key, data_type) {
 
     key = data_type + key;
 
-    // Add new filter
-    critic_search.add_filter(type, key, title, ftype, type_title, title_pre);
+    var pftitle = ftitle.replace('RVALUE', title);
+    var pfname = fname.replace('RVALUE', title);
+
+    critic_search.add_filter(type, key, pftitle, pfname, ftype);
     critic_search.submit('', 'graph');
 }
 
@@ -1073,10 +1080,11 @@ search_extend.init_facet = function (v) {
             search_extend.remove_type_filters(type);
 
             if (id != 'def') {
-                var title = $this.find(':selected').attr('data-title');
+                var ftitle = $this.find(':selected').attr('data-ftitle');
+                var fname = $this.find(':selected').attr('data-fname');
                 var ftype = v.attr('data-type');
-                var name_pre = $this.attr('data-name-pre');
-                critic_search.add_filter(type, id, title, ftype, type, name_pre);
+
+                critic_search.add_filter(type, id, ftitle, fname, ftype);
             }
         }
         critic_search.submit();
@@ -1235,9 +1243,10 @@ Choose the number of points for each type of verdict.<br />' + ctable + type_cal
                 }
 
                 // Add new filter
-                var title = 'Weight id ';
+                var title = 'Weight id '+mode_id;
                 var ftype = $('#facet-verdict').attr('data-type');
-                critic_search.add_filter(type, mode_id, mode_id, ftype, title, title);
+                // TODO refactor
+                critic_search.add_filter(type, mode_id, title, title, ftype);
                 critic_search.submit();
 
                 // TODO add history of the settings to user meta and cookies
@@ -1330,6 +1339,15 @@ search_extend.submit = function (inc, target) {
             critic_search.remove_filter(type, from);
         }
     }
+}
+
+search_extend.get_facet_name = function (parent_id = '', facet_name='') {
+
+    if (parent_id === 'chart_div' && $('#' + parent_id).length !== 0) {
+        facet_name = parent_id;
+    }
+
+    return facet_name;
 }
 
 

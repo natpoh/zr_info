@@ -289,7 +289,7 @@ return $result;
 
 
             !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
-            PgRatingCalculate::CalculateRating($imdb_id,$rwt_id,0,1);
+            PgRatingCalculate::CalculateRating($imdb_id,$rwt_id,0,1);//rebuild_cache
         }
         if ($table=='actors_crowd')
         {

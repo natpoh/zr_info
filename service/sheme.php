@@ -166,7 +166,7 @@ public static function front($data)
         <div class="b_row">Table <input class="b_table" ></div>
         <div class="b_row">Type <select class="b_type" ><?php echo $options_type; ?></select></div>
         <div class="b_row">Color <select class="b_color" ><?php echo $options_color; ?></select></div>
-
+        <div class="b_row">Method <select class="b_method" ><option value="">none</option><option value="get">Get</option><option value="set">Set</option></select></div>
 
     </div>
 

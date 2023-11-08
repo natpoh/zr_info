@@ -13,7 +13,7 @@
                     <input type="submit" id="submit" class="btn" value="find">        
                 </div>
                 <div class="filters_btn">
-                    <a id="fiters-btn" class="search-filters-btn" href="#filters" title="Advanced search filters"><span class="filters-icon"></span> Search filters</a>                    
+                    <a id="fiters-btn" class="search-filters-btn" href="#filters" title="Advanced search filters"><span class="filters-icon"></span> Filters</a>                    
                 </div>
                 <?php $search_front->theme_search_url($search_url, $search_text, $inc, $user_filter_id); ?>
                 <?php

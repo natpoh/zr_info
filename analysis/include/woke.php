@@ -70,7 +70,7 @@ class WOKE
     private function rwt_audience($id, $type = 1, $update = '')
     {
         !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
-        return PgRatingCalculate::rwt_audience($id, $type, $update);
+        return PgRatingCalculate::rwt_audience($id, 1, $update);
     }
 
     private function get_rwt_rating($movie_id)

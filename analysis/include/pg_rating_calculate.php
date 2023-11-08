@@ -47,7 +47,7 @@ class PgRatingCalculate {
 
 
 
-           $total =  self::CalculateRating($imdb_id,$id);
+           $total =  self::CalculateRating($imdb_id,$id);//ckeck_cms_pg_rating
            if ($cur_total!=$total){return(2);}
 
             return 1;
@@ -93,7 +93,7 @@ class PgRatingCalculate {
            // else     if ($post_type=='last_pg_update')
 
 
-           $total =  self::CalculateRating($imdb_id,$id);
+           $total =  self::CalculateRating($imdb_id,$id);///ckeck_imdb_pg_rating
 
 
            if ($cur_total!=$total){return(2);}
@@ -344,6 +344,8 @@ class PgRatingCalculate {
 
     public static function add_movie_rating($id, $rwt_array_last = '', $debug = '', $update = 1,$check_fields=0,$sync=1) {
 
+
+
         ///get option
         $rating_array =[];
         $array_convert=[];
@@ -421,9 +423,38 @@ class PgRatingCalculate {
                 }
 
             }
+            $aud_array = self::get_audience_rating_in_movie($id);
+
+            foreach  ($main_data_ext as $r_name=> $r_value)
+                {
+                    if (strstr($r_name,'audience_'))
+                    {
+                        $input_row = substr($r_name,9);
+
+
+
+                        if ($input_row=='count' && $aud_array[$input_row] != $r_value )
+                        {
+                            $data_current_array[$r_name] = $aud_array[$input_row];
+                            $data_current_array['audience_date'] =time();
+                        }
+
+
+                        else if ($aud_array[$input_row]* 20 != $r_value )
+                            {
+                                $data_current_array[$r_name] = $aud_array[$input_row]* 20;
+                                $data_current_array['audience_date'] =time();
+                            }
+
+                    }
+                /// `vote`, `rating`, `affirmative`, `god`, `hollywood`, `lgbtq`, `misandry`, `patriotism`, `count`,
+//`audience_patriotism`, `audience_misandry`, `audience_lgbtq`, `audience_hollywood`, `audience_god`, `audience_affirmative`, `audience_rating_five`, `audience_vote`, `audience_rating`, `audience_count`
+
+                }
+
 
             if (!$main_data_ext['audience_rating']) {
-                $aud_array = self::get_audience_rating_in_movie($id);
+
 
                 $aud = $aud_array['rating'];
                 if ($aud) {
@@ -695,11 +726,11 @@ class PgRatingCalculate {
 
 
         $imdb_id = self::get_imdb_id_from_id($id);
-        $array_family = self::get_family_rating_in_movie($imdb_id);
+        $array_family = self::get_family_rating_in_movie('',$id);
 
         $array_rwt_rating_type = array("message" => 1, "nudity" => 1, "violence" => 1, "language" => 1, "drugs" => 1, "other" => 1);
 
-        $croudsurce = self::get_family_rating_croud_in_movie($imdb_id, $array_rwt_rating_type, 1);
+        $croudsurce = self::get_family_rating_croud_in_movie($id, $array_rwt_rating_type, 1);
 
         if ($array_family['certification']) {
             $content .= self::debug_table('MPAA Certification', $array_family['certification']);
@@ -1117,6 +1148,27 @@ class PgRatingCalculate {
         return array($total_lgbt, $lgbt_enable, $lgbt_text_string);
         }
     }
+    private function get_movie_genre($id)
+    {
+
+        $genre=[];
+
+        $q ="SELECT `data_movie_genre`.`name` FROM `meta_movie_genre`,`data_movie_genre`  WHERE `data_movie_genre`.`id` =`meta_movie_genre`.`gid` AND  `meta_movie_genre`.`mid` = ".$id." ";
+        $r = Pdo_an::db_results_array($q);
+        foreach ($r as $rows)
+        {
+
+            $genre[]=   $rows['name'];
+        }
+        if (!$genre)
+        {
+            $genre = self::get_data_in_movie('genre', '',$id);
+            $genre = explode(',', $genre);
+
+        }
+        return $genre;
+    }
+
 
     public function CalculateRating($imdb_id = '', $id = '', $debug = '', $update = 1)
     {
@@ -1130,11 +1182,8 @@ class PgRatingCalculate {
             $imdb_id = self::get_imdb_id_from_id($id);
         }
 
-        if (!$imdb_id) {
-            return;
-        }
 
-        $movie_type = self::get_data_in_movie('type', $imdb_id);
+        $movie_type = self::get_data_in_movie('type', '',$id);
 
 
         if ($debug)
@@ -1142,7 +1191,7 @@ class PgRatingCalculate {
 
         //echo 'CalculateRating '.$imdb_id;
 
-        $array_family = self::get_family_rating_in_movie($imdb_id);
+        $array_family = self::get_family_rating_in_movie('',$id);
         ////"educational":"2","message":"2","role_model":"3","
 //        if ($id && !$array_family['rwt_id'])
 //        {
@@ -1174,7 +1223,7 @@ class PgRatingCalculate {
         $total_count_array = [];
         $rating_count = 0;
 
-        $family_rating_croud = self::get_family_rating_croud_in_movie($imdb_id, $array_rwt_rating_weight, 1);
+        $family_rating_croud = self::get_family_rating_croud_in_movie($id, $array_rwt_rating_weight, 1);
         if ($family_rating_croud['imdb_rating']) {
 
 
@@ -1609,11 +1658,10 @@ class PgRatingCalculate {
                 }
             }
         }
-
-        $genre = self::get_data_in_movie('genre', $imdb_id);
+        $genre = self::get_movie_genre($id);
 
         if ($genre) {
-            $genre = explode(',', $genre);
+
             $words = $rating_array['words_limit'];
             foreach ($words as $i => $v) {
                 if (strstr($v, ',')) {
@@ -1829,16 +1877,28 @@ class PgRatingCalculate {
         return $total_cms_rating;
     }
 
-    public function get_family_rating_in_movie($rid) {
-        $rid = intval($rid);
-        $sql = "SELECT * FROM `data_pg_rating` WHERE `movie_id` = {$rid} limit 1";
+    public function get_family_rating_in_movie($rid='',$id='') {
+        if ($id)
+        {
+            $id = intval($id);
+            $sql = "SELECT * FROM `data_pg_rating` WHERE `rwt_id` = {$id} limit 1";
+
+        }
+        else if ($rid)
+        {
+            $rid = intval($rid);
+            $sql = "SELECT * FROM `data_pg_rating` WHERE `movie_id` = {$rid} limit 1";
+
+        }
+
+
         $row = Pdo_an::db_results_array($sql);
         return $row[0];
     }
 
-    public function get_family_rating_croud_in_movie($rid, $array_rwt_rating_weight, $all_data = '') {
-        $rid = intval($rid);
-        $sql = "SELECT * FROM `data_movies_pg_crowd` WHERE `movie_id` = {$rid} and status = 1 ";
+    public function get_family_rating_croud_in_movie($id, $array_rwt_rating_weight, $all_data = '') {
+        $id = intval($id);
+        $sql = "SELECT * FROM `data_movies_pg_crowd` WHERE `rwt_id` = {$id} and status = 1 ";
         $row = Pdo_an::db_results_array($sql);
 
         $rating_rwt_crd = [];
@@ -1907,6 +1967,11 @@ class PgRatingCalculate {
 
     public function get_audience_rating_in_movie($rid, $type = 1) {
 
+        ///get from e rating
+//        $rid = intval($rid);
+//        $sql = "SELECT * FROM `data_movie_erating` where `movie_id` = " . $rid;
+//        $row_movie_erating= Pdo_an::db_results_array($sql);
+
         $rid = intval($rid);
 
         $sql = "SELECT * FROM `cache_rwt_rating` WHERE `movie_id` = {$rid}  limit 1";
@@ -1930,13 +1995,15 @@ class PgRatingCalculate {
 
         if ($debug) { !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
 
+            echo 'rwt_audience<br>';
             TMDB::var_dump_table(['result_summ_rating',$result_summ_rating]);
         }
 
 
 //critic_matic_posts_meta
         $hollywood_total = [];
-        $review_data = self::get_wpcdata($movie_id, $audience_type);
+        $audience_count=0;
+        $review_data = self::get_wpcdata($movie_id, 1);
         ///echo '<br>review_data<br>'.PHP_EOL;
 ///var_dump($review_data);
 
@@ -1948,85 +2015,96 @@ class PgRatingCalculate {
 
         $total_audience = [];
 
-        if (is_array($review_data)) {
-            foreach ($review_data as $rid => $val) {
-                // echo $rid.'<br>';
-                ///  var_dump($val);
+        if ($review_data) {
+            if (is_array($review_data)) {
+                foreach ($review_data as $rid => $val) {
+                    // echo $rid.'<br>';
+                    ///  var_dump($val);
+                    $audience_count += 1;
 
-                if ($val['hollywood']) {
-                    $hollywood_total[$rid]['data'] = $val['hollywood'];
-                    $hollywood_total[$rid]['count'] ++;
-                }
+                    if ($val['hollywood']) {
+                        $hollywood_total[$rid]['data'] = $val['hollywood'];
+                        $hollywood_total[$rid]['count']++;
+                    }
 
-                foreach ($val as $i => $v) {
-                    if ($i == 'vote') {
-                        $total_audience[$i][$v] ++;
-                    } else {
+                    foreach ($val as $i => $v) {
+                        if ($i == 'vote') {
+                            $total_audience[$i][$v]++;
+                        } else {
 
-                        if ($v) {
-                            $total_audience[$i]['data'] += $v;
-                            $total_audience[$i]['count'] ++;
-                            if ($i != 'r') {
-                                $hollywood_total[$rid]['data'] += $v;
-                                $hollywood_total[$rid]['count'] ++;
+                            if ($v) {
+                                $total_audience[$i]['data'] += $v;
+                                $total_audience[$i]['count']++;
+                                if ($i != 'r') {
+                                    $hollywood_total[$rid]['data'] += $v;
+                                    $hollywood_total[$rid]['count']++;
+                                }
                             }
                         }
                     }
                 }
-            }
-            // echo '<br>';  echo '<br>';
+                // echo '<br>';  echo '<br>';
 
-            if ($audience_type == 2) {
-                //  $total_audience = self::rwt_staff($movie_id, $total_audience);
-            }
+                if ($audience_type == 2) {
+                    //  $total_audience = self::rwt_staff($movie_id, $total_audience);
+                }
 
-            $result_summ_rating = [];
+                $result_summ_rating = [];
 
-            //   $array_convert = array('r' => 'rating', 'h' => 'hollywood', 'p' => 'patriotism', 'm' => 'misandry', 'a' => 'affirmative', 'l' => 'lgbtq', 'g' => 'god', 'v' => 'vote');
-            //echo 'total_audience<br>'.PHP_EOL;
-            //var_dump($total_audience);
-            ///echo 'total_audience end<br>'.PHP_EOL;
-            foreach ($total_audience as $i => $v) {
+                //   $array_convert = array('r' => 'rating', 'h' => 'hollywood', 'p' => 'patriotism', 'm' => 'misandry', 'a' => 'affirmative', 'l' => 'lgbtq', 'g' => 'god', 'v' => 'vote');
+                //echo 'total_audience<br>'.PHP_EOL;
+                //var_dump($total_audience);
+                ///echo 'total_audience end<br>'.PHP_EOL;
+                foreach ($total_audience as $i => $v) {
 
-                if ($i) {
-                    if ($i == 'vote') {
-                        arsort($v);
-                        $key = array_keys($v);
-                        $result_summ_rating['vote'] = $key[0];
-                    } else {
-                        $i0 = $i;
+                    if ($i) {
+                        if ($i == 'vote') {
+                            arsort($v);
+                            $key = array_keys($v);
+                            $result_summ_rating['vote'] = $key[0];
+                        } else {
+                            $i0 = $i;
 
-                        if ($v['count']) {
-                            $summ = $v['data'] / $v['count'];
-                            $summ = ceil(($summ) / 0.5) * 0.5;
-                            $result_summ_rating[$i0] = $summ;
+                            if ($v['count']) {
+                                $summ = $v['data'] / $v['count'];
+                                $summ = ceil(($summ) / 0.5) * 0.5;
+                                $result_summ_rating[$i0] = $summ;
+                            }
                         }
                     }
                 }
-            }
 
-            $hollywood_result = [];
-            foreach ($hollywood_total as $pid => $data) {
-                $hollywood_result['data'] += $data['data'];
-                $hollywood_result['count'] += $data['count'];
-            }
-            if ($hollywood_result['count']) {
-                $hollywood_result_string = $hollywood_result['data'] / $hollywood_result['count'];
-                if ($hollywood_result_string) {
-                    $hollywood_result_string = ceil(($hollywood_result_string) / 0.5) * 0.5;
+                $hollywood_result = [];
+                foreach ($hollywood_total as $pid => $data) {
+                    $hollywood_result['data'] += $data['data'];
+                    $hollywood_result['count'] += $data['count'];
                 }
-                $result_summ_rating['hollywood'] = $hollywood_result_string;
+                if ($hollywood_result['count']) {
+                    $hollywood_result_string = $hollywood_result['data'] / $hollywood_result['count'];
+                    if ($hollywood_result_string) {
+                        $hollywood_result_string = ceil(($hollywood_result_string) / 0.5) * 0.5;
+                    }
+                    $result_summ_rating['hollywood'] = $hollywood_result_string;
+                }
+
+                //var_dump($result_summ_rating);
+
+                if (!$audience_count) $audience_count = 0;
+
+                $result_summ_rating['count'] = $audience_count;
+
+                if ($debug) {
+                    TMDB::var_dump_table(['result_summ_rating', $result_summ_rating]);
+                }
+
+                self::update_rating_db($movie_id, $result_summ_rating, $audience_type);
             }
-
-            //var_dump($result_summ_rating);
-
-
+        }else
+        {
             if ($debug)
             {
-                TMDB::var_dump_table(['result_summ_rating',$result_summ_rating]);
+               echo 'review_data is null<br>';
             }
-
-            self::update_rating_db($movie_id, $result_summ_rating, $audience_type);
         }
         return $result_summ_rating;
     }
@@ -2099,6 +2177,14 @@ class PgRatingCalculate {
 
     public function update_rating_db($rid, $ar, $type = 1) {
 
+        global $debug;
+
+        if ($debug)
+        {
+            echo 'update_rating_db<br>';
+        }
+
+
         $dop = '';
         if ($type == 2) {
             $dop = '_staff';
@@ -2106,6 +2192,9 @@ class PgRatingCalculate {
 
 
         $rid = intval($rid);
+
+
+
 
         $r = self::get_audience_rating_in_movie($rid, $type);
 
@@ -2121,42 +2210,62 @@ class PgRatingCalculate {
                     $r['hollywood'] == $ar['hollywood'] &&
                     $r['lgbtq'] == $ar['lgbtq'] &&
                     $r['misandry'] == $ar['misandry'] &&
+                    $r['count'] == $ar['count'] &&
                     $r['patriotism'] == $ar['patriotism']
             ) {
                 //skip
-            } else {
 
+                if ($debug)echo 'skip<br>';
+
+            } else {
+                if ($debug)echo 'update<br>';
                 $sql = "UPDATE `cache_rwt_rating" . $dop . "` SET 
                               `vote` = ?,   `rating` = ?,    `affirmative` = ?,   `god` = ?,
                               `hollywood` = ?,  `lgbtq` = ?, `misandry` = ?, 
-                              `patriotism` = ?  WHERE `movie_id` = {$rid} and `type`={$type} ";
-                Pdo_an::db_results_array($sql, array($ar['vote'], $ar['rating'], $ar['affirmative'], $ar['god'], $ar['hollywood'], $ar['lgbtq'], $ar['misandry'], $ar['patriotism']));
+                              `patriotism` = ?,  `count` = ? ,`last_update` =?  WHERE `movie_id` = {$rid} and `type`={$type} ";
+
+
+                Pdo_an::db_results_array($sql, array($ar['vote'], $ar['rating'], $ar['affirmative'], $ar['god'], $ar['hollywood'], $ar['lgbtq'], $ar['misandry'], $ar['patriotism'], $ar['count'],time()));
 
 
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
                 Import::create_commit('', 'update', 'cache_rwt_rating', array('movie_id' => $rid), 'cache_rwt_rating', 20, ['skip' => ['id']]);
+
+
+                ///update erating
+
+                self::add_movie_rating($rid,'',$debug,1,1,1);
             }
         } else {
-
+            if ($debug)echo 'insert<br>';
             if ($ar['vote'] || $ar['rating'] || $ar['affirmative'] || $ar['god'] || $ar['hollywood'] || $ar['lgbtq'] || $ar['misandry'] || $ar['patriotism']) {
 
-                $sql = "INSERT INTO cache_rwt_rating" . $dop . " (`id`, `movie_id`, `type`, `vote`, `rating`, `affirmative`, `god`, `hollywood`, `lgbtq`, `misandry`, `patriotism`)   
-                          VALUES (NULL, ?,        ?,     ?,    ?,             ?,           ?,     ?,          ?,          ?,          ?);";
-                Pdo_an::db_results_array($sql, array($rid, $type, $ar['vote'], $ar['rating'], $ar['affirmative'], $ar['god'], $ar['hollywood'], $ar['lgbtq'], $ar['misandry'], $ar['patriotism']));
+                $sql = "INSERT INTO cache_rwt_rating" . $dop . " (`id`, `movie_id`, `type`, `vote`, `rating`, `affirmative`, `god`, `hollywood`, `lgbtq`, `misandry`, `patriotism`, `count`, `last_update`)   
+                          VALUES (NULL, ?,        ?,     ?,    ?,             ?,           ?,     ?,          ?,          ?,          ?,          ?,          ?);";
+                Pdo_an::db_results_array($sql, array($rid, $type, $ar['vote'], $ar['rating'], $ar['affirmative'], $ar['god'], $ar['hollywood'], $ar['lgbtq'], $ar['misandry'], $ar['patriotism'],$ar['count'],time()));
 
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
                 Import::create_commit('', 'update', 'cache_rwt_rating', array('movie_id' => $rid), 'cache_rwt_rating', 20, ['skip' => ['id']]);
+
+
+                ///update erating
+
+                self::add_movie_rating($rid,'',$debug,1,1,1);
+
             }
         }
 
 
         ////check audience meta
-        self::check_audience_meta($rid,$ar['rating']);
+      //  self::check_audience_meta($rid,$ar['rating']);
 
 
     }
 
-    public function get_wpcdata($movie_id, $audience_type) {
+    public function get_wpcdata($movie_id, $audience_type=1) {
+
+        global $debug;
+
         if ($audience_type == 1) {
             $staff_type = "and a.type=2";
         } else {
@@ -2178,8 +2287,17 @@ inner join {$table_prefix}critic_matic_authors as a ON a.id = am.aid
 
 where  m.fid='{$movie_id}' AND m.state!=0  and p.status=1 " . $staff_type;
 
-        ///echo $sql.'<br>';
+       if ($debug) {            echo 'get_wpcdata<br>';}
+
         $rows = Pdo_an::db_results_array($sql);
+
+
+        if ($debug) { !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+
+
+            TMDB::var_dump_table(['critic_matic_rating',$rows]);
+        }
+
         foreach ($rows as $r) {
 
 

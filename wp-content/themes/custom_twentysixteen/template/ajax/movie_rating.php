@@ -57,6 +57,12 @@ if (isset($_POST['action'])) {
         $type  =$_POST['type'];
         !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
 
+
+
+             if (strstr($type,'_userscore'))
+             {
+                 $type = str_replace('_userscore','_rating',$type);
+             }
         if (strstr($type,'_rating'))
         {
             $type = substr($type,0,strpos($type,'_rating'));

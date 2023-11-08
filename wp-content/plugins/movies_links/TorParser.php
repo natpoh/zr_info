@@ -71,7 +71,7 @@ class TorParser extends MoviesAbstractDB {
                             print "Wait reboot\n";
                         }
                     }
-                } else if ($status == 1) {
+                } else if ($status == 1 && $type == 0) {
                     $service_life_time = $curr_time - $last_reboot;
                     if ($service_life_time > $this->service_life_time) {
                         // Reboot old services

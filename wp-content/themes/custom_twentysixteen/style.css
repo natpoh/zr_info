@@ -1293,6 +1293,8 @@ input.radio {
     display: block;
     margin-top: -15px;
     line-height: 15px;
+    margin-left: 6px;
+    font-family: Menlo,Consolas,monaco,monospace;
 }
 
 .zr_logo_site_name .zr_logo_ws
@@ -3242,11 +3244,10 @@ body.theme_dark #facets>.facets>.facet-title{
     width: 28px;
     height: 28px; 
     border: none;
-    border-radius: 4px;
     padding: 3px;
     margin: 2px;
     min-width: 28px;
-    background:  #fff;
+
     align-items: center;
     justify-content: center;
 }
@@ -3361,18 +3362,45 @@ body.theme_dark .ac-result {
 
 
 .facet-hl {
-  box-shadow: 0 0 5px red;
-  animation: highlight 2s forwards;
+    background-color: var(--blue-light-3);
+    box-shadow: 0 0 10px var(--blue-light-3);
+  animation: highlight 4s forwards;
+}
+.theme_dark .facet-hl {
+    box-shadow: 0 0 10px var(--blue-light-1);
+    background-color: var(--blue-default);
+    animation: highlight_dark 4s forwards;
 }
 
 @keyframes highlight {
-  from {
-    box-shadow: 0 0 0 rgba(255, 0, 0, 0);
-  }
-  to {
-    box-shadow: 0 0 5px rgba(255, 0, 0, 1); 
-  }
+    0% {
+        box-shadow: 0 0 10px #fff;
+        background-color: #fff;
+    }
+    70% {
+        background-color: var(--blue-light-3);
+        box-shadow: 0 0 10px var(--blue-light-3);
+    }
+    100% {
+        box-shadow: 0 0 10px #fff;
+        background-color: #fff;
+    }
 }
+@keyframes highlight_dark {
+    0% {
+        box-shadow: 0 0 10px var(--gray-dark-1);
+        background-color: var(--gray-dark-1);
+    }
+    70% {
+        box-shadow: 0 0 10px var(--blue-light-1);
+        background-color: var(--blue-default);
+    }
+    100% {
+        box-shadow: 0 0 10px var(--gray-dark-1);
+        background-color: var(--gray-dark-1);
+    }
+}
+
 
 .chevron, 
 .chevronup{

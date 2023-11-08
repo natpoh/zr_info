@@ -300,7 +300,7 @@ class RWT_RATING
     }
     public function rwt_audience($id, $type = 1, $update = '')
     {
-        return PgRatingCalculate::rwt_audience($id, $type, $update);
+        return PgRatingCalculate::rwt_audience($id, 1, $update);
     }
 
     private function get_parent($id)

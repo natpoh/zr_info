@@ -301,100 +301,89 @@ class AnalyticsFront extends SearchFacets {
                     $curr_item = $this->current[$current['type']];
                     $slug = $current['value'];
                     $name = $curr_item['title'] . ' ' . $slug;
-                    $name_pre = $this->cs->search_filters[$key]['name_pre'];
-                    $filter_pre = $this->cs->search_filters[$key]['filter_pre'];
-                    $tags[] = array('name' => $name, 'type' => $key, 'type_title' => $filter_pre, 'name_pre' => $name_pre, 'id' => $slug, 'parent' => 'current', 'minus' => $minus);
+                    $title = $this->cs->search_filters[$key]['title'];
+                    $tags[] = array('name' => $name, 'type' => $key,  'title' => $title, 'id' => $slug, 'parent' => 'chart_div', 'minus' => $minus);
                 }
             } else if ($key == 'showcast') {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
                     $name = $this->showcast[$slug];
-                    $name_pre = $this->cs->search_filters[$key]['name_pre'];
-                    $filter_pre = $this->cs->search_filters[$key]['filter_pre'];
-                    $tags[] = array('name' => $name, 'type' => $key, 'type_title' => $filter_pre, 'name_pre' => $name_pre, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
+                    $title = $this->cs->search_filters[$key]['title'];
+              
+                    $tags[] = array('name' => $name, 'type' => $key,  'title' => $title, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
                 }
             } else if ($key == 'diversity') {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
                     $name = $this->diversity[$slug]['title'];
-                    $name_pre = 'Diversity ';
-                    $filter_pre = $name_pre;
-                    $tags[] = array('name' => $name, 'type' => $key, 'type_title' => $filter_pre, 'name_pre' => $name_pre, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
+                    $title = 'Diversity ';
+           
+                    $tags[] = array('name' => $name, 'type' => $key,  'title' => $title, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
                 }
             } else if ($key == 'vis') {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
                     $name = $this->vis[$slug]['title'];
-                    $name_pre = 'Visualization ';
-                    $filter_pre = $name_pre;
-                    $tags[] = array('name' => $name, 'type' => $key, 'type_title' => $filter_pre, 'name_pre' => $name_pre, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
+                    $title = 'Visualization ';
+              
+                    $tags[] = array('name' => $name, 'type' => $key,  'title' => $title, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
                 }
             } else if ($key == 'xaxis' || $key == 'yaxis') {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
                     $name = $this->axis[$slug]['title'];
-                    $name_pre = 'X-axis ';
+                    $title = 'X-axis ';
                     if ($key == 'yaxis') {
-                        $name_pre = 'Y-axis ';
+                        $title = 'Y-axis ';
                     }
-                    $filter_pre = $name_pre;
-                    $tags[] = array('name' => $name, 'type' => $key, 'type_title' => $filter_pre, 'name_pre' => $name_pre, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
+               
+                    $tags[] = array('name' => $name, 'type' => $key,  'title' => $title, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
                 }
             } else if ($key == 'setup') {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
                     $name = $this->setup[$slug]['title'];
-                    $name_pre = 'Setup ';
-                    $filter_pre = $name_pre;
-                    $tags[] = array('name' => $name, 'type' => $key, 'type_title' => $filter_pre, 'name_pre' => $name_pre, 'id' => $slug, 'parent' => 'setup', 'minus' => $minus);
+                    $title = 'Setup ';
+           
+                    $tags[] = array('name' => $name, 'type' => $key,  'title' => $title, 'id' => $slug, 'parent' => 'setup', 'minus' => $minus);
                 }
             } else if ($key == 'verdict') {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
                     $name = $this->verdict_mode[$slug]['title'];
-                    $name_pre = 'Verdict ';
-                    $filter_pre = $name_pre;
-                    $tags[] = array('name' => $name, 'type' => $key, 'type_title' => $filter_pre, 'name_pre' => $name_pre, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
+                    $title = 'Race verdict mode';
+               
+                    $tags[] = array('name' => $name, 'type' => $key,  'title' => $title, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
                 }
             } else if ($key == 'priority') {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
                     $name = $slug;
-                    $name_pre = 'Priority ';
-                    $filter_pre = $name_pre;
-                    $tags[] = array('name' => $name, 'type' => $key, 'type_title' => $filter_pre, 'name_pre' => $name_pre, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
+                    $title = 'Priority ';
+             
+                    $tags[] = array('name' => $name, 'type' => $key,  'title' => $title, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
                 }
             } else if ($key == 'weight') {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
                     $name = $slug;
-                    $name_pre = 'Weight id ';
-                    $filter_pre = $name_pre;
-                    $tags[] = array('name' => $name, 'type' => $key, 'type_title' => $filter_pre, 'name_pre' => $name_pre, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
+                    $title = 'Weight id ';
+           
+                    $tags[] = array('name' => $name, 'type' => $key,  'title' => $title, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
                 }
             } else if ($key == 'stacking') {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
                     $name = ucfirst($slug);
-                    $name_pre = 'Stacking ';
-                    $filter_pre = $name_pre;
-                    $tags[] = array('name' => $name, 'type' => $key, 'type_title' => $filter_pre, 'name_pre' => $name_pre, 'id' => $slug, 'parent' => 'international', 'minus' => $minus);
+                    $title = 'Stacking ';
+                
+                    $tags[] = array('name' => $name, 'type' => $key,  'title' => $title, 'id' => $slug, 'parent' => 'international', 'minus' => $minus,  'class' => 'sohf');
                 }
             } else if ($key == 'year') {
                 $name = $value;
                 $slug = $value;
-                $tags[] = array('name' => $name, 'type' => $key, 'name_pre' => 'Year ', 'id' => $slug, 'parent' => 'year', 'minus' => $minus);
-            } /*else if ($key == 'budget') {
-                $name = $value;
-                $slug = $value;
-                if (strstr($name, '-')) {
-                    $name_arr = explode('-', $name);
-                    $name = $this->get_budget_showkey($name_arr[0]) . '-' . $this->get_budget_showkey($name_arr[1]);
-                } else {
-                    $name = $this->get_budget_showkey($value);
-                }
-                $tags[] = array('name' => $name, 'type' => $key, 'name_pre' => 'Budget ', 'id' => $slug, 'parent' => 'budget', 'minus' => $minus);
-            }*/
+                $tags[] = array('name' => $name, 'type' => $key, 'title' => 'Year ', 'id' => $slug, 'parent' => 'year', 'minus' => $minus);
+            }
         }
         return $tags;
     }
@@ -693,9 +682,9 @@ class AnalyticsFront extends SearchFacets {
         }
 
         $filter = 'vis';
-        $name_pre = 'Visualization ';
+
         $ftype = 'ethnicity';
-        $this->theme_facet_select($filter, $dates, $title, $ftype, $name_pre);
+        $this->theme_facet_select($filter, $dates, $title, $ftype);
 
         // X-axis
         $title = 'X-axis';
@@ -704,9 +693,9 @@ class AnalyticsFront extends SearchFacets {
             $dates[$key] = array('title' => $value['title']);
         }
         $filter = 'xaxis';
-        $name_pre = 'X-axis ';
 
-        $this->theme_facet_select($filter, $dates, $title, $ftype, $name_pre);
+
+        $this->theme_facet_select($filter, $dates, $title, $ftype);
 
 
         // Y-axis
@@ -716,21 +705,19 @@ class AnalyticsFront extends SearchFacets {
             $dates[$key] = array('title' => $value['title']);
         }
         $filter = 'yaxis';
-        $name_pre = 'Y-axis ';
 
-        $this->theme_facet_select($filter, $dates, $title, $ftype, $name_pre);
+
+        $this->theme_facet_select($filter, $dates, $title, $ftype);
 
 
         // Actor type
         $actor_type = $data['actor_type'];
         $dates = array();
         $filter = 'showcast';
-        $name_pre = $this->cs->search_filters[$filter]['name_pre'];
-        $filter_pre = $this->cs->search_filters[$filter]['filter_pre'];
 
         foreach ($this->showcast as $id => $title) {
             $cnt = $actor_type[$id] ? $actor_type[$id] : 0;
-            $dates[$id] = array('title' => $title, 'count' => $cnt, 'name_pre' => $name_pre, 'filter_pre' => $filter_pre);
+            $dates[$id] = array('title' => $title, 'count' => $cnt,);
         }
         $title = 'Show cast';
         $facet_data = array(
@@ -747,8 +734,7 @@ class AnalyticsFront extends SearchFacets {
         // Setup
         $dates = array();
         $filter = 'setup';
-        $name_pre = 'Setup ';
-        $filter_pre = $name_pre;
+
         $tab_key = $this->get_tab_key();
 
         foreach ($this->setup as $id => $item) {
@@ -756,7 +742,7 @@ class AnalyticsFront extends SearchFacets {
             if ($item_tab == 'all' || $item_tab == $tab_key) {
                 $cnt = 0;
                 $title = $item['title'];
-                $dates[$id] = array('title' => $title, 'count' => $cnt, 'name_pre' => $name_pre, 'filter_pre' => $filter_pre);
+                $dates[$id] = array('title' => $title, 'count' => $cnt,);
                 if (isset($item['note'])) {
                     $dates[$id]['note'] = $item['note'];
                 }
@@ -806,11 +792,11 @@ class AnalyticsFront extends SearchFacets {
             $dates[$key] = array('title' => $value['title']);
         }
         $filter = 'verdict';
-        $name_pre = 'Verdict ';
 
 
 
-        $this->theme_facet_select($filter, $dates, $title, $ftype, $name_pre, '', '', $priority_content, $check_default);
+
+        $this->theme_facet_select($filter, $dates, $title, $ftype, '', '', '', $priority_content, $check_default);
 
         $content = ob_get_contents();
         ob_end_clean();
@@ -886,9 +872,11 @@ class AnalyticsFront extends SearchFacets {
                             <?php
                             $i += 1;
                         }
+                        $title = 'Priority ';
+                        $select_tag = $this->theme_tag($filter, $title, 'RVALUE', false);
                         ?>
                     </div>
-                    <div id="ethnycity_sort" class="sort_data"  data-name="<?php print $filter ?>" data-ftype="<?php print $ftype ?>">
+                    <div id="ethnycity_sort" class="sort_data"  data-name="<?php print $filter ?>" data-ftype="<?php print $ftype ?>" data-fname="<?php print $select_tag['name'] ?>" data-ftitle="<?php print $select_tag['title'] ?>">
                         <?php
                         foreach ($priority as $id => $active) {
                             $disabled = '';
@@ -941,8 +929,7 @@ class AnalyticsFront extends SearchFacets {
         // Setup
         $dates = array();
         $filter = 'setup';
-        $name_pre = 'Setup ';
-        $filter_pre = $name_pre;
+
 
         $tab_key = $this->get_tab_key();
 
@@ -951,7 +938,7 @@ class AnalyticsFront extends SearchFacets {
             if ($item_tab == 'all' || $item_tab == $tab_key) {
                 $cnt = 0;
                 $title = $item['title'];
-                $dates[$id] = array('title' => $title, 'count' => $cnt, 'name_pre' => $name_pre, 'filter_pre' => $filter_pre);
+                $dates[$id] = array('title' => $title, 'count' => $cnt,);
                 if (isset($item['note'])) {
                     $dates[$id]['note'] = $item['note'];
                 }
@@ -1565,8 +1552,7 @@ class AnalyticsFront extends SearchFacets {
         }
 
         $current_filter = 'current';
-        $name_pre = $this->cs->search_filters[$current_filter]['name_pre'];
-        $filter_pre = $this->cs->search_filters[$current_filter]['filter_pre'];
+        $current_title = $this->cs->search_filters[$current_filter]['title'];
         $ftype = 'international';
         $graph_title = 'Box Office by year';
         $y_axis = 'Total Box Office';
@@ -1599,12 +1585,14 @@ class AnalyticsFront extends SearchFacets {
         $title = "Box office";
         $collapsed = "";
         $type = "boxofficetable";
+        $current_parent = 'chart_div';
+        $filter_tag = $this->theme_tag($current_filter, $current_title, 'RVALUE', false);
         ?>
         <div id="select-current"  
              data-name="<?php print $current_filter ?>" 
-             data-ftype="<?php print $ftype ?>"              
-             data-title="<?php print $filter_pre ?>"
-             data-title-pre="<?php print $name_pre ?>">         
+             data-ftype="<?php print $current_parent ?>"              
+             data-ftitle="<?php print $filter_tag['title'] ?>"
+             data-fname="<?php print $filter_tag['name'] ?>">         
                  <?php
                  if ($curryear) {
                      print '<h3>Current year: ' . $curryear . '</h3>';
@@ -1908,14 +1896,16 @@ class AnalyticsFront extends SearchFacets {
 
         // Info table
         $current_filter = 'current';
-        $name_pre = $this->cs->search_filters[$current_filter]['name_pre'];
-        $filter_pre = $this->cs->search_filters[$current_filter]['filter_pre'];
+        $current_title = $this->cs->search_filters[$current_filter]['title'];
+        
+        $current_parent = 'chart_div';
+        $filter_tag = $this->theme_tag($current_filter, $current_title, 'RVALUE', false);
         ?>
         <div id="select-current"                  
              data-name="<?php print $current_filter ?>" 
-             data-ftype="<?php print $ftype ?>"              
-             data-title="<?php print $filter_pre ?>"
-             data-title-pre="<?php print $name_pre ?>"
+             data-ftype="<?php print $current_parent ?>"              
+             data-ftitle="<?php print $filter_tag['title'] ?>"
+             data-fname="<?php print $filter_tag['name'] ?>"
              class="select-current" >
 
             <?php
@@ -3139,15 +3129,15 @@ class AnalyticsFront extends SearchFacets {
 
                     foreach ($total_item_race_mf[$axis] as $gender => $race_item) {
                         foreach ($race_item as $key => $value) {
-                            if ($gender=='none'){
+                            if ($gender == 'none') {
                                 continue;
                             }
                             $name_key = $this->race_small[$key]['key'];
                             $theme_key = $this->theme_name_key_diversity($name_key, $axis);
-                            if ($gender=='male'){
-                                $theme_key = 'm_'.$theme_key;
+                            if ($gender == 'male') {
+                                $theme_key = 'm_' . $theme_key;
                             } else {
-                                $theme_key = 'f_'.$theme_key;
+                                $theme_key = 'f_' . $theme_key;
                             }
                             $ret_percent = 100;
                             if ($item_race_count) {
@@ -4367,8 +4357,8 @@ class AnalyticsFront extends SearchFacets {
     }
 
     public function get_movie_link($type, $post_name) {
-        
-        
+
+
         if ($type == 'TVSeries') {
             $link = 'tvseries';
         } else if ($type == 'VideoGame') {
