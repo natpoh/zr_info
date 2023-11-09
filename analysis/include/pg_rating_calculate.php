@@ -910,7 +910,7 @@ class PgRatingCalculate {
         !class_exists('PgRating') ? include ABSPATH . "analysis/include/pg_rating.php" : '';
 
 
-        global $table_prefix;
+
 
         !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
         $value = OptionData::get_options('', 'custom_rating_data');
@@ -2273,14 +2273,14 @@ class PgRatingCalculate {
         if (!$movie_id)
             return;
 
-        global $table_prefix;
+
         $review_data = [];
 
-        $sql = "select r.* from {$table_prefix}critic_matic_rating as r 
-    inner join {$table_prefix}critic_matic_posts_meta as m ON m.cid = r.cid
-inner join {$table_prefix}critic_matic_posts as p ON p.id = r.cid
-inner join {$table_prefix}critic_matic_authors_meta as am ON am.cid = m.cid
-inner join {$table_prefix}critic_matic_authors as a ON a.id = am.aid
+        $sql = "select r.* from ".DB_PREFIX_WP_AN."critic_matic_rating as r 
+    inner join ".DB_PREFIX_WP_AN."critic_matic_posts_meta as m ON m.cid = r.cid
+inner join ".DB_PREFIX_WP_AN."critic_matic_posts as p ON p.id = r.cid
+inner join ".DB_PREFIX_WP_AN."critic_matic_authors_meta as am ON am.cid = m.cid
+inner join ".DB_PREFIX_WP_AN."critic_matic_authors as a ON a.id = am.aid
 
 
 where  m.fid='{$movie_id}' AND m.state!=0  and p.status=1 " . $staff_type;
