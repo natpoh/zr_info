@@ -285,7 +285,7 @@ echo 'error';
 
                 ///create_image_64($actor_id);
                 if ($img_64) {
-                    sleep(1);
+                    sleep(5);
                     $array_race = self::get_actor_race($img_64, $actor_id);
 
 
