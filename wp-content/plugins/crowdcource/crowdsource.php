@@ -39,8 +39,11 @@ class CrowdAdmin
         $rwc_count = Crowdsource::get_new_draft('data_critic_crowd');
 
 
+
+
+
         echo '<h1>Crowdsource</h1>';
-        if ($pg_count || $actor_count|| $rw_count) {
+        if ($pg_count || $actor_count|| $rw_count || $rwc_count) {
 
             if ($pg_count)
             {
@@ -62,7 +65,24 @@ class CrowdAdmin
         else{
             echo '<h2>no new draft</h2>';
         }
+        !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
 
+        if (isset($_POST['submit_crowd']))
+        {
+            $auto_publish_crowdsource  = $_POST['auto_publish_checkbox'];
+            Optiondata::set_option('',$auto_publish_crowdsource,'auto_publish_crowdsource');
+        }
+
+
+        $checked = Optiondata::get_options('','auto_publish_crowdsource');
+
+
+?>
+        <form method="post" action="">
+        <input type="checkbox" name="auto_publish_checkbox" <?php checked(1,$checked , true); ?> value="1" /> Auto publish posts<br><br>
+            <input type="submit" name="submit_crowd" id="submit" class="button button-primary" value="Save Changes">
+        </form>
+<?php
 
     }
 

@@ -95,12 +95,15 @@ function single_movie($curent_user='')
         $mid=TMDB::get_id_from_imdbid($imdb_id);
 
     }
-
+    global $post_id;
     $post_id = $mid;
     if (!function_exists('template_single_movie')) {
         require ABSPATH . 'wp-content/themes/custom_twentysixteen/template/movie_single_template.php';
     }
+
     template_single_movie($mid, '', '', 1);
+
+
 
 
     echo '<style type="text/css">.nte_show {    display: none;}</style>';
@@ -109,7 +112,9 @@ function single_movie($curent_user='')
 
     echo '<div class="movie_load_grid"><a class="button" target="_blank" href="/analysis/include/scrap_imdb.php?get_imdb_movie_id&imdb_id='.$imdb_id.'">Update data</a></div>';
 
+    include ABSPATH . 'wp-content/themes/custom_twentysixteen/template/actors_template_single.php';
 
+    show_actors_template_single();
 
     /////////add rating
 

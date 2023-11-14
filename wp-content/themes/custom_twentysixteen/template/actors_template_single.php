@@ -1,5 +1,23 @@
 <?php
 ////////check count reviews
+
+function details_template($title,$data,$active='')
+{
+//        $result= '<details  class="dark actor_details" >
+//   <summary>'.$title.'</summary>
+//        <div>'.$data. '</div>
+//        </details>';
+
+
+    $result= '
+        <div class="accordion-item'.$active.'">
+            <div class="accordion-header">'.$title.'</div>
+            <div class="accordion-content">'.$data. '</div>
+        </div>
+        ';
+
+return $result;
+}
 function show_actors_template_single()
 {
 
@@ -27,6 +45,7 @@ function show_actors_template_single()
     );
 
     $content_actors = '';
+    $content_other='';
 
     foreach ($array_list as $array_type => $value) {
         $content_inner = $section;
@@ -41,24 +60,35 @@ function show_actors_template_single()
 
         $video_items = Data_Loaded::get_data_content($post_id, $array_type, 'actor_data');
 
-
-
         $content_inner = str_replace('{content}', $video_items, $content_inner);
-        if ($array_type == 'extra') {
-            $content_actors .= '<details  class="dark actor_details" >
-   <summary>Other Cast, Production</summary>
-        <div>';
+
+        $content_inner= preg_replace('/\{[a-z_]+\}/', '', $content_inner);
+
+        if ($array_type == 'extra' || $array_type == 'directors') {
+
+            $content_other.= $content_inner;
 
         }
-
-        $content_inner = preg_replace('/\{[a-z_]+\}/', '', $content_inner);
-
-        $content_actors .= $content_inner;
-
+        else
+        {
+            $content_actors .= $content_inner;
+        }
 
     }
-    $content_actors .= '</div></details>';
 
+    if ($content_other)
+    {
+
+        $content_other =   details_template('Other Cast, Production',$content_other);
+
+        $content_actors .= $content_other;
+
+    }
+
+
+
+
+    $content_rating='';
     $content = '';
 
     $allow_types = array("Movie" => 'Movies', "TVseries" => 'Shows', "VideoGame" => 'Games');
@@ -69,11 +99,11 @@ function show_actors_template_single()
     !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
     $cast_demographic_note = OptionData::get_options('','cast_demographic_note');
 
-    $content .= '<div class="movie_total_rating" id="movie_rating" data-value="' . $post_id . '"></div>';
+    $content_rating= '<div class="movie_total_rating" id="movie_rating" data-value="' . $post_id . '"></div>';
 
     $ajax_data = Data_Loaded::get_movie_total_rating($post_id);
     if ($ajax_data) {
-        $content .= '<script type="text/javascript">var movie_rating_data =' . $ajax_data . ';
+        $content_rating .= '<script type="text/javascript">var movie_rating_data =' . $ajax_data . ';
     jQuery(document).ready(function () {
 add_movie_rating("movie_rating", movie_rating_data);
 });
@@ -83,30 +113,25 @@ add_movie_rating("movie_rating", movie_rating_data);
 
 if ($post_type!='VideoGame') {
 
-    $content .= '<div class="detail_container" >
-<details  class="dark actor_details" >
-   <summary>Cast</summary>
-<div>
-<div class="desc"> <span data-value="cast_demographic_popup" class="nte_info nte_right nte_open_down"></span>
-' . $cast_demographic_note . '
-</div>
-' . $content_actors . '
-</div>
-</details>';
-    $content .= '<details class="dark actor_details" >
-   <summary>Representation</summary>
-<div class="dmg_content" id="actor_data_dop" ><div id="actor_representation"  data-value="' . $post_id . '" class="not_load"></div></div>
-</details>
-</details>';
+    $title='Cast';
+    $data='<div class="desc"> <span data-value="cast_demographic_popup" class="nte_info nte_right nte_open_down"></span>' . $cast_demographic_note . '</div>' . $content_actors ;
+
+    $content .= details_template($title,$data);
+
+
+    $data='<div id="actor_representation"  data-value="' . $post_id . '" class="not_load"></div>';
+
+    $content .= details_template('Representation',$data);
+
+
 
 }
 else
 {
-    $content .= '<details class="dark actor_details" >
-   <summary>Characters</summary>
-<div class="dmg_content" id="actor_data_dop" ><div id="google_characters"  data-value="' . $post_id . '" class="page_custom_block not_load"></div></div>
-</details>
-</details>';
+
+    $content .= details_template('Characters','<div class="dmg_content" id="actor_data_dop" ><div id="google_characters"  data-value="' . $post_id . '" class="page_custom_block not_load"></div></div>');
+
+
 
 }
 
@@ -116,50 +141,29 @@ else
 
     $keyword_data = Data_Loaded::get_keywords($post_id);
 
-    $content .= '<details class="dark actor_details" >
-   <summary>Tags / Keywords</summary>
-<div class="dmg_content" id="actor_data_dop" ><div id="tags_keywords"  data-value="' . $post_id . '" class="loaded">' . $keyword_data . '</div></div>
-</details>';
+    $content .= details_template('Tags / Keywords',$keyword_data);
 
 
-    $content .= '<details class="dark actor_details" >
-   <summary>Similar ' . $ptipe . '</summary>
-<section class="dmg_content inner_content" id="actor_data_dop" >
-        <div  id="similar_movies" data-name="' . $ptipe . '" data-value="' . $post_id . '" class="not_load"></div>
-</section>
-</details>
-</details>
+    $content .=   details_template('Similar ' . $ptipe ,'<section class="dmg_content inner_content" id="actor_data_dop" ><div  id="similar_movies" data-name="' . $ptipe . '" data-value="' . $post_id . '" class="not_load"></div></section>');
 
 
-<details class="dark actor_details" >
-   <summary>Family Friendly Breakdown</summary>
-<section class="dmg_content inner_content" id="actor_data_dop" >
-        <div  id="family_friendly" data-value="' . $post_id . '" class="not_load"></div>
-</section>
-</details>
-
-</div>
-';
+    $content .= details_template('Family Friendly Breakdown','<section class="dmg_content inner_content" id="actor_data_dop" ><div  id="family_friendly" data-value="' . $post_id . '" class="not_load"></div></section>');
+$colum=7;
 if ($post_type=='VideoGame') {
 
+    $content .= details_template('Global Consensus','<section class="dmg_content inner_content" id="actor_data_dop" >
+        <div  id="google_global_games" data-value="' . $post_id . '" class="page_custom_block not_load"></div></section>');
 
-    $content .= '<details class="dark actor_details" >
-   <summary>Global Consensus</summary>
-<section class="dmg_content inner_content" id="actor_data_dop" >
-        <div  id="google_global_games" data-value="' . $post_id . '" class="page_custom_block not_load"></div>
-</section>
-</details>';
-
-
+$colum=6;
 }
+
+
+
 else if ($post_type!='VideoGame') {
 
-    $content .= '<details class="dark actor_details global_zr" open >
-   <summary>Global Consensus</summary>
-<section class="dmg_content inner_content" id="actor_data_dop" >
-        <div  id="global_zeitgeist" data-value="' . $post_id . '" class="page_custom_block not_load"></div>
-</section>
-</details>';
+$content .= details_template('Global Consensus','<section class="dmg_content inner_content" id="actor_data_dop" >
+        <div  id="global_zeitgeist" data-value="' . $post_id . '" class="page_custom_block not_load"></div></section>', ' active global_zr');
+
 
 
 
@@ -169,7 +173,12 @@ else if ($post_type!='VideoGame') {
 //                </div><div  id="global_zeitgeist" data-value="' . $post_id . '" class="not_load"></div></section>';
 
 }
+
+    $content =$content_rating.'<div class="accordion_section column-'.$colum.'">'.$content.'</div>';
     echo $content;
+
+
+
 }
 
 
@@ -182,9 +191,9 @@ function show_actors_template_single_cache()
         require(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/include/custom_cahe.php');
     }
 
-   $cache = wp_custom_cache('p-'.$post_id.'_show_actors_template_single_1', 'fastcache', 3600);
-   echo $cache;
-   //show_actors_template_single();
+ $cache = wp_custom_cache('p-'.$post_id.'_show_actors_template_single_1', 'fastcache', 3600);
+  echo $cache;
+ // show_actors_template_single();
 }
 
 

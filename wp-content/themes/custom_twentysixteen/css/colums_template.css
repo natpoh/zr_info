@@ -1637,7 +1637,7 @@ body section.section_actors  .img_tooltip{
 }
 
 section.inner_content.section_actors div.column_content div.card.style_1 {
-    background: #f6f6f6;
+    background: #efefef;
     box-shadow: 3px 3px 2px rgba( 0, 0, 0, 0.3 );
 }
 
@@ -2503,6 +2503,7 @@ body.theme_dark  .bg_woke, body.theme_dark  .bg_woke a, body.theme_dark  .bg_wok
     right: 60px;
     width: 140px;
     height: 28px;
+    margin: 0 auto;
 }
 .rating_block > .rwt_stars .not_rated
 {
@@ -2691,6 +2692,7 @@ body.theme_dark .gray_comment {
 
 .movie_total_rating .rating_block > .rwt_stars .rating_result .rating_result_total {
     filter:unset;
+    left: 0;
 }
 .rating_block > .rwt_stars .note_show .rating_result {
     filter: unset;

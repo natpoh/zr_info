@@ -724,15 +724,16 @@ function create_rating_content(object, m_id, search_block = 0) {
         scorecontent = popup_cusomize('popup_header', `This ${name} gets a ${value}/5 family friendly score `);
     } else if (value == 0) {
         value = 'N/A';
-        scorecontent = 'No MPAA or IMDb parental guidance data has been imported yet.<br>Please help improve our site and <div class="add_pg_rating_button"><a href="#" class="empty_ff_rating">add a Family Friendly Rating.</a></div>';
+        scorecontent = 'No MPAA or IMDb parental guidance data has been imported yet.';
 
     }
 
+    scorecontent+= '<br>Please help improve our site and <div class="add_pg_rating_button"><a href="#" class="empty_ff_rating">add a Family Friendly Rating.</a></div>';
 
     let rating_link = popup_cusomize('row_link', '<a href="#" class="read_more_rating">CONTENT BREAKDOWN</a>');
     rating_link += popup_cusomize('row_link', '<a href="#" class="how_calculate_rating">Methodology</a>')
 
-    content += add_rating_block(block_class + ' ' + lgbt_class + woke_class + rating_color, value, scorecontent + lgbt_warning_text + woke_warning_text + family_data_result + rating_link, 1, true);
+    content += add_rating_block(block_class + ' ' + lgbt_class + woke_class + rating_color, value,  lgbt_warning_text + woke_warning_text + family_data_result +scorecontent + rating_link, 1, true);
 
 
     if (object.total_rating && object.total_rating.total_rating > 0) {
@@ -1838,27 +1839,25 @@ function load_ajax_block(block_id) {
 
 
                     if (gzobj.result.length != 0) {
+
                         let gz_content = global_zeitgeist_content(gzobj);
 
-                        gz_content += `<details style="margin-top: 15px; width: 100%" class="trsprnt actor_details">
-   <summary>Search the globe</summary>
-  <div  id="google_global_zeitgeist" data-value="${parent_id}" class="not_load page_custom_block"></div>
-
-</details>`;
+        gz_content += `
+        <div style="margin-top: 15px; width: 100%"  class="accordion-item">
+            <div class="accordion-header">Search the globe</div>
+            <div class="accordion-content"><div  id="google_global_zeitgeist" data-value="${parent_id}" class="not_load page_custom_block"></div></div>
+        </div>
+        `;
                         jQuery('#' + block_id).html(gz_content);
 
-                    } else {
+                    }
+                    else {
 
 
-                        jQuery('.global_zr').remove();
+                        jQuery('.global_zr').removeClass('active');
+                        jQuery('.global_zr .accordion-content').html(`<section class="dmg_content inner_content" id="actor_data_dop" ><div  id="google_global_zeitgeist" data-value="${parent_id}" class="not_load page_custom_block"></div></section>`);
 
-                        jQuery('.detail_container').append(`<details class="dark actor_details" >
-   <summary>Global Consensus</summary>
-<section class="dmg_content inner_content" id="actor_data_dop" >
-        <div  id="google_global_zeitgeist" data-value="${parent_id}" class="not_load page_custom_block"></div>
-</section>
-</details>`);
-                        jQuery('#' + block_id).html(gz_content);
+                       // jQuery('#' + block_id).html(gz_content);
                     }
 
 
@@ -4214,6 +4213,55 @@ jQuery(document).ready(function () {
             ///console.log('already added');
         }
 
+    });
+
+
+
+    jQuery('body').on('click', '.accordion-header', function() {
+        let prnt =jQuery(this).parent('.accordion-item');
+
+        if (window.innerWidth >= 1240) {
+
+            let big_prnt = prnt.parent('.accordion_section');
+            if (big_prnt.length)
+            {
+                if (jQuery('.accordion_section > .accordion-item.active').length)
+                {
+                    jQuery('.accordion_section > .accordion-item.active').each( function (){
+                      let b = jQuery(this);
+                        if ( b ) {
+                            if (prnt.hasClass('active') ) {
+                             //   console.log('skip');
+                                //skip
+                            } else {
+                                   b.removeClass('active');
+                                   b.find('.accordion-content').hide();
+                            }
+                        }
+                    });
+                }
+
+            }
+
+
+        }
+
+        var content = jQuery(this).next('.accordion-content');
+
+        content.slideToggle(500,function (e){
+            prnt.toggleClass('active');
+
+        if (prnt.hasClass('active'))
+        {
+        let  inner_cnt =  content.find('.not_load');
+        if (inner_cnt.length)
+        {
+           let id = inner_cnt.attr('id');
+            load_next_block(id);
+        }
+        }
+
+        });
     });
 
 

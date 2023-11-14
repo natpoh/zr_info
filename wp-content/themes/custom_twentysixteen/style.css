@@ -165,7 +165,7 @@ details.dark {
     border-bottom: 1px solid var(--gray-light-3);
 }
 .theme_dark  details.dark {
-    border-bottom: 1px solid var(--gray-dark-3);
+    border-bottom: 1px solid rgb(39 39 39);
 }
 .theme_dark summary {
     padding: 10px;
@@ -194,7 +194,7 @@ body.theme_dark  .detail_container{
 }
 
 body.theme_dark .actor_details[open] {
-    box-shadow: 1px 1px 20px #000000;
+
     padding-top: 0px;
 }
 body.theme_dark .actor_details[open]>summary{
@@ -210,6 +210,9 @@ body.theme_dark  details.dark {
 }
 details >summary, details[open] >summary {
     list-style: none;
+}
+details summary::-webkit-details-marker {
+    display: none;
 }
 details{
     position: relative;
@@ -230,6 +233,8 @@ details {
     }
 }
 */
+
+
 
 details >summary{
     position: relative;
@@ -278,7 +283,7 @@ details.dark summary {
 
 body.theme_dark details.dark summary {
     color: #fff;
-    background-color: #111111;
+    background-color: #1a1a1a;
 }
 details.dark>div{
     padding: 0px;
@@ -9818,6 +9823,7 @@ body.theme_dark .site-header-menu {
     }
 }
 
+
 @media screen and (min-width: 1780px) {
     .site, .site-footer {
         margin: 0 auto;
@@ -12499,11 +12505,6 @@ body {
 
 
 
-.theme_white .block a:hover {
-    color:#0086b3!important;
-}
-
-
 .type-Movie .movie_poster {
     margin: auto auto;
 }
@@ -12692,7 +12693,7 @@ body {
 /* very subtle paper texture on white background */
 
 .theme_white .inner_content {
-    background-color:rgba(255, 255, 255, 0.95);
+    background-color: unset;
 }
 
 
@@ -15347,55 +15348,33 @@ body.theme_dark .note_show_content_3 a {
 
 
 .theme_dark .home-tabs .tab-a a:hover{
-    color:yellow!important;
+    color: var(--link-hover);
 }
 
 .theme_dark .home-tabs .tab-n a:hover{
-    color:yellow!important;
+    color: var(--link-hover);
 }
 
 
 .theme_dark .home-tabs .tab-p a:hover{
-    color:yellow!important;
+    color: var(--link-hover);
 }
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-.theme_dark .actor_details summary:hover {
-    color:yellow!important;
+.actor_details summary:hover, .theme_dark  .actor_details summary:hover {
+    color: var(--link-hower-white);
 }
 
-
-
-
-
-
-
-
-
-/* hiding wordpress logo on login page */
-
-.login h1{
-    display:none;
+.accordion-header:hover , .theme_dark .accordion-header:hover {
+    color: var(--link-hower-white);
 }
 
-
-
-
-
+.accordion-item.active .accordion-header:hover, .theme_dark .accordion-item.active .accordion-header:hover  {
+    color: var(--link-hover);
+}
 
 /*navigation hover */
 
@@ -15403,7 +15382,7 @@ body.theme_dark .note_show_content_3 a {
 
 
 .theme_white .nav-tab .btn:hover {
-    color:var(--link-hower-white);
+    color: var(--link-hover);
 }
 
 

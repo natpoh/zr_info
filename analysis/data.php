@@ -162,8 +162,11 @@ AND table_schema='" . DB_NAME_AN . "'";
 
             <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
             <link rel="stylesheet" type="text/css" media="screen" href="<?php echo $home_url ?>analysis/jqgrid/css/ui.jqgrid-bootstrap4.css" />
+            <link rel="stylesheet" href="<?php echo $home_url . 'wp-content/themes/custom_twentysixteen/css/theme-style-colors.css?' . LASTVERSION ?>">
             <link rel="stylesheet" href="<?php echo $home_url . 'wp-content/themes/custom_twentysixteen/css/movie_single.css?' . LASTVERSION ?>">
             <link rel="stylesheet" href="<?php echo $home_url . 'wp-content/themes/custom_twentysixteen/css/colums_template.css?' . LASTVERSION ?>">
+            <script src="<?php echo $home_url . 'wp-content/themes/custom_twentysixteen/js/section_home.js?' . LASTVERSION ?>"></script>
+
             <script type="text/javascript">
                 function getSubgrid(subgrid_id, row_id){
 
@@ -183,6 +186,16 @@ AND table_schema='" . DB_NAME_AN . "'";
                 {
                 var actor_id = jQuery("#jqGrid").jqGrid('getCell', row_id, 'actor_id');
                 var movie = jQuery("#jqGrid").jqGrid('getCell', row_id, 'movie_id');
+
+                var rwt_id='';
+
+                if (jQuery("#jqGrid").jqGrid('getCell', row_id, 'mid'))
+                {
+                    rwt_id=jQuery("#jqGrid").jqGrid('getCell', row_id, 'mid');
+
+                }
+
+
                 }
 
 
@@ -195,6 +208,7 @@ AND table_schema='" . DB_NAME_AN . "'";
                         data: ({
                         oper: 'movie_data',
                                 id: movie,
+                                rwt_id:rwt_id,
                                 data:"{\"movie_type\":[],\"movie_genre\":[],\"animation\":\"0\",\"inflation\":\"0\",\"start\":\"1800\",\"end\":\"2100\",\"actor_type\":[\"star\",\"main\"],\"diversity_select\":\"default\",\"display_select\":\"date_range_international\",\"country_movie_select\":[],\"display_xa_axis\":\"Box+Office+Worldwide\",\"color\":\"default\",\"ethnycity\":{\"1\":{\"ethnic\":1},\"2\":{\"jew\":1},\"3\":{\"face\":1},\"4\":{\"face2\":1},\"5\":{\"surname\":1}}}"
                         }),
                         success: function (html) {
@@ -491,6 +505,9 @@ AND table_schema='" . DB_NAME_AN . "'";
                     display: none;
                 }
 
+                .tablediv{
+                    max-width: 1200px;
+                }
                 .notice_edit input{
                     margin-right: 10px;
                 }

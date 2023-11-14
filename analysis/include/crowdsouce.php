@@ -28,6 +28,38 @@ if (!defined('CROWDSOURCEURL')) {
 class Crowdsource
 {
 
+    public static function auto_publish_crowdsource()
+    {
+
+        global $debug;
+        !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+        $checked = Optiondata::get_options('','auto_publish_crowdsource');
+
+        if ($checked==1)
+        {
+
+        $q ="UPDATE `data_actors_crowd` SET `status` = 1 WHERE `status` = 0";
+        Pdo_an::db_results_array($q);
+
+            $q ="UPDATE `data_movies_pg_crowd` SET `status` = 1 WHERE `status` = 0";
+            Pdo_an::db_results_array($q);
+
+            $q ="UPDATE `data_review_crowd` SET `status` = 1 WHERE `status` = 0";
+            Pdo_an::db_results_array($q);
+
+            $q ="UPDATE `data_critic_crowd` SET `status` = 1 WHERE `status` = 0";
+            Pdo_an::db_results_array($q);
+            if ($debug)echo 'ok';
+        }
+        else
+        {
+            if ($debug)echo 'auto publish is off';
+        }
+
+
+    }
+
+
     public static function link_hash($link) {
         $link = preg_replace('/^http(?:s|)\:\/\//', '', $link);
         return sha1($link);

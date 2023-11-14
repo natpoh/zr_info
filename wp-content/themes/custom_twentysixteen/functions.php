@@ -2164,17 +2164,9 @@ wp_enqueue_script('script_custom', get_template_directory_uri() . '/js/script_cu
 
 
 
-if (!function_exists('clear_all_cache')) {
 
-    function clear_all_cache() {
-        wpclearpostcache();
-        exit();
-    }
-
-}
 if (current_user_can('administrator')) {
-    add_action('wp_ajax_clear_all_cache', 'clear_all_cache');
-    add_action('wp_ajax_nopriv_clear_all_cache', 'clear_all_cache');
+
 
 
     add_action('admin_bar_menu', 'clear_all_cache_menu', 100000);
@@ -2186,7 +2178,7 @@ if (current_user_can('administrator')) {
             $wp_admin_bar->add_menu(array(
                 'id' => 'clear_all_cache',
                 'title' => 'Clear all page cache',
-                'href' => esc_url(home_url('/')) . 'wp-admin/admin-ajax.php?action=clear_all_cache',
+                'href' => esc_url(home_url('/')) . 'service/ajax/cache.php?action=clear_all_cache',
                 10
             ));
         }

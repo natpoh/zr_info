@@ -370,7 +370,7 @@ function init_nte() {
                                 //resize();
                         }
 
-                        // ��������� �������� �������������� ������ � ������ ����
+
                         initialWidth = currentWidth;
                         initialHeight = currentHeight;
                     });

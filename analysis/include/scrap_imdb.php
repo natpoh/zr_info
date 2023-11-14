@@ -3651,6 +3651,8 @@ if (isset($_GET['actor_logs'])) {
 }
 
 
+
+
 if (isset($_GET['check_tmdb_image_on_server'])) {
 
     $actor_id=intval($_GET['check_tmdb_image_on_server']);
@@ -3752,6 +3754,23 @@ $tablesQuery = "SHOW TABLES";
 
         }
     echo "ok";
+}
+
+
+
+if (isset($_GET['auto_publish_crowdsource'])) {
+
+    global $debug;
+    $debug = $_GET['debug'];
+
+    !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
+
+    Crowdsource::auto_publish_crowdsource();
+
+
+
+
+    return;
 }
 
 //echo 'ok';

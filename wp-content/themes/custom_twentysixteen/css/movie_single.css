@@ -116,10 +116,126 @@ body.theme_dark .single_post .movie_summary .block span {
 .block_main{
     margin-top: 20px;
 }
-.single_post .movie_description a {
-    color: #8c8c8c;
+.movie_description a {
+    color: var(--gray-default);
     text-decoration: underline;
 }
+
+
+
+
+.single_post .movie_description .block a:hover {
+    color: var(--link-hower-white);
+}
+
+
+
+
+
+.accordion {
+    margin: 0 auto;
+
+}
+
+.accordion_section > .accordion-item {
+    border-bottom: 1px solid #ccc;
+}
+
+.accordion-header {
+
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    position: relative;
+    color: #000;
+    cursor: pointer;
+    border: none;
+    padding: 6px 20px;
+    font-size: 18px;
+}
+
+
+.accordion-item:last-child .accordion-header {
+    border-bottom: none;
+}
+
+.accordion-item.active >F .accordion-header {
+    background-color: #e2e2e2;
+}
+
+.accordion-item.active > .accordion-content {
+    display: block;
+    max-height: 500px; /* Высота контента, которая будет плавно раскрываться */
+}
+
+.accordion-content {
+    padding: 15px;
+    display: none;
+    background-color: #f9f9f9;
+    overflow: hidden;
+    max-height: 1000px;
+
+    transition: max-height 0.3s ease;
+}
+
+.accordion-item.active .accordion-content {
+    max-height: unset;
+    border-bottom: unset;
+    padding-bottom: 30px;
+}
+.theme_dark .accordion-item.active  {
+    background-color: transparent;
+    border-bottom: unset;
+}
+
+.theme_dark .accordion-header {
+    color: rgb(198 198 198);
+    background-color: rgb(52 52 52);
+}
+.theme_dark  .accordion_section >  .accordion-item {
+    border-bottom: 1px solid var(--gray-dark-3);
+}
+
+
+
+.accordion_section > .accordion-item.active > .accordion-header {
+    background-color: var(--blue-light-4);
+}
+
+.theme_dark .accordion-item.active > .accordion-header {
+    background-color: rgb(72 71 71);
+    color: #fff;
+}
+
+.theme_dark .accordion-content {
+    background-color: var(--gray-dark-1);
+}
+
+.accordion-header::after {
+    content: "";
+    position: absolute;
+    right: 10px;
+    top: 7px;
+    background: url(../images/ar_u.svg) 0px 0px;
+    transform: rotate(-180deg);
+    transition: transform 0.3s ease;
+    width: 30px;
+    height: 30px;
+    display: block;
+    background-size: contain;
+    filter: invert(100);
+}
+.accordion-item.active > .accordion-header::after {
+    transform: rotate(0deg);
+}
+
+.theme_dark .accordion-header::after {
+    filter: none;
+}
+
+
+
+
+
 .watch_buttom, .add_movie_todb {
     font-size: 18px;
     width: 100%;
@@ -1708,7 +1824,42 @@ div.sortable {
     text-align: center;
     border-radius: 0 0 7px 7px;
 }
+@media screen and (min-width: 1240px) {
 
+    .accordion_section{
+        display: grid;
+    }
+    .accordion_section>.accordion-item {
+        display: contents;
+    }
+
+    .accordion_section>.accordion-item >.accordion-header {
+        align-items: center;
+        grid-row: 1/2;
+        padding-right: 50px;
+        display: flex;
+        justify-content: center;
+        font-family: 'Encode Sans Condensed',Lato;
+        box-sizing: border-box;
+        min-height: 75px;
+        line-height: 1.3em;
+    }
+
+    .accordion_section>.accordion-item >.accordion-header::after {
+        content: "";
+        position: absolute;
+        right: 10px;
+        top: calc(50% - 16px);
+    }
+
+
+    .accordion_section.column-7>.accordion-item >.accordion-content {
+        grid-column: 1/7;
+    }
+    .accordion_section.column-6>.accordion-item >.accordion-content {
+        grid-column: 1/6;
+    }
+}
 @media screen and (min-width: 1170px) {
     .single_flex>.block
     {
