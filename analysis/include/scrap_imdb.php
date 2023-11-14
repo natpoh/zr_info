@@ -1517,7 +1517,7 @@ function add_empty_actors($id='')
                if ($debug) echo '  try add actor ' . $id . PHP_EOL;
                 $result = add_actors_to_db($id, 1);
                 ////logs
-                TMDB::add_log($id,'','update actors','result: '.$result,1,'add_empty_actors');
+                TMDB::add_log($id,'','update actors','result: '.$result.' aid:'.$id,1,'add_empty_actors');
 
                 if (check_cron_time())
                 {
