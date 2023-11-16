@@ -247,15 +247,11 @@ function fix_actors_verdict($actor_id='')
 function set_verdict_weight($id)
 {
     !class_exists('CPULOAD') ? include ABSPATH . "service/cpu_load.php" : '';
-    $load = CPULOAD::check_load();
 
-    if ($load['loaded'])
-    {
-        return;
-    }
+    check_load(50,0);
 
     !class_exists('ActorWeight') ? include ABSPATH . "analysis/include/actors_weight.php" : '';
-    $count=100;
+    $count=1000;
     if (isset($_GET['count']))
     {
        $count =  $_GET['count'];
@@ -270,7 +266,7 @@ function set_verdict_weight($id)
     ActorWeight::update_actor_weight($id, $_GET['debug'],0,$count,$force);
     !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
     $last_id = OptionData::get_options('','actors_meta_last_id');
-    echo 'last_id='.$last_id;
+    echo 'last_id (actors_meta_last_id) ='.$last_id;
 }
 
 function get_similar($id)

@@ -564,6 +564,17 @@ class CriticTransit extends AbstractDB {
                         print "Skip update ".$item->n_verdict_weight. "==". $n_verdict."\n";
                     }
                 }
+
+
+                if (function_exists('check_cron_time'))
+                {
+                    if (check_cron_time())
+                    {
+                        break;
+                    }
+
+                }
+
             }
         }
         if ($actors_upd){
