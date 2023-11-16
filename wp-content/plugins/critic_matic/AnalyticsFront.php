@@ -4199,7 +4199,14 @@ class AnalyticsFront extends SearchFacets {
     }
 
     public function custom_weight_race_code($race = 0, $race_weight = array(), $onlydata = 0, $debugs = '') {
+        if ($debugs) {
 
+            if (function_exists('var_dump_table'))
+            {
+                var_dump_table(array('race'=>$race,'race_weight'=> $race_weight ));
+
+            }
+        }
         /*
           // Other codes
           $race_setup = array();

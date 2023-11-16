@@ -507,7 +507,30 @@ class CriticTransit extends AbstractDB {
                 //
                 }
 
-                $n_verdict = $af->custom_weight_race_code($actor_code_id, $filter_weights, $onlydata, $debug);
+                !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+                $vd_data = unserialize(unserialize(OptionData::get_options('','critic_matic_settings')));
+                $verdict_method=0; if ($vd_data["an_verdict_type"]=='w'){$verdict_method=1;}
+
+                $ver_weight = false;
+                if ($verdict_method ==1) {
+                    // Weights logic
+                    $ver_weight = true;
+                }
+                if ($debug) {
+                    print "verdict_method ".$verdict_method.' ver_weight '.$ver_weight. "\n<br>";
+
+                }
+
+                if ($ver_weight) {
+                    // Weight logic
+                    $n_verdict = $af->custom_weight_race_code($actor_code_id, $filter_weights, $onlydata, $debug);
+                } else {
+                    // Priority logic
+                    $n_verdict = $af->custom_priority_race_code($actor_code_id, $filter_weights);
+                }
+
+
+               /// $n_verdict = $af->custom_weight_race_code($actor_code_id, $filter_weights, $onlydata, $debug);
                 if ($onlydata) {
                     if ($debug) {
                         print "Actor verdict ";
