@@ -251,7 +251,7 @@ function set_verdict_weight($id)
     check_load(50,0);
 
     !class_exists('ActorWeight') ? include ABSPATH . "analysis/include/actors_weight.php" : '';
-    $count=1000;
+    $count=10000;
     if (isset($_GET['count']))
     {
        $count =  $_GET['count'];
