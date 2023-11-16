@@ -3277,6 +3277,12 @@ if (isset($_GET['set_actors_ethnic_vedict'])) {
     return;
 }
 if (isset($_GET['update_actors_verdict'])) {
+    global $debug;
+    if (isset($_GET['debug']))
+    {
+        $debug=1;
+    }
+
     update_actors_verdict($_GET['update_actors_verdict'],1);
     return;
 }

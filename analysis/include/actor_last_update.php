@@ -436,7 +436,7 @@ class ActorsInfo{
 
         $array_actors['gender_verdict']=self::array_to_content($actors_meta,'Gender Verdict: '. $array_convert[$actors_meta['gender']],'db: '.self::link_db('data_actors_meta').' ',1,[['verdict',2]],'last_update','','gender');
 
-        $array_actors['verdict']=self::array_to_content($actors_meta,'Verdict: '. $acc[$rsm[$actors_meta['n_verdict_weight']]].' '.$array_convert[$actors_meta['gender']],'db: '.self::link_db('data_actors_meta').' ',1,'','last_update','','n_verdict_weight');
+        $array_actors['verdict']=self::array_to_content($actors_meta,'Verdict: '. $acc[$rsm[$actors_meta['n_verdict_weight']]].' '.$array_convert[$actors_meta['gender']],'db: '.self::link_db('data_actors_meta').' <br><a target="_blank" href="/analysis/include/scrap_imdb.php?update_actors_verdict='.$aid.'&debug=1">update</a>',1,'','last_update','','n_verdict_weight');
 
 
         ///tmdb

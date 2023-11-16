@@ -1063,6 +1063,7 @@ critic_search.init_save_filters = function () {
         $this.addClass('init');
         $this.click(function () {
             if (critic_search.uid == 0) {
+                window.open('/login/', '_blank');
                 return false;
             }
             if ($('#search-filters').hasClass('tab-filters')) {

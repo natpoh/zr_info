@@ -481,17 +481,27 @@ class CriticTransit extends AbstractDB {
                 }
             }
             if ($debug) {
-                print_r(array($mode_key, $filter_weights));
+                if (function_exists('var_dump_table'))
+                {
+                    var_dump_table(array('Get from settings',$mode_key, $filter_weights));
+                }
+
             }
 
             foreach ($results as $item) {
                 if ($debug) {
-                    print_r($item);
+
+                    if (function_exists('var_dump_table'))
+                    {
+                        var_dump_table(array('item',$item));
+                    }
                 }
 
                 $actor_code_id = $this->get_actor_id_by_data($item, $debug);
                 if ($debug) {
-                    print "Actor code id: " . $actor_code_id . "\n";
+                    print "Actor code id: " . $actor_code_id . "\n<br>";
+
+
                     //11101000000413
                     //111101110101251
                 //
@@ -500,8 +510,8 @@ class CriticTransit extends AbstractDB {
                 $n_verdict = $af->custom_weight_race_code($actor_code_id, $filter_weights, $onlydata, $debug);
                 if ($onlydata) {
                     if ($debug) {
-                        print "Actor verdict";
-                        print_r($n_verdict);
+                        print "Actor verdict ";
+                        print_r($n_verdict). "\n<br>";
                     }
 
 
@@ -510,12 +520,16 @@ class CriticTransit extends AbstractDB {
 
 
                 if ($debug) {
-                    print "Race verdict: " . $n_verdict . "\n";
+                    print "Race verdict: " . $n_verdict . "\n<br>";
                 }
 
                 // Update verdict
 
-                if ($item->n_verdict_weight == $n_verdict) {
+                if ($item->n_verdict_weight != $n_verdict) {
+
+                    if ($debug) {
+                        print "update ".$item->n_verdict_weight. "!=". $n_verdict."\n";
+                    }
                     $data = array(
                         'last_update' => $this->curr_time(),
                         'n_verdict_weight' => $n_verdict
@@ -524,7 +538,7 @@ class CriticTransit extends AbstractDB {
                     $actors_upd[] = $item->actor_id;
                 } else {
                     if ($debug) {
-                        print "Skip update \n";
+                        print "Skip update ".$item->n_verdict_weight. "==". $n_verdict."\n";
                     }
                 }
             }
@@ -559,7 +573,9 @@ class CriticTransit extends AbstractDB {
         $n_aid = substr($item->actor_id, -3);
 
         if ($debug) {
-            var_dump(['total data', $n_forebears, $n_familysearch, $n_ethnic, $n_jew, $n_kairos, $n_bettaface, $n_surname, $n_crowdsource]);
+            if (function_exists('var_dump_table')) {
+                var_dump_table(['total data', $n_forebears, $n_familysearch, $n_ethnic, $n_jew, $n_kairos, $n_bettaface, $n_surname, $n_crowdsource]);
+            }
         }
         /*
          * valid alrorithm

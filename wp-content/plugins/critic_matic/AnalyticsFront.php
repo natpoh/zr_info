@@ -4255,12 +4255,31 @@ class AnalyticsFront extends SearchFacets {
                 $debug[$key] = array('race' => $race_code, 'key' => $race_code_key, 'score' => $score);
 
                 if ($debugs) {
-                    var_dump([$key, $row, $race_code, $race_code_key, $score]);
+
+                    if (function_exists('var_dump_table'))
+                    {
+                        var_dump_table([$key, $row, $race_code, $race_code_key, $score]);
+
+                    }
+                    else
+                    {
+                        var_dump([$key, $row, $race_code, $race_code_key, $score]);
+                    }
+
                 }
             }
         }
         if ($debugs) {
-            var_dump(['debug', $debug]);
+            if (function_exists('var_dump_table'))
+            {
+                var_dump_table(['debug', $debug]);
+            }
+            else
+            {
+                var_dump(['debug', $debug]);
+
+            }
+
         }
         if ($type_calc == 0 && $result_summ) {
             arsort($result_summ);
