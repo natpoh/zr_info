@@ -42,6 +42,12 @@ if ($_GET['mid']) {
     $mid = (int) $_GET['mid'];
 }
 
+$type = 0;
+if ($_GET['type']) {
+    $type = (int) $_GET['type'];
+}
+
+
 // Check server load
 !class_exists('CPULOAD') ? include ABSPATH . "service/cpu_load.php" : '';
 $load = CPULOAD::check_load();
@@ -53,7 +59,7 @@ if ($load['loaded']) {
 }
 
 $cm = new CriticMatic();
-$cron_name = 'movie_actor_cache_cron';
+$cron_name = 'movie_actor_cache_cron_' . $type;
 if ($cm->cron_already_run($cron_name, 10, $debug, $force)) {
     exit();
 }
@@ -61,12 +67,22 @@ if ($cm->cron_already_run($cron_name, 10, $debug, $force)) {
 $cm->register_cron($cron_name);
 
 
-$mac = $cm->get_mac();
-if (!$mid) {
-    $mac->run_cron($count, $debug, $force);
-} else {
-    $mac->hook_update_movies(array($mid), $debug);
+if ($type == 0) {
+    // Actors
+    $mac = $cm->get_mac();
+    if (!$mid) {
+        $mac->run_cron($count, $debug, $force);
+    } else {
+        $mac->hook_update_movies(array($mid), $debug);
+    }
+} else if ($type == 1) {
+    // Directors
+    $mac = $cm->get_mdirs();
+    if (!$mid) {
+        $mac->run_cron($count, $debug, $force);
+    } else {
+        $mac->hook_update_movies(array($mid), $debug);
+    }
 }
-
 
 $cm->unregister_cron($cron_name);

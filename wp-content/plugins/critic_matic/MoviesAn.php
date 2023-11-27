@@ -1971,6 +1971,9 @@ class MoviesAn extends AbstractDBAn {
             // Movies Actors
             $mac = $this->cm->get_mac();
             $mac->hook_update_movies($mids, $debug);
+            // Movies Directors
+            $mdirs = $this->cm->get_mdirs();
+            $mdirs->hook_update_movies($mids, $debug);
         }
     }
 

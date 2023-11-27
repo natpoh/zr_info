@@ -25,6 +25,8 @@ class CriticMatic extends AbstractDB {
     private $uc;
     private $si;
     private $uf;
+    private $mac;
+    private $mdirs;
 
 
     /*
@@ -358,6 +360,18 @@ class CriticMatic extends AbstractDB {
         return $this->mac;
     }
 
+    public function get_mdirs() {
+        // Get MoviesDirectors
+        if (!$this->mdirs) {
+            if (!class_exists('MoviesActors')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'MoviesActors.php' );
+            }
+
+            $this->mdirs = new MoviesDirectors($this);
+        }
+        return $this->mdirs;
+    }
+
     public function get_cp() {
         // Get CriticParser
         if (!$this->cp) {
@@ -493,7 +507,7 @@ class CriticMatic extends AbstractDB {
                 //fid, type, state, rating 
                 foreach ($movies_meta as $meta) {
                     PgRatingCalculate::rwt_audience($meta->fid, 1, 1);
-                    PgRatingCalculate::CalculateRating('', $meta->fid, 0, 1);///hook_update_post
+                    PgRatingCalculate::CalculateRating('', $meta->fid, 0, 1); ///hook_update_post
                     PgRatingCalculate::add_movie_rating($meta->fid);
                 }
             }

@@ -8,8 +8,7 @@
  */
 class MoviesActors extends AbstractDB {
 
-    private $cm;
-    
+    public $cm;
     public $count = array(
         'e' => array('key' => 0, 'title' => 'Exist'),
         'n' => array('key' => 1, 'title' => 'Number'),
@@ -37,7 +36,9 @@ class MoviesActors extends AbstractDB {
         'jw' => array('key' => 8, 'title' => 'Jewish'),
     );
 
-    public function __construct($cm='') {
+    public $option_name = 'movies_actors_last_id';
+    
+    public function __construct($cm = '') {
         $this->cm = $cm ? $cm : new CriticMatic();
         $this->db = array(
             'movie_imdb' => 'data_movie_imdb',
@@ -46,14 +47,14 @@ class MoviesActors extends AbstractDB {
             'cache_actor' => 'cache_movie_actor_meta',
         );
     }
-
+        
     /*
      * Cron for new movies
      */
 
     public function run_cron($count = 100, $debug = false, $force = false) {
-        $option_name = 'movies_actors_last_id';
-        $last_id = $this->get_option($option_name, 0);
+
+        $last_id = $this->get_option($this->option_name, 0);
         if ($force) {
             $last_id = 0;
         }
@@ -72,7 +73,7 @@ class MoviesActors extends AbstractDB {
         if ($results) {
             $last = end($results);
             if ($last) {
-                $this->update_option($option_name, $last->id);
+                $this->update_option($this->option_name, $last->id);
             }
 
             foreach ($results as $movie) {
@@ -218,6 +219,30 @@ class MoviesActors extends AbstractDB {
                 $this->sync_insert_data($data, $this->db['cache_actor'], $this->cm->sync_client, $this->cm->sync_data, 10);
             }
         }
+    }
+
+}
+
+class MoviesDirectors extends MoviesActors {
+
+    public $type = array(
+        'a' => array('key' => 0, 'title' => 'all'),
+        'd' => array('key' => 1, 'title' => 'director'),
+        'w' => array('key' => 2, 'title' => 'writer'),
+        'c' => array('key' => 3, 'title' => 'cast_director'),
+        'p' => array('key' => 4, 'title' => 'producers'),
+    );
+
+    public $option_name = 'movies_directors_last_id';
+    
+    public function __construct($cm = '') {
+        $this->cm = $cm ? $cm : new CriticMatic();
+        $this->db = array(
+            'movie_imdb' => 'data_movie_imdb',            
+            'data_actors_meta' => 'data_actors_meta',
+            'meta_movie_actor' => 'meta_movie_director',
+            'cache_actor' => 'cache_movie_director_meta',
+        );
     }
 
 }

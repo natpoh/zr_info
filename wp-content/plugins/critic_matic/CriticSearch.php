@@ -5,7 +5,6 @@
  *
  * @author brahman
  * 
- * 
  * TODO 
  * add top movie link for all user select critic posts
  * Add page for view critics meta: user, auto, no meta
@@ -72,7 +71,6 @@ class CriticSearch extends AbstractDB {
         'expand' => '',
         'show' => '',
         'hide' => '',
-        'cast' => '',
         'director' => '',
         // TODO refactor
         'price' => '',
@@ -82,6 +80,7 @@ class CriticSearch extends AbstractDB {
     public $facets = array();
     public $facet_titles = array();
     public $facet_parents = array();
+    public $facet_all_parents = array();
     public $facets_data = array();
     public $search_sort = array();
     public $facet_parent = array();
@@ -160,36 +159,98 @@ class CriticSearch extends AbstractDB {
             'hide' => 1,
             'weight' => 80,
             'childs' => array(
-                // facets_race_cast
-                'race_cast' => array('title' => 'race_cast',),
-                'race' => array('filter' => 'actor', 'parent' => 'race_cast', 'name' => 'actor_all', 'title' => 'Cast', 'filter_key' => 'race', 'minus' => 1,),
-                'starrace' => array('filter' => 'actorstar', 'parent' => 'race_cast', 'name' => 'actor_star', 'title' => 'Stars', 'filter_key' => 'race', 'minus' => 1,),
-                'mainrace' => array('filter' => 'actormain', 'parent' => 'race_cast', 'name' => 'actor_main', 'title' => 'Supporting', 'filter_key' => 'race', 'minus' => 1,),
-                // facets_gender
-                'gender_cast' => array('title' => 'gender_cast',),
-                'gender' => array('parent' => 'gender_cast', 'title' => 'Cast Gender', 'filter_key' => 'gender', 'minus' => 1,),
-                'stargender' => array('parent' => 'gender_cast', 'title' => 'Star Gender', 'filter_key' => 'gender', 'minus' => 1,),
-                'maingender' => array('parent' => 'gender_cast', 'title' => 'Supporting Gender', 'filter_key' => 'gender', 'minus' => 1,),
-                'sphoto' => array('parent' => 'sphoto', 'title' => 'Star conditions', 'filter_key' => 'sphoto', 'minus' => 1, 'hide' => 1),
-                // search actor_filters                
-                'actors' => array('title' => 'Actors',),
-                'actor' => array('filter' => 'actor_all', 'parent' => 'actors', 'title' => 'Actor', 'placeholder' => '', 'minus' => 1,),
-                'actorstar' => array('filter' => 'actor_star', 'parent' => 'actors', 'title' => 'Actor Star', 'placeholder' => 'star', 'minus' => 1,),
-                'actormain' => array('filter' => 'actor_main', 'parent' => 'actors', 'title' => 'Actor Supporting', 'placeholder' => 'main', 'minus' => 1,),
-                // actors simpson
-                'actors_simpson' => array('title' => 'Literal Diversity',),
-                'simall' => array('parent' => 'actors_simpson', 'title' => 'Literal Diversity', 'facet' => 'rating', 'titlesm' => 'LD', 'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'sorted' => 1, 'minus' => 1, 'sort_w' => 21,),
-                'simstar' => array('parent' => 'actors_simpson', 'title' => 'Literal Diversity (Star)', 'facet' => 'rating', 'titlesm' => 'LD (Star)', 'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'minus' => 1, 'sort_w' => 21,),
-                'simmain' => array('parent' => 'actors_simpson', 'title' => 'Literal Diversity (Supporting)', 'facet' => 'rating', 'titlesm' => 'LD (Supporting)', 'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'minus' => 1, 'sort_w' => 21,),
-                //'actors_simpson_mf' => array('title' => 'Literal Diversity Gender',),
-                //'simmfall' => array('parent' => 'actors_simpson_mf', 'title' => 'Literal Diversity Gender', 'facet' => 'rating', 'titlesm' => 'LD Gender',  'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'minus' => 1, 'sort_w' => 21, 'hide' => 1,),
-                //'simmfstar' => array('parent' => 'actors_simpson_mf', 'title' => 'Literal Diversity Gender (Star)', 'facet' => 'rating', 'titlesm' => 'LD Gender (Star)', 'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'minus' => 1, 'sort_w' => 21, 'hide' => 1,),
-                //'simmfmain' => array('parent' => 'actors_simpson_mf', 'title' => 'Literal Diversity Gender (Supporting)', 'facet' => 'rating', 'titlesm' => 'LD Gender (Supporting)',  'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'minus' => 1, 'sort_w' => 21, 'hide' => 1,),
-                // Actors country
-                'actorscountry' => array('title' => 'Actors Country',),
-                'countryall' => array('filter' => 'countryall', 'parent' => 'actorscountry', 'title' => 'Actor Country', 'placeholder' => '', 'minus' => 1,),
-                'countrystar' => array('filter' => 'countrystar', 'parent' => 'actorscountry', 'title' => 'Actor star Country', 'placeholder' => 'star', 'minus' => 1,),
-                'countrymain' => array('filter' => 'countrymain', 'parent' => 'actorscountry', 'title' => 'Actor main Country', 'placeholder' => 'main', 'minus' => 1,),
+                'cast' => array(
+                    // Tabs
+                    'title' => 'Cast',
+                    'type' => 'tabs',
+                    'def-tab' => 'star',
+                    'childs' => array(
+                        'star' => array(
+                            'type' => 'tab',
+                            'title' => 'Stars',
+                            'childs' => array(
+                                'starrace' => array(
+                                    'filter' => 'actorstar', 'parent' => 'race', 'name' => 'actor_star', 'title' => 'Stars', 'filter_key' => 'race', 'minus' => 1,
+                                    'childs' => array('star' => array('type' => 'generate', 'parent' => 'race',),),
+                                ),
+                                'stargender' => array(
+                                    'parent' => 'gender', 'title' => 'Star Gender', 'filter_key' => 'gender', 'minus' => 1,
+                                    'childs' => array('star' => array('type' => 'generate', 'parent' => 'gender',),),
+                                ),
+                                'sphoto' => array('parent' => 'sphoto', 'title' => 'Star conditions', 'filter_key' => 'sphoto', 'minus' => 1, 'hide' => 1),
+                                'actorstar' => array('filter' => 'actor_star', 'parent' => 'actors', 'title' => 'Actor Star', 'placeholder' => 'star', 'minus' => 1,),
+                                'simstar' => array('parent' => 'simpson', 'title' => 'Literal Diversity (Star)', 'facet' => 'rating', 'titlesm' => 'LD (Star)', 'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'minus' => 1, 'sort_w' => 21,),
+                                'countrystar' => array('filter' => 'countrystar', 'parent' => 'country', 'title' => 'Actor Star Country', 'placeholder' => 'star', 'minus' => 1,),
+                            ),
+                        ),
+                        'main' => array(
+                            'type' => 'tab',
+                            'title' => 'Supporting',
+                            'childs' => array(
+                                'mainrace' => array(
+                                    'filter' => 'actormain', 'parent' => 'race', 'name' => 'actor_main', 'title' => 'Supporting', 'filter_key' => 'race', 'minus' => 1,
+                                    'childs' => array('main' => array('type' => 'generate', 'parent' => 'race',),),
+                                ),
+                                'maingender' => array(
+                                    'parent' => 'gender', 'title' => 'Supporting Gender', 'filter_key' => 'gender', 'minus' => 1,
+                                    'childs' => array('main' => array('type' => 'generate', 'parent' => 'gender',),),
+                                ),
+                                'actormain' => array('filter' => 'actor_main', 'parent' => 'actors', 'title' => 'Actor Supporting', 'placeholder' => 'main', 'minus' => 1,),
+                                'simmain' => array('parent' => 'simpson', 'title' => 'Literal Diversity (Supporting)', 'facet' => 'rating', 'titlesm' => 'LD (Supporting)', 'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'minus' => 1, 'sort_w' => 21,),
+                                'countrymain' => array('filter' => 'country', 'parent' => 'actorscountry', 'title' => 'Actor Supporting Country', 'placeholder' => 'main', 'minus' => 1,),
+                            ),
+                        ),
+                        'all' => array(
+                            'type' => 'tab',
+                            'title' => 'All',
+                            'childs' => array(
+                                'race' => array(
+                                    'filter' => 'actor', 'parent' => 'race', 'name' => 'actor_all', 'title' => 'Cast', 'filter_key' => 'race', 'minus' => 1,
+                                    'childs' => array('all' => array('type' => 'generate', 'parent' => 'race',),),
+                                ),
+                                'gender' => array(
+                                    'parent' => 'gender', 'title' => 'Cast Gender', 'filter_key' => 'gender', 'minus' => 1,
+                                    'childs' => array('all' => array('type' => 'generate', 'parent' => 'gender',),),
+                                ),
+                                'actor' => array('filter' => 'actor_all', 'parent' => 'actors', 'title' => 'Actor', 'placeholder' => '', 'minus' => 1,),
+                                'simall' => array('parent' => 'simpson', 'title' => 'Literal Diversity', 'facet' => 'rating', 'titlesm' => 'LD', 'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'sorted' => 1, 'minus' => 1, 'sort_w' => 21,),
+                                'countryall' => array('filter' => 'countryall', 'parent' => 'country', 'title' => 'Actor Country', 'placeholder' => '', 'minus' => 1,),
+                            ),
+                        ),
+                    ),
+                ),
+            /*
+              // facets_race_cast
+              'race_cast' => array('title' => 'race_cast',),
+              'race' => array('filter' => 'actor', 'parent' => 'race_cast', 'name' => 'actor_all', 'title' => 'Cast', 'filter_key' => 'race', 'minus' => 1,),
+              'starrace' => array('filter' => 'actorstar', 'parent' => 'race_cast', 'name' => 'actor_star', 'title' => 'Stars', 'filter_key' => 'race', 'minus' => 1,),
+              'mainrace' => array('filter' => 'actormain', 'parent' => 'race_cast', 'name' => 'actor_main', 'title' => 'Supporting', 'filter_key' => 'race', 'minus' => 1,),
+              // facets_gender
+              'gender_cast' => array('title' => 'gender_cast',),
+              'gender' => array('parent' => 'gender_cast', 'title' => 'Cast Gender', 'filter_key' => 'gender', 'minus' => 1,),
+              'stargender' => array('parent' => 'gender_cast', 'title' => 'Star Gender', 'filter_key' => 'gender', 'minus' => 1,),
+              'maingender' => array('parent' => 'gender_cast', 'title' => 'Supporting Gender', 'filter_key' => 'gender', 'minus' => 1,),
+              'sphoto' => array('parent' => 'sphoto', 'title' => 'Star conditions', 'filter_key' => 'sphoto', 'minus' => 1, 'hide' => 1),
+              // search actor_filters
+              'actors' => array('title' => 'Actors',),
+              'actor' => array('filter' => 'actor_all', 'parent' => 'actors', 'title' => 'Actor', 'placeholder' => '', 'minus' => 1,),
+              'actorstar' => array('filter' => 'actor_star', 'parent' => 'actors', 'title' => 'Actor Star', 'placeholder' => 'star', 'minus' => 1,),
+              'actormain' => array('filter' => 'actor_main', 'parent' => 'actors', 'title' => 'Actor Supporting', 'placeholder' => 'main', 'minus' => 1,),
+              // actors simpson
+              'actors_simpson' => array('title' => 'Literal Diversity',),
+              'simall' => array('parent' => 'actors_simpson', 'title' => 'Literal Diversity', 'facet' => 'rating', 'titlesm' => 'LD', 'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'sorted' => 1, 'minus' => 1, 'sort_w' => 21,),
+              'simstar' => array('parent' => 'actors_simpson', 'title' => 'Literal Diversity (Star)', 'facet' => 'rating', 'titlesm' => 'LD (Star)', 'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'minus' => 1, 'sort_w' => 21,),
+              'simmain' => array('parent' => 'actors_simpson', 'title' => 'Literal Diversity (Supporting)', 'facet' => 'rating', 'titlesm' => 'LD (Supporting)', 'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'minus' => 1, 'sort_w' => 21,),
+              //'actors_simpson_mf' => array('title' => 'Literal Diversity Gender',),
+              //'simmfall' => array('parent' => 'actors_simpson_mf', 'title' => 'Literal Diversity Gender', 'facet' => 'rating', 'titlesm' => 'LD Gender',  'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'minus' => 1, 'sort_w' => 21, 'hide' => 1,),
+              //'simmfstar' => array('parent' => 'actors_simpson_mf', 'title' => 'Literal Diversity Gender (Star)', 'facet' => 'rating', 'titlesm' => 'LD Gender (Star)', 'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'minus' => 1, 'sort_w' => 21, 'hide' => 1,),
+              //'simmfmain' => array('parent' => 'actors_simpson_mf', 'title' => 'Literal Diversity Gender (Supporting)', 'facet' => 'rating', 'titlesm' => 'LD Gender (Supporting)',  'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'minus' => 1, 'sort_w' => 21, 'hide' => 1,),
+              // Actors country
+              'actorscountry' => array('title' => 'Actors Country',),
+              'countryall' => array('filter' => 'countryall', 'parent' => 'actorscountry', 'title' => 'Actor Country', 'placeholder' => '', 'minus' => 1,),
+              'countrystar' => array('filter' => 'countrystar', 'parent' => 'actorscountry', 'title' => 'Actor Star Country', 'placeholder' => 'star', 'minus' => 1,),
+              'countrymain' => array('filter' => 'countrymain', 'parent' => 'actorscountry', 'title' => 'Actor Supporting Country', 'placeholder' => 'main', 'minus' => 1,),
+             */
             ),
             'race_gender' => array(
                 'race' => 'gender',
@@ -370,11 +431,19 @@ class CriticSearch extends AbstractDB {
                 'fem' => array('title' => 'Female %', 'eid' => 'efemale', 'def' => 'desc', 'group' => 'woke', 'no_data' => 1, 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'sort_w' => 20,),
                 // IMDB Keywords
                 // 'imdbratingtitle' => array('title' => 'Keyword Matches<span data-value="tooltip_zr_keyword_matches" class="nte_info"></span>', 'is_title' => 1, 'group' => 'woke', 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'sort_w' => 30,),
-                'kmwoke' => array('title' => 'Keyword Matches', 'titlesm' => 'Keyword Matches', 'group' => 'woke', 'minus' => 1, 'icon' => 'imdb', 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'sort_w' => 30,),
-                'woke' => array('title' => 'Possibly Woke', 'parent' => 'kmwoke', 'facet' => 'rating', 'eid' => 'ewoke', 'titlesm' => 'Possibly Woke', 'max_count' => 20, 'multipler' => 1, 'group' => 'woke', 'icon' => 'zr_woke', 'sorted' => 1, 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1, 'sort_w' => 30,),
-                'lgbt' => array('title' => 'LGBTQ', 'parent' => 'kmwoke', 'facet' => 'rating', 'eid' => 'elgbt', 'titlesm' => 'LGBTQ', 'max_count' => 20, 'multipler' => 1, 'group' => 'woke', 'icon' => 'zr_lgbt', 'sorted' => 1, 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'sort_w' => 30, 'sort_zero' => 1, 'max' => 1,),
-                'lgb' => array('title' => 'LGB', 'parent' => 'kmwoke', 'facet' => 'rating', 'eid' => 'elgb', 'titlesm' => 'LGB', 'max_count' => 20, 'multipler' => 1, 'group' => 'woke', 'icon' => 'zr_lgbt', 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1, 'sort_w' => 30),
-                'qtia' => array('title' => 'QTIA+', 'parent' => 'kmwoke', 'facet' => 'rating', 'eid' => 'eqtia', 'titlesm' => 'QTIA', 'max_count' => 20, 'multipler' => 1, 'group' => 'woke', 'icon' => 'zr_lgbt', 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1, 'sort_w' => 30),
+                'kmwoke' => array(
+                    'title' => 'Keyword Matches', 'titlesm' => 'Keyword Matches', 'group' => 'woke', 'minus' => 1, 'icon' => 'imdb', 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'sort_w' => 30,
+                    'childs' => array(
+                        'woke' => array('title' => 'Possibly Woke', 'facet' => 'rating', 'eid' => 'ewoke', 'titlesm' => 'Possibly Woke', 'max_count' => 20, 'multipler' => 1, 'group' => 'woke', 'icon' => 'zr_woke', 'sorted' => 1, 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1, 'sort_w' => 30,),
+                        'lgbt' => array(
+                            'title' => 'LGBTQ', 'facet' => 'rating', 'eid' => 'elgbt', 'titlesm' => 'LGBTQ', 'max_count' => 20, 'multipler' => 1, 'group' => 'woke', 'icon' => 'zr_lgbt', 'sorted' => 1, 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'sort_w' => 30, 'sort_zero' => 1, 'max' => 1,
+                            'childs' => array(
+                                'lgb' => array('title' => 'LGB', 'facet' => 'rating', 'eid' => 'elgb', 'titlesm' => 'LGB', 'max_count' => 20, 'multipler' => 1, 'group' => 'woke', 'icon' => 'zr_lgbt', 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1, 'sort_w' => 30),
+                                'qtia' => array('title' => 'QTIA+', 'facet' => 'rating', 'eid' => 'eqtia', 'titlesm' => 'QTIA', 'max_count' => 20, 'multipler' => 1, 'group' => 'woke', 'icon' => 'zr_lgbt', 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1, 'sort_w' => 30),
+                            ),
+                        ),
+                    ),
+                ),
                 // Ratings
                 'reviewwoketitle' => array('title' => 'Review Sites<span data-value="tooltip_zr_woke_search" class="nte_info"></span>', 'is_title' => 1, 'group' => 'woke', 'tabs' => array('movies', 'international', 'ethnicity'), 'sort_w' => 40,),
                 'bechdeltest' => array('title' => 'BechdelTest', 'facet' => 'select', 'eid' => 'ebechdeltest', 'titlesm' => 'BechdelTest', 'max_count' => 5, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'sorted' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'sort_w' => 40, 'max' => 1,),
@@ -652,40 +721,72 @@ class CriticSearch extends AbstractDB {
         $this->search_sort = $this->def_search_sort;
         $this->hide_facets = array();
 
+        $this->actorscache = array();
         foreach ($this->facet_data as $key => $facet) {
             $this->init_filters($key, $facet);
         }
-        $this->init_actor_filters();
     }
 
-    public function init_actor_filters() {
+    public function generate_facet($type = '', $facet_tab = '', $parent = '', $main_parent = '') {
+        // type: star, main, all
+        // tab: race, gender
         // Init actor filters
-        $this->actorscache = array();
+
+        /* print "$type, $facet_tab, $parent, $main_parent\n";
+          star, race, starrace, actorsdata
+          star, gender, stargender, actorsdata
+          main, race, mainrace, actorsdata
+          main, gender, maingender, actorsdata
+          all, race, race, actorsdata
+          all, gender, gender, actorsdata
+         */
         $rcount = array('e' => 'exist', 'p' => 'percent');
-        $rtype = array('a' => 'race', 's' => 'starrace', 'm' => 'mainrace');
+        
+        $rtab = array('a' => 'all', 's' => 'star', 'm' => 'main');
+        if ($type == 'star') {
+            $rtab = array('s' => 'star');
+        } else if ($type == 'main') {
+            $rtab = array('m' => 'main');
+        } else if ($type == 'all') {
+            $rtab = array('a' => 'all');
+        }
+
         $rgender = array('a' => 'all', 'm' => 'male', 'f' => 'female');
+        $rrace = $this->search_filters['race'];
+        if ($facet_tab == 'race') {
+            // Only all genders for race select             
+            $rgender = array('a' => 'all');
+        } else if ($facet_tab == 'gender'){
+            // Only all races for gender select
+            $rrace = array('a' => array('key' => 0, 'title' => 'All'),);
+        }
+
         $tabs = array('movies', 'games', 'international', 'ethnicity');
         foreach ($rcount as $ckey => $cvalue) {
-            foreach ($rtype as $tckey => $tvalue) {
+            foreach ($rtab as $tckey => $tvalue) {
+                /* if ($type != $tvalue) {
+                  continue;
+                  } */
                 foreach ($rgender as $gkey => $gvalue) {
-                    foreach ($this->search_filters['race'] as $rkey => $rvalue) {
+                    foreach ($rrace as $rkey => $rvalue) {
                         try {
                             $key_str = "{$ckey}{$tckey}{$gkey}{$rkey}";
                             $race_item = array('race' => $rkey);
                             if ($ckey == 'e') {
                                 $child_key = "p{$tckey}{$gkey}{$rkey}";
+                                $exist_key = "e{$tckey}{$gkey}{$rkey}";
                                 $gender_title = '';
                                 if ($gkey != 'a') {
                                     $gender_title = $this->search_filters['gender'][$gvalue]['title'] . ' ';
                                 }
-                                $type_title = $this->facet_data['actorsdata']['childs'][$tvalue]['title'];
+                                $type_title = $this->facets_data[$tvalue]['title'];
 
                                 $race_title = '';
                                 if ($rkey != 'a') {
                                     $race_title = $rvalue['title'];
                                 }
                                 $child_title = "{$type_title};{$gender_title};{$race_title}";
-                                $parent = 'actorsdata';
+
                                 $child_value = array(
                                     'theme' => 'cast',
                                     'facet' => 'rating',
@@ -693,12 +794,14 @@ class CriticSearch extends AbstractDB {
                                     'hide' => 0,
                                     'name_after' => '%',
                                     'title' => $child_title,
-                                    'name_after'=>'%',
-                                    'parent'=>$parent,
+                                    'name_after' => '%',
+                                        // 'parent' => $facet_tab,
                                 );
                                 $race_item['childs'] = array($child_key => $child_value);
                                 $this->facets_data[$child_key] = $child_value;
-                                $this->facet_parents[$child_key] = $parent;
+                                $this->facet_parents[$child_key] = $main_parent;
+                                $this->facet_all_parents[$exist_key] = $parent;
+                                $this->facet_all_parents[$child_key] = $exist_key;
                             }
                             $this->actorscache[$cvalue][$tvalue][$gvalue][$key_str] = $race_item;
                             // Add filters
@@ -721,10 +824,22 @@ class CriticSearch extends AbstractDB {
         }
     }
 
-    public function init_filters($key, $facet, $parent = '') {
+    public function init_filters($key, $facet, $parent = '', $main_parent = '') {
+
+        if (isset($facet['type']) && $facet['type'] == 'generate') {
+            //if (!$this->actorscache) {
+            $this->generate_facet($key, $facet['parent'], $parent, $main_parent);
+            //}
+            return;
+        }
+
         if ($parent) {
             // Parent logic
-            $this->facet_parents[$key] = $parent;
+            $this->facet_all_parents[$key] = $parent;
+            if (!$main_parent) {
+                $main_parent = $parent;
+            }
+            $this->facet_parents[$key] = $main_parent;
         }
 
         $this->facets_data[$key] = $facet;
@@ -790,17 +905,22 @@ class CriticSearch extends AbstractDB {
         }
 
         // Parent name logic
-        if (isset($facet['parent'])) {
-            $this->facet_parent[$key] = $facet['parent'];
-        }
+        /* if (isset($facet['parent'])) {
+          $this->facet_parent[$key] = $facet['parent'];
+          $this->facet_all_parents[$key] = $facet['parent'];
+          } */
 
         // Childs
         if (isset($facet['childs'])) {
+            if (!$main_parent) {
+                $main_parent = $key;
+            }
+
             foreach ($facet['childs'] as $ckey => $child) {
                 if (!isset($child['tabs'])) {
                     $child['tabs'] = $facet['tabs'];
                 }
-                $this->init_filters($ckey, $child, $key);
+                $this->init_filters($ckey, $child, $key, $main_parent);
             }
         }
     }
@@ -833,6 +953,50 @@ class CriticSearch extends AbstractDB {
             $this->wpdb = new AbstractDBWp();
         }
         return $this->wpdb;
+    }
+
+    public function get_last_parent($facet) {
+        /* $parents = $this->get_parents($facet, $cache);
+          $last_parent = $facet;
+          if ($parents) {
+          $last_parent = $parents[sizeof($parents) - 1];
+          } */
+        $last_parent = isset($this->facet_parents[$facet]) ? $this->facet_parents[$facet] : $facet;
+        return $last_parent;
+    }
+
+    public function get_parents($facet, $cache = true) {
+        if (strstr($facet, 'minus-')) {
+            $facet = str_replace('minus-', '', $facet);
+        }
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$facet])) {
+                return $dict[$facet];
+            }
+        }
+        $facet_name = $facet;
+        $parents = array($facet);
+
+        while (true) {
+            if (isset($this->facet_all_parents[$facet_name])) {
+                $facet_name = $this->facet_all_parents[$facet_name];
+                $parents[] = $facet_name;
+            } else {
+                break;
+            }
+        }
+
+
+        if ($cache) {
+            $dict[$facet] = $parents;
+        }
+
+        return $parents;
     }
 
     /*
@@ -2771,6 +2935,9 @@ class CriticSearch extends AbstractDB {
             $facet_list = $facets;
             // Find childs
             $parents = array_values($this->facet_parents);
+            /* print_r($this->facet_parents);
+              print_r($this->facet_all_parents);
+              exit; */
             $new_list = array();
             foreach ($facet_list as $facet) {
                 if (!$this->is_hide_facet($facet, $filters, $tab) || isset($this->facets_data[$facet]['eid'])) {
@@ -2800,8 +2967,7 @@ class CriticSearch extends AbstractDB {
                 }
                 $facet_list = $valid_list;
             }
-            //print_r($facet_list);
-            //exit;
+
             $show_facets = array();
             foreach ($facet_list as $facet) {
                 if (!$this->is_hide_facet($facet, $filters)) {
@@ -2813,7 +2979,7 @@ class CriticSearch extends AbstractDB {
             }
             $facet_list = $show_facets;
         }
-
+        // Todo actorsdata childs
 
         if ($tab == 'filters') {
             $sql_arr = $this->filters_facets_sql($facet_list, $filters, $match, $aid);
@@ -2821,16 +2987,15 @@ class CriticSearch extends AbstractDB {
             $sql_arr = $this->movies_facets_sql($facet_list, $filters, $match);
         }
         $facets_arr = $this->movies_facets_get($sql_arr, $match, $search_query);
-/*
-         print_r($facet_list);
+        /*
+          print_r($facet_list);
           print_r($sql_arr);
           print_r(array_keys($facets_arr));
           print_r($facets_arr);
           $meta = $this->sps->query("SHOW META")->fetchAll();
           print_r($meta);
-          exit; 
-  */
- 
+          exit;
+         */
         return $facets_arr;
     }
 
@@ -2858,29 +3023,46 @@ class CriticSearch extends AbstractDB {
 
             if (isset($curr_facet['facet']) && $curr_facet['facet'] == 'rating') {
                 // Rating facets                
+                $show_facet = true;
+                //$parent = isset($curr_facet['parent']) ? $curr_facet['parent'] : '';
 
-                $parent = isset($curr_facet['parent']) ? $curr_facet['parent'] : '';
-                if ($parent == 'kmwoke'||$parent == 'actorsdata') {
+                /* if ($parent) {
+                  $show_facet = false;
+                  if ($parent=='kmwoke'||$parent=='actorsdata'){
+                  $show_facet = true;
+                  }
+                  } */
+
+                if ($show_facet) {
+                    $curr_parents = $this->get_parents($facet);
+                    if (in_array('actorsdata', $curr_parents)) {
+                        $show_facet = false;
+                    }
+                }
+
+                if ($show_facet) {
+                    $max_count = isset($curr_facet['max_count']) ? $curr_facet['max_count'] : 6;
+                    $filters_and = $this->get_filters_query($filters, $facet);
+
+                    if (isset($this->facet_data['findata']['childs'][$facet])) {
+                        // Finances facets                   
+                        $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . ", FLOOR({$facet}/100000)*100 as bgt FROM movie_an"
+                                . " WHERE {$facet}>0" . $filters_and['filter'] . $match
+                                . " GROUP BY bgt ORDER BY {$facet} ASC LIMIT 0,1000";
+                    } else {
+                        // All rating facets              
+                        if ($facet == 'rrtg') {
+                            $filters_and['filter'] .= " AND rrta>0 AND rrt>0";
+                        }
+                        $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
+                                . " GROUP BY " . $facet . " ORDER BY " . $facet . " ASC LIMIT 0," . $max_count;
+                    }
+                    // Show and continue
                     continue;
                 }
+            }
 
-                $max_count = isset($curr_facet['max_count']) ? $curr_facet['max_count'] : 6;
-                $filters_and = $this->get_filters_query($filters, $facet);
-
-                if (isset($this->facet_data['findata']['childs'][$facet])) {
-                    // Finances facets                   
-                    $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . ", FLOOR({$facet}/100000)*100 as bgt FROM movie_an"
-                            . " WHERE {$facet}>0" . $filters_and['filter'] . $match
-                            . " GROUP BY bgt ORDER BY {$facet} ASC LIMIT 0,1000";
-                } else {
-                    // All rating facets              
-                    if ($facet == 'rrtg') {
-                        $filters_and['filter'] .= " AND rrta>0 AND rrt>0";
-                    }
-                    $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
-                            . " GROUP BY " . $facet . " ORDER BY " . $facet . " ASC LIMIT 0," . $max_count;
-                }
-            } else if ($facet == 'release') {
+            if ($facet == 'release') {
                 $filters_and = $this->get_filters_query($filters, $facet);
                 $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE year_int>0" . $filters_and['filter'] . $match
                         . " GROUP BY year_int ORDER BY year_int ASC LIMIT 0,200";
@@ -2934,136 +3116,6 @@ class CriticSearch extends AbstractDB {
                 }
                 $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
                         . " GROUP BY " . $facet . " ORDER BY cnt DESC LIMIT 0,$limit" . $max_option;
-            } else if ($facet == 'race_cast') {
-                // Race actor logic
-                $facet_active = $this->get_active_race_facet($filters);
-                if (isset($this->facet_data['actorsdata']['childs'][$facet_active])) {
-                    /*
-                      $limit = $this->facet_limit;
-                      $filters_and = $this->get_filters_query($filters, $facet_active);
-                      $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
-                      . " GROUP BY " . $facet_active . " ORDER BY cnt DESC LIMIT 0,$limit";
-                     */
-                    // New api
-                    $race_facets = isset($this->actorscache['exist'][$facet_active]) ? $this->actorscache['exist'][$facet_active] : array();
-                    if ($race_facets) {
-                        $exclude_keys = array_merge(array_merge(array_keys($this->actorscache['exist']['race']['all']), array_keys($this->actorscache['exist']['starrace']['all'])), array_keys($this->actorscache['exist']['mainrace']['all']));
-                        $exclude_percent = array_merge(array_merge(array_keys($this->actorscache['percent']['race']['all']), array_keys($this->actorscache['percent']['starrace']['all'])), array_keys($this->actorscache['percent']['mainrace']['all']));
-                        $exclude_keys = array_merge($exclude_keys, $exclude_percent);
-                        foreach ($race_facets['all'] as $rkey => $rval) {
-                            $race = $rval['race'];
-                            if ($race == 'a') {
-                                continue;
-                            }
-                            $filters_and = $this->get_filters_query($filters, $exclude_keys);
-                            // exist sql
-                            $sql_arr[$rkey] = "SELECT COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
-                                    . " AND " . $rkey . ">0";
-
-                            $item_collapsed = $this->is_hide_facet($rkey, $filters);
-                            if (!$item_collapsed) {
-                                $childs = isset($rval['childs']) ? $rval['childs'] : array();
-                                if ($childs) {
-                                    $limit = 100;
-                                    foreach ($childs as $child => $child_val) {
-                                        $sql_arr[$child] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
-                                                . " GROUP BY " . $child . " ORDER BY " . $child . " ASC LIMIT 0,{$limit}";
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            } else if ($facet == 'gender_cast') {
-                // Gender actor logic
-                $facet_active = $this->get_active_race_facet($filters);
-                // $facet_active = $this->get_active_gender_facet($filters);
-                if (isset($this->facet_data['actorsdata']['childs'][$facet_active])) {
-                    /*  $limit = $this->facet_limit;
-                      $filters_and = $this->get_filters_query($filters, $facet_active);
-                      $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
-                      . " GROUP BY " . $facet_active . " ORDER BY cnt DESC LIMIT 0,$limit";
-                     */
-
-                    // New api                    
-                    $race_facets = isset($this->actorscache['exist'][$facet_active]) ? $this->actorscache['exist'][$facet_active] : array();
-                    if ($race_facets) {
-                        $gender_arr = array('male', 'female');
-                        foreach ($gender_arr as $gender) {
-                            $exclude_keys = array_merge(array_merge(array_keys($this->actorscache['exist']['race'][$gender]), array_keys($this->actorscache['exist']['starrace'][$gender])), array_keys($this->actorscache['exist']['mainrace'][$gender]));
-                            $exclude_percent = array_merge(array_merge(array_keys($this->actorscache['percent']['race'][$gender]), array_keys($this->actorscache['percent']['starrace'][$gender])), array_keys($this->actorscache['percent']['mainrace'][$gender]));
-                            $exclude_keys = array_merge($exclude_keys, $exclude_percent);
-
-                            foreach ($race_facets[$gender] as $rkey => $rval) {
-                                $race = $rval['race'];
-                                if ($race == 'a') {
-                                    $filters_and = $this->get_filters_query($filters, $exclude_keys);
-                                    // exist sql
-                                    $sql_arr[$rkey] = "SELECT COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
-                                            . " AND " . $rkey . ">0";
-
-                                    $item_collapsed = $this->is_hide_facet($rkey, $filters);
-                                    if (!$item_collapsed) {
-                                        $childs = isset($rval['childs']) ? $rval['childs'] : array();
-                                        if ($childs) {
-                                            $limit = 100;
-                                            foreach ($childs as $child => $child_val) {
-                                                $sql_arr[$child] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
-                                                        . " GROUP BY " . $child . " ORDER BY " . $child . " ASC LIMIT 0,{$limit}";
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            } else if ($facet == 'actors') {
-                // Cast actor logic
-                $facet_active = $this->get_active_race_facet($filters);
-
-                if (isset($this->facet_data['actorsdata']['childs'][$facet_active])) {
-                    $race_name = $this->facet_data['actorsdata']['childs'][$facet_active]['name'];
-                    $limit = $expand == $this->facet_data['actorsdata']['childs'][$facet_active]['filter'] ? $this->facet_max_limit : $this->facet_limit;
-                    $filters_and = $this->get_filters_query($filters, $this->facet_data['actorsdata']['childs'][$facet_active]['filter']);
-                    $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $this->filter_actor_and . $match
-                            . " GROUP BY " . $race_name . " ORDER BY cnt DESC LIMIT 0,$limit";
-                }
-            } else if ($facet == 'actors_simpson' || $facet == 'actors_simpson_mf') {
-                // Simpson actor logic
-                $name_active = $this->get_active_race_facet($filters);
-                $race_name = 'race_simpson';
-                if ($facet == 'actors_simpson_mf') {
-                    $race_name = 'race_simpson_mf';
-                }
-
-                if (isset($this->facet_data['actorsdata'][$race_name][$name_active])) {
-
-                    $filter_name = $this->facet_data['actorsdata'][$race_name][$name_active];
-                    $active_facet = $this->facet_data['actorsdata']['childs'][$filter_name];
-                    $max_count = isset($active_facet['max_count']) ? $active_facet['max_count'] : 110;
-                    $filters_and = $this->get_filters_query($filters, $filter_name);
-
-                    $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
-                            . " GROUP BY " . $filter_name . " ORDER BY " . $filter_name . " ASC LIMIT 0," . $max_count;
-                }
-            } else if ($facet == 'actorscountry') {
-                // Cast actor logic
-                $facet_active = $this->get_active_actor_country_facet($filters);
-
-                if (isset($this->facet_data['actorsdata']['childs'][$facet_active])) {
-                    $limit = $expand == $facet_active ? $this->facet_max_limit : $this->facet_limit;
-                    $filters_and = $this->get_filters_query($filters, $facet_active);
-                    $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
-                            . " GROUP BY " . $facet_active . " ORDER BY cnt DESC LIMIT 0,$limit";
-                }
-            } else if ($facet == 'sphoto') {
-                // Star photo
-                $facet_active = $this->get_active_race_facet($filters);
-                $limit = 2;
-                $filters_and = $this->get_filters_query($filters, $facet);
-                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $this->filter_actor_and . $match
-                        . " GROUP BY " . $facet . " ORDER BY cnt DESC LIMIT 0,$limit";
             } else if ($facet == 'dirs') {
                 // Directors logic
                 $facet_active = $this->get_active_director_facet($filters);
@@ -3080,10 +3132,10 @@ class CriticSearch extends AbstractDB {
                 $filters_and = $this->get_filters_query($filters, array('provider', 'price'));
                 $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
                         . " GROUP BY provider ORDER BY cnt DESC LIMIT 0,$limit";
-            } else if ($facet == 'providerfree') {
-                $limit = $this->facet_max_limit;
-                $filters_and = $this->get_filters_query($filters, array('provider', 'price'));
-                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
+
+                // Provider free
+                $facet_free = 'providerfree';
+                $sql_arr[$facet_free] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
                         . " GROUP BY providerfree ORDER BY cnt DESC LIMIT 0,$limit";
             } else if ($facet == 'dirrace') {
                 $limit = $this->facet_limit;
@@ -3161,6 +3213,125 @@ class CriticSearch extends AbstractDB {
                 $filters_and = $this->get_filters_query($filters, $facet);
                 $sql_arr[$facet] = "SELECT COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
                         . " AND " . $facet . ">0";
+            } else {
+                $curr_parents = $this->get_parents($facet);
+                if (in_array('actorsdata', $curr_parents)) {
+                    /*
+                      [0] => esaw
+                      [1] => esaea
+                      [2] => esah
+                      [3] => esab
+                      [4] => esai
+                      [5] => esam
+                      [6] => esamix
+                      [7] => esajw
+                      [8] => esma
+                      [9] => esfa
+                      [10] => sphoto
+                      [11] => simstar
+                      [12] => countrystar
+                     */
+
+                    // Race actor logic               
+                    $active_tab_name = isset($filters['cast']) ? $filters['cast'] : $this->facets_data['cast']['def-tab'];
+                    $active_tab = $this->facets_data['cast']['childs'][$active_tab_name];
+                    $race_facets = isset($this->actorscache['exist'][$active_tab_name]) ? $this->actorscache['exist'][$active_tab_name] : array();
+                    $childs = array_keys($active_tab['childs']);
+
+                    if (in_array($facet, $childs)) {
+
+                        $cvalue = $active_tab['childs'][$facet];
+                        $cparent = isset($cvalue['parent']) ? $cvalue['parent'] : '';
+
+                        if ($cparent == 'race') {
+                            // Race facets
+                            if ($race_facets) {
+
+                                $exclude_keys = array_merge(array_merge(array_keys($this->actorscache['exist']['all']['all']), array_keys($this->actorscache['exist']['star']['all'])), array_keys($this->actorscache['exist']['main']['all']));
+                                $exclude_percent = array_merge(array_merge(array_keys($this->actorscache['percent']['all']['all']), array_keys($this->actorscache['percent']['star']['all'])), array_keys($this->actorscache['percent']['main']['all']));
+                                $exclude_keys = array_merge($exclude_keys, $exclude_percent);
+                                foreach ($race_facets['all'] as $rkey => $rval) {
+                                    $race = $rval['race'];
+                                    if ($race == 'a') {
+                                        continue;
+                                    }
+                                    $filters_and = $this->get_filters_query($filters, $exclude_keys);
+                                    // exist sql
+                                    $sql_arr[$rkey] = "SELECT COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
+                                            . " AND " . $rkey . ">0";
+
+                                    $item_collapsed = $this->is_hide_facet($rkey, $filters);
+                                    if (!$item_collapsed) {
+                                        $childs = isset($rval['childs']) ? $rval['childs'] : array();
+                                        if ($childs) {
+                                            $limit = 100;
+                                            foreach ($childs as $child => $child_val) {
+                                                $sql_arr[$child] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
+                                                        . " GROUP BY " . $child . " ORDER BY " . $child . " ASC LIMIT 0,{$limit}";
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } else if ($cparent == 'gender') {
+                            // Gender actor logic
+                            if ($race_facets) {
+                                $gender_arr = array('male', 'female');
+                                foreach ($gender_arr as $gender) {
+                                    $exclude_keys = array_merge(array_merge(array_keys($this->actorscache['exist']['all'][$gender]), array_keys($this->actorscache['exist']['star'][$gender])), array_keys($this->actorscache['exist']['main'][$gender]));
+                                    $exclude_percent = array_merge(array_merge(array_keys($this->actorscache['percent']['all'][$gender]), array_keys($this->actorscache['percent']['star'][$gender])), array_keys($this->actorscache['percent']['main'][$gender]));
+                                    $exclude_keys = array_merge($exclude_keys, $exclude_percent);
+
+                                    foreach ($race_facets[$gender] as $rkey => $rval) {
+                                        $race = $rval['race'];
+                                        if ($race == 'a') {
+                                            $filters_and = $this->get_filters_query($filters, $exclude_keys);
+                                            // exist sql
+                                            $sql_arr[$rkey] = "SELECT COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
+                                                    . " AND " . $rkey . ">0";
+
+                                            $item_collapsed = $this->is_hide_facet($rkey, $filters);
+                                            if (!$item_collapsed) {
+                                                $childs = isset($rval['childs']) ? $rval['childs'] : array();
+                                                if ($childs) {
+                                                    $limit = 100;
+                                                    foreach ($childs as $child => $child_val) {
+                                                        $sql_arr[$child] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
+                                                                . " GROUP BY " . $child . " ORDER BY " . $child . " ASC LIMIT 0,{$limit}";
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } else if ($cparent == 'sphoto') {
+                            // Star photo
+                            $limit = 2;
+                            $filters_and = $this->get_filters_query($filters, $facet);
+                            $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $this->filter_actor_and . $match
+                                    . " GROUP BY " . $facet . " ORDER BY cnt DESC LIMIT 0,$limit";
+                        } else if ($cparent == 'actors') {
+                            // Cast actor logic
+                            $limit = $expand == $facet ? $this->facet_max_limit : $this->facet_limit;
+                            $filters_and = $this->get_filters_query($filters, $cvalue['filter']);
+                            $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $this->filter_actor_and . $match
+                                    . " GROUP BY " . $cvalue['filter'] . " ORDER BY cnt DESC LIMIT 0,$limit";
+                        } else if ($cparent == 'simpson') {
+                            // Simpson actor logic
+                            $max_count = isset($cvalue['max_count']) ? $cvalue['max_count'] : 110;
+                            $filters_and = $this->get_filters_query($filters, $facet);
+                            $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
+                                    . " GROUP BY " . $facet . " ORDER BY " . $facet . " ASC LIMIT 0," . $max_count;
+                        } else if ($cparent == 'country') {
+                            // Country actor logic                                             
+                            $limit = $expand == $cvalue['filter'] ? $this->facet_max_limit : $this->facet_limit;
+                            $filters_and = $this->get_filters_query($filters, $facet);
+                            $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
+                                    . " GROUP BY " . $facet . " ORDER BY cnt DESC LIMIT 0,$limit";
+                        }
+                    }
+                }
             }
         }
 
@@ -3624,6 +3795,9 @@ class CriticSearch extends AbstractDB {
 
                 // Get current facet                
                 $curr_facet = isset($this->facets_data[$key]) ? $this->facets_data[$key] : array();
+                if (isset($curr_facet['type']) && $curr_facet['type'] == 'tabs') {
+                    continue;
+                }
 
                 // Get titles
                 $this->get_filter_titles($key, $value);
@@ -3780,90 +3954,6 @@ class CriticSearch extends AbstractDB {
                 } else if ($key == 'country') {
                     // Country
                     $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
-                } else if (isset($this->facet_data['actorsdata']['childs'][$key])) {
-                    if ($key == 'actor' || $key == 'actorstar' || $key == 'actormain') {
-                        // Actor       
-                        $actor_filter = $this->facet_data['actorsdata']['childs'][$key]['filter'];
-                        $filters_and .= $this->filter_multi_value($actor_filter, $value, true, $minus);
-                    } else if ($key == 'countryall' || $key == 'countrystar' || $key == 'countrymain') {
-                        // Actor Country
-                        $actor_filter = $this->facet_data['actorsdata']['childs'][$key]['filter'];
-                        $filters_and .= $this->filter_multi_value($actor_filter, $value, true, $minus);
-                    } else if ($key == 'sphoto') {
-                        // sphoto                            
-                        $filters_and .= $this->filter_multi_value($key, $value, true, $minus, false, true, false);
-                    } else if ($key == 'gender' || $key == 'stargender' || $key == 'maingender') {
-                        // Gender
-
-
-                        /*
-                          'race_gender' => array(
-                          'race' => 'gender',
-                          'starrace' => 'stargender',
-                          'mainrace' => 'maingender',
-                          ), */
-                        $race_key = '';
-                        foreach ($this->facet_data['actorsdata']['race_gender'] as $gkey => $gvalue) {
-                            if ($key == $gvalue) {
-                                $race_key = $gkey;
-                                break;
-                            }
-                        }
-                        $race_facets = isset($this->actorscache['exist'][$race_key]) ? $this->actorscache['exist'][$race_key] : array();
-                        if ($race_facets) {
-                            foreach ($this->search_filters['gender'] as $gkey => $gitem) {
-                                foreach ($race_facets[$gkey] as $rkey => $rval) {
-                                    $racekey = $rval['race'];
-                                    if ($racekey == 'a') {
-
-                                        if (!$and) {
-                                            if ($this->in_exclude($rkey, $exlude)) {
-                                                continue;
-                                            }
-                                        }
-                                        if (is_array($value)) {
-                                            if (in_array($gkey, $value)) {
-                                                $filters_and .= $this->filter_multi_value($rkey, 1, false, $minus);
-                                            }
-                                        } else {
-                                            if ($gkey == $value) {
-                                                $filters_and .= $this->filter_multi_value($rkey, 1, false, $minus);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        // TODO Gender  
-                        //$filters_and .= $this->filter_multi_value($key, $value, true, $minus);
-                        //print_r($filters_and);
-                        //exit;
-                    } else if ($key == 'race' || $key == 'starrace' || $key == 'mainrace') {
-                        // Race
-                        $race_facets = isset($this->actorscache['exist'][$key]) ? $this->actorscache['exist'][$key] : array();
-                        if ($race_facets) {
-                            foreach ($race_facets['all'] as $rkey => $rval) {
-                                $racekey = $rval['race'];
-                                // Exclude filter
-                                if (!$and) {
-                                    if ($this->in_exclude($rkey, $exlude)) {
-                                        continue;
-                                    }
-                                }
-
-                                if (is_array($value)) {
-                                    if (in_array($racekey, $value)) {
-                                        $filters_and .= $this->filter_multi_value($rkey, 1, false, $minus);
-                                    }
-                                } else {
-                                    if ($racekey == $value) {
-                                        $filters_and .= $this->filter_multi_value($rkey, 1, false, $minus);
-                                    }
-                                }
-                            }
-                        }
-                    }
                 } else if (isset($this->facet_data['dirsdata']['childs'][$key])) {
                     if ($key == 'dirall' || $key == 'dir' || $key == 'dirwrite' || $key == 'dircast' || $key == 'dirprod') {
                         // Director  
@@ -3915,6 +4005,84 @@ class CriticSearch extends AbstractDB {
                             $filters_and .= sprintf(" AND {$key} >= %d", $from);
                         } else {
                             $filters_and .= sprintf(" AND {$key} >=%d AND {$key} < %d", $from, $to);
+                        }
+                    }
+                } else {
+
+                    $curr_parent = $this->get_last_parent($key);
+                    //print_r(array($key,$curr_parent));
+                    if ($curr_parent == 'actorsdata') {
+
+
+                        $cparent = isset($curr_facet['parent']) ? $curr_facet['parent'] : '';
+                        if ($cparent == 'race') {
+                            // Race
+                            $race_facets = isset($this->actorscache['exist'][$key]) ? $this->actorscache['exist'][$key] : array();
+                            if ($race_facets) {
+                                foreach ($race_facets['all'] as $rkey => $rval) {
+                                    $racekey = $rval['race'];
+                                    // Exclude filter
+                                    if (!$and) {
+                                        if ($this->in_exclude($rkey, $exlude)) {
+                                            continue;
+                                        }
+                                    }
+
+                                    if (is_array($value)) {
+                                        if (in_array($racekey, $value)) {
+                                            $filters_and .= $this->filter_multi_value($rkey, 1, false, $minus);
+                                        }
+                                    } else {
+                                        if ($racekey == $value) {
+                                            $filters_and .= $this->filter_multi_value($rkey, 1, false, $minus);
+                                        }
+                                    }
+                                }
+                            }
+                        } else if ($cparent == 'gender') {
+                            // Gender
+                            $race_key = '';
+                            // TODO REFACTOR
+                            foreach ($this->facet_data['actorsdata']['race_gender'] as $gkey => $gvalue) {
+                                if ($key == $gvalue) {
+                                    $race_key = $gkey;
+                                    break;
+                                }
+                            }
+                            $race_facets = isset($this->actorscache['exist'][$race_key]) ? $this->actorscache['exist'][$race_key] : array();
+                            if ($race_facets) {
+                                foreach ($this->search_filters['gender'] as $gkey => $gitem) {
+                                    foreach ($race_facets[$gkey] as $rkey => $rval) {
+                                        $racekey = $rval['race'];
+                                        if ($racekey == 'a') {
+
+                                            if (!$and) {
+                                                if ($this->in_exclude($rkey, $exlude)) {
+                                                    continue;
+                                                }
+                                            }
+                                            if (is_array($value)) {
+                                                if (in_array($gkey, $value)) {
+                                                    $filters_and .= $this->filter_multi_value($rkey, 1, false, $minus);
+                                                }
+                                            } else {
+                                                if ($gkey == $value) {
+                                                    $filters_and .= $this->filter_multi_value($rkey, 1, false, $minus);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            if ($key == 'sphoto') {
+                                // sphoto                            
+                                $filters_and .= $this->filter_multi_value($key, $value, true, $minus, false, true, false);
+                            } else {
+                                // other
+                                $custom_filter = isset($curr_facet['filter']) ? $curr_facet['filter'] : $key;
+                                $filters_and .= $this->filter_multi_value($custom_filter, $value, true, $minus);
+                            }
                         }
                     }
                 }
@@ -4022,11 +4190,10 @@ class CriticSearch extends AbstractDB {
 
     private function get_search_filter($key, $value) {
         $filter = '';
-        $race_arr = array('actorsdata', 'dirsdata');
-        foreach ($race_arr as $name) {
-            if (isset($this->facet_data[$name]['childs'][$key]['filter_key'])) {
-                $key = $this->facet_data[$name]['childs'][$key]['filter_key'];
-            }
+
+        $curr_facet = isset($this->facets_data[$key]) ? $this->facets_data[$key] : array();
+        if (isset($curr_facet['filter_key'])) {
+            $key = $curr_facet['filter_key'];
         }
 
         if (isset($this->search_filters[$key][$value])) {
@@ -4102,6 +4269,7 @@ class CriticSearch extends AbstractDB {
     }
 
     public function get_active_race_facet($filters) {
+        // DEPRECATED
         $ret = $this->get_default_cast_tab();
         $tabs = $this->get_cast_tabs();
         $active_tab = isset($filters['cast']) ? $filters['cast'] : '';
@@ -4114,12 +4282,14 @@ class CriticSearch extends AbstractDB {
     }
 
     public function get_active_gender_facet($filters) {
+        // DEPRECATED
         $race = $this->get_active_race_facet($filters);
         $gender = $this->facet_data['actorsdata']['race_gender'][$race];
         return $gender;
     }
 
     public function get_active_actor_country_facet($filters) {
+        // DEPRECATED
         $race = $this->get_active_race_facet($filters);
         $country = $this->facet_data['actorsdata']['race_country'][$race];
         return $country;
