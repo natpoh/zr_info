@@ -42,10 +42,6 @@
 
 		container.find( '.menu-item-has-children > ul' ).prepend( Toggleback );
 
-		// Toggle buttons and submenu items with active children menu items.
-		container.find( '.current-menu-ancestor > button' ).addClass( 'toggled-on' );
-		container.find( '.current-menu-ancestor > .sub-menu' ).addClass( 'toggled-on' );
-
 		// Add menu items with submenus to aria-haspopup="true".
 		container.find( '.menu-item-has-children' ).attr( 'aria-haspopup', 'true' );
 

@@ -398,3 +398,7 @@ svg.hide_left_sidebar_arrow {
     padding-bottom: 40px;
     background-size: 50px;
 }
+
+input.edit_sheme_input{
+    width: 50%;
+}

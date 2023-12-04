@@ -2173,7 +2173,7 @@ function add_popup() {
 
 function generate_watch_content(data, title, year, type) {
 
-    let content = '<h2  style="font-size: 25px;text-align: center;color: #686e75;"> Watch Now</h2>';
+    let content = '<h2> Watch Now</h2>';
     let content_array = {};
     let array_type = [];
     let array_priority = {'4k': 1, 'hd': 2, 'sd': 3};

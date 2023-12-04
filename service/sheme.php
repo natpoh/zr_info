@@ -58,16 +58,20 @@ if ($r)
 public static function run($id)
 {
 
+    $request_array = $_GET;
+
+    unset($request_array['edit_sheme']);
+
     $id=intval($id);
 
     $data = self::get_from_db($id);
 
 
-    self::front($data);
-    self::script($data);
+    self::front($data,$request_array);
+    self::script($data,$request_array);
 
 }
-public static function front($data)
+public static function front($data,$request_array=[])
 {
     ///get arrays
 
@@ -115,8 +119,14 @@ public static function front($data)
 
         }
     }
-
-
+$rq='';
+if ($request_array)
+{
+    foreach ($request_array as $n =>$val)
+    {
+        $rq.='<div class="b_row">'.$n.' => <input data-type="b_'.$n.'" data-value="'.$val.'" class="edit_sheme_input" /></div>';
+    }
+}
 
 
     ?>
@@ -168,6 +178,12 @@ public static function front($data)
         <div class="b_row">Color <select class="b_color" ><?php echo $options_color; ?></select></div>
         <div class="b_row">Method <select class="b_method" ><option value="">none</option><option value="get">Get</option><option value="set">Set</option></select></div>
 
+        <div class="inner_edit">
+            <div class="b_row">Requests</div>
+            <div class="rq_container"><?php echo $rq; ?></div>
+
+        </div>
+
     </div>
 
 
@@ -205,7 +221,7 @@ public static function front($data)
     }
 
 
-    public static function script($data)
+    public static function script($data,$request_array)
     {
 
         $object = $data['data'];
@@ -219,7 +235,27 @@ public static function front($data)
 
             var main_id =<?php echo $id ; ?>;
 
-            <?php if ($object) {
+
+
+            <?php if ($request_array) {
+
+            ?>
+            var request_array = <?php echo json_encode($request_array) ; ?>;
+
+            <?php
+
+            }
+            else
+                {
+
+            ?>
+            var request_array = {};
+
+            <?php
+                }
+
+
+            if ($object) {
 
                 ?>
             var object_array = <?php echo $object ; ?>;

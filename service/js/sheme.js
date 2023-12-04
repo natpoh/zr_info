@@ -138,7 +138,7 @@ function inner_message(id,inner_data=[])
         }
         if (inner_data.table)
         {
-            inner_message+='<p class="mb_table"><button data-value="'+inner_data.table+'" class="open_btn">'+inner_data.table+'</button></p>';
+            inner_message+='<p class="mb_table"><button data-id="'+id+'" class="open_btn">'+inner_data.table+'</button></p>';
         }
 
     }
@@ -320,7 +320,7 @@ function add_block_line(x,y){
 
 
 const mainwin = document.querySelector('.main_win');
-let scale = 0.3; // начальный масштаб
+let scale = 0.3; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 var deltaX_last = 0, deltaY_last = 0;
 
 
@@ -329,9 +329,9 @@ mainwin.addEventListener('wheel', function (event) {
         const delta = event.deltaY || event.detail || event.wheelDelta;
 
         if (delta < 0) {
-            scale += 0.05; // увеличиваем масштаб на 0.1
+            scale += 0.05; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ 0.1
         } else {
-            scale -= 0.05; // уменьшаем масштаб на 0.1
+            scale -= 0.05; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ 0.1
         }
 
         scale = Math.max(0.1, Math.min(2, scale));
@@ -389,6 +389,10 @@ document.querySelector('.save_button').addEventListener('click', function() {
         .then(function(data) {
             console.log(data);
             document.querySelector('.save_result').innerHTML=data.message;
+
+            setTimeout(function() {
+                document.querySelector('.save_result').innerHTML = '';
+            }, 2000);
         })
         .catch(function(error) {
             console.error('There has been a problem with your fetch operation:', error);
@@ -582,8 +586,8 @@ add_line_button.addEventListener('click', function() {
         if (object_array.line && (object_array.line[0])) {
             object_array.line.forEach(function(line) {
                 var lineButton = document.createElement('button');
-                lineButton.innerText = line.name; // Используйте имя линии или другие свойства для текста кнопки
-                lineButton.dataset.lineId = line.id; // Устанавливаем id линии как data-атрибут кнопки
+                lineButton.innerText = line.name; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+                lineButton.dataset.lineId = line.id; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ id пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ data-пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
                 menuLines.appendChild(lineButton);
 
                 check_click_linebutton();
@@ -617,7 +621,7 @@ document.addEventListener('mousemove', function (event) {
     if (!isMouseDown) return;
     const x = event.pageX - mainScroll.offsetLeft;
     const y = event.pageY - mainScroll.offsetTop;
-    const moveX = (x - startX) * 1; // умножьте на любое число для изменения скорости скролла
+    const moveX = (x - startX) * 1; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     const moveY = (y - startY) * 1;
 
     mainScroll.scrollLeft = scrollLeft - moveX;
@@ -643,6 +647,44 @@ function getCubeDataById(id) {
         return item.id === id;
     });
 }
+function add_request_data(request_array)
+{
+
+
+    const container = document.querySelector('.rq_container');
+
+
+    for (const key in request_array) {
+        if (request_array.hasOwnProperty(key)) {
+
+            const input = container.querySelector(`input[data-type="${key}"]`);
+
+            if (input) {
+
+                input.value = request_array[key];
+            } else {
+
+                const newInput = document.createElement('input');
+                newInput.setAttribute('data-type', key);
+                //newInput.setAttribute('data-value', request_array[key]);
+                newInput.classList.add('edit_sheme_input');
+                newInput.value = request_array[key];
+
+                const div = document.createElement('div');
+                div.classList.add('b_row');
+                div.innerHTML = `${key} => `;
+                div.appendChild(newInput);
+                container.appendChild(div);
+
+                newInput.addEventListener('change', function() {
+                   const dataType = newInput.getAttribute('data-type');
+                   const value = newInput.value;
+                    save_request(dataType,  value);
+                });
+            }
+        }
+    }
+}
 
 isoBlock.addEventListener('click', function(event) {
 
@@ -663,6 +705,10 @@ isoBlock.addEventListener('click', function(event) {
             var colorInput = document.querySelector('.b_color');
             var methodInput = document.querySelector('.b_method');
 
+            if(foundData.requests)
+            {
+                add_request_data(foundData.requests);
+            }
 
 
             idElement.textContent = foundData.id !== undefined ? foundData.id : '';
@@ -675,7 +721,38 @@ isoBlock.addEventListener('click', function(event) {
         }
     }
     else if (event.target.classList.contains('open_btn')) {
-        var datavalue = event.target.getAttribute('data-value');
+        let dataId = event.target.getAttribute('data-id');
+
+        var foundData = getCubeDataById(dataId);
+
+        let datavalue  = foundData.table;
+
+        console.log(datavalue);
+
+        let dop_request='';
+        if(foundData.requests)
+        {
+            for (const key in foundData.requests) {
+                if (foundData.requests.hasOwnProperty(key)) {
+
+                 let value = foundData.requests[key];
+
+                 if (key && value)
+                 {
+                     let subkey = key.substring(2);
+
+                    // console.log(key,subkey,value);
+
+                     if (subkey && request_array[subkey])
+                     {
+                         dop_request+='&'+value+'='+request_array[subkey];
+
+                     }
+
+                 }
+                }
+            }
+        }
 
         var popup = document.getElementById("popup");
         popup.style.display = "block";
@@ -683,7 +760,10 @@ isoBlock.addEventListener('click', function(event) {
         popup.style.left = "50%";
         popup.style.transform = "translate(-50%, -50%)";
 
-        let pcntn='<iframe src="/analysis/data.php?onlytable='+datavalue+'"></iframe>';
+        let link = '/analysis/data.php?onlytable='+datavalue+dop_request;
+        console.log(link);
+
+        let pcntn='<iframe src="'+link+'"></iframe>';
         document.querySelector('.popup-content').innerHTML=pcntn;
 
 
@@ -700,6 +780,50 @@ var tableInput = document.querySelector('.b_table');
 var typeInput = document.querySelector('.b_type');
 var colorInput = document.querySelector('.b_color');
 var methodInput = document.querySelector('.b_method');
+
+
+
+
+function save_request(dataType,  value) {
+    let idElement = document.querySelector('.b_id');
+    var id = parseInt(idElement.textContent);
+    var cube = findCubeById(id);
+    if (cube) {
+       // cube.desc = descTextarea.value;
+
+
+        if (!cube.requests)cube.requests ={};
+
+        if (!value)
+        {
+            delete cube.requests[dataType];
+        }
+        else
+        {
+            cube.requests[dataType]=value;
+        }
+
+
+        console.log(cube);
+        ///  document.querySelector('.cube#cube_'+id+' .cube_desc_message').innerHTML=imsg;e;
+    }
+    ///console.log(`dataType: ${dataType}, dataValue: ${dataValue}, value: ${value}`);
+
+}
+
+var inputs = document.querySelectorAll('.edit_sheme_input');
+inputs.forEach(input => {
+    input.addEventListener('change', function() {
+        const dataType = input.getAttribute('data-type');
+
+        const value = input.value;
+        save_request(dataType,  value);
+    });
+});
+
+
+
+
 
 function findCubeById(id) {
     return object_array.cube.find(function(cube) {
@@ -903,7 +1027,7 @@ isoBlock.addEventListener('dblclick', function(event) {
 
 
 isoBlock.addEventListener('mousedown', function (event) {
-    if (event.button === 2) { // Проверяем, что это правая кнопка мыши
+    if (event.button === 2) { // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
         isRightMouseDown = true;
         initialMouseX = event.clientX;
         initialMouseY = event.clientY;
@@ -917,7 +1041,7 @@ isoBlock.addEventListener('mousedown', function (event) {
             isRightMouseDown = false;
             document.removeEventListener('mousemove', handleMouseMove);
         });
-        event.preventDefault(); // Предотвращаем стандартное контекстное меню
+        event.preventDefault(); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
     }
 });
 
@@ -1041,7 +1165,7 @@ function elementDrag(e) {
     pos4 = e.clientY;
     var newTop = popup.offsetTop - pos2;
     var newLeft = popup.offsetLeft - pos1;
-    // Проверяем, чтобы окно не выходило за пределы экрана
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     if (newTop > 0 && newTop + popup.offsetHeight < window.innerHeight) {
         popup.style.top = newTop + "px";
     }
@@ -1065,10 +1189,10 @@ function closeDragElement() {
 
 function chart() {
 
-    // Генерируем случайные данные для графика
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     var data = [];
     for (var i = 0; i < 30; i++) {
-        data.push(Math.floor(Math.random() * 100)); // Замените это на ваши данные
+        data.push(Math.floor(Math.random() * 100)); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     }
     Highcharts.chart('chart-container', {
         chart: {

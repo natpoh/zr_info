@@ -1021,8 +1021,8 @@ search_extend.change_sort = function (id) {
     var key = result;
     var pftitle = ftitle.replace('RVALUE', result);
     var pfname = fname.replace('RVALUE', result);
-
-    critic_search.add_filter(type, key, pftitle, pfname, ftype);
+    var parents = 'ethnicity;verdict';
+    critic_search.add_filter(type, key, pftitle, pfname, ftype, '',parents);
 
     critic_search.submit();
 }
@@ -1059,8 +1059,8 @@ search_extend.click_to_graph = function (key, data_type) {
 
     var pftitle = ftitle.replace('RVALUE', title);
     var pfname = fname.replace('RVALUE', title);
-
-    critic_search.add_filter(type, key, pftitle, pfname, ftype);
+    var parents = 'current';
+    critic_search.add_filter(type, key, pftitle, pfname, ftype, '', parents);
     critic_search.submit('', 'graph');
 }
 
@@ -1083,8 +1083,9 @@ search_extend.init_facet = function (v) {
                 var ftitle = $this.find(':selected').attr('data-ftitle');
                 var fname = $this.find(':selected').attr('data-fname');
                 var ftype = v.attr('data-type');
+                var parents = v.attr('data-parents');
 
-                critic_search.add_filter(type, id, ftitle, fname, ftype);
+                critic_search.add_filter(type, id, ftitle, fname, ftype, '', parents);
             }
         }
         critic_search.submit();
@@ -1243,10 +1244,11 @@ Choose the number of points for each type of verdict.<br />' + ctable + type_cal
                 }
 
                 // Add new filter
-                var title = 'Weight id '+mode_id;
+                var title = 'Weight id ' + mode_id;
                 var ftype = $('#facet-verdict').attr('data-type');
                 // TODO refactor
-                critic_search.add_filter(type, mode_id, title, title, ftype);
+                var parents = 'ethnicity;verdict';
+                critic_search.add_filter(type, mode_id, title, title, ftype,'', parents);
                 critic_search.submit();
 
                 // TODO add history of the settings to user meta and cookies
@@ -1341,10 +1343,10 @@ search_extend.submit = function (inc, target) {
     }
 }
 
-search_extend.get_facet_name = function (parent_id = '', facet_name='') {
+search_extend.get_facet_name = function (parent_name = '', facet_name = '') {
 
-    if (parent_id === 'chart_div' && $('#' + parent_id).length !== 0) {
-        facet_name = parent_id;
+    if (parent_name === 'current' && $('#chart_div').length !== 0) {
+        facet_name = 'chart_div';
     }
 
     return facet_name;

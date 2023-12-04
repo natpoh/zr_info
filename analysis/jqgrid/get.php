@@ -178,7 +178,6 @@ AND table_schema='".DB_NAME_AN."'";
 
             unset($array['oper']);
 
-var_dump($array);
 
             foreach ($array as $i => $v) {
                 if (strstr($v, '\"')) {
@@ -209,7 +208,7 @@ var_dump($array);
 
 
             }
-            var_dump($array);
+           // var_dump($array);
             $countval = count($array);
 
             $sql = "SELECT *  FROM `INFORMATION_SCHEMA`.`COLUMNS`  WHERE `TABLE_SCHEMA`='".DB_NAME_AN."' AND `TABLE_NAME`='" . $table_data . "'   ORDER BY `COLUMNS`.`ORDINAL_POSITION` ASC";
@@ -519,9 +518,31 @@ var_dump($array);
             }
         }
 
+        if (isset($_POST['qustom_request'])) {
+
+            if ($_POST['qustom_request'])
+            {
+
+
+                $qr = json_decode(stripslashes($_POST['qustom_request']));
+
+                if ($qr)
+                {
+                    foreach ($qr as $i=>$v)
+                    {
+
+                        $where1.= " AND `".$i."` = ". $v." ";
+
+                    }
+                }
+            }
+
+
+
+        }
 
         global $pdo;
-//                ,                             -                    
+
         $sql = "SELECT count(*) as count FROM  " . $table_data . " where  1 = 1  " . $where1;
 
         if ($db == 'Pdo_tc') {

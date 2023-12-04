@@ -5,7 +5,7 @@ var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
 var site_url = window.location.protocol + "//" + window.location.host;
 var critic_search = critic_search || {};
 
-critic_search.debug = false;
+critic_search.debug = true;
 
 jQuery(function ($) {
     $(document).ready(function () {
@@ -142,9 +142,9 @@ critic_search.menu = function () {
 }
 
 critic_search.init_facet = function (v) {
-    if (critic_search.debug) {
-        console.log('init_facet', v);
-    }
+
+    critic_search.log('init_facet', v);
+
     v.find('input[type=checkbox]').click(function () {
         var $this = $(this);
         var type = $this.attr('data-name');
@@ -163,7 +163,7 @@ critic_search.init_facet = function (v) {
                         fthis.prop('checked', false);
                         flabel.removeClass('active');
                         var ftype = fthis.attr('data-name');
-                        //console.log('remove filter')
+                        //critic_search.log('remove filter')
 
                         if (parrent.hasClass('slider')) {
                             var filter = $('#search-filters [data-type="' + type + '"]');
@@ -184,8 +184,11 @@ critic_search.init_facet = function (v) {
             var ftitle = $this.attr('data-ftitle');
             var fname = $this.attr('data-fname');
             var ftype = v.attr('data-type');
-
-            critic_search.add_filter(type, id, ftitle, fname, ftype);
+            var parents = v.attr('data-parents');
+            if ($this.attr('data-parents')){
+                parents = $this.attr('data-parents');
+            }
+            critic_search.add_filter(type, id, ftitle, fname, ftype, '', parents);
             var label = $this.closest('label');
             label.addClass('active');
         } else {
@@ -229,9 +232,9 @@ critic_search.init_facet = function (v) {
 }
 
 critic_search.init = function ($custom_id = '') {
-    if (critic_search.debug) {
-        console.log('init', $custom_id);
-    }
+
+    critic_search.log('init', $custom_id);
+
     var $ = jQuery;
 
     critic_search.uid = 0;
@@ -369,46 +372,8 @@ critic_search.init = function ($custom_id = '') {
                 critic_search.menu();
             }
 
-            var id = $parent.attr('data-id');
-            var parent_id = $parent.attr('data-parent');
-            var facet_name = 'filter-' + id;
-            
-            // Check search_extend
-            if ($('#' + facet_name).length == 0) {
-                var type = $parent.attr('data-type');
-
-                facet_name = 'facet-' + type;
-                var child_view = false;
-                if ($('#' + facet_name).length != 0) {
-                    if ($('#' + facet_name).closest('.collapsed').length == 0) {
-                        child_view = true;
-                    }
-                }
-
-                if (!child_view) {
-                    
-                    facet_name = 'facet-' + parent_id;
-                    if ($('#' + facet_name).length == 0) {
-                        var facet_name = 'facets-' + parent_id;
-                    }
-                }
-            }
-            if (typeof search_extend !== 'undefined') {      
-                facet_name = search_extend.get_facet_name(parent_id, facet_name);
-            }
-
-
-            //console.log(facet_name);
-
-
-            const block = document.getElementById(facet_name);
-            block.scrollIntoView({behavior: "smooth", block: "center"});
-            block.classList.add('facet-hl');
-
-            setTimeout(() => {
-                block.classList.remove('facet-hl');
-            }, 4000);
-
+            var parent_id = $parent.attr('id');
+            critic_search.filter_move(parent_id);
             return false;
         });
     });
@@ -584,7 +549,7 @@ critic_search.init = function ($custom_id = '') {
         var data_parent = $this.attr('data-parent');
         if (data_parent) {
 
-            if ($('#facet-' + data_parent).length || $('#facets-' + data_parent).length|| $('#' + data_parent).length) {
+            if ($('#facet-' + data_parent).length || $('#facets-' + data_parent).length || $('#' + data_parent).length) {
                 if ($this.hasClass('inactive')) {
                     $this.removeClass('inactive');
                 }
@@ -600,6 +565,12 @@ critic_search.init = function ($custom_id = '') {
 
     // Save filters
     critic_search.init_save_filters();
+
+    // Init move to filters
+    var need_move = critic_search.move_to_parent_name;
+    if (need_move) {
+        critic_search.filter_move(need_move);
+}
 }
 
 critic_search.init_more = function (v) {
@@ -653,7 +624,7 @@ critic_search.init_collapse = function (id) {
 
                 if (v.hasClass('defshow')) {
                     var ftitle = facet_id.capitalize();
-                    critic_search.add_filter('hide', facet_id, ftitle, ftitle, 'hide','sohf');
+                    critic_search.add_filter('hide', facet_id, ftitle, ftitle, 'hide', 'sohf');
                 } else {
                     critic_search.remove_filter('show', facet_id);
                 }
@@ -717,11 +688,151 @@ critic_search.init_collapse = function (id) {
     });
 }
 
+critic_search.move_to_parent_name = '';
+
+critic_search.filter_move = function (parent_id = '') {
+    var $parent = $('#' + parent_id);
+
+    critic_search.move_to_parent_name = '';
+    var id = $parent.attr('data-id');
+    var facet_name = 'filter-' + id;
+
+    var parent_ids = $parent.attr('data-parents');
+    critic_search.log('1. Try get parents', parent_ids);
+    var parent_ids_arr = parent_ids.split(";");
+    const parent_reversed = parent_ids_arr.reverse();
+
+    critic_search.log('found parents', parent_reversed);
+    var continue_tab = '';
+    var parent_name = '';
+    for (var key in parent_reversed) {
+        parent_name = parent_reversed[key];
+        if (continue_tab != '' && continue_tab == parent_name) {
+            critic_search.log('Continue tab', parent_name);
+            continue;
+        }
+        
+        if (typeof search_extend !== 'undefined') {            
+            facet_name = search_extend.get_facet_name(parent_name, facet_name);
+        }
+        
+        critic_search.log('Try to open parent', parent_name);
+        var move_to_parent = critic_search.move_to_parent(parent_name, key, parent_reversed)
+        if (move_to_parent == 0) {
+            critic_search.log('Can not open parent', parent_name);
+        } else if (move_to_parent == 1) {
+            critic_search.log('Move to parent', parent_name);
+        } else if (move_to_parent == 2) {
+            // Click to parent Add global ajax flag
+            critic_search.move_to_parent_name = parent_id;
+            critic_search.log('Open parent', parent_name);
+            break;
+        } else if (move_to_parent == 3 || move_to_parent == 4) {
+            // opened tab. Next continue
+            var tab_key = Number(key) + 1;
+            var continue_tab = parent_reversed[tab_key];
+            if (move_to_parent == 4) {
+                // load tab. Next continue
+                critic_search.move_to_parent_name = parent_id;
+                critic_search.log('Open parent', parent_name);
+                break;
+            }
+        }
+    }
+    critic_search.log(parent_name, facet_name);
+    if (critic_search.move_to_parent_name == '') {
+        if ($('#' + facet_name).length != 0) {
+            critic_search.log('2. Try to move to facet', facet_name);
+            critic_search.move_to_facet(facet_name, 4000);
+        } else if ($('#facet-' + parent_name).hasClass('slider-facet')) {
+            critic_search.log('2. Try to move to slider facet', parent_name);
+            critic_search.move_to_facet('facet-' + parent_name, 4000);
+        } else if ($('#facet-' + parent_name).hasClass('select-facet')) {
+            critic_search.log('2. Try to move to select facet', parent_name);
+            critic_search.move_to_facet('facet-' + parent_name, 4000);
+        }
+
+    } else {
+        critic_search.log('2. Wait for load parent', critic_search.move_to_parent_name);
+    }
+
+    return false;
+}
+
+critic_search.move_to_parent = function (name = '', key = 0, parents = []) {
+    // Check search_extend
+    var ret = 0;
+
+    var facet_name = '';
+    var collapse_cls = '.wacc';
+    if ($('#row-' + name).length != 0) {
+        // Try to get row
+        facet_name = '#row-' + name;
+        var collapse_cls = '.acc';
+    } else if ($('#facet-' + name).length != 0) {
+        facet_name = '#facet-' + name;
+    } else if ($('#facets-' + name).length != 0) {
+        facet_name = '#facets-' + name;
+    }
+
+    if (facet_name) {
+        // Found facet
+        critic_search.log('Found facet', facet_name);
+        ret = 1;
+        // Check hide
+        if ($(facet_name).hasClass('collapsed')) {
+            // show
+            critic_search.log('click', facet_name);
+            $(facet_name).find(collapse_cls).first().click();
+            ret = 2;
+        }
+        critic_search.move_to_facet(facet_name.replace('#', ''), 0);
+    } else {
+        // Try to find tab
+        if ($('#' + name + '-tabs').length != 0) {
+            facet_name = '#' + name + '-tabs';
+            if (parents.length >= key) {
+                var tab_key = Number(key) + 1;
+                var tab = parents[tab_key];
+                critic_search.log('Found tab', facet_name, tab);
+
+                var tab_elem = $(facet_name).find("li.nav-tab[data-id=" + tab + "]").first();
+                if (tab_elem.length) {
+                    if (tab_elem.hasClass('active')) {
+                        // Already open
+                        critic_search.log('already open tab', facet_name);
+                        ret = 3;
+                    } else {
+                        critic_search.log('click tab', facet_name);
+                        tab_elem.find('a').click();
+                        ret = 4;
+                    }
+                }
+            }
+        }
+    }
+
+    return ret;
+}
+
+critic_search.move_to_facet = function (facet_name, time = 0) {
+    const block = document.getElementById(facet_name);
+    block.scrollIntoView({behavior: "smooth", block: "center"});
+    if (time > 0) {
+        block.classList.add('facet-hl');
+        setTimeout(() => {
+            block.classList.remove('facet-hl');
+        }, time);
+    }
+
+    return false;
+}
+
 critic_search.slider_facet = function (type, data_arr, ftype = 'all') {
     var $ = jQuery;
-    if (critic_search.debug) {
-        console.log('slider init: ' + type);
-    }
+
+    critic_search.log('slider init: ' + type);
+
     // Release facet
     if ($("#" + type + "-slider").length === 0) {
         return false;
@@ -852,8 +963,8 @@ critic_search.slider_facet = function (type, data_arr, ftype = 'all') {
             title_t = title_t + shift;
         }
         var title = title_f + '-' + title_t;
-        if (from==to){
-             title = title_f;
+        if (from == to) {
+            title = title_f;
         }
         if (extend_title) {
             title = extend_title;
@@ -861,8 +972,9 @@ critic_search.slider_facet = function (type, data_arr, ftype = 'all') {
 
         var pftitle = ftitle.replace('RVALUE', title);
         var pfname = fname.replace('RVALUE', title);
+        var parents = slider.attr('data-parents');
 
-        critic_search.add_filter(custom_type, key, pftitle, pfname, ftype);
+        critic_search.add_filter(custom_type, key, pftitle, pfname, ftype, '', parents);
         critic_search.submit();
     });
 
@@ -940,7 +1052,7 @@ critic_search.slider_facet = function (type, data_arr, ftype = 'all') {
     });
 }
 
-critic_search.add_filter = function (type = '', id = '', title = '', name = '', ftype = '', custom_class = '') {
+critic_search.add_filter = function (type = '', id = '', title = '', name = '', ftype = '', custom_class = '', parents = '') {
     var $ = jQuery;
 
     var minus_class = '';
@@ -952,7 +1064,7 @@ critic_search.add_filter = function (type = '', id = '', title = '', name = '', 
         custom_class = ' ' + custom_class;
     }
 
-    var filter = '<li id="' + type + '-' + id + '" class="filter ' + minus_class + custom_class + '" data-type="' + type + '" data-parent="' + ftype + '" data-id="' + id + '"><span class="title" title="' + title + '">' + name + '</span><span class="close"></span></li>';
+    var filter = '<li id="' + type + '-' + id + '" class="filter ' + minus_class + custom_class + '" data-type="' + type + '" data-parent="' + ftype + '" data-parents="' + parents + '" data-id="' + id + '"><span class="title" title="' + title + '">' + name + '</span><span class="close"></span></li>';
 
     if ($("#search-filters").length == 0) {
         $('#search-tabs').after('<div id="search-filters"><span>Filters: </span><ul class="filters-wrapper"></ul></div>');
@@ -1139,9 +1251,9 @@ critic_search.init_save_filters = function () {
 }
 
 critic_search.update_facets = function ($rtn = [], $holder = '#facets', $is_child = false) {
-    if (critic_search.debug) {
-        console.log('update facets', $rtn, $holder, $is_child);
-    }
+
+    critic_search.log('update facets', $rtn, $holder, $is_child);
+
     var new_ids = [];
     $rtn.find($holder + ' > .ajload').each(function (i, v) {
         var v = $(v), id = v.attr('id');
@@ -1190,9 +1302,9 @@ critic_search.update_facets = function ($rtn = [], $holder = '#facets', $is_chil
 }
 
 critic_search.submit = function (inc = '', target = '', facetid = '') {
-    if (critic_search.debug) {
-        console.log('submit', inc, target);
-    }
+
+    critic_search.log('submit', inc, target);
+
     if (!critic_search.enable_submit) {
         return false;
     }
@@ -1366,9 +1478,9 @@ critic_search.submit = function (inc = '', target = '', facetid = '') {
             ts = v.attr('data-id');
         });
 
-        if (critic_search.debug) {
-            console.log(ts, critic_search.last_submit);
-        }
+
+        critic_search.log(ts, critic_search.last_submit);
+
 
         if (ts != '' && ts != critic_search.last_submit) {
             return false;
@@ -1436,11 +1548,16 @@ critic_search.submit = function (inc = '', target = '', facetid = '') {
     });
 }
 
+critic_search.log = function (...args) {
+    if (critic_search.debug) {
+        console.log(...args);
+    }
+}
 
 critic_search.ajax = function (data, cb) {
-    if (critic_search.debug) {
-        console.log('ajax', data);
-    }
+
+    critic_search.log('ajax', data);
+
     var $ = jQuery;
     return $.ajax({
         type: "POST",

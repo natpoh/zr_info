@@ -34,6 +34,12 @@ if ($curent_user) {
         $table = preg_replace("/[^a-zA-Z0-9_]/", "",$currant_table);
         $datatype=$table;
 
+
+        $request = $_GET;
+        unset($request['onlytable']);
+
+
+
     echo '<h4>Table: '.$table.'</h4>';
     }
     else {
@@ -97,8 +103,20 @@ AND table_schema='" . DB_NAME_AN . "'";
     $count_rows = count($rows);
     $counts_name =0;
 
+
+    $requset_result =[];
+
     foreach ($rows as $r) {
+
+
+
         $name = $r["Field"];
+
+        if ($request[$name])
+        {
+            $requset_result[$name] = $request[$name];
+        }
+
         $counts_name+= mb_strlen($name, 'UTF-8');
 
         if (!$update_row)
@@ -133,6 +151,15 @@ AND table_schema='" . DB_NAME_AN . "'";
                     },";
         }
     }
+
+    if ($requset_result)
+    {
+        !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+        TMDB::var_dump_table($requset_result);
+    }
+
+
+    $r_string =  json_encode($requset_result);
 
     $min_width = $counts_name*10+$count_rows*10+80;
     if (!$min_width)
@@ -277,6 +304,12 @@ AND table_schema='" . DB_NAME_AN . "'";
                             mtype: "POST",
                             datatype: "json",
                             page: 1,
+                        postData: {
+
+                        "qustom_request":'<?php echo $r_string ?>'
+                        },
+
+
                             colModel: [
     <?php echo $colums; ?>
                             ],
@@ -293,6 +326,7 @@ AND table_schema='" . DB_NAME_AN . "'";
                                 rowNum: 100,
                                 pager: "#jqGridPager",
                                 multiselect: true,
+
                                 subGrid: true,
                                 subGridRowExpanded: function(subgrid_id, row_id) {
 
