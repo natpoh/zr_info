@@ -199,19 +199,33 @@ AND table_schema='" . DB_NAME_AN . "'";
 
                 ////check select grig
 
+
                 var grid = $('.header_menu a.selected').html();
+
+                    <?php     if (isset($_GET['onlytable'])) {
+
+                    ?>
+                    var grid ='<?php echo $datatype; ?>';
+                    <?php
+                    }
+                    ?>
+
                 console.log(grid);
-                if (grid == 'actors_imdb')
+                if (grid == 'actors_imdb' || grid == 'data_actors_imdb'  )
                 {
                 var actor_id = jQuery("#jqGrid").jqGrid('getCell', row_id, 'id');
                 }
-                if (grid == 'movie_imdb')
+                else if (grid == 'movie_imdb' || grid == 'data_movie_imdb')
                 {
                 var movie = jQuery("#jqGrid").jqGrid('getCell', row_id, 'movie_id');
                 }
                 else
                 {
                 var actor_id = jQuery("#jqGrid").jqGrid('getCell', row_id, 'actor_id');
+                if (!actor_id)
+                {
+                    actor_id = jQuery("#jqGrid").jqGrid('getCell', row_id, 'aid');
+                }
                 var movie = jQuery("#jqGrid").jqGrid('getCell', row_id, 'movie_id');
 
                 var rwt_id='';
@@ -219,7 +233,6 @@ AND table_schema='" . DB_NAME_AN . "'";
                 if (jQuery("#jqGrid").jqGrid('getCell', row_id, 'mid'))
                 {
                     rwt_id=jQuery("#jqGrid").jqGrid('getCell', row_id, 'mid');
-
                 }
 
 

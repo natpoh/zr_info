@@ -140,7 +140,36 @@ function inner_message(id,inner_data=[])
         {
             inner_message+='<p class="mb_table"><button data-id="'+id+'" class="open_btn">'+inner_data.table+'</button></p>';
         }
+        if (inner_data.link)
+        {
+            let getRequest='';
 
+
+            if (inner_data.requests)
+            {
+                const result = {};
+
+                for (let key in request_array) {
+                    const requestKey = `b_${key}`;
+                    if (inner_data.requests.hasOwnProperty(requestKey)) {
+                        result[key] = request_array[key];
+                    }
+                }
+
+            if (result)
+            {
+                let params = new URLSearchParams(result).toString();
+
+                if (inner_data.link.includes('?')) {
+                    getRequest = `&${params}`;
+                } else {
+                    getRequest = `?${params}`;
+                }
+            }
+            }
+
+            inner_message+='<p class="mb_link"><a target="_blank" href="'+inner_data.link+getRequest+'" class="ext_link">Link</a></p>';
+        }
     }
 
     inner_message+='<p class="mb_edit">id:'+id+' <button data-id="'+id+'" class="edit_cube">Edit</button></p>';
@@ -686,6 +715,102 @@ function add_request_data(request_array)
     }
 }
 
+
+//var colorInput = document.querySelector('.b_color');
+//var methodInput = document.querySelector('.b_method');
+
+
+
+// methodInput.addEventListener('change', function(event) {
+//     let data = event.target.value;
+//     let idElement = document.querySelector('.b_id');
+//     var id = parseInt(idElement.textContent);
+//     var cube = findCubeById(id);
+//
+//     if (cube) {
+//         cube.method = data;
+//     }
+//
+//     var cubeElement = document.querySelector('.cube#cube_'+id);
+//     var classesToRemove = Array.from(cubeElement.classList).filter(className => className.includes('method_'));
+//     cubeElement.classList.remove(...classesToRemove);
+//
+//     cubeElement.classList.add('method_'+data);
+//
+// });
+// colorInput.addEventListener('change', function(event) {
+//     var selectedColor = event.target.value;
+//     let idElement = document.querySelector('.b_id');
+//     var id = parseInt(idElement.textContent);
+//     var cube = findCubeById(id);
+//
+//     if (cube) {
+//         cube.color = selectedColor;
+//     }
+//
+//     var cubeElement = document.querySelector('.cube#cube_'+id);
+//     var classesToRemove = Array.from(cubeElement.classList).filter(className => className.includes('color_'));
+//     cubeElement.classList.remove(...classesToRemove);
+//
+//     cubeElement.classList.add('color_'+selectedColor);
+//
+// });
+
+function prepare_data(className, value) {
+    let cid = className.substring(2);
+
+    let idElement = document.querySelector('.b_id');
+    var id = parseInt(idElement.textContent);
+    var cube = findCubeById(id);
+
+    if (cube) {
+
+        cube[cid] = value;
+
+        if (cid=='title' || cid=='desc' || cid=='table' || cid=='link')
+        {
+            let imsg =  inner_message(id,cube);
+            document.querySelector('.cube#cube_'+id+' .cube_desc_message').innerHTML=imsg;
+        }
+        else if (cid=='type')
+        {
+            let cubeElement = document.querySelector('.cube#cube_'+id);
+            let classesToRemove = Array.from(cubeElement.classList).filter(className => className.includes('type_'));
+            cubeElement.classList.remove(...classesToRemove);
+
+            let tclass   = value;
+            if (tclass.includes(" ")) {
+                tclass   = tclass.replace(/ /g, "_");
+            }
+
+            cubeElement.classList.add('type_'+tclass);
+        }
+        else if (cid=='color')
+        {
+            let cubeElement = document.querySelector('.cube#cube_'+id);
+            let classesToRemove = Array.from(cubeElement.classList).filter(className => className.includes('color_'));
+            cubeElement.classList.remove(...classesToRemove);
+
+            cubeElement.classList.add('color_'+value);
+
+        }
+        else if (cid=='method') {
+            var cubeElement = document.querySelector('.cube#cube_'+id);
+            var classesToRemove = Array.from(cubeElement.classList).filter(className => className.includes('method_'));
+            cubeElement.classList.remove(...classesToRemove);
+
+            cubeElement.classList.add('method_'+value);
+
+        }
+
+    }
+
+    console.log(`prepare_data Class: ${cid}, Value: ${value} `,cube);
+
+}
+
+
+
 isoBlock.addEventListener('click', function(event) {
 
     if (event.target.classList.contains('edit_cube')) {
@@ -701,13 +826,38 @@ isoBlock.addEventListener('click', function(event) {
         var foundData = getCubeDataById(dataId);
 
         if (foundData) {
+
+            const innerMain = document.querySelector('.inner_main');
+
+            function handleInputChange(event) {
+                const { target } = event;
+                const value = target.value;
+                const className = target.classList[0];
+
+                prepare_data(className, value);
+            }
+
+            const inputs = innerMain.querySelectorAll('input, select, textarea');
+
+            inputs.forEach(input => {
+                input.addEventListener('change', handleInputChange);
+                let  className = input.classList[0];
+                let cid = className.substring(2);
+                console.log(cid,foundData[cid]);
+                input.value = foundData[cid] !== undefined ? foundData[cid] : '';
+
+            });
+
+
+
+
             var idElement = document.querySelector('.b_id');
-            var titleInput = document.querySelector('.b_title');
-            var descTextarea = document.querySelector('.b_desc');
-            var tableInput = document.querySelector('.b_table');
-            var typeInput = document.querySelector('.b_type');
-            var colorInput = document.querySelector('.b_color');
-            var methodInput = document.querySelector('.b_method');
+            // var titleInput = document.querySelector('.b_title');
+            // var descTextarea = document.querySelector('.b_desc');
+            // var tableInput = document.querySelector('.b_table');
+            // var typeInput = document.querySelector('.b_type');
+            // var colorInput = document.querySelector('.b_color');
+            // var methodInput = document.querySelector('.b_method');
 
             if(foundData.requests)
             {
@@ -715,13 +865,13 @@ isoBlock.addEventListener('click', function(event) {
             }
 
 
-            idElement.textContent = foundData.id !== undefined ? foundData.id : '';
-            titleInput.value = foundData.title !== undefined ? foundData.title : '';
-            descTextarea.value = foundData.desc !== undefined ? foundData.desc : '';
-            tableInput.value = foundData.table !== undefined ? foundData.table : '';
-            typeInput.value = foundData.type !== undefined ? foundData.type : '';
-            colorInput.value = foundData.color !== undefined ? foundData.color : '';
-            methodInput.value = foundData.method !== undefined ? foundData.method : '';
+             idElement.textContent = foundData.id !== undefined ? foundData.id : '';
+            // titleInput.value = foundData.title !== undefined ? foundData.title : '';
+            // descTextarea.value = foundData.desc !== undefined ? foundData.desc : '';
+            // tableInput.value = foundData.table !== undefined ? foundData.table : '';
+            // typeInput.value = foundData.type !== undefined ? foundData.type : '';
+            // colorInput.value = foundData.color !== undefined ? foundData.color : '';
+            // methodInput.value = foundData.method !== undefined ? foundData.method : '';
         }
     }
     else if (event.target.classList.contains('open_btn')) {
@@ -778,12 +928,6 @@ isoBlock.addEventListener('click', function(event) {
 //////update cube
 
 
-var titleInput = document.querySelector('.b_title');
-var descTextarea = document.querySelector('.b_desc');
-var tableInput = document.querySelector('.b_table');
-var typeInput = document.querySelector('.b_type');
-var colorInput = document.querySelector('.b_color');
-var methodInput = document.querySelector('.b_method');
 
 
 
@@ -835,112 +979,10 @@ function findCubeById(id) {
     });
 }
 
-titleInput.addEventListener('input', function() {
-    let idElement = document.querySelector('.b_id');
-    var id = parseInt(idElement.textContent);
-    var cube = findCubeById(id);
-    if (cube) {
-        cube.title = titleInput.value;
 
-        let imsg =  inner_message(id,cube);
-
-        document.querySelector('.cube#cube_'+id+' .cube_desc_message').innerHTML=imsg;
-    }
-});
-
-
-descTextarea.addEventListener('input', function() {
-    let idElement = document.querySelector('.b_id');
-    var id = parseInt(idElement.textContent);
-    var cube = findCubeById(id);
-    if (cube) {
-        cube.desc = descTextarea.value;
-        let imsg =  inner_message(id,cube);
-
-        document.querySelector('.cube#cube_'+id+' .cube_desc_message').innerHTML=imsg;e;
-    }
-});
-
-tableInput.addEventListener('input', function() {
-    let idElement = document.querySelector('.b_id');
-    var id = parseInt(idElement.textContent);
-    var cube = findCubeById(id);
-    if (cube) {
-        cube.table = tableInput.value;
-
-        let imsg =  inner_message(id,cube);
-
-        document.querySelector('.cube#cube_'+id+' .cube_desc_message').innerHTML=imsg;
-    }
-});
-
-
-typeInput.addEventListener('change', function(event) {
-    var selecteddata = event.target.value;
-    let idElement = document.querySelector('.b_id');
-    var id = parseInt(idElement.textContent);
-    var cube = findCubeById(id);
-
-    if (cube) {
-        cube.type = selecteddata;
-    }
-    var cubeElement = document.querySelector('.cube#cube_'+id);
-    var classesToRemove = Array.from(cubeElement.classList).filter(className => className.includes('type_'));
-    cubeElement.classList.remove(...classesToRemove);
-
-    let tclass   = selecteddata;
-    if (tclass.includes(" ")) {
-        tclass   = tclass.replace(/ /g, "_");
-    }
-
-    cubeElement.classList.add('type_'+tclass);
-
-
-});
-
-
-methodInput.addEventListener('change', function(event) {
-    let data = event.target.value;
-    let idElement = document.querySelector('.b_id');
-    var id = parseInt(idElement.textContent);
-    var cube = findCubeById(id);
-
-    if (cube) {
-        cube.method = data;
-    }
-
-    var cubeElement = document.querySelector('.cube#cube_'+id);
-    var classesToRemove = Array.from(cubeElement.classList).filter(className => className.includes('method_'));
-    cubeElement.classList.remove(...classesToRemove);
-
-    cubeElement.classList.add('method_'+data);
-
-});
-
-
-colorInput.addEventListener('change', function(event) {
-    var selectedColor = event.target.value;
-    let idElement = document.querySelector('.b_id');
-    var id = parseInt(idElement.textContent);
-    var cube = findCubeById(id);
-
-    if (cube) {
-        cube.color = selectedColor;
-    }
-
-    var cubeElement = document.querySelector('.cube#cube_'+id);
-    var classesToRemove = Array.from(cubeElement.classList).filter(className => className.includes('color_'));
-    cubeElement.classList.remove(...classesToRemove);
-
-    cubeElement.classList.add('color_'+selectedColor);
-
-});
 
 
 //////update cube
-
-
-
 isoBlock.addEventListener('dblclick', function(event) {
 
 
@@ -1027,7 +1069,6 @@ isoBlock.addEventListener('dblclick', function(event) {
         }
     }
 });
-
 
 
 isoBlock.addEventListener('mousedown', function (event) {
