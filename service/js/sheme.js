@@ -320,7 +320,7 @@ function add_block_line(x,y){
 
 
 const mainwin = document.querySelector('.main_win');
-let scale = 0.3; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+let scale = 0.3; // начальный масштаб
 var deltaX_last = 0, deltaY_last = 0;
 
 
@@ -329,9 +329,9 @@ mainwin.addEventListener('wheel', function (event) {
         const delta = event.deltaY || event.detail || event.wheelDelta;
 
         if (delta < 0) {
-            scale += 0.05; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ 0.1
+            scale += 0.05; // увеличиваем масштаб на 0.1
         } else {
-            scale -= 0.05; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ 0.1
+            scale -= 0.05; // уменьшаем масштаб на 0.1
         }
 
         scale = Math.max(0.1, Math.min(2, scale));
@@ -586,8 +586,8 @@ add_line_button.addEventListener('click', function() {
         if (object_array.line && (object_array.line[0])) {
             object_array.line.forEach(function(line) {
                 var lineButton = document.createElement('button');
-                lineButton.innerText = line.name; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
-                lineButton.dataset.lineId = line.id; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ id пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ data-пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+                lineButton.innerText = line.name; // Используйте имя линии или другие свойства для текста кнопки
+                lineButton.dataset.lineId = line.id; // Устанавливаем id линии как data-атрибут кнопки
                 menuLines.appendChild(lineButton);
 
                 check_click_linebutton();
@@ -621,7 +621,7 @@ document.addEventListener('mousemove', function (event) {
     if (!isMouseDown) return;
     const x = event.pageX - mainScroll.offsetLeft;
     const y = event.pageY - mainScroll.offsetTop;
-    const moveX = (x - startX) * 1; // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    const moveX = (x - startX) * 1; // умножьте на любое число для изменения скорости скролла
     const moveY = (y - startY) * 1;
 
     mainScroll.scrollLeft = scrollLeft - moveX;
@@ -692,6 +692,10 @@ isoBlock.addEventListener('click', function(event) {
 
         var dataId = event.target.getAttribute('data-id');
 
+        let inputs = document.querySelectorAll('input.edit_sheme_input');
+        inputs.forEach(input => {
+            input.value = '';
+        });
 
 
         var foundData = getCubeDataById(dataId);
@@ -1027,7 +1031,7 @@ isoBlock.addEventListener('dblclick', function(event) {
 
 
 isoBlock.addEventListener('mousedown', function (event) {
-    if (event.button === 2) { // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+    if (event.button === 2) { // Проверяем, что это правая кнопка мыши
         isRightMouseDown = true;
         initialMouseX = event.clientX;
         initialMouseY = event.clientY;
@@ -1041,7 +1045,7 @@ isoBlock.addEventListener('mousedown', function (event) {
             isRightMouseDown = false;
             document.removeEventListener('mousemove', handleMouseMove);
         });
-        event.preventDefault(); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+        event.preventDefault(); // Предотвращаем стандартное контекстное меню
     }
 });
 
@@ -1165,7 +1169,7 @@ function elementDrag(e) {
     pos4 = e.clientY;
     var newTop = popup.offsetTop - pos2;
     var newLeft = popup.offsetLeft - pos1;
-    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+    // Проверяем, чтобы окно не выходило за пределы экрана
     if (newTop > 0 && newTop + popup.offsetHeight < window.innerHeight) {
         popup.style.top = newTop + "px";
     }
@@ -1189,10 +1193,10 @@ function closeDragElement() {
 
 function chart() {
 
-    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    // Генерируем случайные данные для графика
     var data = [];
     for (var i = 0; i < 30; i++) {
-        data.push(Math.floor(Math.random() * 100)); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+        data.push(Math.floor(Math.random() * 100)); // Замените это на ваши данные
     }
     Highcharts.chart('chart-container', {
         chart: {
