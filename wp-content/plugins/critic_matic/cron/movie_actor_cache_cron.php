@@ -59,7 +59,7 @@ if ($load['loaded']) {
 }
 
 $cm = new CriticMatic();
-$cron_name = 'movie_actor_cache_cron_' . $type;
+$cron_name = 'movie_actor_cache_cron_' . $type.'-'.$mid;
 if ($cm->cron_already_run($cron_name, 10, $debug, $force)) {
     exit();
 }
