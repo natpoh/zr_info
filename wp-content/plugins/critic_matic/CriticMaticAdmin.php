@@ -1675,6 +1675,8 @@ class CriticMaticAdmin {
                 }
                 $critics_search = $this->cs->search_critics($movie, true);
                 include(CRITIC_MATIC_PLUGIN_DIR . 'includes/view_movie.php');
+            } else if ($curr_tab == 'actors') {
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/view_actors.php');
             }
             return;
         }

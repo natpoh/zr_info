@@ -35,9 +35,8 @@ class MoviesActors extends AbstractDB {
         'mix' => array('key' => 7, 'title' => 'Mixed / Other'),
         'jw' => array('key' => 8, 'title' => 'Jewish'),
     );
-
     public $option_name = 'movies_actors_last_id';
-    
+
     public function __construct($cm = '') {
         $this->cm = $cm ? $cm : new CriticMatic();
         $this->db = array(
@@ -47,7 +46,7 @@ class MoviesActors extends AbstractDB {
             'cache_actor' => 'cache_movie_actor_meta',
         );
     }
-        
+
     /*
      * Cron for new movies
      */
@@ -221,6 +220,21 @@ class MoviesActors extends AbstractDB {
         }
     }
 
+    public function get_movie_actors($mid = 0) {
+        // Get movie actors
+        $sql_actors = sprintf("SELECT a.aid AS actor_id, a.type AS actor_type, m.* FROM {$this->db['meta_movie_actor']} a"
+                . " INNER JOIN {$this->db['data_actors_meta']} m ON m.actor_id = a.aid"
+                . " WHERE a.mid=%d", $mid);
+        $actors = $this->db_results($sql_actors);
+        return $actors;
+    }
+    
+    public function get_cache_actors($mid=0) {
+        $sql = sprintf("SELECT * FROM {$this->db['cache_actor']} WHERE mid=%d", $mid);
+        $actors = $this->db_results($sql);
+        return $actors;
+    }
+
 }
 
 class MoviesDirectors extends MoviesActors {
@@ -232,13 +246,12 @@ class MoviesDirectors extends MoviesActors {
         'c' => array('key' => 3, 'title' => 'cast_director'),
         'p' => array('key' => 4, 'title' => 'producers'),
     );
-
     public $option_name = 'movies_directors_last_id';
-    
+
     public function __construct($cm = '') {
         $this->cm = $cm ? $cm : new CriticMatic();
         $this->db = array(
-            'movie_imdb' => 'data_movie_imdb',            
+            'movie_imdb' => 'data_movie_imdb',
             'data_actors_meta' => 'data_actors_meta',
             'meta_movie_actor' => 'meta_movie_director',
             'cache_actor' => 'cache_movie_director_meta',

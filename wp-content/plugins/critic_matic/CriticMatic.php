@@ -158,7 +158,8 @@ class CriticMatic extends AbstractDB {
         'videogame' => 'VideoGame'
     );
     public $movie_tabs = array(
-        'home' => 'View'
+        'home' => 'View',
+        'actors' => 'Actors',
     );
 
     /* Audience */
@@ -4406,6 +4407,34 @@ class CriticMatic extends AbstractDB {
         $result = curl_exec($ch);
 
         return $result;
+    }
+
+    public function theme_table($data) {
+        $ret = '';
+        if (!empty($data)) {
+            $ret.= '<table class="wp-list-table widefat striped table-view-list"><tr>';
+
+            // Получение заголовков (названий полей) из первого объекта
+            $firstObject = $data[0];
+            foreach ($firstObject as $key => $value) {
+                $ret.= "<th>$key</th>";
+            }
+            $ret.= "</tr>";
+
+            // Вывод данных
+            foreach ($data as $object) {
+                $ret.= "<tr>";
+                foreach ($object as $value) {
+                    $ret.= "<td>$value</td>";
+                }
+                $ret.= "</tr>";
+            }
+
+            $ret.= "</table>";
+        } else {
+            $ret.= "Data not found.";
+        }
+        return $ret;
     }
 
 }
