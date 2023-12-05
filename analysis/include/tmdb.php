@@ -1204,23 +1204,37 @@ public static function add_movie_actor($mid = 0, $id = 0, $type = 0,$table='meta
             }
 
             $meta_exist = Pdo_an::db_fetch_row($sql);
-          //  if ($debug) echo $sql.'<br>';
+           if ($debug) echo $id.' '.$meta_exist->type.'=='.$type .'<br>';
             if ($meta_exist)
             {
                 if ($meta_exist->type!=$type && $table=='meta_movie_actor')
                 {
 
+                    if ($debug) echo $id.' '.$meta_exist->type.'=='.$type .' updated<br>';
+
                     $sql = "UPDATE `{$table}` SET `type` = '{$type}' WHERE `id` = ".intval($meta_exist->id);
                    /// echo $sql.PHP_EOL;
                     Pdo_an::db_query($sql);
 
-                 }
+                    !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
+                    ACTIONLOG::update_actor_log('update_actor_type',$table,$id);
+                    !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+
+                    $array_custom =array('skip'=>['id']);
+                    Import::create_commit('','update',$table,array('mid'=>$mid,'aid'=>$id,'type'=>$type),'movie_meta_actor',5,$array_custom);
+
+
+
+                }
                 if ($meta_exist->pos!=$pos && $table=='meta_movie_actor')
                 {
 
                     $sql = "UPDATE `{$table}` SET `pos` = '{$pos}' WHERE `id` = ".intval($meta_exist->id);
                     // echo $sql.PHP_EOL;
                     Pdo_an::db_query($sql);
+
+
+
 
                 }
 

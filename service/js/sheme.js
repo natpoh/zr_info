@@ -152,11 +152,11 @@ function inner_message(id,inner_data=[])
                 for (let key in request_array) {
                     const requestKey = `b_${key}`;
                     if (inner_data.requests.hasOwnProperty(requestKey)) {
-                        result[key] = request_array[key];
+                        result[inner_data.requests[requestKey]] = request_array[key];
                     }
                 }
 
-            if (result)
+                if (result)
             {
                 let params = new URLSearchParams(result).toString();
 
@@ -220,7 +220,7 @@ function insert_block_to_field(id,x,y,inner_data=[])
                 tclass   = tclass.replace(/ /g, "_");
             }
 
-            console.log(inner_data.type);
+           // console.log(inner_data.type);
             document.querySelector('.cube#cube_'+id).classList.add('type_'+tclass);
         }
 
