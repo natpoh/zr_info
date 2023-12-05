@@ -1769,7 +1769,7 @@ class PgRatingCalculate {
 
 
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', 'data_pg_rating', array('movie_id' => $imdb_id), 'pg_rating', 9, ['skip' => ['id']]);
+                Import::create_commit('', 'update', 'data_pg_rating', array('rwt_id' => $id), 'pg_rating', 9, ['skip' => ['id']]);
             }
 
 
