@@ -433,7 +433,7 @@ class PgRatingCalculate {
 
 
 
-                        if ($input_row=='count' && $aud_array[$input_row] != $r_value )
+                        if (($input_row=='count' || $input_row=='vote') && $aud_array[$input_row] != $r_value )
                         {
                             $data_current_array[$r_name] = $aud_array[$input_row];
                             $data_current_array['audience_date'] =time();

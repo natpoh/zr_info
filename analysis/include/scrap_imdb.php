@@ -1008,7 +1008,7 @@ function update_all_rwt_rating()
     if (isset($_GET['id']))
     {
         $rwt_id = intval($_GET['id']);
-        $result = PgRatingCalculate::add_movie_rating($rwt_id,'',1);
+        $result = PgRatingCalculate::add_movie_rating($rwt_id,'',1,1,1);
 
         return;
     }
