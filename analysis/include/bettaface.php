@@ -169,7 +169,7 @@ echo 'error';
 
         }
 
-        return array($race, $percent, $attractive,1);
+        return array($race, $percent, $attractive,1,$arraay);
     }
 
     private static function fileman($way) {
@@ -301,8 +301,32 @@ echo 'error';
                         self::update_meta($actor_id,$array_race[0]);
 
                     } else {
+                        $error='';
+
+                        if ($array_race[4])
+                        {
+
+                            if ($array_race[4]['error_code'])
+                            {
+                                $error =$array_race[4]['error_code'];
+
+                            }
+                            if ($array_race[4]['error_description'])
+                            {
+                                $error.=$array_race[4]['you have reached your daily processed images limit'];
+                            }
+                        }
+
+                        if ($array_race[4]['error_code']=='-57')
+                        {
+                            echo $array_race[4]['error_description'] .'<br>';
+
+                            break;
+                            return;
+                        }
+
                         echo 'error get ethnic data <br>';
-                        $array_race = [NULL, NULL, json_encode(['error' => 'error get ethnic data'])];
+                        $array_race = [NULL, NULL, json_encode(['error' => 'error get ethnic data '.$error])];
                         self::add_toracebd($actor_id, $array_race,3);
                     }
                 } else {
