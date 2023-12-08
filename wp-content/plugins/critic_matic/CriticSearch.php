@@ -179,7 +179,7 @@ class CriticSearch extends AbstractDB {
                                 ),
                                 'sphoto' => array('parent' => 'sphoto', 'title' => 'Star conditions', 'filter_key' => 'sphoto', 'minus' => 1, 'hide' => 1),
                                 'actorstar' => array('filter' => 'actor_star', 'parent' => 'actors', 'title' => 'Actor Star', 'placeholder' => 'star', 'minus' => 1,),
-                                'simstar' => array('parent' => 'simpson', 'title' => 'Literal Diversity (Star)', 'facet' => 'rating', 'titlesm' => 'LD (Star)', 'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'minus' => 1, 'sort_w' => 21,),
+                                'simstar' => array('parent' => 'simpson', 'title' => 'Literal Diversity (Stars)', 'facet' => 'rating', 'titlesm' => 'LD (Stars)', 'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'minus' => 1, 'sort_w' => 21,),
                                 'countrystar' => array('filter' => 'countrystar', 'parent' => 'country', 'title' => 'Actor Star Country', 'placeholder' => 'star', 'minus' => 1,),
                             ),
                         ),
@@ -219,38 +219,6 @@ class CriticSearch extends AbstractDB {
                         ),
                     ),
                 ),
-            /*
-              // facets_race_cast
-              'race_cast' => array('title' => 'race_cast',),
-              'race' => array('filter' => 'actor', 'parent' => 'race_cast', 'name' => 'actor_all', 'title' => 'Cast', 'filter_key' => 'race', 'minus' => 1,),
-              'starrace' => array('filter' => 'actorstar', 'parent' => 'race_cast', 'name' => 'actor_star', 'title' => 'Stars', 'filter_key' => 'race', 'minus' => 1,),
-              'mainrace' => array('filter' => 'actormain', 'parent' => 'race_cast', 'name' => 'actor_main', 'title' => 'Supporting', 'filter_key' => 'race', 'minus' => 1,),
-              // facets_gender
-              'gender_cast' => array('title' => 'gender_cast',),
-              'gender' => array('parent' => 'gender_cast', 'title' => 'Cast Gender', 'filter_key' => 'gender', 'minus' => 1,),
-              'stargender' => array('parent' => 'gender_cast', 'title' => 'Star Gender', 'filter_key' => 'gender', 'minus' => 1,),
-              'maingender' => array('parent' => 'gender_cast', 'title' => 'Supporting Gender', 'filter_key' => 'gender', 'minus' => 1,),
-              'sphoto' => array('parent' => 'sphoto', 'title' => 'Star conditions', 'filter_key' => 'sphoto', 'minus' => 1, 'hide' => 1),
-              // search actor_filters
-              'actors' => array('title' => 'Actors',),
-              'actor' => array('filter' => 'actor_all', 'parent' => 'actors', 'title' => 'Actor', 'placeholder' => '', 'minus' => 1,),
-              'actorstar' => array('filter' => 'actor_star', 'parent' => 'actors', 'title' => 'Actor Star', 'placeholder' => 'star', 'minus' => 1,),
-              'actormain' => array('filter' => 'actor_main', 'parent' => 'actors', 'title' => 'Actor Supporting', 'placeholder' => 'main', 'minus' => 1,),
-              // actors simpson
-              'actors_simpson' => array('title' => 'Literal Diversity',),
-              'simall' => array('parent' => 'actors_simpson', 'title' => 'Literal Diversity', 'facet' => 'rating', 'titlesm' => 'LD', 'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'sorted' => 1, 'minus' => 1, 'sort_w' => 21,),
-              'simstar' => array('parent' => 'actors_simpson', 'title' => 'Literal Diversity (Star)', 'facet' => 'rating', 'titlesm' => 'LD (Star)', 'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'minus' => 1, 'sort_w' => 21,),
-              'simmain' => array('parent' => 'actors_simpson', 'title' => 'Literal Diversity (Supporting)', 'facet' => 'rating', 'titlesm' => 'LD (Supporting)', 'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'minus' => 1, 'sort_w' => 21,),
-              //'actors_simpson_mf' => array('title' => 'Literal Diversity Gender',),
-              //'simmfall' => array('parent' => 'actors_simpson_mf', 'title' => 'Literal Diversity Gender', 'facet' => 'rating', 'titlesm' => 'LD Gender',  'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'minus' => 1, 'sort_w' => 21, 'hide' => 1,),
-              //'simmfstar' => array('parent' => 'actors_simpson_mf', 'title' => 'Literal Diversity Gender (Star)', 'facet' => 'rating', 'titlesm' => 'LD Gender (Star)', 'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'minus' => 1, 'sort_w' => 21, 'hide' => 1,),
-              //'simmfmain' => array('parent' => 'actors_simpson_mf', 'title' => 'Literal Diversity Gender (Supporting)', 'facet' => 'rating', 'titlesm' => 'LD Gender (Supporting)',  'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'minus' => 1, 'sort_w' => 21, 'hide' => 1,),
-              // Actors country
-              'actorscountry' => array('title' => 'Actors Country',),
-              'countryall' => array('filter' => 'countryall', 'parent' => 'actorscountry', 'title' => 'Actor Country', 'placeholder' => '', 'minus' => 1,),
-              'countrystar' => array('filter' => 'countrystar', 'parent' => 'actorscountry', 'title' => 'Actor Star Country', 'placeholder' => 'star', 'minus' => 1,),
-              'countrymain' => array('filter' => 'countrymain', 'parent' => 'actorscountry', 'title' => 'Actor Supporting Country', 'placeholder' => 'main', 'minus' => 1,),
-             */
             ),
             'race_gender' => array(
                 'race' => 'gender',
@@ -354,28 +322,7 @@ class CriticSearch extends AbstractDB {
                         ),
                     ),
                 ),
-            // facets_race_directors
-            /* 'race_dir' => array('title' => 'race_dir',),
-              'dirrace' => array('filter' => 'dirall', 'parent' => 'race_dir', 'name' => 'director_all', 'title' => 'All Production race', 'filter_key' => 'race', 'minus' => 1,),
-              'dirsrace' => array('filter' => 'dir', 'parent' => 'race_dir', 'name' => 'director_dir', 'title' => 'Directors race', 'filter_key' => 'race', 'minus' => 1,),
-              'writersrace' => array('filter' => 'dirwrite', 'parent' => 'race_dir', 'name' => 'director_write', 'title' => 'Writers race', 'filter_key' => 'race', 'minus' => 1,),
-              'castdirrace' => array('filter' => 'dircast', 'parent' => 'race_dir', 'name' => 'director_cast', 'title' => 'Casting Directors race', 'filter_key' => 'race', 'minus' => 1,),
-              'producerrace' => array('filter' => 'dirprod', 'parent' => 'race_dir', 'name' => 'director_prod', 'title' => 'Producers race', 'filter_key' => 'race', 'minus' => 1,),
-              // facets_gender_dir
-              'gender_dir' => array('title' => 'gender_dir',),
-              'dirgender' => array('parent' => 'gender_dir', 'title' => 'All Production Gender', 'filter_key' => 'gender', 'minus' => 1,),
-              'dirsgender' => array('parent' => 'gender_dir', 'title' => 'Directors Gender', 'filter_key' => 'gender', 'minus' => 1,),
-              'writergender' => array('parent' => 'gender_dir', 'title' => 'Writers Gender', 'filter_key' => 'gender', 'minus' => 1,),
-              'castgender' => array('parent' => 'gender_dir', 'title' => 'Casting Directors Gender', 'filter_key' => 'gender', 'minus' => 1,),
-              'producergender' => array('parent' => 'gender_dir', 'title' => 'Producers Gender', 'filter_key' => 'gender', 'minus' => 1,),
-              // director_filters
-              'dirs' => array('title' => 'Production',),
-              'dirall' => array('filter' => 'director_all', 'parent' => 'dirs', 'title' => 'Production', 'placeholder' => 'all', 'minus' => 1,),
-              'dir' => array('filter' => 'director_dir', 'parent' => 'dirs', 'title' => 'Director', 'placeholder' => 'director', 'minus' => 1,),
-              'dirwrite' => array('filter' => 'director_write', 'parent' => 'dirs', 'title' => 'Writer', 'placeholder' => 'writer', 'minus' => 1,),
-              'dircast' => array('filter' => 'director_cast', 'parent' => 'dirs', 'title' => 'Casting director', 'placeholder' => 'casting', 'minus' => 1,),
-              'dirprod' => array('filter' => 'director_prod', 'parent' => 'dirs', 'title' => 'Producer', 'placeholder' => 'producer', 'minus' => 1,), */
-            ),
+                ),
             'race_gender_dir' => array(
                 'dirrace' => 'dirgender',
                 'dirsrace' => 'dirsgender',
@@ -464,8 +411,8 @@ class CriticSearch extends AbstractDB {
                 'canl' => array('title' => 'MyAnimeList', 'eid' => 'eanl', 'titlesm' => 'MyAnimeList', 'group' => 'pop', 'icon' => 'mal', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'no_data' => 1,),
                 'crt' => array('title' => 'Rotten Tomatoes', 'eid' => 'ert', 'titlesm' => 'Rotten Tomatoes', 'group' => 'pop', 'icon' => 'rt', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'no_data' => 1,),
                 'crta' => array('title' => 'Rotten Tomatoes Audience', 'eid' => 'erta', 'titlesm' => 'Rotten Tomatoes Audience', 'group' => 'pop', 'icon' => 'rt', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'no_data' => 1,),
-                'pop' => array('title' => 'ZR Critics', 'eid' => 'epop', 'titlesm' => 'ZR Critics', 'group' => 'pop', 'icon' => 'zr', 'sorted' => 1, 'no_data' => 1,),
-                //'caurating' => array('title' => 'ZR Audience', 'titlesm' => 'ZR Audience', 'group' => 'pop', 'icon' => 'zr', 'sorted' => 1, 'no_data' => 1,),                
+                'pop' => array('title' => 'ZR Critics', 'eid' => 'epop', 'titlesm' => 'ZR Critics', 'group' => 'pop', 'icon' => 'zr', 'sorted' => 1, 'no_data' => 1,),                
+                'caudience' => array('title' => 'ZR Audience', 'titlesm' => 'ZR Audience', 'group' => 'pop', 'icon' => 'zr', 'sorted' => 1, 'no_data' => 1,),                
                 'cfn' => array('title' => '4chan', 'titlesm' => '4chan', 'eid' => 'efn', 'group' => 'pop', 'icon' => 'fchan', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'no_data' => 1,),
                 // Global
                 'gpoptitle' => array('title' => 'Global Popularity', 'is_title' => 1, 'group' => 'pop', 'tabs' => array('movies', 'international', 'ethnicity'), 'no_data' => 1,),

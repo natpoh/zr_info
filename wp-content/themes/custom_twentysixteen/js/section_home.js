@@ -329,7 +329,11 @@ function create_total_rating(obj, only_tomatoes, rt_gap) {
                 name = 'ZR Audience';
             } else if (key == 'imdb_rating') {
                 name = 'IMDb';
-            } else if (key == 'kinop_rating') {
+            }
+            else if (key == 'ofdb_rating') {
+                name = 'OFDb';
+            }
+            else if (key == 'kinop_rating') {
                 name = 'Kinopoisk';
             } else if (key == 'Animelist') {
                 name = 'MyAnimeList';
@@ -1180,7 +1184,7 @@ function word_cloud(id) {
 
 
 function ff_content(data, id) {
-    let content = '<div class="column_header"><h2>Family Friendly Breakdown: <a href="#" data-value="' + id + '" class="empty_ff_rating empty_ff_popup_rating">+add</a></h2></div>';
+    let content = '<div class="column_header"><h2>Parental Guide: <a href="#" data-value="' + id + '" class="empty_ff_rating empty_ff_popup_rating">+add</a></h2></div>';
 
     if (data) {
         let data_ob = JSON.parse(data);
@@ -4247,7 +4251,7 @@ jQuery(document).ready(function () {
         }
 
         var content = jQuery(this).next('.accordion-content');
-
+        jQuery(this).toggleClass('is_open');
         content.slideToggle(500,function (e){
             prnt.toggleClass('active');
 

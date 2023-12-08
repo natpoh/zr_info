@@ -208,10 +208,10 @@ class CriticFront extends SearchFacets {
                   2 => array('title' => 'Skip It'),
                   3 => array('title' => 'Watch If Free')
                   Positive
-                  5                        (watch if free or pay to watch )
-                  4                        (watch if free or pay to watch )
-                  ≥3.5                     (watch if free or pay to watch )
-                  2.9 - 3.2            (pay to watch only)
+                  5     (watch if free or pay to watch )
+                  4     (watch if free or pay to watch )
+                  >3.7   (watch if free or pay to watch )
+                  >=3    (pay to watch only)
                  * 
                  */
 

@@ -248,14 +248,14 @@ body.theme_dark .single_post .movie_summary .block span {
     top: 7px;
     background: url(../images/ar_u.svg) 0px 0px;
     transform: rotate(-180deg);
-    transition: transform 0.3s ease;
+    transition: transform 0.5s ease;
     width: 30px;
     height: 30px;
     display: block;
     background-size: contain;
     filter: invert(100);
 }
-.accordion-item.active > .accordion-header::after {
+.accordion-item > .accordion-header.is_open::after {
     transform: rotate(0deg);
 }
 
@@ -286,7 +286,7 @@ body.theme_dark .single_post .movie_summary .block span {
     border: none;
     letter-spacing: 0.1em;
     padding: 10px;
-    z-index: 110;
+    z-index: 9;
 }
 .watch_buttom:hover{
     background-color: var(--blue-light-1);
@@ -1947,11 +1947,11 @@ div.sortable {
     }
     .movie_total_rating>.rating_block>div.diversity:after{
 
-        content:'Diversity/Wokeness';
+        content:'Representation';
     }
     .movie_total_rating>.rating_block>div.family_friendly:after{
 
-        content:'Family Friendly Breakdown';
+        content:'Parental Guide';
     }
     .movie_total_rating>.rating_block>div.edit:after{
 

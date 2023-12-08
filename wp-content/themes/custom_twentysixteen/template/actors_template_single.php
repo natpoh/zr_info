@@ -147,7 +147,7 @@ else
     $content .=   details_template('Similar ' . $ptipe ,'<section class="dmg_content inner_content" id="actor_data_dop" ><div  id="similar_movies" data-name="' . $ptipe . '" data-value="' . $post_id . '" class="not_load"></div></section>');
 
 
-    $content .= details_template('Family Friendly Breakdown','<section class="dmg_content inner_content" id="actor_data_dop" ><div  id="family_friendly" data-value="' . $post_id . '" class="not_load"></div></section>');
+    $content .= details_template('Parental Guide','<section class="dmg_content inner_content" id="actor_data_dop" ><div  id="family_friendly" data-value="' . $post_id . '" class="not_load"></div></section>');
 $colum=7;
 if ($post_type=='VideoGame') {
 
