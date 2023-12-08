@@ -15,6 +15,7 @@ global $array_jobs;
 
 $array_jobs = array(
 
+'auto_publish_crowdsource'=>10, ///auto publish crowdsource if enable
 'add_tmdb_without_id'=>10,///add imdb id to tmdb database
 ///'check_last_actors'=>20,
 ///'check_kairos'=>5,///add kairos images

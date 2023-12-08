@@ -70,7 +70,8 @@ class CrowdAdmin
         if (isset($_POST['submit_crowd']))
         {
             $auto_publish_crowdsource  = $_POST['auto_publish_checkbox'];
-            Optiondata::set_option('',$auto_publish_crowdsource,'auto_publish_crowdsource');
+            Optiondata::set_option('',$auto_publish_crowdsource,'auto_publish_crowdsource',1);
+
         }
 
 
