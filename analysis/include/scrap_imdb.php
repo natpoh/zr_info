@@ -1206,6 +1206,15 @@ function add_actors_description($actor_id,$description,$sync=1)
 
 
 }
+function auto_publish_crowdsource()
+{
+    global $debug;
+    $debug = $_GET['debug'];
+
+    !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
+
+    Crowdsource::auto_publish_crowdsource();
+}
 
 function migration_actors_description()
 {
@@ -3762,13 +3771,8 @@ $tablesQuery = "SHOW TABLES";
 
 if (isset($_GET['auto_publish_crowdsource'])) {
 
-    global $debug;
-    $debug = $_GET['debug'];
 
-    !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
-
-    Crowdsource::auto_publish_crowdsource();
-
+    auto_publish_crowdsource();
 
 
 
