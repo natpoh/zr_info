@@ -2759,7 +2759,7 @@ class CriticSearch extends AbstractDB {
             $filters_and = $this->get_filters_query($filters, array(), $query_type, '', $aid);
 
             // Main sql
-            $sql = sprintf("SELECT id, aid, wp_uid, fid, publish, date,  last_upd, frating, title, content, ftab, link, weight() w" . $order['select'] . $filters_and['select']
+            $sql = sprintf("SELECT id, aid, wp_uid, fid, publish, date, last_upd, frating, title, content, img, ftab, link, weight() w" . $order['select'] . $filters_and['select']
                     . " FROM filters WHERE id>0" . $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
 
             $ret = $this->movie_results($sql, $match, $search_query);

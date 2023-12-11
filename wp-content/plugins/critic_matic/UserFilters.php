@@ -8,7 +8,6 @@
  * TODO
  * 1. Check user login
  * 2. Edit link
- * 3. 
  * 
  */
 class UserFilters extends AbstractDB {
@@ -22,6 +21,12 @@ class UserFilters extends AbstractDB {
         'international' => 4,
         'ethnicity' => 5,
     );
+    public $filters_img_dir = "filters_img";
+    public $allowed_mime_types = [
+        'image/jpeg' => '.jpg',
+        'image/gif' => '.gif',
+        'image/png' => '.png',
+    ];
     public $an_tabs = array(4, 5);
 
     public function __construct($cm = '') {
@@ -36,8 +41,12 @@ class UserFilters extends AbstractDB {
         $link = $data['link'];
         $title = $data['title'];
         $content = $data['content'];
+        $croped_image = $data['img'];
+        $remove_img = (int) $data['remove_img'];
         $publish = (int) $data['publish'];
         $curr_time = $this->curr_time();
+        $filename = '';
+        $source_dir = WP_CONTENT_DIR . '/uploads/' . $this->filters_img_dir;
 
         $user = wp_get_current_user();
         $wp_uid = $user->exists() ? $user->ID : 0;
@@ -64,70 +73,127 @@ class UserFilters extends AbstractDB {
                 $aid = $this->cm->create_author_by_name($author_name, $author_type, $author_status, $options, $wp_uid);
             }
 
-            if ($link_data) {
-                // Exist filter
-                $user_add_data = array(
-                    'publish' => $publish,
-                    'aid' => $aid,
-                    'wp_uid' => $wp_uid,
-                    'fid' => $link_data->id,
-                    'last_upd' => $curr_time,
-                    'title' => $title,
-                    'content' => $content,
-                );
+            // Upload image
+            $img_error = 0;
+            if ($croped_image) {
 
-                // Check user data
-                $user_data = $this->get_user_data($link_data->id, $wp_uid);
-                if ($user_data) {
-                    // Update user data
-                    $user_id = $user_data->id;
-                    $this->db_update($user_add_data, $this->db['user_filters'], $user_id);
-                    $msg = "The filter updated successfully";
-                    $ret_class = 'success';
-                } else {
-                    // Add user data
-                    $user_add_data['date'] = $curr_time;
-                    $user_id = $this->db_insert($user_add_data, $this->db['user_filters']);
-                    if ($user_id) {
-                        $msg = "The filter added successfully";
-                        $ret_class = 'success';
-                    }
+                // This is an image?
+                list($type, $croped_image) = explode(';', $croped_image);
+                list(, $croped_image) = explode(',', $croped_image);
+                $file_content = base64_decode($croped_image);
+
+                $src_type = $this->isImage($file_content);
+                if (!$src_type) {
+                    $img_error = 1;
+                    $msg = 'Upload image error';
                 }
-            } else {
-                // New filter
 
-                $filters = $this->get_filters_by_url($link);
-                $tab_name = isset($filters['filters']['tab']) ? $filters['filters']['tab'] : '';
+                if ($img_error == 0 && !isset($this->allowed_mime_types[$src_type])) {
+                    $img_error = 1;
+                    $msg = 'Upload image type is not allowed';
+                }
 
-                $def_tab = 1;
+                if ($img_error == 0) {
+                    $filename = $aid . '-' . $curr_time . $this->allowed_mime_types[$src_type];
 
-                $tab = isset($this->tab_names[$tab_name]) ? $this->tab_names[$tab_name] : $this->get_def_tab($link);
+                    // Save image           
 
-                // Add link data
-                $link_add_data = array(
-                    'date' => $curr_time,
-                    'tab' => $tab,
-                    'link_hash' => $link_hash,
-                    'link' => $link,
-                );
-                $link_id = $this->db_insert($link_add_data, $this->db['link_filters']);
-                if ($link_id) {
-                    // Add user data
+                    if (class_exists('ThemeCache')) {
+                        ThemeCache::check_and_create_dir($source_dir);
+                    }
+
+                    $img_path = $source_dir . "/" . $filename;
+
+                    if (file_exists($img_path)) {
+                        unlink($img_path);
+                    }
+
+                    // Save file
+                    $fp = fopen($img_path, "w");
+                    fwrite($fp, $file_content);
+                    fclose($fp);
+                }
+            }
+
+            if ($img_error == 0) {
+                if ($link_data) {
+                    // Exist filter
                     $user_add_data = array(
                         'publish' => $publish,
                         'aid' => $aid,
                         'wp_uid' => $wp_uid,
-                        'fid' => $link_id,
-                        'date' => $curr_time,
+                        'fid' => $link_data->id,
                         'last_upd' => $curr_time,
                         'title' => $title,
                         'content' => $content,
                     );
-
-                    $user_id = $this->db_insert($user_add_data, $this->db['user_filters']);
-                    if ($user_id) {
-                        $msg = "The filter added successfully";
+                    if ($filename) {
+                        $user_add_data['img'] = $filename;
+                    }
+                    // Check user data
+                    $user_data = $this->get_user_data($link_data->id, $wp_uid);
+                    if ($user_data) {
+                        // Check old image
+                        if (($filename && $user_data->img !== $filename) || $remove_img == 1) {
+                            $img_path = $source_dir . "/" . $user_data->img;
+                            if (file_exists($img_path)) {
+                                unlink($img_path);
+                            }
+                        }
+                        if ($remove_img == 1) {
+                            $user_add_data['img'] = '';
+                        }
+                        // Update user data
+                        $user_id = $user_data->id;
+                        $this->db_update($user_add_data, $this->db['user_filters'], $user_id);
+                        $msg = "The filter updated successfully";
                         $ret_class = 'success';
+                    } else {
+                        // Add user data
+                        $user_add_data['date'] = $curr_time;
+                        $user_id = $this->db_insert($user_add_data, $this->db['user_filters']);
+                        if ($user_id) {
+                            $msg = "The filter added successfully";
+                            $ret_class = 'success';
+                        }
+                    }
+                } else {
+                    // New filter
+
+                    $filters = $this->get_filters_by_url($link);
+                    $tab_name = isset($filters['filters']['tab']) ? $filters['filters']['tab'] : '';
+
+                    $def_tab = 1;
+
+                    $tab = isset($this->tab_names[$tab_name]) ? $this->tab_names[$tab_name] : $this->get_def_tab($link);
+
+                    // Add link data
+                    $link_add_data = array(
+                        'date' => $curr_time,
+                        'tab' => $tab,
+                        'link_hash' => $link_hash,
+                        'link' => $link,
+                    );
+                    $link_id = $this->db_insert($link_add_data, $this->db['link_filters']);
+                    if ($link_id) {
+                        // Add user data
+                        $user_add_data = array(
+                            'publish' => $publish,
+                            'aid' => $aid,
+                            'wp_uid' => $wp_uid,
+                            'fid' => $link_id,
+                            'date' => $curr_time,
+                            'last_upd' => $curr_time,
+                            'title' => $title,
+                            'content' => $content,
+                            'img' => $filename,
+                        );
+
+                        $user_id = $this->db_insert($user_add_data, $this->db['user_filters']);
+                        if ($user_id) {
+                            $msg = "The filter added successfully";
+                            $ret_class = 'success';
+                        }
                     }
                 }
             }
@@ -143,6 +209,10 @@ class UserFilters extends AbstractDB {
             </div>
         </form>
         <?php
+    }
+
+    public function get_img_path($img) {
+        return '/wp-content/uploads/' . $this->filters_img_dir . '/' . $img;
     }
 
     public function get_def_tab($link) {
@@ -179,6 +249,7 @@ class UserFilters extends AbstractDB {
         $filter_id = 0;
         $title = '';
         $content = '';
+        $img = '';
         $already_publish = '';
 
         // Get exist link        
@@ -192,6 +263,7 @@ class UserFilters extends AbstractDB {
                 $publish = $user_data->publish;
                 $title = $user_data->title;
                 $content = $user_data->content;
+                $img = $user_data->img;
             } else {
                 $already_publish = $this->already_publish($link_data->id, $wp_uid);
                 if ($already_publish) {
@@ -213,6 +285,24 @@ class UserFilters extends AbstractDB {
                     do_action('comment_form_logged_in_after', $commenter, $user_identity);
                     ?>               
                 </div>
+            </div>
+            <div class="row">
+                <div class="col_input"> 
+                    <div id="filter_image"><?php if ($img) { ?>
+                            <img src="<?php print $this->get_img_path($img); ?>">
+                        <?php } ?></div>                
+                </div>                
+                <div class="col_input">  
+                    <button id="upl_filter_image" class="btn-small">Upload image</button>                     
+                    <button id="remove_filter_image" class="btn-small btn-second<?php
+                    if (!$img) {
+                        print " ishide";
+                    }
+                    ?>">Remove image</button>
+                    <input type="file" id="upl_filter_file" style="display: none;" >                                        
+                    <input type="hidden" id="upl_filter_thumb" >                    
+                    <input type="hidden" id="remove_filter_thumb" val="0"> 
+                </div>                
             </div>
             <div class="row">
                 <div class="col_title">Filter link:</div>
@@ -248,7 +338,7 @@ class UserFilters extends AbstractDB {
                 </div>      
                 <?php if ($already_publish): ?>
                     <div class="desc col_title">Default: not published. Reason: the same filter has already been published by another user.</div>
-                <?php endif; ?>
+        <?php endif; ?>
             </div>
             <div class="submit_data">
                 <button id="submit-filter" class="button">Submit</button>
@@ -279,10 +369,9 @@ class UserFilters extends AbstractDB {
                 $search_front->init_search_filters();
                 $ret['filters'] = $search_front->filters;
             }
-            
-            $search_front->cs->get_filters_query($ret['filters']);            
+
+            $search_front->cs->get_filters_query($ret['filters']);
             $ret['tags'] = $search_front->search_filters($curr_tab, true);
-            
         }
         // Deinit url
         $_SERVER['REQUEST_URI'] = $last_req;
@@ -290,11 +379,11 @@ class UserFilters extends AbstractDB {
         return $ret;
     }
 
-    public function get_filter_link($fid){
+    public function get_filter_link($fid) {
         $link = '/f/' . $fid;
         return $link;
     }
-    
+
     public function get_filters_count_by_wpuser($wp_uid = 0, $owner = 0) {
 
         $and_publish = '';
@@ -418,7 +507,7 @@ class UserFilters extends AbstractDB {
         return $result;
     }
 
-    private function filters_delta() {
+    public function filters_delta() {
         $data = array(
             'cmd' => 'filters_delta',
         );
@@ -428,6 +517,20 @@ class UserFilters extends AbstractDB {
         }
         $host = SYNC_HOST;
         return $this->cm->post($data, $host);
+    }
+
+    public function isImage($temp_file, $debug = false) {
+        //Провереяем, картинка ли это
+        @list($src_w, $src_h, $src_type_num) = array_values(getimagesizefromstring($temp_file));
+        $src_type = image_type_to_mime_type($src_type_num);
+        if ($debug) {
+            print_r($src_type);
+        }
+
+        if (empty($src_w) || empty($src_h) || empty($src_type)) {
+            return '';
+        }
+        return $src_type;
     }
 
 }

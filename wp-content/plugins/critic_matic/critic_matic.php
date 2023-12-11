@@ -1505,6 +1505,10 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'last_upd', 'fid'), "data_user_filters");
 
+    // Filter images
+    $sql = "ALTER TABLE `data_user_filters` ADD `img` varchar(255) NOT NULL default ''";
+    Pdo_an::db_query($sql);
+    
     /*
      * Ethic img
      */
