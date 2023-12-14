@@ -2217,7 +2217,8 @@ function list_hooked_functions($tag = false) {
 }
 
 function replace_zr_url($content) {
-    return preg_replace('/http[^\.]+(zeitgeistreviews\.com|zgreviews\.com|rwt.4aoc\.ru)/', '', $content);
+
+    return preg_replace('/\"http[^\.]+(zeitgeistreviews\.com|zgreviews\.com|rwt.4aoc\.ru)/', '"', $content);
 }
 function get_zr_footer() {
     return get_short_zr_url('wp_footer');

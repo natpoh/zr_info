@@ -314,11 +314,16 @@ article.main {
 }
 
 .uw-title {
-    background: #3c78a7;
+    background-color: var(--buttons);
+    border-color: rgb(0 0 0 / 60%);
     color: #fff;
-    padding: 0 20px;
+    padding: 5px 20px;
     line-height: 1.75rem;
     margin: 0 -15px 1rem -15px;
+}
+
+body.theme_dark .uw-title {
+   color: var(--blue-light-3); 
 }
 
 .user-widget .uavh, .user-widget #cauthor {
@@ -1081,7 +1086,7 @@ body.theme_dark .simple .items{
     .uw-title {
         display: inline-block;
         margin: 0 0 1rem 0;
-        padding: 0 15px;
+        padding: 5px 20px;
     }
 
     .user-widget .uavh{

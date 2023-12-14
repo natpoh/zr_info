@@ -14,7 +14,11 @@
                         <td><input type="text" name="score_avatar" value="<?php print $ss['score_avatar'] ?>">                             
                         </td>
                     </tr>                   
-
+                    <tr class="wrap">
+                        <th><label for=""><?php print __('Upload filter image') ?></label></th>
+                        <td><input type="text" name="score_filter_image" value="<?php print $ss['score_filter_image'] ?>">                             
+                        </td>
+                    </tr>  
                 </tbody>
             </table>
 

@@ -120,7 +120,9 @@ nav,
 section {
     display: block;
 }
-
+.ishide{
+    display: none;
+}
 details {
     position: relative;
     box-sizing: border-box;
@@ -3045,11 +3047,15 @@ body.theme_dark .facet .more-popup{
 }
 
 .sfilter-item {
-    max-height: 20em;
+    max-height: 30em;
     overflow-y: auto;
     overflow-x: hidden;
     display: block;
     color: #000;
+}
+
+.a_msg_i .sfilter-item img {
+    max-height: 100%;
 }
 
 
@@ -3122,6 +3128,11 @@ display: none;
 }
 
 body.logged-in #search-filters .sohf.save-filters {
+    display: inline-block;
+}
+
+
+#search-filters .filters-wrapper .filter.save-filters{
     display: inline-block;
 }
 
@@ -6137,13 +6148,17 @@ body.theme_dark  .site-content {
 }
 
 button, input[type="submit"] {
-    background-color: #678db8;
-    border-color: #678db8;
+    background-color: var(--buttons);
+    border-color: rgb(0 0 0 / 60%);
     color: #fff;
     font-size: 18px;
     letter-spacing: 0.1em;
     padding: .62em 1.62em;
     text-transform: uppercase;
+}
+
+body.theme_dark button {
+   color: var(--blue-light-3); 
 }
 
 button.in_process {
@@ -6156,7 +6171,7 @@ button.btn-second {
 }
 
 button.btn-second:hover{
-    background-color: #111;
+    background-color: #222;
 }
 
 #secondary .mailpoet_form p.mailpoet_paragraph {
@@ -14673,6 +14688,10 @@ body.theme_dark .note_show_content_3 a {
 
 
         opacity:.09!important;
+    }
+    
+    .sfilter-item {
+        max-height: 100%;
     }
 }
 

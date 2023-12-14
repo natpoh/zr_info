@@ -120,7 +120,7 @@ function uploadAvatar() {
                 $('.av_action.active').removeClass('active');
                 $('#av_action_' + select).addClass('active');
                 // TODO ajax change default avatar, reload user avatar
-                console.log(select);
+                //console.log(select);
                 var author = $('#author_id');
                 var av_size = $('#author_image').attr('data-size');
                 $.ajax({

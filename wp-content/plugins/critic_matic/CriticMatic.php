@@ -271,6 +271,7 @@ class CriticMatic extends AbstractDB {
             'audience_unique' => 0,
             'audience_top_unique' => 0,
             'score_avatar' => 50,
+            'score_filter_image' => 0,
         );
 
         $this->sync_data = DB_SYNC_DATA == 1 ? true : false;

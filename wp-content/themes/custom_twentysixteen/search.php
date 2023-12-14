@@ -86,25 +86,30 @@ if (isset($_POST['filters'])) {
 
     // Single critic post
 
-    /*
-      if (isset($filters['old_reviews'])) {
-      // Redirect from old reviews to new
-      $critic_id = $cfront->get_critic_url_by_old_slug($filters['old_reviews']);
-      if ($critic_id) {
-      $filters['critics'][0] = $critic_id;
-      }
-      }
-     */
     if (isset($filters['sfilter'])) {
         // Load custom search filter
         $uf = $cfront->cm->get_uf();
         $req = $_SERVER['REQUEST_URI'];
+        global $sfilter;
         $sfilter = $uf->load_filter_by_url($req);
+        
+        /* p_r($sfilter);
+          exit;
+         * stdClass Object
+          (
+          [id] => 14
+          [title] => Audience SUGGESTION is Pay To Consume and Audience SUGGESTION is Consume If Free
+          [content] => fff
+          [aid] => 1374
+          [wp_uid] => 42
+          [link] => /search/show_wokedata_auvote/auvote_pay_free
+          [tab] => 1
+          )
+         */
         if ($sfilter) {
-
             if (in_array($sfilter->tab, $uf->an_tabs)) {
                 // Analytics
-                $filters['analytics']=1;
+                $filters['analytics'] = 1;
                 $_SERVER['REQUEST_URI'] = $sfilter->link;
             } else {
                 // Search
@@ -142,7 +147,7 @@ if (isset($_POST['filters'])) {
         gmi('init_search_filters');
 
         $uid = $cfront->get_uid();
-        
+
         // Get current tab
         $curr_tab = $cfront->get_search_tab();
         $results = $cfront->find_results($uid);
@@ -157,6 +162,9 @@ if (isset($_POST['filters'])) {
         if ($keywords) {
             $search_title = 'Search results:';
             $search_text = 'Search Results for: ' . $keywords . '. ' . $blog_title;
+        }
+        if ($sfilter){
+            $search_title = $sfilter->title;
         }
 
         $tab_key = $cfront->get_tab_key();
@@ -199,7 +207,7 @@ if (isset($_POST['filters'])) {
         $search_front->init_search_filters();
 
         $uid = $cfront->get_uid();
-        
+
         // Get current tab
         $curr_tab = $search_front->get_search_tab();
         $tab_key = $search_front->get_tab_key();
@@ -219,12 +227,12 @@ if (isset($_POST['filters'])) {
         }
 
         $tab_key = $search_front->get_tab_key();
-        
+
         // Create url
         $search_url = $search_front->get_current_search_url();
         $uid = $search_front->get_uid();
         $user_filter_id = $search_front->get_user_search_filter($uid, $search_url);
-        
+
         $fiters = $search_front->search_filters($tab_key);
         $sort = $search_front->search_sort($tab_key, $results);
         $facets = $results[$tab_key]['facets'];
