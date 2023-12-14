@@ -75,9 +75,7 @@ class UserFilters extends AbstractDB {
 
             // Upload image
             $img_error = 0;
-            $uscore_filter_image = $this->score_filter_image($wp_uid);
-
-            if ($croped_image && $uscore_filter_image) {
+            if ($croped_image) {
 
                 // This is an image?
                 list($type, $croped_image) = explode(';', $croped_image);
@@ -129,23 +127,21 @@ class UserFilters extends AbstractDB {
                         'title' => $title,
                         'content' => $content,
                     );
-                    if ($uscore_filter_image && $filename) {
+                    if ($filename) {
                         $user_add_data['img'] = $filename;
                     }
                     // Check user data
                     $user_data = $this->get_user_data($link_data->id, $wp_uid);
                     if ($user_data) {
                         // Check old image
-                        if ($uscore_filter_image) {
-                            if (($filename && $user_data->img !== $filename) || $remove_img == 1) {
-                                $img_path = $source_dir . "/" . $user_data->img;
-                                if (file_exists($img_path)) {
-                                    unlink($img_path);
-                                }
+                        if (($filename && $user_data->img !== $filename) || $remove_img == 1) {
+                            $img_path = $source_dir . "/" . $user_data->img;
+                            if (file_exists($img_path)) {
+                                unlink($img_path);
                             }
-                            if ($remove_img == 1) {
-                                $user_add_data['img'] = '';
-                            }
+                        }
+                        if ($remove_img == 1) {
+                            $user_add_data['img'] = '';
                         }
                         // Update user data
                         $user_id = $user_data->id;
@@ -256,7 +252,6 @@ class UserFilters extends AbstractDB {
         $img = '';
         $already_publish = '';
 
-
         // Get exist link        
         $link_data = $this->get_link_by_hash($link_hash);
         if ($link_data) {
@@ -291,26 +286,24 @@ class UserFilters extends AbstractDB {
                     ?>               
                 </div>
             </div>
-            <?php if ($this->score_filter_image($wp_uid)): ?>
-                <div class="row">
-                    <div class="col_input"> 
-                        <div id="filter_image"><?php if ($img) { ?>
-                                <img src="<?php print $this->get_img_path($img); ?>">
-                            <?php } ?></div>                
-                    </div>                
-                    <div class="col_input">  
-                        <button id="upl_filter_image" class="btn-small">Upload image</button>                     
-                        <button id="remove_filter_image" class="btn-small btn-second<?php
-                        if (!$img) {
-                            print " ishide";
-                        }
-                        ?>">Remove image</button>
-                        <input type="file" id="upl_filter_file" style="display: none;" >                                        
-                        <input type="hidden" id="upl_filter_thumb" >                    
-                        <input type="hidden" id="remove_filter_thumb" val="0"> 
-                    </div>                
-                </div>
-            <?php endif ?>
+            <div class="row">
+                <div class="col_input"> 
+                    <div id="filter_image"><?php if ($img) { ?>
+                            <img src="<?php print $this->get_img_path($img); ?>">
+                        <?php } ?></div>                
+                </div>                
+                <div class="col_input">  
+                    <button id="upl_filter_image" class="btn-small">Upload image</button>                     
+                    <button id="remove_filter_image" class="btn-small btn-second<?php
+                    if (!$img) {
+                        print " ishide";
+                    }
+                    ?>">Remove image</button>
+                    <input type="file" id="upl_filter_file" style="display: none;" >                                        
+                    <input type="hidden" id="upl_filter_thumb" >                    
+                    <input type="hidden" id="remove_filter_thumb" val="0"> 
+                </div>                
+            </div>
             <div class="row">
                 <div class="col_title">Filter link:</div>
                 <div class="col_input">                    
@@ -345,7 +338,7 @@ class UserFilters extends AbstractDB {
                 </div>      
                 <?php if ($already_publish): ?>
                     <div class="desc col_title">Default: not published. Reason: the same filter has already been published by another user.</div>
-                <?php endif; ?>
+        <?php endif; ?>
             </div>
             <div class="submit_data">
                 <button id="submit-filter" class="button">Submit</button>
@@ -353,24 +346,6 @@ class UserFilters extends AbstractDB {
             </div>
         </form>
         <?php
-    }
-
-    private function score_filter_image($wp_uid = 0) {
-        $ss = $this->cm->get_settings();
-        $score_filter_image = $ss['score_filter_image'];
-        $user_rating = 0;
-
-        if ($wp_uid) {
-            $uc = $this->cm->get_uc();
-            $carma = $uc->getCarma($wp_uid);
-            $user_rating = $carma[0];
-        }
-
-        if ($user_rating >= $score_filter_image) {
-            return true;
-        }
-
-        return false;
     }
 
     public function get_filters_by_url($url = '', $tags = false) {
@@ -505,7 +480,7 @@ class UserFilters extends AbstractDB {
     }
 
     public function get_user_filter_by_id($id = 0) {
-        $sql = sprintf("SELECT f.id, f.title, f.content, f.aid, f.wp_uid, f.img, l.link, l.tab "
+        $sql = sprintf("SELECT f.id, f.title, f.content, f.aid, f.wp_uid, l.link, l.tab "
                 . "FROM {$this->db['user_filters']} f "
                 . "INNER JOIN {$this->db['link_filters']} l ON l.id=f.fid "
                 . "WHERE f.id=%d", $id);
