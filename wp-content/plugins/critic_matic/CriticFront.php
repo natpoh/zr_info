@@ -3414,8 +3414,6 @@ class CriticFront extends SearchFacets {
             $title = ' ';
         }
         $content = $item->content;
-
-
         $aid = $item->aid;
         $author = $this->cm->get_author($aid);
 
@@ -3496,6 +3494,13 @@ class CriticFront extends SearchFacets {
         // Link to full post
         $link = $uf->get_filter_link($item->id);
 
+        // img
+        $img = $item->img;
+        $img_str = '';
+        if ($img){
+            $img_path = $uf->get_img_path($img);
+            $img_str = '<a href="' . $link . '"><img src="'.$img_path.'" /></a>';
+        }
 
         // Country
         $country_img = '';
@@ -3516,7 +3521,7 @@ class CriticFront extends SearchFacets {
 
 
             $filter_content = '
-                    <div class="sfilter-item">'
+                    <div class="sfilter-item">'.$img_str
                     . '<h3 class="sfilter-title"><a href="' . $link . '">' . $title . '</a></h3>' . $content
                     . '<div class="sfliter-link">Link: ' . $pub_icon . '<a href="' . $link . '">' . $link . '</a></div>'
                     . '<div>' . $fdata['tags'] . "</div></div>";

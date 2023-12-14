@@ -62,15 +62,10 @@ $sql = "SELECT `last_update` FROM `data_actors_meta` WHERE `actor_id`=".intval($
 
         $current_site  ='https://info.antiwoketomatoes.com';
         $cache_site  ='https://img.zeitgeistreviews.com';
-
-        if ($image)
-        {
-            $result = $cache_site.'/'.$image;
-            return $result;
-        }
-
         if (defined('LOCALCACHEIMAGES'))
         {
+
+
             if (LOCALCACHEIMAGES ==1)
             {
                 $cache_site  ='https://img.4aoc.ru';
@@ -83,9 +78,16 @@ $sql = "SELECT `last_update` FROM `data_actors_meta` WHERE `actor_id`=".intval($
                 $current_site ='https://zeitgeistreviews.com';
             }
         }
+        if ($image)
+        {
+            $result = $cache_site.'/jpg/'.$w.'/'.$image.'.jpg';
+            return $result;
+        }
 
+
+
+        ////https://img2.zeitgeistreviews.com/jpg/640/https://zeitgeistreviews.com/analysis/create_image/m_133608_v1701333138.jpg.jpg
         $result = $cache_site.'/jpg/'.$w.'/'.$current_site.'/analysis/create_image/' . $id .'_v'.$las_update.'.jpg.jpg';
-
 
         return $result;
     }

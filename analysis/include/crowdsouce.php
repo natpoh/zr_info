@@ -47,8 +47,9 @@ class Crowdsource
             $q ="UPDATE `data_review_crowd` SET `status` = 1 WHERE `status` = 0";
             Pdo_an::db_results_array($q);
 
-            $q ="UPDATE `data_critic_crowd` SET `status` = 1 WHERE `status` = 0";
-            Pdo_an::db_results_array($q);
+//            $q ="UPDATE `data_critic_crowd` SET `status` = 1 WHERE `status` = 0";
+//            Pdo_an::db_results_array($q);
+
             if ($debug)echo 'ok';
         }
         else
