@@ -1925,6 +1925,9 @@ class CriticFront extends SearchFacets {
                     $video_link = $this->find_video_link($valid_link);
                     if ($video_link) {
                         $theme_link = $video_link['video'];
+                        if (strstr($content,'="'.$link)||strstr($content,'=\''.$link)){
+                            $theme_link='';
+                        }
                     }
                 } else {
                     if ($need_replace) {

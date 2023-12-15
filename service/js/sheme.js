@@ -144,7 +144,7 @@ function inner_message(id,inner_data=[])
         {
             let getRequest='';
 
-
+           ///console.log(inner_data.requests,request_array);
             if (inner_data.requests)
             {
                 const result = {};
@@ -155,10 +155,23 @@ function inner_message(id,inner_data=[])
                         result[inner_data.requests[requestKey]] = request_array[key];
                     }
                 }
+              ///  console.log(result);
 
-                if (result)
+                let req_default='';
+
+                if (inner_data.requests.b_default)
+                {
+                    req_default = inner_data.requests.b_default;
+                }
+
+                if (result || req_default)
             {
-                let params = new URLSearchParams(result).toString();
+                let params =req_default;
+                if (result)
+                {
+                    params+=  new URLSearchParams(result).toString();
+                }
+
 
                 if (inner_data.link.includes('?')) {
                     getRequest = `&${params}`;
@@ -762,10 +775,12 @@ function prepare_data(className, value) {
     let idElement = document.querySelector('.b_id');
     var id = parseInt(idElement.textContent);
     var cube = findCubeById(id);
-
+    //console.log(cid,cube);
     if (cube) {
 
         cube[cid] = value;
+
+
 
         if (cid=='title' || cid=='desc' || cid=='table' || cid=='link')
         {
@@ -843,7 +858,7 @@ isoBlock.addEventListener('click', function(event) {
                 input.addEventListener('change', handleInputChange);
                 let  className = input.classList[0];
                 let cid = className.substring(2);
-                console.log(cid,foundData[cid]);
+               // console.log(cid,foundData[cid]);
                 input.value = foundData[cid] !== undefined ? foundData[cid] : '';
 
             });
@@ -881,7 +896,7 @@ isoBlock.addEventListener('click', function(event) {
 
         let datavalue  = foundData.table;
 
-        console.log(datavalue);
+     console.log(foundData);
 
         let dop_request='';
         if(foundData.requests)
@@ -897,7 +912,12 @@ isoBlock.addEventListener('click', function(event) {
 
                     // console.log(key,subkey,value);
 
-                     if (subkey && request_array[subkey])
+                     if (subkey=='default')
+                     {
+                         dop_request+='&'+value;
+                     }
+
+                    else  if (subkey && request_array[subkey])
                      {
                          dop_request+='&'+value+'='+request_array[subkey];
 
@@ -952,7 +972,10 @@ function save_request(dataType,  value) {
         }
 
 
-        console.log(cube);
+        let imsg =  inner_message(id,cube);
+        document.querySelector('.cube#cube_'+id+' .cube_desc_message').innerHTML=imsg;
+
+      //  console.log(cube);
         ///  document.querySelector('.cube#cube_'+id+' .cube_desc_message').innerHTML=imsg;e;
     }
     ///console.log(`dataType: ${dataType}, dataValue: ${dataValue}, value: ${value}`);

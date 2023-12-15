@@ -1612,21 +1612,12 @@ function prepare_search_data(block_id, data_str) {
             gs_ob[block_id] = JSON.parse(data_str);
         }
 
+        //console.log(gs_ob[block_id].data);
 
-        //console.log(data);
 
-        const sortedArray = Object.values(gs_ob[block_id].data).sort((a, b) => {
-            const titleA = a.data.weight;
-            const titleB = b.data.weight;
-            if (titleA < titleB) {
-                return -1;
-            }
-            if (titleA > titleB) {
-                return 1;
-            }
-            return 0;
-        });
+        let sortedArray = Object.values(gs_ob[block_id].data).sort((a, b) => Number(b.data.weight) - Number(a.data.weight));
 
+       /// console.log('sortedArray',sortedArray);
 
         let buttons = '';
         let sub_content = '';

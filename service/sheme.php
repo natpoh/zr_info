@@ -120,6 +120,9 @@ public static function front($data,$request_array=[])
         }
     }
 $rq='';
+
+    $request_array['default']='';
+
 if ($request_array)
 {
     foreach ($request_array as $n =>$val)

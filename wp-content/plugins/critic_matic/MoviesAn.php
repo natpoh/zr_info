@@ -1866,8 +1866,7 @@ class MoviesAn extends AbstractDBAn {
      * Movie keywords
      */
     public function get_movie_keywords($mid=0) {
-       // meta_movie_keywords' => 'meta_movie_keywords',
-        //    'meta_keywords'=>'meta_keywords',
+
         $sql = sprintf("SELECT k.id, k.name FROM {$this->db['meta_movie_keywords']} m"
         . " INNER JOIN {$this->db['meta_keywords']} k ON k.id = m.kid WHERE m.mid=%d", $mid);
         $data = $this->db_results($sql);
