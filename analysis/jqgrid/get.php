@@ -530,10 +530,10 @@ AND table_schema='".DB_NAME_AN."'";
                 {
                     foreach ($qr as $i=>$v)
                     {
-                        if (strstr($v,'_like_')  && strpos($v,'_like_')===0)
+                        if (strstr($v,'like=')  && strpos($v,'like')===0)
                         {
 
-                            $v = substr($v,6);
+                            $v = substr($v,5);
                             $where1.= " AND `".$i."` LIKE '%". $v."%' ";
 
                         }
