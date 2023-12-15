@@ -242,6 +242,10 @@ class Movie_Keywords {
     {
         $q="INSERT INTO `meta_movie_keywords`(`id`, `mid`, `kid`) VALUES (NULL,{$mid},{$kid})";
         $result = Pdo_an::db_query($q);
+
+        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+        Import::create_commit('', 'update', 'meta_movie_keywords', array('mid' => $mid,'kid'=>$kid), 'meta_movie_keywords',9,['skip'=>['id']]);
+
     }
 
     private function insert_key_to_movie($kid,$mid){
@@ -358,6 +362,10 @@ class Movie_Keywords {
 
         echo ' updated <br>';
     }
+
+        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+        Import::create_commit('', 'update', 'meta_movie_keywords_update', array('mid' => $mid), 'meta_movie_keywords_update',9,['skip'=>['id']]);
+
 
 
         !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';

@@ -52,7 +52,15 @@ class CriticCrowd extends AbstractDB {
 
     public function run_cron($count = 100, $debug = false) {
 
-        $this->publish_new_crowd($count, $debug);
+
+        //Check option auto_publish_crowdsource 
+        $auto_publish_crowdsource = $this->get_option('auto_publish_crowdsource');
+        if ($debug) {            
+            print_r(array('auto_publish_crowdsource', $auto_publish_crowdsource?'on':'off'));
+        }
+        if ($auto_publish_crowdsource) {
+            $this->publish_new_crowd($count, $debug);
+        }
         /*
           // 1. Get new crowd and create posts
           $this->get_new_crowd($count, $debug);
@@ -437,10 +445,10 @@ class CriticCrowd extends AbstractDB {
         }
 
         $view_type = $this->cm->get_post_view_type($link);
-        
+
         // Is youtube
         $youtube = false;
-        if ($view_type==1) {
+        if ($view_type == 1) {
             $youtube = true;
         }
 
@@ -459,15 +467,14 @@ class CriticCrowd extends AbstractDB {
             }
         } else {
             ///get main data
-           
             #$service_url = 'http://148.251.54.53:8110/?p=ds1bfgFe_23_KJDS-F&clear=1&wait=3&url=';
             #$full_url = $service_url .$link;
             #$content = file_get_contents($full_url);
             /*
-            $result = $cp->clear_read($link);
-            if ($result) {
-                $content = $result['content'];
-            }*/
+              $result = $cp->clear_read($link);
+              if ($result) {
+              $content = $result['content'];
+              } */
             if (!$content) {
                 $msg = "Sorry, there was an error fetching data from the URL. Please try again or manually submit it.";
                 $this->log_error($msg, $id, $log_status);

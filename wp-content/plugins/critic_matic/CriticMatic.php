@@ -160,6 +160,7 @@ class CriticMatic extends AbstractDB {
     public $movie_tabs = array(
         'home' => 'View',
         'actors' => 'Actors',
+        'index' => 'Index',
     );
 
     /* Audience */
