@@ -530,8 +530,20 @@ AND table_schema='".DB_NAME_AN."'";
                 {
                     foreach ($qr as $i=>$v)
                     {
+                        if (strstr($v,'_like_')  && strpos($v,'_like_')===0)
+                        {
 
-                        $where1.= " AND `".$i."` = ". $v." ";
+                            $v = substr($v,6);
+                            $where1.= " AND `".$i."` LIKE '%". $v."%' ";
+
+                        }
+                        else
+                        {
+                            $where1.= " AND `".$i."` = '". $v."' ";
+
+                        }
+
+
 
                     }
                 }
@@ -544,7 +556,7 @@ AND table_schema='".DB_NAME_AN."'";
         global $pdo;
 
         $sql = "SELECT count(*) as count FROM  " . $table_data . " where  1 = 1  " . $where1;
-
+///echo $sql;
         if ($db == 'Pdo_tc') {
             $result = Pdo_tc::db_fetch_row($sql);
         } else {

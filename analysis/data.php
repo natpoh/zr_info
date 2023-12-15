@@ -210,7 +210,7 @@ AND table_schema='" . DB_NAME_AN . "'";
                     }
                     ?>
 
-                console.log(grid);
+               // console.log(grid);
                 if (grid == 'actors_imdb' || grid == 'data_actors_imdb'  )
                 {
                 var actor_id = jQuery("#jqGrid").jqGrid('getCell', row_id, 'id');
@@ -537,6 +537,11 @@ AND table_schema='" . DB_NAME_AN . "'";
             <input type="submit" id="edit-submit" data-value="<?php echo $currant_table ?>" value="Submit" class="update_crowd button-primary">
         </div>
 <?php } ?>
+
+
+        <?php
+        if (isset($_GET['onlytable'])) {echo '<a href="'.$_SERVER['REQUEST_URI'].'" target="_blank">Open in a new tab</a>';}
+        ?>
 
             <table id="jqGrid"></table>
             <div id="jqGridPager"></div>
