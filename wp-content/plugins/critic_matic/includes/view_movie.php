@@ -3,6 +3,10 @@
 
 <?php if ($movie) { ?>    
     <h3><?php print __('Movie') ?>: [<?php print $mid ?>] <?php print $movie->title ?></h3>
+    <p> Server: 
+        <a href="https://info.antiwoketomatoes.com/wp-admin/admin.php?page=critic_matic_movies&mid=<?php print $mid ?>">Info</a> | 
+        <a href="https://zeitgeistreviews.com/wp-admin/admin.php?page=critic_matic_movies&mid=<?php print $mid ?>">Zr</a>
+    </p>
     <?php
 } else {
     ?>
