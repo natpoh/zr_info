@@ -24,6 +24,8 @@ if ($mid) {
     if ($img) {
         print '<img src="' . $img . '" /><br />';
     }
+    $ma = $this->cm->get_ma();
+    $kw_data = $ma->get_movie_keywords($mid);
     ?>
     <h3><?php print __('Meta') ?></h3>
     <table class="wp-list-table widefat striped table-view-list">
@@ -54,6 +56,16 @@ if ($mid) {
             <tr>
                 <td><?php print __('Last update') ?></td>
                 <td><?php print date('d.m.Y H:i:s', $ma->get_movie_last_update($mid)); ?></td>
+            </tr>
+             <tr>
+                <td><?php print __('Keywords') ?></td>
+                <td><?php 
+                if ($kw_data){
+                    foreach ($kw_data as $kw_item) {
+                        print "[{$kw_item->id}] {$kw_item->name}; ";
+                    }
+                }
+                ?></td>
             </tr>
         </tbody>        
     </table>

@@ -1677,6 +1677,8 @@ class CriticMaticAdmin {
                 include(CRITIC_MATIC_PLUGIN_DIR . 'includes/view_movie.php');
             } else if ($curr_tab == 'actors') {
                 include(CRITIC_MATIC_PLUGIN_DIR . 'includes/view_actors.php');
+            } else if ($curr_tab == 'index') {
+                include(CRITIC_MATIC_PLUGIN_DIR . 'includes/view_index.php');
             }
             return;
         }

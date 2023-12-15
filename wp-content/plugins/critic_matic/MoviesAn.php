@@ -128,6 +128,8 @@ class MoviesAn extends AbstractDBAn {
             'franchises' => 'data_movie_franchises',
             'distributors' => 'data_movie_distributors',
             'hook_movie_upd' => 'hook_movie_upd',
+            'meta_movie_keywords' => 'meta_movie_keywords',
+            'meta_keywords'=>'meta_keywords',
         );
         $this->timer_start();
         $this->get_perpage();
@@ -1858,6 +1860,18 @@ class MoviesAn extends AbstractDBAn {
             $data['mid'] = $mid;
             $this->db_insert($data, $this->db['cache_nf_keywords']);
         }
+    }
+    
+    /* 
+     * Movie keywords
+     */
+    public function get_movie_keywords($mid=0) {
+       // meta_movie_keywords' => 'meta_movie_keywords',
+        //    'meta_keywords'=>'meta_keywords',
+        $sql = sprintf("SELECT k.id, k.name FROM {$this->db['meta_movie_keywords']} m"
+        . " INNER JOIN {$this->db['meta_keywords']} k ON k.id = m.kid WHERE m.mid=%d", $mid);
+        $data = $this->db_results($sql);
+        return $data;
     }
 
     /*
