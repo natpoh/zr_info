@@ -74,7 +74,7 @@ class CriticCrowd extends AbstractDB {
     }
 
     private function publish_new_crowd($count = 100, $debug = false) {
-        $sql = sprintf("SELECT * FROM {$this->db['critic_crowd']} WHERE critic_status=0 AND critic_id>0 ORDER BY id ASC LIMIT %d", $count);
+        $sql = sprintf("SELECT * FROM {$this->db['critic_crowd']} WHERE critic_status=0 ORDER BY id ASC LIMIT %d", $count);
         $results = $this->db_results($sql);
         if ($debug) {
             print_r($results);

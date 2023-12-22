@@ -3488,7 +3488,10 @@ class CriticSearch extends AbstractDB {
                 $order = ' ORDER BY id ' . $sort_type;
             } else if ($sort_key == 'mw') {
                 $order = ' ORDER BY id DESC';
-            } else if (in_array($sort_key, $simple_facets) || $sort_key == 'pop') {
+            } else if (in_array($sort_key, $simple_facets) || $sort_key == 'emotions'|| $sort_key == 'aurating') {
+                if ($sort_key=='emotions'){
+                    $sort_key='pop';
+                }
                 if ($sort_type == 'DESC') {
                     $order = ' ORDER BY ' . $sort_key . ' DESC';
                 } else {
@@ -3860,7 +3863,7 @@ class CriticSearch extends AbstractDB {
                     } else if ($key == 'movie') {
                         // Movie                 
                         $filters_and .= $this->filter_multi_value('movies', $value, true);
-                    }
+                    } 
                 }
 
                 // All

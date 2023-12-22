@@ -1858,6 +1858,7 @@ ALTER TABLE `data_actors_meta` CHANGE `gender` `gender` TINYINT NULL DEFAULT '0'
 UPDATE wp_bcw98b_critic_matic_posts SET content = REPLACE(content, '<!--Taboola:V2-->  window', '<!--Taboola:V2--><script>window')
 UPDATE wp_bcw98b_critic_matic_posts SET content = REPLACE(content, '(\'tbl_ic\');}</div>', '(\'tbl_ic\');}</script></div>')
 
+UPDATE wp_bcw98b_critic_matic_posts SET content = REPLACE(content, 'please.stfuhollywood.com', 'oc.rightwingtomatoes.com')
 
 SELECT link_hash, count(*) FROM `movies_links_url` WHERE cid=27 GROUP by link_hash having count(*) > 1;
 

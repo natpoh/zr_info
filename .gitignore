@@ -78,6 +78,7 @@ sitemap.xml
 sitemap.xml.gz
 an_config.php
 wp-content/plugins/critic_matic/lib/google-api-php-client--PHP7.4
+api/temp
 
 *.log
 
