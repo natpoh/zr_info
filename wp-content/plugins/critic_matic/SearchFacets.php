@@ -359,7 +359,7 @@ class SearchFacets extends AbstractDB {
         return $ret;
     }
 
-    public function find_results($uid = 0, $ids = array(), $show_facets = true, $only_curr_tab = false, $limit = -1, $page = -1, $show_main = true, $show_chart = true) {
+    public function find_results($uid = 0, $ids = array(), $show_facets = true, $only_curr_tab = false, $limit = -1, $page = -1, $show_main = true, $show_chart = true, $fields=array()) {
         gmi('find_results');
         $result = array();
         $start = 0;
@@ -395,7 +395,7 @@ class SearchFacets extends AbstractDB {
             if ($show_facets) {
                 $facets = $is_movie ? true : false;
             }
-            $result['movies'] = $this->cs->front_search_movies_multi($this->keywords, $search_limit, $start, $sort, $filters, $facets, true, true, $show_main);
+            $result['movies'] = $this->cs->front_search_movies_multi($this->keywords, $search_limit, $start, $sort, $filters, $facets, true, true, $show_main, $fields);
             $movies_count = $result['movies']['count'];
 
             if ($movies_count == 0 && $this->keywords && $is_movie && $show_main) {
@@ -417,7 +417,7 @@ class SearchFacets extends AbstractDB {
             if ($show_facets) {
                 $facets = $is_game ? true : false;
             }
-            $result['games'] = $this->cs->front_search_games_multi($this->keywords, $search_limit, $start, $sort, $filters, $facets, true, true, $show_main);
+            $result['games'] = $this->cs->front_search_games_multi($this->keywords, $search_limit, $start, $sort, $filters, $facets, true, true, $show_main, $fields);
             $games_count = $result['games']['count'];
 
             if ($games_count == 0 && $this->keywords && $is_game && $show_main) {
@@ -474,7 +474,7 @@ class SearchFacets extends AbstractDB {
                 }
             }
             
-            $result['filters'] = $this->cs->front_search_filters_multi($aid, $this->keywords, $search_limit, $start, $sort, $filters, $facets, true, true, $show_main);
+            $result['filters'] = $this->cs->front_search_filters_multi($aid, $this->keywords, $search_limit, $start, $sort, $filters, $facets, true, true, $show_main,$fields);
             $filters_count = $result['filters']['count'];
 
             if ($filters_count == 0 && $this->keywords && $is_filter && $show_main) {

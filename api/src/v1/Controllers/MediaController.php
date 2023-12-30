@@ -68,7 +68,10 @@ class MediaController extends Controller {
      *     @OA\Response(
      *         response=404,
      *         description="Media not found"
-     *     )
+     *     ),
+     *     security={
+     *         {"api_key": {}}
+     *     }
      * )
      */
     public function getMediaById($query_args = []) {
@@ -116,7 +119,10 @@ class MediaController extends Controller {
      *     @OA\Response(
      *         response=404,
      *         description="Media not found"
-     *     )
+     *     ),
+     *     security={
+     *         {"api_key": {}}
+     *     }
      * )
      */
     public function getMediaCast($query_args = []) {
@@ -229,7 +235,10 @@ class MediaController extends Controller {
      *     @OA\Response(
      *         response=404,
      *         description="Media not found"
-     *     )
+     *     ),
+     *     security={
+     *         {"api_key": {}}
+     *     }
      * )
      */
     public function getMediaRating($query_args = []) {

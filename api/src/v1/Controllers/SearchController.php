@@ -17,7 +17,7 @@ class SearchController extends Controller {
 
     public $sfunction = 'searchMedia';
     public $seach_arr = array();
-    
+ 
     /**
      * @OA\Get(
      *     path="/search",
@@ -83,20 +83,18 @@ class SearchController extends Controller {
     public function searchMedia($query_args = []) {
         $pp = isset($query_args['pp']) ? (int) $query_args['pp'] : 20;
         $p = isset($query_args['p']) ? (int) $query_args['p'] : 1;
-        $sf = new \SearchFacets();
+        $sf = $this->get_sf();
 
         // Init filters
         $sf->init_search_get_fiters($query_args);
-
-        // Create url
-        //$search_url = $sf->get_current_search_url();
-        // Tab
-        //$curr_tab = $sf->get_search_tab();
-        //$tab_key = $sf->get_tab_key();
-        // Filters
-        //$fiters = $sf->search_filters($tab_key);
-
-        $result = $sf->find_results(0, array(), false, true, $pp);
+        
+        $fields=array(
+            'actor_all','actor_star','actor_main',            
+            'paaw','paaea','paah','paab','paai','paam','paamix','paajw',
+            'psaw','psaea','psah','psab','psai','psam','psamix','psajw',
+            'pmaw','pmaea','pmah','pmab','pmai','pmam','pmamix','pmajw',
+        );
+        $result = $sf->find_results(0, array(), false, true, $pp,-1,true,false,$fields);
 
         $ret = array();
 
@@ -121,8 +119,16 @@ class SearchController extends Controller {
     private function getMediaFromList($data = array()) {
         $ret = array();
         if ($data) {
+            $sf = $this->get_sf();
             foreach ($data as $item) {
-               $media = new \OpenApi\Fd\Models\Media((array) $item);
+               // get actor data
+               $actors_str = $item->actor_all;
+               $actor_names = array();
+               if ($actors_str){
+                   $actor_names = $sf->cs->get_actor_names(explode(',', $actors_str));
+                   $race_names = $sf->cs->search_filters['race'];
+               }
+               $media = new \OpenApi\Fd\Models\Media((array) $item, $actor_names, $race_names);
                $ret[]=$media->toArray();
             }
         }

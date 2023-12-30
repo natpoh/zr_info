@@ -2591,7 +2591,7 @@ class CriticSearch extends AbstractDB {
         return $ret;
     }
 
-    public function front_search_movies_multi($keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = false, $show_meta = true, $widlcard = true, $show_main = true) {
+    public function front_search_movies_multi($keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = false, $show_meta = true, $widlcard = true, $show_main = true, $fields=array()) {
 
         $m_mkw = '';
         if ($filters['mkw']) {
@@ -2632,8 +2632,14 @@ class CriticSearch extends AbstractDB {
             // Filters logic
             $filters_and = $this->get_filters_query($filters);
 
+            // Custom fields
+            $custom_fields = '';
+            if ($fields) {
+                $custom_fields = ', ' . implode(', ', $fields) . ' ';
+            }
+            
             // Main sql
-            $sql = sprintf("SELECT id, rwt_id, title, release, type, year, weight() w, rrt, rrta, rrtg, movie_id" . $filters_and['select'] . $order['select']
+            $sql = sprintf("SELECT id, rwt_id, title, release, type, year, weight() w, rrt, rrta, rrtg, movie_id" .$custom_fields . $filters_and['select'] . $order['select']
                     . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
 
             $ret = $this->movie_results($sql, $match, $search_query);
@@ -2667,8 +2673,7 @@ class CriticSearch extends AbstractDB {
         return $ret;
     }
 
-    public function front_search_games_multi($keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = false, $show_meta = true, $widlcard = true, $show_main = true) {
-
+    public function front_search_games_multi($keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = false, $show_meta = true, $widlcard = true, $show_main = true, $fields=array()) {
 
         $filters['type'] = array('videogame');
 
@@ -2708,8 +2713,14 @@ class CriticSearch extends AbstractDB {
             // Filters logic            
             $filters_and = $this->get_filters_query($filters, array(), $query_type);
 
+            // Custom fields
+            $custom_fields = '';
+            if ($fields) {
+                $custom_fields = ', ' . implode(', ', $fields) . ' ';
+            }
+            
             // Main sql
-            $sql = sprintf("SELECT id, rwt_id, title, release, type, year, weight() w, movie_id" . $order['select'] . $filters_and['select']
+            $sql = sprintf("SELECT id, rwt_id, title, release, type, year, weight() w, movie_id" .$custom_fields. $order['select'] . $filters_and['select']
                     . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
 
             $ret = $this->movie_results($sql, $match, $search_query);
@@ -2731,7 +2742,7 @@ class CriticSearch extends AbstractDB {
         return $ret;
     }
 
-    public function front_search_filters_multi($aid = 0, $keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = false, $show_meta = true, $widlcard = true, $show_main = true) {
+    public function front_search_filters_multi($aid = 0, $keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = false, $show_meta = true, $widlcard = true, $show_main = true,$fields=array()) {
 
         //Keywords logic
         $match = '';
@@ -2756,8 +2767,14 @@ class CriticSearch extends AbstractDB {
             // Filters logic            
             $filters_and = $this->get_filters_query($filters, array(), $query_type, '', $aid);
 
+            // Custom fields
+            $custom_fields = '';
+            if ($fields) {
+                $custom_fields = ', ' . implode(', ', $fields) . ' ';
+            }
+            
             // Main sql
-            $sql = sprintf("SELECT id, aid, wp_uid, fid, publish, date, last_upd, frating, title, content, img, ftab, link, weight() w" . $order['select'] . $filters_and['select']
+            $sql = sprintf("SELECT id, aid, wp_uid, fid, publish, date, last_upd, frating, title, content, img, ftab, link, weight() w" .$custom_fields. $order['select'] . $filters_and['select']
                     . " FROM filters WHERE id>0" . $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
 
             $ret = $this->movie_results($sql, $match, $search_query);

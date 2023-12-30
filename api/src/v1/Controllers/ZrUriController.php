@@ -50,9 +50,6 @@ class ZrUriController {
      *         description="successful operation",
      *     @OA\JsonContent(
      *         type="object",
-     *         @OA\Property(property="currentPage", type="integer", example=1),
-     *         @OA\Property(property="totalPages", type="integer", example=5),
-     *         @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Media")),     
      *     ),),
      *     @OA\Response(
      *         response=404,
@@ -125,7 +122,6 @@ class ZrUriController {
      *         description="successful operation",
      *     @OA\JsonContent(
      *         type="object",
-     *         @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Media")),     
      *     ),),
      *     @OA\Response(
      *         response=404,
@@ -194,7 +190,6 @@ class ZrUriController {
      *         description="successful operation",
      *     @OA\JsonContent(
      *         type="object",
-     *         @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Media")),     
      *     ),),
      *     @OA\Response(
      *         response=404,

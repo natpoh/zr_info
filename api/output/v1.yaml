@@ -44,6 +44,9 @@ paths:
           description: Unauthorized
         '404':
           description: 'Media not found'
+      security:
+        -
+          api_key: []
   '/media/{mediaId}/cast':
     get:
       tags:
@@ -73,6 +76,9 @@ paths:
           description: Unauthorized
         '404':
           description: 'Media not found'
+      security:
+        -
+          api_key: []
   '/media/{mediaId}/rating':
     get:
       tags:
@@ -102,6 +108,9 @@ paths:
           description: Unauthorized
         '404':
           description: 'Media not found'
+      security:
+        -
+          api_key: []
   /search:
     get:
       tags:
@@ -177,10 +186,6 @@ paths:
           content:
             application/json:
               schema:
-                properties:
-                  currentPage: { type: integer, example: 1 }
-                  totalPages: { type: integer, example: 5 }
-                  data: { type: array, items: { $ref: '#/components/schemas/Media' } }
                 type: object
         '404':
           description: 'Media not found'
@@ -211,8 +216,6 @@ paths:
           content:
             application/json:
               schema:
-                properties:
-                  data: { type: array, items: { $ref: '#/components/schemas/Media' } }
                 type: object
         '404':
           description: 'Media not found'
@@ -243,8 +246,6 @@ paths:
           content:
             application/json:
               schema:
-                properties:
-                  data: { type: array, items: { $ref: '#/components/schemas/Media' } }
                 type: object
         '404':
           description: 'Media not found'
@@ -290,10 +291,10 @@ components:
           type: string
           default: ''
           enum:
-            - All
-            - Stars
-            - Supporting
-          example: Stars
+            - all
+            - stars
+            - supporting
+          example: stars
         race:
           title: 'Cast race'
           type: string
@@ -316,6 +317,38 @@ components:
             - Male
             - Female
           example: Male
+      type: object
+    CastName:
+      title: 'CastName model'
+      description: 'CastName model'
+      properties:
+        id:
+          title: 'Cast ID'
+          type: integer
+          format: int64
+          default: 0
+          example: 206
+        name:
+          title: 'Cast name'
+          type: string
+          default: ''
+          example: 'Keanu Reeves'
+      type: object
+    Demographic:
+      title: 'Demographic model'
+      description: 'Demographic model'
+      properties:
+        race:
+          title: 'Cast race'
+          type: string
+          default: ''
+          example: White
+        percent:
+          title: Percent
+          type: integer
+          format: int64
+          default: 0
+          example: 100
       type: object
     Media:
       title: 'Media model'
@@ -363,6 +396,45 @@ components:
           type: string
           default: ''
           example: tt0133093
+        cast_stars:
+          title: 'Cast stars'
+          description: 'Cast stars list'
+          properties:
+            cast:
+              type: array
+              items:
+                $ref: '#/components/schemas/CastName'
+            demographic:
+              type: array
+              items:
+                $ref: '#/components/schemas/Demographic'
+          type: object
+        cast_stupporting:
+          title: 'Cast stupporting'
+          description: 'Cast supporting list'
+          properties:
+            cast:
+              type: array
+              items:
+                $ref: '#/components/schemas/CastName'
+            demographic:
+              type: array
+              items:
+                $ref: '#/components/schemas/Demographic'
+          type: object
+        cast_all:
+          title: Cast
+          description: 'Cast all list'
+          properties:
+            cast:
+              type: array
+              items:
+                $ref: '#/components/schemas/CastName'
+            demographic:
+              type: array
+              items:
+                $ref: '#/components/schemas/Demographic'
+          type: object
       type: object
     Rating:
       title: 'Rating model'

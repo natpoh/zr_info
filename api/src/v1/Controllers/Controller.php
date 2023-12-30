@@ -16,7 +16,16 @@ class Controller extends \AbstractDBAn {
 
     public $sfunction = '';
     public $seach_arr = array();
+    public $sf='';
 
+
+    public function get_sf(){
+        if (!$this->sf){
+            $this->sf = new \SearchFacets();
+        }
+        return $this->sf;
+    }
+    
     public function runPath($command = '', $query_args = []) {
         $sfunction = $this->sfunction;
         if (isset($this->seach_arr[$command])) {

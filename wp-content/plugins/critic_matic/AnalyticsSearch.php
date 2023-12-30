@@ -124,7 +124,7 @@ class AnalyticsSearch extends CriticSearch {
         return $ret;
     }
 
-    public function front_search_international($keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = true, $show_meta = true, $widlcard = true, $show_main = true, $show_chart = true) {
+    public function front_search_international($keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = true, $show_meta = true, $widlcard = true, $show_main = true, $show_chart = true, $fields = array()) {
 
         // Keywords logic
         $match = '';
@@ -150,6 +150,12 @@ class AnalyticsSearch extends CriticSearch {
             }
             $filters_and = $this->get_filters_query($filters, array(), 'movies', array('current'));
 
+            // Custom fields
+            $custom_fields = '';
+            if ($fields) {
+                $custom_fields = ', ' . implode(', ', $fields) . ' ';
+            }
+
             // Main sql
             $sql = sprintf("SELECT id, title, release, add_time, post_name, type, boxusa, boxworld, boxint, (boxusa/boxworld) AS share, budget, year_int as year, weight() w, movie_id" . $order['select'] . $filters_and['select']
                     . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
@@ -173,7 +179,7 @@ class AnalyticsSearch extends CriticSearch {
             $facet = 'international';
 
             $filters_and = $this->get_filters_query($filters);
-            $sql = sprintf("SELECT boxusa as box_usa, boxworld as box_world, year_int as year" . $filters_and['select']
+            $sql = sprintf("SELECT boxusa as box_usa, boxworld as box_world, year_int as year" .$custom_fields. $filters_and['select']
                     . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match . " ORDER BY year_int ASC LIMIT 0,%d OPTION max_matches=%d", $this->max_matches, $this->max_matches);
 
             $international_facet = $this->movies_facet_single_get($sql, $search_query);
@@ -186,7 +192,7 @@ class AnalyticsSearch extends CriticSearch {
         return $ret;
     }
 
-    public function front_search_ethnicity_xy($keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $ids = array(), $vis = '', $diversity = '', $xaxis = '', $yaxis = '', $facets = true, $show_meta = true, $widlcard = true, $show_main = true, $show_chart = true) {
+    public function front_search_ethnicity_xy($keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $ids = array(), $vis = '', $diversity = '', $xaxis = '', $yaxis = '', $facets = true, $show_meta = true, $widlcard = true, $show_main = true, $show_chart = true, $fields = array()) {
 
         // Keywords logic
         $match = '';
@@ -235,10 +241,16 @@ class AnalyticsSearch extends CriticSearch {
         $select_and_str = implode('', array_keys($select_and));
         $filters_need_str = implode('', array_keys($filters_need));
 
+        // Custom fields
+        $custom_fields = '';
+        if ($fields) {
+            $custom_fields = ', ' . implode(', ', $fields) . ' ';
+        }
+
         if ($show_main) {
             // Main sql
             $sql = sprintf("SELECT id, title, release, add_time, post_name, type, boxusa, boxworld, boxint, boxprofit, budget, (boxusa/boxworld) AS share, "
-                    . "year_int as year, raceu, draceu, rimdb, rrwt, rrt, rrta, rrtg, rating, aurating, weight() w, movie_id" . $order['select'] . $filters_select_and
+                    . "year_int as year, raceu, draceu, rimdb, rrwt, rrt, rrta, rrtg, rating, aurating, weight() w, movie_id" .$custom_fields. $order['select'] . $filters_select_and
                     . " FROM movie_an WHERE id>0" . $filters_and . $filters_need_str . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
 
             $ret = $this->movie_results($sql, $match, $search_query);
@@ -280,7 +292,7 @@ class AnalyticsSearch extends CriticSearch {
             $facets_arr[$facet]['meta'] = $ethnicity_facet['meta'];
             gmi('chart query');
         }
-        
+
         $ret['facets'] = $facets_arr;
 
         return $ret;
