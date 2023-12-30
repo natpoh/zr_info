@@ -150,12 +150,14 @@ class MediaController extends Controller {
        
                 if ($actors) {
                     $race_titles = array();
-                    foreach ($cs->search_filters['race'] as $race_data) {
+                    $race_names = \OpenApi\Fd\Models\Media::getRaceNames();
+                    foreach ($race_names as $race_data) {
                         $race_titles[$race_data['key']]=$race_data['title'];
                     }
                     $gender_titles=array();
-                    foreach ($cs->search_filters['gender'] as $race_data) {
-                        $gender_titles[$race_data['key']]=$race_data['title'];
+                    $gender_names = \OpenApi\Fd\Models\Media::getGenderNames();
+                    foreach ($gender_names as $gender_data) {
+                        $gender_titles[$gender_data['key']]=$gender_data['title'];
                     }
                     
                     /*
@@ -183,6 +185,7 @@ class MediaController extends Controller {
                             $race = $verdicts_arr[$actor->id]->n_verdict_weight;
                             if ($race){                                
                                 $actor->race=isset($race_titles[$race])?$race_titles[$race]:'';
+                                $actor->race_id=$race;
                             }
                             $gender = $verdicts_arr[$actor->id]->gender;
                             if ($gender){
@@ -190,7 +193,7 @@ class MediaController extends Controller {
                             }                            
                         }
                         $cast = new \OpenApi\Fd\Models\Cast((array) $actor);
-                        $actors_list[$actor->type][] = $cast->toArray();
+                        $actors_list[$actor->type][] = $cast;
                     }
                 }
             }

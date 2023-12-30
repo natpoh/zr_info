@@ -131,6 +131,7 @@ class Media extends Model {
      *     type="object",
      *     properties={
      *          @OA\Property(property="cast", type="array", @OA\Items(ref="#/components/schemas/CastName")), 
+     *          @OA\Property(property="gender", type="array", @OA\Items(ref="#/components/schemas/Gender")),
      *          @OA\Property(property="demographic", type="array", @OA\Items(ref="#/components/schemas/Demographic")),
      *     },
      *     description="Cast all list",
@@ -141,19 +142,8 @@ class Media extends Model {
      */
     public $cast_all;
 
-    public function __construct($arr = array(), $actor_names = array(), $race_names=array()) {
-        /*
-         * "id": "33955",
-          "rwt_id": "32510",
-          "title": "Matrix",
-          "release": "1993-03-01",
-          "type": "TVSeries",
-          "year": "1993",
-          "w": "1677",
-          "rrt": "0",
-          "rrta": "0",
-          "rrtg": "0"
-         */
+    public function __construct($arr = array(), $actor_names = array()) {
+
         $this->setIntVal($arr, 'id');
         $this->setVal($arr, 'type');
         $this->setVal($arr, 'title');
@@ -166,15 +156,18 @@ class Media extends Model {
         try {
             $this->cast_stars = array(
                 'cast' => $this->get_cast_names(explode(',', $arr['actor_star']), $actor_names),
-                'demographic' => $this->get_demographic('s', $arr, $race_names),
+                'gender' => $this->get_gender('s', $arr),
+                'demographic' => $this->get_demographic('s', $arr),
             );
             $this->cast_stupporting = array(
                 'cast' => $this->get_cast_names(explode(',', $arr['actor_main']), $actor_names),
-                'demographic' => $this->get_demographic('m', $arr, $race_names),
+                'gender' => $this->get_gender('s', $arr),
+                'demographic' => $this->get_demographic('m', $arr),
             );
             $this->cast_all = array(
                 'cast' => $this->get_cast_names(explode(',', $arr['actor_all']), $actor_names),
-                'demographic' => $this->get_demographic('a', $arr, $race_names),
+                'gender' => $this->get_gender('s', $arr),
+                'demographic' => $this->get_demographic('a', $arr),
             );
         } catch (Exception $exc) {
             //echo $exc->getTraceAsString();
@@ -197,8 +190,16 @@ class Media extends Model {
         return $ret;
     }
 
-    private function get_demographic($type = 'a', $arr = array(), $race_names=array()) {
-        /*
+    public static function getGenderNames() {
+        $names = array(
+            'm' => array('key' => 2, 'title' => 'Male'),
+            'f' => array('key' => 1, 'title' => 'Female'),
+        );
+        return $names;
+    }
+
+    public static function getRaceNames() {
+        $names = array(
             'a' => array('key' => 0, 'title' => 'All'),
             'w' => array('key' => 1, 'title' => 'White'),
             'ea' => array('key' => 2, 'title' => 'Asian'),
@@ -208,20 +209,40 @@ class Media extends Model {
             'm' => array('key' => 6, 'title' => 'Arab'),
             'mix' => array('key' => 7, 'title' => 'Mixed / Other'),
             'jw' => array('key' => 8, 'title' => 'Jewish'),
-         */
+        );
+        return $names;
+    }
+
+    private function get_gender($type = 'a', $arr = array()) {
+        $gender_names = $this->getGenderNames();
+
+        $ret = array();
+        foreach ($gender_names as $key => $value) {
+            $field = "p{$type}{$key}a";
+            $title = $value['title'];
+            $percent = $arr[$field];
+            $data = array('gender' => $title, 'percent' => $percent);
+            $gender = new Gender($data);
+            $ret[] = $gender;
+        }
+        return $ret;
+    }
+
+    private function get_demographic($type = 'a', $arr = array()) {
+        $race_names = $this->getRaceNames();
         $ret = array();
         foreach ($race_names as $key => $value) {
-            if ($key=='a'){
+            if ($key == 'a') {
                 continue;
             }
             $field = "p{$type}a{$key}";
             $race = $value['title'];
             $percent = $arr[$field];
-            $data = array('race'=>$race,'percent'=>$percent);
+            $data = array('race' => $race, 'race_id'=>$value['key'], 'percent' => $percent);
             $demographic = new Demographic($data);
-            $ret[]=$demographic;
+            $ret[] = $demographic;
         }
-        return $ret;  
+        return $ret;
     }
 
     private function get_cast_names($ids = array(), $names = array()) {

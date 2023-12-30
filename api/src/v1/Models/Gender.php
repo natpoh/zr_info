@@ -12,36 +12,24 @@ namespace OpenApi\Fd\Models;
  * @author  Brahmnan <brahmnan@gmail.com>
  *
  * @OA\Schema(
- *     title="Demographic model",
- *     description="Demographic model",
+ *     title="Gender model",
+ *     description="Gender model",
  * )
  */
-class Demographic extends Model {
+class Gender extends Model {
 
     /**
      * @OA\Property(
      *     default="",
-     *     example="White",     
-     *     title="Cast race",
+     *     example="Male",     
+     *     title="Cast gender",
      *     type="string",
      * )
      *
      * @var string
      */
-    public $race;
+    public $gender;
 
-    /**
-     * @OA\Property(
-     *     default=0,
-     *     example=1,
-     *     format="int64",
-     *     enum={0, 1, 2, 3, 4, 5, 6, 7, 8},
-     * )
-     * 
-     * @var int
-     */
-    public $race_id;
-    
     /**
      * @OA\Property(
      *     default=0,
@@ -53,17 +41,16 @@ class Demographic extends Model {
      * @var int
      */
     public $percent;
+
     
     public function __construct($arr = array()) {
-        $this->setVal($arr, 'race');               
-        $this->setIntVal($arr, 'race_id'); 
+        $this->setVal($arr, 'gender');               
         $this->setIntVal($arr, 'percent');        
     }
 
     public function toArray() {
         return array(
-            'race' => $this->race,
-            'race' => $this->race_id,
+            'gender' => $this->name,
             'percent' => $this->percent,    
         );
     }

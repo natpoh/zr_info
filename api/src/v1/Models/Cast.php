@@ -105,6 +105,18 @@ class Cast extends Model {
      */
     public $race;
     
+    /**
+     * @OA\Property(
+     *     default=0,
+     *     example=1,
+     *     format="int64",
+     *     enum={0, 1, 2, 3, 4, 5, 6, 7, 8},
+     * )
+     * 
+     * @var int
+     */
+    public $race_id;
+     
      /**
      * @OA\Property(
      *     default="",
@@ -137,6 +149,7 @@ class Cast extends Model {
         $this->setVal($arr, 'burn_date');
         $this->setVal($arr, 'type');
         $this->setVal($arr, 'race');
+        $this->setIntVal($arr, 'race_id');
         $this->setVal($arr, 'gender');
     }
 
@@ -149,6 +162,7 @@ class Cast extends Model {
             'burn_date' => $this->burn_date,
             'type' => $this->type,
             'race' => $this->race,
+            'race_id' => $this->race_id,
             'gender' => $this->gender,
         );
     }
