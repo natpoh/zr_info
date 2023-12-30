@@ -81,10 +81,10 @@ class Cast extends Model {
     /**
      * @OA\Property(
      *     default="",
-     *     example="Stars",     
+     *     example="stars",     
      *     title="Cast type",
      *     type="string",
-     *     enum={"All", "Stars", "Supporting"},
+     *     enum={"all", "stars", "supporting"},
      * )
      *
      * @var string

@@ -141,7 +141,7 @@ class MediaController extends Controller {
                         $verdicts_arr[$verdict->actor_id]=$verdict;
                     }
                 }
-          
+       
                 if ($actors) {
                     $race_titles = array();
                     foreach ($cs->search_filters['race'] as $race_data) {
@@ -164,13 +164,13 @@ class MediaController extends Controller {
                       "lastupdate": "1610561889"
                      */
                     foreach ($actors as $actor) {
-                        $actor->type = 'All';
+                        $actor->type = 'all';
                         $actor->race="";
                         $actor->gender="";
                         if (in_array($actor->id, $actor_main_all)) {
-                            $actor->type = 'Stars';
+                            $actor->type = 'stars';
                         } else if (in_array($actor->id, $actor_star_all)) {
-                            $actor->type = 'Supporting';
+                            $actor->type = 'supporting';
                         }
                         // Check verdict
                         if (isset($verdicts_arr[$actor->id])){
