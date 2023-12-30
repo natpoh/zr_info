@@ -52,6 +52,14 @@ require_once __DIR__ . '/vendor/autoload.php';
 // Get current URL
 $parsedUrl = parse_url($_SERVER['REQUEST_URI']);
 $path = $parsedUrl['path'];
+
+if ($path=='/'){
+    // Load documentation    
+    $index = file_get_contents('doc/index.html');
+    str_replace("swagger_url_path", SWAGGER_API_URL, $index);    
+    print $index;
+    exit;
+}
 $path_arr = explode('/', $path);
 
 $version = isset($path_arr[1]) ? $path_arr[1] : 'v1';
