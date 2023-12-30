@@ -24,10 +24,9 @@ class CriticFront extends SearchFacets {
     // Show hollywood bs rating
     private $show_hollywood = false;
 
-    public function __construct($cm = '', $cs = '', $ce = '') {
+    public function __construct($cm = '', $cs = '') {
         $this->cm = $cm ? $cm : new CriticMatic();
-        $this->cs = $cs ? $cs : new CriticSearch($this->cm);
-        $this->ce = $ce ? $ce : new CriticEmotions($this->cm);
+        $this->cs = $cs ? $cs : new CriticSearch($this->cm);       
         $table_prefix = DB_PREFIX_WP_AN;
         $this->db = array(
             //CM
@@ -71,7 +70,19 @@ class CriticFront extends SearchFacets {
         }
         return $this->ca;
     }
-
+    
+    public function get_ce() {
+        // Get critic audience
+        if (!$this->ce) {
+            // init cma
+            if (!class_exists('CriticEmotions')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticEmotions.php' );
+            }
+            $this->ce = new CriticEmotions($this->cm);
+        }
+        return $this->ce;
+    }
+    
     /*
      * Critic functions
      */
@@ -2262,7 +2273,8 @@ class CriticFront extends SearchFacets {
 
             $content['count'] = count($content['result']);
             $content['tmpl'] = $video_template;
-            $content['reaction'] = $this->ce->get_emotions_counts_all($pids);
+            $ce = $this->get_ce();
+            $content['reaction'] = $ce->get_emotions_counts_all($pids);
 
             // Print json
             //    return json_encode($content);
@@ -2363,7 +2375,8 @@ class CriticFront extends SearchFacets {
             $content['rating'] = $rating;
             $content['count'] = count($content['result']);
             $content['tmpl'] = $video_template;
-            $content['reaction'] = $this->ce->get_emotions_counts_all($pids);
+            $ce = $this->get_ce();
+            $content['reaction'] = $ce->get_emotions_counts_all($pids);
 
             // Print json
             return json_encode($content);
@@ -2469,7 +2482,8 @@ class CriticFront extends SearchFacets {
             $content['rating'] = $rating;
             $content['count'] = count($content['result']);
             $content['tmpl'] = $video_template;
-            $content['reaction'] = $this->ce->get_emotions_counts_all($pids);
+            $ce = $this->get_ce();
+            $content['reaction'] = $ce->get_emotions_counts_all($pids);
 
             // Print json
             return json_encode($content);
@@ -3183,7 +3197,8 @@ class CriticFront extends SearchFacets {
 
     public function get_user_reactions($cid, $post_type = 0, $allow_cmt = true) {
         if ($this->enable_reactions) {
-            $reaction_data = $this->ce->get_user_reactions($cid, $post_type, $allow_cmt);
+            $ce = $this->get_ce();
+            $reaction_data = $ce->get_user_reactions($cid, $post_type, $allow_cmt);
         } else {
             $reaction_data = '<div class="review_comment_data" data-ptype="' . $post_type . '"></div>';
         }

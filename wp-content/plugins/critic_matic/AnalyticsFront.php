@@ -302,31 +302,31 @@ class AnalyticsFront extends SearchFacets {
                     $slug = $current['value'];
                     $name = $curr_item['title'] . ' ' . $slug;
                     $title = $this->cs->search_filters[$key]['title'];
-                    $tags[] = array('name' => $name, 'type' => $key,  'title' => $title, 'id' => $slug, 'parent' => 'chart_div', 'minus' => $minus);
+                    $tags[] = array('name' => $name, 'type' => $key, 'title' => $title, 'id' => $slug, 'parent' => 'chart_div', 'minus' => $minus);
                 }
             } else if ($key == 'showcast') {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
                     $name = $this->showcast[$slug];
                     $title = $this->cs->search_filters[$key]['title'];
-              
-                    $tags[] = array('name' => $name, 'type' => $key,  'title' => $title, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
+
+                    $tags[] = array('name' => $name, 'type' => $key, 'title' => $title, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
                 }
             } else if ($key == 'diversity') {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
                     $name = $this->diversity[$slug]['title'];
                     $title = 'Diversity ';
-           
-                    $tags[] = array('name' => $name, 'type' => $key,  'title' => $title, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
+
+                    $tags[] = array('name' => $name, 'type' => $key, 'title' => $title, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
                 }
             } else if ($key == 'vis') {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
                     $name = $this->vis[$slug]['title'];
                     $title = 'Visualization ';
-              
-                    $tags[] = array('name' => $name, 'type' => $key,  'title' => $title, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
+
+                    $tags[] = array('name' => $name, 'type' => $key, 'title' => $title, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
                 }
             } else if ($key == 'xaxis' || $key == 'yaxis') {
                 $value = is_array($value) ? $value : array($value);
@@ -336,48 +336,48 @@ class AnalyticsFront extends SearchFacets {
                     if ($key == 'yaxis') {
                         $title = 'Y-axis ';
                     }
-               
-                    $tags[] = array('name' => $name, 'type' => $key,  'title' => $title, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
+
+                    $tags[] = array('name' => $name, 'type' => $key, 'title' => $title, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
                 }
             } else if ($key == 'setup') {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
                     $name = $this->setup[$slug]['title'];
                     $title = 'Setup ';
-           
-                    $tags[] = array('name' => $name, 'type' => $key,  'title' => $title, 'id' => $slug, 'parent' => 'setup', 'minus' => $minus);
+
+                    $tags[] = array('name' => $name, 'type' => $key, 'title' => $title, 'id' => $slug, 'parent' => 'setup', 'minus' => $minus);
                 }
             } else if ($key == 'verdict') {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
                     $name = $this->verdict_mode[$slug]['title'];
                     $title = 'Race verdict mode';
-               
-                    $tags[] = array('name' => $name, 'type' => $key,  'title' => $title, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
+
+                    $tags[] = array('name' => $name, 'type' => $key, 'title' => $title, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
                 }
             } else if ($key == 'priority') {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
                     $name = $slug;
                     $title = 'Priority ';
-             
-                    $tags[] = array('name' => $name, 'type' => $key,  'title' => $title, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
+
+                    $tags[] = array('name' => $name, 'type' => $key, 'title' => $title, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
                 }
             } else if ($key == 'weight') {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
                     $name = $slug;
                     $title = 'Weight id ';
-           
-                    $tags[] = array('name' => $name, 'type' => $key,  'title' => $title, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
+
+                    $tags[] = array('name' => $name, 'type' => $key, 'title' => $title, 'id' => $slug, 'parent' => 'ethnicity', 'minus' => $minus);
                 }
             } else if ($key == 'stacking') {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
                     $name = ucfirst($slug);
                     $title = 'Stacking ';
-                
-                    $tags[] = array('name' => $name, 'type' => $key,  'title' => $title, 'id' => $slug, 'parent' => 'international', 'minus' => $minus,  'class' => 'sohf');
+
+                    $tags[] = array('name' => $name, 'type' => $key, 'title' => $title, 'id' => $slug, 'parent' => 'international', 'minus' => $minus, 'class' => 'sohf');
                 }
             } else if ($key == 'year') {
                 $name = $value;
@@ -388,7 +388,7 @@ class AnalyticsFront extends SearchFacets {
         return $tags;
     }
 
-    public function find_results($uid = 0, $ids = array(), $show_facets = true, $only_curr_tab = false, $limit = -1, $page = -1) {
+    public function find_results($uid = 0, $ids = array(), $show_facets = true, $only_curr_tab = false, $limit = -1, $page = -1, $show_main = true, $show_chart = true) {
         $result = array();
         $start = 0;
         $page = $this->get_search_page();
@@ -400,8 +400,8 @@ class AnalyticsFront extends SearchFacets {
         $filters = $this->get_search_filters();
 
         if ($tab_key == 'international') {
-            $sort = $this->get_search_sort($tab_key);
-            $data = $this->cs->front_search_international($this->keywords, $this->search_limit, $start, $sort, $filters, $show_facets);
+            $sort = $this->get_search_sort($tab_key);            
+            $data = $this->cs->front_search_international($this->keywords, $this->search_limit, $start, $sort, $filters, $show_facets, true, true, $show_main, $show_chart);
         } else if ($tab_key == 'ethnicity') {
             // Claster facets
             if (!$show_facets && !$ids) {
@@ -417,8 +417,8 @@ class AnalyticsFront extends SearchFacets {
             $vis = $this->get_filter('vis');
             $diversity = $this->get_filter('diversity');
             $xaxis = $this->get_filter('xaxis', $this->xaxis_def);
-            $yaxis = $this->get_filter('yaxis', $this->yaxis_def);
-            $data = $this->cs->front_search_ethnicity_xy($this->keywords, $this->search_limit, $start, $sort, $filters, $ids, $vis, $diversity, $xaxis, $yaxis, $show_facets);
+            $yaxis = $this->get_filter('yaxis', $this->yaxis_def);            
+            $data = $this->cs->front_search_ethnicity_xy($this->keywords, $this->search_limit, $start, $sort, $filters, $ids, $vis, $diversity, $xaxis, $yaxis, $show_facets, true, true, $show_main, $show_chart);
             gmi('find data');
             if ($show_facets) {
                 $data['facets'][$tab_key]['data'] = $this->calculate_facet_ethnicity_xy($data['facets'][$tab_key]['data'], $xaxis, $yaxis);
@@ -673,7 +673,6 @@ class AnalyticsFront extends SearchFacets {
 
         ob_start();
 
-
         // Visualization
         $title = 'Visualization';
         $dates = array();
@@ -694,9 +693,7 @@ class AnalyticsFront extends SearchFacets {
         }
         $filter = 'xaxis';
 
-
         $this->theme_facet_select($filter, $dates, $title, $ftype);
-
 
         // Y-axis
         $title = 'Y-axis';
@@ -706,9 +703,7 @@ class AnalyticsFront extends SearchFacets {
         }
         $filter = 'yaxis';
 
-
         $this->theme_facet_select($filter, $dates, $title, $ftype);
-
 
         // Actor type
         $actor_type = $data['actor_type'];
@@ -762,7 +757,6 @@ class AnalyticsFront extends SearchFacets {
         );
         $this->theme_facet_multi($facet_data);
 
-
         // Race priority               
         $check_default = '';
         $verdict = $this->get_filter_multi('verdict');
@@ -792,9 +786,6 @@ class AnalyticsFront extends SearchFacets {
             $dates[$key] = array('title' => $value['title']);
         }
         $filter = 'verdict';
-
-
-
 
         $this->theme_facet_select($filter, $dates, $title, $ftype, '', '', '', $priority_content, $check_default);
 
@@ -930,7 +921,6 @@ class AnalyticsFront extends SearchFacets {
         $dates = array();
         $filter = 'setup';
 
-
         $tab_key = $this->get_tab_key();
 
         foreach ($this->setup as $id => $item) {
@@ -997,7 +987,6 @@ class AnalyticsFront extends SearchFacets {
         $max_key = $this->cs->budget_max;
         $karay = $this->cs->get_budget_array();
 
-
         $from = $to = 0;
         // Filters
         $filters = $this->facet_filters[$type];
@@ -1043,7 +1032,6 @@ class AnalyticsFront extends SearchFacets {
             $i++;
         }
         $max_item = $i - 1;
-
 
         $data_min = $first_item;
         $collapsed = $this->cs->is_hide_facet($type, $this->filters);
@@ -1638,12 +1626,10 @@ class AnalyticsFront extends SearchFacets {
         $races_count = $data['races_count'];
         $total_calc = $data['total_ret'];
 
-
         // Current select
         $curryear = $data['curryear'];
         $currmovie = $data['currmovie'];
         $currclaster = $data['currclaster'];
-
 
         // Setup
         $setup = $this->get_filter_multi('setup');
@@ -1663,7 +1649,6 @@ class AnalyticsFront extends SearchFacets {
         $claster_ids = array();
         $i = 0;
         $j = 0;
-
 
         // Main for from all movies array
         foreach ($array_movie_bell as $mid => $item) {
@@ -1897,7 +1882,7 @@ class AnalyticsFront extends SearchFacets {
         // Info table
         $current_filter = 'current';
         $current_title = $this->cs->search_filters[$current_filter]['title'];
-        
+
         $current_parent = 'chart_div';
         $filter_tag = $this->theme_tag($current_filter, $current_title, 'RVALUE', false);
         ?>
@@ -2075,7 +2060,6 @@ class AnalyticsFront extends SearchFacets {
         $per_capita_min = $data['per_capita_min'];
         $per_capita_max = $data['per_capita_max'];
 
-
         $result_in = '';
         $result_in_all = '';
         $r_sort = array();
@@ -2132,7 +2116,6 @@ class AnalyticsFront extends SearchFacets {
 
         $array_total = $data['array_total'];
         $yearmin = $data['yearmin'];
-
 
         arsort($array_total['t']);
         foreach ($array_total['t'] as $race => $count) {
@@ -2326,7 +2309,6 @@ class AnalyticsFront extends SearchFacets {
 
             if ($total_calc['racemf'][$axis]) {
                 $races_gender_data = $total_calc['racemf'][$axis];
-
 
                 $table = array(
                     'Race' => array('t' => 's'),
@@ -2801,7 +2783,6 @@ class AnalyticsFront extends SearchFacets {
         $showcast = $this->get_filter_multi('showcast');
         $show_cast_valid = $this->get_show_cast_valid($showcast);
 
-
         // Priority                       
         $verdict = $this->get_filter_multi('verdict');
         if (in_array('w', $verdict)) {
@@ -2868,8 +2849,6 @@ class AnalyticsFront extends SearchFacets {
         }
 
         gmi('for before');
-
-
 
         foreach ($data as $item) {
             $year = $item->year;
@@ -3383,7 +3362,6 @@ class AnalyticsFront extends SearchFacets {
         $year_facet = array();
         $current_year = date('Y', time());
 
-
         foreach ($population as $item) {
 
             $country = $item->country_name;
@@ -3446,7 +3424,6 @@ class AnalyticsFront extends SearchFacets {
         }
         $count = sizeof($population);
 
-
         $data = array(
             'array_country' => $array_country,
             'array_total' => $array_total,
@@ -3499,7 +3476,6 @@ class AnalyticsFront extends SearchFacets {
                 $ethnic_array_result = (array) json_decode($ethnic_array_result, JSON_FORCE_OBJECT);
                 $key = array_keys($ethnic_array_result);
                 $value = $key[0];
-
 
                 $ethnic_country = '';
                 foreach ($ethnic_array_result as $race => $count) {
@@ -3577,7 +3553,7 @@ class AnalyticsFront extends SearchFacets {
                     $arry_total[$race] += $val;
                     $next = 1;
                 } else {
-                    $array_country[$country][$index] ++;
+                    $array_country[$country][$index]++;
                     $array_country_data[$country] = $item->region . ' ' . $item->subregion . ' ' . $item->latlng;
                 }
                 $content[$index] += $val;
@@ -3896,7 +3872,6 @@ class AnalyticsFront extends SearchFacets {
         $populatin_by_year = $item->populatin_by_year;
         $populatin_by_year_result = (array) json_decode($populatin_by_year);
 
-
         $populatin_result = array();
         $current_year = date('Y', time());
 
@@ -4119,7 +4094,7 @@ class AnalyticsFront extends SearchFacets {
 
     public function print_mob_styles($table = array(), $table_class = 'rsdiv') {
         ?>
-        <style  type='text/css' media='all'>                    
+        <style  type='text/css' media='all'>
         <?php
         print '@media only screen and (max-width: 760px), (min-device-width: 768px) and (max-device-width: 1024px)  {';
         $i = 1;
@@ -4201,10 +4176,8 @@ class AnalyticsFront extends SearchFacets {
     public function custom_weight_race_code($race = 0, $race_weight = array(), $onlydata = 0, $debugs = '') {
         if ($debugs) {
 
-            if (function_exists('var_dump_table'))
-            {
-                var_dump_table(array('race'=>$race,'race_weight'=> $race_weight ));
-
+            if (function_exists('var_dump_table')) {
+                var_dump_table(array('race' => $race, 'race_weight' => $race_weight));
             }
         }
         /*
@@ -4247,11 +4220,9 @@ class AnalyticsFront extends SearchFacets {
 
                 $race_code = $this->get_race_by_key($race, $key);
 
-
                 if ($race_code) {
                     $race_code_key = $this->race_small[$race_code]['key'];
                     $score = $row[$race_code_key];
-
 
                     // Plus logic
                     if ($score > 0) {
@@ -4263,30 +4234,20 @@ class AnalyticsFront extends SearchFacets {
 
                 if ($debugs) {
 
-                    if (function_exists('var_dump_table'))
-                    {
+                    if (function_exists('var_dump_table')) {
                         var_dump_table([$key, $row, $race_code, $race_code_key, $score]);
-
-                    }
-                    else
-                    {
+                    } else {
                         var_dump([$key, $row, $race_code, $race_code_key, $score]);
                     }
-
                 }
             }
         }
         if ($debugs) {
-            if (function_exists('var_dump_table'))
-            {
+            if (function_exists('var_dump_table')) {
                 var_dump_table(['debug', $debug]);
-            }
-            else
-            {
+            } else {
                 var_dump(['debug', $debug]);
-
             }
-
         }
         if ($type_calc == 0 && $result_summ) {
             arsort($result_summ);
@@ -4336,21 +4297,18 @@ class AnalyticsFront extends SearchFacets {
 
         //$tab_key = $this->get_tab_key();
         $filters = $this->get_search_filters();
-        $facets = false;
-
         //$sort = $this->get_search_sort($tab_key);
         $sort = array();
         //$this->keywords
         unset($filters['movie']);
         $search_limit = 6;
-
         $tab_key = $this->get_tab_key();
 
-
+        $facets = false;
         if ($tab_key == 'international') {
-            $data = $this->cs->front_search_international($keyword, $search_limit, $start, $sort, $filters, $facets);
+            $data = $this->cs->front_search_international($keyword, $search_limit, $start, $sort, $filters, $facets, true, true, true, false);
         } else {
-            $data = $this->cs->front_search_ethnicity_xy($keyword, $search_limit, $start, $sort, $filters, array(), '', '', '', '', $facets);
+            $data = $this->cs->front_search_ethnicity_xy($keyword, $search_limit, $start, $sort, $filters, array(), '', '', '', '', $facets, true, true, true, false);
         }
 
         $filter = 'movie';
@@ -4401,7 +4359,6 @@ class AnalyticsFront extends SearchFacets {
     public function get_image_link($id = '', $last_update = '', $resolution = 540) {
         $current_site = 'https://zeitgeistreviews.com';
         $cache_site = 'https://img.zeitgeistreviews.com';
-
 
         if (defined('LOCALCACHEIMAGES')) {
             if (LOCALCACHEIMAGES == 1) {
@@ -4583,5 +4540,4 @@ class AnalyticsFront extends SearchFacets {
         }
         return $ret;
     }
-
 }

@@ -87,8 +87,10 @@ class SearchFacets extends AbstractDB {
         return $ret;
     }
 
-    public function init_search_get_fiters() {
-        $search_data = $_POST;
+    public function init_search_get_fiters($search_data = '') {        
+        if (!$search_data){
+            $search_data=$_POST;
+        }
         if (isset($search_data['s'])) {
             $this->keywords = strip_tags(stripslashes($search_data['s']));
         }
@@ -357,7 +359,7 @@ class SearchFacets extends AbstractDB {
         return $ret;
     }
 
-    public function find_results($uid = 0, $ids = array(), $show_facets = true, $only_curr_tab = false, $limit = -1, $page = -1) {
+    public function find_results($uid = 0, $ids = array(), $show_facets = true, $only_curr_tab = false, $limit = -1, $page = -1, $show_main = true, $show_chart = true) {
         gmi('find_results');
         $result = array();
         $start = 0;
@@ -393,10 +395,10 @@ class SearchFacets extends AbstractDB {
             if ($show_facets) {
                 $facets = $is_movie ? true : false;
             }
-            $result['movies'] = $this->cs->front_search_movies_multi($this->keywords, $search_limit, $start, $sort, $filters, $facets);
+            $result['movies'] = $this->cs->front_search_movies_multi($this->keywords, $search_limit, $start, $sort, $filters, $facets, true, true, $show_main);
             $movies_count = $result['movies']['count'];
 
-            if ($movies_count == 0 && $this->keywords && $is_movie) {
+            if ($movies_count == 0 && $this->keywords && $is_movie && $show_main) {
                 if ($this->get_clear_filters($filters)) {
                     // Try to find without filters
                     $no_filters = $this->cs->front_search_movies_multi($this->keywords, $search_limit, $start, $sort, array(), false);
@@ -415,10 +417,10 @@ class SearchFacets extends AbstractDB {
             if ($show_facets) {
                 $facets = $is_game ? true : false;
             }
-            $result['games'] = $this->cs->front_search_games_multi($this->keywords, $search_limit, $start, $sort, $filters, $facets);
+            $result['games'] = $this->cs->front_search_games_multi($this->keywords, $search_limit, $start, $sort, $filters, $facets, true, true, $show_main);
             $games_count = $result['games']['count'];
 
-            if ($games_count == 0 && $this->keywords && $is_game) {
+            if ($games_count == 0 && $this->keywords && $is_game && $show_main) {
                 if ($this->get_clear_filters($filters)) {
                     // Try to find without filters
                     $no_filters = $this->cs->front_search_games_multi($this->keywords, $search_limit, $start, $sort, array(), false);
@@ -437,10 +439,11 @@ class SearchFacets extends AbstractDB {
             if ($show_facets) {
                 $facets = $is_critic ? true : false;
             }
-            $result['critics'] = $this->cs->front_search_critics_multi($this->keywords, $search_limit, $start, $sort, $filters, $facets);
+            
+            $result['critics'] = $this->cs->front_search_critics_multi($this->keywords, $search_limit, $start, $sort, $filters, $facets, true, false, array(), $show_main);
             $critics_count = $result['critics']['count'];
 
-            if ($critics_count == 0 && $this->keywords && $is_critic) {
+            if ($critics_count == 0 && $this->keywords && $is_critic && $show_main) {
                 if ($this->get_clear_filters($filters)) {
                     // Try to find without filters
                     $no_filters = $this->cs->front_search_critics_multi($this->keywords, $search_limit, $start, $sort, array(), false);
@@ -470,11 +473,11 @@ class SearchFacets extends AbstractDB {
                     $aid = $author->id;
                 }
             }
-
-            $result['filters'] = $this->cs->front_search_filters_multi($aid, $this->keywords, $search_limit, $start, $sort, $filters, $facets);
+            
+            $result['filters'] = $this->cs->front_search_filters_multi($aid, $this->keywords, $search_limit, $start, $sort, $filters, $facets, true, true, $show_main);
             $filters_count = $result['filters']['count'];
 
-            if ($filters_count == 0 && $this->keywords && $is_filter) {
+            if ($filters_count == 0 && $this->keywords && $is_filter && $show_main) {
                 if ($this->get_clear_filters($filters)) {
                     // Try to find without filters
                     $no_filters = $this->cs->front_search_filters_multi($aid, $this->keywords, $search_limit, $start, $sort, array(), false);
@@ -3336,7 +3339,7 @@ class SearchFacets extends AbstractDB {
                         'minus' => $minus,
                     );
                     $this->theme_facet_multi($filter_data);
-                } else if ($cparent == 'sphoto') {
+                } else if ($cparent == 'castphoto') {
                     // Photo                  
                     // Need photo for stars
                     $need_data = array();
@@ -3352,7 +3355,7 @@ class SearchFacets extends AbstractDB {
                             $id = (int) trim($value->id);
                             $cnt = $value->cnt;
                             if ($id) {
-                                foreach ($this->cs->search_filters['sphoto'] as $key => $item) {
+                                foreach ($this->cs->search_filters[$ckey] as $key => $item) {
                                     if ($item['key'] == $id) {
                                         $dates[$key] = array('title' => $item['title'], 'count' => $cnt, 'type_title' => $title);
                                     }
@@ -3415,7 +3418,7 @@ class SearchFacets extends AbstractDB {
 
                         $this->show_slider_include_facet($slider_data);
                     }
-                } else if ($cparent == 'country') {
+                } else if ($cparent == 'actorscountry') {
                     // Country
                     $dates = array();
                     $data = array();
