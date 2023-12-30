@@ -294,6 +294,28 @@ components:
             - stars
             - supporting
           example: stars
+        race:
+          title: 'Cast race'
+          type: string
+          default: ''
+          enum:
+            - White
+            - Asian
+            - Latino
+            - Black
+            - Indian
+            - Arab
+            - 'Mixed / Other'
+            - Jewish
+          example: white
+        gender:
+          title: 'Cast gender'
+          type: string
+          default: ''
+          enum:
+            - Male
+            - Female
+          example: male
       type: object
     Media:
       title: 'Media model'

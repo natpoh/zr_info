@@ -91,6 +91,33 @@ class Cast extends Model {
      */
     public $type;
 
+    /**
+     * @OA\Property(
+     *     default="",
+     *     example="white",     
+     *     title="Cast race",
+     *     type="string",
+     *     enum={"White", "Asian", "Latino", "Black", "Indian", "Arab", "Mixed / Other", "Jewish"},
+     * )
+     * 
+     *
+     * @var string
+     */
+    public $race;
+    
+     /**
+     * @OA\Property(
+     *     default="",
+     *     example="male",     
+     *     title="Cast gender",
+     *     type="string",
+     *     enum={"Male", "Female"},
+     * )
+     *
+     * @var string
+     */
+    public $gender;
+    
     public function __construct($arr = array()) {
         /*
           "id": "206",
@@ -109,6 +136,8 @@ class Cast extends Model {
         $this->setVal($arr, 'birth_place');
         $this->setVal($arr, 'burn_date');
         $this->setVal($arr, 'type');
+        $this->setVal($arr, 'race');
+        $this->setVal($arr, 'gender');
     }
 
     public function toArray() {
@@ -119,6 +148,8 @@ class Cast extends Model {
             'birth_place' => $this->birth_place,
             'burn_date' => $this->burn_date,
             'type' => $this->type,
+            'race' => $this->race,
+            'gender' => $this->gender,
         );
     }
 }

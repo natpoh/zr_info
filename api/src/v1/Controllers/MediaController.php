@@ -35,6 +35,7 @@ class MediaController extends Controller {
             'data_provider' => 'data_movie_provider',
             'meta_actor' => 'meta_movie_actor',
             'meta_director' => 'meta_movie_director',
+            'actors_meta'=>'data_actors_meta',
         );
     }
 
@@ -131,7 +132,26 @@ class MediaController extends Controller {
                 // Get actor data by id
                 $sql = "SELECT * FROM {$this->db['actors_imdb']} WHERE id in(" . $actor_all . ")";
                 $actors = $this->db_results($sql);
+                // Get verdicts
+                $verdicts_sql = "SELECT actor_id, gender, n_verdict_weight FROM {$this->db['actors_meta']} WHERE actor_id in(" . $actor_all . ")";
+                $verdicts = $this->db_results($verdicts_sql);
+                $verdicts_arr = array();
+                if ($verdicts){
+                    foreach ($verdicts as $verdict) {
+                        $verdicts_arr[$verdict->actor_id]=$verdict;
+                    }
+                }
+          
                 if ($actors) {
+                    $race_titles = array();
+                    foreach ($cs->search_filters['race'] as $race_data) {
+                        $race_titles[$race_data['key']]=$race_data['title'];
+                    }
+                    $gender_titles=array();
+                    foreach ($cs->search_filters['gender'] as $race_data) {
+                        $gender_titles[$race_data['key']]=$race_data['title'];
+                    }
+                    
                     /*
                       "id": "206",
                       "name": "Keanu Reeves",
@@ -145,10 +165,23 @@ class MediaController extends Controller {
                      */
                     foreach ($actors as $actor) {
                         $actor->type = 'all';
+                        $actor->race="";
+                        $actor->gender="";
                         if (in_array($actor->id, $actor_main_all)) {
                             $actor->type = 'stars';
                         } else if (in_array($actor->id, $actor_star_all)) {
                             $actor->type = 'supporting';
+                        }
+                        // Check verdict
+                        if (isset($verdicts_arr[$actor->id])){
+                            $race = $verdicts_arr[$actor->id]->n_verdict_weight;
+                            if ($race){                                
+                                $actor->race=isset($race_titles[$race])?$race_titles[$race]:'';
+                            }
+                            $gender = $verdicts_arr[$actor->id]->gender;
+                            if ($gender){
+                                $actor->gender=isset($gender_titles[$gender])?$gender_titles[$gender]:'';
+                            }                            
                         }
                         $cast = new \OpenApi\Fd\Models\Cast((array) $actor);
                         $actors_list[$actor->type][] = $cast->toArray();
