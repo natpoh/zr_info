@@ -56,7 +56,7 @@ $path = $parsedUrl['path'];
 if ($path=='/'){
     // Load documentation    
     $index = file_get_contents('doc/index.html');
-    str_replace("swagger_url_path", SWAGGER_API_URL, $index);    
+    $index = str_replace("swagger_url_path", SWAGGER_API_URL, $index);    
     print $index;
     exit;
 }
