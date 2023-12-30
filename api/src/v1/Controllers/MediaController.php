@@ -164,13 +164,13 @@ class MediaController extends Controller {
                       "lastupdate": "1610561889"
                      */
                     foreach ($actors as $actor) {
-                        $actor->type = 'all';
+                        $actor->type = 'All';
                         $actor->race="";
                         $actor->gender="";
                         if (in_array($actor->id, $actor_main_all)) {
-                            $actor->type = 'stars';
+                            $actor->type = 'Stars';
                         } else if (in_array($actor->id, $actor_star_all)) {
-                            $actor->type = 'supporting';
+                            $actor->type = 'Supporting';
                         }
                         // Check verdict
                         if (isset($verdicts_arr[$actor->id])){

@@ -290,10 +290,10 @@ components:
           type: string
           default: ''
           enum:
-            - all
-            - stars
-            - supporting
-          example: stars
+            - All
+            - Stars
+            - Supporting
+          example: Stars
         race:
           title: 'Cast race'
           type: string
@@ -307,7 +307,7 @@ components:
             - Arab
             - 'Mixed / Other'
             - Jewish
-          example: white
+          example: White
         gender:
           title: 'Cast gender'
           type: string
@@ -315,7 +315,7 @@ components:
           enum:
             - Male
             - Female
-          example: male
+          example: Male
       type: object
     Media:
       title: 'Media model'

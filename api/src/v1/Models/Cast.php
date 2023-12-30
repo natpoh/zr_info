@@ -81,10 +81,10 @@ class Cast extends Model {
     /**
      * @OA\Property(
      *     default="",
-     *     example="stars",     
+     *     example="Stars",     
      *     title="Cast type",
      *     type="string",
-     *     enum={"all", "stars", "supporting"},
+     *     enum={"All", "Stars", "Supporting"},
      * )
      *
      * @var string
@@ -94,7 +94,7 @@ class Cast extends Model {
     /**
      * @OA\Property(
      *     default="",
-     *     example="white",     
+     *     example="White",     
      *     title="Cast race",
      *     type="string",
      *     enum={"White", "Asian", "Latino", "Black", "Indian", "Arab", "Mixed / Other", "Jewish"},
@@ -108,7 +108,7 @@ class Cast extends Model {
      /**
      * @OA\Property(
      *     default="",
-     *     example="male",     
+     *     example="Male",     
      *     title="Cast gender",
      *     type="string",
      *     enum={"Male", "Female"},
