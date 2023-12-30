@@ -142,7 +142,7 @@ class Media extends Model {
      */
     public $cast_all;
 
-    public function __construct($arr = array(), $actor_names = array()) {
+    public function __construct($arr = array(), $sf='') {
 
         $this->setIntVal($arr, 'id');
         $this->setVal($arr, 'type');
@@ -152,6 +152,11 @@ class Media extends Model {
         $this->get_imdb_id($arr);
 
         // Actor objects
+        // get actor data
+        $actor_names = array();
+        if ($sf) {
+            $actor_names = $sf->cs->get_actor_names(explode(',', $arr['actor_all']));
+        }
         // 'actor_all','actor_star','actor_main',
         try {
             $this->cast_stars = array(
@@ -190,6 +195,16 @@ class Media extends Model {
         return $ret;
     }
 
+    public static function getSearchFields() {
+        $fields=array(
+            'actor_all','actor_star','actor_main',            
+            'paaw','paaea','paah','paab','paai','paam','paamix','paajw','pama','pafa',
+            'psaw','psaea','psah','psab','psai','psam','psamix','psajw','psma','psfa',
+            'pmaw','pmaea','pmah','pmab','pmai','pmam','pmamix','pmajw','pmma','pmfa',            
+        );
+        return $fields;
+    }
+    
     public static function getGenderNames() {
         $names = array(
             'm' => array('key' => 2, 'title' => 'Male'),
@@ -238,7 +253,7 @@ class Media extends Model {
             $field = "p{$type}a{$key}";
             $race = $value['title'];
             $percent = $arr[$field];
-            $data = array('race' => $race, 'race_id'=>$value['key'], 'percent' => $percent);
+            $data = array('race' => $race, 'race_id' => $value['key'], 'percent' => $percent);
             $demographic = new Demographic($data);
             $ret[] = $demographic;
         }

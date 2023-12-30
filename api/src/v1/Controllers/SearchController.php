@@ -88,13 +88,7 @@ class SearchController extends Controller {
         // Init filters
         $sf->init_search_get_fiters($query_args);
         
-        $fields=array(
-            'actor_all','actor_star','actor_main',            
-            'paaw','paaea','paah','paab','paai','paam','paamix','paajw','pama','pafa',
-            'psaw','psaea','psah','psab','psai','psam','psamix','psajw','psma','psfa',
-            'pmaw','pmaea','pmah','pmab','pmai','pmam','pmamix','pmajw','pmma','pmfa',
-            
-        );
+        $fields=\OpenApi\Fd\Models\Media::getSearchFields();
         $result = $sf->find_results(0, array(), false, true, $pp,-1,true,false,$fields);
 
         $ret = array();
@@ -122,13 +116,7 @@ class SearchController extends Controller {
         if ($data) {
             $sf = $this->get_sf();
             foreach ($data as $item) {
-               // get actor data
-               $actors_str = $item->actor_all;
-               $actor_names = array();
-               if ($actors_str){
-                   $actor_names = $sf->cs->get_actor_names(explode(',', $actors_str));                 
-               }
-               $media = new \OpenApi\Fd\Models\Media((array) $item, $actor_names);
+               $media = new \OpenApi\Fd\Models\Media((array) $item, $sf);
                $ret[]=$media->toArray();
             }
         }

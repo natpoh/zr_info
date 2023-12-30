@@ -79,7 +79,8 @@ class MediaController extends Controller {
         $cs = new \CriticSearch();
         $fmedia = $cs->get_movie_by_id($mediaId);
         if ($fmedia) {
-            $media = new \OpenApi\Fd\Models\Media((array) $fmedia);
+            $sf = $this->get_sf();
+            $media = new \OpenApi\Fd\Models\Media((array) $fmedia, $sf);
             $ret = $media->toArray();
             return $this->responce(200, $ret);
         } else {
