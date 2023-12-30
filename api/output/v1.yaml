@@ -11,8 +11,11 @@ info:
   version: 1.0.0
 servers:
   -
-    url: 'http://api.zr.4aoc.ru/v1'
+    url: 'https://api.filmdemographics.com/v1'
     description: 'FilmDemographics API Mocking'
+  -
+    url: 'http://api.zr.4aoc.ru/v1'
+    description: 'DEV FilmDemographics API Mocking'
 paths:
   '/media/{mediaId}':
     get:

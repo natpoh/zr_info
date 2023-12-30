@@ -36,6 +36,10 @@ use OpenApi\Annotations as OA;
  * )
  * @OA\Server(
  *     description="FilmDemographics API Mocking",
+ *     url="https://api.filmdemographics.com/v1"
+ * )
+ * @OA\Server(
+ *     description="DEV FilmDemographics API Mocking",
  *     url="http://api.zr.4aoc.ru/v1"
  * )
  */
