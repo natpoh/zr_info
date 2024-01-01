@@ -13,7 +13,7 @@ use OpenApi\Annotations as OA;
  *
  * @author  Brahmnan <brahmnan@gmail.com>
  */
-class strURIController {
+class StrUriController {
 
     public function runPath($command='', $query_args=[]) {
         $sfunction = 'getMediaBystrURI';

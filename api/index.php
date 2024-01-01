@@ -97,7 +97,7 @@ if ($version == 'v1') {
         $controller = new OpenApi\Fd\Controllers\SearchController();
         $controller->runPath($command2, $query_args);
     } elseif ($command == 'string_uri') {
-        $controller = new OpenApi\Fd\Controllers\StrURIController();
+        $controller = new OpenApi\Fd\Controllers\StrUriController();
         $controller->runPath($command2, $query_args);
     } elseif ($command == 'media') {
         $controller = new OpenApi\Fd\Controllers\MediaController();
