@@ -13,9 +13,6 @@ servers:
   -
     url: 'https://api.filmdemographics.com/v1'
     description: 'FilmDemographics API Mocking'
-  -
-    url: 'http://api.zr.4aoc.ru/v1'
-    description: 'DEV FilmDemographics API Mocking'
 paths:
   '/media/{mediaId}':
     get:
@@ -170,10 +167,10 @@ paths:
         - string_uri
       summary: 'Returns media objects'
       description: 'Returns a map of media objects'
-      operationId: getMediaByZrURI
+      operationId: getMediaBystrURI
       parameters:
         -
-          name: zrURI
+          name: strURI
           in: query
           description: 'Type to find media by string request'
           required: false
@@ -200,10 +197,10 @@ paths:
         - string_uri
       summary: 'Returns media objects'
       description: 'Returns a map of media objects'
-      operationId: getChartDataByZrURI
+      operationId: getChartDataBystrURI
       parameters:
         -
-          name: zrURI
+          name: strURI
           in: query
           description: 'Type to find media by string request'
           required: true
@@ -230,10 +227,10 @@ paths:
         - string_uri
       summary: 'Returns media objects'
       description: 'Returns a map of media objects'
-      operationId: getFacetsByZrURI
+      operationId: getFacetsBystrURI
       parameters:
         -
-          name: zrURI
+          name: strURI
           in: query
           description: 'Type to find media by string request'
           required: false

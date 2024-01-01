@@ -13,13 +13,13 @@ use OpenApi\Annotations as OA;
  *
  * @author  Brahmnan <brahmnan@gmail.com>
  */
-class ZrUriController {
+class strURIController {
 
     public function runPath($command='', $query_args=[]) {
-        $sfunction = 'getMediaByZrURI';
+        $sfunction = 'getMediaBystrURI';
         $seach_arr = array(
-            'chart' => 'getChartDataByZrURI',
-            'facets' => 'getFacetsByZrURI',
+            'chart' => 'getChartDataBystrURI',
+            'facets' => 'getFacetsBystrURI',
         );
         if (isset($seach_arr[$command])) {
             // Check paths
@@ -34,9 +34,9 @@ class ZrUriController {
      *     tags={"string_uri"},
      *     summary="Returns media objects",
      *     description="Returns a map of media objects",
-     *     operationId="getMediaByZrURI",
+     *     operationId="getMediaBystrURI",
      *     @OA\Parameter(
-     *         name="zrURI",
+     *         name="strURI",
      *         in="query",
      *         description="Type to find media by string request",
      *         example="/search/show_ratings_rrwt/type_movies/rrwt_70-100",
@@ -64,11 +64,11 @@ class ZrUriController {
      *     }
      * )
      */
-    public function getMediaByZrURI($query_args = []) {
+    public function getMediaBystrURI($query_args = []) {
 
-        $zrURI = isset($query_args['zrURI']) ? htmlspecialchars($query_args['zrURI']) : '';
+        $strURI = isset($query_args['strURI']) ? htmlspecialchars($query_args['strURI']) : '';
 
-        $uri_arr = explode('/', $zrURI);
+        $uri_arr = explode('/', $strURI);
         $first_str = isset($uri_arr[1]) ? $uri_arr[1] : '';
         $result = array();
 
@@ -76,7 +76,7 @@ class ZrUriController {
             // Search URI
             // Init url
             $last_req = $_SERVER['REQUEST_URI'];
-            $_SERVER['REQUEST_URI'] = $zrURI;
+            $_SERVER['REQUEST_URI'] = $strURI;
             if ($first_str == 'search') {
                 $sf = new \SearchFacets();
                 $sf->init_search_filters();
@@ -106,9 +106,9 @@ class ZrUriController {
      *     tags={"string_uri"},
      *     summary="Returns media objects",
      *     description="Returns a map of media objects",
-     *     operationId="getChartDataByZrURI",
+     *     operationId="getChartDataBystrURI",
      *     @OA\Parameter(
-     *         name="zrURI",
+     *         name="strURI",
      *         in="query",
      *         description="Type to find media by string request",
      *         example="/analytics/tab_ethnicity/release_2020-2030/type_movies/vis_scatter/xaxis_rimdb/yaxis_release/showcast_1",
@@ -136,11 +136,11 @@ class ZrUriController {
      *     }
      * )
      */
-    public function getChartDataByZrURI($query_args = []) {
+    public function getChartDataBystrURI($query_args = []) {
 
-        $zrURI = isset($query_args['zrURI']) ? htmlspecialchars($query_args['zrURI']) : '';
+        $strURI = isset($query_args['strURI']) ? htmlspecialchars($query_args['strURI']) : '';
 
-        $uri_arr = explode('/', $zrURI);
+        $uri_arr = explode('/', $strURI);
         $first_str = isset($uri_arr[1]) ? $uri_arr[1] : '';
         $result = array();
 
@@ -148,7 +148,7 @@ class ZrUriController {
             // Analytics URI only
             // Init url
             $last_req = $_SERVER['REQUEST_URI'];
-            $_SERVER['REQUEST_URI'] = $zrURI;
+            $_SERVER['REQUEST_URI'] = $strURI;
 
             $sf = $this->getAnSearchFront();
             $sf->init_search_filters();
@@ -174,9 +174,9 @@ class ZrUriController {
      *     tags={"string_uri"},
      *     summary="Returns media objects",
      *     description="Returns a map of media objects",
-     *     operationId="getFacetsByZrURI",
+     *     operationId="getFacetsBystrURI",
      *     @OA\Parameter(
-     *         name="zrURI",
+     *         name="strURI",
      *         in="query",
      *         description="Type to find media by string request",
      *         example="/search/show_ratings_rrwt/type_movies/rrwt_70-100",
@@ -204,11 +204,11 @@ class ZrUriController {
      *     }
      * )
      */
-    public function getFacetsByZrURI($query_args = []) {
+    public function getFacetsBystrURI($query_args = []) {
 
-        $zrURI = isset($query_args['zrURI']) ? htmlspecialchars($query_args['zrURI']) : '';
+        $strURI = isset($query_args['strURI']) ? htmlspecialchars($query_args['strURI']) : '';
 
-        $uri_arr = explode('/', $zrURI);
+        $uri_arr = explode('/', $strURI);
         $first_str = isset($uri_arr[1]) ? $uri_arr[1] : '';
         $result = array();
 
@@ -216,7 +216,7 @@ class ZrUriController {
             // Search URI
             // Init url
             $last_req = $_SERVER['REQUEST_URI'];
-            $_SERVER['REQUEST_URI'] = $zrURI;
+            $_SERVER['REQUEST_URI'] = $strURI;
             if ($first_str == 'search') {
                 $sf = new \SearchFacets();
                 $sf->init_search_filters();
