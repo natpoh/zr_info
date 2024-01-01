@@ -164,10 +164,10 @@ paths:
       security:
         -
           api_key: []
-  /zr_uri:
+  /string_uri:
     get:
       tags:
-        - zr_uri
+        - string_uri
       summary: 'Returns media objects'
       description: 'Returns a map of media objects'
       operationId: getMediaByZrURI
@@ -175,7 +175,7 @@ paths:
         -
           name: zrURI
           in: query
-          description: 'Type to find media by Zr URI'
+          description: 'Type to find media by string request'
           required: false
           schema:
             type: string
@@ -194,10 +194,10 @@ paths:
       security:
         -
           api_key: []
-  /zr_uri/chart:
+  /string_uri/chart:
     get:
       tags:
-        - zr_uri
+        - string_uri
       summary: 'Returns media objects'
       description: 'Returns a map of media objects'
       operationId: getChartDataByZrURI
@@ -205,7 +205,7 @@ paths:
         -
           name: zrURI
           in: query
-          description: 'Type to find media by Zr URI'
+          description: 'Type to find media by string request'
           required: true
           schema:
             type: string
@@ -224,10 +224,10 @@ paths:
       security:
         -
           api_key: []
-  /zr_uri/facets:
+  /string_uri/facets:
     get:
       tags:
-        - zr_uri
+        - string_uri
       summary: 'Returns media objects'
       description: 'Returns a map of media objects'
       operationId: getFacetsByZrURI
@@ -235,7 +235,7 @@ paths:
         -
           name: zrURI
           in: query
-          description: 'Type to find media by Zr URI'
+          description: 'Type to find media by string request'
           required: false
           schema:
             type: string
@@ -522,5 +522,5 @@ tags:
     name: media
     description: 'Get media info'
   -
-    name: zr_uri
-    description: 'Get media by ZR URI'
+    name: string_uri
+    description: 'Get media by string request'

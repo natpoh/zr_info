@@ -96,7 +96,7 @@ if ($version == 'v1') {
     if ($command == 'search') {
         $controller = new OpenApi\Fd\Controllers\SearchController();
         $controller->runPath($command2, $query_args);
-    } elseif ($command == 'zr_uri') {
+    } elseif ($command == 'string_uri') {
         $controller = new OpenApi\Fd\Controllers\ZrUriController();
         $controller->runPath($command2, $query_args);
     } elseif ($command == 'media') {

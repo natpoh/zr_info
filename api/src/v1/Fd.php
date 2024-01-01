@@ -31,8 +31,8 @@ use OpenApi\Annotations as OA;
  *     description="Get media info",
  * )
  * @OA\Tag(
- *     name="zr_uri",
- *     description="Get media by ZR URI",
+ *     name="string_uri",
+ *     description="Get media by string request",
  * )
  * @OA\Server(
  *     description="FilmDemographics API Mocking",

@@ -30,15 +30,15 @@ class ZrUriController {
 
     /**
      * @OA\Get(
-     *     path="/zr_uri",
-     *     tags={"zr_uri"},
+     *     path="/string_uri",
+     *     tags={"string_uri"},
      *     summary="Returns media objects",
      *     description="Returns a map of media objects",
      *     operationId="getMediaByZrURI",
      *     @OA\Parameter(
      *         name="zrURI",
      *         in="query",
-     *         description="Type to find media by Zr URI",
+     *         description="Type to find media by string request",
      *         example="/search/show_ratings_rrwt/type_movies/rrwt_70-100",
      *         required=false,
      *         @OA\Schema(
@@ -102,15 +102,15 @@ class ZrUriController {
 
     /**
      * @OA\Get(
-     *     path="/zr_uri/chart",
-     *     tags={"zr_uri"},
+     *     path="/string_uri/chart",
+     *     tags={"string_uri"},
      *     summary="Returns media objects",
      *     description="Returns a map of media objects",
      *     operationId="getChartDataByZrURI",
      *     @OA\Parameter(
      *         name="zrURI",
      *         in="query",
-     *         description="Type to find media by Zr URI",
+     *         description="Type to find media by string request",
      *         example="/analytics/tab_ethnicity/release_2020-2030/type_movies/vis_scatter/xaxis_rimdb/yaxis_release/showcast_1",
      *         required=true,
      *         @OA\Schema(
@@ -170,15 +170,15 @@ class ZrUriController {
 
     /**
      * @OA\Get(
-     *     path="/zr_uri/facets",
-     *     tags={"zr_uri"},
+     *     path="/string_uri/facets",
+     *     tags={"string_uri"},
      *     summary="Returns media objects",
      *     description="Returns a map of media objects",
      *     operationId="getFacetsByZrURI",
      *     @OA\Parameter(
      *         name="zrURI",
      *         in="query",
-     *         description="Type to find media by Zr URI",
+     *         description="Type to find media by string request",
      *         example="/search/show_ratings_rrwt/type_movies/rrwt_70-100",
      *         required=false,
      *         @OA\Schema(
