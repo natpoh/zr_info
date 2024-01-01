@@ -84,7 +84,7 @@ if (isset($query_args['api_key'])) {
 if (!$api_valid) {
     // TODO Check api IP or Domain
 
-	if ($_SERVER['REMOTE_ADDR']=='148.251.54.53')
+	//if ($_SERVER['REMOTE_ADDR']=='148.251.54.53')
 	{
 	$api_valid = true;
 	}
