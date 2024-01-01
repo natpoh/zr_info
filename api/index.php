@@ -84,7 +84,7 @@ if (isset($query_args['api_key'])) {
 if (!$api_valid) {
     // TODO Check api IP or Domain
 
-	if (strstr($_SERVER['REMOTE_HOST'],'filmdemographics.com'))
+	if ($_SERVER['REMOTE_ADDR']=='148.251.54.53')
 	{
 	$api_valid = true;
 	}
@@ -94,7 +94,7 @@ if (!$api_valid) {
 
 if (!$api_valid) {
     http_response_code(401);
-    echo 'Unauthorized '.$_SERVER['REMOTE_HOST'];
+    echo 'Unauthorized ';
     exit;
 }
 
