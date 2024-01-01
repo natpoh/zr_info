@@ -83,7 +83,13 @@ if (isset($query_args['api_key'])) {
 
 if (!$api_valid) {
     // TODO Check api IP or Domain
-    $api_valid = true;
+
+	if (strstr($_SERVER['REQUEST_URI'],'filmdemographics.com'))
+	{
+	$api_valid = true;
+	}
+
+
 }
 
 if (!$api_valid) {
