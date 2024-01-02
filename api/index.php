@@ -86,10 +86,10 @@ if (!$api_valid) {
 
 	$allowed_domains = array("https://api.filmdemographics.com", "https://filmdemographics.com/");
 
-	if (isset($_SERVER['HTTP_ORIGIN']) && in_array($_SERVER['HTTP_ORIGIN'], $allowed_domains)) {
+	//if (isset($_SERVER['HTTP_ORIGIN']) && in_array($_SERVER['HTTP_ORIGIN'], $allowed_domains)) {
 
 	$api_valid = true;
-	}
+	//}
 
 
 }
