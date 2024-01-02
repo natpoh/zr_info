@@ -257,12 +257,17 @@ class MediaController extends Controller {
                 
                 if (isset($item['facet']) && $item['facet'] == 'rating') {                    
                     $rating_val = isset($fmedia_arr[$rkey])?$fmedia_arr[$rkey]:0;                    
-                   
+                   if ($rkey!='aurating' && $rkey!='rrev')
+                   {
                     if ($rating_val){
                         $rating_multi = (int) $rating_val;
                         if (isset($item['multipler'])){
                             $rating_multi = round($rating_val/$item['multipler'],2);
                         }
+						if ($rkey=='rrwt')
+						{
+							$item['title'] ='Aggregate Rating';
+						}
                         $item_arr = array(
                             'id'=>$rkey,
                             'title'=>$item['title'],
@@ -271,6 +276,7 @@ class MediaController extends Controller {
                         $rating = new \OpenApi\Fd\Models\Rating($item_arr);
                         $items[] = $rating->toArray();
                     }
+				   }
                 }
             }
             return $this->responce(200, $items);
