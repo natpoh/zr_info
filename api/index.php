@@ -96,7 +96,7 @@ if (!$api_valid) {
 
 if (!$api_valid) {
     http_response_code(401);
-    echo 'Unauthorized ';
+    echo 'Unauthorized '.$_SERVER['HTTP_ORIGIN'];
     exit;
 }
 
