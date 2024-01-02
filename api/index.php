@@ -84,8 +84,10 @@ if (isset($query_args['api_key'])) {
 if (!$api_valid) {
     // TODO Check api IP or Domain
 
-	//if ($_SERVER['REMOTE_ADDR']=='148.251.54.53')
-	{
+	$allowed_domains = array("https://api.filmdemographics.com", "https://filmdemographics.com/");
+
+	if (isset($_SERVER['HTTP_ORIGIN']) && in_array($_SERVER['HTTP_ORIGIN'], $allowed_domains)) {
+
 	$api_valid = true;
 	}
 
