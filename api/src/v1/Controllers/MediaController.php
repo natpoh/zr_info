@@ -267,6 +267,7 @@ class MediaController extends Controller {
 						if ($rkey=='rrwt')
 						{
 							$item['title'] ='Aggregate Rating';
+							$rkey='arfd';
 						}
                         $item_arr = array(
                             'id'=>$rkey,
