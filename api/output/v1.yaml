@@ -2,12 +2,12 @@ openapi: 3.0.0
 info:
   title: 'FilmDemographics API'
   description: ''
-  termsOfService:
+  termsOfService: 'http://swagger.io/terms/'
   contact:
-    email:
+    email: apiteam@swagger.io
   license:
-    name: 'FilmDemographics'
-    url: 'https://filmdemographics.com'
+    name: 'Apache 2.0'
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
   version: 1.0.0
 servers:
   -
