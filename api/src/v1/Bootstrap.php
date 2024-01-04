@@ -37,6 +37,7 @@ class Bootstrap extends Controllers\Controller {
             }
         }
 
+        // Force always valid
         $api_valid = true;
 
         if (!$api_valid) {
