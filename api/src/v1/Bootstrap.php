@@ -12,6 +12,11 @@ class Bootstrap extends Controllers\Controller {
         "http://api.zr.4aoc.ru/",
         "https://api.filmdemographics.com/",
     );
+    public $trust_domains = array(
+        "https://filmdemographics.com/",
+    );
+    
+    private $admin_api = 'LDKW_asd46-545f';
 
     public function run($path_arr = array(), $query_args = array()) {
 
@@ -22,23 +27,29 @@ class Bootstrap extends Controllers\Controller {
         $api_valid = false;
         $preview_mode = false;
 
-  
         // Doc domain
         if (isset($_SERVER['HTTP_REFERER']) && in_array($_SERVER['HTTP_REFERER'], $this->doc_domains)) {
             $api_valid = true;
             $preview_mode = true;
         }
+        
+        // Trust domain
+        if (!$api_valid && isset($_SERVER['HTTP_REFERER']) && in_array($_SERVER['HTTP_REFERER'], $this->trust_domains)) {
+            $api_valid = true;            
+        }
 
+        
+        
         if (!$api_valid) {
             if (isset($query_args['api_key'])) {
                 $api_key = $query_args['api_key'];
                 // TODO check api limits
-                $api_valid = true;
+                if ($api_key == $this->admin_api){
+                    $api_valid = true;
+                }
             }
         }
 
-        // Force always valid
-        $api_valid = true;
 
         if (!$api_valid) {
             http_response_code(401);
