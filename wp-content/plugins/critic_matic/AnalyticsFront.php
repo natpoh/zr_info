@@ -388,7 +388,7 @@ class AnalyticsFront extends SearchFacets {
         return $tags;
     }
 
-    public function find_results($uid = 0, $ids = array(), $show_facets = true, $only_curr_tab = false, $limit = -1, $page = -1, $show_main = true, $show_chart = true, $fields=array()) {
+    public function find_results($uid = 0, $ids = array(), $show_facets = true, $only_curr_tab = false, $limit = -1, $page = -1, $show_main = true, $show_chart = true, $fields = array()) {
         $result = array();
         $start = 0;
         $page = $this->get_search_page();
@@ -400,7 +400,7 @@ class AnalyticsFront extends SearchFacets {
         $filters = $this->get_search_filters();
 
         if ($tab_key == 'international') {
-            $sort = $this->get_search_sort($tab_key);            
+            $sort = $this->get_search_sort($tab_key);
             $data = $this->cs->front_search_international($this->keywords, $this->search_limit, $start, $sort, $filters, $show_facets, true, true, $show_main, $show_chart, $fields);
         } else if ($tab_key == 'ethnicity') {
             // Claster facets
@@ -417,10 +417,10 @@ class AnalyticsFront extends SearchFacets {
             $vis = $this->get_filter('vis');
             $diversity = $this->get_filter('diversity');
             $xaxis = $this->get_filter('xaxis', $this->xaxis_def);
-            $yaxis = $this->get_filter('yaxis', $this->yaxis_def);            
-            $data = $this->cs->front_search_ethnicity_xy($this->keywords, $this->search_limit, $start, $sort, $filters, $ids, $vis, $diversity, $xaxis, $yaxis, $show_facets, true, true, $show_main, $show_chart,$fields);
+            $yaxis = $this->get_filter('yaxis', $this->yaxis_def);
+            $data = $this->cs->front_search_ethnicity_xy($this->keywords, $this->search_limit, $start, $sort, $filters, $ids, $vis, $diversity, $xaxis, $yaxis, $show_facets, true, true, $show_main, $show_chart, $fields);
             gmi('find data');
-            if ($show_facets) {
+            if ($show_chart) {
                 $data['facets'][$tab_key]['data'] = $this->calculate_facet_ethnicity_xy($data['facets'][$tab_key]['data'], $xaxis, $yaxis);
                 gmi('calculate data');
             }
@@ -1456,7 +1456,31 @@ class AnalyticsFront extends SearchFacets {
         }
     }
 
-    public function show_page_facet_international($search_data, $tab_key = '') {
+    /*
+     * Get page facets
+     */
+
+    public function get_page_facet($data = array(), $tab_key = '', $preview_limit = 0) {
+        $ret = array();
+
+        if ($tab_key == 'international') {
+            $ret = $this->show_page_facet_international($data, $tab_key, true, $preview_limit);
+        } else if ($tab_key == 'ethnicity') {
+            $ret = $this->show_page_facet_ethnicity_xy($data, $tab_key, true, $preview_limit);
+        } else if ($tab_key == 'population') {
+            $ret = $this->show_page_facet_population($data, $tab_key, true, $preview_limit);
+        } else if ($tab_key == 'worldmap') {
+            $ret = $this->show_page_facet_worldmap($data, $tab_key, true, $preview_limit);
+        } else if ($tab_key == 'power') {
+            $ret = $this->show_page_facet_power($data, $tab_key, true, $preview_limit);
+        } else if ($tab_key == 'powerrace') {
+            $ret = $this->show_page_facet_powerrace($data, $tab_key, true, $preview_limit);
+        }
+
+        return $ret;
+    }
+
+    public function show_page_facet_international($search_data, $tab_key = '', $api_mode = false, $preview_limit = 0) {
 
         $data = $search_data[$tab_key]['facets'][$tab_key]['data'];
         $select_movies_count = $search_data[$tab_key]['count'];
@@ -1517,25 +1541,38 @@ class AnalyticsFront extends SearchFacets {
             }
         }
 
-        $result_data = '';
+        $result_data = array();
         $array_result = array();
 
         ksort($array_years);
         if (is_array($array_years)) {
+            $counter = 0;
             foreach ($array_years as $index => $val) {
                 arsort($val);
 
                 foreach ($val as $val_type => $count) {
                     if (!$count)
                         $count = 0;
-
-                    $array_result[$val_type][] = "{x:" . $index . ",y:" . $count . "}";
+                    if ($api_mode) {
+                        $array_result[$val_type][] = array("x" => $index, "y" => $count);
+                    } else {
+                        $array_result[$val_type][] = "{x:" . $index . ",y:" . $count . "}";
+                    }
+                }
+                $counter += 1;
+                if ($preview_limit > 0 && $counter >= $preview_limit) {
+                    break;
                 }
             }
 
             foreach ($array_result as $val_type => $result) {
                 $ethnic = $this->array_ethnic_data[$val_type];
-                $result_data .= $this->graphic_default($ethnic, $result);
+
+                if ($api_mode) {
+                    $result_data[] = $this->graphic_api($ethnic['title'], $ethnic['color'], $result);
+                } else {
+                    $result_data[] = $this->graphic_default($ethnic, $result);
+                }
             }
         }
 
@@ -1548,10 +1585,23 @@ class AnalyticsFront extends SearchFacets {
         if ($this->filters['stacking']) {
             $stacking = 'percent';
         }
+
+        // Api result
+        if ($api_mode) {
+
+            $ret = array(
+                'title' => $graph_title,
+                'yaxis' => $y_axis,
+                'stacking' => $stacking,
+                'results' => $result_data,
+            );
+            return $ret;
+        }
+
         $vis = '';
         ?>
         <script type="text/javascript">
-                            var search_extend_data = [<?php echo $result_data; ?>];
+                            var search_extend_data = [<?php echo implode('', $result_data); ?>];
         </script>
         <div id="chart_div" 
              data-tab="<?php print $tab_key ?>" 
@@ -1606,7 +1656,7 @@ class AnalyticsFront extends SearchFacets {
         <?php
     }
 
-    public function show_page_facet_ethnicity_xy($search_data, $tab_key = '') {
+    public function show_page_facet_ethnicity_xy($search_data, $tab_key = '', $api_mode = false, $preview_limit = 0) {
 
         $data = $search_data[$tab_key]['facets'][$tab_key]['data'];
 
@@ -1739,6 +1789,7 @@ class AnalyticsFront extends SearchFacets {
                 if ($vis == 'column' || $vis == 'line') {
                     // Columns
                     $result_item = array();
+                    $counter = 0;
                     foreach ($result as $key_filter => $cdata) {
                         $ydata = $cdata['y'];
                         $xdata = $cdata['x'];
@@ -1766,12 +1817,17 @@ class AnalyticsFront extends SearchFacets {
                         }
 
                         $result_item[] = "{x:" . $xdata . ",y:" . $ydata . ",id:'" . $key_filter . "',t:'" . $type . "'}";
+                        $counter += 1;
+                        if ($preview_limit > 0 && $counter >= $preview_limit) {
+                            break;
+                        }
                     }
                     $result = $result_item;
                 } else {
 
                     if ($clasters) {
                         $result_item = array();
+                        $counter = 0;
                         foreach ($result as $key_filter => $cdata) {
                             $count = $cdata['c'];
                             if ($count == 1) {
@@ -1796,12 +1852,25 @@ class AnalyticsFront extends SearchFacets {
                                 $mid = $key_filter;
                                 $type = "c";
                             }
-                            $result_item[] = "{x:" . $cdata['x'] . ",y:" . $cdata['y'] . ", title:'" . $titley . "', id:'" . $mid . "', t:'" . $type . "'}";
+                            if ($api_mode) {
+                                $result_item[] = array("x" => $cdata['x'], "y" => $cdata['y'], "title" => $titley, "id" => $mid, "t" => $type);
+                            } else {
+                                $result_item[] = "{x:" . $cdata['x'] . ",y:" . $cdata['y'] . ", title:'" . $titley . "', id:'" . $mid . "', t:'" . $type . "'}";
+                            }
+                            $counter += 1;
+                            if ($preview_limit > 0 && $counter >= $preview_limit) {
+                                break;
+                            }
                         }
                         $result = $result_item;
                     }
                 }
-                $result_data[] = $this->graphic_xy($title, $color, $result, $show_type);
+
+                if ($api_mode) {
+                    $result_data[] = $this->graphic_api($title, $color, $result);
+                } else {
+                    $result_data[] = $this->graphic_xy($title, $color, $result, $show_type);
+                }
             }
         }
 
@@ -1833,6 +1902,32 @@ class AnalyticsFront extends SearchFacets {
         if ($this->filters['stacking']) {
             $stacking = 'percent';
         }
+
+        // Api result
+        if ($api_mode) {
+            $ret = array(
+                'title' => $graph_title,
+                'xtitle' => $x_title,
+                'xatitle' => $xa_title,
+                'xaxis' => $xaxis,
+                'xaxist' => $xaxist,
+                'xformat' => $xformat,
+                'xsize' => $size_x,
+                'xmin' => $xmin,
+                'xmax' => $xmax,
+                'ytitle' => $y_title,
+                'yatitle' => $ya_title,
+                'yaxis' => $yaxis,
+                'yaxist' => $yaxist,
+                'yformat' => $yformat,
+                'ysize' => $size_y,
+                'ymin' => $ymin,
+                'ymax' => $ymax,
+                'results' => $result_data,
+            );
+            return $ret;
+        }
+
         // Graphic view
         // https://api.highcharts.com/highcharts/
         ?>
@@ -1939,9 +2034,9 @@ class AnalyticsFront extends SearchFacets {
         <?php
     }
 
-    public function show_page_facet_population($search_data, $tab_key = '') {
+    public function show_page_facet_population($search_data, $tab_key = '', $api_mode = false, $preview_limit = 0) {
         $data = $search_data[$tab_key];
-        $result_data = '';
+        $result_data = array();
 
         // Filters
         $years = $this->get_filter('year');
@@ -1962,25 +2057,46 @@ class AnalyticsFront extends SearchFacets {
             ksort($data);
             $result = array();
 
+            $counter = 0;
             foreach ($data as $year => $summ) {
                 $summ = round($summ, 0);
                 $world = $array_world[$year];
                 $wpercent = round(($summ / $world) * 100, 2);
                 $result[] = "{ x: " . $year . ", y: " . $summ . ",world:'" . $world . "' ,wpercent: '" . $wpercent . "'}";
+                $counter += 1;
+                if ($preview_limit > 0 && $counter >= $preview_limit) {
+                    break;
+                }
             }
 
             $name_key_theme = $this->population_keys[$name];
             $ethnic = $this->array_ethnic_data[$name_key_theme];
 
-            $result_data .= $this->graphic_world($ethnic, $result);
+            if ($api_mode) {
+                $result_data[] = $this->graphic_api($ethnic['title'], $ethnic['color'], $result);
+            } else {
+                $result_data[] = $this->graphic_world($ethnic, $result);
+            }
         }
 
         $graph_title = 'World population';
         $x_title = 'Total';
         $y_axis = 'Year';
+
+        // Api result
+        if ($api_mode) {
+
+            $ret = array(
+                'title' => $graph_title,
+                'xtitle' => $x_title,
+                'yaxis' => $y_axis,
+                'results' => $result_data,
+            );
+            return $ret;
+        }
         ?>
         <script type="text/javascript">
-            var search_extend_data = [<?php echo $result_data; ?>];
+            var search_extend_data = [<?php echo implode('', $result_data); ?>];
         </script>
         <div id="chart_div" 
              data-tab="<?php print $tab_key ?>" 
@@ -1996,9 +2112,9 @@ class AnalyticsFront extends SearchFacets {
         <?php
     }
 
-    public function show_page_facet_worldmap($search_data, $tab_key = '') {
+    public function show_page_facet_worldmap($search_data, $tab_key = '', $api_mode = false, $preview_limit = 0) {
         $data = $search_data[$tab_key];
-        $result_data = '';
+        $result_data = array();
 
         // Filters
         $years = $this->get_filter('year');
@@ -2014,15 +2130,28 @@ class AnalyticsFront extends SearchFacets {
         $array_movie_bell = $data['array_movie_bell'];
 
         foreach ($array_movie_bell as $name => $data) {
-            $result_in = '';
+            $result_in = array();
+            $counter = 0;
             foreach ($data as $cca2 => $val) {
-                $result_in .= "{ name: '" . $val[0] . "', code2: '" . $cca2 . "', value: '" . $val[2] . "', year:'" . $val[3] . "', content:'" . $val[1] . "'},";
+                if ($api_mode) {
+                    $result_in[] = array("name" => $val[0], "code2" => $cca2, "value" => $val[2], "year" => $val[3], "content" => $val[1]);
+                } else {
+                    $result_in[] = "{ name: '" . $val[0] . "', code2: '" . $cca2 . "', value: '" . $val[2] . "', year:'" . $val[3] . "', content:'" . $val[1] . "'}";
+                }
+                $counter += 1;
+                if ($preview_limit > 0 && $counter >= $preview_limit) {
+                    break;
+                }
             }
 
             $name_key_theme = $this->population_keys[$name];
             $ethnic = $this->array_ethnic_data[$name_key_theme];
 
-            $result_data .= "{ data: [" . $result_in . "],
+            if ($api_mode) {
+                $result_data[] = $this->graphic_api($name, $ethnic['color'], $result_in);
+            } else {
+
+                $result_data [] = "{ data: [" . implode(',', $result_in) . "],
                         joinBy: ['iso-a2', 'code2'],
                         name: '" . $name . "',
                         tooltip: {
@@ -2031,14 +2160,25 @@ class AnalyticsFront extends SearchFacets {
                         },                
                         color: '" . $ethnic['color'] . "',                
                         },";
+            }
         }
 
         //arsort($array_race);
 
         $graph_title = 'Ethnic world map';
+
+        // Api result
+        if ($api_mode) {
+
+            $ret = array(
+                'title' => $graph_title,
+                'results' => $result_data,
+            );
+            return $ret;
+        }
         ?>
         <script type="text/javascript">
-            var search_extend_data = [<?php echo $result_data; ?>];
+            var search_extend_data = [<?php echo implode('', $result_data); ?>];
         </script>
         <div id="chart_div" 
              data-tab="<?php print $tab_key ?>" 
@@ -2051,7 +2191,7 @@ class AnalyticsFront extends SearchFacets {
         <?php
     }
 
-    public function show_page_facet_power($search_data, $tab_key = '') {
+    public function show_page_facet_power($search_data, $tab_key = '', $api_mode = false, $preview_limit = 0) {
         $data = $search_data[$tab_key];
 
         $data_power = $data['data_power'];
@@ -2085,6 +2225,13 @@ class AnalyticsFront extends SearchFacets {
         foreach ($r_sort_all as $key => $value) {
             $search_extend_c_all[] = $result_c_all[$key];
         }
+
+        // Api result
+        if ($api_mode) {
+
+            $ret = array();
+            return $ret;
+        }
         ?>
         <script type="text/javascript">
             var search_extend_c = [<?php echo implode(',', $search_extend_c); ?>];
@@ -2106,7 +2253,7 @@ class AnalyticsFront extends SearchFacets {
         <?php
     }
 
-    public function show_page_facet_powerrace($search_data, $tab_key = '') {
+    public function show_page_facet_powerrace($search_data, $tab_key = '', $api_mode = false, $preview_limit = 0) {
         $data = $search_data[$tab_key];
 
         $result_in = '';
@@ -2138,6 +2285,11 @@ class AnalyticsFront extends SearchFacets {
             $ethnic = $this->array_ethnic_data[$name_key_theme];
             $result_in .= "{name:'" . $race . "', y: " . $count . ", color: '" . $ethnic['color'] . "'}, ";
             $result_in_pop .= "{name:'" . $race . "', y: " . round($array_total['pop_p'][$race], 0) . ",content:'Population " . $array_total['pop_p'][$race] . "'}, ";
+        }
+        // Api result
+        if ($api_mode) {
+            $ret = array();
+            return $ret;
         }
         ?>
         <script type="text/javascript">
@@ -2489,9 +2641,9 @@ class AnalyticsFront extends SearchFacets {
         <div id="facet-<?php print $table_class ?>" class="facet ajload<?php print $this->cs->hide_facet_class($table_class, $this->filters) ?>">
             <div class="facet-title wacc">
                 <h3 class="title"><?php
-                    print $title;
-                    print $nte;
-                    ?></h3>   
+        print $title;
+        print $nte;
+        ?></h3>   
                 <div class="acc">
                     <div class="chevron icon-down-open"></div>
                     <div class="chevronup icon-up-open"></div>
@@ -2504,9 +2656,9 @@ class AnalyticsFront extends SearchFacets {
                 }
                 ?>
                 <table class="analytics_table <?php
-                if ($mob) {
-                    print 'rspv';
-                }
+        if ($mob) {
+            print 'rspv';
+        }
                 ?> <?php print $table_class ?>">
                     <thead>
                         <tr>
@@ -2751,6 +2903,17 @@ class AnalyticsFront extends SearchFacets {
                   turboThreshold:0,
                   data: [" . implode(',', $result) . "]},";
         return $result_data;
+    }
+
+    private function graphic_api($title = '', $color = '', $result = array()) {
+        $ret = array(
+            'title' => $title,
+            'data' => $result,
+        );
+        if ($color) {
+            $ret['color'] = $color;
+        }
+        return $ret;
     }
 
     public function calculate_facet_ethnicity_xy($data, $xaxis = '', $yaxis = '') {

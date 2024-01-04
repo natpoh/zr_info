@@ -18,6 +18,10 @@ class SearchController extends Controller {
     public $sfunction = 'searchMedia';
     public $seach_arr = array();
  
+    public function __construct($preview_mode=false) {
+        
+    }
+    
     /**
      * @OA\Get(
      *     path="/search",

@@ -13,9 +13,16 @@ use OpenApi\Annotations as OA;
  *
  * @author  Brahmnan <brahmnan@gmail.com>
  */
-class StrUriController {
+class StrUriController extends Controller {
 
-    public function runPath($command='', $query_args=[]) {
+    private $preview_mode = false;
+    private $preview_limit = 10;
+
+    public function __construct($preview_mode = false) {
+        $this->preview_mode = $preview_mode;
+    }
+
+    public function runPath($command = '', $query_args = []) {
         $sfunction = 'getMediaBystrURI';
         $seach_arr = array(
             'chart' => 'getChartDataBystrURI',
@@ -87,6 +94,9 @@ class StrUriController {
                 $sf->init_search_filters();
                 $result = $sf->find_results(0, array(), false, true);
             }
+            if ($this->preview_mode) {
+                $result = $this->get_preview_result($result, $this->preview_limit);
+            }
             // Deinit url
             $_SERVER['REQUEST_URI'] = $last_req;
         } else {
@@ -153,8 +163,19 @@ class StrUriController {
             $sf = $this->getAnSearchFront();
             $sf->init_search_filters();
 
-            $result = $sf->find_results(0, array(), false, true, -1, -1, false, true);
+            $tab_key = $sf->get_tab_key();
+                                    
+            $find_results = $sf->find_results(0, array(), false, true, -1, -1, false, true);
+            $preview_limit=0;
+            if ($this->preview_mode){
+                $preview_limit=$this->preview_limit;
+            }
+            
+            $result = $sf->get_page_facet($find_results, $tab_key, $preview_limit);
 
+            /*if ($this->preview_mode) {                
+                $result = $this->get_preview_result($result, $this->preview_limit);                
+            }*/
             // Deinit url
             $_SERVER['REQUEST_URI'] = $last_req;
         } else {
@@ -225,7 +246,9 @@ class StrUriController {
                 // Analytics URI
                 $sf = $this->getAnSearchFront();
                 $sf->init_search_filters();
-                $result = $sf->find_results(0, array(), true, true, -1, -1, false, false);
+                $find_results = $sf->find_results(0, array(), true, true, -1, -1, false, false);
+                $tab_key = $sf->get_tab_key();
+                $result = $sf->get_page_facet($find_results, $tab_key);
             }
             // Deinit url
             $_SERVER['REQUEST_URI'] = $last_req;
@@ -238,20 +261,5 @@ class StrUriController {
         } else {
             return $this->responce(404);
         }
-    }
-
-    private function responce($code = 200, $data = array()) {
-        http_response_code($code);
-        header('Content-Type: application/json');
-        print json_encode($data);
-    }
-
-    private function getAnSearchFront() {
-        if (!class_exists('AnalyticsFront')) {
-            require_once( CRITIC_MATIC_PLUGIN_DIR . 'AnalyticsFront.php' );
-            require_once( CRITIC_MATIC_PLUGIN_DIR . 'AnalyticsSearch.php' );
-        }
-        $sf = new \AnalyticsFront();
-        return $sf;
     }
 }

@@ -170,17 +170,17 @@ class CriticSearch extends AbstractDB {
                             'title' => 'Stars',
                             'childs' => array(
                                 'starrace' => array(
-                                    'filter' => 'actorstar', 'parent' => 'race', 'name' => 'actor_star', 'title' => 'Stars', 'filter_key' => 'race', 'minus' => 1,
+                                    'filter' => 'actorstar', 'parent' => 'race', 'name' => 'actor_star', 'title' => 'Race (Stars)', 'title_tag'=>'Stars', 'filter_key' => 'race', 'minus' => 1,
                                     'childs' => array('star' => array('type' => 'generate', 'parent' => 'race',),),
                                 ),
                                 'stargender' => array(
-                                    'parent' => 'gender', 'title' => 'Star Gender', 'filter_key' => 'gender', 'minus' => 1,
+                                    'parent' => 'gender', 'title' => 'Gender (Stars)', 'title_tag'=>'Stars', 'filter_key' => 'gender', 'minus' => 1,
                                     'childs' => array('star' => array('type' => 'generate', 'parent' => 'gender',),),
                                 ),
                                 'sphoto' => array('parent' => 'castphoto', 'title' => 'Star conditions', 'filter_key' => 'sphoto', 'minus' => 1, 'hide' => 1),
                                 'actorstar' => array('filter' => 'actor_star', 'parent' => 'actors', 'title' => 'Actor Star', 'placeholder' => 'star', 'minus' => 1,),
                                 'simstar' => array('parent' => 'simpson', 'title' => 'Literal Diversity (Stars)', 'facet' => 'rating', 'titlesm' => 'LD (Stars)', 'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'minus' => 1, 'sort_w' => 21,),
-                                'countrystar' => array('filter' => 'countrystar', 'parent' => 'actorscountry', 'title' => 'Actor Star Country', 'placeholder' => 'star', 'minus' => 1,),
+                                'countrystar' => array('filter' => 'countrystar', 'parent' => 'actorscountry', 'title' => 'Actor Surname (Star)',  'title_tag'=>'Star Surname', 'placeholder' => 'star', 'minus' => 1,),
                             ),
                         ),
                         'main' => array(
@@ -188,17 +188,17 @@ class CriticSearch extends AbstractDB {
                             'title' => 'Supporting',
                             'childs' => array(
                                 'mainrace' => array(
-                                    'filter' => 'actormain', 'parent' => 'race', 'name' => 'actor_main', 'title' => 'Supporting', 'filter_key' => 'race', 'minus' => 1,
+                                    'filter' => 'actormain', 'parent' => 'race', 'name' => 'actor_main', 'title' => 'Race (Supporting)', 'title_tag'=>'Supporting', 'filter_key' => 'race', 'minus' => 1,
                                     'childs' => array('main' => array('type' => 'generate', 'parent' => 'race',),),
                                 ),
                                 'maingender' => array(
-                                    'parent' => 'gender', 'title' => 'Supporting Gender', 'filter_key' => 'gender', 'minus' => 1,
+                                    'parent' => 'gender', 'title' => 'Gender (Supporting)',  'title_tag'=>'Supporting', 'filter_key' => 'gender', 'minus' => 1,
                                     'childs' => array('main' => array('type' => 'generate', 'parent' => 'gender',),),
                                 ),
                                 'mphoto' => array('parent' => 'castphoto', 'title' => 'Supporting conditions', 'filter_key' => 'mphoto', 'minus' => 1, 'hide' => 1),
                                 'actormain' => array('filter' => 'actor_main', 'parent' => 'actors', 'title' => 'Actor Supporting', 'placeholder' => 'main', 'minus' => 1,),
                                 'simmain' => array('parent' => 'simpson', 'title' => 'Literal Diversity (Supporting)', 'facet' => 'rating', 'titlesm' => 'LD (Supporting)', 'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'minus' => 1, 'sort_w' => 21,),
-                                'countrymain' => array('filter' => 'countrymain', 'parent' => 'actorscountry', 'title' => 'Actor Supporting Country', 'placeholder' => 'main', 'minus' => 1,),
+                                'countrymain' => array('filter' => 'countrymain', 'parent' => 'actorscountry', 'title' => 'Actor Surname (Supporting)', 'title_tag'=>'Supporting Surname', 'placeholder' => 'main', 'minus' => 1,),
                             ),
                         ),
                         'all' => array(
@@ -206,17 +206,17 @@ class CriticSearch extends AbstractDB {
                             'title' => 'All Cast',
                             'childs' => array(
                                 'race' => array(
-                                    'filter' => 'actor', 'parent' => 'race', 'name' => 'actor_all', 'title' => 'Cast', 'filter_key' => 'race', 'minus' => 1,
+                                    'filter' => 'actor', 'parent' => 'race', 'name' => 'actor_all', 'title' => 'Race (Cast)', 'title_tag'=>'Cast', 'filter_key' => 'race', 'minus' => 1,
                                     'childs' => array('all' => array('type' => 'generate', 'parent' => 'race',),),
                                 ),
                                 'gender' => array(
-                                    'parent' => 'gender', 'title' => 'Cast Gender', 'filter_key' => 'gender', 'minus' => 1,
+                                    'parent' => 'gender', 'title' => 'Gender (Cast)', 'title_tag'=>'Cast', 'filter_key' => 'gender', 'minus' => 1,
                                     'childs' => array('all' => array('type' => 'generate', 'parent' => 'gender',),),
                                 ),
                                 'aphoto' => array('parent' => 'castphoto', 'title' => 'Actors conditions', 'filter_key' => 'aphoto', 'minus' => 1, 'hide' => 1),
                                 'actor' => array('filter' => 'actor_all', 'parent' => 'actors', 'title' => 'Actor', 'placeholder' => '', 'minus' => 1,),
                                 'simall' => array('parent' => 'simpson', 'title' => 'Literal Diversity', 'facet' => 'rating', 'titlesm' => 'LD', 'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'sorted' => 1, 'minus' => 1, 'sort_w' => 21,),
-                                'countryall' => array('filter' => 'countryall', 'parent' => 'actorscountry', 'title' => 'Actor Country', 'placeholder' => '', 'minus' => 1,),
+                                'countryall' => array('filter' => 'countryall', 'parent' => 'actorscountry', 'title' => 'Actor Surname', 'title_tag'=>'Cast Surname', 'placeholder' => '', 'minus' => 1,),
                             ),
                         ),
                     ),

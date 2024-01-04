@@ -14,6 +14,7 @@ header('Access-Control-Allow-Origin: *');
  * https://zircote.github.io/swagger-php/reference/attributes.html
  *  
  * docker run --rm -v /var/www/inforwt/api:/app -it pathmotion/swagger-php openapi -e vendor --format yaml -o ./output/v1.yaml ./src/v1 --debug
+ * cd /var/www/inforwt/api && composer 
  *
  * TODO
  * 
@@ -53,67 +54,24 @@ require_once __DIR__ . '/vendor/autoload.php';
 $parsedUrl = parse_url($_SERVER['REQUEST_URI']);
 $path = $parsedUrl['path'];
 
-if ($path=='/'){
+if ($path == '/') {
     // Load documentation    
     $index = file_get_contents('doc/index.html');
-    $index = str_replace("swagger_url_path", SWAGGER_API_URL, $index);    
-    print $index;
+    $indexr = str_replace("swagger_url_path", SWAGGER_API_URL, $index);
+    print $indexr;
     exit;
 }
 $path_arr = explode('/', $path);
 
 $version = isset($path_arr[1]) ? $path_arr[1] : 'v1';
-$command = isset($path_arr[2]) ? $path_arr[2] : '';
-$command2 = isset($path_arr[3]) ? $path_arr[3] : '';
-
-
-// Check api key
-$api_valid = false;
 
 $query_args = array();
 if ($parsedUrl['query']) {
     parse_str($parsedUrl['query'], $query_args);
 }
 
-if (isset($query_args['api_key'])) {
-    $api_key = $query_args['api_key'];
-    // TODO check api limits
-    $api_valid = true;
-}
-
-if (!$api_valid) {
-    // TODO Check api IP or Domain
-
-	$allowed_domains = array("https://api.filmdemographics.com", "https://filmdemographics.com/");
-
-	//if (isset($_SERVER['HTTP_ORIGIN']) && in_array($_SERVER['HTTP_ORIGIN'], $allowed_domains)) {
-
-	$api_valid = true;
-	//}
-
-
-}
-
-if (!$api_valid) {
-    http_response_code(401);
-    echo 'Unauthorized '.$_SERVER['HTTP_ORIGIN'];
-    exit;
-}
-
 if ($version == 'v1') {
-    if ($command == 'search') {
-        $controller = new OpenApi\Fd\Controllers\SearchController();
-        $controller->runPath($command2, $query_args);
-    } elseif ($command == 'string_uri') {
-        $controller = new OpenApi\Fd\Controllers\StrUriController();
-        $controller->runPath($command2, $query_args);
-    } elseif ($command == 'media') {
-        $controller = new OpenApi\Fd\Controllers\MediaController();
-        $query_args['media_id']=$command2;
-        $command3 = isset($path_arr[4]) ? $path_arr[4] : '';
-        $controller->runPath($command3, $query_args);
-    }
-} else {
-    http_response_code(404);
-    echo '404 Not Found';
+    $bs = new OpenApi\Fd\Bootstrap();
+    $bs->run($path_arr,$query_args);
 }
+

@@ -22,7 +22,7 @@ class MediaController extends Controller {
     );
     private $db;
 
-    public function __construct() {
+    public function __construct($preview_mode=false) {
         $this->db = array(
             'movie_imdb' => 'data_movie_imdb',
             'actors_imdb' => 'data_actors_imdb',

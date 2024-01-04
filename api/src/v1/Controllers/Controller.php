@@ -16,16 +16,28 @@ class Controller extends \AbstractDBAn {
 
     public $sfunction = '';
     public $seach_arr = array();
-    public $sf='';
+    public $sf = '';
 
+    public function get_preview_result($result = array(), $preview_limit = 10) {
+        $preview_result = array();
+        $i = 0;
+        foreach ($result as $item) {
+            $preview_result[] = $item;
+            $i++;
+            if ($i > $preview_limit) {
+                break;
+            }
+        }
+        return $preview_result;
+    }
 
-    public function get_sf(){
-        if (!$this->sf){
+    public function get_sf() {
+        if (!$this->sf) {
             $this->sf = new \SearchFacets();
         }
         return $this->sf;
     }
-    
+
     public function runPath($command = '', $query_args = []) {
         $sfunction = $this->sfunction;
         if (isset($this->seach_arr[$command])) {
