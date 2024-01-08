@@ -2071,7 +2071,7 @@ class PgRatingCalculate {
 
                             if ($v['count']) {
                                 $summ = $v['data'] / $v['count'];
-                                $summ = ceil(($summ) / 0.5) * 0.5;
+                                $summ = round($summ , 1) ;
                                 $result_summ_rating[$i0] = $summ;
                             }
                         }
@@ -2086,7 +2086,7 @@ class PgRatingCalculate {
                 if ($hollywood_result['count']) {
                     $hollywood_result_string = $hollywood_result['data'] / $hollywood_result['count'];
                     if ($hollywood_result_string) {
-                        $hollywood_result_string = ceil(($hollywood_result_string) / 0.5) * 0.5;
+                        $hollywood_result_string = round($hollywood_result_string,1);
                     }
                     $result_summ_rating['hollywood'] = $hollywood_result_string;
                 }
