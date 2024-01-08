@@ -1015,7 +1015,7 @@ class CriticAvatars extends AbstractDB {
         return $avatar_url;
     }
 
-    private function get_by_webdriver($url, $parse_mode = 3, $tor_mode = 2) {
+    public function get_by_webdriver($url, $parse_mode = 3, $tor_mode = 2) {
         // $parse_mode=3 - Tor curl
         // $tor_mode=2 - Proxy
         $mp = $this->get_mp();
