@@ -127,8 +127,24 @@ class GETNEWMOVIES{
         {
             $starttime= time();
         }
+        if (!class_exists('CriticParser')) {
+            //Critic feeds
+            if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
+                define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
+            }
+            if (!class_exists('CriticFront')) {
+                require_once(CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php');
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticParser.php' );
+            }
 
-            $content = GETCURL::getCurlCookie('https://www.fandango.com/movies-in-theaters');
+        }
+
+        $cp = New CriticParser;
+        $content = $cp->get_webdriver('https://www.fandango.com/movies-in-theaters');
+
+
+
+      //      $content = GETCURL::getCurlCookie('https://www.fandango.com/movies-in-theaters');
 
         global $debug;
         if ($debug)
