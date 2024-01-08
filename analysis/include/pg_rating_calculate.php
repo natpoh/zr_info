@@ -402,7 +402,7 @@ class PgRatingCalculate {
         }
 
         $data_current_array=[];
-        if ($check_fields && $pos_id) {
+        if ($check_fields) {
 
 
 

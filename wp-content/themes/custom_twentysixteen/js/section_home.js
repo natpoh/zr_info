@@ -567,7 +567,7 @@ function create_rating_content(object, m_id, search_block = 0) {
 
         content += add_rating_block('indie' + recycle + big_b, ' ', data, 2, true, dwn);
     }
-    console.log(object);
+    //console.log(object);
     if (object['type'] != 'videogame') {
         if (object.total_rating && (object.total_rating.rt_gap > 0 || object.total_rating.rt_rating > 0 || object.total_rating.rt_aurating > 0)) {
 
