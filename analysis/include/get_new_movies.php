@@ -134,14 +134,15 @@ class GETNEWMOVIES{
             }
             if (!class_exists('CriticFront')) {
                 require_once(CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php');
-                require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticParser.php' );
             }
 
         }
 
-        $cp = New CriticParser;
-        $content = $cp->get_webdriver('https://www.fandango.com/movies-in-theaters');
+        $cm = New CriticMatic();
 
+        $cav=$cm->get_cav();
+
+        $content = $cav->get_by_webdriver('https://www.fandango.com/movies-in-theaters',2);
 
 
       //      $content = GETCURL::getCurlCookie('https://www.fandango.com/movies-in-theaters');
