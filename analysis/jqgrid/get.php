@@ -8,8 +8,8 @@ if (!defined('ABSPATH'))
 
 
 include ($_SERVER['DOCUMENT_ROOT'].'/wp-config.php');
-
-
+global $debug;
+$debug =0;
 
 function get_flag($ip)
 {
@@ -172,7 +172,8 @@ AND table_schema='".DB_NAME_AN."'";
 
 
 
-        } else if (($_POST['oper'] == 'edit') || ($_POST['oper'] == 'add')) {
+        }
+        else if (($_POST['oper'] == 'edit') || ($_POST['oper'] == 'add')) {
 
             $array = $_POST;
 
@@ -208,6 +209,13 @@ AND table_schema='".DB_NAME_AN."'";
 
 
             }
+
+            global $debug;
+            if ($debug) { !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+                TMDB::var_dump_table($arraay);
+
+            }
+
            // var_dump($array);
             $countval = count($array);
 
@@ -247,8 +255,25 @@ AND table_schema='".DB_NAME_AN."'";
 
 
 
+                        if ($val == 'review_id' ) {
+                            $review_id = $array[str_replace(' ', '_', $val)];
 
-                        if ($val == 'add_time' || $val == 'last_update'  || $val == 'lastupdate'  || $val == 'last_upd' ) {
+                            $reg='#\<a[^\>]+\>([0-9]+)#';
+
+                            if (preg_match($reg,$review_id,$match))
+                            {
+
+                                $review_id =   $match[1];
+
+                            }
+
+                            $arrayrequest[] = $review_id;
+
+                            $qres .= ", `" . $val . "` = ? ";
+
+                            $qcheck .= ", `" . $val . "` = '".$review_id."' ";
+                        }
+                        else if ($val == 'add_time' || $val == 'last_update'  || $val == 'lastupdate'  || $val == 'last_upd' ) {
                             $arrayrequest[] = time();
 
 
@@ -310,10 +335,13 @@ AND table_schema='".DB_NAME_AN."'";
 
 
                 $sql_check = "UPDATE `" . $table_data . "` SET " . $qcheck . "  WHERE `id` = '" . $array['parent'] . "'";
-               // echo $sql_check;
-               // print_r($arrayrequest);
-                //echo $sql;
-             //  var_dump($arrayrequest);
+
+                global $debug;
+                if ($debug) { !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+                    TMDB::var_dump_table(['sql debug'=>$sql_check,'sql'=>$sql,'array'=>$arrayrequest]);
+
+                }
+
 
                 $result = Pdo_an::db_results_array($sql, $arrayrequest);
 
@@ -340,7 +368,8 @@ AND table_schema='".DB_NAME_AN."'";
                 $res_id = $array['parent'] ;
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
                 Import::create_commit('', 'update', $table_data, array('id' => intval($res_id)), 'user_'.$table_data,6);
-            } else if ($_POST['oper'] == 'add') {
+            }
+            else if ($_POST['oper'] == 'add') {
 
                 $array_index = implode(',', $array_index);
 

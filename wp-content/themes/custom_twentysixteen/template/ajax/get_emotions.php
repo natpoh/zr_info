@@ -27,12 +27,13 @@ global $cfront;
 if ($cfront) {
     if (isset($_POST['request'])) {
         $data = '';
+        $ce = $cfront->get_ce();
         if ($_POST['request'] == 'get_emtns') {
             $id = intval($_POST['id']);
             $ptype = intval($_POST['ptype']);
-            print $cfront->ce->get_emotions($id, $ptype);
+            print $ce->get_emotions($id, $ptype);
         } else if ($_POST['request'] == 'set_emtns') {
-            $cfront->ce->get_ajax();
+            $ce->get_ajax();
         }
     }
 }

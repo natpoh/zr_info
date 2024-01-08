@@ -47,7 +47,8 @@ wp_enqueue_script('section_home', get_template_directory_uri() . '/js/section_ho
 
     global $review_id;
     global $cfront;
-    $cfront->ce->get_emotions($review_id, 0, true);
+    $ce = $cfront->get_ce();
+    $ce->get_emotions($review_id, 0, true);
 
     ///discuss_config(data_object);
     ///

@@ -195,7 +195,8 @@ body.theme_dark .single_post .movie_summary .block span {
 
 .accordion-item.active > .accordion-content {
     display: block;
-    max-height: 500px; /* Высота контента, которая будет плавно раскрываться */
+    max-height: 500px;
+    overflow: unset;
 }
 
 .accordion-content {
@@ -1875,6 +1876,11 @@ div.sortable {
     .accordion_section{
         display: grid;
     }
+
+    .accordion_section.column-7{
+        grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+    }
+
     .accordion_section>.accordion-item {
         display: contents;
     }

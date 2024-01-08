@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="64"
+   height="74"
+   viewBox="0 0 16.933333 19.579168"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
+   sodipodi:docname="mt_gap.svg"
+   xml:space="preserve"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     units="px"
+     width="64px"
+     inkscape:zoom="6.5714107"
+     inkscape:cx="61.858863"
+     inkscape:cy="51.511009"
+     inkscape:window-width="2560"
+     inkscape:window-height="1351"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1"
+     inkscape:showpageshadow="0"
+     inkscape:deskcolor="#d1d1d1" /><defs
+     id="defs2" /><g
+     inkscape:label="Слой 1"
+     inkscape:groupmode="layer"
+     id="layer1"><g
+       id="g3665"
+       transform="matrix(0.27867531,0,0,0.28068844,17.317035,9.4140078)">
+	<path
+   id="Fill-1"
+   class="st0"
+   d="m -1.7587093,5.5810082 c 0,16.5656568 -13.5353547,30.1010108 -30.1010107,30.1010108 -16.565657,0 -29.89899,-13.535354 -29.89899,-30.1010108 0,-16.3636362 13.333333,-29.8989892 29.89899,-29.8989892 16.565656,0 30.1010107,13.535353 30.1010107,29.8989892"
+   style="stroke-width:2.0202" />
+	<path
+   id="Fill-4"
+   class="st1"
+   d="m -6.6971304,5.5184715 c 0,13.8655475 -11.1344546,25.0000015 -25.0000006,25.0000015 -13.865546,0 -25,-11.134454 -25,-25.0000015 0,-13.8655455 11.134454,-24.9999995 25,-24.9999995 13.655463,0 25.0000006,11.134454 25.0000006,24.9999995"
+   style="stroke-width:2.10084" />
+	
+</g></g><style
+     type="text/css"
+     id="style3656">
+	.st0{fill:#FFCC34;}
+	.st1{fill:#333333;}
+	.st2{fill:#FEFEFE;}
+	.st3{fill:#FFFFFF;}
+</style></svg>

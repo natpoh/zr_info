@@ -342,7 +342,7 @@ class PgRatingCalculate {
 
     }
 
-    public static function add_movie_rating($id, $rwt_array_last = '', $debug = '', $update = 1,$check_fields=0,$sync=1) {
+    public static function add_movie_rating($id, $rwt_array_last = '', $debug = '', $update = 1,$check_fields=1,$sync=1) {
 
 
 
@@ -395,6 +395,10 @@ class PgRatingCalculate {
         if ($main_data_ext)
         {
             $pos_id = $main_data_ext['id'];
+        }
+        else
+        {
+            $check_fields =1;
         }
 
         $data_current_array=[];

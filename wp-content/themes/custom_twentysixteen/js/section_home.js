@@ -263,13 +263,20 @@ function create_total_rating(obj, only_tomatoes, rt_gap) {
 
     let rt_class = '';
 
-
     if (Number(obj.rt_rating) > 0 || Number(obj.rt_aurating) > 0) {
 
 
-        if (rt_gap != 0) {
-            var ttcomment = '';
-            if (rt_gap > 10) {
+         if (rt_gap != 0) {
+             var ttcomment = '';
+             if (Number(obj.rt_rating) > 0  && !obj.rt_aurating)
+             {
+                 ttcomment = "The average Rotten Tomatoes critic score is " + Number(obj.rt_rating)  + "%."
+             }
+             else if (!obj.rt_rating  && Number(obj.rt_aurating)>0)
+             {
+                 ttcomment = "The average Rotten Tomatoes audience score is " +  Number(obj.rt_aurating)  + "%."
+             }
+            else if (rt_gap > 10) {
                 ttcomment = "The Rotten Tomatoes audience rated this " + rt_gap + "% higher than the critics."
             } else if (rt_gap < -10) {
                 ttcomment = "The Rotten Tomatoes audience rated this " + rt_gap + "% lower than the critics."
@@ -277,6 +284,8 @@ function create_total_rating(obj, only_tomatoes, rt_gap) {
                 ttcomment = "The Rotten Tomatoes audience rated this " + rt_gap + "% higher than the critics."
             } else if (rt_gap < 0) {
                 ttcomment = "The Rotten Tomatoes audience rated this " + rt_gap + "% lower than the critics."
+            } else if (obj.rt_rating == obj.rt_aurating) {
+                ttcomment = "Rotten Tomatoes audience rated it equally with the critics."
             }
             content_rating += popup_cusomize('popup_header', ttcomment);
 
@@ -558,11 +567,18 @@ function create_rating_content(object, m_id, search_block = 0) {
 
         content += add_rating_block('indie' + recycle + big_b, ' ', data, 2, true, dwn);
     }
-
+    console.log(object);
     if (object['type'] != 'videogame') {
         if (object.total_rating && (object.total_rating.rt_gap > 0 || object.total_rating.rt_rating > 0 || object.total_rating.rt_aurating > 0)) {
 
             let total_gap_str = 'N/A';
+
+            if (object.total_rating.rt_rating == object.total_rating.rt_aurating )
+            {
+
+                total_gap_str = '0%';
+            }
+
 
             var total_gap = object.total_rating.rt_gap;
             let rating_color = '';
@@ -781,7 +797,8 @@ function set_video_scroll(data, block_id, append = '') {
 
         data = JSON.parse(data);
 
-        if (data['count'] > 0 && data['tmpl']) {
+        if  (data['count'] > 0 && data['tmpl'])
+        {
             if (!append) {
                 jQuery('div[id="' + block_id + '"]').parents('section').addClass('loaded');
             }
@@ -947,15 +964,15 @@ function set_video_scroll(data, block_id, append = '') {
                 if (data['mid'] && data['mid'] > 0) {
 
                     let custom_ctntn = `<div class="review_details"><a href="#" id-data="${data['mid']}" class="add_critic">Submit a review link</a></div>
-<details class="actor_details review_details">
-   <summary>Search blogosphere & vlogosphere</summary>
+
+
 <section class="dmg_content inner_content" id="actor_data_dop">
+   <div class="column_header"><h2>Blogosphere / Vlogosphere:</h2></div>
         <div id="google_search_review" data-name="reviews_search" data-value="${data['mid']}" class="page_custom_block not_load"></div>
-</section>
-</details>`;
+</section>`;
 
                     jQuery('div[id="' + block_id + '"]').append(custom_ctntn);
-
+                    load_next_block('google_search_review');
                 }
 
 
@@ -1710,11 +1727,10 @@ function load_ajax_block(block_id) {
     }
     if (local_sroll) {
         set_video_scroll(scroll_data, block_id);
-        initializeScroller(0, 'div[id="' + block_id + '"]');
-        init_nte();
-        init_tags();
-
+        initializeScroller(0, 'div[id="' + block_id + '"]');        
+        init_tags();        
         scroll_block(block_id);
+        init_nte();
         return true;
     }
 
@@ -2010,6 +2026,7 @@ function init_audience_tabs(block_id, parent_id) {
                     success: function (data) {
                         var tab_class = '.' + tab_id;
                         set_video_scroll(data, block_id, tab_class);
+                        init_nte();
                     }
                 });
             }
@@ -4418,7 +4435,7 @@ function init_tags() {
                     success: function (rtn) {
                         set_video_scroll(rtn, block_id);
                         initializeScroller(0, 'div[id="' + block_id + '"]');
-                        init_nte();
+                        init_nte();                        
                     },
                     error: function (rtn) {
 

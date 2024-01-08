@@ -68,7 +68,7 @@ foreach ($array_list as $index=> $value) {
         if ($id == 'tabs') {
             // Tabs logic
             $name_arr = $name;
-            $t = '<ul class="tab-wrapper home-tabs audience-tab">';
+            $t = '<ul class="tab-wrapper home-tabs tabs-btn audience-tab">';
             $i = 0;
             foreach ($name_arr as $k => $v) {
                 $active = '';

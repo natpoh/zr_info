@@ -430,6 +430,14 @@ critic_search.init = function ($custom_id = '') {
         });
     });
 
+    $('.sidebar-tabs a').click(function () {
+        var $this = $(this);
+        var holder = $this.closest('.nav-tab');
+        if (holder.hasClass('active')) {
+            return false;
+        }
+    });
+
     // Tabs facet
     $('.facet-tabs:not(.init)').each(function (i, v) {
         var v = $(v);

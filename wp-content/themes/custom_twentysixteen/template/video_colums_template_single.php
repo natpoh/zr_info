@@ -72,7 +72,7 @@ foreach ($array_list as $value) {
             if ($post_count['a']) {
                 // Tabs logic
                 $name_arr = $name;
-                $t = '<ul class="tab-wrapper home-tabs">';
+                $t = '<ul class="tab-wrapper home-tabs tabs-btn">';
                 foreach ($name_arr as $k => $v) {
                     if (!$post_count[$k]) {
                         continue;

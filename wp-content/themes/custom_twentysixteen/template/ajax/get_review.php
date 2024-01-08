@@ -105,7 +105,8 @@ if (isset($_GET['id'])) {
         $content_templ = '<div class="full_review">' . $critic_content . '</div><div id="disqus_thread"></div>';
 
         // Emotions
-        $emotions = $cfront->ce->get_emotions($post->id, 0, true);
+        $ce = $cfront->get_ce();
+        $emotions = $ce->get_emotions($post->id, 0, true);
 
         ///try pet pgind from db
         $sql = "SELECT `idn` FROM `cache_disqus_treheads` WHERE `type`='critics' and `post_id` ='" . $critic_id . "' limit 1";

@@ -597,6 +597,7 @@ body.theme_dark .review_autor_name ,body.theme_dark  .review_autor_name a  {
 .inner_content{
     background-color: #fff;
     color: #000;
+    max-width: 100%;
 }
 .inner_content.secton_gray {
     background-color: #a6a6a6;
@@ -2426,6 +2427,15 @@ p.l_c_g::before {
 }
 
 .rating_block > .rt_gap {
+    top: 115px;
+    padding-left: 2px;
+    background-size: contain;
+    height: 60px;
+    padding-top: 2px;
+    color: #fff;
+}
+
+.rating_block > .mt_gap {
     top: 117px;
     padding-left: 5px;
     background-size: contain;
@@ -2433,6 +2443,7 @@ p.l_c_g::before {
     padding-top: 7px;
     color: #fff;
 }
+
 
 .rating_block >.green_rt>.btn
 {
@@ -2463,6 +2474,21 @@ p.l_c_g::before {
 .rating_block > .red_rt::before {
     filter: saturate(0.38);
 }
+
+.rating_block > .mt_gap::before {
+    background: url(../images/mt_gap.svg) 0px 0px no-repeat;
+    background-size: contain;
+    height: 60px;
+    opacity: 0.86;
+    width: 48px;
+    content: "";
+    display: block;
+    position: absolute;
+    z-index: -1;
+    left: 0px;
+    top: 0px;
+}
+
 
 .rating_block > .family_friendly.lgbt.woke {
     background: url("../images/rating/lgbt_active.svg") 21px 22px no-repeat, url("../images/eyepiramid.svg") -8px -13px no-repeat;
@@ -4325,10 +4351,10 @@ body.theme_dark .highcharts-legend-title tspan{
 
     .tab-wrapper li.nav-tab {
         text-align: center;
-        padding: 0 5px 5px 0;
+        /*padding: 0 5px 5px 0;*/
 
     }
-    .tab-wrapper li.nav-tab a {
+    /*.tab-wrapper li.nav-tab a {
         border-radius: 4px;
-    }
+    }*/
 }
