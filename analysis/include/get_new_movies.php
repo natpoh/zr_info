@@ -150,24 +150,19 @@ class GETNEWMOVIES{
         global $debug;
         if ($debug)
         {
-          echo $content;
+        //  echo $content;
         }
 
-            $regv = '#poster-card--title\"\>([^<]+)\<#';
+            $regv = '#poster-card--title\"[^\>]+\>([^\<]+)\<\/span\>#';
 
             if (preg_match_all($regv, $content, $mach)) {
                 foreach ($mach[1] as $m) {
 
                     //$m = replace_movie_text($m);
                     $m =  self::htmlspecialchars_decode($m);
-                    if (preg_match('#doublefeature([^\/]+)\/(.+)#', $m, $dm)) {
 
-                        $array_int[self::replace_movie_text($dm[1])] = $dm[1];
-                        $array_int[self::replace_movie_text($dm[2])] = $dm[2];
-                    } else {
+                    $array_int[self::replace_movie_text($m)] = $m;
 
-                        $array_int[self::replace_movie_text($m)] = $m;
-                    }
 
                 }
             }
