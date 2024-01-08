@@ -130,6 +130,11 @@ class GETNEWMOVIES{
 
             $content = GETCURL::getCurlCookie('https://www.fandango.com/movies-in-theaters');
 
+        global $debug;
+        if ($debug)
+        {
+          echo $content;
+        }
 
             $regv = '#poster-card--title\"\>([^<]+)\<#';
 
@@ -155,6 +160,7 @@ class GETNEWMOVIES{
 
     public static function get_new_movies()
     {
+        global $debug;
         $array_title = [];
 
 
@@ -181,6 +187,12 @@ class GETNEWMOVIES{
         //print_r($array_title);
 
         $array_int =self::get_fandango();
+
+        if ($debug)
+        {
+            !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+             TMDB::var_dump_table(['array_int',$array_int]);
+        }
 
         $i=0;
         foreach ($array_int as $movie_decoded => $movie_name) {
@@ -209,9 +221,9 @@ class GETNEWMOVIES{
                         $movie_date =$date2;
                     }
 
-
-                    echo 'try add movie '. $movie_name .' '.$movie_decoded .PHP_EOL;
-
+                    if ($debug) {
+                        echo 'try add movie ' . $movie_name . ' ' . $movie_decoded .'<br>'. PHP_EOL;
+                    }
                     $array_movie_id =TMDB::get_data($movie_name,'ft');
 
                     $coincide = self::check_movie_coincidence($array_movie_id,$movie_name,$movie_date);
@@ -229,8 +241,10 @@ class GETNEWMOVIES{
                             if (!strstr($country,'India'))
                             {
                                 $add =  TMDB::addto_db_imdb($coincide, $array_movie,'','','fandango');
-                                echo $coincide.' adedded <br>'.PHP_EOL;
 
+                                if ($debug) {
+                                    echo $coincide . ' adedded <br>' . PHP_EOL;
+                                }
                             }
                             else
                             {
@@ -261,6 +275,11 @@ class GETNEWMOVIES{
                 }
         }
 
+        if ($debug)
+        {
+
+            TMDB::var_dump_table(['array_movies',$array_movies]);
+        }
         if ($array_movies)
         {
 

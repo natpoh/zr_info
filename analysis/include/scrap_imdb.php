@@ -3240,6 +3240,12 @@ if (isset($_GET['update_all_audience_and_staff'])) {
     return;
 }
 if (isset($_GET['get_new_movies'])) {
+    global $debug;
+    if (isset($_GET['debug']))
+    {
+        $debug=1;
+    }
+
     get_new_movies();
     return;
 }
