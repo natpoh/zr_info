@@ -1435,6 +1435,34 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('actor_id', 'result'), "data_actors_country");
 
+    /* 
+     * Data tmdb
+     * movie_id - movie id
+     * date - add time
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_movie_tmdb`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `mid` int(11) NOT NULL DEFAULT '0',
+                                `tmdb` int(11) NOT NULL DEFAULT '0',
+                                `last_update` int(11) NOT NULL DEFAULT '0',                               
+                                `original_language_int` int(11) NOT NULL DEFAULT '0',
+                                `original_language` varchar(255) NOT NULL default '',
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('mid', 'last_update'), "data_movie_tmdb");
+    
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_language_code`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                
+                                `code` varchar(255) NOT NULL default '',
+                                `title` varchar(255) NOT NULL default '',
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('code'), "data_language_code");
+    
     /*
      * Site images     
      */

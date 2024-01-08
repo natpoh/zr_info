@@ -206,11 +206,11 @@ class CriticSearch extends AbstractDB {
                             'title' => 'All Cast',
                             'childs' => array(
                                 'race' => array(
-                                    'filter' => 'actor', 'parent' => 'race', 'name' => 'actor_all', 'title' => 'Race (Cast)', 'title_tag'=>'Cast', 'filter_key' => 'race', 'minus' => 1,
+                                    'filter' => 'actor', 'parent' => 'race', 'name' => 'actor_all', 'title' => 'Race (All Cast)', 'title_tag'=>'All Cast', 'filter_key' => 'race', 'minus' => 1,
                                     'childs' => array('all' => array('type' => 'generate', 'parent' => 'race',),),
                                 ),
                                 'gender' => array(
-                                    'parent' => 'gender', 'title' => 'Gender (Cast)', 'title_tag'=>'Cast', 'filter_key' => 'gender', 'minus' => 1,
+                                    'parent' => 'gender', 'title' => 'Gender (All Cast)', 'title_tag'=>'All Cast', 'filter_key' => 'gender', 'minus' => 1,
                                     'childs' => array('all' => array('type' => 'generate', 'parent' => 'gender',),),
                                 ),
                                 'aphoto' => array('parent' => 'castphoto', 'title' => 'Actors conditions', 'filter_key' => 'aphoto', 'minus' => 1, 'hide' => 1),
@@ -261,10 +261,10 @@ class CriticSearch extends AbstractDB {
                             'title' => 'All Crew',
                             'childs' => array(
                                 'dirrace' => array(
-                                    'filter' => 'dirall', 'parent' => 'race', 'name' => 'director_all', 'title' => 'All Production race', 'filter_key' => 'race', 'minus' => 1,
+                                    'filter' => 'dirall', 'parent' => 'race', 'name' => 'director_all', 'title' => 'Race (All Crew)', 'title_tag'=>'All Crew', 'filter_key' => 'race', 'minus' => 1,
                                     'childs' => array('alldir' => array('type' => 'generate', 'parent' => 'race',),),
                                 ),
-                                'dirgender' => array('parent' => 'gender', 'title' => 'All Production Gender', 'filter_key' => 'gender', 'minus' => 1,
+                                'dirgender' => array('parent' => 'gender', 'title' => 'Gender (All Crew)', 'title_tag'=>'All Crew', 'filter_key' => 'gender', 'minus' => 1,
                                     'childs' => array('alldir' => array('type' => 'generate', 'parent' => 'gender',),),
                                 ),
                                 'dirall' => array('filter' => 'director_all', 'parent' => 'dirs', 'title' => 'Production', 'placeholder' => 'all', 'minus' => 1,),
@@ -274,10 +274,10 @@ class CriticSearch extends AbstractDB {
                             'type' => 'tab',
                             'title' => 'Directors',
                             'childs' => array(
-                                'dirsrace' => array('filter' => 'dir', 'parent' => 'race', 'name' => 'director_dir', 'title' => 'Directors race', 'filter_key' => 'race', 'minus' => 1,
+                                'dirsrace' => array('filter' => 'dir', 'parent' => 'race', 'name' => 'director_dir', 'title' => 'Race (Directors)', 'title_tag'=>'Directors', 'filter_key' => 'race', 'minus' => 1,
                                     'childs' => array('directors' => array('type' => 'generate', 'parent' => 'race',),),
                                 ),
-                                'dirsgender' => array('parent' => 'gender', 'title' => 'Directors Gender', 'filter_key' => 'gender', 'minus' => 1,
+                                'dirsgender' => array('parent' => 'gender', 'title' => 'Gender (Directors)', 'title_tag'=>'Directors', 'filter_key' => 'gender', 'minus' => 1,
                                     'childs' => array('directors' => array('type' => 'generate', 'parent' => 'gender',),),
                                 ),
                                 'dir' => array('filter' => 'director_dir', 'parent' => 'dirs', 'title' => 'Director', 'placeholder' => 'director', 'minus' => 1,),
@@ -287,10 +287,10 @@ class CriticSearch extends AbstractDB {
                             'type' => 'tab',
                             'title' => 'Writers',
                             'childs' => array(
-                                'writersrace' => array('filter' => 'dirwrite', 'parent' => 'race', 'name' => 'director_write', 'title' => 'Writers race', 'filter_key' => 'race', 'minus' => 1,
+                                'writersrace' => array('filter' => 'dirwrite', 'parent' => 'race', 'name' => 'director_write', 'title' => 'Race (Writers)', 'title_tag'=>'Writers', 'filter_key' => 'race', 'minus' => 1,
                                     'childs' => array('writers' => array('type' => 'generate', 'parent' => 'race',),),
                                 ),
-                                'writergender' => array('parent' => 'gender', 'title' => 'Writers Gender', 'filter_key' => 'gender', 'minus' => 1,
+                                'writergender' => array('parent' => 'gender', 'title' => 'Gender (Writers)', 'title_tag'=>'Writers', 'filter_key' => 'gender',  'minus' => 1,
                                     'childs' => array('writers' => array('type' => 'generate', 'parent' => 'gender',),),
                                 ),
                                 'dirwrite' => array('filter' => 'director_write', 'parent' => 'dirs', 'title' => 'Writer', 'placeholder' => 'writer', 'minus' => 1,),
@@ -300,10 +300,10 @@ class CriticSearch extends AbstractDB {
                             'type' => 'tab',
                             'title' => 'Casting Directors',
                             'childs' => array(
-                                'castdirrace' => array('filter' => 'dircast', 'parent' => 'race', 'name' => 'director_cast', 'title' => 'Casting Directors race', 'filter_key' => 'race', 'minus' => 1,
+                                'castdirrace' => array('filter' => 'dircast', 'parent' => 'race', 'name' => 'director_cast', 'title' => 'Race (Casting Directors)', 'title_tag'=>'Casting Directors', 'filter_key' => 'race', 'minus' => 1,
                                     'childs' => array('cast-directors' => array('type' => 'generate', 'parent' => 'race',),),
                                 ),
-                                'castgender' => array('parent' => 'gender', 'title' => 'Casting Directors Gender', 'filter_key' => 'gender', 'minus' => 1,
+                                'castgender' => array('parent' => 'gender', 'title' => 'Gender (Casting Directors)', 'title_tag'=>'Casting Directors', 'filter_key' => 'gender', 'minus' => 1,
                                     'childs' => array('cast-directors' => array('type' => 'generate', 'parent' => 'gender',),),
                                 ),
                                 'dircast' => array('filter' => 'director_cast', 'parent' => 'dirs', 'title' => 'Casting director', 'placeholder' => 'casting', 'minus' => 1,),
@@ -313,10 +313,10 @@ class CriticSearch extends AbstractDB {
                             'type' => 'tab',
                             'title' => 'Producers',
                             'childs' => array(
-                                'producerrace' => array('filter' => 'dirprod', 'parent' => 'race', 'name' => 'director_prod', 'title' => 'Producers race', 'filter_key' => 'race', 'minus' => 1,
+                                'producerrace' => array('filter' => 'dirprod', 'parent' => 'race', 'name' => 'director_prod', 'title' => 'Race (Producers)', 'title_tag'=>'Producers', 'filter_key' => 'race', 'minus' => 1,
                                     'childs' => array('producers' => array('type' => 'generate', 'parent' => 'race',),),
                                 ),
-                                'producergender' => array('parent' => 'gender', 'title' => 'Producers Gender', 'filter_key' => 'gender', 'minus' => 1,
+                                'producergender' => array('parent' => 'gender', 'title' => 'Gender (Producers)', 'title_tag'=>'Producers',  'filter_key' => 'gender', 'minus' => 1,
                                     'childs' => array('producers' => array('type' => 'generate', 'parent' => 'gender',),),
                                 ),
                                 'dirprod' => array('filter' => 'director_prod', 'parent' => 'dirs', 'title' => 'Producer', 'placeholder' => 'producer', 'minus' => 1,),

@@ -30,6 +30,9 @@ class MoviesCustomHooks {
 
             // Woke
             $this->update_woke($post, $options, $campaign, $debug);
+
+            // Update tmdb
+            $this->update_tmdb($post, $options, $campaign, $debug);
         }
 
         // Dove.org
@@ -638,6 +641,41 @@ class MoviesCustomHooks {
         }
     }
 
+    private function update_tmdb($post, $options, $campaign, $debug = false) {
+        if ($campaign->id == 9 || $campaign->id == 10) {
+            // Tmdb
+
+            $upd_opt = array(
+                'tmdb' => 'tmdb',
+                'original_language' => 'original_language',
+            );
+
+            $to_update = array();
+            foreach ($upd_opt as $post_key => $db_key) {
+                $field_value = '';
+                if (isset($options[$post_key])) {
+                    $field_value = base64_decode($options[$post_key]);
+                }
+                $to_update[$db_key] = $field_value;
+            }
+            if ($to_update) {
+                $code = $to_update['original_language'];
+                if ($code) {                                    
+                    $ma = $this->ml->get_ma();
+                    $code_int = $ma->get_or_create_language_by_name($code);
+                    
+                    # Update tmdb
+                    $tmdb_data = array(
+                        'tmdb' => (int) $to_update['tmdb'],
+                        'original_language'=>$code,
+                        'original_language_int'=>$code_int,
+                    );
+                    $ma->update_tmdb($post->top_movie, $tmdb_data);
+                }
+            }
+        }
+    }
+
     /*
      * Dove
      */
@@ -778,5 +816,4 @@ class MoviesCustomHooks {
         // Return array
         return array('rating' => $rating, 'rating_info' => $rating_info, 'info' => $info, 'reliase' => $reliase);
     }
-
 }

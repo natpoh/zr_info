@@ -34,6 +34,8 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             'franchises' => 'data_movie_franchises',
             'indie' => 'data_movie_indie',
             'woke' => 'data_woke',
+            'tmdb' => 'data_movie_tmdb',
+            'language_code' => 'data_language_code',            
         );
     }
 
@@ -725,6 +727,42 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             $this->sync_insert_data($data, $this->db['woke'], false, true, 10);
             CustomHooks::do_action('add_woke', ['mid' => $mid, 'data' => $data]);
         }
+    }
+    
+    /*
+     * Woke
+     */
+
+    public function update_tmdb($mid = 0, $data = array()) {
+        // Get data 
+        $sql = sprintf("SELECT * FROM {$this->db['tmdb']} WHERE mid = %d", (int) $mid);
+        $exist = $this->db_fetch_row($sql);
+        $data['last_update'] = $this->curr_time();
+        if ($exist) {
+            // Update post            
+            $this->sync_update_data($data, $exist->id, $this->db['tmdb'], true, 10);
+            CustomHooks::do_action('update_tmdb', ['mid' => $mid, 'data' => $data]);
+        } else {
+            // Add post            
+            $data['mid'] = $mid;
+            $this->sync_insert_data($data, $this->db['tmdb'], false, true, 10);
+            CustomHooks::do_action('add_tmdb', ['mid' => $mid, 'data' => $data]);
+        }
+    }
+    
+    public function get_or_create_language_by_name($name = '') {
+        $sql = sprintf("SELECT * FROM {$this->db['language_code']} WHERE code = '%s'", $name);
+        $exist = $this->db_fetch_row($sql);
+        if ($exist){
+            $id = $exist->id;
+        } else {        
+            // Create the platform
+            $data = array(
+                'code' => $name,                
+            );
+            $id = $this->sync_insert_data($data, $this->db['language_code'], false, true);
+        }
+        return $id;
     }
 
     public function create_slug($string, $glue = '-') {
