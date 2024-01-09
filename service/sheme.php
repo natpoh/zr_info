@@ -319,8 +319,8 @@ if ($request_array)
             ?>
 
         </script>
-        <script type="text/javascript" src="/service/js/sheme.js"></script>
-        <link rel='stylesheet' href='/service/css/sheme.css' type='text/css' media='all' />
+        <script type="text/javascript" src="/service/js/sheme.js?<?php echo LASTVERSION; ?>"></script>
+        <link rel='stylesheet' href='/service/css/sheme.css?<?php echo LASTVERSION; ?>' type='text/css' media='all' />
         </body>
         </html>
         <?php
