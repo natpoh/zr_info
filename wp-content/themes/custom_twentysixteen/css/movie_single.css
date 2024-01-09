@@ -1876,7 +1876,10 @@ div.sortable {
     .accordion_section{
         display: grid;
     }
+    .accordion_section.column-6 {
 
+        grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    }
     .accordion_section.column-7{
         grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
     }

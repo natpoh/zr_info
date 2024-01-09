@@ -3542,10 +3542,33 @@ jQuery(document).ready(function () {
         }
 
 
-        if (link.indexOf(window.location.host) == -1) {
-            link = window.location.protocol + '//' + window.location.host + link;
+        if (link)
+        {
+
+
+            if (link.indexOf(window.location.host) == -1) {
+                link = window.location.protocol + '//' + window.location.host + link;
+            }
+
         }
 
+
+        else if (!link)
+        {
+            if (jQuery(this).hasClass('edit_comment')) {
+                let commentElement = document.getElementById('movie_commnets');
+                commentElement.scrollIntoView();
+
+            }
+            else if (jQuery(this).hasClass('edit_review')) {
+
+                let commentElement = document.getElementById('audience_form');
+                commentElement.scrollIntoView();
+
+            }
+
+            return false;
+        }
 
         add_popup();
 

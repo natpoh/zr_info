@@ -11,7 +11,7 @@ if (!defined('ABSPATH'))
 class Last_update{
 
 
-public function show_graph($table = 'data_movie_imdb',$update_row='add_time')
+public function show_graph($table = 'data_movie_imdb',$update_row='add_time',$request=[])
 {
 
 
@@ -201,6 +201,7 @@ public function show_graph($table = 'data_movie_imdb',$update_row='add_time')
             params.append('endDate', endDate);
             params.append('db', '<?php echo $table;?>');
             params.append('row', '<?php echo $update_row;?>');
+            params.append('request', '<?php echo json_encode($request);?>');
             params.append('oper', 'get_graph');
             params.append('groupType', groupType); // Передача типа группировки
 
@@ -237,23 +238,50 @@ public static function show_data()
     $endDate =  intval($data["endDate"]/1000);
     $update_row = preg_replace("/[^a-zA-Z0-9_]/", "",$data["row"]);
     $groupType = isset($data["groupType"]) ? $data["groupType"] : 'daily'; // Получение типа группировки
+    $where1 ='';
+    if ($data['request']) {
+        $qr = json_decode(stripslashes($data['request']));
+    }
+    if ($data['request_string']) {
+        parse_str( $data['request_string'],$qr);
+    }
 
+
+            if ($qr)
+            {
+                foreach ($qr as $i=>$v)
+                {
+                    if (strstr($v,'like=')  && strpos($v,'like')===0)
+                    {
+
+                        $v = substr($v,5);
+                        $where1.= " AND `".$i."` LIKE '%". $v."%' ";
+
+                    }
+                    else
+                    {
+                        $where1.= " AND `".$i."` = '". $v."' ";
+
+                    }
+                }
+
+    }
 
     if ($groupType === 'hourly') {
         $query = "SELECT COUNT(*) AS record_count, FLOOR(".$update_row." / 3600) * 3600 AS update_date
               FROM ".$table."
-              WHERE ".$update_row." BETWEEN $startDate AND $endDate
+              WHERE ".$update_row."  BETWEEN $startDate AND $endDate ".$where1."
               GROUP BY update_date
               ORDER BY update_date";
     } else {
         $query = "SELECT COUNT(*) AS record_count, FLOOR(".$update_row." / 86400) * 86400 AS update_date
               FROM ".$table."
-              WHERE ".$update_row." BETWEEN $startDate AND $endDate
+              WHERE ".$update_row."  BETWEEN $startDate AND $endDate ".$where1."
               GROUP BY update_date
               ORDER BY update_date";
     }
 
-
+//echo $query;
     $result = Pdo_an::db_results_array($query);
 
 

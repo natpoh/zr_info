@@ -122,6 +122,170 @@ function    draw_lines(id,parent){
 
 }
 
+// Highcharts
+
+
+
+function chart(id,data) {
+
+    //console.log(data);
+    Highcharts.chart(id, {
+        chart: {
+
+            plotBorderWidth: null,
+            plotShadow: false,
+            type: 'line'
+        },
+        title: {
+            text: ''
+        },
+
+        plotOptions: {
+            series: {
+                grouping: false,
+                borderWidth: 0,
+            }
+        },
+        legend: {
+            enabled: false
+        },
+        xAxis: {
+
+            visible: false,
+        },
+        yAxis: {
+
+            visible: false,
+
+        },
+        tooltip: {
+            formatter: function () {
+
+                const formatDate = function (timestamp) {
+                    const date = new Date(timestamp);
+                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                    const day = date.getDate().toString().padStart(2, '0');
+                    const year = date.getFullYear();
+                    return `${month}/${day}/${year}`;
+                };
+
+
+                const formattedDate = formatDate(this.x);
+                return `<b>Date:</b> ${formattedDate}<br/><b>Value:</b> ${this.y}`;
+            }
+            },
+
+        series: [{
+            data: data
+        }]
+    });
+    // Highcharts
+}
+
+
+
+function prepare_request(foundData)
+{
+    let dop_request='';
+    if(foundData.requests)
+    {
+        for (const key in foundData.requests) {
+            if (foundData.requests.hasOwnProperty(key)) {
+
+                let value = foundData.requests[key];
+
+                if (key && value)
+                {
+                    let subkey = key.substring(2);
+
+                    // console.log(key,subkey,value);
+
+                    if (subkey=='default')
+                    {
+                        dop_request+='&'+value;
+                    }
+
+                    else  if (subkey && request_array[subkey])
+                    {
+                        dop_request+='&'+value+'='+request_array[subkey];
+
+                    }
+
+                }
+            }
+        }
+    }
+
+    return dop_request;
+}
+function fetchChartData(id,datavalue,dop_request,period) {
+
+    let endDate = Date.now();
+    let startDate =  Number(endDate) - period * 24 * 60 * 60 * 1000;
+
+    const url = '../analysis/jqgrid/get.php';
+    const params = {
+        startDate: startDate,
+        endDate: endDate,
+        db: datavalue,
+        row: 'last_update',
+        request_string: dop_request,
+        oper: 'get_graph',
+        groupType: 'daily'
+    };
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams(params),
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+
+            chart(id,data);
+
+        })
+        .catch(error => {
+
+            console.error('There was a problem with the fetch operation:', error);
+        });
+}
+
+
+function show_charts()
+{
+
+    const elements = document.querySelectorAll('.mb_graph.not_load');
+
+    elements.forEach(element => {
+
+        let id = element.getAttribute('id');
+        let dataId = element.getAttribute('data-id');
+        let period = element.getAttribute('data-value');
+
+
+
+        let foundData = getCubeDataById(dataId);
+        let datavalue  = foundData.table;
+        let dop_request=prepare_request(foundData);
+
+
+        fetchChartData(id,datavalue,dop_request,period);
+
+        element.classList.add('loaded');
+
+      ///  console.log(`Element ID: ${id}, Data ID: ${dataId}`);
+    });
+
+
+}
 function inner_message(id,inner_data=[])
 {
 
@@ -140,6 +304,11 @@ function inner_message(id,inner_data=[])
         {
             inner_message+='<p class="mb_table"><button data-id="'+id+'" class="open_btn">'+inner_data.table+'</button></p>';
         }
+        if (inner_data.graph)
+        {
+            inner_message+='<p data-id="'+id+'" data-value="'+inner_data.graph+'" id="chart-container-'+id+'" class="mb_graph not_load"></p>';
+        }
+
         if (inner_data.link)
         {
             let getRequest='';
@@ -238,7 +407,7 @@ function insert_block_to_field(id,x,y,inner_data=[])
         }
 
     }
-
+    show_charts();
 }
 
 
@@ -782,10 +951,12 @@ function prepare_data(className, value) {
 
 
 
-        if (cid=='title' || cid=='desc' || cid=='table' || cid=='link')
+        if (cid=='title' || cid=='desc' || cid=='table' || cid=='link' || cid=='graph')
         {
             let imsg =  inner_message(id,cube);
             document.querySelector('.cube#cube_'+id+' .cube_desc_message').innerHTML=imsg;
+
+            show_charts();
         }
         else if (cid=='type')
         {
@@ -896,37 +1067,9 @@ isoBlock.addEventListener('click', function(event) {
 
         let datavalue  = foundData.table;
 
-     console.log(foundData);
+    // console.log(foundData);
 
-        let dop_request='';
-        if(foundData.requests)
-        {
-            for (const key in foundData.requests) {
-                if (foundData.requests.hasOwnProperty(key)) {
-
-                 let value = foundData.requests[key];
-
-                 if (key && value)
-                 {
-                     let subkey = key.substring(2);
-
-                    // console.log(key,subkey,value);
-
-                     if (subkey=='default')
-                     {
-                         dop_request+='&'+value;
-                     }
-
-                    else  if (subkey && request_array[subkey])
-                     {
-                         dop_request+='&'+value+'='+request_array[subkey];
-
-                     }
-
-                 }
-                }
-            }
-        }
+        let dop_request=prepare_request(foundData);
 
         var popup = document.getElementById("popup");
         popup.style.display = "block";
@@ -974,7 +1117,7 @@ function save_request(dataType,  value) {
 
         let imsg =  inner_message(id,cube);
         document.querySelector('.cube#cube_'+id+' .cube_desc_message').innerHTML=imsg;
-
+        show_charts();
       //  console.log(cube);
         ///  document.querySelector('.cube#cube_'+id+' .cube_desc_message').innerHTML=imsg;e;
     }
@@ -1251,51 +1394,3 @@ function closeDragElement() {
 
 
 
-// Highcharts
-
-
-
-function chart() {
-
-    // Генерируем случайные данные для графика
-    var data = [];
-    for (var i = 0; i < 30; i++) {
-        data.push(Math.floor(Math.random() * 100)); // Замените это на ваши данные
-    }
-    Highcharts.chart('chart-container', {
-        chart: {
-            // plotBackgroundColor: null,
-            plotBorderWidth: null,
-            plotShadow: false,
-            type: 'line'
-        },
-        title: {
-            text: ''
-        },
-
-        plotOptions: {
-            series: {
-                grouping: false,
-                borderWidth: 0
-            }
-        },
-        legend: {
-            enabled: false
-        },
-        xAxis: {
-            // showFirstLabel: false,
-            visible: false,
-        },
-        yAxis: {
-            // title: {
-            //      text: ''
-            //  },
-            visible: false,
-            //gridLineWidth: 0,
-        },
-        series: [{
-            data: data
-        }]
-    });
-    // Highcharts
-}

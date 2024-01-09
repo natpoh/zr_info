@@ -107,7 +107,7 @@ if ($movie_list) {
         $pg_idnt = $post_id . ' ' . $link;
         $comments_account = get_option('disqus_forum_url');
 
-        echo '<div class="column_header" style="text-align: center; margin-top: 35px"><h2>Comments:</h2></div>
+        echo '<div class="column_header" id="movie_commnets" style="text-align: center; margin-top: 35px"><h2>Comments:</h2></div>
         <div class="not_load" id="disquss_container" data_comments="' . $comments_account . '"  data_title="' . $post_title . '" data_link="' . $link . '" data_idn="' . $pg_idnt . '"></div>';
         ?>
         <div id="disqus_recommendations"></div>

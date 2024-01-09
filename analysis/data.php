@@ -518,7 +518,7 @@ AND table_schema='" . DB_NAME_AN . "'";
 
         if ($currant_table && $update_row)
         {
-            $Last_update->show_graph($currant_table,$update_row);
+            $Last_update->show_graph($currant_table,$update_row,$request);
         }
 
 

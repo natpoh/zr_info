@@ -402,3 +402,8 @@ svg.hide_left_sidebar_arrow {
 input.edit_sheme_input{
     width: 50%;
 }
+.mb_graph {
+    height: 100px;
+    margin: 0 auto;
+    width: 120px;
+}

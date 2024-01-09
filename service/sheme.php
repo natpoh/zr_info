@@ -42,6 +42,35 @@ public static function edit_data($id)
     }
 
 }
+private static function get_links_from_db($id,$type,$request_array)
+{
+$q="SELECT * FROM `option_sheme` WHERE `type` = ?" ;
+$r = Pdo_an::db_results_array($q,[$type]);
+if ($r)
+{
+$links='';
+    $queryString='';
+if ($request_array){
+    $queryString = '&'.http_build_query($request_array);
+}
+    foreach ($r as $row)
+    {
+        if ($id == $row['id'])
+        {
+            $links.=' <span class="link_active">'.$row['name'].'</span> ';
+        }
+        else
+        {
+            $links.=' <a href="/service/sheme.php?edit_sheme='.$row['id'].$queryString.'">'.$row['name'].'</a> ';
+        }
+
+
+
+    }
+}
+return $links;
+
+}
 
 private static function get_from_db($id)
 {
@@ -77,7 +106,9 @@ public static function front($data,$request_array=[])
 
     $name = $data['name'];
     $id = $data['id'];
+    $m_type = $data['type'];
 
+    $links = self::get_links_from_db($id,$m_type,$request_array);
 
     !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
     $colors = OptionData::get_options('', 'sheme_colors');
@@ -158,7 +189,7 @@ if ($request_array)
     z-index: 10;
     position: relative;
     margin-left: 200px;
-    margin-top: 7px;"><a href="https://info.antiwoketomatoes.com/<?php echo $_SERVER['REQUEST_URI'] ?>">Server</a><a href="https://zeitgeistreviews.com/<?php echo $_SERVER['REQUEST_URI'] ?>">ZR</a></div>
+    margin-top: 7px;"><a href="https://info.antiwoketomatoes.com<?php echo $_SERVER['REQUEST_URI'] ?>">Server</a><a href="https://zeitgeistreviews.com<?php echo $_SERVER['REQUEST_URI'] ?>">ZR</a> <?php echo $links; ?></div>
 
 <div class="left_menu">
 <div class="menu_title"><?php echo $name; ?></div>
@@ -188,6 +219,7 @@ if ($request_array)
         <div class="b_row">Type <select class="b_type" ><?php echo $options_type; ?></select></div>
         <div class="b_row">Color <select class="b_color" ><?php echo $options_color; ?></select></div>
         <div class="b_row">Method <select class="b_method" ><option value="">none</option><option value="get">Get</option><option value="set">Set</option></select></div>
+        <div class="b_row">Show graph<select class="b_graph" ><option value="">none</option><option value="30">30 days</option><option value="90">90 days</option><option value="365">1 year</option></select></div>
         </div>
 
         <div class="inner_edit">
@@ -211,9 +243,6 @@ if ($request_array)
 
 
         <div class="iso">
-
-
-<!--  <div id="chart-container" style="width: 100px; height: 100px;"></div>-->
 
 
             </div>
