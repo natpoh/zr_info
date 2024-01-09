@@ -48,11 +48,11 @@ $array_jobs = array(
 'add_gender_rating'=>60,///add new gender rating
 
 
-'add_to_db_from_userlist'=>60,///add new movies from user vote list ////
-'check_tv_series_imdb'=>120, ///add tvseries from list
-'check_best_games'=>120, ///add games from list
+'add_to_db_from_userlist'=>30,///add new movies from user vote list ////
+'check_tv_series_imdb'=>60*8, ///add tvseries from list
+'check_best_games'=>60*8, ///add games from list
 
-'get_new_movies'=>(60*12),///add new movies from fandango
+'get_new_movies'=>(60*4),///add new movies from fandango
 'get_new_tv'=>(60*12),///add new tv from tmdb
 //'check_imdb'=>(60*12),///add new movies from list
 
