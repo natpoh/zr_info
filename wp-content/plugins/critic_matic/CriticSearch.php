@@ -170,17 +170,17 @@ class CriticSearch extends AbstractDB {
                             'title' => 'Stars',
                             'childs' => array(
                                 'starrace' => array(
-                                    'filter' => 'actorstar', 'parent' => 'race', 'name' => 'actor_star', 'title' => 'Race (Stars)', 'title_tag'=>'Stars', 'filter_key' => 'race', 'minus' => 1,
+                                    'filter' => 'actorstar', 'parent' => 'race', 'name' => 'actor_star', 'title' => 'Race (Stars)', 'title_tag' => 'Stars', 'filter_key' => 'race', 'minus' => 1,
                                     'childs' => array('star' => array('type' => 'generate', 'parent' => 'race',),),
                                 ),
                                 'stargender' => array(
-                                    'parent' => 'gender', 'title' => 'Gender (Stars)', 'title_tag'=>'Stars', 'filter_key' => 'gender', 'minus' => 1,
+                                    'parent' => 'gender', 'title' => 'Gender (Stars)', 'title_tag' => 'Stars', 'filter_key' => 'gender', 'minus' => 1,
                                     'childs' => array('star' => array('type' => 'generate', 'parent' => 'gender',),),
                                 ),
                                 'sphoto' => array('parent' => 'castphoto', 'title' => 'Star conditions', 'filter_key' => 'sphoto', 'minus' => 1, 'hide' => 1),
                                 'actorstar' => array('filter' => 'actor_star', 'parent' => 'actors', 'title' => 'Actor Star', 'placeholder' => 'star', 'minus' => 1,),
                                 'simstar' => array('parent' => 'simpson', 'title' => 'Literal Diversity (Stars)', 'facet' => 'rating', 'titlesm' => 'LD (Stars)', 'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'minus' => 1, 'sort_w' => 21,),
-                                'countrystar' => array('filter' => 'countrystar', 'parent' => 'actorscountry', 'title' => 'Actor Surname (Star)',  'title_tag'=>'Star Surname', 'placeholder' => 'star', 'minus' => 1,),
+                                'countrystar' => array('filter' => 'countrystar', 'parent' => 'actorscountry', 'title' => 'Actor Surname (Star)', 'title_tag' => 'Star Surname', 'placeholder' => 'star', 'minus' => 1,),
                             ),
                         ),
                         'main' => array(
@@ -188,17 +188,17 @@ class CriticSearch extends AbstractDB {
                             'title' => 'Supporting',
                             'childs' => array(
                                 'mainrace' => array(
-                                    'filter' => 'actormain', 'parent' => 'race', 'name' => 'actor_main', 'title' => 'Race (Supporting)', 'title_tag'=>'Supporting', 'filter_key' => 'race', 'minus' => 1,
+                                    'filter' => 'actormain', 'parent' => 'race', 'name' => 'actor_main', 'title' => 'Race (Supporting)', 'title_tag' => 'Supporting', 'filter_key' => 'race', 'minus' => 1,
                                     'childs' => array('main' => array('type' => 'generate', 'parent' => 'race',),),
                                 ),
                                 'maingender' => array(
-                                    'parent' => 'gender', 'title' => 'Gender (Supporting)',  'title_tag'=>'Supporting', 'filter_key' => 'gender', 'minus' => 1,
+                                    'parent' => 'gender', 'title' => 'Gender (Supporting)', 'title_tag' => 'Supporting', 'filter_key' => 'gender', 'minus' => 1,
                                     'childs' => array('main' => array('type' => 'generate', 'parent' => 'gender',),),
                                 ),
                                 'mphoto' => array('parent' => 'castphoto', 'title' => 'Supporting conditions', 'filter_key' => 'mphoto', 'minus' => 1, 'hide' => 1),
                                 'actormain' => array('filter' => 'actor_main', 'parent' => 'actors', 'title' => 'Actor Supporting', 'placeholder' => 'main', 'minus' => 1,),
                                 'simmain' => array('parent' => 'simpson', 'title' => 'Literal Diversity (Supporting)', 'facet' => 'rating', 'titlesm' => 'LD (Supporting)', 'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'minus' => 1, 'sort_w' => 21,),
-                                'countrymain' => array('filter' => 'countrymain', 'parent' => 'actorscountry', 'title' => 'Actor Surname (Supporting)', 'title_tag'=>'Supporting Surname', 'placeholder' => 'main', 'minus' => 1,),
+                                'countrymain' => array('filter' => 'countrymain', 'parent' => 'actorscountry', 'title' => 'Actor Surname (Supporting)', 'title_tag' => 'Supporting Surname', 'placeholder' => 'main', 'minus' => 1,),
                             ),
                         ),
                         'all' => array(
@@ -206,17 +206,17 @@ class CriticSearch extends AbstractDB {
                             'title' => 'All Cast',
                             'childs' => array(
                                 'race' => array(
-                                    'filter' => 'actor', 'parent' => 'race', 'name' => 'actor_all', 'title' => 'Race (All Cast)', 'title_tag'=>'All Cast', 'filter_key' => 'race', 'minus' => 1,
+                                    'filter' => 'actor', 'parent' => 'race', 'name' => 'actor_all', 'title' => 'Race (All Cast)', 'title_tag' => 'All Cast', 'filter_key' => 'race', 'minus' => 1,
                                     'childs' => array('all' => array('type' => 'generate', 'parent' => 'race',),),
                                 ),
                                 'gender' => array(
-                                    'parent' => 'gender', 'title' => 'Gender (All Cast)', 'title_tag'=>'All Cast', 'filter_key' => 'gender', 'minus' => 1,
+                                    'parent' => 'gender', 'title' => 'Gender (All Cast)', 'title_tag' => 'All Cast', 'filter_key' => 'gender', 'minus' => 1,
                                     'childs' => array('all' => array('type' => 'generate', 'parent' => 'gender',),),
                                 ),
                                 'aphoto' => array('parent' => 'castphoto', 'title' => 'Actors conditions', 'filter_key' => 'aphoto', 'minus' => 1, 'hide' => 1),
                                 'actor' => array('filter' => 'actor_all', 'parent' => 'actors', 'title' => 'Actor', 'placeholder' => '', 'minus' => 1,),
                                 'simall' => array('parent' => 'simpson', 'title' => 'Literal Diversity', 'facet' => 'rating', 'titlesm' => 'LD', 'multipler' => 100, 'max_count' => 100, 'group' => 'woke', 'sorted' => 1, 'minus' => 1, 'sort_w' => 21,),
-                                'countryall' => array('filter' => 'countryall', 'parent' => 'actorscountry', 'title' => 'Actor Surname', 'title_tag'=>'Cast Surname', 'placeholder' => '', 'minus' => 1,),
+                                'countryall' => array('filter' => 'countryall', 'parent' => 'actorscountry', 'title' => 'Actor Surname', 'title_tag' => 'Cast Surname', 'placeholder' => '', 'minus' => 1,),
                             ),
                         ),
                     ),
@@ -261,10 +261,10 @@ class CriticSearch extends AbstractDB {
                             'title' => 'All Crew',
                             'childs' => array(
                                 'dirrace' => array(
-                                    'filter' => 'dirall', 'parent' => 'race', 'name' => 'director_all', 'title' => 'Race (All Crew)', 'title_tag'=>'All Crew', 'filter_key' => 'race', 'minus' => 1,
+                                    'filter' => 'dirall', 'parent' => 'race', 'name' => 'director_all', 'title' => 'Race (All Crew)', 'title_tag' => 'All Crew', 'filter_key' => 'race', 'minus' => 1,
                                     'childs' => array('alldir' => array('type' => 'generate', 'parent' => 'race',),),
                                 ),
-                                'dirgender' => array('parent' => 'gender', 'title' => 'Gender (All Crew)', 'title_tag'=>'All Crew', 'filter_key' => 'gender', 'minus' => 1,
+                                'dirgender' => array('parent' => 'gender', 'title' => 'Gender (All Crew)', 'title_tag' => 'All Crew', 'filter_key' => 'gender', 'minus' => 1,
                                     'childs' => array('alldir' => array('type' => 'generate', 'parent' => 'gender',),),
                                 ),
                                 'dirall' => array('filter' => 'director_all', 'parent' => 'dirs', 'title' => 'Production', 'placeholder' => 'all', 'minus' => 1,),
@@ -274,10 +274,10 @@ class CriticSearch extends AbstractDB {
                             'type' => 'tab',
                             'title' => 'Directors',
                             'childs' => array(
-                                'dirsrace' => array('filter' => 'dir', 'parent' => 'race', 'name' => 'director_dir', 'title' => 'Race (Directors)', 'title_tag'=>'Directors', 'filter_key' => 'race', 'minus' => 1,
+                                'dirsrace' => array('filter' => 'dir', 'parent' => 'race', 'name' => 'director_dir', 'title' => 'Race (Directors)', 'title_tag' => 'Directors', 'filter_key' => 'race', 'minus' => 1,
                                     'childs' => array('directors' => array('type' => 'generate', 'parent' => 'race',),),
                                 ),
-                                'dirsgender' => array('parent' => 'gender', 'title' => 'Gender (Directors)', 'title_tag'=>'Directors', 'filter_key' => 'gender', 'minus' => 1,
+                                'dirsgender' => array('parent' => 'gender', 'title' => 'Gender (Directors)', 'title_tag' => 'Directors', 'filter_key' => 'gender', 'minus' => 1,
                                     'childs' => array('directors' => array('type' => 'generate', 'parent' => 'gender',),),
                                 ),
                                 'dir' => array('filter' => 'director_dir', 'parent' => 'dirs', 'title' => 'Director', 'placeholder' => 'director', 'minus' => 1,),
@@ -287,10 +287,10 @@ class CriticSearch extends AbstractDB {
                             'type' => 'tab',
                             'title' => 'Writers',
                             'childs' => array(
-                                'writersrace' => array('filter' => 'dirwrite', 'parent' => 'race', 'name' => 'director_write', 'title' => 'Race (Writers)', 'title_tag'=>'Writers', 'filter_key' => 'race', 'minus' => 1,
+                                'writersrace' => array('filter' => 'dirwrite', 'parent' => 'race', 'name' => 'director_write', 'title' => 'Race (Writers)', 'title_tag' => 'Writers', 'filter_key' => 'race', 'minus' => 1,
                                     'childs' => array('writers' => array('type' => 'generate', 'parent' => 'race',),),
                                 ),
-                                'writergender' => array('parent' => 'gender', 'title' => 'Gender (Writers)', 'title_tag'=>'Writers', 'filter_key' => 'gender',  'minus' => 1,
+                                'writergender' => array('parent' => 'gender', 'title' => 'Gender (Writers)', 'title_tag' => 'Writers', 'filter_key' => 'gender', 'minus' => 1,
                                     'childs' => array('writers' => array('type' => 'generate', 'parent' => 'gender',),),
                                 ),
                                 'dirwrite' => array('filter' => 'director_write', 'parent' => 'dirs', 'title' => 'Writer', 'placeholder' => 'writer', 'minus' => 1,),
@@ -300,10 +300,10 @@ class CriticSearch extends AbstractDB {
                             'type' => 'tab',
                             'title' => 'Casting Directors',
                             'childs' => array(
-                                'castdirrace' => array('filter' => 'dircast', 'parent' => 'race', 'name' => 'director_cast', 'title' => 'Race (Casting Directors)', 'title_tag'=>'Casting Directors', 'filter_key' => 'race', 'minus' => 1,
+                                'castdirrace' => array('filter' => 'dircast', 'parent' => 'race', 'name' => 'director_cast', 'title' => 'Race (Casting Directors)', 'title_tag' => 'Casting Directors', 'filter_key' => 'race', 'minus' => 1,
                                     'childs' => array('cast-directors' => array('type' => 'generate', 'parent' => 'race',),),
                                 ),
-                                'castgender' => array('parent' => 'gender', 'title' => 'Gender (Casting Directors)', 'title_tag'=>'Casting Directors', 'filter_key' => 'gender', 'minus' => 1,
+                                'castgender' => array('parent' => 'gender', 'title' => 'Gender (Casting Directors)', 'title_tag' => 'Casting Directors', 'filter_key' => 'gender', 'minus' => 1,
                                     'childs' => array('cast-directors' => array('type' => 'generate', 'parent' => 'gender',),),
                                 ),
                                 'dircast' => array('filter' => 'director_cast', 'parent' => 'dirs', 'title' => 'Casting director', 'placeholder' => 'casting', 'minus' => 1,),
@@ -313,10 +313,10 @@ class CriticSearch extends AbstractDB {
                             'type' => 'tab',
                             'title' => 'Producers',
                             'childs' => array(
-                                'producerrace' => array('filter' => 'dirprod', 'parent' => 'race', 'name' => 'director_prod', 'title' => 'Race (Producers)', 'title_tag'=>'Producers', 'filter_key' => 'race', 'minus' => 1,
+                                'producerrace' => array('filter' => 'dirprod', 'parent' => 'race', 'name' => 'director_prod', 'title' => 'Race (Producers)', 'title_tag' => 'Producers', 'filter_key' => 'race', 'minus' => 1,
                                     'childs' => array('producers' => array('type' => 'generate', 'parent' => 'race',),),
                                 ),
-                                'producergender' => array('parent' => 'gender', 'title' => 'Gender (Producers)', 'title_tag'=>'Producers',  'filter_key' => 'gender', 'minus' => 1,
+                                'producergender' => array('parent' => 'gender', 'title' => 'Gender (Producers)', 'title_tag' => 'Producers', 'filter_key' => 'gender', 'minus' => 1,
                                     'childs' => array('producers' => array('type' => 'generate', 'parent' => 'gender',),),
                                 ),
                                 'dirprod' => array('filter' => 'director_prod', 'parent' => 'dirs', 'title' => 'Producer', 'placeholder' => 'producer', 'minus' => 1,),
@@ -434,6 +434,13 @@ class CriticSearch extends AbstractDB {
         ),
         'country' => array(
             'title' => 'Country',
+            'tabs' => array('movies', 'games', 'international', 'ethnicity'),
+            'minus' => 1,
+            'hide' => 1,
+            'weight' => 130,
+        ),
+        'lang' => array(
+            'title' => 'Language',
             'tabs' => array('movies', 'games', 'international', 'ethnicity'),
             'minus' => 1,
             'hide' => 1,
@@ -2591,7 +2598,7 @@ class CriticSearch extends AbstractDB {
         return $ret;
     }
 
-    public function front_search_movies_multi($keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = false, $show_meta = true, $widlcard = true, $show_main = true, $fields=array()) {
+    public function front_search_movies_multi($keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = false, $show_meta = true, $widlcard = true, $show_main = true, $fields = array()) {
 
         $m_mkw = '';
         if ($filters['mkw']) {
@@ -2637,9 +2644,9 @@ class CriticSearch extends AbstractDB {
             if ($fields) {
                 $custom_fields = ', ' . implode(', ', $fields) . ' ';
             }
-            
+
             // Main sql
-            $sql = sprintf("SELECT id, rwt_id, title, release, type, year, weight() w, rrt, rrta, rrtg, movie_id" .$custom_fields . $filters_and['select'] . $order['select']
+            $sql = sprintf("SELECT id, rwt_id, title, release, type, year, weight() w, rrt, rrta, rrtg, movie_id" . $custom_fields . $filters_and['select'] . $order['select']
                     . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
 
             $ret = $this->movie_results($sql, $match, $search_query);
@@ -2673,7 +2680,7 @@ class CriticSearch extends AbstractDB {
         return $ret;
     }
 
-    public function front_search_games_multi($keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = false, $show_meta = true, $widlcard = true, $show_main = true, $fields=array()) {
+    public function front_search_games_multi($keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = false, $show_meta = true, $widlcard = true, $show_main = true, $fields = array()) {
 
         $filters['type'] = array('videogame');
 
@@ -2718,9 +2725,9 @@ class CriticSearch extends AbstractDB {
             if ($fields) {
                 $custom_fields = ', ' . implode(', ', $fields) . ' ';
             }
-            
+
             // Main sql
-            $sql = sprintf("SELECT id, rwt_id, title, release, type, year, weight() w, movie_id" .$custom_fields. $order['select'] . $filters_and['select']
+            $sql = sprintf("SELECT id, rwt_id, title, release, type, year, weight() w, movie_id" . $custom_fields . $order['select'] . $filters_and['select']
                     . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
 
             $ret = $this->movie_results($sql, $match, $search_query);
@@ -2742,7 +2749,7 @@ class CriticSearch extends AbstractDB {
         return $ret;
     }
 
-    public function front_search_filters_multi($aid = 0, $keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = false, $show_meta = true, $widlcard = true, $show_main = true,$fields=array()) {
+    public function front_search_filters_multi($aid = 0, $keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = false, $show_meta = true, $widlcard = true, $show_main = true, $fields = array()) {
 
         //Keywords logic
         $match = '';
@@ -2772,9 +2779,9 @@ class CriticSearch extends AbstractDB {
             if ($fields) {
                 $custom_fields = ', ' . implode(', ', $fields) . ' ';
             }
-            
+
             // Main sql
-            $sql = sprintf("SELECT id, aid, wp_uid, fid, publish, date, last_upd, frating, title, content, img, ftab, link, weight() w" .$custom_fields. $order['select'] . $filters_and['select']
+            $sql = sprintf("SELECT id, aid, wp_uid, fid, publish, date, last_upd, frating, title, content, img, ftab, link, weight() w" . $custom_fields . $order['select'] . $filters_and['select']
                     . " FROM filters WHERE id>0" . $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
 
             $ret = $this->movie_results($sql, $match, $search_query);
@@ -3145,6 +3152,11 @@ class CriticSearch extends AbstractDB {
                 $filters_and = $this->get_filters_query($filters, 'country');
                 $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
                         . " GROUP BY country ORDER BY cnt DESC LIMIT 0,$limit";
+            } else if ($facet == 'lang') {
+                $limit = $expand == $facet ? $this->facet_max_limit : $this->facet_limit;
+                $filters_and = $this->get_filters_query($filters, $facet);
+                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
+                        . " GROUP BY " . $facet . " ORDER BY cnt DESC LIMIT 0,$limit";
             } else if ($facet == 'genre') {
                 $limit = $expand == $facet ? $this->facet_max_limit : $this->facet_limit;
                 $filters_and = $this->get_filters_query($filters, 'genre');
@@ -3718,6 +3730,14 @@ class CriticSearch extends AbstractDB {
                 $country = $ma->get_country_by_slug($slug, true);
                 $this->search_filters[$key][$slug] = array('key' => $country->id, 'title' => $country->name);
             }
+        } else if ($key == 'lang') {
+            // Language
+            $ma = $this->get_ma();
+            $value = is_array($value) ? $value : array($value);
+            foreach ($value as $slug) {
+                $country = $ma->get_lanuage_by_slug($slug, true);
+                $this->search_filters[$key][$slug] = array('key' => $country->id, 'title' => $country->title);
+            }
         } else if ($key == 'from') {
             // From author
             $value = is_array($value) ? $value : array($value);
@@ -3993,6 +4013,9 @@ class CriticSearch extends AbstractDB {
                     $filters_and .= $this->filter_multi_value('provider', $list, true);
                 } else if ($key == 'country') {
                     // Country
+                    $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
+                } else if ($key == 'lang') {
+                    // lang
                     $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
                 } else if (isset($this->facet_data['dirsdata']['childs'][$key])) {
                     if ($key == 'dirall' || $key == 'dir' || $key == 'dirwrite' || $key == 'dircast' || $key == 'dirprod') {

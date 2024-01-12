@@ -28,7 +28,6 @@ class CriticMatic extends AbstractDB {
     private $mac;
     private $mdirs;
 
-
     /*
      * Posts
      */
@@ -503,7 +502,6 @@ class CriticMatic extends AbstractDB {
         if ($author_type == 2) {
             $movies_meta = $this->get_movies_data($id);
 
-
             if ($movies_meta && sizeof($movies_meta)) {
                 !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
 
@@ -553,7 +551,6 @@ class CriticMatic extends AbstractDB {
                 . " FROM {$this->db['posts']} p"
                 . " LEFT JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
                 . $cid_inner . $ts_inner . $where;
-
 
         $result = $this->db_fetch_row($sql);
         return $result;
@@ -795,8 +792,6 @@ class CriticMatic extends AbstractDB {
                 . " LEFT JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
                 . $atype_inner . $cid_inner . $ts_inner . $status_query . $cid_and . $and_date_add . $and_date . $aid_and . $type_and . $view_type_and . $ts_and . $meta_type_and . $atype_and . $and_orderby . $limit;
 
-
-
         if (!$count) {
             //  print $sql;
             $result = $this->db_results($sql);
@@ -956,7 +951,6 @@ class CriticMatic extends AbstractDB {
             'view_type' => $view_type,
             'link_id' => $link_id,
         );
-
 
         $id = $this->sync_insert_data($data, $this->db['posts'], $this->sync_client, $sync);
 
@@ -1976,7 +1970,6 @@ class CriticMatic extends AbstractDB {
 
 
         $sql = "SELECT " . $select . " FROM {$this->db['authors']} a" . $tags_inner . $filters_and . $and_orderby . $limit;
-
 
         if (!$count) {
             $result = $this->db_results($sql);
@@ -3990,7 +3983,6 @@ class CriticMatic extends AbstractDB {
 
         $record = $this->getGeoIp2Data($ip);
 
-
         if (isset($record->country->isoCode)) {
             $res = $record->country->isoCode;
         }
@@ -4388,7 +4380,7 @@ class CriticMatic extends AbstractDB {
             return $code;
     }
 
-    public function get_domain_by_url($url = '') {
+     public function get_domain_by_url($url = '') {
         $domain = preg_replace('#^([a-z]+\:\/\/[^\/]+)(\/|\?|\#).*#', '$1', $url . '/');
         return $domain;
     }
@@ -4414,29 +4406,28 @@ class CriticMatic extends AbstractDB {
     public function theme_table($data) {
         $ret = '';
         if (!empty($data)) {
-            $ret.= '<table class="wp-list-table widefat striped table-view-list"><tr>';
+            $ret .= '<table class="wp-list-table widefat striped table-view-list"><tr>';
 
             // Получение заголовков (названий полей) из первого объекта
             $firstObject = $data[0];
             foreach ($firstObject as $key => $value) {
-                $ret.= "<th>$key</th>";
+                $ret .= "<th>$key</th>";
             }
-            $ret.= "</tr>";
+            $ret .= "</tr>";
 
             // Вывод данных
             foreach ($data as $object) {
-                $ret.= "<tr>";
+                $ret .= "<tr>";
                 foreach ($object as $value) {
-                    $ret.= "<td>$value</td>";
+                    $ret .= "<td>$value</td>";
                 }
-                $ret.= "</tr>";
+                $ret .= "</tr>";
             }
 
-            $ret.= "</table>";
+            $ret .= "</table>";
         } else {
-            $ret.= "Data not found.";
+            $ret .= "Data not found.";
         }
         return $ret;
     }
-
 }

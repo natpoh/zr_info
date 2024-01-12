@@ -41,7 +41,6 @@ class MoviesAn extends AbstractDBAn {
     );
     public $sort_pages = array('add_time', 'free', 'id', 'date', 'year', 'title', 'name', 'slug', 'status', 'type', 'weight');
 
-
     /*
      * Genres
      */
@@ -129,7 +128,8 @@ class MoviesAn extends AbstractDBAn {
             'distributors' => 'data_movie_distributors',
             'hook_movie_upd' => 'hook_movie_upd',
             'meta_movie_keywords' => 'meta_movie_keywords',
-            'meta_keywords'=>'meta_keywords',
+            'meta_keywords' => 'meta_keywords',
+            'language_code' => 'data_language_code',
         );
         $this->timer_start();
         $this->get_perpage();
@@ -215,7 +215,6 @@ class MoviesAn extends AbstractDBAn {
             //Get post meta
             $sql = sprintf("SELECT id, date FROM {$this->db['movies_meta']} WHERE mid=%d", (int) $mid);
             $meta_exist = $this->db_fetch_row($sql);
-
 
             if ($meta_exist) {
                 if ($date == 0 && $meta_exist->date == 0) {
@@ -973,6 +972,286 @@ class MoviesAn extends AbstractDBAn {
     }
 
     /*
+     * language_code
+     */
+
+    public function get_lanuage_by_slug($slug, $cache = false) {
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$slug])) {
+                return $dict[$slug];
+            }
+        }
+
+        //Get author id
+        $sql = sprintf("SELECT id, title FROM {$this->db['language_code']} WHERE code='%s'", $this->escape($slug));
+        $result = $this->db_fetch_row($sql);
+
+        if (!$result->title) {
+            $result->title = $this->getLanguageByCode($slug);
+        }
+
+        if ($cache) {
+            $dict[$slug] = $result;
+        }
+        return $result;
+    }
+
+    public function get_all_languauges() {
+        $sql = "SELECT id, code, title FROM {$this->db['language_code']}";
+        $result = $this->db_results($sql);
+        $ret = array();
+        if (sizeof($result)) {
+            foreach ($result as $item) {
+                if (!$item->title) {
+                    $item->title = $this->getLanguageByCode($item->code);
+                }
+                $ret[$item->id] = $item;
+            }
+        }
+        return $ret;
+    }
+
+    public function getLanguageByCode($code) {
+        if (!$code)
+            return '';
+        $names = array(
+            "aa" => "Afar",
+            "ab" => "Abkhazian",
+            "af" => "Afrikaans",
+            "am" => "Amharic",
+            "ar" => "Arabic",
+            "ar-ae" => "Arabic (U.A.E.)",
+            "ar-bh" => "Arabic (Bahrain)",
+            "ar-dz" => "Arabic (Algeria)",
+            "ar-eg" => "Arabic (Egypt)",
+            "ar-iq" => "Arabic (Iraq)",
+            "ar-jo" => "Arabic (Jordan)",
+            "ar-kw" => "Arabic (Kuwait)",
+            "ar-lb" => "Arabic (Lebanon)",
+            "ar-ly" => "Arabic (libya)",
+            "ar-ma" => "Arabic (Morocco)",
+            "ar-om" => "Arabic (Oman)",
+            "ar-qa" => "Arabic (Qatar)",
+            "ar-sa" => "Arabic (Saudi Arabia)",
+            "ar-sy" => "Arabic (Syria)",
+            "ar-tn" => "Arabic (Tunisia)",
+            "ar-ye" => "Arabic (Yemen)",
+            "as" => "Assamese",
+            "ay" => "Aymara",
+            "az" => "Azeri",
+            "ba" => "Bashkir",
+            "be" => "Belarusian",
+            "bg" => "Bulgarian",
+            "bh" => "Bihari",
+            "bi" => "Bislama",
+            "bm" => "Bambara",
+            "bn" => "Bengali",
+            "bo" => "Tibetan",
+            "br" => "Breton",
+            "bs" => "Bosnian",
+            "ca" => "Catalan",
+            "co" => "Corsican",
+            "cs" => "Czech",
+            "cy" => "Welsh",
+            "da" => "Danish",
+            "de" => "German",
+            "de-at" => "German (Austria)",
+            "de-ch" => "German (Switzerland)",
+            "de-li" => "German (Liechtenstein)",
+            "de-lu" => "German (Luxembourg)",
+            "div" => "Divehi",
+            "dz" => "Bhutani",
+            "el" => "Greek",
+            "en" => "English",
+            "en-au" => "English (Australia)",
+            "en-bz" => "English (Belize)",
+            "en-ca" => "English (Canada)",
+            "en-gb" => "English (United Kingdom)",
+            "en-ie" => "English (Ireland)",
+            "en-jm" => "English (Jamaica)",
+            "en-nz" => "English (New Zealand)",
+            "en-ph" => "English (Philippines)",
+            "en-tt" => "English (Trinidad)",
+            "en-us" => "English (United States)",
+            "en-za" => "English (South Africa)",
+            "en-zw" => "English (Zimbabwe)",
+            "eo" => "Esperanto",
+            "es" => "Spanish",
+            "es-ar" => "Spanish (Argentina)",
+            "es-bo" => "Spanish (Bolivia)",
+            "es-cl" => "Spanish (Chile)",
+            "es-co" => "Spanish (Colombia)",
+            "es-cr" => "Spanish (Costa Rica)",
+            "es-do" => "Spanish (Dominican Republic)",
+            "es-ec" => "Spanish (Ecuador)",
+            "es-es" => "Spanish (España)",
+            "es-gt" => "Spanish (Guatemala)",
+            "es-hn" => "Spanish (Honduras)",
+            "es-mx" => "Spanish (Mexico)",
+            "es-ni" => "Spanish (Nicaragua)",
+            "es-pa" => "Spanish (Panama)",
+            "es-pe" => "Spanish (Peru)",
+            "es-pr" => "Spanish (Puerto Rico)",
+            "es-py" => "Spanish (Paraguay)",
+            "es-sv" => "Spanish (El Salvador)",
+            "es-us" => "Spanish (United States)",
+            "es-uy" => "Spanish (Uruguay)",
+            "es-ve" => "Spanish (Venezuela)",
+            "et" => "Estonian",
+            "eu" => "Basque",
+            "fa" => "Farsi",
+            "fi" => "Finnish",
+            "fj" => "Fiji",
+            "fo" => "Faeroese",
+            "fr" => "French",
+            "fr-be" => "French (Belgium)",
+            "fr-ca" => "French (Canada)",
+            "fr-ch" => "French (Switzerland)",
+            "fr-lu" => "French (Luxembourg)",
+            "fr-mc" => "French (Monaco)",
+            "fy" => "Frisian",
+            "ga" => "Irish",
+            "gd" => "Gaelic",
+            "gl" => "Galician",
+            "gn" => "Guarani",
+            "gu" => "Gujarati",
+            "ha" => "Hausa",
+            "he" => "Hebrew",
+            "hi" => "Hindi",
+            "hr" => "Croatian",
+            "hu" => "Hungarian",
+            "hy" => "Armenian",
+            "ia" => "Interlingua",
+            "id" => "Indonesian",
+            "ie" => "Interlingue",
+            "iu"=>"Inuktitut",
+            "ik" => "Inupiak",
+            "in" => "Indonesian",
+            "is" => "Icelandic",
+            "it" => "Italian",
+            "it-ch" => "Italian (Switzerland)",
+            "iw" => "Hebrew",
+            "ja" => "Japanese",
+            "ji" => "Yiddish",
+            "jw" => "Javanese",
+            "ka" => "Georgian",
+            "kk" => "Kazakh",
+            "kl" => "Greenlandic",
+            "km" => "Cambodian",
+            "kn" => "Kannada",
+            "ko" => "Korean",
+            "kok" => "Konkani",
+            "ks" => "Kashmiri",
+            "ku" => "Kurdish",
+            "ky" => "Kirghiz",
+            "kz" => "Kyrgyz",
+            "la" => "Latin",
+            "lb"=>"Luxembourgish",
+            "ln" => "Lingala",
+            "lo" => "Laothian",
+            "ls" => "Slovenian",
+            "lt" => "Lithuanian",
+            "lv" => "Latvian",
+            "mg" => "Malagasy",
+            "mi" => "Maori",
+            "mk" => "FYRO Macedonian",
+            "ml" => "Malayalam",
+            "mn" => "Mongolian",
+            "mo" => "Moldavian",
+            "mr" => "Marathi",
+            "ms" => "Malay",
+            "mt" => "Maltese",
+            "my" => "Burmese",
+            "na" => "Nauru",
+            "nb" => "Norwegian (Bokmal)",
+            "nb-no" => "Norwegian (Bokmal)",
+            "ne" => "Nepali (India)",
+            "nl" => "Dutch",
+            "nl-be" => "Dutch (Belgium)",
+            "nn-no" => "Norwegian",
+            "no" => "Norwegian (Bokmal)",
+            "oc" => "Occitan",
+            "om" => "(Afan)/Oromoor/Oriya",
+            "or" => "Oriya",
+            "pa" => "Punjabi",
+            "pl" => "Polish",
+            "ps" => "Pashto/Pushto",
+            "pt" => "Portuguese",
+            "pt-br" => "Portuguese (Brazil)",
+            "qu" => "Quechua",
+            "rm" => "Rhaeto-Romanic",
+            "rn" => "Kirundi",
+            "ro" => "Romanian",
+            "ro-md" => "Romanian (Moldova)",
+            "ru" => "Russian",
+            "ru-md" => "Russian (Moldova)",
+            "rw" => "Kinyarwanda",
+            "sa" => "Sanskrit",
+            "sb" => "Sorbian",
+            "sd" => "Sindhi",
+            "sg" => "Sangro",
+            "sh" => "Serbo-Croatian",
+            "si" => "Singhalese",
+            "sk" => "Slovak",
+            "sl" => "Slovenian",
+            "sm" => "Samoan",
+            "sn" => "Shona",
+            "so" => "Somali",
+            "sq" => "Albanian",
+            "sr" => "Serbian",
+            "ss" => "Siswati",
+            "st" => "Sesotho",
+            "su" => "Sundanese",
+            "sv" => "Swedish",
+            "sv-fi" => "Swedish (Finland)",
+            "sw" => "Swahili",
+            "sx" => "Sutu",
+            "syr" => "Syriac",
+            "ta" => "Tamil",
+            "te" => "Telugu",
+            "tg" => "Tajik",
+            "th" => "Thai",
+            "ti" => "Tigrinya",
+            "tk" => "Turkmen",
+            "tl" => "Tagalog",
+            "tn" => "Tswana",
+            "to" => "Tonga",
+            "tr" => "Turkish",
+            "ts" => "Tsonga",
+            "tt" => "Tatar",
+            "tw" => "Twi",
+            "uk" => "Ukrainian",
+            "ur" => "Urdu",
+            "us" => "English",
+            "uz" => "Uzbek",
+            "vi" => "Vietnamese",
+            "vo" => "Volapuk",
+            "wo" => "Wolof",
+            "xh" => "Xhosa",
+            "xx"=>"N/A",
+            "yi" => "Yiddish",
+            "yo" => "Yoruba",
+            "zh" => "Chinese",
+            "cn" => "Chinese (China)",
+            "zh-cn" => "Chinese (China)",
+            "zh-hk" => "Chinese (Hong Kong SAR)",
+            "zh-mo" => "Chinese (Macau SAR)",
+            "zh-sg" => "Chinese (Singapore)",
+            "zh-tw" => "Chinese (Taiwan)",
+            "zu" => "Zulu",
+        );
+        if (isset($names[$code]))
+            return $names[$code];
+        else
+            return $code;
+    }
+
+    /*
      * Actors
      */
 
@@ -1091,7 +1370,6 @@ class MoviesAn extends AbstractDBAn {
     public function create_slug($string, $glue = '-') {
         $string = str_replace('&', ' and ', $string);
         $string = preg_replace("/('|`)/", "", $string);
-
 
         $table = array(
             'Š' => 'S', 'š' => 's', 'Đ' => 'Dj', 'đ' => 'dj', 'Ž' => 'Z', 'ž' => 'z', 'Č' => 'C', 'č' => 'c', 'Ć' => 'C', 'ć' => 'c',
@@ -1591,7 +1869,6 @@ class MoviesAn extends AbstractDBAn {
 
         $sql = "SELECT * FROM {$this->db['movie_imdb']} WHERE id>0" . $year_and . $post_and . $and_orderby . $limit;
 
-
         $result = $this->db_results($sql);
 
         return $result;
@@ -1861,14 +2138,15 @@ class MoviesAn extends AbstractDBAn {
             $this->db_insert($data, $this->db['cache_nf_keywords']);
         }
     }
-    
-    /* 
+
+    /*
      * Movie keywords
      */
-    public function get_movie_keywords($mid=0) {
+
+    public function get_movie_keywords($mid = 0) {
 
         $sql = sprintf("SELECT k.id, k.name FROM {$this->db['meta_movie_keywords']} m"
-        . " INNER JOIN {$this->db['meta_keywords']} k ON k.id = m.kid WHERE m.mid=%d", $mid);
+                . " INNER JOIN {$this->db['meta_keywords']} k ON k.id = m.kid WHERE m.mid=%d", $mid);
         $data = $this->db_results($sql);
         return $data;
     }
@@ -1917,6 +2195,7 @@ class MoviesAn extends AbstractDBAn {
     /*
      * Add movies to update list
      */
+
     private function add_movies_upd($mids = array(), $debug = false) {
         if ($debug) {
             print_r(array('add_movies_upd', $mids));
@@ -1989,5 +2268,4 @@ class MoviesAn extends AbstractDBAn {
             $mdirs->hook_update_movies($mids, $debug);
         }
     }
-
 }

@@ -661,6 +661,13 @@ class MoviesCustomHooks {
             if ($to_update) {
                 $code = $to_update['original_language'];
                 if ($code) {                                    
+                    
+                    if ($code=='nb'){
+                       $code='no' ;
+                    } else if ($code=='cn'){
+                       $code='zh' ;
+                    }
+                    
                     $ma = $this->ml->get_ma();
                     $code_int = $ma->get_or_create_language_by_name($code);
                     
