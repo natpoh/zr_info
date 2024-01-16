@@ -1076,10 +1076,16 @@ isoBlock.addEventListener('click', function(event) {
         var foundData = getCubeDataById(dataId);
 
         let datavalue  = foundData.table;
+        let dop_request=prepare_request(foundData);
 
+        let last_update  = foundData.last_update;
+        if (last_update)
+        {
+            dop_request=dop_request+'&custom_date_row='+last_update;
+        }
     // console.log(foundData);
 
-        let dop_request=prepare_request(foundData);
+
 
         var popup = document.getElementById("popup");
         popup.style.display = "block";

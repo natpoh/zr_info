@@ -428,6 +428,14 @@ AND table_schema='".DB_NAME_AN."'";
         $sidx = $_POST['sidx'];      //
 
         $sord = $_POST['sord'];      //
+        $qustom_sort = $_POST['qustom_sort'];
+        if (!$sidx)
+        {
+            $sidx =$qustom_sort;
+            if (!$sord)$sord ='desc';
+        }
+
+
 
 
         if (isset($_GET['db'])) {
@@ -561,18 +569,10 @@ AND table_schema='".DB_NAME_AN."'";
                  !class_exists('Last_update') ? include ABSPATH . "analysis/include/last_update_graph.php" : '';
                  $Last_update = new Last_update();
 
-                 $where1 =  $Last_update->prepare_request($qr);
+                 $where1.=  $Last_update->prepare_request($qr);
 
 
              }
-
-
-                 else    {
-                            $where1.= " AND `".$i."` = '". $v."' ";
-
-                        }
-
-
 
             }
 

@@ -26,7 +26,7 @@ if ($curent_user) {
     !class_exists('Pdoa') ? include ABSPATH . "analysis/include/Pdoa.php" : '';
 
 
-
+    $update_row='';
 
     if (isset($_GET['onlytable']))
     {
@@ -35,12 +35,22 @@ if ($curent_user) {
         $datatype=$table;
 
 
+
         $request = $_GET;
         unset($request['onlytable']);
+        if ($request['custom_date_row'])
+        {
 
+         $update_row =  $request['custom_date_row'];
+         unset($request['custom_date_row']);
+        }
 
+    if ($update_row)
+    {
+        $update_row_str =' (sorted by '.$update_row.')';
+    }
 
-    echo '<h4>Table: '.$table.'</h4>';
+    echo '<h4>Table: '.$table.' '.$update_row_str.'</h4>';
     }
     else {
 
@@ -96,7 +106,7 @@ AND table_schema='" . DB_NAME_AN . "'";
 
     $sql = "SHOW COLUMNS FROM " . $currant_table;
 
-    $update_row='';
+
     $rows = Pdo_an::db_results_array($sql);
 
 
@@ -317,9 +327,13 @@ AND table_schema='" . DB_NAME_AN . "'";
                             mtype: "POST",
                             datatype: "json",
                             page: 1,
+                        sortorder: 'desc',
+
                         postData: {
 
-                        "qustom_request":'<?php echo $r_string ?>'
+                        "qustom_request":'<?php echo $r_string ?>',
+                            "qustom_sort":'<?php echo $update_row ?>'
+
                         },
 
 
