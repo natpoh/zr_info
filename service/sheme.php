@@ -160,6 +160,21 @@ if ($request_array)
     {
         $rq.='<div class="b_row">'.$n.' => <input data-type="b_'.$n.'" data-value="'.$val.'" class="edit_sheme_input" /></div>';
     }
+
+     $rq.='<details><summary>?</summary>
+
+the default query may contain different expressions<br>
+=<br>
+like<br>
+larger<br>
+lower<br>
+not_equal<br>
+Example:<br>
+type=from_userlist <br>
+type=like=userlist<br>
+add_time=larger=0<br>
+last_update=not_equal=0<br>
+</details>';
 }
 
 

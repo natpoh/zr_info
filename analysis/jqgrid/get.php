@@ -566,6 +566,27 @@ AND table_schema='".DB_NAME_AN."'";
                             $where1.= " AND `".$i."` LIKE '%". $v."%' ";
 
                         }
+                        else if (strstr($v,'lower=')  && strpos($v,'lower')===0)
+                        {
+
+                            $v = substr($v,6);
+                            $where1.= " AND `".$i."` < '". $v."' ";
+
+                        }
+                        else if (strstr($v,'larger=')  && strpos($v,'larger')===0)
+                        {
+
+                            $v = substr($v,7);
+                            $where1.= " AND `".$i."` > '". $v."' ";
+
+                        }
+                        else if (strstr($v,'not_equal')  && strpos($v,'not_equal')===0)
+                        {
+
+                            $v = substr($v,9);
+                            $where1.= " AND `".$i."` != '". $v."' ";
+
+                        }
                         else
                         {
                             $where1.= " AND `".$i."` = '". $v."' ";
