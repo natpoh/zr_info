@@ -132,7 +132,61 @@ class MovieSingle {
         }
         return $content_release;
     }
+public  static function  get_language($mid)
+{
+  $q="SELECT * FROM `data_movie_tmdb` WHERE `mid` = ".$mid." LIMIT 1";
+  $r = Pdo_an::db_results_array($q);
+  $data = $r[0];
+  if ($data)
+  {
+      $slug = $data['original_language'];
+      if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
+          define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
+      }
 
+      if (!class_exists('CriticFront')) {
+          require_once( CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php' );
+      }
+      if (class_exists('CriticMatic')) {
+          $cm = new CriticMatic();
+
+      }
+
+
+      $ma = $cm->get_ma();
+      $language = $ma->get_lanuage_by_slug($slug, true);
+
+    if ($language)
+    {
+        return '<div class="block"><span>Original Language: </span><a href="/search/lang_'.$slug.'">'.$language->title.'</a></div>';
+    }
+
+  }else
+  {
+      $q="SELECT `language` FROM `data_movie_imdb` WHERE `id` = ".$mid." LIMIT 1";
+        $r = Pdo_an::db_results_array($q);
+      if ($r)
+      {
+        $languages = $r[0]['language'];
+        if ($languages)
+        {
+            if (strstr($languages,','))
+            {
+                $languages = str_replace(',',', ',$languages);
+
+                return '<div class="block"><span>Languages: </span>'.$languages.'</div>';
+            }
+            else
+            {
+                return '<div class="block"><span>Language: </span>'.$languages.'</div>';
+            }
+        }
+      }
+  }
+
+
+
+}
 }
 
 if (!function_exists('template_single_movie')) {
@@ -355,6 +409,10 @@ if (!function_exists('template_single_movie')) {
             }
             $_wpmoly_movie_country = '<div class="block"><span>' . $countries . ': </span>' . $_wpmoly_movie_country . '</div>';
         }
+
+
+        $language_block =MovieSingle::get_language($id);
+
         $_wpmoly_movie_budget = $movie_meta['budget'];
         if ($_wpmoly_movie_budget) {
             $_wpmoly_movie_budget = '<div class="block"><span>' . $tmd . ' budget: </span> $ ' . $_wpmoly_movie_budget . '</div>';
@@ -495,11 +553,19 @@ if (!function_exists('template_single_movie')) {
 <div class="single_grid">'. $_wpmoly_movie_runtime.$mpaa.'</div>
                                <hr><div class="single_flex">' .
                             $production_block .$distributors_block.
-                            '</div>
-                        <div class="single_grid">' .
-                          $_wpmoly_movie_country .$franchise.
-                        '</div>' .
-                        '<div class="single_flex">' . $_wpmoly_movie_budget . $_box_usa . $_box_international . '</div>';
+                            '</div>';
+
+                        if ($_wpmoly_movie_country && $language_block && $franchise)
+                        {
+                            $c_block = 'single_flex';
+                        }
+                        else
+                        {
+                            $c_block = 'single_grid';
+                        }
+                        echo '<div class="'.$c_block.'">' .  $_wpmoly_movie_country .$language_block.$franchise.'</div>';
+
+                        echo '<div class="single_flex">' . $_wpmoly_movie_budget . $_box_usa . $_box_international . '</div>';
                         ?>
                     </div>
                 </div>

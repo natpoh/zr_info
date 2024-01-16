@@ -331,7 +331,7 @@ body.add_line .lines_container {
 
 .block_edit_menu input, .block_edit_menu select, .block_edit_menu textarea {
     max-width: 100%;
-    width: 150px;
+    width: 120px;
 }
 .hidden_left .left_menu
 {

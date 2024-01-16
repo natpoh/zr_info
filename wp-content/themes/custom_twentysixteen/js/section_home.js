@@ -263,7 +263,59 @@ function create_total_rating(obj, only_tomatoes, rt_gap) {
 
     let rt_class = '';
 
-    if (Number(obj.rt_rating) > 0 || Number(obj.rt_aurating) > 0) {
+    let mt_gap =0;
+    if ((Number(obj.metacritic_rating) > 0 || Number(obj.metacritic_userscore) > 0) && only_tomatoes== 2) {
+
+
+            mt_gap = Number(obj.metacritic_userscore)  - Number(obj.metacritic_rating);
+            mt_gap = mt_gap * 20;
+            mt_gap = mt_gap.toFixed(0);
+
+            let mtcr = Number(obj.metacritic_rating)* 20;
+            let mtus = Number(obj.metacritic_userscore)* 20;
+
+
+
+            var ttcomment = '';
+            if (Number(obj.metacritic_rating) > 0  && !obj.metacritic_userscore)
+            {
+                ttcomment = "The average Metacritic score is " + Number(mtcr)  + "%."
+            }
+            else if (!obj.metacritic_rating  && Number(obj.metacritic_userscore)>0)
+            {
+                ttcomment = "The average Metacritic audience score is " +  Number(mtus)  + "%."
+            }
+            else if (mt_gap > 10) {
+                ttcomment = "The Metacritic audience rated this " + mt_gap + "% higher than the critics."
+            } else if (mt_gap < -10) {
+                ttcomment = "The Metacritic audience rated this " + mt_gap + "% lower than the critics."
+            } else if (mt_gap > 0) {
+                ttcomment = "The Metacritic audience rated this " + mt_gap + "% higher than the critics."
+            } else if (mt_gap < 0) {
+                ttcomment = "The Metacritic audience rated this " + mt_gap + "% lower than the critics."
+            } else if (obj.metacritic_rating == obj.metacritic_userscore) {
+                ttcomment = "Metacritic audience rated it equally with the critics."
+            }
+            content_rating += popup_cusomize('popup_header', ttcomment);
+
+
+
+        if (mtcr)
+        {
+         content_rating +=  popup_cusomize('row_inner','<div class="exlink" id="metacritic_rating"><span>Metacritic:</span></div>',create_rating_star(mtcr,  'big_rating',100));
+        }
+        if (mtus)
+        {
+         content_rating +=  popup_cusomize('row_inner','<div class="exlink" id="metacritic_rating"><span>Metacritic User:</span></div>',create_rating_star(mtus,  'big_rating',100));
+
+        }
+
+
+        return  content_rating;
+
+    }
+
+    else if (Number(obj.rt_rating) > 0 || Number(obj.rt_aurating) > 0) {
 
 
          if (rt_gap != 0) {
@@ -314,6 +366,8 @@ function create_total_rating(obj, only_tomatoes, rt_gap) {
 
         }
         content_rating += '</div></div>';
+
+        content_rating+='<br>';
     }
 
     if (!only_tomatoes) {
@@ -568,50 +622,146 @@ function create_rating_content(object, m_id, search_block = 0) {
         content += add_rating_block('indie' + recycle + big_b, ' ', data, 2, true, dwn);
     }
     //console.log(object);
-    if (object['type'] != 'videogame') {
-        if (object.total_rating && (object.total_rating.rt_gap > 0 || object.total_rating.rt_rating > 0 || object.total_rating.rt_aurating > 0)) {
-
-            let total_gap_str = 'N/A';
-
-            if (object.total_rating.rt_rating == object.total_rating.rt_aurating )
-            {
-
-                total_gap_str = '0%';
-            }
 
 
-            var total_gap = object.total_rating.rt_gap;
-            let rating_color = '';
-            if (total_gap) {
-                total_gap = Number(total_gap);
-
-                if (total_gap > 0 || total_gap < 0) {
-
-
-                    let rating_color = '';
-
-                    if ((total_gap) > 10) {
-                        rating_color = 'green_rt';
-                    }
-                    if ((total_gap) < -10) {
-                        rating_color = 'red_rt';
-                    }
-                }
-                total_gap_str = total_gap + '%'
-            }
-
-            let total_tomatoes_content = create_total_rating(object.total_rating, 1, total_gap);
-
-            content += add_rating_block('rt_gap ' + rating_color, total_gap_str, total_tomatoes_content, 4, true);
-
-        } else {
-            let rating_color = 'gray_rt';
-            let total_gap_str = 'N/A';
-            let total_tomatoes_content = 'No <b class="exlink" id="rt">Rotten Tomatoes</b> ratings imported yet.';
-
-            content += add_rating_block('rt_gap ' + rating_color, total_gap_str, total_tomatoes_content, 4, true);
-        }
+    let enable_rt_mt =0;
+    if (Number(object.total_rating.metacritic_rating) > 0 || Number(object.total_rating.metacritic_userscore) > 0 || object.total_rating.rt_rating > 0 || object.total_rating.rt_aurating > 0) {
+        enable_rt_mt=1;
     }
+
+        let total_tomatoes_content ='';
+        let total_mt_content ='';
+        let use_tomatos =0;
+        let use_mt =0;
+        let total_gap_str ='';
+        let rating_color = '';
+        let total_mt_gap_str ='';
+        let rating_mt_color = '';
+
+
+        if (object['type'] != 'videogame') {
+            if (object.total_rating && (object.total_rating.rt_gap > 0 || object.total_rating.rt_rating > 0 || object.total_rating.rt_aurating > 0)) {
+
+                total_gap_str = 'N/A';
+
+                if (object.total_rating.rt_rating == object.total_rating.rt_aurating) {
+
+                    total_gap_str = '0%';
+                }
+
+
+                total_gap = object.total_rating.rt_gap;
+                rating_color = '';
+                if (total_gap) {
+                    total_gap = Number(total_gap);
+
+                    if (total_gap > 0 || total_gap < 0) {
+
+
+                        if ((total_gap) > 10) {
+                            rating_color = 'green_rt';
+                        }
+                        if ((total_gap) < -10) {
+                            rating_color = 'red_rt';
+                        }
+                    }
+                    total_gap_str = total_gap + '%'
+                }
+
+                 total_tomatoes_content = create_total_rating(object.total_rating, 1, total_gap);
+                    use_tomatos =1;
+
+
+            }
+
+            if (!use_tomatos)
+            {
+                total_tomatoes_content =  popup_cusomize('row_link','No <b class="exlink" id="rt">Rotten Tomatoes</b> ratings imported yet.');
+
+            }
+        }
+
+
+
+        if (Number(object.total_rating.metacritic_rating) > 0 || Number(object.total_rating.metacritic_userscore) > 0 || object['type'] == 'videogame') {
+
+            if (Number(object.total_rating.metacritic_rating) > 0 || Number(object.total_rating.metacritic_userscore) > 0) {
+                use_mt=1;
+
+                 total_mt_gap_str = 'N/A';
+
+                if (object.total_rating.metacritic_rating == object.total_rating.metacritic_userscore) {
+
+                    total_mt_gap_str = '0%';
+                }
+
+
+                let total_gap = Number(object.total_rating.metacritic_userscore) - Number(object.total_rating.metacritic_rating);
+                 rating_mt_color = '';
+                if (total_gap) {
+                    total_gap = Number(total_gap);
+                    total_gap = total_gap * 20;
+                    total_gap = total_gap.toFixed(0);
+
+                    if (total_gap > 0 || total_gap < 0) {
+
+                        if ((total_gap) > 10) {
+                            rating_mt_color = 'green_mt';
+                        }
+                        if ((total_gap) < -10) {
+                            rating_mt_color = 'red_mt';
+                        }
+                    }
+
+
+                    total_mt_gap_str = total_gap + '%'
+                }
+
+                 total_mt_content = create_total_rating(object.total_rating, 2, total_gap);
+
+
+            }
+        }
+
+        if (!use_mt) {
+
+            total_mt_content =  popup_cusomize('row_link','No <b class="exlink" id="metacritic_rating">Metacritic Rating</b> ratings imported yet.');
+
+        }
+
+
+        if (use_tomatos)
+        {
+            content += add_rating_block('rt_gap ' + rating_color, total_gap_str, total_tomatoes_content+total_mt_content, 4, true);
+        }
+        else if (use_mt)
+        {
+
+            content += add_rating_block('mt_gap ' + rating_mt_color, total_mt_gap_str, total_mt_content, 4, true);
+        }
+        else
+        {
+            ///empty
+            if (object['type'] != 'videogame')
+            {
+                content += add_rating_block('rt_gap gray_rt' , 'N/A', total_tomatoes_content+total_mt_content, 4, true);
+
+            }
+            else
+            {
+             //   content += add_rating_block('mt_gap gray_mt norating' , 'N/A', total_mt_content, 4, true);
+            }
+
+        }
+
+
+
+    rating_color = '';
+
+
+
+
+
 
 
     if ((object['diversity'] || object['diversity_data'] || object['female'] || object['male']) && object['type'] != 'videogame') {
@@ -665,7 +815,7 @@ function create_rating_content(object, m_id, search_block = 0) {
 
     value = value.toFixed(2);
 
-    let rating_color = 'noffrating';
+     rating_color = 'noffrating';
 
     if (value > 0) {
         rating_color = 'green';
@@ -1854,18 +2004,19 @@ function load_ajax_block(block_id) {
                         let gz_content = global_zeitgeist_content(gzobj);
 
         gz_content += `
-        <div style="margin-top: 15px; width: 100%"  class="accordion-item">
-            <div class="accordion-header">Search the globe</div>
-            <div class="accordion-content"><div  id="google_global_zeitgeist" data-value="${parent_id}" class="not_load page_custom_block"></div></div>
-        </div>
+           
+            <div  style="margin-top: 15px; width: 100%" id="google_global_zeitgeist" data-value="${parent_id}" class="not_load page_custom_block"></div>
+       
         `;
                         jQuery('#' + block_id).html(gz_content);
-
+                        load_ajax_block('google_global_zeitgeist');
                     }
                     else {
 
 
                         jQuery('.global_zr').removeClass('active');
+                        jQuery('.global_zr .accordion-header').removeClass('is_open');
+
                         jQuery('.global_zr .accordion-content').html(`<section class="dmg_content inner_content" id="actor_data_dop" ><div  id="google_global_zeitgeist" data-value="${parent_id}" class="not_load page_custom_block"></div></section>`);
 
                        // jQuery('#' + block_id).html(gz_content);
@@ -4254,10 +4405,10 @@ jQuery(document).ready(function () {
 
     jQuery('body').on('click', '.accordion-header', function() {
         let prnt =jQuery(this).parent('.accordion-item');
-
+        let big_prnt = prnt.parent('.accordion_section');
         if (window.innerWidth >= 1240) {
 
-            let big_prnt = prnt.parent('.accordion_section');
+
             if (big_prnt.length)
             {
                 if (jQuery('.accordion_section > .accordion-item.active').length)
@@ -4282,7 +4433,19 @@ jQuery(document).ready(function () {
         }
 
         var content = jQuery(this).next('.accordion-content');
-        jQuery(this).toggleClass('is_open');
+
+
+        if (jQuery(this).hasClass('is_open'))
+        {
+            jQuery(this).removeClass('is_open');
+
+        }
+        else
+        {
+            big_prnt.find('.accordion-header.is_open').removeClass('is_open');
+            jQuery(this).addClass('is_open');
+
+        }
         content.slideToggle(500,function (e){
             prnt.toggleClass('active');
 

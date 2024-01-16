@@ -7,11 +7,15 @@ function details_template($title,$data,$active='')
 //   <summary>'.$title.'</summary>
 //        <div>'.$data. '</div>
 //        </details>';
-
+    $hclass='';
+    if ($active)
+    {
+        $hclass= ' is_open';
+    }
 
     $result= '
         <div class="accordion-item'.$active.'">
-            <div class="accordion-header">'.$title.'</div>
+            <div class="accordion-header'.$hclass.'">'.$title.'</div>
             <div class="accordion-content">'.$data. '</div>
         </div>
         ';

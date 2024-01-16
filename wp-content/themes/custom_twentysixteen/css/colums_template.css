@@ -2436,14 +2436,19 @@ p.l_c_g::before {
 }
 
 .rating_block > .mt_gap {
-    top: 117px;
+    top: 122px;
     padding-left: 5px;
     background-size: contain;
-    height: 60px;
-    padding-top: 7px;
+    height: 48px;
+    padding-top: 0px;
     color: #fff;
 }
 
+.rating_block .mt_gap.norating >.btn {
+    margin-top: -2px;
+    margin-left: -3px;
+
+}
 
 .rating_block >.green_rt>.btn
 {
@@ -2486,7 +2491,7 @@ p.l_c_g::before {
     position: absolute;
     z-index: -1;
     left: 0px;
-    top: 0px;
+    top: -7px;
 }
 
 
@@ -2748,7 +2753,7 @@ body.theme_dark  .rating_block .imdb_rating {
     font-size: 20px;
     display: flex;
     align-items: center;
-    color: #9f9f9f;
+    color: #6c6c6c;
 }
 
 .rating_block .note_show_content_rwt_rt .exlink::before {

@@ -218,8 +218,9 @@ function prepare_request(foundData)
 
     return dop_request;
 }
-function fetchChartData(id,datavalue,dop_request,period) {
+function fetchChartData(id,datavalue,dop_request,period,last_update) {
 
+    if (!last_update){last_update='last_update';}
     let endDate = Date.now();
     let startDate =  Number(endDate) - period * 24 * 60 * 60 * 1000;
 
@@ -228,7 +229,7 @@ function fetchChartData(id,datavalue,dop_request,period) {
         startDate: startDate,
         endDate: endDate,
         db: datavalue,
-        row: 'last_update',
+        row: last_update,
         request_string: dop_request,
         oper: 'get_graph',
         groupType: 'daily'
@@ -259,10 +260,19 @@ function fetchChartData(id,datavalue,dop_request,period) {
 }
 
 
-function show_charts()
+function show_charts(block_id)
 {
+let elements;
 
-    const elements = document.querySelectorAll('.mb_graph.not_load');
+    if (block_id)
+    {
+        elements = document.querySelectorAll('#cube_'+block_id+' .mb_graph.not_load');
+    }
+    else
+    {
+      elements = document.querySelectorAll('.mb_graph.not_load');
+    }
+
 
     elements.forEach(element => {
 
@@ -275,14 +285,14 @@ function show_charts()
         let foundData = getCubeDataById(dataId);
         let datavalue  = foundData.table;
         let dop_request=prepare_request(foundData);
+        let last_update  = foundData.last_update;
 
-
-        fetchChartData(id,datavalue,dop_request,period);
+        fetchChartData(id,datavalue,dop_request,period,last_update);
 
         element.classList.add('loaded');
 
       ///  console.log(`Element ID: ${id}, Data ID: ${dataId}`);
-    });
+   });
 
 
 }
@@ -407,7 +417,7 @@ function insert_block_to_field(id,x,y,inner_data=[])
         }
 
     }
-    show_charts();
+   show_charts(id);
 }
 
 
@@ -951,12 +961,12 @@ function prepare_data(className, value) {
 
 
 
-        if (cid=='title' || cid=='desc' || cid=='table' || cid=='link' || cid=='graph')
+        if (cid=='title' || cid=='desc' || cid=='table' || cid=='link' || cid=='graph' || cid=='last_update')
         {
             let imsg =  inner_message(id,cube);
             document.querySelector('.cube#cube_'+id+' .cube_desc_message').innerHTML=imsg;
 
-            show_charts();
+            show_charts(id);
         }
         else if (cid=='type')
         {
@@ -1117,7 +1127,7 @@ function save_request(dataType,  value) {
 
         let imsg =  inner_message(id,cube);
         document.querySelector('.cube#cube_'+id+' .cube_desc_message').innerHTML=imsg;
-        show_charts();
+        show_charts(id);
       //  console.log(cube);
         ///  document.querySelector('.cube#cube_'+id+' .cube_desc_message').innerHTML=imsg;e;
     }

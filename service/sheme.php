@@ -220,6 +220,7 @@ if ($request_array)
         <div class="b_row">Color <select class="b_color" ><?php echo $options_color; ?></select></div>
         <div class="b_row">Method <select class="b_method" ><option value="">none</option><option value="get">Get</option><option value="set">Set</option></select></div>
         <div class="b_row">Show graph<select class="b_graph" ><option value="">none</option><option value="30">30 days</option><option value="90">90 days</option><option value="365">1 year</option></select></div>
+            <div class="b_row">row date<input class="b_last_update" placeholder="last_update" ></div>
         </div>
 
         <div class="inner_edit">
