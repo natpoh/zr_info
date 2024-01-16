@@ -2279,7 +2279,7 @@ class MoviesParser extends MoviesAbstractDB {
 
     public function check_link_post($o, $post, $movie_id = 0) {
         $rules = $o['rules'];
-        
+
         $min_match = $o['match'];
         $min_rating = $o['rating'];
         $movie_type = $this->movie_type[$o['type']];
@@ -2448,16 +2448,15 @@ class MoviesParser extends MoviesAbstractDB {
             $facets = array();
             if ($movie_id > 0) {
                 $movies = $ms->search_movies_by_id($movie_id);
-                //p_r(array($movies,$post_title_name));
                 foreach ($post_title_name as $key => $name) {
-                    //$movies_title = $ms->search_movies_by_title($name, $title_rule[$key]['e'], $post_year_name, 20, $movie_type);
+                    $movies_title = $ms->search_movies_by_title($name, $title_rule[$key]['e'], $post_year_name, 20, $movie_type);
 
                     if (!isset($movies_title[$movie_id])) {
                         if ($movies[$movie_id]->title != $name) {
-                            $post_title_name[$key] = '';                              
+                            $post_title_name[$key] = '';
                         }
                     }
-                }             
+                }
             } else if ($movie_id == -1) {
                 $movie = new stdClass();
                 $movie->id = -1;
@@ -2483,9 +2482,7 @@ class MoviesParser extends MoviesAbstractDB {
                 if ($post_title_name) {
                     // Find movies by title and year
                     foreach ($post_title_name as $key => $name) {
-                        if ($name){
-                            $movies_title = $ms->search_movies_by_title($name, $title_rule[$key]['e'], $post_year_name, 20, $movie_type);
-                        }
+                        $movies_title = $ms->search_movies_by_title($name, $title_rule[$key]['e'], $post_year_name, 20, $movie_type);
                     }
                 }
 
@@ -2527,25 +2524,16 @@ class MoviesParser extends MoviesAbstractDB {
                     //Movie              
                     if ($post_title_name) {
                         foreach ($post_title_name as $key => $name) {
-
                             $field = 'title';
                             if ($key > 0) {
                                 $field = $field . '-' . $key;
                             }
-                            
-                            $cnt = 1;
-                            $rating = $title_rule[$key]['ra'];
-                            if (!$name){
-                                $cnt = 0;
-                                $rating=0;
-                            }
-                            
                             $results[$movie->id][$field]['data'] = $movie->title;
-                            $results[$movie->id][$field]['match'] = $cnt;
-                            $results[$movie->id][$field]['rating'] = $rating;
+                            $results[$movie->id][$field]['match'] = 1;
+                            $results[$movie->id][$field]['rating'] = $title_rule[$key]['ra'];
 
-                            $results[$movie->id]['total']['match'] += $cnt;
-                            $results[$movie->id]['total']['rating'] += $rating;
+                            $results[$movie->id]['total']['match'] += 1;
+                            $results[$movie->id]['total']['rating'] += $title_rule[$key]['ra'];
                         }
                     }
 
@@ -3262,7 +3250,7 @@ class MoviesParser extends MoviesAbstractDB {
                     print_r($url);
                     print_r($data);
                 }
-                
+
                 foreach ($data as $k => $v) {
                     foreach ($v as $ck => $cv) {
                         if (!$posts_arr[$ck]) {
@@ -3271,7 +3259,7 @@ class MoviesParser extends MoviesAbstractDB {
                         $posts_arr[$ck][$k] = $cv;
                     }
                 }
-    
+
                 if ($posts_arr) {
                     foreach ($posts_arr as $arr) {
                         $post = $this->create_post($arr);

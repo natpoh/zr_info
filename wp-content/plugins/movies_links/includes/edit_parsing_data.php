@@ -7,6 +7,7 @@
 
 print $tabs;
 
+
 if ($cid) {
     $options = $this->mp->get_options($campaign);
     $o = $options['parsing'];
@@ -48,7 +49,7 @@ if ($cid) {
                     </select>                     
                     <span class="inline-edit"><?php print __('Number of URLs for cron parsing') ?></span> 
                 </label>
-
+                
                 <label class="inline-edit-interval"> 
                     <span class="title"><?php print __('Version') ?></span>         
                     <select name="version" class="interval">
@@ -151,12 +152,12 @@ if ($cid) {
             </div>
         </form>
         <br /><?php
-            if (isset($_POST['preview_row'])) {
+        if (isset($_POST['preview_row'])) {
 
-                if ($preivew_data == -1) {
-                    print '<p>No arhives found</p>';
-                } else if ($preivew_data) {
-                            ?>
+            if ($preivew_data == -1) {
+                print '<p>No arhives found</p>';
+            } else if ($preivew_data) {
+                ?>
                 <h3>Parsing result:</h3>
                 <?php foreach ($preivew_data as $id => $item) { ?>
                     <table class="wp-list-table widefat striped table-view-list">
@@ -354,14 +355,14 @@ if ($cid) {
                                 <tr>
                                     <td><?php print $show_name ?></td>
                                     <td><?php
-                        if (is_array($value)) {
-                            foreach ($value as $k => $v) {
-                                print "[$k] $v<br />";
-                            }
-                        } else {
-                            print $value;
-                        }
-                                ?></td>
+                                        if (is_array($value)) {
+                                            foreach ($value as $k => $v) {
+                                                print "[$k] $v<br />";
+                                            }
+                                        } else {
+                                            print $value;
+                                        }
+                                        ?></td>
                                 </tr> 
                             <?php } ?>
                         </tbody>        
@@ -424,22 +425,6 @@ if ($cid) {
                         <span class="inline-edit"><?php print __('Campaign to which the found url addresses will be added.') ?></span>                    
                     </label>
 
-                    <label class="inline-edit-interval">
-                        <span class="title"><?php print __('Link to') ?></span>
-                        <select name="type" class="interval">
-                            <?php
-                            $rwt_select_link_type = $this->rwt_movie_type;
-                            // Movies
-                            foreach ($rwt_select_link_type as $key => $value) {
-                                $selected = ($key == $ol['type']) ? 'selected' : '';
-                                ?>
-                                <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $value ?></option>                                
-                                <?php
-                            }
-                            ?>                          
-                        </select> 
-                        <span class="inline-edit"><?php print __('Choose where to look for a match.') ?></span>                    
-                    </label>
 
                     <label>
                         <span class="title"><?php print __('Weight') ?></span>
