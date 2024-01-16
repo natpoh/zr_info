@@ -555,48 +555,25 @@ AND table_schema='".DB_NAME_AN."'";
 
                 $qr = json_decode(stripslashes($_POST['qustom_request']));
 
-                if ($qr)
-                {
-                    foreach ($qr as $i=>$v)
-                    {
-                        if (strstr($v,'like=')  && strpos($v,'like')===0)
-                        {
 
-                            $v = substr($v,5);
-                            $where1.= " AND `".$i."` LIKE '%". $v."%' ";
+             if ($qr)
+             {
+                 !class_exists('Last_update') ? include ABSPATH . "analysis/include/last_update_graph.php" : '';
+                 $Last_update = new Last_update();
 
-                        }
-                        else if (strstr($v,'lower=')  && strpos($v,'lower')===0)
-                        {
+                 $where1 =  $Last_update->prepare_request($qr);
 
-                            $v = substr($v,6);
-                            $where1.= " AND `".$i."` < '". $v."' ";
 
-                        }
-                        else if (strstr($v,'larger=')  && strpos($v,'larger')===0)
-                        {
+             }
 
-                            $v = substr($v,7);
-                            $where1.= " AND `".$i."` > '". $v."' ";
 
-                        }
-                        else if (strstr($v,'not_equal')  && strpos($v,'not_equal')===0)
-                        {
-
-                            $v = substr($v,9);
-                            $where1.= " AND `".$i."` != '". $v."' ";
-
-                        }
-                        else
-                        {
+                 else    {
                             $where1.= " AND `".$i."` = '". $v."' ";
 
                         }
 
 
 
-                    }
-                }
             }
 
 

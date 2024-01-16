@@ -229,6 +229,40 @@ public function show_graph($table = 'data_movie_imdb',$update_row='add_time',$re
 }
 
 
+public static function prepare_request($qr)
+{
+    $where1='';
+    if ($qr) {
+        foreach ($qr as $i => $v) {
+            if (strstr($v, 'like=') && strpos($v, 'like') === 0) {
+
+                $v = substr($v, 5);
+                $where1 .= " AND `" . $i . "` LIKE '%" . $v . "%' ";
+
+            } else if (strstr($v, 'lower=') && strpos($v, 'lower') === 0) {
+
+                $v = substr($v, 6);
+                $where1 .= " AND `" . $i . "` < '" . $v . "' ";
+
+            } else if (strstr($v, 'larger=') && strpos($v, 'larger') === 0) {
+
+                $v = substr($v, 7);
+                $where1 .= " AND `" . $i . "` > '" . $v . "' ";
+
+            } else if (strstr($v, 'not_equal') && strpos($v, 'not_equal') === 0) {
+
+                $v = substr($v, 9);
+                $where1 .= " AND `" . $i . "` != '" . $v . "' ";
+
+            }
+
+
+        }
+
+    }
+
+return $where1;
+}
 public static function show_data()
 {
     $data = $_POST;
@@ -249,23 +283,9 @@ public static function show_data()
 
             if ($qr)
             {
-                foreach ($qr as $i=>$v)
-                {
-                    if (strstr($v,'like=')  && strpos($v,'like')===0)
-                    {
+                $where1 =  self::prepare_request($qr);
 
-                        $v = substr($v,5);
-                        $where1.= " AND `".$i."` LIKE '%". $v."%' ";
-
-                    }
-                    else
-                    {
-                        $where1.= " AND `".$i."` = '". $v."' ";
-
-                    }
-                }
-
-    }
+            }
 
     if ($groupType === 'hourly') {
         $query = "SELECT COUNT(*) AS record_count, FLOOR(".$update_row." / 3600) * 3600 AS update_date
