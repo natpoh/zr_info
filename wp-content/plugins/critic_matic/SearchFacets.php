@@ -5325,10 +5325,20 @@ class SearchFacets extends AbstractDB {
         }
         $this->tool_tips = array();
         $filters_active = $this->get_option('tooltips_filters');
-
-        if ($filters_active) {
-            $this->tool_tips = explode("\n", $filters_active);
+        
+        $filters_active = str_replace("\n", ',', $filters_active);
+        
+        $filters = array();
+        if (strstr($filters_active, ',')){
+            $filters_active_arr = explode(',', $filters_active);
+            foreach ($filters_active_arr as $filter) {
+                $filter=trim($filter);
+                if ($filter){
+                    $filters[]=$filter;
+                }
+            }
         }
+        $this->tool_tips = $filters;
         return $this->tool_tips;
     }
 }

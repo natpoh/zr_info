@@ -1994,4 +1994,19 @@ SELECT m.mid, count(*) FROM meta_movie_actor m INNER JOIN data_actors_meta r ON 
  * 
  * DELETE FROM `data_actor_gender_auto` WHERE `gender` = 0
  * DELETE FROM `data_movie_erating` WHERE `date` = 0 AND `total_rating` = 0;
+ * 
+ * eafmjw, esfmjw, emfmjw, nafmjw, nsfmjw, nmfmjw, pafmjw, psfmjw, pmfmjw
+ * 
+
+ALTER TABLE `cache_movie_actor_meta` CHANGE `eafmjw` `eafjw` INT NOT NULL DEFAULT '0';
+ALTER TABLE `cache_movie_actor_meta` CHANGE `esfmjw` `esfjw` INT NOT NULL DEFAULT '0';
+ALTER TABLE `cache_movie_actor_meta` CHANGE `emfmjw` `emfjw` INT NOT NULL DEFAULT '0';
+ALTER TABLE `cache_movie_actor_meta` CHANGE `nafmjw` `nafjw` INT NOT NULL DEFAULT '0';
+ALTER TABLE `cache_movie_actor_meta` CHANGE `nsfmjw` `nsfjw` INT NOT NULL DEFAULT '0';
+ALTER TABLE `cache_movie_actor_meta` CHANGE `nmfmjw` `nmfjw` INT NOT NULL DEFAULT '0';
+ALTER TABLE `cache_movie_actor_meta` CHANGE `pafmjw` `pafjw` INT NOT NULL DEFAULT '0';
+ALTER TABLE `cache_movie_actor_meta` CHANGE `psfmjw` `psfjw` INT NOT NULL DEFAULT '0';
+ALTER TABLE `cache_movie_actor_meta` CHANGE `pmfmjw` `pmfjw` INT NOT NULL DEFAULT '0';
+
+ * 
  */
