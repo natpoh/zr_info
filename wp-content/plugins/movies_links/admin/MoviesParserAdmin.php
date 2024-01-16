@@ -1213,7 +1213,7 @@ class MoviesParserAdmin extends ItemAdmin {
         $version = $o['version'];
         $cid = $campaign->id;
         $last_posts = $this->mp->get_last_arhives_no_posts($count, $cid, $version, false);
-
+        
         if ($last_posts) {
             $preivew_data = $this->mp->parse_arhives($last_posts, $campaign, $rules_name);
         } else {
