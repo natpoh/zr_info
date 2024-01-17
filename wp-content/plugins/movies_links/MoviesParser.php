@@ -195,6 +195,7 @@ class MoviesParser extends MoviesAbstractDB {
         'm' => 'URL Movie ID',
         'em' => 'Exist Movie',
         'et' => 'Exist TV',
+        'eg' => 'Exist Game',
         'g' => 'Genre',
     );
     public $links_rules_actor_fields = array(
@@ -2443,6 +2444,20 @@ class MoviesParser extends MoviesAbstractDB {
                 }
                 $search_fields['exist_tv'] = $post_exist_tv_name;
             }
+            
+            // Get exist game
+            $post_exist_game_name = '';
+            $exist_game_rule = '';
+            if ($active_rules['eg']) {
+                foreach ($active_rules['eg'] as $item) {
+                    if ($item['content']) {
+                        $post_exist_game_name = $item['content'];
+                        $exist_game_rule = $item;
+                        break;
+                    }
+                }
+                $search_fields['exist_game'] = $post_exist_game_name;
+            }
 
             $ms = $this->ml->get_ms();
             $facets = array();
@@ -2628,6 +2643,18 @@ class MoviesParser extends MoviesAbstractDB {
                         }
                     }
 
+                    // Exist VideoGame
+                    if ($post_exist_game_name) {
+                        if ($movie->type == 'VideoGame') {
+                            $results[$movie->id]['exist_game']['data'] = $post_exist_game_name;
+                            $results[$movie->id]['exist_game']['match'] = 1;
+                            $results[$movie->id]['exist_game']['rating'] = $exist_game_rule['ra'];
+
+                            $results[$movie->id]['total']['match'] += 1;
+                            $results[$movie->id]['total']['rating'] += $exist_game_rule['ra'];
+                        }
+                    }
+                    
                     //Facets
                     $facets[$movie->id] = $ms->get_movie_facets($movie->id);
                 }
