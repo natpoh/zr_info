@@ -119,7 +119,7 @@ class MoviesCustomHooks {
                 'audienceScore' => 'aurating',
                 'audienceCount' => 'aucount',
             );
-        } else if ($campaign->id == 53||$campaign->id == 51) {
+        } else if ($campaign->id == 51||$campaign->id == 53||$campaign->id == 55) {
             // metacritic
             $curr_camp = 'metacritic';
             $score_opt = array(
