@@ -151,7 +151,6 @@ class CriticTransit extends AbstractDB {
         $def_url = '/search/type_movies_tv/genre_animation/countrystar_china_japan/country_china_japan';
         $url = $this->get_option('anime_filter_url', $def_url);
 
-
         // Init url
         $last_req = $_SERVER['REQUEST_URI'];
 
@@ -314,7 +313,6 @@ class CriticTransit extends AbstractDB {
                 }
 
                 $povtors = $cs->find_post_povtor($item->title, $item->id, $item->aid, $debug);
-
 
                 if ($povtors) {
                     // 3. Validate posts    
@@ -481,19 +479,16 @@ class CriticTransit extends AbstractDB {
                 }
             }
             if ($debug) {
-                if (function_exists('var_dump_table'))
-                {
-                    var_dump_table(array('Get from settings',$mode_key, $filter_weights));
+                if (function_exists('var_dump_table')) {
+                    var_dump_table(array('Get from settings', $mode_key, $filter_weights));
                 }
-
             }
 
             foreach ($results as $item) {
                 if ($debug) {
 
-                    if (function_exists('var_dump_table'))
-                    {
-                        var_dump_table(array('item',$item));
+                    if (function_exists('var_dump_table')) {
+                        var_dump_table(array('item', $item));
                     }
                 }
 
@@ -501,24 +496,24 @@ class CriticTransit extends AbstractDB {
                 if ($debug) {
                     print "Actor code id: " . $actor_code_id . "\n<br>";
 
-
                     //11101000000413
                     //111101110101251
-                //
+                    //
+                }
+                !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+                $vd_data = unserialize(unserialize(OptionData::get_options('', 'critic_matic_settings')));
+                $verdict_method = 0;
+                if ($vd_data["an_verdict_type"] == 'w') {
+                    $verdict_method = 1;
                 }
 
-                !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-                $vd_data = unserialize(unserialize(OptionData::get_options('','critic_matic_settings')));
-                $verdict_method=0; if ($vd_data["an_verdict_type"]=='w'){$verdict_method=1;}
-
                 $ver_weight = false;
-                if ($verdict_method ==1) {
+                if ($verdict_method == 1) {
                     // Weights logic
                     $ver_weight = true;
                 }
                 if ($debug) {
-                    print "verdict_method ".$verdict_method.' ver_weight '.$ver_weight. "\n<br>";
-
+                    print "verdict_method " . $verdict_method . ' ver_weight ' . $ver_weight . "\n<br>";
                 }
 
                 if ($ver_weight) {
@@ -530,11 +525,11 @@ class CriticTransit extends AbstractDB {
                 }
 
 
-               /// $n_verdict = $af->custom_weight_race_code($actor_code_id, $filter_weights, $onlydata, $debug);
+                /// $n_verdict = $af->custom_weight_race_code($actor_code_id, $filter_weights, $onlydata, $debug);
                 if ($onlydata) {
                     if ($debug) {
                         print "Actor verdict ";
-                        print_r($n_verdict). "\n<br>";
+                        print_r($n_verdict) . "\n<br>";
                     }
 
 
@@ -551,7 +546,7 @@ class CriticTransit extends AbstractDB {
                 if ($item->n_verdict_weight != $n_verdict) {
 
                     if ($debug) {
-                        print "update ".$item->n_verdict_weight. "!=". $n_verdict."\n";
+                        print "update " . $item->n_verdict_weight . "!=" . $n_verdict . "\n";
                     }
                     $data = array(
                         'last_update' => $this->curr_time(),
@@ -561,23 +556,19 @@ class CriticTransit extends AbstractDB {
                     $actors_upd[] = $item->actor_id;
                 } else {
                     if ($debug) {
-                        print "Skip update ".$item->n_verdict_weight. "==". $n_verdict."\n";
+                        print "Skip update " . $item->n_verdict_weight . "==" . $n_verdict . "\n";
                     }
                 }
 
 
-                if (function_exists('check_cron_time'))
-                {
-                    if (check_cron_time())
-                    {
+                if (function_exists('check_cron_time')) {
+                    if (check_cron_time()) {
                         break;
                     }
-
                 }
-
             }
         }
-        if ($actors_upd){
+        if ($actors_upd) {
             // run update movie hook
             $ma = $this->get_ma();
             $ma->hook_actors_movie($actors_upd, $debug);
@@ -1240,6 +1231,101 @@ class CriticTransit extends AbstractDB {
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+
+    public function transit_lang($count = 100, $debug = false, $force = false) {
+
+        $option_name = 'transit_lang_unique_id';
+        $last_id = $this->get_option($option_name, 0);
+        if ($force) {
+            $last_id = 0;
+        }
+
+        if ($debug) {
+            p_r(array('last_id', $last_id));
+        }
+
+        // 1. Get posts
+        $sql = sprintf("SELECT id, title, language FROM {$this->db['movie_imdb']} "
+                . " WHERE id>%d ORDER BY id ASC limit %d", $last_id, $count);
+        $results = $this->db_results($sql);
+
+        if ($debug) {
+            print_r($results);
+        }
+
+        // get movies
+        $ma = $this->get_ma();
+
+        if ($results) {
+            $last = end($results);
+            if ($debug) {
+                print 'last id: ' . $last->id . "\n";
+            }
+            if ($last) {
+                $this->update_option($option_name, $last->id);
+            }
+
+
+
+            foreach ($results as $post) {
+                $mid = $post->id;
+                $countrys = $post->language;
+                $this->addPostCountry($mid, $countrys, $debug);
+            }
+        }
+    }
+
+    public function addPostCountry($mid = 0, $countrys = '', $debug = false) {
+
+        // Get post countrys
+        if ($countrys) {
+            $ma = $this->get_ma();
+            $names = $ma->getLangNames();
+            $names_titles = array();
+            foreach ($names as $key => $value) {
+                if (!isset($names_titles[$value])) {
+                    $names_titles[$value] = $key;
+                }
+            }
+
+            $to_add = array();
+            if (strstr($countrys, ',')) {
+                $explode = explode(',', $countrys);
+                foreach ($explode as $value) {
+                    $trim = trim($value);
+                    if ($trim) {
+                        $to_add[] = trim($trim);
+                    }
+                }
+            } else {
+                $to_add[] = trim($countrys);
+            }
+            if ($debug) {
+                print_r($to_add);
+            }
+
+            if (sizeof($to_add)) {
+
+                // Add first valid lang
+
+                $add_key_name = '';
+                foreach ($to_add as $name) {
+                    if (isset($names_titles[$name])) {
+                        $add_key_name = $names_titles[$name];
+                        break;
+                    }
+                }
+                if ($add_key_name) {
+                    if ($debug) {
+                        print_r(array('add_key_name', $add_key_name));
+                    }
+                    // Get key id by name
+                    $lang_id = $ma->get_or_create_language_by_name($add_key_name);
+                    $ma->update_imdb_lang($mid, $lang_id, $add_key_name);
                 }
             }
         }
@@ -2209,7 +2295,6 @@ class CriticTransit extends AbstractDB {
 
         $last = end($results);
 
-
         if ($debug) {
             print_r($results);
             print 'last_id: ' . $last->id . "\n";
@@ -2349,5 +2434,4 @@ class CriticTransit extends AbstractDB {
         }
 //$regv = "#\<img.+title=\".+src=\"([^\"]+)\"#";
     }
-
 }
