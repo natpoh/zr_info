@@ -1100,6 +1100,13 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     $sql = "ALTER TABLE `data_movie_imdb` ADD `title_weight_upd` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
+    
+    // Language
+    $sql = "ALTER TABLE `data_movie_imdb` ADD `original_language_int` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `data_movie_imdb` ADD `original_language` varchar(255) NOT NULL default ''";
+    Pdo_an::db_query($sql);
+    
     critic_matic_create_index_an(array('weight', 'weight_upd', 'title_weight', 'title_weight_upd'), "data_movie_imdb");
 
     // User avatars

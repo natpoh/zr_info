@@ -1016,9 +1016,30 @@ class MoviesAn extends AbstractDBAn {
         return $ret;
     }
 
-    public function getLanguageByCode($code) {
-        if (!$code)
-            return '';
+    public function get_or_create_language_by_name($name = '') {
+        $sql = sprintf("SELECT * FROM {$this->db['language_code']} WHERE code = '%s'", $name);
+        $exist = $this->db_fetch_row($sql);
+        if ($exist) {
+            $id = $exist->id;
+        } else {
+            // Create the platform
+            $data = array(
+                'code' => $name,
+            );
+            $id = $this->sync_insert_data($data, $this->db['language_code'], $this->cm->sync_client, $this->cm->sync_data);
+        }
+        return $id;
+    }
+
+    public function update_imdb_lang($id = 0, $original_language_int = 0, $original_language = '') {
+        $data = array(
+            'original_language_int' => $original_language_int,
+            'original_language' => $original_language,
+        );
+        $this->cm->sync_update_data($data, $id, $this->db['movie_imdb'], $this->cm->sync_data);
+    }
+
+    public function getLangNames() {
         $names = array(
             "aa" => "Afar",
             "ab" => "Abkhazian",
@@ -1129,7 +1150,7 @@ class MoviesAn extends AbstractDBAn {
             "ia" => "Interlingua",
             "id" => "Indonesian",
             "ie" => "Interlingue",
-            "iu"=>"Inuktitut",
+            "iu" => "Inuktitut",
             "ik" => "Inupiak",
             "in" => "Indonesian",
             "is" => "Icelandic",
@@ -1151,7 +1172,7 @@ class MoviesAn extends AbstractDBAn {
             "ky" => "Kirghiz",
             "kz" => "Kyrgyz",
             "la" => "Latin",
-            "lb"=>"Luxembourgish",
+            "lb" => "Luxembourgish",
             "ln" => "Lingala",
             "lo" => "Laothian",
             "ls" => "Slovenian",
@@ -1168,13 +1189,13 @@ class MoviesAn extends AbstractDBAn {
             "mt" => "Maltese",
             "my" => "Burmese",
             "na" => "Nauru",
+            "no" => "Norwegian (Bokmal)",
             "nb" => "Norwegian (Bokmal)",
             "nb-no" => "Norwegian (Bokmal)",
             "ne" => "Nepali (India)",
             "nl" => "Dutch",
             "nl-be" => "Dutch (Belgium)",
             "nn-no" => "Norwegian",
-            "no" => "Norwegian (Bokmal)",
             "oc" => "Occitan",
             "om" => "(Afan)/Oromoor/Oriya",
             "or" => "Oriya",
@@ -1233,7 +1254,7 @@ class MoviesAn extends AbstractDBAn {
             "vo" => "Volapuk",
             "wo" => "Wolof",
             "xh" => "Xhosa",
-            "xx"=>"N/A",
+            "xx" => "N/A",
             "yi" => "Yiddish",
             "yo" => "Yoruba",
             "zh" => "Chinese",
@@ -1245,6 +1266,13 @@ class MoviesAn extends AbstractDBAn {
             "zh-tw" => "Chinese (Taiwan)",
             "zu" => "Zulu",
         );
+        return $names;
+    }
+
+    public function getLanguageByCode($code) {
+        if (!$code)
+            return '';
+        $names = $this->getLangNames();
         if (isset($names[$code]))
             return $names[$code];
         else
