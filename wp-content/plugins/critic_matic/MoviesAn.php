@@ -2291,9 +2291,21 @@ class MoviesAn extends AbstractDBAn {
             // Movies Actors
             $mac = $this->cm->get_mac();
             $mac->hook_update_movies($mids, $debug);
+
             // Movies Directors
             $mdirs = $this->cm->get_mdirs();
             $mdirs->hook_update_movies($mids, $debug);
+
+            // Movies Language            
+            $ct = $this->cm->get_ct();
+            $sql = "SELECT id, language, original_language_int, original_language FROM {$this->db['movie_imdb']} "
+                    . " WHERE id IN(" . implode(',', $mids) . ")";
+            $results = $this->db_results($sql);
+            if ($results) {
+                foreach ($results as $item) {    
+                    $ct->addPostCountry($item->id, $item->language, $item->original_language_int, $item->original_language, $debug);
+                }
+            }
         }
     }
 }

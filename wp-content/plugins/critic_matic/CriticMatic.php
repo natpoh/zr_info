@@ -18,6 +18,7 @@ class CriticMatic extends AbstractDB {
     private $cf;
     private $cp;
     private $cs;
+    private $ct;    
     private $ma;
     private $ms;
     private $mw;
@@ -432,7 +433,19 @@ class CriticMatic extends AbstractDB {
         }
         return $this->ts;
     }
+    
+    public function get_ct() {
+        if (!$this->ct) {
+            //init 
+            if (!class_exists('CriticTransit')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticTransit.php' );
+            }
+            $this->ct = new CriticTransit($this);
+        }
+        return $this->ct;
+    }
 
+    
     public function get_af() {
         if (!$this->af) {
             //init 

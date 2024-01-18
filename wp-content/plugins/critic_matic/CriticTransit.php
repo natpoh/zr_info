@@ -44,8 +44,8 @@ class CriticTransit extends AbstractDB {
         3 => 'Related Article'
     );
 
-    public function __construct($cm) {
-        $this->cm = $cm;
+    public function __construct($cm = '') {
+        $this->cm = $cm ? $cm : new CriticMatic();
         $table_prefix = DB_PREFIX_WP_AN;
         $this->db = array(
             'posts' => $table_prefix . 'critic_matic_posts',
@@ -1249,7 +1249,7 @@ class CriticTransit extends AbstractDB {
         }
 
         // 1. Get posts
-        $sql = sprintf("SELECT id, title, language FROM {$this->db['movie_imdb']} "
+        $sql = sprintf("SELECT id, title, language, original_language_int, original_language FROM {$this->db['movie_imdb']} "
                 . " WHERE id>%d ORDER BY id ASC limit %d", $last_id, $count);
         $results = $this->db_results($sql);
 
@@ -1257,8 +1257,6 @@ class CriticTransit extends AbstractDB {
             print_r($results);
         }
 
-        // get movies
-        $ma = $this->get_ma();
 
         if ($results) {
             $last = end($results);
@@ -1269,17 +1267,17 @@ class CriticTransit extends AbstractDB {
                 $this->update_option($option_name, $last->id);
             }
 
-
-
             foreach ($results as $post) {
                 $mid = $post->id;
                 $countrys = $post->language;
-                $this->addPostCountry($mid, $countrys, $debug);
+                $original_language_int = $post->original_language_int;
+                $original_language = $post->original_language;
+                $this->addPostCountry($mid, $countrys, $original_language_int, $original_language, $debug);
             }
         }
     }
 
-    public function addPostCountry($mid = 0, $countrys = '', $debug = false) {
+    public function addPostCountry($mid = 0, $countrys = '', $original_language_int = 0, $original_language = '', $debug = false) {
 
         // Get post countrys
         if ($countrys) {
@@ -1325,7 +1323,9 @@ class CriticTransit extends AbstractDB {
                     }
                     // Get key id by name
                     $lang_id = $ma->get_or_create_language_by_name($add_key_name);
-                    $ma->update_imdb_lang($mid, $lang_id, $add_key_name);
+                    if ($lang_id != $original_language_int || $add_key_name != $original_language) {
+                        $ma->update_imdb_lang($mid, $lang_id, $add_key_name);
+                    }
                 }
             }
         }
