@@ -583,7 +583,7 @@ AND table_schema='".DB_NAME_AN."'";
         global $pdo;
 
         $sql = "SELECT count(*) as count FROM  " . $table_data . " where  1 = 1  " . $where1;
-///echo $sql;
+//echo $sql;
         if ($db == 'Pdo_tc') {
             $result = Pdo_tc::db_fetch_row($sql);
         } else {

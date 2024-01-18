@@ -725,7 +725,7 @@ function create_rating_content(object, m_id, search_block = 0) {
 
         if (!use_mt) {
 
-            total_mt_content =  popup_cusomize('row_link','No <b class="exlink" id="metacritic_rating">Metacritic Rating</b> ratings imported yet.');
+            total_mt_content =  popup_cusomize('row_link','No <b class="exlink" id="metacritic_rating">Metacritic Rating</b> imported yet.');
 
         }
 

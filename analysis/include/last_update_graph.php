@@ -255,7 +255,10 @@ public static function prepare_request($qr)
                 $where1 .= " AND `" . $i . "` != '" . $v . "' ";
 
             }
+            else {
 
+                $where1 .= " AND `" . $i . "` = '" . $v . "' ";
+            }
 
         }
 
