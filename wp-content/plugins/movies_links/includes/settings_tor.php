@@ -28,6 +28,12 @@
             <input type="text" name="tor_ip_d" class="title" value="<?php print $ss['tor_ip_d'] ?>" style="width:90%">
             <br /><br />
 
+            <div class="label">
+                <?php print __('Tor Log limit') ?>
+            </div>
+            <input type="text" name="tor_log" class="title" value="<?php print $ss['tor_log'] ?>" style="width:90%">
+            <br /><br />
+            
             <label class="inline-edit-interval">
                 <span class="title"><?php print __('Tor agent') ?></span>
                 <select name="tor_agent" class="interval">

@@ -21,6 +21,7 @@ class TorParser extends MoviesAbstractDB {
         'h' => 30,
         'd' => 1000,
     );
+    private $log_limit = 10000;
     public $sort_pages = array('date', 'id', 'ip', 'drivers', 'dst_url', 'user_agents', 'url_meta', 'last_upd', 'last_reboot', 'status', 'type');
 
     public function __construct($ml = '') {
@@ -40,6 +41,7 @@ class TorParser extends MoviesAbstractDB {
             'h' => $ss['tor_ip_h'],
             'd' => $ss['tor_ip_d'],
         );
+        $this->log_limit = $ss['tor_log'];
     }
 
     public function run_cron($type = 0, $debug = false, $force = false) {
@@ -89,6 +91,8 @@ class TorParser extends MoviesAbstractDB {
                 }
             }
         }
+        // Remove old tor log
+        $this->remove_old_log();
     }
 
     public function get_url_content($url = '', &$header = '', $ip_limit = array(), $curl = false, $tor_mode = 0, $tor_agent = 0, $is_post = false, $post_vars = array(), $header_array = array(), $max_errors = 10, $debug = false) {
@@ -136,7 +140,7 @@ class TorParser extends MoviesAbstractDB {
             if ($debug) {
                 print_r($log_data);
             }
-   
+
             if ($status == 200 || $status == 301) {
                 $content = $data;
                 // Add log
@@ -1238,6 +1242,16 @@ class TorParser extends MoviesAbstractDB {
 
     public function log_error($q_arr = array()) {
         $this->log(2, $q_arr);
+    }
+
+    private function remove_old_log() {
+        $sql = "SELECT id FROM {$this->db['log']} ORDER BY id DESC LIMIT 1";
+        $last_id = $this->db_get_var($sql);
+        if ($last_id > $this->log_limit) {
+            $min_id = (int) ($last_id-$this->log_limit);
+            $sql = "DELETE FROM {$this->db['log']} WHERE id < {$min_id}";
+            $this->db_query($sql);
+        }
     }
 
     public function curl($url, &$header = '', $curl_user_agent = '', $proxy = '', $is_post = false, $post_vars = array(), $header_array = array()) {

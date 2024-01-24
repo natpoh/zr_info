@@ -37,6 +37,7 @@ class MoviesLinks extends MoviesAbstractDB {
             'tor_ip_h' => 100,
             'tor_ip_d' => 1000,
             'tor_agent' => 0,
+            'tor_log' => 10000,
         );
 
         $this->db = array(
