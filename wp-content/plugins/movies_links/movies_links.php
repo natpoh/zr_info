@@ -253,8 +253,22 @@ function movies_links_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
-    movies_links_create_index(array('date', 'driver', 'url', 'ip', 'agent', 'type', 'status'), 'tor_log');
 
+    // Campaign type 1 - ml, 2 - cp ...
+    $sql = "ALTER TABLE `tor_log` ADD `ctype` int(11) NOT NULL DEFAULT '0'";    
+    Pdo_ml::db_query($sql);
+    // Campaign id
+    $sql = "ALTER TABLE `tor_log` ADD `cid` int(11) NOT NULL DEFAULT '0'";
+    Pdo_ml::db_query($sql);
+    // Url id
+    $sql = "ALTER TABLE `tor_log` ADD `uid` int(11) NOT NULL DEFAULT '0'";
+    Pdo_ml::db_query($sql);
+    // 200, 403
+    $sql = "ALTER TABLE `tor_log` ADD `resp_code` int(11) NOT NULL DEFAULT '0'";
+    Pdo_ml::db_query($sql);
+    
+    movies_links_create_index(array('date', 'driver', 'url', 'ip', 'agent', 'type', 'status','ctype','cid','resp_code'), 'tor_log');
+    
     /*
      * Actors names
      */

@@ -52,7 +52,7 @@ class TorAdmin extends ItemAdmin {
         2 => 'Update IP',
         3 => 'Reboot',
     );
-
+    
     public function __construct($mla = '') {
         $this->mla = $mla;
         $this->ml = $mla->ml;
@@ -277,7 +277,8 @@ class TorAdmin extends ItemAdmin {
                     print "<div class=\"updated\"><p><strong>Updated</strong></p></div>";
                 } else if ($b == 'tor_getip') {
                     foreach ($ids as $id) {
-                        $this->tp->update_service_ip($id, 'Manual', 4);                       
+                        //'Manual'
+                        $this->tp->update_service_ip($id, 4);                       
                     }
                 } else if ($b == 'tor_reboot') {
                     foreach ($ids as $id) {

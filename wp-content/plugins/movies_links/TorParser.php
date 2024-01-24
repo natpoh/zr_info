@@ -65,7 +65,8 @@ class TorParser extends MoviesAbstractDB {
                         if ($debug) {
                             print "Get IP\n";
                         }
-                        $this->update_service_ip($service->id, 'Auto', 3);
+                        // Auto
+                        $this->update_service_ip($service->id, 3);
                     } else {
                         if ($debug) {
                             print "Wait reboot\n";
@@ -92,10 +93,10 @@ class TorParser extends MoviesAbstractDB {
 
     public function get_url_content($url = '', &$header = '', $ip_limit = array(), $curl = false, $tor_mode = 0, $tor_agent = 0, $is_post = false, $post_vars = array(), $header_array = array(), $max_errors = 10, $debug = false) {
         $content = '';
-        $get_url_data = $this->get_tor_url($url, $ip_limit, $log_data, $tor_mode, $max_errors, $debug);
+        $get_url_data = $this->get_tor_url($url, $ip_limit, $tor_mode, $max_errors, $debug);
         $get_url = isset($get_url_data['url']) ? $get_url_data['url'] : '';
         if ($get_url) {
-
+            $log_data = $get_url_data['log_data'];
             $service_id = $log_data['driver'];
             // Service used
             $date = $this->curr_time();
@@ -127,6 +128,7 @@ class TorParser extends MoviesAbstractDB {
             }
 
             $status = $this->get_header_status($header);
+            $log_data['resp_code'] = $status;
             if ($debug) {
                 print "Status: $status\n";
             }
@@ -134,16 +136,16 @@ class TorParser extends MoviesAbstractDB {
             if ($debug) {
                 print_r($log_data);
             }
-
+   
             if ($status == 200 || $status == 301) {
                 $content = $data;
                 // Add log
-                $message = 'Parser URL: ' . $status;
-                $this->log_info($message, $log_data);
+                //$message = 'Parser URL: ' . $status;
+                $this->log_info($log_data);
             } else {
                 // Add log
-                $message = 'Error parser URL: ' . $status;
-                $this->log_error($message, $log_data);
+                //$message = 'Error parser URL: ' . $status;
+                $this->log_error($log_data);
 
                 /* if ($status == 403) {
                   $message = 'Parsing error ' . $status;
@@ -165,7 +167,7 @@ class TorParser extends MoviesAbstractDB {
         return $agent;
     }
 
-    private function get_tor_url($url = '', $ip_limit = array(), &$log_data = array(), $tor_mode = 0, $max_error_count = 10, $debug = false, $force = true) {
+    private function get_tor_url($url = '', $ip_limit = array(), $tor_mode = 0, $max_error_count = 10, $debug = false, $force = true) {
         if (!$ip_limit) {
             $ip_limit = $this->ip_limit;
         }
@@ -225,7 +227,7 @@ class TorParser extends MoviesAbstractDB {
                         'date_gt' => $curr_time - 3600
                     );
 
-                    $ip_error_last_hour_count = $this->get_logs($q_req, 1, 0, 'date', 'DESC', true, $debug);
+                    $ip_error_last_hour_count = $this->get_logs_count($q_req);
                     if ($debug) {
                         print_r($q_req);
                         print_r('Last parsing error: ' . $ip_error_last_hour_count . "\n");
@@ -245,11 +247,11 @@ class TorParser extends MoviesAbstractDB {
                     } else {
                         $q_req['type'] = 0;
                         // Valid ips
-                        $ip_last_hour_count = $this->get_logs($q_req, 1, 0, 'date', 'DESC', true);
+                        $ip_last_hour_count = $this->get_logs_count($q_req);
                         $ip_last_hour_limit_gen = rand($ip_limit['h'] - (int) ($ip_limit['h'] / 2), $ip_limit['h'] + (int) ($ip_limit['h'] / 2));
 
                         $q_req['date_gt'] = $curr_time - 86400;
-                        $ip_last_day_count = $this->get_logs($q_req, 1, 0, 'date', 'DESC', true);
+                        $ip_last_day_count = $this->get_logs_count($q_req);
                         $ip_last_day_limit_gen = rand($ip_limit['d'] - (int) ($ip_limit['d'] / 2), $ip_limit['d'] + (int) ($ip_limit['d'] / 2));
 
                         $ips[$service->last_reboot] = array(
@@ -269,8 +271,8 @@ class TorParser extends MoviesAbstractDB {
             print "Ips available\n";
             print_r($ips);
         }
-        
-        if (!$serv_arr){
+
+        if (!$serv_arr) {
             return '';
         }
 
@@ -298,10 +300,10 @@ class TorParser extends MoviesAbstractDB {
                     if ($service->type == 0 && ($curr_time - $this->service_used_time) > $service->last_upd) {
                         $ips_on_limit[$last_reboot] = $item;
                     }
-                    /* $this->reboot_service($service_id, $message, false, $debug);
-                      if ($debug) {
-                      print $message . "\n";
-                      } */
+                    //$this->reboot_service($service_id, $message, false, $debug);
+                    if ($debug) {
+                        print $message . "\n";
+                    }
                     continue;
                 }
 
@@ -357,14 +359,7 @@ class TorParser extends MoviesAbstractDB {
             }
 
             // 5. Get last ip_ids from log
-            $sql = "SELECT ip FROM {$this->db['log']} WHERE status=1 AND type=0 AND IP IN(" . implode(',', $ip_ids) . ") ORDER BY date DESC LIMIT 1";
-            $last_ip = $this->db_get_var($sql);
-            if (!$last_ip) {
-                // Random ip from ids
-                // shuffle($ip_ids);
-                // Get last ip
-                $last_ip = current($ip_ids);
-            }
+            $last_ip = $this->get_last_log_ip($ip_ids);
 
             if ($debug) {
                 print "Last valid ip $last_ip\n";
@@ -377,10 +372,9 @@ class TorParser extends MoviesAbstractDB {
 
             // 5. Tor url
             $service = $serv_arr[$service_id];
-            
         } else {
             // Any service
-            if ($debug){
+            if ($debug) {
                 print "Any service\n";
             }
             $service_ids = array_keys($serv_arr);
@@ -403,18 +397,16 @@ class TorParser extends MoviesAbstractDB {
                 print_r(array($url, $get_url));
             }
 
-            $log_data = array(
+            $ret['url'] = $get_url;
+            $ret['agent'] = $agent;
+            $ret['proxy'] = $proxy;
+            $ret['log_data'] = array(
                 'driver' => $service->id,
                 'ip' => $service->ip,
                 'agent' => $service->agent,
                 'url' => $site_id,
                 'status' => 1,
-                'dst_url' => $url,
             );
-
-            $ret['url'] = $get_url;
-            $ret['agent'] = $agent;
-            $ret['proxy'] = $proxy;
         }
 
         return $ret;
@@ -630,7 +622,7 @@ class TorParser extends MoviesAbstractDB {
             'driver' => $id,
             'status' => 3,
         );
-        $this->log_info($message, $q_arr);
+        $this->log_info($q_arr);
         return true;
     }
 
@@ -695,7 +687,6 @@ class TorParser extends MoviesAbstractDB {
                 . " LEFT JOIN {$this->db['ip_meta']} m ON p.id = m.agent"
                 . " LEFT JOIN {$this->db['ip']} ip ON ip.id = m.ip"
                 . " WHERE p.id>0" . $and_ip . $and_orderby . $limit;
-
 
         if (!$count) {
             $result = $this->db_results($sql);
@@ -767,18 +758,18 @@ class TorParser extends MoviesAbstractDB {
             $this->add_agent_ip_id($agent_id, $ip_id);
 
             // Log
-            $message = 'Add Agent to IP';
+            //$message = 'Add Agent to IP';
             $q_arr = array(
                 'ip' => $ip_id,
                 'agent' => $agent_id,
             );
-            $this->log_info($message, $q_arr);
+            $this->log_info($q_arr);
 
             return $agent_id;
         } else {
             // Remove old agents                                    
-            $message = 'Need more agents. Generate new';
-            $this->log_warn($message, $q_arr);
+            //$message = 'Need more agents. Generate new';
+            $this->log_warn($q_arr);
 
             $this->remove_old_agents(10);
 
@@ -855,7 +846,6 @@ class TorParser extends MoviesAbstractDB {
                 . " LEFT JOIN {$this->db['user_agents']} p ON p.id = m.agent"
                 . " WHERE ip.id>0" . $and_ip . $and_orderby . $limit;
 
-
         if (!$count) {
             $result = $this->db_results($sql);
         } else {
@@ -895,7 +885,7 @@ class TorParser extends MoviesAbstractDB {
      * Ip
      */
 
-    public function update_service_ip($id, $update_message = '', $error_status = 3) {
+    public function update_service_ip($id, $error_status = 3) {
         // Get ip
         $ip_id = $this->get_tor_ip_id($id);
         $date = $this->curr_time();
@@ -919,29 +909,28 @@ class TorParser extends MoviesAbstractDB {
             );
 
             // Log
-            $message = 'Update IP';
-            if ($update_message) {
-                $message .= '. ' . $update_message;
-            }
+            //$message = 'Update IP';
+            //if ($update_message) {
+            //$message .= '. ' . $update_message;
+            //}
             $q_arr = array(
                 'driver' => $id,
                 'status' => 2,
                 'ip' => $ip_id,
                 'agent' => $agent_id,
             );
-            $this->log_info($message, $q_arr);
+            $this->log_info($q_arr);
         } else {
             // Error           
-
-            $message = 'Can not get IP';
-            if ($update_message) {
-                $message .= '. ' . $update_message;
-            }
+            //$message = 'Can not get IP';
+            //if ($update_message) {
+            //$message .= '. ' . $update_message;
+            //}
             $q_arr = array(
                 'driver' => $id,
                 'status' => 2,
             );
-            $this->log_error($message, $q_arr);
+            $this->log_error($q_arr);
         }
         $this->update_service_field($data, $id);
         return $ret;
@@ -1087,6 +1076,26 @@ class TorParser extends MoviesAbstractDB {
      * Log
      */
 
+    public function get_last_log_ip($ip_ids = array()) {
+        // 5. Get last ip_ids from log
+        $sql = "SELECT ip, date FROM {$this->db['log']} WHERE status=1 AND type=0 AND IP IN(" . implode(',', $ip_ids) . ")";
+        $last_ips = $this->db_results($sql);
+        if ($last_ips) {
+            $ips = array();
+            foreach ($last_ips as $ip) {
+                $ips[$ip->date] = $ip->ip;
+            }
+            krsort($ips);
+            $last_ip = current($ips);
+        } else {
+            // Random ip from ids
+            // shuffle($ip_ids);
+            // Get last ip
+            $last_ip = current($ip_ids);
+        }
+        return $last_ip;
+    }
+
     public function get_logs($q_req = array(), $page = 1, $perpage = 20, $orderby = '', $order = 'ASC', $count = false, $debug = false) {
         $q_def = array(
             'type' => -1,
@@ -1193,7 +1202,7 @@ class TorParser extends MoviesAbstractDB {
         return $this->get_logs($q_req, $page = 1, 1, '', '', true);
     }
 
-    public function log($message = '', $type = 0, $q_arr = array()) {
+    public function log($type = 0, $q_arr = array()) {
         /*
          * type:
           0 => 'Info',
@@ -1202,23 +1211,13 @@ class TorParser extends MoviesAbstractDB {
 
           status:
           0 => 'Other',
-
-
-          `id` int(11) unsigned NOT NULL auto_increment,
-          `date` int(11) NOT NULL DEFAULT '0',
-          `driver` int(11) NOT NULL DEFAULT '0',
-          `ip` int(11) NOT NULL DEFAULT '0',
-          `agent` int(11) NOT NULL DEFAULT '0',
-          `url` int(11) NOT NULL DEFAULT '0',
-          `type` int(11) NOT NULL DEFAULT '0',
-          `status` int(11) NOT NULL DEFAULT '0',
-          `message` varchar(255) NOT NULL default '',
-          `dst_url` text default NULL,
+          1 => 'Parsing',
+          2 => 'Update IP',
+          3 => 'Reboot',
          */
         $time = $this->curr_time();
         $data = array(
             'date' => $time,
-            'message' => $message,
             'type' => $type,
         );
         if ($q_arr) {
@@ -1229,16 +1228,16 @@ class TorParser extends MoviesAbstractDB {
         $this->db_insert($data, $this->db['log']);
     }
 
-    public function log_info($message, $q_arr) {
-        $this->log($message, 0, $q_arr);
+    public function log_info($q_arr = array()) {
+        $this->log(0, $q_arr);
     }
 
-    public function log_warn($message, $q_arr) {
-        $this->log($message, 1, $q_arr);
+    public function log_warn($q_arr = array()) {
+        $this->log(1, $q_arr);
     }
 
-    public function log_error($message, $q_arr) {
-        $this->log($message, 2, $q_arr);
+    public function log_error($q_arr = array()) {
+        $this->log(2, $q_arr);
     }
 
     public function curl($url, &$header = '', $curl_user_agent = '', $proxy = '', $is_post = false, $post_vars = array(), $header_array = array()) {
@@ -1313,5 +1312,4 @@ class TorParser extends MoviesAbstractDB {
         }
         return $status;
     }
-
 }

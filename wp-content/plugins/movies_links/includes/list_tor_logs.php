@@ -23,23 +23,10 @@ if (sizeof($logs) > 0) {
         <th><?php print __('IP') ?></th>
         <th><?php print __('Agent') ?></th>
         <th><?php print __('Site') ?></th>
-        <th><?php print __('Message') ?></th>
-        <th><?php print __('URL') ?></th>
+        <th><?php print __('Code') ?></th>        
     </thead>
     <tbody>
         <?php
-        /*
-          `id` int(11) unsigned NOT NULL auto_increment,
-          `date` int(11) NOT NULL DEFAULT '0',
-          `driver` int(11) NOT NULL DEFAULT '0',
-          `ip` int(11) NOT NULL DEFAULT '0',
-          `agent` int(11) NOT NULL DEFAULT '0',
-          `url` int(11) NOT NULL DEFAULT '0',
-          `type` int(11) NOT NULL DEFAULT '0',
-          `status` int(11) NOT NULL DEFAULT '0',
-          `message` varchar(255) NOT NULL default '',
-          `dst_url` text default NULL,
-         */
 
         foreach ($logs as $service) {
             ?>
@@ -52,8 +39,7 @@ if (sizeof($logs) > 0) {
                 <td><?php print $this->tp->get_ip_name_by_id($service->ip) ?></td>
                 <td><?php print $this->tp->get_agent_name_by_id($service->agent) ?></td>
                 <td><?php print $this->tp->get_site_name_by_id($service->url) ?></td>
-                <td><?php print $service->message ?></td>
-                <td><?php print $service->dst_url ?></td>
+                <td><?php print $service->resp_code ?></td>
             </tr> 
         <?php } ?>
     </tbody>
