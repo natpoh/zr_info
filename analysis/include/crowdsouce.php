@@ -50,6 +50,10 @@ class Crowdsource
 //            $q ="UPDATE `data_critic_crowd` SET `status` = 1 WHERE `status` = 0";
 //            Pdo_an::db_results_array($q);
 
+            $q ="UPDATE `data_keywords_crowd` SET `status` = 1 WHERE `status` = 0";
+            Pdo_an::db_results_array($q);
+
+
             if ($debug)echo 'ok';
         }
         else
@@ -513,18 +517,20 @@ public static function front($datatype, $array_rows, $array_user = [], $id = '',
         } else if ($datatype == 'moviespgcrowd') {
             $sql = "SELECT * FROM `data_movies_pg_crowd` where `user` = ? and `rwt_id` = ? limit 1";
         }
-
+        else if ($datatype == 'keywords') {
+            $sql = "SELECT * FROM `data_keywords_crowd` where `user` = ? and `rwt_id` = ? limit 1";
+        }
 
         if ($sql) {
             $rw = Pdo_an::db_results_array($sql, array($user_id, $id));
             if ($rw[0]['id']) {
                 $row = $rw[0];
-                if ($row['status'] > 0 && !$array_user['admin']) {
+                if (($row['status'] > 0 && !$array_user['admin']) && $datatype != 'keywords') {
                     ///return
                     $content = '<p class="user_message_info">You already left a comment.</p><div class="submit_data"><button class="button close" >Close</button></div>';
 
                     return $content;
-                } else if ($row['status'] == 0 || $array_user['admin']) {
+                } else if ($row['status'] == 0 || $array_user['admin'] ||  $datatype == 'keywords') {
 
                     $array_value = $row;
 
@@ -654,7 +660,7 @@ public static function front($datatype, $array_rows, $array_user = [], $id = '',
                     {
                        $textval= $array_value[$name];
                     }
-                    $textarea = '<textarea data-id="' . $name . '"  class="'.$name.'"  placeholder="'.$value['placeholer'].'">'.$textval.'</textarea>';
+                    $textarea = '<textarea data-id="' . $name . '"  class="'.$name.$class.'"  placeholder="'.$value['placeholer'].'">'.$textval.'</textarea>';
                     $content.= self::setcol($name,$textarea,$desc,$style,$title,$star);
                 }
                 if ($type=='input')
@@ -697,6 +703,22 @@ public static function front($datatype, $array_rows, $array_user = [], $id = '',
                     if ($array_value[$name])
                     {
                         $textval= $array_value[$name];
+
+                        if ($name=='keywords')
+                        {
+                            $ob = explode(', ',$textval);
+                            $ik=0;
+                            $res='';
+                            foreach ($ob as $key)
+                            {
+
+                            $res.='<div class="keyword">'.$key.'<span class="close"></span><input data-id="k_'.$ik.'" class="k_input" type="hidden" value="'.$key.'"></div>';
+                            $ik+=1;
+
+                            }
+                            $textval=$res;
+                        }
+
                     }
 
                     $textarea = '<div data-id="' . $name . '" class="' . $name . $class . ' input_content" >'.$textval.'</div>';

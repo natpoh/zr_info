@@ -35,6 +35,8 @@ $array_jobs = array(
 'download_crowd_images'=>60,///load image to server from crowdsource status 1
 
 
+'crowd_movie_keywords'=>60,///add crowdsource keywords to movies
+
 'check_face'=>120,///add bettaface verdict
 
 'update_crowd_verdict'=>30,    ///crowdsource udate actor verdict

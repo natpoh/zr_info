@@ -36,6 +36,13 @@ function get_first_five_words($string) {
     return $result;
 }
 
+function prepare_key_text($val)
+{
+    $val=trim(strip_tags(stripslashes($val)));
+    $val = preg_replace('/[^a-zA-Z0-9- ]/u', '', $val);
+    return $val;
+}
+
 function critic_crowd_validation($link, $row = []) {
     !class_exists('GETCURL') ? include ABSPATH . "analysis/include/get_curl.php" : '';
 
@@ -385,7 +392,7 @@ if (isset($_POST['oper'])) {
 
 
 
-        $array_crowd = array('actor_crowdsource' => 'actors_crowd', 'moviespgcrowd' => 'movies_pg_crowd', 'review_crowdsource' => 'review_crowd', 'critic_crowd_link' => 'critic_crowd_link', 'critic_crowd_result' => 'critic_crowd');
+        $array_crowd = array('keywords' => 'keywords_crowd', 'actor_crowdsource' => 'actors_crowd', 'moviespgcrowd' => 'movies_pg_crowd', 'review_crowdsource' => 'review_crowd', 'critic_crowd_link' => 'critic_crowd_link', 'critic_crowd_result' => 'critic_crowd');
 
         $type = $_POST['type'];
         $data = $_POST['data'];
@@ -516,6 +523,60 @@ if (isset($_POST['oper'])) {
 
                 $data_obj['movies'] = json_encode($array_movies);
             }
+            else if ($array_crowd[$type] == 'keywords_crowd') {
+
+                $array_keywords =[];
+                $array_keywords_temp=[];
+                //validate keywords
+                unset($data_obj['keywords']);
+                $key_raw = $data_obj['input'];
+                if ($key_raw)
+                {
+                    $array_keywords_temp =explode(',',$key_raw);
+                    foreach ($array_keywords_temp as $val)
+                    {
+
+                        $val = prepare_key_text($val);
+
+
+                     if (!in_array($val,$array_keywords))
+                     {
+                         $array_keywords[]=$val;
+                     }
+                    }
+
+
+                }
+                unset($data_obj['input']);
+                foreach ($data_obj as $key=>$val)
+                {
+                    if (strstr($key,'k_'))
+                    {
+                        unset($data_obj[$key]);
+                        $val = prepare_key_text($val);
+                        if (!in_array($val,$array_keywords))
+                        {
+                            $array_keywords[]=$val;
+                        }
+                    }
+
+                }
+
+
+                $sql = "SELECT * FROM `data_movie_imdb` where id = " . $id;
+                $name_array = Pdo_an::db_fetch_row($sql);
+                $title = $name_array->title;
+                $imdb_id = $name_array->movie_id;
+
+                $data_obj['movie_title'] = $title;
+                $data_obj['status_meta'] = 0;
+                $data_obj['rwt_id'] = $id;
+                $data_obj['keywords'] = implode(', ',$array_keywords);
+                $reqest_field = 'rwt_id';
+
+            }
+
+
             else if ($array_crowd[$type] == 'actors_crowd') {
                 ///add name from authors
 
@@ -638,8 +699,6 @@ if (isset($_POST['oper'])) {
                     }
 
 
-
-
                     if ($rw[0]['id']) {
                         $uddate_id = $rw[0]['id'];
                     }
@@ -657,6 +716,7 @@ if (isset($_POST['oper'])) {
 
                     $inser_sql_debug = "INSERT INTO `data_" . $array_crowd[$type] . "`(`id` " . $oper_insert_colums . " ) VALUES (NULL " . $oper_insert_data_debug . " )";
 
+                    //echo $inser_sql_debug;
 
                    $uddate_id = Pdo_an::db_insert_sql($inser_sql, $data_array);
                 }
@@ -1037,5 +1097,26 @@ if (isset($_POST['oper'])) {
 
         echo $chead . $content;
     }
+
+    else if ($oper == 'add_keywords') {
+        $id = intval($_POST['id']);
+        include(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/movie_single_template.php');
+        $chead = template_single_movie_small($id);
+
+        $array_user = Crowdsource::get_user();
+
+        $array_rows = array(
+            'input' => array('type' => 'textarea', 'placeholer' => 'keyword','class'=>' keyword_input', 'title' => 'Add some keywords:'),
+            'keywords' => array('type' => 'html','class'=>' keyword_container keyword_container_input', 'title' => 'Keywords:' )
+        );
+
+        $content = Crowdsource::front('keywords', $array_rows, $array_user, $id);
+
+
+        echo $chead . $content;
+
+
+    }
+
 }
 

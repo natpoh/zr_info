@@ -30,6 +30,7 @@ class CrowdAdmin
         add_submenu_page($this->parrent_slug, __('PG Rating Crowdsource'), __('PG Rating'), $this->access_level, $this->parrent_slug . '_pgrating_crowd', array($this, 'pgrating_crowd'));
         add_submenu_page($this->parrent_slug, __('Review Crowdsource'), __('Review'), $this->access_level, $this->parrent_slug . '_review_crowd', array($this, 'review_crowd'));
         add_submenu_page($this->parrent_slug, __('Critic Review Crowdsource'), __('Critic Review'), $this->access_level, $this->parrent_slug . '_critic_review_crowd', array($this, 'critic_review_crowd'));
+        add_submenu_page($this->parrent_slug, __('Keywords Crowdsource'), __('Keywords'), $this->access_level, $this->parrent_slug . '_keywords_crowd', array($this, 'keywords_crowd'));
     }
     public function overview()
     {
@@ -37,13 +38,13 @@ class CrowdAdmin
         $pg_count = Crowdsource::get_new_draft('data_movies_pg_crowd');
         $rw_count = Crowdsource::get_new_draft('data_review_crowd');
         $rwc_count = Crowdsource::get_new_draft('data_critic_crowd');
-
+        $keywords_count= Crowdsource::get_new_draft('data_keywords_crowd');
 
 
 
 
         echo '<h1>Crowdsource</h1>';
-        if ($pg_count || $actor_count|| $rw_count || $rwc_count) {
+        if ($pg_count || $actor_count|| $rw_count || $rwc_count || $keywords_count) {
 
             if ($pg_count)
             {
@@ -60,6 +61,10 @@ class CrowdAdmin
             if ($rwc_count)
             {
                 echo '<h2><a href="/wp-admin/admin.php?page='.$this->parrent_slug.'_critic_review_crowd&status=0">New Critic Review crowdsource '.$rwc_count.'</a></h2>';
+            }
+            if ($keywords_count)
+            {
+                echo '<h2><a href="/wp-admin/admin.php?page='.$this->parrent_slug.'_keywords_crowd&status=0">New Keywords '.$keywords_count.'</a></h2>';
             }
         }
         else{
@@ -113,9 +118,11 @@ class CrowdAdmin
             $pg_count = Crowdsource::get_new_draft('data_movies_pg_crowd');
             $rw_count = Crowdsource::get_new_draft('data_review_crowd');
             $rwc_count= Crowdsource::get_new_draft('data_critic_crowd');
+            $keywords_count= Crowdsource::get_new_draft('data_keywords_crowd');
 
-            $total_crowd = $pg_count + $actor_count+$rw_count+$rwc_count;
-            if ($pg_count || $actor_count|| $rw_count || $rwc_count) {
+
+            $total_crowd = $pg_count + $actor_count+$rw_count+$rwc_count+$keywords_count;
+            if ($pg_count || $actor_count|| $rw_count || $rwc_count || $keywords_count) {
                 $wp_admin_bar->add_menu(array(
                     'parent' => '',
                     'id' => 'flag-report-crowd',
@@ -156,6 +163,16 @@ class CrowdAdmin
                         'href' => '/wp-admin/admin.php?page='.$this->parrent_slug.'_critic_review_crowd&status=0',
                     ));
                 }
+                if ($keywords_count) {
+                    $wp_admin_bar->add_menu(array(
+                        'parent' => 'flag-report-crowd',
+                        'id' => 'flag-report-crowd-actor',
+                        'title' => '<span style="color: #ff5e28; font-weight: bold;">Keywords Crowdsource: ' . $keywords_count . '</span>',
+                        'href' => '/wp-admin/admin.php?page='.$this->parrent_slug.'_keywords_crowd&status=0',
+                    ));
+                }
+
+
             }
 
         }
@@ -197,7 +214,31 @@ class CrowdAdmin
 
     }
 
+public function keywords_crowd()
+{
 
+    !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
+
+    if (Crowdsource::checkpost())
+    {
+        return;
+    }
+
+    echo '<h1>Keywords Crowdsource</h1>';
+
+
+    $array_rows = array(
+        'id'=>array('w'=>10),
+        'keywords' =>array('w'=>20, 'type' => 'textarea'),
+        'status_meta'=>array('type'=>'select','options'=>'0:Waiting;1:Added'),
+        'status'=>array('type'=>'select','options'=>'0:Waiting;1:Approved;2:Rejected')
+    );
+
+
+    Crowdsource::Show_admin_table('keywords_crowd',$array_rows,1);
+
+
+}
 
     public function review_crowd()
     {

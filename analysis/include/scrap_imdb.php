@@ -475,7 +475,21 @@ function update_actors_verdict($id='',$force=0,$sync = 1 )
 
 
 
+function crowd_movie_keywords($id='')
+{
 
+    !class_exists('Movie_Keywords') ? include ABSPATH . "analysis/include/keywords.php" : '';
+
+    $keywords = new Movie_Keywords;
+    global $debug;
+    if (isset($_GET['debug']))
+    {
+        $debug =$_GET['debug'];
+    }
+
+    $keywords->crowd_movie_keywords();
+
+}
 
 function movie_keywords($id='')
 {
@@ -3608,7 +3622,12 @@ if (isset($_GET['check_dublicate_movies'])) {
 return;
 }
 
+if (isset($_GET['crowd_movie_keywords'])) {
 
+    crowd_movie_keywords($_GET['crowd_movie_keywords'])  ;
+
+    return;
+}
 if (isset($_GET['movie_keywords'])) {
 
     movie_keywords($_GET['movie_keywords'])  ;

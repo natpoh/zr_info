@@ -28,6 +28,12 @@ function last_movie_trailer($movie_id=0)
             }
         }
     }
+    else
+    {
+        $movie_type=TMDB::get_movie_type_from_id($movie_id);
+        return generate_trailer_link($movie_type,$movie_id,'none');
+
+    }
 }
 function check_movie_trailer($movie_id=0){
 if ($movie_id) {
@@ -60,21 +66,28 @@ function generate_trailer_link($movie_type,$movie_id,$enable)
 
 
     }
+    else if ($movie_type!='VideoGame' )
+    {
+        $title_encoded = urlencode($title.' Official Trailer');
+
+        $link = 'search_query='.$title_encoded;
+
+    }
+
     $link_data = ["Trailer"=>["key"=>$link]];
     $data  = json_encode($link_data);
 
-    if ($enable)
-    {
-        $sql="UPDATE `cache_movie_trailers` SET  `data`=?, `status`=?, `last_update`=? WHERE `id`=? ";
+    if ($enable!='none') {
+        if ($enable) {
+            $sql = "UPDATE `cache_movie_trailers` SET  `data`=?, `status`=?, `last_update`=? WHERE `id`=? ";
 
-        Pdo_an::db_results_array($sql,array($data ,1,time(),$movie_id));
-    }
-    else
-    {
-        $sql="INSERT INTO `cache_movie_trailers` (`id`, `rwt_id`, `data`, `status`, `last_update`) 
+            Pdo_an::db_results_array($sql, array($data, 1, time(), $movie_id));
+        } else {
+            $sql = "INSERT INTO `cache_movie_trailers` (`id`, `rwt_id`, `data`, `status`, `last_update`) 
                                                 VALUES (NULL, ?, ?, ?, ?);";
 
-       Pdo_an::db_insert_sql($sql,array($movie_id,$data,1,time()));
+            Pdo_an::db_insert_sql($sql, array($movie_id, $data, 1, time()));
+        }
     }
 
 
@@ -145,7 +158,11 @@ function get_movie_trailer($movie_id=0)
     }
     else
     {
-        return '';
+
+
+     return '';
+
+
     }
 $array_data = [];
 

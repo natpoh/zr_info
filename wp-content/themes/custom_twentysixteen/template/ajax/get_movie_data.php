@@ -28,6 +28,14 @@ if (isset($_POST['request']))
         if (function_exists('get_movie_trailer'))
         {
          $data = get_movie_trailer($id,$tmdb_id);
+         if (!$data)
+         {
+             $movie_type=TMDB::get_movie_type_from_id($id);
+
+             $data = generate_trailer_link($movie_type,$id,'none');
+
+
+         }
         }
 
 

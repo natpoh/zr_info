@@ -13,7 +13,7 @@ class Movie_Keywords {
 
     private $array_keys =[];
 
-    public function to_key_content($result,$notag =0)
+    public function to_key_content($result,$notag =0,$mid='')
     {
         $content ='';
       foreach ($result as $id=>$name)
@@ -34,7 +34,7 @@ class Movie_Keywords {
 
           return $content;
       }
-        $content = '<div class="keyword_container">'.$content.'</div>';
+        $content = '<div class="keyword_container">'.$content.'<button id-data="'.$mid.'" class="add_movie_keyword add_button" >Add</button></div>';
 
         return $content;
 
@@ -80,10 +80,10 @@ class Movie_Keywords {
 
     }
 
-    public function front($mid,$return_data = 0)
+    public function front($mid,$return_data = 0,$type=0)
     {
         ///get movie keywors
-        $array_keys = $this->get_movie_keys($mid);
+        $array_keys = $this->get_movie_keys($mid,$type);
         $sql='';
         if ($array_keys) {
             foreach ($array_keys as $row) {
@@ -93,7 +93,7 @@ class Movie_Keywords {
             }
             if ($sql) {
                 $sql = substr($sql, 2);
-                $q = "SELECT * FROM `meta_keywords` where " . $sql;
+                $q = "SELECT * FROM `meta_keywords` where `type` =".$type." and " . $sql;
                 $data = Pdo_an::db_results_array($q);
                 if ($data)
                 {
@@ -106,7 +106,7 @@ class Movie_Keywords {
 
             }
         }
-        else
+        else if ($type==0)
         {
             //old method
             $result =   $this->get_keys_from_movie($mid);
@@ -116,7 +116,7 @@ class Movie_Keywords {
         if ($result)
         {   asort($result);
 
-            $content = $this->to_key_content($result);
+            $content = $this->to_key_content($result,0,$mid);
         }
 
         if ($return_data)
@@ -130,11 +130,11 @@ class Movie_Keywords {
 
 
     }
-    public function get_keywors_array($mid,$get_id='')
+    public function get_keywors_array($mid,$get_id='',$type=0)
     {
         $result=[];
         ///get movie keywors
-        $array_keys = $this->get_movie_keys($mid);
+        $array_keys = $this->get_movie_keys($mid,$type);
         $sql='';
         if ($array_keys) {
             foreach ($array_keys as $row) {
@@ -144,7 +144,7 @@ class Movie_Keywords {
             }
             if ($sql) {
                 $sql = substr($sql, 2);
-                $q = "SELECT * FROM `meta_keywords` where " . $sql;
+                $q = "SELECT * FROM `meta_keywords` where `type` =".$type." and  " . $sql;
                 $data = Pdo_an::db_results_array($q);
                 if ($data)
                 {
@@ -167,7 +167,7 @@ class Movie_Keywords {
 
             }
         }
-        else
+        else if ($type==0)
         {
             if ($get_id)
             {
@@ -219,48 +219,52 @@ class Movie_Keywords {
         }
     }
 
-    private function check_movie_keys($kid,$mid)
+    private function check_movie_keys($kid,$mid,$type=0)
     {
 
-    $q ="SELECT `id` FROM `meta_movie_keywords` WHERE `kid` = ".$kid." and mid = ".$mid;
-    $row = Pdo_an::db_results_array($q);
+    $q ="SELECT `id` FROM `meta_movie_keywords` WHERE `kid` = ".$kid." and mid = ".$mid." and `type`=".$type;
+
+
+
+        $row = Pdo_an::db_results_array($q);
     if ($row)return 1;
 
     }
 
-    private function get_movie_keys($mid)
+    private function get_movie_keys($mid,$type=0)
     {
 
-        $q ="SELECT * FROM `meta_movie_keywords` WHERE  mid = ".$mid;
+        $q ="SELECT * FROM `meta_movie_keywords` WHERE  mid = ".$mid." and `type`=".$type;
 
         $row = Pdo_an::db_results_array($q);
         if ($row)return $row;
 
     }
 
-    private function insert_key_request($kid,$mid)
+    private function insert_key_request($kid,$mid,$type=0)
     {
-        $q="INSERT INTO `meta_movie_keywords`(`id`, `mid`, `kid`) VALUES (NULL,{$mid},{$kid})";
+        $q="INSERT INTO `meta_movie_keywords`(`id`, `mid`, `kid`,`type`) VALUES (NULL,{$mid},{$kid},{$type})";
+
         $result = Pdo_an::db_query($q);
 
         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-        Import::create_commit('', 'update', 'meta_movie_keywords', array('mid' => $mid,'kid'=>$kid), 'meta_movie_keywords',9,['skip'=>['id']]);
+        Import::create_commit('', 'update', 'meta_movie_keywords', array('mid' => $mid,'kid'=>$kid,'type'=>$type), 'meta_movie_keywords',9,['skip'=>['id']]);
 
     }
 
-    private function insert_key_to_movie($kid,$mid){
+    private function insert_key_to_movie($kid,$mid,$type){
 
-        if (!$this->check_movie_keys($kid,$mid))
+        if (!$this->check_movie_keys($kid,$mid,$type))
         {
-            $this->insert_key_request($kid,$mid);
+            $this->insert_key_request($kid,$mid,$type);
             return 1;
         }
     }
-    private function  add_keys_to_movie($keys,$mid)
+    private function  add_keys_to_movie($keys,$mid,$type=0)
     {
         $kid = $this->get_key_id($keys);
         //echo $kid.' ';
-        $insert = $this->insert_key_to_movie($kid,$mid);
+        $insert = $this->insert_key_to_movie($kid,$mid,$type);
         return $insert;
     }
 
@@ -293,7 +297,7 @@ class Movie_Keywords {
     }
 
 
-	private function fill_main_keys($array,$mid)
+	private function fill_main_keys($array,$mid,$type=0)
 	{
     $count=0;
 
@@ -301,7 +305,7 @@ class Movie_Keywords {
 		{
 			// echo $keys.' ';
 
-			$res = $this->add_keys_to_movie($keys,$mid);
+			$res = $this->add_keys_to_movie($keys,$mid,$type);
 
             if ($res)$count++;
 		}
@@ -344,6 +348,27 @@ class Movie_Keywords {
 
         return $count;
     }
+
+
+    private function update_crowd_status($cid,$mid,$count)
+    {
+
+
+        $q ="UPDATE `data_keywords_crowd` SET `status_meta` = 1 WHERE `id` =".$cid;
+
+        Pdo_an::db_results_array($q);
+
+        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+        Import::create_commit('', 'update', 'data_keywords_crowd', array('id' => $cid), 'data_keywords_crowd',9);
+
+
+
+        !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+        TMDB::add_log($mid,'','update movie keywords','Total crowd keywords updated '.$count.' crowd id: '.$cid,1,'data_keywords_crowd');
+
+    }
+
+
     private function update_movie_meta($mid,$count=0)
     {
 
@@ -369,7 +394,7 @@ class Movie_Keywords {
 
 
         !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
-        TMDB::add_log($mid,'','update movies','Total updated '.$count,1,'meta_movie_keywords_update');
+        TMDB::add_log($mid,'','update movie keywords','Total updated '.$count,1,'meta_movie_keywords_update');
 
     }
     public function parse_imdb_keywords($id)
@@ -398,6 +423,49 @@ class Movie_Keywords {
 
     }
 
+
+
+    public function crowd_movie_keywords()
+    {
+        $sql ="SELECT * FROM `data_keywords_crowd` WHERE `status_meta` = 0 and  `status` = 1 ";
+
+        global $dedug;
+
+        $array_request =Pdo_an::db_results_array($sql);
+
+
+
+        foreach ($array_request as $r)
+        {
+            $mid  =$r['rwt_id'];
+            ///get keyword data
+
+            $keywords =$r['keywords'];
+
+
+            if ($keywords)
+            {
+                if (strstr($keywords,','))
+                {
+                    $keywords_array=explode(',',$keywords);
+                }
+                else
+                {
+                    $keywords_array[]=trim($keywords);;
+                }
+
+                if ($keywords_array)
+                {
+                 $count =  $this->fill_main_keys($keywords_array,$mid,1);
+                }
+            }
+
+            $this->update_crowd_status($r['id'],$mid,$count);
+
+        }
+
+
+    }
     public function get_movies_keyword($id='')
     {
 
@@ -439,7 +507,8 @@ class Movie_Keywords {
             ///get keyword data
             $last_update=$r['last_update'];
 	        $keywords =$r['keywords'];
-	        if ($keywords)
+
+            if ($keywords)
 	        {
 		        if (strstr($keywords,','))
 		        {
@@ -450,8 +519,8 @@ class Movie_Keywords {
 			        $keywords_array[]=$keywords;
 		        }
 
-
 	        }
+
             echo 'try get '.$mid. ' last_update '.date('H:i Y.m.d',$last_update).'<br>';
 
             $content =  TMDBIMPORT::get_data_from_archive(17,$mid,$last_update);

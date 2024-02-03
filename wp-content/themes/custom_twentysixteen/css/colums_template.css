@@ -302,7 +302,7 @@ div.column_wrapper div.content_wrapper {
 div.scroller_wrap.should_fade::after {
     content: '';
     width: 60px;
-    height: 100%;
+    height: 410px;
     position: absolute;
     top: 0;
     right: 0;
@@ -2255,6 +2255,8 @@ body.theme_dark  .actor_data .green{
 
 }
 
+
+
 .rating_block > .family_friendly {
     top: 230px;
 }
@@ -2494,6 +2496,14 @@ p.l_c_g::before {
     top: -7px;
 }
 
+
+.rating_block > .mt_gap.none_mt   .btn
+{
+    font-size: 30px;
+    transform: rotate(-45deg);
+    margin: -5px 10px 0px 1px;
+    font-weight: bold;
+}
 
 .rating_block > .family_friendly.lgbt.woke {
     background: url("../images/rating/lgbt_active.svg") 21px 22px no-repeat, url("../images/eyepiramid.svg") -8px -13px no-repeat;
@@ -3326,7 +3336,7 @@ body.theme_dark  .open_rating_container.note_show::after {
 }
 
 .edit_area .edit_critic {
-    background: rgb(175, 41, 236) url("../images/comment_critic.svg") center no-repeat;
+    background: rgb(175, 41, 236) url("../images/comment_critic_chain.svg") center no-repeat;
     top: 97px;
     left: 73px;
     background-size: 30px;
@@ -3532,6 +3542,40 @@ body.theme_dark  .note_show::after {
     padding: 6px;
     line-height: normal;
 }
+
+
+.col_input .keyword_input{
+    height: 40px;
+}
+
+ .col_input .keyword_container .keyword, body.theme_dark .col_input   .keyword_container .keyword {
+    padding-right: 40px;
+    position: relative;
+}
+.col_input .keyword .close {
+    position: absolute;
+    right: 0;
+    top: 0;
+    background-image: url(../images/close_black.svg);
+    background-repeat: no-repeat;
+    background-position: center center;
+    margin: 0;
+    padding: 0;
+    background-size: 20px;
+    width: 30px;
+    border-left: 2px solid rgb(255 255 255 / 33%);
+    display: block;
+    height: 38px;
+
+    opacity: 0.6;
+    cursor: pointer;
+}
+
+body.theme_dark .col_input .keyword .close {
+    filter: invert(1);
+
+}
+
 .col_input div.input_content.embed_content  {
     overflow-y: auto;
     max-height: 400px;
@@ -3546,6 +3590,13 @@ body.theme_dark .col_input div.input_content {
     background: #d3ffd3;
 }
 
+
+
+.col_input div.input_content.keyword_container_input, body.theme_dark  .col_input div.input_content.keyword_container_input
+{
+    background-color: transparent;
+    border: none;
+}
 
 input.radio {
     width: 40px;

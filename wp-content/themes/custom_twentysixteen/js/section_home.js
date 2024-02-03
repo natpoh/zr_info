@@ -688,7 +688,7 @@ function create_rating_content(object, m_id, search_block = 0) {
             if (Number(object.total_rating.metacritic_rating) > 0 || Number(object.total_rating.metacritic_userscore) > 0) {
                 use_mt=1;
 
-                 total_mt_gap_str = 'N/A';
+                 total_mt_gap_str = 'm';
 
                 if (object.total_rating.metacritic_rating == object.total_rating.metacritic_userscore) {
 
@@ -736,6 +736,11 @@ function create_rating_content(object, m_id, search_block = 0) {
         }
         else if (use_mt)
         {
+
+            if (total_mt_gap_str=='m')
+            {
+                rating_mt_color=' none_mt '
+            }
 
             content += add_rating_block('mt_gap ' + rating_mt_color, total_mt_gap_str, total_mt_content, 4, true);
         }
@@ -3752,6 +3757,86 @@ jQuery(document).ready(function () {
 
     });
 
+
+
+    function setupKeywordInput() {
+        var keywordInput = document.querySelector('.keyword_input');
+        keywordInput.addEventListener('input', handleInput);
+    }
+
+
+    function handleInput() {
+        var keywordInput = document.querySelector('.keyword_input');
+        var keywordContainer = document.querySelector('.keyword_container_input');
+        let keywordBlocks = document.querySelectorAll('.k_input');
+        let k_count = keywordBlocks.length;
+
+        if (keywordInput.value.includes(',') || keywordInput.value.includes('\n')) {
+            var inputText = keywordInput.value;
+            var commaIndex = inputText.indexOf(',');
+            var newlineIndex = inputText.indexOf('\n');
+            var endIndex = Math.min(commaIndex !== -1 ? commaIndex : Infinity, newlineIndex !== -1 ? newlineIndex : Infinity);
+
+            if (endIndex !== -1) {
+                var newKeyword = inputText.substring(0, endIndex).trim();
+                keywordInput.value = inputText.substring(endIndex + 1).trim();
+
+                if (newKeyword !== '') {
+                    var newKeywordBlock = document.createElement('div');
+                    newKeywordBlock.className = 'keyword';
+                    newKeywordBlock.innerHTML = newKeyword +
+                        '<span class="close" ></span><input data-id="k_'+k_count+'" class="k_input" type="hidden" value="'+newKeyword+'">';
+
+                    keywordContainer.appendChild(newKeywordBlock);
+                }
+            }
+        }
+    }
+    jQuery('body').on('click', '.keyword .close ', function (e) {
+        let prnt = jQuery(this).parent('.keyword');
+        prnt.remove();
+
+
+    });
+
+
+
+    jQuery('body').on('click', '.add_movie_keyword, .edit_movie_keyword ', function (e) {
+
+
+
+
+        if (jQuery(this).hasClass('edit_movie_keyword')) {
+            var prnt = jQuery(this).parents('.note.edit');
+            var id = prnt.attr('id');
+        }
+        else {
+            var id = jQuery(this).attr('id-data');
+        }
+
+
+        jQuery.ajax({
+            type: 'POST',
+            data: {
+                'oper': 'add_keywords',
+                'id': id
+            },
+            url: crowdsource_url,
+            success: function (html) {
+                if (debug_mode) {
+                    console.log('add_keywords', html);
+                }
+                add_popup();
+                jQuery('.popup-content').html('<div id="' + id + '" class="default_popup"><h2>Add keywords:</h2><p>Please help improve ZR, add a keywords</p>' + html + '</div>');
+                jQuery('input[id="action-popup"]').click();
+
+                setupKeywordInput();
+
+            }
+        });
+
+        return false;
+    });
     jQuery('body').on('click', '.add_critic, .edit_critic', function (e) {
 
         if (jQuery(this).hasClass('edit_critic')) {

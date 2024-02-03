@@ -136,10 +136,18 @@ public  static function  get_language($mid)
 {
   $q="SELECT * FROM `data_movie_tmdb` WHERE `mid` = ".$mid." LIMIT 1";
   $r = Pdo_an::db_results_array($q);
-  $data = $r[0];
-  if ($data)
+    $slug = $r[0]['original_language'];
+    if (!$slug)
+    {
+        $q="SELECT `original_language` FROM `data_movie_imdb` WHERE `id` = ".$mid." LIMIT 1";
+        $r = Pdo_an::db_results_array($q);
+        $slug = $r[0]['original_language'];
+
+    }
+
+  if ($slug)
   {
-      $slug = $data['original_language'];
+
       if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
           define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
       }
@@ -158,10 +166,11 @@ public  static function  get_language($mid)
 
     if ($language)
     {
-        return '<div class="block"><span>Original Language: </span><a href="/search/lang_'.$slug.'">'.$language->title.'</a></div>';
+        return '<div class="block"><span>Language: </span><a href="/search/lang_'.$slug.'">'.$language->title.'</a></div>';
     }
 
-  }else
+  }
+  else
   {
       $q="SELECT `language` FROM `data_movie_imdb` WHERE `id` = ".$mid." LIMIT 1";
         $r = Pdo_an::db_results_array($q);

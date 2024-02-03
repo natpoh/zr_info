@@ -126,7 +126,7 @@ class AnalyticsFront extends SearchFacets {
     public $setup = array(
         'cwj' => array('title' => 'Combine White & Jew', 'tab' => 'ethnicity'),
         'noclasters' => array('title' => 'No Clusters', 'tab' => 'ethnicity'),
-        'inflation' => array('title' => 'Adjust for inflation', 'tab' => 'all', 'note' => 'Our inflation adjustments are calculated using the official CPI records published by the U.S. Department of Labor.<br /><br />Source:<br /><a rel="nofollow" target="_blank" href="https://www.officialdata.org/us/inflation/">https://www.officialdata.org/us/inflation/</a>'),
+        'inflation' => array('title' => 'Adjust for inflation', 'tab' => 'all', 'note' => 'Our inflation adjustments are calculated using the official CPI records published by the U.S. Department of Labor.'),
     );
     public $array_ethnic_data = array(
         // Race
