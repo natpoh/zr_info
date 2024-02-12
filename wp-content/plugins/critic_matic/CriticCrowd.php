@@ -155,7 +155,7 @@ class CriticCrowd extends AbstractDB {
     }
 
     private function renew_error_crowd($count = 100, $debug = false) {
-        $max_error_count = 10;
+        $max_error_count = 20;
         $time = $this->curr_time();
         $wait_time = $time - 600;
         $sql = sprintf("SELECT * FROM {$this->db['critic_crowd']} WHERE status=2 AND review_id=0 AND last_update < %d ORDER BY id ASC LIMIT %d", $wait_time, $count);
