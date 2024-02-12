@@ -65,7 +65,7 @@ class CriticCrowd extends AbstractDB {
         $sql = sprintf("SELECT * FROM {$this->db['critic_crowd']} WHERE critic_status=0 ORDER BY id ASC LIMIT %d", $count);
         $results = $this->db_results($sql);
         if ($debug) {
-            print_r(array('publish',$results));
+            print_r(array('publish', $results));
         }
 
         // Log status cron
@@ -161,9 +161,9 @@ class CriticCrowd extends AbstractDB {
         $sql = sprintf("SELECT * FROM {$this->db['critic_crowd']} WHERE status=2 AND review_id=0 AND last_update < %d ORDER BY id ASC LIMIT %d", $wait_time, $count);
         $results = $this->db_results($sql);
         if ($debug) {
-            print_r(array('renew',$results));
+            print_r(array('renew', $results));
         }
-        $log_status=0;
+        $log_status = 0;
         if ($results) {
             foreach ($results as $item) {
                 // Get last error logs count
@@ -175,13 +175,13 @@ class CriticCrowd extends AbstractDB {
                     $data['critic_status'] = 0;
                     // New
                     $data['status'] = 0;
-                    $msg = "Renew, max error count:".$result;
+                    $msg = "Renew, max error count:" . $result;
                 } else {
                     // Rejected
                     $data['status'] = 3;
-                    $msg = "Rejected, max error count:".$result;
+                    $msg = "Rejected, max error count:" . $result;
                 }
-                
+
                 $this->log_info($msg, $item->id, $log_status);
                 $this->update_crowd($item->id, $data);
             }
@@ -469,24 +469,23 @@ class CriticCrowd extends AbstractDB {
 
         $view_type = $this->cm->get_post_view_type($link);
 
-        // Is youtube
-        $youtube = false;
-        if ($view_type == 1) {
-            $youtube = true;
-        }
-
         $cp = $this->cm->get_cp();
 
-        if ($youtube) {
-            $cpyoutube = $cp->get_cpyoutube();
-            // Get youtube data
-            $result = $cpyoutube->yt_video_data($link);
-            if ($result) {
-                $channelId = $result->channelId;
-                if ($result->description) {
-                    // $date = strtotime($result->publishedAt);
-                    $content = str_replace("\n", '<br />', $result->description);
+        if ($view_type > 0) {
+            // Is youtube
+            if ($view_type == 1) {
+                $cpyoutube = $cp->get_cpyoutube();
+                // Get youtube data
+                $result = $cpyoutube->yt_video_data($link);
+                if ($result) {
+                    $channelId = $result->channelId;
+                    if ($result->description) {
+                        // $date = strtotime($result->publishedAt);
+                        $content = str_replace("\n", '<br />', $result->description);
+                    }
                 }
+            } else {
+                // Bichude, odysee
             }
         } else {
             ///get main data
