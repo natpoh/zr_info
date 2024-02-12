@@ -163,18 +163,27 @@ class CriticCrowd extends AbstractDB {
         if ($debug) {
             print_r(array('renew',$results));
         }
+        $log_status=0;
         if ($results) {
             foreach ($results as $item) {
                 // Get last error logs count
                 $sql = sprintf("SELECT COUNT(*) FROM {$this->db['log']} WHERE cid=%d AND type=2", $item->id);
                 $result = $this->db_get_var($sql);
+                $data = array();
                 if ($result <= $max_error_count) {
-                    // Update critic crowd
-                    $data = array();
+                    // Update critic crowd                    
                     $data['critic_status'] = 0;
+                    // New
                     $data['status'] = 0;
-                    $this->update_crowd($item->id, $data);
+                    $msg = "Renew, max error count:".$result;
+                } else {
+                    // Rejected
+                    $data['status'] = 3;
+                    $msg = "Rejected, max error count:".$result;
                 }
+                
+                $this->log_info($msg, $item->id, $log_status);
+                $this->update_crowd($item->id, $data);
             }
         }
     }
