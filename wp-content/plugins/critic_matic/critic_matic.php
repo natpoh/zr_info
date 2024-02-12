@@ -1717,6 +1717,47 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('id', 'last_upd', 'mid'), "cache_movie_director_meta");
+    
+    
+    /*
+     * Watch list
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `watch_list`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `date` int(11) NOT NULL DEFAULT '0',
+                                `last_update` int(11) NOT NULL DEFAULT '0',
+                                `uid` int(11) NOT NULL DEFAULT '0',
+                                `share` int(11) NOT NULL DEFAULT '0',
+                                `name` varchar(255) NOT NULL default '',                                
+				PRIMARY KEY  (`id`)
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('date', 'uid', 'share'), "watch_list");
+    
+    /*
+     * lid - list id
+     * mid - movie id
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `watch_item`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `date` int(11) NOT NULL DEFAULT '0',
+                                `lid` int(11) NOT NULL DEFAULT '0',
+                                `mid` int(11) NOT NULL DEFAULT '0',
+                                `weight` int(11) NOT NULL DEFAULT '0',
+				PRIMARY KEY  (`id`)
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('date', 'lid', 'mid'), "watch_item");
+    
+    
+    /*
+     * Critic crowd last update
+     */
+    $sql = "ALTER TABLE `data_critic_crowd` ADD `last_update` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {

@@ -1,14 +1,6 @@
 <?php
 
-/*
- * TODO
- * get data from crowd db
- * validate data
- * public critic or moderate
- */
-
 /**
- * Description of CriticCrowd
  *
  * @author brahman
  */
@@ -25,7 +17,8 @@ class CriticCrowd extends AbstractDB {
     public $status = array(
         0 => 'Waiting',
         1 => 'Approved',
-        2 => 'Rejected'
+        2 => 'Error',
+        3 => 'Rejected',
     );
     private $log_type = array(
         0 => 'Info',
@@ -55,29 +48,24 @@ class CriticCrowd extends AbstractDB {
 
         //Check option auto_publish_crowdsource 
         $auto_publish_crowdsource = $this->get_option('auto_publish_crowdsource');
-        if ($debug) {            
-            print_r(array('auto_publish_crowdsource', $auto_publish_crowdsource?'on':'off'));
+        if ($debug) {
+            print_r(array('auto_publish_crowdsource', $auto_publish_crowdsource ? 'on' : 'off'));
         }
         if ($auto_publish_crowdsource) {
+
+            // Publish new crowd
             $this->publish_new_crowd($count, $debug);
+
+            // Try to parsing error crowd
+            $this->renew_error_crowd($count, $debug);
         }
-        /*
-          // 1. Get new crowd and create posts
-          $this->get_new_crowd($count, $debug);
-
-          // 2. Calculate rating
-          $this->calculate_posts($count, $debug);
-
-          // 3. Get admin approved posts
-          $this->get_approved_posts($count, $debug);
-         */
     }
 
     private function publish_new_crowd($count = 100, $debug = false) {
         $sql = sprintf("SELECT * FROM {$this->db['critic_crowd']} WHERE critic_status=0 ORDER BY id ASC LIMIT %d", $count);
         $results = $this->db_results($sql);
         if ($debug) {
-            print_r($results);
+            print_r(array('publish',$results));
         }
 
         // Log status cron
@@ -161,6 +149,31 @@ class CriticCrowd extends AbstractDB {
                         $msg = "Add movie $movie_id to post $cid";
                         $this->log_info($msg, $id, $log_status);
                     }
+                }
+            }
+        }
+    }
+
+    private function renew_error_crowd($count = 100, $debug = false) {
+        $max_error_count = 10;
+        $time = $this->curr_time();
+        $wait_time = $time - 600;
+        $sql = sprintf("SELECT * FROM {$this->db['critic_crowd']} WHERE status=2 AND review_id=0 AND last_update < %d ORDER BY id ASC LIMIT %d", $wait_time, $count);
+        $results = $this->db_results($sql);
+        if ($debug) {
+            print_r(array('renew',$results));
+        }
+        if ($results) {
+            foreach ($results as $item) {
+                // Get last error logs count
+                $sql = sprintf("SELECT COUNT(*) FROM {$this->db['log']} WHERE cid=%d AND type=2", $item->id);
+                $result = $this->db_get_var($sql);
+                if ($result <= $max_error_count) {
+                    // Update critic crowd
+                    $data = array();
+                    $data['critic_status'] = 0;
+                    $data['status'] = 0;
+                    $this->update_crowd($item->id, $data);
                 }
             }
         }
@@ -415,6 +428,7 @@ class CriticCrowd extends AbstractDB {
     }
 
     public function update_crowd($id = 0, $data) {
+        $data['last_update'] = $this->curr_time();
         $this->sync_update_data($data, $id, $this->db['critic_crowd'], $this->cm->sync_data, 3);
     }
 
@@ -494,7 +508,6 @@ class CriticCrowd extends AbstractDB {
         // Status publish
         $post_status = 1;
 
-
         # $content = $this->cm->clear_utf8($content);
         $date_add = $curr_time;
         $post_data = array(
@@ -516,7 +529,6 @@ class CriticCrowd extends AbstractDB {
         }
 
         $post_id = $this->sync_insert_data($post_data, $this->db['posts'], $this->sync_client, $this->sync_data);
-
 
         if ($post_id > 0) {
             $ret = $post_id;
@@ -823,5 +835,4 @@ class CriticCrowd extends AbstractDB {
         $sql = "DELETE FROM {$this->db['log']} WHERE id>0";
         $this->db_query($sql);
     }
-
 }

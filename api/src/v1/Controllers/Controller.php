@@ -53,6 +53,18 @@ class Controller extends \AbstractDBAn {
         }
     }
 
+    public function responce_404($text = 'Media not found') {
+        http_response_code(404);
+        echo $text;
+        exit;
+    }
+    
+    public function responce_unauthorized() {
+        http_response_code(401);
+        echo 'Unauthorized ' . $_SERVER['HTTP_ORIGIN'];
+        exit;
+    }
+
     public function responce($code = 200, $data = array()) {
         http_response_code($code);
         header('Content-Type: application/json');

@@ -17,11 +17,11 @@ class SearchController extends Controller {
 
     public $sfunction = 'searchMedia';
     public $seach_arr = array();
- 
-    public function __construct($preview_mode=false) {
+
+    public function __construct($preview_mode = false) {
         
     }
-    
+
     /**
      * @OA\Get(
      *     path="/search",
@@ -85,33 +85,32 @@ class SearchController extends Controller {
      * )
      */
     public function searchMedia($query_args = []) {
+
+        $credentials = new \OpenApi\Fd\Credentials();
+        $validate_key = $credentials->validateApiKey($query_args);
+        if ($validate_key == 0) {
+            return $this->responce_unauthorized();
+        }
+
         $pp = isset($query_args['pp']) ? (int) $query_args['pp'] : 20;
         $p = isset($query_args['p']) ? (int) $query_args['p'] : 1;
         $sf = $this->get_sf();
 
         // Init filters
         $sf->init_search_get_fiters($query_args);
-        
-        $fields=\OpenApi\Fd\Models\Media::getSearchFields();
-        $result = $sf->find_results(0, array(), false, true, $pp,-1,true,false,$fields);
 
-        $ret = array();
+        $fields = \OpenApi\Fd\Models\Media::getSearchFields();
+        $result = $sf->find_results(0, array(), false, true, $pp, -1, true, false, $fields);
 
-        // Movies and tv
-        if (isset($result['movies']['list'])) {
+        $count = isset($result['movies']['count']) ? (int) $result['movies']['count'] : 0;
+        $totalPages = ceil($count / $pp);
 
-            $count = isset($result['movies']['count']) ? (int) $result['movies']['count'] : 0;
-            $totalPages = ceil($count / $pp);
-
-            $ret = array(
-                "currentPage" => $p,
-                "totalPages" => $totalPages,
-                "totalCount" => $count,
-                "data" => $this->getMediaFromList($result['movies']['list']),
-            );
-        }
-
-
+        $ret = array(
+            "currentPage" => $p,
+            "totalPages" => $totalPages,
+            "totalCount" => $count,
+            "data" => $this->getMediaFromList($result['movies']['list']),
+        );
         return $this->responce(200, $ret);
     }
 
@@ -120,8 +119,8 @@ class SearchController extends Controller {
         if ($data) {
             $sf = $this->get_sf();
             foreach ($data as $item) {
-               $media = new \OpenApi\Fd\Models\Media((array) $item, $sf);
-               $ret[]=$media->toArray();
+                $media = new \OpenApi\Fd\Models\Media((array) $item, $sf);
+                $ret[] = $media->toArray();
             }
         }
         return $ret;

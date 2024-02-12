@@ -32,14 +32,13 @@ class Bootstrap extends Controllers\Controller {
             $api_valid = true;
             $preview_mode = true;
         }
-        
+        $api_valid = true;
+        /*
         // Trust domain
         if (!$api_valid && isset($_SERVER['HTTP_REFERER']) && in_array($_SERVER['HTTP_REFERER'], $this->trust_domains)) {
             $api_valid = true;            
         }
-
-        
-        
+               
         if (!$api_valid) {
             if (isset($query_args['api_key'])) {
                 $api_key = $query_args['api_key'];
@@ -49,13 +48,11 @@ class Bootstrap extends Controllers\Controller {
                 }
             }
         }
-
-
         if (!$api_valid) {
             http_response_code(401);
             echo 'Unauthorized ' . $_SERVER['HTTP_ORIGIN'];
             exit;
-        }
+        }*/
 
         if ($command == 'search') {
             $controller = new Controllers\SearchController($preview_mode);

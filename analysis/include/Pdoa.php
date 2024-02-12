@@ -360,3 +360,18 @@ class Pdo_cpuinfo extends Pdoa {
     public static $db_charset = DB_CHARSET_CPUINFO;
 
 }
+
+/*
+ * Pdo from api
+ */
+
+class Pdo_fda extends Pdoa {
+
+    public static $pdo = false;
+    public static $db_host = DB_HOST_FDA;
+    public static $db_name = DB_NAME_FDA;
+    public static $db_user = DB_USER_FDA;
+    public static $db_pass = DB_PASSWORD_FDA;
+    public static $db_charset = DB_CHARSET_FDA;
+
+}
