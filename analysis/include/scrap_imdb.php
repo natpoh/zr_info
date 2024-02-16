@@ -3792,8 +3792,6 @@ $tablesQuery = "SHOW TABLES";
     echo "ok";
 }
 
-
-
 if (isset($_GET['auto_publish_crowdsource'])) {
 
 

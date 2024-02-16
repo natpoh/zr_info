@@ -416,12 +416,14 @@ class Import
         }
 
 
-        $sql = "SELECT `text` FROM `commit` WHERE  `uniq_id`  = '".$unique_id."' and `status`= 0  ";
+        $sql = "SELECT `text`, `id` FROM `commit` WHERE  `uniq_id`  = '".$unique_id."' and `status`= 0  ";
         $row = Pdo_an::db_fetch_row($sql);
 
         if ($row && $data)
         {
             ///update
+            $update_id = $row->id;
+
             $text = $row->text;
             if ($text)
             {
@@ -441,7 +443,7 @@ class Import
             $text = json_encode($text);
 
 
-            $sql = "UPDATE `commit` SET `text`=? , `last_update`=? WHERE `uniq_id`  = '".$unique_id."'";
+            $sql = "UPDATE `commit` SET `text`=? , `last_update`=? WHERE `id`  = '".$update_id."'";
             Pdo_an::db_results_array($sql,array($text,time()));
 
         }
