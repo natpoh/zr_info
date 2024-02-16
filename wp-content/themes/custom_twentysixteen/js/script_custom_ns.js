@@ -1,3 +1,8 @@
+var arraymetastring = new Object();
+var array_poviders = new Object();
+var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
+
+
 jQuery(document).ready(function () {
     //Ajax loading
     jQuery("body").append('<div id="loading">Loading</div>');        
@@ -9,9 +14,6 @@ jQuery(document).ready(function () {
     });
 
     //search
-    var arraymetastring = new Object();
-    var array_poviders = new Object();
-    var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
 
     function enable_moble()
     {
@@ -170,7 +172,7 @@ jQuery(document).ready(function () {
         jQuery.ajax({
             type: 'POST',
             data: {id: id, 'request': 'get_trailer'},
-            url: window.location.protocol + template_path + "get_movie_data.php",
+            url:  template_path + "get_movie_data.php",
             success: function (html) {
 
                 if (html)

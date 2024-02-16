@@ -1277,7 +1277,7 @@ else if ($_POST['oper'] === 'get_actordata') {
                             arsort($actor_data);
                             $key = array_keys($actor_data);
 
-                            $surname = $array_compare[$r['verdict']];
+                            $surname = $array_compare_cache[$r['verdict']];
 
 
                             if ($surname) {
@@ -1289,7 +1289,7 @@ else if ($_POST['oper'] === 'get_actordata') {
 
                             echo '<div class="small_desc">';
                             foreach ($actor_data as $i => $v) {
-                                echo $array_compare[$i] . ': ' . $v . '%<br>';
+                                echo $array_compare_cache[$i] . ': ' . $v . '%<br>';
                             }
                             echo '</div>';
 
@@ -1364,7 +1364,7 @@ else if ($_POST['oper'] === 'get_actordata') {
 
                         echo '<div class="small_desc">';
                         foreach ($array_race as $i => $v) {
-                            echo $array_compare[$i] . ': ' . $v . '%<br>';
+                            echo $array_compare_cache[$i] . ': ' . $v . '%<br>';
                         }
                         echo '</div>';
 
@@ -1478,7 +1478,7 @@ else if ($_POST['oper'] === 'get_actordata') {
                             if ($r['verdict']) {
 
                                 echo '<div class="small_desc">';
-                                echo $array_compare[$r['verdict']] . '<br>';
+                                echo $array_compare_cache[$r['verdict']] . '<br>';
                                 echo '</div>';
 
                             }

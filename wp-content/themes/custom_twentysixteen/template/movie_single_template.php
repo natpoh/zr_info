@@ -553,6 +553,7 @@ if (!function_exists('template_single_movie')) {
                         if (function_exists('current_user_can')) {
                             if (current_user_can("administrator")) {
                                 print 'Movie <a class="link_adimin_info" target="_blank" href="https://info.antiwoketomatoes.com/wp-admin/admin.php?page=critic_matic_movies&mid=' . $id . '">adimin info</a>.<br />';
+                             ///   print 'Watchlist test <button class="add_watchlist">Save</button><br />';
                             }
                         }
 

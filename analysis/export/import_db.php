@@ -416,7 +416,7 @@ class Import
         }
 
 
-        $sql = "SELECT `text` FROM `commit` WHERE `uniq_id`  = '".$unique_id."'";
+        $sql = "SELECT `text` FROM `commit` WHERE  `uniq_id`  = '".$unique_id."' and `status`= 0  ";
         $row = Pdo_an::db_fetch_row($sql);
 
         if ($row && $data)
@@ -431,8 +431,13 @@ class Import
             {
                 $text = [];
             }
+            ///check dublicate
+            if (!in_array($data,$text))
+            {
+                $text[]=$data;
+            }
 
-            $text[]=$data;
+
             $text = json_encode($text);
 
 
@@ -442,6 +447,7 @@ class Import
         }
         else
         {
+
             if ($data)
             {
                 $data_string = json_encode(array(0=>$data));

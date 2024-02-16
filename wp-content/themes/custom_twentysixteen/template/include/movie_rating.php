@@ -64,14 +64,15 @@ class RWT_RATING
         $indie = $this->box_office($rwt_id);
 
 
-
        $array_result = array('type'=>$type,'male' => $gender['male'], 'female' => $gender['female'],
            'diversity' => $gender['diversity'], 'diversity_data' => $gender['diversity_data'], 'family' => $family['pgrating'], 'family_data' => $family['pg_data'],
            'qtia_warning'=>$family['qtia_warning'],'qtia_text'=>$family['qtia_text'],
            'lgbt_warning'=>$family['lgbt_warning'],'lgbt_text'=>$family['lgbt_text'],
            'woke'=>$family['woke'],'woke_text'=>$family['woke_text'],'total_rating'=>$total_rwt,'indie'=>$indie);
 
-
+///["total_rating"]=> array(2) { ["imdb_rating"]=> float(3.15) ["total_rating"]=> float(3.15) }
+///["total_rating"]=> array(2) { ["imdb_rating"]=> string(0) "" ["total_rating"]=> float(3.15) }
+///
 
 
         return $array_result;
@@ -490,15 +491,19 @@ class RWT_RATING
 
     public function rwt_total_rating($id)
     {
-        $rating =  PgRatingCalculate::rwt_total_rating($id);
+        $rating =  PgRatingCalculate::rwt_total_rating($id,1,1);
+
 ///check and update
-        $last_update = $rating['last_update'];
+        $last_update = $rating['last_upd'];
+        unset( $rating['last_upd']);
 
         if ($last_update<time() - 86400*7)
         {
-            PgRatingCalculate::add_movie_rating($id);
-            $rating =  PgRatingCalculate::rwt_total_rating($id);
+          PgRatingCalculate::add_movie_rating($id);
+          $rating =  PgRatingCalculate::rwt_total_rating($id,0);
         }
+
+
 
         return $rating;
     }

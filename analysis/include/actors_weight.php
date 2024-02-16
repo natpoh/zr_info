@@ -225,8 +225,8 @@ foreach ($rows as $row)
             }
             else
             {
-                $sql = "update `data_actors_meta` set n_verdict =?  where id = ".$row['id']." ";
-                Pdo_an::db_results_array($sql,array($verdict));
+                $sql = "update `data_actors_meta` set n_verdict =?, last_update=?  where id = ".$row['id']." ";
+                Pdo_an::db_results_array($sql,[$verdict,time()]);
                 $sync_data=1;
 
             }

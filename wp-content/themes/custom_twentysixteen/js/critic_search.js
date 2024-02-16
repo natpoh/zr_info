@@ -1097,7 +1097,7 @@ critic_search.add_filter = function (type = '', id = '', title = '', name = '', 
 }
 
 critic_search.add_clear_all = function () {
-
+    var $ = jQuery;
     var clear_url = '/search';
     if (typeof search_extend !== 'undefined') {
         clear_url = '/analytics';

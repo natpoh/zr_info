@@ -631,6 +631,9 @@ body.theme_white .section_ethnic  .highcharts-label text> tspan.highcharts-text-
     display: none;
 }
 
+.keyword_container p.center {
+    padding: 12px;
+}
 
 .section_chart {
     height: 260px;
@@ -2037,6 +2040,15 @@ div.sortable {
         bottom: -29px;
         content:'Audience Sentiment';
     }
+
+    .movie_total_rating>.rating_block>div.mt_gap:after{
+        bottom: -32px;
+        content:'Audience Sentiment';
+    }
+
+
+
+
     .movie_total_rating>.rating_block>div.diversity:after{
 
         content:'Representation';

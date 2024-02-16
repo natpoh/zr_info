@@ -350,7 +350,7 @@ $array_compare_cache = array('Sadly, not'  => 'N/A','1' => 'N/A', '2' => 'N/A', 
 $array_convert = array('2' => 'Male', '1' => 'Female', '0' => 'NA');
 
 $array_type=array(
-    "n_crowd"=>'CROWDSOURCE:' ,
+    "n_crowdsource"=>'CROWDSOURCE:' ,
     "n_jew"=>'JEWORNOTJEW:' ,
     "n_ethnic"=>'ETHNICELEBS:',
 "n_kairos"=>'KAIROS FACIAL RECOGNITION:'  ,

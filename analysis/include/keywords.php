@@ -34,6 +34,12 @@ class Movie_Keywords {
 
           return $content;
       }
+
+      if (!$content)
+      {
+          $content = '<p class="center">No keywords yet. Please help improve ZR and add some: </p>';
+      }
+
         $content = '<div class="keyword_container">'.$content.'<button id-data="'.$mid.'" class="add_movie_keyword add_button" >Add</button></div>';
 
         return $content;
@@ -80,10 +86,10 @@ class Movie_Keywords {
 
     }
 
-    public function front($mid,$return_data = 0,$type=0)
+    public function front($mid,$return_data = 0)
     {
         ///get movie keywors
-        $array_keys = $this->get_movie_keys($mid,$type);
+        $array_keys = $this->get_movie_keys($mid,'all');
         $sql='';
         if ($array_keys) {
             foreach ($array_keys as $row) {
@@ -93,7 +99,7 @@ class Movie_Keywords {
             }
             if ($sql) {
                 $sql = substr($sql, 2);
-                $q = "SELECT * FROM `meta_keywords` where `type` =".$type." and " . $sql;
+                $q = "SELECT * FROM `meta_keywords` where " . $sql;
                 $data = Pdo_an::db_results_array($q);
                 if ($data)
                 {
@@ -113,11 +119,11 @@ class Movie_Keywords {
 
         }
 
-        if ($result)
-        {   asort($result);
-
-            $content = $this->to_key_content($result,0,$mid);
+        if ($result) {
+            asort($result);
         }
+            $content = $this->to_key_content($result,0,$mid);
+
 
         if ($return_data)
         {
@@ -144,7 +150,7 @@ class Movie_Keywords {
             }
             if ($sql) {
                 $sql = substr($sql, 2);
-                $q = "SELECT * FROM `meta_keywords` where `type` =".$type." and  " . $sql;
+                $q = "SELECT * FROM `meta_keywords` where  " . $sql;
                 $data = Pdo_an::db_results_array($q);
                 if ($data)
                 {
@@ -234,7 +240,16 @@ class Movie_Keywords {
     private function get_movie_keys($mid,$type=0)
     {
 
-        $q ="SELECT * FROM `meta_movie_keywords` WHERE  mid = ".$mid." and `type`=".$type;
+        if ($type=='all')
+        {
+            $q ="SELECT * FROM `meta_movie_keywords` WHERE  mid = ".$mid;
+        }
+        else
+        {
+            $q ="SELECT * FROM `meta_movie_keywords` WHERE  mid = ".$mid." and `type`=".$type;
+        }
+
+
 
         $row = Pdo_an::db_results_array($q);
         if ($row)return $row;

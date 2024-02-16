@@ -370,8 +370,9 @@ if (id)
         if (id) {
             var th = jQuery('.play_trailer[id="' + id + '"]');
         }
+
         jQuery.ajax({
-            type: 'post',
+            type: 'POST',
             data: {id: id,'request':'get_trailer'},
             url: site_url + template_path + "get_movie_data.php",
             success: function (html) {

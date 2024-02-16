@@ -1,0 +1,46 @@
+.login .wp-pwd-zr {
+    position: relative;
+}
+.login .button.wp-hide-pw-zr {
+    background: 0 0;
+    border: 1px solid transparent;
+    box-shadow: none;
+    font-size: 14px;
+    line-height: 2;
+    width: 2.5rem;
+    height: 2.5rem;
+    min-width: 40px;
+    min-height: 40px;
+    margin: 0;
+    padding: 5px 9px;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.login .button.wp-hide-pw-zr .dashicons {
+    width: 1.25rem;
+    height: 1.25rem;
+    position: relative;
+    top: 3px;    
+    font-size: 20px;
+}
+
+#login form p.submit.reset-pass-submit {
+    margin-bottom: 10px;
+}
+
+#pass-strength-result.empty {
+    display: none!important;
+}
+
+
+#user_login.valid,
+#user_email.valid {
+    border-color: #68de7c;
+}
+
+#user_login.invalid,
+#user_email.invalid {
+    border-color: #e65054;
+}

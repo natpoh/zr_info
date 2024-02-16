@@ -39,7 +39,6 @@ require_once (STYLESHEETPATH . '/app/PandoraScripts.php');
 require_once (STYLESHEETPATH . '/app/PandoraStyles.php');
 require_once (STYLESHEETPATH . '/app/TextOp.php');
 
-
 # Long cookies for authors
 
 $version = '1.0';
@@ -63,7 +62,7 @@ wp_enqueue_script('transition', $themepath . '/js/bs3/transition.js', array('jqu
 wp_enqueue_script('bs3', $themepath . '/js/bs3/bootstrap.min.js', array('jquery'), false, true);
 
 if (function_exists('isAuthorPage')) {
-    if (isAuthorPage()) {        
+    if (isAuthorPage()) {
         wp_enqueue_script('author', $themepath . '/js/author_12.js', array('jquery'), $version, true);
         wp_enqueue_style('users-profile', get_template_directory_uri() . '/css/user-profile.css?', array('dashicons'), $version);
         //wp_enqueue_style( 'dashicons-profile', get_stylesheet_uri(), array( 'dashicons' ), $version);
@@ -75,15 +74,112 @@ add_action('wp_print_styles', 'custom_styles', 100);
 wp_enqueue_style('users-style', get_template_directory_uri() . '/css/users.css?', array(), $version);
 wp_enqueue_style('fontello', $themepath . '/fontello/css/fontello.css', array(), $version);
 
+// Custom login
+add_action('wp_ajax_zr_check_username', 'zr_check_username_ajax');
+add_action('wp_ajax_nopriv_zr_check_username', 'zr_check_username_ajax');
+
+function zr_check_username_ajax() {
+    $errors = new WP_Error();
+    $ret = array('valid' => 1, 'err' => '');
+
+    $user_field = '';
+    $field_name = '';
+
+    if (isset($_POST['user_field']) && is_string($_POST['user_field'])) {
+        $user_field = wp_unslash($_POST['user_field']);
+    }
+    $sanitized_user_field = sanitize_user($user_field);
+
+    if (isset($_POST['name']) && is_string($_POST['name'])) {
+        $field_name = wp_unslash($_POST['name']);
+    }
+
+    if ($field_name == 'user_login') {
+        // Check the username.
+        $user_login = $user_field;
+        $sanitized_user_login = $sanitized_user_field;
+        if ('' === $sanitized_user_login) {
+            $errors->add('empty_username', __('<strong>Error:</strong> Please enter a username.'));
+        } elseif (!validate_username($user_login)) {
+            $errors->add('invalid_username', __('<strong>Error:</strong> This username is invalid because it uses illegal characters. Please enter a valid username.'));
+            $sanitized_user_login = '';
+        } elseif (username_exists($sanitized_user_login)) {
+            $errors->add('username_exists', __('<strong>Error:</strong> This username is already registered. Please choose another one.'));
+        } else {
+            /** This filter is documented in wp-includes/user.php */
+            $illegal_user_logins = (array) apply_filters('illegal_user_logins', array());
+            if (in_array(strtolower($sanitized_user_login), array_map('strtolower', $illegal_user_logins), true)) {
+                $errors->add('invalid_username', __('<strong>Error:</strong> Sorry, that username is not allowed.'));
+            }
+        }
+    } else if ($field_name == 'user_email') {
+        $user_email = $user_field;
+        // Check the email address.
+        if ('' === $user_email) {
+            $errors->add('empty_email', __('<strong>Error:</strong> Please type your email address.'));
+        } elseif (!is_email($user_email)) {
+            $errors->add('invalid_email', __('<strong>Error:</strong> The email address is not correct.'));
+            $user_email = '';
+        } elseif (email_exists($user_email)) {
+            $errors->add(
+                    'email_exists',
+                    sprintf(
+                            /* translators: %s: Link to the login page. */
+                            __('<strong>Error:</strong> This email address is already registered. <a href="%s">Log in</a> with this address or choose another one.'),
+                            wp_login_url()
+                    )
+            );
+        }
+    }
+
+    if ($errors->has_errors()) {
+        $ret['valid'] = 0;
+        $ret['err'] = zr_login_error($errors);
+    }
+
+    print json_encode($ret);
+
+    wp_die();
+}
+
+function zr_login_error($wp_error) {
+    if ($wp_error->has_errors()) {
+        $error_list = array();
+        $messages = '';
+
+        foreach ($wp_error->get_error_codes() as $code) {
+            $severity = $wp_error->get_error_data($code);
+            foreach ($wp_error->get_error_messages($code) as $error_message) {
+                if ('message' === $severity) {
+                    $messages .= '<p>' . $error_message . '</p>';
+                } else {
+                    $error_list[] = $error_message;
+                }
+            }
+        }
+        $errors = '';
+        if (!empty($error_list)) {
 
 
+            if (count($error_list) > 1) {
+                $errors .= '<ul class="login-error-list">';
 
+                foreach ($error_list as $item) {
+                    $errors .= '<li>' . $item . '</li>';
+                }
 
+                $errors .= '</ul>';
+            } else {
+                $errors .= '<p>' . $error_message . '</p>';
+            }
+        }
+    }
+    return $errors;
+}
 
 function add_custom_css() {
 
-    $color_scheme = array('1'=>'#ff0000','2'=>'#ffff00','3'=>'#0000ff','4'=>'#00ff00');
-
+    $color_scheme = array('1' => '#ff0000', '2' => '#ffff00', '3' => '#0000ff', '4' => '#00ff00');
 
     $primary_colors = array();
     for ($i = 1; $i <= 4; $i++) {
@@ -95,23 +191,17 @@ function add_custom_css() {
     for ($i = 0; $i < 4; $i++) {
         $custom_css .= "--primary-color-" . ($i + 1) . ": " . $primary_colors[$i] . "; ";
     }
-    $custom_css.= "}";
+    $custom_css .= "}";
 
     echo '<style type="text/css">' . $custom_css . '</style>';
 }
 
-
-
-
-
 //add_action('wp_head', 'add_custom_css');
 
-if(!class_exists('ThemeColor'))
-{
+if (!class_exists('ThemeColor')) {
 
-    wp_enqueue_style('custom-plugin-styles', get_template_directory_uri() . '/css/theme-style-colors.css',LASTVERSION);
+    wp_enqueue_style('custom-plugin-styles', get_template_directory_uri() . '/css/theme-style-colors.css', LASTVERSION);
 }
-
 
 function custom_login_logo() {
 
@@ -129,7 +219,7 @@ function custom_login_logo() {
         }
         body.login  {
             background-color: #1a1a1a;
-         }
+        }
         body.login #backtoblog a, body.login #nav a {
             text-decoration: none;
             color: #599ee4;
@@ -141,6 +231,7 @@ function custom_login_logo() {
     </style>
     <?php
 }
+
 add_action('login_enqueue_scripts', 'custom_login_logo');
 
 function custom_styles() {
@@ -407,7 +498,6 @@ function twentysixteen_widgets_init() {
             )
     );
 
-
     register_sidebar(
             array(
                 'name' => __('Background ads', 'twentysixteen'),
@@ -516,8 +606,8 @@ if (!function_exists('twentysixteen_fonts_url')) :
         if ($fonts) {
             $fonts_url = add_query_arg(
                     array(
-                'family' => urlencode(implode('|', $fonts)),
-                'subset' => urlencode($subsets),
+                        'family' => urlencode(implode('|', $fonts)),
+                        'subset' => urlencode($subsets),
                     ), 'https://fonts.googleapis.com/css'
             );
         }
@@ -575,8 +665,6 @@ function twentysixteen_scripts() {
     // Load the html5 shiv.
     wp_enqueue_script('twentysixteen-html5', get_template_directory_uri() . '/js/html5.js', array(), '3.7.3');
     wp_script_add_data('twentysixteen-html5', 'conditional', 'lt IE 9');
-
-
 
     wp_enqueue_script('twentysixteen-skip-link-focus-fix', get_template_directory_uri() . '/js/skip-link-focus-fix.js', array(), '20160816', true);
 
@@ -645,7 +733,7 @@ function twentysixteen_body_classes($classes) {
     if (!is_singular()) {
         $classes[] = 'hfeed';
     }
-    if ( current_user_can("administrator")) {
+    if (current_user_can("administrator")) {
         $classes[] = 'is_admin';
     }
     return $classes;
@@ -773,9 +861,6 @@ function twentysixteen_widget_tag_cloud_args($args) {
 
 add_filter('widget_tag_cloud_args', 'twentysixteen_widget_tag_cloud_args');
 
-
-
-
 /////////////////////////////////////custom functions///////////////////////////////////////////////////////////
 
 if (!function_exists('fileman')) {
@@ -822,7 +907,6 @@ if (!function_exists('wp_theme_cache')) {
             return null;
 
         $cachename = $name;
-
 
         if (function_exists('check_and_create_dir')) {
 
@@ -876,7 +960,6 @@ if (!function_exists('wp_theme_cache')) {
 
             $string = ob_get_contents();
             ob_end_clean();
-
 
             $fp = fopen($file_name, "w");
             fwrite($fp, $string);
@@ -1001,7 +1084,6 @@ if (!function_exists('load_cache')) {
 
         $file_name = $path . '/' . $cachename . '.html';
 
-
         if (file_exists($file_name)) {
 
             $fbody = file_get_contents($file_name);
@@ -1024,16 +1106,12 @@ function wp_theme_cache2($name = null, $filename = null, $path = 'wp-content/upl
 
     $cachename = $filename != null ? $filename : $name;
 
-
     if (function_exists('check_and_create_dir')) {
         check_and_create_dir($path);
     }
     $file_name = $path . '/' . $cachename . '.html';
 
-
     $cached = false;
-
-
 
     if (file_exists($file_name)) {
 
@@ -1057,7 +1135,6 @@ function wp_theme_cache2($name = null, $filename = null, $path = 'wp-content/upl
         $name();
         $string = ob_get_contents();
         ob_end_clean();
-
 
         $fp = fopen($file_name, "w");
         fwrite($fp, $string);
@@ -1088,7 +1165,6 @@ if (!function_exists('getCurlCookie')) {
     function getCurlCookie($url = '', $useheder = '') {
 
         $cookie_path = ABSPATH . 'wp-content/uploads/cookies.txt';
-
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -1137,7 +1213,6 @@ function get_youtube_title($video_code) {
 
     $content = getCurlCookie($link);
 
-
     $regv = '#title>([^\<]+)#';
     $regv2 = '#,\"title\"\:\"([^\"]+)\"\,#';
 
@@ -1168,10 +1243,7 @@ function walker_nav_menu_start_el_check($item_output, $item) {
 
     $term_id = $item->object_id;
 
-
     $term_dop_link = get_term_meta($term_id, 'term_dop_link', true);
-
-
 
     if ($term_dop_link) {
         $term_dop_icon = get_term_meta($term_id, 'term_dop_icon', true);
@@ -1186,7 +1258,6 @@ function walker_nav_menu_start_el_check($item_output, $item) {
 <div class="headline">' . $term_dop_title . '</div>
 <div class="copy">' . $term_dop_text . '</div>
 </div></a></div>';
-
 
             $item_output .= $featured;
         }
@@ -1204,9 +1275,6 @@ function nav_menu_item_title_check($title, $item) {
 
     $icon_w = get_term_meta($term_id, 'term_icon_w', true);
     $icon_b = get_term_meta($term_id, 'term_icon_b', true);
-
-
-
 
     if ($icon_w) {
         $nav_icon_w = '<img class="nav_icon_w" src="' . $icon_w . '" />';
@@ -1265,7 +1333,6 @@ function check_enable_images($img) {
     $response = curl_exec($ch);
     curl_close($ch);
 
-
     /// var_dump($response);
 
     if (strstr($response, '404 Not Found')) {
@@ -1278,10 +1345,8 @@ function check_enable_images($img) {
 function get_video_max($data) {
     $regv = '#([htpvahs]{3,7})*(\:\/\/)*(www.)*(youtu)(be.com\/)*(watch\?)*(v=)*(embed)*(\.be\/)*(be:)*(v\/)*(p=)*(\/)*([a-zA-Z0-9\-_]{8,13})#';
 
-
     if (preg_match($regv, $data, $macth)) {
         $img = 'https://img.youtube.com/vi/' . $macth[14] . '/maxresdefault.jpg';
-
 
         if (!check_enable_images($img)) {
             $img = 'https://img.youtube.com/vi/' . $macth[14] . '/mqdefault.jpg';
@@ -1317,8 +1382,7 @@ function get_image_content($content) {
     } else if (preg_match('#<img.*src="(.*)"#iU', $content, $match)) {
         if (count($match) == 2)
             return $match[1];
-    }
-    else if (preg_match("#<img.*src='(.*)'#iU", $content, $match)) {
+    } else if (preg_match("#<img.*src='(.*)'#iU", $content, $match)) {
         if (count($match) == 2)
             return $match[1];
     }
@@ -1351,9 +1415,6 @@ function check_custom_tsumb($pid) {
 
                     require_once($_SERVER['DOCUMENT_ROOT'] . '/wp-content/themes/custom_twentysixteen/template/include/create_tsumb.php');
 
-
-
-
                     $data = new GETTSUMB;
                     $img = $data->getThumbLocal_custom(375, 180, $_SERVER['DOCUMENT_ROOT'] . '/wp-content/uploads/screencap/' . $pid . '.png');
                 }
@@ -1371,7 +1432,6 @@ function getExcerpt() {
     $link = get_permalink();
     $title = get_the_title();
     $date = get_the_date('d.m.y');
-
 
     $term = get_the_category();
     $cat = $term[0]->name;
@@ -1395,11 +1455,7 @@ function getExcerpt() {
 
     $content = $post->post_content;
 
-
-
     $img = get_the_post_thumbnail($post->ID);
-
-
 
     $excerpt = getExcerptData($link, $title, $img, $catres, $date);
     return $excerpt;
@@ -1418,7 +1474,6 @@ function renderPostItem($echo = 1) {
 function getCacheTeaser() {
     global $post;
 
-
     $tkey = "t-archive-" . $post->ID;
     if (defined('LOCAL_CACHE') && LOCAL_CACHE == true) {
         return wp_theme_cache2('renderPostItem', $tkey);
@@ -1431,15 +1486,10 @@ function getPostItem($post) {
     $postItem = array();
     $postItem['id'] = $post->ID;
 
-
-
-
     $postItem['lastMod'] = mysql2date('G', $post->post_modified, false);
     $postItem['views'] = intval(post_custom('views'));
     $postItem['body'] = getCacheTeaser();
     $postItem['edit'] = '<a href="' . get_edit_post_link() . '">' . __('Edit This') . '</a>';
-
-
 
     return $postItem;
 }
@@ -1451,9 +1501,7 @@ function get_video_views($pid) {
 
     $content = $post->post_content;
 
-
     $regv = '#([htpvahs]{3,7})*(\:\/\/)*(www.)*(youtu)(be.com\/)*(watch\?)*(v=)*(embed)*(\.be\/)*(be:)*(v\/)*(p=)*(\/)*([a-zA-Z0-9\-_]{8,13})#';
-
 
     if (preg_match($regv, $content, $macth)) {
         $code = $macth[14];
@@ -1465,14 +1513,12 @@ function get_video_views($pid) {
 
         $regv2 = '#\\\"viewCount\\\":\\\"([0-9]+)\\\"#';
 
-
         if (preg_match($regv2, $content, $mach)) {
             $views = $mach[1];
 
             ///update views
 
             $views_in_site = get_post_meta($pid, 'views', 1);
-
 
             if ($views_in_site > $views) {
                 $views = $views_in_site;
@@ -1497,14 +1543,11 @@ function contentview($search = false) {
 
     global $type_content;
 
-
-
     while (have_posts()) :
         the_post();
         global $post;
         $ids[] = $post->ID;
         $postItem = getPostItem($post);
-
 
         $postArr[$post->ID] = $postItem;
         $postview[$post->ID] = '';
@@ -1514,8 +1557,6 @@ function contentview($search = false) {
         }
 
     endwhile;
-
-
 
     $editpost = "";
     if (current_user_can('editor') || current_user_can('administrator')) {
@@ -1582,7 +1623,6 @@ function wp_infinitepaginate() {
 
     wp_infiniteContent();
 
-
     exit;
 }
 
@@ -1596,8 +1636,6 @@ function wp_infiniteContent() {
     $cat = $_POST['category'];
     $type_content = $_POST['type_content'];
     $curday = $_POST['curday'];
-
-
 
     if (strstr($type_content, 'trending')) {
         $trending = substr($type_content, 9);
@@ -1627,7 +1665,6 @@ function ajax_load_content() {
         $catlink = '&category=' . $term->term_id;
     }
     global $type_content;
-
 
     if ($type_content) {
         $type_content_link = '&type_content=' . $type_content;
@@ -2162,15 +2199,11 @@ if (!function_exists('custom_wprss_pagination')) {
 
 wp_enqueue_script('script_custom', get_template_directory_uri() . '/js/script_custom_ns.js', array('jquery'), LASTVERSION, true);
 
-
-
-
 if (current_user_can('administrator')) {
 
 
 
     add_action('admin_bar_menu', 'clear_all_cache_menu', 100000);
-
 
     if (!function_exists('clear_all_cache_menu')) {
 
@@ -2220,6 +2253,7 @@ function replace_zr_url($content) {
 
     return preg_replace('/\"http[^\.]+(zeitgeistreviews\.com|zgreviews\.com|rwt.4aoc\.ru)/', '"', $content);
 }
+
 function get_zr_footer() {
     return get_short_zr_url('wp_footer');
 }
@@ -2234,4 +2268,3 @@ function get_short_zr_url($function) {
 
     return $content;
 }
-

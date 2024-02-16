@@ -302,7 +302,7 @@ function create_total_rating(obj, only_tomatoes, rt_gap) {
 
         if (mtcr)
         {
-         content_rating +=  popup_cusomize('row_inner','<div class="exlink" id="metacritic_rating"><span>Metacritic:</span></div>',create_rating_star(mtcr,  'big_rating',100));
+         content_rating +=  popup_cusomize('row_inner','<div class="exlink" id="metacritic_rating"><span>Metacritic Meta:</span></div>',create_rating_star(mtcr,  'big_rating',100));
         }
         if (mtus)
         {
@@ -725,7 +725,7 @@ function create_rating_content(object, m_id, search_block = 0) {
 
         if (!use_mt) {
 
-            total_mt_content =  popup_cusomize('row_link','No <b class="exlink" id="metacritic_rating">Metacritic Rating</b> imported yet.');
+            total_mt_content =  popup_cusomize('row_link','No <b class="exlink" id="metacritic_rating">Metacritic ratings</b> imported yet.');
 
         }
 

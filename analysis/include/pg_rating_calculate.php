@@ -250,7 +250,7 @@ class PgRatingCalculate {
         }
     }
 
-    public static function rwt_total_rating($id) {
+    public static function rwt_total_rating($id,$check_fields=1,$last_upd=0) {
 
         $data = [];
 
@@ -294,22 +294,38 @@ class PgRatingCalculate {
 
                         }
 
-
-//                        if ($i=='audience_rating' || $i=='total_rating')
-//                        {
-//                            $v= round($v/2,1);
-//                        }
-
                         $data[$i]=$v;
                     }
+                }
+            }
+            if ($last_upd)
+            {
+                $data['last_upd']= $r[0]['last_upd'];
 
+            }
+
+
+            if ($check_fields){
+
+                if (!$data['imdb_rating']) {
+                    $imdb = self::get_data_in_movie('rating', '', $id);
+
+                    if ($imdb) {
+                        $data['imdb_rating'] = $imdb / 2;
+
+                        if (!$data["total_rating"])
+                        {
+                            $data["total_rating"]=$data['imdb_rating'];
+                        }
+
+                    }
 
                 }
             }
-           }
-       /// var_dump($data);
-        ksort($data);
 
+           }
+
+        ksort($data);
         return $data;
     }
 
@@ -400,7 +416,7 @@ class PgRatingCalculate {
         {
             $check_fields =1;
         }
-
+        $update_imdb=0;
         $data_current_array=[];
         if ($check_fields) {
 
@@ -410,6 +426,10 @@ class PgRatingCalculate {
                 $imdb = self::get_data_in_movie('rating', '', $id);
 
                 if ($imdb) {
+
+
+                    $update_imdb=1;
+
                     $main_data_ext['imdb_rating'] = $imdb * 10;
 
                     $data_current_array['imdb_rating'] = $main_data_ext['imdb_rating'];
@@ -457,11 +477,15 @@ class PgRatingCalculate {
                 }
 
 
+            $update_aud=0;
+
             if (!$main_data_ext['audience_rating']) {
 
 
                 $aud = $aud_array['rating'];
                 if ($aud) {
+
+                    $update_aud=1;
                     $main_data_ext['audience_rating'] = $aud * 20;
 
                     $data_current_array['audience_rating'] = $main_data_ext['audience_rating'];
@@ -634,7 +658,7 @@ class PgRatingCalculate {
 
                // if (!$debug) echo 'add<br>';
             }
-            else if ($total_rating!=$main_data_ext['total_rating'] || $force_sync)
+            else if ($total_rating!=$main_data_ext['total_rating'] || $update_imdb || $update_aud || $force_sync)
             {
                 //if (!$debug) echo 'update '.$total_rating.'!=' .$main_data_ext['total_rating'].' f='.$force_sync.'<br>';
                 $data_current_array =['total_rating'=>$total_rating,'last_upd'=>time()];
@@ -739,7 +763,7 @@ class PgRatingCalculate {
         if ($array_family['certification']) {
             $content .= self::debug_table('MPAA Certification', $array_family['certification']);
         }
-        else
+        else if (!$array_family['certification_countries'])
         {
             $content .= self::debug_table('MPAA Certification', 'No MPAA rating found yet.  <a href="#" data-value="'.$id.'" class="empty_ff_rating empty_ff_popup_rating">Add Family Friendly Rating?</a>');
         }
@@ -757,7 +781,7 @@ class PgRatingCalculate {
                 $cont_sert.=implode(',',$pg).'</span>';
 
             }
-            $content .= self::debug_table('Other Certification', $cont_sert);
+            $content .= self::debug_table('International Certification', $cont_sert);
         }
 
         if ($croudsurce['imdb_rating']) {
