@@ -272,6 +272,26 @@ class PgRatingCalculate {
         //echo $sql;
         $r = Pdo_an::db_results_array($sql);
         if ($r) {
+            ////check fill rating
+            $recalc=0;
+            if (!$r[0]['total_rating'])
+            {
+                foreach (  $r[0] as $i=>$v)
+                {
+                    if (strstr($i,'_rating') && $v>0)
+                    {
+                        $recalc =1;
+                    }
+                }
+                if ($recalc)
+                {
+                    self::add_movie_rating($id);
+                    $sql = "SELECT * FROM `data_movie_erating`  where `movie_id` = " . $id . " limit 1";
+                    $r = Pdo_an::db_results_array($sql);
+                }
+            }
+
+
             foreach (  $r[0] as $i=>$v)
             {
 
@@ -433,7 +453,7 @@ class PgRatingCalculate {
                     $main_data_ext['imdb_rating'] = $imdb * 10;
 
                     $data_current_array['imdb_rating'] = $main_data_ext['imdb_rating'];
-
+                    $data_current_array['imdb_date'] = time();
 
                 }
 

@@ -636,6 +636,25 @@ AND table_schema='".DB_NAME_AN."'";
             if ($row['add_time']){$row['add_time'] = date('H:i d:m:Y',$row['add_time']);}
             if ($row['last_upd']){$row['last_upd'] = date('H:i d:m:Y',$row['last_upd']);}
 
+            if ($table_data=='data_movie_erating')
+            {
+                foreach ($row as $ir=>$vr)
+                {
+                    if (strstr($ir,'_date'))
+                    {
+                        if ($row[$ir])
+                        {
+                            $row[$ir] = date('H:i d:m:Y',$row[$ir]);
+                        }
+
+                    }
+                }
+
+
+            }
+
+
+
             if ($row['ip']){$row['ip'] = get_flag($row['ip']).$row['ip'];}
 
 
