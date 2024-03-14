@@ -549,8 +549,12 @@ if ($mid) {
                                     <td colspan="7">
                                         <table class="wp-list-table widefat striped table-view-list">     
                                             <tbody>
-                                                <?php foreach ($critic['debug'] as $key => $value) { ?>
-                                                    <tr>
+                                                <?php foreach ($critic['debug'] as $key => $value) { 
+                                                    if (!$value){
+                                                        continue;
+                                                    }
+                                                    ?>
+                                                    <tr>                                                        
                                                         <td><?php print $key ?></td>
                                                         <td><?php
                                                             if (is_array($value)) {
@@ -558,7 +562,8 @@ if ($mid) {
                                                             } else {
                                                                 print_r($value);
                                                             }
-                                                            ?></td>
+                                                            ?>
+                                                        </td>
                                                     </tr>
                                                 <?php } ?>
                                             </tbody>        

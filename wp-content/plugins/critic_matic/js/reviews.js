@@ -388,6 +388,10 @@ wpcr3a.submit = function (e) {
         min_ofsett = jQuery('.wpcr3_respond_1').offset().top;
         jQuery("html:not(:animated)").animate({scrollTop: min_ofsett}, 200);
         jQuery('.wpcr3_respond_1').html('<h3 class="column_header">Submit your review:</h3><div class="succes_send">Thank you! Your review has been received and will be posted immediately after it passes anti-troll inspection.</div>');
+        // user menu hook
+       if (typeof author_review_upd !== "undefined"){
+           author_review_upd();
+       }
     });
 };
 

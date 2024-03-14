@@ -7,7 +7,7 @@ class CriticFront extends SearchFacets {
 
     public $new_api = true;
     public $movies_an = true;
-    public $cache_results = true;
+    public $cache_results = false;
     public $enable_reactions = true;
     // Critic matic
     public $cm;
@@ -81,16 +81,6 @@ class CriticFront extends SearchFacets {
             $this->ce = new CriticEmotions($this->cm);
         }
         return $this->ce;
-    }
-
-    public function get_wl() {
-        if (!$this->wl) {
-            if (!class_exists('WatchList')) {
-                require_once( CRITIC_MATIC_PLUGIN_DIR . 'WatchList.php' );
-            }
-            $this->wl = new WatchList();
-        }
-        return $this->wl;
     }
 
     /*
@@ -2555,63 +2545,61 @@ class CriticFront extends SearchFacets {
             ?>
             <div class="simple">
                 <div class="items">
-            <?php
-            foreach ($posts as $post) {
+                    <?php
+                    foreach ($posts as $post) {
 
-                $critic = $this->cm->get_post_and_author($post->id);
+                        $critic = $this->cm->get_post_and_author($post->id);
 
-                $permalink = $critic->link;
-                if (!$permalink) {
-                    // Create local permalink
-                    $permalink = $this->get_critic_url($critic);
-                }
-                $title = $critic->title;
-                $top_movie = $critic->top_movie;
-
-                if ($top_movie) {
-                    $meta_state = $this->cm->get_critic_meta_state($critic->id, $top_movie);
-                    $info_link = $this->get_info_link($critic->id, $top_movie, $meta_state->state);
-                    $meta_type = $this->cm->get_post_category_name($meta_state->type);
-                }
-
-
-                // Link to full post
-                $link = $this->get_critic_url($critic);
-
-                // Time
-                $ptime = $critic->date;
-                $critic_addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
-
-                // Title
-                $title_str = '';
-                $title = strip_tags($title);
-                $title = $this->pccf_filter($title);
-
-                // Movie
-                $ma = $this->get_ma();
-                if ($top_movie) {
-                    $movie = $ma->get_post($top_movie);
-
-                    // Title
-                    $mtitle = $movie->title;
-
-                    $slug = $ma->get_post_slug($movie->type);
-
-                    // release
-                    $release = $movie->release;
-                    if ($release) {
-                        $release = strtotime($release);
-                        $release = date('Y', $release);
-                        if (strstr($mtitle, $release)) {
-                            $release = '';
-                        } else {
-                            $release = ' (' . $release . ')';
+                        $permalink = $critic->link;
+                        if (!$permalink) {
+                            // Create local permalink
+                            $permalink = $this->get_critic_url($critic);
                         }
-                    }
+                        $title = $critic->title;
+                        $top_movie = $critic->top_movie;
 
-                    $poster_link_90 = $this->get_thumb_path_full(90, 120, $top_movie);
-                }
-                ?>
+                        if ($top_movie) {
+                            $meta_state = $this->cm->get_critic_meta_state($critic->id, $top_movie);
+                            $info_link = $this->get_info_link($critic->id, $top_movie, $meta_state->state);
+                            $meta_type = $this->cm->get_post_category_name($meta_state->type);
+                        }
+
+
+                        // Link to full post
+                        $link = $this->get_critic_url($critic);
+
+                        // Time
+                        $ptime = $critic->date;
+                        $critic_addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+
+                        // Title
+                        $title_str = '';
+                        $title = strip_tags($title);
+                        $title = $this->pccf_filter($title);
+
+                        // Movie
+                        $ma = $this->get_ma();
+                        if ($top_movie) {
+                            $movie = $ma->get_post($top_movie);
+
+                            // Title
+                            $mtitle = $movie->title;
+
+                            // release
+                            $release = $movie->release;
+                            if ($release) {
+                                $release = strtotime($release);
+                                $release = date('Y', $release);
+                                if (strstr($mtitle, $release)) {
+                                    $release = '';
+                                } else {
+                                    $release = ' (' . $release . ')';
+                                }
+                            }
+
+                            $poster_link_90 = $this->get_thumb_path_full(90, 120, $top_movie);
+                        }
+                        ?>
                         <div class="item">
                             <a href="<?php print $link ?>" title="<?php print $title ?>" >
                                 <img srcset="<?php print $poster_link_90 ?>" alt="<?php print $mtitle ?>">
@@ -2631,13 +2619,117 @@ class CriticFront extends SearchFacets {
         return $content;
     }
 
-    public function get_last_posts_by_wpuid($wp_uid = 0, $perpage = 10) {
+    public function get_posts_page_by_wpuid($wp_uid = 0, $owner = 0, $perpage = 10, $page = 1) {
+        $posts = $this->get_last_posts_by_wpuid($wp_uid, $perpage, $page);
+        $content = '';
+        if ($posts) {
+            /*
+             * Array ( [0] => stdClass Object ( [id] => 144712 [date] => 1667222826 [date_add] => 1667238777 [status] => 1 [type] => 2 [link_hash] => [link] => [title] => 11223dsdd 3333 [content] => ddfdf 3333 [top_movie] => 69796 [blur] => 0 [view_type] => 0 [aid] => 1023 ) )
+             */
+            ob_start();
+            ?>
+            <div class="simple">
+                <div class="items<?php
+                if ($owner) {
+                    print " owner";
+                }
+                ?>">
+                         <?php
+                         foreach ($posts as $post) {
+
+                             $critic = $this->cm->get_post_and_author($post->id);
+
+                             $permalink = $critic->link;
+                             if (!$permalink) {
+                                 // Create local permalink
+                                 $permalink = $this->get_critic_url($critic);
+                             }
+                             $title = $critic->title;
+                             $top_movie = $critic->top_movie;
+
+                             if ($top_movie) {
+                                 $meta_state = $this->cm->get_critic_meta_state($critic->id, $top_movie);
+                                 $info_link = $this->get_info_link($critic->id, $top_movie, $meta_state->state);
+                                 $meta_type = $this->cm->get_post_category_name($meta_state->type);
+                             }
+
+                             // Link to full post
+                             $link = $this->get_critic_url($critic);
+
+                             // Time
+                             $ptime = $critic->date;
+                             $critic_addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+
+                             // Title
+                             $title_str = '';
+                             $title = strip_tags($title);
+                             $title = $this->pccf_filter($title);
+
+                             // Movie
+                             $ma = $this->get_ma();
+                             if ($top_movie) {
+                                 $movie = $ma->get_post($top_movie);
+
+                                 // Title
+                                 $mtitle = $movie->title;
+
+                                 // release
+                                 $release = $movie->release;
+                                 if ($release) {
+                                     $release = strtotime($release);
+                                     $release = date('Y', $release);
+                                     if (strstr($mtitle, $release)) {
+                                         $release = '';
+                                     } else {
+                                         $release = ' (' . $release . ')';
+                                     }
+                                 }
+
+                                 $poster_link_90 = $this->get_thumb_path_full(90, 120, $top_movie);
+                             }
+                             ?>
+                        <div class="item" data-id="<?php print $critic->id ?>">
+                            <a href="<?php print $link ?>" title="<?php print $title ?>" >
+                                <img srcset="<?php print $poster_link_90 ?>" alt="<?php print $mtitle ?>">
+                                <div class="desc">
+                                    <h5><?php print $title ?></h5>                         
+                                    <p>For: <?php print $mtitle . $release ?></p>
+                                </div>
+                            </a>
+                            <?php if ($owner): ?>                                            
+                                <div class="menu nte">
+                                    <div class="btn">
+                                        <i class="icon icon-ellipsis-vert"></i>
+                                    </div>
+                                    <div class="nte_show dwn">
+                                        <div class="nte_in">
+                                            <div class="nte_cnt">
+                                                <ul class="sort-wrapper more listmenu">                                                                                                               
+                                                    <li class="nav-tab" data-act="editrev" data-id="<?php print $top_movie ?>" data-cid="<?php print $critic->id ?>">Edit Review</li>
+
+                                                </ul>
+                                            </div>                                                          
+                                        </div>                                                    
+                                    </div>                                                
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    <?php } ?>
+                </div>
+            </div>
+            <?php
+            $content = ob_get_contents();
+            ob_end_clean();
+        }
+        return $content;
+    }
+
+    public function get_last_posts_by_wpuid($wp_uid = 0, $perpage = 10, $page = 1) {
         $author = $this->cm->get_author_by_wp_uid($wp_uid, true);
         $posts = array();
         if ($author) {
             $order = 'DESC';
             $orderby = '';
-            $page = 1;
             $q_req = array(
                 'status' => 1,
                 'aid' => $author->id,
@@ -2859,277 +2951,277 @@ class CriticFront extends SearchFacets {
                     <h2>NewsFilter.biz</h2>
                     <h3><a href="<?php print $ns_link ?>">"<?php print $movie_data->title ?>"</a></h3>
                 </div>                        
-            <?php
-            // Bias facet
-            $this->show_bias_facet($results['facets']);
+                <?php
+                // Bias facet
+                $this->show_bias_facet($results['facets']);
 
-            foreach ($results['list'] as $item) {
-                $theme_url = $this->theme_item_url($item);
+                foreach ($results['list'] as $item) {
+                    $theme_url = $this->theme_item_url($item);
 
-                $cats_arr = array('bias', 'biastag');
+                    $cats_arr = array('bias', 'biastag');
 
-                $cats_arr = array(
-                    'bias' => array('title' => 0),
-                    'biastag' => array('title' => 0, 'show_tags' => 1),
-                );
+                    $cats_arr = array(
+                        'bias' => array('title' => 0),
+                        'biastag' => array('title' => 0, 'show_tags' => 1),
+                    );
 
-                $tags = $this->theme_search_tags($item, $cats_arr, $ns_link);
-                ?>
+                    $tags = $this->theme_search_tags($item, $cats_arr, $ns_link);
+                    ?>
                     <div class="ns_item">
                         <h3 class="tile"><?php print $item->t ?></h3>
                         <div class="url">
-                    <?php print $theme_url ?>
+                            <?php print $theme_url ?>
                         </div>  
                         <p class="content"><?php print $item->c ?></p>  
                         <div class="meta">
                             <span class="p-date block">
                                 <time><?php
-                    print date('d.m.Y H:i', $item->date);
-                    ?></time>
+                                    print date('d.m.Y H:i', $item->date);
+                                    ?></time>
                             </span>
 
                             <span class="p-cat block">
-                <?php
-                if ($tags) {
-                    print implode(' ', $tags);
-                }
-                ?>
+                                <?php
+                                if ($tags) {
+                                    print implode(' ', $tags);
+                                }
+                                ?>
                             </span>
 
-                <?php if ($item->nresult) { ?>
+                            <?php if ($item->nresult) { ?>
                                 <span class="p-rating block">
                                     Rating: <span class="rt_color-<?php print $item->nresult ?>"><?php print $item->nresult ?></span>/5
                                 </span>
-                                <?php } ?>
+                            <?php } ?>
                         </div>
                     </div><?php
-                            }
-                            ?>
-                        <?php if ($total_count > $view_rows) { ?>
+                }
+                ?>
+                <?php if ($total_count > $view_rows) { ?>
                     <h3 class="ns_all"><a href="<?php print $ns_link ?>">Show all related posts: <?php print $total_count ?></a></h3>
-                <?php
-            }
-            ?>
+                    <?php
+                }
+                ?>
 
             </div>
-                <?php
+            <?php
+        }
+    }
+
+    public function show_bias_facet($facet_data = array()) {
+
+        // Rating data
+        $total_rating = array();
+        if ($facet_data['biasrating']['data']) {
+            foreach ($facet_data['biasrating']['data'] as $item) {
+                $total_rating[$item->id] = (int) round($item->nresults / $item->cnt, 0);
             }
         }
 
-        public function show_bias_facet($facet_data = array()) {
+        //Get types
+        $dates = array();
 
-            // Rating data
-            $total_rating = array();
-            if ($facet_data['biasrating']['data']) {
-                foreach ($facet_data['biasrating']['data'] as $item) {
-                    $total_rating[$item->id] = (int) round($item->nresults / $item->cnt, 0);
-                }
-            }
+        // Facet titles
+        $data = isset($facet_data['bias']['data']) ? $facet_data['bias']['data'] : array();
 
-            //Get types
-            $dates = array();
-
-            // Facet titles
-            $data = isset($facet_data['bias']['data']) ? $facet_data['bias']['data'] : array();
-
-            $facet_titles = array(
-                2 => 'Far left',
-                3 => 'Left',
-                4 => 'Center Left',
-                5 => 'Center',
-                6 => 'Center Right',
-                7 => 'Right',
-                8 => 'Far right',
-            );
-
-            if ($data) {
-                $ids = array();
-                foreach ($data as $value) {
-                    $id = trim($value->id);
-                    $cnt = $value->cnt;
-                    $ids[$id]['cnt'] = $cnt;
-                    $ids[$id]['rating'] = isset($total_rating[$id]) ? $total_rating[$id] : 0;
-                }
-
-
-                if ($ids[1]) {
-                    $ids[2] = $this->merge_ids($ids[1], $ids[2]);
-                }
-
-                if ($ids[9]) {
-                    $ids[8] = $this->merge_ids($ids[8], $ids[9]);
-                }
-
-                foreach ($facet_titles as $key => $value) {
-
-                    $item_title = $value;
-                    $rating_title = isset($ids[$key]) ? $ids[$key]['rating'] : 0;
-                    $cnt = isset($ids[$key]) ? $ids[$key]['cnt'] : 0;
-                    $dates[$key] = array('title' => $item_title, 'rating' => $rating_title, 'count' => $cnt);
-                }
-            }
-
-            $this->theme_bias_facet($dates);
-        }
-
-        private function merge_ids($first, $second) {
-            $ret = array('cnt' => 0, 'rating' => 0);
-            $cnt_1 = isset($first['cnt']) ? $first['cnt'] : 0;
-            $cnt_2 = isset($second['cnt']) ? $second['cnt'] : 0;
-            $ret['cnt'] = $cnt_1 + $cnt_2;
-
-            $r_1 = isset($first['rating']) ? $first['rating'] : 0;
-            $r_2 = isset($second['rating']) ? $second['rating'] : 0;
-            if ($r_1 && $r_2) {
-                $ret['rating'] = round(($r_1 + $r_2) / 2, 1);
-            } else if ($r_1) {
-                $ret['rating'] = $r_1;
-            } else if ($r_2) {
-                $ret['rating'] = $r_2;
-            }
-            return $ret;
-        }
-
-        public function theme_bias_facet($dates) {
-            if (!$dates) {
-                return false;
-            }
-            ?>
-        <div class="bias_info rspv-table">
-        <?php
-        $rows = array(
+        $facet_titles = array(
+            2 => 'Far left',
+            3 => 'Left',
+            4 => 'Center Left',
+            5 => 'Center',
+            6 => 'Center Right',
+            7 => 'Right',
+            8 => 'Far right',
         );
-        foreach ($dates as $key => $value) {
-            $rating = $value['rating'];
-            $rating_text = $rating > 0 ? $rating : 'None';
 
-            $rating_after = '';
-            if ($rating > 0) {
-                $rating_after = '/5';
+        if ($data) {
+            $ids = array();
+            foreach ($data as $value) {
+                $id = trim($value->id);
+                $cnt = $value->cnt;
+                $ids[$id]['cnt'] = $cnt;
+                $ids[$id]['rating'] = isset($total_rating[$id]) ? $total_rating[$id] : 0;
             }
 
-            $rows['title'][] = '<span class="title">' . $value['title'] . '</span> <span class="cnt">(' . $value['count'] . ')</span>';
-            $rows['rating'][] = '<span class="rating"><span class="rt_color-' . $rating . '">' . $rating_text . '</span>' . $rating_after . '</span>';
+
+            if ($ids[1]) {
+                $ids[2] = $this->merge_ids($ids[1], $ids[2]);
+            }
+
+            if ($ids[9]) {
+                $ids[8] = $this->merge_ids($ids[8], $ids[9]);
+            }
+
+            foreach ($facet_titles as $key => $value) {
+
+                $item_title = $value;
+                $rating_title = isset($ids[$key]) ? $ids[$key]['rating'] : 0;
+                $cnt = isset($ids[$key]) ? $ids[$key]['cnt'] : 0;
+                $dates[$key] = array('title' => $item_title, 'rating' => $rating_title, 'count' => $cnt);
+            }
+        }
+
+        $this->theme_bias_facet($dates);
+    }
+
+    private function merge_ids($first, $second) {
+        $ret = array('cnt' => 0, 'rating' => 0);
+        $cnt_1 = isset($first['cnt']) ? $first['cnt'] : 0;
+        $cnt_2 = isset($second['cnt']) ? $second['cnt'] : 0;
+        $ret['cnt'] = $cnt_1 + $cnt_2;
+
+        $r_1 = isset($first['rating']) ? $first['rating'] : 0;
+        $r_2 = isset($second['rating']) ? $second['rating'] : 0;
+        if ($r_1 && $r_2) {
+            $ret['rating'] = round(($r_1 + $r_2) / 2, 1);
+        } else if ($r_1) {
+            $ret['rating'] = $r_1;
+        } else if ($r_2) {
+            $ret['rating'] = $r_2;
+        }
+        return $ret;
+    }
+
+    public function theme_bias_facet($dates) {
+        if (!$dates) {
+            return false;
         }
         ?>
+        <div class="bias_info rspv-table">
+            <?php
+            $rows = array(
+            );
+            foreach ($dates as $key => $value) {
+                $rating = $value['rating'];
+                $rating_text = $rating > 0 ? $rating : 'None';
+
+                $rating_after = '';
+                if ($rating > 0) {
+                    $rating_after = '/5';
+                }
+
+                $rows['title'][] = '<span class="title">' . $value['title'] . '</span> <span class="cnt">(' . $value['count'] . ')</span>';
+                $rows['rating'][] = '<span class="rating"><span class="rt_color-' . $rating . '">' . $rating_text . '</span>' . $rating_after . '</span>';
+            }
+            ?>
             <?php
             $ir = 1;
             foreach ($rows as $row) {
                 $ic = 1;
                 ?>
                 <div class="rspv-row row-<?php print $ir ?>">
-                <?php foreach ($row as $clmn) { ?>
+                    <?php foreach ($row as $clmn) { ?>
                         <div class="rspv-clm clm-<?php print $ic ?>"><?php print $clmn ?></div>
-                    <?php
-                    $ic++;
-                }
-                ?>
+                        <?php
+                        $ic++;
+                    }
+                    ?>
                 </div>                    
                 <?php
                 $ir++;
             }
             ?>
         </div>
-                <?php
-            }
+        <?php
+    }
 
-            public function theme_search_tags($item, $cats_arr, $link = '') {
-                $tags = array();
-                $facet_data = array(
-                    'bias' => array(
-                        'title' => 'Bias rating',
-                        'facet_titles' => array(
-                            0 => 'Not rated',
-                            1 => 'Extreme left',
-                            2 => 'Far left',
-                            3 => 'Left',
-                            4 => 'Left-center',
-                            5 => 'Least biased',
-                            6 => 'Right-center',
-                            7 => 'Right',
-                            8 => 'Far right',
-                            9 => 'Extreme right'
-                        )
-                    ),
-                    'biastag' => array(
-                        'title' => 'Bias tags',
-                        'facet_titles' => array(
-                            1 => 'Conpiracy-pseudoscience',
-                            2 => 'Pro-science',
-                            3 => 'Satire',
-                        ),
-                    ),);
+    public function theme_search_tags($item, $cats_arr, $link = '') {
+        $tags = array();
+        $facet_data = array(
+            'bias' => array(
+                'title' => 'Bias rating',
+                'facet_titles' => array(
+                    0 => 'Not rated',
+                    1 => 'Extreme left',
+                    2 => 'Far left',
+                    3 => 'Left',
+                    4 => 'Left-center',
+                    5 => 'Least biased',
+                    6 => 'Right-center',
+                    7 => 'Right',
+                    8 => 'Far right',
+                    9 => 'Extreme right'
+                )
+            ),
+            'biastag' => array(
+                'title' => 'Bias tags',
+                'facet_titles' => array(
+                    1 => 'Conpiracy-pseudoscience',
+                    2 => 'Pro-science',
+                    3 => 'Satire',
+                ),
+            ),);
 
-                foreach ($cats_arr as $tag => $tag_data) {
-                    if ($item->$tag >= 0) {
-                        $tag_tile = '';
-                        if ($tag_data['title']) {
-                            $tag_tile = $facet_data[$tag]['title'];
-                            $tag_tile .= ': ';
-                        }
+        foreach ($cats_arr as $tag => $tag_data) {
+            if ($item->$tag >= 0) {
+                $tag_tile = '';
+                if ($tag_data['title']) {
+                    $tag_tile = $facet_data[$tag]['title'];
+                    $tag_tile .= ': ';
+                }
 
-                        $title = $item->$tag;
-                        if (isset($facet_data[$tag]['facet_titles'][$item->$tag])) {
-                            $title = $facet_data[$tag]['facet_titles'][$item->$tag];
-                        } else {
-                            if ($tag_data['show_tags']) {
-                                $title = null;
-                            }
-                        }
-
-                        if (isset($title)) {
-                            $theme_tag = '<a href="' . $link . '/' . $tag . '_' . $item->$tag . '" rel="category tag">#' . $title . '</a>';
-                            $tags[] = $theme_tag;
-                        }
+                $title = $item->$tag;
+                if (isset($facet_data[$tag]['facet_titles'][$item->$tag])) {
+                    $title = $facet_data[$tag]['facet_titles'][$item->$tag];
+                } else {
+                    if ($tag_data['show_tags']) {
+                        $title = null;
                     }
                 }
-                return $tags;
-            }
 
-            public function theme_item_url($item) {
-                $url = $item->link;
-                if ($item->type == 0) {
-                    $url = $item->site . substr($item->link, 1);
+                if (isset($title)) {
+                    $theme_tag = '<a href="' . $link . '/' . $tag . '_' . $item->$tag . '" rel="category tag">#' . $title . '</a>';
+                    $tags[] = $theme_tag;
                 }
-                $text_url = $url;
-                $domain = $url;
-                if (preg_match('#(http[s]*://)([^/]+)/#', $url, $match)) {
-                    $text_url = str_replace($match[2], '<b>' . $match[2] . '</b>', $text_url);
-                    $domain = $match[1] . $match[2];
-                }
-                $icon = 'https://www.google.com/s2/favicons?domain=' . $domain;
-                $theme_url = '<img srcset="' . $icon . '" width="16" height="16"> <a target="_blank" href="' . $url . '">' . $text_url . '</a>';
-                return $theme_url;
             }
+        }
+        return $tags;
+    }
 
-            /*
-             * User avatars
-             */
+    public function theme_item_url($item) {
+        $url = $item->link;
+        if ($item->type == 0) {
+            $url = $item->site . substr($item->link, 1);
+        }
+        $text_url = $url;
+        $domain = $url;
+        if (preg_match('#(http[s]*://)([^/]+)/#', $url, $match)) {
+            $text_url = str_replace($match[2], '<b>' . $match[2] . '</b>', $text_url);
+            $domain = $match[1] . $match[2];
+        }
+        $icon = 'https://www.google.com/s2/favicons?domain=' . $domain;
+        $theme_url = '<img srcset="' . $icon . '" width="16" height="16"> <a target="_blank" href="' . $url . '">' . $text_url . '</a>';
+        return $theme_url;
+    }
 
-            public function select_user_avatar($wp_id = 0, $user_rating = 0) {
-                $ss = $this->cm->get_settings();
-                $score_avatar = $ss['score_avatar'];
-                $cav = $this->cm->get_cav();
+    /*
+     * User avatars
+     */
 
-                if ($user_rating >= $score_avatar) {
-                    // Enable to upload avatar
-                    // Check avatar type
-                    $author = $this->cm->get_author_by_wp_uid($wp_id, true);
-                    ?>
+    public function select_user_avatar($wp_id = 0, $user_rating = 0) {
+        $ss = $this->cm->get_settings();
+        $score_avatar = $ss['score_avatar'];
+        $cav = $this->cm->get_cav();
+
+        if ($user_rating >= $score_avatar) {
+            // Enable to upload avatar
+            // Check avatar type
+            $author = $this->cm->get_author_by_wp_uid($wp_id, true);
+            ?>
             <div id="author_id" data-id="<?php print $author->id ?>"></div>
             <fieldset id="select_av_type">
                 <legend>Avatar type:</legend>
-            <?php
-            foreach ($this->cm->author_av_types as $key => $value) {
-                $checked = $key == $author->avatar_type ? 'checked' : '';
-                ?>
+                <?php
+                foreach ($this->cm->author_av_types as $key => $value) {
+                    $checked = $key == $author->avatar_type ? 'checked' : '';
+                    ?>
                     <div>
                         <input type="radio" id="<?php print $key ?>" name="avtype" value="<?php print $key ?>" <?php print $checked ?>>
                         <label for="<?php print $key ?>"><?php print $value ?></label>
                     </div>
-                <?php
-            }
-            ?>              
+                    <?php
+                }
+                ?>              
             </fieldset>
             <div class="av_actions">
                 <?php
@@ -3137,26 +3229,26 @@ class CriticFront extends SearchFacets {
                     $checked = $key == $author->avatar_type ? ' active' : '';
                     ?>
                     <div id="av_action_<?php print $key ?>" class="av_action<?php print $checked ?>" >
-                    <?php
-                    if ($key == 0) {
-                        $this->user_random_avatar();
-                    } else {
-                        $this->user_upload_avatar();
-                    }
-                    ?>
+                        <?php
+                        if ($key == 0) {
+                            $this->user_random_avatar();
+                        } else {
+                            $this->user_upload_avatar();
+                        }
+                        ?>
                     </div>
                     <?php
                 }
                 ?>                
             </div>
-                    <?php
-                } else {
-                    $this->user_random_avatar();
-                }
-            }
+            <?php
+        } else {
+            $this->user_random_avatar();
+        }
+    }
 
-            private function user_upload_avatar() {
-                ?>
+    private function user_upload_avatar() {
+        ?>
         <div class="upload-holder">
             <div id="upload-image"></div>
         </div>
@@ -3370,24 +3462,24 @@ class CriticFront extends SearchFacets {
         ?>
         <input type="hidden" name="post_category[]" value="0">
         <ul class="cat-checklist category-checklist">
-        <?php
-        $author = $this->cm->get_author_by_wp_uid($wp_uid);
-        $tags = $this->cm->get_tags();
-        $author_tags = $this->cm->get_author_tags($author->id, -1, false);
-        $tag_arr = array();
-        if (sizeof($author_tags)) {
-            foreach ($author_tags as $tag) {
-                $tag_arr[] = $tag->id;
-            }
-        }
-
-        if (sizeof($tags)) {
-            foreach ($tags as $tag) {
-                $checked = '';
-                if (in_array($tag->id, $tag_arr)) {
-                    $checked = 'checked="checked"';
+            <?php
+            $author = $this->cm->get_author_by_wp_uid($wp_uid);
+            $tags = $this->cm->get_tags();
+            $author_tags = $this->cm->get_author_tags($author->id, -1, false);
+            $tag_arr = array();
+            if (sizeof($author_tags)) {
+                foreach ($author_tags as $tag) {
+                    $tag_arr[] = $tag->id;
                 }
-                ?>
+            }
+
+            if (sizeof($tags)) {
+                foreach ($tags as $tag) {
+                    $checked = '';
+                    if (in_array($tag->id, $tag_arr)) {
+                        $checked = 'checked="checked"';
+                    }
+                    ?>
                     <li id="category-<?php print $tag->id ?>">
                         <label class="selectit"><input value="<?php print $tag->id ?>" <?php print $checked ?> type="checkbox" name="post_category[]" id="in-category-<?php print $tag->id ?>"> <?php print $tag->name ?></label>
                     </li>
@@ -3396,171 +3488,171 @@ class CriticFront extends SearchFacets {
             }
             ?>
         </ul>
-            <?php
+        <?php
+    }
+
+    /* Theme filters */
+
+    public function theme_filter_item($item) {
+        if ($this->cache_results) {
+            $item_theme = $this->cache_theme_filter_item_get($item);
+        } else {
+            $item_theme = $this->theme_filter_item_get($item);
+        }
+        return $item_theme;
+    }
+
+    public function cache_theme_filter_item_get($item) {
+        $arg = (array) $item;
+        $aid = $item->aid;
+        $author = $this->cm->get_author($aid, true);
+        $filename = "f-{$item->id}-{$item->last_upd}-{$author->last_upd}";
+        $str = ThemeCache::cache('theme_filter_item_get', false, $filename, 'filters', $this, $arg);
+        return $str;
+    }
+
+    public function theme_filter_item_get($item) {
+        if (is_array($item)) {
+            $item = (object) $item;
         }
 
-        /* Theme filters */
+        $title = $item->title;
 
-        public function theme_filter_item($item) {
-            if ($this->cache_results) {
-                $item_theme = $this->cache_theme_filter_item_get($item);
-            } else {
-                $item_theme = $this->theme_filter_item_get($item);
-            }
-            return $item_theme;
+        if (!$title) {
+            $title = ' ';
         }
+        $content = $item->content;
+        $aid = $item->aid;
+        $author = $this->cm->get_author($aid);
 
-        public function cache_theme_filter_item_get($item) {
-            $arg = (array) $item;
-            $aid = $item->aid;
-            $author = $this->cm->get_author($aid, true);
-            $filename = "f-{$item->id}-{$item->last_upd}-{$author->last_upd}";
-            $str = ThemeCache::cache('theme_filter_item_get', false, $filename, 'filters', $this, $arg);
-            return $str;
-        }
+        // Author name
+        $author_title = $author->name;
+        $author_title = $this->pccf_filter($author_title);
+        $wp_uid = $item->wp_uid;
 
-        public function theme_filter_item_get($item) {
-            if (is_array($item)) {
-                $item = (object) $item;
-            }
+        // WP avatar
+        $cav = $this->cm->get_cav();
+        $wp_avatar = $cav->get_author_avatar($author, 64);
 
-            $title = $item->title;
+        $author_admin_img = '';
 
-            if (!$title) {
-                $title = ' ';
-            }
-            $content = $item->content;
-            $aid = $item->aid;
-            $author = $this->cm->get_author($aid);
+        if (!$wp_avatar) {
+            // Author image
 
-            // Author name
-            $author_title = $author->name;
-            $author_title = $this->pccf_filter($author_title);
-            $wp_uid = $item->wp_uid;
+            $author_options = unserialize($author->options);
+            $author_img = $author_options['image'];
 
-            // WP avatar
-            $cav = $this->cm->get_cav();
-            $wp_avatar = $cav->get_author_avatar($author, 64);
-
-            $author_admin_img = '';
-
-            if (!$wp_avatar) {
-                // Author image
-
-                $author_options = unserialize($author->options);
-                $author_img = $author_options['image'];
-
-                if ($author_img) {
-                    try {
-                        $image = $this->get_local_thumb(100, 100, $author_img);
-                        $author_admin_img = '<div class="a_img_container" style="background: url(' . $image . '); background-size: cover;"></div>';
-                    } catch (Exception $exc) {
-                        
-                    }
+            if ($author_img) {
+                try {
+                    $image = $this->get_local_thumb(100, 100, $author_img);
+                    $author_admin_img = '<div class="a_img_container" style="background: url(' . $image . '); background-size: cover;"></div>';
+                } catch (Exception $exc) {
+                    
                 }
             }
+        }
 
-            $umeta = '';
+        $umeta = '';
 
-            // User profile link
-            $uc = $this->cm->get_uc();
-            $wp_user = $uc->getUserById($wp_uid);
+        // User profile link
+        $uc = $this->cm->get_uc();
+        $wp_user = $uc->getUserById($wp_uid);
 
-            $author_link = $uc->get_user_profile_link($wp_user->url);
-            $ucarma_class = ($wp_user->carma < 0) ? " minus" : " plus";
-            $umeta = '<div class="umeta' . $ucarma_class . '">
+        $author_link = $uc->get_user_profile_link($wp_user->url);
+        $ucarma_class = ($wp_user->carma < 0) ? " minus" : " plus";
+        $umeta = '<div class="umeta' . $ucarma_class . '">
                     <span class="urating" ><i class="icon-star"></i>' . (int) $wp_user->rating . '</span>                   
                 </div>';
 
-            $author_title_link = '<a href="' . $author_link . '">' . $author_title . '</a>';
+        $author_title_link = '<a href="' . $author_link . '">' . $author_title . '</a>';
 
-            // Tags
-            $catdata = '';
-            $max_tags = 3;
-            $tags = $this->cm->get_author_tags($author->id);
-            if (sizeof($tags)) {
-                $tags_count = 1;
-                foreach ($tags as $tag) {
-                    $catdata .= $this->get_tag_link($tag->slug, $tag->name);
-                    $tags_count += 1;
-                    if ($tags_count > 3) {
-                        break;
-                    }
+        // Tags
+        $catdata = '';
+        $max_tags = 3;
+        $tags = $this->cm->get_author_tags($author->id);
+        if (sizeof($tags)) {
+            $tags_count = 1;
+            foreach ($tags as $tag) {
+                $catdata .= $this->get_tag_link($tag->slug, $tag->name);
+                $tags_count += 1;
+                if ($tags_count > 3) {
+                    break;
                 }
             }
+        }
 
-            if ($catdata) {
-                $catdata = '<div class="a_cat">' . $catdata . '</div>';
-            }
+        if ($catdata) {
+            $catdata = '<div class="a_cat">' . $catdata . '</div>';
+        }
 
-            // Time
-            $ptime = $item->date;
-            $critic_addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+        // Time
+        $ptime = $item->date;
+        $critic_addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
 
-            // User filter
-            $uf = $this->cm->get_uf();
-            $fdata = $uf->get_filters_by_url($item->link, true);
+        // User filter
+        $uf = $this->cm->get_uf();
+        $fdata = $uf->get_filters_by_url($item->link, true);
 
-            $publish = $item->publish;
+        $publish = $item->publish;
 
-            if ($publish == 0) {
-                $pub_icon = '<i class="icon-eye-off"></i> ';
-            }
+        if ($publish == 0) {
+            $pub_icon = '<i class="icon-eye-off"></i> ';
+        }
 
-            // Link to full post
-            $link = $uf->get_filter_link($item->id);
+        // Link to full post
+        $link = $uf->get_filter_link($item->id);
 
-            // img
-            $img = $item->img;
-            $img_str = '';
-            if ($img) {
-                $img_path = $uf->get_img_path($img);
-                $img_str = '<a href="' . $link . '"><img src="' . $img_path . '" /></a>';
-            }
+        // img
+        $img = $item->img;
+        $img_str = '';
+        if ($img) {
+            $img_path = $uf->get_img_path($img);
+            $img_str = '<a href="' . $link . '"><img src="' . $img_path . '" /></a>';
+        }
 
-            // Country
-            $country_img = '';
+        // Country
+        $country_img = '';
 
-            $short_codes_exist_class = '';
-            $wp_core = '';
+        $short_codes_exist_class = '';
+        $wp_core = '';
 
-            $content = $this->pccf_filter($content);
-            if ($content) {
-                $content = '<div class="sfilter-content">' . $content . '</div>';
-            }
-            $title = $this->pccf_filter($title);
+        $content = $this->pccf_filter($content);
+        if ($content) {
+            $content = '<div class="sfilter-content">' . $content . '</div>';
+        }
+        $title = $this->pccf_filter($title);
 
-            $filter_content = '';
-            if ($content || $title) {
+        $filter_content = '';
+        if ($content || $title) {
 
 
-                $filter_content = '
+            $filter_content = '
                     <div class="sfilter-item">' . $img_str
-                        . '<h3 class="sfilter-title"><a href="' . $link . '">' . $title . '</a></h3>' . $content
-                        . '<div class="sfliter-link">Link: ' . $pub_icon . '<a href="' . $link . '">' . $link . '</a></div>'
-                        . '<div>' . $fdata['tags'] . "</div></div>";
-            }
+                    . '<h3 class="sfilter-title"><a href="' . $link . '">' . $title . '</a></h3>' . $content
+                    . '<div class="sfliter-link">Link: ' . $pub_icon . '<a href="' . $link . '">' . $link . '</a></div>'
+                    . '<div>' . $fdata['tags'] . "</div></div>";
+        }
 
-            $stars_data = 0;
-            $actorsdata = '';
+        $stars_data = 0;
+        $actorsdata = '';
 
-            if ($wp_avatar) {
-                $actorsdata = $wp_avatar;
-            } else if ($author_admin_img) {
-                $actorsdata = $author_admin_img;
-            }
+        if ($wp_avatar) {
+            $actorsdata = $wp_avatar;
+        } else if ($author_admin_img) {
+            $actorsdata = $author_admin_img;
+        }
 
-            if (!$actorsdata) {
-                $actorsdata = '<span></span>';
-            }
+        if (!$actorsdata) {
+            $actorsdata = '<span></span>';
+        }
 
-            $actorsdata_link = '<a href="' . $author_link . '">' . $actorsdata . '</a>';
+        $actorsdata_link = '<a href="' . $author_link . '">' . $actorsdata . '</a>';
 
-            $review_bottom = '<div class="review_bottom"><div class="r_type"></div><div class="r_right"><div class="r_date">' . $critic_addtime . '</div>' . $country_img . '</div></div>';
+        $review_bottom = '<div class="review_bottom"><div class="r_type"></div><div class="r_right"><div class="r_date">' . $critic_addtime . '</div>' . $country_img . '</div></div>';
 
-            $reaction_data = $this->get_user_reactions($item->id, 1, false);
+        $reaction_data = $this->get_user_reactions($item->id, 1, false);
 
-            $actorsresult = '<div class="a_msg">
+        $actorsresult = '<div class="a_msg">
     <div class="a_msg_i">
         ' . $filter_content . $review_bottom . '<div class="ugol"><div></div></div>
     </div>
@@ -3572,60 +3664,188 @@ class CriticFront extends SearchFacets {
         </div>
 </div>';
 
-            return $actorsresult;
+        return $actorsresult;
+    }
+
+    /* Theme watchlist */
+
+    public function theme_watchlist_item($item) {
+        if ($this->cache_results) {
+            $item_theme = $this->cache_theme_watchlist_item_get($item);
+        } else {
+            $item_theme = $this->theme_watchlist_item_get($item);
+        }
+        return $item_theme;
+    }
+
+    public function cache_theme_watchlist_item_get($item) {
+        $arg = (array) $item;
+        $aid = $item->aid;
+        $author = $this->cm->get_author($aid, true);
+        $filename = "f-{$item->id}-{$item->last_upd}-{$author->last_upd}";
+        $str = ThemeCache::cache('theme_watchlist_item_get', false, $filename, 'watchlists', $this, $arg);
+        return $str;
+    }
+
+    public function theme_watchlist_item_get($item) {
+        if (is_array($item)) {
+            $item = (object) $item;
         }
 
-        public function get_filters_count_by_wpuser($wp_uid = 0, $owner = 0) {
-            $uf = $this->cm->get_uf();
-            return $uf->get_filters_count_by_wpuser($wp_uid, $owner);
+        $title = stripslashes($item->title);
+
+        if (!$title) {
+            $title = ' ';
         }
+        $content = stripslashes($item->content);
+        $aid = $item->aid;
+        $author = $this->cm->get_author($aid);
 
-        public function get_filters_widget_by_wpuid($wp_uid = 0, $owner = 0, $perpage = 10) {
-            $uf = $this->cm->get_uf();
-            $posts = $uf->get_filters_by_wpuser($wp_uid, $owner);
+        // Author name
+        $author_title = $author->name;
+        $author_title = $this->pccf_filter($author_title);
+        $wp_uid = $item->wp_uid;
 
-            $content = '';
-            if ($posts) {
-                ob_start();
-                ?>
-            <div class="simple">
-                <div class="items">
-            <?php
-            foreach ($posts as $post) {
+        // WP avatar
+        $cav = $this->cm->get_cav();
+        $wp_avatar = $cav->get_author_avatar($author, 64);
 
-                // Link to filter
-                $link = $uf->get_filter_link($post->id);
+        $author_admin_img = '';
 
-                // Time
-                $ptime = $post->date;
-                $addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+        if (!$wp_avatar) {
+            // Author image
 
-                // Title
-                $title = strip_tags($post->title);
-                $title = $this->pccf_filter($title);
+            $author_options = unserialize($author->options);
+            $author_img = $author_options['image'];
 
-                $publish = $post->publish;
-                $pub_icon = '';
-                if ($publish == 0) {
-                    $pub_icon = '<i class="icon-eye-off"></i> ';
+            if ($author_img) {
+                try {
+                    $image = $this->get_local_thumb(100, 100, $author_img);
+                    $author_admin_img = '<div class="a_img_container" style="background: url(' . $image . '); background-size: cover;"></div>';
+                } catch (Exception $exc) {
+                    
                 }
-                ?>
-                        <div class="item">
-                            <a href="<?php print $link ?>" title="<?php print $title ?>" >                           
-                                <div class="desc">
-                                    <h5><?php print $title ?></h5>
-                                    <p><?php print $addtime ?> Link: <?php print $pub_icon ?><?php print $link ?></p>
-                                </div>
-                            </a>
-                        </div>
-                    <?php } ?>
-                </div>
-            </div>
-                    <?php
-                    $content = ob_get_contents();
-                    ob_end_clean();
-                }
-                return $content;
             }
         }
-        
+
+        $umeta = '';
+
+        // User profile link
+        $uc = $this->cm->get_uc();
+        $wp_user = $uc->getUserById($wp_uid);
+
+        $author_link = $uc->get_user_profile_link($wp_user->url);
+        $ucarma_class = ($wp_user->carma < 0) ? " minus" : " plus";
+        $umeta = '<div class="umeta' . $ucarma_class . '">
+                    <span class="urating" ><i class="icon-star"></i>' . (int) $wp_user->rating . '</span>                   
+                </div>';
+
+        $author_title_link = '<a href="' . $author_link . '">' . $author_title . '</a>';
+
+        // Tags
+        $catdata = '';
+        $max_tags = 3;
+        $tags = $this->cm->get_author_tags($author->id);
+        if (sizeof($tags)) {
+            $tags_count = 1;
+            foreach ($tags as $tag) {
+                $catdata .= $this->get_tag_link($tag->slug, $tag->name);
+                $tags_count += 1;
+                if ($tags_count > 3) {
+                    break;
+                }
+            }
+        }
+
+        if ($catdata) {
+            $catdata = '<div class="a_cat">' . $catdata . '</div>';
+        }
+
+        // Time
+        $ptime = $item->date;
+        $critic_addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+
+        // User watchlist
+        $wl = $this->cm->get_wl();
+
+        $publish = $item->publish;
+
+        if ($publish == 0) {
+            $pub_icon = '<i class="icon-eye-off"></i> ';
+        }
+
+        // Link to full post
+        $link = "/search/wl_" . $item->id;
+
+        // img
+        $img_str = $wl->get_list_collage($item->id);
+        if ($img_str){
+            $img_str = '<a href="'.$link.'">'.$img_str.'</a>';
+        }
+        /*
+         $img = $item->top_mid;
+        $img_str = '';
+        $img_bg = '';
+        if ($img) {
+            $img_path = $this->get_thumb_path_full(220, 330, $img);
+            $img_str = '<a href="' . $link . '"><img src="' . $img_path . '" /></a>';            
+            $img_bg = ' style="background: url(\''.$img_path.'\'); background-size: cover;"';
+            $img_bg = '';
+        }*/
+
+        // Country
+        $country_img = '';
+
+        $content = $this->pccf_filter($content);
+        if ($content) {
+            $content = '<div class="sfilter-content">' . $content . '</div>';
+        }
+        $title = $this->pccf_filter($title);
+
+        # Time
+        $ptime = $item->date;
+        $addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+
+        $filter_content = '';
+        if ($content || $title) {
+
+            $filter_content = '
+                    <div class="sfilter-item">' . $img_str
+                    . '<h3 class="sfilter-title"><a href="' . $link . '">' . $title . '</a></h3>' . $content                    
+                    . '</div>';
+        }
+
+
+        $actorsdata = '';
+
+        if ($wp_avatar) {
+            $actorsdata = $wp_avatar;
+        } else if ($author_admin_img) {
+            $actorsdata = $author_admin_img;
+        }
+
+        if (!$actorsdata) {
+            $actorsdata = '<span></span>';
+        }
+
+        $actorsdata_link = '<a href="' . $author_link . '">' . $actorsdata . '</a>';
+
+        $review_bottom = '<div class="review_bottom"><div class="r_type">'. $pub_icon . ' Items: ' . $item->items .'</div><div class="r_right"><div class="r_date">' . $critic_addtime . '</div>' . $country_img . '</div></div>';
+
+        $reaction_data = $this->get_user_reactions($item->id, 2, false);
+
+        $actorsresult = '<div class="a_msg">
+    <div class="a_msg_i witch_bg"><div class="bg_holder">
+        ' . $filter_content . $review_bottom . '<div class="ugol"><div></div></div>
+    </div></div>
+        <div class="em_hold"></div>
+        <div class="amsg_aut">
+            ' . $actorsdata_link . '
+            <div class="review_autor_name">' . $author_title_link . $umeta . $catdata . '</div>
+            ' . $reaction_data . '
+        </div>
+</div>';
+
+        return $actorsresult;
+    }
+}

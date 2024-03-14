@@ -19,6 +19,7 @@ class CriticMaticAdmin {
     public $cfront;
     private $ts;
     private $access_level = 4;
+    public $new_audience_count = 0;
     //Slug    
     private $parrent_slug = 'critic_matic';
     private $admin_page = '/wp-admin/admin.php?page=';
@@ -129,7 +130,6 @@ class CriticMaticAdmin {
         $this->tags_url = $this->parrent_slug . '_tags';
         $this->transcriptions_url = $this->parrent_slug . '_transcriptions';
 
-
         add_action('admin_menu', array($this, 'add_option_page'));
         add_action('admin_print_styles', array($this, 'print_admin_styles'));
 
@@ -139,6 +139,39 @@ class CriticMaticAdmin {
         add_action("wp_ajax_cm_autocomplite", array($this, "cm_autocomplite"));
         add_action("wp_ajax_cm_author_autocomplite", array($this, "cm_author_autocomplite"));
         add_action("wp_ajax_cm_find_yt_channel", array($this, "cm_find_yt_channel"));
+
+        if (function_exists('user_can')) {
+            $this->user_can = $this->user_can();
+            if ($this->user_can) {
+                $q_audience = array(
+                    'status' => 0,
+                    'author_type' => 2
+                );
+                $this->new_audience_count = $this->cm->get_post_count($q_audience);
+            }
+            add_action('admin_bar_menu', array($this, 'admin_bar_render'), 99);
+        }
+    }
+
+    // User permissions
+    public function user_can() {
+        global $user_ID;
+        if (user_can($user_ID, 'editor') || user_can($user_ID, 'administrator')) {
+            return true;
+        }
+        return false;
+    }
+
+    function admin_bar_render($wp_admin_bar) {
+        if ($this->new_audience_count > 0 && $this->user_can) {
+
+            $wp_admin_bar->add_menu(array(
+                'parent' => '',
+                'id' => 'flag-report',
+                'title' => '<span style="color: #ff5e28; font-weight: bold;">Reviews: ' . $this->new_audience_count . '</span>',
+                'href' => '/wp-admin/admin.php?page=critic_matic_audience&status=0'
+            ));
+        }
     }
 
     public function add_option_page() {
@@ -565,7 +598,6 @@ class CriticMaticAdmin {
                 'status' => $this->cm->post_status
             );
 
-
             $filters_tabs = $this->get_filters_tabs($filters, $page_url);
             $query_adb = $filters_tabs['query_adb'];
             $query = $query_adb->get_query();
@@ -575,7 +607,6 @@ class CriticMaticAdmin {
             $per_page = $this->cm->perpage;
             $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
             $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order, false, false);
-
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_overview.php');
         } else if ($curr_tab == 'details') {
@@ -591,7 +622,6 @@ class CriticMaticAdmin {
                 'meta_type' => $this->cm->post_meta_status,
                 'status' => $this->cm->post_status
             );
-
 
             $filters_tabs = $this->get_filters_tabs($filters, $page_url);
             $query_adb = $filters_tabs['query_adb'];
@@ -759,7 +789,6 @@ class CriticMaticAdmin {
             $query_adb = new QueryADB();
             $query_adb->add_query('author_type', $author_type);
 
-
             $filters = array(
                 'status' => $this->cm->post_status
             );
@@ -773,7 +802,6 @@ class CriticMaticAdmin {
             $per_page = $this->cm->perpage;
             $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
             $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order, false, false);
-
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_audience.php');
             wp_enqueue_style('audience_rating', CRITIC_MATIC_PLUGIN_URL . 'css/rating.css', false, CRITIC_MATIC_VERSION);
@@ -918,7 +946,6 @@ class CriticMaticAdmin {
 
             $query_adb = new QueryADB();
 
-
             $filters = array(
                 'type' => array(
                     'type_list' => $this->cm->author_type,
@@ -934,12 +961,9 @@ class CriticMaticAdmin {
             $page_url = $filters_tabs['p'];
             $count = $filters_tabs['c'];
 
-
             $per_page = $this->cm->perpage;
             $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
             $authors = $this->cm->get_authors_query($query, $page, $per_page, $orderby, $order);
-
-
 
             if ($author_type == 1) {
                 include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_authors.php');
@@ -1102,8 +1126,6 @@ class CriticMaticAdmin {
         $orderby = $this->get_orderby($sort_pages);
         $order = $this->get_order();
 
-
-
         $url = $this->admin_page . $this->genres_url;
         $page_url = $url;
 
@@ -1224,8 +1246,6 @@ class CriticMaticAdmin {
         $sort_pages = $ma->sort_pages;
         $orderby = $this->get_orderby($sort_pages);
         $order = $this->get_order();
-
-
 
         $url = $this->admin_page . $this->countries_url;
         $page_url = $url;
@@ -1348,8 +1368,6 @@ class CriticMaticAdmin {
         $orderby = $this->get_orderby($sort_pages);
         $order = $this->get_order();
 
-
-
         $url = $this->admin_page . $this->providers_url;
         $page_url = $url;
 
@@ -1469,7 +1487,6 @@ class CriticMaticAdmin {
         $page = $this->get_page();
         $per_page = $this->get_perpage();
 
-
         $url = $this->admin_page . $this->clear_url;
         $page_url = $url;
 
@@ -1482,7 +1499,6 @@ class CriticMaticAdmin {
         $sort_pages = $this->cm->sort_pages;
         $orderby = $this->get_orderby($sort_pages);
         $order = $this->get_order();
-
 
         /*
           'home' => 'Overview',
@@ -1543,7 +1559,6 @@ class CriticMaticAdmin {
             'status' => $this->cm->post_status,
             'ts' => $ts->ts,
         );
-
 
         $filters_tabs = $this->get_filters_tabs($filters, $page_url, $query_adb);
         $query_adb = $filters_tabs['query_adb'];
@@ -1939,7 +1954,6 @@ class CriticMaticAdmin {
             $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab, $append);
             $settings = $this->cp->get_parser_settings();
 
-
             if (!$curr_tab) {
                 $curr_tab = 'home';
             }
@@ -2007,7 +2021,6 @@ class CriticMaticAdmin {
                 }
                 $campaign = $this->cp->get_campaign($cid);
                 $options = $this->cp->get_options($campaign);
-
 
                 $yt_preivew = array();
                 if (isset($_POST['yt_preview'])) {
@@ -2287,7 +2300,6 @@ class CriticMaticAdmin {
             }
             $ss = $this->cm->get_settings(false);
 
-
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/settings_parser.php');
         } else if ($curr_tab == 'audience') {
 
@@ -2448,7 +2460,6 @@ class CriticMaticAdmin {
 
         $query_adb = new QueryADB();
 
-
         // Campaign id
         $campaign = '';
         if ($cid) {
@@ -2475,7 +2486,6 @@ class CriticMaticAdmin {
             'status' => $this->cm->post_status
         );
 
-
         $filters_tabs = $this->get_filters_tabs($filters, $page_url, $query_adb);
         $query_adb = $filters_tabs['query_adb'];
         $query = $query_adb->get_query();
@@ -2485,7 +2495,6 @@ class CriticMaticAdmin {
         $per_page = $this->cm->perpage;
         $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
         $posts = $this->cm->get_posts($query, $page, $per_page, $orderby, $order, false, false);
-
 
         if ($aid) {
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/list_posts_author.php');
@@ -3434,5 +3443,4 @@ class CriticMaticAdmin {
         }
         return $result;
     }
-
 }

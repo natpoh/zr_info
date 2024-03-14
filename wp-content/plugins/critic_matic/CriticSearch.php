@@ -61,8 +61,8 @@ class CriticSearch extends AbstractDB {
         4 => 'Ignore dublicate',
     );
     public $sort_default = array(
-        'date' => array('title' => 'Date', 'def' => 'desc', 'main' => 1, 'tabs' => array('movies', 'critics', 'games', 'international', 'ethnicity', 'filters'),),
-        'rel' => array('title' => 'Relevance', 'def' => 'desc', 'main' => 1, 'tabs' => array('movies', 'critics', 'games', 'international', 'ethnicity', 'filters'),),
+        'date' => array('title' => 'Date', 'def' => 'desc', 'main' => 1, 'tabs' => array('movies', 'critics', 'games', 'international', 'ethnicity', 'filters', 'watchlists'),),
+        'rel' => array('title' => 'Relevance', 'def' => 'desc', 'main' => 1, 'tabs' => array('movies', 'critics', 'games', 'international', 'ethnicity', 'filters', 'watchlists'),),
     );
     public $filters = array(
         'p' => '',
@@ -132,8 +132,8 @@ class CriticSearch extends AbstractDB {
                 'rrwt' => array('title' => 'ZR Aggregate Rating', 'facet' => 'rating', 'eid' => 'erwt', 'titlesm' => 'ZR Rating', 'max_count' => 100, 'multipler' => 10, 'group' => 'rating', 'sorted' => 1, 'sort_second' => 'crwt', 'sort_second_title' => 'votes', 'icon' => 'zr', 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1),
                 'rimdb' => array('title' => 'IMDb', 'facet' => 'rating', 'eid' => 'eimdb', 'titlesm' => 'IMDb', 'max_count' => 100, 'multipler' => 10, 'group' => 'rating', 'icon' => 'imdb', 'sorted' => 1, 'sort_second' => 'cimdb', 'sort_second_title' => 'votes', 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1),
                 'ropencritic' => array('title' => 'OpenCritic', 'facet' => 'rating', 'eid' => 'eopencritic', 'titlesm' => 'OpenCritic', 'max_count' => 100, 'multipler' => 1, 'group' => 'rating', 'icon' => 'opencritic', 'sorted' => 1, 'sort_second' => 'copencritic', 'sort_second_title' => 'votes', 'tabs' => array('games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1),
-                'rmc' => array('title' => 'Metacritic MetaScore', 'facet' => 'rating', 'eid' => 'emc', 'titlesm' => 'MetaScore', 'max_count' => 100, 'multipler' => 1, 'group' => 'rating', 'icon' => 'mtcr', 'sorted' => 1, 'tabs' => array('movies', 'games','international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1),
-                'rmu' => array('title' => 'Metacritic UserScore', 'facet' => 'rating', 'eid' => 'emu', 'titlesm' => 'UserScore', 'max_count' => 100, 'multipler' => 10, 'group' => 'rating', 'icon' => 'mtcr', 'sorted' => 1, 'tabs' => array('movies', 'games','international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1),
+                'rmc' => array('title' => 'Metacritic MetaScore', 'facet' => 'rating', 'eid' => 'emc', 'titlesm' => 'MetaScore', 'max_count' => 100, 'multipler' => 1, 'group' => 'rating', 'icon' => 'mtcr', 'sorted' => 1, 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1),
+                'rmu' => array('title' => 'Metacritic UserScore', 'facet' => 'rating', 'eid' => 'emu', 'titlesm' => 'UserScore', 'max_count' => 100, 'multipler' => 10, 'group' => 'rating', 'icon' => 'mtcr', 'sorted' => 1, 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1),
                 'ranl' => array('title' => 'MyAnimeList', 'facet' => 'rating', 'eid' => 'eanl', 'titlesm' => 'MyAnimeList', 'max_count' => 100, 'multipler' => 10, 'group' => 'rating', 'icon' => 'mal', 'sorted' => 1, 'sort_second' => 'canl', 'sort_second_title' => 'votes', 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1),
                 'rrt' => array('title' => 'Rotten Tomatoes', 'facet' => 'rating', 'eid' => 'ert', 'titlesm' => 'Rotten Tomatoes', 'max_count' => 100, 'group' => 'rating', 'icon' => 'rt', 'sorted' => 1, 'sort_second' => 'crt', 'sort_second_title' => 'votes', 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1),
                 'rrta' => array('title' => 'Rotten Tomatoes Audience', 'facet' => 'rating', 'eid' => 'erta', 'titlesm' => 'Rotten Tomatoes Audience', 'max_count' => 100, 'group' => 'rating', 'icon' => 'rt', 'sorted' => 1, 'sort_second' => 'crta', 'sort_second_title' => 'votes', 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1),
@@ -546,6 +546,10 @@ class CriticSearch extends AbstractDB {
             'title' => 'Price',
             'tabs' => array('movies', 'games', 'critics'),
         ),
+        'wl' => array(
+            'title' => 'Watchlist',
+            'tabs' => array('movies', 'games', 'international', 'ethnicity'),
+        ),
         'author' => array(
             'title' => 'Author',
             'tabs' => array('critics'),
@@ -568,7 +572,7 @@ class CriticSearch extends AbstractDB {
         ),
         'from' => array(
             'title' => 'From author',
-            'tabs' => array('critics', 'filters'),
+            'tabs' => array('critics', 'filters', 'watchlists'),
             'weight' => 70,
         ),
         'site' => array(
@@ -638,6 +642,12 @@ class CriticSearch extends AbstractDB {
             'rel' => array('title' => 'Relevance', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
         ),
         'filters' => array(
+            'title' => array('title' => 'Title', 'def' => 'asc', 'main' => 1, 'group' => 'def'),
+            'date' => array('title' => 'Date', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
+            'frating' => array('title' => 'Rating', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
+            'rel' => array('title' => 'Relevance', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
+        ),
+        'watchlists' => array(
             'title' => array('title' => 'Title', 'def' => 'asc', 'main' => 1, 'group' => 'def'),
             'date' => array('title' => 'Date', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
             'frating' => array('title' => 'Rating', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
@@ -1345,7 +1355,7 @@ class CriticSearch extends AbstractDB {
         $meta_search = array();
 
         $ids = array();
-        // Search custom fields
+        // Search custom fields        
         if (sizeof($data)) {
             foreach ($data as $item) {
                 $ids[] = $item->id;
@@ -1792,7 +1802,8 @@ class CriticSearch extends AbstractDB {
 
             // Auto critic type
             $ret[$id]['type'] = $critic_type;
-
+            $ret[$id]['debug']['other'] = array();
+            
             $valid = true;
             $ret[$id]['debug']['valid'][] = "True: Default";
 
@@ -1831,8 +1842,8 @@ class CriticSearch extends AbstractDB {
                 }
             }
 
+            // Check date for proper review
             if ($dates && $critic_type == 1) {
-                // Check date for proper review
                 $valid_text = 'Valid';
                 if ($year_invalid) {
                     $valid = false;
@@ -1851,6 +1862,33 @@ class CriticSearch extends AbstractDB {
                 }
             }
 
+            // Check another movies the same name
+            $title_clear = strtolower($this->filter_movie_tile($title));
+            $all_movies = $this->search_movies_by_title($title_clear);
+            if ($all_movies) {
+                $another_movies = array();
+                foreach ($all_movies as $movie) {
+                    $mtitle = strtolower($this->filter_movie_tile($movie->title));
+                    if ($mtitle == $title_clear && $movie->year != $year) {
+                        $another_movies[$movie->year] = $movie->id;
+                    }
+                    // Sort movies by year
+                    krsort($another_movies);
+                }
+                if (sizeof($another_movies) > 0) {
+                    // Found another movies. Need check date   
+                    $first_movie_year = array_pop(array_keys($another_movies));
+                    $ret[$id]['debug']['other'][]='Found another movies: '.implode(',',array_keys($another_movies));
+                    if ($first_movie_year > $year) {
+                        $ret[$id]['debug']['other'][] = '<br />Found a newer ('.$first_movie_year.') movie with the same title, id='.$another_movies[$first_movie_year] ;
+                        if (!in_array($id, $valid_release)) {
+                            $ret[$id]['score']['release_exist'] = 'False';
+                            $valid = false;
+                            $ret[$id]['debug']['valid'][] = "<br />False: Movie is dublicated ($year < $first_movie_year) and valid release year not found in post";
+                        }
+                    } 
+                }
+            }
 
             if ($valid) {
                 // Check min score
@@ -2387,7 +2425,7 @@ class CriticSearch extends AbstractDB {
         }
 
 
-        $sql = sprintf("SELECT id, title FROM movie_an "
+        $sql = sprintf("SELECT id, title, year FROM movie_an "
                 . "WHERE id>0" . $type_and . " AND MATCH('" . $title_query . "') LIMIT %d", $limit);
 
         $result = $this->sdb_results($sql);
@@ -2652,6 +2690,7 @@ class CriticSearch extends AbstractDB {
             $ret = $this->movie_results($sql, $match, $search_query);
 
             /*
+              print_r($filters);
               print_r($filters_and);
               print_r(array($match, $search_query));
               print_r($sql);
@@ -2785,6 +2824,61 @@ class CriticSearch extends AbstractDB {
                     . " FROM filters WHERE id>0" . $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
 
             $ret = $this->movie_results($sql, $match, $search_query);
+            gmi('main sql');
+            // Simple result
+            if (!$show_meta) {
+                return $ret['list'];
+            }
+        }
+
+        // Facets logic
+        $facets_arr = array();
+        if ($facets) {
+            $facets_arr = $this->movies_facets($filters, $match, $search_query, $facets, $query_type, $aid);
+        }
+        gmi('get facets');
+
+        $ret['facets'] = $facets_arr;
+        return $ret;
+    }
+
+    public function front_search_watchlists_multi($aid = 0, $keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = false, $show_meta = true, $widlcard = true, $show_main = true, $fields = array()) {
+
+        //Keywords logic
+        $match = '';
+        if ($keyword) {
+            $keyword = str_replace("'", "\'", $keyword);
+            $search_keywords = $this->wildcards_maybe_query($keyword, $widlcard, ' ');
+            $search_query = sprintf("'@(title,content) (%s)'", $search_keywords);
+            $match = " AND MATCH(:match)";
+        }
+
+        $ret = array('list' => array(), 'count' => 0);
+        $this->connect();
+        gmi('search connect');
+        $query_type = 'watchlists';
+
+        // Main logic
+        if ($show_main) {
+
+            //Sort logic
+            $order = $this->get_order_query_filters($sort);
+
+            // Filters logic            
+            $filters_and = $this->get_filters_query($filters, array(), $query_type, '', $aid);
+
+            // Custom fields
+            $custom_fields = '';
+            if ($fields) {
+                $custom_fields = ', ' . implode(', ', $fields) . ' ';
+            }
+
+            // Main sql
+            $sql = sprintf("SELECT id, aid, wp_uid, top_mid, publish, date, last_upd, frating, title, content, type, items, weight() w" . $custom_fields . $order['select'] . $filters_and['select']
+                    . " FROM watchlists WHERE id>0" . $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
+
+            $ret = $this->movie_results($sql, $match, $search_query);
+
             gmi('main sql');
             // Simple result
             if (!$show_meta) {
@@ -3063,6 +3157,8 @@ class CriticSearch extends AbstractDB {
 
         if ($tab == 'filters') {
             $sql_arr = $this->filters_facets_sql($facet_list, $filters, $match, $aid);
+        } else if ($tab == 'watchlists') {
+            $sql_arr = $this->watchlists_facets_sql($facet_list, $filters, $match, $aid);
         } else {
             $sql_arr = $this->movies_facets_sql($facet_list, $filters, $match);
         }
@@ -3392,7 +3488,6 @@ class CriticSearch extends AbstractDB {
     public function filters_facets_sql($facet_list, $filters, $match, $aid = 0) {
         $sql_arr = array();
         $expand = isset($filters['expand']) ? $filters['expand'] : '';
-        $rating_facets = $this->facet_data['ratings']['childs'];
 
         foreach ($facet_list as $facet) {
             if (isset($this->facet_data[$facet]['is_parent'])) {
@@ -3416,6 +3511,34 @@ class CriticSearch extends AbstractDB {
                 $limit = $expand == 'from' ? $this->facet_max_limit : $this->facet_limit;
                 $filters_and = $this->get_filters_query($filters, $facet, 'filters', '', $aid);
                 $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM filters WHERE id>0" . $filters_and['filter'] . $match
+                        . " GROUP BY aid ORDER BY cnt DESC LIMIT 0," . $limit;
+            }
+        }
+
+        return $sql_arr;
+    }
+
+    public function watchlists_facets_sql($facet_list, $filters, $match, $aid = 0) {
+        $sql_arr = array();
+        $expand = isset($filters['expand']) ? $filters['expand'] : '';
+
+        foreach ($facet_list as $facet) {
+            if (isset($this->facet_data[$facet]['is_parent'])) {
+                continue;
+            }
+
+            if (isset($this->facet_data[$facet]['no_data'])) {
+                continue;
+            }
+
+            if (isset($this->facet_titles[$facet])) {
+                continue;
+            }
+
+            if ($facet == 'from') {
+                $limit = $expand == 'from' ? $this->facet_max_limit : $this->facet_limit;
+                $filters_and = $this->get_filters_query($filters, $facet, 'filters', '', $aid);
+                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM watchlists WHERE id>0" . $filters_and['filter'] . $match
                         . " GROUP BY aid ORDER BY cnt DESC LIMIT 0," . $limit;
             }
         }
@@ -3812,6 +3935,9 @@ class CriticSearch extends AbstractDB {
         if ($query_type == 'filters') {
             $select_and .= ", IF(publish OR aid={$aid},1,0) as upub";
             $filters_and .= " AND upub=1";
+        } else if ($query_type == 'watchlists') {
+            $select_and .= ", IF((publish AND items>0) OR aid={$aid},1,0) as upub";
+            $filters_and .= " AND upub=1";
         } else {
             if (!isset($filters['release'])) {
                 $filters['release'] = $this->get_default_release();
@@ -3869,7 +3995,7 @@ class CriticSearch extends AbstractDB {
                     }
                 }
 
-                if ($query_type == 'filters') {
+                if ($query_type == 'filters' || $query_type == 'watchlists') {
                     // Filters
                     if ($key == 'ftab') {
                         // Ftab
@@ -4043,6 +4169,16 @@ class CriticSearch extends AbstractDB {
                 } else if ($key == 'distributor' || $key == 'production') {
                     // Distributor
                     $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
+                } else if ($key == 'wl') {
+                    // Watchlist
+                    // Get watchlist
+                    $wl = $this->cm->get_wl();
+                    $value_int = is_array($value) ? array_pop($value) : $value;
+                    $wp_uid = isset($filters['wp_uid']) ? $filters['wp_uid'] : 0;
+                    $ids = $wl->get_list_movies($wp_uid, $value_int);
+                    if ($ids) {
+                        $filters_and .= " AND id IN(" . implode(',', $ids) . ")";
+                    }
                 } else if (isset($this->facet_data['findata']['childs'][$key])) {
                     // Finances
                     $data_arr = explode('-', $value);

@@ -22,7 +22,8 @@ class SearchFacets extends AbstractDB {
         'movies' => array('title' => 'Movies/TV', 'count' => 0),
         'games' => array('title' => 'Games', 'count' => 0),
         'critics' => array('title' => 'Reviews', 'count' => 0),
-        'filters' => array('title' => 'Filters', 'count' => 0)
+        'filters' => array('title' => 'Filters', 'count' => 0),
+        'watchlists' => array('title' => 'Watchlists', 'count' => 0),
     );
     // Search sort: /sort_title_desc
     public $search_sort = array();
@@ -373,10 +374,11 @@ class SearchFacets extends AbstractDB {
 
         $tab_key = $this->get_tab_key();
         $filters = $this->get_search_filters();
+        $filters['wp_uid'] = $uid;
 
         gmi('get_search_filters');
 
-        $is_movie = $is_critic = $is_game = $is_filter = false;
+        $is_movie = $is_critic = $is_game = $is_filter = $is_watchlist = false;
         if ($tab_key == 'movies') {
             $is_movie = true;
         } else if ($tab_key == 'critics') {
@@ -385,6 +387,8 @@ class SearchFacets extends AbstractDB {
             $is_game = true;
         } else if ($tab_key == 'filters') {
             $is_filter = true;
+        } else if ($tab_key == 'watchlists') {
+            $is_watchlist = true;
         }
         $facets = false;
         $movies_count = $critics_count = $games_count = 0;
@@ -489,8 +493,36 @@ class SearchFacets extends AbstractDB {
             gmi('front_search_filters_multi');
         }
 
+        if ($is_watchlist && $only_curr_tab || !$only_curr_tab) {
+            // Filters
+            $sort = $this->get_search_sort('watchlists');
+            if ($show_facets) {
+                $facets = $is_watchlist ? true : false;
+            }
+            $aid = 0;
+            if ($uid) {
+                $author = $this->cm->get_author_by_wp_uid($uid, true);
+                if ($author) {
+                    $aid = $author->id;
+                }
+            }
 
-        $result['count'] = $movies_count + $games_count + $critics_count + $filters_count;
+            $result['watchlists'] = $this->cs->front_search_watchlists_multi($aid, $this->keywords, $search_limit, $start, $sort, $filters, $facets, true, true, $show_main, $fields);
+            $watchlists_count = $result['watchlists']['count'];
+
+            if ($filters_count == 0 && $this->keywords && $is_watchlist && $show_main) {
+                if ($this->get_clear_filters($filters)) {
+                    // Try to find without filters
+                    $no_filters = $this->cs->front_search_watchlists_multi($aid, $this->keywords, $search_limit, $start, $sort, array(), false);
+                    if ($no_filters['count'] > 0) {
+                        $result['watchlists']['no_filters_count'] = $no_filters['count'];
+                    }
+                }
+            }
+            gmi('front_search_watchlists_multi');
+        }
+
+        $result['count'] = $movies_count + $games_count + $critics_count + $filters_count+$watchlists_count;
         return $result;
     }
 
@@ -571,7 +603,7 @@ class SearchFacets extends AbstractDB {
         return $facet_filters;
     }
 
-    public function search_filters($curr_tab = '', $show = false) {
+    public function search_filters($curr_tab = '', $uid = 0, $show = false) {
         if (!$curr_tab) {
             $curr_tab = 'movies';
         }
@@ -579,13 +611,13 @@ class SearchFacets extends AbstractDB {
         $this->get_fiters_available($curr_tab);
         $filters = $this->get_search_filters();
 
-        $tags = $this->get_filter_tags($filters);
+        $tags = $this->get_filter_tags($filters, $uid);
         $ret = $this->render_filter_tags($tags, $show);
 
         return $ret;
     }
 
-    public function get_filter_tags($filters) {
+    public function get_filter_tags($filters, $uid = 0) {
 
         $tags = array();
         foreach ($filters as $key_raw => $value) {
@@ -761,6 +793,17 @@ class SearchFacets extends AbstractDB {
                 foreach ($value as $slug) {
                     $name = isset($this->cs->search_filters[$key][$slug]['title']) ? $this->cs->search_filters[$key][$slug]['title'] : $slug;
                     $tags[] = array('name' => $name, 'type' => $key, 'title' => $title, 'type_title' => 'Production', 'id' => $slug, 'minus' => $minus);
+                }
+            } else if ($key == 'wl') {
+                // Get watchlist
+                $wl = $this->cm->get_wl();
+                $list = $wl->get_list((int) $value);
+
+                if ($list->publish == 1 || ($list->publish == 0 && $list->wp_uid == $uid)) {
+                    $slug = $value;
+                    $name = $list->title;
+                    $title = 'Watch List';
+                    $tags[] = array('name' => $name, 'type' => $key, 'title' => $title, 'id' => $slug);
                 }
             }
             /*
@@ -3203,7 +3246,7 @@ class SearchFacets extends AbstractDB {
 
     public function show_lang_facet($data, $more) {
         $dates = array();
-       
+
         if ($data) {
             //Get languages
             $ma = $this->get_ma();
@@ -3217,23 +3260,23 @@ class SearchFacets extends AbstractDB {
                     if (!$item->code) {
                         continue;
                     }
-                     
-                    $codes_sort[$item->code]= strtolower($item->title);
+
+                    $codes_sort[$item->code] = strtolower($item->title);
                     $dates[$item->code] = array('title' => $item->title, 'count' => $value->cnt);
                 }
-            }      
+            }
             asort($codes_sort);
-            
+
             $dates_sort = array();
             foreach ($codes_sort as $key => $value) {
-                $dates_sort[$key]=$dates[$key];
+                $dates_sort[$key] = $dates[$key];
             }
             $dates = $dates_sort;
             //
             //ksort($dates);
-            /*usort($dates, function($a, $b) {
-                return $a['title'] - $b['title'];
-            });*/
+            /* usort($dates, function($a, $b) {
+              return $a['title'] - $b['title'];
+              }); */
         }
 
         $filter = 'lang';
@@ -3250,7 +3293,7 @@ class SearchFacets extends AbstractDB {
         );
         $this->theme_facet_multi($filter_data);
     }
-    
+
     public function show_race_facet($facets = array(), $facet = '', $main_type = '') {
 
         $actors_facet = '';
@@ -5325,16 +5368,16 @@ class SearchFacets extends AbstractDB {
         }
         $this->tool_tips = array();
         $filters_active = $this->get_option('tooltips_filters');
-        
+
         $filters_active = str_replace("\n", ',', $filters_active);
-        
+
         $filters = array();
-        if (strstr($filters_active, ',')){
+        if (strstr($filters_active, ',')) {
             $filters_active_arr = explode(',', $filters_active);
             foreach ($filters_active_arr as $filter) {
-                $filter=trim($filter);
-                if ($filter){
-                    $filters[]=$filter;
+                $filter = trim($filter);
+                if ($filter) {
+                    $filters[] = $filter;
                 }
             }
         }

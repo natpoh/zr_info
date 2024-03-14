@@ -95,14 +95,9 @@ class CriticEmotions extends AbstractDB {
     }
 
     public function get_emotions($post_id = 0, $post_type = 0, $single = '') {
-        // Get wp user
-        $wp_uid = 0;
-        if (function_exists('wp_get_current_user')) {
-            $user = wp_get_current_user();
-            if ($user->exists()) {
-                $wp_uid = $user->ID;
-            }
-        }
+        // Get wp user        
+        $user = $this->get_current_user();
+        $wp_uid = isset($user->ID) ? (int) $user->ID : 0;        
 
         $user_vote = $this->get_current_user_post_reaction($post_id, $post_type, $wp_uid);
 
@@ -151,7 +146,6 @@ class CriticEmotions extends AbstractDB {
         $user_like = array();
         $result = array();
 
-
         if ($this->top_results) {
             foreach ($post_ids as $post_id) {
                 $reaction = $this->get_top_reaction($post_id, $post_type);
@@ -164,7 +158,7 @@ class CriticEmotions extends AbstractDB {
             }
         } else {
 
-            $aid = $this->get_current_user();
+            $aid = $this->get_current_user_unic();
 
             if (sizeof($post_ids)) {
                 foreach ($post_ids as $post_id) {
@@ -219,13 +213,8 @@ class CriticEmotions extends AbstractDB {
         $update_vote = true;
 
         // Get wp user
-        $wp_uid = 0;
-        if (function_exists('wp_get_current_user')) {
-            $user = wp_get_current_user();
-            if ($user->exists()) {
-                $wp_uid = $user->ID;
-            }
-        }
+        $user = $this->get_current_user();
+        $wp_uid = isset($user->ID) ? (int) $user->ID : 0;
 
         $unic_id = $this->unic_id();
         if ($unic_id != $_POST['nonce']) {
@@ -277,7 +266,7 @@ class CriticEmotions extends AbstractDB {
         return $id;
     }
 
-    public function get_current_user() {
+    public function get_current_user_unic() {
         $unic_id = $this->unic_id();
         if (!$unic_id) {
             return '';
@@ -287,12 +276,22 @@ class CriticEmotions extends AbstractDB {
         return $aid;
     }
 
+    private function get_current_user() {
+        $wpu = $this->cm->get_wpu();
+        $user_id = $wpu->get_current_user();
+        if ($user_id) {
+            $user = $wpu->user;
+            return $user;
+        }
+        return new stdClass();
+    }
+
     public function get_current_user_post_reaction($post_id, $post_type, $wp_uid = 0) {
 
         if ($wp_uid) {
             $vote = $this->get_post_vote_by_author_wp($post_id, $post_type, $wp_uid);
         } else {
-            $aid = $this->get_current_user();
+            $aid = $this->get_current_user_unic();
             if (!$aid) {
                 return '';
             }
@@ -381,6 +380,17 @@ class CriticEmotions extends AbstractDB {
                     $uc = $this->cm->get_uc();
                     $uc->emotions_rating($post_wp_author, $post_type, 1, $post_id);
                 }
+            } else if ($post_type == 2) {
+                // Add watchilst rating
+                $wl = $this->cm->get_wl();
+                $list = $wl->get_list($post_id);
+                if ($list) {
+                    $post_wp_author = $list->wp_uid;
+                    if ($wp_uid != $post_wp_author) {
+                        $uc = $this->cm->get_uc();
+                        $uc->emotions_rating($post_wp_author, $post_type, 1, $post_id);
+                    }
+                }
             }
         }
 
@@ -389,9 +399,18 @@ class CriticEmotions extends AbstractDB {
             if ($post_type == 0) {
                 $this->update_critic_post($post_id);
             } else if ($post_type == 1) {
+                // Filter
                 $uf = $this->cm->get_uf();
                 $vote_count = $this->get_posts_vote_count($post_id, $post_type);
                 $uf->update_filter($post_id, $vote_count);
+            } else if ($post_type == 2) {
+                // Watchlist
+                $wl = $this->cm->get_wl();
+                $vote_count = $this->get_posts_vote_count($post_id, $post_type);
+                $data = array(
+                    'rating' => $vote_count,
+                );
+                $wl->update_list($data, $post_id);
             }
         }
     }
@@ -505,5 +524,4 @@ class CriticEmotions extends AbstractDB {
         }
         return $result;
     }
-
 }

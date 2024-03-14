@@ -70,9 +70,9 @@ class AbstractFunctions {
 
 
         global $debug;
-        if ($debug){
+        if ($debug) {
             !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
-            TMDB::var_dump_table(['sync_update_data',$data, $id, $db, $sync_data, $priority]);
+            TMDB::var_dump_table(['sync_update_data', $data, $id, $db, $sync_data, $priority]);
         }
 
         $this->db_update($data, $db, $id);
@@ -156,7 +156,7 @@ class AbstractFunctions {
         return $commit_id;
     }
 
-    public function get_option($option, $def = '', $cache = true) {
+    public function get_option($option, $def = '', $cache = true, $db_an = true) {
         if ($cache) {
             static $dict;
             if (is_null($dict)) {
@@ -170,9 +170,11 @@ class AbstractFunctions {
 
         $data = '';
 
-        // New api 02.09.2022
-        $sql = sprintf("SELECT val FROM options WHERE type = '%s'", $option);
-        $data = Pdo_an::db_get_var($sql);
+        if ($db_an) {
+            // New api 02.09.2022
+            $sql = sprintf("SELECT val FROM options WHERE type = '%s'", $option);
+            $data = Pdo_an::db_get_var($sql);
+        }
         if ($data) {
             if ($this->is_serialized($data)) { // Don't attempt to unserialize data that wasn't serialized going in.
                 $data = unserialize(trim($data));
@@ -192,7 +194,7 @@ class AbstractFunctions {
                     }
                 }
             }
-            if ($data) {
+            if ($data && $db_an) {
                 // Add to new api
                 $this->update_option($option, $data);
             }
@@ -201,10 +203,10 @@ class AbstractFunctions {
         if ($cache && $data) {
             $dict[$option] = $data;
         }
-        if (!$data){
+        if (!$data) {
             $data = $def;
         }
-        
+
         return $data;
     }
 
@@ -250,6 +252,18 @@ class AbstractFunctions {
                 }
             }
         }
+    }
+
+    public function get_user_meta($user_id = 0, $key = '', $single = false) {
+        // Front get option
+        $sql = sprintf("SELECT meta_value FROM " . DB_PREFIX_WP . "usermeta WHERE user_id=%d AND meta_key = '%s'", $user_id, $key);
+        $data = Pdo_wp::db_get_var($sql);
+        if ($data) {
+            if ($this->is_serialized($data)) { // Don't attempt to unserialize data that wasn't serialized going in.
+                $data = unserialize(trim($data));
+            }
+        }
+        return $data;
     }
 
     /**
@@ -395,7 +409,6 @@ class AbstractFunctions {
         }
         return $string;
     }
-
 }
 
 class QueryADB {
@@ -417,5 +430,4 @@ class QueryADB {
     public function clear() {
         $this->query = array();
     }
-
 }

@@ -276,7 +276,7 @@ class AnalyticsFront extends SearchFacets {
         $this->filters['stacking'] = '';
     }
 
-    public function search_filters($curr_tab = '', $show = false) {
+    public function search_filters($curr_tab = '', $uid=0, $show = false) {
         if (!$curr_tab) {
             $curr_tab = 'international';
         }
@@ -284,13 +284,13 @@ class AnalyticsFront extends SearchFacets {
         $this->get_fiters_available($curr_tab);
         $filters = $this->get_search_filters();
 
-        $tags = $this->get_filter_tags($filters);
+        $tags = $this->get_filter_tags($filters, $uid);
         $ret = $this->render_filter_tags($tags, $show);
 
         return $ret;
     }
 
-    public function get_filter_tags($filters) {
+    public function get_filter_tags($filters, $uid=0) {
         $tags = parent::get_filter_tags($filters);
 
         $minus = false;

@@ -10,7 +10,6 @@ class CriticMatic extends AbstractDB {
     public $perpage = 30;
     private $db = array();
     public $user_can;
-    public $new_audience_count = 0;
     private $ac;
     private $af;
     private $cav;
@@ -18,7 +17,7 @@ class CriticMatic extends AbstractDB {
     private $cf;
     private $cp;
     private $cs;
-    private $ct;    
+    private $ct;
     private $ma;
     private $ms;
     private $mw;
@@ -27,7 +26,9 @@ class CriticMatic extends AbstractDB {
     private $si;
     private $uf;
     private $mac;
+    private $wl;
     private $mdirs;
+    private $wpu;
 
     /*
      * Posts
@@ -226,17 +227,6 @@ class CriticMatic extends AbstractDB {
         );
         $this->timer_start();
 
-        if (function_exists('user_can')) {
-            $this->user_can = $this->user_can();
-            if ($this->user_can) {
-                $q_audience = array(
-                    'status' => 0,
-                    'author_type' => 2
-                );
-                $this->new_audience_count = $this->get_post_count($q_audience);
-            }
-            add_action('admin_bar_menu', array($this, 'admin_bar_render'), 99);
-        }
         $this->get_perpage();
 
         //Settings
@@ -433,7 +423,7 @@ class CriticMatic extends AbstractDB {
         }
         return $this->ts;
     }
-    
+
     public function get_ct() {
         if (!$this->ct) {
             //init 
@@ -445,7 +435,6 @@ class CriticMatic extends AbstractDB {
         return $this->ct;
     }
 
-    
     public function get_af() {
         if (!$this->af) {
             //init 
@@ -491,16 +480,27 @@ class CriticMatic extends AbstractDB {
         return $this->uf;
     }
 
-    function admin_bar_render($wp_admin_bar) {
-        if ($this->new_audience_count > 0 && $this->user_can) {
-
-            $wp_admin_bar->add_menu(array(
-                'parent' => '',
-                'id' => 'flag-report',
-                'title' => '<span style="color: #ff5e28; font-weight: bold;">Reviews: ' . $this->new_audience_count . '</span>',
-                'href' => '/wp-admin/admin.php?page=critic_matic_audience&status=0'
-            ));
+    public function get_wl() {
+        if (!$this->wl) {
+            if (!class_exists('WatchList')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'WatchList.php' );
+            }
+            $this->wl = new WatchList($this->cm);
         }
+        return $this->wl;
+    }
+
+    public function get_wpu() {
+        if (!$this->wpu) {
+            if (!class_exists('AbstractDBWp')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'db/AbstractDBWp.php' );
+            }
+            if (!class_exists('WpUser')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'WpUser.php' );
+            }
+            $this->wpu = new WpUser($this->cm);
+        }
+        return $this->wpu;
     }
 
     /*
@@ -4393,7 +4393,7 @@ class CriticMatic extends AbstractDB {
             return $code;
     }
 
-     public function get_domain_by_url($url = '') {
+    public function get_domain_by_url($url = '') {
         $domain = preg_replace('#^([a-z]+\:\/\/[^\/]+)(\/|\?|\#).*#', '$1', $url . '/');
         return $domain;
     }

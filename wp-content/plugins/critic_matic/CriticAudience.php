@@ -174,7 +174,6 @@ class CriticAudience extends AbstractDb {
          */
         $ip = $this->cm->get_remote_ip();
 
-
         $rtn = new stdClass();
         $rtn->err = array();
         $rtn->success = false;
@@ -201,7 +200,6 @@ class CriticAudience extends AbstractDb {
 
             // Anon review            
             $anon_review = $posted->fname ? false : true;
-
 
             if ($uid) {
                 $anon_review = false;
@@ -385,6 +383,8 @@ class CriticAudience extends AbstractDb {
                 'unic_id' => $unic_id,
                 'title' => $title,
                 'content' => $content,
+                'pid' => $posted->pid,
+                'force' => $posted->force,
             );
 
             if ($is_edit) {
@@ -432,12 +432,19 @@ class CriticAudience extends AbstractDb {
     }
 
     public function update_audience($arr) {
-        // Already vote
-        $a_voted = $this->already_voted($arr['top_movie']);
-        if ($a_voted['ret'] == 2) {
-            // Is edit
-            $au_data = (array) $a_voted['au_data'];
+        if ($arr['pid'] && $arr['force']) {
+            // Force edit
+            $au_data = (array)  $this->get_audata($arr['pid']);
+        } else {
+            // Already vote
+            $a_voted = $this->already_voted($arr['top_movie']);
+            if ($a_voted['ret'] == 2) {
+                // Is edit
+                $au_data = (array) $a_voted['au_data'];
+            }
+        }
 
+        if ($au_data) {
             $data_upd = array(
                 'date' => $this->curr_time(),
                 'rating' => $this->get_rating_by_audata('rating', $arr, $au_data),
@@ -665,7 +672,6 @@ class CriticAudience extends AbstractDb {
             $update_top_movie = false;
             $this->cm->add_post_meta($top_movie, $movie_cat, $state, $pid, 0, $update_top_movie);
 
-
             // Add rating
             $options = $this->cm->get_rating_array($item);
 
@@ -700,7 +706,6 @@ class CriticAudience extends AbstractDb {
             if (isset($this->vote_data['vote']['options'][$rating]['img'])) {
 
                 $verdict = $this->vote_data['vote']['options'][$rating]['verdict'];
-
 
                 $title = $this->vote_data[$type]['title'];
 
@@ -740,6 +745,21 @@ class CriticAudience extends AbstractDb {
         <?php
     }
 
+    public function get_audata($cid = 0) {
+        $unic_id = $this->unic_id();
+        $post = $this->cm->get_post($cid);
+        $au_data = array();
+        if ($post) {
+            $au_data = $this->get_audata_post($post);
+            $au_data->unic_id = $unic_id;
+            $au_data->force = 1;
+            if ($post->status == 1) {
+                $au_data->status = 1;
+            }
+        }
+        return $au_data;
+    }
+
     /*
      * return: 
      * 0 - no vote
@@ -768,7 +788,7 @@ class CriticAudience extends AbstractDb {
         if ($queue_id) {
             $voted = true;
             $post_queue = $this->get_post_queue($queue_id);
- 
+
             // Post exist?
             if ($post_queue->status == 1) {
                 // Author is voted?
@@ -780,10 +800,11 @@ class CriticAudience extends AbstractDb {
                 }
             }
         }
-        
+
         $ret = 0;
         $au_data = new stdClass();
         $au_data->status = 0;
+        $au_data->force = 0;
         if ($voted) {
             $ret = 1;
             $post = '';
@@ -794,7 +815,7 @@ class CriticAudience extends AbstractDb {
             $time_to_edit = $ss['audience_post_edit'];
 
             if ($ss['audience_post_edit']) {
-             
+
                 if ($cid) {
                     $post = $this->cm->get_post($cid);
                     if ($post) {
@@ -834,10 +855,10 @@ class CriticAudience extends AbstractDb {
                         }
                     }
                 }
-                
-                
 
-                if ($date_add>0 && $time > ($date_add + ($time_to_edit * 60))) {
+
+
+                if ($date_add > 0 && $time > ($date_add + ($time_to_edit * 60))) {
                     // Edit mode expired, user can add new review
                     $au_data->status = 0;
                     $ret = 3;
@@ -873,7 +894,6 @@ class CriticAudience extends AbstractDb {
     public function get_queue($status = -1, $page = 1, $per_page = 20, $orderby = '', $order = 'ASC') {
         $page -= 1;
         $start = $page * $this->perpage;
-
 
         // Custom status
         $status_query = "";
@@ -1083,6 +1103,8 @@ class CriticAudience extends AbstractDb {
                             <p class="redtext">Your review is awaiting an anti-troll check.</p>
                         <?php } ?>
                         <input id="unic_id" type="hidden" name="unic_id" value="<?php print $au_data->unic_id ?>" />
+                        <input id="pid" type="hidden" name="pid" value="<?php print $au_data->pid ?>" />
+                        <input id="force" type="hidden" name="force" value="<?php print $au_data->force ?>" />
                     <?php } ?>
                     <tr class="msg-holder"><td colspan="2"><div class="msg-data"></div></td></tr>
                     <?php
@@ -1275,7 +1297,6 @@ class CriticAudience extends AbstractDb {
         if ($value) {
             $width = $value * 20;
             $sizes = array(0, 100, 50, 33.3333, 25, 20);
-
 
             $count = $value * 100 / 5;
 
@@ -1480,5 +1501,4 @@ class CriticAudience extends AbstractDb {
         setcookie('comment_author_' . COOKIEHASH, $comment->comment_author, $comment_cookie_lifetime, COOKIEPATH, COOKIE_DOMAIN, $secure);
         setcookie('comment_author_pass_' . COOKIEHASH, $comment->comment_author_pass, $comment_cookie_lifetime, COOKIEPATH, COOKIE_DOMAIN, $secure);
     }
-
 }

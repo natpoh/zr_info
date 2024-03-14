@@ -48,12 +48,15 @@ class UserFilters extends AbstractDB {
         $filename = '';
         $source_dir = WP_CONTENT_DIR . '/uploads/' . $this->filters_img_dir;
 
-        $user = wp_get_current_user();
-        $wp_uid = $user->exists() ? $user->ID : 0;
+        if (!$title) {
+           $title = 'Filter ' . $this->curr_date();
+        }
+        
+        $user = $this->get_current_user();
+        $wp_uid = isset($user->ID) ? (int) $user->ID : 0;
 
         $msg = 'Need login';
         $ret_class = 'error';
-
 
         if ($wp_uid) {
             $link_hash = $this->link_hash($link);
@@ -238,11 +241,12 @@ class UserFilters extends AbstractDB {
         $link_hash = $this->link_hash($link);
 
         // Get user
-        $user = wp_get_current_user();
-        $wp_uid = $user->exists() ? $user->ID : 0;
+
+        $user = $this->get_current_user();
+        $wp_uid = isset($user->ID) ? (int) $user->ID : 0;
 
         // Check user login
-        $user_identity = $user->exists() ? $user->display_name : '';
+        $user_identity = $user ? $user->display_name : '';
 
         if (!$user_identity) {
             print 'Need login';
@@ -255,7 +259,6 @@ class UserFilters extends AbstractDB {
         $content = '';
         $img = '';
         $already_publish = '';
-
 
         // Get exist link        
         $link_data = $this->get_link_by_hash($link_hash);
@@ -283,11 +286,10 @@ class UserFilters extends AbstractDB {
             <div class="row">
                 <div class="col_title">
                     <?php
-                    $user_profile = get_author_posts_url($user->ID, $user->user_nicename);
+                    $user_profile = '/author/'.$user->user_nicename.'/';
                     $logged_in_as = '<p class="logged-in-as">' .
-                            sprintf(__('You are logged in as <a href="%1$s">%2$s</a>. <a href="%3$s" title="Sign out of this account">Sign out?</a>'), $user_profile, $user_identity, wp_logout_url($post_link)) . '</p>';
-                    print apply_filters('comment_form_logged_in', $logged_in_as, $commenter, $user_identity);
-                    do_action('comment_form_logged_in_after', $commenter, $user_identity);
+                            sprintf('You are logged in as <a href="%1$s">%2$s</a>.', $user_profile, $user_identity). '</p>';   
+                    print $logged_in_as;
                     ?>               
                 </div>
             </div>
@@ -301,10 +303,10 @@ class UserFilters extends AbstractDB {
                     <div class="col_input">  
                         <button id="upl_filter_image" class="btn-small">Upload image</button>                     
                         <button id="remove_filter_image" class="btn-small btn-second<?php
-                        if (!$img) {
-                            print " ishide";
-                        }
-                        ?>">Remove image</button>
+                            if (!$img) {
+                                print " ishide";
+                            }
+                            ?>">Remove image</button>
                         <input type="file" id="upl_filter_file" style="display: none;" >                                        
                         <input type="hidden" id="upl_filter_thumb" >                    
                         <input type="hidden" id="remove_filter_thumb" val="0"> 
@@ -335,10 +337,10 @@ class UserFilters extends AbstractDB {
             <div class="row">                
                 <div class="col_title form-check">                     
                     <input type="checkbox" name="publish" value="1" id="publish" <?php
-                    if ($publish) {
-                        print "checked";
-                    }
-                    ?> >
+            if ($publish) {
+                print "checked";
+            }
+            ?> >
                     <label for="publish">
                         Publish to the public filter list.
                     </label>                    
@@ -373,6 +375,24 @@ class UserFilters extends AbstractDB {
         return false;
     }
 
+    public function ajax_list_menu($id = '', $act = '') {
+        $user = $this->get_current_user();
+        $wp_uid = isset($user->ID) ? (int) $user->ID : 0;
+        $result = 0;
+        if ($act == 'delfilter') {
+            $exist_id = $this->get_filter_id_by_user_and_id($wp_uid, $id);
+            if ($exist_id) {
+                $this->remove_filter($exist_id);
+                // Reindex rating
+                $this->filters_delta();
+                $result = 1;
+            }
+        }
+        $ret = array('uid' => $wp_uid, 'result' => $result);
+        print json_encode($ret);
+        exit();
+    }
+
     public function get_filters_by_url($url = '', $tags = false) {
         $ret = array();
         // Init url
@@ -396,7 +416,8 @@ class UserFilters extends AbstractDB {
             }
 
             $search_front->cs->get_filters_query($ret['filters']);
-            $ret['tags'] = $search_front->search_filters($curr_tab, true);
+            $uid = 0;
+            $ret['tags'] = $search_front->search_filters($curr_tab, $uid, true);
         }
         // Deinit url
         $_SERVER['REQUEST_URI'] = $last_req;
@@ -421,15 +442,25 @@ class UserFilters extends AbstractDB {
         return $ret;
     }
 
-    public function get_filters_by_wpuser($wp_uid = 0, $owner = 0) {
+    public function get_filters_by_wpuser($wp_uid = 0, $owner = 0, $count = 0, $page = 1) {
         $and_publish = '';
         if ($owner != 1) {
             $and_publish = ' AND f.publish=1';
         }
-        $sql = sprintf("SELECT f.id, f.date, f.title, f.content, f.publish, f.aid, f.wp_uid, l.link, l.tab "
+
+        $and_limit = '';
+        if ($count != 0) {
+            $from = 0;
+            if ($page != 1) {
+                $from = ($page - 1) * $count;
+            }
+            $and_limit = sprintf(' LIMIT %d,%d', $from, $count);
+        }
+
+        $sql = sprintf("SELECT f.id, f.date, f.title, f.content, f.publish, f.aid, f.wp_uid, f.img, l.link, l.tab "
                 . "FROM {$this->db['user_filters']} f "
                 . "INNER JOIN {$this->db['link_filters']} l ON l.id=f.fid "
-                . "WHERE f.wp_uid=%d" . $and_publish . " ORDER BY f.date DESC", $wp_uid);
+                . "WHERE f.wp_uid=%d" . $and_publish . " ORDER BY id DESC" . $and_limit, $wp_uid);
         $ret = $this->db_results($sql);
 
         return $ret;
@@ -443,11 +474,21 @@ class UserFilters extends AbstractDB {
             $fid = $this->db_get_var($sql);
 
             if ($fid) {
-                $sql = sprintf("SELECT id FROM {$this->db['user_filters']} WHERE fid=%d AND wp_uid=%d", $fid, $wp_uid);
-                $ret = $this->db_get_var($sql);
+                $ret = $this->get_filter_id_by_user_and_id($wp_uid, $fid);
             }
         }
         return $ret;
+    }
+
+    public function get_filter_id_by_user_and_id($wp_uid = 0, $fid = '') {
+        $sql = sprintf("SELECT id FROM {$this->db['user_filters']} WHERE fid=%d AND wp_uid=%d", $fid, $wp_uid);
+        $ret = $this->db_get_var($sql);
+        return $ret;
+    }
+
+    public function remove_filter($id = 0) {
+        $sql = sprintf("DELETE FROM {$this->db['user_filters']} WHERE id=%d", (int) $id);
+        $this->db_query($sql);
     }
 
     private function wp_get_current_commenter() {
@@ -558,4 +599,147 @@ class UserFilters extends AbstractDB {
         return $src_type;
     }
 
+    public function get_filters_page_by_wpuid($wp_uid = 0, $owner = 0, $url, $perpage = 10, $page = 1) {
+        $posts = $this->get_filters_by_wpuser($wp_uid, $owner, $perpage, $page);
+        $content = '';
+        if ($posts) {
+            ob_start();
+            ?>
+            <div class="simple">
+                <div class="items<?php
+            if ($owner) {
+                print " owner";
+            }
+            ?>" data-id="0">
+                     <?php
+                         foreach ($posts as $post) {
+
+                             // Link to filter
+                             $link = $this->get_filter_link($post->id);
+
+                             // Time
+                             $ptime = $post->date;
+                             $addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+
+                             // Title
+                             $title = strip_tags($post->title);
+
+                             $publish = $post->publish;
+                             $pub_icon = '';
+                             if ($owner) {
+                                 if ($publish == 0) {
+                                     $pub_icon = '<i class="icon-eye-off"></i>';
+                                 } else {
+                                     $pub_icon = '<i class="icon-eye"></i>';
+                                 }
+                             }
+                             $img = '';
+                             if ($post->img) {
+                                 $img = $this->get_img_path($post->img);
+                             }
+                             ?>
+                        <div class="item" data-id="<?php print $post->id ?>">
+                            <a href="<?php print $link ?>" title="<?php print $title ?>" >   
+                                <?php if ($img): ?>
+                                    <img srcset="<?php print $img; ?>" alt="<?php print $title ?>">                                             
+                                <?php endif ?>
+                                <div class="desc">
+                                    <h5><?php print $title ?></h5>
+                                    <p><?php print $addtime ?>.<?php print $pub_icon ?></p>
+                                </div>
+                            </a>                                       
+                            <?php if ($owner): ?>                                            
+                                <div class="menu nte">
+                                    <div class="btn">
+                                        <i class="icon icon-ellipsis-vert"></i>
+                                    </div>
+                                    <div class="nte_show dwn">
+                                        <div class="nte_in">
+                                            <div class="nte_cnt">
+                                                <ul class="sort-wrapper more listmenu">                                                                                                               
+                                                    <li class="nav-tab" data-act="editfilter" data-link="<?php print $link ?>">Edit Filter</li>
+                                                    <li class="nav-tab" data-act="delfilter">Delete Filter</li>                                                                
+                                                </ul>
+                                            </div>                                                          
+                                        </div>                                                    
+                                    </div>                                                
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    <?php } ?>
+                </div>
+            </div>
+            <?php
+            $content = ob_get_contents();
+            ob_end_clean();
+        }
+        return $content;
+    }
+
+    public function get_filters_widget_by_wpuid($wp_uid = 0, $owner = 0, $perpage = 10) {
+        $posts = $this->get_filters_by_wpuser($wp_uid, $owner, $perpage);
+
+        $content = '';
+        if ($posts) {
+            ob_start();
+            ?>
+            <div class="simple">
+                <div class="items">
+                    <?php
+                    foreach ($posts as $post) {
+
+                        // Link to filter
+                        $link = $this->get_filter_link($post->id);
+
+                        // Time
+                        $ptime = $post->date;
+                        $addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+
+                        // Title
+                        $title = strip_tags($post->title);
+
+                        $publish = $post->publish;
+                        $pub_icon = '';
+                        if ($owner) {
+                            if ($publish == 0) {
+                                $pub_icon = '<i class="icon-eye-off"></i>';
+                            } else {
+                                $pub_icon = '<i class="icon-eye"></i>';
+                            }
+                        }
+                        $img = '';
+                        if ($post->img) {
+                            $img = $this->get_img_path($post->img);
+                        }
+                        ?>
+                        <div class="item">
+                            <a href="<?php print $link ?>" title="<?php print $title ?>" >    
+                                <?php if ($img): ?>
+                                    <img srcset="<?php print $img; ?>" alt="<?php print $title ?>">                                             
+                                <?php endif ?>
+                                <div class="desc">
+                                    <h5><?php print $title ?></h5>
+                                    <p><?php print $addtime ?></p>
+                                </div>
+                            </a>
+                        </div>
+                    <?php } ?>
+                </div>
+            </div>
+            <?php
+            $content = ob_get_contents();
+            ob_end_clean();
+        }
+        return $content;
+    }
+
+    private function get_current_user() {
+        $wpu = $this->cm->get_wpu();
+        $user_id = $wpu->get_current_user();
+        if ($user_id) {
+            $user = $wpu->user;
+            return $user;
+        }
+        return new stdClass();
+    }
 }
