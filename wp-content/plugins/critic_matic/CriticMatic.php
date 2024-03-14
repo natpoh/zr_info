@@ -1533,7 +1533,7 @@ class CriticMatic extends AbstractDB {
         }
 
         $data = array(
-            'status' => $meta_state,
+            'state' => $meta_state,
         );
 
         foreach ($ids as $id) {

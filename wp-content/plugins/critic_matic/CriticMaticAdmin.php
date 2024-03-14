@@ -3164,7 +3164,7 @@ class CriticMaticAdmin {
 
                     if ($b == 'meta_remove') {
                         $changed = $this->cm->bulk_meta_remove($ids, $mid);
-                    } else {
+                    } else {                        
                         $meta_state = ($b == 'meta_approve') ? 1 : 0;
                         $changed = $this->cm->bulk_meta_update($ids, $meta_state, $mid);
                     }
