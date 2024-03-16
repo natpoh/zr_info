@@ -18,12 +18,12 @@ global $post_id;
 global $rwt_id;
 global $post_an;
 global $ma;
+global $cfront, $review_api;
 $post_id = $post_an->id;
 $post_title = $post_an->title;
 $post_type = $post_an->type;
 $post_name = $post_an->post_name;
 $rwt_id = $post_an->rwt_id;
-
 
 global $site_url;
 if (!$site_url)
@@ -49,9 +49,13 @@ if ($movie_list) {
 <article id="post-<?php echo $post_id; ?>" class="post-<?php echo $post_id; ?> type-<?php echo $post_type; ?> status-publish hentry">
 
     <?php
-    template_single_movie($post_id, $post_title, '', 1);
+    $wl = $cfront->cm->get_wl();
+    $user_blocks = array(
+        'watchlists' => $wl->get_watch_blocks(array($post_id))
+    );
 
-
+    template_single_movie($post_id, $post_title, '', 1, '', $user_blocks);
+    
 
 //////movie rating
 ///  get_movie_rating(get_the_ID());
@@ -78,38 +82,37 @@ if ($movie_list) {
 ////get reviews
     ?>
     <div class="entry-content">
-        <?php
-        global $cfront, $review_api;
-        if ($review_api == 2) {
+    <?php
+    if ($review_api == 2) {
 
-            $ca = $cfront->get_ca();
-            $ca->audience_form_code($post_id);
-        }
-        ///the_content();
+        $ca = $cfront->get_ca();
+        $ca->audience_form_code($post_id);
+    }
+    ///the_content();
 
-        require get_template_directory() . '/template/video_colums_template_single.php';
-        // require get_template_directory() . '/template/include/emotiondata.php';
-        ?>
+    require get_template_directory() . '/template/video_colums_template_single.php';
+    // require get_template_directory() . '/template/include/emotiondata.php';
+    ?>
         <div class="column_header">
             <h2>Internet Zeitgest:</h2>
         </div>
         <div id="google_search"  data-value="<?php print $post_id ?>" class="page_custom_block not_load"></div>
 
 
-        <?php
-        $post_type = strtolower($post_type);
+<?php
+$post_type = strtolower($post_type);
 
-        if ($post_type == 'movie') {
-            $post_type = 'movies';
-        }
+if ($post_type == 'movie') {
+    $post_type = 'movies';
+}
 
-        $link = WP_SITEURL . '/' . $post_type . '/' . $post_name . '/';
-        $pg_idnt = $post_id . ' ' . $link;
-        $comments_account = get_option('disqus_forum_url');
+$link = WP_SITEURL . '/' . $post_type . '/' . $post_name . '/';
+$pg_idnt = $post_id . ' ' . $link;
+$comments_account = get_option('disqus_forum_url');
 
-        echo '<div class="column_header" id="movie_commnets" style="text-align: center; margin-top: 35px"><h2>Comments:</h2></div>
+echo '<div class="column_header" id="movie_commnets" style="text-align: center; margin-top: 35px"><h2>Comments:</h2></div>
         <div class="not_load" id="disquss_container" data_comments="' . $comments_account . '"  data_title="' . $post_title . '" data_link="' . $link . '" data_idn="' . $pg_idnt . '"></div>';
-        ?>
+?>
         <div id="disqus_recommendations"></div>
 
 

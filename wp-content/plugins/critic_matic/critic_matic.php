@@ -1725,15 +1725,30 @@ function critic_matic_plugin_activation() {
     $sql = "CREATE TABLE IF NOT EXISTS  `watch_list`(
 				`id` int(11) unsigned NOT NULL auto_increment,
                                 `date` int(11) NOT NULL DEFAULT '0',
-                                `last_update` int(11) NOT NULL DEFAULT '0',
-                                `uid` int(11) NOT NULL DEFAULT '0',
-                                `share` int(11) NOT NULL DEFAULT '0',
-                                `name` varchar(255) NOT NULL default '',                                
+                                `last_upd` int(11) NOT NULL DEFAULT '0',
+                                `wp_uid` int(11) NOT NULL DEFAULT '0',
+                                `aid` int(11) NOT NULL DEFAULT '0',
+                                `publish` int(11) NOT NULL DEFAULT '0',
+                                `top_mid` int(11) NOT NULL DEFAULT '0',                                
+                                `rating` int(11) NOT NULL DEFAULT '0',
+                                `items` int(11) NOT NULL DEFAULT '0',
+                                `title` varchar(255) NOT NULL default '',         
+                                `content` text default NULL,
 				PRIMARY KEY  (`id`)
 				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('date', 'uid', 'share'), "watch_list");
+    
+    /*
+     * Type:
+     * 0 - user list
+     * 1 - watch later
+     * 2 - favorites
+     */
+    $sql = "ALTER TABLE `watch_list` ADD `type` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
+    critic_matic_create_index_an(array('date', 'uid', 'share','type'), "watch_list");
     
     /*
      * lid - list id

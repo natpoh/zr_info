@@ -15,7 +15,7 @@ if (isset($search_data['wpapi'])) {
     require_once($_SERVER['DOCUMENT_ROOT'] . '/wp-config.php');
 } else {
     // no wp api
-    
+
     if (!defined('ABSPATH')) {
         define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
     }
@@ -74,6 +74,8 @@ if (isset($search_data['search_type']) && $search_data['search_type'] == 'ajax')
         $search_front = new CriticFront();
     }
 
+    // User id
+    $uid = $search_data['uid'] ? (int) $search_data['uid'] : 0;
 
     // Init filters
     $search_front->init_search_get_fiters();
@@ -86,14 +88,14 @@ if (isset($search_data['search_type']) && $search_data['search_type'] == 'ajax')
     $tab_key = $search_front->get_tab_key();
 
     // Filters
-    $fiters = $search_front->search_filters($tab_key);
+    $fiters = $search_front->search_filters($tab_key, $uid);
 
     if ($autocomplite) {
         $keyword = $search_data['facet_keyword'];
         $count = (int) $search_data['facet_count'];
         $facet_ac_type = $search_data['facet_ac_type'];
 
-        if ($facet_ac_type == 'ac') {            
+        if ($facet_ac_type == 'ac') {
             if (in_array($autocomplite_type, $actors_facets)) {
                 // DEPRECATED
                 $search_front->actor_autocomplite($keyword, $count, 'actor');
@@ -156,11 +158,10 @@ if (isset($search_data['search_type']) && $search_data['search_type'] == 'ajax')
 
     print '<div>';
 
-    $uid = $search_data['uid']? (int) $search_data['uid']:0;
-        
+
+
     //Find results
     $results = $search_front->find_results($uid, array(), $show_facets);
-
 
     global $total;
     $total = $results['count'];
@@ -174,7 +175,7 @@ if (isset($search_data['search_type']) && $search_data['search_type'] == 'ajax')
     }
     // Facets
     $facets = $results[$tab_key]['facets'];
-    
+
     // User filter
     $user_filter_id = $search_front->get_user_search_filter($uid, $search_url);
 
@@ -215,16 +216,20 @@ if (isset($search_data['search_type']) && $search_data['search_type'] == 'ajax')
         print $rules_id;
     }
 } else if (isset($search_data['link_form'])) {
-    global $cfront;
 
-    $uf = $cfront->cm->get_uf();
-    
+    $cm = new CriticMatic();
+    $uf = $cm->get_uf();
+
     // Get form
-    if (isset($search_data['submit'])){
+    if (isset($search_data['submit'])) {
         $uf->submit($search_data);
     } else if (isset($search_data['url'])) {
         $url = $search_data['url'];
-        $uf->link_form($url);        
+        $uf->link_form($url);
+    } else if (isset($search_data['act'])) {
+        $act = ($_POST['act']);
+        $id = intval($_POST['id']);        
+        print $uf->ajax_list_menu($id, $act);
     }
 }
 exit;

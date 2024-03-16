@@ -311,7 +311,9 @@ template {
 a {
     background-color: transparent;
 }
-
+a:focus {
+    outline: none;
+}
 abbr[title] {
     border-bottom: 1px dotted;
 }
@@ -787,6 +789,154 @@ td {
 }
 
 
+/*jGrowl*/
+
+.jGrowl {
+    z-index: 10000001;
+    color: #fff;
+    font-size: 1rem;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    position: fixed;
+}
+
+.jGrowl button {
+    margin: 0;
+    padding: 0;
+}
+
+.jGrowl.top-left {
+    left: 0px;
+    top: 0px;
+}
+.jGrowl.top-right {
+    right: 0px;
+    top: 0px;
+}
+.jGrowl.bottom-left {
+    left: 0px;
+    bottom: 0px;
+}
+.jGrowl.bottom-right {
+    right: 0px;
+    bottom: 0px;
+}
+.jGrowl.center {
+    top: 0px;
+    width: 50%;
+    left: 25%;
+}
+.jGrowl.center .jGrowl-notification,
+.jGrowl.center .jGrowl-closer {
+    margin-left: auto;
+    margin-right: auto;
+}
+.jGrowl-notification {
+    background-color: #000;
+    opacity: 0.9;
+    filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=90);
+    -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=90);
+    zoom: 1;
+    width: 250px;
+    padding: 10px;
+    margin: 10px;
+    text-align: left;
+    display: none;
+    border-radius: 5px;
+    min-height: 40px;
+}
+.jGrowl-notification .ui-state-highlight,
+.jGrowl-notification .ui-widget-content .ui-state-highlight,
+.jGrowl-notification .ui-widget-header .ui-state-highlight {
+    border: 1px solid #000;
+    background: #000;
+    color: #fff;
+}
+.jGrowl-notification .jGrowl-header {
+    font-weight: bold;
+    font-size: .85em;
+}
+.jGrowl-notification .jGrowl-close {
+    background-color: transparent;
+    color: inherit;
+    border: none;
+    z-index: 99;
+    float: right;
+    font-weight: bold;
+    font-size: 1em;
+    cursor: pointer;
+}
+.jGrowl-closer {
+    background-color: #000;
+    opacity: 0.9;
+    filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=90);
+    -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=90);
+    zoom: 1;
+    width: 250px;
+    padding: 10px;
+    margin: 10px;
+    text-align: left;
+    display: none;
+    border-radius: 5px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    cursor: pointer;
+    font-size: .9em;
+    font-weight: bold;
+    text-align: center;
+}
+.jGrowl-closer .ui-state-highlight,
+.jGrowl-closer .ui-widget-content .ui-state-highlight,
+.jGrowl-closer .ui-widget-header .ui-state-highlight {
+    border: 1px solid #000;
+    background: #000;
+    color: #fff;
+}
+
+/** Hide jGrowl when printing **/
+@media print {
+    .jGrowl {
+        display: none;
+    }
+}
+
+/*jGrowl*/
+div.jGrowl div.warning, 
+.msg.warning {
+    color: var(--red-default);
+    background: var(--yellow-light-2);
+    border-color: var(--yellow-light-2);
+}
+
+div.jGrowl div.error, 
+.msg.error {
+    color: white;
+    background: var(--red-light-1);
+    border-color: var(--red-default);
+}
+
+div.jGrowl div.error a, 
+.msg.error a {
+    color: white;
+}
+
+div.jGrowl div.status, 
+.msg.status {
+    color: var(--green-dark-1);
+    background: var(--green-light-2);
+    border-color: var(--green-light-1);
+}
+
+div.jGrowl div.jGrowl-closer {
+    background:  var(--blue-default);
+}
+
+.msg {
+    font-size: 1rem;
+    padding: 10px;
+    display: block;
+    margin: 0 0 1rem 0;
+    background: #eee;
+}
 
 /* Placeholder text color -- selectors need to be separate to work. */
 ::-webkit-input-placeholder {
@@ -1484,6 +1634,9 @@ body.theme_dark .tab-wrapper.tabs-btn li.nav-tab a {
     display: none;
 }
 
+.listmenu {
+    flex-direction: column;
+}
 
 .nav-tab.group {
     display: inline-block; 
@@ -6227,6 +6380,15 @@ button.btn-second:hover{
     background-color: #222;
 }
 
+button.btn-danger {
+    background-color: #ad0000;
+    border-color: #640000    
+}
+
+button.btn-danger:hover{
+    background-color: #ff0000;
+}
+
 #secondary .mailpoet_form p.mailpoet_paragraph {
 
 }
@@ -8384,6 +8546,8 @@ body.theme_dark .site-header-menu {
         margin-top: 0px;
         gap: 3px;
         width: 100%;
+        background-color: #000;
+        border-radius: 0 0 8px 8px;
     }
 
     .search .flex_movies_block .watch_buttom {
@@ -13658,7 +13822,7 @@ body.home.blog.theme_dark .inner_content:nth-of-type(1)  {
 @media only screen and (max-width: 420px) {
 
     .movie_description {
-        top:10px!important;
+        top: 7px !important;
         min-height:30%!important;
         padding-top:0px!important;
 

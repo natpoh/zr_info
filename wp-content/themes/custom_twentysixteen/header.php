@@ -14,6 +14,20 @@
         <meta charset="<?php bloginfo('charset'); ?>">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="profile" href="http://gmpg.org/xfn/11">
+        <?php function formatcanonicalUrl($url)
+        {
+            $url = ltrim($url, '/');
+            $parts = parse_url($url);
+            $path = $parts['path'] ?? '';
+            $query = $parts['query'] ?? '';
+            $formattedPath = rtrim($path, '/') . '/';
+            $formattedQuery = $query ? '?' . str_replace('?', '', $query) : '';
+            $formattedUrl = $formattedPath . $formattedQuery;
+            return '/' . $formattedUrl;
+        }
+        ?>
+        <link rel="canonical" href="<?php echo formatcanonicalUrl($_SERVER['REQUEST_URI']); ?>">
+
         <?php if (is_singular() && pings_open(get_queried_object())) : ?>
             <link rel="pingback" href="<?php echo esc_url(get_bloginfo('pingback_url')); ?>">
         <?php endif; ?>

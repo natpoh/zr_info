@@ -47,13 +47,13 @@ class WatchList extends AbstractDB {
             if ($list) {
                 if ($activate == 1) {
                     // Add
-                    $msg = 'Added to '.$this->type[$type];
-                    $this->add_to_list($wp_uid, $list->id, $mid);                    
+                    $msg = 'Added to ' . $this->type[$type];
+                    $this->add_to_list($wp_uid, $list->id, $mid);
                     $theme = 'status';
                 } else {
                     // Remove
                     $this->remove_from_list($wp_uid, $list->id, $mid);
-                    $msg = 'Removed from '.$this->type[$type];
+                    $msg = 'Removed from ' . $this->type[$type];
                     $theme = 'status';
                 }
                 $result = 1;
@@ -76,12 +76,13 @@ class WatchList extends AbstractDB {
                 if ($act == 'add') {
                     # Add to list
                     $result['ret'] = $this->add_to_list($wp_uid, $lid, $mid);
-                    $msg = 'Added to list: '. stripslashes($list->title);
+                    $msg = 'Added to list: ' . stripslashes($list->title);
                     $theme = 'status';
                 } else {
                     # Remove from list
                     $result['ret'] = $this->remove_from_list($wp_uid, $lid, $mid);
-                    $msg = 'Removed from list: '. stripslashes($list->title);;
+                    $msg = 'Removed from list: ' . stripslashes($list->title);
+                    ;
                     $theme = 'status';
                 }
                 $result['type'] = $list->type;
@@ -141,7 +142,7 @@ class WatchList extends AbstractDB {
         $wp_uid = $this->get_current_user_id();
         $msg = 'Please login';
         $theme = 'warning';
-        
+
         if ($wp_uid) {
             if (!$title) {
                 $title = 'Watch list ' . $this->curr_date();
@@ -159,7 +160,7 @@ class WatchList extends AbstractDB {
             $this->db_insert($data, $this->db['list']);
             $msg = 'Watch lists added';
             $theme = 'status';
-        
+
             $this->watchlists_delta();
             $lists = $this->get_user_lists_mid($wp_uid, $mid);
         }
@@ -565,7 +566,7 @@ class WatchList extends AbstractDB {
                                 </div>
                             </a>
                         </div>
-            <?php } ?>
+                    <?php } ?>
                 </div>
             </div>
             <?php
@@ -646,15 +647,15 @@ class WatchList extends AbstractDB {
                                                     <?php if ($post->type == 0): ?>
                                                         <li class="nav-tab" data-act="editwl" data-json="<?php print htmlspecialchars($str_json) ?>">Edit Wachlist</li>
                                                         <li class="nav-tab" data-act="delwl">Delete Wachlist</li>                                                                
-                    <?php endif ?>
+                                                    <?php endif ?>
                                                 </ul>
                                             </div>                                                          
                                         </div>                                                    
                                     </div>                                                
                                 </div>
-                <?php endif; ?>
+                            <?php endif; ?>
                         </div>
-            <?php } ?>
+                    <?php } ?>
                 </div>
             </div>
             <?php
@@ -700,7 +701,7 @@ class WatchList extends AbstractDB {
                         ?>
                         <?php if ($ptime) { ?>
                             <div class="row">Updated: <?php print $updtime ?></div>
-                <?php } ?>
+                        <?php } ?>
                         <?php if ($owner) { ?>
                             <div class="row">Access: <?php print $pub_icon . ' ' . $pub_title ?></div>
                         <?php } ?>
@@ -712,23 +713,23 @@ class WatchList extends AbstractDB {
                         if ($content) {
                             ?>
                             <p><?php print $content ?><p>
-                <?php } ?>
+                            <?php } ?>
 
                         <div class="row"><a class="uw-btn" href="/search/wl_<?php print $list->id ?>">Show in Search</a></div>
                         <div class="row"><a class="uw-btn" href="/analytics/tab_ethnicity/wl_<?php print $list->id ?>">Show in Analytics</a></div>
 
 
-                <?php if ($owner && $list->type == 0) { ?>
+                        <?php if ($owner && $list->type == 0) { ?>
                             <br /><div class="row"><button id="user_edit_watchlist" class="btn-small" data-json="<?php print htmlspecialchars($str_json) ?>" data-id="<?php print $curr_list ?>" data-publish="<?php print $publish ?>" data-title="<?php print $list->title ?>" data-content="<?php print $list->content ?>">Edit list</button></div>
                         <?php } ?>
 
                     </div>
                     <div class="flexcol second simple">
                         <div class="items<?php
-                                 if ($owner) {
-                                     print " owner";
-                                 }
-                                 ?>" data-id="<?php print $list->id ?>">
+                        if ($owner) {
+                            print " owner";
+                        }
+                        ?>" data-id="<?php print $list->id ?>">
                                  <?php
                                  if ($posts) {
                                      foreach ($posts as $post) {
@@ -766,7 +767,7 @@ class WatchList extends AbstractDB {
                                                 <p><?php print $addtime ?></p>
                                             </div>
                                         </a>
-                        <?php if ($owner): ?>                                            
+                                        <?php if ($owner): ?>                                            
                                             <div class="menu nte">
                                                 <div class="btn">
                                                     <i class="icon icon-ellipsis-vert"></i>
@@ -781,12 +782,12 @@ class WatchList extends AbstractDB {
                                                     </div>                                                    
                                                 </div>                                                
                                             </div>
-                                    <?php endif; ?>
+                                        <?php endif; ?>
                                     </div>
-                        <?php
-                    }
-                }
-                ?>
+                                    <?php
+                                }
+                            }
+                            ?>
                         </div>
                     </div>
                 </div>
@@ -818,8 +819,39 @@ class WatchList extends AbstractDB {
             }
             $ret .= '</div>';
         }
+        return $ret;
+    }
 
-
+    public function get_watch_blocks($ids = array()) {        
+        if (!$ids) {
+            return array();
+        }
+        # Get current user
+        $wp_uid = $this->get_current_user_id();
+        if (!$wp_uid){
+            return array();
+        }
+        $in_list = $this->in_def_lists($wp_uid, $ids);
+        $ret = array();
+        foreach ($ids as $id) {
+            /*
+              1 => 'Watch Later',
+              2 => 'Favorites',
+             */
+            $add_watch_list_active = isset($in_list[$id][1]) ? ' active' : '';
+            $add_favorite_list_active = isset($in_list[$id][2]) ? ' active' : '';
+            ob_start();            
+            ?>
+            <div id="watch_block_<?php print $id ?>" class="watch_block">
+                <a href="#watch_later" title="Watch later" class="add_watch_list<?php print $add_watch_list_active ?>" data-mid="<?php print $id ?>" data-type="1"></a>
+                <a href="#favorites" title="Favorites" class="add_favorite_list<?php print $add_favorite_list_active ?>" data-mid="<?php print $id ?>" data-type="2"></a>
+                <a href="#" title="Add to Watch List" class="browse_watch_lists" data-mid="<?php print $id ?>">...</a>
+            </div>            
+            <?php
+            $content = ob_get_contents();
+            ob_end_clean();         
+            $ret[$id]=$content;
+        }
         return $ret;
     }
 

@@ -375,6 +375,23 @@ check_request();
     <?php
 
 }
+private function get_parnets()
+{
+        $q = "SELECT MIN(`parents`) AS `parents` FROM `meta_compilation_links` WHERE `enable` = 1 and `parents` IS NOT NULL GROUP BY `parents` ORDER BY `parents` asc";
+        $r = Pdo_an::db_results_array($q);
+            $typedata = [];
+            if ($r)
+            {
+            foreach ($r as $t=>$v)
+                {
+                  $typedata[]=$v['parents'].':'.  $v['parents'];
+                }
+
+            $typedata_string = implode(';',$typedata) ;
+            }
+
+            return $typedata_string;
+}
     private function get_zr_type()
     {
                    $arrtypes =$this->get_option('','zr_content_type');
@@ -398,6 +415,26 @@ check_request();
     public function compilation_links()
     {
 
+
+    $sub_parent_string =$this->get_parnets();
+
+  echo '<h1>Home blocks</h1>';
+
+          $array_rows = array(
+            'id'=>array('w'=>5),
+
+            'type'=>array('type'=>'select','options'=>'0:Custom;1:Last Audience;2:Last Critics;3:Last Movies;4:Last TV;5:Last Games'),
+            'sub_parent'=>array('type'=>'select','options'=>'0:None;'.$sub_parent_string),
+            'select_type'=>array('type'=>'select','options'=>'0:Default;1:List;2:Random;3:None'),
+            'last_update' =>array('w'=>10, 'type' => 'textarea','editfalse'=>1),
+            'show'=>array('type'=>'select','options'=>'0:All;1:Admin only'),
+            'enable'=>array('type'=>'select','options'=>'1:Enable;0:Disable'),
+        );
+
+        Crowdsource::Show_admin_table('meta_home_bloks',$array_rows,1,'meta_home_bloks','',1,1,1,0,1,'meta_home_bloks',1,250);
+
+
+
                 echo '<h1>Compilation links</h1>';
 
                  !class_exists('Crowdsource') ? include ABSPATH . "analysis/include/crowdsouce.php" : '';
@@ -409,7 +446,7 @@ check_request();
             'id'=>array('w'=>5),
 
             'type'=>array('type'=>'select','options'=>$typedata_string),
-
+            'select_type'=>array('type'=>'select','options'=>'0:List;1:Random;2:None'),
             'last_update' =>array('w'=>10, 'type' => 'textarea','editfalse'=>1),
             'enable'=>array('type'=>'select','options'=>'1:Enable;0:Disable'),
         );

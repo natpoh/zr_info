@@ -5,10 +5,10 @@ if (empty($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQU
 }
 
 // WP api
-require_once($_SERVER['DOCUMENT_ROOT'] . '/wp-config.php');
-global $cfront;
+//require_once($_SERVER['DOCUMENT_ROOT'] . '/wp-config.php');
+//global $cfront;
 
-/*
+
   // No WP api
   if (!defined('ABSPATH'))
   define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
@@ -23,7 +23,7 @@ global $cfront;
   }
 
   $cfront = new CriticFront();
- */
+
 if ($cfront) {
     if (isset($_POST['request'])) {
         $data = '';

@@ -25,63 +25,54 @@ if (!function_exists('format_movie_runtime')) {
 
 class MovieSingle {
 
-    public static function get_franchise($mid){
-        $data=[];
-        $q="SELECT `franchise` FROM `data_movie_indie` WHERE `movie_id`= ".$mid." and `franchise`>0";
-        $r= Pdo_an::db_results_array($q);
+    public static function get_franchise($mid) {
+        $data = [];
+        $q = "SELECT `franchise` FROM `data_movie_indie` WHERE `movie_id`= " . $mid . " and `franchise`>0";
+        $r = Pdo_an::db_results_array($q);
         $count = count($r);
-        foreach ($r as $row)
-        {
+        foreach ($r as $row) {
             $fid = $row['franchise'];
-            if ($fid)
-            {
-                $q ="SELECT `name` FROM `data_movie_franchises` WHERE `id` =".$fid;
-                $rf =Pdo_an::db_fetch_row($q);
+            if ($fid) {
+                $q = "SELECT `name` FROM `data_movie_franchises` WHERE `id` =" . $fid;
+                $rf = Pdo_an::db_fetch_row($q);
                 $name = $rf->name;
-                $data[]= '<a target="_blank" href="/search/show_franchise/franchise_' .$fid . '">' .$name. '</a>';
+                $data[] = '<a target="_blank" href="/search/show_franchise/franchise_' . $fid . '">' . $name . '</a>';
             }
-
         }
         $count = count($data);
-        if ($count)
-        {
-            $s='';
-            if ($count>1)$s='s';
+        if ($count) {
+            $s = '';
+            if ($count > 1)
+                $s = 's';
             $data_string = implode(', ', $data);
-            $data_string= '<div class="block"><span>Franchise'.$s.': '.$data_string.'</span></div>';
+            $data_string = '<div class="block"><span>Franchise' . $s . ': ' . $data_string . '</span></div>';
 
             return $data_string;
         }
-
     }
+
     private static function get_actor_name($aid) {
         $q = "SELECT `name` FROM `data_actors_imdb` where id =" . $aid;
         $r = Pdo_an::db_fetch_row($q);
         return $r->name;
     }
 
-    public static function get_productions($mid,$type=0)
-    {
-        $data=[];
+    public static function get_productions($mid, $type = 0) {
+        $data = [];
 
-        $q="SELECT ds.* FROM `data_movie_distributors` as ds  LEFT JOIN meta_movie_distributors as m ON ds.`id` = m.`did` and m.`type`='".$type."'  WHERE m.`mid` = ".$mid;
+        $q = "SELECT ds.* FROM `data_movie_distributors` as ds  LEFT JOIN meta_movie_distributors as m ON ds.`id` = m.`did` and m.`type`='" . $type . "'  WHERE m.`mid` = " . $mid;
 
         $r = Pdo_an::db_results_array($q);
-        foreach ($r as $row)
-        {
+        foreach ($r as $row) {
 
-            if ($type==0)
-            {
-              $l =   '/search/show_production/production_';
-            }
-            else if ($type==1)
-            {
-                $l =   '/search/show_distributor/distributor_';
+            if ($type == 0) {
+                $l = '/search/show_production/production_';
+            } else if ($type == 1) {
+                $l = '/search/show_distributor/distributor_';
             }
 
 
-            $data[]= '<a target="_blank" href="' . $l . strtolower($row['id']) . '">' . $row['name'] . '</a>';
-
+            $data[] = '<a target="_blank" href="' . $l . strtolower($row['id']) . '">' . $row['name'] . '</a>';
         }
 
         $data_string = implode(', ', $data);
@@ -91,7 +82,6 @@ class MovieSingle {
     public static function director_template($id) {
 
         $content_release = '';
-
 
         $director_result = [];
         ////get movie director
@@ -105,15 +95,14 @@ class MovieSingle {
         if ($director_result) {
             foreach ($director_types as $name => $type) {
                 if ($director_result[$type]) {
-                    $s='';
+                    $s = '';
                     $actors = '';
-                    if (count($director_result[$type])>1)$s='s';
+                    if (count($director_result[$type]) > 1)
+                        $s = 's';
                     foreach ($director_result[$type] as $aid => $enable) {
                         $actor_name = self::get_actor_name($aid);
 
-
                         $pupup_data = MOVIE_DATA::single_actor_template($aid, $name);
-
 
                         $actors .= ', <span class="actor_link_block">
 <a target="_blank" href="/search/dirall_' . $aid . '">' . $actor_name . '</a> 
@@ -126,81 +115,65 @@ class MovieSingle {
                         $actors = substr($actors, 2);
                     }
 
-                    $content_release .= '<div class="block"><span>' . $name .$s. ': </span>' . $actors . '</div>';
+                    $content_release .= '<div class="block"><span>' . $name . $s . ': </span>' . $actors . '</div>';
                 }
             }
         }
         return $content_release;
     }
-public  static function  get_language($mid)
-{
-  $q="SELECT * FROM `data_movie_tmdb` WHERE `mid` = ".$mid." LIMIT 1";
-  $r = Pdo_an::db_results_array($q);
-    $slug = $r[0]['original_language'];
-    if (!$slug)
-    {
-        $q="SELECT `original_language` FROM `data_movie_imdb` WHERE `id` = ".$mid." LIMIT 1";
+
+    public static function get_language($mid) {
+        $q = "SELECT * FROM `data_movie_tmdb` WHERE `mid` = " . $mid . " LIMIT 1";
         $r = Pdo_an::db_results_array($q);
         $slug = $r[0]['original_language'];
+        if (!$slug) {
+            $q = "SELECT `original_language` FROM `data_movie_imdb` WHERE `id` = " . $mid . " LIMIT 1";
+            $r = Pdo_an::db_results_array($q);
+            $slug = $r[0]['original_language'];
+        }
 
-    }
+        if ($slug) {
 
-  if ($slug)
-  {
-
-      if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
-          define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
-      }
-
-      if (!class_exists('CriticFront')) {
-          require_once( CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php' );
-      }
-      if (class_exists('CriticMatic')) {
-          $cm = new CriticMatic();
-
-      }
-
-
-      $ma = $cm->get_ma();
-      $language = $ma->get_lanuage_by_slug($slug, true);
-
-    if ($language)
-    {
-        return '<div class="block"><span>Language: </span><a href="/search/lang_'.$slug.'">'.$language->title.'</a></div>';
-    }
-
-  }
-  else
-  {
-      $q="SELECT `language` FROM `data_movie_imdb` WHERE `id` = ".$mid." LIMIT 1";
-        $r = Pdo_an::db_results_array($q);
-      if ($r)
-      {
-        $languages = $r[0]['language'];
-        if ($languages)
-        {
-            if (strstr($languages,','))
-            {
-                $languages = str_replace(',',', ',$languages);
-
-                return '<div class="block"><span>Languages: </span>'.$languages.'</div>';
+            if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
+                define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
             }
-            else
-            {
-                return '<div class="block"><span>Language: </span>'.$languages.'</div>';
+
+            if (!class_exists('CriticFront')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php' );
+            }
+            if (class_exists('CriticMatic')) {
+                $cm = new CriticMatic();
+            }
+
+
+            $ma = $cm->get_ma();
+            $language = $ma->get_lanuage_by_slug($slug, true);
+
+            if ($language) {
+                return '<div class="block"><span>Language: </span><a href="/search/lang_' . $slug . '">' . $language->title . '</a></div>';
+            }
+        } else {
+            $q = "SELECT `language` FROM `data_movie_imdb` WHERE `id` = " . $mid . " LIMIT 1";
+            $r = Pdo_an::db_results_array($q);
+            if ($r) {
+                $languages = $r[0]['language'];
+                if ($languages) {
+                    if (strstr($languages, ',')) {
+                        $languages = str_replace(',', ', ', $languages);
+
+                        return '<div class="block"><span>Languages: </span>' . $languages . '</div>';
+                    } else {
+                        return '<div class="block"><span>Language: </span>' . $languages . '</div>';
+                    }
+                }
             }
         }
-      }
-  }
-
-
-
-}
+    }
 }
 
 if (!function_exists('template_single_movie')) {
 
-    function template_single_movie($id, $title = '', $name = '', $single = '', $movie_object = '') {
+    function template_single_movie($id, $title = '', $name = '', $single = '', $movie_object = '', $user_blocks = array()) {
         /////check content
 
         global $post_an;
@@ -260,9 +233,6 @@ if (!function_exists('template_single_movie')) {
         $movie_meta['runtime'] = $post_an->runtime;
         $movie_meta['mpaa'] = $post_an->contentrating;
 
-
-
-
         if ($post_an->productionBudget) {
             $movie_meta['budget'] = number_format($post_an->productionBudget);
         }
@@ -288,11 +258,12 @@ if (!function_exists('template_single_movie')) {
             if ($movie_t == 'movie') {
                 $movie_t = 'movies';
             }
-
+            $tmd_s = $movie_t;
             $movie_details = 'Movie Details & Credits';
             if ($movie_t == 'movies') {
                 $movie_link_desc = 'class="card_movie_type ctype_movies" title="Movie"';
                 $tmd = 'Movie';
+                $tmd_s = 'movie';
 
                 $movie_details = 'Movie Details & Credits';
             } else if ($movie_t == 'tvseries') {
@@ -300,11 +271,13 @@ if (!function_exists('template_single_movie')) {
                 $movie_details = 'TV Series Details & Credits';
 
                 $tmd = 'TV Series';
+                $tmd_s = 'show';
             } else if ($movie_t == 'videogame') {
                 $movie_link_desc = 'class="card_movie_type ctype_videogame" title="Game"';
                 $movie_details = 'Game Details & Credits';
 
                 $tmd = 'Game';
+                $tmd_s = 'game';
             }
 
             if ($name) {
@@ -321,13 +294,11 @@ if (!function_exists('template_single_movie')) {
 
         $_wpmoly_movie_release_date = $movie_meta['release_date'];
 
-
-
         if ($_wpmoly_movie_release_date) {
 
             $date = date('F d', strtotime($_wpmoly_movie_release_date));
             $date_y = date('Y', strtotime($_wpmoly_movie_release_date));
-            $content_release = '<div class="block"><span>Release Date:</span> ' . $date . ', <a href="/search/release_'.$date_y.'-'.$date_y.'">'.$date_y.'</a></div>';
+            $content_release = '<div class="block"><span>Release Date:</span> ' . $date . ', <a href="/search/release_' . $date_y . '-' . $date_y . '">' . $date_y . '</a></div>';
         }
 
 //        $_wpmoly_movie_production_companies = $movie_meta['production_companies'];
@@ -335,23 +306,19 @@ if (!function_exists('template_single_movie')) {
 //        if ($_wpmoly_movie_production_companies) {
 //            $content_release .= '| ' . $_wpmoly_movie_production_companies . ' ';
 //        }
-        $production_companies = MovieSingle::get_productions($id,0);
-        if ($production_companies)
-        {
-            $production_block= '<div class="block"><span>Production:</span> ' .   $production_companies.'</div>';
+        $production_companies = MovieSingle::get_productions($id, 0);
+        if ($production_companies) {
+            $production_block = '<div class="block"><span>Production:</span> ' . $production_companies . '</div>';
         }
-        $distributors= MovieSingle::get_productions($id,1);
-        if ($distributors)
-        {
-            $distributors_block= '<div class="block"><span>Distributor:</span> ' .   $distributors.'</div>';
+        $distributors = MovieSingle::get_productions($id, 1);
+        if ($distributors) {
+            $distributors_block = '<div class="block"><span>Distributor:</span> ' . $distributors . '</div>';
         }
 
 
         $_wpmoly_movie_overview = '<div class="block block_summary"><span>Summary: </span>' . $movie_meta['overview'] . '</div>';
 
-
         $_wpmoly_movie_genres = $movie_meta['genres'];
-
 
         if ($_wpmoly_movie_genres) {
 
@@ -359,13 +326,10 @@ if (!function_exists('template_single_movie')) {
             $genre_array = explode(',', $_wpmoly_movie_genres);
             $array_genre = [];
 
-            if (count($genre_array)==1)
-            {
-                $gstring='Genre';
-            }
-            else
-            {
-                $gstring='Genres';
+            if (count($genre_array) == 1) {
+                $gstring = 'Genre';
+            } else {
+                $gstring = 'Genres';
             }
             foreach ($genre_array as $val) {
                 $val = trim($val);
@@ -373,7 +337,7 @@ if (!function_exists('template_single_movie')) {
                 //$array_genre[] = $val;
             }
             $genre_string = implode(', ', $array_genre);
-            $_wpmoly_movie_genres = '<div class="block"><span>'.$gstring.': </span>' . $genre_string . '</div>';
+            $_wpmoly_movie_genres = '<div class="block"><span>' . $gstring . ': </span>' . $genre_string . '</div>';
         }
 
         ///franchise
@@ -398,7 +362,9 @@ if (!function_exists('template_single_movie')) {
             $_wpmoly_movie_runtime = '<div class="block"><span>Runtime: </span>' . format_movie_runtime($_wpmoly_movie_runtime) . '</div>';
         }
 
-        if ($movie_meta['mpaa']){$mpaa = '<div class="block"><span>MPAA: </span>' . $movie_meta['mpaa']. '</div>';}
+        if ($movie_meta['mpaa']) {
+            $mpaa = '<div class="block"><span>MPAA: </span>' . $movie_meta['mpaa'] . '</div>';
+        }
 
 
         $_wpmoly_movie_country = $movie_meta['country'];
@@ -420,7 +386,7 @@ if (!function_exists('template_single_movie')) {
         }
 
 
-        $language_block =MovieSingle::get_language($id);
+        $language_block = MovieSingle::get_language($id);
 
         $_wpmoly_movie_budget = $movie_meta['budget'];
         if ($_wpmoly_movie_budget) {
@@ -446,26 +412,22 @@ if (!function_exists('template_single_movie')) {
         $sql = "SELECT * FROM `just_wach`  where rwt_id='{$id}' and addtime>0";
         $wach_data = Pdo_an::db_fetch_row($sql);
 
-
         if ($movie_t == 'videogame') {
 
             $wb = 'Play';
-
-        }
-        else
-        {
+        } else {
             $wb = 'Watch';
         }
 
-            if ($wach_data->data || strtotime($_wpmoly_movie_release_date) < time() + 86400 * 30) {
-                $year_string = '';
-                if ($post_an->year) {
+        if ($wach_data->data || strtotime($_wpmoly_movie_release_date) < time() + 86400 * 30) {
+            $year_string = '';
+            if ($post_an->year) {
 
-                    $year_string = ' data-year="' . ($post_an->year) . '" ';
-                }
-
-                $_wpmoly_buttom = '<button style="font-size: 18px;" class="watch_buttom" id="' . $id . '" ' . $year_string . ' data-title="' . ($post_an->title) . '" data-type="' . ($post_an->type) . '">'.$wb.' Now</button>';
+                $year_string = ' data-year="' . ($post_an->year) . '" ';
             }
+
+            $_wpmoly_buttom = '<button style="font-size: 18px;" class="watch_buttom" id="' . $id . '" ' . $year_string . ' data-title="' . ($post_an->title) . '" data-type="' . ($post_an->type) . '">' . $wb . ' Now</button>';
+        }
 
 
 
@@ -501,16 +463,14 @@ if (!function_exists('template_single_movie')) {
 
 
                 if ($movie_t == 'videogame') {
-                  $plb =   'Gameplay';
-                }
-                else
-                {
-                    $plb    ='Play Trailer';
+                    $plb = 'Gameplay';
+                } else {
+                    $plb = 'Play Trailer';
                 }
 
 
                 $class = 'ready_to_load';
-                $button = '<a href="#" class="button_play_trailer" id="' . $trailer_data . '">'.$plb.'</a>';
+                $button = '<a href="#" class="button_play_trailer" id="' . $trailer_data . '">' . $plb . '</a>';
             } else {
                 $class = 'check_load';
             }
@@ -553,27 +513,25 @@ if (!function_exists('template_single_movie')) {
                         if (function_exists('current_user_can')) {
                             if (current_user_can("administrator")) {
                                 print 'Movie <a class="link_adimin_info" target="_blank" href="https://info.antiwoketomatoes.com/wp-admin/admin.php?page=critic_matic_movies&mid=' . $id . '">adimin info</a>.<br />';
-                             ///   print 'Watchlist test <button class="add_watchlist">Save</button><br />';
                             }
                         }
-
-
-
-                        echo $_wpmoly_movie_overview . '<div class="single_grid">'. $content_release.$_wpmoly_movie_genres . $director_result.'</div>
-<div class="single_grid">'. $_wpmoly_movie_runtime.$mpaa.'</div>
-                               <hr><div class="single_flex">' .
-                            $production_block .$distributors_block.
-                            '</div>';
-
-                        if ($_wpmoly_movie_country && $language_block && $franchise)
-                        {
-                            $c_block = 'single_flex';
+                        if (isset($user_blocks['watchlists'][$id])) {
+                            print $user_blocks['watchlists'][$id];
                         }
-                        else
-                        {
+
+
+                        echo $_wpmoly_movie_overview . '<div class="single_grid">' . $content_release . $_wpmoly_movie_genres . $director_result . '</div>
+<div class="single_grid">' . $_wpmoly_movie_runtime . $mpaa . '</div>
+                               <hr><div class="single_flex">' .
+                        $production_block . $distributors_block .
+                        '</div>';
+
+                        if ($_wpmoly_movie_country && $language_block && $franchise) {
+                            $c_block = 'single_flex';
+                        } else {
                             $c_block = 'single_grid';
                         }
-                        echo '<div class="'.$c_block.'">' .  $_wpmoly_movie_country .$language_block.$franchise.'</div>';
+                        echo '<div class="' . $c_block . '">' . $_wpmoly_movie_country . $language_block . $franchise . '</div>';
 
                         echo '<div class="single_flex">' . $_wpmoly_movie_budget . $_box_usa . $_box_international . '</div>';
                         ?>
@@ -621,7 +579,6 @@ if (!function_exists('template_single_movie_small')) {
         $thumbs = array([90, 120]);
 
         $array_tsumb = CreateTsumbs::get_poster_tsumb_fast($id, $thumbs);
-
 
         if ($array_tsumb) {
             $imgsrc = $array_tsumb[0];

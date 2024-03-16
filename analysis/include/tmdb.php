@@ -205,7 +205,7 @@ class TMDB
         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
 
         $mid = self::get_id_from_imdbid($imdb_id);
-        Import::create_commit('', 'update', 'data_movie_imdb', array('id' => $mid), 'movie_update',6);
+        Import::create_commit('', 'update', 'data_movie_imdb', array('id' => $mid), 'add_tmdb_id_to_movie',6);
 
     }
 

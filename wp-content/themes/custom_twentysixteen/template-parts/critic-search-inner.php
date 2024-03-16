@@ -94,8 +94,6 @@
                                         }
                                         $post_content = $post_arr['content_pro'];
 
-
-
                                         if ($keywords) {
                                             if (preg_match('/<div class="vote_content">(.*)<\/div>/Us', $post_content, $match) ||
                                                     preg_match('/<a[^>]* class="icntn"[^>]*>(.*)<\/a>/Us', $post_content, $match)) {
@@ -139,7 +137,7 @@
                                     <?php
                                     if (isset($results[$tab_key]['no_filters_count'])) {
                                         $found_results = $results[$tab_key]['no_filters_count'];
-                                        $clean_search = $search_front->get_current_search_url(array(),array(),true);
+                                        $clean_search = $search_front->get_current_search_url(array(), array(), true);
                                         ?>
                                         <p style="width: 100%; text-align: center; margin-bottom: 20px;" >
 
@@ -157,10 +155,10 @@
                             <div class="flex_content_block">
                                 <?php
                                 if (sizeof($results['filters']['list'])):
-                                    foreach ($results['filters']['list'] as $post):                 
+                                    foreach ($results['filters']['list'] as $post):
                                         ?>
                                         <div class="card search_review">                                            
-                                            <?php 
+                                            <?php
                                             print $search_front->theme_filter_item($post);
                                             ?>                                            
                                         </div>
@@ -173,7 +171,39 @@
                                     <?php
                                     if (isset($results[$tab_key]['no_filters_count'])) {
                                         $found_results = $results[$tab_key]['no_filters_count'];
-                                        $clean_search = $search_front->get_current_search_url(array(),array(),true);
+                                        $clean_search = $search_front->get_current_search_url(array(), array(), true);
+                                        ?>
+                                        <p style="width: 100%; text-align: center; margin-bottom: 20px;" >
+                                            If you <a href="<?php print $clean_search ?>">reset the filters</a> you'll get <?php print $found_results ?> result<?php print $found_results > 1 ? 's' : ''  ?>, though.
+                                        </p>
+                                        <?php
+                                    }
+                                endif;
+                                ?>
+                            </div>
+                            <?php
+                        elseif ($tab_key == 'watchlists'):
+                            ?>
+                            <div class="flex_content_block">
+                                <?php
+                                if (sizeof($results['watchlists']['list'])):
+                                    foreach ($results['watchlists']['list'] as $post):
+                                        ?>
+                                        <div class="card search_review">                                            
+                                            <?php
+                                            print $search_front->theme_watchlist_item($post);
+                                            ?>                                            
+                                        </div>
+                                        <?php
+                                    endforeach;
+                                    print $search_front->pagination($results['watchlists']['count']);
+                                else:
+                                    ?>
+                                    <h2 style="width: 100%; text-align: center" >No results found</h2>
+                                    <?php
+                                    if (isset($results[$tab_key]['no_filters_count'])) {
+                                        $found_results = $results[$tab_key]['no_filters_count'];
+                                        $clean_search = $search_front->get_current_search_url(array(), array(), true);
                                         ?>
                                         <p style="width: 100%; text-align: center; margin-bottom: 20px;" >
                                             If you <a href="<?php print $clean_search ?>">reset the filters</a> you'll get <?php print $found_results ?> result<?php print $found_results > 1 ? 's' : ''  ?>, though.
@@ -195,14 +225,21 @@
                                 if (sizeof($total_list)):
                                     $ma = $search_front->get_ma();
                                     $array_result = array();
-                                    ?>
-                                    <?php
+
+                                    $movies_ids = array();
+                                    foreach ($total_list as $movie) {
+                                        $movies_ids[] = $movie->id;
+                                    }
+                                    $wl = $search_front->cm->get_wl();
+                                    $user_blocks = array(
+                                        'watchlists' => $wl->get_watch_blocks($movies_ids)
+                                    );
+
                                     foreach ($total_list as $movie):
                                         global $post_an, $video_api;
-                                       
 
-                                        $sortval = $movie->sortval;                                        
-                                        $sortsecond = isset($movie->sortsecond)?$movie->sortsecond:0;
+                                        $sortval = $movie->sortval;
+                                        $sortsecond = isset($movie->sortsecond) ? $movie->sortsecond : 0;
                                         $movie->sort_val_theme = $search_front->theme_sort_val($sortval, $sortsecond);
 
                                         $post_an = $ma->get_post($movie->id);
@@ -214,7 +251,8 @@
 
                                         if ($post_type == 'movie' || $post_type == 'tvseries' || $post_type == 'videogame') {
                                             if (function_exists('template_single_movie')) {
-                                                template_single_movie($ids, $title, $name, '', $movie);
+
+                                                template_single_movie($ids, $title, $name, '', $movie, $user_blocks);
                                                 $content_result[$ids] = $ids;
                                             }
                                         }
@@ -235,7 +273,7 @@
                                     <?php
                                     if (isset($results[$tab_key]['no_filters_count'])) {
                                         $found_results = $results[$tab_key]['no_filters_count'];
-                                        $clean_search = $search_front->get_current_search_url(array(),array(),true);
+                                        $clean_search = $search_front->get_current_search_url(array(), array(), true);
                                         ?>
                                         <p style="width: 100%; text-align: center; margin-bottom: 20px;" >
 

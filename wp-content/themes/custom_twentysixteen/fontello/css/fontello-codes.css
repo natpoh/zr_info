@@ -33,11 +33,13 @@
 .icon-flow-branch:before { content: '\e81f'; } /* '' */
 .icon-flow-parallel:before { content: '\e820'; } /* '' */
 .icon-check:before { content: '\e821'; } /* '' */
+.icon-link:before { content: '\e822'; } /* '' */
 .icon-up-dir:before { content: '\e824'; } /* '' */
 .icon-down-open:before { content: '\e825'; } /* '' */
 .icon-up-open:before { content: '\e826'; } /* '' */
 .icon-plus-1:before { content: '\e827'; } /* '' */
 .icon-minus-1:before { content: '\e828'; } /* '' */
+.icon-move:before { content: '\f047'; } /* '' */
 .icon-link-ext:before { content: '\f08e'; } /* '' */
 .icon-twitter:before { content: '\f099'; } /* '' */
 .icon-rss:before { content: '\f09e'; } /* '' */
@@ -45,6 +47,7 @@
 .icon-comment-empty:before { content: '\f0e5'; } /* '' */
 .icon-spinner:before { content: '\f110'; } /* '' */
 .icon-rocket:before { content: '\f135'; } /* '' */
+.icon-ellipsis-vert:before { content: '\f142'; } /* '' */
 .icon-vkontakte:before { content: '\f189'; } /* '' */
 .icon-odnoklassniki:before { content: '\f263'; } /* '' */
 .icon-user-circle-o:before { content: '\f2be'; } /* '' */

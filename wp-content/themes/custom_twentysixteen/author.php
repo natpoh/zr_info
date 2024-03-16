@@ -41,9 +41,7 @@ if ($widget_page) {
                 </div>
                 <?php
             }
-
             $usercp->render_top_widgets();
-
             //Страница виджета
             if (!$widget_page) {
                 //Главная страница                            

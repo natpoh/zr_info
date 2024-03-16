@@ -28,12 +28,25 @@
         dynamic_sidebar('sidebar-3');
         echo '</div>';
     }
-    
-    echo '</div>';    
+
+    echo '</div>';
+    ?>
+    <?php
+    /*
+      gmi('footer before print');
+
+      global $gmi;
+      if ($gmi) {
+      print '<pre>';
+      foreach ($gmi as $i => $val) {
+      echo $val . '   ' . $i . PHP_EOL;
+      }
+      print '</pre>';
+      }
+     */
     ?>
 </footer><!-- .site-footer -->
 <?php
-
 //wp_footer();
 
 print get_zr_footer();
@@ -65,17 +78,6 @@ print get_zr_footer();
     gtag('config', 'UA-124487298-2');
 </script>
 </div><!-- .site -->
-<?php
-/*
-gmi('footer before print');
 
-global $gmi;
-if ($gmi) {
-    foreach ($gmi as $i => $val) {
-        echo $val . '   ' . $i . PHP_EOL;
-    }
-}
-*/
-?>
 </body>
 </html>

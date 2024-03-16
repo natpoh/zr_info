@@ -170,10 +170,10 @@ if (isset($_POST['filters'])) {
         $tab_key = $cfront->get_tab_key();
         // Create url
         $search_url = $cfront->get_current_search_url();
-
+        
         $user_filter_id = $cfront->get_user_search_filter($uid, $search_url);
 
-        $fiters = $cfront->search_filters($tab_key);
+        $fiters = $cfront->search_filters($tab_key, $uid);
         $sort = $cfront->search_sort($tab_key, $results);
         $facets = $results[$tab_key]['facets'];
 
@@ -230,10 +230,10 @@ if (isset($_POST['filters'])) {
 
         // Create url
         $search_url = $search_front->get_current_search_url();
-        $uid = $search_front->get_uid();
+        
         $user_filter_id = $search_front->get_user_search_filter($uid, $search_url);
 
-        $fiters = $search_front->search_filters($tab_key);
+        $fiters = $search_front->search_filters($tab_key, $uid);
         $sort = $search_front->search_sort($tab_key, $results);
         $facets = $results[$tab_key]['facets'];
 

@@ -10,22 +10,10 @@ wp_enqueue_script('section_home', get_template_directory_uri() . '/js/section_ho
 global $cfront;
 
 include ABSPATH.'wp-content/themes/custom_twentysixteen/template/compilation.php';
-[$c_id,$c_title]=last_compilation_scroll();
-
-$array_list = array(
-    'Audience' => array('title' => 'Latest Audience Reviews:', 'id' => 'audience_scroll', 'class' => 'audience_review widthed ',
-       'tabs' => array('p' => 'Positive', 'n' => 'Negative', 'a' => 'Latest')),
-        'Pro' => array( 'title' => 'Latest Critic Reviews:<span data-value="critics_reviews_popup" class="critic_popup nte_info nte_right"></span>', 'id' => 'review_scroll', 'class' => 'pro_review widthed secton_gray'),
+$array_list = Compilation_link::get_home_blocks();
 
 
-    'Video' => array('title' => 'New Movies:', 'id' => 'video_scroll', 'class' => ''),
-    'TV' => array('title' => 'Popular Shows Streaming:', 'id' => 'tv_scroll', 'class' => ''),
-    'Games' => array('title' => 'New Games:', 'id' => 'games_scroll', 'class' => ''),
 
-);
-
-
-    $array_list [ 'Random']=array('title' => $c_title, 'id' => 'compilation_scroll', 'class' => 'rand_scroll', 'pid'=>$c_id);
 
 
 
@@ -62,6 +50,9 @@ for ($i = 1; $i <= 5; $i++) {
 $pid = $value['pid'];
 if(!$pid)$pid='';
 $content = '';
+
+
+
 foreach ($array_list as $index=> $value) {
     $content_inner = $section;
     foreach ($value as $id => $name) {
@@ -85,7 +76,7 @@ foreach ($array_list as $index=> $value) {
     }
 
 
-    if ($index=='Random')
+    if (strstr($index,'compilation_'))
     {
 
 

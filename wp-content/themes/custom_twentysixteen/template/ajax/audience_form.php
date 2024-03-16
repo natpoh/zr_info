@@ -20,7 +20,7 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/wp-config.php');
   if (!class_exists('CriticFront')) {
   require_once( CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php' );
   }
- $cfront = new CriticFront();
+  $cfront = new CriticFront();
  * 
  */
 global $cfront;
@@ -33,7 +33,16 @@ $ca = $cfront->get_ca();
 // Get form
 if (isset($_GET['id'])) {
     $id = (int) $_GET['id'];
-    $avoted = $ca->already_voted($id);
+    $cid = isset($_GET['cid']) ? (int) $_GET['cid'] : 0;
+
+    if ($cid) {
+        $au_data = $ca->get_audata($cid);
+        print $ca->audience_form($id, $au_data);
+        exit;
+    }
+
+    $avoted = $ca->already_voted($id, $edit);
+
     $ret = $avoted['ret'];
     /*
      * return: 

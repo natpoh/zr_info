@@ -63,7 +63,7 @@ wp_enqueue_script('bs3', $themepath . '/js/bs3/bootstrap.min.js', array('jquery'
 
 if (function_exists('isAuthorPage')) {
     if (isAuthorPage()) {
-        wp_enqueue_script('author', $themepath . '/js/author_12.js', array('jquery'), $version, true);
+        wp_enqueue_script('author', $themepath . '/js/author.js', array('jquery'), $version, true);
         wp_enqueue_style('users-profile', get_template_directory_uri() . '/css/user-profile.css?', array('dashicons'), $version);
         //wp_enqueue_style( 'dashicons-profile', get_stylesheet_uri(), array( 'dashicons' ), $version);
     }

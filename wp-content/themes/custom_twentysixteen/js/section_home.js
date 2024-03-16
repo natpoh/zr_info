@@ -1819,14 +1819,17 @@ function prepare_search_data(block_id, data_str) {
 
 }
 
-function load_ajax_block(block_id) {
+function load_ajax_block(block_id='', request_id='') {
 
     lastload = block_id;
     var parent_id = '';
-    if (jQuery('div[id="' + block_id + '"]').attr('data-value')) {
-        var request_block = '';
+    var request = "";
+    var request_block = '';
+    if (request_id!==''){
+        var request = "?id=" + request_id;
+    } else if (jQuery('div[id="' + block_id + '"]').attr('data-value')) {        
         parent_id = jQuery('div[id="' + block_id + '"]').attr('data-value');
-        var request = "?id=" + parent_id;
+        request = "?id=" + parent_id;
 
     } else {
         request = "";
@@ -1842,7 +1845,13 @@ function load_ajax_block(block_id) {
         var block_id_sub = block_id.substr(0, pos);
         //  console.log(pos,request_block,block_id);
     }
-
+    if (block_id.indexOf('_id_') > 0) {
+        let pos = block_id.indexOf('_id_');
+        request_block = block_id.substr(pos + 1);
+        var block_id_sub = block_id.substr(0, pos);
+        request_block=request_block.replace('_','=');
+      //console.log(pos,request_block,block_id);
+    }
     // Get local data
     var local_sroll = false;
     var scroll_data = '';
@@ -1894,7 +1903,16 @@ function load_ajax_block(block_id) {
     var url =  site_url+template_path + block_id + ".php" + request;
 
     if (request_block) {
-        url =  site_url+template_path + block_id_sub + ".php" + request + '&' + request_block;
+        if (request)
+        {
+            url =  site_url+template_path + block_id_sub + ".php" + request + '&' + request_block;
+        }
+        else
+        {
+            url =  site_url+template_path + block_id_sub + ".php?" +  request_block;
+        }
+
+
     }
 
     if (block_id == 'ns_related_scroll') {
@@ -2091,6 +2109,8 @@ function load_ajax_block(block_id) {
 
                     };
                 }
+                
+                
 
 
             } else if (block_id == 'search_ajax') {
@@ -2122,6 +2142,9 @@ function load_ajax_block(block_id) {
             } else {
 
 
+                if (block_id.indexOf("&cid") !== -1) {
+                block_id = block_id.replace(/&cid=.*/, "");
+                }
                 set_video_scroll(data, block_id);
                 initializeScroller(0, 'div[id="' + block_id + '"]');
             }
@@ -2196,24 +2219,110 @@ function init_audience_tabs(block_id, parent_id) {
     });
 }
 
-function update_scrool_Title(event) {
-    var selectedOption = event.target;
-    var selectedValue = selectedOption.getAttribute("data-value");
-    var selectedText = selectedOption.innerText;
+// function update_scrool_Title(event) {
+//     var selectedOption = event.target;
+//     var selectedValue = selectedOption.getAttribute("data-value");
+//     var selectedText = selectedOption.innerText;
+//
+//     let title = jQuery('.rand_scroll .column_header>h2 span.block_title')
+//     title.html(selectedText);
+//     jQuery('#compilation_scroll').attr('data-value', selectedValue);
+//
+//     ///jQuery('#compilation_scroll').removeClass('loaded').addClass('not_load');
+//     load_ajax_block('compilation_scroll');
+// }
 
-    let title = jQuery('.rand_scroll .column_header>h2 span.block_title')
-    title.html(selectedText);
-    jQuery('#compilation_scroll').attr('data-value', selectedValue);
 
-    ///jQuery('#compilation_scroll').removeClass('loaded').addClass('not_load');
-    load_ajax_block('compilation_scroll');
-}
 
-var update_scrool = document.getElementById("myList");
-if (update_scrool) {
-    update_scrool.addEventListener("click", update_scrool_Title);
-}
 
+
+jQuery('body').on('click','.refresh_random .rr_image',function () {
+
+    let ths =  jQuery(this);
+    ths.addClass('rotate');
+    let prnt =   ths.parents('div.column');
+    let cnt = prnt.find('.refresh_random .rr_content').html();
+    let header = prnt.find('.block_title');
+    let scr = prnt.find('.scroller_wrap');
+    let sid = scr.attr('id');
+
+    if (cnt)
+    {
+     let   ob =JSON.parse(cnt);
+
+        var dataArray = Object.keys(ob).map(function(key) {
+            return {
+                id: key,
+                title: ob[key].title,
+                desc : ob[key].desc
+            };
+        });
+
+
+        dataArray.sort(function() {
+            return 0.5 - Math.random();
+        });
+
+        header.html('<div class="random_choice"><div class="random_choice_content"></div></div>');
+        let ul =  header.find('.random_choice_content');
+        dataArray.forEach(function(item) {
+            var li = document.createElement("div");
+            li.textContent = item.title;
+            ul.append(li);
+        });
+
+      let res = dataArray[dataArray.length - 1];
+
+
+
+        setTimeout(function() {
+
+            let desc = res.desc;
+            if (desc)
+            {
+                prnt.find('div.title_block_desc').html(desc).removeClass('hide');
+            }
+            else
+            {
+                prnt.find('div.title_block_desc').html('').addClass('hide');
+            }
+
+            ths.removeClass('rotate');
+            header.html(res.title+':');
+            load_ajax_block(sid+'&cid='+res.id);
+        }, 2200);
+    }
+
+
+});
+
+
+jQuery('body').on('click','.dropdown-content[id="myList"] li',function (){
+
+  let prnt =   jQuery(this).parents('div.column');
+  let scr = prnt.find('.scroller_wrap');
+  let sid = scr.attr('id');
+  let id = jQuery(this).attr('data-value');
+  let desc = jQuery(this).attr('data-desc');
+
+  if (desc)
+  {
+      prnt.find('div.title_block_desc').html(desc).removeClass('hide');
+  }
+  else
+  {
+      prnt.find('div.title_block_desc').html('').addClass('hide');
+  }
+
+
+  let title = jQuery(this).html();
+  prnt.find('span.block_title').html(title);
+
+
+  load_ajax_block(sid+'&cid='+id);
+
+
+});
 
 function get_Top(block) {
     if (jQuery(block).attr('id')) {
@@ -2453,7 +2562,16 @@ function generate_watch_content(data, title, year, type) {
             }
 
             if (current_data.retail_price) {
-                provider_currency = provider_currency + current_data.retail_price;
+
+                if (current_data.retail_price.indexOf('$')!=-1)
+                {
+                    provider_currency = current_data.retail_price;
+                }
+                else
+                {
+                    provider_currency = provider_currency + current_data.retail_price;
+                }
+
             } else {
                 provider_currency = '';
             }
@@ -4548,6 +4666,24 @@ jQuery(document).ready(function () {
     });
 
 
+    jQuery('body').on('click', '.add_watch_list, .add_favorite_list, .browse_watch_lists', function () {
+        var $this = $(this);
+        var third_scripts = {
+            watchlist: '/wp-content/themes/custom_twentysixteen/js/watchlist.js?v=1.21'
+        };        
+        success = function () {
+            watchlist.movietype = $this.attr('data-type');
+            watchlist.mid = $this.attr('data-mid');
+            if ($this.hasClass('browse_watch_lists')){
+                watchlist.click($this);
+            }  else {
+                watchlist.select_list($this);                
+            }
+        };
+        use_ext_js(success, third_scripts);
+        return event.preventDefault();
+    });
+    
 });
 
 
@@ -4794,6 +4930,30 @@ jQuery.fn.upScrollButton = function (options) {
     });
 
 }
+
+function jGrowl(msg, theme) {
+    var $ = jQuery;
+    if ($('body').hasClass('jg_init')) {
+        $.jGrowl(msg, {
+            theme: theme,
+            position: 'bottom-left'
+        });
+    } else {
+        $.ajax({
+            url: '/wp-content/themes/custom_twentysixteen/js/jquery.jgrowl.min.js',
+            dataType: 'script',
+            cache: true,
+            success: function () {
+                $('body').addClass('jg_init');
+                $.jGrowl(msg, {
+                    theme: theme,
+                    position: 'bottom-left'
+                });
+            }
+        });
+    }
+}
+
 
 // let previousHistoryLength = history.length;
 //

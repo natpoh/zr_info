@@ -5,7 +5,7 @@ var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
 var site_url = window.location.protocol + "//" + window.location.host;
 var critic_search = critic_search || {};
 
-critic_search.debug = true;
+critic_search.debug = false;
 
 jQuery(function ($) {
     $(document).ready(function () {
@@ -1190,98 +1190,120 @@ critic_search.init_save_filters = function () {
                 return false;
             }
 
-            if (typeof add_popup !== "undefined") {
-                add_popup();
-                var filter_title = $(".filters-wrapper .save-filters").attr('title');
-                var content = '<div class="default_popup"><h2>' + filter_title + '</h2><div id="link_form"><div class="loading"><i class="icon icon-loader"></i></div><div class="form"></div></div></div>';
-                jQuery('.popup-content').html(content);
-                jQuery('input[id="action-popup"]').click();
-
-                var data = {
-                    'link_form': 1,
-                    'wpapi': 1,
-                    'url': window.location.pathname,
-                }
-                critic_search.ajax(data, function (rtn) {
-                    $('#link_form').addClass('load');
-                    $('#link_form .form').html(rtn);
-                    // Add title
-                    var filter_placeholder = '';
-                    $('.filters-wrapper .filter.init:not(.sohf)').each(function () {
-                        var $filter = $(this);
-                        if ($filter.hasClass('clear-all')) {
-                            return;
-                        }
-                        var title = $filter.attr('title');
-
-                        if (filter_placeholder == '') {
-                            filter_placeholder = title;
-                        } else {
-                            filter_placeholder += ' and ' + title;
-                        }
-                    });
-                    $('.col_input .title').attr('placeholder', filter_placeholder).focus();
-
-                    // Upload image
-                    $('#upl_filter_image').click(function () {
-                        $('#upl_filter_file').click();
-                        return false;
-                    });
-                    $('#upl_filter_file').change(function () {
-                        var file = this.files[0];
-                        critic_search.create_thumbnail(file);
-                        $('#remove_filter_thumb').val('0');
-                        $('#remove_filter_image').removeClass('ishide');
-                        return false;
-                    });
-
-                    // Remove image
-                    $('#remove_filter_image').click(function () {
-                        $('#filter_image').html('');
-                        $('#remove_filter_thumb').val('1');
-                        $('#upl_filter_thumb').val('');
-                        $('#remove_filter_image').addClass('ishide');
-                        return false;
-                    });
-
-                    $('#submit-filter').click(function () {
-                        var title = $('#link_form .col_input .title').val();
-                        if (!title) {
-                            title = $('#link_form .col_input .title').attr('placeholder');
-                        }
-                        var publish = 0;
-                        if ($('#link_form input#publish').prop('checked')) {
-                            publish = 1;
-                        }
-                        var send_data = {
-                            'wpapi': 1,
-                            'link_form': 1,
-                            'submit': 1,
-                            'link': $('#link_form .col_input .link').val(),
-                            'title': title,
-                            'content': $('#link_form .col_input .content').val(),
-                            'publish': publish,
-                            'img': $('#upl_filter_thumb').val(),
-                            'remove_img': $('#remove_filter_thumb').val(),
-                        }
-
-                        $('#link_form').removeClass('load');
-                        critic_search.ajax(send_data, function (rtn) {
-                            $('#link_form').addClass('load');
-                            $('#link_form .form').html(rtn);
-                            if ($('#link_form .form .success').length) {
-                                $('#search-url').attr('data-uf', 1);
-                                critic_search.init_save_filters();
-                            }
-                        });
-                        return false;
-                    })
-                });
-            }
+            critic_search.save_filters_click();
             return false;
         });
     });
-}
+};
+
+critic_search.save_filters_click = function (url = '') {
+    var $ = jQuery;
+    if (typeof add_popup !== "undefined") {
+        add_popup();
+        var filter_title = 'Edit filter';
+        var is_search = 0;
+
+        if (url === '') {
+            filter_title = $(".filters-wrapper .save-filters").attr('title');
+            is_search = 1;
+            url = window.location.pathname;
+        }
+        var content = '<div class="default_popup"><h2>' + filter_title + '</h2><div id="link_form"><div class="loading"><i class="icon icon-loader"></i></div><div class="form"></div></div></div>';
+        jQuery('.popup-content').html(content);
+        jQuery('input[id="action-popup"]').click();
+
+        var data = {
+            'link_form': 1,
+            'url': url,
+        };
+        critic_search.ajax(data, function (rtn) {
+            $('#link_form').addClass('load');
+            $('#link_form .form').html(rtn);
+
+            // Add title
+            var filter_placeholder = '';
+            if (is_search) {
+                $('.filters-wrapper .filter.init:not(.sohf)').each(function () {
+                    var $filter = $(this);
+                    if ($filter.hasClass('clear-all')) {
+                        return;
+                    }
+                    var title = $filter.attr('title');
+
+                    if (filter_placeholder == '') {
+                        filter_placeholder = title;
+                    } else {
+                        filter_placeholder += ' and ' + title;
+                    }
+                });
+            }
+            $('.col_input .title').attr('placeholder', filter_placeholder).focus();
+
+            // Upload image
+            $('#upl_filter_image').click(function () {
+                $('#upl_filter_file').click();
+                return false;
+            });
+            $('#upl_filter_file').change(function () {
+                var file = this.files[0];
+                critic_search.create_thumbnail(file);
+                $('#remove_filter_thumb').val('0');
+                $('#remove_filter_image').removeClass('ishide');
+                return false;
+            });
+
+            // Remove image
+            $('#remove_filter_image').click(function () {
+                $('#filter_image').html('');
+                $('#remove_filter_thumb').val('1');
+                $('#upl_filter_thumb').val('');
+                $('#remove_filter_image').addClass('ishide');
+                return false;
+            });
+
+            $('#submit-filter').click(function () {
+                var title = $('#link_form .col_input .title').val();
+                if (!title) {
+                    title = $('#link_form .col_input .title').attr('placeholder');
+                }
+                var publish = 0;
+                if ($('#link_form input#publish').prop('checked')) {
+                    publish = 1;
+                }
+                var send_data = {
+                    'link_form': 1,
+                    'submit': 1,
+                    'link': $('#link_form .col_input .link').val(),
+                    'title': title,
+                    'content': $('#link_form .col_input .content').val(),
+                    'publish': publish,
+                    'img': $('#upl_filter_thumb').val(),
+                    'remove_img': $('#remove_filter_thumb').val(),
+                };
+
+                $('#link_form').removeClass('load');
+                critic_search.ajax(send_data, function (rtn) {
+                    $('#link_form').addClass('load');
+                    $('#link_form .form').html(rtn);
+                    if ($('#link_form .form .success').length) {
+                        $('#search-url').attr('data-uf', 1);
+                        if (is_search) {
+                            critic_search.init_save_filters();
+                        } else {
+                            // Update list
+                            var local_url = window.location.href;
+                            $("#cnt-filters").load(local_url + " #cnt-filters>*", function () {
+                                init_nte();
+                            });
+                        }
+                    }
+                });
+                return false;
+            });
+        });
+    }
+    return false;
+};
 
 critic_search.create_thumbnail = function (file, thumbnailSize = 400) {
     var reader = new FileReader();
@@ -1312,6 +1334,33 @@ critic_search.create_thumbnail = function (file, thumbnailSize = 400) {
     reader.readAsDataURL(file);
 }
 
+critic_search.filter_menu_click = function ($this) {
+    var action = $this.data('act');
+
+    if (action == 'editfilter') {
+        var url = $this.data('link');
+        critic_search.save_filters_click(url);
+        return event.preventDefault();
+    }
+
+    var data = {
+        'link_form': 1,
+        'act': action,
+        'id': $this.closest('.item').data('id'),
+    };
+
+    critic_search.ajax(data, function (rtn) {
+        var jrtn = JSON.parse(rtn);
+        var uid = jrtn.uid;
+        if (uid > 0) {
+            var url = window.location.href;
+            $("#cnt-filters").load(url + " #cnt-filters>*", function () {
+                init_nte();
+            });
+        }
+    });
+    return event.preventDefault();
+};
 
 critic_search.update_facets = function ($rtn = [], $holder = '#facets', $is_child = false) {
 

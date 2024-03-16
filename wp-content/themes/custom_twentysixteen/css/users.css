@@ -907,16 +907,54 @@ body.user .hide-user {
 
 
 .simple .item {
-    height: 60px;
-    overflow: hidden;
+    height: 60px;    
     position: relative;
     border-top: 1px solid #dbdbdb;
+}
+
+.simple .item a {
+    overflow: hidden;
 }
 
 .simple a {    
     display: flex;
 }
+.simple .item .menu {
+    border-left:  1px solid #dbdbdb;    
+}
+body.theme_dark .simple .item .menu {
+    border-color: #666;
+}
 
+.simple .item .menu .btn {
+    display: flex;
+    align-items: center;
+    width: 40px;
+    height: 60px;
+    cursor: pointer;
+    justify-content: center;
+}
+
+.simple .item .menu .nte_cnt {
+    padding: 0;
+}
+
+.simple .item .menu ul {
+    margin: 0;
+    padding: 0;
+}
+
+.simple .item .menu li {
+    flex: 1;
+    margin: 0;
+    padding: 10px 15px;
+    border-bottom: 1px solid #dbdbdb; 
+    cursor: pointer;
+}
+
+.simple .item .menu li:last-child{
+    border-bottom: none;
+}
 
 .simple .desc {
     margin: 3px 6px 0 10px;
@@ -926,6 +964,15 @@ body.user .hide-user {
 .simple .items {
     border: 1px solid #dbdbdb;
     border-top: none;
+    margin-bottom: 1rem;
+}
+
+.simple .items.owner .item {
+    display: flex;
+}
+
+.simple .items.owner .item>a {
+    flex:1;
 }
 
 .simple .item img {
@@ -1035,6 +1082,32 @@ body.theme_dark .simple .items{
     margin-right: 10px;
 }
 
+.nav-tabs {
+    margin: 1rem 0; 
+}
+
+.nav-tabs .tab,
+.uw-btn {
+    display: inline-block;
+    padding: 0px 10px;
+    margin-bottom: 5px;
+}
+
+.nav-tabs .tab.active,
+.uw-btn {
+    border: 1px solid #dbdbdb;
+    border-radius: 4px;
+}
+
+body.theme_dark .nav-tabs .tab.active,
+body.theme_dark .uw-btn {
+    border-color: #666;
+}
+
+.user-page .collage.big {
+    margin-bottom: 0.5rem;
+}
+
 @media (min-width: 720px) {
 
     .flexrow {
@@ -1050,6 +1123,12 @@ body.theme_dark .simple .items{
         max-width: 200px;
     }
 
+    .flexcol.first250 {
+        flex: auto; 
+        max-width: 270px;
+        padding-right: 20px;
+    }
+    
     .two-columns {
 
     }

@@ -1,5 +1,16 @@
 
 <div class="container">
+    <h1>Box Office comparison</h1>
+    <div class="canvas-container" style="    width: 100%;height: 400px;">
+    <canvas style="    width: 100%;height: 400px;"  id="boxOfficeChart"></canvas>
+    </div>
+    <h1>Release Date / Ethnicity</h1>
+    <div class="canvas-container" style="    width: 100%;height: 400px;">
+        <canvas  style="    width: 100%;height: 400px;"  id="ethnicityChart"></canvas>
+    </div>
+
+
+
     <h1>Film Search</h1>
     <input type="text" id="searchInput" placeholder="Enter film name..." value="Matrix">
     <button onclick="searchFilms()">Search</button>
@@ -175,12 +186,6 @@
                }
         });
     }
-
-
-
-
-
-
     function createCanvasWithHeader(parentElement, demographicData, titleText) {
         const container = document.createElement('div');
         container.classList.add('canvas-container');
@@ -316,4 +321,236 @@
         }
     }
     searchFilms();
+
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+
+
+        async function load_data() {
+
+            try {
+                const response = await fetch(`https://api.filmdemographics.com/v1/string_uri/chart?strURI=%2Fanalytics%2Frelease_1960-2024`);
+                const jsonData = await response.json();
+
+
+                if (jsonData){
+
+                    var labels = [];
+                    var domesticData = [];
+                    var internationalData = [];
+
+                    jsonData.results.forEach(function (result) {
+                        result.data.forEach(function (datapoint) {
+                            if (!labels.includes(datapoint.x)) {
+                                labels.push(datapoint.x);
+                            }
+                        });
+                    });
+
+                    labels.sort();
+
+                    labels.forEach(function (label) {
+                        var domesticValue = null;
+                        var internationalValue = null;
+
+                        jsonData.results.forEach(function (result) {
+                            result.data.forEach(function (datapoint) {
+                                if (datapoint.x === label) {
+                                    if (result.title === "Box Office Domestic") {
+                                        domesticValue = datapoint.y;
+                                    } else if (result.title === "Box Office International") {
+                                        internationalValue = datapoint.y;
+                                    }
+                                }
+                            });
+                        });
+
+                        domesticData.push(domesticValue);
+                        internationalData.push(internationalValue);
+                    });
+
+                    var ctx = document.getElementById('boxOfficeChart').getContext('2d');
+                    var boxOfficeChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                {
+                                    label: 'Box Office Domestic',
+                                    backgroundColor: '#f69876',
+                                    data: domesticData,
+                                    stack: 'stack1'
+                                },
+                                {
+                                    label: 'Box Office International',
+                                    backgroundColor: '#73e084',
+                                    data: internationalData,
+                                    stack: 'stack1'
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                xAxes: [{
+                                    stacked: true,
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: 'Year'
+                                    }
+                                }],
+                                yAxes: [{
+                                    stacked: true,
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: jsonData.yaxis
+                                    },
+                                    ticks: {
+                                        beginAtZero: true,
+                                        callback: function (value, index, values) {
+                                            return value.toLocaleString();
+                                        }
+                                    }
+                                }]
+                            },
+
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(tooltipItem, data) {
+                                            return `${tooltipItem.label}:  $ ${tooltipItem.formattedValue}`;
+                                        }
+                                    }
+                                }
+                            },
+
+                            title: {
+                                display: true,
+                                text: jsonData.title
+                            }
+                        }
+                    });
+
+
+
+                }else {
+                    console.error('no data:');
+                }
+            } catch (error) {
+                console.error('Error fetching cast details:', error);
+            }
+        }
+        function wrapKeysInQuotes(dataString) {
+            dataString =  dataString.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, "$1'$2'$3");
+            return dataString.replace(/'([^']+)'/g, '"$1"');
+        }
+
+        async function load_ethnic() {
+
+            try {
+                const response = await fetch(`https://api.filmdemographics.com/v1/string_uri/chart?strURI=%2Fanalytics%2Ftab_ethnicity%2Fcurrent_y2020%2Frelease_1960-2024`);
+                const jsonData = await response.json();
+
+
+                if (jsonData){
+
+                    var labels = jsonData.results[0].data.map(function (item) {
+
+                        return item.id ? item.id : undefined;
+                    }).filter(function (id) {
+
+                        return id !== undefined;
+                    });
+                    var datasets = [];
+
+                    jsonData.results.forEach(function (result) {
+
+
+                        var data = result.data.map(function (item) {
+
+                          item=  wrapKeysInQuotes(item);
+                         let itemob =JSON.parse(item);
+                            if (itemob)
+                            {
+                             return { x: (itemob.id), y: itemob.y };
+                            }
+
+                        });
+
+                        datasets.push({
+                            label: result.title,
+                            data: data,
+                            backgroundColor: result.color,
+                            stack: 'stack2' // ƒобавлен параметр stack дл€ каждого датасета
+                        });
+                    });
+
+
+                    var ctx = document.getElementById('ethnicityChart').getContext('2d');
+                    var ethnicityChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: datasets
+                        },
+                        options: {
+                            title: {
+                                display: true,
+                                text: jsonData.title
+                            },
+                            scales: {
+                                xAxes: [{
+                                    stacked: true,
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: jsonData.xtitle
+                                    },
+                                    ticks: {
+                                        callback: function(value, index, values) {
+                                            return value.toString();
+                                        }
+                                    }
+                                }],
+                                yAxes: [{
+                                    stacked: true,
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: jsonData.ytitle
+                                    },
+                                    ticks: {
+                                        min: 0,
+                                        max: 100,
+                                         }
+                                }]
+                            },
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(tooltipItem, data) {
+                                            return `${tooltipItem.label}: ${tooltipItem.formattedValue} %`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+
+                }else {
+                    console.error('no data:');
+                }
+            } catch (error) {
+                console.error('Error fetching cast details:', error);
+            }
+        }
+        load_data();
+        load_ethnic();
+    });
+
+
+
+
 </script>

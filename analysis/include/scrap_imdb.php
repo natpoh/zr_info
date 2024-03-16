@@ -2815,6 +2815,14 @@ function add_providers()
 {
 
 
+    return;
+
+ !class_exists('JustWatch') ? include ABSPATH . "analysis/include/justwatch.php" : '';
+
+ //JustWatch::add_provider();
+
+
+
     chdir($_SERVER['DOCUMENT_ROOT'] . '/wp-content/themes/custom_twentysixteen/template/ajax');
     include $_SERVER['DOCUMENT_ROOT'] . '/wp-content/themes/custom_twentysixteen/template/ajax/get_wach.php';
 
@@ -3169,6 +3177,19 @@ if (isset($_GET['get_imdb_movie_id'])) {
     return;
 }
 
+
+
+if (isset($_GET['just_watch_api_request'])) {
+    global $debug;
+    if (isset($_GET['debug']))
+    {
+        $debug=1;
+    }
+    !class_exists('JustWatch') ? include ABSPATH . "analysis/include/justwatch.php" : '';
+    $result = JustWatch::get_just_wach($_GET['just_watch_api_request']);
+    var_dump_table($result);
+    return;
+}
 
 /////////add providers
 if (isset($_GET['add_providers'])) {
