@@ -127,6 +127,7 @@ __typename
 
     }
 
+
     public static function update_providers($array)
     {
         if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
