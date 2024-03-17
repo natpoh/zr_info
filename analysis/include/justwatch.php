@@ -171,9 +171,15 @@ __typename
         $sql = "SELECT * FROM `data_movie_provider` where status = 1";
         $rows = Pdo_an::db_results_array($sql);
         foreach ($rows as $val) {
+
             $i = self::provider_img($val['pid']);
             $array_providers[$val['pid']] = array('n' => $val['name'], 'i' => $i);
         }
+
+        ///check providers
+
+
+
         return $array_providers;
     }
 
@@ -195,12 +201,8 @@ __typename
                 }
             }
         }
-
-
         $url = 'https://apis.justwatch.com/content/providers/locale/en_US';
-
         $array_result = [];
-
 
         $result = GETCURL::getCurlCookie($url);
         if ($result) {
@@ -234,7 +236,7 @@ __typename
         if ($array_result) {
 
 
-            update_providers($array_result);
+            self::update_providers($array_result);
 
             $providers = array('last_update' => time());
 
@@ -244,15 +246,15 @@ __typename
             OptionData::set_option(15, $option, 'get_providers', 1);
 
 
-            $providers_array = get_providers_table();
-            return json_encode($providers_array);
+//            $providers_array = self::get_providers_table();
+//            return json_encode($providers_array);
         }
 
     }
 
     public static function save_to_db($movie_id,$found,$movie_title,$status,$country='US')
     {
-        $all_providers =self::get_providers_table();
+
 
         $providers_array = [];
         $data_array=[];
@@ -302,13 +304,31 @@ __typename
          }
      }
 
+     $all_providers =self::get_providers_table();
+
+
      $providers_result = [];
 
         if ($providers_array)
      {
          foreach ($providers_array as $provider)
          {
-             $providers_result[$provider]=$all_providers[$provider];
+             if ($all_providers[$provider])
+             {
+                 $providers_result[$provider]=$all_providers[$provider];
+
+             }
+             else
+             {
+                 if ($debug) echo 'provider ' . $provider . ' not found  <br>';
+                 ///update providers
+
+                 $providers = array('last_update' => 0);
+                 $option = json_encode($providers);
+                 !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+                 OptionData::set_option(15, $option, 'get_providers', 1);
+             }
+
 
          }
      }

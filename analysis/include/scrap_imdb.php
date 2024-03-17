@@ -2815,49 +2815,49 @@ function add_providers()
 {
 
 
-    return;
 
  !class_exists('JustWatch') ? include ABSPATH . "analysis/include/justwatch.php" : '';
 
- //JustWatch::add_provider();
+ JustWatch::get_providers();
 
+return;
 
-
-    chdir($_SERVER['DOCUMENT_ROOT'] . '/wp-content/themes/custom_twentysixteen/template/ajax');
-    include $_SERVER['DOCUMENT_ROOT'] . '/wp-content/themes/custom_twentysixteen/template/ajax/get_wach.php';
-
-
-    $sql = "SELECT `data_movie_imdb`.id  FROM `data_movie_imdb` LEFT JOIN just_wach 
-    ON `data_movie_imdb`.id=just_wach.rwt_id
-        WHERE   just_wach.rwt_id IS NULL order by `data_movie_imdb`.id desc  limit 500";
-
-$rows = Pdo_an::db_results_array($sql);
-if ($rows)echo 'add empty '.count($rows);
-foreach ($rows as $r)
-{
-        $id = $r['id'];
-       // echo 'rwt_id=' . $id . '  <br>' . PHP_EOL;
-        if ($id)
-        {
-            get_just_wach($id);
-        }
-
-    }
-
-$sql = "SELECT rwt_id FROM just_wach WHERE just_wach.`addtime` =0 limit 20 ";
-
-$rows = Pdo_an::db_results_array($sql);
-    if ($rows)echo 'update empty '.count($rows);
-foreach ($rows as $r)
-{
-    $id = $r['rwt_id'];
-    echo 'rwt_id=' . $id . '  <br>' . PHP_EOL;
-    if ($id)
-    {
-        get_just_wach($id);
-    }
-
-}
+//
+//    chdir($_SERVER['DOCUMENT_ROOT'] . '/wp-content/themes/custom_twentysixteen/template/ajax');
+//    include $_SERVER['DOCUMENT_ROOT'] . '/wp-content/themes/custom_twentysixteen/template/ajax/get_wach.php';
+//
+//
+//    $sql = "SELECT `data_movie_imdb`.id  FROM `data_movie_imdb` LEFT JOIN just_wach
+//    ON `data_movie_imdb`.id=just_wach.rwt_id
+//        WHERE   just_wach.rwt_id IS NULL order by `data_movie_imdb`.id desc  limit 500";
+//
+//$rows = Pdo_an::db_results_array($sql);
+//if ($rows)echo 'add empty '.count($rows);
+//foreach ($rows as $r)
+//{
+//        $id = $r['id'];
+//       // echo 'rwt_id=' . $id . '  <br>' . PHP_EOL;
+//        if ($id)
+//        {
+//            get_just_wach($id);
+//        }
+//
+//    }
+//
+//$sql = "SELECT rwt_id FROM just_wach WHERE just_wach.`addtime` =0 limit 20 ";
+//
+//$rows = Pdo_an::db_results_array($sql);
+//    if ($rows)echo 'update empty '.count($rows);
+//foreach ($rows as $r)
+//{
+//    $id = $r['rwt_id'];
+//    echo 'rwt_id=' . $id . '  <br>' . PHP_EOL;
+//    if ($id)
+//    {
+//        get_just_wach($id);
+//    }
+//
+//}
 
 }
 
