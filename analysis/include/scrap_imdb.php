@@ -973,7 +973,7 @@ function get_coins_data()
 
 }
 
-function get_weight_list($table,$last_update='last_update',$table_mid="mid",$limit=100,$rating_update='')
+function get_weight_list($table,$last_update='last_update',$table_mid="mid",$limit=100,$rating_update='',$dop_request='')
 {
 
 
@@ -989,7 +989,7 @@ if (!$rating_update)
     $rating_update = array( 50=> 86400*7, 40 =>86400*30, 30=> 86400*60 , 20=> 86400*90, 10=> 86400*180, 0=>86400*360);
 }
 
-        $where=$table.".id IS NULL OR `{$table}`.`{$last_update}` IS NULL  OR `{$table}`.`{$last_update}` = 0  ";
+        $where=$table.".id IS NULL OR `{$table}`.`{$last_update}` IS NULL  OR `{$table}`.`{$last_update}` = 0  ".$dop_request." ";
 
         foreach ($rating_update as $w =>$period){
             $time = time()-$period;
@@ -1576,7 +1576,13 @@ function check_enable_actor_meta($id='',$commit_actors=[],$debug=0)
 
 function check_last_actors($aid ='')
 {
+    start_cron_time(50);
     global $debug;
+
+    if ($debug)
+    {
+        echo 'check_last_actors start<br>';
+    }
 
     !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
 
@@ -1770,7 +1776,7 @@ function check_last_actors($aid ='')
         return;
     }
 
-///face
+///betta face
 
     $array_face = array('white' => 'W', 'hispanic' => 'H', 'black' => 'B', 'mideast' => 'M', 'indian' => 'I', 'asian' => 'EA');
 
@@ -1875,7 +1881,7 @@ function check_last_actors($aid ='')
         commit_actors($commit_actors);
         return;
     }
-
+////check actor kairos tmdb
     $sql = "SELECT data_actors_tmdb_race.actor_id, data_actors_tmdb_race.kairos_verdict  FROM `data_actors_tmdb_race` 
     LEFT JOIN data_actors_meta ON data_actors_tmdb_race.actor_id=data_actors_meta.actor_id
         WHERE (data_actors_meta.n_kairos =0 ) 
@@ -2824,9 +2830,9 @@ function update_just_watch()
 
     !class_exists('JustWatch') ? include ABSPATH . "analysis/include/justwatch.php" : '';
 
-
+    $dop_request=" and (`data_movie_imdb`.`type`='TVSeries' OR `data_movie_imdb`.`type`='Movie' )";
     $rating_update = array( 50=> 86400*7, 40 =>86400*14, 30=> 86400*30 , 20=> 86400*60, 10=> 86400*120, 0=>86400*200);
-    $rows =get_weight_list('just_wach','last_update',"rwt_id",$limit,$rating_update);
+    $rows =get_weight_list('just_wach','last_update',"rwt_id",$limit,$rating_update,$dop_request);
 
 
     $count = count($rows);
