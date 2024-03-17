@@ -989,7 +989,7 @@ if (!$rating_update)
     $rating_update = array( 50=> 86400*7, 40 =>86400*30, 30=> 86400*60 , 20=> 86400*90, 10=> 86400*180, 0=>86400*360);
 }
 
-        $where=$table.".id IS NULL OR `{$table}`.`{$last_update}` IS NULL  OR `{$table}`.`{$last_update}` = 0  ".$dop_request." ";
+        $where=$table.".id IS NULL OR `{$table}`.`{$last_update}` IS NULL  OR `{$table}`.`{$last_update}` = 0  ";
 
         foreach ($rating_update as $w =>$period){
             $time = time()-$period;
@@ -997,10 +997,11 @@ if (!$rating_update)
         }
 
 
+
 ////get movie list
     $sql ="SELECT `data_movie_imdb`.`id`, `{$table}`.`{$last_update}` FROM `data_movie_imdb` left join `{$table}` 
        ON `data_movie_imdb`.`id`= `{$table}`.`{$table_mid}`
-        WHERE     ".$where." order by `data_movie_imdb`.`weight` desc LIMIT {$limit}";
+        WHERE     ( ".$where." ) ".$dop_request."  order by `data_movie_imdb`.`weight` desc LIMIT {$limit}";
         global $debug;
         if ($debug){echo $sql;}
     $rows = Pdo_an::db_results_array($sql);
