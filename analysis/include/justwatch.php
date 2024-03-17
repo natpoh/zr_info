@@ -607,12 +607,24 @@ __typename
 
     }
 
+
+
+    public static function delete_provider($id,$movie_id,  $provider)
+    {
+        $sql = "DELETE FROM `cache_just_wach` WHERE `id`  = ".$id;
+        Pdo_an::db_query($sql);
+        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+        Import::create_commit('', 'delete', 'cache_just_wach', array('rwt_id' => $movie_id,'provider' => $provider), 'cache_just_wach', 15, ['skip' => ['id']]);
+
+    }
+
     public static function add_provider($movie_id,  $provider)
     {
-        $sql = "INSERT INTO `cache_just_wach` (`id`, `rwt_id`, `tmdb_id`, `provider`) 
-                VALUES ( NULL, " . $movie_id . ", 0 ," . intval($provider) . ");";
-        Pdo_an::db_query($sql);
-
+        $sql = "INSERT INTO `cache_just_wach` (`id`, `rwt_id`,  `provider`, `last_update`) 
+                VALUES ( NULL, ?, ?, ? )";
+        Pdo_an::db_results_array($sql,[$movie_id,$provider,time()]);
+        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+        Import::create_commit('', 'update', 'cache_just_wach', array('rwt_id' => $movie_id,'provider' => $provider), 'cache_just_wach', 15, ['skip' => ['id']]);
     }
 
     public static function check_watch($movie_id,  $array_providers=[])
@@ -620,19 +632,36 @@ __typename
 ////check enable cache movie
         global $debug;
         if (is_array($array_providers)) {
-            ////delete lasr value
 
-            if ($movie_id) {
-                $w = "rwt_id ='" . intval($movie_id) . "'";
-            }
+                $sql = "SELECT * FROM `cache_just_wach` WHERE rwt_id ='" . intval($movie_id) . "'";
+                $r = Pdo_an::db_results_array($sql);
 
-            if ($w) {
+                $array_enable =[];
 
-                $sql = "DELETE FROM `cache_just_wach` WHERE  " . $w;
-                Pdo_an::db_query($sql);
-            }
+                foreach ($r as $val)
+                {
+                    $provider = $val['provider'];
+
+                    if (in_array($provider,$array_providers))
+                    {
+                        //skip
+                        $array_enable[]=$provider;
+                    }
+                    else
+                    {
+                        ///delete provider
+                        self::delete_provider($val['id'],$movie_id, $provider);
+                    }
+
+                }
+
             foreach ($array_providers as $provider ) {
-                self::add_provider($movie_id, $provider);
+
+                if (!in_array($provider,$array_enable))
+                {
+                    self::add_provider($movie_id, $provider);
+                }
+
             }
         }
 
