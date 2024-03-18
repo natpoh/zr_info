@@ -149,6 +149,15 @@ class Media extends Model {
         $this->setVal($arr, 'title');
         $this->setIntVal($arr, 'year');
         $this->setVal($arr, 'release');
+
+	    $this->setVal($arr, 'runtime');
+
+
+	    $this->setVal($arr, 'genre');
+	    $this->setVal($arr, 'country');
+
+
+
         $this->get_imdb_id($arr);
 
         // Actor objects
@@ -178,6 +187,16 @@ class Media extends Model {
             //echo $exc->getTraceAsString();
         }
     }
+	public function format_movie_runtime($data, $format = null) {
+		if (is_numeric($data)) {
+			$format = 'G \h i \m\i\n';
+			$output = date($format, mktime(0, 0, $data));
+
+			return $output;
+		}
+	}
+
+
 
     public function toArray() {
         $ret = array(
@@ -185,6 +204,13 @@ class Media extends Model {
             'type' => $this->type,
             'title' => $this->title,
             'year' => $this->year,
+
+            'genre' => $this->genre,
+            'country' => $this->country,
+
+            'runtime' => $this->format_movie_runtime($this->runtime),
+			'poster'=>$this->to_poster($this->id),
+
             'release' => $this->release,
             'imdb_id' => $this->imdb_id,
             'cast_stars' => $this->cast_stars,
@@ -194,6 +220,13 @@ class Media extends Model {
 
         return $ret;
     }
+
+	public static function to_poster($id) {
+
+		return '/api/index.php/v1/image/'.$id;
+
+	}
+
 
     public static function getSearchFields() {
         $fields=array(

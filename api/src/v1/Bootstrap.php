@@ -53,7 +53,12 @@ class Bootstrap extends Controllers\Controller {
             echo 'Unauthorized ' . $_SERVER['HTTP_ORIGIN'];
             exit;
         }*/
+	    if ($command == 'image') {
+		    $_GET['id'] = 'm_'.$command2;
+			include ('../analysis/create_image.php');
 
+			exit();
+	    }
         if ($command == 'search') {
             $controller = new Controllers\SearchController($preview_mode);
             $controller->runPath($command2, $query_args);

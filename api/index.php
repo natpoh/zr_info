@@ -46,13 +46,22 @@ if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
     require_once( CRITIC_MATIC_PLUGIN_DIR . 'ThemeCache.php' );
     require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticMatic.php' );
     require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticSearch.php' );
-    require_once( CRITIC_MATIC_PLUGIN_DIR . 'SearchFacets.php' );
+	require_once( CRITIC_MATIC_PLUGIN_DIR . 'SearchFacets.php' );
+
 }
 
 require_once __DIR__ . '/vendor/autoload.php';
 
 // Get current URL
 $parsedUrl = parse_url($_SERVER['REQUEST_URI']);
+
+
+if (strstr($parsedUrl["path"],'index.php'))
+{
+	$parsedUrl["path"] = str_replace( '/api/index.php','',$parsedUrl["path"] );
+}
+
+
 $path = $parsedUrl['path'];
 
 if ($path == '/') {
@@ -70,6 +79,7 @@ $query_args = array();
 if ($parsedUrl['query']) {
     parse_str($parsedUrl['query'], $query_args);
 }
+
 
 if ($version == 'v1') {
     $bs = new OpenApi\Fd\Bootstrap();

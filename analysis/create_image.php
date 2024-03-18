@@ -29,11 +29,11 @@ $id =$_GET['id'];
 if (isset($_GET['c']))
 {
 
-    $mage_file = $_GET['id'];
+    $image_file = $_GET['id'];
 
     //check cache
     $cachePath = ABSPATH.'analysis/img_result/';
-    $filename_image = $cachePath . $mage_file . '.jpg';
+    $filename_image = $cachePath . $image_file . '.jpg';
     if (file_exists($filename_image)) {
         readfile($filename_image);
         return;

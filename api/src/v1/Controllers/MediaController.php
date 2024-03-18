@@ -78,6 +78,10 @@ class MediaController extends Controller {
         $mediaId = isset($query_args['media_id']) ? (int) $query_args['media_id'] : 0;
         $cs = new \CriticSearch();
         $fmedia = $cs->get_movie_by_id($mediaId);
+	    $movie_data = $this->movie_data($mediaId);
+	    //$fmedia->data=$movie_data;
+
+	   // var_dump($fmedia);
         if ($fmedia) {
             $sf = $this->get_sf();
             $media = new \OpenApi\Fd\Models\Media((array) $fmedia, $sf);
@@ -87,6 +91,16 @@ class MediaController extends Controller {
             return $this->responce(404);
         }
     }
+
+
+	public function movie_data($mid)
+	{
+
+		$sql = sprintf("SELECT * FROM `data_movie_imdb` WHERE id=%d", (int) $mid);
+		$movie_data = $this->db_fetch_row($sql);
+		return $movie_data;
+
+	}
 
     /**
      * @OA\Get(
@@ -126,6 +140,10 @@ class MediaController extends Controller {
      *     }
      * )
      */
+
+
+
+
     public function getMediaCast($query_args = []) {
         $mediaId = isset($query_args['media_id']) ? (int) $query_args['media_id'] : 0;
         $cs = new \CriticSearch();
