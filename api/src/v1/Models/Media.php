@@ -6,6 +6,8 @@
 
 namespace OpenApi\Fd\Models;
 
+use OpenApi\Fd\Controllers\Controller;
+
 /**
  * Class Order.
  *
@@ -205,8 +207,8 @@ class Media extends Model {
             'title' => $this->title,
             'year' => $this->year,
 
-            'genre' => $this->genre,
-            'country' => $this->country,
+            'genre' => $this->movie_genre($this->genre,'data_movie_genre'),
+            'country' => $this->movie_genre($this->country,'data_movie_country'),
 
             'runtime' => $this->format_movie_runtime($this->runtime),
 			'poster'=>$this->to_poster($this->id),
@@ -220,6 +222,46 @@ class Media extends Model {
 
         return $ret;
     }
+
+	public function movie_genre($genre,$db )
+	{
+		if (!$genre)return;
+
+
+		if (strstr($genre,','))
+		{
+			$genre_array = explode(',',$genre);
+		}
+		else
+		{
+			$genre_array[]=$genre;
+		}
+		foreach ($genre_array as $gid)
+		{
+			$gid = trim($gid);
+
+			$where.=" OR id='".$gid."' ";
+		}
+		if ($where)
+		{
+			$where = substr($where,3);
+		}
+
+		$sql = "SELECT * FROM `".$db."` WHERE (".$where.") ";
+
+		$db = new Controller();
+		$data = $db->db_results($sql);
+		foreach ($data as $r)
+		{
+			$res_array[]=$r->name;
+		}
+		if ($res_array)
+		{
+			return implode(',',$res_array);
+		}
+
+	}
+
 
 	public static function to_poster($id) {
 
