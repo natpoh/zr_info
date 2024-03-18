@@ -1916,7 +1916,7 @@ function load_ajax_block(block_id='', request_id='') {
     }
 
     if (block_id == 'ns_related_scroll') {
-        url = 'https://newsfilter.biz/service/ns_related.php?pid=' + parent_id;
+        url = 'https://curatedinfo.org/service/ns_related.php?pid=' + parent_id;
     }
     if (block_id == 'global_zeitgeist') {
         url = 'https://info.antiwoketomatoes.com/service/global_consensus.php?mid=' + parent_id;

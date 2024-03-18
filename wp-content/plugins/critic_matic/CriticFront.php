@@ -2924,7 +2924,7 @@ class CriticFront extends SearchFacets {
             $results = $this->cs->find_in_newsfilter($movie_data, $view_rows, $debug);
         }
 
-        $ns_link = "https://newsfilter.biz/search/" . urlencode($search_text);
+        $ns_link = "https://curatedinfo.org/search/" . urlencode($search_text);
 
         /*
          *                         (
@@ -2948,7 +2948,7 @@ class CriticFront extends SearchFacets {
             ?>
             <div class="ns_related">
                 <div class="column_header">
-                    <h2>NewsFilter.biz</h2>
+                    <h2>Curatedinfo.org</h2>
                     <h3><a href="<?php print $ns_link ?>">"<?php print $movie_data->title ?>"</a></h3>
                 </div>                        
                 <?php

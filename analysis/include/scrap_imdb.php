@@ -2832,7 +2832,7 @@ function update_just_watch()
     !class_exists('JustWatch') ? include ABSPATH . "analysis/include/justwatch.php" : '';
 
     $dop_request=" and (`data_movie_imdb`.`type`='TVSeries' OR `data_movie_imdb`.`type`='Movie' )";
-    $rating_update = array( 50=> 86400*7, 40 =>86400*14, 30=> 86400*30 , 20=> 86400*60, 10=> 86400*120, 0=>86400*200);
+    $rating_update = array( 50=> 86400*7, 40 =>86400*14, 30=> 86400*21 , 20=> 86400*30, 10=> 86400*60, 0=>86400*90);
     $rows =get_weight_list('just_wach','last_update',"rwt_id",$limit,$rating_update,$dop_request);
 
 
