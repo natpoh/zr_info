@@ -46,21 +46,13 @@ if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
     require_once( CRITIC_MATIC_PLUGIN_DIR . 'ThemeCache.php' );
     require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticMatic.php' );
     require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticSearch.php' );
-	require_once( CRITIC_MATIC_PLUGIN_DIR . 'SearchFacets.php' );
-
+    require_once( CRITIC_MATIC_PLUGIN_DIR . 'SearchFacets.php' );
 }
 
 require_once __DIR__ . '/vendor/autoload.php';
 
 // Get current URL
 $parsedUrl = parse_url($_SERVER['REQUEST_URI']);
-
-
-if (strstr($parsedUrl["path"],'index.php'))
-{
-	$parsedUrl["path"] = str_replace( '/api/index.php','',$parsedUrl["path"] );
-}
-
 
 $path = $parsedUrl['path'];
 
@@ -70,7 +62,14 @@ if ($path == '/') {
     $indexr = str_replace("swagger_url_path", SWAGGER_API_URL, $index);
     print $indexr;
     exit;
+} else if (preg_match('#^/poster/([0-9]+)#', $path, $match)) {
+    // Generate poster    	   
+    $_GET['id'] = 'm_' . $match[1];
+    include ('../analysis/create_image.php');
+    exit();
 }
+
+
 $path_arr = explode('/', $path);
 
 $version = isset($path_arr[1]) ? $path_arr[1] : 'v1';
@@ -83,6 +82,6 @@ if ($parsedUrl['query']) {
 
 if ($version == 'v1') {
     $bs = new OpenApi\Fd\Bootstrap();
-    $bs->run($path_arr,$query_args);
+    $bs->run($path_arr, $query_args);
 }
 
