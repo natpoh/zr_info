@@ -54,7 +54,18 @@ require_once __DIR__ . '/vendor/autoload.php';
 // Get current URL
 $parsedUrl = parse_url($_SERVER['REQUEST_URI']);
 
+
+
+///only develop server
+if (strstr($parsedUrl["path"],'index.php') && $_SERVER['HTTP_HOST'] =='info.test1.ru')
+{
+
+	$parsedUrl["path"] = str_replace( '/api/index.php','',$parsedUrl["path"] );
+}
+
+
 $path = $parsedUrl['path'];
+
 
 if ($path == '/') {
     // Load documentation    

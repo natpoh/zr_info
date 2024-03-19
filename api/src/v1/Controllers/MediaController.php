@@ -81,7 +81,8 @@ class MediaController extends Controller {
 	    $movie_data = $this->movie_data($mediaId);
 	    //$fmedia->data=$movie_data;
 
-	   // var_dump($fmedia);
+	   // include ABSPATH.'analysis/include/tmdb.php';
+	   // \TMDB::var_dump_table($fmedia);
         if ($fmedia) {
             $sf = $this->get_sf();
             $media = new \OpenApi\Fd\Models\Media((array) $fmedia, $sf);

@@ -154,6 +154,12 @@ class Media extends Model {
 
 	    $this->setVal($arr, 'runtime');
 
+	    $this->setVal($arr, 'boxusa');
+	    $this->setVal($arr, 'boxworld');
+	    $this->setVal($arr, 'budget');
+	    $this->setVal($arr, 'boxprofit');
+	    $this->setVal($arr, 'provider');
+
 
 	    $this->setVal($arr, 'genre');
 	    $this->setVal($arr, 'country');
@@ -213,6 +219,13 @@ class Media extends Model {
             'runtime' => $this->format_movie_runtime($this->runtime),
 			'poster'=>$this->to_poster($this->id),
 
+			'justwatch_provider'=>$this->to_array($this->provider),
+			'finances'=>['domestic_box' => $this->boxusa,
+			             'world_box' => $this->boxworld,
+			             'budget' => $this->budget,
+			             'profit' => $this->boxprofit,],
+
+
             'release' => $this->release,
             'imdb_id' => $this->imdb_id,
             'cast_stars' => $this->cast_stars,
@@ -222,6 +235,27 @@ class Media extends Model {
 
         return $ret;
     }
+
+	public function	to_array($data)
+{
+	if ($data)
+	{
+		if (strstr($data,','))
+		{
+			$data_array = explode(',',$data);
+		}
+		else
+		{
+			$data_array[]=$data;
+		}
+
+		if ($data_array)
+		{
+			return json_encode($data_array);
+		}
+	}
+
+}
 
 	public function movie_genre($genre,$db )
 	{
@@ -253,11 +287,11 @@ class Media extends Model {
 		$data = $db->db_results($sql);
 		foreach ($data as $r)
 		{
-			$res_array[]=$r->name;
+			$res_array[]=['id'=>$r->id,'name'=>$r->name];
 		}
 		if ($res_array)
 		{
-			return implode(',',$res_array);
+			return json_encode($res_array);
 		}
 
 	}
@@ -265,7 +299,7 @@ class Media extends Model {
 
 	public static function to_poster($id) {
 
-		return '/api/index.php/v1/image/'.$id;
+		return 'https://img.filmdemographics.com/poster/'.$id.'.jpg';
 
 	}
 
