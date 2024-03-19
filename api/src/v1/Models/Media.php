@@ -256,7 +256,7 @@ class Media extends Model {
 
 		if ($data_array)
 		{
-			return json_encode($data_array);
+			return $data_array;
 		}
 	}
 
@@ -296,7 +296,7 @@ class Media extends Model {
 		}
 		if ($res_array)
 		{
-			return json_encode($res_array);
+			return $res_array;
 		}
 
 	}
