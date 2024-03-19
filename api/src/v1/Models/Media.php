@@ -159,6 +159,7 @@ class Media extends Model {
 	    $this->setVal($arr, 'budget');
 	    $this->setVal($arr, 'boxprofit');
 	    $this->setVal($arr, 'provider');
+	    $this->setVal($arr, 'data');
 
 
 	    $this->setVal($arr, 'genre');
@@ -215,7 +216,9 @@ class Media extends Model {
 
             'genre' => $this->movie_genre($this->genre,'data_movie_genre'),
             'country' => $this->movie_genre($this->country,'data_movie_country'),
-
+            'language' => $this->data->language,
+			'production'=> $this->data->production,
+			'description'=> $this->data->description,
             'runtime' => $this->format_movie_runtime($this->runtime),
 			'poster'=>$this->to_poster($this->id),
 
@@ -224,6 +227,8 @@ class Media extends Model {
 			             'world_box' => $this->boxworld,
 			             'budget' => $this->budget,
 			             'profit' => $this->boxprofit,],
+
+
 
 
             'release' => $this->release,

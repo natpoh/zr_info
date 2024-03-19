@@ -79,7 +79,7 @@ class MediaController extends Controller {
         $cs = new \CriticSearch();
         $fmedia = $cs->get_movie_by_id($mediaId);
 	    $movie_data = $this->movie_data($mediaId);
-	    //$fmedia->data=$movie_data;
+	    $fmedia->data=$movie_data;
 
 	   // include ABSPATH.'analysis/include/tmdb.php';
 	   // \TMDB::var_dump_table($fmedia);
