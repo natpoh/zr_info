@@ -226,7 +226,7 @@ class Media extends Model {
             'runtime' => $this->format_movie_runtime($this->runtime),
 			'poster'=>$this->to_poster($this->id),
 			'rating'=>[
-            'imdb'=> $this->rimdb,
+            'imdb'=> $this->rimdb/10,
             'rt'=> $this->rrt,
             'rt_audience'=> $this->rrta,
 			],
