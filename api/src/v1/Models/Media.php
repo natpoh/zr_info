@@ -161,6 +161,10 @@ class Media extends Model {
 	    $this->setVal($arr, 'provider');
 	    $this->setVal($arr, 'data');
 
+	    $this->setVal($arr, 'rimdb');
+	    $this->setVal($arr, 'rrt');
+	    $this->setVal($arr, 'rrta');
+
 
 	    $this->setVal($arr, 'genre');
 	    $this->setVal($arr, 'country');
@@ -221,6 +225,11 @@ class Media extends Model {
 			'description'=> $this->data->description,
             'runtime' => $this->format_movie_runtime($this->runtime),
 			'poster'=>$this->to_poster($this->id),
+			'rating'=>[
+            'imdb'=> $this->rimdb,
+            'rt'=> $this->rrt,
+            'rt_audience'=> $this->rrta,
+			],
 
 			'justwatch_provider'=>$this->to_array($this->provider),
 			'finances'=>['domestic_box' => $this->boxusa,
