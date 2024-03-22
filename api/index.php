@@ -79,10 +79,9 @@ if ($path == '/') {
     include ('../analysis/create_image.php');
     exit();
 }
-else if (preg_match('#^/image/([0-9]+)#', $path, $match)) {
+else if (preg_match('#^/actorphoto/([0-9]+)#', $path, $match)) {
 	// Generate poster
 	$_GET['id'] =  $match[1].'_o2';
-	var_dump($_GET['id']);
 	include ('../analysis/create_image.php');
 	exit();
 }
