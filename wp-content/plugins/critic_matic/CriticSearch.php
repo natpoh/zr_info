@@ -1803,7 +1803,7 @@ class CriticSearch extends AbstractDB {
             // Auto critic type
             $ret[$id]['type'] = $critic_type;
             $ret[$id]['debug']['other'] = array();
-            
+
             $valid = true;
             $ret[$id]['debug']['valid'][] = "True: Default";
 
@@ -1878,15 +1878,15 @@ class CriticSearch extends AbstractDB {
                 if (sizeof($another_movies) > 0) {
                     // Found another movies. Need check date   
                     $first_movie_year = array_pop(array_keys($another_movies));
-                    $ret[$id]['debug']['other'][]='Found another movies: '.implode(',',array_keys($another_movies));
+                    $ret[$id]['debug']['other'][] = 'Found another movies: ' . implode(',', array_keys($another_movies));
                     if ($first_movie_year > $year) {
-                        $ret[$id]['debug']['other'][] = '<br />Found a newer ('.$first_movie_year.') movie with the same title, id='.$another_movies[$first_movie_year] ;
+                        $ret[$id]['debug']['other'][] = '<br />Found a newer (' . $first_movie_year . ') movie with the same title, id=' . $another_movies[$first_movie_year];
                         if (!in_array($id, $valid_release)) {
                             $ret[$id]['score']['release_exist'] = 'False';
                             $valid = false;
                             $ret[$id]['debug']['valid'][] = "<br />False: Movie is dublicated ($year < $first_movie_year) and valid release year not found in post";
                         }
-                    } 
+                    }
                 }
             }
 
@@ -4004,6 +4004,7 @@ class CriticSearch extends AbstractDB {
                         // From author
                         $filters_and .= $this->filter_multi_value('aid', $value, true);
                     }
+                    continue;
                 } else if ($query_type == 'critics') {
 
                     if ($key == 'author') {
@@ -4024,6 +4025,19 @@ class CriticSearch extends AbstractDB {
                     } else if ($key == 'movie') {
                         // Movie                 
                         $filters_and .= $this->filter_multi_value('movies', $value, true);
+                    }
+                } else {
+                    // Movies, Games, Analytics
+                    if ($key == 'wl') {
+                        // Watchlist
+                        // Get watchlist
+                        $wl = $this->cm->get_wl();
+                        $value_int = is_array($value) ? array_pop($value) : $value;
+                        $wp_uid = isset($filters['wp_uid']) ? $filters['wp_uid'] : 0;
+                        $ids = $wl->get_list_movies($wp_uid, $value_int);
+                        if ($ids) {
+                            $filters_and .= " AND id IN(" . implode(',', $ids) . ")";
+                        }
                     }
                 }
 
@@ -4169,16 +4183,6 @@ class CriticSearch extends AbstractDB {
                 } else if ($key == 'distributor' || $key == 'production') {
                     // Distributor
                     $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
-                } else if ($key == 'wl') {
-                    // Watchlist
-                    // Get watchlist
-                    $wl = $this->cm->get_wl();
-                    $value_int = is_array($value) ? array_pop($value) : $value;
-                    $wp_uid = isset($filters['wp_uid']) ? $filters['wp_uid'] : 0;
-                    $ids = $wl->get_list_movies($wp_uid, $value_int);
-                    if ($ids) {
-                        $filters_and .= " AND id IN(" . implode(',', $ids) . ")";
-                    }
                 } else if (isset($this->facet_data['findata']['childs'][$key])) {
                     // Finances
                     $data_arr = explode('-', $value);

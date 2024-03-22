@@ -173,7 +173,7 @@ class MovieSingle {
 
 if (!function_exists('template_single_movie')) {
 
-    function template_single_movie($id, $title = '', $name = '', $single = '', $movie_object = '', $user_blocks = array()) {
+    function template_single_movie($id, $title = '', $name = '', $single = '', $movie_object = '', $user_blocks = array(), $small_view = false) {
         /////check content
 
         global $post_an;
@@ -518,7 +518,11 @@ if (!function_exists('template_single_movie')) {
                         if (isset($user_blocks['watchlists'][$id])) {
                             print $user_blocks['watchlists'][$id];
                         }
-
+                        if ($small_view) {
+                            ?>  
+                            <div class="watch-data" data-id="<?php print $id ?>"></div>
+                        <?php
+                        }
 
                         echo $_wpmoly_movie_overview . '<div class="single_grid">' . $content_release . $_wpmoly_movie_genres . $director_result . '</div>
 <div class="single_grid">' . $_wpmoly_movie_runtime . $mpaa . '</div>

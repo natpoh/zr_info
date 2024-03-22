@@ -184,6 +184,8 @@ if (!function_exists('video_scroll')) {
             $RWT_RATING = new RWT_RATING;
             $content_result['rating'] = $RWT_RATING->get_rating_data($content_result['result']);
         }
+        $content_result['mids']= array_keys($array_movies);        
+        
         $content_string = json_encode($content_result);
         return $content_string;
     }

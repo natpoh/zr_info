@@ -289,11 +289,11 @@ watchlist.add_new = function () {
 
 watchlist.add_new_content = function ($edit = false) {
     var submit = 'Create';
-    var title = 'Add Watchlist';
+    var title = 'Add List';
     var remove = '';
     if ($edit) {
         submit = 'Update';
-        title = 'Edit Watchlist';
+        title = 'Edit List';
     }
     var form = `<h2>` + title + `</h2>                
                 <div class="row">

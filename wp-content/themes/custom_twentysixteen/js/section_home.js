@@ -1,9 +1,9 @@
 var disqus_config = function () {
 };
 var lastload = '';
-var template_path =  "/wp-content/themes/custom_twentysixteen/template/ajax/";
-var site_url = window.location.protocol +"//"+window.location.host;
-var crowdsource_url = site_url+"/service/ajax/crowdsource.php"
+var template_path = "/wp-content/themes/custom_twentysixteen/template/ajax/";
+var site_url = window.location.protocol + "//" + window.location.host;
+var crowdsource_url = site_url + "/service/ajax/crowdsource.php"
 var debug_mode = 0;
 // if (window.location.host == 'zeitgeistreviews.com' || window.location.host == 'zgreviews.com') {
 //     crowdsource_url = 'https://' + window.location.host + "/service/ajax/crowdsource.php";
@@ -263,72 +263,66 @@ function create_total_rating(obj, only_tomatoes, rt_gap) {
 
     let rt_class = '';
 
-    let mt_gap =0;
-    if ((Number(obj.metacritic_rating) > 0 || Number(obj.metacritic_userscore) > 0) && only_tomatoes== 2) {
+    let mt_gap = 0;
+    if ((Number(obj.metacritic_rating) > 0 || Number(obj.metacritic_userscore) > 0) && only_tomatoes == 2) {
 
 
-            mt_gap = Number(obj.metacritic_userscore)  - Number(obj.metacritic_rating);
-            mt_gap = mt_gap * 20;
-            mt_gap = mt_gap.toFixed(0);
+        mt_gap = Number(obj.metacritic_userscore) - Number(obj.metacritic_rating);
+        mt_gap = mt_gap * 20;
+        mt_gap = mt_gap.toFixed(0);
 
-            let mtcr = Number(obj.metacritic_rating)* 20;
-            let mtus = Number(obj.metacritic_userscore)* 20;
+        let mtcr = Number(obj.metacritic_rating) * 20;
+        let mtus = Number(obj.metacritic_userscore) * 20;
 
 
 
-            var ttcomment = '';
-            if (Number(obj.metacritic_rating) > 0  && !obj.metacritic_userscore)
-            {
-                ttcomment = "The average Metacritic score is " + Number(mtcr)  + "%."
-            }
-            else if (!obj.metacritic_rating  && Number(obj.metacritic_userscore)>0)
-            {
-                ttcomment = "The average Metacritic audience score is " +  Number(mtus)  + "%."
-            }
-            else if (mt_gap > 10) {
-                ttcomment = "The Metacritic audience rated this " + mt_gap + "% higher than the critics."
-            } else if (mt_gap < -10) {
-                ttcomment = "The Metacritic audience rated this " + mt_gap + "% lower than the critics."
-            } else if (mt_gap > 0) {
-                ttcomment = "The Metacritic audience rated this " + mt_gap + "% higher than the critics."
-            } else if (mt_gap < 0) {
-                ttcomment = "The Metacritic audience rated this " + mt_gap + "% lower than the critics."
-            } else if (obj.metacritic_rating == obj.metacritic_userscore) {
-                ttcomment = "Metacritic audience rated it equally with the critics."
-            }
-            content_rating += popup_cusomize('popup_header', ttcomment);
+        var ttcomment = '';
+        if (Number(obj.metacritic_rating) > 0 && !obj.metacritic_userscore)
+        {
+            ttcomment = "The average Metacritic score is " + Number(mtcr) + "%."
+        } else if (!obj.metacritic_rating && Number(obj.metacritic_userscore) > 0)
+        {
+            ttcomment = "The average Metacritic audience score is " + Number(mtus) + "%."
+        } else if (mt_gap > 10) {
+            ttcomment = "The Metacritic audience rated this " + mt_gap + "% higher than the critics."
+        } else if (mt_gap < -10) {
+            ttcomment = "The Metacritic audience rated this " + mt_gap + "% lower than the critics."
+        } else if (mt_gap > 0) {
+            ttcomment = "The Metacritic audience rated this " + mt_gap + "% higher than the critics."
+        } else if (mt_gap < 0) {
+            ttcomment = "The Metacritic audience rated this " + mt_gap + "% lower than the critics."
+        } else if (obj.metacritic_rating == obj.metacritic_userscore) {
+            ttcomment = "Metacritic audience rated it equally with the critics."
+        }
+        content_rating += popup_cusomize('popup_header', ttcomment);
 
 
 
         if (mtcr)
         {
-         content_rating +=  popup_cusomize('row_inner','<div class="exlink" id="metacritic_rating"><span>Metacritic Meta:</span></div>',create_rating_star(mtcr,  'big_rating',100));
+            content_rating += popup_cusomize('row_inner', '<div class="exlink" id="metacritic_rating"><span>Metacritic Meta:</span></div>', create_rating_star(mtcr, 'big_rating', 100));
         }
         if (mtus)
         {
-         content_rating +=  popup_cusomize('row_inner','<div class="exlink" id="metacritic_rating"><span>Metacritic User:</span></div>',create_rating_star(mtus,  'big_rating',100));
+            content_rating += popup_cusomize('row_inner', '<div class="exlink" id="metacritic_rating"><span>Metacritic User:</span></div>', create_rating_star(mtus, 'big_rating', 100));
 
         }
 
 
         return  content_rating;
 
-    }
-
-    else if (Number(obj.rt_rating) > 0 || Number(obj.rt_aurating) > 0) {
+    } else if (Number(obj.rt_rating) > 0 || Number(obj.rt_aurating) > 0) {
 
 
-         if (rt_gap != 0) {
-             var ttcomment = '';
-             if (Number(obj.rt_rating) > 0  && !obj.rt_aurating)
-             {
-                 ttcomment = "The average Rotten Tomatoes critic score is " + Number(obj.rt_rating)  + "%."
-             }
-             else if (!obj.rt_rating  && Number(obj.rt_aurating)>0)
-             {
-                 ttcomment = "The average Rotten Tomatoes audience score is " +  Number(obj.rt_aurating)  + "%."
-             }
-            else if (rt_gap > 10) {
+        if (rt_gap != 0) {
+            var ttcomment = '';
+            if (Number(obj.rt_rating) > 0 && !obj.rt_aurating)
+            {
+                ttcomment = "The average Rotten Tomatoes critic score is " + Number(obj.rt_rating) + "%."
+            } else if (!obj.rt_rating && Number(obj.rt_aurating) > 0)
+            {
+                ttcomment = "The average Rotten Tomatoes audience score is " + Number(obj.rt_aurating) + "%."
+            } else if (rt_gap > 10) {
                 ttcomment = "The Rotten Tomatoes audience rated this " + rt_gap + "% higher than the critics."
             } else if (rt_gap < -10) {
                 ttcomment = "The Rotten Tomatoes audience rated this " + rt_gap + "% lower than the critics."
@@ -367,7 +361,7 @@ function create_total_rating(obj, only_tomatoes, rt_gap) {
         }
         content_rating += '</div></div>';
 
-        content_rating+='<br>';
+        content_rating += '<br>';
     }
 
     if (!only_tomatoes) {
@@ -392,11 +386,9 @@ function create_total_rating(obj, only_tomatoes, rt_gap) {
                 name = 'ZR Audience';
             } else if (key == 'imdb_rating') {
                 name = 'IMDb';
-            }
-            else if (key == 'ofdb_rating') {
+            } else if (key == 'ofdb_rating') {
                 name = 'OFDb';
-            }
-            else if (key == 'kinop_rating') {
+            } else if (key == 'kinop_rating') {
                 name = 'Kinopoisk';
             } else if (key == 'Animelist') {
                 name = 'MyAnimeList';
@@ -404,17 +396,17 @@ function create_total_rating(obj, only_tomatoes, rt_gap) {
                 name = formatWordsList(key);
             }
 
-            let nolink ='';
-           if (key =='audience_rating')
-           {
+            let nolink = '';
+            if (key == 'audience_rating')
+            {
 
-               nolink =' no_link '
-           }
+                nolink = ' no_link '
+            }
 
             if (Number(value) > 0) {
                 if (key.indexOf('rt_') == -1 && key != 'total_rating') {
 
-                    content_rating += '<div class="exlink'+nolink+'" id="' + key + '"><span>' + name + ':</span>' + create_rating_star(value, key) + '</div>';
+                    content_rating += '<div class="exlink' + nolink + '" id="' + key + '"><span>' + name + ':</span>' + create_rating_star(value, key) + '</div>';
                 }
 
 
@@ -506,9 +498,9 @@ function abbreviateNumber(number) {
     for (let i = 0; i < abbreviations.length; i++) {
         if (number >= abbreviations[i].value) {
             return (
-                (number / abbreviations[i].value).toFixed(1).replace(/\.0$/, "") +
-                abbreviations[i].symbol
-            );
+                    (number / abbreviations[i].value).toFixed(1).replace(/\.0$/, "") +
+                    abbreviations[i].symbol
+                    );
         }
     }
 
@@ -624,140 +616,137 @@ function create_rating_content(object, m_id, search_block = 0) {
     //console.log(object);
 
 
-    let enable_rt_mt =0;
+    let enable_rt_mt = 0;
     if (Number(object.total_rating.metacritic_rating) > 0 || Number(object.total_rating.metacritic_userscore) > 0 || object.total_rating.rt_rating > 0 || object.total_rating.rt_aurating > 0) {
-        enable_rt_mt=1;
+        enable_rt_mt = 1;
     }
 
-        let total_tomatoes_content ='';
-        let total_mt_content ='';
-        let use_tomatos =0;
-        let use_mt =0;
-        let total_gap_str ='';
-        let rating_color = '';
-        let total_mt_gap_str ='';
-        let rating_mt_color = '';
+    let total_tomatoes_content = '';
+    let total_mt_content = '';
+    let use_tomatos = 0;
+    let use_mt = 0;
+    let total_gap_str = '';
+    let rating_color = '';
+    let total_mt_gap_str = '';
+    let rating_mt_color = '';
 
 
-        if (object['type'] != 'videogame') {
-            if (object.total_rating && (object.total_rating.rt_gap > 0 || object.total_rating.rt_rating > 0 || object.total_rating.rt_aurating > 0)) {
+    if (object['type'] != 'videogame') {
+        if (object.total_rating && (object.total_rating.rt_gap > 0 || object.total_rating.rt_rating > 0 || object.total_rating.rt_aurating > 0)) {
 
-                total_gap_str = 'N/A';
+            total_gap_str = 'N/A';
 
-                if (object.total_rating.rt_rating == object.total_rating.rt_aurating) {
+            if (object.total_rating.rt_rating == object.total_rating.rt_aurating) {
 
-                    total_gap_str = '0%';
-                }
-
-
-                total_gap = object.total_rating.rt_gap;
-                rating_color = '';
-                if (total_gap) {
-                    total_gap = Number(total_gap);
-
-                    if (total_gap > 0 || total_gap < 0) {
+                total_gap_str = '0%';
+            }
 
 
-                        if ((total_gap) > 10) {
-                            rating_color = 'green_rt';
-                        }
-                        if ((total_gap) < -10) {
-                            rating_color = 'red_rt';
-                        }
+            total_gap = object.total_rating.rt_gap;
+            rating_color = '';
+            if (total_gap) {
+                total_gap = Number(total_gap);
+
+                if (total_gap > 0 || total_gap < 0) {
+
+
+                    if ((total_gap) > 10) {
+                        rating_color = 'green_rt';
                     }
-                    total_gap_str = total_gap + '%'
-                }
-
-                 total_tomatoes_content = create_total_rating(object.total_rating, 1, total_gap);
-                    use_tomatos =1;
-
-
-            }
-
-            if (!use_tomatos)
-            {
-                total_tomatoes_content =  popup_cusomize('row_link','No <b class="exlink" id="rt">Rotten Tomatoes</b> ratings imported yet.');
-
-            }
-        }
-
-
-
-        if (Number(object.total_rating.metacritic_rating) > 0 || Number(object.total_rating.metacritic_userscore) > 0 || object['type'] == 'videogame') {
-
-            if (Number(object.total_rating.metacritic_rating) > 0 || Number(object.total_rating.metacritic_userscore) > 0) {
-                use_mt=1;
-
-                 total_mt_gap_str = 'm';
-
-                if (object.total_rating.metacritic_rating == object.total_rating.metacritic_userscore) {
-
-                    total_mt_gap_str = '0%';
-                }
-
-
-                let total_gap = Number(object.total_rating.metacritic_userscore) - Number(object.total_rating.metacritic_rating);
-                 rating_mt_color = '';
-                if (total_gap) {
-                    total_gap = Number(total_gap);
-                    total_gap = total_gap * 20;
-                    total_gap = total_gap.toFixed(0);
-
-                    if (total_gap > 0 || total_gap < 0) {
-
-                        if ((total_gap) > 10) {
-                            rating_mt_color = 'green_mt';
-                        }
-                        if ((total_gap) < -10) {
-                            rating_mt_color = 'red_mt';
-                        }
+                    if ((total_gap) < -10) {
+                        rating_color = 'red_rt';
                     }
+                }
+                total_gap_str = total_gap + '%'
+            }
+
+            total_tomatoes_content = create_total_rating(object.total_rating, 1, total_gap);
+            use_tomatos = 1;
 
 
-                    total_mt_gap_str = total_gap + '%'
+        }
+
+        if (!use_tomatos)
+        {
+            total_tomatoes_content = popup_cusomize('row_link', 'No <b class="exlink" id="rt">Rotten Tomatoes</b> ratings imported yet.');
+
+        }
+    }
+
+
+
+    if (Number(object.total_rating.metacritic_rating) > 0 || Number(object.total_rating.metacritic_userscore) > 0 || object['type'] == 'videogame') {
+
+        if (Number(object.total_rating.metacritic_rating) > 0 || Number(object.total_rating.metacritic_userscore) > 0) {
+            use_mt = 1;
+
+            total_mt_gap_str = 'm';
+
+            if (object.total_rating.metacritic_rating == object.total_rating.metacritic_userscore) {
+
+                total_mt_gap_str = '0%';
+            }
+
+
+            let total_gap = Number(object.total_rating.metacritic_userscore) - Number(object.total_rating.metacritic_rating);
+            rating_mt_color = '';
+            if (total_gap) {
+                total_gap = Number(total_gap);
+                total_gap = total_gap * 20;
+                total_gap = total_gap.toFixed(0);
+
+                if (total_gap > 0 || total_gap < 0) {
+
+                    if ((total_gap) > 10) {
+                        rating_mt_color = 'green_mt';
+                    }
+                    if ((total_gap) < -10) {
+                        rating_mt_color = 'red_mt';
+                    }
                 }
 
-                 total_mt_content = create_total_rating(object.total_rating, 2, total_gap);
 
-
+                total_mt_gap_str = total_gap + '%'
             }
-        }
 
-        if (!use_mt) {
+            total_mt_content = create_total_rating(object.total_rating, 2, total_gap);
 
-            total_mt_content =  popup_cusomize('row_link','No <b class="exlink" id="metacritic_rating">Metacritic ratings</b> imported yet.');
 
         }
+    }
+
+    if (!use_mt) {
+
+        total_mt_content = popup_cusomize('row_link', 'No <b class="exlink" id="metacritic_rating">Metacritic ratings</b> imported yet.');
+
+    }
 
 
-        if (use_tomatos)
+    if (use_tomatos)
+    {
+        content += add_rating_block('rt_gap ' + rating_color, total_gap_str, total_tomatoes_content + total_mt_content, 4, true);
+    } else if (use_mt)
+    {
+
+        if (total_mt_gap_str == 'm')
         {
-            content += add_rating_block('rt_gap ' + rating_color, total_gap_str, total_tomatoes_content+total_mt_content, 4, true);
+            rating_mt_color = ' none_mt '
         }
-        else if (use_mt)
+
+        content += add_rating_block('mt_gap ' + rating_mt_color, total_mt_gap_str, total_mt_content, 4, true);
+    } else
+    {
+        ///empty
+        if (object['type'] != 'videogame')
         {
+            content += add_rating_block('rt_gap gray_rt', 'N/A', total_tomatoes_content + total_mt_content, 4, true);
 
-            if (total_mt_gap_str=='m')
-            {
-                rating_mt_color=' none_mt '
-            }
-
-            content += add_rating_block('mt_gap ' + rating_mt_color, total_mt_gap_str, total_mt_content, 4, true);
-        }
-        else
+        } else
         {
-            ///empty
-            if (object['type'] != 'videogame')
-            {
-                content += add_rating_block('rt_gap gray_rt' , 'N/A', total_tomatoes_content+total_mt_content, 4, true);
-
-            }
-            else
-            {
-             //   content += add_rating_block('mt_gap gray_mt norating' , 'N/A', total_mt_content, 4, true);
-            }
-
+            //   content += add_rating_block('mt_gap gray_mt norating' , 'N/A', total_mt_content, 4, true);
         }
+
+    }
 
 
 
@@ -820,7 +809,7 @@ function create_rating_content(object, m_id, search_block = 0) {
 
     value = value.toFixed(2);
 
-     rating_color = 'noffrating';
+    rating_color = 'noffrating';
 
     if (value > 0) {
         rating_color = 'green';
@@ -847,25 +836,22 @@ function create_rating_content(object, m_id, search_block = 0) {
     // console.log(object);
     if (object['lgbt_warning'] == 1 || object['qtia_warning'] == 1) {
         let ltext = '';
-        let qtext ='';
+        let qtext = '';
 
-        if (object['lgbt_text'] && object['qtia_text'] ) {
-            ltext+= '<span class="bg_rainbow">' + object['lgbt_text']+ '</span>';
-            qtext+= '<span class="bg_rainbow">' +object['qtia_text']+ '</span>';
+        if (object['lgbt_text'] && object['qtia_text']) {
+            ltext += '<span class="bg_rainbow">' + object['lgbt_text'] + '</span>';
+            qtext += '<span class="bg_rainbow">' + object['qtia_text'] + '</span>';
 
-            lgbt_warning_text = popup_cusomize('row_text_head', 'LGBTQ content included:<span data-value="lgbt_popup" class="nte_info"></span>') ;
+            lgbt_warning_text = popup_cusomize('row_text_head', 'LGBTQ content included:<span data-value="lgbt_popup" class="nte_info"></span>');
 
-            lgbt_warning_text+= popup_cusomize('row_text_head', 'LGB:') + popup_cusomize('row_text', ltext);
-            lgbt_warning_text+= popup_cusomize('row_text_head', 'QTIA+:') + popup_cusomize('row_text', qtext);
-        }
-
-        else if (object['lgbt_text']) {
-            ltext+= '<span class="bg_rainbow">' + object['lgbt_text'] + '</span>';
-            lgbt_warning_text= popup_cusomize('row_text_head', 'LGBTQ content included:<span data-value="lgbt_popup" class="nte_info"></span>') + popup_cusomize('row_text', ltext);
-        }
-        else if (object['qtia_text']) {
-            qtext+= '<span class="bg_rainbow">' + object['qtia_text'] + '</span>';
-            lgbt_warning_text= popup_cusomize('row_text_head', 'LGBTQ content included:<span data-value="lgbt_popup" class="nte_info"></span>') + popup_cusomize('row_text', qtext);
+            lgbt_warning_text += popup_cusomize('row_text_head', 'LGB:') + popup_cusomize('row_text', ltext);
+            lgbt_warning_text += popup_cusomize('row_text_head', 'QTIA+:') + popup_cusomize('row_text', qtext);
+        } else if (object['lgbt_text']) {
+            ltext += '<span class="bg_rainbow">' + object['lgbt_text'] + '</span>';
+            lgbt_warning_text = popup_cusomize('row_text_head', 'LGBTQ content included:<span data-value="lgbt_popup" class="nte_info"></span>') + popup_cusomize('row_text', ltext);
+        } else if (object['qtia_text']) {
+            qtext += '<span class="bg_rainbow">' + object['qtia_text'] + '</span>';
+            lgbt_warning_text = popup_cusomize('row_text_head', 'LGBTQ content included:<span data-value="lgbt_popup" class="nte_info"></span>') + popup_cusomize('row_text', qtext);
         }
 
         lgbt_class = ' lgbt ';
@@ -903,12 +889,12 @@ function create_rating_content(object, m_id, search_block = 0) {
 
     }
 
-    scorecontent+= '<br>Please help improve our site and <div class="add_pg_rating_button"><a href="#" class="empty_ff_rating">add a Family Friendly Rating.</a></div>';
+    scorecontent += '<br>Please help improve our site and <div class="add_pg_rating_button"><a href="#" class="empty_ff_rating">add a Family Friendly Rating.</a></div>';
 
     let rating_link = popup_cusomize('row_link', '<a href="#" class="read_more_rating">CONTENT BREAKDOWN</a>');
     rating_link += popup_cusomize('row_link', '<a href="#" class="how_calculate_rating">Methodology</a>')
 
-    content += add_rating_block(block_class + ' ' + lgbt_class + woke_class + rating_color, value,  lgbt_warning_text + woke_warning_text + family_data_result +scorecontent + rating_link, 1, true);
+    content += add_rating_block(block_class + ' ' + lgbt_class + woke_class + rating_color, value, lgbt_warning_text + woke_warning_text + family_data_result + scorecontent + rating_link, 1, true);
 
 
     if (object.total_rating && object.total_rating.total_rating > 0) {
@@ -930,12 +916,12 @@ function create_rating_content(object, m_id, search_block = 0) {
 
 
     content += '<div id="' + m_id + '"  class="note edit"><div class="note_togle">' +
-        '<div  class="edit_area  note_show">' +
-        '<div class="edit_comment"><div class="desc">Add Comment</div></div>' +
-        '<div   class="edit_review"><div class="desc">Write a Review</div></div>' +
-        '<div   class="edit_critic"><div class="desc">Submit Review Link</div></div>' +
-        '<div class="edit_family_rating"><span class="f_name"></span><div class="desc">Edit Family Friendly Rating</div></div>' +
-        '</div></div>';
+            '<div  class="edit_area  note_show">' +
+            '<div class="edit_comment"><div class="desc">Add Comment</div></div>' +
+            '<div   class="edit_review"><div class="desc">Write a Review</div></div>' +
+            '<div   class="edit_critic"><div class="desc">Submit Review Link</div></div>' +
+            '<div class="edit_family_rating"><span class="f_name"></span><div class="desc">Edit Family Friendly Rating</div></div>' +
+            '</div></div>';
 
 
     if (content) {
@@ -952,7 +938,7 @@ function set_video_scroll(data, block_id, append = '') {
 
         data = JSON.parse(data);
 
-        if  (data['count'] > 0 && data['tmpl'])
+        if (data['count'] > 0 && data['tmpl'])
         {
             if (!append) {
                 jQuery('div[id="' + block_id + '"]').parents('section').addClass('loaded');
@@ -1015,6 +1001,7 @@ function set_video_scroll(data, block_id, append = '') {
 
                     var i = 1;
                     jQuery.each(array_movie, function (mi, b) {
+
                         var a = b.mid;
                         var block = jQuery('div[id="' + block_id + '"] .column_content' + append + ' .loading[id="' + i + '"]');
 
@@ -1027,10 +1014,16 @@ function set_video_scroll(data, block_id, append = '') {
                             if (array_title[b.type]) {
                                 mtitle = array_title[b.type];
                             }
+                            var mid = b.mid;
+                            if (b.content_pro) {
+                                if (b['m_id']) {
+                                    mid = b['m_id'];
+                                }
+                            }
                             var image = '<a class="image" href="' + b.link + '/" title="' + b.title + '">' +
-                                '<span class="card_movie_type ctype_' + b.type + '" title="' + mtitle + '"></span>\n' +
-                                '<img loading="lazy" class="poster"  srcset="' + b.poster_link_small + ' 1x, ' + b.poster_link_big + ' 2x" alt="">\n' +
-                                '</a>';
+                                    '<span class="card_movie_type ctype_' + b.type + '" title="' + mtitle + '"></span>\n' +
+                                    '<img loading="lazy" class="poster"  srcset="' + b.poster_link_small + ' 1x, ' + b.poster_link_big + ' 2x" alt="">\n' +
+                                    '</a><div class="watch-data" data-id="' + mid + '"></div>';
                             block.find('.wrapper').html(image);
                             block.find('.content h2').html('<a href="' + b.link + '/" title="' + b.title + '">' + b.title + '</a>');
                             block.find('.content p').html(b.genre);
@@ -1069,7 +1062,7 @@ function set_video_scroll(data, block_id, append = '') {
                                 if (ccount) {
                                     disquss_class = ' comment_count';
                                     ccount_data = '<span  class="disquss_coment_count">' + ccount + '</span>';
-                                } 
+                                }
 
                                 let ptitle = b.pid_title;
                                 if (!ptitle)
@@ -1107,6 +1100,24 @@ function set_video_scroll(data, block_id, append = '') {
 
                         i++;
                     });
+
+
+
+                    if (data['watchlist'] !== 'undefined') {
+                        if (typeof watch_lists_data === 'undefined'){
+                            watch_lists_data=[];
+                        }
+                        for (var key in data['watchlist']) {
+
+                            if (!watch_lists_data[key]) {
+                                watch_lists_data[key] = data['watchlist'][key];
+                            }
+                        }
+                    }
+
+
+                    // Check watchlists
+                    check_watchlists();
 
                     init_short_codes();
 
@@ -1178,7 +1189,37 @@ function set_video_scroll(data, block_id, append = '') {
         }
 
 
+}
+}
+
+function check_watchlists() {
+    if (!$('body').hasClass('logged-in')) {
+        return false;
     }
+
+    //console.log(watch_lists_data);
+    $('.watch-data:not(".init")').each(function () {
+        var $this = $(this);
+        $this.addClass('init');
+        var id = $this.data('id');
+        var watch = '';
+        var favorite = '';
+
+        if (typeof watch_lists_data !== 'undefined' && id in watch_lists_data) {
+            var watch_data = watch_lists_data[id];
+            watch = watch_data[1] ? ' active' : '';
+            favorite = watch_data[2] ? ' active' : '';
+        }
+        var tpl = `<div id="watch_block_` + id + `" class="watch_block">
+                <a href="#watch_later" title="Watch later" class="add_watch_list` + watch + `" data-mid="` + id + `" data-type="1"></a>
+                <a href="#favorites" title="Favorites" class="add_favorite_list` + favorite + `" data-mid="` + id + `" data-type="2"></a>
+                <a href="#" title="Add to Watch List" class="browse_watch_lists" data-mid="` + id + `">...</a>
+            </div>`;
+        $this.append(tpl);
+
+    });
+
+
 }
 
 function add_rating_row(title, content, id, content_text) {
@@ -1255,7 +1296,7 @@ function create_rating_star(rating, type, num = 10) {
         str_widt = str_widt.toFixed(0);
         return '<span class="rating_result btn"><span style="width: ' + str_widt + '%;background-size: ' + bg + '%;" class="rating_result_total btn" title="' + rating + '/5"></span></span>';
 
-    }
+}
 
 
 }
@@ -1296,7 +1337,7 @@ function load_actor_representation(movie_id) {
     data['ethnycity'] = ethnycity;
     data['actor_type'] = a_type;
 
-    var url =  site_url+template_path + "actor_representation.php";
+    var url = site_url + template_path + "actor_representation.php";
 
     jQuery.ajax({
         type: "post",
@@ -1514,11 +1555,11 @@ function loadGScript(src) {
 
 }
 
-function check_new_data(title, block_id,tabName) {
+function check_new_data(title, block_id, tabName) {
 
-    let gsContent = document.querySelector("#" + block_id + " #gs_cotntent div.tab-content-inner#i_"+tabName);
+    let gsContent = document.querySelector("#" + block_id + " #gs_cotntent div.tab-content-inner#i_" + tabName);
 
-   /// var gsContent = document.querySelector('#' + block_id + ' #gs_cotntent'); ///document.getElementById("gs_cotntent");
+    /// var gsContent = document.querySelector('#' + block_id + ' #gs_cotntent'); ///document.getElementById("gs_cotntent");
 
     var observer = new MutationObserver(function (mutations) {
         mutations.forEach(function (mutation) {
@@ -1526,10 +1567,10 @@ function check_new_data(title, block_id,tabName) {
 
                 mutation.addedNodes.forEach(function (addedNode) {
 
-                    if (addedNode.classList && addedNode.classList.contains('gsc-input')  && addedNode.nodeName === 'INPUT') {
+                    if (addedNode.classList && addedNode.classList.contains('gsc-input') && addedNode.nodeName === 'INPUT') {
                         addedNode.value = title;
 
-                        document.querySelector("#" + block_id + " #gs_cotntent div.tab-content-inner#i_"+tabName+' button.gsc-search-button').click();
+                        document.querySelector("#" + block_id + " #gs_cotntent div.tab-content-inner#i_" + tabName + ' button.gsc-search-button').click();
 
                         observer.disconnect();
                     }
@@ -1594,8 +1635,8 @@ function showTab_inner(button) {
 
 
         let parentBlock = document.querySelector("#" + block_id + " #gs_cotntent");
-        let contentDiv = document.querySelector("#" + block_id + " #gs_cotntent div.tab-content-inner#i_"+tabName);
-        if (!contentDiv){
+        let contentDiv = document.querySelector("#" + block_id + " #gs_cotntent div.tab-content-inner#i_" + tabName);
+        if (!contentDiv) {
 
             contentDiv = document.createElement("div");
             contentDiv.id = "i_" + tabName;
@@ -1620,8 +1661,7 @@ function showTab_inner(button) {
 
         if (!sub_procces && gs_ob_current[tabName].sub) {
             sub_content = get_subcontent_gs(tabName, gs_ob_current[tabName].sub, block_id);
-        }
-        else if (sub_procces && prnt)
+        } else if (sub_procces && prnt)
         {
 
             sub_content = get_subcontent_gs(prnt, gs_ob_current, block_id);
@@ -1633,18 +1673,18 @@ function showTab_inner(button) {
         let content_type = gs_ob_current[tabName].data.content_type;
         let search_block = '<div class=\"gcse-search\"></div>';
         if (content_type == 0) {
-            let script_src='';
+            let script_src = '';
             if (gs_ob_current[tabName].data.script) {
                 script_src = (gs_ob_current[tabName].data.script);
             }
 
-            let sublass ='';
+            let sublass = '';
             if (document.querySelector('body').classList.contains('theme_dark'))
             {
                 sublass = ' theme_dark';
             }
             let title = gs_ob[block_id].title;
-            title =title.replace(/'/g, '&#39;');
+            title = title.replace(/'/g, '&#39;');
 
             search_block = `<iframe class="gcse-search-main" srcdoc='<meta name="viewport" content="width=device-width, initial-scale=1"><body class="${sublass}"><div class="page_custom_block"><div class="gcse-search"></div></div></div><script type="text/javascript" src="${script_src}"></script>
 <script type="text/javascript" >
@@ -1672,7 +1712,7 @@ function showTab_inner(button) {
 
         if (isContentDivEmpty)
         {
-            contentDiv.innerHTML = "<h3 class = \"gs_head gs_head_" + tabName + "\">" + gs_ob_current[tabName].data.name + ": <a target='_blank' href=\"" + gs_ob_current[tabName].data.link + "\" class=\"button_child_extlink\"></a></h3><div class=\"tab_content_gs_block\">"+search_block+"</div><p>" + sub_content + gs_ob_current[tabName].data.dop_content + "</p>";
+            contentDiv.innerHTML = "<h3 class = \"gs_head gs_head_" + tabName + "\">" + gs_ob_current[tabName].data.name + ": <a target='_blank' href=\"" + gs_ob_current[tabName].data.link + "\" class=\"button_child_extlink\"></a></h3><div class=\"tab_content_gs_block\">" + search_block + "</div><p>" + sub_content + gs_ob_current[tabName].data.dop_content + "</p>";
 
         }
 
@@ -1705,7 +1745,7 @@ function showTab_inner(button) {
 
 
 
-           //  check_new_data(gs_ob[block_id].title, block_id,tabName);
+            //  check_new_data(gs_ob[block_id].title, block_id,tabName);
             // if (gs_ob_current[tabName].data.script) {
             //  loadGScript(gs_ob_current[tabName].data.script);
             // }
@@ -1713,7 +1753,7 @@ function showTab_inner(button) {
         } else if (content_type == 1) {
             let srcdata = gs_ob_current[tabName].data.script
 
-            let tabContentBlock = document.querySelector("#" + block_id + " #gs_cotntent div.tab-content-inner#i_"+tabName + ' .tab_content_gs_block');
+            let tabContentBlock = document.querySelector("#" + block_id + " #gs_cotntent div.tab-content-inner#i_" + tabName + ' .tab_content_gs_block');
 
 
             let htmlCode = '<div class="spin_bg"><i class="icon icon-loader"></i></div><iframe src="' + srcdata + '"></iframe>';
@@ -1725,7 +1765,7 @@ function showTab_inner(button) {
         } else if (content_type == 2) {
             let srcdata = gs_ob_current[tabName].data.script
 
-            let tabContentBlock = document.querySelector("#" + block_id + " #gs_cotntent div.tab-content-inner#i_"+tabName + ' .tab_content_gs_block');
+            let tabContentBlock = document.querySelector("#" + block_id + " #gs_cotntent div.tab-content-inner#i_" + tabName + ' .tab_content_gs_block');
 
 
             let htmlCode = '<div class="spin_bg"><i class="icon icon-loader"></i></div><iframe style="max-width: 1020px;" src="' + srcdata + '"></iframe>';
@@ -1765,7 +1805,7 @@ function  showTab(button) {
 
 
         const targetNode = document.body;
-        const config = { childList: true, subtree: true };
+        const config = {childList: true, subtree: true};
         observer.observe(targetNode, config);
     } else {
 
@@ -1789,11 +1829,11 @@ function prepare_search_data(block_id, data_str) {
 
         let sortedArray = Object.values(gs_ob[block_id].data).sort((a, b) => Number(b.data.weight) - Number(a.data.weight));
 
-       /// console.log('sortedArray',sortedArray);
+        /// console.log('sortedArray',sortedArray);
 
         let buttons = '';
         let sub_content = '';
-        let gs_div ='';
+        let gs_div = '';
 
         sortedArray.forEach(item => {
             // console.log(item);
@@ -1801,7 +1841,7 @@ function prepare_search_data(block_id, data_str) {
 
         });
 
-    content = `<div class="tab-container">
+        content = `<div class="tab-container">
     <div class="tab-list_main">
     <div class="tab-list">
         ${buttons}
@@ -1819,15 +1859,15 @@ function prepare_search_data(block_id, data_str) {
 
 }
 
-function load_ajax_block(block_id='', request_id='') {
+function load_ajax_block(block_id = '', request_id = '') {
 
     lastload = block_id;
     var parent_id = '';
     var request = "";
     var request_block = '';
-    if (request_id!==''){
+    if (request_id !== '') {
         var request = "?id=" + request_id;
-    } else if (jQuery('div[id="' + block_id + '"]').attr('data-value')) {        
+    } else if (jQuery('div[id="' + block_id + '"]').attr('data-value')) {
         parent_id = jQuery('div[id="' + block_id + '"]').attr('data-value');
         request = "?id=" + parent_id;
 
@@ -1849,8 +1889,8 @@ function load_ajax_block(block_id='', request_id='') {
         let pos = block_id.indexOf('_id_');
         request_block = block_id.substr(pos + 1);
         var block_id_sub = block_id.substr(0, pos);
-        request_block=request_block.replace('_','=');
-      //console.log(pos,request_block,block_id);
+        request_block = request_block.replace('_', '=');
+        //console.log(pos,request_block,block_id);
     }
     // Get local data
     var local_sroll = false;
@@ -1866,7 +1906,7 @@ function load_ajax_block(block_id='', request_id='') {
             local_sroll = true;
         }
     } else if (block_id == 'games_scroll') {
-        if (typeof tv_scroll_data !== 'undefined') {
+        if (typeof games_scroll_data !== 'undefined') {
             scroll_data = games_scroll_data;
             local_sroll = true;
         }
@@ -1889,27 +1929,30 @@ function load_ajax_block(block_id='', request_id='') {
         // Init tabs
         init_audience_tabs(block_id, parent_id);
     }
+
     if (local_sroll) {
+        // console.log('local scroll', block_id);
         set_video_scroll(scroll_data, block_id);
-        initializeScroller(0, 'div[id="' + block_id + '"]');        
-        init_tags();        
+        initializeScroller(0, 'div[id="' + block_id + '"]');
+        init_tags();
         scroll_block(block_id);
         init_nte();
         return true;
+    } else {
+        // console.log('ajax scroll', block_id);
     }
 
 
     // Ajax load
-    var url =  site_url+template_path + block_id + ".php" + request;
+    var url = site_url + template_path + block_id + ".php" + request;
 
     if (request_block) {
         if (request)
         {
-            url =  site_url+template_path + block_id_sub + ".php" + request + '&' + request_block;
-        }
-        else
+            url = site_url + template_path + block_id_sub + ".php" + request + '&' + request_block;
+        } else
         {
-            url =  site_url+template_path + block_id_sub + ".php?" +  request_block;
+            url = site_url + template_path + block_id_sub + ".php?" + request_block;
         }
 
 
@@ -1939,9 +1982,9 @@ function load_ajax_block(block_id='', request_id='') {
                             }
 
                             jQuery('div[id="' + block_id + '"]').html('<div class="column_header">\n' +
-                                '                    <h2>Similar ' + title + ':</h2>\n' +
-                                '                </div><div class="movie_scroller scroller_wrap"><div class="column_content flex scroller flex_movies_block">' + obj.content + '</div>' +
-                                '</div>' + dto);
+                                    '                    <h2>Similar ' + title + ':</h2>\n' +
+                                    '                </div><div class="movie_scroller scroller_wrap"><div class="column_content flex scroller flex_movies_block">' + obj.content + '</div>' +
+                                    '</div>' + dto);
 
                             if (obj['rating']) {
                                 jQuery.each(obj['rating'], function (a, b) {
@@ -1993,7 +2036,7 @@ function load_ajax_block(block_id='', request_id='') {
 
                 }
 
-            } else if (block_id == 'google_search' || block_id == 'google_search_review' || block_id == 'google_global_zeitgeist'|| block_id == 'google_global_games'|| block_id == 'google_characters') {
+            } else if (block_id == 'google_search' || block_id == 'google_search_review' || block_id == 'google_global_zeitgeist' || block_id == 'google_global_games' || block_id == 'google_characters') {
                 if (data) {
                     prepare_search_data(block_id, data);
                 }
@@ -2026,15 +2069,14 @@ function load_ajax_block(block_id='', request_id='') {
 
                         let gz_content = global_zeitgeist_content(gzobj);
 
-        gz_content += `
+                        gz_content += `
            
             <div  style="margin-top: 15px; width: 100%" id="google_global_zeitgeist" data-value="${parent_id}" class="not_load page_custom_block"></div>
        
         `;
                         jQuery('#' + block_id).html(gz_content);
                         load_ajax_block('google_global_zeitgeist');
-                    }
-                    else {
+                    } else {
 
 
                         jQuery('.global_zr').removeClass('active');
@@ -2042,7 +2084,7 @@ function load_ajax_block(block_id='', request_id='') {
 
                         jQuery('.global_zr .accordion-content').html(`<section class="dmg_content inner_content" id="actor_data_dop" ><div  id="google_global_zeitgeist" data-value="${parent_id}" class="not_load page_custom_block"></div></section>`);
 
-                       // jQuery('#' + block_id).html(gz_content);
+                        // jQuery('#' + block_id).html(gz_content);
                     }
 
 
@@ -2059,7 +2101,7 @@ function load_ajax_block(block_id='', request_id='') {
                 jQuery('div[id="' + block_id + '"]').html(data);
                 load_actor_representation(parent_id);
 
-                var srcs = window.location.protocol +"//"+window.location.host+ '/wp-content/themes/custom_twentysixteen/js/jquery-ui-sortable.min.js';
+                var srcs = window.location.protocol + "//" + window.location.host + '/wp-content/themes/custom_twentysixteen/js/jquery-ui-sortable.min.js';
 
                 jQuery.getScript(srcs).done(function (script, textStatus) {
                     jQuery('div[id="Ethnycity_container"]').sortable({
@@ -2109,8 +2151,8 @@ function load_ajax_block(block_id='', request_id='') {
 
                     };
                 }
-                
-                
+
+
 
 
             } else if (block_id == 'search_ajax') {
@@ -2139,11 +2181,29 @@ function load_ajax_block(block_id='', request_id='') {
                     }
 
                 }
+              
+
+                if (Object_data['watchlist'] !== 'undefined') {
+                    if (typeof watch_lists_data === 'undefined'){
+                        watch_lists_data=[];
+                    }
+                    for (var key in Object_data['watchlist']) {
+
+                        if (!watch_lists_data[key]) {
+                            watch_lists_data[key] = Object_data['watchlist'][key];
+                        }
+                    }
+                }
+
+
+                // Check watchlists
+                check_watchlists();
+
             } else {
 
 
                 if (block_id.indexOf("&cid") !== -1) {
-                block_id = block_id.replace(/&cid=.*/, "");
+                    block_id = block_id.replace(/&cid=.*/, "");
                 }
                 set_video_scroll(data, block_id);
                 initializeScroller(0, 'div[id="' + block_id + '"]');
@@ -2197,7 +2257,12 @@ function init_audience_tabs(block_id, parent_id) {
                 if (parent_id) {
                     and_parent = "&id=" + parent_id;
                 }
-                var url =  site_url+template_path + block_id + ".php" + "?vote=" + vote + and_parent;
+                var url = site_url + template_path + block_id + ".php" + "?vote=" + vote + and_parent;
+
+                // Need uid
+                if ($('body').hasClass('logged-in')) {
+                    url += '&isuser=1';
+                }
 
                 jQuery.ajax({
                     type: "GET",
@@ -2236,11 +2301,11 @@ function init_audience_tabs(block_id, parent_id) {
 
 
 
-jQuery('body').on('click','.refresh_random .rr_image',function () {
+jQuery('body').on('click', '.refresh_random .rr_image', function () {
 
-    let ths =  jQuery(this);
+    let ths = jQuery(this);
     ths.addClass('rotate');
-    let prnt =   ths.parents('div.column');
+    let prnt = ths.parents('div.column');
     let cnt = prnt.find('.refresh_random .rr_content').html();
     let header = prnt.find('.block_title');
     let scr = prnt.find('.scroller_wrap');
@@ -2248,48 +2313,47 @@ jQuery('body').on('click','.refresh_random .rr_image',function () {
 
     if (cnt)
     {
-     let   ob =JSON.parse(cnt);
+        let   ob = JSON.parse(cnt);
 
-        var dataArray = Object.keys(ob).map(function(key) {
+        var dataArray = Object.keys(ob).map(function (key) {
             return {
                 id: key,
                 title: ob[key].title,
-                desc : ob[key].desc
+                desc: ob[key].desc
             };
         });
 
 
-        dataArray.sort(function() {
+        dataArray.sort(function () {
             return 0.5 - Math.random();
         });
 
         header.html('<div class="random_choice"><div class="random_choice_content"></div></div>');
-        let ul =  header.find('.random_choice_content');
-        dataArray.forEach(function(item) {
+        let ul = header.find('.random_choice_content');
+        dataArray.forEach(function (item) {
             var li = document.createElement("div");
             li.textContent = item.title;
             ul.append(li);
         });
 
-      let res = dataArray[dataArray.length - 1];
+        let res = dataArray[dataArray.length - 1];
 
 
 
-        setTimeout(function() {
+        setTimeout(function () {
 
             let desc = res.desc;
             if (desc)
             {
                 prnt.find('div.title_block_desc').html(desc).removeClass('hide');
-            }
-            else
+            } else
             {
                 prnt.find('div.title_block_desc').html('').addClass('hide');
             }
 
             ths.removeClass('rotate');
-            header.html(res.title+':');
-            load_ajax_block(sid+'&cid='+res.id);
+            header.html(res.title + ':');
+            load_ajax_block(sid + '&cid=' + res.id);
         }, 2200);
     }
 
@@ -2297,29 +2361,28 @@ jQuery('body').on('click','.refresh_random .rr_image',function () {
 });
 
 
-jQuery('body').on('click','.dropdown-content[id="myList"] li',function (){
+jQuery('body').on('click', '.dropdown-content[id="myList"] li', function () {
 
-  let prnt =   jQuery(this).parents('div.column');
-  let scr = prnt.find('.scroller_wrap');
-  let sid = scr.attr('id');
-  let id = jQuery(this).attr('data-value');
-  let desc = jQuery(this).attr('data-desc');
+    let prnt = jQuery(this).parents('div.column');
+    let scr = prnt.find('.scroller_wrap');
+    let sid = scr.attr('id');
+    let id = jQuery(this).attr('data-value');
+    let desc = jQuery(this).attr('data-desc');
 
-  if (desc)
-  {
-      prnt.find('div.title_block_desc').html(desc).removeClass('hide');
-  }
-  else
-  {
-      prnt.find('div.title_block_desc').html('').addClass('hide');
-  }
-
-
-  let title = jQuery(this).html();
-  prnt.find('span.block_title').html(title);
+    if (desc)
+    {
+        prnt.find('div.title_block_desc').html(desc).removeClass('hide');
+    } else
+    {
+        prnt.find('div.title_block_desc').html('').addClass('hide');
+    }
 
 
-  load_ajax_block(sid+'&cid='+id);
+    let title = jQuery(this).html();
+    prnt.find('span.block_title').html(title);
+
+
+    load_ajax_block(sid + '&cid=' + id);
 
 
 });
@@ -2433,15 +2496,15 @@ var run = 1;
 function add_popup() {
     if (!jQuery('.popup-container').html()) {
         var popup = '<div class="popup-container">\n' +
-            '\t<input type="checkbox" id="action-popup">\n' +
-            '\t<div class="popup">\n' +
-            '\t\t<label for="action-popup" class="transparent-label"></label>\n' +
-            '\t\t<label for="action-popup" class="popup-close"></label><div class="popup-inner">\n' +
-            '\t\t\t<div class="popup-content">\n' +
-            '\t\t\t</div>\n' +
-            '\t\t</div>\n' +
-            '\t</div>\n' +
-            '</div>';
+                '\t<input type="checkbox" id="action-popup">\n' +
+                '\t<div class="popup">\n' +
+                '\t\t<label for="action-popup" class="transparent-label"></label>\n' +
+                '\t\t<label for="action-popup" class="popup-close"></label><div class="popup-inner">\n' +
+                '\t\t\t<div class="popup-content">\n' +
+                '\t\t\t</div>\n' +
+                '\t\t</div>\n' +
+                '\t</div>\n' +
+                '</div>';
         jQuery('body').append(popup);
     }
 
@@ -2492,7 +2555,7 @@ function generate_watch_content(data, title, year, type) {
         Object_data['providers']['showtimes'] = {
             's': 'fullsize fullsizebig',
             'n': 'Showtimes',
-            'i': window.location.protocol  +"//"+window.location.host+"/wp-content/themes/custom_twentysixteen/images/showtimes-logo.png"
+            'i': window.location.protocol + "//" + window.location.host + "/wp-content/themes/custom_twentysixteen/images/showtimes-logo.png"
         };
     }
 
@@ -2563,11 +2626,10 @@ function generate_watch_content(data, title, year, type) {
 
             if (current_data.retail_price) {
 
-                if (current_data.retail_price.indexOf('$')!=-1)
+                if (current_data.retail_price.indexOf('$') != -1)
                 {
                     provider_currency = current_data.retail_price;
-                }
-                else
+                } else
                 {
                     provider_currency = provider_currency + current_data.retail_price;
                 }
@@ -2691,27 +2753,27 @@ function create_Highcharts_colomn_single(data, block) {
                     }
                 },
                 yAxis: [{
-                    title: {
-                        text: 'Percentage'
-                    },
-                    showFirstLabel: false
-                }],
-                series: [{
-                    name: data['name'],
-                    colorByPoint: true,
-                    dataSorting: {
-                        enabled: true,
-                        matchByName: true
-                    },
-                    dataLabels: [{
-                        enabled: true,
-                        inside: true,
-                        style: {
-                            fontSize: '14px'
-                        }
+                        title: {
+                            text: 'Percentage'
+                        },
+                        showFirstLabel: false
                     }],
-                    data: data_series
-                }]
+                series: [{
+                        name: data['name'],
+                        colorByPoint: true,
+                        dataSorting: {
+                            enabled: true,
+                            matchByName: true
+                        },
+                        dataLabels: [{
+                                enabled: true,
+                                inside: true,
+                                style: {
+                                    fontSize: '14px'
+                                }
+                            }],
+                        data: data_series
+                    }]
             });
         } else {
             console.log('data error');
@@ -2767,34 +2829,34 @@ function create_Highcharts_columns(data, block) {
                     }
                 },
                 yAxis: [{
-                    title: {
-                        text: 'Percentage'
-                    },
-                    showFirstLabel: false
-                }],
-                series: [{
-                    color: 'rgb(44,47,66)',
-                    pointPlacement: -0.2,
-                    linkedTo: 'main',
-                    name: data['name'],
-                    data: data_series,
-
-                }, {
-                    name: 'Cast Percentages',
-                    id: 'main',
-                    dataSorting: {
-                        enabled: true,
-                        matchByName: true
-                    },
-                    dataLabels: [{
-                        enabled: true,
-                        inside: true,
-                        style: {
-                            fontSize: '14px'
-                        }
+                        title: {
+                            text: 'Percentage'
+                        },
+                        showFirstLabel: false
                     }],
-                    data: data_series_cast
-                }
+                series: [{
+                        color: 'rgb(44,47,66)',
+                        pointPlacement: -0.2,
+                        linkedTo: 'main',
+                        name: data['name'],
+                        data: data_series,
+
+                    }, {
+                        name: 'Cast Percentages',
+                        id: 'main',
+                        dataSorting: {
+                            enabled: true,
+                            matchByName: true
+                        },
+                        dataLabels: [{
+                                enabled: true,
+                                inside: true,
+                                style: {
+                                    fontSize: '14px'
+                                }
+                            }],
+                        data: data_series_cast
+                    }
                 ]
             });
         }
@@ -2884,10 +2946,10 @@ function create_Highcharts(data, block) {
 
                 },
                 series: [{
-                    name: data['name'],
-                    colorByPoint: true,
-                    data: data_series
-                }]
+                        name: data['name'],
+                        colorByPoint: true,
+                        data: data_series
+                    }]
             });
         } else {
             console.log('data error');
@@ -2955,7 +3017,7 @@ jQuery(document).ready(function () {
     {
         jQuery('.movie_watch').html('').hide();
         jQuery('.watch_buttom').show();
-        let btn =  jQuery('.watch_buttom[id="'+id+'"]');
+        let btn = jQuery('.watch_buttom[id="' + id + '"]');
 
         let title = btn.attr('data-title');
         let year = btn.attr('data-year');
@@ -2970,7 +3032,7 @@ jQuery(document).ready(function () {
             type: 'POST',
             async: false,
             data: {id: id},
-            url:  site_url+template_path + "get_wach.php",
+            url: site_url + template_path + "get_wach.php",
             success: function (html) {
 
                 var content = generate_watch_content(html, title, year, type);
@@ -2983,11 +3045,11 @@ jQuery(document).ready(function () {
 
     jQuery("body").on('click', '.watch_buttom', function (e) {
         e.preventDefault();
-       // console.log('watch_buttom');
+        // console.log('watch_buttom');
         let id = jQuery(this).attr('id');
         get_watch(id);
-      //  console.log('after ajax');
-      // return false;
+        //  console.log('after ajax');
+        // return false;
     });
 
     jQuery('body').on('change', '.popup-container > input:not(:checked)', function () {
@@ -3038,7 +3100,7 @@ jQuery(document).ready(function () {
 
         jQuery.ajax({
             type: "GET",
-            url:  site_url+template_path + "get_review.php?id=" + link + wp_core,
+            url: site_url + template_path + "get_review.php?id=" + link + wp_core,
             success: function (data) {
                 if (data) {
                     jQuery('div[id="disqus_thread"]').remove();
@@ -3140,7 +3202,7 @@ jQuery(document).ready(function () {
 
         $.ajax({
 
-            url:  site_url+template_path + "get_emotions.php",
+            url: site_url + template_path + "get_emotions.php",
             type: 'POST',
             data: {
 
@@ -3224,11 +3286,11 @@ jQuery(document).ready(function () {
                 type: 'POST',
 
                 data: {
-                    id: id, 
+                    id: id,
                     request: 'get_emtns',
                     ptype: ptype,
                 },
-                url:  site_url+template_path + "get_emotions.php",
+                url: site_url + template_path + "get_emotions.php",
 
                 success: function (data) {
                     if (data) {
@@ -3288,13 +3350,13 @@ jQuery(document).ready(function () {
 
         add_popup();
         var whait_html = '<div class="cssload-circle">\n' +
-            '\t\t<div class="cssload-up">\n' +
-            '\t\t\t\t<div class="cssload-innera"></div>\n' +
-            '\t\t</div>\n' +
-            '\t\t<div class="cssload-down">\n' +
-            '\t\t\t\t<div class="cssload-innerb"></div>\n' +
-            '\t\t</div>\n' +
-            '</div>';
+                '\t\t<div class="cssload-up">\n' +
+                '\t\t\t\t<div class="cssload-innera"></div>\n' +
+                '\t\t</div>\n' +
+                '\t\t<div class="cssload-down">\n' +
+                '\t\t\t\t<div class="cssload-innerb"></div>\n' +
+                '\t\t</div>\n' +
+                '</div>';
         jQuery('.popup-content').html(whait_html);
         jQuery('input[id="action-popup"]').click();
 
@@ -3307,7 +3369,7 @@ jQuery(document).ready(function () {
 
         $.ajax({
             type: "POST",
-            url: window.location.protocol +"//"+window.location.host+ "/analysis/get_data.php",
+            url: window.location.protocol + "//" + window.location.host + "/analysis/get_data.php",
             data: ({
                 oper: 'get_actordata',
                 id: actor_id,
@@ -3339,7 +3401,7 @@ jQuery(document).ready(function () {
             jQuery.ajax({
                 type: 'POST',
                 ///context: this,
-                url:  site_url+template_path + "ajax_data.php",
+                url: site_url + template_path + "ajax_data.php",
                 data: {"action": "ajax_search", "keyword": keyword, "type": "movie", 'nolinks': 1},
                 success: function (data) {
                     // console.log(data);
@@ -3355,30 +3417,30 @@ jQuery(document).ready(function () {
     jQuery('body').on('change', '.review_crowd .big_checkbox>input', function (e) {
 
 
-            let min_prnt = jQuery(this).parents('.big_checkbox');
-            let sconainer = min_prnt.find('.check_container');
+        let min_prnt = jQuery(this).parents('.big_checkbox');
+        let sconainer = min_prnt.find('.check_container');
 
-            if (jQuery(this).is(":checked")) {
-                sconainer.show();
-            } else {
-                sconainer.hide();
-            }
-
-
-            let th = jQuery(this).parents('.review_crowd');
+        if (jQuery(this).is(":checked")) {
+            sconainer.show();
+        } else {
+            sconainer.hide();
+        }
 
 
-            if (th.hasClass('active')) {
-                return;
-            } else {
-                th.addClass('active');
-                setTimeout(function () {
-                    th.removeClass('active');
-                }, 2980);
+        let th = jQuery(this).parents('.review_crowd');
 
-            }
+
+        if (th.hasClass('active')) {
+            return;
+        } else {
+            th.addClass('active');
+            setTimeout(function () {
+                th.removeClass('active');
+            }, 2980);
 
         }
+
+    }
     );
 
     // jQuery('.ajaxlogin').click(function () {
@@ -3406,7 +3468,7 @@ jQuery(document).ready(function () {
     // });
 
     jQuery('.primary-menu a[href="#add_movie"],' +
-        ' .primary-menu a[href="#add_review"], .primary-menu a[href="#add_audience_review"]').click(function () {
+            ' .primary-menu a[href="#add_review"], .primary-menu a[href="#add_audience_review"]').click(function () {
 
         let href = jQuery(this).attr('href');
 
@@ -3479,7 +3541,7 @@ jQuery(document).ready(function () {
                     jQuery.ajax({
                         type: 'get',
                         dataType: 'html',
-                        url: window.location.protocol +"//"+window.location.host+ "/wp-content/themes/custom_twentysixteen/images/roboto.svg",
+                        url: window.location.protocol + "//" + window.location.host + "/wp-content/themes/custom_twentysixteen/images/roboto.svg",
                         success: function (html) {
                             jQuery('.review_crowd').append(html);
 
@@ -3512,39 +3574,39 @@ jQuery(document).ready(function () {
         jQuery('.advanced_search_first').html('').hide();
 
         jQuery.ajax({
-                type: 'POST',
-                data: {
-                    'oper': 'get_search_movie',
-                    'id': id,
-                    'r_id': r_id,
-                    'only_movie': only_movie
-                },
-                url: crowdsource_url,
-                success: function (html) {
-                    if (debug_mode) {
-                        console.log('get_search_movie', html);
-                    }
-                    if (only_movie) {
-                        jQuery('.check_container_main').html(html);
+            type: 'POST',
+            data: {
+                'oper': 'get_search_movie',
+                'id': id,
+                'r_id': r_id,
+                'only_movie': only_movie
+            },
+            url: crowdsource_url,
+            success: function (html) {
+                if (debug_mode) {
+                    console.log('get_search_movie', html);
+                }
+                if (only_movie) {
+                    jQuery('.check_container_main').html(html);
 
-                        if (bigprnt.hasClass('add_audience_review')) {
-                            let mid = jQuery('div.custom_crowd_movie').attr('data-value');
+                    if (bigprnt.hasClass('add_audience_review')) {
+                        let mid = jQuery('div.custom_crowd_movie').attr('data-value');
 
-                            jQuery('input[name="wpcr3_postid"]').val(mid);
-                            jQuery('div.wpcr3_respond_1').attr('data-value', mid).attr('data-postid', mid);
-                            load_ajax_block('audience_form');
-
-                        }
-                    } else {
-                        if (!jQuery('.check_inner_container[id="' + id + '"]').html()) {
-                            jQuery('.check_container_main').append(html);
-                        }
+                        jQuery('input[name="wpcr3_postid"]').val(mid);
+                        jQuery('div.wpcr3_respond_1').attr('data-value', mid).attr('data-postid', mid);
+                        load_ajax_block('audience_form');
 
                     }
-
+                } else {
+                    if (!jQuery('.check_inner_container[id="' + id + '"]').html()) {
+                        jQuery('.check_container_main').append(html);
+                    }
 
                 }
+
+
             }
+        }
         );
 
 
@@ -3613,7 +3675,7 @@ jQuery(document).ready(function () {
         jQuery.ajax({
             type: 'POST',
             data: ({'add_movie': movie}),
-            url: window.location.protocol +"//"+window.location.host+ "/wp-content/themes/custom_twentysixteen/template/ajax/search_ajax.php",
+            url: window.location.protocol + "//" + window.location.host + "/wp-content/themes/custom_twentysixteen/template/ajax/search_ajax.php",
             success: function (html) {
                 if (html == 1) {
                     button.after('<div class="add_succ">Successfully added to the queue. Check back soon!</div>');
@@ -3824,17 +3886,13 @@ jQuery(document).ready(function () {
                 link = window.location.protocol + '//' + window.location.host + link;
             }
 
-        }
-
-
-        else if (!link)
+        } else if (!link)
         {
             if (jQuery(this).hasClass('edit_comment')) {
                 let commentElement = document.getElementById('movie_commnets');
                 commentElement.scrollIntoView();
 
-            }
-            else if (jQuery(this).hasClass('edit_review')) {
+            } else if (jQuery(this).hasClass('edit_review')) {
 
                 let commentElement = document.getElementById('audience_form');
                 commentElement.scrollIntoView();
@@ -3863,8 +3921,8 @@ jQuery(document).ready(function () {
         } else if (jQuery(this).hasClass('edit_review')) {
 
             let content = '<div class="sub_content" ><div class="sub_content_text" >' + contenttext + '</div>' +
-                '<div id="audience_form" class="wpcr3_respond_1" data-value="' + id + '" data-postid="' + id + '"></div>' +
-                '</div><label style="margin-top: -85px;margin-right: 15px;" for="action-popup" class="popup-close-btn">Close</label>';
+                    '<div id="audience_form" class="wpcr3_respond_1" data-value="' + id + '" data-postid="' + id + '"></div>' +
+                    '</div><label style="margin-top: -85px;margin-right: 15px;" for="action-popup" class="popup-close-btn">Close</label>';
 
             jQuery('.popup-content').html(content);
             jQuery('input[id="action-popup"]').click();
@@ -3903,7 +3961,7 @@ jQuery(document).ready(function () {
                     var newKeywordBlock = document.createElement('div');
                     newKeywordBlock.className = 'keyword';
                     newKeywordBlock.innerHTML = newKeyword +
-                        '<span class="close" ></span><input data-id="k_'+k_count+'" class="k_input" type="hidden" value="'+newKeyword+'">';
+                            '<span class="close" ></span><input data-id="k_' + k_count + '" class="k_input" type="hidden" value="' + newKeyword + '">';
 
                     keywordContainer.appendChild(newKeywordBlock);
                 }
@@ -3927,8 +3985,7 @@ jQuery(document).ready(function () {
         if (jQuery(this).hasClass('edit_movie_keyword')) {
             var prnt = jQuery(this).parents('.note.edit');
             var id = prnt.attr('id');
-        }
-        else {
+        } else {
             var id = jQuery(this).attr('id-data');
         }
 
@@ -4194,7 +4251,8 @@ jQuery(document).ready(function () {
 
         if (jQuery(this).hasClass('no_link'))
         {
-            return false;;
+            return false;
+            ;
         }
 
         let type = jQuery(this).attr('id');
@@ -4208,7 +4266,7 @@ jQuery(document).ready(function () {
         jQuery.ajax({
             type: 'POST',
             ///context: this,
-            url:  site_url+template_path + "movie_rating.php",
+            url: site_url + template_path + "movie_rating.php",
             data: {"action": "get_link", "type": type, "id": id},
             success: function (data) {
                 if (data) {
@@ -4280,7 +4338,7 @@ jQuery(document).ready(function () {
         jQuery.ajax({
             type: 'POST',
             data: (post),
-            url: window.location.protocol +"//"+window.location.host+ "/wp-content/themes/custom_twentysixteen/template/ajax/search_ajax.php",
+            url: window.location.protocol + "//" + window.location.host + "/wp-content/themes/custom_twentysixteen/template/ajax/search_ajax.php",
             success: function (html) {
 
                 add_popup();
@@ -4499,45 +4557,46 @@ jQuery(document).ready(function () {
 
 
     jQuery('body').on('click', 'summary', function () {
-            const details = jQuery(this).parent();
-             let  firstDiv = details.find('section');
+        const details = jQuery(this).parent();
+        let  firstDiv = details.find('section');
 
-            if (!firstDiv)firstDiv = details.find('div');
+        if (!firstDiv)
+            firstDiv = details.find('div');
 
-            if (details.prop('open')) {
+        if (details.prop('open')) {
 
-            }
-            else {
-                let height = firstDiv.height();
-                if (height<200)height=200;
+        } else {
+            let height = firstDiv.height();
+            if (height < 200)
+                height = 200;
 
-                const targetHeight = height;
-                const startHeight = 0;
-                const duration = 200;
-                const startTime = performance.now();
-                let animationFrame = null;
+            const targetHeight = height;
+            const startHeight = 0;
+            const duration = 200;
+            const startTime = performance.now();
+            let animationFrame = null;
 
-                firstDiv.css('overflow','hidden');
+            firstDiv.css('overflow', 'hidden');
 
-                function animate() {
-                    const currentTime = performance.now();
-                    const progress = (currentTime - startTime) / duration;
+            function animate() {
+                const currentTime = performance.now();
+                const progress = (currentTime - startTime) / duration;
 
-                    if (progress < 1) {
-                        const newHeight = startHeight + (targetHeight - startHeight) * progress;
-                        firstDiv.css('height', newHeight + 'px');
-                        animationFrame = requestAnimationFrame(animate);
-                    } else {
+                if (progress < 1) {
+                    const newHeight = startHeight + (targetHeight - startHeight) * progress;
+                    firstDiv.css('height', newHeight + 'px');
+                    animationFrame = requestAnimationFrame(animate);
+                } else {
 
-                        firstDiv.css('height','auto');
-                        firstDiv.css('overflow','unset');
-                    }
+                    firstDiv.css('height', 'auto');
+                    firstDiv.css('overflow', 'unset');
                 }
-
-                cancelAnimationFrame(animationFrame);
-                animate();
             }
-        });
+
+            cancelAnimationFrame(animationFrame);
+            animate();
+        }
+    });
 
 
 
@@ -4606,8 +4665,8 @@ jQuery(document).ready(function () {
 
 
 
-    jQuery('body').on('click', '.accordion-header', function() {
-        let prnt =jQuery(this).parent('.accordion-item');
+    jQuery('body').on('click', '.accordion-header', function () {
+        let prnt = jQuery(this).parent('.accordion-item');
         let big_prnt = prnt.parent('.accordion_section');
         if (window.innerWidth >= 1240) {
 
@@ -4616,15 +4675,15 @@ jQuery(document).ready(function () {
             {
                 if (jQuery('.accordion_section > .accordion-item.active').length)
                 {
-                    jQuery('.accordion_section > .accordion-item.active').each( function (){
-                      let b = jQuery(this);
-                        if ( b ) {
-                            if (prnt.hasClass('active') ) {
-                             //   console.log('skip');
+                    jQuery('.accordion_section > .accordion-item.active').each(function () {
+                        let b = jQuery(this);
+                        if (b) {
+                            if (prnt.hasClass('active')) {
+                                //   console.log('skip');
                                 //skip
                             } else {
-                                   b.removeClass('active');
-                                   b.find('.accordion-content').hide();
+                                b.removeClass('active');
+                                b.find('.accordion-content').hide();
                             }
                         }
                     });
@@ -4642,25 +4701,24 @@ jQuery(document).ready(function () {
         {
             jQuery(this).removeClass('is_open');
 
-        }
-        else
+        } else
         {
             big_prnt.find('.accordion-header.is_open').removeClass('is_open');
             jQuery(this).addClass('is_open');
 
         }
-        content.slideToggle(500,function (e){
+        content.slideToggle(500, function (e) {
             prnt.toggleClass('active');
 
-        if (prnt.hasClass('active'))
-        {
-        let  inner_cnt =  content.find('.not_load');
-        if (inner_cnt.length)
-        {
-           let id = inner_cnt.attr('id');
-            load_next_block(id);
-        }
-        }
+            if (prnt.hasClass('active'))
+            {
+                let  inner_cnt = content.find('.not_load');
+                if (inner_cnt.length)
+                {
+                    let id = inner_cnt.attr('id');
+                    load_next_block(id);
+                }
+            }
 
         });
     });
@@ -4669,21 +4727,21 @@ jQuery(document).ready(function () {
     jQuery('body').on('click', '.add_watch_list, .add_favorite_list, .browse_watch_lists', function () {
         var $this = $(this);
         var third_scripts = {
-            watchlist: '/wp-content/themes/custom_twentysixteen/js/watchlist.js?v=1.21'
-        };        
+            watchlist: '/wp-content/themes/custom_twentysixteen/js/watchlist.js?v=1.22'
+        };
         success = function () {
             watchlist.movietype = $this.attr('data-type');
             watchlist.mid = $this.attr('data-mid');
-            if ($this.hasClass('browse_watch_lists')){
+            if ($this.hasClass('browse_watch_lists')) {
                 watchlist.click($this);
-            }  else {
-                watchlist.select_list($this);                
+            } else {
+                watchlist.select_list($this);
             }
         };
         use_ext_js(success, third_scripts);
         return event.preventDefault();
     });
-    
+
 });
 
 
@@ -4803,7 +4861,7 @@ function author_autocomplete(form_class = '') {
                 });
             }
         });
-    }
+}
 }
 
 function init_tags() {
@@ -4842,7 +4900,7 @@ function init_tags() {
                     success: function (rtn) {
                         set_video_scroll(rtn, block_id);
                         initializeScroller(0, 'div[id="' + block_id + '"]');
-                        init_nte();                        
+                        init_nte();
                     },
                     error: function (rtn) {
 

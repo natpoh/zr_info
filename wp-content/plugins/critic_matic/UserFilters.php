@@ -52,7 +52,7 @@ class UserFilters extends AbstractDB {
            $title = 'Filter ' . $this->curr_date();
         }
         
-        $user = $this->get_current_user();
+        $user = $this->cm->get_current_user();
         $wp_uid = isset($user->ID) ? (int) $user->ID : 0;
 
         $msg = 'Need login';
@@ -242,7 +242,7 @@ class UserFilters extends AbstractDB {
 
         // Get user
 
-        $user = $this->get_current_user();
+        $user = $this->cm->get_current_user();
         $wp_uid = isset($user->ID) ? (int) $user->ID : 0;
 
         // Check user login
@@ -376,7 +376,7 @@ class UserFilters extends AbstractDB {
     }
 
     public function ajax_list_menu($id = '', $act = '') {
-        $user = $this->get_current_user();
+        $user = $this->cm->get_current_user();
         $wp_uid = isset($user->ID) ? (int) $user->ID : 0;
         $result = 0;
         if ($act == 'delfilter') {
@@ -733,13 +733,4 @@ class UserFilters extends AbstractDB {
         return $content;
     }
 
-    private function get_current_user() {
-        $wpu = $this->cm->get_wpu();
-        $user_id = $wpu->get_current_user();
-        if ($user_id) {
-            $user = $wpu->user;
-            return $user;
-        }
-        return new stdClass();
-    }
 }

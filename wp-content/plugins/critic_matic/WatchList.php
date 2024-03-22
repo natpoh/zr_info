@@ -158,7 +158,7 @@ class WatchList extends AbstractDB {
                 'publish' => (int) $publish,
             );
             $this->db_insert($data, $this->db['list']);
-            $msg = 'Watch lists added';
+            $msg = 'List added';
             $theme = 'status';
 
             $this->watchlists_delta();
@@ -645,8 +645,8 @@ class WatchList extends AbstractDB {
                                                     <li class="nav-tab" data-act="show" data-href="/search/wl_<?php print $post->id ?>">Show in Search</li>
                                                     <li class="nav-tab" data-act="show" data-href="/analytics/tab_ethnicity/wl_<?php print $post->id ?>">Show in Analytics</li>
                                                     <?php if ($post->type == 0): ?>
-                                                        <li class="nav-tab" data-act="editwl" data-json="<?php print htmlspecialchars($str_json) ?>">Edit Wachlist</li>
-                                                        <li class="nav-tab" data-act="delwl">Delete Wachlist</li>                                                                
+                                                        <li class="nav-tab" data-act="editwl" data-json="<?php print htmlspecialchars($str_json) ?>">Edit List</li>
+                                                        <li class="nav-tab" data-act="delwl">Delete List</li>
                                                     <?php endif ?>
                                                 </ul>
                                             </div>                                                          
@@ -866,20 +866,13 @@ class WatchList extends AbstractDB {
         return $link;
     }
 
-    private function get_current_user() {
-        $wpu = $this->cm->get_wpu();
-        $user_id = $wpu->get_current_user();
-        if ($user_id) {
-            $user = $wpu->user;
-            return $user;
-        }
-        return new stdClass();
+    public function get_current_user() {        
+        return $this->cm->get_current_user();
     }
 
-    private function get_current_user_id() {
-        $wpu = $this->cm->get_wpu();
-        $wp_uid = $wpu->get_current_user();
-        return $wp_uid;
+    public function get_current_user_id() {        
+        $user = $this->cm->get_current_user();
+        return $user->ID;
     }
 
     private function get_aid($wp_uid) {

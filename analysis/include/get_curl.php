@@ -12,7 +12,7 @@ class GETCURL
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
 
-        if ($proxy==1) {
+        /*if ($proxy==1) {
 
             $proxy = '127.0.0.1:8118';
 
@@ -22,7 +22,11 @@ class GETCURL
 
         curl_setopt($ch, CURLOPT_PROXY, $proxy);
         }
-
+*/
+        $proxy = '38.170.124.178:9890';
+        $loginpassw = 'xGcK7F:PoTtL9';
+        curl_setopt($ch, CURLOPT_PROXYUSERPWD, $loginpassw);
+        curl_setopt($ch, CURLOPT_PROXY, $proxy);
 
         if ($return_header)
         {

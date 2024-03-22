@@ -96,8 +96,8 @@ class CriticEmotions extends AbstractDB {
 
     public function get_emotions($post_id = 0, $post_type = 0, $single = '') {
         // Get wp user        
-        $user = $this->get_current_user();
-        $wp_uid = isset($user->ID) ? (int) $user->ID : 0;        
+        $user = $this->cm->get_current_user();
+        $wp_uid = isset($user->ID) ? (int) $user->ID : 0;
 
         $user_vote = $this->get_current_user_post_reaction($post_id, $post_type, $wp_uid);
 
@@ -158,19 +158,27 @@ class CriticEmotions extends AbstractDB {
             }
         } else {
 
-            $aid = $this->get_current_user_unic();
-
+            // Get wp user
+            $user = $this->cm->get_current_user();
+            $wp_uid = isset($user->ID) ? (int) $user->ID : 0;
+            $aid = 0;
+            if (!$wp_uid) {
+                $aid = $this->get_current_user_unic();
+            }
             if (sizeof($post_ids)) {
                 foreach ($post_ids as $post_id) {
                     $total = $this->get_posts_vote_count($post_id, $post_type);
                     $array_like[$post_id] = $total ? $total : '';
-                    if ($aid) {
-                        // Get user vote
+                    // Get user vote
+                    if ($wp_uid) {
+                        $vote = $this->get_post_vote_by_author_wp($post_id, $post_type, $wp_uid);
+                    } else if ($aid) {
                         $vote = $this->get_post_vote_by_author($post_id, $post_type, $aid);
-                        if ($vote) {
-                            $reaction = $this->get_reaction_name($vote);
-                            $user_like[$post_id] = 'user-reaction-' . $reaction;
-                        }
+                    }
+
+                    if ($vote) {
+                        $reaction = $this->get_reaction_name($vote);
+                        $user_like[$post_id] = 'user-reaction-' . $reaction;
                     }
                 }
             }
@@ -213,7 +221,7 @@ class CriticEmotions extends AbstractDB {
         $update_vote = true;
 
         // Get wp user
-        $user = $this->get_current_user();
+        $user = $this->cm->get_current_user();
         $wp_uid = isset($user->ID) ? (int) $user->ID : 0;
 
         $unic_id = $this->unic_id();
@@ -274,16 +282,6 @@ class CriticEmotions extends AbstractDB {
 
         $aid = $this->get_author_by_name($unic_id);
         return $aid;
-    }
-
-    private function get_current_user() {
-        $wpu = $this->cm->get_wpu();
-        $user_id = $wpu->get_current_user();
-        if ($user_id) {
-            $user = $wpu->user;
-            return $user;
-        }
-        return new stdClass();
     }
 
     public function get_current_user_post_reaction($post_id, $post_type, $wp_uid = 0) {

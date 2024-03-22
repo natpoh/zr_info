@@ -155,6 +155,8 @@ class StrUriController extends Controller {
         $result = array();
 
         if ($first_str == 'analytics') {
+			global $api_mode;
+	        $api_mode=1;
             // Analytics URI only
             // Init url
             $last_req = $_SERVER['REQUEST_URI'];

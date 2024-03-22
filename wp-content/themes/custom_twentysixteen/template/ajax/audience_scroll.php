@@ -9,7 +9,6 @@ ini_set('display_errors', 'On');
 
 require('../include/custom_connect.php');
 
-
 /*
  * New api after 23.07.2021
  */
@@ -42,8 +41,17 @@ if (class_exists('Pdo_wp')) {
         $search = true;
     }
 
-    print $cfront->get_scroll('audience_scroll', $movie_id, $vote, $search);
+    $data = $cfront->get_scroll('audience_scroll', $movie_id, $vote, $search);
 
+    // Get watchlists
+    if (isset($_GET['isuser'])) {
+        $user = $cfront->cm->get_current_user();
+        if ($user){
+            $data = $cfront->append_watch_list_scroll_data($data);
+        }
+    }
+
+    print $data;
 
     exit();
 }

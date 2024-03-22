@@ -5,7 +5,7 @@ $(document).ready(function () {
     uploadAvatar();
 
     var wl_scripts = {
-        watchlist: '/wp-content/themes/custom_twentysixteen/js/watchlist.js?v=1.21'
+        watchlist: '/wp-content/themes/custom_twentysixteen/js/watchlist.js?v=1.22'
     };
 
     // Lists

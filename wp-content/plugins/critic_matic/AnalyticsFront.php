@@ -1482,6 +1482,8 @@ class AnalyticsFront extends SearchFacets {
 
     public function show_page_facet_international($search_data, $tab_key = '', $api_mode = false, $preview_limit = 0) {
 
+        if (!$api_mode)global $api_mode;
+
         $data = $search_data[$tab_key]['facets'][$tab_key]['data'];
         $select_movies_count = $search_data[$tab_key]['count'];
         $movies_count = sizeof($data);
@@ -1658,6 +1660,8 @@ class AnalyticsFront extends SearchFacets {
 
     public function show_page_facet_ethnicity_xy($search_data, $tab_key = '', $api_mode = false, $preview_limit = 0) {
 
+        if (!$api_mode)global $api_mode;
+
         $data = $search_data[$tab_key]['facets'][$tab_key]['data'];
 
         if (!$data) {
@@ -1750,7 +1754,23 @@ class AnalyticsFront extends SearchFacets {
                             // Create results for scatter chart
                             $xfilter_arr = $this->get_axis_filter($xaxis, $x_val, $year, $inflation, 'p');
                             $yfilter_arr = $this->get_axis_filter($yaxis, $y_val, $year, $inflation, 'p');
-                            $result_in[$xname][$yname][] = "{x:" . $xfilter_arr['data'] . ",y:" . $yfilter_arr['data'] . ",title:'" . $titley . "',id:'" . $mid . "'}";
+
+
+
+
+                            if ($api_mode)
+                            {
+                                $result_in[$xname][$yname][] = '{"x":"' . $xfilter_arr['data'] . '","y":"' . $yfilter_arr['data'] . '","title":"' . $titley . '","id":"' . $mid . '"}';
+                            }
+                            else
+                            {
+
+                                $result_in[$xname][$yname][] = "{x:" . $xfilter_arr['data'] . ",y:" . $yfilter_arr['data'] . ",title:'" . $titley . "',id:'" . $mid . "'}";
+                            }
+
+
+
+
                         }
                     }
                 }
@@ -1816,7 +1836,20 @@ class AnalyticsFront extends SearchFacets {
                             $type = 'y';
                         }
 
-                        $result_item[] = "{x:" . $xdata . ",y:" . $ydata . ",id:'" . $key_filter . "',t:'" . $type . "'}";
+
+                        if ($api_mode)
+                        {
+                            $result_item[] ='{"x":"' . $xdata . '","y":"' . $ydata . '","id":"' . $key_filter . '","t":"' . $type . '"}';
+                        }
+                        else
+                        {
+                            $result_item[] = "{x:" . $xdata . ",y:" . $ydata . ",id:'" . $key_filter . "',t:'" . $type . "'}";
+                        }
+
+
+
+
+
                         $counter += 1;
                         if ($preview_limit > 0 && $counter >= $preview_limit) {
                             break;
@@ -2035,6 +2068,8 @@ class AnalyticsFront extends SearchFacets {
     }
 
     public function show_page_facet_population($search_data, $tab_key = '', $api_mode = false, $preview_limit = 0) {
+        if (!$api_mode)global $api_mode;
+
         $data = $search_data[$tab_key];
         $result_data = array();
 
@@ -2062,7 +2097,19 @@ class AnalyticsFront extends SearchFacets {
                 $summ = round($summ, 0);
                 $world = $array_world[$year];
                 $wpercent = round(($summ / $world) * 100, 2);
-                $result[] = "{ x: " . $year . ", y: " . $summ . ",world:'" . $world . "' ,wpercent: '" . $wpercent . "'}";
+
+                if ($api_mode)
+                {
+                    $result[] = '{ "x": "' . $year . '", "y": "' . $summ . '","world":"' . $world . '" ,"wpercent": "' . $wpercent . '"}';
+                }
+                else
+                {
+                    $result[] = "{ x: " . $year . ", y: " . $summ . ",world:'" . $world . "' ,wpercent: '" . $wpercent . "'}";
+                }
+
+
+
+
                 $counter += 1;
                 if ($preview_limit > 0 && $counter >= $preview_limit) {
                     break;
@@ -4178,20 +4225,39 @@ class AnalyticsFront extends SearchFacets {
             $actor_content .= '</tbody></table>';
             echo $actor_content . '<br>';
         }
+        if (!$api_mode)global $api_mode;
 
         $result_in = '';
         ksort($populatin_result);
         foreach ($populatin_result as $year => $summ) {
             $summ = round($summ, 0);
-            $result_in .= "{ x: " . $year . ", y: " . $summ . " },";
-        }
+            if ($api_mode)
+            {
+                $result_in .= '{ "x": "' . $year . '", "y": "' . $summ . '" },';
+            }
+            else
+            {
+                $result_in .= "{ x: " . $year . ", y: " . $summ . " },";
+            }
 
-        $result_data .= "{
+        }
+        if ($api_mode)
+        {
+            $result_data .= '{ "name": "' . $item->country_name . '","data": [' . $result_in . ']},';
+        }
+        else
+        {
+
+            $result_data .= "{
                     name: '" . $item->country_name . " population',
                     type: 'spline',                  
                     marker: {            enabled: false        },
                     turboThreshold:0,
                     data: [" . $result_in . "]},";
+
+        }
+
+
 
         // graph
         ?>
@@ -4686,13 +4752,9 @@ class AnalyticsFront extends SearchFacets {
         return $ret;
     }
 
-    public function get_uid() {
-        $uid = -1;
-        if (function_exists('wp_get_current_user')) {
-            $wpUser = wp_get_current_user();
-            $uid = $wpUser->ID;
-        }
-        return $uid;
+    public function get_uid() {        
+        $user = $this->cm->get_current_user();
+        return $user->ID;
     }
 
     public function get_user_search_filter($uid = 0, $search_url = '') {

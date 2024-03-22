@@ -503,6 +503,38 @@ class CriticMatic extends AbstractDB {
         return $this->wpu;
     }
 
+    public function get_current_user($cache = true) {
+        $id = 'user';
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$id])) {
+                return $dict[$id];
+            }
+        }
+
+        if (function_exists('wp_get_current_user')) {
+            $user = wp_get_current_user();
+        } else {
+            $user = new stdClass();
+            $user->ID = 0;
+
+            $wpu = $this->get_wpu();
+            $user_id = $wpu->get_current_user();
+
+            if ($user_id) {
+                $user = $wpu->user;
+            }
+        }
+        if ($cache) {
+            $dict[$id] = $user;
+        }
+        return $user;
+    }
+
     /*
      * Hooks
      */

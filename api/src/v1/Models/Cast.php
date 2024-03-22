@@ -142,6 +142,7 @@ class Cast extends Model {
           "image": "Y",
           "lastupdate": "1610561889"
          */
+
         $this->setIntVal($arr, 'id');
         $this->setVal($arr, 'name');
         $this->setVal($arr, 'birth_name');

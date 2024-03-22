@@ -9,10 +9,8 @@
         <canvas  style="    width: 100%;height: 400px;"  id="ethnicityChart"></canvas>
     </div>
 
-
-
     <h1>Film Search</h1>
-    <input type="text" id="searchInput" placeholder="Enter film name..." value="Matrix">
+    <input type="text" id="searchInput" placeholder="Enter film name..." value="Mermaid">
     <button onclick="searchFilms()">Search</button>
     <ul id="filmList"></ul>
     <div id="pagination" class="pagination"></div>
@@ -110,12 +108,191 @@
         text-align: center;
         display: inline-block;
         min-width: 320px;
+
     }
+    .graph  .canvas-container{
+        min-height: 700px;
+    }
+
+    .film-details  {
+        display: flex;
+        align-items: center;
+
+        backdrop-filter: blur(15px);
+        padding: 20px;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+
+    .film-details   .details{
+        background-color: rgb(255 255 255 / 61%);
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+
+
+    .film-details img {
+        width: 200px;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 5px;
+        margin-right: 20px;
+    }
+
+    .details {
+        flex: 1;
+    }
+
+    .details h2 {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    .details p {
+        margin-bottom: 5px;
+    }
+
+    .finances {
+        margin-top: 20px;
+    }
+
+    .finances p {
+        margin-bottom: 10px;
+    }
+    .rating_innner{
+        display: inline-block;
+        margin-left: 10px;
+    }
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script type="text/javascript">
     const baseUrl = 'https://api.filmdemographics.com/v1/search';
     let currentPage = 1;
+
+    const observer = new IntersectionObserver(handleIntersection, {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.5, // Триггер при попадании 50% элемента в область просмотра
+    });
+
+    function handleIntersection(entries) {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                const filmId = entry.target.id;
+                fetchFilmDetails(filmId, entry.target);
+                entry.target.dataset.fetched = true;
+            }
+        });
+    }
+    function displayFilmDetails(filmData,targetElement) {
+        const detailsContainer = targetElement.querySelector('.details');
+
+        detailsContainer.innerHTML = '';
+
+        const title = document.createElement('h2');
+        title.textContent = filmData.title;
+        detailsContainer.appendChild(title);
+
+        const year = document.createElement('p');
+        year.textContent = `Year: ${filmData.year}`;
+        detailsContainer.appendChild(year);
+
+        const genre = document.createElement('p');
+        genre.textContent = `Genre: ${filmData.genre.map(g => g.name).join(', ')}`;
+        detailsContainer.appendChild(genre);
+
+        const country = document.createElement('p');
+        country.textContent = `Country: ${filmData.country.map(c => c.name).join(', ')}`;
+        detailsContainer.appendChild(country);
+
+        const language = document.createElement('p');
+        language.textContent = `Language: ${filmData.language}`;
+        detailsContainer.appendChild(language);
+
+        const description = document.createElement('p');
+        description.textContent = `Description: ${filmData.description}`;
+        detailsContainer.appendChild(description);
+
+        const runtime = document.createElement('p');
+        runtime.textContent = `Runtime: ${filmData.runtime}`;
+        detailsContainer.appendChild(runtime);
+
+        ///"rating":{"imdb":"87","rt":"0","rt_audience":"0"}
+
+        if (filmData.rating) {
+
+            const rating = document.createElement('p');
+            let rating_content = '';
+            if (filmData.rating.imdb>0)
+            {
+                rating_content+= `<span class="rating_innner">IMDb: ${filmData.rating.imdb}</span>`;
+            }
+            if (filmData.rating.rt>0)
+            {
+                rating_content+= `<span class="rating_innner">RT: ${filmData.rating.rt}</span>`;
+            }
+            if (filmData.rating.rt_audience>0)
+            {
+                rating_content+= `<span class="rating_innner">RT audience: ${filmData.rating.rt_audience}</span>`;
+            }
+            if (rating_content)
+            {
+                rating.innerHTML ='Rating: '+rating_content;
+            }
+
+
+            detailsContainer.appendChild(rating);
+        }
+
+        const finances = document.createElement('div');
+        finances.classList.add('finances');
+
+        if (filmData.finances.domestic_box>0) {
+            const domesticBox = document.createElement('p');
+            domesticBox.textContent = `Domestic Box Office: $${filmData.finances.domestic_box}`;
+            finances.appendChild(domesticBox);
+        }
+
+        if (filmData.finances.world_box>0) {
+            const worldBox = document.createElement('p');
+            worldBox.textContent = `World Box Office: $${filmData.finances.world_box}`;
+            finances.appendChild(worldBox);
+        }
+
+        if (filmData.finances.budget>0) {
+            const budget = document.createElement('p');
+            budget.textContent = `Budget: $${filmData.finances.budget}`;
+            finances.appendChild(budget);
+        }
+
+        if (filmData.finances.profit>0) {
+            const profit = document.createElement('p');
+            profit.textContent = `Profit: $${filmData.finances.profit}`;
+            finances.appendChild(profit);
+        }
+
+        if (finances.children.length > 0) {
+            detailsContainer.appendChild(finances);
+        }
+
+        filmDetailsContainer.appendChild(detailsContainer);
+
+        return filmDetailsContainer;
+    }
+    function fetchFilmDetails(filmId, targetElement) {
+        if (targetElement.dataset.fetched) return;
+        const url = `https://api.filmdemographics.com/v1/media/${filmId}`;
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                 displayFilmDetails(data, targetElement);
+                targetElement.dataset.fetched = true;
+            })
+            .catch(error => console.error('Error fetching film details:', error));
+    }
 
     function searchFilms() {
         const searchInput = document.getElementById('searchInput').value.trim();
@@ -123,7 +300,12 @@
             fetchFilms(searchInput, currentPage);
         }
     }
-
+    function setFilmPosterBackground(filmItem, posterUrl) {
+        filmItem.style.backgroundImage = `url(${posterUrl})`;
+        filmItem.style.backgroundSize = 'cover';
+        filmItem.style.backgroundPosition = 'center';
+        filmItem.style.backgroundRepeat = 'no-repeat';
+    }
     function fetchFilms(searchQuery, page) {
         const resultsPerPage = 20;
         const url = `${baseUrl}?s=${searchQuery}&p=${page}&pp=${resultsPerPage}`;
@@ -136,6 +318,101 @@
             })
             .catch(error => console.error('Error fetching films:', error));
     }
+    function displayFilms(films) {
+        const filmList = document.getElementById('filmList');
+        filmList.innerHTML = '';
+
+        films.forEach(film => {
+            const filmItem = document.createElement('li');
+            filmItem.classList.add('film-item');
+            filmItem.id = film.id;
+
+            const filmDetailsContainer = document.createElement('div');
+            filmDetailsContainer.classList.add('film-details');
+            filmDetailsContainer.style.minHeight = '300px'; // Устанавливаем фиксированную высоту
+
+
+            const poster = document.createElement('img');
+            poster.src = film.poster;
+            poster.alt = film.title;
+            filmDetailsContainer.appendChild(poster);
+
+            const detailsContainer = document.createElement('div');
+            detailsContainer.classList.add('details');
+
+            const title = document.createElement('h2');
+            title.textContent = film.title;
+            detailsContainer.appendChild(title);
+
+            const year = document.createElement('p');
+            year.textContent = `Year: ${film.year}`;
+            detailsContainer.appendChild(year);
+
+            filmDetailsContainer.appendChild(detailsContainer);
+
+            const filmDetailsBibContainer = document.createElement('div');
+            filmDetailsBibContainer.classList.add('film-container');
+            setFilmPosterBackground(filmDetailsBibContainer, film.poster);
+            filmDetailsBibContainer.appendChild(filmDetailsContainer);
+
+            filmItem.appendChild(filmDetailsBibContainer);
+            filmList.appendChild(filmItem);
+
+
+
+
+            const mainTitle = document.createElement('h3');
+            mainTitle.textContent =   'Demographics:';
+
+            const detailsButton = document.createElement('button');
+            detailsButton.textContent = 'Actors';
+            detailsButton.addEventListener('click', () => {
+
+                toggleCastDetails(film.id);
+
+            });
+
+
+            filmItem.appendChild(mainTitle);
+
+            const canvasblock = document.createElement('div');
+            canvasblock.classList.add('graph');
+            createCanvasWithHeader(canvasblock, film.cast_stars.demographic, 'Stars Cast');
+            createCanvasWithHeader(canvasblock, film.cast_stupporting.demographic, 'Supporting Cast');
+            createCanvasWithHeader(canvasblock, film.cast_all.demographic, 'All Cast');
+            filmItem.appendChild(canvasblock);
+
+
+            filmItem.appendChild(detailsButton);
+
+            const newActorContainer = document.createElement('div');
+            newActorContainer.classList.add('actor_container');
+            newActorContainer.dataset.id = film.id;
+            filmItem.appendChild(newActorContainer);
+            filmList.appendChild(filmItem);
+            observer.observe(filmItem);
+
+        });
+
+
+    }
+    function displayPagination(totalPages) {
+        const pagination = document.getElementById('pagination');
+        pagination.innerHTML = '';
+
+        for (let i = 1; i <= totalPages; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.textContent = i;
+            pageButton.addEventListener('click', () => {
+                currentPage = i;
+                searchFilms();
+            });
+            pagination.appendChild(pageButton);
+        }
+    }
+    searchFilms();
+
+
     function createChart(canvas, labels, percentages, titleText) {
         const ctx = canvas.getContext('2d');
         new Chart(ctx, {
@@ -186,7 +463,95 @@
                }
         });
     }
+
+
+
+    function diaggamm(canvas,data,titleText){
+
+        let usaDemographics2023 = [
+            {
+                "race": "White",
+                "race_id": 1,
+                "percent": 57.8
+            },
+            {
+                "race": "Asian",
+                "race_id": 2,
+                "percent": 6.1
+            },
+            {
+                "race": "Latino",
+                "race_id": 3,
+                "percent": 18.9
+            },
+            {
+                "race": "Black",
+                "race_id": 4,
+                "percent": 13.4
+            },
+            {
+                "race": "Indian",
+                "race_id": 5,
+                "percent": 1.3
+            },
+            {
+                "race": "Arab",
+                "race_id": 6,
+                "percent": 0.4
+            },
+            {
+                "race": "Mixed / Other",
+                "race_id": 7,
+                "percent": 2.1
+            }
+        ];
+
+        let labels = data.map(item => item.race);
+        let values1 = data.map(item => item.percent);
+        let values2 = usaDemographics2023.map(item => item.percent);
+
+        let ctx = canvas.getContext('2d');
+        let myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: titleText,
+                        data: values1,
+                        backgroundColor: 'rgb(14,163,255)',
+
+                    },
+                    {
+                        label: 'USA Demographics 2023',
+                        data: values2,
+                        backgroundColor: 'rgb(190,190,190)',
+
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                height: 300
+            }
+        });
+    }
+
     function createCanvasWithHeader(parentElement, demographicData, titleText) {
+
+        const whiteRace = demographicData.find(item => item.race === "White");
+        const jewishRace = demographicData.find(item => item.race === "Jewish");
+
+
+        whiteRace.percent += jewishRace.percent;
+        whiteRace.race = "White";
+        demographicData = demographicData.filter(item => item.race !== "Jewish");
+
+
         const container = document.createElement('div');
         container.classList.add('canvas-container');
 
@@ -196,24 +561,45 @@
         const title = document.createElement('h3');
         title.textContent = titleText;
 
+        const t2 = document.createElement('h4');
+        t2.textContent = 'Representation';
+
+
         const percentages = demographicData.map(item => item.percent);
         const hasData = percentages.some(percent => percent !== 0);
 
         if (hasData) {
-            container.appendChild(canvas);
+
+
+            const canvas2 = document.createElement('canvas');
+            canvas2.height = 320;
+            canvas2.classList.add('compare');
+
             container.appendChild(title);
+            container.appendChild(canvas);
+            container.appendChild(t2);
+            container.appendChild(canvas2);
+
+
             parentElement.appendChild(container);
+
+
+
 
             const labels = demographicData.map(item => item.race);
             createChart(canvas, labels, percentages);
-        } else {
+            diaggamm(canvas2,demographicData,titleText);
+
+
+        }
+        else
+        {
             const noDataText = document.createElement('p');
             noDataText.textContent = 'No data';
             container.appendChild(noDataText);
             parentElement.appendChild(container);
         }
     }
-
     async function loadCastDetails(filmId) {
         const actorContainer = document.querySelector(`.actor_container[data-id="${filmId}"]`);
         try {
@@ -256,7 +642,6 @@
             console.error('Error fetching cast details:', error);
         }
     }
-
     function toggleCastDetails(filmId) {
         const actorContainer = document.querySelector(`.actor_container[data-id="${filmId}"]`);
         if (!actorContainer.innerHTML.length) {
@@ -265,62 +650,8 @@
             actorContainer.style.display = actorContainer.style.display === 'none' ? 'block' : 'none';
         }
     }
-    function displayFilms(films) {
-        const filmList = document.getElementById('filmList');
-        filmList.innerHTML = '';
-
-        films.forEach(film => {
-            const filmItem = document.createElement('li');
-            filmItem.classList.add('film-item');
-
-            const mainTitle = document.createElement('h2');
-            mainTitle.textContent =  `${film.title} (${film.year})`;
-
-            const detailsButton = document.createElement('button');
-            detailsButton.textContent = 'Actors';
-            detailsButton.addEventListener('click', () => {
-
-                toggleCastDetails(film.id);
-
-            });
 
 
-            filmItem.appendChild(mainTitle);
-
-            const canvasblock = document.createElement('div');
-            canvasblock.classList.add('graph');
-            createCanvasWithHeader(canvasblock, film.cast_stars.demographic, 'Stars Cast');
-            createCanvasWithHeader(canvasblock, film.cast_stupporting.demographic, 'Supporting Cast');
-            createCanvasWithHeader(canvasblock, film.cast_all.demographic, 'All Cast');
-            filmItem.appendChild(canvasblock);
-
-
-            filmItem.appendChild(detailsButton);
-
-            const newActorContainer = document.createElement('div');
-            newActorContainer.classList.add('actor_container');
-            newActorContainer.dataset.id = film.id;
-            filmItem.appendChild(newActorContainer);
-
-            filmList.appendChild(filmItem);
-        });
-    }
-
-    function displayPagination(totalPages) {
-        const pagination = document.getElementById('pagination');
-        pagination.innerHTML = '';
-
-        for (let i = 1; i <= totalPages; i++) {
-            const pageButton = document.createElement('button');
-            pageButton.textContent = i;
-            pageButton.addEventListener('click', () => {
-                currentPage = i;
-                searchFilms();
-            });
-            pagination.appendChild(pageButton);
-        }
-    }
-    searchFilms();
 
 
 
@@ -420,6 +751,7 @@
                             plugins: {
                                 tooltip: {
                                     callbacks: {
+
                                         label: function(tooltipItem, data) {
                                             return `${tooltipItem.label}:  $ ${tooltipItem.formattedValue}`;
                                         }
@@ -547,7 +879,7 @@
             }
         }
         load_data();
-        load_ethnic();
+       load_ethnic();
     });
 
 

@@ -83,6 +83,7 @@ class CriticFront extends SearchFacets {
         return $this->ce;
     }
 
+
     /*
      * Critic functions
      */
@@ -2151,6 +2152,32 @@ class CriticFront extends SearchFacets {
         return $content;
     }
 
+    public function append_watch_list_scroll_data($data = '') {
+        // Try to get movies ids
+        try {
+            $json_data = json_decode($data);
+
+            $mids = $json_data->mids;
+            if ($mids) {
+                arsort($mids);
+
+                // Get watchlists                
+                $user = $this->cm->get_current_user();
+                if ($user->ID) {
+                    $wl = $this->cm->get_wl();
+                    $in_list = $wl->in_def_lists($user->ID, $mids);
+                    if ($in_list) {
+                        $json_data->watchlist = $in_list;                        
+                        $data = json_encode($json_data);
+                    }
+                }
+            }
+        } catch (Exception $exc) {
+            
+        }
+        return $data;
+    }
+
     public function get_video_scroll() {
         ob_start();
         require(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/ajax/video_scroll.php');
@@ -2223,7 +2250,7 @@ class CriticFront extends SearchFacets {
         $posts = $this->theme_last_posts($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, 0, true, 0, 0, $unique);
         $count = $this->get_post_count($a_type, $movie_id);
         $content = array();
-
+        $array_movies = [];
         if (sizeof($posts)) {
             //Get $video_template
             if ($movie_id) {
@@ -2234,7 +2261,7 @@ class CriticFront extends SearchFacets {
             //Reactions
             $this->enable_reactions = false;
             $pids = array();
-            $array_movies = [];
+
             foreach ($posts as $post) {
                 $content['result'][$post['date'] . '_' . $post['pid']] = $post;
                 $pids[] = $post['pid'];
@@ -2271,6 +2298,7 @@ class CriticFront extends SearchFacets {
             //    return json_encode($content);
         }
         $content['mid'] = $movie_id;
+        $content['mids'] = array_keys($array_movies);
         ///google cse
         !class_exists('Gsearch') ? include ABSPATH . "analysis/include/gsearch.php" : '';
         $gserch = new Gsearch();
@@ -2418,6 +2446,7 @@ class CriticFront extends SearchFacets {
           } */
 
         $min_rating = 0;
+        $array_movies = array();
 
         $posts = $this->theme_last_posts($a_type, $limit, $movie_id, 0, 0, array(), $min_rating, $vote, $search, $min_au, $max_au, $unique, $vote_type);
         $count = $this->get_post_count($a_type, $movie_id, 0, $vote, $min_rating, $min_au, $max_au, $vote_type);
@@ -2475,6 +2504,7 @@ class CriticFront extends SearchFacets {
             $content['tmpl'] = $video_template;
             $ce = $this->get_ce();
             $content['reaction'] = $ce->get_emotions_counts_all($pids);
+            $content['mids'] = array_keys($array_movies);
 
             // Print json
             return json_encode($content);
@@ -3440,13 +3470,9 @@ class CriticFront extends SearchFacets {
      * User functions
      */
 
-    public function get_uid() {
-        $uid = -1;
-        if (function_exists('wp_get_current_user')) {
-            $wpUser = wp_get_current_user();
-            $uid = $wpUser->ID;
-        }
-        return $uid;
+    public function get_uid() {        
+        $user = $this->cm->get_current_user();
+        return $user->ID;
     }
 
     public function get_user_search_filter($uid = 0, $search_url = '') {
@@ -3779,19 +3805,19 @@ class CriticFront extends SearchFacets {
 
         // img
         $img_str = $wl->get_list_collage($item->id);
-        if ($img_str){
-            $img_str = '<a href="'.$link.'">'.$img_str.'</a>';
+        if ($img_str) {
+            $img_str = '<a href="' . $link . '">' . $img_str . '</a>';
         }
         /*
-         $img = $item->top_mid;
-        $img_str = '';
-        $img_bg = '';
-        if ($img) {
-            $img_path = $this->get_thumb_path_full(220, 330, $img);
-            $img_str = '<a href="' . $link . '"><img src="' . $img_path . '" /></a>';            
-            $img_bg = ' style="background: url(\''.$img_path.'\'); background-size: cover;"';
-            $img_bg = '';
-        }*/
+          $img = $item->top_mid;
+          $img_str = '';
+          $img_bg = '';
+          if ($img) {
+          $img_path = $this->get_thumb_path_full(220, 330, $img);
+          $img_str = '<a href="' . $link . '"><img src="' . $img_path . '" /></a>';
+          $img_bg = ' style="background: url(\''.$img_path.'\'); background-size: cover;"';
+          $img_bg = '';
+          } */
 
         // Country
         $country_img = '';
@@ -3811,7 +3837,7 @@ class CriticFront extends SearchFacets {
 
             $filter_content = '
                     <div class="sfilter-item">' . $img_str
-                    . '<h3 class="sfilter-title"><a href="' . $link . '">' . $title . '</a></h3>' . $content                    
+                    . '<h3 class="sfilter-title"><a href="' . $link . '">' . $title . '</a></h3>' . $content
                     . '</div>';
         }
 
@@ -3830,7 +3856,7 @@ class CriticFront extends SearchFacets {
 
         $actorsdata_link = '<a href="' . $author_link . '">' . $actorsdata . '</a>';
 
-        $review_bottom = '<div class="review_bottom"><div class="r_type">'. $pub_icon . ' Items: ' . $item->items .'</div><div class="r_right"><div class="r_date">' . $critic_addtime . '</div>' . $country_img . '</div></div>';
+        $review_bottom = '<div class="review_bottom"><div class="r_type">' . $pub_icon . ' Items: ' . $item->items . '</div><div class="r_right"><div class="r_date">' . $critic_addtime . '</div>' . $country_img . '</div></div>';
 
         $reaction_data = $this->get_user_reactions($item->id, 2, false);
 

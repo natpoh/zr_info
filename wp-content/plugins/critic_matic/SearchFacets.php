@@ -23,7 +23,7 @@ class SearchFacets extends AbstractDB {
         'games' => array('title' => 'Games', 'count' => 0),
         'critics' => array('title' => 'Reviews', 'count' => 0),
         'filters' => array('title' => 'Filters', 'count' => 0),
-        'watchlists' => array('title' => 'Watchlists', 'count' => 0),
+        'watchlists' => array('title' => 'Lists', 'count' => 0),
     );
     // Search sort: /sort_title_desc
     public $search_sort = array();
