@@ -83,7 +83,6 @@ else if (preg_match('#^/image/([0-9]+)#', $path, $match)) {
 	// Generate poster
 	$_GET['id'] =  $match[1].'_o2';
 
-	echo 'id='.$_GET['id'];
 	include ('../analysis/create_image.php');
 	exit();
 }
