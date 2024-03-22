@@ -75,7 +75,7 @@ if ($path == '/') {
     exit;
 } else if (preg_match('#^/poster/([0-9]+)#', $path, $match)) {
     // Generate poster    	   
-    $_GET['id'] = 'm_' . $match[1];
+    $_GET['id'] = 'm_' . (int)$match[1];
     include ('../analysis/create_image.php');
     exit();
 }
