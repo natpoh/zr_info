@@ -54,18 +54,14 @@ require_once __DIR__ . '/vendor/autoload.php';
 // Get current URL
 $parsedUrl = parse_url($_SERVER['REQUEST_URI']);
 
-
-
 ///only develop server
-if (strstr($parsedUrl["path"],'index.php') && $_SERVER['HTTP_HOST'] =='info.test1.ru')
-{
+if (strstr($parsedUrl["path"], 'index.php') && $_SERVER['HTTP_HOST'] == 'info.test1.ru') {
 
-	$parsedUrl["path"] = str_replace( '/api/index.php','',$parsedUrl["path"] );
+    $parsedUrl["path"] = str_replace('/api/index.php', '', $parsedUrl["path"]);
 }
 
 
 $path = $parsedUrl['path'];
-
 
 if ($path == '/') {
     // Load documentation    
@@ -75,16 +71,14 @@ if ($path == '/') {
     exit;
 } else if (preg_match('#^/poster/([0-9]+)#', $path, $match)) {
     // Generate poster    	   
-    $_GET['id'] = 'm_' . (int)$match[1];
+    $_GET['id'] = 'm_' . (int) $match[1];
     include ('../analysis/create_image.php');
     exit();
-}
-else if (preg_match('#^/image/([0-9]+)#', $path, $match)) {
-	// Generate poster
-	$_GET['id'] =  $match[1].'_o2';
-
-	include ('../analysis/create_image.php');
-	exit();
+} else if (preg_match('#^/image/([0-9]+)#', $path, $match)) {
+    // Generate poster
+    $_GET['id'] = $match[1] . '_o2';
+    include ('../analysis/create_image.php');
+    exit();
 }
 
 $path_arr = explode('/', $path);
