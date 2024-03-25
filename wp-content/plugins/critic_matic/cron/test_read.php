@@ -18,10 +18,19 @@ if ($_GET['p'] != $p) {
 
 $content = file_get_contents($url);
 
+$clear_data = preg_replace('#<script.*</script>#Uis','', $content);
+$clear_data = preg_replace('#<style.*</style>#Uis','',$clear_data);
+// Get tags
+if (preg_match('/<title[^>]*>(.*)<\/title>/Uis', $clear_data, $match)) {
+    $title = trim(strip_tags($match[1]));
+}
+
+// print $title;
+
 //$content = "<body>Look at this cat: <img src='./cat.jpg'> 123 <img src=x onerror=alert(1)//></body>";
 $pass = 'sdDclSPMF_32sd-s';
 
-$data = array('p' => $pass, 'u' => $url, 'c' => $content);
+$data = array('p' => $pass, 'u' => $url, 'c' => $clear_data);
 
 // use key 'http' even if you send the request to https://...
 $options = array(
@@ -49,8 +58,8 @@ if ($data) {
 
         echo $result_string;
     } else {
-        print '<h1>'.$data->title.'</h1>';
-        print '<h3>'.$data->author.'</h3>';
+        print '<h1>' . $data->title . '</h1>';
+        print '<h3>' . $data->author . '</h3>';
         print $data->content;
     }
 }

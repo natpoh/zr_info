@@ -38,6 +38,10 @@ class MoviesCustomHooks {
         // Dove.org
         if ($campaign->id == 3) {
             $this->update_dove($post, $options, $campaign, $debug);
+        } else
+        if ($campaign->id == 1) {
+            // www.the-numbers.com
+            $this->update_numbers($post, $options, $campaign, $debug);
         }
 
         $url_data = $this->mp->get_url($post->uid);
@@ -119,7 +123,7 @@ class MoviesCustomHooks {
                 'audienceScore' => 'aurating',
                 'audienceCount' => 'aucount',
             );
-        } else if ($campaign->id == 51||$campaign->id == 53||$campaign->id == 55) {
+        } else if ($campaign->id == 51 || $campaign->id == 53 || $campaign->id == 55) {
             // metacritic
             $curr_camp = 'metacritic';
             $score_opt = array(
@@ -660,24 +664,132 @@ class MoviesCustomHooks {
             }
             if ($to_update) {
                 $code = $to_update['original_language'];
-                if ($code) {                                    
-                    
-                    if ($code=='nb'){
-                       $code='no' ;
-                    } else if ($code=='cn'){
-                       $code='zh' ;
+                if ($code) {
+
+                    if ($code == 'nb') {
+                        $code = 'no';
+                    } else if ($code == 'cn') {
+                        $code = 'zh';
                     }
-                    
+
                     $ma = $this->ml->get_ma();
                     $code_int = $ma->get_or_create_language_by_name($code);
-                    
+
                     # Update tmdb
                     $tmdb_data = array(
                         'tmdb' => (int) $to_update['tmdb'],
-                        'original_language'=>$code,
-                        'original_language_int'=>$code_int,
+                        'original_language' => $code,
+                        'original_language_int' => $code_int,
                     );
                     $ma->update_tmdb($post->top_movie, $tmdb_data);
+                }
+            }
+        }
+    }
+
+    /*
+     * The Numbers
+     */
+
+    private function update_numbers($post, $options, $campaign, $debug = false) {
+        if ($debug) {
+            p_r(array('update_numbers', $post));
+        }
+        $cid = $campaign->id;
+        $uid = $post->uid;
+        $url_data = $this->mp->get_url($uid);
+        $link = $url_data->link;
+        $arhive = $this->mp->get_arhive_by_url_id($uid);
+        $link_hash = $arhive->arhive_hash;
+        $top_movie = $post->top_movie;
+        if ($debug) {
+            p_r($arhive);
+        }
+        $code = $this->mp->get_arhive_file($cid, $link_hash);
+        if ($code) {
+            /*
+              <h2>Box Office Summary Per Territory</h2>
+              <div id="page_filling_chart">
+              <center>
+              <table >
+              <tr>
+              <th>Territory</th>
+              <th>Release<br>Date</th>
+              <!--<th>Distributor</th>-->
+              <!--<th>Local Name</th>-->
+              <th>Opening<br>Weekend</th>
+              <th>Opening<br>Weekend<br>Screens</th>
+              <th>Maximum<br>Screens</th>
+              <th>Theatrical<br>Engagements</th>
+              <th>Total<br>Box Office</th>
+              <th>Report<br>Date</th>
+              </tr>
+              <tr>
+              <td><b><a  href="/movie/Transformers-Rise-of-the-Beasts-(2023)/Argentina#tab=box-office">Argentina</a></b></td>
+              <td class="data">6/8/2023</td>
+              <td class="data">$0</td>
+              <td class="data">0</td>
+              <td class="data">174</td>
+              <td class="data">174</td>
+              <td class="data">$2,100,000</td>
+              <td class="data">6/18/2023</td>
+              </tr>
+              ...
+              <tr>
+              <td><b><a  href="/movie/Transformers-Rise-of-the-Beasts-(2023)/United-Kingdom#tab=box-office">United Kingdom</a></b></td>
+              <td class="data">6/9/2023</td>
+              <td class="data">$3,740,224</td>
+              <td class="data">597</td>
+              <td class="data">600</td>
+              <td class="data">2,851</td>
+              <td class="data">$10,475,217</td>
+              <td class="data">8/8/2023</td>
+              </tr>
+              <tr><td colspan=8>&nbsp;</td></tr>
+              <tr>
+              <td colspan=6><b>Rest of World</b></td>
+              <td class="data">$47,080,908</td>
+              <td class="data"></td>
+              </tr>
+              <tr><td colspan=8>&nbsp;</td></tr>
+              <tr><td colspan=6><b>International Total</b></td><td class="data"><b>$280,602,889</b></td>
+              <td class="data">12/4/2023</td></tr>
+              </table>
+              </center>
+              </div>
+             */
+            $results = array();
+            if (preg_match('#<h2>Box Office Summary Per Territory</h2>(.*</table>)#Uis', $code, $match)) {
+                if (preg_match_all('#<tr>.*</tr>#Uis', $match[1], $match2)) {
+                    foreach ($match2[0] as $row) {
+                        if (preg_match_all('#<td[^>]*>(.*)</td>#', $row, $match3)) {
+                            $item = $match3[1];
+                            if (sizeof($item) == 8) {
+                                $title = trim(strip_tags($item[0]));
+                                $total = (int) preg_replace('/[^0-9]+/', '', $item[6]);
+                                if ($title && $total > 0) {
+                                    $results[$title] = $total;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if ($debug) {
+                print_r($results);
+            }
+            if ($results) {
+                $ma = $this->ml->get_ma();
+                foreach ($results as $title => $total) {
+                    $cid = $ma->get_or_create_country_by_name($title);
+
+                    if ($cid) {
+                        $id = $ma->add_meta_box_int($cid, $top_movie, $total);
+                    }
+
+                    if ($debug) {
+                        print_r(array($title, $total, $cid, $id));
+                    }
                 }
             }
         }
@@ -739,7 +851,7 @@ class MoviesCustomHooks {
     }
 
     /*
-     * Find data in post page by regexp
+     * Find Dove data in post page by regexp
      */
 
     private function find_in_post_page($code) {

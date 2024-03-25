@@ -35,7 +35,8 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             'indie' => 'data_movie_indie',
             'woke' => 'data_woke',
             'tmdb' => 'data_movie_tmdb',
-            'language_code' => 'data_language_code',            
+            'language_code' => 'data_language_code',
+            'meta_movie_boxint' => 'meta_movie_boxint',
         );
     }
 
@@ -728,7 +729,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             CustomHooks::do_action('add_woke', ['mid' => $mid, 'data' => $data]);
         }
     }
-    
+
     /*
      * Woke
      */
@@ -749,18 +750,82 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             CustomHooks::do_action('add_tmdb', ['mid' => $mid, 'data' => $data]);
         }
     }
-    
+
     public function get_or_create_language_by_name($name = '') {
         $sql = sprintf("SELECT * FROM {$this->db['language_code']} WHERE code = '%s'", $name);
         $exist = $this->db_fetch_row($sql);
-        if ($exist){
+        if ($exist) {
             $id = $exist->id;
-        } else {        
+        } else {
             // Create the platform
             $data = array(
-                'code' => $name,                
+                'code' => $name,
             );
             $id = $this->sync_insert_data($data, $this->db['language_code'], false, true);
+        }
+        return $id;
+    }
+
+    /*
+     * Country
+     */
+
+    public function get_or_create_country_by_name($name = '', $cache = false) {
+        $id = $this->get_country_by_name($name, $cache);
+        if (!$id) {
+            // Create slug
+            $slug = $this->create_slug($name);
+            // Create the country
+            $data = array(
+                'name' => $name,
+                'slug' => $slug,
+            );
+            $id = $this->sync_insert_data($data, $this->db['data_country'], false, true);
+        }
+        return $id;
+    }
+
+    public function get_country_by_name($name, $cache = false) {
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+
+            if (isset($dict[$name])) {
+                return $dict[$name];
+            }
+        }
+
+        //Get author id
+        $sql = sprintf("SELECT id FROM {$this->db['data_country']} WHERE name='%s'", $this->escape($name));
+        $result = $this->db_get_var($sql);
+
+        if ($cache && $result) {
+            $dict[$name] = $result;
+        }
+        return $result;
+    }
+
+    /*
+     * Meta box int
+     */
+
+    public function get_meta_box_int($cid, $mid) {
+        $sql = sprintf("SELECT id FROM {$this->db['meta_movie_boxint']} WHERE mid=%d AND country=%d", (int) $mid, (int) $cid);
+        $result = $this->db_get_var($sql);
+        return $result;
+    }
+
+    public function add_meta_box_int($cid, $mid, $total) {
+        $id = $this->get_meta_box_int($cid, $mid);
+        if (!$id) {
+            $data = array(
+                'mid' => (int) $mid,
+                'country' => (int) $cid,
+                'total' => (int) $total,
+            );            
+            $id = $this->sync_insert_data($data, $this->db['meta_movie_boxint'], false, true);
         }
         return $id;
     }
@@ -768,7 +833,6 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
     public function create_slug($string, $glue = '-') {
         $string = str_replace('&', ' and ', $string);
         $string = preg_replace("/('|`)/", "", $string);
-
 
         $table = array(
             'Š' => 'S', 'š' => 's', 'Đ' => 'Dj', 'đ' => 'dj', 'Ž' => 'Z', 'ž' => 'z', 'Č' => 'C', 'č' => 'c', 'Ć' => 'C', 'ć' => 'c',
@@ -793,5 +857,4 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
 
         return $slug;
     }
-
 }

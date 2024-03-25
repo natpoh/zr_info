@@ -231,7 +231,7 @@ class MoviesParser extends MoviesAbstractDB {
     public $movie_type = array(
         'a' => 'Movie,TVSeries',
         'm' => 'Movie',
-        't' => 'TVSeries',        
+        't' => 'TVSeries',
         'g' => 'VideoGame',
     );
     public $rating_update = array(
@@ -289,7 +289,6 @@ class MoviesParser extends MoviesAbstractDB {
                 . "FROM {$this->db['campaign']} c "
                 . $status_query . $type_query . $and_orderby . $limit);
 
-
         $result = $this->db_results($sql);
 
         return $result;
@@ -323,7 +322,6 @@ class MoviesParser extends MoviesAbstractDB {
                 site='%s'                                  
                 WHERE id = %d", $status, $type, $title, $site, $id
         );
-
 
         $this->db_query($sql);
     }
@@ -508,10 +506,10 @@ class MoviesParser extends MoviesAbstractDB {
                         // Move arhive
                         try {
                             $arhive_hash = $arhive->arhive_hash;
-                            $full_path_old = $this->get_arhive_path($url_exist->cid, $arhive_hash, true);  
-                            $full_path_new = $this->get_arhive_path($cid, $arhive_hash, true);                          
+                            $full_path_old = $this->get_arhive_path($url_exist->cid, $arhive_hash, true);
+                            $full_path_new = $this->get_arhive_path($cid, $arhive_hash, true);
                             rename($full_path_old, $full_path_new);
-                            $message = 'Move arhive '.$url_exist->id.' from ' . $url_exist->cid . ' to ' . $cid;
+                            $message = 'Move arhive ' . $url_exist->id . ' from ' . $url_exist->cid . ' to ' . $cid;
                             $this->log_info($message, $cid, $url_exist->id, 1);
                         } catch (Exception $exc) {
                             //echo $exc->getTraceAsString();
@@ -564,7 +562,6 @@ class MoviesParser extends MoviesAbstractDB {
         $campaign = $this->get_campaign($id, $cache);
         $options = $this->get_options($campaign);
         $weight = $options['service_urls']['weight'];
-
 
         if ($cache) {
             $dict[$id] = $weight;
@@ -620,7 +617,6 @@ class MoviesParser extends MoviesAbstractDB {
             'ids' => array(),
             'date' => 0,
         );
-
 
         $q = array();
         foreach ($q_def as $key => $value) {
@@ -839,7 +835,6 @@ class MoviesParser extends MoviesAbstractDB {
                 . " LEFT JOIN {$this->db['arhive']} a ON u.id = a.uid"
                 . " LEFT JOIN {$this->db['posts']} p ON u.id = p.uid"
                 . $status_query . $cid_and . $arhive_type_and . $parser_type_and . $links_type_and . $and_date . $and_orderby . $limit;
-
 
         $result = $this->db_results($query);
         return $result;
@@ -1163,7 +1158,6 @@ class MoviesParser extends MoviesAbstractDB {
 
         $curr_time = $this->curr_time();
 
-
         $cid = $campaign->id;
         $ma = $this->ml->get_ma();
 
@@ -1248,7 +1242,6 @@ class MoviesParser extends MoviesAbstractDB {
         $wait = isset($find_urls['wait']) ? (int) $find_urls['wait'] : 1;
 
         $new_url = isset($find_urls['new_url']) ? base64_decode($find_urls['new_url']) : '';
-
 
         $cid = $campaign->id;
         $ret = array();
@@ -1639,25 +1632,25 @@ class MoviesParser extends MoviesAbstractDB {
             }
         }
     }
-    
-    public function get_arhive_path($cid, $link_hash, $create_dir=false) {
-         
+
+    public function get_arhive_path($cid, $link_hash, $create_dir = false) {
+
         $arhive_path = $this->ml->arhive_path;
         $first_letter = substr($link_hash, 0, 1);
         $cid_path = $arhive_path . $cid . '/';
         $first_letter_path = $cid_path . $first_letter . '/';
-        
-        if ($create_dir){
+
+        if ($create_dir) {
             $this->check_and_create_dir($first_letter_path);
         }
         $full_path = $first_letter_path . $link_hash;
-        
+
         return $full_path;
     }
 
-    public function get_arhive_file($cid, $link_hash) {        
+    public function get_arhive_file($cid, $link_hash) {
         $full_path = $this->get_arhive_path($cid, $link_hash);
-        
+
         $gzcontent = '';
         if (file_exists($full_path)) {
             $gzcontent = file_get_contents($full_path);
@@ -1673,7 +1666,7 @@ class MoviesParser extends MoviesAbstractDB {
 
     public function delete_arhive_file($cid, $link_hash) {
         $full_path = $this->get_arhive_path($cid, $link_hash);
-               
+
         $remove = true;
         if (file_exists($full_path)) {
             $remove = unlink($full_path);
@@ -1698,7 +1691,7 @@ class MoviesParser extends MoviesAbstractDB {
         return $ret;
     }
 
-    public function get_code_by_current_driver($url, &$headers, $settings=array(), $type_opt=array()) {
+    public function get_code_by_current_driver($url, &$headers, $settings = array(), $type_opt = array()) {
         $use_webdriver = $type_opt['webdrivers'];
         $ip_limit = array('h' => $type_opt['tor_h'], 'd' => $type_opt['tor_d']);
         $tor_mode = $type_opt['tor_mode'];
@@ -1763,17 +1756,21 @@ class MoviesParser extends MoviesAbstractDB {
             $np_and = ' AND (p.uid is NULL OR p.multi=0' . $and_version . ')';
         }
 
-        $and_url_id = '';
+
         if ($custom_url > 0) {
-            $and_url_id = sprintf(' AND u.id=%d', $custom_url);
+            
+            $query = sprintf("SELECT a.uid, a.arhive_hash, u.cid, u.id as uid, u.pid as upid FROM {$this->db['arhive']} a"
+                    . " INNER JOIN {$this->db['url']} u ON u.id = a.uid"
+                    . " LEFT JOIN {$this->db['posts']} p ON p.uid = a.uid"
+                    . " WHERE u.id=%d", (int) $custom_url);
+        } else {
+
+            $query = sprintf("SELECT a.uid, a.arhive_hash, u.cid, u.id as uid, u.pid as upid FROM {$this->db['arhive']} a"
+                    . " INNER JOIN {$this->db['url']} u ON u.id = a.uid"
+                    . " LEFT JOIN {$this->db['posts']} p ON p.uid = a.uid"
+                    . " WHERE a.id>0 AND u.status!=4" . $np_and . $cid_and
+                    . " ORDER BY a.id DESC LIMIT %d", (int) $count);
         }
-
-        $query = sprintf("SELECT a.uid, a.arhive_hash, u.cid, u.id as uid, u.pid as upid FROM {$this->db['arhive']} a"
-                . " INNER JOIN {$this->db['url']} u ON u.id = a.uid"
-                . " LEFT JOIN {$this->db['posts']} p ON p.uid = a.uid"
-                . " WHERE a.id>0 AND u.status!=4" . $np_and . $cid_and . $and_url_id
-                . " ORDER BY a.id DESC LIMIT %d", (int) $count);
-
         if ($debug) {
             print "$query\n";
         }
@@ -2270,7 +2267,6 @@ class MoviesParser extends MoviesAbstractDB {
                 . " WHERE p.id>0" . $and_top_movie . $cid_and . $and_last_update
                 . " ORDER BY p.id DESC LIMIT %d,%d", (int) $start, $count);
 
-
         $result = $this->db_results($query);
 
         return $result;
@@ -2280,7 +2276,7 @@ class MoviesParser extends MoviesAbstractDB {
 
     public function check_link_post($o, $post, $movie_id = 0) {
         $rules = $o['rules'];
-        
+
         $min_match = $o['match'];
         $min_rating = $o['rating'];
         $movie_type = $this->movie_type[$o['type']];
@@ -2444,7 +2440,7 @@ class MoviesParser extends MoviesAbstractDB {
                 }
                 $search_fields['exist_tv'] = $post_exist_tv_name;
             }
-            
+
             // Get exist game
             $post_exist_game_name = '';
             $exist_game_rule = '';
@@ -2469,10 +2465,10 @@ class MoviesParser extends MoviesAbstractDB {
 
                     if (!isset($movies_title[$movie_id])) {
                         if ($movies[$movie_id]->title != $name) {
-                            $post_title_name[$key] = '';                              
+                            $post_title_name[$key] = '';
                         }
                     }
-                }             
+                }
             } else if ($movie_id == -1) {
                 $movie = new stdClass();
                 $movie->id = -1;
@@ -2498,7 +2494,7 @@ class MoviesParser extends MoviesAbstractDB {
                 if ($post_title_name) {
                     // Find movies by title and year
                     foreach ($post_title_name as $key => $name) {
-                        if ($name){
+                        if ($name) {
                             $movies_title = $ms->search_movies_by_title($name, $title_rule[$key]['e'], $post_year_name, 20, $movie_type);
                         }
                     }
@@ -2547,14 +2543,14 @@ class MoviesParser extends MoviesAbstractDB {
                             if ($key > 0) {
                                 $field = $field . '-' . $key;
                             }
-                            
+
                             $cnt = 1;
                             $rating = $title_rule[$key]['ra'];
-                            if (!$name){
+                            if (!$name) {
                                 $cnt = 0;
-                                $rating=0;
+                                $rating = 0;
                             }
-                            
+
                             $results[$movie->id][$field]['data'] = $movie->title;
                             $results[$movie->id][$field]['match'] = $cnt;
                             $results[$movie->id][$field]['rating'] = $rating;
@@ -2666,7 +2662,7 @@ class MoviesParser extends MoviesAbstractDB {
                             $results[$movie->id]['total']['rating'] += $exist_game_rule['ra'];
                         }
                     }
-                    
+
                     //Facets
                     $facets[$movie->id] = $ms->get_movie_facets($movie->id);
                 }
@@ -3289,7 +3285,7 @@ class MoviesParser extends MoviesAbstractDB {
                     print_r($url);
                     print_r($data);
                 }
-                
+
                 foreach ($data as $k => $v) {
                     foreach ($v as $ck => $cv) {
                         if (!$posts_arr[$ck]) {
@@ -3298,7 +3294,7 @@ class MoviesParser extends MoviesAbstractDB {
                         $posts_arr[$ck][$k] = $cv;
                     }
                 }
-    
+
                 if ($posts_arr) {
                     foreach ($posts_arr as $arr) {
                         $post = $this->create_post($arr);
@@ -3998,5 +3994,4 @@ class MoviesParser extends MoviesAbstractDB {
         }
         return $ret;
     }
-
 }

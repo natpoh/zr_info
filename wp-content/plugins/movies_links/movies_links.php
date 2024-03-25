@@ -112,7 +112,6 @@ function movies_links_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
 
-
     $sql = "ALTER TABLE `movies_links_url` ADD `parent_url` int(11) NOT NULL DEFAULT '0'";
     Pdo_ml::db_query($sql);
 
@@ -131,7 +130,6 @@ function movies_links_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
     movies_links_create_index(array('date', 'uid', 'arhive_hash'), 'movies_links_arhive');
-
 
     /*
      * uid - url id
@@ -203,7 +201,6 @@ function movies_links_plugin_activation() {
 
     movies_links_create_index(array('type'), 'tor_drivers');
 
-
     $sql = "CREATE TABLE IF NOT EXISTS  `tor_ip`(
 				`id` int(11) unsigned NOT NULL auto_increment,                                                               
                                 `ip` varchar(255) NOT NULL default '',
@@ -255,7 +252,7 @@ function movies_links_plugin_activation() {
     Pdo_ml::db_query($sql);
 
     // Campaign type 1 - ml, 2 - cp ...
-    $sql = "ALTER TABLE `tor_log` ADD `ctype` int(11) NOT NULL DEFAULT '0'";    
+    $sql = "ALTER TABLE `tor_log` ADD `ctype` int(11) NOT NULL DEFAULT '0'";
     Pdo_ml::db_query($sql);
     // Campaign id
     $sql = "ALTER TABLE `tor_log` ADD `cid` int(11) NOT NULL DEFAULT '0'";
@@ -266,166 +263,12 @@ function movies_links_plugin_activation() {
     // 200, 403
     $sql = "ALTER TABLE `tor_log` ADD `resp_code` int(11) NOT NULL DEFAULT '0'";
     Pdo_ml::db_query($sql);
-    
-    movies_links_create_index(array('date', 'driver', 'url', 'ip', 'agent', 'type', 'status','ctype','cid','resp_code'), 'tor_log');
-    
-    /*
-     * Actors names
-     */
 
-    $sql = "CREATE TABLE IF NOT EXISTS  `data_actors_normalize`(
-				`id` int(11) unsigned NOT NULL auto_increment,
-                                `aid` int(11) NOT NULL DEFAULT '0',   
-                                `firstname` varchar(255) NOT NULL default '',
-                                `lastname` varchar(255) NOT NULL default '',                                
-				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8mb4_general_ci;";
-    Pdo_an::db_query($sql);
-
-    $sql = "ALTER TABLE `data_actors_normalize` ADD `last_upd` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-
-    $sql = "ALTER TABLE `data_actors_normalize` ADD `source_name` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-
-    if (function_exists('critic_matic_create_index_an')) {
-        critic_matic_create_index_an(array('aid', 'firstname', 'lastname', 'last_upd'), 'data_actors_normalize');
-    }
+    movies_links_create_index(array('date', 'driver', 'url', 'ip', 'agent', 'type', 'status', 'ctype', 'cid', 'resp_code'), 'tor_log');
 
     /*
-     * Familysearch.
-     * Actors lastnames unique
+     * DB An
      */
-
-    $sql = "CREATE TABLE IF NOT EXISTS  `data_lastnames`(
-				`id` int(11) unsigned NOT NULL auto_increment,                                                               
-                                `lastname` varchar(255) NOT NULL default '',         
-                                `topcountry` int(11) NOT NULL DEFAULT '0',  
-				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8mb4_general_ci;";
-    Pdo_an::db_query($sql);
-
-    $sql = "ALTER TABLE `data_lastnames` ADD `add_time` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-
-    if (function_exists('critic_matic_create_index_an')) {
-        critic_matic_create_index_an(array('add_time', 'lastname', 'topcountry'), 'data_lastnames');
-    }
-
-    $sql = "CREATE TABLE IF NOT EXISTS  `data_familysearch_country`(
-				`id` int(11) unsigned NOT NULL auto_increment,                                
-                                `country` varchar(255) NOT NULL default '',                                
-				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8mb4_general_ci;";
-    Pdo_an::db_query($sql);
-    if (function_exists('critic_matic_create_index_an')) {
-        critic_matic_create_index_an(array('country'), 'data_familysearch_country');
-    }
-
-    $sql = "CREATE TABLE IF NOT EXISTS  `meta_familysearch`(
-				`id` int(11) unsigned NOT NULL auto_increment,                                
-                                `nid` int(11) NOT NULL DEFAULT '0',   
-                                `cid` int(11) NOT NULL DEFAULT '0',   
-                                `ccount` int(11) NOT NULL DEFAULT '0',  
-				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8mb4_general_ci;";
-    Pdo_an::db_query($sql);
-    if (function_exists('critic_matic_create_index_an')) {
-        critic_matic_create_index_an(array('nid', 'cid', 'ccount'), 'meta_familysearch');
-    }
-
-
-    $sql = "CREATE TABLE IF NOT EXISTS  `data_familysearch_verdict`(
-				`id` int(11) unsigned NOT NULL auto_increment,    
-                                `last_upd` int(11) NOT NULL DEFAULT '0',     
-                                `verdict` int(11) NOT NULL DEFAULT '0',  
-                                `lastname` varchar(255) NOT NULL default '',                                         
-                                `description` text default NULL,
-				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8mb4_general_ci;";
-    Pdo_an::db_query($sql);
-    if (function_exists('critic_matic_create_index_an')) {
-        critic_matic_create_index_an(array('last_upd', 'verdict', 'lastname'), 'data_familysearch_verdict');
-    }
-
-
-    $sql = "ALTER TABLE `data_population_country` ADD `simpson` varchar(255) NOT NULL DEFAULT ''";
-    Pdo_an::db_query($sql);
-
-
-    /*
-     * Forebears
-     * Actors lastnames unique
-     */
-
-    $sql = "CREATE TABLE IF NOT EXISTS  `data_forebears_lastnames`(
-				`id` int(11) unsigned NOT NULL auto_increment,                                                               
-                                `lastname` varchar(255) NOT NULL default '',         
-                                `topcountry` int(11) NOT NULL DEFAULT '0',  
-				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8mb4_general_ci;";
-    Pdo_an::db_query($sql);
-
-    $sql = "ALTER TABLE `data_forebears_lastnames` ADD `topcountry_rank` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-
-    $sql = "ALTER TABLE `data_forebears_lastnames` ADD `add_time` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-
-    if (function_exists('critic_matic_create_index_an')) {
-        critic_matic_create_index_an(array('add_time', 'lastname', 'topcountry', 'topcountry_rank'), 'data_forebears_lastnames');
-    }
-
-    $sql = "CREATE TABLE IF NOT EXISTS  `data_forebears_country`(
-				`id` int(11) unsigned NOT NULL auto_increment,                                
-                                `country` varchar(255) NOT NULL default '',                                
-				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8mb4_general_ci;";
-    Pdo_an::db_query($sql);
-    if (function_exists('critic_matic_create_index_an')) {
-        critic_matic_create_index_an(array('country'), 'data_forebears_country');
-    }
-
-    $sql = "CREATE TABLE IF NOT EXISTS  `meta_forebears`(
-				`id` int(11) unsigned NOT NULL auto_increment,                                
-                                `nid` int(11) NOT NULL DEFAULT '0',   
-                                `cid` int(11) NOT NULL DEFAULT '0',   
-                                `ccount` int(11) NOT NULL DEFAULT '0',  
-				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8mb4_general_ci;";
-    Pdo_an::db_query($sql);
-
-
-    $sql = "ALTER TABLE `meta_forebears` ADD `freq` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-    $sql = "ALTER TABLE `meta_forebears` ADD `area_rank` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-
-    if (function_exists('critic_matic_create_index_an')) {
-        critic_matic_create_index_an(array('nid', 'cid', 'ccount'), 'meta_forebears');
-    }
-
-
-    $sql = "CREATE TABLE IF NOT EXISTS  `data_forebears_verdict`(
-				`id` int(11) unsigned NOT NULL auto_increment,    
-                                `last_upd` int(11) NOT NULL DEFAULT '0',     
-                                `verdict` int(11) NOT NULL DEFAULT '0',  
-                                `lastname` varchar(255) NOT NULL default '',                                         
-                                `description` text default NULL,
-				PRIMARY KEY  (`id`)				
-				) DEFAULT COLLATE utf8mb4_general_ci;";
-    Pdo_an::db_query($sql);
-
-
-    $sql = "ALTER TABLE `data_forebears_verdict` ADD `verdict_rank` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-
-    $sql = "ALTER TABLE `data_forebears_verdict` ADD  `description_rank` text default NULL";
-    Pdo_an::db_query($sql);
-
-    if (function_exists('critic_matic_create_index_an')) {
-        critic_matic_create_index_an(array('last_upd', 'verdict', 'verdict_rank', 'lastname'), 'data_forebears_verdict');
-    }
 
     /*
      * fchan
@@ -476,7 +319,6 @@ function movies_links_plugin_activation() {
     Pdo_ml::db_query($sql);
     movies_links_create_index(array('date', 'uid', 'type', 'status'), 'data_fchan_log');
 
-
     $sql = "CREATE TABLE IF NOT EXISTS  `data_fchan_workers`(
 				`id` int(11) unsigned NOT NULL auto_increment,                                
                                 `date` int(11) NOT NULL DEFAULT '0',                                                                
@@ -489,6 +331,180 @@ function movies_links_plugin_activation() {
     Pdo_ml::db_query($sql);
 
     movies_links_create_index(array('date', 'proxy', 'cid'), 'data_fchan_workers');
+
+    /*
+     * Actors names
+     */
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_actors_normalize`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `aid` int(11) NOT NULL DEFAULT '0',   
+                                `firstname` varchar(255) NOT NULL default '',
+                                `lastname` varchar(255) NOT NULL default '',                                
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_actors_normalize` ADD `last_upd` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_actors_normalize` ADD `source_name` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+
+    movies_links_create_index_an(array('aid', 'firstname', 'lastname', 'last_upd'), 'data_actors_normalize');
+
+    /*
+     * Familysearch.
+     * Actors lastnames unique
+     */
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_lastnames`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                                               
+                                `lastname` varchar(255) NOT NULL default '',         
+                                `topcountry` int(11) NOT NULL DEFAULT '0',  
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_lastnames` ADD `add_time` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+
+    movies_links_create_index_an(array('add_time', 'lastname', 'topcountry'), 'data_lastnames');
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_familysearch_country`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                
+                                `country` varchar(255) NOT NULL default '',                                
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_an::db_query($sql);
+
+    movies_links_create_index_an(array('country'), 'data_familysearch_country');
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `meta_familysearch`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                
+                                `nid` int(11) NOT NULL DEFAULT '0',   
+                                `cid` int(11) NOT NULL DEFAULT '0',   
+                                `ccount` int(11) NOT NULL DEFAULT '0',  
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_an::db_query($sql);
+
+    movies_links_create_index_an(array('nid', 'cid', 'ccount'), 'meta_familysearch');
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_familysearch_verdict`(
+				`id` int(11) unsigned NOT NULL auto_increment,    
+                                `last_upd` int(11) NOT NULL DEFAULT '0',     
+                                `verdict` int(11) NOT NULL DEFAULT '0',  
+                                `lastname` varchar(255) NOT NULL default '',                                         
+                                `description` text default NULL,
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_an::db_query($sql);
+
+    movies_links_create_index_an(array('last_upd', 'verdict', 'lastname'), 'data_familysearch_verdict');
+
+    $sql = "ALTER TABLE `data_population_country` ADD `simpson` varchar(255) NOT NULL DEFAULT ''";
+    Pdo_an::db_query($sql);
+
+    /*
+     * Forebears
+     * Actors lastnames unique
+     */
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_forebears_lastnames`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                                               
+                                `lastname` varchar(255) NOT NULL default '',         
+                                `topcountry` int(11) NOT NULL DEFAULT '0',  
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_forebears_lastnames` ADD `topcountry_rank` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_forebears_lastnames` ADD `add_time` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+
+    movies_links_create_index_an(array('add_time', 'lastname', 'topcountry', 'topcountry_rank'), 'data_forebears_lastnames');
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_forebears_country`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                
+                                `country` varchar(255) NOT NULL default '',                                
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_an::db_query($sql);
+
+    movies_links_create_index_an(array('country'), 'data_forebears_country');
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `meta_forebears`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                
+                                `nid` int(11) NOT NULL DEFAULT '0',   
+                                `cid` int(11) NOT NULL DEFAULT '0',   
+                                `ccount` int(11) NOT NULL DEFAULT '0',  
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `meta_forebears` ADD `freq` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `meta_forebears` ADD `area_rank` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+
+    movies_links_create_index_an(array('nid', 'cid', 'ccount'), 'meta_forebears');
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_forebears_verdict`(
+				`id` int(11) unsigned NOT NULL auto_increment,    
+                                `last_upd` int(11) NOT NULL DEFAULT '0',     
+                                `verdict` int(11) NOT NULL DEFAULT '0',  
+                                `lastname` varchar(255) NOT NULL default '',                                         
+                                `description` text default NULL,
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_forebears_verdict` ADD `verdict_rank` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_forebears_verdict` ADD  `description_rank` text default NULL";
+    Pdo_an::db_query($sql);
+
+    movies_links_create_index_an(array('last_upd', 'verdict', 'verdict_rank', 'lastname'), 'data_forebears_verdict');
+    
+    
+    /*
+     * The numbers box office int
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `meta_movie_boxint`(
+				`id` int(11) unsigned NOT NULL auto_increment,    
+                                `mid` int(11) NOT NULL DEFAULT '0',     
+                                `country` int(11) NOT NULL DEFAULT '0',
+                                `total` int(11) NOT NULL DEFAULT '0',
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_an::db_query($sql);
+    movies_links_create_index_an(array('mid', 'country'), 'meta_movie_boxint');
+}
+
+function movies_links_create_index_an($names = array(), $table_name = '') {
+    if (function_exists('critic_matic_create_index_an')) {
+        critic_matic_create_index_an($names, $table_name);
+    } else {
+        if ($names && $table_name) {
+            foreach ($names as $name) {
+                $index_sql = "SELECT COUNT(*)        
+    FROM `INFORMATION_SCHEMA`.`STATISTICS`
+    WHERE `TABLE_SCHEMA` = '" . DB_NAME_AN . "' 
+    AND `TABLE_NAME` = '$table_name'
+    AND `INDEX_NAME` = '$name'";
+                $exists = Pdo_an::db_get_var($index_sql);
+
+                if (!$exists) {
+                    $sql = "ALTER TABLE `$table_name` ADD INDEX(`$name`)";
+                    Pdo_an::db_query($sql);
+                }
+            }
+        }
+    }
 }
 
 function movies_links_create_index($names = array(), $table_name = '') {

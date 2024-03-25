@@ -70,7 +70,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         $type_opt = $options[$type_name];
         $active = $type_opt['status'];
 
-        if ($active == 1) {
+        if ($active == 1 || $force) {
             $update_interval = $type_opt['interval'];
             $update_last_time = $type_opt['last_update'];
 
@@ -119,7 +119,7 @@ class MoviesParserCron extends MoviesAbstractDB {
                     }
                 }
             } else {
-                $count = $this->proccess_parsing($campaign, $options, false, $debug, $custom_url_id);
+                $count = $this->proccess_parsing($campaign, $options, $force, $debug, $custom_url_id);
             }
         } else if ($type_name == 'links') {
             $count = $this->proccess_links($campaign, $options);
@@ -398,6 +398,7 @@ class MoviesParserCron extends MoviesAbstractDB {
 
     private function parsing_post_add($item, $cid, $uid, $version = 0, $force = false, $expired = false, $campaign = array(), $debug = false) {
         // Add post
+        // print_r(array($item, $cid, $uid, $version, $force , $expired , $campaign , $debug));
 
         $new_version = false;
         $post_exist = $this->mp->get_post_by_uid($uid);
@@ -484,6 +485,9 @@ class MoviesParserCron extends MoviesAbstractDB {
                 $this->mp->update_post($data, $post_exist->id);
 
                 //Movies custom hook
+                if ($debug) {
+                    print "Movies custom hook";                
+                }
                 $post_exist_update = $this->mp->get_post_by_uid($uid);
                 $mch = $this->ml->get_mch();
                 $mch->add_post($campaign, $post_exist_update, $debug);
@@ -655,6 +659,9 @@ class MoviesParserCron extends MoviesAbstractDB {
             $message = 'All arhives parsed to posts';
             $this->mp->log_info($message, $campaign->id, 0, 3);
         }
+        if ($debug) {
+                    print_r(array('log',$message));
+                }
         return $count;
     }
 
@@ -925,7 +932,7 @@ class MoviesParserCron extends MoviesAbstractDB {
      * Cron async
      */
 
-    public function run_cron_async($cid = 0, $type_name = '', $debug = false, $custom_url_id = 0) {
+    public function run_cron_async($cid = 0, $type_name = '', $debug = false, $custom_url_id = 0, $force=false) {
 
         if (!$cid) {
             return;
@@ -964,7 +971,7 @@ class MoviesParserCron extends MoviesAbstractDB {
             }
 
             if ($count) {
-                $this->arhive_urls($campaign, $options, $urls);
+                $this->arhive_urls($campaign, $options, $urls, $force);
             }
             if ($count_expired > 0) {
                 $this->arhive_urls($campaign, $options, $expired_urls, true);

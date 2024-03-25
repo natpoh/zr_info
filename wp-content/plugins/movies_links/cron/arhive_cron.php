@@ -1,5 +1,7 @@
 <?php
-
+/*
+ * /wp-content/plugins/movies_links/cron/arhive_cron.php?p=8ggD_23_2D0DSF-F&t=2&url=1962323&debug=1
+ */
 require_once($_SERVER['DOCUMENT_ROOT'] . '/wp-config.php');
 nocache_headers();
 
