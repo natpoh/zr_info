@@ -1079,7 +1079,7 @@ class Import
 
         Pdo_an::db_query($sql);
 
-        $sql = "UPDATE `commit` SET `status` = 1 , `complete` = NULL  where (`status` = 2 OR `status` = 6)  and `last_update` < ".(time()-$fast_resynch);
+        $sql = "UPDATE `commit` SET `status` = 1 , `complete` = NULL  where (`status` = 2 ) and site_id!='".$site_id."' and `last_update` < ".(time()-$fast_resynch);
 
         if ($debug)
         {
@@ -1088,6 +1088,14 @@ class Import
 
         Pdo_an::db_query($sql);
 
+        $sql = "UPDATE `commit` SET `status` = 0 , `complete` = NULL  where (`status` = 6) and site_id='".$site_id."' and `last_update` < ".(time()-$fast_resynch);
+
+        if ($debug)
+        {
+            echo $sql.'<br>';
+        }
+
+        Pdo_an::db_query($sql);
 
         ////check requests
 
