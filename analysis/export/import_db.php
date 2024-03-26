@@ -1086,7 +1086,7 @@ class Import
             echo $sql.'<br>';
         }
 
-
+        Pdo_an::db_query($sql);
 
 
         ////check requests
