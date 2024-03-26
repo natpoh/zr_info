@@ -1,4 +1,4 @@
-
+<div class="webdev">For a webdev API demo click <a href="https://api.filmdemographics.com/" target="_blank" rel="noopener">here</a>.</div>
 <div class="container">
     <h1>Box Office comparison</h1>
     <div class="canvas-container" style="    width: 100%;height: 400px;">
@@ -165,6 +165,26 @@
         display: inline-block;
         margin-left: 10px;
     }
+    .actor_container
+    {
+        display: block;
+        overflow-y: auto;
+        max-height: 510px;
+    }
+.actor_photo{
+ width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0px 0px 5px #686868;
+}
+.actor_photo img{
+max-width: 100%;
+    width: 100%;
+}
 
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -612,20 +632,33 @@
 
                 const tableHead = document.createElement('thead');
                 const tableHeadRow = document.createElement('tr');
-                ['name', 'gender', 'race'].forEach(headerText => {
+                ['photo','name', 'gender', 'race'].forEach(headerText => {
                     const th = document.createElement('th');
                     th.textContent = headerText;
                     tableHeadRow.appendChild(th);
                 });
+
                 tableHead.appendChild(tableHeadRow);
                 castTable.appendChild(tableHead);
 
                 const tableBody = document.createElement('tbody');
                 castData.forEach(actor => {
+                    if (actor.race==='Jewish'){actor.race='White';}
                     const tableRow = document.createElement('tr');
-                    ['name', 'gender', 'race'].forEach(property => {
+                    ['photo','name', 'gender', 'race'].forEach(property => {
                         const tableData = document.createElement('td');
-                        tableData.textContent = actor[property];
+
+                        if (property=='photo')
+                        {
+                            tableData.innerHTML = '<span class="actor_photo"><img src="https://img.filmdemographics.com/actor_thumb/140/'+actor.id+'.jpg">' ;
+                        }
+                        else
+                        {
+                            tableData.textContent = actor[property];
+                        }
+
+
+
                         tableRow.appendChild(tableData);
                     });
                     tableBody.appendChild(tableRow);
@@ -650,10 +683,6 @@
             actorContainer.style.display = actorContainer.style.display === 'none' ? 'block' : 'none';
         }
     }
-
-
-
-
 
     document.addEventListener('DOMContentLoaded', function () {
 
@@ -753,7 +782,7 @@
                                     callbacks: {
 
                                         label: function(tooltipItem, data) {
-                                            return `${tooltipItem.label}:  $ ${tooltipItem.formattedValue}`;
+                                            return `${tooltipItem.dataset.label}:  $ ${tooltipItem.formattedValue}`;
                                         }
                                     }
                                 }
@@ -803,7 +832,7 @@
 
                         var data = result.data.map(function (item) {
 
-                          item=  wrapKeysInQuotes(item);
+                       //   item=  wrapKeysInQuotes(item);
                          let itemob =JSON.parse(item);
                             if (itemob)
                             {
@@ -811,15 +840,46 @@
                             }
 
                         });
+                        result.data=data;
 
-                        datasets.push({
-                            label: result.title,
-                            data: data,
-                            backgroundColor: result.color,
-                            stack: 'stack2' // ƒобавлен параметр stack дл€ каждого датасета
-                        });
                     });
 
+                    let data = jsonData.results;
+
+                    const mergedData = data.map(item => {
+                        if (item.title === "White" || item.title === "Jewish") {
+                            const whiteData = data.find(obj => obj.title === "White").data;
+                            const jewishData = data.find(obj => obj.title === "Jewish").data;
+                            const mergedDataPoints = whiteData.map((dataPoint, index) => {
+                                const jewishValue = parseFloat(jewishData[index].y);
+                                const whiteValue = parseFloat(dataPoint.y);
+                                return {
+                                    x: dataPoint.x,
+                                    y: whiteValue + jewishValue
+                                };
+                            });
+                            return {
+                                title: item.title,
+                                data: mergedDataPoints,
+                                color: "#2b908f"
+                            };
+                        }
+                        return item;
+                    });
+
+                    const resultWithoutJewish = mergedData.filter(item => item.title !== "Jewish");
+
+
+
+                    resultWithoutJewish.forEach(function (result) {
+                        var data = result.data;
+                    datasets.push({
+                        label: result.title,
+                        data: data,
+                        backgroundColor: result.color,
+                        stack: 'stack2'
+                    });
+                    });
 
                     var ctx = document.getElementById('ethnicityChart').getContext('2d');
                     var ethnicityChart = new Chart(ctx, {
@@ -862,7 +922,7 @@
                                 tooltip: {
                                     callbacks: {
                                         label: function(tooltipItem, data) {
-                                            return `${tooltipItem.label}: ${tooltipItem.formattedValue} %`;
+                                                   return `${tooltipItem.dataset.label}: ${tooltipItem.formattedValue} %`;
                                         }
                                     }
                                 }

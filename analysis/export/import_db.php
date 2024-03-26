@@ -1041,9 +1041,14 @@ class Import
 
     public static function service()
     {
+        global $debug;
 
         $timing =self::get_timing();
         $rsynh = $timing['reverse_to_synh'];
+        $fast_resynch = $timing['fast_resynch'];
+
+
+
         ////delete old comlete request
 
         $sql = "DELETE FROM `commit` WHERE `complete` = 1 and `last_update` < ".(time()-86400*8);
@@ -1058,11 +1063,31 @@ class Import
 
         $sql = "UPDATE `commit` SET `status` = 0 , `complete` = NULL  where (`status` = 1 OR `status` = 2 OR `status` = 3 OR `status` = 4 OR `status` = 6 ) and site_id='".$site_id."' and `last_update` < ".(time()-$rsynh);
 
+        if ($debug)
+        {
+            echo $sql.'<br>';
+        }
+
         Pdo_an::db_query($sql);
 
         $sql = "UPDATE `commit` SET `status` = 1 , `complete` = NULL  where (`status` = 2 OR `status` = 3 OR `status` = 4 ) and site_id!='".$site_id."' and `last_update` < ".(time()-$rsynh);
 
+        if ($debug)
+        {
+            echo $sql.'<br>';
+        }
+
         Pdo_an::db_query($sql);
+
+        $sql = "UPDATE `commit` SET `status` = 1 , `complete` = NULL  where (`status` = 2 ) and site_id!='".$site_id."' and `last_update` < ".(time()-$fast_resynch);
+
+        if ($debug)
+        {
+            echo $sql.'<br>';
+        }
+
+        Pdo_an::db_query($sql);
+
 
 
         ////check requests
@@ -1299,7 +1324,6 @@ class Import
             $result['sync'] = self::sync($data);             ///sync - send data to remote server and change status to 1
 
             $result['sync_last_commit'] = self::sync_last_commit($data);    ///sync_last_commit - get commit in status 1 and add from remote site update status to 4
-
             $result['sync_complete'] = self::sync_complete($data);
             $result['sync_empty'] = self::sync_complete($data,7,7);
 

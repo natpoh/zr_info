@@ -26,8 +26,7 @@ foreach ($array_list as $value) {
     if ($user->ID) {
         // Try to get movies ids
         try {
-            $json_data = json_decode($data);
-
+            $json_data = json_decode($data);           
             $mids_loc = $json_data->mids;
             if ($mids_loc) {
                 $mids = array_merge($mids, $mids_loc);

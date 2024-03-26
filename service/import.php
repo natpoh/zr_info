@@ -49,7 +49,11 @@ if (isset($_REQUEST['test_sync'])) {
 
 if (isset($_REQUEST['key'])) {
 
+    if (isset($_REQUEST['debug'])) {
 
+        global $debug;
+        $debug=1;
+    }
 
     $key = '1R3W5T8s13t21a34f';
     if ($_REQUEST['key']!=$key)
