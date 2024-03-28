@@ -253,7 +253,7 @@ class PgRating
 
 
             !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
-            TMDB::add_log($id,$imdb_id,'update movies','update_pg_rating_imdb '.$comment,1,'admin');
+            TMDB::add_log($id,$imdb_id,'update movies','update pg_rating imdb '.$comment,1,'update_pg_rating_imdb');
 
         }
         foreach ($array_pg_commit as $mid=>$enable)
