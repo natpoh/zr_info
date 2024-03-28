@@ -43,7 +43,7 @@ $commands = array(
 );
 
 $cmd = isset($_GET['cmd']) ? $_GET['cmd'] : '';
-
+print $cmd;
 if (in_array($cmd, $commands)) {
     $data = array(
         'cmd' => $cmd,
