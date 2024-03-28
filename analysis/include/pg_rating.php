@@ -22,7 +22,7 @@ class PgRating
 
 
 
-    public static function update_pg_rating_cms($imdb_id = '',$debug='')
+    public static function update_pg_rating_cms($id = '',$debug='')
     {
         $array_result_data = [];
         !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
@@ -31,8 +31,8 @@ class PgRating
 
 
 
-        if ($imdb_id) {
-            $sql = "SELECT *  FROM `data_movie_imdb` where movie_id='{$imdb_id}'";
+        if ($id) {
+            $sql = "SELECT *  FROM `data_movie_imdb` where id='{$id}'";
             $rows = Pdo_an::db_results_array($sql);
         } else {
 
@@ -49,15 +49,13 @@ class PgRating
         $i = 0;
         foreach ($rows as $r) {
 
-
-
-
-            $rows_data =   self::get_movie_data($r['id']);
+            $mid =$r['id'];
+            $rows_data =   self::get_movie_data($mid);
             $movie_id = $rows_data['movie_id'];
             $title = $rows_data['title'];
             $type = $rows_data['type'];
 
-            $array_family = $PgRatingCalculate->get_family_rating_in_movie($movie_id);
+            $array_family = $PgRatingCalculate->get_family_rating_in_movie('',$mid);
 
 
             if ($debug){echo 'try get cms '.$title.' '.$movie_id.'<br>';}
@@ -74,7 +72,7 @@ class PgRating
             if ($commonsense_comment) {
                 $commonsense_comment = json_encode($commonsense_comment);
             }
-            self::check_enable_pg($movie_id);
+            self::check_enable_pg('','',$mid);
 
             if ($commonsense_link) {
 
@@ -86,29 +84,29 @@ class PgRating
         `cms_link`=?,
         `cms_rating`=?,
         `cms_rating_desk`=? 
-          WHERE `data_pg_rating`.`movie_id` = " . $movie_id;
+          WHERE `data_pg_rating`.`rwt_id` = " . $mid;
                     Pdo_an::db_results_array($sql, array($commonsense_link, $commonsense_data, $commonsense_comment));
 
-                    $array_result_data[] = $movie_id;
-                    if ($debug) echo 'update cms ' . $movie_id . '<br>' . PHP_EOL;
+                    $array_result_data[] = $mid;
+                    if ($debug) echo 'update cms ' . $mid . '<br>' . PHP_EOL;
 
 
                     !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                    Import::create_commit('', 'update', 'data_pg_rating', array('movie_id' => $movie_id), 'pg_rating', 9, ['skip' => ['id']]);
+                    Import::create_commit('', 'update', 'data_pg_rating', array('rwt_id' => $mid), 'pg_rating_cms', 9, ['skip' => ['id']]);
                     $comment = 'updated';
                 }
             }
 
 
             else {
-                $sql = "UPDATE `data_pg_rating` SET `cms_date` = '" . time() . "'  WHERE `data_pg_rating`.`movie_id` = " . $movie_id;
+                $sql = "UPDATE `data_pg_rating` SET `cms_date` = '" . time() . "'  WHERE `data_pg_rating`.`rwt_id` = " . $mid;
                 Pdo_an::db_query($sql);
-                if ($debug)echo 'not new data cms '.$movie_id.'<br>'.PHP_EOL;
+                if ($debug)echo 'not new data cms '.$mid.'<br>'.PHP_EOL;
 
                 $comment= 'skip';
             }
             !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
-            TMDB::add_log($r['id'],$movie_id,'update movies','update_pg_rating_cms '.$comment,1,'admin');
+            TMDB::add_log($mid,$movie_id,'update movies','update pg rating cms '.$comment,1,'update_pg_rating_cms');
 
 
             $i++;
@@ -118,19 +116,19 @@ class PgRating
     }
     public static function get_movie_data($mid)
     {
-        $sql = "SELECT `movie_id`, `title`, `type`  FROM `data_movie_imdb` WHERE data_movie_imdb.id ='{$mid}' limit 1";
+        $sql = "SELECT `id`, `movie_id`, `title`, `type`  FROM `data_movie_imdb` WHERE data_movie_imdb.id ='{$mid}' limit 1";
         $data = Pdo_an::db_results_array($sql);
         return $data[0];
 
     }
 
-    public static function update_pg_rating_imdb($movie_id = '',$debug='')
+    public static function update_pg_rating_imdb($mid = '',$debug='')
     {
         $array_result_data=[];
 
 
 
-        if (!$movie_id) {
+        if (!$mid) {
 
             $rating_update = array( 50=> 86400*20, 40 =>86400*40, 30=> 86400*90 , 20=> 86400*180, 10=> 86400*240, 0=>86400*360);
             $rows =get_weight_list('data_pg_rating','imdb_date',"rwt_id",20,$rating_update);
@@ -138,22 +136,32 @@ class PgRating
             foreach ($rows as $r) {
                 $data =   self::get_movie_data($r['id']);
 
-                $array_id[ $data['movie_id']] = $data['movie_title'];
+                $array_id[ $data['id']] = $data['movie_title'];
             }
         } else {
-            $array_id[$movie_id] = 1;
+            $array_id[$mid] = 1;
         }
+        if ($debug){
+            !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+            TMDB::var_dump_table(['array_id'=>$array_id]);
+        }
+
+
 
         $array_pg_commit =[];
 
-        foreach ($array_id as $movie_id=>$movie_title) {
+        foreach ($array_id as $id=>$movie_title) {
 
-            if ($debug)echo 'try add imdbid '.$movie_id.' ' .$movie_title.'<br>'.PHP_EOL;
+            if ($debug)echo 'try add id '.$id.' ' .$movie_title.'<br>'.PHP_EOL;
 
-            $final_value = sprintf('%07d', $movie_id);
+
+            $imdb_id = PgRatingCalculate::get_imdb_id_from_id($id);
+
+            $final_value = sprintf('%07d', $imdb_id);
             $url = "https://www.imdb.com/title/tt" . $final_value . '/parentalguide';
-
-
+            if ($debug) {
+            echo $url.'<br>';
+            }
 
             global $RWT_PROXY;
             if ($RWT_PROXY)
@@ -191,9 +199,13 @@ class PgRating
                 $contentrating = $array_result['cert_usa'];
             }
 
+            if ($debug){
+                !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+                TMDB::var_dump_table(array($contentrating, $mpaa, time(), $cert_contries, $imdb_data, $imdb_comment));
+            }
 
-            $id = self::check_enable_pg($movie_id);
-            if ($id) {
+            $pid = self::check_enable_pg($imdb_id,$debug,$id);
+            if ($pid) {
                 ///////update
                 $array_insert = array($contentrating, $mpaa, time(), $cert_contries, $imdb_data, $imdb_comment,time());
 
@@ -203,7 +215,7 @@ class PgRating
                             `pg`=? AND
                             `certification`=? AND
                             `certification_countries`=? AND
-                            `imdb_rating`=? AND id = {$id}";
+                            `imdb_rating`=? AND id = {$pid}";
                 $rslt = Pdo_an::db_results_array($sql,array($contentrating, $mpaa, $cert_contries, $imdb_data));
                 if ($rslt)
                 {
@@ -222,33 +234,33 @@ class PgRating
                             `imdb_rating`=?,
                             `imdb_rating_desc`=?,
                             `last_update`=?
-                            where id = {$id}";
+                            where id = {$pid}";
                     Pdo_an::db_results_array($sql, $array_insert);
-                    if ($debug)echo 'updated imdbid '.$movie_id.'<br>'.PHP_EOL;
 
-                    $array_pg_commit[$movie_id]=1;
+
+                    if ($debug)echo 'updated mid '.$id.'<br>'.PHP_EOL;
+
+                    $array_pg_commit[$id]=1;
 
                     if ($debug)echo 'updated<br>';
 
                     $comment ='updated '.json_encode([$contentrating, $mpaa,  $cert_contries, $imdb_data]);
                 }
 
-                 $array_result_data[]=$movie_id;
+                 $array_result_data[]=$id;
 
                  }
 
 
             !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
-            TMDB::add_log('',$movie_id,'update movies','update_pg_rating_imdb '.$comment,1,'admin');
+            TMDB::add_log($id,$imdb_id,'update movies','update_pg_rating_imdb '.$comment,1,'admin');
 
         }
         foreach ($array_pg_commit as $mid=>$enable)
         {
 
-
-
             !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-            Import::create_commit('', 'update', 'data_pg_rating', array('movie_id' => $mid), 'pg_rating',9,['skip'=>['id']]);
+            Import::create_commit('', 'update', 'data_pg_rating', array('rwt_id' => $mid), 'pg_rating_imdb_update',9,['skip'=>['id']]);
 
         }
 
@@ -305,14 +317,17 @@ class PgRating
     public static function add_pgrating($mid = '',$debug='')
     {
 
-        $array_result = self::update_pg_rating_imdb($mid, $debug);
+       $array_result = self::update_pg_rating_imdb($mid, $debug);
+
         $array_result2 = self::update_pg_rating_cms($mid, $debug);
+
+
 
         $result = array_merge($array_result, $array_result2);
 
-        foreach ($result as $imdb_id)
+        foreach ($result as $mid)
         {
-            PgRatingCalculate::CalculateRating($imdb_id);//add_pgrating
+            PgRatingCalculate::CalculateRating('',$mid);//add_pgrating
         }
 
 

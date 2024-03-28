@@ -60,6 +60,19 @@ $sql = "SELECT `last_update` FROM `data_actors_meta` WHERE `actor_id`=".intval($
     public static function get_simple_image_link($id='',$w=640,$las_update='',$image ='')
     {
 
+        if (strstr($id,'m_') && !$image)
+        {
+            $id =substr($id,2);
+            ///https://img2.zeitgeistreviews.com/poster_thumb/220x330/21055.webp
+
+            $result = 'https://img2.zeitgeistreviews.com/poster_thumb/'.$w.'/'.$id.'-'.$las_update.'.jpg';
+
+            return $result;
+
+        }
+
+
+
         $current_site  ='https://info.antiwoketomatoes.com';
         $cache_site  ='https://img.zeitgeistreviews.com';
         if (defined('LOCALCACHEIMAGES'))
@@ -96,6 +109,15 @@ $sql = "SELECT `last_update` FROM `data_actors_meta` WHERE `actor_id`=".intval($
     public static function get_image_link($id='',$resolution=540,$request='',$las_update='',$image ='',$original=0)
     {
 
+
+        if (strstr($id,'m_') && !$image)
+        {
+            $id =substr($id,2);
+
+            $result = 'https://img2.zeitgeistreviews.com/poster_thumb/'.$resolution.'/'.$id.'-'.$las_update.'.webp';
+            return $result;
+
+        }
 
         $current_site  ='https://info.antiwoketomatoes.com';
         $cache_site  ='https://img.zeitgeistreviews.com';

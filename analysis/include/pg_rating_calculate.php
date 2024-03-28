@@ -65,7 +65,7 @@ class PgRatingCalculate {
 
         $imdb_id = self::get_imdb_id_from_id($id);
 
-        $array_family = self::get_family_rating_in_movie($imdb_id);
+        $array_family = self::get_family_rating_in_movie('',$id);
         if ($post_type=='last_imdb_pg_update') {
             $last_imdb_updated = $array_family['imdb_date'];
         }
@@ -87,13 +87,13 @@ class PgRatingCalculate {
 
             if ($post_type=='last_imdb_pg_update')
             {
-                PgRating::update_pg_rating_imdb($imdb_id);
+                PgRating::update_pg_rating_imdb($id);
             }
 
            // else     if ($post_type=='last_pg_update')
 
 
-           $total =  self::CalculateRating($imdb_id,$id);///ckeck_imdb_pg_rating
+           $total =  self::CalculateRating('',$id);///ckeck_imdb_pg_rating
 
 
            if ($cur_total!=$total){return(2);}

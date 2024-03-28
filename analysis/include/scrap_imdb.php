@@ -2305,13 +2305,13 @@ function add_pg_rating_for_new_movies($limit=100)
 }
 
 
-function add_pgrating($imdb_id='')
+function add_pgrating($id='')
 {
     global $debug;
     !class_exists('PgRating') ? include ABSPATH . "analysis/include/pg_rating.php" : '';
 if (isset($_GET['debug']))$debug=1;
 
-    PgRating::add_pgrating($imdb_id,$debug);
+    PgRating::add_pgrating($id,$debug);
 
     return;
 }
