@@ -19,6 +19,7 @@ class MoviesParser extends MoviesAbstractDB {
             'actors_meta' => 'actors_meta',
             'fchan_posts' => 'data_fchan_posts',
             'fchan_log' => 'data_fchan_log',
+            'critics' => 'movies_links_critics',
         );
 
         // Init settings
@@ -110,6 +111,16 @@ class MoviesParser extends MoviesAbstractDB {
                     'custom_last_run_id' => 0,
                     'camp' => 0,
                     'weight' => 10,
+                ),
+                'critics' => array(
+                    'last_update' => 0,
+                    'interval' => 60,
+                    'num' => 10,
+                    'pr_num' => 5,
+                    'status' => 0,
+                    'rules' => '',
+                    'version' => 0,
+                    'author' => 0,
                 ),
                 'update' => array(
                     'status' => 0,
@@ -1758,7 +1769,7 @@ class MoviesParser extends MoviesAbstractDB {
 
 
         if ($custom_url > 0) {
-            
+
             $query = sprintf("SELECT a.uid, a.arhive_hash, u.cid, u.id as uid, u.pid as upid FROM {$this->db['arhive']} a"
                     . " INNER JOIN {$this->db['url']} u ON u.id = a.uid"
                     . " LEFT JOIN {$this->db['posts']} p ON p.uid = a.uid"
@@ -1769,6 +1780,48 @@ class MoviesParser extends MoviesAbstractDB {
                     . " INNER JOIN {$this->db['url']} u ON u.id = a.uid"
                     . " LEFT JOIN {$this->db['posts']} p ON p.uid = a.uid"
                     . " WHERE a.id>0 AND u.status!=4" . $np_and . $cid_and
+                    . " ORDER BY a.id DESC LIMIT %d", (int) $count);
+        }
+        if ($debug) {
+            print "$query\n";
+        }
+
+        $result = $this->db_results($query);
+
+        return $result;
+    }
+
+    public function get_last_arhives_no_critics($count = 10, $cid = 0, $version = 0, $no_posts = true, $debug = false, $custom_url = 0) {
+
+        // Company id
+        $cid_and = '';
+
+        if ($cid > 0) {
+            $cid_and = sprintf(" AND u.cid=%d", (int) $cid);
+        }
+
+        $and_version = '';
+        if ($version > 0) {
+            $and_version = sprintf(' OR c.version!=%d', $version);
+        }
+
+        // Critic posts
+        $cp_and = ' AND (c.uid is NULL' . $and_version . ')';
+
+        if ($custom_url > 0) {
+
+            $query = sprintf("SELECT a.uid, a.arhive_hash, u.cid, u.id as uid, u.pid as upid, u.link, u.link_hash, p.top_movie, p.id AS pid FROM {$this->db['arhive']} a"
+                    . " INNER JOIN {$this->db['url']} u ON u.id = a.uid"
+                    . " INNER JOIN {$this->db['posts']} p ON p.uid = a.uid"
+                    . " LEFT JOIN {$this->db['critics']} c ON c.uid = a.uid"
+                    . " WHERE u.id=%d", (int) $custom_url);
+        } else {
+
+            $query = sprintf("SELECT a.uid, a.arhive_hash, u.cid, u.id as uid, u.pid as upid, u.link, u.link_hash, p.top_movie, p.id AS pid FROM {$this->db['arhive']} a"
+                    . " INNER JOIN {$this->db['url']} u ON u.id = a.uid"
+                    . " INNER JOIN {$this->db['posts']} p ON p.uid = a.uid"
+                    . " LEFT JOIN {$this->db['critics']} c ON c.uid = a.uid"
+                    . " WHERE a.id>0 AND u.status!=4 AND p.top_movie>0" . $cp_and . $cid_and
                     . " ORDER BY a.id DESC LIMIT %d", (int) $count);
         }
         if ($debug) {
@@ -1856,6 +1909,194 @@ class MoviesParser extends MoviesAbstractDB {
                 $ret[$item->uid] = $result;
             }
         }
+        return $ret;
+    }
+
+    public function parse_critics($items, $campaign, $preview = false, $debug = false) {
+        ini_set('max_execution_time', '300'); //300 seconds = 5 minutes
+        set_time_limit(300);
+
+        $ret = array();
+        if ($items) {
+            $cid = $campaign->id;
+            $options = $this->get_options($campaign);
+            $o = $options['critics'];
+            $cm = $this->ml->get_cm();
+            if ($cm) {
+                $cp = $cm->get_cp();
+                $cprules = $cp->get_cprules();
+                foreach ($items as $item) {
+                    $arhive_hash = $item->arhive_hash;
+                    $code = $this->get_arhive_file($cid, $arhive_hash);
+
+                    if ($code) {
+                        if ($debug) {
+                            print "File arhive exist: $arhive_hash\n";
+                        }
+
+                        $id = $item->uid;
+                        $ret[$id]['raw'] = $code;
+
+                        // Default
+                        // if (isset($o['p_encoding']) && $o['p_encoding'] != 'utf-8') {
+                        //    $code = mb_convert_encoding($code, 'utf-8', $options['p_encoding']);
+                        // }
+                        // Use reg rules
+                        $items = $cprules->check_reg_post($o['rules'], $code, '', $item->link);
+
+                        $content = isset($items['d']) ? $items['d'] : '';
+                        $title = isset($items['t']) ? $items['t'] : '';
+                        $author = isset($items['a']) ? $items['a'] : '';
+                        $date_raw = isset($items['y']) ? $items['y'] : '';
+
+                        if ($content) {
+                            $content = $cp->force_balance_tags($content);
+                        }
+
+                        if ($content) {
+                            // Core filters
+                            $domain = preg_replace('#^([a-z]+\:\/\/[^\/]+)(\/|\?|\#).*#', '$1', $item->link . '/');
+                            $content = $cp->absoluteUrlFilter($domain, $content);
+                        }
+                        if ($date_raw) {
+                            $date = strtotime($date_raw);
+                        } else {
+                            $date = $cp->curr_time();
+                        }
+
+                        $ret[$id]['title'] = $title;
+                        $ret[$id]['date'] = $date;
+                        $ret[$id]['date_raw'] = $date_raw;
+                        $ret[$id]['author'] = $author;
+                        $ret[$id]['content'] = $content;
+                        $add_post = true;
+
+                        if (!$preview) {
+                            // Add post
+                            // Post exist?
+                            $link_hash = $item->link_hash;
+                            // Check the post already in db
+                            $post_exist = $cm->get_post_by_link_hash($link_hash);
+
+                            if ($debug) {
+                                print_r(array('post_exist', $post_exist));
+                            }
+
+                            if ($content && $title) {
+                                if ($debug) {
+                                    print_r(array('title', $title));
+                                }
+
+                                $content = $cp->force_balance_tags($content);
+                                // Core filters
+                                $domain = preg_replace('#^([a-z]+\:\/\/[^\/]+)(\/|\?|\#).*#', '$1', $item->link . '/');
+                                $content = $cp->absoluteUrlFilter($domain, $content);
+
+                                // MoviesLinks
+                                $post_type = 5;
+                                // Post status publish
+                                $post_status = 1;
+                                $top_movie = $item->top_movie;
+
+                                if ($post_exist) {
+                                    // Update post
+                                    $log_message = 'Update post';
+                                    $pid = $post_exist->id;
+                                    $cm->update_post($pid, $date, $post_status, $item->link, $title, $content, $post_type);
+                                } else {
+                                    $view_type = $cm->get_post_view_type($item->link);
+                                    // Add post 
+                                    $log_message = 'Add post';
+                                    $pid = $cm->add_post($date, $post_type, $item->link, $title, $content, $top_movie, $post_status, $view_type);
+
+                                    if ($pid) {
+                                        // Add author
+                                        if ($author) {
+                                            $author_type = 1;
+                                            $author_status = 0;
+                                            $aid = $cm->get_or_create_author_by_name($author, $author_type, $author_status);
+                                        } else {
+                                            $aid = $options['author'];
+                                        }
+
+                                        $cm->add_post_author($pid, $aid);
+                                    } else {
+                                        $log_message = "Error add post url: " . $item->link . ", campaign:" . $cid;
+                                        // $status = 4;
+                                        // $cp->change_url_state($id, $status);
+
+
+                                        if ($debug) {
+                                            print_r(array('error', $log_message));
+                                        }
+                                        $add_post = false;
+                                    }
+                                }
+                            } else {
+                                $message = 'Error URL filters';
+                                if (!$title) {
+                                    $message .= '. No Title';
+                                }
+                                if (!$content) {
+                                    $message .= '. No Content';
+                                }
+                            }
+
+                            // Default status
+                            $meta_status = 1;
+
+                            if (!$add_post) {
+                                // Error status
+                                $meta_status = 2;
+                            }
+
+                            // Add meta
+                            $sql = sprintf("SELECT id FROM {$this->db['critics']} WHERE uid=%d", $id);
+                            $meta_exist_id = $this->db_get_var($sql);
+                            if ($debug) {
+                                print_r(array('meta_exist_id', $meta_exist_id));
+                            }
+                            if ($meta_exist_id) {
+                                // Change version
+                                $data = array(
+                                    'version' => $o['version'],
+                                    'status' => $meta_status,
+                                );
+                                $this->db_update($data, $this->db['critics'], $meta_exist_id);
+                            } else {
+                                // Add meta
+                                $curr_time = $this->curr_time();
+                                $data = array(
+                                    'date' => $curr_time,
+                                    'last_upd' => $curr_time,
+                                    'uid' => $id,
+                                    'pid' => $item->pid,
+                                    'critic_id' => $pid,
+                                    'status' => $meta_status,
+                                    'version' => $o['version'],
+                                );
+                                $this->db_insert($data, $this->db['critics']);
+                            }
+
+                            if ($debug) {
+                                print_r(array('data', $data));
+                            }
+
+                            if ($add_post) {
+                                $this->log_info($log_message, $cid, $id, 3);
+                            } else {
+                                $this->log_error($log_message, $cid, $id, 3);
+                            }
+                        }
+                    } else {
+                        if ($debug) {
+                            print "File arhive is empty: $link_hash\n";
+                        }
+                    }
+                }
+            }
+        }
+
         return $ret;
     }
 

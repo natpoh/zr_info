@@ -1,6 +1,7 @@
 <?php
 /*
  * /wp-content/plugins/movies_links/cron/arhive_cron.php?p=8ggD_23_2D0DSF-F&t=2&url=1962323&debug=1
+ * /wp-content/plugins/movies_links/cron/arhive_cron.php?p=8ggD_23_2D0DSF-F&t=7&debug=1
  */
 require_once($_SERVER['DOCUMENT_ROOT'] . '/wp-config.php');
 nocache_headers();
@@ -60,7 +61,8 @@ $ml = new MoviesLinks();
   3 => 'links',
   4 => 'cron_urls',
   5 => 'gen_urls',
-  6 => 'find_expired',
+  6 => 'update',
+  7 => 'critics'
  */
 $cron_name = 'arhive_cron_'.$cron_type;
 if ($ml->cron_already_run($cron_name, 10, $debug)&&!$force) {

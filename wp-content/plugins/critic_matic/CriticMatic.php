@@ -51,7 +51,8 @@ class CriticMatic extends AbstractDB {
         1 => 'Feed',
         2 => 'Manual',
         3 => 'Parser',
-        4 => 'Transcript'
+        4 => 'Transcript',
+        5 => 'MoviesLinks',
     );
     public $post_status = array(
         1 => 'Publish',
@@ -147,7 +148,8 @@ class CriticMatic extends AbstractDB {
     public $movie_state = array(
         1 => 'Approved',
         2 => 'Auto',
-        0 => 'Unapproved'
+        3 => 'Auto (ML)',
+        0 => 'Unapproved',        
     );
     public $movie_rating = array(
         0 => 'Zero rating',

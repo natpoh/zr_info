@@ -12,6 +12,7 @@ class MoviesLinks extends MoviesAbstractDB {
     private $ms;
     private $tp;
     private $mch;
+    private $cm;
     private $mlr = array();
     private $settings;
     private $settings_def;
@@ -106,6 +107,18 @@ class MoviesLinks extends MoviesAbstractDB {
             $this->mch = new MoviesCustomHooks($this);
         }
         return $this->mch;
+    }
+    
+    public function get_cm() {
+        // Get critic matic        
+        if (!$this->cm) {
+            if (class_exists('CriticMatic')) {
+                $this->cm = new CriticMatic();
+            } else {
+                $this->cm = '';
+            }
+        }
+        return $this->cm;
     }
 
     public function get_campaign_mlr_name($campaign) {

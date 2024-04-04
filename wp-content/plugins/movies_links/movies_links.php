@@ -62,14 +62,12 @@ function movies_links_plugin_activation() {
 				`id` int(11) unsigned NOT NULL auto_increment,                                				
                                 `date` int(11) NOT NULL DEFAULT '0',
                                 `status` int(11) NOT NULL DEFAULT '1',                                                   		
+                                `type` int(11) NOT NULL DEFAULT '0',
                                 `title` varchar(255) NOT NULL default '',                                                                
                                 `site` text default NULL,                                
                                 `options` longtext default NULL,
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
-    Pdo_ml::db_query($sql);
-
-    $sql = "ALTER TABLE `movies_links_campaign` ADD `type` int(11) NOT NULL DEFAULT '0'";
     Pdo_ml::db_query($sql);
 
     movies_links_create_index(array('date', 'status', 'type'), 'movies_links_campaign');
@@ -106,15 +104,12 @@ function movies_links_plugin_activation() {
                                 `last_upd` int(11) NOT NULL DEFAULT '0',
                                 `exp_status` int(11) NOT NULL DEFAULT '0',
                                 `upd_rating` int(11) NOT NULL DEFAULT '0',
+                                `parent_url` int(11) NOT NULL DEFAULT '0',
                                 `link_hash` varchar(255) NOT NULL default '',                                
                                 `link` text default NULL,               
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
-
-    $sql = "ALTER TABLE `movies_links_url` ADD `parent_url` int(11) NOT NULL DEFAULT '0'";
-    Pdo_ml::db_query($sql);
-
     movies_links_create_index(array('cid', 'pid', 'status', 'link_hash', 'date', 'last_upd', 'exp_status', 'upd_rating'), 'movies_links_url');
 
     /*
@@ -145,22 +140,41 @@ function movies_links_plugin_activation() {
                                 `uid` int(11) NOT NULL DEFAULT '0',                                                                  
                                 `top_movie` int(11) NOT NULL DEFAULT '0', 
                                 `rating` int(11) NOT NULL DEFAULT '0', 
-                                `status` int(11) NOT NULL DEFAULT '0',                                                                  
+                                `status` int(11) NOT NULL DEFAULT '0',      
+                                `score` int(11) NOT NULL DEFAULT '0',
                                 `title` varchar(255) NOT NULL default '',   
                                 `rel` varchar(255) NOT NULL default '',   
                                 `year` int(11) NOT NULL DEFAULT '0',                                                                  
                                 `options` text default NULL,      
                                 `status_links` int(11) NOT NULL DEFAULT '0',
                                 `multi` int(11) NOT NULL DEFAULT '0',
-                                `version` int(11) NOT NULL DEFAULT '0' 
+                                `version` int(11) NOT NULL DEFAULT '0', 
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
-
-    $sql = "ALTER TABLE `movies_links_posts` ADD `score` int(11) NOT NULL DEFAULT '0'";
-    Pdo_ml::db_query($sql);
-
+    
     movies_links_create_index(array('version', 'date', 'last_upd', 'uid', 'status', 'top_movie', 'rating', 'score', 'title', 'rel', 'year', 'status_links', 'multi'), 'movies_links_posts');
+
+    /*
+     * uid - url id
+     * pid - post id
+     * critic_id - critic post id     
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `movies_links_critics`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `date` int(11) NOT NULL DEFAULT '0',                                    
+                                `last_upd` int(11) NOT NULL DEFAULT '0',     
+                                `uid` int(11) NOT NULL DEFAULT '0',                                                                  
+                                `pid` int(11) NOT NULL DEFAULT '0', 
+                                `critic_id` int(11) NOT NULL DEFAULT '0', 
+                                `status` int(11) NOT NULL DEFAULT '0',
+                                `version` int(11) NOT NULL DEFAULT '0', 
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_ml::db_query($sql);
+    //print_r(Pdo_ml::last_error());
+
+    movies_links_create_index(array('date', 'last_upd', 'uid', 'pid', 'critic_id', 'status', 'version'), 'movies_links_critics');
 
     /*
      * Actors names meta
@@ -469,8 +483,7 @@ function movies_links_plugin_activation() {
     Pdo_an::db_query($sql);
 
     movies_links_create_index_an(array('last_upd', 'verdict', 'verdict_rank', 'lastname'), 'data_forebears_verdict');
-    
-    
+
     /*
      * The numbers box office int
      */

@@ -95,7 +95,10 @@ if ($cid) {
     <br />
     <hr />
 
-    <?php if ($campaign->type == 2): ?>
+    <?php
+    if ($campaign->type == 2):
+        // Links
+        ?>
         <form accept-charset="UTF-8" method="post" id="campaign">
             <div class="cm-edit inline-edit-row">
                 <fieldset>
@@ -151,12 +154,12 @@ if ($cid) {
             </div>
         </form>
         <br /><?php
-            if (isset($_POST['preview_row'])) {
+        if (isset($_POST['preview_row'])) {
 
-                if ($preivew_data == -1) {
-                    print '<p>No arhives found</p>';
-                } else if ($preivew_data) {
-                            ?>
+            if ($preivew_data == -1) {
+                print '<p>No arhives found</p>';
+            } else if ($preivew_data) {
+                ?>
                 <h3>Parsing result:</h3>
                 <?php foreach ($preivew_data as $id => $item) { ?>
                     <table class="wp-list-table widefat striped table-view-list">
@@ -354,14 +357,14 @@ if ($cid) {
                                 <tr>
                                     <td><?php print $show_name ?></td>
                                     <td><?php
-                        if (is_array($value)) {
-                            foreach ($value as $k => $v) {
-                                print "[$k] $v<br />";
-                            }
-                        } else {
-                            print $value;
-                        }
-                                ?></td>
+                                        if (is_array($value)) {
+                                            foreach ($value as $k => $v) {
+                                                print "[$k] $v<br />";
+                                            }
+                                        } else {
+                                            print $value;
+                                        }
+                                        ?></td>
                                 </tr> 
                             <?php } ?>
                         </tbody>        
@@ -383,7 +386,7 @@ if ($cid) {
 
     <?php
     if ($campaign->type == 2):
-
+        // Links
         $ol = $options['links'];
         $campaigns = $this->mp->get_campaigns();
         ?>
@@ -497,5 +500,5 @@ if ($cid) {
         ?>
 
     <?php endif ?>
-
+      
 <?php } ?>

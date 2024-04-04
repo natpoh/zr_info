@@ -45,6 +45,7 @@ if ($cid) {
                         }
                         ?>                       
                     </select>
+                    <span class="inline-edit">Select or <a href="/wp-admin/admin.php?page=critic_matic_authors&tab=add">add</a> critic author.</span>
                 </label>
 
                 <label class="inline-edit-interval">

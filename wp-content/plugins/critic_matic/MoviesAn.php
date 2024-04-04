@@ -15,11 +15,7 @@ class MoviesAn extends AbstractDBAn {
      */
     public $movies_weight_upd_interval = 1;
     public $perpage = 30;
-    public $movie_state = array(
-        1 => 'Approved',
-        2 => 'Auto',
-        0 => 'Unapproved'
-    );
+
     public $movie_rating = array(
         0 => 'Zero rating',
         1 => 'Non zero rating',
@@ -130,6 +126,7 @@ class MoviesAn extends AbstractDBAn {
             'meta_movie_keywords' => 'meta_movie_keywords',
             'meta_keywords' => 'meta_keywords',
             'language_code' => 'data_language_code',
+            'meta_movie_boxint' => 'meta_movie_boxint',
         );
         $this->timer_start();
         $this->get_perpage();
@@ -955,6 +952,7 @@ class MoviesAn extends AbstractDBAn {
     }
 
     public function get_countries_list($pids = array()) {
+        // TODO REFACTOR
         $pid_and = '';
         if (sizeof($pids)) {
             $pid_and = sprintf(" AND pid IN(%s)", implode(',', $pids));
@@ -968,6 +966,35 @@ class MoviesAn extends AbstractDBAn {
                 $ret[$item->pid] = $item;
             }
         }
+        return $ret;
+    }
+
+    public function get_all_countries($cache = true) {
+        $id=1;
+        if ($cache) {
+            static $dict;
+            if (is_null($dict)) {
+                $dict = array();
+            }
+            if (isset($dict[$id])) {
+                return $dict[$id];
+            }
+        }
+
+        $sql = "SELECT * FROM {$this->db['data_country']}";
+        $result = $this->db_results($sql);
+
+        $ret = array();
+        if (sizeof($result)) {
+            foreach ($result as $item) {
+                $ret[$item->id] = $item;
+            }
+        }
+
+        if ($cache) {
+            $dict[$id] = $result;
+        }
+
         return $ret;
     }
 
@@ -2302,10 +2329,30 @@ class MoviesAn extends AbstractDBAn {
                     . " WHERE id IN(" . implode(',', $mids) . ")";
             $results = $this->db_results($sql);
             if ($results) {
-                foreach ($results as $item) {    
+                foreach ($results as $item) {
                     $ct->addPostCountry($item->id, $item->language, $item->original_language_int, $item->original_language, $debug);
                 }
             }
         }
+    }
+
+    /*
+     * Meta box int
+     */
+
+    public function get_meta_box_int($mid) {
+        $sql = sprintf("SELECT * FROM {$this->db['meta_movie_boxint']} WHERE mid=%d", (int) $mid);
+        $result = $this->db_results($sql);
+        $ret = array();
+        if ($result){
+            $countryes = $this->get_all_countries();
+            foreach ($result as $item) {
+                $country = isset($countryes[$item->country])?$countryes[$item->country]:$item->country;
+                $item->country=$country->name;
+                $item->country_slug=$country->slug;
+                $ret[$item->id]=$item;
+            }
+        }
+        return $ret;
     }
 }

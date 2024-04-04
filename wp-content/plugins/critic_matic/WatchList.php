@@ -44,20 +44,22 @@ class WatchList extends AbstractDB {
         $theme = 'warn';
         if ($wp_uid) {
             $list = $this->get_user_list_by_type($wp_uid, $type);
-            if ($list) {
-                if ($activate == 1) {
-                    // Add
-                    $msg = 'Added to ' . $this->type[$type];
-                    $this->add_to_list($wp_uid, $list->id, $mid);
-                    $theme = 'status';
-                } else {
-                    // Remove
-                    $this->remove_from_list($wp_uid, $list->id, $mid);
-                    $msg = 'Removed from ' . $this->type[$type];
-                    $theme = 'status';
-                }
-                $result = 1;
+            if (!$list) {
+                $this->create_def_lists($wp_uid);
+                $list = $this->get_user_list_by_type($wp_uid, $type);
             }
+            if ($activate == 1) {
+                // Add
+                $msg = 'Added to ' . $this->type[$type];
+                $this->add_to_list($wp_uid, $list->id, $mid);
+                $theme = 'status';
+            } else {
+                // Remove
+                $this->remove_from_list($wp_uid, $list->id, $mid);
+                $msg = 'Removed from ' . $this->type[$type];
+                $theme = 'status';
+            }
+            $result = 1;
         }
         $ret = array('wp_uid' => $wp_uid, 'result' => $result, 'msg' => $msg, 'theme' => $theme);
         print json_encode($ret);
@@ -72,21 +74,24 @@ class WatchList extends AbstractDB {
         $theme = 'warning';
         if ($wp_uid && $mid) {
             $list = $this->get_user_list($wp_uid, $lid);
-            if ($list) {
-                if ($act == 'add') {
-                    # Add to list
-                    $result['ret'] = $this->add_to_list($wp_uid, $lid, $mid);
-                    $msg = 'Added to list: ' . stripslashes($list->title);
-                    $theme = 'status';
-                } else {
-                    # Remove from list
-                    $result['ret'] = $this->remove_from_list($wp_uid, $lid, $mid);
-                    $msg = 'Removed from list: ' . stripslashes($list->title);
-                    ;
-                    $theme = 'status';
-                }
-                $result['type'] = $list->type;
+            if (!$list) {
+                $this->create_def_lists($wp_uid);
+                $list = $this->get_user_list($wp_uid, $lid);
             }
+
+            if ($act == 'add') {
+                # Add to list
+                $result['ret'] = $this->add_to_list($wp_uid, $lid, $mid);
+                $msg = 'Added to list: ' . stripslashes($list->title);
+                $theme = 'status';
+            } else {
+                # Remove from list
+                $result['ret'] = $this->remove_from_list($wp_uid, $lid, $mid);
+                $msg = 'Removed from list: ' . stripslashes($list->title);
+                ;
+                $theme = 'status';
+            }
+            $result['type'] = $list->type;
         }
 
         $ret = array('wp_uid' => $wp_uid, 'result' => $result, 'msg' => $msg, 'theme' => $theme);
@@ -401,6 +406,9 @@ class WatchList extends AbstractDB {
           2 => 'Favorites',
          */
         foreach ($this->type as $type => $title) {
+            if ($type==0){
+                continue;
+            }
             $exist = $this->get_user_list_by_type($wp_uid, $type);
             if (!$exist) {
                 $aid = $this->get_aid($wp_uid);
@@ -533,40 +541,40 @@ class WatchList extends AbstractDB {
             ?>
             <div class="simple">
                 <div class="items">
-                    <?php
-                    foreach ($posts as $post) {
+            <?php
+            foreach ($posts as $post) {
 
-                        # Link to filter
-                        $link = $this->get_post_link($url, $post->id);
+                # Link to filter
+                $link = $this->get_post_link($url, $post->id);
 
-                        # Time
-                        $ptime = $post->date;
-                        $addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+                # Time
+                $ptime = $post->date;
+                $addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
 
-                        # Title
-                        $title = stripslashes($post->title);
+                # Title
+                $title = stripslashes($post->title);
 
-                        $publish = $post->publish;
-                        $pub_icon = '<i class="icon-' . $this->publish[$publish]['icon'] . '"></i>';
+                $publish = $post->publish;
+                $pub_icon = '<i class="icon-' . $this->publish[$publish]['icon'] . '"></i>';
 
-                        $count = $post->items;
+                $count = $post->items;
 
-                        $poster = $this->get_list_collage($post->id, false);
-                        ?>
+                $poster = $this->get_list_collage($post->id, false);
+                ?>
                         <div class="item">
                             <a href="<?php print $link ?>" title="<?php print $title ?>" >                           
-                                <?php
-                                if ($poster) {
-                                    print $poster;
-                                }
-                                ?>
+                <?php
+                if ($poster) {
+                    print $poster;
+                }
+                ?>
                                 <div class="desc">
                                     <h5><?php print $title ?></h5>
                                     <p><?php print $addtime ?> <?php print $pub_icon ?> Items: <?php print $count ?></p>
                                 </div>
                             </a>
                         </div>
-                    <?php } ?>
+            <?php } ?>
                 </div>
             </div>
             <?php
@@ -585,55 +593,55 @@ class WatchList extends AbstractDB {
             ?>
             <div class="simple">
                 <div class="items<?php
-                if ($owner) {
-                    print " owner";
-                }
-                ?>" data-id="0">
-                         <?php
-                         foreach ($posts as $post) {
+            if ($owner) {
+                print " owner";
+            }
+            ?>" data-id="0">
+                <?php
+                     foreach ($posts as $post) {
 
-                             # Link to filter
-                             $link = $this->get_post_link($url, $post->id);
+                         # Link to filter
+                         $link = $this->get_post_link($url, $post->id);
 
-                             # Time
-                             $ptime = $post->date;
-                             $addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+                         # Time
+                         $ptime = $post->date;
+                         $addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
 
-                             # Title
-                             $title = stripslashes($post->title);
+                         # Title
+                         $title = stripslashes($post->title);
 
-                             $publish = $post->publish;
-                             $pub_icon = '';
-                             if ($owner) {
-                                 $pub_icon = ' <i class="icon-' . $this->publish[$publish]['icon'] . '"></i>';
-                             }
-                             $count = $post->items;
+                         $publish = $post->publish;
+                         $pub_icon = '';
+                         if ($owner) {
+                             $pub_icon = ' <i class="icon-' . $this->publish[$publish]['icon'] . '"></i>';
+                         }
+                         $count = $post->items;
 
-                             $poster = $this->get_list_collage($post->id, false);
-                             ?>
+                         $poster = $this->get_list_collage($post->id, false);
+                         ?>
                         <div class="item" data-id="<?php print $post->id ?>">
                             <a href="<?php print $link ?>" title="<?php print $title ?>" >   
-                                <?php
-                                if ($poster) {
-                                    print $poster;
-                                }
-                                ?>
+                <?php
+                if ($poster) {
+                    print $poster;
+                }
+                ?>
                                 <div class="desc">
                                     <h5><?php print $title ?></h5>
                                     <p><?php print $addtime ?>.<?php print $pub_icon ?> Items: <?php print $count ?></p>
                                 </div>
                             </a>                                       
-                            <?php
-                            if ($owner):
+                <?php
+                if ($owner):
 
-                                $list_json = array(
-                                    'id' => $post->id,
-                                    'publish' => $post->publish,
-                                    'title' => stripslashes($post->title),
-                                    'content' => stripslashes($post->content),
-                                );
-                                $str_json = json_encode($list_json);
-                                ?>                                            
+                    $list_json = array(
+                        'id' => $post->id,
+                        'publish' => $post->publish,
+                        'title' => stripslashes($post->title),
+                        'content' => stripslashes($post->content),
+                    );
+                    $str_json = json_encode($list_json);
+                    ?>                                            
                                 <div class="menu nte">
                                     <div class="btn">
                                         <i class="icon icon-ellipsis-vert"></i>
@@ -644,18 +652,18 @@ class WatchList extends AbstractDB {
                                                 <ul class="sort-wrapper more listmenu">                      
                                                     <li class="nav-tab" data-act="show" data-href="/search/wl_<?php print $post->id ?>">Show in Search</li>
                                                     <li class="nav-tab" data-act="show" data-href="/analytics/tab_ethnicity/wl_<?php print $post->id ?>">Show in Analytics</li>
-                                                    <?php if ($post->type == 0): ?>
+                    <?php if ($post->type == 0): ?>
                                                         <li class="nav-tab" data-act="editwl" data-json="<?php print htmlspecialchars($str_json) ?>">Edit List</li>
                                                         <li class="nav-tab" data-act="delwl">Delete List</li>
-                                                    <?php endif ?>
+                    <?php endif ?>
                                                 </ul>
                                             </div>                                                          
                                         </div>                                                    
                                     </div>                                                
                                 </div>
-                            <?php endif; ?>
+                <?php endif; ?>
                         </div>
-                    <?php } ?>
+                        <?php } ?>
                 </div>
             </div>
             <?php
@@ -677,28 +685,28 @@ class WatchList extends AbstractDB {
                 ?>
                 <div class="flexrow">    
                     <div class="flexcol first250">
-                        <?php
-                        $ptime = $list->last_upd;
-                        $updtime = '';
-                        if ($ptime) {
-                            $updtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
-                        }
-                        $publish = $list->publish;
-                        $pub_icon = '<i class="icon-' . $this->publish[$publish]['icon'] . '"></i>';
-                        $pub_title = $this->publish[$publish]['title'];
-                        $list_json = array(
-                            'id' => $list->id,
-                            'publish' => $list->publish,
-                            'title' => stripslashes($list->title),
-                            'content' => stripslashes($list->content),
-                        );
-                        $str_json = json_encode($list_json);
+                <?php
+                $ptime = $list->last_upd;
+                $updtime = '';
+                if ($ptime) {
+                    $updtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+                }
+                $publish = $list->publish;
+                $pub_icon = '<i class="icon-' . $this->publish[$publish]['icon'] . '"></i>';
+                $pub_title = $this->publish[$publish]['title'];
+                $list_json = array(
+                    'id' => $list->id,
+                    'publish' => $list->publish,
+                    'title' => stripslashes($list->title),
+                    'content' => stripslashes($list->content),
+                );
+                $str_json = json_encode($list_json);
 
-                        $poster = $this->get_list_collage($list->id);
-                        if ($poster) {
-                            print $poster;
-                        }
-                        ?>
+                $poster = $this->get_list_collage($list->id);
+                if ($poster) {
+                    print $poster;
+                }
+                ?>
                         <?php if ($ptime) { ?>
                             <div class="row">Updated: <?php print $updtime ?></div>
                         <?php } ?>
@@ -707,58 +715,58 @@ class WatchList extends AbstractDB {
                         <?php } ?>
                         <div class="row">Items: <?php print $count ?></div>
 
-                        <?php
-                        # Content
-                        $content = stripslashes($list->content);
-                        if ($content) {
-                            ?>
+                <?php
+                # Content
+                $content = stripslashes($list->content);
+                if ($content) {
+                    ?>
                             <p><?php print $content ?><p>
-                            <?php } ?>
+                        <?php } ?>
 
                         <div class="row"><a class="uw-btn" href="/search/wl_<?php print $list->id ?>">Show in Search</a></div>
                         <div class="row"><a class="uw-btn" href="/analytics/tab_ethnicity/wl_<?php print $list->id ?>">Show in Analytics</a></div>
 
 
-                        <?php if ($owner && $list->type == 0) { ?>
+                <?php if ($owner && $list->type == 0) { ?>
                             <br /><div class="row"><button id="user_edit_watchlist" class="btn-small" data-json="<?php print htmlspecialchars($str_json) ?>" data-id="<?php print $curr_list ?>" data-publish="<?php print $publish ?>" data-title="<?php print $list->title ?>" data-content="<?php print $list->content ?>">Edit list</button></div>
                         <?php } ?>
 
                     </div>
                     <div class="flexcol second simple">
                         <div class="items<?php
-                        if ($owner) {
-                            print " owner";
-                        }
+                if ($owner) {
+                    print " owner";
+                }
                         ?>" data-id="<?php print $list->id ?>">
-                                 <?php
-                                 if ($posts) {
-                                     foreach ($posts as $post) {
+                        <?php
+                             if ($posts) {
+                                 foreach ($posts as $post) {
 
-                                         # Time
-                                         $ptime = $post->date;
-                                         $addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+                                     # Time
+                                     $ptime = $post->date;
+                                     $addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
 
-                                         $movie = $ma->get_post($post->mid);
+                                     $movie = $ma->get_post($post->mid);
 
-                                         # Title                                
-                                         $title = stripslashes($movie->title);
+                                     # Title                                
+                                     $title = stripslashes($movie->title);
 
-                                         # Link 
-                                         $link = $ma->get_post_link($movie);
+                                     # Link 
+                                     $link = $ma->get_post_link($movie);
 
-                                         // release
-                                         $release = $movie->release;
-                                         if ($release) {
-                                             $release = strtotime($release);
-                                             $release = date('Y', $release);
-                                             if (strstr($title, $release)) {
-                                                 $release = '';
-                                             } else {
-                                                 $release = ' (' . $release . ')';
-                                             }
+                                     // release
+                                     $release = $movie->release;
+                                     if ($release) {
+                                         $release = strtotime($release);
+                                         $release = date('Y', $release);
+                                         if (strstr($title, $release)) {
+                                             $release = '';
+                                         } else {
+                                             $release = ' (' . $release . ')';
                                          }
-                                         $poster_link_90 = $cfront->get_thumb_path_full(90, 120, $post->mid);
-                                         ?>
+                                     }
+                                     $poster_link_90 = $cfront->get_thumb_path_full(90, 120, $post->mid);
+                                     ?>
                                     <div class="item" data-id="<?php print $movie->id ?>">
                                         <a href="<?php print $link ?>" title="<?php print $title ?>" >   
                                             <img srcset="<?php print $poster_link_90 ?>" alt="<?php print $title ?>">
@@ -767,7 +775,7 @@ class WatchList extends AbstractDB {
                                                 <p><?php print $addtime ?></p>
                                             </div>
                                         </a>
-                                        <?php if ($owner): ?>                                            
+                        <?php if ($owner): ?>                                            
                                             <div class="menu nte">
                                                 <div class="btn">
                                                     <i class="icon icon-ellipsis-vert"></i>
@@ -782,12 +790,12 @@ class WatchList extends AbstractDB {
                                                     </div>                                                    
                                                 </div>                                                
                                             </div>
-                                        <?php endif; ?>
+                        <?php endif; ?>
                                     </div>
-                                    <?php
+                                        <?php
+                                    }
                                 }
-                            }
-                            ?>
+                                ?>
                         </div>
                     </div>
                 </div>
@@ -822,13 +830,13 @@ class WatchList extends AbstractDB {
         return $ret;
     }
 
-    public function get_watch_blocks($ids = array()) {        
+    public function get_watch_blocks($ids = array()) {
         if (!$ids) {
             return array();
         }
         # Get current user
         $wp_uid = $this->get_current_user_id();
-        if (!$wp_uid){
+        if (!$wp_uid) {
             return array();
         }
         $in_list = $this->in_def_lists($wp_uid, $ids);
@@ -840,7 +848,7 @@ class WatchList extends AbstractDB {
              */
             $add_watch_list_active = isset($in_list[$id][1]) ? ' active' : '';
             $add_favorite_list_active = isset($in_list[$id][2]) ? ' active' : '';
-            ob_start();            
+            ob_start();
             ?>
             <div id="watch_block_<?php print $id ?>" class="watch_block">
                 <a href="#watch_later" title="Watch later" class="add_watch_list<?php print $add_watch_list_active ?>" data-mid="<?php print $id ?>" data-type="1"></a>
@@ -849,8 +857,8 @@ class WatchList extends AbstractDB {
             </div>            
             <?php
             $content = ob_get_contents();
-            ob_end_clean();         
-            $ret[$id]=$content;
+            ob_end_clean();
+            $ret[$id] = $content;
         }
         return $ret;
     }
@@ -866,11 +874,11 @@ class WatchList extends AbstractDB {
         return $link;
     }
 
-    public function get_current_user() {        
+    public function get_current_user() {
         return $this->cm->get_current_user();
     }
 
-    public function get_current_user_id() {        
+    public function get_current_user_id() {
         $user = $this->cm->get_current_user();
         return $user->ID;
     }
