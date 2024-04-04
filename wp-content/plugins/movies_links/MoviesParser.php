@@ -2016,7 +2016,7 @@ class MoviesParser extends MoviesAbstractDB {
                                             $author_status = 0;
                                             $aid = $cm->get_or_create_author_by_name($author, $author_type, $author_status);
                                         } else {
-                                            $aid = $options['author'];
+                                            $aid = $o['author'];
                                         }
 
                                         $cm->add_post_author($pid, $aid);

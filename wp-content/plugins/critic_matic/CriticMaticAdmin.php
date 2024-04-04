@@ -540,7 +540,7 @@ class CriticMaticAdmin {
                 include(CRITIC_MATIC_PLUGIN_DIR . 'includes/view_post.php');
             } else if ($curr_tab == 'edit') {
                 // Edit the post
-                $authors = $this->cm->get_all_authors(-1, 2);
+                $authors = $this->cm->get_all_authors(1);
                 if (isset($_POST['title'])) {
                     $valid = $this->cm->post_edit_validate($_POST);
                     if ($valid === true) {
@@ -730,7 +730,7 @@ class CriticMaticAdmin {
                 include(CRITIC_MATIC_PLUGIN_DIR . 'includes/view_post.php');
             } else if ($curr_tab == 'edit') {
                 // Edit the post
-                $authors = $this->cm->get_all_authors(-1, 2);
+                $authors = $this->cm->get_all_authors(1);
                 if (isset($_POST['title'])) {
                     $valid = $this->cm->post_edit_validate($_POST);
                     if ($valid === true) {
@@ -1786,7 +1786,7 @@ class CriticMaticAdmin {
                         print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
                     }
                 }
-                $authors = $this->cm->get_all_authors();
+                $authors = $this->cm->get_all_authors(1);
                 $def_options = $this->cf->def_options;
                 $campaign = $this->cf->get_campaign($cid);
                 $update_interval = $this->cf->update_interval;
@@ -1912,7 +1912,7 @@ class CriticMaticAdmin {
                     print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
                 }
             }
-            $authors = $this->cm->get_all_authors();
+            $authors = $this->cm->get_all_authors(1);
             $def_options = $this->cf->def_options;
             $update_interval = $this->cf->update_interval;
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/add_feed.php');
