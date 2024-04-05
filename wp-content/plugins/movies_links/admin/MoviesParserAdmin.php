@@ -1141,6 +1141,8 @@ class MoviesParserAdmin extends ItemAdmin {
                     }
                 }
             }
+            
+            $add_result['status'] = isset($form_state['status']) ? $form_state['status'] : 0;
 
             $opt_upd = array();
             $opt_upd['critics'] = $add_result;
