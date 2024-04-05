@@ -318,6 +318,14 @@ class MoviesParserAdmin extends ItemAdmin {
                         print '<textarea style="width:90%; height:500px">' . $json . '</textarea>';
 
                         exit;
+                    } else if ($_GET['export_critic_rules']) {
+                        $options = $this->mp->get_options($campaign);
+                        $parser_rules = $options['critics']['rules'];
+                        $json = json_encode($parser_rules);
+                        print '<h2>Export campaign critics rules</h2>';
+                        print '<textarea style="width:90%; height:500px">' . $json . '</textarea>';
+
+                        exit;
                     } else if ($_GET['find_urls']) {
                         print '<h2>Find campaign URLs</h2>';
                         $settings = $this->ml->get_settings();
@@ -1133,8 +1141,8 @@ class MoviesParserAdmin extends ItemAdmin {
                     $cp = $cm->get_cp();
                     $cprules = $cp->get_cprules();
                     $add_result['rules'] = $cprules->parser_rules_form($form_state);
-                    if ($form_state['import_rules_json']) {
-                        $rules = json_decode(trim(stripslashes($form_state['import_rules_json'])), true);
+                    if ($form_state['import_critic_rules_json']) {
+                        $rules = json_decode(trim(stripslashes($form_state['import_critic_rules_json'])), true);
                         if (sizeof($rules)) {
                             $add_result['rules'] = $rules;
                         }
