@@ -174,7 +174,7 @@ class WpUser extends AbstractDBWp {
         }
 
         $sessions = array_map(array($this, 'prepare_session'), $sessions);
-        return array_filter($sessions, array($this, 'wp_session_is_still_valid'));
+        return $this->wp_session_is_still_valid($sessions);
     }
 
     /**

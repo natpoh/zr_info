@@ -2224,7 +2224,7 @@ class CriticFront extends SearchFacets {
         return $content;
     }
 
-    public function get_review_scroll_data($movie_id = 0, $tags = array()) {
+    public function get_review_scroll_data($movie_id = 0, $tags = array(),$posts=null, $link='') {
         $a_type = 1;
         $limit = 10;
         $start = 0;
@@ -2247,7 +2247,12 @@ class CriticFront extends SearchFacets {
             $meta_type[] = 3;
         }
         $unique = 1;
-        $posts = $this->theme_last_posts($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, 0, true, 0, 0, $unique);
+
+        if (!$posts)
+        {
+            $posts = $this->theme_last_posts($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, 0, true, 0, 0, $unique);
+        }
+
         $count = $this->get_post_count($a_type, $movie_id);
         $content = array();
         $array_movies = [];
@@ -2269,16 +2274,22 @@ class CriticFront extends SearchFacets {
             }
 
             // Link more
-            if ($count > $limit) {
-                $link = '/search/tab_critics/author_critic/state_proper_contains';
 
-                if ($movie_id) {
-                    $link .= '/movie_' . $movie_id;
+            if ($count > $limit) {
+
+                if (!$link) {
+                    $link = '/search/tab_critics/author_critic/state_proper_contains';
+
+                    if ($movie_id) {
+                        $link .= '/movie_' . $movie_id;
+                    }
                 }
+
 
                 $title = 'Load more<br>Critic Reviews';
                 $content['result']['0_0'] = array('link' => $link, 'title' => $title, 'genre' => 'load_more', 'poster_link_small' => '', 'poster_link_big' => '', 'content_pro' => '');
             }
+
 
             if (!class_exists('RWT_RATING')) {
                 require ABSPATH . "wp-content/themes/custom_twentysixteen/template/include/movie_rating.php";

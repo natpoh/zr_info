@@ -522,7 +522,7 @@ class SearchFacets extends AbstractDB {
             gmi('front_search_watchlists_multi');
         }
 
-        $result['count'] = $movies_count + $games_count + $critics_count + $filters_count+$watchlists_count;
+        $result['count'] = $movies_count + $games_count + $critics_count + $filters_count + $watchlists_count;
         return $result;
     }
 
@@ -913,6 +913,9 @@ class SearchFacets extends AbstractDB {
                 $multipler = $curr_facet['multipler'];
                 $rating = $sort_val;
                 if ($curr_sort == 'rrtg') {
+                    $rating -= 100;
+                }
+                if ($curr_sort == 'rmg') {
                     $rating -= 100;
                 }
 
@@ -1953,7 +1956,11 @@ class SearchFacets extends AbstractDB {
                                             $show_key = $key / $multipler;
                                         }
                                         if ($shift) {
-                                            $show_key = $show_key + $shift;
+                                            $view_shift = $shift;
+                                            //if ($multipler > 0) {
+                                            //    $view_shift = round($shift/$multipler,2);
+                                            //}
+                                            $show_key = $show_key + $view_shift;
                                         }
                                         if ($name_after) {
                                             $show_key = $show_key . $name_after;
@@ -1984,7 +1991,12 @@ class SearchFacets extends AbstractDB {
                                             $show_key = $key / $multipler;
                                         }
                                         if ($shift) {
-                                            $show_key = $show_key + $shift;
+                                            $view_shift = $shift;
+                                            //if ($multipler > 0) {
+                                            //    $view_shift = round($shift/$multipler,2);
+                                            //}
+                                            $show_key = $show_key + $view_shift;
+                                            
                                         }
                                         if ($name_after) {
                                             $show_key = $show_key . $name_after;
@@ -1997,7 +2009,7 @@ class SearchFacets extends AbstractDB {
                         </div>
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $first_item ?>">
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $max_item ?>">
-                        <?php //unset($items[count($items) - 1]);                                             ?>
+                        <?php //unset($items[count($items) - 1]);                                              ?>
                         <script type="text/javascript">var <?php print $type ?>_arr =<?php print json_encode($items) ?></script>
 
                     </div>  
@@ -2226,7 +2238,7 @@ class SearchFacets extends AbstractDB {
                             </div>
                             <input type="hidden" name="<?php print $type ?>" value="<?php print $first_item ?>">
                             <input type="hidden" name="<?php print $type ?>" value="<?php print $max_item ?>">
-                            <?php //unset($items[count($items) - 1]);                                          ?>
+                            <?php //unset($items[count($items) - 1]);                                           ?>
                             <script type="text/javascript">var <?php print $type ?>_arr =<?php print json_encode($items) ?></script>
 
                         <?php endif; ?>
@@ -2425,7 +2437,7 @@ class SearchFacets extends AbstractDB {
                         </div>
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $first_item ?>">
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $max_item ?>">
-                        <?php //unset($items[count($items) - 1]);                                              ?>
+                        <?php //unset($items[count($items) - 1]);                                               ?>
                         <script type="text/javascript">var <?php print $type ?>_arr =<?php print json_encode($items) ?></script>
                     </div>  
                 <?php endif; ?>
@@ -3015,7 +3027,7 @@ class SearchFacets extends AbstractDB {
                         </div>
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $first_item ?>">
                         <input type="hidden" name="<?php print $type ?>" value="<?php print $max_item ?>">
-                        <?php //unset($items[count($items) - 1]);                                                                                               ?>
+                        <?php //unset($items[count($items) - 1]);                                                                                                ?>
                         <script type="text/javascript">var <?php print $type ?>_arr =<?php print json_encode($items) ?></script>
                     </div>  
                 <?php endif ?>
@@ -3936,30 +3948,30 @@ class SearchFacets extends AbstractDB {
             print ' column';
         }
         ?>" data-filter="<?php print $filter_name ?>"><?php
-                foreach ($tabs as $slug => $item) {
-                    $is_active = '';
-                    $is_default = '';
+            foreach ($tabs as $slug => $item) {
+                $is_active = '';
+                $is_default = '';
 
-                    if ($inactive && in_array($item[$filter_type], $inactive)) {
-                        continue;
-                    }
+                if ($inactive && in_array($item[$filter_type], $inactive)) {
+                    continue;
+                }
 
-                    if ($item[$filter_type] == $active_facet) {
-                        $is_active = ' active';
-                    }
-                    if ($def_tab == $item[$filter_type]) {
-                        $is_default = ' default';
-                        $include = array();
-                        $exclude = array($filter_name);
-                    } else {
-                        $include = array($filter_name => $slug);
-                        $exclude = array();
-                    }
+                if ($item[$filter_type] == $active_facet) {
+                    $is_active = ' active';
+                }
+                if ($def_tab == $item[$filter_type]) {
+                    $is_default = ' default';
+                    $include = array();
+                    $exclude = array($filter_name);
+                } else {
+                    $include = array($filter_name => $slug);
+                    $exclude = array();
+                }
 
-                    $url = $this->get_current_search_url($include, $exclude);
-                    ?><li class="nav-tab<?php print $is_active . $is_default ?>" data-id="<?php print $slug ?>"><a href="<?php print $url ?>"><?php print $item['title'] ?></a></li><?php }
-                ?></ul>
-        <?php
+                $url = $this->get_current_search_url($include, $exclude);
+                ?><li class="nav-tab<?php print $is_active . $is_default ?>" data-id="<?php print $slug ?>"><a href="<?php print $url ?>"><?php print $item['title'] ?></a></li><?php }
+            ?></ul>
+            <?php
         $content = ob_get_contents();
         ob_end_clean();
         return $content;
@@ -3973,30 +3985,30 @@ class SearchFacets extends AbstractDB {
             print ' column';
         }
         ?>" data-filter="<?php print $filter_name ?>"><?php
-                foreach ($tabs as $slug => $item) {
-                    $is_active = '';
-                    $is_default = '';
+            foreach ($tabs as $slug => $item) {
+                $is_active = '';
+                $is_default = '';
 
-                    if ($inactive && in_array($slug, $inactive)) {
-                        continue;
-                    }
+                if ($inactive && in_array($slug, $inactive)) {
+                    continue;
+                }
 
-                    if ($slug == $active_facet) {
-                        $is_active = ' active';
-                    }
-                    if ($def_tab == $slug) {
-                        $is_default = ' default';
-                        $include = array();
-                        $exclude = array($filter_name);
-                    } else {
-                        $include = array($filter_name => $slug);
-                        $exclude = array();
-                    }
+                if ($slug == $active_facet) {
+                    $is_active = ' active';
+                }
+                if ($def_tab == $slug) {
+                    $is_default = ' default';
+                    $include = array();
+                    $exclude = array($filter_name);
+                } else {
+                    $include = array($filter_name => $slug);
+                    $exclude = array();
+                }
 
-                    $url = $this->get_current_search_url($include, $exclude);
-                    ?><li class="nav-tab<?php print $is_active . $is_default ?>" data-id="<?php print $slug ?>"><a href="<?php print $url ?>"><?php print $item['title'] ?></a></li><?php }
-                ?></ul>
-        <?php
+                $url = $this->get_current_search_url($include, $exclude);
+                ?><li class="nav-tab<?php print $is_active . $is_default ?>" data-id="<?php print $slug ?>"><a href="<?php print $url ?>"><?php print $item['title'] ?></a></li><?php }
+            ?></ul>
+            <?php
         $content = ob_get_contents();
         ob_end_clean();
         return $content;
@@ -4513,10 +4525,10 @@ class SearchFacets extends AbstractDB {
             <?php if ($quick_find) { ?>
                 <div class="facet-quickfind">
                     <input type="search" class="autocomplite<?php
-                    if ($keyword) {
-                        print ' active';
-                    }
-                    ?>" data-type="<?php print $filter ?>" data-count="<?php print $more ?>" value="<?php print $keyword ?>" placeholder="Quick find" ac-type="qf">
+            if ($keyword) {
+                print ' active';
+            }
+                ?>" data-type="<?php print $filter ?>" data-count="<?php print $more ?>" value="<?php print $keyword ?>" placeholder="Quick find" ac-type="qf">
                 </div>          
             <?php } ?>
             <div class="facet-ch<?php
@@ -4524,14 +4536,14 @@ class SearchFacets extends AbstractDB {
                 print ' custom';
             }
             ?>"><?php
-                     if ($collapsed):
-                         $this->theme_block_loading();
-                     else:
-                         if ($tabs) {
-                             print $tabs;
-                         }
-                         $keys = array();
-                         ?>
+                 if ($collapsed):
+                     $this->theme_block_loading();
+                 else:
+                     if ($tabs) {
+                         print $tabs;
+                     }
+                     $keys = array();
+                     ?>
                          <?php if (sizeof($data)): ?>
                              <?php
                              $andor_filter = '';

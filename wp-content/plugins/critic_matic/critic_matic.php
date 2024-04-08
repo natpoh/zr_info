@@ -2071,5 +2071,15 @@ ALTER TABLE `cache_movie_actor_meta` CHANGE `pafmjw` `pafjw` INT NOT NULL DEFAUL
 ALTER TABLE `cache_movie_actor_meta` CHANGE `psfmjw` `psfjw` INT NOT NULL DEFAULT '0';
 ALTER TABLE `cache_movie_actor_meta` CHANGE `pmfmjw` `pmfjw` INT NOT NULL DEFAULT '0';
 
+
  * 
+ * Erating
+ * 
+ * SELECT movie_id, count(*) FROM `data_movie_erating` GROUP by movie_id having count(*) > 1;
+ * 
+DELETE m FROM `data_movie_erating` m
+INNER JOIN `data_movie_erating` s
+WHERE 
+    m.id > s.id AND 
+    m.movie_id = s.movie_id;
  */

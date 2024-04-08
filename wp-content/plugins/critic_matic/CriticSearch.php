@@ -134,6 +134,7 @@ class CriticSearch extends AbstractDB {
                 'ropencritic' => array('title' => 'OpenCritic', 'facet' => 'rating', 'eid' => 'eopencritic', 'titlesm' => 'OpenCritic', 'max_count' => 100, 'multipler' => 1, 'group' => 'rating', 'icon' => 'opencritic', 'sorted' => 1, 'sort_second' => 'copencritic', 'sort_second_title' => 'votes', 'tabs' => array('games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1),
                 'rmc' => array('title' => 'Metacritic MetaScore', 'facet' => 'rating', 'eid' => 'emc', 'titlesm' => 'MetaScore', 'max_count' => 100, 'multipler' => 1, 'group' => 'rating', 'icon' => 'mtcr', 'sorted' => 1, 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1),
                 'rmu' => array('title' => 'Metacritic UserScore', 'facet' => 'rating', 'eid' => 'emu', 'titlesm' => 'UserScore', 'max_count' => 100, 'multipler' => 10, 'group' => 'rating', 'icon' => 'mtcr', 'sorted' => 1, 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1),
+                'rmg' => array('title' => 'Metacritic % Gap', 'facet' => 'rating', 'eid' => 'emg', 'titlesm' => 'Metacritic % Gap', 'max_count' => 200, 'shift' => -10, 'multipler' => 10, 'group' => 'rating', 'icon' => 'mtcr', 'sorted' => 1, 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1),
                 'ranl' => array('title' => 'MyAnimeList', 'facet' => 'rating', 'eid' => 'eanl', 'titlesm' => 'MyAnimeList', 'max_count' => 100, 'multipler' => 10, 'group' => 'rating', 'icon' => 'mal', 'sorted' => 1, 'sort_second' => 'canl', 'sort_second_title' => 'votes', 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1),
                 'rrt' => array('title' => 'Rotten Tomatoes', 'facet' => 'rating', 'eid' => 'ert', 'titlesm' => 'Rotten Tomatoes', 'max_count' => 100, 'group' => 'rating', 'icon' => 'rt', 'sorted' => 1, 'sort_second' => 'crt', 'sort_second_title' => 'votes', 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1),
                 'rrta' => array('title' => 'Rotten Tomatoes Audience', 'facet' => 'rating', 'eid' => 'erta', 'titlesm' => 'Rotten Tomatoes Audience', 'max_count' => 100, 'group' => 'rating', 'icon' => 'rt', 'sorted' => 1, 'sort_second' => 'crta', 'sort_second_title' => 'votes', 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1),
@@ -477,7 +478,7 @@ class CriticSearch extends AbstractDB {
                 // Ratings
                 'reviewwoketitle' => array('title' => 'Review Sites<span data-value="tooltip_zr_woke_search" class="nte_info"></span>', 'is_title' => 1, 'group' => 'woke', 'tabs' => array('movies', 'international', 'ethnicity'), 'sort_w' => 40,),
                 'bechdeltest' => array('title' => 'BechdelTest', 'facet' => 'select', 'eid' => 'ebechdeltest', 'titlesm' => 'BechdelTest', 'max_count' => 5, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'sorted' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'sort_w' => 40, 'max' => 1,),
-                'rcherry' => array('title' => 'CherryPicks', 'facet' => 'rating', 'eid' => 'echerry', 'titlesm' => 'CherryPicks', 'max_count' => 100, 'multipler' => 1, 'group' => 'woke', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1, 'sort_w' => 40,),
+                'rcherry' => array('title' => 'CherryPicks', 'facet' => 'rating', 'eid' => 'echerry', 'titlesm' => 'CherryPicks', 'max_count' => 100, 'multipler' => 1, 'group' => 'woke', 'sorted' => 1, 'hide' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'zero' => 1, 'max' => 1, 'sort_w' => 40,),
                 'rmedia' => array('title' => 'MediaVersity', 'facet' => 'rating', 'eid' => 'emedia', 'titlesm' => 'MediaVersity', 'max_count' => 50, 'multipler' => 10, 'group' => 'woke', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1, 'sort_w' => 40,),
                 'mediaversity' => array('title' => 'MediaVersity A-F', 'eid' => 'emedia', 'facet' => 'select', 'titlesm' => 'MediaVersity', 'max_count' => 20, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'sort_w' => 40,),
                 'worthit' => array('title' => 'WorthItOrWoke', 'eid' => 'eworthit', 'facet' => 'select', 'titlesm' => 'WorthIt', 'max_count' => 5, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'sorted' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'sort_w' => 40,),
@@ -503,7 +504,7 @@ class CriticSearch extends AbstractDB {
                 'elgbt' => array('tabs' => array('movies', 'international', 'ethnicity'),),
                 'elgb' => array('tabs' => array('movies', 'international', 'ethnicity'),),
                 'eqtia' => array('tabs' => array('movies', 'international', 'ethnicity'),),
-                'echerry' => array('tabs' => array('movies', 'international', 'ethnicity'),),
+                'echerry' => array(),
                 'emedia' => array('tabs' => array('movies', 'international', 'ethnicity'),),
                 'eworthit' => array('tabs' => array('movies', 'international', 'ethnicity'),),
                 'ebechdeltest' => array('tabs' => array('movies', 'international', 'ethnicity'),),
@@ -3081,7 +3082,9 @@ class CriticSearch extends AbstractDB {
                 if ($facet == 'rrtg') {
                     $filters_and['filter'] .= " AND rrta>0 AND rrt>0";
                 }
-
+                if ($facet == 'rmg') {
+                    $filters_and['filter'] .= " AND rmu>0 AND rmc>0";
+                }
                 $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1" . $filters_and['filter'] . $match
                         . " GROUP BY " . $facet . " ORDER BY " . $facet . " ASC LIMIT 0," . $max_count;
             } else if ($facet == 'movie') {
@@ -3222,6 +3225,9 @@ class CriticSearch extends AbstractDB {
                         // All rating facets              
                         if ($facet == 'rrtg') {
                             $filters_and['filter'] .= " AND rrta>0 AND rrt>0";
+                        }
+                        if ($facet == 'rmg') {
+                            $filters_and['filter'] .= " AND rmu>0 AND rmc>0";
                         }
                         $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
                                 . " GROUP BY " . $facet . " ORDER BY " . $facet . " ASC LIMIT 0," . $max_count;
@@ -4083,6 +4089,9 @@ class CriticSearch extends AbstractDB {
                         }
                         if ($key == 'rrtg') {
                             $filters_and .= " AND rrta>0 AND rrt>0";
+                        }
+                        if ($facet == 'rmg') {
+                            $filters_and .= " AND rmu>0 AND rmc>0";
                         }
                     }
                 } else if ($key == 'genre') {

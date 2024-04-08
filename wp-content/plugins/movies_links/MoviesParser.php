@@ -1996,13 +1996,21 @@ class MoviesParser extends MoviesAbstractDB {
                                 $post_type = 5;
                                 // Post status publish
                                 $post_status = 1;
-                                $top_movie = $item->top_movie;
+                                $top_movie = (int) $item->top_movie;
+                                $pid = 0;
 
                                 if ($post_exist) {
                                     // Update post
                                     $log_message = 'Update post';
                                     $pid = $post_exist->id;
-                                    $cm->update_post($pid, $date, $post_status, $item->link, $title, $content, $post_type);
+                                    $data = array(
+                                        'status' => $post_status,
+                                        'type' => $post_type,
+                                        'title' => $title,
+                                        'content' => $content,
+                                        'top_movie' => $top_movie,
+                                    );
+                                    $cm->update_post_fields($pid, $data);
                                 } else {
                                     $view_type = $cm->get_post_view_type($item->link);
                                     // Add post 
@@ -2032,6 +2040,17 @@ class MoviesParser extends MoviesAbstractDB {
                                         $add_post = false;
                                     }
                                 }
+
+                                if ($pid) {
+                                    // Add top movie meta                                                        
+                                    // Type: 1 => 'Proper Review',
+                                    $type = 1;
+                                    // State: 1 => 'Approved',
+                                    $state = 1;
+                                    // Add meta                                    
+                                    $cm->add_post_meta($top_movie, $type, $state, $pid, 0, false);
+                                }
+                                
                             } else {
                                 $message = 'Error URL filters';
                                 if (!$title) {
