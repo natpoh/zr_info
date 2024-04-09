@@ -644,8 +644,9 @@ function create_rating_content(object, m_id, search_block = 0) {
 
             total_gap = object.total_rating.rt_gap;
             rating_color = '';
-            if (total_gap) {
+            if (object.total_rating.rt_rating > 0 && object.total_rating.rt_aurating > 0) {
                 total_gap = Number(total_gap);
+                if (!total_gap)total_gap=0;
 
                 if (total_gap > 0 || total_gap < 0) {
 
@@ -657,7 +658,10 @@ function create_rating_content(object, m_id, search_block = 0) {
                         rating_color = 'red_rt';
                     }
                 }
-                total_gap_str = total_gap + '%'
+                total_gap_str = total_gap + '%';
+            }else
+            {
+                total_gap_str =  'N/A';
             }
 
             total_tomatoes_content = create_total_rating(object.total_rating, 1, total_gap);
@@ -1169,7 +1173,10 @@ function set_video_scroll(data, block_id, append = '') {
             if (!append) {
 
                 let prnt = jQuery('div[id="' + block_id + '"]').parents('section.inner_content');
-                prnt.remove();
+                let content_area = prnt.find('.scroller_wrap');
+                content_area.html('<p class="no_result">No results found</p>');
+
+                //prnt.remove();
                 var tmpl_type = data['type'];
 
                 if (tmpl_type == 'actors_data') {
@@ -1180,12 +1187,15 @@ function set_video_scroll(data, block_id, append = '') {
         }
 
 
-    } else {
+    }
+    else {
 
 
         if (!append) {
             let prnt = jQuery('div[id="' + block_id + '"]').parents('section.inner_content');
-            prnt.remove();
+            let content_area = prnt.find('.scroller_wrap');
+            content_area.html('<p class="no_result">No results found</p>');
+            //prnt.remove();
         }
 
 
@@ -2000,7 +2010,8 @@ function load_ajax_block(block_id = '', request_id = '') {
                         }
                     }
                 }
-            } else if (block_id == 'twitter_scroll') {
+            }
+            else if (block_id == 'twitter_scroll') {
                 if (data) {
                     //  jQuery('div.column_header_main').prepend(data);
                     jQuery('div[id="' + block_id + '"]').html('<div class="column_content flex scroller">' + data + '</div>');
@@ -2017,7 +2028,8 @@ function load_ajax_block(block_id = '', request_id = '') {
                     initializeScroller(1, 'div[id="' + block_id + '"]');
 
                 }
-            } else if (block_id == 'chan_scroll') {
+            }
+            else if (block_id == 'chan_scroll') {
                 if (data) {
                     try {
                         var Object_data = JSON.parse(data);
@@ -2036,7 +2048,8 @@ function load_ajax_block(block_id = '', request_id = '') {
 
                 }
 
-            } else if (block_id == 'google_search' || block_id == 'google_search_review' || block_id == 'google_global_zeitgeist' || block_id == 'google_global_games' || block_id == 'google_characters') {
+            }
+            else if (block_id == 'google_search' || block_id == 'google_search_review' || block_id == 'google_global_zeitgeist' || block_id == 'google_global_games' || block_id == 'google_characters') {
                 if (data) {
                     prepare_search_data(block_id, data);
                 }
@@ -2089,7 +2102,8 @@ function load_ajax_block(block_id = '', request_id = '') {
 
 
                 }
-            } else if (block_id == 'movie_rating') {
+            }
+            else if (block_id == 'movie_rating') {
                 add_movie_rating(block_id, data);
             } else if (block_id == 'last_donations') {
                 jQuery('div[id="' + block_id + '"]').html(data);
@@ -2121,7 +2135,8 @@ function load_ajax_block(block_id = '', request_id = '') {
                 jQuery('body').on('click', '.r_row  .ethnycity_select', function () {
                     load_actor_representation(parent_id);
                 });
-            } else if (block_id == 'audience_form') {
+            }
+            else if (block_id == 'audience_form') {
                 jQuery('div[id="' + block_id + '"]').html(data);
                 //check load script
 
@@ -2155,7 +2170,8 @@ function load_ajax_block(block_id = '', request_id = '') {
 
 
 
-            } else if (block_id == 'search_ajax') {
+            }
+            else if (block_id == 'search_ajax') {
                 if (data) {
                     try {
                         var Object_data = JSON.parse(data);
@@ -2199,7 +2215,8 @@ function load_ajax_block(block_id = '', request_id = '') {
                 // Check watchlists
                 check_watchlists();
 
-            } else {
+            }
+            else {
 
 
                 if (block_id.indexOf("&cid") !== -1) {

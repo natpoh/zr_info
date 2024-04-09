@@ -78,11 +78,18 @@ div.media.discover div.card.style_1 div.image div.wrapper {
     min-height: 330px;
     display: flex;
 }
-div.image div.wrapper a {
+div.image div.wrapper>a {
     display: flex;
     width: 100%;
     max-width: 220px;
 }
+
+p.no_result
+{
+    padding: 130px 50px;
+    font-size: 22px;
+}
+
 .glyphicons_v2.picture.grey {
     background-image: url("../images/empty_image.svg");
 }
@@ -2508,6 +2515,13 @@ p.l_c_g::before {
     filter: unset;
     opacity: 1;
 
+}
+
+.browse_watch_lists{
+    transform: translateY(-5px);
+}
+.flex_movies_block .browse_watch_lists{
+    transform: translateY(-9px);
 }
 .add_favorite_list {
 

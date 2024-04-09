@@ -349,7 +349,7 @@ class PgRatingCalculate {
         return $data;
     }
 
-    public static function sync_update($data,$id,$db,$type='update',$sync=true,$sync_client=false){
+    public static function sync_update($data,$id,$db,$type='update',$sync=true,$sync_client=false,$request=''){
 
         if (!$sync_client)
         {
@@ -373,7 +373,8 @@ class PgRatingCalculate {
         }
         else  if ($type=='insert')
         {
-            $ma->sync_insert_data($data, $db, $sync_client,$sync , 10);
+
+            $ma->sync_insert_data($data, $db, $sync_client,$sync , 10,$request);
         }
 
     }
@@ -672,7 +673,9 @@ class PgRatingCalculate {
                     $data_current_array['date'] = time();
                     $data_current_array['last_upd'] = time();
 
-                    self::sync_update($data_current_array, '', 'data_movie_erating', 'insert', 1);
+                    $request=['movie_id'=>$id];
+
+                    self::sync_update($data_current_array, '', 'data_movie_erating', 'insert', 1,$request);
                 }
 
 
@@ -2184,8 +2187,9 @@ class PgRatingCalculate {
                 if ($debug){
                     TMDB::var_dump_table(['insert data_movie_erating',$audience_calc,$rid]);
                 }
+                $request=['movie_id'=>$rid];
 
-                        self::sync_update($data_current_array, '', 'data_movie_erating', 'insert', 1);
+                        self::sync_update($data_current_array, '', 'data_movie_erating', 'insert', 1,$request);
             }
             else {
 

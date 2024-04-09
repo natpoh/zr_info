@@ -83,7 +83,6 @@ class CriticFront extends SearchFacets {
         return $this->ce;
     }
 
-
     /*
      * Critic functions
      */
@@ -390,14 +389,18 @@ class CriticFront extends SearchFacets {
     }
 
     public function cache_get_top_movie_critic($critic_id, $date_add, $movie_id = 0, $author_upd = 0) {
-        $arg = array();
-        $arg['critic_id'] = $critic_id;
-        $arg['date_add'] = $date_add;
-        $arg['movie_id'] = $movie_id;
-        $filename = "c-$critic_id-$date_add-$movie_id-$author_upd";
+        if ($this->cache_results) {
+            $arg = array();
+            $arg['critic_id'] = $critic_id;
+            $arg['date_add'] = $date_add;
+            $arg['movie_id'] = $movie_id;
+            $filename = "c-$critic_id-$date_add-$movie_id-$author_upd";
 
-        $str = ThemeCache::cache('get_top_movie_critic_string', false, $filename, 'critics', $this, $arg);
-        return unserialize($str);
+            $str = ThemeCache::cache('get_top_movie_critic_string', false, $filename, 'critics', $this, $arg);
+            return unserialize($str);
+        } else {
+            return $this->get_top_movie_critic($critic_id, $date_add);
+        }
     }
 
     public function get_top_movie_critic_string($arg) {
@@ -698,13 +701,16 @@ class CriticFront extends SearchFacets {
         $ptime = $critic->date;
         $critic_addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
 
+        // Custom rating
+        $custom_rating = $this->get_custom_critic_rating($critic);
+
         // Title
         $title_str = '';
         $title = strip_tags($title);
         $title = $this->pccf_filter($title);
 
         if ($title != $content && !$stuff) {
-            $title_str = '<strong class="review-title">' . $title . '</strong>';
+            $title_str = '<strong class="review-title">' . $title .$custom_rating. '</strong>';
         }
 
 
@@ -779,6 +785,20 @@ class CriticFront extends SearchFacets {
                     . '</div>' . $reaction_data . '</div></div>';
         }
         return $actorsresult;
+    }
+
+    public function get_custom_critic_rating($critic) {
+        // CherryPicks
+        $rating_text = '';
+        if ($critic->link_id == 177 && $critic->top_movie) {
+            //get_movie_erating
+            $ma = $this->get_ma();
+            $erating = $ma->get_movie_erating($critic->top_movie);
+            if ($cherry = $erating->thecherrypicks_rating){
+                $rating_text = ' <span class="rating-cherry">'.$erating->thecherrypicks_rating.'%</span>';                
+            }
+        }
+        return $rating_text;
     }
 
     public function get_tag_link($slug, $name) {
@@ -2167,7 +2187,7 @@ class CriticFront extends SearchFacets {
                     $wl = $this->cm->get_wl();
                     $in_list = $wl->in_def_lists($user->ID, $mids);
                     if ($in_list) {
-                        $json_data->watchlist = $in_list;                        
+                        $json_data->watchlist = $in_list;
                         $data = json_encode($json_data);
                     }
                 }
@@ -2224,7 +2244,7 @@ class CriticFront extends SearchFacets {
         return $content;
     }
 
-    public function get_review_scroll_data($movie_id = 0, $tags = array(),$posts=null, $link='') {
+    public function get_review_scroll_data($movie_id = 0, $tags = array(), $posts = null, $link = '') {
         $a_type = 1;
         $limit = 10;
         $start = 0;
@@ -2248,8 +2268,7 @@ class CriticFront extends SearchFacets {
         }
         $unique = 1;
 
-        if (!$posts)
-        {
+        if (!$posts) {
             $posts = $this->theme_last_posts($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, 0, true, 0, 0, $unique);
         }
 
@@ -3481,7 +3500,7 @@ class CriticFront extends SearchFacets {
      * User functions
      */
 
-    public function get_uid() {        
+    public function get_uid() {
         $user = $this->cm->get_current_user();
         return $user->ID;
     }

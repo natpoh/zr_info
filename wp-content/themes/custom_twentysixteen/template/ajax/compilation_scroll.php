@@ -15,10 +15,8 @@ if (isset($_GET['cid'])) {
 ob_start();
 if (!class_exists('TV_Scroll')) {
     require(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/ajax/tv_scroll.php');
-} else {
-    $cache = tv_scroll('compilation', intval($_GET['id']));
-    echo $cache;
 }
+
 $data = ob_get_contents();
 ob_clean();
 

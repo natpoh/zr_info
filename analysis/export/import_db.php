@@ -207,6 +207,7 @@ class Import
       $table = $array['table'];
       $request =  $array['request'];
       $column = $array['column'];
+
       if (!$column)$column = 'id';
 
       if ($request)

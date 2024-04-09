@@ -111,10 +111,10 @@ if (!$array_data) {
         $type = $data['type'];
         $sid = $data['id'];
         $title =  $data['title'];
-       if  ($type==0)
+       if  ($type==0 || $type==6)
        {
            ///custom
-           $array_list['compilation_'.$sid]=Compilation_link::last_compilation_scroll($data);
+           $array_list['compilation_'.$sid]=Compilation_link::last_compilation_scroll($data,$type);
        }
        else
        {
@@ -132,7 +132,7 @@ if (!$array_data) {
 }
 
 
-public static function last_compilation_scroll($data ='')
+public static function last_compilation_scroll($data ='',$type =0)
 {
     $custom_select_type = $data['select_type'];
     $parent  = $data['sub_parent'];
@@ -266,7 +266,12 @@ else
     {
         $main_title_desc='<div class="title_block_desc hide"></div>';
     }
+    $dop_class='';
+    if ($type==6)
+    {
+        $dop_class =' widthed  ';
+    }
 
-    return array('title' => $main_title, 'title_desc' => $main_title_desc, 'id' => 'compilation_scroll_id_'.$main_id, 'class' => 'rand_scroll_'.$main_id);
+    return array('title' => $main_title, 'title_desc' => $main_title_desc, 'id' => 'compilation_scroll_id_'.$main_id, 'class' => $dop_class.'rand_scroll_'.$main_id);
 }
 }

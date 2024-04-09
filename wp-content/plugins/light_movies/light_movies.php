@@ -423,7 +423,7 @@ private function get_parnets()
           $array_rows = array(
             'id'=>array('w'=>5),
 
-            'type'=>array('type'=>'select','options'=>'0:Custom;1:Last Audience;2:Last Critics;3:Last Movies;4:Last TV;5:Last Games'),
+            'type'=>array('type'=>'select','options'=>'0:Custom;6:Custom Reviews;1:Last Audience;2:Last Critics;3:Last Movies;4:Last TV;5:Last Games'),
             'sub_parent'=>array('type'=>'select','options'=>'0:None;'.$sub_parent_string),
             'select_type'=>array('type'=>'select','options'=>'0:Default;1:List;2:Random;3:None'),
             'last_update' =>array('w'=>10, 'type' => 'textarea','editfalse'=>1),

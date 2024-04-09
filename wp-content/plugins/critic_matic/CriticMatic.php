@@ -594,7 +594,7 @@ class CriticMatic extends AbstractDB {
 
         $where = sprintf(" WHERE p.id=%d", (int) $id);
 
-        $sql = "SELECT p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.top_rating, p.blur, p.view_type, am.aid" . $cid_get . $ts_get
+        $sql = "SELECT p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.top_rating, p.blur, p.view_type, p.link_id, am.aid" . $cid_get . $ts_get
                 . " FROM {$this->db['posts']} p"
                 . " LEFT JOIN {$this->db['authors_meta']} am ON am.cid = p.id"
                 . $cid_inner . $ts_inner . $where;
@@ -648,7 +648,7 @@ class CriticMatic extends AbstractDB {
     }
 
     public function get_post_and_author($id) {
-        $sql = sprintf("SELECT p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, "
+        $sql = sprintf("SELECT p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, p.link_id, "
                 . "a.id AS aid, a.name AS author_name, a.type AS author_type, a.options AS author_options, a.last_upd AS author_last_upd, a.date_add AS author_date_add "
                 . "FROM {$this->db['posts']} p "
                 . "INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id "
@@ -826,7 +826,7 @@ class CriticMatic extends AbstractDB {
             }
 
             if (!$content_after) {
-                $select = " p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, p.view_type, am.aid" . $cid_get . $ts_get;
+                $select = " p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, p.view_type,p.link_id, am.aid" . $cid_get . $ts_get;
             } else {
                 $select = " p.id, am.aid" . $cid_get . $ts_get;
             }
@@ -849,7 +849,7 @@ class CriticMatic extends AbstractDB {
                     $items[$item->id] = $item;
                 }
                 $ids = array_keys($items);
-                $select = " p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, p.view_type";
+                $select = " p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, p.view_type, p.link_id";
                 $sql = "SELECT" . $select . " FROM {$this->db['posts']} p WHERE id IN(" . implode(",", $ids) . ")";
 
                 $content = $this->db_results($sql);

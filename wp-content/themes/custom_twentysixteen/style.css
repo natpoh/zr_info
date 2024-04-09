@@ -5495,6 +5495,10 @@ body.error404 .page-header  {
     text-transform: none;
 }
 
+span.rating-cherry {
+    color: #c52155;
+}
+
 /**
  * 11.5 - Sidebar
  */

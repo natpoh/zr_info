@@ -631,10 +631,12 @@ AND table_schema='".DB_NAME_AN."'";
 
 
         foreach ($result_rows as $row) {
-            if ($row['last_update']){$row['last_update'] = date('H:i d:m:Y',$row['last_update']);}
-            if ($row['lastupdate']){$row['lastupdate'] = date('H:i d:m:Y',$row['lastupdate']);}
-            if ($row['add_time']){$row['add_time'] = date('H:i d:m:Y',$row['add_time']);}
-            if ($row['last_upd']){$row['last_upd'] = date('H:i d:m:Y',$row['last_upd']);}
+            if ($row['last_update']){$row['last_update'] = date('H:i:s d:m:Y',$row['last_update']);}
+            if ($row['lastupdate']){$row['lastupdate'] = date('H:i:s d:m:Y',$row['lastupdate']);}
+            if ($row['add_time']){$row['add_time'] = date('H:i:s d:m:Y',$row['add_time']);}
+            if ($row['last_upd']){$row['last_upd'] = date('H:i:s d:m:Y',$row['last_upd']);}
+            if ($row['date'] && is_numeric($row['date'])){$row['date'] = date('H:i:s d:m:Y',$row['date']);}
+
 
             if ($table_data=='data_movie_erating')
             {
@@ -644,7 +646,7 @@ AND table_schema='".DB_NAME_AN."'";
                     {
                         if ($row[$ir])
                         {
-                            $row[$ir] = date('H:i d:m:Y',$row[$ir]);
+                            $row[$ir] = date('H:i:s d:m:Y',$row[$ir]);
                         }
 
                     }

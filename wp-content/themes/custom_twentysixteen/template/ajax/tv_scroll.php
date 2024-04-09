@@ -119,31 +119,78 @@ class TV_Scroll {
             $last_req = $_SERVER['REQUEST_URI'];
             $_SERVER['REQUEST_URI'] = $url;
 
+
+            ///$data = $cfront->get_scroll('audience_scroll', $movie_id, $vote, $search);
+
+
             $search_front = new CriticFront();
             $search_front->init_search_filters();
             $array_data = $search_front->find_results(0, array(), false, true);
 
             //var_dump($array_data["movies"]["list"]);
             /// var_dump($array_data["movies"] ["list"]);
-            if ($array_data["movies"] ["list"]) {
+            ///reviews
+            $_SERVER['REQUEST_URI'] = $last_req;
+
+         //   var_dump($array_data);
+            if ($array_data["critics"] ["list"]) {
+                global $cfront;
+                if (!$cfront) {
+                    if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
+                        define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
+                    }
+
+                    if (!class_exists('CriticFront')) {
+                        require_once(CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php');
+                    }
+                    $cfront = new CriticFront();
+                }
+
+                $items =[];
+                foreach ($array_data["critics"] ["list"] as $i => $v) {
+                    $array_critics[$v->id] = strtotime($v->date_add);
+                    $item_theme = $cfront->get_top_movie_critic($v->id, $v->date_add);
+                    $items[]=$item_theme;
+
+                    if (count($items) >= 20) {
+                        break;
+                    }
+                }
+
+                $items_result = $cfront->get_review_scroll_data(0, [],$items,$url);
+
+
+            return $items_result;
+            }
+
+
+
+
+            ////movies
+           else  if ($array_data["movies"] ["list"]) {
                 foreach ($array_data["movies"] ["list"] as $i => $v) {
 
                     $array_movies[$v->id] = strtotime($v->release);
                 }
-            }
-            $_SERVER['REQUEST_URI'] = $last_req;
-
-            foreach ($array_movies as $id => $enable) {
-
-                $content_result = self::prepare_movies($id, $content_result);
-                //else echo $imdb_id.'found<br>';
 
 
-                if (count($content_result['result']) >= 20) {
-                    break;
+                foreach ($array_movies as $id => $enable) {
+
+                    $content_result = self::prepare_movies($id, $content_result);
+                    //else echo $imdb_id.'found<br>';
+
+
+                    if (count($content_result['result']) >= 20) {
+                        break;
+                    }
                 }
+
             }
-        } else {
+
+        }
+
+
+        else {
 
             if ($type == 'TVSeries') {
                 $sql = "SELECT * FROM `options` where id = 14";
@@ -230,6 +277,13 @@ class TV_Scroll {
 function tv_scroll($type = 'TVSeries', $data = '', $custom_data = '') {
     global $video_template;
     $content_result = TV_Scroll::show_scroll($type, $data, $custom_data);
+
+    if (is_string($content_result))
+    {
+        return $content_result;
+    }
+
+
     include(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/video_item_template.php');
     $content_result['tmpl'] = $video_template;
 
@@ -250,11 +304,15 @@ if (isset($_GET['type'])) {
     if ($_GET['type'] == 'games') {
         $cache = tv_scroll('VideoGame');
     }
-    if ($_GET['type'] == 'games') {
-        $cache = tv_scroll('VideoGame');
-    }
+
     if ($_GET['type'] == 'compilation') {
-        $cache = tv_scroll('compilation', intval($_GET['id']));
+        //$cache = tv_scroll('compilation', intval($_GET['id']));
+
+        if (!function_exists('wp_custom_cache')) {
+            require(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/include/custom_cahe.php');
+        }
+
+        $cache = wp_custom_cache('tv_scroll__compilation__'.intval($_GET['id']), 'fastcache', 3600);
     }
 } else {
 

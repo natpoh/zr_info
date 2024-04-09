@@ -970,7 +970,8 @@ critic_search.slider_facet = function (type, data_arr, ftype = 'all') {
             title_f = title_f + shift;
             title_t = title_t + shift;
         }
-        var title = title_f + '-' + title_t;
+        var title = critic_search.formatNumber(title_f) + '-' + critic_search.formatNumber(title_t);
+
         if (from == to) {
             title = title_f;
         }
@@ -1059,6 +1060,14 @@ critic_search.slider_facet = function (type, data_arr, ftype = 'all') {
         return false;
     });
 }
+
+critic_search.formatNumber = function(num) {
+  if (Number.isInteger(num)) {
+    return num.toFixed(0);
+  } else {
+    return num.toFixed(2);
+  }
+};
 
 critic_search.add_filter = function (type = '', id = '', title = '', name = '', ftype = '', custom_class = '', parents = '') {
     var $ = jQuery;

@@ -513,6 +513,15 @@ if (!function_exists('template_single_movie')) {
                         if (function_exists('current_user_can')) {
                             if (current_user_can("administrator")) {
                                 print 'Movie <a class="link_adimin_info" target="_blank" href="https://info.antiwoketomatoes.com/wp-admin/admin.php?page=critic_matic_movies&mid=' . $id . '">adimin info</a>.<br />';
+                                try {
+                                    $ma = $cfront->cm->get_ma();
+                                   // $box_int = $ma->get_meta_box_int($id);
+                                    //print '<pre>';
+                                    //print_r($box_int);
+                                    //print '</pre>';
+                                } catch (Exception $exc) {
+                                    
+                                }
                             }
                         }
                         if (isset($user_blocks['watchlists'][$id])) {
@@ -521,7 +530,7 @@ if (!function_exists('template_single_movie')) {
                         if ($small_view) {
                             ?>  
                             <div class="watch-data" data-id="<?php print $id ?>"></div>
-                        <?php
+                            <?php
                         }
 
                         echo $_wpmoly_movie_overview . '<div class="single_grid">' . $content_release . $_wpmoly_movie_genres . $director_result . '</div>

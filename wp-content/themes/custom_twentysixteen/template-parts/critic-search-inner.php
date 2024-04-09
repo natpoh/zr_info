@@ -66,7 +66,8 @@
 
                                     foreach ($results['critics']['list'] as $post):
 
-                                        $post_arr = $search_front->get_top_movie_critic($post->id, $post->date_add);
+                                        $post_arr = $search_front->cache_get_top_movie_critic($post->id, $post->date_add);
+                                        
                                         if (!$post_arr) {
                                             continue;
                                         }

@@ -28,14 +28,14 @@ class AbstractFunctions {
         return $ret;
     }
 
-    public function sync_insert_data($data, $db, $sync_client = true, $sync_data = true, $priority = 5) {
+    public function sync_insert_data($data, $db, $sync_client = true, $sync_data = true, $priority = 5,$request='') {
         $update = false;
         $id = 0;
 
         if ($sync_client) {
             // Client mode
             // Get id
-            $id = $this->get_remote_id($db);
+            $id = $this->get_remote_id($db,$request);
             if (!$id) {
                 $ex_msg = 'Can not get id from the Server. Table:' . $db;
                 throw new Exception($ex_msg);
@@ -112,13 +112,13 @@ class AbstractFunctions {
     }
 
     // Sync
-    public function get_remote_id($db = '') {
+    public function get_remote_id($db = '',$request='') {
 
         if (!class_exists('Import')) {
             include ABSPATH . "analysis/export/import_db.php";
         }
 
-        $array = array('table' => $db, 'column' => 'id');
+        $array = array('table' => $db, 'column' => 'id','request'=>$request);
         $id_array = Import::get_remote_id($array);
         $rid = $id_array['id'];
 

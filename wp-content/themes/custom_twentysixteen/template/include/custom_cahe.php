@@ -123,16 +123,24 @@ if ( $local_cahe == true ) {
                     $_GET['data']=substr($mach[4],1);
                 }
 
-
-
                 $name=$mach[2];
             }
 
 
+                $regv='#([a-z_]+)__([a-z_]+)__([0-9]+)#';
+                if (preg_match($regv,$name,$mach))
+                {
 
-            $result = $name();
+                    $name=$mach[1];
+                    $a=$mach[2];
+                    $b =$mach[3];
 
-
+                    $result = $name($a,$b);
+                }
+                else
+                {
+                    $result = $name();
+                }
 
 
 

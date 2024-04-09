@@ -38,8 +38,7 @@ function curl_post($data = array(), $host = '') {
 }
 
 $commands = array(
-    'pull_info',
-    'pull_filmdemographics',
+    'pull_zr',
 );
 
 $cmd = isset($_GET['cmd']) ? $_GET['cmd'] : '';
