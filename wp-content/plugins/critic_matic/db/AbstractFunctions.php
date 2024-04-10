@@ -32,6 +32,8 @@ class AbstractFunctions {
         $update = false;
         $id = 0;
 
+
+
         if ($sync_client) {
             // Client mode
             // Get id
@@ -71,8 +73,8 @@ class AbstractFunctions {
 
         global $debug;
         if ($debug) {
-            !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
-            TMDB::var_dump_table(['sync_update_data', $data, $id, $db, $sync_data, $priority]);
+          //  !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+          //  TMDB::var_dump_table(['sync_update_data', $data, $id, $db, $sync_data, $priority]);
         }
 
         $this->db_update($data, $db, $id);
@@ -121,6 +123,7 @@ class AbstractFunctions {
         $array = array('table' => $db, 'column' => 'id','request'=>$request);
         $id_array = Import::get_remote_id($array);
         $rid = $id_array['id'];
+
 
         return $rid;
     }

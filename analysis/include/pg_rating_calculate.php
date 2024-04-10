@@ -361,7 +361,7 @@ class PgRatingCalculate {
         global $debug;
         if ($debug){
 
-            TMDB::var_dump_table(['sync_update',$data, $id, $db, $type, $sync]);
+          //  TMDB::var_dump_table(['sync_update',$data, $id, $db, $type, $sync,$request]);
         }
         $ma = self::getMa();
 
@@ -675,7 +675,7 @@ class PgRatingCalculate {
 
                     $request=['movie_id'=>$id];
 
-                    self::sync_update($data_current_array, '', 'data_movie_erating', 'insert', 1,$request);
+                    self::sync_update($data_current_array, '', 'data_movie_erating', 'insert', 1,1,$request);
                 }
 
 
@@ -2189,7 +2189,7 @@ class PgRatingCalculate {
                 }
                 $request=['movie_id'=>$rid];
 
-                        self::sync_update($data_current_array, '', 'data_movie_erating', 'insert', 1,$request);
+                        self::sync_update($data_current_array, '', 'data_movie_erating', 'insert', 1,1,$request);
             }
             else {
 

@@ -1017,13 +1017,16 @@ function update_all_rwt_rating()
     start_cron_time(0);
     $force = intval($_GET['force']);
 
+    global $debug;
+    $debug =1; ///$_GET['debug'];
+
 
     !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
 
     if (isset($_GET['id']))
     {
         $rwt_id = intval($_GET['id']);
-        $result = PgRatingCalculate::add_movie_rating($rwt_id,'',1,1,1);
+        $result = PgRatingCalculate::add_movie_rating($rwt_id,'',$debug,1,1);
 
         return;
     }

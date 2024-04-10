@@ -223,7 +223,7 @@ class Import
               $where = substr($where,4);
               $sql ="SELECT `".$column."` from `".$table."` where ".$where." limit 1";
 
-              $result['sql']=$sql;
+              $result['sql'][]=$sql;
 
               $row = Pdo_an::db_results_array($sql);
               if ($row)
@@ -240,10 +240,8 @@ class Import
           ///
 
           $sql = "INSERT INTO `".$table."` (`".$column."`) VALUES (NULL)";
-          $result['sql']=$sql;
+          $result['sql'][]=$sql;
           $result['id']= Pdo_an::db_insert_sql($sql);
-
-
 
       }
 
@@ -292,6 +290,15 @@ class Import
         {
             $result = json_decode($result,1);
         }
+
+//        global $debug;
+//        if ($debug)
+//        {
+//            !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+//            TMDB::var_dump_table(['request'=>$request,'link'=>$link,'result'=>$result]);
+//        }
+
+
         return $result;
     }
 
