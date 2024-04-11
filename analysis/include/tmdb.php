@@ -1084,8 +1084,8 @@ public static function add_todb_actor($id,$name='')
 
         if (!$name)$name='';
 
-            $sql =  "INSERT INTO `data_actors_imdb`(`id`, `name`,  `lastupdate`) VALUES (?,?,?)";
-            Pdo_an::db_results_array($sql, array($id, $name,0));
+            $sql =  "INSERT INTO `data_actors_imdb`(`id`, `imdb_id` ,`name`,  `lastupdate`) VALUES (?,?,?,?)";
+            Pdo_an::db_results_array($sql, array($id,$id, $name,0));
 
 
         if ($debug) echo 'insert '.$id.' '.$name.'<br>'.PHP_EOL;

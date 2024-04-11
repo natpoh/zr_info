@@ -25,11 +25,20 @@ if (isset($_POST['filters'])) {
     $is_tv = isset($filters['tvseries']);
     $is_game = isset($filters['videogame']);
     $is_podcastseries = isset($filters['podcastseries']);
-
+    $is_actor = isset($filters['actor']);
 
     $post_type_slug = '';
-    if ($is_movie || $is_tv || $is_game || $is_podcastseries) {
+    if ($is_actor)
+    {
+        global $post_name;
+        $post_name = $filters['actor'];
 
+        include 'actor.php';
+        return;
+   }
+
+
+    else if ($is_movie || $is_tv || $is_game || $is_podcastseries) {
         if ($is_movie) {
             $post_name = $filters['movies'];
             $post_type = 'Movie';

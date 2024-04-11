@@ -1354,11 +1354,11 @@ WHERE `data_actors_imdb`.`id` = " . $actor_id;
     else
     {
         $array_request = array($name, $burn_name, $burn_place, $birthDate, '',$image_url, $image, time());
-        $sql = "INSERT INTO `data_actors_imdb` VALUES ( '" . $actor_id . "' ,?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO `data_actors_imdb` VALUES ( '" . $actor_id . "' ,'" . $actor_id . "' , ?, ?, ?, ?, ?, ?, ?, ?)";
         Pdo_an::db_results_array($sql,$array_request);
         if ($debug)echo 'adedded ' . $actor_id .' '.$name. '<br>' . PHP_EOL;
         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-        Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $actor_id), 'actor_update',40);
+        Import::create_commit('', 'insert', 'data_actors_imdb', array('id' => $actor_id), 'actor_update',40);
     }
     ///check actor meta
 
@@ -1521,8 +1521,8 @@ function add_empty_actors($id='')
             if ($id && !$result)
             {
                 if ($debug) echo '  actor not found, try add ' . $id . PHP_EOL;
-                $sql =  "INSERT INTO `data_actors_imdb`(`id`, `name`,  `lastupdate`) VALUES (?,?,?)";
-                Pdo_an::db_results_array($sql, array($id, '',0));
+                $sql =  "INSERT INTO `data_actors_imdb`(`id`,`imdb_id`, `name`,  `lastupdate`) VALUES (?,?,?,?)";
+                Pdo_an::db_results_array($sql, array($id,$id, '',0));
 
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
                 Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $id),'actor_add',40);

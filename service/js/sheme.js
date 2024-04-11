@@ -298,6 +298,7 @@ let elements;
 }
 function inner_message(id,inner_data=[])
 {
+    console.log(inner_data);
 
     let inner_message ='';
     if (inner_data)
@@ -963,13 +964,16 @@ function prepare_data(className, value) {
 
         if (cid=='title' || cid=='desc' || cid=='table' || cid=='link' || cid=='graph' || cid=='last_update')
         {
-            let imsg =  inner_message(id,cube);
+
+             let imsg =  inner_message(id,cube);
             document.querySelector('.cube#cube_'+id+' .cube_desc_message').innerHTML=imsg;
 
             show_charts(id);
         }
         else if (cid=='type')
         {
+
+
             let cubeElement = document.querySelector('.cube#cube_'+id);
             let classesToRemove = Array.from(cubeElement.classList).filter(className => className.includes('type_'));
             cubeElement.classList.remove(...classesToRemove);
@@ -980,6 +984,40 @@ function prepare_data(className, value) {
             }
 
             cubeElement.classList.add('type_'+tclass);
+
+            if ( value=='Synch')
+            {
+                document.querySelector('.b_table').value='commit';
+                document.querySelector('.edit_sheme_input[data-type="b_default"]').value='description=';
+                document.querySelector('.b_graph').value='30';
+
+
+                if (!cube.requests)cube.requests={};
+                if (!cube.requests.b_default)cube.requests.b_default={};
+                cube.requests.b_default='description=';
+                cube.table='commit';
+                cube.graph='30';
+
+                let imsg =  inner_message(id,cube);
+                document.querySelector('.cube#cube_'+id+' .cube_desc_message').innerHTML=imsg;
+            }
+            else if ( value=='Log')
+            {
+                document.querySelector('.b_table').value='movies_log';
+                document.querySelector('.edit_sheme_input[data-type="b_default"]').value='type=';
+                document.querySelector('.b_graph').value='30';
+
+
+                if (!cube.requests)cube.requests={};
+                if (!cube.requests.b_default)cube.requests.b_default={};
+                cube.requests.b_default='type=';
+                cube.table='movies_log';
+                cube.graph='30';
+
+                let imsg =  inner_message(id,cube);
+                document.querySelector('.cube#cube_'+id+' .cube_desc_message').innerHTML=imsg;
+            }
+
         }
         else if (cid=='color')
         {
@@ -1000,6 +1038,8 @@ function prepare_data(className, value) {
         }
 
     }
+
+
 
     console.log(`prepare_data Class: ${cid}, Value: ${value} `,cube);
 
@@ -1039,7 +1079,6 @@ isoBlock.addEventListener('click', function(event) {
                 input.addEventListener('change', handleInputChange);
                 let  className = input.classList[0];
                 let cid = className.substring(2);
-               // console.log(cid,foundData[cid]);
                 input.value = foundData[cid] !== undefined ? foundData[cid] : '';
 
             });
@@ -1134,7 +1173,7 @@ function save_request(dataType,  value) {
         let imsg =  inner_message(id,cube);
         document.querySelector('.cube#cube_'+id+' .cube_desc_message').innerHTML=imsg;
         show_charts(id);
-      //  console.log(cube);
+        console.log(cube);
         ///  document.querySelector('.cube#cube_'+id+' .cube_desc_message').innerHTML=imsg;e;
     }
     ///console.log(`dataType: ${dataType}, dataValue: ${dataValue}, value: ${value}`);
