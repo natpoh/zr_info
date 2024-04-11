@@ -1354,11 +1354,12 @@ WHERE `data_actors_imdb`.`id` = " . $actor_id;
     else
     {
         $array_request = array($name, $burn_name, $burn_place, $birthDate, '',$image_url, $image, time());
-        $sql = "INSERT INTO `data_actors_imdb` VALUES ( '" . $actor_id . "' ,'" . $actor_id . "' , ?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO `data_actors_imdb` (`id`, `imdb_id`, `name`, `birth_name`, `birth_place`, `burn_date`, `description`, `image_url`, `image`, `lastupdate`) 
+                                            VALUES ( '" . $actor_id . "' ,'" . $actor_id . "' , ?, ?, ?, ?, ?, ?, ?, ?)";
         Pdo_an::db_results_array($sql,$array_request);
         if ($debug)echo 'adedded ' . $actor_id .' '.$name. '<br>' . PHP_EOL;
         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-        Import::create_commit('', 'insert', 'data_actors_imdb', array('id' => $actor_id), 'actor_update',40);
+        Import::create_commit('', 'insert', 'data_actors_imdb', array('id' => $actor_id), 'actor_add',40);
     }
     ///check actor meta
 
