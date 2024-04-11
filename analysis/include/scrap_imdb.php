@@ -1262,7 +1262,7 @@ function migration_actors_description()
 }
 
 
-function addto_db_actors($actor_id, $array_result, $update = 0,$debug)
+function addto_db_actors($actor_id, $imdb_id,$array_result, $update = 0,$debug)
 {
 
 
@@ -1355,7 +1355,7 @@ WHERE `data_actors_imdb`.`id` = " . $actor_id;
     {
         $array_request = array($name, $burn_name, $burn_place, $birthDate, '',$image_url, $image, time());
         $sql = "INSERT INTO `data_actors_imdb` (`id`, `imdb_id`, `name`, `birth_name`, `birth_place`, `burn_date`, `description`, `image_url`, `image`, `lastupdate`) 
-                                            VALUES ( '" . $actor_id . "' ,'" . $actor_id . "' , ?, ?, ?, ?, ?, ?, ?, ?)";
+                                            VALUES ( '" . $actor_id . "' ,'" . $imdb_id . "' , ?, ?, ?, ?, ?, ?, ?, ?)";
         Pdo_an::db_results_array($sql,$array_request);
         if ($debug)echo 'adedded ' . $actor_id .' '.$name. '<br>' . PHP_EOL;
         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
@@ -1384,10 +1384,18 @@ WHERE `data_actors_imdb`.`id` = " . $actor_id;
     return 1;
 }
 
-function add_actors_to_db($id, $update = 0)
+function add_actors_to_db($id, $imdb_id='',$update = 0)
 {
+
+    if (!$imdb_id)
+    {
+        $sql = "SELECT  `imdb_id` FROM `data_actors_imdb` where id =".intval($id);
+        $r= Pdo_an::db_results_array($sql);
+        $imdb_id =$r[0]['imdb_id'];
+    }
+
     global $debug;
-    $final_value = sprintf('%07d', $id);
+    $final_value = sprintf('%07d', $imdb_id);
 
 
     $url = 'https://www.imdb.com/name/nm' . $final_value . '/bio/';
@@ -1401,7 +1409,7 @@ function add_actors_to_db($id, $update = 0)
     if  ($debug)var_dump_table($array_result);
     if ($array_result) {
 
-        return addto_db_actors($id, $array_result, $update,$debug);
+        return addto_db_actors($id,$imdb_id, $array_result, $update,$debug);
 
 
     } else {
@@ -1499,47 +1507,40 @@ $imdb_id = TMDB::get_imdb_id_from_id($id);
 
 function add_empty_actors($id='')
 {
-
+    ///update actor data
     global $debug;
 
     check_load(50,60);
 
     if ($id)
     {
-        $where =' id = '.intval($id);
+        $where =' imdb_id = '.intval($id);
     }
     else
     {
         $where="( lastupdate = '0' OR  (`name` = '' and lastupdate != '0' and lastupdate < ".(time()-86400).") OR ((`birth_name` = '' OR `birth_place` = '' OR `burn_date` = '' OR `image_url` = NULL) and lastupdate != '0' and lastupdate < ".(time()-86400*60).")  )";
     }
 
-
-
-            $sql = "SELECT id FROM `data_actors_imdb` where  ".$where."  limit 60";
+            $sql = "SELECT `id`, `imdb_id` FROM `data_actors_imdb` where  ".$where."  limit 60";
             // if ($debug)echo $sql.PHP_EOL;
-            $result= Pdo_an::db_results_array($sql);
+             $result= Pdo_an::db_results_array($sql);
 
             if ($id && !$result)
             {
-                if ($debug) echo '  actor not found, try add ' . $id . PHP_EOL;
-                $sql =  "INSERT INTO `data_actors_imdb`(`id`,`imdb_id`, `name`,  `lastupdate`) VALUES (?,?,?,?)";
-                Pdo_an::db_results_array($sql, array($id,$id, '',0));
-
-                !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $id),'actor_add',40);
-
-                $sql = "SELECT id FROM `data_actors_imdb` where  ".$where."  limit 60";
-                // if ($debug)echo $sql.PHP_EOL;
-                $result= Pdo_an::db_results_array($sql);
+                ///add empty
+                $imdb_id =$result[0]['imdb_id'];
+                $resultdata = add_actors_to_db($id, $imdb_id,1);
+                ////logs
+                TMDB::add_log($id,'','update actors','result: '.$resultdata.' aid:'.$id,1,'add_empty_actors');
             }
-
-
-
+            else
+            {
 
             foreach ($result as $r) {
+                $imdb_id =$r['imdb_id'];
                 $id = $r['id'];
                if ($debug) echo '  try add actor ' . $id . PHP_EOL;
-                $result = add_actors_to_db($id, 1);
+                $result = add_actors_to_db($id,$imdb_id, 1);
                 ////logs
                 TMDB::add_log($id,'','update actors','result: '.$result.' aid:'.$id,1,'add_empty_actors');
 
@@ -1549,6 +1550,7 @@ function add_empty_actors($id='')
                 }
                 sleep(0.5);
 
+            }
             }
 
 }
