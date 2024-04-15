@@ -634,9 +634,37 @@ class MoviesParser extends MoviesAbstractDB {
     }
 
     public function get_url_by_top_movie($mid = 0, $cid = 0) {
-        $sql = sprintf("SELECT u.id, u.pid, u.link, u.link_hash, p.top_movie, p.options FROM {$this->db['url']} u INNER JOIN {$this->db['posts']} p ON p.uid = u.id WHERE u.cid = %d AND p.top_movie=%d", (int) $cid, (int) $mid);
+
+
+        if (strstr($cid,','))
+        {
+            $d ='';
+            $cid_array = explode(',',$cid);
+            foreach ($cid_array as $cid_data)
+            {
+                if ($cid_data)
+                {
+                    $cid_data = intval($cid_data);
+                    $d.= " OR u.cid =".$cid_data." ";
+
+                }
+                $d = " ( ".substr($d,3)." ) ";
+
+            }
+
+        }
+        else
+        {
+            $cid=intval($cid);
+
+           $d =  "u.cid = ".$cid;
+
+        }
+
+        $sql = sprintf("SELECT u.id, u.pid, u.link, u.link_hash, p.top_movie, p.options FROM {$this->db['url']} u INNER JOIN {$this->db['posts']} p ON p.uid = u.id WHERE ".$d." AND p.top_movie=%d", (int) $mid);
         $result = $this->db_fetch_row($sql);
         return $result;
+
     }
 
     public function update_urls_status($id, $status) {
