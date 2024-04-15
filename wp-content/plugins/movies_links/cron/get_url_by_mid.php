@@ -17,6 +17,12 @@ $debug = $_GET['$debug'];
 
 $cid = $_GET['cid'];
 
+
+if ($debug)
+{
+    echo '$cid='.$cid;
+}
+
 if (!strstr($cid,','))
 {
     $cid = intval($cid);

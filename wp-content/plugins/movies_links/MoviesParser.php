@@ -630,6 +630,8 @@ class MoviesParser extends MoviesAbstractDB {
         {
             $sql = sprintf("SELECT * FROM {$this->db['url']} WHERE pid = %d and cid = %d", (int) $mid, (int) $cid);
 
+            global  $debug;
+            if ($debug ){echo $sql;}
 
 
             $result = $this->db_fetch_row($sql);
