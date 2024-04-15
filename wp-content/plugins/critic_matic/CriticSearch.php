@@ -61,8 +61,8 @@ class CriticSearch extends AbstractDB {
         4 => 'Ignore dublicate',
     );
     public $sort_default = array(
-        'date' => array('title' => 'Date', 'def' => 'desc', 'main' => 1, 'tabs' => array('movies', 'critics', 'games', 'international', 'ethnicity', 'filters', 'watchlists'),),
-        'rel' => array('title' => 'Relevance', 'def' => 'desc', 'main' => 1, 'tabs' => array('movies', 'critics', 'games', 'international', 'ethnicity', 'filters', 'watchlists'),),
+        'date' => array('title' => 'Date', 'def' => 'desc', 'main' => 1, 'tabs' => array('movies', 'critics', 'games', 'international', 'ethnicity', 'filters'),),
+        'rel' => array('title' => 'Relevance', 'def' => 'desc', 'main' => 1, 'tabs' => array('movies', 'critics', 'games', 'international', 'ethnicity', 'filters'),),
     );
     public $filters = array(
         'p' => '',
@@ -596,6 +596,7 @@ class CriticSearch extends AbstractDB {
         'movies' => array(
             'title' => array('title' => 'Title', 'def' => 'asc', 'main' => 1, 'group' => 'def'),
             'date' => array('title' => 'Date', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
+            'random' => array('title' => 'Random', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
             'ratingsort' => array('title' => 'Ratings', 'group' => 'rating', 'main' => 1, 'sorted' => 1,),
             'rating' => array('title' => 'Family Friendly Score', 'def' => 'desc', 'group' => 'woke'),
             'popsort' => array('title' => 'Popularity', 'group' => 'pop', 'main' => 1, 'sorted' => 1,),
@@ -606,6 +607,7 @@ class CriticSearch extends AbstractDB {
         'games' => array(
             'title' => array('title' => 'Title', 'def' => 'asc', 'main' => 1, 'group' => 'def'),
             'date' => array('title' => 'Date', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
+            'random' => array('title' => 'Random', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
             'ratingsort' => array('title' => 'Ratings', 'group' => 'rating', 'main' => 1, 'sorted' => 1,),
             'rating' => array('title' => 'Family Friendly Score', 'def' => 'desc', 'group' => 'woke'),
             'popsort' => array('title' => 'Popularity', 'group' => 'pop', 'main' => 1, 'sorted' => 1,),
@@ -616,6 +618,7 @@ class CriticSearch extends AbstractDB {
         'critics' => array(
             'title' => array('title' => 'Title', 'def' => 'asc', 'main' => 1, 'group' => 'def'),
             'date' => array('title' => 'Date', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
+            'random' => array('title' => 'Random', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
             'rel' => array('title' => 'Relevance', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
             'ratingsort' => array('title' => 'Ratings', 'group' => 'rating', 'main' => 1, 'sorted' => 1,),
             'titlepop' => array('title' => 'Rating', 'group' => 'woke', 'main' => 1,),
@@ -645,12 +648,14 @@ class CriticSearch extends AbstractDB {
         'filters' => array(
             'title' => array('title' => 'Title', 'def' => 'asc', 'main' => 1, 'group' => 'def'),
             'date' => array('title' => 'Date', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
+            'random' => array('title' => 'Random', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
             'frating' => array('title' => 'Rating', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
             'rel' => array('title' => 'Relevance', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
         ),
         'watchlists' => array(
             'title' => array('title' => 'Title', 'def' => 'asc', 'main' => 1, 'group' => 'def'),
             'date' => array('title' => 'Date', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
+            'random' => array('title' => 'Random', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
             'frating' => array('title' => 'Rating', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
             'rel' => array('title' => 'Relevance', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
         ),
@@ -2691,16 +2696,15 @@ class CriticSearch extends AbstractDB {
             $ret = $this->movie_results($sql, $match, $search_query);
 
             /*
-              print_r($filters);
-              print_r($filters_and);
-              print_r(array($match, $search_query));
-              print_r($sql);
-              print_r($ret);
+            print_r($filters_and);
+            print_r(array($match, $search_query));
+            print_r($sql);
+            print_r($ret);
 
-              $meta = $this->sps->query("SHOW META")->fetchAll();
-              print_r($meta);
-              exit;
-             */
+            $meta = $this->sps->query("SHOW META")->fetchAll();
+            print_r($meta);
+            exit;
+*/
 
             gmi('main sql');
             // Simple result
@@ -3646,6 +3650,8 @@ class CriticSearch extends AbstractDB {
                 $order = ' ORDER BY id ' . $sort_type;
             } else if ($sort_key == 'mw') {
                 $order = ' ORDER BY id DESC';
+            } else if ($sort_key == 'random') {
+                $order = ' ORDER BY RAND()';
             } else if (in_array($sort_key, $simple_facets) || $sort_key == 'emotions' || $sort_key == 'aurating') {
                 if ($sort_key == 'emotions') {
                     $sort_key = 'pop';
@@ -3690,6 +3696,8 @@ class CriticSearch extends AbstractDB {
                 $order = ' ORDER BY id ' . $sort_type;
             } else if ($sort_key == 'mw') {
                 $order = ' ORDER BY id DESC';
+            } else if ($sort_key == 'random') {
+                $order = ' ORDER BY RAND()';
             }
         } else {
             // Default weight
@@ -3759,6 +3767,8 @@ class CriticSearch extends AbstractDB {
                 $order = ' ORDER BY id ' . $sort_type;
             } else if ($sort_key == 'rating') {
                 $order = ' ORDER BY rating ' . $sort_type;
+            } else if ($sort_key == 'random') {
+                $order = ' ORDER BY RAND()';
             } else if ($sort_key == 'div') {
                 if ($sort_type == 'DESC') {
                     $order = ' ORDER BY diversity DESC';

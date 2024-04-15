@@ -139,7 +139,7 @@ class PgRatingCalculate {
 
         if (!$array_cid)
         {
-            $array_cid = array('thenumbers' => 1, 'rotten_mv' => 20, 'rotten_tv' => 21, 'douban' => 22, 'metacritic' => 23, 'kinop' => 24, 'animelist' => 27, 'moviemeter' => 38, 'eiga' => 35);
+            $array_cid = array('thenumbers' => 1, 'rotten_mv' => 20, 'rotten_tv' => 21, 'douban' => 22, 'metacritic' => '50,51,52,53,54,55', 'kinop' => 24, 'animelist' => 27, 'moviemeter' => 38, 'eiga' => 35);
         }
         else
         {
@@ -161,7 +161,7 @@ class PgRatingCalculate {
         !class_exists('GETCURL') ? include ABSPATH . "analysis/include/get_curl.php" : '';
 
         $link = 'https://info.antiwoketomatoes.com/wp-content/plugins/movies_links/cron/get_url_by_mid.php?p=8ggD_23_2D0DSF-F&cid=' . $array_cid[$type] . '&mid=' . $mid;
-
+        //echo $link;
         $result = GETCURL::getCurlCookie($link);
         return $result;
     }

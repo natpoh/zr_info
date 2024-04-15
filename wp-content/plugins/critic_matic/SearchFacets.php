@@ -1358,6 +1358,9 @@ class SearchFacets extends AbstractDB {
                 if ($item_sort == 'asc') {
                     $sort_icon = '<span class="asc"></span>';
                 }
+                if ($slug=='random'){
+                    $sort_icon = '<span class="random"></span>';
+                }
 
                 $url = $this->get_current_search_url(array('sort' => $search_slug), array('p'));
 

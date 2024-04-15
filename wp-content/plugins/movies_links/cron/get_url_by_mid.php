@@ -13,7 +13,13 @@ if ($_GET['p'] != $p) {
     return;
 }
 
-$cid = (int) $_GET['cid'];
+$cid = $_GET['cid'];
+
+if (!strstr($cid,','))
+{
+    $cid = intval($cid);
+}
+
 $mid = (int) $_GET['mid'];
 
 if (!class_exists('MoviesLinks')) {

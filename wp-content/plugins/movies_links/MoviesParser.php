@@ -598,8 +598,38 @@ class MoviesParser extends MoviesAbstractDB {
     }
 
     public function get_url_by_mid($mid = 0, $cid = 0) {
-        $sql = sprintf("SELECT * FROM {$this->db['url']} WHERE pid = %d and cid = %d", (int) $mid, (int) $cid);
-        $result = $this->db_fetch_row($sql);
+        $result='';
+
+        $mid = intval($mid);
+
+        if (strstr($cid,','))
+        {
+            $cid_request ='';
+            $cid_array = explode(',',$cid);
+            foreach ($cid_array as $cid_data)
+            {
+                if ($cid_data)
+                {
+                    $cid_data = intval($cid_data);
+                    $cid_request.= " OR cid =".$cid_data." ";
+
+                }
+                $cid_request = substr($cid_request,3);
+
+                $q ="SELECT * FROM {$this->db['url']} WHERE pid = ".$mid." and (".$cid_request.")";
+
+                $result = $this->db_fetch_row($q);
+
+            }
+
+        }
+        else
+        {
+            $sql = sprintf("SELECT * FROM {$this->db['url']} WHERE pid = %d and cid = %d", (int) $mid, (int) $cid);
+            $result = $this->db_fetch_row($sql);
+        }
+
+
         return $result;
     }
 

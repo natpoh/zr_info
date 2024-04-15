@@ -1739,15 +1739,27 @@ body.theme_dark .sort-wrapper .sort-more.mact .btn {
     margin-left: 3px;
     opacity: 0.5;
 }
+.sort-wrapper span.random:after {
+    content: " ";
+    display: inline-block;
+    width: 20px;
+    height: 16px;
+    background: url(images/filter_random.svg) 1px 0px / 17px 16px no-repeat;
+    margin-left: 3px;
+    opacity: 0.5;
+
+}
+
 
 .sort-wrapper .mact .btn .desc:after,
 .sort-wrapper .mact .btn .asc:after,
 .sort-wrapper .nav-tab.active span.desc:after, 
-.sort-wrapper .nav-tab.active span.asc:after {
+.sort-wrapper .nav-tab.active span.asc:after,
+.sort-wrapper .nav-tab.active span.random:after{
     opacity: 0.8;
 }
 
-.theme_dark .sort-wrapper span.desc:after, .theme_dark  .sort-wrapper span.asc:after{
+.theme_dark .sort-wrapper span.desc:after, .theme_dark  .sort-wrapper span.asc:after, .theme_dark  .sort-wrapper span.random:after{
     filter: invert();
 }
 .sort-wrapper span.asc:after {
