@@ -161,7 +161,7 @@ class PgRatingCalculate {
         !class_exists('GETCURL') ? include ABSPATH . "analysis/include/get_curl.php" : '';
 
         $link = 'https://info.antiwoketomatoes.com/wp-content/plugins/movies_links/cron/get_url_by_mid.php?p=8ggD_23_2D0DSF-F&cid=' . $array_cid[$type] . '&mid=' . $mid;
-        //echo $link;
+        echo $link;
         $result = GETCURL::getCurlCookie($link);
         return $result;
     }

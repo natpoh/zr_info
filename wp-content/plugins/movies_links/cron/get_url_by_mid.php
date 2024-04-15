@@ -12,6 +12,8 @@ $p = '8ggD_23_2D0DSF-F';
 if ($_GET['p'] != $p) {
     return;
 }
+global $debug;
+$debug = $_GET['$debug'];
 
 $cid = $_GET['cid'];
 

@@ -616,7 +616,10 @@ class MoviesParser extends MoviesAbstractDB {
                 }
                 $cid_request = substr($cid_request,3);
 
-                $q ="SELECT * FROM {$this->db['url']} WHERE pid = ".$mid." and (".$cid_request.")";
+                $q ="SELECT * FROM {$this->db['url']} WHERE pid = ".$mid." and (".$cid_request.") limit 1";
+
+                global  $debug;
+                if ($debug ){echo $q;}
 
                 $result = $this->db_fetch_row($q);
 
@@ -626,6 +629,9 @@ class MoviesParser extends MoviesAbstractDB {
         else
         {
             $sql = sprintf("SELECT * FROM {$this->db['url']} WHERE pid = %d and cid = %d", (int) $mid, (int) $cid);
+
+
+
             $result = $this->db_fetch_row($sql);
         }
 
@@ -661,7 +667,11 @@ class MoviesParser extends MoviesAbstractDB {
 
         }
 
-        $sql = sprintf("SELECT u.id, u.pid, u.link, u.link_hash, p.top_movie, p.options FROM {$this->db['url']} u INNER JOIN {$this->db['posts']} p ON p.uid = u.id WHERE ".$d." AND p.top_movie=%d", (int) $mid);
+        $sql = sprintf("SELECT u.id, u.pid, u.link, u.link_hash, p.top_movie, p.options FROM {$this->db['url']} u INNER JOIN {$this->db['posts']} p ON p.uid = u.id WHERE ".$d." AND p.top_movie=%d limit 1", (int) $mid);
+
+        global  $debug;
+        if ($debug ){echo $sql;}
+
         $result = $this->db_fetch_row($sql);
         return $result;
 
