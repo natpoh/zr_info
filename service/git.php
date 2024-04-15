@@ -48,5 +48,6 @@ if (in_array($cmd, $commands)) {
         'cmd' => $cmd,
     );
     $host = SYNC_HOST;
+    print_r(array($data, $host));
     print curl_post($data, $host);
 }
