@@ -616,7 +616,7 @@ class MoviesParser extends MoviesAbstractDB {
                 }
 
 
-                $q ="SELECT * FROM {$this->db['url']} WHERE pid = ".$mid." and (".$cid_request.") limit 1";
+
 
 
             }
@@ -624,6 +624,7 @@ class MoviesParser extends MoviesAbstractDB {
             {
                 $cid_request = substr($cid_request,3);
             }
+            $q ="SELECT * FROM {$this->db['url']} WHERE pid = ".$mid." and (".$cid_request.") limit 1";
 
             global  $debug;
             if ($debug ){echo $q;}
