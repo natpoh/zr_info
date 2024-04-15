@@ -614,17 +614,20 @@ class MoviesParser extends MoviesAbstractDB {
                     $cid_request.= " OR cid =".$cid_data." ";
 
                 }
-                $cid_request = substr($cid_request,3);
+
 
                 $q ="SELECT * FROM {$this->db['url']} WHERE pid = ".$mid." and (".$cid_request.") limit 1";
 
-                global  $debug;
-                if ($debug ){echo $q;}
-
-                $result = $this->db_fetch_row($q);
 
             }
+            if ($cid_request)
+            {
+                $cid_request = substr($cid_request,3);
+            }
 
+            global  $debug;
+            if ($debug ){echo $q;}
+            $result = $this->db_fetch_row($q);
         }
         else
         {
@@ -656,10 +659,10 @@ class MoviesParser extends MoviesAbstractDB {
                     $d.= " OR u.cid =".$cid_data." ";
 
                 }
-                $d = " ( ".substr($d,3)." ) ";
+
 
             }
-
+            $d = " ( ".substr($d,3)." ) ";
         }
         else
         {

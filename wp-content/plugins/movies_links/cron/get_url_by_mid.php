@@ -13,7 +13,7 @@ if ($_GET['p'] != $p) {
     return;
 }
 global $debug;
-$debug = $_GET['$debug'];
+$debug = $_GET['debug'];
 
 $cid = $_GET['cid'];
 
