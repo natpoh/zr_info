@@ -1,5 +1,7 @@
 <?php
-
+/*
+ * /wp-content/plugins/critic_matic/cron/critic_avatars_cron.php?p=8ggD_23_2D0DSF-F&debug=1&c=1&force=1
+ */
 require_once($_SERVER['DOCUMENT_ROOT'] . '/wp-config.php');
 nocache_headers();
 
