@@ -271,6 +271,11 @@ class CriticAvatars extends AbstractDB {
      */
 
     public function run_cron($cron_type = 1, $force = false, $debug = false, $count = 10) {
+        // Get change size
+        $this->change_img_size($force, $debug, $count);
+     
+/*
+        // UNUSED need refactor
         if ($cron_type == 1) {
             // Parse avatar
             $this->parse_avatar($force, $debug);
@@ -280,12 +285,166 @@ class CriticAvatars extends AbstractDB {
         } else if ($cron_type == 3) {
             // Get tomatoe
             $this->get_tomato($force, $debug, $count);
+        }*/
+    }
+
+    public function change_img_size($force = false, $debug = false, $count = 10) {
+        $option_name = 'critic_avatars_last_id';
+        $last_id = $this->get_option($option_name, 0);
+        if ($force) {
+            $last_id = 0;
+        }
+
+        if ($debug) {
+            p_r(array('last_id', $last_id));
+        }
+
+        // 1. Get avatars
+        $sql = sprintf("SELECT * FROM {$this->db['user_avatars']} WHERE id>%d ORDER BY id ASC limit %d", (int) $last_id, (int) $count);
+
+        if ($debug) {
+            print_r($sql);
+        }
+        $results = $this->db_results($sql);
+
+        if ($results) {
+            $last = end($results);
+            if ($debug) {
+                print 'last id: ' . $last->id . "\n";
+            }
+            $this->update_option($option_name, $last->id);
+            foreach ($results as $item) {
+
+                $filename = $item->img;
+                $source_dir = WP_CONTENT_DIR . '/uploads/' . $this->source_dir;
+                $img_path = $source_dir . "/" . $filename;
+                if ($debug) {
+                    print 'img_path: ' . $img_path . "\n";
+                }
+                if (file_exists($img_path)) {
+                    $this->resize_jpg($img_path, $debug);
+                } else {
+                    if ($debug) {
+                        print "File not found: {$img_path}\n";
+                    }
+                }
+
+                // Tomato
+                $tomato_dir = WP_CONTENT_DIR . '/uploads/' . $this->tomato_dir;
+                $tomato_path = $tomato_dir . "/" . $item->date . ".png";
+
+                if ($debug) {
+                    print 'path: ' . $tomato_path . "\n";
+                }
+
+                if (file_exists($tomato_path)) {
+                    $this->resize_png($tomato_path, $debug);
+                } else {
+                    if ($debug) {
+                        print "File not found: {$tomato_path}\n";
+                    }
+                }
+                
+                // Sketch
+                $sketch_dir = WP_CONTENT_DIR . '/uploads/' . $this->cketch_dir;
+                $sketch_path = $sketch_dir . "/" . $item->date . ".png";
+
+                if ($debug) {
+                    print 'path: ' . $sketch_path . "\n";
+                }
+
+                if (file_exists($sketch_path)) {
+                    $this->resize_png($sketch_path, $debug);
+                } else {
+                    if ($debug) {
+                        print "File not found: {$sketch_path}\n";
+                    }
+                }
+            }
+        }
+    }
+
+    public function resize_jpg($img_path, $debug = false) {
+        // Загрузка исходного изображения
+        $source_image = imagecreatefromjpeg($img_path);
+
+        // Получение текущих размеров изображения
+        $original_width = imagesx($source_image);
+        $original_height = imagesy($source_image);
+
+        // Проверяем, нужно ли уменьшать изображение
+        $new_width = 200; // Новая ширина
+        $new_height = 200; // Новая высота
+
+        if ($original_width != $new_width || $original_height != $new_height) {
+            // Создание нового изображения с новыми размерами
+            $new_image = imagecreatetruecolor($new_width, $new_height);
+
+            // Копирование исходного изображения в новое с ресайзом
+            imagecopyresampled($new_image, $source_image, 0, 0, 0, 0, $new_width, $new_height, $original_width, $original_height);
+
+            // Установка качества сжатия (0-100)
+            $quality = 90;
+
+            // Сохранение нового изображения
+            imagejpeg($new_image, $img_path, $quality);
+
+            // Освобождение памяти
+            imagedestroy($source_image);
+            imagedestroy($new_image);
+
+            if ($debug) {
+                print "resized: {$img_path}\n";
+            }
+        } else {
+            if ($debug) {
+                print "not changes\n";
+            }
+        }
+    }
+
+    public function resize_png($img_path, $debug = false) {
+        // Загрузка исходного изображения
+        $source_image = imagecreatefrompng($img_path);
+
+        // Получение текущих размеров изображения
+        $original_width = imagesx($source_image);
+        $original_height = imagesy($source_image);
+
+        // Установка новых размеров
+        $new_width = 200; // Новая ширина
+        $new_height = 200; // Новая высота
+        // Проверяем, нужно ли уменьшать изображение
+        if ($original_width > $new_width || $original_height > $new_height) {
+
+            // Создание нового изображения с новыми размерами
+            $new_image = imagecreatetruecolor($new_width, $new_height);
+
+            // Сохраняем прозрачность
+            imagealphablending($new_image, false);
+            imagesavealpha($new_image, true);
+
+            // Копирование исходного изображения в новое с ресайзом
+            imagecopyresampled($new_image, $source_image, 0, 0, 0, 0, $new_width, $new_height, imagesx($source_image), imagesy($source_image));
+
+            // Сохранение нового изображения
+            imagepng($new_image, $img_path, 9); // 9 - максимальное сжатие
+            // Освобождение памяти
+            imagedestroy($source_image);
+            imagedestroy($new_image);
+            if ($debug) {
+                print "resized: {$img_path}\n";
+            }
+        } else {
+            if ($debug) {
+                print "not changes\n";
+            }
         }
     }
 
     public function parse_avatar($force = false, $debug = false) {
         $time = $this->curr_time();
-        $url = 'https://thispersondoesnotexist.com/image';
+        $url = 'https://thispersondoesnotexist.com/';
 
         $file_content = $this->get_file_content($url, $debug);
 
@@ -301,7 +460,6 @@ class CriticAvatars extends AbstractDB {
             }
 
             $filename = $time . $this->allowed_mime_types[$src_type];
-
 
             // Check md5 hash
             $img_hash = md5($file_content);
@@ -361,7 +519,7 @@ class CriticAvatars extends AbstractDB {
 
             $mp = $this->get_mp();
             $tp = $mp->get_tp();
-            $max_errors=10;
+            $max_errors = 10;
 
             $file_content = $tp->get_url_content($url, $headers, $ip_limit, true, $tor_mode, false, array(), array(), $max_errors, $debug);
         } else {
@@ -727,7 +885,6 @@ class CriticAvatars extends AbstractDB {
 
                 $filename = $author->id . '-' . $time . $this->allowed_mime_types[$src_type];
 
-
                 // Save image           
                 $source_dir = WP_CONTENT_DIR . '/uploads/' . $this->pro_source_dir;
                 if (class_exists('ThemeCache')) {
@@ -746,7 +903,7 @@ class CriticAvatars extends AbstractDB {
                     $data = array(
                         'avatar' => 1,
                         'avatar_name' => $filename,
-                        'last_upd'=>$this->curr_time(),
+                        'last_upd' => $this->curr_time(),
                     );
 
                     $id = $this->sync_update_data($data, $author->id, $this->db['authors']);
@@ -853,7 +1010,7 @@ class CriticAvatars extends AbstractDB {
             'avatar' => 1,
             'avatar_type' => 1,
             'avatar_name' => $filename,
-            'last_upd'=>$this->curr_time(),
+            'last_upd' => $this->curr_time(),
         );
 
         $this->sync_update_data($data, $author_id, $this->db['authors']);
@@ -867,7 +1024,7 @@ class CriticAvatars extends AbstractDB {
             'avatar' => 1,
             'avatar_type' => 1,
             'avatar_name' => $filename,
-            'last_upd'=>$this->curr_time(),
+            'last_upd' => $this->curr_time(),
         );
 
         $this->sync_update_data($data, $author_id, $this->db['authors']);
@@ -882,7 +1039,7 @@ class CriticAvatars extends AbstractDB {
         // Add avatar to db
         $data = array(
             'avatar_type' => $av_type,
-            'last_upd'=>$this->curr_time(),
+            'last_upd' => $this->curr_time(),
         );
 
         $this->sync_update_data($data, $author_id, $this->db['authors']);
@@ -940,7 +1097,6 @@ class CriticAvatars extends AbstractDB {
                                 }
                                 # Get avatar by site api
                                 $post = $this->cm->get_author_post_link_by_site($aid, $site_key);
-
 
                                 if ($post) {
                                     if ($debug) {
@@ -1033,5 +1189,4 @@ class CriticAvatars extends AbstractDB {
         $code = $mp->get_code_by_current_driver($url, $headers, $mp_settings, $service_urls);
         return $code;
     }
-
 }

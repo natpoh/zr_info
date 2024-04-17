@@ -3063,13 +3063,28 @@ body.theme_dark  .rating_block .imdb_rating {
     background-position-y: -3px;
 }
 
-.rating_block .exlink#metacritic_rating::before, .rating_block .exlink#metacritic_userscore::before {
-    background: url("../images/metacritic-logo.svg") no-repeat left 0 top 0 transparent;
+.rating_block .exlink#thecherrypicks_rating::before {
+
+    background: url("../images/cherry.svg") no-repeat left 0 top 0 transparent;
+    background-size: contain;
+    box-shadow: none;
+}
+.rating_block .exlink#mediaversity_rating::before {
+
+    background: url("../images/mediaversity.svg") no-repeat left 0 top 0 transparent;
     background-size: contain;
     box-shadow: none;
 }
 
 
+
+
+
+.rating_block .exlink#metacritic_rating::before, .rating_block .exlink#metacritic_userscore::before {
+    background: url("../images/metacritic-logo.svg") no-repeat left 0 top 0 transparent;
+    background-size: contain;
+    box-shadow: none;
+}
 
 .rating_block .exlink#imdb_rating::before {
     content: "";

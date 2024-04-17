@@ -3899,6 +3899,15 @@ i.jp{
 i.de{
     background: transparent url(images/flags/4x3/de.svg) 0px 3px no-repeat;
 }
+
+i.CherryPicks{
+    background: transparent url(images/cherry.svg) 0px 0px no-repeat;
+}
+
+i.MediaVersity{
+    background: transparent url(images/mediaversity.svg) 0px 0px no-repeat;
+}
+
 .theme_white i.jp{
     border: 1px solid #818181;
 }

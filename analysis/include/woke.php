@@ -217,7 +217,7 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
 
 
         !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-        $weihgt_total= OptionData::get_options('', 'woke_raiting_weight');
+        $weihgt_total= OptionData::get_options('', 'woke_rating_weight');
         $weihgt_total = unserialize($weihgt_total);
 
 

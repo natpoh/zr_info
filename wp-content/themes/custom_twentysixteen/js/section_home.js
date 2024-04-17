@@ -414,6 +414,17 @@ function create_total_rating(obj, only_tomatoes, rt_gap) {
 
         });
 
+        if (Object.keys(obj.woke).length > 0)
+        {
+            content_rating +='<p>Wokeness</p>';
+                Object.keys(obj.woke).forEach(function (key) {
+
+                let value = obj.woke[key];
+                let name = formatWordsList(key);
+                    content_rating += '<div class="exlink" id="' + key + '"><span>' + name + ':</span>' + create_rating_star(value, key) + '</div>';
+
+            });
+        }
 
         // if (obj.kinop_rating > 0)
         //     content_rating += '<div class="exlink" id="kinop"><span>Kinopoisk:</span>' + create_rating_star(obj.kinop_rating, 'kinopoisk') + '</div>';

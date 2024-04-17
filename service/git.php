@@ -19,16 +19,18 @@
 
 require_once('../an_config.php');
 
+
 function curl_post($data = array(), $host = '') {
 
+    $time = isset($_GET['t']) ? (int) $_GET['t'] : 1;
     $fields_string = http_build_query($data);
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $host);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 1);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $time);
+    curl_setopt($ch, CURLOPT_TIMEOUT, $time);
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
 
@@ -39,6 +41,8 @@ function curl_post($data = array(), $host = '') {
 
 $commands = array(
     'pull_zr',
+    'pull_info',
+    'pull_filmdemographics',
 );
 
 $cmd = isset($_GET['cmd']) ? $_GET['cmd'] : '';

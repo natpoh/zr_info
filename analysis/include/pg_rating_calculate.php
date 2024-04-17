@@ -161,7 +161,7 @@ class PgRatingCalculate {
         !class_exists('GETCURL') ? include ABSPATH . "analysis/include/get_curl.php" : '';
 
         $link = 'https://info.antiwoketomatoes.com/wp-content/plugins/movies_links/cron/get_url_by_mid.php?p=8ggD_23_2D0DSF-F&cid=' . $array_cid[$type] . '&mid=' . $mid;
-        echo $link;
+        //echo $link;
         $result = GETCURL::getCurlCookie($link);
         return $result;
     }
@@ -253,24 +253,32 @@ class PgRatingCalculate {
     public static function rwt_total_rating($id,$check_fields=1,$last_upd=0) {
 
         $data = [];
-
+        $data['woke']=[];
         !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-        $value = OptionData::get_options('', 'movies_raiting_weight_convert');
+        $value = OptionData::get_options('', 'movies_rating_weight_convert');
         if ($value) {
             $value = json_decode($value, 1);
             $array_convert = $value;
         }
 
 
-        $rating_weight_str = OptionData::get_options('','movies_raiting_weight');
+        $rating_weight_str = OptionData::get_options('','movies_rating_weight');
         $rating_weight_ob = json_decode($rating_weight_str,1);
         $rating_weight = $rating_weight_ob['rwt'];
 
-        //var_dump($rating_weight);
+
+        $rating_woke_str = OptionData::get_options('','movies_rating_woke');
+        $rating_woke = json_decode($rating_woke_str,1);
+
+
+       //var_dump($rating_woke);
 
         $sql = "SELECT * FROM `data_movie_erating`  where `movie_id` = " . $id . " limit 1";
         //echo $sql;
         $r = Pdo_an::db_results_array($sql);
+
+        //TMDB::var_dump_table($r);
+
         if ($r) {
             ////check fill rating
             $recalc=0;
@@ -314,6 +322,10 @@ class PgRatingCalculate {
 
                         }
 
+                        if (in_array($i,$rating_woke))
+                        {
+                        $data['woke'][$i]=$v;
+                        }
                         $data[$i]=$v;
                     }
                 }
@@ -391,7 +403,7 @@ class PgRatingCalculate {
         if (!self::$rwt_array)
         {
             !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-            $value = OptionData::get_options('', 'movies_raiting_weight');
+            $value = OptionData::get_options('', 'movies_rating_weight');
 
             if ($value) {
                 $rwt_array_data = json_decode($value,1);
@@ -407,7 +419,7 @@ class PgRatingCalculate {
 
         if (!self::$array_convert) {
             !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-            $value = OptionData::get_options('', 'movies_raiting_weight_convert');
+            $value = OptionData::get_options('', 'movies_rating_weight_convert');
 
 
 
