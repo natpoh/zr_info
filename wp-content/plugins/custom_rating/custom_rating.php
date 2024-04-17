@@ -116,7 +116,7 @@ class CustomRating
         $data = json_decode($data, 1);
         //var_dump($data);
         !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-        OptionData::set_option('',serialize($data),'woke_raiting_weight',1);
+        OptionData::set_option('',serialize($data),'woke_rating_weight',1);
         echo 'ok';
 
         return;
@@ -125,7 +125,7 @@ class CustomRating
         echo '<h1>Woke Rating</h1>';
 
         !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-        $value  =OptionData::get_options('','woke_raiting_weight');
+        $value  =OptionData::get_options('','woke_rating_weight');
 
         if ($value) {
          $array = unserialize($value);
@@ -149,7 +149,7 @@ class CustomRating
                 ,'country'=>['diversity_country_list'=>'United States,Canada,France,United Kingdom']];
 
             !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-            OptionData::set_option('',serialize($array),'woke_raiting_weight',1);
+            OptionData::set_option('',serialize($array),'woke_rating_weight',1);
         }
         if (!$array['other_weight']['rating_max'])
         {
@@ -247,7 +247,7 @@ class CustomRating
         echo '<h1>Movies Rating</h1>';
 
         !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-        $value  =OptionData::get_options('','movies_raiting_weight');
+        $value  =OptionData::get_options('','movies_rating_weight');
         if ($value) {
             $array = json_decode($value,1);
         }
@@ -372,7 +372,7 @@ class CustomRating
                 $data = json_decode($data, 1);
                 //var_dump($data);
                 !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-                OptionData::set_option('',json_encode($data),'movies_raiting_weight',1);
+                OptionData::set_option('',json_encode($data),'movies_rating_weight',1);
                 echo 'ok';
 
                 return;
