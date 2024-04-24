@@ -489,7 +489,7 @@ class CriticCrowd extends AbstractDB {
             }
         } else {
             ///get main data
-            #$service_url = 'http://148.251.54.53:8110/?p=ds1bfgFe_23_KJDS-F&clear=1&wait=3&url=';
+            #$service_url = 'http://37.27.53.197:8110/?p=ds1bfgFe_23_KJDS-F&clear=1&wait=3&url=';
             #$full_url = $service_url .$link;
             #$content = file_get_contents($full_url);
             /*

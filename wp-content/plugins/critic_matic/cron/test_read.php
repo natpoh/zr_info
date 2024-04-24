@@ -1,5 +1,7 @@
 <?php
-
+/*
+ * 
+ */
 $url = 'https://zeitgeistreviews.com/critics/126655-Staff-Neo-Feudalist-How_Am_I_Not_Myself/';
 if ($_GET['url']) {
     $url = $_GET['url'];
@@ -41,7 +43,7 @@ $options = array(
     )
 );
 $context = stream_context_create($options);
-$service = 'http://148.251.54.53:8980/';
+$service = 'http://37.27.53.197:8980/';
 $result = file_get_contents($service, false, $context);
 
 $data = array();

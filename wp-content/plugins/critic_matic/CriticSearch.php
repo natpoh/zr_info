@@ -4055,10 +4055,37 @@ class CriticSearch extends AbstractDB {
                             $filters_and .= " AND id IN(" . implode(',', $ids) . ")";
                         }
                     }
-                }
+                }                
 
                 // All
-                if (isset($curr_facet['facet']) && $curr_facet['facet'] == 'rating') {
+                if (isset($this->facet_data['findata']['childs'][$key])) {
+                    // Finances                    
+                    $data_arr = explode('-', $value);
+                    $from = ((int) $data_arr[0]) * 1000;
+                    $to = ((int) $data_arr[1]) * 1000;
+                    $budget_min = $this->budget_min * 1000;
+                    $budget_max = $this->budget_max * 1000;
+              
+                    if ($from == $to) {
+                        if ($from == $budget_min) {
+                            $filters_and .= sprintf(" AND {$key} > 0 AND {$key}<=%d", $from);
+                        } else if ($from == $budget_max) {
+                            $filters_and .= sprintf(" AND {$key}>=%d", $to);
+                        } else {
+                            $filters_and .= sprintf(" AND {$key}=%d", $from);
+                        }
+                    } else {
+                        if ($from == $budget_min && $to == $budget_max) {
+                            $filters_and .= " AND {$key} > 0";
+                        } else if ($from == $budget_min) {
+                            $filters_and .= sprintf(" AND {$key} > 0 AND {$key} < %d", $to);
+                        } else if ($to == $budget_max) {
+                            $filters_and .= sprintf(" AND {$key} >= %d", $from);
+                        } else {
+                            $filters_and .= sprintf(" AND {$key} >=%d AND {$key} < %d", $from, $to);
+                        }
+                    }
+                } else if (isset($curr_facet['facet']) && $curr_facet['facet'] == 'rating') {
                     if ($value == 'use' || $value == 'minus') {
                         $parent_key = $curr_facet['eid'];
                         if ($value == 'use') {
@@ -4202,34 +4229,7 @@ class CriticSearch extends AbstractDB {
                 } else if ($key == 'distributor' || $key == 'production') {
                     // Distributor
                     $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
-                } else if (isset($this->facet_data['findata']['childs'][$key])) {
-                    // Finances
-                    $data_arr = explode('-', $value);
-                    $from = ((int) $data_arr[0]) * 1000;
-                    $to = ((int) $data_arr[1]) * 1000;
-                    $budget_min = $this->budget_min * 1000;
-                    $budget_max = $this->budget_max * 1000;
-
-                    if ($from == $to) {
-                        if ($from == $budget_min) {
-                            $filters_and .= sprintf(" AND {$key} > 0 AND {$key}<=%d", $from);
-                        } else if ($from == $budget_max) {
-                            $filters_and .= sprintf(" AND {$key}>=%d", $to);
-                        } else {
-                            $filters_and .= sprintf(" AND {$key}=%d", $from);
-                        }
-                    } else {
-                        if ($from == $budget_min && $to == $budget_max) {
-                            $filters_and .= " AND {$key} > 0";
-                        } else if ($from == $budget_min) {
-                            $filters_and .= sprintf(" AND {$key} > 0 AND {$key} < %d", $to);
-                        } else if ($to == $budget_max) {
-                            $filters_and .= sprintf(" AND {$key} >= %d", $from);
-                        } else {
-                            $filters_and .= sprintf(" AND {$key} >=%d AND {$key} < %d", $from, $to);
-                        }
-                    }
-                } else {
+                }  else {
 
                     $curr_parent = $this->get_last_parent($key);
 

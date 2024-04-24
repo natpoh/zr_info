@@ -2193,7 +2193,7 @@ class CriticTransit extends AbstractDB {
 
             $p = 'ds1bfgFe_23_KJDS-F';
             //$domain = 'http://zeitgeistreviews.com:8008/';
-            $domain = 'http://148.251.54.53:8008/';
+            $domain = 'http://37.27.53.197:8008/';
             $url = $domain . '?p=' . $p . '&names=' . $qnames;
             if ($debug) {
                 print_r($url . "\n");
