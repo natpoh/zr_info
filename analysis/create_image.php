@@ -313,11 +313,12 @@ $array_type = array(
 
 $id = intval($id);
 
-$vd_data = unserialize(unserialize(OptionData::get_options('', 'critic_matic_settings')));
-$verdict_method = 0;
-if ($vd_data["an_verdict_type"] == 'w') {
-    $verdict_method = 1;
-}
+//$vd_data = unserialize(unserialize(OptionData::get_options('', 'critic_matic_settings')));
+//$verdict_method = 0;
+//if ($vd_data["an_verdict_type"] == 'w') {
+//    $verdict_method = 1;
+//}
+$verdict_method = 1;
 
 $sql = "SELECT * FROM `data_actors_meta` where actor_id =" . $id . " ";
 $row = Pdo_an::db_results_array($sql);
@@ -328,21 +329,12 @@ foreach ($row as $r) {
         $gender = $array_convert[$r['gender']];
 
     $result = $r;
-//        if ($r['jew']) $result['jew'] = $r['jew'];
-//        if ($r['bettaface'] && $r['bettaface']!=2 && $r['bettaface']!=1) $result['bettaface'] = $r['bettaface'];
-//        if ($r['surname']) $result['surname'] = $r['surname'];
-//        if ($r['ethnic']) $result['ethnic'] = $r['ethnic'];
-//        if ($r['familysearch']) $result['familysearch'] = $r['familysearch'];
-//        if ($r['forebears']) $result['forebears'] = $r['forebears'];
-//        if ($r['kairos']) $result['kairos'] = $r['kairos'];
-//        if ($r['crowdsource']) $result['crowd'] = $r['crowdsource'];
 
 
     if ($verdict_method == 1) {
         $verdict = $r['n_verdict_weight'];
     }
-    if ($verdict_method == 0 || !$verdict) {
-
+    else if ($verdict_method == 0 ) {
         $verdict = $r['n_verdict'];
     }
 }

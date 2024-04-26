@@ -73,7 +73,7 @@ $sql = "SELECT `last_update` FROM `data_actors_meta` WHERE `actor_id`=".intval($
 
 
 
-        $current_site  ='https://info.antiwoketomatoes.com';
+        $current_site  ='https://info.filmdemographics.com';
         $cache_site  ='https://img.zeitgeistreviews.com';
         if (defined('LOCALCACHEIMAGES'))
         {
@@ -119,7 +119,7 @@ $sql = "SELECT `last_update` FROM `data_actors_meta` WHERE `actor_id`=".intval($
 
         }
 
-        $current_site  ='https://info.antiwoketomatoes.com';
+        $current_site  ='https://info.filmdemographics.com';
         $cache_site  ='https://img.zeitgeistreviews.com';
 
 

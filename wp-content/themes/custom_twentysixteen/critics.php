@@ -91,7 +91,7 @@ get_header();
 
                     if (function_exists('current_user_can')) {
                         if (current_user_can("administrator")) {
-                            print 'Review <a target="_blank" href="https://info.antiwoketomatoes.com/wp-admin/admin.php?page=critic_matic&pid=' . $post->id . '">adimin info</a>.<br />';
+                            print 'Review <a target="_blank" href="https://info.filmdemographics.com/wp-admin/admin.php?page=critic_matic&pid=' . $post->id . '">adimin info</a>.<br />';
                         }
                     }
                     ?>       

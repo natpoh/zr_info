@@ -41,7 +41,7 @@ public  function get_data($id)
 
     [$title,$type] = $this->get_title($id);
 
-    $url = 'https://info.antiwoketomatoes.com/service/global_consensus.php?mid=' . $id;
+    $url = 'https://info.filmdemographics.com/service/global_consensus.php?mid=' . $id;
     $result = GETCURL::getCurlCookie($url);
 
     return $result;

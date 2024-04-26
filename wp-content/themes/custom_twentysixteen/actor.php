@@ -9,9 +9,14 @@
 
 $post_an =[];/// $ma->get_post($post_id);
 global $post_name;
+
+include ABSPATH.'analysis/include/actor_data.php';
+global $actor_meta;
+$actor_meta = Actor_Data::get_actor_meta($post_name);
+
 global $title;
 $blog_title = get_bloginfo('name');
-$title = $post_an->title . '. ' . $blog_title;
+$title = $actor_meta['name']. '. ' . $blog_title;
 
 add_filter('pre_get_document_title', function () {
     global $title;
@@ -28,36 +33,29 @@ add_filter('fb_og_title', function () {
     return trim(strip_tags($title));
 });
 add_filter('fb_og_desc', function () {
-    global $post_an;
-    return trim(strip_tags($post_an->description));
+
+    return '';
 });
 add_filter('fb_og_image', function () {
-    global $post_an;
-    global $cfront;
-    $img = $cfront->get_thumb_og_images($post_an->id);
-    return trim(strip_tags($img));
+    global $actor_meta;
+    $img = $actor_meta['image_big'];
+    return $img;
 });
 
 get_header();
 
-//ob_start();
-//$quicktags_settings = array();
-//wp_editor('', 'id_wpcr3_ftext', array('textarea_name' => 'wpcr3_ftext', 'media_buttons' => false, 'tinymce' => true, 'quicktags' => $quicktags_settings));
-//$review_field = ob_get_clean();
+wp_enqueue_style('movie_single', get_template_directory_uri() . '/css/movie_single.css', array(), LASTVERSION);
+wp_enqueue_style('colums_template', get_template_directory_uri() . '/css/colums_template.css', array(), LASTVERSION);
+//js
+wp_enqueue_script('section_home', get_template_directory_uri() . '/js/section_home.js', array('jquery'), LASTVERSION);
+
 ?>
 <div id="primary" class="content-area">
     <main id="main" class="site-main" role="main">
         <?php
-        // ZR post
-        global $post;
-        global $post_an;
-        global $ma;
-        //$post = get_post($post_an->rwt_id);
-        //get_template_part('template-parts/content', 'single-movie');
 
-        echo 'Actor '.$post_name;
-        include ABSPATH.'analysis/include/actor_data.php';
-        Actor_Data::actor_data_template($post_name);
+        get_template_part('template-parts/content', 'actor');
+
         ?>
         <pre>
             <?php

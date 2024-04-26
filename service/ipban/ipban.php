@@ -35,7 +35,7 @@ class IpBanService extends AbstractDBi {
 
     private $db;
     private $allowhosts = array('yandex', 'google.com', 'miralinks.ru');
-    private $white_ip_list = array('198.27.70.142', '198.27.68.101', '148.251.54.53', '127.0.0.1', '172.17.0.1');
+    private $white_ip_list = array('198.27.70.142', '198.27.68.101', '148.251.54.53', '37.27.53.197', '127.0.0.1', '172.17.0.1');
     private $post_ban_list = array('/p-login.php');
     private $ban_time_sec = 86400;
     private $allow_get_path = array('/album/');

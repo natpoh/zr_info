@@ -63,12 +63,14 @@ class RWT_RATING
         $total_rwt = $this->rwt_total_rating($rwt_id);
         $indie = $this->box_office($rwt_id);
 
+        $woke =  $this->get_woke($rwt_id);
+
 
        $array_result = array('type'=>$type,'male' => $gender['male'], 'female' => $gender['female'],
            'diversity' => $gender['diversity'], 'diversity_data' => $gender['diversity_data'], 'family' => $family['pgrating'], 'family_data' => $family['pg_data'],
            'qtia_warning'=>$family['qtia_warning'],'qtia_text'=>$family['qtia_text'],
            'lgbt_warning'=>$family['lgbt_warning'],'lgbt_text'=>$family['lgbt_text'],
-           'woke'=>$family['woke'],'woke_text'=>$family['woke_text'],'total_rating'=>$total_rwt,'indie'=>$indie);
+           'woke'=>$family['woke'],'woke_text'=>$family['woke_text'],'total_rating'=>$total_rwt,'indie'=>$indie,'woke_worthit'=>$woke['worthit'],'woke_bechdeltest'=>$woke['bechdeltest']);
 
 ///["total_rating"]=> array(2) { ["imdb_rating"]=> float(3.15) ["total_rating"]=> float(3.15) }
 ///["total_rating"]=> array(2) { ["imdb_rating"]=> string(0) "" ["total_rating"]=> float(3.15) }
@@ -90,6 +92,7 @@ class RWT_RATING
                     let rating_content = create_rating_content(b,a);
                     if (rating_content) {
                         jQuery('.movie_container[id="' + a + '"]').append(rating_content);
+                        observeChartContainers();
                     }
                 });
                 <?php if ($wait) { ?> }); <?php }  ?>
@@ -211,6 +214,16 @@ class RWT_RATING
         return array("diversity" => $diversity, "diversity_data" => $diversity_data, "male" => $male, "female" => $female);
 
     }
+
+    public static function get_woke($rwt_id)
+    {
+        $sql = "SELECT * FROM `data_woke` WHERE `mid` = {$rwt_id} limit 1";
+        $row = Pdo_an::db_results_array($sql);
+        return $row[0];
+
+
+    }
+
     public  function ajax_pg_rating($movie_id)
     {
 
@@ -323,6 +336,63 @@ class RWT_RATING
         $name_encoded =urlencode($name);
         return '<a class="out_link"  target="_blank" href="https://en.wikipedia.org/w/index.php?search='.$name_encoded.'"></a>';
     }
+
+    public function get_countries($mid)
+    {
+        $q ="SELECT * FROM `meta_movie_boxint` WHERE `mid` = ".$mid;
+        $r = Pdo_an::db_results_array($q);
+        $countries = [];
+        if ($r)
+        {
+        foreach ($r as $row)
+        {
+
+            $countries[]=  $row['country'];
+
+            $data[$row['country']]=$row['total'];
+
+
+        }
+        if ($countries)
+        {
+            $countries_str = implode(' OR id = ',$countries);
+
+            $q ="SELECT `id`, `name` FROM `data_movie_country` WHERE id = ".$countries_str;
+            $countries_array = Pdo_an::db_results_array($q);
+            foreach ($countries_array as $v)
+            {
+                $result_country[$v['id']]=$v['name'];
+
+
+            }
+        }
+        }
+        $result =[];
+        foreach ($data as $i=>$v)
+        {
+            $flag = $this->get_country_flag($result_country[$i]);
+
+            $result[$i] = ['country'=>$result_country[$i],'data'=>$v,'flag'=>$flag];
+        }
+
+        return $result;
+
+    }
+
+private function get_country_flag($v)
+{
+    $v = trim($v,'*');
+    if ($v =='Russia (CIS)')
+    {
+        return 'RU';
+    }
+    $q="SELECT `cca2` FROM `data_population_country` WHERE `official` =? OR `country_name` =? LIMIT 1";
+    $r = Pdo_an::db_results_array($q,[$v,$v]);
+    return $r[0]['cca2'];
+
+}
+
+
     public  function get_productions($mid)
     {
         $big_b =0;
@@ -483,7 +553,9 @@ class RWT_RATING
 
             $result['production']=$production;
         }
+        $countries=$this->get_countries($mid);
 
+        $result['c_box'] =$countries;
 
     return $result;
 

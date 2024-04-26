@@ -510,6 +510,7 @@ critic_search.init = function ($custom_id = '') {
                 let rating_content = create_rating_content(b, a, 1);
                 if (rating_content) {
                     $('.movie_container[id="' + a + '"]').append(rating_content);
+                    observeChartContainers();
                 }
             });
         }

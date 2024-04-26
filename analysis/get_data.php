@@ -756,7 +756,9 @@ if ($_POST['oper'] == 'get_country_data') {
         $q->setFetchMode(PDO::FETCH_ASSOC);
 
 
-    } else {
+    }
+
+    else {
         $sql = "SELECT *  FROM data_population_country where country_name = ? limit 1";
         $q = $pdo->prepare($sql);
         $q->execute(array(0 => $id));

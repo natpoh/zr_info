@@ -4,6 +4,85 @@
 class Actor_Data
 {
 
+    public static function get_actor_verdict($aid)
+    {
+//        $vd_data = unserialize(unserialize(OptionData::get_options('', 'critic_matic_settings')));
+//        $verdict_method = 0;
+//        if ($vd_data["an_verdict_type"] == 'w') {
+//            $verdict_method = 1;
+//        }
+
+        $verdict_method = 1;
+
+        $array_convert = array('2' => 'Male', '1' => 'Female', '0' => 'NA');
+        $array_int_convert = array(1 => 'W', 2 => 'EA', 3 => 'H', 4 => 'B', 5 => 'I', 6 => 'M', 7 => 'MIX', 8 => 'JW', 9 => 'NJW', 10 => 'IND');
+        $array_compare_cache = array('Sadly, not' => 'N/A', '1' => 'N/A', '2' => 'N/A', 'NJW' => 'N/A', 'W' => 'White', 'B' => 'Black', 'EA' => 'Asian', 'H' => 'Latino', 'JW' => 'Jewish', 'I' => 'Indian', 'M' => 'Arab', 'MIX' => 'Mixed / Other', 'IND' => 'Indigenous');
+
+
+        $sql = "SELECT * FROM `data_actors_meta` where actor_id =" . $aid . " ";
+        $row = Pdo_an::db_results_array($sql);
+
+        $result =[];
+
+        $r =$row[0];
+
+            if ($r['gender'])
+            {
+                $result['gender'] = $array_convert[$r['gender']];
+            }
+
+            foreach ($r as $rw=>$v)
+            {
+                if (strstr($rw,'n_') && $rw!='n_verdict_weight'  && $rw!='n_verdict' && $rw!='n_forebears' )
+                {
+
+                    $rws = substr($rw,2);
+
+                    if ($v>0)
+                    {
+                        $result[$rws] =  $array_compare_cache[$array_int_convert[$v]];
+                    }
+                    else
+                    {
+                        $result[$rws] ='N/A';
+                    }
+
+                }
+
+            }
+
+
+            if ($verdict_method == 1) {
+                $verdict = $r['n_verdict_weight'];
+            }
+            else if ($verdict_method == 0 ) {
+
+                $verdict = $r['n_verdict'];
+            }
+
+
+
+        if ($verdict) {
+            $result['verdict']  = $array_compare_cache[$array_int_convert[$verdict]];
+        }
+
+        return $result;
+    }
+
+    public static function get_actor_meta($aid)
+    {
+        $aid=intval($aid);
+        $q = "SELECT `name` FROM `data_actors_imdb` WHERE `id` =".$aid;
+        $r = Pdo_an::db_results_array($q);
+        $name = $r[0]['name'];
+
+        !class_exists('RWTimages') ? include ABSPATH . "analysis/include/rwt_images.php" : '';
+        $image_link = RWTimages::get_image_link($aid,'270x338','','','',1);
+        $image_link_big = RWTimages::get_image_link($aid,'540x676','','','',1);
+        $verdict = self::get_actor_verdict($aid);
+
+        return ['name'=>$name,'image'=>$image_link,'image_big'=>$image_link_big, 'verdict'=>$verdict];
+    }
 
 private static function normalise_array($array)
     {
@@ -460,7 +539,7 @@ foreach ($array_id as $id) {
 
 
 
-    echo '<a  target="_blank" class="admin_link" href="https://info.antiwoketomatoes.com/analysis/include/scrap_imdb.php?actor_logs='.$id.'">Actor info</a>';
+    echo '<a  target="_blank" class="admin_link" href="https://info.filmdemographics.com/analysis/include/scrap_imdb.php?actor_logs='.$id.'">Actor info</a>';
 
 
     if ($debug) {

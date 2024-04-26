@@ -204,7 +204,7 @@ last_update=not_equal=0<br>
     z-index: 10;
     position: relative;
     margin-left: 200px;
-    margin-top: 7px;"><a href="https://info.antiwoketomatoes.com<?php echo $_SERVER['REQUEST_URI'] ?>">Server</a><a href="https://zeitgeistreviews.com<?php echo $_SERVER['REQUEST_URI'] ?>">ZR</a> <?php echo $links; ?></div>
+    margin-top: 7px;"><a href="https://info.filmdemographics.com<?php echo $_SERVER['REQUEST_URI'] ?>">Server</a><a href="https://zeitgeistreviews.com<?php echo $_SERVER['REQUEST_URI'] ?>">ZR</a> <?php echo $links; ?></div>
 
 <div class="left_menu">
 <div class="menu_title"><?php echo $name; ?></div>

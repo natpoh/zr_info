@@ -179,7 +179,7 @@ class AnalyticsSearch extends CriticSearch {
             $facet = 'international';
 
             $filters_and = $this->get_filters_query($filters);
-            $sql = sprintf("SELECT boxusa as box_usa, boxworld as box_world, year_int as year" .$custom_fields. $filters_and['select']
+            $sql = sprintf("SELECT boxusa as box_usa, boxworld as box_world, year_int as year" . $custom_fields . $filters_and['select']
                     . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match . " ORDER BY year_int ASC LIMIT 0,%d OPTION max_matches=%d", $this->max_matches, $this->max_matches);
 
             $international_facet = $this->movies_facet_single_get($sql, $search_query);
@@ -218,11 +218,6 @@ class AnalyticsSearch extends CriticSearch {
             $filters['type'] = array('movies', 'tv', 'videogame');
         }
 
-        // Ids logic
-        if ($ids) {
-            $filters_and .= ' AND id IN(' . implode(',', $ids) . ')';
-        }
-
         // Select facet and filters logic
         $select = " id, year_int as year, title";
 
@@ -249,12 +244,21 @@ class AnalyticsSearch extends CriticSearch {
 
         if ($show_main) {
             // Main sql
-            $sql = sprintf("SELECT id, title, release, add_time, post_name, type, boxusa, boxworld, boxint, boxprofit, budget, (boxusa/boxworld) AS share, "
-                    . "year_int as year, raceu, draceu, rimdb, rrwt, rrt, rrta, rrtg, rating, aurating, weight() w, movie_id" .$custom_fields. $order['select'] . $filters_select_and
-                    . " FROM movie_an WHERE id>0" . $filters_and . $filters_need_str . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
+            // Ids logic
+            if ($ids) {
+                $filters_and = ' id IN(' . implode(',', $ids) . ')';
+                $sql = sprintf("SELECT id, title, release, add_time, post_name, type, boxusa, boxworld, boxint, boxprofit, budget, (boxusa/boxworld) AS share, "
+                        . "year_int as year, raceu, draceu, rimdb, rrwt, rrt, rrta, rrtg, rating, aurating, weight() w, movie_id" . $custom_fields . $order['select'] . $filters_select_and
+                        . " FROM movie_an WHERE " . $filters_and . $order['order'] . " LIMIT %d,%d ", $start, $limit);
+                $ret = $this->movie_results($sql);
+            } else {
+                $sql = sprintf("SELECT id, title, release, add_time, post_name, type, boxusa, boxworld, boxint, boxprofit, budget, (boxusa/boxworld) AS share, "
+                        . "year_int as year, raceu, draceu, rimdb, rrwt, rrt, rrta, rrtg, rating, aurating, weight() w, movie_id" . $custom_fields . $order['select'] . $filters_select_and
+                        . " FROM movie_an WHERE id>0" . $filters_and . $filters_need_str . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
+                $ret = $this->movie_results($sql, $match, $search_query);
+            }
 
-            $ret = $this->movie_results($sql, $match, $search_query);
-
+  
             gmi('main find query');
 
             if (!$show_meta) {
@@ -333,6 +337,9 @@ class AnalyticsSearch extends CriticSearch {
         } else if ($axis == 'release') {
             // Date axis
             $select = ", release";
+        } else if ($axis == 'movies') {
+            // Movies axis
+            $select = ", 1 AS movies";
         } else if ($axis == 'rimdb') {
             // Rating axis
             $select = ", rimdb as rating";
@@ -388,7 +395,7 @@ class AnalyticsSearch extends CriticSearch {
         return $parent_arr;
     }
 
-    public function movie_results($sql, $match, $search_query) {
+    public function movie_results($sql, $match = '', $search_query = '') {
         //Get result
         $stmt = $this->sps->prepare($sql);
 

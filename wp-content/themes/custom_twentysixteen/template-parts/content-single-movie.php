@@ -72,9 +72,9 @@ if ($movie_list) {
         $update_link = '';
 
         if ($post_an->add_time < time() - 86400) {
-            $update_link = ' <a target="_blanc" class="admin_link" href="' . WP_SITEURL . '/analysis/include/scrap_imdb.php?get_imdb_movie_id=' . $post_id . '&debug=1"  >update data</a> <a  target="_blanc" class="admin_link"  href="https://info.antiwoketomatoes.com/analysis/include/scrap_imdb.php?get_imdb_movie_id=' . $post_id . '&debug=1"  >update server data</a>';
+            $update_link = ' <a target="_blanc" class="admin_link" href="' . WP_SITEURL . '/analysis/include/scrap_imdb.php?get_imdb_movie_id=' . $post_id . '&debug=1"  >update data</a> <a  target="_blanc" class="admin_link"  href="https://info.filmdemographics.com/analysis/include/scrap_imdb.php?get_imdb_movie_id=' . $post_id . '&debug=1"  >update server data</a>';
         }
-        echo '<p class="last_updated_desc">Last updated: ' . $last_imdb_updated_string . $update_link . '  <a  target="_blanc" class="admin_link"  href="https://info.antiwoketomatoes.com/service/sheme.php?edit_sheme=5&mid=' . $post_id . '"  >View details</a>  <a href="#" id="clear_page_cache" data-value="' . $post_id . '" class="update_data">Clear cache</a></p>';
+        echo '<p class="last_updated_desc">Last updated: ' . $last_imdb_updated_string . $update_link . '  <a  target="_blanc" class="admin_link"  href="https://info.filmdemographics.com/service/sheme.php?edit_sheme=5&mid=' . $post_id . '"  >View details</a>  <a href="#" id="clear_page_cache" data-value="' . $post_id . '" class="update_data">Clear cache</a></p>';
     }
     ?>
 

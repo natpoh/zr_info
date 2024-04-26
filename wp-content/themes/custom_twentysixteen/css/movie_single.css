@@ -17,6 +17,14 @@ body.theme_dark  .movie_container {
     flex-basis: calc(100% - 260px);
     flex-grow: 1;
 }
+
+
+.actor_container  .movie_description {
+
+    flex-basis: calc(100% - 300px);
+
+}
+
 .movie_poster {
     box-shadow: 2px 0px 2px rgba(255, 255, 255, 0.3);
 }
@@ -35,6 +43,7 @@ body.theme_dark  .single_post .movie_description {
 
 .single_post  .movie_poster {
     box-shadow: none;
+    margin: auto;
 }
 .movie_container {
     display: flex;
@@ -66,6 +75,11 @@ body.theme_dark  .single_post .movie_description {
     border-radius: 6px;
     overflow: hidden;
 }
+
+.actor_container  .movie_poster .image {
+width: 270px;
+}
+
 .movie_poster {
     padding: 15px;
 }
@@ -107,6 +121,13 @@ body.theme_white .providers_colum a .provider_type {
 
 body.theme_dark  .single_post .movie_credits_bloc,body.theme_dark .single_post .movie_summary {
     background-color: rgba(0, 0, 0, 0.7);
+
+}
+.movie_summary {
+    position: relative;
+}
+.actor_container  .movie_summary {
+    padding-right: 45px;
 }
 
 .movie_load_grid{
@@ -114,6 +135,16 @@ body.theme_dark  .single_post .movie_credits_bloc,body.theme_dark .single_post .
     padding: 5px;
 }
 
+.actor_container  .movie_summary {
+    max-width: 500px;
+    margin-left: 25px;
+
+}
+
+.actor_container h1.entry-title
+{
+    margin-bottom: 5px;
+}
 .single_post .movie_summary {
     color: #3e3b3b;
 
@@ -159,9 +190,43 @@ body.theme_dark .single_post .movie_summary .block span {
     color: var(--link-hower-white);
 }
 
+.crowd_data{
+    min-width: 320px;
+}
 
+.actor_container .actor_crowdsource, .actor_container .actor_crowdsource:hover, .actor_container .actor_crowdsource:visited {
+    background: none;
+}
 
+.actor_crowdsource_container{
+    display: flex;
+}
 
+.actor_crowdsource_container .nte_info {
+
+    display: inline-block;
+    background: url(../images/edit.svg) no-repeat scroll left 0 top 0 transparent;
+    width: 24px;
+    height: 24px;
+    background-size: contain;
+}
+
+.theme_white .actor_crowdsource_container .nte_info {
+    background: url(../images/edit_b.svg) no-repeat scroll left 0 top 0 transparent;
+    background-size: contain;
+}
+
+.actor_crowdsource_container  .nte_show .nte_in {
+    width: 320px;
+}
+
+.yellow{
+    color: var(--yellow-light-1);
+}
+.theme_white  .yellow
+{
+    color: var(--yellow-dark-3);
+}
 
 .accordion {
     margin: 0 auto;

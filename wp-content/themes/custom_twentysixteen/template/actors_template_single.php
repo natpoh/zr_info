@@ -184,8 +184,6 @@ $content .= details_template('Global Consensus','<section class="dmg_content inn
 
 
 }
-
-
 function show_actors_template_single_cache()
 {
 

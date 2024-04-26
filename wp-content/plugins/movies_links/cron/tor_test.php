@@ -20,7 +20,7 @@ if ($_GET['force']) {
     $force = true;
 }
 
-$url_test = 'https://info.antiwoketomatoes.com/service/request.php?p=dfs_WFDS-32FhGSD6';
+$url_test = 'https://info.filmdemographics.com/service/request.php?p=dfs_WFDS-32FhGSD6';
 if ($_GET['url_test']) {
     $url_test = urldecode($_GET['url_test']);
 }

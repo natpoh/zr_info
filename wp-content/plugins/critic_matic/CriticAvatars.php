@@ -14,7 +14,7 @@ class CriticAvatars extends AbstractDB {
     public $source_dir = "ca/source";
     public $cketch_dir = "ca/sketch";
     public $tomato_dir = "ca/tomato";
-    public $img_service = 'https://info.antiwoketomatoes.com/';
+    public $img_service = 'https://info.filmdemographics.com/';
     public $thumb_service = 'https://img.zeitgeistreviews.com/';
     // Pro critic
     public $pro_source_dir = "cp/source";

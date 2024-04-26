@@ -304,7 +304,7 @@ class CriticMaticTrans extends AbstractDB {
 
         // Service
         // http://172.17.0.1:8009/?p=43dfsfgFe_dJD4S-fdds&proxy=107.152.153.239:9942&url=
-        $service = 'http://148.251.54.53:8009/?p=43dfsfgFe_dJD4S-fdds';
+        $service = 'http://172.17.0.1:8009/?p=43dfsfgFe_dJD4S-fdds';
 
         $proxy = $this->cm->get_parser_proxy(true);
         $proxy_text = '';

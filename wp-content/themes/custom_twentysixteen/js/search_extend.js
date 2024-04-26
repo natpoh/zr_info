@@ -170,7 +170,7 @@ search_extend.k_m_b_generator = function ($num) {
     return $num;
 }
 
-search_extend.init_chart_scatter_xy = function (chart_div, vis = '') {
+search_extend.init_chart_scatter_xy = function (chart_div, vis = '') {    
     var title = chart_div.attr('data-title');
 
     var x_title = chart_div.attr('data-xtitle');

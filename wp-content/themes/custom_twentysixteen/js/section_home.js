@@ -414,16 +414,17 @@ function create_total_rating(obj, only_tomatoes, rt_gap) {
 
         });
 
-        if (Object.keys(obj.woke).length > 0)
-        {
-            content_rating +='<p>Wokeness</p>';
+        if (obj.woke) {
+            if (Object.keys(obj.woke).length > 0) {
+                content_rating += '<p>Wokeness</p>';
                 Object.keys(obj.woke).forEach(function (key) {
 
-                let value = obj.woke[key];
-                let name = formatWordsList(key);
+                    let value = obj.woke[key];
+                    let name = formatWordsList(key);
                     content_rating += '<div class="exlink" id="' + key + '"><span>' + name + ':</span>' + create_rating_star(value, key) + '</div>';
 
-            });
+                });
+            }
         }
 
         // if (obj.kinop_rating > 0)
@@ -517,9 +518,150 @@ function abbreviateNumber(number) {
 
     return number.toString();
 }
+function formatNumber(num) {
+    if (num >= 1000000000) {
+        return (num / 1000000000).toFixed(1) + 'B';
+    } else if (num >= 1000000) {
+        return (num / 1000000).toFixed(1) + 'M';
+    } else if (num >= 1000) {
+        return (num / 1000).toFixed(1) + 'k';
+    } else {
+        return num.toString();
+    }
+}
+
+
+function create_BoxChart(data, containerElement) {
+
+
+    let dataArray = Object.values(data);
+
+    // Sort the array by the 'data' parameter in descending order
+    dataArray.sort((a, b) => parseFloat(b.data) - parseFloat(a.data));
+
+    if (dataArray.length > 10) {
+        dataArray = dataArray.slice(0, 10);
+    }
+    let numDataPoints = Object.keys(dataArray).length;
+
+    if (!numDataPoints)return;
+
+    numDataPoints = Math.max(numDataPoints*25, 100)
+
+    const chartData = {
+        chart: {
+            type: 'column',
+            inverted: true,
+            height: numDataPoints
+        },
+        title: {
+            text: ''
+        },
+        xAxis: {
+
+            categories: Object.values(dataArray).map(item => {
+                // Check if flag is available
+                if (item.flag) {
+                    // Return flag and country name
+                    return `<span class="iflagsmall"><img src="/wp-content/themes/custom_twentysixteen/images/flags/4x3/${item.flag.toLowerCase()}.svg" /> </span>`;
+                } else {
+
+                   let categoryLabel = item.country.substring(0,3);
+                    // If flag is not available, return just the country name
+                    return `<span class="iflagsmall">${categoryLabel}</span>`;
+                }
+            }),
+            labels: {
+                useHTML: true,
+                animate: true,
+                formatter: function () {
+                    var output = this.value;
+                    return output;
+                }
+            },
+
+            crosshair: true,
+
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: null
+            },
+            labels: {
+                enabled: false // Hide all labels on the y-axis
+            }
+        },
+
+        legend: {
+            enabled: false
+        },
+        tooltip: {
+            formatter: function() {
+
+                const dataIndex = chartData.xAxis.categories.indexOf(this.key);
+
+                    return `${dataArray[dataIndex].country}: $${formatNumber(this.y)}`;
+
+            }
+        },
+
+
+
+        series: [{
+            name: 'Box office',
+            data: Object.values(dataArray).map(item => parseFloat(item.data)),
+            color: 'rgb(77,114,187)'
+        }]
+    };
+    if (typeof Highcharts !== 'undefined') {
+        Highcharts.chart(containerElement, chartData);
+    }
+}
+
+function observeChartContainers() {
+
+    const containers = document.querySelectorAll('.box_chart.not_loaded');
+
+
+
+const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const container = entry.target;
+            const dataElement = container.querySelector('.data');
+            if (dataElement) {
+                const data = JSON.parse(dataElement.textContent);
+
+                if (data ) {
+                    if (typeof Highcharts == 'undefined') {
+                        var third_scripts = {
+                            hrts: 'https://code.highcharts.com/highcharts.js'
+                        };
+                        use_ext_js_data(create_BoxChart, third_scripts, [data, container]);
+
+                    } else {
+                        //load_main_graph();
+                        create_BoxChart(data, container);
+                    }
+                }
+
+                container.classList.remove('not_loaded');
+                container.classList.add('loaded');
+            }
+        }
+    });
+}, { rootMargin: '0px 0px 200px 0px' });
+
+containers.forEach(container => {
+    observer.observe(container);
+});
+}
+
 
 function create_rating_content(object, m_id, search_block = 0) {
     let content = '';
+
 
 
     if (object['type']) {
@@ -530,7 +672,7 @@ function create_rating_content(object, m_id, search_block = 0) {
     if (object['indie']) {
         //console.log(object['indie']);
         let data = '';
-        if (object['indie']['productionBudget'] > 0 || object['indie']['box_usa'] > 0 || object['indie']['box_intern'] || object['indie']['box_world'] > 0) {
+        if (object['indie']['productionBudget'] > 0 || object['indie']['box_usa'] > 0 || object['indie']['box_intern'] || object['indie']['box_world'] > 0 || object['indie']['c_box']) {
 
 
             if (object['indie']['box_usa'] > 0 || object['indie']['box_world'] > 0) {
@@ -548,6 +690,20 @@ function create_rating_content(object, m_id, search_block = 0) {
 
             if (object['indie']['box_world'] > 0)
                 data += popup_cusomize('row_inner', 'Worldwide:', '$' + abbreviateNumber(object['indie']['box_world']));
+
+
+
+            if (object['indie']['c_box'])
+            {
+                if (Object.keys(object['indie']['c_box']).length>0)
+                {
+
+                    data +='<p class="row_text_head exlink" id="thenumbers">Box office International:</p><span class="box_chart not_loaded"><span class="data" style="display: none">'+JSON.stringify(object['indie']['c_box'])+'</span></span>';
+                }
+
+            }
+
+
         }
 
 
@@ -771,8 +927,6 @@ function create_rating_content(object, m_id, search_block = 0) {
 
 
 
-
-
     if ((object['diversity'] || object['diversity_data'] || object['female'] || object['male']) && object['type'] != 'videogame') {
 
         let fem_desk = '';
@@ -849,6 +1003,9 @@ function create_rating_content(object, m_id, search_block = 0) {
     }
     lgbt_warning_text = '';
     // console.log(object);
+
+
+
     if (object['lgbt_warning'] == 1 || object['qtia_warning'] == 1) {
         let ltext = '';
         let qtext = '';
@@ -888,7 +1045,19 @@ function create_rating_content(object, m_id, search_block = 0) {
     }
 
 
-    /// console.log(movie_type);
+    let wort_array={'1':'Worth it','2':'Non-Woke','3':'Woke-ish','4':'Woke'};
+    let woke_worthit_text ='';
+    if (object['woke_worthit'] >0) {
+        woke_worthit_text = '<span class="pp_row  row_main"><span class="pp_rl exlink " id="WorthItOrWoke">WorthItOrWoke</span><span class="pp_rr">' + wort_array[object['woke_worthit']] + '</span></span>';
+    }
+
+    let bechdeltest_array={'1':'No 2 women','2':'No women talking','3':'Talk about a man','4':'Passed!'};
+    let bechdeltest_text ='';
+    if (object['woke_bechdeltest'] >0) {
+        bechdeltest_text = '<span class="pp_row  row_main"><span class="pp_rl exlink"  id="bechdeltest">Bechdeltest</span><span class="pp_rr">' + bechdeltest_array[object['woke_bechdeltest']] + '</span></span>';
+    }
+
+
 
     let array_title = {'movie': 'film', 'tvseries': 'show', 'videogame': 'game'};
     let name = 'film';
@@ -909,7 +1078,7 @@ function create_rating_content(object, m_id, search_block = 0) {
     let rating_link = popup_cusomize('row_link', '<a href="#" class="read_more_rating">CONTENT BREAKDOWN</a>');
     rating_link += popup_cusomize('row_link', '<a href="#" class="how_calculate_rating">Methodology</a>')
 
-    content += add_rating_block(block_class + ' ' + lgbt_class + woke_class + rating_color, value, lgbt_warning_text + woke_warning_text + family_data_result + scorecontent + rating_link, 1, true);
+    content += add_rating_block(block_class + ' ' + lgbt_class + woke_class + rating_color, value, lgbt_warning_text + woke_warning_text +woke_worthit_text+bechdeltest_text+ family_data_result + scorecontent + rating_link, 1, true);
 
 
     if (object.total_rating && object.total_rating.total_rating > 0) {
@@ -942,6 +1111,10 @@ function create_rating_content(object, m_id, search_block = 0) {
     if (content) {
         content = `<div id="${m_id}"  class="rating_block">${content}</div>`;
     }
+
+
+
+
 
     return content;
 }
@@ -1105,6 +1278,7 @@ function set_video_scroll(data, block_id, append = '') {
                                             let rating_content = create_rating_content(data['rating'][a], a);
                                             if (rating_content) {
                                                 block_img.append(rating_content);
+                                                observeChartContainers();
                                             }
                                         }
                                     }
@@ -1219,7 +1393,7 @@ function check_watchlists() {
     }
 
     //console.log(watch_lists_data);
-    $('.watch-data:not(".init")').each(function () {
+    $('.watch-data:not(.init)').each(function () {
         var $this = $(this);
         $this.addClass('init');
         var id = $this.data('id');
@@ -1327,6 +1501,7 @@ function add_movie_rating(block_id, data) {
     let rating_content = create_rating_content(data, parent_id, 1);
 
     jQuery('div.movie_total_rating[id="' + block_id + '"]').html(rating_content);
+    observeChartContainers();
     return;
 
 }
@@ -2013,6 +2188,7 @@ function load_ajax_block(block_id = '', request_id = '') {
                                     let rating_content = create_rating_content(b, a);
                                     if (rating_content) {
                                         jQuery('div.movie_container[id="' + a + '"]').append(rating_content);
+                                        observeChartContainers();
                                     }
                                 });
 
@@ -2202,6 +2378,7 @@ function load_ajax_block(block_id = '', request_id = '') {
                             let rating_content = create_rating_content(b, a);
                             if (rating_content) {
                                 jQuery('div.movie_container[id="' + a + '"]').append(rating_content);
+                                observeChartContainers();
                             }
                         });
 
@@ -3728,11 +3905,36 @@ jQuery(document).ready(function () {
 
         var closep = 0;
         let prnt = jQuery(this).parents('.crowd_data');
+
+
         if (!prnt.hasClass('crowd_data')) {
             prnt = jQuery(this).parents('.default_popup');
             closep = 1;
 
+            if (!prnt.hasClass('default_popup')) {
+                prnt = jQuery(this).parents('.actor_crowdsource_container');
+                closep = 2;
+
+            }
         }
+        if (closep==2) {
+            var type = jQuery(this).attr('id');
+            var id = prnt.attr('data-value');
+        }
+        else if (closep==1) {
+            var type = jQuery(this).attr('id');
+            var id = prnt.attr('id');
+        }
+        else {
+            var link = prnt.prev('a.actor_crowdsource');
+            var id = link.attr('data-value');
+            var type = link.attr('class');
+
+        }
+
+
+
+
         var result = new Object();
         prnt.find('input, select, textarea').each(function () {
 
@@ -3760,15 +3962,7 @@ jQuery(document).ready(function () {
             result[cls] = data;
         });
 
-        if (closep) {
-            var type = jQuery(this).attr('id');
-            var id = prnt.attr('id');
-        } else {
-            var link = prnt.prev('a.actor_crowdsource');
-            var id = link.attr('data-value');
-            var type = link.attr('class');
 
-        }
 
         if (type == 'critic_crowd_link') {
             var msg_text = '<div id="progress-bar-container"><div class="txt"><i class="icon icon-loader"></i><span>Loading <span id="dtime">00:00</span></span></div><div id="progress-bar"></div></div>';
@@ -3844,7 +4038,11 @@ jQuery(document).ready(function () {
 
                 } else {
                     let msg = '<p class="user_message_info">Thank you for your help, we\'ll check it soon.</p>';
-                    if (closep) {
+                    if (closep==2) {
+                        prnt.find('.nte_cnt').html(msg + '<div class="submit_data"><button class="button close" >Close</button></div>');
+                    }
+
+                    else if (closep==1) {
                         prnt.html(msg + '<div class="submit_data"><button class="button close" >Close</button></div>');
                     } else {
                         prnt.html('<div class="open_rating_container note_show">' + msg + '<div class="submit_data"><button class="button close" >Close</button></div></div>');
@@ -3863,11 +4061,16 @@ jQuery(document).ready(function () {
 
     jQuery('body').on('click', '.submit_data .close', function (e) {
 
-
         let prnt = jQuery(this).parents('.crowd_data');
         //  console.log(prnt);
         if (!prnt.hasClass('crowd_data')) {
             prnt = jQuery(this).parents('.popup-content');
+
+            if (!prnt.hasClass('.popup-content')) {
+                prnt = jQuery(this).parents('.nte');
+                prnt.find('.btn').click();
+                return false;
+            }
             prnt.html('');
             jQuery('.popup-close').click();
 
@@ -4953,6 +5156,25 @@ function loadScript($url, success = '') {
         }
     });
 }
+function use_ext_js_data(f, third_scripts,data=[]) {
+    for (var n in third_scripts) {
+        if (jQuery('body').hasClass(n)) {
+            continue;
+        } else {
+            jQuery('body').addClass(n);
+            var success = function () {
+                use_ext_js_data(f, third_scripts,data);
+            }
+            loadScript(third_scripts[n], success);
+            return;
+        }
+    }
+    if (typeof f === 'function') {
+        f(...data);
+    }
+
+}
+
 
 function use_ext_js(f, third_scripts) {
     for (var n in third_scripts) {

@@ -9,7 +9,7 @@ class TorParser extends MoviesAbstractDB {
 
     private $ml;
     private $db;
-    // public $web_driver = '148.251.54.53:8110';
+    // public $web_driver = '37.27.53.197:8110';
     public $web_driver = '';
     public $get_ip_url = '';
     public $service_min_life_time = 300; // 5 min

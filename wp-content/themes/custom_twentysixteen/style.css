@@ -12051,13 +12051,7 @@ custom ratings can be used in the advanced search feature and using the audience
 .row_head {
     margin-top:1.4em!important;
     font-size:17px;
-    -webkit-text-stroke-width: .3px;
-    -webkit-text-stroke-color: black;
 
-}
-body.theme_dark .row_head {
-
-    -webkit-text-stroke-color: white;
 }
 
 
@@ -16273,3 +16267,854 @@ body.home.blog.theme_dark .inner_content {
 
 
 
+/* making filters transparent until it is unlocked */
+
+.menu-item-489611 {
+    opacity:.25!important;
+}
+
+.menu-item-489559 {
+    opacity:.25!important;
+}
+
+.menu-item-489561 {
+    opacity:.25!important;
+}
+
+.menu-item-489557 {
+    opacity:.25!important;
+}
+
+.menu-item-489558 {
+    opacity:.25!important;
+}
+
+.menu-item-489560 {
+    opacity:.25!important;
+}
+
+
+
+
+
+
+/* OFDb unlocked */
+
+.menu-item-490969 {
+    opacity:.999999!important;
+}
+
+
+
+
+
+
+
+
+/* making child div arrows more subtle to make the hiearchy understood immediately and keeping them aligned vertically */
+
+.up {
+    margin-bottom:.3em;
+    opacity:.4;
+}
+.down {
+    margin-bottom:.1em;
+    opacity:.4;
+}
+
+.down:hover {
+    opacity:.9;
+}
+
+.up:hover {
+    opacity:.9;
+}
+
+
+
+/* making the question mark tooltips align right on the sidebar */
+#facet-reviewwoketitle .nte_info {
+    margin-left: auto;
+    margin-right:.4em;
+}
+
+#facet-auratingtitle .nte_info {
+    margin-left: auto;
+    margin-right:.4em;
+}
+
+
+
+
+
+/* font change besides headers that will remain the typewriter aesthetic */
+
+.home  {
+    font-family: Roboto,Helvetica,Arial,sans-serif;
+}
+
+.type-TVSeries, .movie_summary {
+    font-family: Roboto,Helvetica,Arial,sans-serif;
+}
+
+
+.type-Movie  {
+    font-family: Roboto,Helvetica,Arial,sans-serif;
+}
+
+
+
+.movie_summary .block_summary span {
+    font-size: 15px;
+    font-weight:bold;
+}
+
+.movie_summary .single_grid span:first-of-type {
+    font-size: 15px;
+    font-weight:bold;
+}
+
+.movie_summary .single_flex span {
+    font-size: 15px;
+    font-weight:bold;
+}
+
+
+.search .search-no-results {
+    font-family: Roboto,Helvetica,Arial,sans-serif;
+}
+
+
+
+.review_autor_name {
+    font-family: Roboto,Helvetica,Arial,sans-serif;
+}
+
+.tab-button {
+    font-family: Roboto,Helvetica,Arial,sans-serif;
+}
+
+.tab_button_child_btn {
+    font-family: Roboto,Helvetica,Arial,sans-serif;
+}
+
+
+
+
+.movie_total_rating div:after {
+    color:#888888;
+    text-shadow: .001px 0 #888888;
+    letter-spacing:.5px;
+    font-weight:bold;
+}
+
+
+
+
+
+
+
+
+/* changing all the font and making each button and tooltip more neatly placed for compatibility */
+
+.rating_block .nte_cnt {
+    font-family: Roboto,Helvetica,Arial,sans-serif!important;
+}
+
+.family_friendly .row_link  {
+    text-decoration:underline;
+    font-size:13px!important;
+}
+
+.family_friendly .row_main:last-of-type {
+    margin-bottom:1.7em;
+}
+
+p.big_b_i {
+    font-size:1.13em!important;
+    margin-bottom:1.2em;
+}
+
+.big_business .nte_info {
+    opacity:.4;
+    margin-top:-3.48em;
+}
+
+.big_business .nte_info {
+    opacity:.2;
+    margin-top:-3.48em;
+}
+
+.big_business .nte_info:hover {
+    opacity:.9999999;
+}
+
+.lgbt .row_text_head {
+    margin-top:.4em;
+    margin-bottom:1em;
+}
+
+.lgbt .nte_info {
+    margin-bottom:.48em;
+}
+
+.lgbt .nte_info {
+    opacity:.3;
+}
+
+.lgbt .nte_info:hover {
+    opacity:.999999;
+}
+
+.lgbt p.row_text{
+    margin-top:-10px!important;
+}
+
+
+
+.movie_button_action button {
+    font-family: Roboto,Helvetica,Arial,sans-serif;
+    font-size:15px!important;
+}
+
+
+.movie_button_action .watch_buttom {
+    padding-top:1.03em!important;
+}
+
+.movie_watch .filters_type, .providers_colum, .nte_cnt {
+    font-family: Roboto,Helvetica,Arial,sans-serif;
+}
+
+
+.search-sort .reviewwoketitle .tlp_cnt tbody tr td{
+    background:none;
+    line-height:1.3em!important;
+}
+
+.search-sort .reviewwoketitle .tlp_cnt  {
+    background:none;
+    padding:0em!important;
+}
+
+.search-sort .reviewwoketitle .tlp_cnt {
+    margin-bottom:-1em!important;
+}
+
+
+
+.tab_button_child_btn, .ext_links  {
+    font-family: Roboto,Helvetica,Arial,sans-serif!important;
+}
+
+
+
+
+
+
+
+
+
+/* adding labels for user friendly interface on search */
+
+
+#facet-zrwoke .select-to:after {
+    content: "\A( Prolly Woke )";
+    opacity:.2;
+    white-space: pre;
+    font-size:15px;
+}
+
+#facet-zrwoke .select-from:after {
+    content: "\A    ( Prolly Not )";
+    opacity:.2;
+    white-space: pre;
+    font-size:15px;
+}
+
+
+
+
+#facet-rating .select-to:after {
+    content: "\A( Kid Friendly )";
+    opacity:.2;
+    white-space: pre;
+    font-size:15px;
+}
+
+#facet-rating .select-from:after {
+    content: "\A    ( Adults Only )";
+    opacity:.2;
+    white-space: pre;
+    font-size:15px;
+}
+
+
+
+
+#facet-rcherry .select-to:after {
+    content: "\A( Feminist Loved )";
+    opacity:.2;
+    white-space: pre;
+    font-size:15px;
+}
+
+#facet-rcherry .select-from:after {
+    content: "\A( Feminist Hated )";
+    opacity:.2;
+    white-space: pre;
+    font-size:15px;
+}
+
+
+
+
+
+#facet-rmedia .select-to:after {
+    content: "\A    ( Diverse )";
+    opacity:.2;
+    white-space: pre;
+    font-size:15px;
+}
+
+#facet-rmedia .select-from:after {
+    content: "\A   ( Not Diverse )";
+    opacity:.2;
+    white-space: pre;
+    font-size:15px;
+}
+
+#facet-mediaversity .checkbox:nth-of-type(1) .plus:nth-of-type(2):after {
+    content: "  ( Diverse )";
+    opacity:.2;
+    white-space: pre-wrap;
+    color:black!important;
+    margin-left:.4em;
+
+}
+
+#facet-mediaversity .checkbox:last-of-type .plus:nth-of-type(2):after {
+    content: "  ( Not Diverse )";
+    opacity:.2;
+    white-space: pre-wrap;
+    color:black!important;
+    margin-left:.4em;
+
+}
+
+
+
+#facet-reviewwoketitle tbody {
+    padding:2em;
+    line-height:1.5em;
+    font-size:13.5px;
+}
+
+
+
+
+
+
+
+#facet-simstar .select-to:after {
+    content: "\A       ( Diverse )";
+    opacity:.2;
+    white-space: pre;
+    font-size:15px;
+}
+
+#facet-simstar .select-from:after {
+    content: "\A     ( Not Diverse )";
+    opacity:.2;
+    white-space: pre;
+    font-size:15px;
+}
+
+
+
+
+/* this shows the labels for the simpson diversity all cast tab */
+
+
+#facet-simall .select-to:after {
+    content: "\A       ( Diverse )";
+    opacity:.2;
+    white-space: pre;
+    font-size:15px;
+}
+
+#facet-simall .select-from:after {
+    content: "\A     ( Not Diverse )";
+    opacity:.2;
+    white-space: pre;
+    font-size:15px;
+}
+
+
+
+/* this shows the labels for the simpson diversity main cast tab */
+
+
+
+#facet-simmain .select-to:after {
+    content: "\A       ( Diverse )";
+    opacity:.2;
+    white-space: pre;
+    font-size:15px;
+}
+
+#facet-simmain .select-from:after {
+    content: "\A     ( Not Diverse )";
+    opacity:.2;
+    white-space: pre;
+    font-size:15px;
+}
+
+
+
+
+
+
+
+
+
+
+
+.content h2 a {
+    transform:scale(1.1,0.9)!important;
+    font-family: Roboto,Helvetica,Arial,sans-serif;
+    font-size:.94em;
+
+}
+
+.vote_content strong {
+    font-size:1.04em!important;
+}
+
+.theme_white .vote_content strong {
+    opacity:.71!important;
+}
+
+.theme_white .vote_content p {
+    opacity:.51!important;
+}
+
+
+
+
+
+
+/* making the question mark tooltips in the woke/lgbt & big business tooltips smaller and to the top right. */
+
+.lgbt .nte_info {
+    width:16px!important;
+    margin-right:3.1em!important;
+    margin-top:-.7em!important;
+    position:relative;
+    float:right;
+
+}
+
+
+
+
+
+
+.family_friendly .nte_info {
+    width:16px!important;
+    margin-right:3.1em!important;
+    margin-top:-.69em!important;
+    position:relative;
+    float:right;
+}
+
+.family_friendly .nte_cnt .tlp_cnt {
+    margin-top:1em!important;
+}
+
+.family_friendly .nte_info {
+    opacity:.2;
+}
+
+.family_friendly .nte_info:hover {
+    opacity:.99999;
+}
+
+
+
+
+
+/* making the tourguide links pop a bit more*/
+
+.tg-dialog a:hover {
+    text-decoration:underline;
+}
+
+
+
+
+
+
+
+
+
+
+/* rotten tomatoes link underline */
+
+.rt_gap .exlink {
+    text-decoration:underline;
+    text-decoration-color: lightgrey;
+}
+
+
+
+
+
+.theme_dark #move_up {
+    background-color:grey;
+    border-radius: 4px!important;
+}
+
+
+.theme_white #move_up {
+    border-radius: 4px!important;
+}
+
+
+
+
+
+
+
+
+/* family friendly header was too bunched up */
+
+.family_friendly .popup_header {
+    margin-top:1.488em;
+}
+
+
+
+
+
+
+/* Make the disclaimer for normies about race filters more subtle */
+
+.latinx {
+    opacity:.4;
+    display: inline-block;
+}
+
+
+
+
+
+/* fixing the over the top css hover effects from before for anon avatars */
+
+.amsg_aut .a_img_container_audience:hover {
+    filter: brightness(88%)!important;
+}
+
+
+
+
+
+/* making the google search options fit better without the transparent white accidentally overlapping in the pro reviews part, but also just making it more visually neat and orderly so users know what divs belong to what hierarchy visually. But also because soon we will do this better by having custom widgets for each user based on their preferences. */
+
+
+
+#global_zeitgeist .accordion-item  {
+    max-width:90%;
+    margin-top:3em!important;
+}
+
+.pro_review .actor_details.review_details  {
+    max-width:90%;
+    margin-top:3em!important;
+}
+
+
+
+
+
+/* other sources in similar movies section is too wide the link and arrow don't seem connected */
+
+.trsprnt {
+    width:80%;
+    margin-left:10%;
+}
+
+
+
+
+/* the content of audience reviews was way too transparent before this */
+
+.vote_main p {
+    opacity:1!important;
+}
+
+
+
+
+/* bandaid solution for tooltip in family friendly circle */
+
+.family_friendly .note_show_content_1 .row_link:last-of-type {
+    margin-bottom:2em;
+
+}
+
+
+
+
+/* bandaid solution for the indie tooltip scroll bar issue when clicking a tooltip in an empty one */
+
+.indie .note_show_content_2 .row_link:last-of-type {
+    margin-bottom:5em;
+}
+
+
+/* bandaid solution for big business tooltip overlapping the divs above it */
+
+
+.indie .row_text_head.row_margin.big_b_i {
+    margin-top:1.4em!important;
+}
+
+
+
+/* bandaid solution to tooltip in cast */
+
+.accordion_section.column-7 .nte_info {
+
+    margin-top:.5em;
+
+}
+
+
+
+
+/* making the buttons more round and professional */
+
+#google_search .tab-button {
+    border-radius: 20px;
+
+}
+
+
+#global_zeitgeist .tab-button {
+    border-radius:10px;
+
+}
+
+
+#google_search_review .tab-button {
+    border-radius: 20px;
+}
+
+
+#reviews_gs_block .tab-button {
+    border-radius: 20px;
+
+}
+
+
+
+
+
+/* bandaid solution making the lazy cash grab and big biz icons look reasonably proportioned */
+
+.big_b_i:before {
+    background-size: 64%!important;
+    background-position: center!important;
+    margin-top:-10px!important;
+}
+
+.l_c_g:before {
+    background-size: 64%!important;
+}
+
+.l_c_g {
+    font-size:18px!important;
+}
+
+
+
+.indie .nte_in .nte_info  {
+    margin-top:-2.7em;
+    width:16px!important;
+    position:relative;
+    float:right;
+    opacity:.4
+}
+
+.indie .nte_info:hover {
+    opacity:1;
+}
+
+
+.row_text_head.row_margin.big_b_i {
+    margin-bottom:.40em!important;
+}
+
+
+
+/* hiding the featured image for new media preview page */
+
+.post-491586 .post-thumbnail {
+    display:none;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Tweaking the line spacing in the audience sentiment tooltip */
+
+.rt_gap .big_rating {
+    margin-top:.45em!important;
+}
+
+
+.rt_gap .pp_rl {
+    margin-top:.45em!important;
+}
+
+
+.rt_gap .rotten_tomatoes_score {
+    margin-top:.7em!important;
+    margin-bottom:-.13em!important;
+}
+
+
+.rt_gap .row_link {
+    margin-bottom:.788em!important;
+
+}
+
+
+
+
+
+/* making the RT tomato score not have an inconsistent line space between the other scores */
+
+.rwt_stars #rt.exlink {
+    margin-bottom:-.2em;
+
+}
+
+
+
+/* bandaid solution for widget submenu headers */
+
+.main_pre_header {
+    font-size:40px;
+}
+
+.block_title.block_title_child {
+    font-size:24px;
+}
+
+
+
+
+
+
+
+
+
+/* bandaid solution to mobile front page widgets fitting on screen */
+
+
+@media only screen and (max-width: 800px) {
+
+    .main_pre_header {
+        margin-bottom:.5em
+    }
+
+    .block_title_child {
+        font-size:18px!important;
+    }
+
+    .refresh_random div {
+        height:16px!important;
+        width:16px!important;
+    }
+
+}
+
+
+
+
+
+/* temporary fix until we set up a bug reporting chat button in the bottom right footer */
+
+.footer_main_right p{
+    margin-top:4em;
+}
+
+.footer_main_right a{
+    text-decoration:underline;
+}
+
+.footer_main_right a:hover{
+    color:lightblue;
+}
+
+
+
+
+
+/* bandaid fix to the error of pop up windows being too small */
+
+@media (min-width: 800px) { .popup-content {
+    min-width:800px!important;
+
+}
+
+
+
+
+    /* bandaid solution to make woke verdicts look neat n symmetrical  n aesthetic */
+
+    .a_msg .rating-cherry {
+        position: relative;
+        float: right;
+    }
+
+    .full_review .rating-cherry {
+        margin-left:2em;
+    }
+
+
+
+
+    /* Not enough room in the tiny tooltips, the credits will be in the TOC and/or Disclaimer pages. Srry HC */
+
+    .highcharts-credits {
+        display:none!important;
+    }
+
+
+
+    /* Bandaid Solution: Need uniformity in the CSS because otherwise it looks amateur and is hard to navigate upon first glance. Especially for new users. The "Family Friendly" tooltip has a good structure we can follow. But all clickable links should be in the verdict, right side of the column. Headers should not be clickable links imo, cuz that is never the case anywhere else online. Ofc, having a source link in a tooltip means it's cramped but in the case of a mini graph it makes more sense than a blue header. */
+
+    .indie .row_text_head {
+        font-weight:bold;
+    }
+
+    #thenumbers {
+        color:black;
+
+    }

@@ -952,7 +952,7 @@ class CriticParser extends AbstractDB {
     public function get_webdriver($url, &$header = '', $settings = '', $use_driver = -1) {
 
         $webdrivers_text = base64_decode($settings['web_drivers']);
-        //http://165.227.101.220:8110/?p=ds1bfgFe_23_KJDS-F&url= http://185.135.80.156:8110/?p=ds1bfgFe_23_KJDS-F&url= http://148.251.54.53:8110/?p=ds1bfgFe_23_KJDS-F&url=
+        //http://165.227.101.220:8110/?p=ds1bfgFe_23_KJDS-F&url= http://185.135.80.156:8110/?p=ds1bfgFe_23_KJDS-F&url= http://37.27.53.197:8110/?p=ds1bfgFe_23_KJDS-F&url=
         $web_arr = array();
         if ($webdrivers_text) {
             if (strstr($webdrivers_text, "\n")) {
@@ -1048,7 +1048,7 @@ class CriticParser extends AbstractDB {
             // $content = "<body>Look at this cat: <img src='./cat.jpg'> 123 <img src=x onerror=alert(1)//></body>";
             // TODO move service and pass to options
             $pass = 'sdDclSPMF_32sd-s';
-            $service = 'http://148.251.54.53:8980/';
+            $service = 'http://37.27.53.197:8980/';
 
             $data = array('p' => $pass, 'u' => $url, 'c' => $content);
 

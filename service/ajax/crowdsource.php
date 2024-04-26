@@ -206,7 +206,7 @@ function critic_crowd_validation($link, $row = []) {
                         $proxy_text = trim("&proxy=" . $proxy[$proxy_num]);
                     }
                     
-                    $service_url = 'http://148.251.54.53:8110/?p=ds1bfgFe_23_KJDS-F&clear=1&wait=3'.$proxy_text.'&url=';
+                    $service_url = 'http://37.27.53.197:8110/?p=ds1bfgFe_23_KJDS-F&clear=1&wait=3'.$proxy_text.'&url=';
                     
                      
                     $full_url = $service_url . $link;

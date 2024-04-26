@@ -512,7 +512,7 @@ if (!function_exists('template_single_movie')) {
                         <?php
                         if (function_exists('current_user_can')) {
                             if (current_user_can("administrator")) {
-                                print 'Movie <a class="link_adimin_info" target="_blank" href="https://info.antiwoketomatoes.com/wp-admin/admin.php?page=critic_matic_movies&mid=' . $id . '">adimin info</a>.<br />';
+                                print 'Movie <a class="link_adimin_info" target="_blank" href="https://info.filmdemographics.com/wp-admin/admin.php?page=critic_matic_movies&mid=' . $id . '">adimin info</a>.<br />';
                                 try {
                                     $ma = $cfront->cm->get_ma();
                                    // $box_int = $ma->get_meta_box_int($id);

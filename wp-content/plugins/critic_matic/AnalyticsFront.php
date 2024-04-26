@@ -98,20 +98,21 @@ class AnalyticsFront extends SearchFacets {
             /* 'percountry' => array('title' => 'Average (performance metric) per country') */
     );
     public $axis = array(
-        'boxworld' => array('name' => 'bow', 'title' => 'Box Office revenue worldwide', 'atitle' => 'Box Office', 'format' => 'usd', 'infl' => 1),
-        'boxint' => array('name' => 'boi', 'title' => 'Box Office revenue internationally', 'atitle' => 'Box Office', 'format' => 'usd', 'infl' => 1),
-        'boxdom' => array('name' => 'bod', 'title' => 'Box Office revenue domestic', 'atitle' => 'Box Office', 'format' => 'usd', 'infl' => 1),
+        'boxworld' => array('name' => 'bow', 'title' => 'Box Office revenue worldwide', 'atitle' => 'Box Office', 'format' => 'usd', 'infl' => 1, 'min' => -1),
+        'boxint' => array('name' => 'boi', 'title' => 'Box Office revenue internationally', 'atitle' => 'Box Office', 'format' => 'usd', 'infl' => 1, 'min' => -1),
+        'boxdom' => array('name' => 'bod', 'title' => 'Box Office revenue domestic', 'atitle' => 'Box Office', 'format' => 'usd', 'infl' => 1, 'min' => -1),
         'boxprofit' => array('name' => 'bop', 'title' => 'Box Office revenue profit', 'atitle' => 'Box Office', 'format' => 'usd', 'min' => -1, 'infl' => 1, 'nte' => 'analytics_budget_popup'),
-        'budget' => array('name' => 'budget', 'title' => 'Budget', 'atitle' => 'Budget', 'format' => 'usd', 'infl' => 1),
+        'budget' => array('name' => 'budget', 'title' => 'Budget', 'atitle' => 'Budget', 'format' => 'usd', 'infl' => 1, 'min' => -1),
         /* 'dvddom' => array('title' => 'DVD Sales Domestic'), */
-        'release' => array('name' => 'date', 'title' => 'Release Date', 'atitle' => 'Movies', 'type' => 'datetime', 'format' => 'date', 'min' => -1),
+        'release' => array('name' => 'date', 'title' => 'Release Date', 'atitle' => 'Release', 'type' => 'datetime', 'format' => 'date', 'min' => -1),
+        'movies' => array('name' => 'movies', 'title' => 'Movies count', 'atitle' => 'Movies'),
         'actors' => array('name' => 'actors', 'title' => 'Actors count', 'atitle' => 'Actors', 'races' => 1),
-        'rrwt' => array('name' => 'rrwt', 'title' => 'Rating ZR', 'atitle' => 'Rating ZR'),
-        'rating' => array('name' => 'rating', 'title' => 'Rating Family Friendly Score', 'atitle' => 'Rating FFS'),
-        'aurating' => array('name' => 'aurating', 'title' => 'ZR Audience Score', 'atitle' => 'Rating WORTHWHILE'),
-        'rimdb' => array('name' => 'rimdb', 'title' => 'Rating IMDB', 'atitle' => 'Rating IMDB'),
-        'rrt' => array('name' => 'rrt', 'title' => 'Rating Rotten Tomatoes', 'atitle' => 'Rating RT'),
-        'rrta' => array('name' => 'rrta', 'title' => 'Rating Rotten Tomatoes Audience', 'atitle' => 'Rating RTA'),
+        'rrwt' => array('name' => 'rrwt', 'title' => 'Rating ZR', 'atitle' => 'Rating ZR', 'min' => -1),
+        'rating' => array('name' => 'rating', 'title' => 'Rating Family Friendly Score', 'atitle' => 'Rating FFS', 'min' => -1),
+        'aurating' => array('name' => 'aurating', 'title' => 'ZR Audience Score', 'atitle' => 'Rating WORTHWHILE', 'min' => -1),
+        'rimdb' => array('name' => 'rimdb', 'title' => 'Rating IMDB', 'atitle' => 'Rating IMDB', 'min' => -1),
+        'rrt' => array('name' => 'rrt', 'title' => 'Rating Rotten Tomatoes', 'atitle' => 'Rating RT', 'min' => -1),
+        'rrta' => array('name' => 'rrta', 'title' => 'Rating Rotten Tomatoes Audience', 'atitle' => 'Rating RTA', 'min' => -1),
         'rrtg' => array('name' => 'rrtg', 'title' => 'Rating Rotten Tomatoes Gap', 'atitle' => 'Rating RTG', 'min' => -1),
         'simpson' => array('name' => 'simpson', 'title' => 'Simpson\'s Diversity Index', 'format' => 'percent', 'races' => 1),
         'simpsonmf' => array('name' => 'simpsonmf', 'title' => 'Simpson\'s Diversity Index plus Male vs Female', 'format' => 'percent', 'races' => 1),
@@ -276,7 +277,7 @@ class AnalyticsFront extends SearchFacets {
         $this->filters['stacking'] = '';
     }
 
-    public function search_filters($curr_tab = '', $uid=0, $show = false) {
+    public function search_filters($curr_tab = '', $uid = 0, $show = false) {
         if (!$curr_tab) {
             $curr_tab = 'international';
         }
@@ -290,7 +291,7 @@ class AnalyticsFront extends SearchFacets {
         return $ret;
     }
 
-    public function get_filter_tags($filters, $uid=0) {
+    public function get_filter_tags($filters, $uid = 0) {
         $tags = parent::get_filter_tags($filters);
 
         $minus = false;
@@ -1147,6 +1148,12 @@ class AnalyticsFront extends SearchFacets {
 
     public function show_movies_table($search_data, $tab_key) {
         $data = $search_data[$tab_key]['list'];
+        $data_count = $search_data[$tab_key]['count'];
+        $array_movie_bell = array();
+        $vis = $this->get_filter('vis');
+        if (!$vis) {
+            $vis = 'column';
+        }
 
         if ($tab_key == 'ethnicity') {
             $eth_data = isset($search_data[$tab_key]['facets'][$tab_key]['data']) ? $search_data[$tab_key]['facets'][$tab_key]['data'] : array();
@@ -1160,14 +1167,16 @@ class AnalyticsFront extends SearchFacets {
                 $this->claster_data = $ids;
             }
 
-            if ($this->claster_data && sizeof($this->claster_data) > 1) {
-                // Claster logic
+
+            if ($this->claster_data && sizeof($this->claster_data) > 0) {
+                // Claster logic                
                 $search_claster_data = $this->find_results(0, $this->claster_data);
             }
 
             if ($this->claster_data) {
-                // New claster data       
-                // $data = $search_data[$tab_key]['list'];
+
+                $data = $search_claster_data[$tab_key]['list'];
+                $data_count = $search_claster_data[$tab_key]['count'];
                 $eth_data = isset($search_claster_data[$tab_key]['facets'][$tab_key]['data']) ? $search_claster_data[$tab_key]['facets'][$tab_key]['data'] : array();
             }
         }
@@ -1198,8 +1207,6 @@ class AnalyticsFront extends SearchFacets {
         if (in_array('cwj', $setup)) {
             $combine_wj = true;
         }
-
-        $array_movie_bell = array();
 
         $table_class = 'tidiv';
         $table = array();
@@ -1313,7 +1320,7 @@ class AnalyticsFront extends SearchFacets {
             </tbody>    
         </table>            
         <?php
-        print $this->pagination($search_data[$tab_key]['count']);
+        print $this->pagination($data_count);
     }
 
     public function theme_axis_data($axis = '', $data = '', $inflation = false) {
@@ -1385,6 +1392,14 @@ class AnalyticsFront extends SearchFacets {
         } else if ($axis == 'rimdb' || $axis == 'rrwt' || $axis == 'rrt' || $axis == 'rrta' || $axis == 'rrtg' || $axis == 'rating' || $axis == 'aurating') {
             // Rating
             $ret = array_pop($data);
+        } else if ($axis == 'movies') {
+            // Movies
+            $ret = array_pop($data);
+        } else {
+            $ret = $data;
+            if (is_array($data)) {
+                $ret = json_encode($data);
+            }
         }
         return $ret;
     }
@@ -1482,7 +1497,8 @@ class AnalyticsFront extends SearchFacets {
 
     public function show_page_facet_international($search_data, $tab_key = '', $api_mode = false, $preview_limit = 0) {
 
-        if (!$api_mode)global $api_mode;
+        if (!$api_mode)
+            global $api_mode;
 
         $data = $search_data[$tab_key]['facets'][$tab_key]['data'];
         $select_movies_count = $search_data[$tab_key]['count'];
@@ -1660,7 +1676,8 @@ class AnalyticsFront extends SearchFacets {
 
     public function show_page_facet_ethnicity_xy($search_data, $tab_key = '', $api_mode = false, $preview_limit = 0) {
 
-        if (!$api_mode)global $api_mode;
+        if (!$api_mode)
+            global $api_mode;
 
         $data = $search_data[$tab_key]['facets'][$tab_key]['data'];
 
@@ -1692,6 +1709,10 @@ class AnalyticsFront extends SearchFacets {
         if (in_array('noclasters', $setup)) {
             $clasters = false;
         }
+        if ($xaxis == 'movies' || $yaxis == 'movies') {
+            $clasters = true;
+        }
+
         if (in_array('inflation', $setup)) {
             $inflation = true;
         }
@@ -1703,6 +1724,27 @@ class AnalyticsFront extends SearchFacets {
         $claster_ids = array();
         $i = 0;
         $j = 0;
+
+        // X-movies logic        
+        // [2500000] => 1
+        // [75000000] => 3        
+        $xmovies = array();
+        foreach ($array_movie_bell as $mid => $item) {
+            $xdata = $item['xdata'];
+            $ydata = $item['ydata'];
+            $year = $item['year'];
+            if ($vis == 'column' || $vis == 'line') {
+                if ($xaxis == 'movies') {
+                    foreach ($xdata as $xname => $x_val) {
+                        foreach ($ydata as $yname => $y_val) {
+                            $yfilter_arr = $this->get_axis_filter($yaxis, $y_val, $year, $inflation, 't');
+                            $yval = $yfilter_arr['data'];
+                            $xmovies[$yval] += 1;
+                        }
+                    }
+                }
+            }
+        }
 
         // Main for from all movies array
         foreach ($array_movie_bell as $mid => $item) {
@@ -1724,8 +1766,15 @@ class AnalyticsFront extends SearchFacets {
                         $xfilter = str_replace('.', 't', $xfilter);
                         $xval = $xfilter_arr['data'];
                         $yval = $yfilter_arr['data'];
-                        $result_in[$xname][$yname][$xfilter]['x'] = $xval;
-                        $result_in[$xname][$yname][$xfilter]['y'] += $yval;
+                        //print_r(array($xfilter,$xval,$yval));
+                        if ($xaxis == 'movies') {
+                            $xfilter = $xmovies[$yval];
+                            $result_in[$xname][$yname][$xfilter]['x'] = $xfilter;
+                            $result_in[$xname][$yname][$xfilter]['y'] = $yval;
+                        } else {
+                            $result_in[$xname][$yname][$xfilter]['x'] = $xval;
+                            $result_in[$xname][$yname][$xfilter]['y'] += $yval;
+                        }
                         $result_in[$xname][$yname][$xfilter]['c'] += 1;
                         $ytotal[$xfilter] += $yval;
                         $claster_ids[$xfilter][] = $mid;
@@ -1743,8 +1792,17 @@ class AnalyticsFront extends SearchFacets {
 
                             $key_filter = 'x' . $xfilter . 'y' . $yfilter;
 
-                            $result_in[$xname][$yname][$key_filter]['x'] = $xfilter_arr['data'];
-                            $result_in[$xname][$yname][$key_filter]['y'] = $yfilter_arr['data'];
+                            if ($xaxis == 'movies') {
+                                $result_in[$xname][$yname][$key_filter]['x'] += 1;
+                            } else {
+                                $result_in[$xname][$yname][$key_filter]['x'] = $xfilter_arr['data'];
+                            }
+                            if ($yaxis == 'movies') {
+                                $result_in[$xname][$yname][$key_filter]['y'] += 1;
+                            } else {
+                                $result_in[$xname][$yname][$key_filter]['y'] = $yfilter_arr['data'];
+                            }
+
                             $result_in[$xname][$yname][$key_filter]['c'] += 1;
                             $result_in[$xname][$yname][$key_filter]['t'][] = $titley;
                             $result_in[$xname][$yname][$key_filter]['id'][] = $mid;
@@ -1755,27 +1813,19 @@ class AnalyticsFront extends SearchFacets {
                             $xfilter_arr = $this->get_axis_filter($xaxis, $x_val, $year, $inflation, 'p');
                             $yfilter_arr = $this->get_axis_filter($yaxis, $y_val, $year, $inflation, 'p');
 
-
-
-
-                            if ($api_mode)
-                            {
+                            if ($api_mode) {
                                 $result_in[$xname][$yname][] = '{"x":"' . $xfilter_arr['data'] . '","y":"' . $yfilter_arr['data'] . '","title":"' . $titley . '","id":"' . $mid . '"}';
-                            }
-                            else
-                            {
+                            } else {
 
                                 $result_in[$xname][$yname][] = "{x:" . $xfilter_arr['data'] . ",y:" . $yfilter_arr['data'] . ",title:'" . $titley . "',id:'" . $mid . "'}";
                             }
-
-
-
-
                         }
                     }
                 }
             }
         }
+        //print_r($result_in);
+        //exit;
 
         $show_type = 'scatter';
         if ($vis == 'column') {
@@ -1816,7 +1866,7 @@ class AnalyticsFront extends SearchFacets {
                         $actors_total = $ytotal[$key_filter];
                         $movies_total = $cdata['c'];
 
-                        if ($yaxis == 'boxworld' || $yaxis == 'boxint' || $yaxis == 'boxdom' || $yaxis == 'boxprofit' || $yaxis == 'budget') {
+                        if ($yaxis == 'boxworld' || $yaxis == 'boxint' || $yaxis == 'boxdom' || $yaxis == 'boxprofit' || $yaxis == 'budget' || $yaxis == 'movies') {
                             // Total for box
                         } else if ($yaxis == 'mf' || $yaxis == 'eth' || $yaxis == 'ethmf' || $yaxis == 'wjnw' || $yaxis == 'wjnwj' || $yaxis == 'wmjnwm' || $yaxis == 'wmjnwmj') {
                             // Percent for actors
@@ -1836,19 +1886,11 @@ class AnalyticsFront extends SearchFacets {
                             $type = 'y';
                         }
 
-
-                        if ($api_mode)
-                        {
-                            $result_item[] ='{"x":"' . $xdata . '","y":"' . $ydata . '","id":"' . $key_filter . '","t":"' . $type . '"}';
-                        }
-                        else
-                        {
+                        if ($api_mode) {
+                            $result_item[] = '{"x":"' . $xdata . '","y":"' . $ydata . '","id":"' . $key_filter . '","t":"' . $type . '"}';
+                        } else {
                             $result_item[] = "{x:" . $xdata . ",y:" . $ydata . ",id:'" . $key_filter . "',t:'" . $type . "'}";
                         }
-
-
-
-
 
                         $counter += 1;
                         if ($preview_limit > 0 && $counter >= $preview_limit) {
@@ -1857,7 +1899,6 @@ class AnalyticsFront extends SearchFacets {
                     }
                     $result = $result_item;
                 } else {
-
                     if ($clasters) {
                         $result_item = array();
                         $counter = 0;
@@ -2068,7 +2109,8 @@ class AnalyticsFront extends SearchFacets {
     }
 
     public function show_page_facet_population($search_data, $tab_key = '', $api_mode = false, $preview_limit = 0) {
-        if (!$api_mode)global $api_mode;
+        if (!$api_mode)
+            global $api_mode;
 
         $data = $search_data[$tab_key];
         $result_data = array();
@@ -2098,12 +2140,9 @@ class AnalyticsFront extends SearchFacets {
                 $world = $array_world[$year];
                 $wpercent = round(($summ / $world) * 100, 2);
 
-                if ($api_mode)
-                {
+                if ($api_mode) {
                     $result[] = '{ "x": "' . $year . '", "y": "' . $summ . '","world":"' . $world . '" ,"wpercent": "' . $wpercent . '"}';
-                }
-                else
-                {
+                } else {
                     $result[] = "{ x: " . $year . ", y: " . $summ . ",world:'" . $world . "' ,wpercent: '" . $wpercent . "'}";
                 }
 
@@ -2688,9 +2727,9 @@ class AnalyticsFront extends SearchFacets {
         <div id="facet-<?php print $table_class ?>" class="facet ajload<?php print $this->cs->hide_facet_class($table_class, $this->filters) ?>">
             <div class="facet-title wacc">
                 <h3 class="title"><?php
-        print $title;
-        print $nte;
-        ?></h3>   
+                    print $title;
+                    print $nte;
+                    ?></h3>   
                 <div class="acc">
                     <div class="chevron icon-down-open"></div>
                     <div class="chevronup icon-up-open"></div>
@@ -2703,9 +2742,9 @@ class AnalyticsFront extends SearchFacets {
                 }
                 ?>
                 <table class="analytics_table <?php
-        if ($mob) {
-            print 'rspv';
-        }
+                if ($mob) {
+                    print 'rspv';
+                }
                 ?> <?php print $table_class ?>">
                     <thead>
                         <tr>
@@ -3226,6 +3265,13 @@ class AnalyticsFront extends SearchFacets {
             }
             $data = (int) strtotime($data);
             $data = $data . '000';
+            $name = $this->axis[$axis]['name'];
+            $ret[$name] = $data;
+        } else if ($axis == 'movies') {
+            $data = (int) $item->movies;
+            if (!$data) {
+                $data = 1;
+            }
             $name = $this->axis[$axis]['name'];
             $ret[$name] = $data;
         } else if ($axis == 'budget') {
@@ -4225,28 +4271,22 @@ class AnalyticsFront extends SearchFacets {
             $actor_content .= '</tbody></table>';
             echo $actor_content . '<br>';
         }
-        if (!$api_mode)global $api_mode;
+        if (!$api_mode)
+            global $api_mode;
 
         $result_in = '';
         ksort($populatin_result);
         foreach ($populatin_result as $year => $summ) {
             $summ = round($summ, 0);
-            if ($api_mode)
-            {
+            if ($api_mode) {
                 $result_in .= '{ "x": "' . $year . '", "y": "' . $summ . '" },';
-            }
-            else
-            {
+            } else {
                 $result_in .= "{ x: " . $year . ", y: " . $summ . " },";
             }
-
         }
-        if ($api_mode)
-        {
+        if ($api_mode) {
             $result_data .= '{ "name": "' . $item->country_name . '","data": [' . $result_in . ']},';
-        }
-        else
-        {
+        } else {
 
             $result_data .= "{
                     name: '" . $item->country_name . " population',
@@ -4254,7 +4294,6 @@ class AnalyticsFront extends SearchFacets {
                     marker: {            enabled: false        },
                     turboThreshold:0,
                     data: [" . $result_in . "]},";
-
         }
 
 
@@ -4752,7 +4791,7 @@ class AnalyticsFront extends SearchFacets {
         return $ret;
     }
 
-    public function get_uid() {        
+    public function get_uid() {
         $user = $this->cm->get_current_user();
         return $user->ID;
     }
