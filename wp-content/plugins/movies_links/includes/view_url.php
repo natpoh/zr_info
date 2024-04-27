@@ -28,6 +28,10 @@ if ($uid) {
                 <td><a target="_blank" href="<?php print $url_data->link ?>"><?php print $url_data->link ?></a></td>
             </tr>
             <tr>
+                <td><?php print __('Pid') ?></td>
+                <td><a target="_blank" href="/wp-admin/admin.php?page=critic_matic_movies&mid=<?php print $url_data->pid ?>"><?php print $url_data->pid ?></a></td>
+            </tr>
+            <tr>
                 <td><?php print __('Link hash') ?></td>
                 <td><?php print $url_data->link_hash ?></td>
             </tr>  
