@@ -817,7 +817,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         return $result;
     }
 
-    public function add_meta_box_int($cid, $mid, $total = 0) {
+    public function add_meta_box_int($cid, $mid, $total = 0, $debug = false) {
         $id_ob = $this->get_meta_box_int($cid, $mid);
         if (!$id_ob->id) {
             $data = array(
@@ -838,8 +838,10 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         return $id;
     }
 
-    public function add_meta_box_int_mojo($cid, $mid, $total_mojo = 0) {
+    public function add_meta_box_int_mojo($cid, $mid, $total_mojo = 0, $debug = false) {
         $id_ob = $this->get_meta_box_int($cid, $mid);
+        $data = array();
+        $result = 'insert';
         if (!$id_ob->id) {
             $data = array(
                 'mid' => (int) $mid,
@@ -849,13 +851,17 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             $id = $this->sync_insert_data($data, $this->db['meta_movie_boxint'], false, true);
         } else {
             $id = $id_ob->id;
-            
+            $result = 'not change';
             if ($total_mojo != $id_ob->total_mojo) {
+                $result = 'update';
                 $data = array(
                     'total_mojo' => (int) $total_mojo,
                 );
                 $this->sync_update_data($data, $id, $this->db['meta_movie_boxint'], true);
             }
+        }
+        if ($debug) {
+            print_r(array($result,$id_ob, array($cid, $mid, $total_mojo), $data));
         }
         return $id;
     }

@@ -16,6 +16,8 @@ class MoviesCustomHooks {
 
     public function add_post($campaign = array(), $post = array(), $debug = false) {
 
+        $debug = $_GET['debug']?true:$debug;
+        
         $options = unserialize($post->options);
 
         if ($post->top_movie > 0) {
@@ -699,6 +701,7 @@ class MoviesCustomHooks {
         if ($debug) {
             p_r(array('update_boxofficemojo', $post));
         }
+     
         $cid = $campaign->id;
         $uid = $post->uid;
         $url_data = $this->mp->get_url($uid);
@@ -753,7 +756,7 @@ class MoviesCustomHooks {
                     $cid = $ma->get_or_create_country_by_name($title);
 
                     if ($cid) {
-                        $id = $ma->add_meta_box_int_mojo($cid, $top_movie, $total);
+                        $id = $ma->add_meta_box_int_mojo($cid, $top_movie, $total, $debug);
                     }
 
                     if ($debug) {
