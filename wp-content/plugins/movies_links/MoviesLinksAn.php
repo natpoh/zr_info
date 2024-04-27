@@ -817,7 +817,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         return $result;
     }
 
-    public function add_meta_box_int($cid, $mid, $total) {
+    public function add_meta_box_int($cid, $mid, $total=0) {
         $id = $this->get_meta_box_int($cid, $mid);
         if (!$id) {
             $data = array(
@@ -829,8 +829,21 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         }
         return $id;
     }
+    
+    public function add_meta_box_int_mojo($cid, $mid, $total_mojo=0) {
+        $id = $this->get_meta_box_int($cid, $mid);
+        if (!$id) {
+            $data = array(
+                'mid' => (int) $mid,
+                'country' => (int) $cid,
+                'total_mojo' => (int) $total_mojo,
+            );            
+            $id = $this->sync_insert_data($data, $this->db['meta_movie_boxint'], false, true);
+        }
+        return $id;
+    }
 
-    public function create_slug($string, $glue = '-') {
+    public function create_slug($string, $glue = '-', $str_lower=true) {
         $string = str_replace('&', ' and ', $string);
         $string = preg_replace("/('|`)/", "", $string);
 
@@ -849,7 +862,10 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         $stripped = preg_replace(array('/\s{2,}/', '/[\t\n]/'), ' ', trim($string));
 
         // -- Returns the slug
-        $slug = strtolower(strtr($stripped, $table));
+        $slug = strtr($stripped, $table);
+        if ($str_lower){
+            $slug = strtolower($slug);
+        }
         $slug = preg_replace('~[^\pL\d]+~u', $glue, $slug);
 
         $slug = preg_replace('/^-/', '', $slug);

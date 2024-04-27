@@ -2174,10 +2174,16 @@ class CriticFront extends SearchFacets {
 
     public function append_watch_list_scroll_data($data = '') {
         // Try to get movies ids
-        try {
-            $json_data = json_decode($data);
 
-            $mids = $json_data->mids;
+        try {
+            $mids=[];
+            if (is_string($data))
+            {
+                $json_data = json_decode($data);
+                $mids = $json_data->mids;
+            }
+            else $mids = $data['mids'];
+
             if ($mids) {
                 arsort($mids);
 
@@ -2187,9 +2193,20 @@ class CriticFront extends SearchFacets {
                     $wl = $this->cm->get_wl();
                     $in_list = $wl->in_def_lists($user->ID, $mids);
                     if ($in_list) {
-                        $json_data->watchlist = $in_list;
-                        $data = json_encode($json_data);
+
+                        if (is_string($data))
+                        {
+                            $json_data->watchlist = $in_list;
+                            $data = json_encode($json_data);
+
+                        }
+                        else
+                        {
+                            $data = $in_list;
+                        }
+
                     }
+
                 }
             }
         } catch (Exception $exc) {
@@ -2285,11 +2302,13 @@ class CriticFront extends SearchFacets {
             //Reactions
             $this->enable_reactions = false;
             $pids = array();
-
+            $orders =0;
             foreach ($posts as $post) {
+                $post['order']=$orders;
                 $content['result'][$post['date'] . '_' . $post['pid']] = $post;
                 $pids[] = $post['pid'];
                 $array_movies[$post['m_id']] = 1;
+                $orders++;
             }
 
             // Link more
@@ -2334,20 +2353,7 @@ class CriticFront extends SearchFacets {
         $gserch = new Gsearch();
         $content['gdata'] = $gserch->get_data($movie_id, 1);
 
-//        else {
-//            $title = $this->get_movie_title($movie_id);
-//            $title = urlencode($title);
-//
-//            $sql = "SELECT val FROM `options` where `type` = 'critic_empty'";
-//            $rows = Pdo_an::db_fetch_row($sql);
-//            $content_data = $rows->val;
-//            $content_data = str_replace('\\', '', $content_data);
-//            $content_data = str_replace('$', $title, $content_data);
-//            $content['other'] = $content_data;
-//
-//
-//
-//        }
+
 
         return json_encode($content);
         return '';

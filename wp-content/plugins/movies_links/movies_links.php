@@ -495,6 +495,10 @@ function movies_links_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
+    
+   $sql = "ALTER TABLE `meta_movie_boxint` ADD `total_mojo` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
     movies_links_create_index_an(array('mid', 'country'), 'meta_movie_boxint');
 }
 
