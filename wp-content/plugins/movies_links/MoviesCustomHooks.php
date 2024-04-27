@@ -705,13 +705,13 @@ class MoviesCustomHooks {
         //$link = $url_data->link;
         $arhive = $this->mp->get_arhive_by_url_id($uid);
         $link_hash = $arhive->arhive_hash;
-        $top_movie = $url_data->pid;
+        $top_movie = (int) $url_data->pid;
         if ($debug) {
             p_r($arhive);
         }
         $ma = $this->ml->get_ma();
         $code = $this->mp->get_arhive_file($cid, $link_hash);
-        if ($code) {
+        if ($code && $top_movie) {
             /*
               <tr><td><a class="a-link-normal" href="/release/rl3608445953/?ref_=bo_tt_gr_1">Spain</a></td><td>06.02.2004</td><td class="a-text-right">
               –
@@ -778,12 +778,12 @@ class MoviesCustomHooks {
         $link = $url_data->link;
         $arhive = $this->mp->get_arhive_by_url_id($uid);
         $link_hash = $arhive->arhive_hash;
-        $top_movie = $post->top_movie;
+        $top_movie = (int) $post->top_movie;
         if ($debug) {
             p_r($arhive);
         }
         $code = $this->mp->get_arhive_file($cid, $link_hash);
-        if ($code) {
+        if ($code && $top_movie) {
             /*
               <h2>Box Office Summary Per Territory</h2>
               <div id="page_filling_chart">
