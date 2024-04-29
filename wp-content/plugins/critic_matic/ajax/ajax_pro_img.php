@@ -2,10 +2,11 @@
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST");
 
+/*
 if (empty($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) != 'xmlhttprequest') {
     exit();
 }
-
+*/
 
 if (!defined('ABSPATH')) {
     define('ABSPATH', $_SERVER['DOCUMENT_ROOT'] . '/');
