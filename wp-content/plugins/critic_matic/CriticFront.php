@@ -2202,7 +2202,7 @@ class CriticFront extends SearchFacets {
                         }
                         else
                         {
-                            $data = $in_list;
+                            $data['watchlist'] = $in_list;
                         }
 
                     }

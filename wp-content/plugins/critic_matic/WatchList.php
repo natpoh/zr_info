@@ -495,6 +495,7 @@ class WatchList extends AbstractDB {
         # Check current user lists
         $result = 0;
         $list_exsist = $this->get_user_list($wp_uid, $lid);
+
         if ($list_exsist) {
             if (!$this->item_exist($list_exsist->id, $mid)) {
                 $new_count = $list_exsist->items;
