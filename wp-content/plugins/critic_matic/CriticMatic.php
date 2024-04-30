@@ -149,7 +149,7 @@ class CriticMatic extends AbstractDB {
         1 => 'Approved',
         2 => 'Auto',
         3 => 'Auto (ML)',
-        0 => 'Unapproved',        
+        0 => 'Unapproved',
     );
     public $movie_rating = array(
         0 => 'Zero rating',
@@ -265,6 +265,10 @@ class CriticMatic extends AbstractDB {
             'audience_top_unique' => 0,
             'score_avatar' => 50,
             'score_filter_image' => 0,
+            'actors_star_ss' => '',
+            'actors_main_ss' => '',
+            'actors_star_wait' => 30,
+            'actors_main_wait' => 30,
         );
 
         $this->sync_data = DB_SYNC_DATA == 1 ? true : false;
@@ -3690,6 +3694,8 @@ class CriticMatic extends AbstractDB {
                         $settings[$key] = $au_decode;
                     } else if ($key == 'games_tags') {
                         $settings[$key] = base64_decode($settings[$key]);
+                    } else if ($key == 'actors_star_ss' || $key == 'actors_main_ss') {
+                        $settings[$key] = base64_decode($settings[$key]);
                     }
                 }
             }
@@ -3743,6 +3749,31 @@ class CriticMatic extends AbstractDB {
                 unlink($cookie_path);
             }
             file_put_contents($cookie_path, $form['parser_cookie_text']);
+        }
+
+        // Actors rating logic
+        if (isset($form['actors_rating'])) {
+            $actors_star_ss = preg_replace('#^.*(/search/.*)$#', "$1", $form['actors_star_ss']);
+            $actors_main_ss = preg_replace('#^.*(/search/.*)$#', "$1", $form['actors_main_ss']);
+            $ss['actors_star_ss'] = base64_encode($actors_star_ss);
+            $ss['actors_main_ss'] = base64_encode($actors_main_ss);
+            if ($form['stars_reset'] || $form['main_reset']) {
+                try {
+                    if (!class_exists('MoviesActorWeight')) {
+                        require_once( CRITIC_MATIC_PLUGIN_DIR . 'MoviesActorWeight.php' );
+                    }
+                    $maw = new MoviesActorWeight($this);
+                    if ($form['stars_reset']) {
+                       $opt = new MoviesActorStarOptions();
+                       $opt->reset();
+                    } else {
+                       $opt = new MoviesActorMainOptions(); 
+                       $opt->reset();
+                    }
+                } catch (Exception $exc) {
+                    
+                }
+            }
         }
 
         // Update options        

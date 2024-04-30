@@ -42,6 +42,7 @@ class CriticMaticAdmin {
         'audience' => 'Audience',
         'posts' => 'Posts view',
         'score' => 'Score',
+        'actors' => 'Actors',
         'analytics' => 'Analytics',
         'cache' => 'Cache',
         'sync' => 'Sync'
@@ -2331,6 +2332,26 @@ class CriticMaticAdmin {
             $ss = $this->cm->get_settings(false);
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/settings_score.php');
+        } else if ($curr_tab == 'actors') {
+
+            if (isset($_POST['critic-feeds-nonce'])) {
+                $valid = $this->nonce_validate($_POST);
+                if ($valid === true) {
+                    $this->cm->update_settings($_POST);
+                    $result = __('Updated');
+                    print "<div class=\"updated\"><p><strong>$result</strong></p></div>";
+                } else {
+                    print "<div class=\"error\"><p><strong>$valid</strong></p></div>";
+                }
+            }
+            if (!class_exists('MoviesActorWeight')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'MoviesActorWeight.php' );
+            }
+            $maw = new MoviesActorWeight($this->cm);
+            
+            $ss = $this->cm->get_settings(false);
+
+            include(CRITIC_MATIC_PLUGIN_DIR . 'includes/settings_actors.php');
         } else if ($curr_tab == 'analytics') {
             if (isset($_POST['critic-feeds-nonce'])) {
                 $valid = $this->nonce_validate($_POST);
@@ -3164,7 +3185,7 @@ class CriticMaticAdmin {
 
                     if ($b == 'meta_remove') {
                         $changed = $this->cm->bulk_meta_remove($ids, $mid);
-                    } else {                        
+                    } else {
                         $meta_state = ($b == 'meta_approve') ? 1 : 0;
                         $changed = $this->cm->bulk_meta_update($ids, $meta_state, $mid);
                     }

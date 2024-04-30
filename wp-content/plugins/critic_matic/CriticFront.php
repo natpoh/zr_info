@@ -710,7 +710,7 @@ class CriticFront extends SearchFacets {
         $title = $this->pccf_filter($title);
 
         if ($title != $content && !$stuff) {
-            $title_str = '<strong class="review-title">' . $title .$custom_rating. '</strong>';
+            $title_str = '<strong class="review-title">' . $title . $custom_rating . '</strong>';
         }
 
 
@@ -790,12 +790,35 @@ class CriticFront extends SearchFacets {
     public function get_custom_critic_rating($critic) {
         // CherryPicks
         $rating_text = '';
-        if ($critic->link_id == 177 && $critic->top_movie) {
-            //get_movie_erating
-            $ma = $this->get_ma();
-            $erating = $ma->get_movie_erating($critic->top_movie);
-            if ($cherry = $erating->thecherrypicks_rating){
-                $rating_text = ' <span class="rating-cherry">'.$erating->thecherrypicks_rating.'%</span>';                
+        if ($critic->top_movie) {
+            if ($critic->link_id == 177) {
+                // Cherry
+                $ma = $this->get_ma();
+                $erating = $ma->get_movie_erating($critic->top_movie);
+                if ($erating->thecherrypicks_rating) {
+                    $rating_text = ' <span class="rating-cherry">' . $erating->thecherrypicks_rating . '%</span>';
+                }
+            } else if ($critic->link_id == 178) {
+                // Bechdeltest
+                $ma = $this->get_ma();
+                try {
+                    $woke = $ma->get_movie_woke($critic->top_movie);
+                    if ($woke->bechdeltest>0) {
+                        $woke_text = '';                        
+                        $filters = $this->cs->search_filters['bechdeltest'];
+                        foreach ($filters as $filter) {
+                            if ($woke->bechdeltest == $filter['key']) {
+                                $woke_text = $filter['title'];
+                                break;
+                            }
+                        }
+                        if ($woke_text){
+                            $rating_text = ' <span class="rating-bechdeltest">' . $woke_text . '</span>';
+                        }
+                    }
+                } catch (Exception $exc) {
+                    
+                }
             }
         }
         return $rating_text;
@@ -2176,13 +2199,12 @@ class CriticFront extends SearchFacets {
         // Try to get movies ids
 
         try {
-            $mids=[];
-            if (is_string($data))
-            {
+            $mids = [];
+            if (is_string($data)) {
                 $json_data = json_decode($data);
                 $mids = $json_data->mids;
-            }
-            else $mids = $data['mids'];
+            } else
+                $mids = $data['mids'];
 
             if ($mids) {
                 arsort($mids);
@@ -2194,19 +2216,13 @@ class CriticFront extends SearchFacets {
                     $in_list = $wl->in_def_lists($user->ID, $mids);
                     if ($in_list) {
 
-                        if (is_string($data))
-                        {
+                        if (is_string($data)) {
                             $json_data->watchlist = $in_list;
                             $data = json_encode($json_data);
-
-                        }
-                        else
-                        {
+                        } else {
                             $data['watchlist'] = $in_list;
                         }
-
                     }
-
                 }
             }
         } catch (Exception $exc) {
@@ -2302,9 +2318,9 @@ class CriticFront extends SearchFacets {
             //Reactions
             $this->enable_reactions = false;
             $pids = array();
-            $orders =0;
+            $orders = 0;
             foreach ($posts as $post) {
-                $post['order']=$orders;
+                $post['order'] = $orders;
                 $content['result'][$post['date'] . '_' . $post['pid']] = $post;
                 $pids[] = $post['pid'];
                 $array_movies[$post['m_id']] = 1;
@@ -2352,8 +2368,6 @@ class CriticFront extends SearchFacets {
         !class_exists('Gsearch') ? include ABSPATH . "analysis/include/gsearch.php" : '';
         $gserch = new Gsearch();
         $content['gdata'] = $gserch->get_data($movie_id, 1);
-
-
 
         return json_encode($content);
         return '';
