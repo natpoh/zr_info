@@ -603,6 +603,7 @@ class CriticSearch extends AbstractDB {
             'wokesort' => array('title' => 'Wokeness', 'group' => 'woke', 'main' => 1, 'sorted' => 1,),
             'finsort' => array('title' => 'Finances', 'group' => 'indie', 'main' => 1, 'sorted' => 1,),
             'rel' => array('title' => 'Relevance', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
+            'cast' => array('title' => 'Cast type', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
         ),
         'games' => array(
             'title' => array('title' => 'Title', 'def' => 'asc', 'main' => 1, 'group' => 'def'),
@@ -614,6 +615,7 @@ class CriticSearch extends AbstractDB {
             'wokesort' => array('title' => 'Wokeness', 'group' => 'woke', 'main' => 1, 'sorted' => 1,),
             'finsort' => array('title' => 'Finances', 'group' => 'indie', 'main' => 1, 'sorted' => 1,),
             'rel' => array('title' => 'Relevance', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
+            'cast' => array('title' => 'Cast type', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
         ),
         'critics' => array(
             'title' => array('title' => 'Title', 'def' => 'asc', 'main' => 1, 'group' => 'def'),
@@ -634,6 +636,7 @@ class CriticSearch extends AbstractDB {
             'wokesort' => array('title' => 'Wokeness', 'group' => 'woke', 'main' => 1, 'sorted' => 1,),
             'finsort' => array('title' => 'Finances', 'group' => 'indie', 'main' => 1, 'sorted' => 1,),
             'rel' => array('title' => 'Relevance', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
+            'cast' => array('title' => 'Cast type', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
         ),
         'ethnicity' => array(
             'title' => array('title' => 'Title', 'def' => 'asc', 'main' => 1, 'group' => 'def'),
@@ -644,6 +647,7 @@ class CriticSearch extends AbstractDB {
             'wokesort' => array('title' => 'Wokeness', 'group' => 'woke', 'main' => 1, 'sorted' => 1,),
             'finsort' => array('title' => 'Finances', 'group' => 'indie', 'main' => 1, 'sorted' => 1,),
             'rel' => array('title' => 'Relevance', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
+            'cast' => array('title' => 'Cast type', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
         ),
         'filters' => array(
             'title' => array('title' => 'Title', 'def' => 'asc', 'main' => 1, 'group' => 'def'),
@@ -2678,7 +2682,7 @@ class CriticSearch extends AbstractDB {
         if ($show_main) {
 
             //Sort logic
-            $order = $this->get_order_query($sort);
+            $order = $this->get_order_query($sort, $filters);
 
             // Filters logic
             $filters_and = $this->get_filters_query($filters);
@@ -2759,7 +2763,7 @@ class CriticSearch extends AbstractDB {
         if ($show_main) {
 
             //Sort logic
-            $order = $this->get_order_query($sort);
+            $order = $this->get_order_query($sort,$filters);
 
             // Filters logic            
             $filters_and = $this->get_filters_query($filters, array(), $query_type);
@@ -3706,7 +3710,7 @@ class CriticSearch extends AbstractDB {
         return array('order' => $order, 'select' => $select);
     }
 
-    public function get_order_query($sort = array()) {
+    public function get_order_query($sort = array(), $filters=array()) {
         //Sort logic
         $order = '';
         $select = '';
@@ -3763,6 +3767,20 @@ class CriticSearch extends AbstractDB {
                 }
             } else if ($sort_key == 'rel') {
                 $order = ' ORDER BY w ' . $sort_type;
+            } else if ($sort_key == 'cast') {
+                
+                if (isset($filters['actor'])){
+                    if (is_array($filters['actor'])){
+                        $actor_id = (int) $filters['actor'][0];
+                    } else {
+                        $actor_id = (int) $filters['actor'];
+                    }
+                    $select = ', IF(IN(actor_star, '.$actor_id.'),3,IF(IN(actor_main, '.$actor_id.'),2,1)) AS cast_score';
+                    
+                    $order = ' ORDER BY cast_score ' . $sort_type.', rrwt DESC, year_int DESC'; 
+                }
+                
+                
             } else if ($sort_key == 'id') {
                 $order = ' ORDER BY id ' . $sort_type;
             } else if ($sort_key == 'rating') {

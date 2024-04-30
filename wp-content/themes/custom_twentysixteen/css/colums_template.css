@@ -138,7 +138,7 @@ div.consensus.tight {
     height: 38px;
     box-sizing: border-box;
 }
-div.media.discover div.card.style_1 div.content h2 {
+div.media.discover div.card.style_1 div.content h2, .flex_content  div.card.style_1 div.content h2 {
     font-size: 1em;
     margin: 0;
     width: 100%;
@@ -147,7 +147,7 @@ div.media.discover div.card.style_1 div.content h2 {
     transform: scale(1,1.3);
     line-height: 1.2em;
 }
-div.media.discover div.card.style_1 div.content p {
+div.media.discover div.card.style_1 div.content p, .flex_content  div.card.style_1 div.content p  {
     font-size: 0.9em;
     margin: 10px 0 0 0;
     padding: 0;
@@ -156,7 +156,30 @@ div.media.discover div.card.style_1 div.content p {
     text-align: center;
     width: 100%;
 }
-body.theme_dark  div.media.discover div.card.style_1 div.content p {
+.flex_content div.card.style_1 div.content h2 {
+    font-weight: normal;
+    margin: 20px 0 0 0;
+
+}
+
+.flex_content .content h2 a {
+    color: #000;
+    text-align: center;
+    display: block;
+}
+body.theme_dark .flex_content .content h2 a {
+    color: #d7d7d7;
+}
+
+
+.flex_content .content h2 a {
+    max-width: 210px;
+    display: block;
+    word-break: auto-phrase;
+    text-align: center;
+}
+
+body.theme_dark  div.media.discover div.card.style_1 div.content p, body.theme_dark  .flex_content div.card.style_1 div.content p  {
     color: rgba(209, 209, 209, 0.65);
 }
 
@@ -4551,9 +4574,33 @@ body.theme_dark .highcharts-legend-title tspan{
 
         margin-top: 0px;
     }
-    .gl_small_block.rating_block {
+    #global_zeitgeist {
+        display: flex;
+        gap: 10px 40px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .gl_small_block.rating_block .gl_rating_img {
+        height: 28px;
+        width: 57px;
+        text-align: center;
+    }
 
-        height: 110px;
+    .gl_small_block.rating_block {
+        height: unset;
+        width: max-content;
+        align-items: center;
+        display: grid;
+        grid-template-columns: 50px 1fr 1fr;
+        justify-items: start;
+        gap: 5px;
+    }
+    .accordion-content {
+        padding: 0;
+    }
+
+    .gl_small_block.rating_block .gl_rating_title {
+        width: unset;
 
     }
     .movie_total_rating>.rating_block>.note .rwt_stars {

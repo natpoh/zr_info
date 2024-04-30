@@ -5520,6 +5520,10 @@ span.rating-cherry {
     color: #c52155;
 }
 
+span.rating-bechdeltest {
+    color: #6cb623;
+}
+
 /**
  * 11.5 - Sidebar
  */
@@ -8696,6 +8700,9 @@ body.theme_dark .site-header-menu {
     }
 
 
+
+
+
     body.filters-open .flex-page .sidebar-left, body.filters-open .flex-page .sidebar-left::before  {
         width: 100vw;
     }
@@ -9137,7 +9144,7 @@ body.theme_dark .site-header-menu {
     .site-header-menu {
 
         padding-top: 78px;
-        z-index: 10;
+        z-index: 12;
     }
 
     .site-header-main {
@@ -11738,19 +11745,22 @@ strong {
 
 
 @media only screen and (max-width: 768px) {
-
+    .entry-content {
+        padding: 0px;
+    }
     .actor_image_container {
         width:79%!important;
     }
 
     .entry-content #audience_form {
-        margin-left: -20px;
-        margin-right: -20px;
+
     }
     section.inner_content.single.pro_review,  section.inner_content.single.audience_review {
         display: block;
-        margin-left: -20px;
-        margin-right: -20px;
+
+    }
+    .page-template-default   .entry-content {
+        padding: 20px;
     }
 }
 
@@ -17088,12 +17098,14 @@ p.big_b_i {
 
     /* bandaid solution to make woke verdicts look neat n symmetrical  n aesthetic */
 
-    .a_msg .rating-cherry {
+    .a_msg .rating-cherry,
+    .a_msg .rating-bechdeltest{
         position: relative;
         float: right;
     }
 
-    .full_review .rating-cherry {
+    .full_review .rating-cherry,
+    .full_review .rating-bechdeltest {
         margin-left:2em;
     }
 
@@ -17107,14 +17119,3 @@ p.big_b_i {
     }
 
 
-
-    /* Bandaid Solution: Need uniformity in the CSS because otherwise it looks amateur and is hard to navigate upon first glance. Especially for new users. The "Family Friendly" tooltip has a good structure we can follow. But all clickable links should be in the verdict, right side of the column. Headers should not be clickable links imo, cuz that is never the case anywhere else online. Ofc, having a source link in a tooltip means it's cramped but in the case of a mini graph it makes more sense than a blue header. */
-
-    .indie .row_text_head {
-        font-weight:bold;
-    }
-
-    #thenumbers {
-        color:black;
-
-    }

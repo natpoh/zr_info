@@ -1610,10 +1610,11 @@ critic_search.submit = function (inc = '', target = '', facetid = '') {
         });
 
 
-        critic_search.log(ts, critic_search.last_submit);
+        critic_search.log('ts: '+ts, 'last_submit: '+critic_search.last_submit);
 
-
-        if (ts != '' && ts != critic_search.last_submit) {
+        if (ts == '') {
+            return false;
+        } else if (ts != critic_search.last_submit) {
             return false;
         }
 

@@ -697,8 +697,18 @@ function create_rating_content(object, m_id, search_block = 0) {
             {
                 if (Object.keys(object['indie']['c_box']).length>0)
                 {
+                    if (object['indie']['c_box']['mojo'])
+                    {
+                        data +='<p class="row_text_head exlink" id="boxmojo">Box office International: (Mojo)</p><span class="box_chart not_loaded"><span class="data" style="display: none">'+JSON.stringify(object['indie']['c_box']['mojo'])+'</span></span>';
+                    }
+                    else  if (object['indie']['c_box']['numbers'])
+                    {
+                        if (Object.keys(object['indie']['c_box']['numbers']).length>0) {
+                            data += '<p class="row_text_head exlink" id="thenumbers">Box office International: (The Numbers)</p><span class="box_chart not_loaded"><span class="data" style="display: none">' + JSON.stringify(object['indie']['c_box']['numbers']) + '</span></span>';
+                        }
 
-                    data +='<p class="row_text_head exlink" id="thenumbers">Box office International:</p><span class="box_chart not_loaded"><span class="data" style="display: none">'+JSON.stringify(object['indie']['c_box'])+'</span></span>';
+                    }
+
                 }
 
             }
@@ -1123,7 +1133,6 @@ function set_video_scroll(data, block_id, append = '') {
 
 
     if (data) {
-
         data = JSON.parse(data);
 
         if (data['count'] > 0 && data['tmpl'])
@@ -1186,6 +1195,21 @@ function set_video_scroll(data, block_id, append = '') {
                         array_movie.sort((a, b) => a.release < b.release ? 1 : -1);
                     }
 
+
+                    else if (block_id.indexOf('custom_search') == 0 || block_id.indexOf('compilation_scroll') == 0 ) {
+                        array_movie.sort((a, b) => {
+                            if (a.order === undefined && b.order === undefined) {
+                                return 0;
+                            } else if (a.order === undefined) {
+                                return 1;
+                            } else if (b.order === undefined) {
+                                return -1;
+                            } else {
+                                return a.order - b.order;
+                            }
+                        });
+                    }
+                    //console.log(block_id, array_movie);
 
                     var i = 1;
                     jQuery.each(array_movie, function (mi, b) {
@@ -1681,7 +1705,7 @@ function global_zeitgeist_content(data) {
 
 
                     if (item.img) {
-                        img_container = '<div class="gl_image"><img src="https://info.antiwoketomatoes.com/wp-content/uploads/sites_img/' + item.img + '.png" alt="' + item.name + '"></div>';
+                        img_container = '<div class="gl_image"><img src="https://info.filmdemographics.com/wp-content/uploads/sites_img/' + item.img + '.png" alt="' + item.name + '"></div>';
                     }
                     let flag = '';
                     if (item.flag) {
@@ -2158,7 +2182,7 @@ function load_ajax_block(block_id = '', request_id = '') {
         url = 'https://curatedinfo.org/service/ns_related.php?pid=' + parent_id;
     }
     if (block_id == 'global_zeitgeist') {
-        url = 'https://info.antiwoketomatoes.com/service/global_consensus.php?mid=' + parent_id;
+        url = 'https://info.filmdemographics.com/service/global_consensus.php?mid=' + parent_id;
     }
 
     jQuery.ajax({

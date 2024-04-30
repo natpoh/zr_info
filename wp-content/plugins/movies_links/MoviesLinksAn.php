@@ -812,25 +812,61 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
      */
 
     public function get_meta_box_int($cid, $mid) {
-        $sql = sprintf("SELECT id FROM {$this->db['meta_movie_boxint']} WHERE mid=%d AND country=%d", (int) $mid, (int) $cid);
-        $result = $this->db_get_var($sql);
+        $sql = sprintf("SELECT * FROM {$this->db['meta_movie_boxint']} WHERE mid=%d AND country=%d", (int) $mid, (int) $cid);
+        $result = $this->db_fetch_row($sql);
         return $result;
     }
 
-    public function add_meta_box_int($cid, $mid, $total) {
-        $id = $this->get_meta_box_int($cid, $mid);
-        if (!$id) {
+    public function add_meta_box_int($cid, $mid, $total = 0, $debug = false) {
+        $id_ob = $this->get_meta_box_int($cid, $mid);
+        if (!$id_ob->id) {
             $data = array(
                 'mid' => (int) $mid,
                 'country' => (int) $cid,
                 'total' => (int) $total,
-            );            
+            );
             $id = $this->sync_insert_data($data, $this->db['meta_movie_boxint'], false, true);
+        } else {
+            $id = $id_ob->id;
+            if ($total != $id_ob->total) {
+                $data = array(
+                    'total' => (int) $total,
+                );
+                $this->sync_update_data($data, $id, $this->db['meta_movie_boxint'], true);
+            }
         }
         return $id;
     }
 
-    public function create_slug($string, $glue = '-') {
+    public function add_meta_box_int_mojo($cid, $mid, $total_mojo = 0, $debug = false) {
+        $id_ob = $this->get_meta_box_int($cid, $mid);
+        $data = array();
+        $result = 'insert';
+        if (!$id_ob->id) {
+            $data = array(
+                'mid' => (int) $mid,
+                'country' => (int) $cid,
+                'total_mojo' => (int) $total_mojo,
+            );
+            $id = $this->sync_insert_data($data, $this->db['meta_movie_boxint'], false, true);
+        } else {
+            $id = $id_ob->id;
+            $result = 'not change';
+            if ($total_mojo != $id_ob->total_mojo) {
+                $result = 'update';
+                $data = array(
+                    'total_mojo' => (int) $total_mojo,
+                );
+                $this->sync_update_data($data, $id, $this->db['meta_movie_boxint'], true);
+            }
+        }
+        if ($debug) {
+            print_r(array($result,$id_ob, array($cid, $mid, $total_mojo), $data));
+        }
+        return $id;
+    }
+
+    public function create_slug($string, $glue = '-', $str_lower = true) {
         $string = str_replace('&', ' and ', $string);
         $string = preg_replace("/('|`)/", "", $string);
 
@@ -849,7 +885,10 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         $stripped = preg_replace(array('/\s{2,}/', '/[\t\n]/'), ' ', trim($string));
 
         // -- Returns the slug
-        $slug = strtolower(strtr($stripped, $table));
+        $slug = strtr($stripped, $table);
+        if ($str_lower) {
+            $slug = strtolower($slug);
+        }
         $slug = preg_replace('~[^\pL\d]+~u', $glue, $slug);
 
         $slug = preg_replace('/^-/', '', $slug);

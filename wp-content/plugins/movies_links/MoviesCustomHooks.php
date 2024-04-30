@@ -16,6 +16,8 @@ class MoviesCustomHooks {
 
     public function add_post($campaign = array(), $post = array(), $debug = false) {
 
+        $debug = $_GET['debug']?true:$debug;
+        
         $options = unserialize($post->options);
 
         if ($post->top_movie > 0) {
@@ -38,10 +40,14 @@ class MoviesCustomHooks {
         // Dove.org
         if ($campaign->id == 3) {
             $this->update_dove($post, $options, $campaign, $debug);
-        } else
-        if ($campaign->id == 1) {
+        } else if ($campaign->id == 1) {
             // www.the-numbers.com
             $this->update_numbers($post, $options, $campaign, $debug);
+        } else if ($campaign->id == 56) {
+            //  [52] www.boxofficemojo.com 
+            //  DEV 52 
+            //  PROD 56
+            $this->update_boxofficemojo($post, $options, $campaign, $debug);
         }
 
         $url_data = $this->mp->get_url($post->uid);
@@ -688,6 +694,80 @@ class MoviesCustomHooks {
     }
 
     /*
+     * boxofficemojo
+     */
+
+    private function update_boxofficemojo($post, $options, $campaign, $debug = false) {
+        if ($debug) {
+            p_r(array('update_boxofficemojo', $post));
+        }
+     
+        $cid = $campaign->id;
+        $uid = $post->uid;
+        $url_data = $this->mp->get_url($uid);
+        //$link = $url_data->link;
+        $arhive = $this->mp->get_arhive_by_url_id($uid);
+        $link_hash = $arhive->arhive_hash;
+        $top_movie = (int) $url_data->pid;
+        if ($debug) {
+            p_r($arhive);
+        }
+        $ma = $this->ml->get_ma();
+        $code = $this->mp->get_arhive_file($cid, $link_hash);
+        if ($code && $top_movie) {
+            /*
+              <tr><td><a class="a-link-normal" href="/release/rl3608445953/?ref_=bo_tt_gr_1">Spain</a></td><td>06.02.2004</td><td class="a-text-right">
+              –
+              </td><td class="a-text-right"><span class="money">$2,406,641</span></td></tr> */
+            $results = array();
+
+            if (preg_match_all('#<tr>.*</tr>#Uis', $code, $match)) {
+                
+                foreach ($match[0] as $row) {
+                    if (preg_match('#<td[^>]*><a[^<]+href="/release/[^<]+>([^<]+)</a></td><td[^>]*>[^<]+</td><td[^>]*>.*</td><td[^>]*>(.*)</td>#Uis', $row, $match2)) {
+
+                        $title = trim(strip_tags($match2[1]));
+                        if ($title == 'Domestic') {
+                            $title = 'United States';
+                        } else {
+                            // Filter title
+
+                            $title = preg_replace('#^(.*)(?:\/|\().*$#is', "$1", $title);
+                            $title = $ma->create_slug($title,' ',false);
+                        }
+                        $total = trim(strip_tags($match2[2]));
+                        $total = (int) preg_replace('/[^0-9]+/', '', $total);
+                        if ($debug) {
+                            print_r(array($match2[1], $title, $total));
+                        }
+                        if ($title && $total > 0) {
+                            $results[$title] = $total;
+                        }
+                    }
+                }
+            }
+
+            if ($debug) {
+                print_r($results);
+            }
+            if ($results) {
+
+                foreach ($results as $title => $total) {
+                    $cid = $ma->get_or_create_country_by_name($title);
+
+                    if ($cid) {
+                        $id = $ma->add_meta_box_int_mojo($cid, $top_movie, $total, $debug);
+                    }
+
+                    if ($debug) {
+                        print_r(array($title, $total, $cid, $id));
+                    }
+                }
+            }
+        }
+    }
+
+    /*
      * The Numbers
      */
 
@@ -701,12 +781,12 @@ class MoviesCustomHooks {
         $link = $url_data->link;
         $arhive = $this->mp->get_arhive_by_url_id($uid);
         $link_hash = $arhive->arhive_hash;
-        $top_movie = $post->top_movie;
+        $top_movie = (int) $post->top_movie;
         if ($debug) {
             p_r($arhive);
         }
         $code = $this->mp->get_arhive_file($cid, $link_hash);
-        if ($code) {
+        if ($code && $top_movie) {
             /*
               <h2>Box Office Summary Per Territory</h2>
               <div id="page_filling_chart">

@@ -124,12 +124,14 @@ body.theme_dark  .single_post .movie_credits_bloc,body.theme_dark .single_post .
 
 }
 .movie_summary {
-    position: relative;
+    position: unset;
 }
 .actor_container  .movie_summary {
     padding-right: 45px;
 }
-
+.actor_container  .movie_summary {
+position: relative;
+}
 .movie_load_grid{
     background-color: rgb(0, 0, 0);
     padding: 5px;
@@ -789,6 +791,16 @@ section.inner_content.section_actors  div.column_content.flex.scroller {
     min-height: 300px;
 
 }
+
+.flex_content .column_content
+{
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+}
+
 .wrapper img.poster {
     width: 220px;
     height: 330px;
@@ -2059,12 +2071,29 @@ div.sortable {
         top: calc(50% - 16px);
     }
 
-
+    .accordion_section.column-8>.accordion-item >.accordion-content {
+        grid-column: 1/8;
+    }
     .accordion_section.column-7>.accordion-item >.accordion-content {
         grid-column: 1/7;
     }
     .accordion_section.column-6>.accordion-item >.accordion-content {
         grid-column: 1/6;
+    }
+    .accordion_section.column-5>.accordion-item >.accordion-content {
+        grid-column: 1/5;
+    }
+    .accordion_section.column-4>.accordion-item >.accordion-content {
+        grid-column: 1/4;
+    }
+    .accordion_section.column-3>.accordion-item >.accordion-content {
+        grid-column: 1/3;
+    }
+    .accordion_section.column-2>.accordion-item >.accordion-content {
+        grid-column: 1/2;
+    }
+    .accordion_section.column-1>.accordion-item >.accordion-content {
+        grid-column: 1/1;
     }
 }
 @media screen and (min-width: 1170px) {
@@ -2178,7 +2207,9 @@ div.sortable {
         width: 100%;
     }
 
-
+    .keyword_container {
+        padding: 8px;
+    }
     body .ready_to_load .button_play_trailer {
         padding-right: 20px;
         margin-top: 0px;
@@ -2193,7 +2224,7 @@ div.sortable {
 
     .movie_total_rating>.rating_block>.note.rwt_stars {
         width: 80%;
-        max-width: 270px;
+        max-width: 190px;
         align-self: center;
         grid-row: 1;
         grid-column: 1/7;

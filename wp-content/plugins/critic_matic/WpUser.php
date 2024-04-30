@@ -178,6 +178,20 @@ class WpUser extends AbstractDBWp {
     }
 
     /**
+     * Converts an expiration to an array of session information.
+     *
+     * @param mixed $session Session or expiration.
+     * @return array Session.
+     */
+    protected function prepare_session($session) {
+        if (is_int($session)) {
+            return array('expiration' => $session);
+        }
+
+        return $session;
+    }
+
+    /**
      * Determines whether a session is still valid, based on its expiration timestamp.
      *
      * @since 4.0.0

@@ -218,7 +218,7 @@ function uploadAvatar() {
         $this.addClass('init');
 
         var cm_url = '/wp-content/plugins/critic_matic/';
-        var server_url = 'https://info.antiwoketomatoes.com';
+        var server_url = 'https://info.filmdemographics.com';
         //var server_url = '';
 
         var css_list = {

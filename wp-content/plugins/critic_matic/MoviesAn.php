@@ -127,6 +127,7 @@ class MoviesAn extends AbstractDBAn {
             'meta_keywords' => 'meta_keywords',
             'language_code' => 'data_language_code',
             'meta_movie_boxint' => 'meta_movie_boxint',
+            'woke'=>'data_woke',
         );
         $this->timer_start();
         $this->get_perpage();
@@ -1986,6 +1987,16 @@ class MoviesAn extends AbstractDBAn {
 
     public function get_movie_erating($mid) {
         $sql = sprintf("SELECT * FROM {$this->db['erating']} WHERE movie_id=%d", (int) $mid);
+        $results = $this->db_fetch_row($sql);
+        return $results;
+    }
+    
+     /*
+     * Woke
+     */
+
+    public function get_movie_woke($mid) {
+        $sql = sprintf("SELECT * FROM {$this->db['woke']} WHERE mid=%d", (int) $mid);
         $results = $this->db_fetch_row($sql);
         return $results;
     }

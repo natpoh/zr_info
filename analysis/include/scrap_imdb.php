@@ -3765,6 +3765,55 @@ if (isset($_GET['check_image_on_server'])) {
     return;
 }
 
+if (isset($_GET['add_actors_slug'])) {
+
+    global $debug;
+
+    check_load(50,60);
+
+    $actor_id=intval($_GET['add_actors_slug']);
+    if ($actor_id)
+    {
+        $q="SELECT * FROM `data_actors_imdb` WHERE id =".$actor_id." ";
+    }
+    else
+    {
+        $q="SELECT * FROM `data_actors_imdb` WHERE `slug` is NULL and `name`!='' order by id asc limit 100000";
+    }
+
+    $r = Pdo_an::db_results_array($q);
+
+    if ($r)
+    {
+        $count =0;
+        foreach ($r as $row)
+        {
+            $count+=1;
+           $name = $row['name'];
+           // echo $name.'<br>';
+           $slug =  TMDB::getslug($name);
+           if ($slug)
+           {
+
+               $q2 ="UPDATE `data_actors_imdb` SET `slug`=?  WHERE `id` =?";
+               Pdo_an::db_results_array($q2,[$slug,$row['id']]);
+
+               if (check_cron_time())
+               {
+
+                   echo 'total: '.$count;
+                   break;
+
+
+               }
+           }
+
+        }
+    }
+    return;
+}
+
+
 if (isset($_GET['check_audience_movie'])) {
     $fid = intval($_GET['check_audience_movie']);
 

@@ -349,7 +349,7 @@ class RWT_RATING
 
             $countries[]=  $row['country'];
 
-            $data[$row['country']]=$row['total'];
+            $data[$row['country']]=[$row['total'],$row['total_mojo']];
 
 
         }
@@ -372,8 +372,26 @@ class RWT_RATING
         {
             $flag = $this->get_country_flag($result_country[$i]);
 
-            $result[$i] = ['country'=>$result_country[$i],'data'=>$v,'flag'=>$flag];
+            if ($v[1]>0 && $result_country[$i]!="United States")
+            {
+                $result['mojo'][$i] = ['country'=>$result_country[$i],'data'=>$v[1],'flag'=>$flag];
+            }
+            else if ($v[0]>0)
+            {
+                $result['numbers'][$i] = ['country'=>$result_country[$i],'data'=>$v[0],'flag'=>$flag];
+            }
+
         }
+        usort($result['mojo'], function($a, $b) {
+            return $b['data'] - $a['data'];
+        });
+        $result['mojo'] = array_slice($result['mojo'], 0, 10);
+
+        usort($result['numbers'], function($a, $b) {
+            return $b['data'] - $a['data'];
+        });
+        $result['numbers'] = array_slice($result['numbers'], 0, 10);
+
 
         return $result;
 
