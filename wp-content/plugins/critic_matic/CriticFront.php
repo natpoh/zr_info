@@ -788,23 +788,25 @@ class CriticFront extends SearchFacets {
     }
 
     public function get_custom_critic_rating($critic) {
-        // CherryPicks
+
         $rating_text = '';
         if ($critic->top_movie) {
-            if ($critic->link_id == 177) {
-                // Cherry
-                $ma = $this->get_ma();
-                $erating = $ma->get_movie_erating($critic->top_movie);
-                if ($erating->thecherrypicks_rating) {
-                    $rating_text = ' <span class="rating-cherry">' . $erating->thecherrypicks_rating . '%</span>';
-                }
-            } else if ($critic->link_id == 178) {
-                // Bechdeltest
-                $ma = $this->get_ma();
-                try {
+            try {
+                if ($critic->link_id == 177) {
+                    // CherryPicks
+                    $ma = $this->get_ma();
+
+                    $erating = $ma->get_movie_erating($critic->top_movie);
+                    if ($erating->thecherrypicks_rating) {
+                        $rating_text = ' <span class="rating-cherry">' . $erating->thecherrypicks_rating . '%</span>';
+                    }
+                } else if ($critic->link_id == 178) {
+                    // Bechdeltest
+                    $ma = $this->get_ma();
+
                     $woke = $ma->get_movie_woke($critic->top_movie);
-                    if ($woke->bechdeltest>0) {
-                        $woke_text = '';                        
+                    if ($woke->bechdeltest > 0) {
+                        $woke_text = '';
                         $filters = $this->cs->search_filters['bechdeltest'];
                         foreach ($filters as $filter) {
                             if ($woke->bechdeltest == $filter['key']) {
@@ -812,13 +814,29 @@ class CriticFront extends SearchFacets {
                                 break;
                             }
                         }
-                        if ($woke_text){
+                        if ($woke_text) {
                             $rating_text = ' <span class="rating-bechdeltest">' . $woke_text . '</span>';
                         }
                     }
-                } catch (Exception $exc) {
-                    
+                } else if ($critic->link_id == 176) {
+                    // worthitorwoke.com
+                    $ma = $this->get_ma();
+                    $woke = $ma->get_movie_woke($critic->top_movie);
+                    $woke_text = 'Not woke';
+                    if ($woke->worthit > 0) {
+                        $filters = $this->cs->search_filters['worthit'];
+                        foreach ($filters as $filter) {
+                            if ($woke->worthit == $filter['key']) {
+                                $woke_text = $filter['title'];
+                                break;
+                            }
+                        }
+                    }
+
+                    $rating_text = ' <span class="rating-worthit">' . $woke_text . '</span>';
                 }
+            } catch (Exception $exc) {
+                
             }
         }
         return $rating_text;
@@ -2710,11 +2728,11 @@ class CriticFront extends SearchFacets {
             ?>
             <div class="simple">
                 <div class="items<?php
-                if ($owner) {
-                    print " owner";
-                }
-                ?>">
-                         <?php
+            if ($owner) {
+                print " owner";
+            }
+            ?>">
+                     <?php
                          foreach ($posts as $post) {
 
                              $critic = $this->cm->get_post_and_author($post->id);
@@ -3056,8 +3074,8 @@ class CriticFront extends SearchFacets {
                         <div class="meta">
                             <span class="p-date block">
                                 <time><?php
-                                    print date('d.m.Y H:i', $item->date);
-                                    ?></time>
+                            print date('d.m.Y H:i', $item->date);
+                            ?></time>
                             </span>
 
                             <span class="p-cat block">
@@ -3075,8 +3093,8 @@ class CriticFront extends SearchFacets {
                             <?php } ?>
                         </div>
                     </div><?php
-                }
-                ?>
+                        }
+                        ?>
                 <?php if ($total_count > $view_rows) { ?>
                     <h3 class="ns_all"><a href="<?php print $ns_link ?>">Show all related posts: <?php print $total_count ?></a></h3>
                     <?php

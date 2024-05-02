@@ -33,7 +33,7 @@ class MoviesParserAdmin extends ItemAdmin {
         43200 => 'Mounth',
     );
     public $parsing_type = array(
-        0 => 'Movie weight',
+        0 => 'Weight',
         1 => 'Random',
     );
     public $multi_rule_type = array(
@@ -209,6 +209,7 @@ class MoviesParserAdmin extends ItemAdmin {
         'm' => 'Main',
         'e' => 'Extra',
         'd' => 'Directors',
+        'w' => 'Weights actors base',
     );
     public $rwt_actor_link = array(
         'a' => 'All normalized actors',
@@ -374,7 +375,7 @@ class MoviesParserAdmin extends ItemAdmin {
                         //Find URLs
                         $preivew_data = $this->mp->find_urls($campaign, $options, $settings, true);
                     } else if ($_POST['generate_urls']) {
-                        // Generage URLs
+                        // Generage URLs              
                         $preview_gen_data = $this->mp->generate_urls($campaign, $options, $settings, 0, true);
                     }
                 }

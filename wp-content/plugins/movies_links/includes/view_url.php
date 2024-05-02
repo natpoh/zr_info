@@ -29,7 +29,15 @@ if ($uid) {
             </tr>
             <tr>
                 <td><?php print __('Pid') ?></td>
-                <td><a target="_blank" href="/wp-admin/admin.php?page=critic_matic_movies&mid=<?php print $url_data->pid ?>"><?php print $url_data->pid ?></a></td>
+                <td>
+                    <?php if ($campaign->type != 1): ?>
+                        <a target="_blank" href="/wp-admin/admin.php?page=critic_matic_movies&mid=<?php print $url_data->pid ?>">
+                        <?php endif ?>
+                        <?php print $url_data->pid ?>
+                        <?php if ($campaign->type != 1): ?>
+                        </a>
+                    <?php endif ?>
+                </td>
             </tr>
             <tr>
                 <td><?php print __('Link hash') ?></td>
@@ -38,9 +46,9 @@ if ($uid) {
             <tr>
                 <td><?php print __('Parent URL') ?></td>
                 <td><?php if ($url_data->parent_url) { ?>
-                    <a href="<?php print $url . '&uid=' . $url_data->parent_url ?>"><?php print $url_data->parent_url ?></a>
-                            <?php }
-                            ?>
+                        <a href="<?php print $url . '&uid=' . $url_data->parent_url ?>"><?php print $url_data->parent_url ?></a>
+                    <?php }
+                    ?>
                 </td>
             </tr> 
             <tr>
@@ -213,7 +221,7 @@ if ($uid) {
                         <td><?php print __('Title') ?></td>
                         <td><?php print $post->title ?></td>
                     </tr>
-                   
+
                     <?php
                     $po = $this->mp->get_post_options($post);
 
@@ -230,7 +238,7 @@ if ($uid) {
                     ?>     
                 </tbody>        
             </table>
-        <br />
+            <br />
             <?php
         }
     }
