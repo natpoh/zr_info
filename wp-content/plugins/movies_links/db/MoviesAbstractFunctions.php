@@ -369,7 +369,7 @@ class MoviesQueryADB {
 
     public function __construct() {
         $this->clear();
-    }
+    }        
 
     public function add_query($key, $value) {
         $this->query[$key] = $value;
@@ -382,5 +382,5 @@ class MoviesQueryADB {
     public function clear() {
         $this->query = array();
     }
-
-}
+    
+    }

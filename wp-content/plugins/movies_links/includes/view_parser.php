@@ -40,6 +40,13 @@ if ($cid) {
                 </td>
             </tr>
             <tr>
+                <td><?php print __('Mode') ?></td>
+                <td><?php
+                    print $this->parser_mode[$campaign->parsing_mode];
+                    ?>
+                </td>
+            </tr>
+            <tr>
                 <td><?php print __('Status') ?></td>
                 <td><?php
                     print $this->camp_state[$campaign->status]['title'];

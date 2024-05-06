@@ -263,7 +263,79 @@ class MoviesParser extends MoviesAbstractDB {
      * Campaign
      */
 
+    public function get_campaigns_query($q_req=array(), $page=1, $perpage=30, $orderby='', $order = 'ASC', $count = false){
+        // New api        
+        $q_def = array(
+            'status' => -1,
+            'type' => -1,            
+            'parsing_mode' => -1,
+        );
+
+        $q = array();
+        foreach ($q_def as $key => $value) {
+            $q[$key] = isset($q_req[$key]) ? $q_req[$key] : $value;
+        }
+
+         // Custom status
+        $status_trash = 2;
+        $status_query = " WHERE c.status != " . $status_trash;
+        if ($q['status'] != -1) {
+            $status_query = " WHERE c.status = " . (int) $q['status'];
+        }
+
+        // Type
+        $type_query = '';
+        if ($q['type'] != -1) {
+            $type_query = " AND c.type = " . (int) $q['type'];
+        }
+             
+        $parsing_mode_query = '';
+        if ($q['parsing_mode'] != -1) {
+            $parsing_mode_query = " AND c.parsing_mode = " . (int) $q['parsing_mode'];
+        }
+
+
+        //Sort
+        $and_orderby = '';
+        $limit = '';
+        if (!$count) {
+            if ($orderby && in_array($orderby, $this->sort_pages)) {
+                $and_orderby = ' ORDER BY ' . $orderby;
+                if ($order) {
+                    $and_orderby .= ' ' . $order;
+                }
+            } else {
+                $and_orderby = " ORDER BY c.id DESC";
+            }
+
+            $page -= 1;
+            $start = $page * $perpage;
+
+            $limit = '';
+            if ($perpage > 0) {
+                $limit = " LIMIT $start, " . $perpage;
+            }
+
+            $select = "c.*";
+        } else {
+            $select = "COUNT(c.id)";
+        }
+
+        $query = "SELECT " . $select
+                . " FROM {$this->db['campaign']} c"
+                . $status_query .  $type_query . $parsing_mode_query . $and_orderby . $limit;
+
+        if (!$count) {
+            $result = $this->db_results($query);
+        } else {
+            $result = $this->db_get_var($query);
+        }
+
+        return $result;
+    }
+    
     public function get_campaigns($status = -1, $type = -1, $page = 1, $orderby = '', $order = 'ASC', $perpage = 30) {
+        // DEPRECATED
         $page -= 1;
         $start = $page * $perpage;
 
@@ -297,7 +369,7 @@ class MoviesParser extends MoviesAbstractDB {
 
 
 
-        $sql = sprintf("SELECT c.id, c.date, c.status, c.type, c.title, c.site, c.options "
+        $sql = sprintf("SELECT c.id, c.date, c.status, c.type, c.parsing_mode, c.title, c.site, c.options "
                 . "FROM {$this->db['campaign']} c "
                 . $status_query . $type_query . $and_orderby . $limit);
 
@@ -326,33 +398,29 @@ class MoviesParser extends MoviesAbstractDB {
         return $result;
     }
 
-    public function update_campaign($status, $title, $site, $type, $id) {
-        $sql = sprintf("UPDATE {$this->db['campaign']} SET            
-                status=%d,
-                type=%d, 
-                title='%s', 
-                site='%s'                                  
-                WHERE id = %d", $status, $type, $title, $site, $id
+    public function update_campaign($status=0, $title='', $site='', $type=0, $parsing_mode=0, $id) {
+        $data = array(            
+            'status' => (int) $status,
+            'type' => (int) $type,
+            'parsing_mode' => (int) $parsing_mode,
+            'title' => $title,
+            'site' => $site,
         );
-
-        $this->db_query($sql);
+        $this->db_update($data, $this->db['campaign'], $id);
+        
     }
 
-    public function add_campaing($status, $title, $site, $type = 0) {
+    public function add_campaing($status, $title, $site, $type = 0, $parsing_mode = 0) {
         $date = $this->curr_time();
-        $this->db_query(sprintf("INSERT INTO {$this->db['campaign']} (
-                date, 
-                status, 
-                type,
-                title,
-                site                
-                ) VALUES (
-                %d,%d,%d,'%s','%s')"
-                        . "", $date, $status, $type, $title, $site
-        ));
-
-        //Return id
-        $id = $this->getInsertId('id', $this->db['campaign']);
+        $data = array(
+            'date' => (int) $date,
+            'status' => (int) $status,
+            'type' => (int) $type,
+            'parsing_mode' => (int) $parsing_mode,
+            'title' => $title,
+            'site' => $site,
+        );
+        $id = $this->db_insert($data, $this->db['campaign']);
 
         return $id;
     }
@@ -408,7 +476,31 @@ class MoviesParser extends MoviesAbstractDB {
         }
         return $options;
     }
+    
+    public function get_parser_query_count($q_req = array()) {
+        return $this->get_campaigns_query($q_req, 1, 1, '', '', true);        
+    }
 
+    public function get_parser_type_count($q_req = array(), $types = array(), $custom_type = '') {
+        $status = -1;
+        $count = $this->get_parser_query_count($q_req);
+        $states = array(
+            '-1' => array(
+                'title' => 'All',
+                'count' => $count
+            )
+        );
+        $q_req_custom = $q_req;
+
+        foreach ($types as $key => $value) {
+            $q_req_custom[$custom_type] = $key;
+            $states[$key] = array(
+                'title' => $value,
+                'count' => $this->get_parser_query_count($q_req_custom));
+        }
+        return $states;
+    }
+    
     public function get_parser_count($status = -1, $type = -1, $aid = 0) {
         // Custom type
         $status_trash = 2;
@@ -1061,11 +1153,11 @@ class MoviesParser extends MoviesAbstractDB {
                     $result = array();
 
                     $ma = $this->ml->get_ma();
-                     // 1. Weight>20
-                    if ($camp_type == 1) {                        
+                    // 1. Weight>20
+                    if ($camp_type == 1) {
                         $ids = $ma->get_actors_ids_by_min_weight(10);
                     } else {
-                       
+
                         $ids = $ma->get_post_ids_by_min_weight(20);
                     }
 
@@ -1081,7 +1173,7 @@ class MoviesParser extends MoviesAbstractDB {
                         // 2. Weight>10
                         if ($camp_type == 1) {
                             $ids = $ma->get_actors_ids_by_min_weight(5);
-                        } else {                            
+                        } else {
                             $ids = $ma->get_post_ids_by_min_weight(10);
                         }
                         if ($ids) {

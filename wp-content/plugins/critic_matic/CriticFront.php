@@ -2702,8 +2702,8 @@ class CriticFront extends SearchFacets {
                             <a href="<?php print $link ?>" title="<?php print $title ?>" >
                                 <img srcset="<?php print $poster_link_90 ?>" alt="<?php print $mtitle ?>">
                                 <div class="desc">
-                                    <h5><?php print $title ?></h5>                         
-                                    <p>For: <?php print $mtitle . $release ?></p>
+                                    <h5><?php print $mtitle . $release ?></h5>
+                                    <p><?php print $title ?></p>
                                 </div>
                             </a>
                         </div>
@@ -2790,8 +2790,8 @@ class CriticFront extends SearchFacets {
                             <a href="<?php print $link ?>" title="<?php print $title ?>" >
                                 <img srcset="<?php print $poster_link_90 ?>" alt="<?php print $mtitle ?>">
                                 <div class="desc">
-                                    <h5><?php print $title ?></h5>                         
-                                    <p>For: <?php print $mtitle . $release ?></p>
+                                    <h5><?php print $mtitle . $release ?></h5>
+                                    <p><?php print $title ?></p>
                                 </div>
                             </a>
                             <?php if ($owner): ?>                                            

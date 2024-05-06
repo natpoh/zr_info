@@ -195,7 +195,7 @@ if ($uid) {
         <?php
         $options = $this->mp->get_options($campaign);
         $o = $options['links'];
-        $preivew_data = $this->mp->find_posts_links(array($post), $o, $campaign->type == 1);
+        $preivew_data = $this->mp->find_posts_links(array($post), $o, $campaign->type);
         $this->preview_links_search($preivew_data);
         ?>
 
