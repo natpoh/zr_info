@@ -155,6 +155,13 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
 
     /* Actors */
 
+    public function get_actor_by_id($id = 0) {
+        $sql = sprintf("SELECT a.id, a.aid, a.firstname, a.lastname, CONCAT('nm', LPAD(a.aid, 7, '0')) AS imdb "
+                . "FROM {$this->db['actors_normalize']} a WHERE a.aid=%d", (int) $id);
+        $results = $this->db_fetch_row($sql);
+        return $results;
+    }
+    
     public function get_actors_by_weight($count = 100, $last_id = 0) {
         $sql = sprintf("SELECT m.id, m.aid, a.firstname, a.lastname, CONCAT('nm', LPAD(m.aid, 7, '0')) AS imdb "
                 . "FROM {$this->db['meta_actor_weight']} m LEFT JOIN {$this->db['actors_normalize']} a ON m.aid=a.aid "

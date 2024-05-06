@@ -117,7 +117,7 @@ if ($cid) {
                 if ($cm) {
                     $cp = $cm->get_cp();
                     $cprules = $cp->get_cprules();
-                    $cprules->show_parser_rules($parser_rules, true, $campaign->type);
+                    $cprules->show_parser_rules($parser_rules, true, $campaign->type, $campaign->parsing_mode);
                 } else {
                     print "<p>Need install Critic Matic pluggin.</p>";
                 }

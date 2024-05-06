@@ -108,7 +108,8 @@ class MoviesParserCron extends MoviesAbstractDB {
         if ($type_name == 'arhive') {
             $count = $this->proccess_arhive($campaign, $options, $debug, $force);
         } else if ($type_name == 'parsing') {
-            if ($campaign->type == 2) {
+            if ($campaign->parsing_mode == 1) {
+                // Create urls
                 $count = $this->proccess_parsing_create_urls($campaign, $options, false, $debug);
                 if ($count) {
                     // Unpaused child campaign  
@@ -526,8 +527,9 @@ class MoviesParserCron extends MoviesAbstractDB {
                 print_r($items);
             }
             $lo = $options['links'];
-            $urls = $this->mp->find_url_posts_links($items, $lo, $debug);
+            $urls = $this->mp->find_url_posts_links($items, $lo, $campaign->type, $debug);
             $ms = $this->ml->get_ms();
+            $ma = $this->ml->get_ma();
             $cid_dst = $lo['camp'];
 
             $so = $options['service_urls'];
@@ -595,20 +597,26 @@ class MoviesParserCron extends MoviesAbstractDB {
                         $year = '';
                         $release = '';
                         if ($movie_id) {
-                            $movie_data = $ms->search_movies_by_id($movie_id);
-
-                            if ($movie_data && $movie_data[$movie_id]) {
-                                $movie = $movie_data[$url->pid];
+                            if ($campaign->type == 1) {
+                                // actors
+                                $actor = $ma->get_actor_by_id($movie_id);        
+                                if ($actor){
+                                    $title = "{$actor->firstname} {$actor->lastname}";
+                                }
+                            } else {
+                                $movie_data = $ms->search_movies_by_id($movie_id);
+                                if ($movie_data && $movie_data[$movie_id]) {
+                                    $movie = $movie_data[$url->pid];
+                                    if ($movie) {
+                                        if ($debug) {
+                                            print_r($movie);
+                                        }
+                                        $title = $movie->title;
+                                        $year = $movie->year;
+                                        $release = $movie->release;
+                                    }
+                                }
                             }
-                        }
-
-                        if ($movie) {
-                            if ($debug) {
-                                print_r($movie);
-                            }
-                            $title = $movie->title;
-                            $year = $movie->year;
-                            $release = $movie->release;
                         }
 
                         $data = array(
@@ -802,7 +810,7 @@ class MoviesParserCron extends MoviesAbstractDB {
 
         // Get posts (last is first)        
         $urls_count = $type_opt['num'];
-    
+
         // Get parsing version
         $version = $type_opt['version'];
 
@@ -980,7 +988,7 @@ class MoviesParserCron extends MoviesAbstractDB {
 
             // Random urls
             $random_urls = $type_opt['random'];
-            $urls = $this->mp->get_last_urls($urls_count, $status, $campaign->id, $random_urls,$campaign->type, $custom_url_id,  $debug);
+            $urls = $this->mp->get_last_urls($urls_count, $status, $campaign->id, $random_urls, $campaign->type, $custom_url_id, $debug);
             if ($debug) {
                 print_r($urls);
             }
