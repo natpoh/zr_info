@@ -79,7 +79,6 @@ class MoviesParserAdmin extends ItemAdmin {
     public $parser_types = array(
         0 => 'Movies',
         1 => 'Actors',
-        2 => 'Links',
     );
     public $parser_mode = array(
         0 => 'Posts',
