@@ -3610,7 +3610,7 @@ class MoviesParser extends MoviesAbstractDB {
                             }
                         }
                         
-                        p_r(array($actor->name,$post_full_name, $post_full_name_valid));
+                        //p_r(array($actor->name,$post_full_name, $post_full_name_valid));
                        
                         if ($post_full_name_valid) {
                             $results[$actor->aid]['fullname']['data'] = $actor->name;
