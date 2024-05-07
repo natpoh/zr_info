@@ -3648,6 +3648,8 @@ class MoviesParser extends MoviesAbstractDB {
                 return array();
             }
         }
+        
+        p_r($results);
 
         $max_rating = 0;
         $max_rating_id = 0;
