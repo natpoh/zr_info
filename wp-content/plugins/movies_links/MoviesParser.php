@@ -3569,7 +3569,7 @@ class MoviesParser extends MoviesAbstractDB {
                     }
 
                     // Actor              
-                    /*if ($post_first_name) {
+                    if ($post_first_name) {
                         $results[$actor->aid]['firstname']['data'] = $actor->firstname;
                         $results[$actor->aid]['firstname']['match'] = 1;
                         $results[$actor->aid]['firstname']['rating'] = $first_rule['ra'];
@@ -3595,7 +3595,7 @@ class MoviesParser extends MoviesAbstractDB {
                         $results[$actor->aid]['total']['match'] += 1;
                         $results[$actor->aid]['total']['rating'] += $exist_rule['ra'];
                     }
-*/
+
                     // Full name
                     if ($post_full_name) {
 
@@ -3620,7 +3620,7 @@ class MoviesParser extends MoviesAbstractDB {
                             $results[$actor->aid]['total']['match'] += 1;
                             $results[$actor->aid]['total']['rating'] += $full_rule['ra'];
                         }
-                        /*if ($post_burn_name) {
+                        if ($post_burn_name) {
                             if ($actor->birth_name == $post_burn_name) {
                                 $results[$actor->aid]['burnname']['data'] = $actor->birth_name;
                                 $results[$actor->aid]['burnname']['match'] = 1;
@@ -3641,7 +3641,7 @@ class MoviesParser extends MoviesAbstractDB {
                                 $results[$actor->aid]['total']['match'] += 1;
                                 $results[$actor->aid]['total']['rating'] += $year_rule['ra'];
                             }
-                        }*/
+                        }
                     }
                 }
             } else {
