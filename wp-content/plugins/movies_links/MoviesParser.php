@@ -3468,6 +3468,7 @@ class MoviesParser extends MoviesAbstractDB {
             $post_full_name = '';
             $full_rule = '';
             if ($active_rules['n']) {
+
                 foreach ($active_rules['n'] as $item) {
                     if ($item['content']) {
                         $post_full_name = $item['content'];
@@ -3524,28 +3525,37 @@ class MoviesParser extends MoviesAbstractDB {
 
             $ma = $this->ml->get_ma();
 
-            $actors=array();           
-
-            if ($post_first_name && $post_last_name) {
-                $actors = $ma->get_actors_normalize_by_name($post_first_name, $post_last_name);
-            } else if ($post_first_name) {
-                $actors = $ma->get_actors_normalize_by_name($post_first_name, '');
-            } else if ($post_last_name) {
-                $actors = $ma->get_actors_normalize_by_name('', $post_last_name);
-            } else if ($post_full_name) {
-                $actors = $ma->get_actors_by_name($post_full_name);
-            }
-            
-            
+            $actors = array();
             if ($url_pid > 0) {
-                /*// TODO Get actor by ID
-                $actor = $ma->get_actor_by_id($url_pid);        
-                if ($actor){
-                    $actors[]=$actor;
-                }*/
+                $actor = $ma->get_actor_by_id($url_pid);
+                if ($actor) {
+                    $actors[] = $actor;
+                }
+            }
+
+            $actors_name = array();
+            if ($post_first_name && $post_last_name) {
+                $actors_name = $ma->get_actors_normalize_by_name($post_first_name, $post_last_name);
+            } else if ($post_first_name) {
+                $actors_name = $ma->get_actors_normalize_by_name($post_first_name, '');
+            } else if ($post_last_name) {
+                $actors_name = $ma->get_actors_normalize_by_name('', $post_last_name);
+            }
+            if ($actors_name) {
+                $actors = array_merge($actors, $actors_name);
+            }
+
+            if ($post_full_name) {
+                $actors = array_merge($actors, $ma->get_actors_by_name($post_full_name));
             }
 
             if ($actors) {
+                $actors_unique = array();
+                foreach ($actors as $actor) {
+                    $actors_unique[$actor->aid] = $actor;
+                }
+                $actors = $actors_unique;
+
                 /*
                  * [id] => 1000 
                  * [aid] => 13335727 
@@ -3553,11 +3563,11 @@ class MoviesParser extends MoviesAbstractDB {
                  * [lastname] => Fehlberg                   
                  */
                 foreach ($actors as $actor) {
-                    if ($results[$actor->aid]){
+                    if ($results[$actor->aid]) {
                         // already exists
                         continue;
-                    } 
-                         
+                    }
+
                     // Actor              
                     if ($post_first_name) {
                         $results[$actor->aid]['firstname']['data'] = $actor->firstname;
@@ -3585,16 +3595,29 @@ class MoviesParser extends MoviesAbstractDB {
                         $results[$actor->aid]['total']['match'] += 1;
                         $results[$actor->aid]['total']['rating'] += $exist_rule['ra'];
                     }
-        
+
                     // Full name
                     if ($post_full_name) {
-                        $results[$actor->aid]['fullname']['data'] = $actor->name;
-                        $results[$actor->aid]['fullname']['match'] = 1;
-                        $results[$actor->aid]['fullname']['rating'] = $full_rule['ra'];
 
-                        $results[$actor->aid]['total']['match'] += 1;
-                        $results[$actor->aid]['total']['rating'] += $full_rule['ra'];
+                        $post_full_name_valid = false;
+                        if ($full_rule['e'] == 'e') {
+                            if ($actor->name == $post_full_name) {
+                                $post_full_name_valid = true;
+                            }
+                        } else if ($full_rule['e'] == 'm') {
+                            if (strstr($actor->name, $post_full_name)) {
+                                $post_full_name_valid = true;
+                            }
+                        }
 
+                        if ($post_full_name_valid) {
+                            $results[$actor->aid]['fullname']['data'] = $actor->name;
+                            $results[$actor->aid]['fullname']['match'] = 1;
+                            $results[$actor->aid]['fullname']['rating'] = $full_rule['ra'];
+
+                            $results[$actor->aid]['total']['match'] += 1;
+                            $results[$actor->aid]['total']['rating'] += $full_rule['ra'];
+                        }
                         if ($post_burn_name) {
                             if ($actor->birth_name == $post_burn_name) {
                                 $results[$actor->aid]['burnname']['data'] = $actor->birth_name;
