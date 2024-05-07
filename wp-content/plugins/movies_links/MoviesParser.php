@@ -3612,8 +3612,7 @@ class MoviesParser extends MoviesAbstractDB {
                         
                         //p_r(array($actor->name,$post_full_name, $post_full_name_valid));
                        
-                        if ($post_full_name_valid) {
-                            $results[$actor->aid]['item']=$actor;
+                        if ($post_full_name_valid) {                            
                             $results[$actor->aid]['fullname']['data'] = $actor->name;
                             $results[$actor->aid]['fullname']['match'] = 1;
                             $results[$actor->aid]['fullname']['rating'] = $full_rule['ra'];
