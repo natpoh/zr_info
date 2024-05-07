@@ -3600,12 +3600,16 @@ class MoviesParser extends MoviesAbstractDB {
                     if ($post_full_name) {
 
                         $post_full_name_valid = false;
+                        $actor_slug = $ma->create_slug($actor->name, ' ');
+                        $name_slug = $ma->create_slug($post_full_name, ' '); 
                         if ($full_rule['e'] == 'e') {
-                            if ($actor->name == $post_full_name) {
+                            
+                                   
+                            if ($actor_slug== $name_slug) {
                                 $post_full_name_valid = true;
                             }
                         } else if ($full_rule['e'] == 'm') {
-                            if (strstr($actor->name, $post_full_name)) {
+                            if (strstr($actor_slug, $name_slug)) {
                                 $post_full_name_valid = true;
                             }
                         }
