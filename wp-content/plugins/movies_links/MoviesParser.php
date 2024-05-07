@@ -3531,22 +3531,22 @@ class MoviesParser extends MoviesAbstractDB {
                 if ($actor) {
                     $actors[] = $actor;
                 }
-            }
+            } else {
+                $actors_name = array();
+                if ($post_first_name && $post_last_name) {
+                    $actors_name = $ma->get_actors_normalize_by_name($post_first_name, $post_last_name);
+                } else if ($post_first_name) {
+                    $actors_name = $ma->get_actors_normalize_by_name($post_first_name, '');
+                } else if ($post_last_name) {
+                    $actors_name = $ma->get_actors_normalize_by_name('', $post_last_name);
+                }
+                if ($actors_name) {
+                    $actors = array_merge($actors, $actors_name);
+                }
 
-            $actors_name = array();
-            if ($post_first_name && $post_last_name) {
-                $actors_name = $ma->get_actors_normalize_by_name($post_first_name, $post_last_name);
-            } else if ($post_first_name) {
-                $actors_name = $ma->get_actors_normalize_by_name($post_first_name, '');
-            } else if ($post_last_name) {
-                $actors_name = $ma->get_actors_normalize_by_name('', $post_last_name);
-            }
-            if ($actors_name) {
-                $actors = array_merge($actors, $actors_name);
-            }
-
-            if ($post_full_name) {
-                $actors = array_merge($actors, $ma->get_actors_by_name($post_full_name));
+                if ($post_full_name) {
+                    $actors = array_merge($actors, $ma->get_actors_by_name($post_full_name));
+                }
             }
 
             if ($actors) {
@@ -3609,10 +3609,10 @@ class MoviesParser extends MoviesAbstractDB {
                                 $post_full_name_valid = true;
                             }
                         }
-                        
+
                         //p_r(array($actor->name,$post_full_name, $post_full_name_valid));
-                       
-                        if ($post_full_name_valid) {                            
+
+                        if ($post_full_name_valid) {
                             $results[$actor->aid]['fullname']['data'] = $actor->name;
                             $results[$actor->aid]['fullname']['match'] = 1;
                             $results[$actor->aid]['fullname']['rating'] = $full_rule['ra'];
@@ -3648,8 +3648,8 @@ class MoviesParser extends MoviesAbstractDB {
                 return array();
             }
         }
-        
-        p_r($results);
+
+        //p_r($results);
 
         $max_rating = 0;
         $max_rating_id = 0;
