@@ -1439,7 +1439,7 @@ function intconvert($data)
     return INTCONVERT::str_to_int($data);
 
 }
-function check_verdict_surname()
+function check_verdict_surname($commit_actors=[])
 {
     $i = 0;
 
@@ -1460,15 +1460,12 @@ function check_verdict_surname()
             Pdo_an::db_query($sql);
 
 
-            $sql1 = "UPDATE `data_actors_meta` SET
-                   
-                              `n_surname` = '" . intconvert($meta_result) . "',
+            $sql1 = "UPDATE `data_actors_meta` SET  `n_surname` = '" . intconvert($meta_result) . "',
               `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['aid'] . "'";
             Pdo_an::db_query($sql1);
 
 
-            update_actors_verdict($r['aid'],1);
-
+            $commit_actors[$r['aid']]=1;
 
 
             !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
@@ -1481,7 +1478,7 @@ function check_verdict_surname()
 
     }
 
-return $i;
+return [$i,$commit_actors];
 }
 
 
@@ -1728,7 +1725,7 @@ function check_last_actors($aid ='')
 
 
 
-    $i = check_verdict_surname();
+    [$i,$commit_actors] = check_verdict_surname($commit_actors);
 
 
     if ($debug)
@@ -1740,6 +1737,7 @@ function check_last_actors($aid ='')
     }
     if (check_cron_time())
     {
+        commit_actors($commit_actors);
         return;
     }
 
