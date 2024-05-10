@@ -1,6 +1,6 @@
 <?php get_header(); ?>
 <?php
-
+wp_enqueue_style('movie_single', get_template_directory_uri() . '/css/movie_single.css', array(), LASTVERSION);
 wp_enqueue_style('colums_template', get_template_directory_uri() . '/css/colums_template.css', array(), LASTVERSION);
 wp_enqueue_script('section_home', get_template_directory_uri() . '/js/section_home.js', array('jquery'), LASTVERSION);
 
@@ -12,15 +12,14 @@ if (!class_exists('UserCp')) {
 $usercp = new UserCp($curauth);
 $userCpData = $usercp->user_data;
 
-//Активные виджеты
+
 $widgets = $usercp->widgets;
 
-//Проверяем страницу, виджет ли это или главная
-//Может быть только два типа страниц: главная страница профиля и страница виджета
+
 $widget_page = $usercp->is_widget_page();
 
 
-//Если страницы нет, отправляем пользователя на 404
+
 if ($widget_page) {
     $can_show = $usercp->can_show_page($widget_page);
     if (!$can_show) {
@@ -31,25 +30,57 @@ if ($widget_page) {
         exit();
     }
 }
+global $current_page;
+$current_page = get_query_var('usercp');
 ?>
 <div id="primary" class="content-full">
     <main id="main" class="site-main" role="main">
-        <article class="main<?php if ($widget_page) print ' user-page' ?>">
+        <article class="author main<?php if ($widget_page) print ' user-page' ?>">
             <?php if (function_exists('breadcrumbs')) { ?>
                 <div class="breadcrumbs"> 
                     <?php breadcrumbs(); ?>
                 </div>
                 <?php
             }
-            $usercp->render_top_widgets();
-            //Страница виджета
-            if (!$widget_page) {
-                //Главная страница                            
-                $usercp->render_widgets();
-            }
+
+
+                $usercp->render_top_widgets();
+                //Страница виджета
+
+
+
+
+
             ?>   
         </article>
         <?php
+
+        global $cfront;
+        $author = $cfront->cm->get_author_by_wp_uid($curauth->ID, true);
+
+        $data = $usercp->get_menu();
+
+
+
+        if ($current_page != 'settings') {
+?>
+
+        <nav>
+            <?php echo $data ?>
+        </nav>
+
+        <?php
+
+        }
+
+        if (!$widget_page) {
+
+         $usercp->render_widgets();
+        }
+
+
+
+
         if ($widget_page) {
             $page = new UserCpPage($widget_page, $usercp->user_data);
             $page->show();

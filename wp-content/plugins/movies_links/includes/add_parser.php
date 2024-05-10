@@ -30,6 +30,20 @@
                 <span class="inline-edit"><?php print __('Type of the Campaign') ?></span>                    
             </label>
 
+            <label>
+                <span class="title"><?php print __('Mode') ?></span>
+                <select id="add-campaing-mode" name="parsing_mode" class="parsing_mode">                    
+                    <?php
+                    foreach ($this->parser_mode as $key => $name) {
+                        ?>
+                        <option value="<?php print $key ?>"><?php print $name ?></option>                                
+                        <?php
+                    }
+                    ?>                          
+                </select> 
+                <span class="inline-edit"><?php print __('Create posts or links for other campaigns') ?></span>                    
+            </label>
+            
             <label class="inline-edit-active">                               
                 <input type="checkbox" name="status" value="1">
                 <span class="checkbox-title"><?php print __('Active') ?></span>

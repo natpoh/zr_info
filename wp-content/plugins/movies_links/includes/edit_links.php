@@ -10,8 +10,8 @@ print $tabs;
 
 if ($cid) {
     $options = $this->mp->get_options($campaign);
-    if ($campaign->type == 2) {
-        ?><p>No links aviable for this campaing type.</p><?php
+    if ($campaign->parsing_mode == 1) {
+        ?><p>No links aviable for this campaing mode.</p><?php
         return;
     }
     $o = $options['links'];

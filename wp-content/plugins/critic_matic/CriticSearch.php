@@ -478,8 +478,8 @@ class CriticSearch extends AbstractDB {
                 // Ratings
                 'reviewwoketitle' => array('title' => 'Review Sites<span data-value="tooltip_zr_woke_search" class="nte_info"></span>', 'is_title' => 1, 'group' => 'woke', 'tabs' => array('movies', 'international', 'ethnicity'), 'sort_w' => 40,),
                 'bechdeltest' => array('title' => 'BechdelTest', 'facet' => 'select', 'eid' => 'ebechdeltest', 'titlesm' => 'BechdelTest', 'max_count' => 5, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'sorted' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'sort_w' => 40, 'max' => 1,),
-                'rcherry' => array('title' => 'CherryPicks',  'icon' => 'CherryPicks',  'facet' => 'rating', 'eid' => 'echerry', 'titlesm' => 'CherryPicks', 'max_count' => 100, 'multipler' => 1, 'group' => 'woke', 'sorted' => 1, 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1, 'sort_w' => 40,),
-                'rmedia' => array('title' => 'MediaVersity', 'icon' => 'MediaVersity',   'facet' => 'rating', 'eid' => 'emedia', 'titlesm' => 'MediaVersity', 'max_count' => 50, 'multipler' => 10, 'group' => 'woke', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1, 'sort_w' => 40,),
+                'rcherry' => array('title' => 'CherryPicks', 'icon' => 'CherryPicks', 'facet' => 'rating', 'eid' => 'echerry', 'titlesm' => 'CherryPicks', 'max_count' => 100, 'multipler' => 1, 'group' => 'woke', 'sorted' => 1, 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1, 'sort_w' => 40,),
+                'rmedia' => array('title' => 'MediaVersity', 'icon' => 'MediaVersity', 'facet' => 'rating', 'eid' => 'emedia', 'titlesm' => 'MediaVersity', 'max_count' => 50, 'multipler' => 10, 'group' => 'woke', 'sorted' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1, 'sort_w' => 40,),
                 'mediaversity' => array('title' => 'MediaVersity A-F', 'eid' => 'emedia', 'facet' => 'select', 'titlesm' => 'MediaVersity', 'max_count' => 20, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'sort_w' => 40,),
                 'worthit' => array('title' => 'WorthItOrWoke', 'eid' => 'eworthit', 'facet' => 'select', 'titlesm' => 'WorthIt', 'max_count' => 5, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'sorted' => 1, 'minus' => 1, 'tabs' => array('movies', 'international', 'ethnicity'), 'sort_w' => 40,),
                 // Audience  
@@ -2700,15 +2700,15 @@ class CriticSearch extends AbstractDB {
             $ret = $this->movie_results($sql, $match, $search_query);
 
             /*
-            print_r($filters_and);
-            print_r(array($match, $search_query));
-            print_r($sql);
-            print_r($ret);
+              print_r($filters_and);
+              print_r(array($match, $search_query));
+              print_r($sql);
+              print_r($ret);
 
-            $meta = $this->sps->query("SHOW META")->fetchAll();
-            print_r($meta);
-            exit;
-*/
+              $meta = $this->sps->query("SHOW META")->fetchAll();
+              print_r($meta);
+              exit;
+             */
 
             gmi('main sql');
             // Simple result
@@ -2763,7 +2763,7 @@ class CriticSearch extends AbstractDB {
         if ($show_main) {
 
             //Sort logic
-            $order = $this->get_order_query($sort,$filters);
+            $order = $this->get_order_query($sort, $filters);
 
             // Filters logic            
             $filters_and = $this->get_filters_query($filters, array(), $query_type);
@@ -2979,6 +2979,72 @@ class CriticSearch extends AbstractDB {
         if (!$show_meta) {
             return $ret['list'];
         }
+
+        return $ret;
+    }
+
+    public function front_search_actors_list($keyword = '', $limit = 20, $start = 0, $group_field = 'actor_star', $filters = array(), $widlcard = true, $fields = array()) {
+
+        $m_mkw = '';
+        if ($filters['mkw']) {
+            $mkw = $filters['mkw'];
+            if (is_array($mkw)) {
+                $mkw = implode('|', $mkw);
+            }
+            $m_mkw = " @(mkw_str) (" . $mkw . ")";
+        }
+
+        if (!isset($filters['type'])) {
+            $filters['type'] = array('movies', 'tv');
+        }
+
+        //Keywords logic
+        $match = '';
+        if ($keyword) {
+            $search_keywords = $this->wildcards_maybe_query($keyword, $widlcard, ' ');
+            $search_query = sprintf("'@(title,year) ((^%s$)|(%s))" . $m_mkw . "'", $keyword, $search_keywords);
+            $match = " AND MATCH(:match)";
+        } else {
+            if ($m_mkw) {
+                $search_query = "'" . $m_mkw . "'";
+                $match = " AND MATCH(:match)";
+            }
+        }
+
+        $this->connect();
+
+
+        // Main logic
+        // Filters logic
+        $filters_and = $this->get_filters_query($filters);
+
+        // Custom fields
+        $custom_fields = '';
+        if ($fields) {
+            $custom_fields = ', ' . implode(', ', $fields) . ' ';
+        }
+
+        $max_option = '';
+        $stlimit = $start+$limit;
+        if ($stlimit > 1000) {
+            $max_option = ' OPTION max_matches=' . $stlimit;
+        }
+        // Main sql
+        $sql = "SELECT GROUPBY() as aid, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $this->filter_actor_and . $match
+                . " GROUP BY " . $group_field . " ORDER BY cnt DESC, aid DESC LIMIT {$start}, {$limit}" . $max_option;
+
+        $ret = $this->movie_results($sql, $match, $search_query);
+/*
+        print_r($filters_and);
+        print_r(array($match, $search_query));
+        print_r($sql);
+        print_r($ret);
+
+        $meta = $this->sps->query("SHOW META")->fetchAll();
+        print_r($meta);
+        exit;
+*/
+  
 
         return $ret;
     }
@@ -3710,7 +3776,7 @@ class CriticSearch extends AbstractDB {
         return array('order' => $order, 'select' => $select);
     }
 
-    public function get_order_query($sort = array(), $filters=array()) {
+    public function get_order_query($sort = array(), $filters = array()) {
         //Sort logic
         $order = '';
         $select = '';
@@ -3768,19 +3834,17 @@ class CriticSearch extends AbstractDB {
             } else if ($sort_key == 'rel') {
                 $order = ' ORDER BY w ' . $sort_type;
             } else if ($sort_key == 'cast') {
-                
-                if (isset($filters['actor'])){
-                    if (is_array($filters['actor'])){
+
+                if (isset($filters['actor'])) {
+                    if (is_array($filters['actor'])) {
                         $actor_id = (int) $filters['actor'][0];
                     } else {
                         $actor_id = (int) $filters['actor'];
                     }
-                    $select = ', IF(IN(actor_star, '.$actor_id.'),3,IF(IN(actor_main, '.$actor_id.'),2,1)) AS cast_score';
-                    
-                    $order = ' ORDER BY cast_score ' . $sort_type.', rrwt DESC, year_int DESC'; 
+                    $select = ', IF(IN(actor_star, ' . $actor_id . '),3,IF(IN(actor_main, ' . $actor_id . '),2,1)) AS cast_score';
+
+                    $order = ' ORDER BY cast_score ' . $sort_type . ', rrwt DESC, year_int DESC';
                 }
-                
-                
             } else if ($sort_key == 'id') {
                 $order = ' ORDER BY id ' . $sort_type;
             } else if ($sort_key == 'rating') {
@@ -4073,7 +4137,7 @@ class CriticSearch extends AbstractDB {
                             $filters_and .= " AND id IN(" . implode(',', $ids) . ")";
                         }
                     }
-                }                
+                }
 
                 // All
                 if (isset($this->facet_data['findata']['childs'][$key])) {
@@ -4083,7 +4147,7 @@ class CriticSearch extends AbstractDB {
                     $to = ((int) $data_arr[1]) * 1000;
                     $budget_min = $this->budget_min * 1000;
                     $budget_max = $this->budget_max * 1000;
-              
+
                     if ($from == $to) {
                         if ($from == $budget_min) {
                             $filters_and .= sprintf(" AND {$key} > 0 AND {$key}<=%d", $from);
@@ -4247,7 +4311,7 @@ class CriticSearch extends AbstractDB {
                 } else if ($key == 'distributor' || $key == 'production') {
                     // Distributor
                     $filters_and .= $this->filter_multi_value($key, $value, true, $minus);
-                }  else {
+                } else {
 
                     $curr_parent = $this->get_last_parent($key);
 

@@ -1,6 +1,9 @@
 <?php
 error_reporting(E_ERROR );
 ini_set('memory_limit', '4096M');
+
+
+
 include  ABSPATH.'an_config.php';
 
 if (!defined('ABSPATH'))
@@ -678,5 +681,6 @@ AND table_schema='".DB_NAME_AN."'";
 }
 else
 {
-    echo 'pd';
+    echo 'ok';
+    return;
 }

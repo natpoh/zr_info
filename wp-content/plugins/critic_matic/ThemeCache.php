@@ -156,6 +156,12 @@ class ThemeCache {
             closedir($d);
         }
     }
+    
+    static function clearCacheAllTypes($echo = true, $wait_def = 86400){
+        foreach (self::$path as $folder=>$data){
+            self::clearCache($folder);
+        }
+    }
 
     static function clearCache($path_tag = '', $echo = true, $wait_def = 86400) {
         $output = '';

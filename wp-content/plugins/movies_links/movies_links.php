@@ -70,7 +70,10 @@ function movies_links_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
 
-    movies_links_create_index(array('date', 'status', 'type'), 'movies_links_campaign');
+    $sql = "ALTER TABLE `movies_links_campaign` ADD `parsing_mode` int(11) NOT NULL DEFAULT '0'";
+    Pdo_ml::db_query($sql);
+    
+    movies_links_create_index(array('date', 'status', 'type', 'parsing_mode'), 'movies_links_campaign');
 
     //Critic parser log
     $sql = "CREATE TABLE IF NOT EXISTS  `movies_links_log`(

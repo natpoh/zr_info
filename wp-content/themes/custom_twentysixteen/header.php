@@ -127,8 +127,11 @@
                         <li class="divider uname"></li>
                         <?php if ($uid) : ?>
                             <li class="sep"><a href="<?php echo get_author_posts_url($wpUser->ID, $wpUser->user_nicename) ?>" title="Public profile">Profile</a></li>
+                            <li class="sep"><a href="<?php echo get_author_posts_url($wpUser->ID, $wpUser->user_nicename) ?>settings/" title="Public profile">Settings</a></li>
+
+
                             <?php if (user_can($wpUser, 'administrator')){ ?>
-                                <li class="sep"><a href="/wp-admin/profile.php"  title="Account settings">Settings</a></li>
+                                <li class="sep"><a href="/wp-admin/profile.php"  title="Account settings">WP Settings</a></li>
                                 <li class="sep"><a href="/wp-admin/"  title="Dashboard">Dashboard</a></li>
                             <?php } ?>
                             <li><a href="<?php

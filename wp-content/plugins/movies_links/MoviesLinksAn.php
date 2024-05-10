@@ -37,6 +37,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             'tmdb' => 'data_movie_tmdb',
             'language_code' => 'data_language_code',
             'meta_movie_boxint' => 'meta_movie_boxint',
+            'meta_actor_weight' => 'meta_actor_weight',
         );
     }
 
@@ -95,6 +96,18 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         return $ret;
     }
 
+    public function get_actors_ids_by_min_weight($min_weight = 0) {
+        $ret = array();
+        $sql = sprintf("SELECT aid FROM {$this->db['meta_actor_weight']} WHERE total_weight>%d ORDER BY total_weight DESC", $min_weight);
+        $result = $this->db_results($sql);
+        if ($result) {
+            foreach ($result as $value) {
+                $ret[] = $value->aid;
+            }
+        }
+        return $ret;
+    }
+
     private function validate_keys($get_keys) {
         $valid_keys = array();
         if ($get_keys && sizeof($get_keys)) {
@@ -142,6 +155,22 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
 
     /* Actors */
 
+    public function get_actor_by_id($id = 0) {
+        $sql = sprintf("SELECT i.id, i.id as aid, i.name, i.birth_name, i.burn_date, n.firstname, n.lastname, CONCAT('nm', LPAD(i.id, 7, '0')) AS imdb "
+                . "FROM {$this->db['actors_imdb']} i"
+                . " LEFT JOIN {$this->db['actors_normalize']} n ON i.id = n.aid WHERE i.id=%d", $id);
+        $results = $this->db_fetch_row($sql);
+        return $results;
+    }
+
+    public function get_actors_by_weight($count = 100, $last_id = 0) {
+        $sql = sprintf("SELECT m.id, m.aid, a.firstname, a.lastname, CONCAT('nm', LPAD(m.aid, 7, '0')) AS imdb "
+                . "FROM {$this->db['meta_actor_weight']} m LEFT JOIN {$this->db['actors_normalize']} a ON m.aid=a.aid "
+                . "WHERE m.id > %d AND m.total_weight>0 ORDER BY m.id ASC limit %d", (int) $last_id, (int) $count);
+        $results = $this->db_results($sql);
+        return $results;
+    }
+
     public function get_actors($actor_type = 'a', $count = 100, $last_id = 0) {
         /*
           $actor_type
@@ -176,7 +205,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             $and_last_id = sprintf(" a.id > %d", (int) $last_id);
         }
 
-        $sql = sprintf("SELECT a.id, a.aid, a.firstname, a.lastname FROM {$this->db['actors_normalize']} a" . $actor_inner . " WHERE " . $and_last_id . $actor_and . " ORDER BY a.id ASC limit %d", (int) $count);
+        $sql = sprintf("SELECT a.id, a.aid, a.firstname, a.lastname, CONCAT('nm', LPAD(a.aid, 7, '0')) AS imdb FROM {$this->db['actors_normalize']} a" . $actor_inner . " WHERE " . $and_last_id . $actor_and . " ORDER BY a.id ASC limit %d", (int) $count);
 
         $results = $this->db_results($sql);
         return $results;
@@ -861,7 +890,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             }
         }
         if ($debug) {
-            print_r(array($result,$id_ob, array($cid, $mid, $total_mojo), $data));
+            print_r(array($result, $id_ob, array($cid, $mid, $total_mojo), $data));
         }
         return $id;
     }

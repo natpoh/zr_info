@@ -41,7 +41,6 @@ require_once( CRITIC_MATIC_PLUGIN_DIR . 'SearchFacets.php' );
 require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticFront.php' );
 !class_exists('CustomHooks') ? include ABSPATH . "wp-content/plugins/critic_matic/CustomHooks.php" : '';
 
-
 add_action('init', 'critic_matic_init');
 
 function critic_matic_init() {
@@ -57,7 +56,6 @@ function critic_matic_init() {
 
         require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticMaticAdmin.php' );
         $cma = new CriticMaticAdmin($cm, $cs);
-
 
         if (isset($_GET['cm_add_counter']) && $_GET['cm_add_counter'] == 1) {
             $cm->add_sphinx_counter();
@@ -269,7 +267,6 @@ function critic_matic_plugin_activation() {
     dbDelta($sql);
     critic_matic_create_index(array('uid'), $table_prefix . "carma");
 
-
     $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "carma_trend`(
 				`id` int(11) unsigned NOT NULL auto_increment,
 				`uid` int(11) NOT NULL DEFAULT '0',					
@@ -280,7 +277,6 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8_general_ci;";
     dbDelta($sql);
     critic_matic_create_index(array('uid', 'date_added'), $table_prefix . "carma_trend");
-
 
     /*
      * Carma log
@@ -312,9 +308,6 @@ function critic_matic_plugin_activation() {
 
     critic_matic_create_index(array('uid', 'date_added', 'type', 'post_type', 'dst_uid', 'dst_ip', 'post_id'), $table_prefix . "carma_log");
 
-
-
-
     /* User Names */
 
     $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "user_names`(
@@ -327,7 +320,6 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8_general_ci;";
     dbDelta($sql);
     critic_matic_create_index(array('uid', 'name_hash'), $table_prefix . "user_names");
-
 
     /*
      * Indexes: 
@@ -439,7 +431,6 @@ function critic_matic_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
-
 
     // Add status
     $sql = "ALTER TABLE `" . $table_prefix . "critic_transcritpions` ADD `status` int(11) NOT NULL DEFAULT '0'";
@@ -564,7 +555,6 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
 
-
     $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_authors` ADD `avatar` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
     $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_authors` ADD `avatar_name` varchar(255) NOT NULL default ''";
@@ -575,7 +565,6 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_authors` ADD `date_add` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-
 
     critic_matic_create_index_an(array('status', 'type', 'name', 'wp_uid', 'show_type', 'avatar', 'avatar_type', 'date_add', 'last_upd'), $table_prefix . "critic_matic_authors");
 
@@ -588,7 +577,6 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('aid', 'cid'), $table_prefix . "critic_matic_authors_meta");
-
 
     // Tumbs
     $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_matic_thumbs`(
@@ -776,7 +764,6 @@ function critic_matic_plugin_activation() {
 
     critic_matic_create_index_an(array('date', 'pid', 'aid', 'vote', 'wp_uid', 'type'), $table_prefix . "critic_emotions");
 
-
     $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_emotions_authors`(
 				`id` int(11) unsigned NOT NULL auto_increment, 
                                 `name` varchar(255) NOT NULL default '',	
@@ -798,7 +785,6 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('aid', 'name'), $table_prefix . "meta_critic_author_key");
-
 
     // Add rating to meta
     //$sql = "ALTER TABLE `" . $table_prefix . "critic_matic_meta` ADD `rating` int(11) NOT NULL DEFAULT '0'";
@@ -958,7 +944,6 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('mid', 'aid', 'pos', 'type'), "meta_movie_director");
 
-
     // Country 
     $sql = "CREATE TABLE IF NOT EXISTS  `data_movie_country`(
 				`id` int(11) unsigned NOT NULL auto_increment,
@@ -982,7 +967,6 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('mid', 'cid'), "meta_movie_country");
-
 
     // Actor gender. Local data
     // gender: 1 - male, 2 -female.
@@ -1073,7 +1057,6 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('mid', 'oldslug', 'newslug'), "data_movie_title_slugs");
 
-
     /*
      * Analytics verdict user mode
      */
@@ -1100,13 +1083,13 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     $sql = "ALTER TABLE `data_movie_imdb` ADD `title_weight_upd` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
     // Language
     $sql = "ALTER TABLE `data_movie_imdb` ADD `original_language_int` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
     $sql = "ALTER TABLE `data_movie_imdb` ADD `original_language` varchar(255) NOT NULL default ''";
     Pdo_an::db_query($sql);
-    
+
     critic_matic_create_index_an(array('weight', 'weight_upd', 'title_weight', 'title_weight_upd'), "data_movie_imdb");
 
     // User avatars
@@ -1130,7 +1113,6 @@ function critic_matic_plugin_activation() {
     $sql = "ALTER TABLE `data_user_avatars` ADD `tomato` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('tomato'), "data_user_avatars");
-
 
     // Critic crowd Logs
     $sql = "CREATE TABLE IF NOT EXISTS  `critic_crowd_log`(
@@ -1190,7 +1172,6 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'mid'), "cache_nf_keywords");
 
-
     /*
      * Word weight
      */
@@ -1244,7 +1225,6 @@ function critic_matic_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
 
-
     // metacritic
     $sql = "ALTER TABLE `data_movie_erating` ADD `metacritic_rating` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
@@ -1270,7 +1250,6 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     $sql = "ALTER TABLE `data_movie_erating` ADD `moviemeter_date` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-
 
     // Audience rating
     $sql = "ALTER TABLE `data_movie_erating` ADD `audience_rating` int(11) NOT NULL DEFAULT '0' AFTER last_upd";
@@ -1306,7 +1285,6 @@ function critic_matic_plugin_activation() {
     $sql = "ALTER TABLE `data_movie_erating` ADD `audience_patriotism` float(5) NOT NULL DEFAULT '0' AFTER last_upd";
     Pdo_an::db_query($sql);
 
-
     // mediaversity
     $sql = "ALTER TABLE `data_movie_erating` ADD `mediaversity_rating` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
@@ -1320,7 +1298,6 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     $sql = "ALTER TABLE `data_movie_erating` ADD `thecherrypicks_date` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-
 
     // ofdb
     $sql = "ALTER TABLE `data_movie_erating` ADD `ofdb_rating` int(11) NOT NULL DEFAULT '0'";
@@ -1337,7 +1314,6 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     $sql = "ALTER TABLE `data_movie_erating` ADD `opencritic_date` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('movie_id', 'date', 'last_upd', 'total_rating'), "data_movie_erating");
@@ -1356,7 +1332,6 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
 
-
     $sql = "ALTER TABLE `data_movie_distributors` ADD `type` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
 
@@ -1364,7 +1339,6 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
 
     critic_matic_create_index_an(array('date', 'mid', 'name', 'type', 'parent'), "data_movie_distributors");
-
 
     $sql = "CREATE TABLE IF NOT EXISTS  `meta_movie_distributors`(
 				`id` int(11) unsigned NOT NULL auto_increment,
@@ -1379,7 +1353,6 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
 
     critic_matic_create_index_an(array('mid', 'did', 'type'), "meta_movie_distributors");
-
 
     /* Franchise
      * mid - movie id
@@ -1442,7 +1415,7 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('actor_id', 'result'), "data_actors_country");
 
-    /* 
+    /*
      * Data tmdb
      * movie_id - movie id
      * date - add time
@@ -1459,7 +1432,7 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('mid', 'last_update'), "data_movie_tmdb");
-    
+
     $sql = "CREATE TABLE IF NOT EXISTS  `data_language_code`(
 				`id` int(11) unsigned NOT NULL auto_increment,                                
                                 `code` varchar(255) NOT NULL default '',
@@ -1469,7 +1442,7 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('code'), "data_language_code");
-    
+
     /*
      * Site images     
      */
@@ -1488,7 +1461,6 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('mid', 'mlcid', 'date', 'views', 'expired', 'link_hash'), "data_site_img");
 
-
     /*
      * Clear comments
      */
@@ -1505,7 +1477,6 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('type', 'date'), "log_clear_comments");
-
 
     /*
      * User filters
@@ -1542,7 +1513,7 @@ function critic_matic_plugin_activation() {
     // Filter images
     $sql = "ALTER TABLE `data_user_filters` ADD `img` varchar(255) NOT NULL default ''";
     Pdo_an::db_query($sql);
-    
+
     /*
      * Ethic img
      */
@@ -1658,7 +1629,7 @@ function critic_matic_plugin_activation() {
      * p - percent
      */
 
-    $rcount = array('e' => 'exist', 'n' => 'num','p' => 'percent');
+    $rcount = array('e' => 'exist', 'n' => 'num', 'p' => 'percent');
     $rtab = array('a' => 'all', 's' => 'star', 'm' => 'main');
     $rgender = array('a' => 'all', 'm' => 'male', 'f' => 'female');
     $race = array(
@@ -1717,8 +1688,7 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('id', 'last_upd', 'mid'), "cache_movie_director_meta");
-    
-    
+
     /*
      * Watch list
      */
@@ -1738,7 +1708,7 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
-    
+
     /*
      * Type:
      * 0 - user list
@@ -1747,9 +1717,9 @@ function critic_matic_plugin_activation() {
      */
     $sql = "ALTER TABLE `watch_list` ADD `type` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
-    critic_matic_create_index_an(array('date', 'uid', 'share','type'), "watch_list");
-    
+
+    critic_matic_create_index_an(array('date', 'uid', 'share', 'type'), "watch_list");
+
     /*
      * lid - list id
      * mid - movie id
@@ -1765,14 +1735,32 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'lid', 'mid'), "watch_item");
-    
-    
+
     /*
      * Critic crowd last update
      */
     $sql = "ALTER TABLE `data_critic_crowd` ADD `last_update` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
+
+    /*
+     * Actor weight
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `meta_actor_weight`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `aid` int(11) NOT NULL DEFAULT '0',
+                                `star_weight` int(11) NOT NULL DEFAULT '0',
+                                `star_date` int(11) NOT NULL DEFAULT '0',
+                                `star_ver` int(11) NOT NULL DEFAULT '0',
+                                `main_weight` int(11) NOT NULL DEFAULT '0',
+                                `main_date` int(11) NOT NULL DEFAULT '0',
+                                `main_ver` int(11) NOT NULL DEFAULT '0',
+                                `crowd_weight` int(11) NOT NULL DEFAULT '0',
+                                `total_weight` int(11) NOT NULL DEFAULT '0',                                
+				PRIMARY KEY  (`id`)
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('aid', 'star_date', 'main_date', 'crowd_weight','star_ver', 'main_ver'), "meta_actor_weight");
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {

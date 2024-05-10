@@ -228,6 +228,8 @@ if (strstr($id, '_v')) {
 }
 
 if (strstr($id, '_o')) {
+
+    $img_type =  substr($id,  strpos($id, '_o')+2);
     $id = substr($id, 0, strpos($id, '_o'));
 
     $originalimg = 1;
@@ -241,9 +243,11 @@ $imgsource = ABSPATH.'analysis/img_final_tmdb/' . $number . '.jpg';
 if (!file_exists($imgsource)) {
     $imgsource = ABSPATH.'analysis/img_final/' . $number . '.jpg';
 }
-if (!file_exists($imgsource)) {
+if (!file_exists($imgsource) || $img_type==3) {
     $imgsource = ABSPATH.'analysis/img_final_crowd/' . $number . '.jpg';
 }
+
+
 if (!file_exists($imgsource)) {
     ///check from db
     $q = "SELECT `image_url` FROM `data_actors_imdb` WHERE `id`=" . $id;
@@ -260,14 +264,10 @@ if (!file_exists($imgsource)) {
 
 if ($originalimg == 1) {
 
-    if (!file_exists($imgsource)) {
-
-        $sql = "SELECT * FROM `data_actors_meta` where actor_id =" . $id . " ";
+        $sql = "SELECT * FROM `data_actors_meta` where actor_id =" . $id . " limit 1";
         $row = Pdo_an::db_results_array($sql);
 
-
         foreach ($row as $r) {
-
             if ($r['gender'])
                 $gender = $r['gender'];
 
@@ -277,15 +277,13 @@ if ($originalimg == 1) {
                 $img = 'empty_f.jpg';
             }
         }
-
         if (!$gender) {
             $img = 'empty.jpg';
         }
-  
 
+    if (!file_exists($imgsource) || $r['private'] > 0  || $img_type==4 ) {
         $imgsource = ABSPATH.'analysis/images/' . $img;        
     }
-   
 
     $result = file_get_contents($imgsource);
     echo $result;

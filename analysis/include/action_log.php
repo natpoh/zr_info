@@ -39,7 +39,7 @@ class ACTIONLOG
     }
     else
     {
-        $sql="SELECT COUNT(*) as count FROM `meta_actors_log` where `last_update` >".$time." and `type` = ".$type;
+        $sql="SELECT COUNT(*) as count FROM `meta_actors_log` where `last_update` >".$time." and `type` =  '".$type."' ";
     }
 
 
@@ -52,7 +52,7 @@ class ACTIONLOG
             $sql="SELECT COUNT(*) as count FROM `".$db."` where `$index` >".$timew ;
         }
         else {
-            $sql = "SELECT COUNT(*) as count FROM `meta_actors_log` where `last_update` >" . $timew . " and `type` = " . $type;
+            $sql = "SELECT COUNT(*) as count FROM `meta_actors_log` where `last_update` >" . $timew . " and `type` =  '".$type."' ";
         }
 
         $row = Pdo_an::db_fetch_row($sql);
@@ -65,8 +65,9 @@ class ACTIONLOG
 
 public static function update_actor_log($id,$table='',$aid=0,$action_type=1)
 {
-    $action_id = static::$array[$id];
-    $sql = "INSERT INTO `meta_actors_log`(`id`, `type`, `result`, `table`, `actor_id`, `last_update`) VALUES (NULL,{$action_id},".$action_type.",'".$table."',".$aid.",".time().")";
+    $action_id = $id;
+
+    $sql = "INSERT INTO `meta_actors_log`(`id`, `type`, `result`, `table`, `actor_id`, `last_update`) VALUES (NULL,'{$action_id}',".$action_type.",'".$table."',".$aid.",".time().")";
     Pdo_an::db_query($sql);
 
 }

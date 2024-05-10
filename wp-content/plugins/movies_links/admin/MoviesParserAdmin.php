@@ -33,7 +33,7 @@ class MoviesParserAdmin extends ItemAdmin {
         43200 => 'Mounth',
     );
     public $parsing_type = array(
-        0 => 'Movie weight',
+        0 => 'Weight',
         1 => 'Random',
     );
     public $multi_rule_type = array(
@@ -79,7 +79,10 @@ class MoviesParserAdmin extends ItemAdmin {
     public $parser_types = array(
         0 => 'Movies',
         1 => 'Actors',
-        2 => 'Links',
+    );
+    public $parser_mode = array(
+        0 => 'Posts',
+        1 => 'Links',
     );
     public $paser_actor_fields = array(
         'a' => 'First and Last Names',
@@ -209,6 +212,7 @@ class MoviesParserAdmin extends ItemAdmin {
         'm' => 'Main',
         'e' => 'Extra',
         'd' => 'Directors',
+        'w' => 'Weights actors base',
     );
     public $rwt_actor_link = array(
         'a' => 'All normalized actors',
@@ -374,7 +378,7 @@ class MoviesParserAdmin extends ItemAdmin {
                         //Find URLs
                         $preivew_data = $this->mp->find_urls($campaign, $options, $settings, true);
                     } else if ($_POST['generate_urls']) {
-                        // Generage URLs
+                        // Generage URLs              
                         $preview_gen_data = $this->mp->generate_urls($campaign, $options, $settings, 0, true);
                     }
                 }
@@ -599,36 +603,25 @@ class MoviesParserAdmin extends ItemAdmin {
         $tabs = $this->get_tabs($url, $tabs_arr, $curr_tab);
 
         if (!$curr_tab) {
-            $page_url = $url;
 
             // Bulk actions
             $this->bulk_submit();
 
-            // Author id            
-            // Filter by status
-            $home_status = -1;
-            $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_status;
-            $filter_arr = $this->parser_states();
-            $filters = $this->get_filters($filter_arr, $page_url, $status);
-            if ($status != $home_status) {
-                $page_url = $page_url . '&status=' . $status;
-            }
+            // Filters
+            $filters = array(
+                'status' => $this->camp_state,
+                'type' => $this->parser_types,
+                'parsing_mode' => $this->parser_mode,
+            );
 
-            // Filter by type
-            $home_type = -1;
-            $type = isset($_GET['type']) ? (int) $_GET['type'] : $home_type;
-            $type_arr = $this->parser_types($status);
-            $type_filters = $this->get_filters($type_arr, $page_url, $type, '', 'type');
-            if ($type != $home_type) {
-                $page_url = $page_url . '&type=' . $type;
-            }
-
-            //Pager
-            $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
+            $filters_tabs = $this->get_filters_tabs($this->mp, 'get_parser_query_count', $filters, $url);
+            $query_adb = $filters_tabs['query_adb'];
+            $query = $query_adb->get_query();
+            $page_url = $filters_tabs['p'];
+            $count = $filters_tabs['c'];
 
             $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
-
-            $campaigns = $this->mp->get_campaigns($status, $type, $page, $orderby, $order, $per_page);
+            $campaigns = $this->mp->get_campaigns_query($query, $page, $per_page, $orderby, $order);
 
             include(MOVIES_LINKS_PLUGIN_DIR . 'includes/list_parsers.php');
         } else if ($curr_tab == 'urls') {
@@ -667,7 +660,7 @@ class MoviesParserAdmin extends ItemAdmin {
         }
     }
 
-    public function get_filters_tabs($filters = array(), $p = '', $query_adb = '') {
+    public function get_links_filters_tabs($filters = array(), $p = '', $query_adb = '') {
         if (!$query_adb) {
             $query_adb = new MoviesQueryADB();
         }
@@ -712,37 +705,24 @@ class MoviesParserAdmin extends ItemAdmin {
         $url = $this->mla->admin_page . $this->mla->parrent_slug;
         $parser_url = $this->mla->admin_page . $this->mla->parser_url;
 
-        $page_url = $url;
+        // Filters
+        $filters = array(
+            'status' => $this->camp_state,
+            'type' => $this->parser_types,
+            'parsing_mode' => $this->parser_mode,
+        );
 
-        // Author id            
-        // Filter by status
-        $home_status = -1;
-        $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_status;
-        $filter_arr = $this->parser_states();
-        $filters = $this->get_filters($filter_arr, $page_url, $status);
-        if ($status != $home_status) {
-            $page_url = $page_url . '&status=' . $status;
-        }
-
-        // Filter by type
-        $home_type = -1;
-        $type = isset($_GET['type']) ? (int) $_GET['type'] : $home_type;
-        $type_arr = $this->parser_types($status);
-        $type_filters = $this->get_filters($type_arr, $page_url, $type, '', 'type');
-        if ($type != $home_type) {
-            $page_url = $page_url . '&type=' . $type;
-        }
-
-        //Pager
-        $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
+        $filters_tabs = $this->get_filters_tabs($this->mp, 'get_parser_query_count', $filters, $url);
+        $query_adb = $filters_tabs['query_adb'];
+        $query = $query_adb->get_query();
+        $page_url = $filters_tabs['p'];
+        $count = $filters_tabs['c'];
 
         $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
-
-        $campaigns = $this->mp->get_campaigns($status, $type, $page, $orderby, $order, $per_page);
+        $campaigns = $this->mp->get_campaigns_query($query, $page, $per_page, $orderby, $order);
 
         //Tabs
         $tabs_arr = $this->parser_tabs;
-
         $tabs = $this->get_tabs($parser_url, $tabs_arr, '-');
 
         include(MOVIES_LINKS_PLUGIN_DIR . 'includes/overview.php');
@@ -793,52 +773,11 @@ class MoviesParserAdmin extends ItemAdmin {
             'exp_status' => $this->exp_status,
         );
 
-        $filters_tabs = $this->get_filters_tabs($filters, $page_url, $query_adb);
+        $filters_tabs = $this->get_links_filters_tabs($filters, $page_url, $query_adb);
         $query_adb = $filters_tabs['query_adb'];
         $query = $query_adb->get_query();
         $page_url = $filters_tabs['p'];
         $count = $filters_tabs['c'];
-
-        /*
-          // Filter by status
-          $home_status = -1;
-          $status = isset($_GET['status']) ? (int) $_GET['status'] : $home_status;
-          $filter_arr = $this->get_url_status_count($cid);
-          $filters = $this->get_filters($filter_arr, $page_url, $status, '', 'status');
-          if ($status != $home_status) {
-          $page_url = $page_url . '&status=' . $status;
-          }
-          $count = isset($filter_arr[$status]['count']) ? $filter_arr[$status]['count'] : 0;
-
-          // Filter by arhive
-          $home_arhive_type = -1;
-          $arhive_type = isset($_GET['arhive_type']) ? (int) $_GET['arhive_type'] : $home_arhive_type;
-          $filter_arhive_type_arr = $this->get_post_arhive_types($cid, $status);
-          $filters_arhive_type = $this->get_filters($filter_arhive_type_arr, $page_url, $arhive_type, '', 'arhive_type');
-          if ($arhive_type != $home_arhive_type) {
-          $page_url = $page_url . '&arhive_type=' . $arhive_type;
-          $count = isset($filter_arhive_type_arr[$arhive_type]['count']) ? $filter_arhive_type_arr[$arhive_type]['count'] : 0;
-          }
-
-          // Filter by parser
-          $home_parser_type = -1;
-          $parser_type = isset($_GET['parser_type']) ? (int) $_GET['parser_type'] : $home_parser_type;
-          $filter_parser_type_arr = $this->get_post_parser_types($cid, $status, $arhive_type);
-          $filters_parser_type = $this->get_filters($filter_parser_type_arr, $page_url, $parser_type, '', 'parser_type');
-          if ($parser_type != $home_parser_type) {
-          $page_url = $page_url . '&parser_type=' . $parser_type;
-          $count = isset($filter_parser_type_arr[$parser_type]['count']) ? $filter_parser_type_arr[$parser_type]['count'] : 0;
-          }
-
-          // Filter by links
-          $home_links_type = -1;
-          $links_type = isset($_GET['links_type']) ? (int) $_GET['links_type'] : $home_links_type;
-          $filter_links_type_arr = $this->get_post_links_types($cid, $status, $arhive_type, $parser_type);
-          $filters_links_type = $this->get_filters($filter_links_type_arr, $page_url, $links_type, '', 'links_type');
-          if ($links_type != $home_links_type) {
-          $page_url = $page_url . '&links_type=' . $links_type;
-          $count = isset($filter_links_type_arr[$links_type]['count']) ? $filter_links_type_arr[$links_type]['count'] : 0;
-          } */
 
         $pager = $this->themePager($page, $page_url, $count, $per_page, $orderby, $order);
         $posts = $this->mp->get_urls_query($query, $page, $per_page, $orderby, $order);
@@ -1149,7 +1088,7 @@ class MoviesParserAdmin extends ItemAdmin {
                     }
                 }
             }
-            
+
             $add_result['status'] = isset($form_state['status']) ? $form_state['status'] : 0;
 
             $opt_upd = array();
@@ -1168,6 +1107,7 @@ class MoviesParserAdmin extends ItemAdmin {
 
         $status = isset($form_state['status']) ? $form_state['status'] : 0;
         $type = isset($form_state['type']) ? $form_state['type'] : 0;
+        $parsing_mode = isset($form_state['parsing_mode']) ? $form_state['parsing_mode'] : 0;
 
         $title = $this->mp->escape($form_state['title']);
         $site = $this->mp->escape($form_state['site']);
@@ -1176,7 +1116,7 @@ class MoviesParserAdmin extends ItemAdmin {
 
         if ($id) {
             //EDIT
-            $this->mp->update_campaign($status, $title, $site, $type, $id);
+            $this->mp->update_campaign($status, $title, $site, $type, $parsing_mode, $id);
             $result = $id;
 
             // Generage URLs
@@ -1195,7 +1135,7 @@ class MoviesParserAdmin extends ItemAdmin {
             $this->mp->update_campaign_options($id, $options);
         } else {
             //ADD
-            $result = $this->mp->add_campaing($status, $title, $site, $type);
+            $result = $this->mp->add_campaing($status, $title, $site, $type, $parsing_mode);
         }
         return $result;
     }
@@ -1385,18 +1325,25 @@ class MoviesParserAdmin extends ItemAdmin {
         return $rule_exists;
     }
 
-    public function show_parser_rules($rules = array(), $edit = true, $camp_type = 0, $check = array(), $rules_fields = array(), $parser_rules_type = array()) {
+    public function show_parser_rules($rules = array(), $edit = true, $camp_type = 0, $parsing_mode = 0, $check = array(), $rules_fields = array(), $parser_rules_type = array()) {
         if ($rules || $edit) {
             if (!is_array($rules)) {
                 $rules = array();
             }
 
             if (!$rules_fields) {
+                // Movies
                 $rules_fields = $this->mp->parser_rules_fields;
-                if ($camp_type == 1) {
-                    $rules_fields = $this->mp->parser_rules_actor_fields;
-                } else if ($camp_type == 2) {
+                if ($parsing_mode == 1) {
                     $rules_fields = $this->mp->parser_urls_rules_fields;
+                }
+                if ($camp_type == 1) {
+                    // Actors
+                    $rules_fields = $this->mp->parser_rules_actor_fields;
+                    if ($parsing_mode == 1) {
+                        // TODO REFACTOR
+                        $rules_fields = $this->mp->parser_urls_rules_actor_fields;
+                    }
                 }
             }
 
@@ -1613,7 +1560,7 @@ class MoviesParserAdmin extends ItemAdmin {
         $preivew_data = array();
 
         if ($parsing_data) {
-            $preivew_data = $this->mp->find_url_posts_links($parsing_data, $o);
+            $preivew_data = $this->mp->find_url_posts_links($parsing_data, $o, $campaign->type);
         } else {
             return -1;
         }
@@ -1621,7 +1568,7 @@ class MoviesParserAdmin extends ItemAdmin {
         return $preivew_data;
     }
 
-    public function preview_links_urls($preivew_data) {
+    public function preview_links_urls($preivew_data, $campaign_type = 0) {
 
         if ($preivew_data == -1) {
             print '<p>No posts found</p>';
@@ -1662,11 +1609,18 @@ class MoviesParserAdmin extends ItemAdmin {
                     <?php
                     foreach ($preivew_data as $uid => $items) {
                         $url = $this->mp->get_url($uid);
-
-                        $m = $ma->get_movie_by_id($url->pid);
-                        $movie_title = $m->title . ' [' . $m->year . ']';
+                        $movie_title = $uid;
+                        if ($url->pid) {
+                            if ($campaign_type == 1) {
+                                $m = $ma->get_actor_by_id($url->pid);
+                                $movie_title = $m->firstname . ' ' . $m->lastname;
+                               
+                            } else {
+                                $m = $ma->get_movie_by_id($url->pid);
+                                $movie_title = $m->title . ' [' . $m->year . ']';
+                            }
+                        }
                         ?>
-
                         <tr>
                             <td colspan="<?php print $col_span ?>">
                                 <h3><?php print $this->mla->theme_parser_url_link($url->id, $movie_title); ?></h3>
@@ -2197,16 +2151,16 @@ class MoviesParserAdmin extends ItemAdmin {
                         <?php endif ?>
                         <?php if ($check): ?>
                             <th><?php print __('Check') ?></th> 
-            <?php endif ?>
+                        <?php endif ?>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if ($rules) { ?>
-                <?php foreach ($rules as $rid => $rule) {
-                    ?>
+                        <?php foreach ($rules as $rid => $rule) {
+                            ?>
                             <tr>
                                 <td>
-                    <?php print $rid ?>
+                                    <?php print $rid ?>
                                     <input type="hidden" name="rule_reg_id_<?php print $rid ?>" value="<?php print $rid ?>">
                                 </td>
                                 <td>
@@ -2283,12 +2237,12 @@ class MoviesParserAdmin extends ItemAdmin {
                                     <input type="checkbox" name="rule_reg_a_<?php print $rid ?>" value="1" <?php print $checked ?> <?php print $disabled ?>>                                    
                                 </td>
 
-                    <?php if ($edit): ?>
+                                <?php if ($edit): ?>
                                     <td>
                                         <input type="checkbox" name="remove_reg_rule[]" value="<?php print $rid ?>">
                                     </td>
-                                    <?php endif ?>
-                                    <?php if ($check): ?>
+                                <?php endif ?>
+                                <?php if ($check): ?>
                                     <td>
                                         <?php
                                         if (isset($check[$rid])) {
@@ -2296,7 +2250,7 @@ class MoviesParserAdmin extends ItemAdmin {
                                         }
                                         ?>
                                     </td>
-                            <?php endif ?>
+                                <?php endif ?>
                             </tr> 
                         <?php } ?>
                         <?php
@@ -2371,7 +2325,7 @@ class MoviesParserAdmin extends ItemAdmin {
                             </td>
                             <td></td>
                         </tr>
-            <?php } ?>
+                    <?php } ?>
                 </tbody>
             </table> 
             <p class="desc">
@@ -2413,15 +2367,15 @@ class MoviesParserAdmin extends ItemAdmin {
                         </tr>
                     </thead>
                     <tbody>
-                <?php foreach ($results as $fkey => $data) { ?>
-                    <?php foreach ($data as $i => $item) { ?>
+                        <?php foreach ($results as $fkey => $data) { ?>
+                            <?php foreach ($data as $i => $item) { ?>
                                 <tr>
                                     <td><?php print $item['title'] ?></td>                                            
                                     <td><?php print $i ?></td>
                                     <td><?php print implode('<br />', $item['content']) ?></td>                                
                                 </tr>
-                    <?php } ?>
-                <?php } ?>
+                            <?php } ?>
+                        <?php } ?>
                     </tbody>        
                 </table>
                 <br />

@@ -43,6 +43,22 @@ if ($cid) {
                     </select> 
                     <span class="inline-edit"><?php print __('Type of the Campaign') ?></span>                    
                 </label>
+                
+                                <label>
+                    <span class="title"><?php print __('Mode') ?></span>
+                    <select id="add-campaing-mode" name="parsing_mode" class="parsing_mode">
+                        <?php
+                        foreach ($this->parser_mode as $key => $name) {
+                            $selected = ($key == $campaign->parsing_mode) ? 'selected' : '';
+                            ?>
+                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                            <?php
+                        }
+                        ?>                          
+                    </select> 
+                    <span class="inline-edit"><?php print __('Create posts or links for other campaigns') ?></span>                    
+                </label>
+                
                 <label class="inline-edit-status">                
                     <?php
                     $checked = '';

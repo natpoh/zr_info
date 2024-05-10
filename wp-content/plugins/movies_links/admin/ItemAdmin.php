@@ -98,9 +98,13 @@ class ItemAdmin {
         $q_req_custom = $q_req;
 
         foreach ($types as $key => $value) {
+            $title=$value;
+            if (is_array($title)){
+                $title=isset($value['title'])?$value['title']:$key;
+            }
             $q_req_custom[$custom_type] = $key;
             $states[$key] = array(
-                'title' => $value,
+                'title' => $title,
                 'count' => $q_class->$fname($q_req_custom));
         }
         return $states;
@@ -166,7 +170,7 @@ class ItemAdmin {
 
     public function getPager($page = 1, $url = '/', $count = 1, $per_page = 100, $orderby = '', $order = '', $pg = 'p', $active_class = 'disabled') {
         $paged = $page;
-        $max_page = 1;
+        $max_page = 1; 
         if ($per_page > 0) {
             $max_page = ceil($count / $per_page);
         }

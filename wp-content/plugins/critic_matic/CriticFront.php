@@ -710,7 +710,7 @@ class CriticFront extends SearchFacets {
         $title = $this->pccf_filter($title);
 
         if ($title != $content && !$stuff) {
-            $title_str = '<strong class="review-title">' . $title .$custom_rating. '</strong>';
+            $title_str = '<strong class="review-title">' . $title . $custom_rating . '</strong>';
         }
 
 
@@ -788,14 +788,55 @@ class CriticFront extends SearchFacets {
     }
 
     public function get_custom_critic_rating($critic) {
-        // CherryPicks
+
         $rating_text = '';
-        if ($critic->link_id == 177 && $critic->top_movie) {
-            //get_movie_erating
-            $ma = $this->get_ma();
-            $erating = $ma->get_movie_erating($critic->top_movie);
-            if ($cherry = $erating->thecherrypicks_rating){
-                $rating_text = ' <span class="rating-cherry">'.$erating->thecherrypicks_rating.'%</span>';                
+        if ($critic->top_movie) {
+            try {
+                if ($critic->link_id == 177) {
+                    // CherryPicks
+                    $ma = $this->get_ma();
+
+                    $erating = $ma->get_movie_erating($critic->top_movie);
+                    if ($erating->thecherrypicks_rating) {
+                        $rating_text = ' <span class="rating-cherry">' . $erating->thecherrypicks_rating . '%</span>';
+                    }
+                } else if ($critic->link_id == 178) {
+                    // Bechdeltest
+                    $ma = $this->get_ma();
+
+                    $woke = $ma->get_movie_woke($critic->top_movie);
+                    if ($woke->bechdeltest > 0) {
+                        $woke_text = '';
+                        $filters = $this->cs->search_filters['bechdeltest'];
+                        foreach ($filters as $filter) {
+                            if ($woke->bechdeltest == $filter['key']) {
+                                $woke_text = $filter['title'];
+                                break;
+                            }
+                        }
+                        if ($woke_text) {
+                            $rating_text = ' <span class="rating-bechdeltest">' . $woke_text . '</span>';
+                        }
+                    }
+                } else if ($critic->link_id == 176) {
+                    // worthitorwoke.com
+                    $ma = $this->get_ma();
+                    $woke = $ma->get_movie_woke($critic->top_movie);
+                    $woke_text = 'Not woke';
+                    if ($woke->worthit > 0) {
+                        $filters = $this->cs->search_filters['worthit'];
+                        foreach ($filters as $filter) {
+                            if ($woke->worthit == $filter['key']) {
+                                $woke_text = $filter['title'];
+                                break;
+                            }
+                        }
+                    }
+
+                    $rating_text = ' <span class="rating-worthit">' . $woke_text . '</span>';
+                }
+            } catch (Exception $exc) {
+                
             }
         }
         return $rating_text;
@@ -2176,13 +2217,12 @@ class CriticFront extends SearchFacets {
         // Try to get movies ids
 
         try {
-            $mids=[];
-            if (is_string($data))
-            {
+            $mids = [];
+            if (is_string($data)) {
                 $json_data = json_decode($data);
                 $mids = $json_data->mids;
-            }
-            else $mids = $data['mids'];
+            } else
+                $mids = $data['mids'];
 
             if ($mids) {
                 arsort($mids);
@@ -2194,19 +2234,13 @@ class CriticFront extends SearchFacets {
                     $in_list = $wl->in_def_lists($user->ID, $mids);
                     if ($in_list) {
 
-                        if (is_string($data))
-                        {
+                        if (is_string($data)) {
                             $json_data->watchlist = $in_list;
                             $data = json_encode($json_data);
-
-                        }
-                        else
-                        {
+                        } else {
                             $data['watchlist'] = $in_list;
                         }
-
                     }
-
                 }
             }
         } catch (Exception $exc) {
@@ -2302,9 +2336,9 @@ class CriticFront extends SearchFacets {
             //Reactions
             $this->enable_reactions = false;
             $pids = array();
-            $orders =0;
+            $orders = 0;
             foreach ($posts as $post) {
-                $post['order']=$orders;
+                $post['order'] = $orders;
                 $content['result'][$post['date'] . '_' . $post['pid']] = $post;
                 $pids[] = $post['pid'];
                 $array_movies[$post['m_id']] = 1;
@@ -2352,8 +2386,6 @@ class CriticFront extends SearchFacets {
         !class_exists('Gsearch') ? include ABSPATH . "analysis/include/gsearch.php" : '';
         $gserch = new Gsearch();
         $content['gdata'] = $gserch->get_data($movie_id, 1);
-
-
 
         return json_encode($content);
         return '';
@@ -2670,8 +2702,8 @@ class CriticFront extends SearchFacets {
                             <a href="<?php print $link ?>" title="<?php print $title ?>" >
                                 <img srcset="<?php print $poster_link_90 ?>" alt="<?php print $mtitle ?>">
                                 <div class="desc">
-                                    <h5><?php print $title ?></h5>                         
-                                    <p>For: <?php print $mtitle . $release ?></p>
+                                    <h5><?php print $mtitle . $release ?></h5>
+                                    <p><?php print $title ?></p>
                                 </div>
                             </a>
                         </div>
@@ -2696,11 +2728,11 @@ class CriticFront extends SearchFacets {
             ?>
             <div class="simple">
                 <div class="items<?php
-                if ($owner) {
-                    print " owner";
-                }
-                ?>">
-                         <?php
+            if ($owner) {
+                print " owner";
+            }
+            ?>">
+                     <?php
                          foreach ($posts as $post) {
 
                              $critic = $this->cm->get_post_and_author($post->id);
@@ -2758,8 +2790,8 @@ class CriticFront extends SearchFacets {
                             <a href="<?php print $link ?>" title="<?php print $title ?>" >
                                 <img srcset="<?php print $poster_link_90 ?>" alt="<?php print $mtitle ?>">
                                 <div class="desc">
-                                    <h5><?php print $title ?></h5>                         
-                                    <p>For: <?php print $mtitle . $release ?></p>
+                                    <h5><?php print $mtitle . $release ?></h5>
+                                    <p><?php print $title ?></p>
                                 </div>
                             </a>
                             <?php if ($owner): ?>                                            
@@ -3042,8 +3074,8 @@ class CriticFront extends SearchFacets {
                         <div class="meta">
                             <span class="p-date block">
                                 <time><?php
-                                    print date('d.m.Y H:i', $item->date);
-                                    ?></time>
+                            print date('d.m.Y H:i', $item->date);
+                            ?></time>
                             </span>
 
                             <span class="p-cat block">
@@ -3061,8 +3093,8 @@ class CriticFront extends SearchFacets {
                             <?php } ?>
                         </div>
                     </div><?php
-                }
-                ?>
+                        }
+                        ?>
                 <?php if ($total_count > $view_rows) { ?>
                     <h3 class="ns_all"><a href="<?php print $ns_link ?>">Show all related posts: <?php print $total_count ?></a></h3>
                     <?php

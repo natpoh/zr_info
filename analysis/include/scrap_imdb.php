@@ -1327,14 +1327,23 @@ function addto_db_actors($actor_id, $imdb_id,$array_result, $update = 0,$debug)
 
     if ($t) {
 
+        if (!$t['slug'] )
+        {
+            $slug =  TMDB::getslug($name);
+        }
+        else
+        {
+            $slug  = $t['slug'];
+        }
 
-        if ($t['name']!=$name || $t['birth_name']!=$burn_name || $t['birth_place']!=$burn_place || $t['burn_date']!=$birthDate
+
+        if (!$t['slug'] ||  $t['name']!=$name || $t['birth_name']!=$burn_name || $t['birth_place']!=$burn_place || $t['burn_date']!=$birthDate
             || $t['image_url']!=$image_url || $t['image']!=$image )
         {
-            $array_request = array($name, $burn_name, $burn_place, $birthDate, '', $image_url, $image, time());
+            $array_request = array($name, $burn_name, $burn_place, $birthDate, '', $image_url, $image, $slug ,time());
             $sql = "UPDATE `data_actors_imdb` SET
-               `name`=?, `birth_name`=?, `birth_place`=?, `burn_date`=?, `description`=?, `image_url`=?, `image`=?, `lastupdate`=?
-WHERE `data_actors_imdb`.`id` = " . $actor_id;
+               `name`=?, `birth_name`=?, `birth_place`=?, `burn_date`=?, `description`=?, `image_url`=?, `image`=?, `slug`=?, `lastupdate`=?
+            WHERE `data_actors_imdb`.`id` = " . $actor_id;
             Pdo_an::db_results_array($sql,$array_request);
 
 
@@ -1685,7 +1694,7 @@ function check_last_actors($aid ='')
         /// echo $sql1.'<br>';
 
         Pdo_an::db_query($sql1);
-        ACTIONLOG::update_actor_log('gender','data_actors_meta',$r['actor_id'] );
+        ACTIONLOG::update_actor_log('gender_auto','data_actors_meta',$r['actor_id'] );
 
         $commit_actors[$r['actor_id']]=1;
     }
@@ -1969,6 +1978,9 @@ function check_last_actors($aid ='')
     commit_actors($commit_actors);
 
 }
+
+
+
 
 function commit_actors($commit_actors)
 {

@@ -38,8 +38,9 @@ if (sizeof($posts) > 0) {
             <thead>
             <td class="manage-column column-cb check-column" ><input type="checkbox" id="cb-select-all-1"></td>
             <?php $this->sorted_head('id', 'id', $orderby, $order, $page_url) ?>             
-            <?php $this->sorted_head('date', 'date', $orderby, $order, $page_url) ?>
+            <?php $this->sorted_head('date', 'date', $orderby, $order, $page_url) ?>            
             <?php $this->sorted_head('last_upd', 'last_upd', $orderby, $order, $page_url) ?>
+            <?php $this->sorted_head('pid', 'pid', $orderby, $order, $page_url) ?>
             <th><?php print __('Link') ?></th>                                
             <?php if ($campaign->type != 1) { ?>
                 <?php $this->sorted_head('pid', 'Movie ID', $orderby, $order, $page_url) ?>
@@ -80,6 +81,9 @@ if (sizeof($posts) > 0) {
                         </td>                             
                         <td><?php print $item->date ? $this->mp->curr_date($item->date) : 0  ?></td> 
                         <td><?php print $item->last_upd ? $this->mp->curr_date($item->last_upd) : 0  ?></td> 
+                        <td>
+                            <?php print $item->pid ?>
+                        </td>  
                         <td class="wrap">                            
                             <a href="<?php print $item->link ?>" target="_blank" title="<?php print $item->link ?>"><?php print $item->link ?></a>                                               
                         </td>

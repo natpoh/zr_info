@@ -96,7 +96,7 @@ if ($cid) {
     <hr />
 
     <?php
-    if ($campaign->type == 2):
+    if ($campaign->parsing_mode == 1):
         // Links
         ?>
         <form accept-charset="UTF-8" method="post" id="campaign">
@@ -118,7 +118,7 @@ if ($cid) {
                     <br />
                     <?php
                     $parser_rules = $o['row_rules'];
-                    $this->show_parser_rules($parser_rules, true, $campaign->type, array(), $this->mp->parser_row_rules_fields, $this->mp->parser_row_rules_type);
+                    $this->show_parser_rules($parser_rules, true, $campaign->type, $campaign->parsing_mode, array(), $this->mp->parser_row_rules_fields, $this->mp->parser_row_rules_type);
                     ?> 
                     <p><b>Export</b> Rules to <a target="_blank" href="<?php print $url ?>&cid=<?php print $cid ?>&export_row_rules=1">JSON array</a>.</p>
                     <p><b>Import</b> Rules from JSON array:</p>
@@ -280,7 +280,7 @@ if ($cid) {
                 <h2>Parser rules</h2>
                 <?php
                 $parser_rules = $o['rules'];
-                $this->show_parser_rules($parser_rules, true, $campaign->type);
+                $this->show_parser_rules($parser_rules, true, $campaign->type, $campaign->parsing_mode);
                 ?> 
                 <p><b>Export</b> Rules to <a target="_blank" href="<?php print $url ?>&cid=<?php print $cid ?>&export_rules=1">JSON array</a>.</p>
                 <p><b>Import</b> Rules from JSON array:</p>
@@ -385,7 +385,7 @@ if ($cid) {
 
 
     <?php
-    if ($campaign->type == 2):
+    if ($campaign->parsing_mode == 1):
         // Links
         $ol = $options['links'];
         $campaigns = $this->mp->get_campaigns();
@@ -395,7 +395,7 @@ if ($cid) {
                 <fieldset>
                     <input type="hidden" name="links_parsing_data" value="1">
                     <input type="hidden" name="id" class="id" value="<?php print $campaign->id ?>">
-                    <h2>Link results to the movie</h2>
+                    <h2>Link results</h2>
                     <label>
                         <span class="title"><?php print __('Min match') ?></span>
                         <span class="input-text-wrap"><input type="text" name="match" class="match" value="<?php print $ol['match'] ?>"></span>
@@ -431,7 +431,11 @@ if ($cid) {
                         <span class="title"><?php print __('Link to') ?></span>
                         <select name="type" class="interval">
                             <?php
-                            $rwt_select_link_type = $this->rwt_movie_type;
+                            if ($campaign->type==1){
+                                $rwt_select_link_type = $this->rwt_actor_link;
+                            }else {
+                                $rwt_select_link_type = $this->rwt_movie_type;
+                            }
                             // Movies
                             foreach ($rwt_select_link_type as $key => $value) {
                                 $selected = ($key == $ol['type']) ? 'selected' : '';
@@ -494,7 +498,7 @@ if ($cid) {
         <?php
         if (isset($_POST['preview_links'])) {
             if ($preivew_data) {
-                $this->preview_links_urls($preivew_data);
+                $this->preview_links_urls($preivew_data, $campaign->type);
             }
         }
         ?>

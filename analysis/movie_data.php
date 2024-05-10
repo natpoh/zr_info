@@ -113,16 +113,17 @@ class MOVIE_DATA
 
     public static function get_actor_name($id)
     {
-        $sql = "SELECT name FROM `data_actors_imdb` where id =" . $id;
+        $sql = "SELECT * FROM `data_actors_imdb` where id =" . $id;
         $r = Pdo_an::db_fetch_row($sql);
         $name = $r->name;
+        $slug = $r->slug;
 //        if (!$name)
 //        {
 //            $sql = "SELECT primaryName  FROM `data_actors_all` where actor_id =".$id;
 //            $r = Pdo_an::db_fetch_row($sql);
 //            $name = $r->primaryName;
 //        }
-        return $name;
+        return [$name,$slug];
     }
     public static function get_verdict_method()
     {
@@ -173,7 +174,7 @@ class MOVIE_DATA
     public static function single_actor_template($id,$type='',$ethnycity_string='')
     {
         !class_exists('RWTimages') ? include ABSPATH . "analysis/include/rwt_images.php" : '';
-        $name = self::get_actor_name($id);
+        [$name,$slug] = self::get_actor_name($id);
         if ($id) {
             $e = '';
             if ($ethnycity_string) {
@@ -182,6 +183,8 @@ class MOVIE_DATA
             if ($type == 'main') {
                 $type = 'supporting';
             }
+
+            if (!$slug)$slug=$id;
 
             $filmolink= '/search/actor_'.$id;
 
@@ -194,8 +197,9 @@ class MOVIE_DATA
             $arace = self::get_actor_race($id);
 
 
+
             $actor_cntr = '<div class="card style_1 img_tooltip">
-                     <a  class="actor_info" data-id="' . $id . '"  href="#">
+                     <a  target="_blank" class="actor_info"  href="/actor/'.$slug.'/">
                      <div class="a_data_n">' . $name . $dop_string . ' </div>
                      <img loading="lazy" title="What ethnicity is ' . $name . '?" alt="' . $name . ' ethnicity" class="a_data_i" 
                      src="' . $image_link . '" />

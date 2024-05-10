@@ -13,6 +13,8 @@ global $post_name;
 include ABSPATH.'analysis/include/actor_data.php';
 global $actor_meta;
 $actor_meta = Actor_Data::get_actor_meta($post_name);
+global $formattedVerdicts;
+$formattedVerdicts = Actor_Data::formatVerdicts($actor_meta['id'], $actor_meta['verdict'], $actor_meta['name'],1);
 
 global $title;
 $blog_title = get_bloginfo('name');
@@ -33,8 +35,8 @@ add_filter('fb_og_title', function () {
     return trim(strip_tags($title));
 });
 add_filter('fb_og_desc', function () {
-
-    return '';
+    global $formattedVerdicts;
+    return $formattedVerdicts;
 });
 add_filter('fb_og_image', function () {
     global $actor_meta;

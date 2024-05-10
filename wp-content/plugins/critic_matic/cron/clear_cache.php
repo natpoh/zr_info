@@ -27,5 +27,9 @@ if (!class_exists('ThemeCache')) {
 if (isset($mode) && $mode == 'all') {
     ThemeCache::clearCacheAll($type);
 } else {
-    ThemeCache::clearCache($type);
+    if ($type){
+        ThemeCache::clearCache($type);
+    } else {
+        ThemeCache::clearCacheAllTypes($type);
+    }
 }

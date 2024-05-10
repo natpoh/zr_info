@@ -520,10 +520,10 @@ textarea {
 }
 
 
-body.theme_dark  input,body.theme_dark  select,body.theme_dark  textarea {
-    color: #c4c4c4;
-    background-color: #242424;
-    border-color: #6f6f6f;
+body.theme_dark input, body.theme_dark select, body.theme_dark textarea {
+    color: var(--gray-light-2);
+    background-color:  rgb(35 35 35);
+    border-color: var(--gray-dark-3);
 }
 
 h1,
@@ -4777,7 +4777,7 @@ body.theme_dark .ns_item .meta{
  */
 
 .site-main > article {
-    margin-bottom: 3.5em;
+    margin-bottom: 10px;
     position: relative;
 }
 
@@ -5524,6 +5524,9 @@ span.rating-bechdeltest {
     color: #6cb623;
 }
 
+span.rating-worthit {
+    color: #c99400;
+}
 /**
  * 11.5 - Sidebar
  */
@@ -5565,7 +5568,7 @@ body.theme_dark  .flex-page .sidebar-left {
 
 body.theme_dark  .site {
     background-color: #0f0f0f;
-    color: #a9a9a9;
+    color: var(--gray-light-3);
 }
 
 
@@ -8991,9 +8994,7 @@ body.theme_dark .site-header-menu {
         display: inline-block;
     }
 
-    .site-main > article {
-        margin-bottom: 10px;
-    }
+
 
     .entry-header,
     .post-thumbnail,
@@ -10680,7 +10681,8 @@ div.card.style_1 div.image  {
 }
 
 .search .full_review_movie img{
-    box-shadow: 2px 2px 4.5px rgba(0, 0, 0, 0.48);
+    box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.49);
+    border-radius: 2px;
 }
 
 
@@ -12751,17 +12753,6 @@ body {
 .theme_white .default_popup:not(.actor_popup) {
     background-image:none!important;
     background-color:white!important;
-}
-
-.col_input  select {
-
-    opacity:.7;
-}
-
-.col_input .message {
-
-    opacity:.9;
-
 }
 
 
@@ -14984,54 +14975,15 @@ body.theme_dark .note_show_content_3 a {
 
 
 
-
-
-/* making the matrix pop up not blurry and goofy looking but cool and aesthetic */
-
-.actor_image_container {
-    background:url(https://zeitgeistreviews.com/wp-content/themes/custom_twentysixteen/images/matrix.gif)!important;
-    background-position: center!important;
-    width:74%!important;
-    margin-left:13%;
-    background-size:90%!important;
-}
-
-
-
-.popup {
-    background-color:rgba(0,0,0,0.88)!important;
-}
-
-.popup-content {
-    background:rgba(0,0,0,0.88)!important;
-}
-
-
-.default_popup {
-    background:rgba(15,15,15,0.88)!important;
-}
-
-
-
-
-
-.actor_image {
-    mix-blend-mode: luminosity!important;
-    opacity:.88!important;
-}
-
-
-
-
-
-
 /* making zr logo not inverted */
 
 .zr {
     filter:none!important;
 }
 
-
+.w100{
+    width: 100%;
+}
 
 
 
@@ -15140,12 +15092,6 @@ body.theme_dark .note_show_content_3 a {
     -webkit-text-stroke-width: .05em;
     -webkit-text-stroke-color: black;
 }
-
-
-.indie .nte_in .note_show_content_2 a:hover {
-    color:black;
-}
-
 
 
 
@@ -16089,27 +16035,10 @@ body.home.blog.theme_dark .inner_content {
 }
 
 
-.theme_dark .bb_row a:hover {
-    color:green!important;
-}
-
 
 .theme_dark .out_link:hover {
     filter:invert(70%);
 }
-
-
-.theme_dark .big_business a:hover {
-    color:green!important;
-}
-
-
-
-
-.theme_dark .indie a:hover {
-    color:green!important;
-}
-
 
 
 .theme_dark .bb_row_after:not(.out_link)  a:hover  {
@@ -17099,13 +17028,15 @@ p.big_b_i {
     /* bandaid solution to make woke verdicts look neat n symmetrical  n aesthetic */
 
     .a_msg .rating-cherry,
-    .a_msg .rating-bechdeltest{
+    .a_msg .rating-bechdeltest,
+    .a_msg .rating-worthit {
         position: relative;
         float: right;
     }
 
     .full_review .rating-cherry,
-    .full_review .rating-bechdeltest {
+    .full_review .rating-bechdeltest,
+    .full_review .rating-worthit{
         margin-left:2em;
     }
 

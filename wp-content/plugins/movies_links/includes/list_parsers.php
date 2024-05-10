@@ -1,7 +1,8 @@
 <h2><a href="<?php print $url ?>"><?php print __('Movies Links Parsers') ?></a>. <?php print __('Campaigns') ?></h2>
-<?php print $tabs; ?>
-<?php print $filters ?>
-<?php print $type_filters ?>
+<?php print $tabs;
+if (isset($filters_tabs['filters'])) {
+    print implode("\n", array_values($filters_tabs['filters']));
+} ?>
 
 <?php
 if (sizeof($campaigns) > 0) {
@@ -26,6 +27,7 @@ if (sizeof($campaigns) > 0) {
             <?php $this->sorted_head('date', 'Date', $orderby, $order, $page_url) ?> 
             <?php $this->sorted_head('title', 'Title', $orderby, $order, $page_url) ?>
             <?php $this->sorted_head('type', 'Type', $orderby, $order, $page_url) ?>  
+            <?php $this->sorted_head('mode', 'Mode', $orderby, $order, $page_url) ?>  
             <?php $this->sorted_head('status', 'State', $orderby, $order, $page_url) ?>       
             <th><?php print __('URL') ?></th> 
             <th><?php print __('Urls') ?></th> 
@@ -54,6 +56,7 @@ if (sizeof($campaigns) > 0) {
                             ?>
                         </td>
                         <td><?php print $this->parser_types[$parser->type] ?></td>
+                        <td><?php print $this->parser_mode[$parser->parsing_mode] ?></td>
                         <td class="nowrap"><i class="sticn st-<?php print $parser->status ?>"></i><?php print $this->camp_state[$parser->status]['title'] ?></td>
                         <td><a href="<?php print $parser->site ?>"><?php print $parser->site ?></a></td>                                
                         <td><?php print $this->mp->get_urls_count(-1, $parser->id) ?></td>

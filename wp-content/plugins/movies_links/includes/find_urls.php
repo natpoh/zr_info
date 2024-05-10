@@ -492,7 +492,7 @@ if ($cid) {
     <?php if ($preview_gen_data) { ?>
 
         <h3>Preview Generate URLs</h3>
-        <p>URL: <?php print $preview_gen_data['url'] ?></p>
+        <p>URL: <a href="<?php print $preview_gen_data['url'] ?>" target="_blank"><?php print $preview_gen_data['url'] ?></a></p>
         <h2>Headers</h2>
         <textarea style="width: 90%; height: 300px;"><?php print $preview_gen_data['headers'] ?></textarea>        
         <h2>Content</h2>

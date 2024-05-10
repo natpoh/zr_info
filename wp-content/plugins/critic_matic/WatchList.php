@@ -266,7 +266,7 @@ class WatchList extends AbstractDB {
         return $list_valid;
     }
 
-    public function get_user_lists($wp_uid = 0, $owner = 0, $count = 0, $page = 1) {
+    public function get_user_lists($wp_uid = 0, $owner = 0, $count = 0, $page = 1,$type ='') {
         $and_publish = '';
         if ($owner != 1) {
             $and_publish = ' AND publish=1';
@@ -280,8 +280,11 @@ class WatchList extends AbstractDB {
             }
             $and_limit = sprintf(' LIMIT %d,%d', $from, $count);
         }
+        $d="";
+        if ($type){$d = " and `type` = '".intval($type)."' ";}
 
-        $sql = sprintf("SELECT * FROM {$this->db['list']} WHERE wp_uid=%d" . $and_publish . " ORDER BY id DESC" . $and_limit, (int) $wp_uid);
+
+        $sql = sprintf("SELECT * FROM {$this->db['list']} WHERE wp_uid=%d" . $and_publish .$d. " ORDER BY id DESC" . $and_limit, (int) $wp_uid);
         $results = $this->db_results($sql);
         $lists = array();
         $def_lists = array();
