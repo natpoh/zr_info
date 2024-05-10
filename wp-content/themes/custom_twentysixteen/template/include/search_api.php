@@ -78,6 +78,7 @@ class Search_api{
         global $cfront;
         $content_result = [];
 
+
         if (!$cfront) {
             if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
                 define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
@@ -97,7 +98,8 @@ class Search_api{
 
         $search_front = new CriticFront();
         $search_front->init_search_filters();
-        $array_data = $search_front->find_results(0, array(), false, true);
+        $uid = $search_front->get_uid();
+        $array_data = $search_front->find_results($uid, array(), false, true);
 
         $_SERVER['REQUEST_URI'] = $last_req;
 

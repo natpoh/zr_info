@@ -29,7 +29,7 @@ function get_s_data($url)
     }
 
 
-    [$array_movies,$content_result] = Search_api::get_search_by_url($url);
+    [$array_movies,$content_result] = Search_api::get_search_by_url($url,19);
     if (count($content_result['result'])) {
 
 

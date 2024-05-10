@@ -699,12 +699,12 @@ function create_rating_content(object, m_id, search_block = 0) {
                 {
                     if (object['indie']['c_box']['mojo'])
                     {
-                        data +='<p class="row_text_head exlink" id="boxmojo">Box office International: (Mojo)</p><span class="box_chart not_loaded"><span class="data" style="display: none">'+JSON.stringify(object['indie']['c_box']['mojo'])+'</span></span>';
+                        data +='<p class="row_text_head">Box office International:</p><span class="box_chart not_loaded"><span class="data" style="display: none">'+JSON.stringify(object['indie']['c_box']['mojo'])+'</span></span><p class="row_text ">Source: <a class="exlink" id="boxmojo">Box Office Mojo</a></p>';
                     }
                     else  if (object['indie']['c_box']['numbers'])
                     {
                         if (Object.keys(object['indie']['c_box']['numbers']).length>0) {
-                            data += '<p class="row_text_head exlink" id="thenumbers">Box office International: (The Numbers)</p><span class="box_chart not_loaded"><span class="data" style="display: none">' + JSON.stringify(object['indie']['c_box']['numbers']) + '</span></span>';
+                            data += '<p class="row_text_head">Box office International:</p><span class="box_chart not_loaded"><span class="data" style="display: none">' + JSON.stringify(object['indie']['c_box']['numbers']) + '</span></span><p class="row_text ">Source: <a class="exlink" id="thenumbers">The Numbers</a></p>';
                         }
 
                     }
@@ -1166,7 +1166,8 @@ function set_video_scroll(data, block_id, append = '') {
                     // let title = head.html();
                     // head.html('<div class="i_head">'+title+data['html']+'</div>')
                 }
-            } else {
+            }
+            else {
                 for (var i = 1; i <= Number(data['count']); i++) {
                     content += tmpl.replace('{id}', i);
                 }
@@ -1357,7 +1358,8 @@ function set_video_scroll(data, block_id, append = '') {
 
             }
 
-        } else {
+        }
+        else {
 
 
             if (block_id == 'review_scroll') {
@@ -1382,15 +1384,25 @@ function set_video_scroll(data, block_id, append = '') {
             if (!append) {
 
                 let prnt = jQuery('div[id="' + block_id + '"]').parents('section.inner_content');
-                let content_area = prnt.find('.scroller_wrap');
-                content_area.html('<p class="no_result">No results found</p>');
+                if (prnt.length)
+                {
+                    let content_area = prnt.find('.scroller_wrap');
+                    content_area.html('<p class="no_result">No results found</p>');
 
-                //prnt.remove();
-                var tmpl_type = data['type'];
+                    //prnt.remove();
+                    var tmpl_type = data['type'];
 
-                if (tmpl_type == 'actors_data') {
-                    //  jQuery('.actor_details>div').html('  Sorry. No actor data available yet. Stay tuned.').addClass('dmg_content');
+                    if (tmpl_type == 'actors_data') {
+                        //  jQuery('.actor_details>div').html('  Sorry. No actor data available yet. Stay tuned.').addClass('dmg_content');
+                    }
+
                 }
+                else
+                {
+                    jQuery('div[id="' + block_id + '"]').html('<p class="no_result">No results found</p>');
+                }
+
+
 
             }
         }
@@ -3574,7 +3586,7 @@ jQuery(document).ready(function () {
 
     });
 
-    jQuery('body').on('click', '.actor_info, a.actors_link', function () {
+    jQuery('body').on('click', 'a.actors_link', function () {
         var actor_id = jQuery(this).attr('data-id');
 
         add_popup();
@@ -4089,16 +4101,25 @@ jQuery(document).ready(function () {
         //  console.log(prnt);
         if (!prnt.hasClass('crowd_data')) {
             prnt = jQuery(this).parents('.popup-content');
-
+            console.log('1');
             if (!prnt.hasClass('.popup-content')) {
                 prnt = jQuery(this).parents('.nte');
-                prnt.find('.btn').click();
-                return false;
+                if (prnt.length)
+                {
+                    prnt.find('.btn').click();
+                    return false;
+                }
+
             }
+
             prnt.html('');
             jQuery('.popup-close').click();
 
             return false;
+        }
+        else
+        {
+
         }
         prnt.prev('a.actor_crowdsource').attr('id', 'op');
         prnt.html('');
