@@ -837,27 +837,20 @@ function set_tmdb_actors_for_movies()
 }
 
 
-function update_crowd_verdict($id='')
+function update_crowd_verdict($commit_actors=[],$id='')
 {
-
-    ///get last id
-    $last_id = OptionData::get_options('','actors_crowd_last_id');
-    if (!$last_id)$last_id=0;
+    $i=0;
 
     if ($id)
     {
-        $where = ' id = '.intval($id);
+        $where = 'and  id = '.intval($id);
+        $sql ="SELECT * FROM `data_actors_crowd` WHERE `status` = 1  ".$where." order by `id` ASC  limit 100";
     }
     else
     {
-
-        $where = '   id > '.$last_id.' ' ;
+        $sql = "SELECT data_actors_crowd.actor_id, data_actors_crowd.verdict  FROM `data_actors_crowd` LEFT JOIN data_actors_meta ON data_actors_crowd.actor_id=data_actors_meta.actor_id
+        WHERE data_actors_meta.n_crowdsource = 0 and data_actors_meta.actor_id >0 and data_actors_crowd.verdict IS NOT NULL limit 100";
     }
-
-
-    echo 'update_crowd_verdict '.$last_id.'<br>';
-
-    $sql ="SELECT * FROM `data_actors_crowd` WHERE `status` = 1 and  ".$where." order by `id` ASC  limit 100";
 
     $r = Pdo_an::db_results_array($sql);
 
@@ -887,11 +880,19 @@ function update_crowd_verdict($id='')
 
         Pdo_an::db_query($sql1);
 
-        update_actors_verdict($row['actor_id'], 1, 1);
-        OptionData::set_option('', $row['id'],'actors_crowd_last_id');
+        update_actors_verdict($row['actor_id'], 1, 0);
+        ACTIONLOG::update_actor_log('crowd_verdict','data_actors_meta',$r['actor_id'] );
+        $commit_actors[$r['actor_id']]=1;
+
+        if (check_cron_time())
+        {
+        break;
+        }
+    $i++;
     }
     }
 
+    return [$commit_actors,$i];
 
 }
 
@@ -1625,7 +1626,7 @@ function check_last_actors($aid ='')
     }
 
 
-
+    $i=0;
 
     //check actor gender
     $sql = "SELECT data_actors_gender.actor_id,  data_actors_gender.Gender 	  FROM `data_actors_gender`
@@ -1668,7 +1669,7 @@ function check_last_actors($aid ='')
         commit_actors($commit_actors);
         return;
     }
-
+    $i=0;
     //check actor gender auto
     $sql = "SELECT data_actor_gender_auto.actor_id,  data_actor_gender_auto.gender 	  FROM `data_actor_gender_auto`
     LEFT JOIN data_actors_meta ON data_actor_gender_auto.actor_id=data_actors_meta.actor_id
@@ -1772,7 +1773,7 @@ function check_last_actors($aid ='')
 
             update_actors_verdict($actor_id,1,0);
             ACTIONLOG::update_actor_log('add_actors_ethnic','data_actors_meta',$actor_id );
-            $commit_actors[$r['actor_id']]=1;
+            $commit_actors[$actor_id]=1;
         }
 
     }
@@ -1785,6 +1786,26 @@ function check_last_actors($aid ='')
         echo $timeleft.' check actor ethnic (' . $i . ') <br>'.PHP_EOL;
 
     }
+    if (check_cron_time())
+    {
+        commit_actors($commit_actors);
+        return;
+    }
+
+
+
+   ////crowd
+
+    [$commit_actors,$i] =  update_crowd_verdict($commit_actors);
+
+
+    if ($debug)
+    {
+        $timeleft = check_cron_time(1);
+        echo $timeleft.' update crowd (' . $i . ') <br>'.PHP_EOL;
+
+    }
+
     if (check_cron_time())
     {
         commit_actors($commit_actors);
@@ -3700,7 +3721,7 @@ if (isset($_GET['movie_keywords'])) {
 }
 if (isset($_GET['update_crowd_verdict'])) {
 
-    update_crowd_verdict($_GET['update_crowd_verdict'])  ;
+    update_crowd_verdict([],$_GET['update_crowd_verdict'])  ;
 
     return;
 }
