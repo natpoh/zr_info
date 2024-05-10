@@ -17,6 +17,7 @@ if (!defined('ABSPATH'))
 ///add option
 !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
 
+!class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
 
 function update_actor_directors($movie_id)
 {
