@@ -1464,6 +1464,7 @@ function check_verdict_surname($commit_actors=[])
               `last_update` = ".time()."  WHERE `data_actors_meta`.`actor_id` = '" . $r['aid'] . "'";
             Pdo_an::db_query($sql1);
 
+            update_actors_verdict($r['aid'],1,0);
 
             $commit_actors[$r['aid']]=1;
 
@@ -1769,8 +1770,8 @@ function check_last_actors($aid ='')
             Pdo_an::db_query($sql1);
             $i++;
 
-            update_actors_verdict($actor_id,1);
-
+            update_actors_verdict($actor_id,1,0);
+            ACTIONLOG::update_actor_log('add_actors_ethnic','data_actors_meta',$actor_id );
             $commit_actors[$r['actor_id']]=1;
         }
 

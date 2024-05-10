@@ -190,7 +190,7 @@ class Actor_Data
         );
 
 
-        $CountryTemplate = array(
+        $Ethnicolr = array(
             "As for his surname, it is the most common in _country, according to _source, so his verdict is _verdict.",
             "His surname is predominantly found in _country, as reported by _source, leading to the verdict of _verdict.",
         );
@@ -254,7 +254,7 @@ class Actor_Data
          $template_arrays_string = OptionData::get_options('', 'actor_verdict_templates');
          $template_arrays = json_decode($template_arrays_string, 1);
 
-//        $template_arrays =array('templatesSurname'=>$templatesSurname,'ethnicTemplates'=>$ethnicTemplates,'templatesFace'=>$templatesFace,'CountryTemplate'=>$CountryTemplate,   'meta_templates'=>$meta_templates, 'neutralTemplates'=>$neutralTemplates,'confirmingTemplates'=>$confirmingTemplates,'refutingTemplates'=>$refutingTemplates,'templateVariations_verdict'=>$templateVariations_verdict);
+//        $template_arrays =array('templatesSurname'=>$templatesSurname,'ethnicTemplates'=>$ethnicTemplates,'templatesFace'=>$templatesFace,'CountryTemplate'=>$Ethnicolr,   'meta_templates'=>$meta_templates, 'neutralTemplates'=>$neutralTemplates,'confirmingTemplates'=>$confirmingTemplates,'refutingTemplates'=>$refutingTemplates,'templateVariations_verdict'=>$templateVariations_verdict);
 //        echo json_encode($template_arrays, JSON_PRETTY_PRINT);
 
         $neutralTemplates = $template_arrays['neutralTemplates'];
@@ -265,7 +265,7 @@ class Actor_Data
 
         $ethnicTemplates = $template_arrays['ethnicTemplates'];
         $templatesFace  =  $template_arrays['templatesFace'];
-        $CountryTemplate = $template_arrays['CountryTemplate'];
+        $Ethnicolr = $template_arrays['EthnicolrTemplate'];
         $templatesSurname = $template_arrays['templatesSurname'];
 
 
@@ -501,7 +501,7 @@ class Actor_Data
 
             $array_data = ['_country' => $country, '_he_she' => $personGender, '_personName' => $personName, '_verdict' => $verdict, '_source' => $link_data];
 
-            [$randomTemplate, $tmplate_order, $used_template] = self::set_template($array_data, $CountryTemplate, $i, $id, $tmplate_order, $used_template, 's');
+            [$randomTemplate, $tmplate_order, $used_template] = self::set_template($array_data, $Ethnicolr, $i, $id, $tmplate_order, $used_template, 's');
 
             $sentences[$i] = $randomTemplate;
 
