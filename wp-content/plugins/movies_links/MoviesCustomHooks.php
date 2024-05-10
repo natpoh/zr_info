@@ -65,6 +65,11 @@ class MoviesCustomHooks {
             }
             $mlr->hook_update_post($campaign, $post, $options, $debug);
         }
+        $url_data = $this->mp->get_url($post->uid);
+        if ($debug) {
+                print_r(array("run custom hook ml_add_post", $url_data));
+            }
+        CustomHooks::do_action('ml_add_post', ['campaign' => $campaign, 'post' => $post, 'url' => $url_data]);
     }
 
     private function update_erating($post, $options, $campaign, $debug = false) {
