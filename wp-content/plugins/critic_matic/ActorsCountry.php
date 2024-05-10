@@ -166,6 +166,9 @@ class ActorsCountry extends AbstractDB {
             }
         }
 
+        //print_r($score_opt);
+        //print_r($to_update);
+        
         if ($to_update) {
             
             $to_update['Name'] = $post->title;
@@ -178,12 +181,15 @@ class ActorsCountry extends AbstractDB {
             $sql = sprintf("SELECT * FROM {$this->db['actors_ethnic']} WHERE actor_id=%d", $aid);
             $actor_exist = $this->db_fetch_row($sql);
 
+            //print_r($actor_exist);
+                    
             if ($actor_exist) {
                 $this->sync_update_data($to_update, $actor_exist->id, $this->db['actors_ethnic'], $this->cm->sync_data, 10);
             } else {
                 $to_update['actor_id'] = $aid;
                 $this->sync_insert_data($to_update, $this->db['actors_ethnic'], $this->cm->sync_client, $this->cm->sync_data, 10);
             }
+            //print_r(Pdo_an::last_error());
         }
     }
 

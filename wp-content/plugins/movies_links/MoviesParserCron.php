@@ -124,7 +124,7 @@ class MoviesParserCron extends MoviesAbstractDB {
                 $count = $this->proccess_parsing($campaign, $options, $force, $debug, $custom_url_id);
             }
         } else if ($type_name == 'links') {
-            $count = $this->proccess_links($campaign, $options);
+            $count = $this->proccess_links($campaign, $options, $force, $debug);
         } else if ($type_name == 'critics') {
             // Parse critics
             $this->proccess_critics($campaign, $options, $force, $debug, $custom_url_id);
@@ -599,8 +599,8 @@ class MoviesParserCron extends MoviesAbstractDB {
                         if ($movie_id) {
                             if ($campaign->type == 1) {
                                 // actors
-                                $actor = $ma->get_actor_by_id($movie_id);        
-                                if ($actor){
+                                $actor = $ma->get_actor_by_id($movie_id);
+                                if ($actor) {
                                     $title = "{$actor->firstname} {$actor->lastname}";
                                 }
                             } else {
@@ -676,7 +676,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         return $count;
     }
 
-    private function proccess_links($campaign, $options, $force = false) {
+    private function proccess_links($campaign, $options, $force = false, $debug = false) {
         $type_name = 'links';
         $cid = $campaign->id;
         $type_opt = $options[$type_name];
@@ -693,10 +693,18 @@ class MoviesParserCron extends MoviesAbstractDB {
         // Get last posts
         $last_posts = $this->mp->get_last_posts($urls_count, $cid, 0, 1, $version);
 
+        if ($debug) {
+            print_r(array('last_posts', $last_posts));
+        }
+
         if ($last_posts) {
 
             $o = $options['links'];
             $items = $this->mp->find_posts_links($last_posts, $o, $campaign->type);
+
+            if ($debug) {
+                print_r(array('find_posts_links', $items));
+            }
 
             foreach ($items as $pid => $item) {
 
@@ -745,12 +753,18 @@ class MoviesParserCron extends MoviesAbstractDB {
                             $this->mp->update_post_top_movie($post->uid, $status, $find_last, $rating);
 
                             $message = "Found author link: name: " . $post->title . "; aid: $find_last; rating: $rating";
+                            if ($debug) {
+                                print_r($message);
+                            }
                             $this->mp->log_info($message, $cid, $post->uid, 4);
-
-                            $mch->add_actors($campaign, $post);
+                            $post->top_movie = $find_last;
+                            $mch->add_actors($campaign, $post, $debug);
                         } else {
                             $this->mp->update_post_status($post->uid, 2);
                             $message = 'Found posts is not valid';
+                            if ($debug) {
+                                print_r($message);
+                            }
                             $this->mp->log_warn($message, $cid, $post->uid, 4);
                         }
                     } else {
@@ -770,13 +784,19 @@ class MoviesParserCron extends MoviesAbstractDB {
                             $this->mp->update_post_top_movie($post->uid, $status, $find_movie, $rating);
 
                             $message = "Found post link: title: " . $post->title . "; mid: $find_movie; rating: $rating";
+                            if ($debug) {
+                                print_r($message);
+                            }
                             $this->mp->log_info($message, $cid, $post->uid, 4);
 
                             $post->top_movie = $find_movie;
-                            $mch->add_post($campaign, $post);
+                            $mch->add_post($campaign, $post, $debug);
                         } else {
                             $this->mp->update_post_status($post->uid, 2);
                             $message = 'Found posts is not valid';
+                            if ($debug) {
+                                print_r($message);
+                            }
                             $this->mp->log_warn($message, $cid, $post->uid, 4);
                         }
                     }
@@ -784,6 +804,9 @@ class MoviesParserCron extends MoviesAbstractDB {
                     // Link post not found
                     $this->mp->update_post_status($post->uid, 2);
                     $message = 'Link post not found';
+                    if ($debug) {
+                        print_r($message);
+                    }
                     $this->mp->log_error($message, $cid, $post->uid, 4);
                 }
                 $count += 1;
@@ -795,6 +818,9 @@ class MoviesParserCron extends MoviesAbstractDB {
             $options_upd[$type_name]['status'] = 3;
             $this->mp->update_campaign_options($campaign->id, $options_upd);
             $message = 'All posts linked to movies';
+            if ($debug) {
+                print_r($message);
+            }
             $this->mp->log_info($message, $campaign->id, 0, 4);
         }
         return $count;

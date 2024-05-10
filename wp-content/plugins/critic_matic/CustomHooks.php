@@ -60,6 +60,7 @@ class CustomHooks {
         /*
          * args = ['campaign'=>$campaign,'post'=>$post]
          */
+        //print_r(array('ml_custom_hooks',$args));
         if (isset($args['post']) && isset($args['campaign']) && isset($args['url'])) {
             $campaign = $args['campaign'];
             $post = $args['post'];

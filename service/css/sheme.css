@@ -209,7 +209,7 @@ body.add_block .line_point {
     margin-top: 37px;
     transform-origin: left center;
     transform: rotate(0deg);
-    animation: moveBackground 1s linear infinite;
+    /*animation: moveBackground 1s linear infinite;*/
     border-radius: 12px;
     padding: 0px 3px;
     margin-left: 50px;
@@ -225,7 +225,7 @@ body.add_block .line_point {
     margin-top: 0;
     transform-origin: left center;
     transform: rotate(180deg);
-    animation: moveBackground 1s linear infinite;
+    /*animation: moveBackground 1s linear infinite;*/
     border-radius: 12px;
     padding: 0px 3px;
     margin-left: 0;
