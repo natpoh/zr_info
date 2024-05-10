@@ -3531,22 +3531,22 @@ class MoviesParser extends MoviesAbstractDB {
                 if ($actor) {
                     $actors[] = $actor;
                 }
-            }
+            } else {
+                $actors_name = array();
+                if ($post_first_name && $post_last_name) {
+                    $actors_name = $ma->get_actors_normalize_by_name($post_first_name, $post_last_name);
+                } else if ($post_first_name) {
+                    $actors_name = $ma->get_actors_normalize_by_name($post_first_name, '');
+                } else if ($post_last_name) {
+                    $actors_name = $ma->get_actors_normalize_by_name('', $post_last_name);
+                }
+                if ($actors_name) {
+                    $actors = array_merge($actors, $actors_name);
+                }
 
-            $actors_name = array();
-            if ($post_first_name && $post_last_name) {
-                $actors_name = $ma->get_actors_normalize_by_name($post_first_name, $post_last_name);
-            } else if ($post_first_name) {
-                $actors_name = $ma->get_actors_normalize_by_name($post_first_name, '');
-            } else if ($post_last_name) {
-                $actors_name = $ma->get_actors_normalize_by_name('', $post_last_name);
-            }
-            if ($actors_name) {
-                $actors = array_merge($actors, $actors_name);
-            }
-
-            if ($post_full_name) {
-                $actors = array_merge($actors, $ma->get_actors_by_name($post_full_name));
+                if ($post_full_name) {
+                    $actors = array_merge($actors, $ma->get_actors_by_name($post_full_name));
+                }
             }
 
             if ($actors) {
@@ -3600,15 +3600,21 @@ class MoviesParser extends MoviesAbstractDB {
                     if ($post_full_name) {
 
                         $post_full_name_valid = false;
+                        $actor_slug = $ma->create_slug($actor->name, ' ');
+                        $name_slug = $ma->create_slug($post_full_name, ' '); 
                         if ($full_rule['e'] == 'e') {
-                            if ($actor->name == $post_full_name) {
+                            
+                                   
+                            if ($actor_slug== $name_slug) {
                                 $post_full_name_valid = true;
                             }
                         } else if ($full_rule['e'] == 'm') {
-                            if (strstr($actor->name, $post_full_name)) {
+                            if (strstr($actor_slug, $name_slug)) {
                                 $post_full_name_valid = true;
                             }
                         }
+
+                        //p_r(array($actor->name,$post_full_name, $post_full_name_valid));
 
                         if ($post_full_name_valid) {
                             $results[$actor->aid]['fullname']['data'] = $actor->name;
@@ -3646,6 +3652,8 @@ class MoviesParser extends MoviesAbstractDB {
                 return array();
             }
         }
+
+        //p_r($results);
 
         $max_rating = 0;
         $max_rating_id = 0;
