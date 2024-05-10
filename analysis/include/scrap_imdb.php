@@ -849,7 +849,7 @@ function update_crowd_verdict($commit_actors=[],$id='')
     else
     {
         $sql = "SELECT data_actors_crowd.actor_id, data_actors_crowd.verdict  FROM `data_actors_crowd` LEFT JOIN data_actors_meta ON data_actors_crowd.actor_id=data_actors_meta.actor_id
-        WHERE data_actors_meta.n_crowdsource = 0 and data_actors_meta.actor_id >0 and data_actors_crowd.verdict IS NOT NULL limit 100";
+        WHERE data_actors_meta.n_crowdsource = 0 and data_actors_meta.actor_id >0 and data_actors_crowd.verdict IS NOT NULL and data_actors_crowd.verdict!='0' limit 100";
     }
 
     $r = Pdo_an::db_results_array($sql);
@@ -873,9 +873,12 @@ function update_crowd_verdict($commit_actors=[],$id='')
                 $set= " `gender` = '" . $gender . "', ";
             }
 
+
+
         }
 
         $sql1 = "UPDATE `data_actors_meta` SET  " . $set . "  n_crowdsource ='" . intconvert($verdict) . "' ,`last_update` = " . time() . "   WHERE `data_actors_meta`.`actor_id` = '" . $row['actor_id'] . "'";
+
 
 
         Pdo_an::db_query($sql1);
