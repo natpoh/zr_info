@@ -29,7 +29,8 @@ function actor_slug()
 
         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
         $actor_id=intval($_GET['add_actors_slug']);
-        if ($actor_id)
+
+     if ($actor_id)
         {
             $q="SELECT * FROM `data_actors_imdb` WHERE id =".$actor_id." ";
         }
@@ -1388,7 +1389,7 @@ function addto_db_actors($actor_id, $imdb_id,$array_result, $update = 0,$debug)
 
     if ($t) {
 
-        if (!$t['slug'] ||  $t['name']!=$name )
+        if (!$t['slug']  ||  $t['name']!=$name )
         {
             $slug =  TMDB::getslug($name);
         }
