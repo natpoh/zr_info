@@ -35,7 +35,7 @@ function actor_slug()
         }
         else
         {
-            $q="SELECT * FROM `data_actors_imdb` WHERE `slug` is NULL and `name`!='' order by id asc limit 100000";
+            $q="SELECT * FROM `data_actors_imdb` WHERE `slug` is NULL and `name` IS NOT NULL and `name`!='' order by id asc limit 100000";
         }
 
         $r = Pdo_an::db_results_array($q);
