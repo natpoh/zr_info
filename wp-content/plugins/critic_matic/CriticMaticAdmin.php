@@ -1754,6 +1754,19 @@ class CriticMaticAdmin {
                 $curr_tab = 'home';
             }
             if ($curr_tab == 'home') {
+                if ($_GET['export']) {
+                    $urls = $this->cm->get_all_feed_urls($cid);
+                    print '<h2>Export campaign URLs</h2>';
+                    if ($urls) {
+                        print '<p> Found links: '. sizeof($urls).'</p>';
+                        $items = array();
+                        foreach ($urls as $url) {
+                            $items[] = $url->link;
+                        }
+                        print '<textarea style="width:90%; height:500px">' . implode("\n", $items) . '</textarea>';
+                    }
+                    exit;
+                }
                 // Campaign view page  
                 $update_interval = $this->cf->update_interval;
                 $feed_state = $this->cf->feed_state;
@@ -2348,7 +2361,7 @@ class CriticMaticAdmin {
                 require_once( CRITIC_MATIC_PLUGIN_DIR . 'MoviesActorWeight.php' );
             }
             $maw = new MoviesActorWeight($this->cm);
-            
+
             $ss = $this->cm->get_settings(false);
 
             include(CRITIC_MATIC_PLUGIN_DIR . 'includes/settings_actors.php');

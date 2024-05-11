@@ -79,7 +79,13 @@ if ($cid) {
             </tr>
             <tr>
                 <td><?php print __('Posts count') ?></td>
-                <td><?php print $this->cm->get_feed_count($cid) ?></td>
+                <td><?php
+                    $posts_count = $this->cm->get_feed_count($cid);
+                    print $posts_count;
+                    ?>. <?php if ($posts_count > 0) { ?> 
+                        <a target="_blank" href="<?php print $url ?>&cid=<?php print $cid ?>&export=1">Export</a>.
+                    <?php } ?>
+                    </td>
             </tr>
             <tr>
                 <td><?php print __('Valid') ?></td>
@@ -96,6 +102,6 @@ if ($cid) {
             </tr>
         </tbody>        
     </table>
-    
-    <?php $this->cf->show_rules($options['rules'],false)?>
+
+    <?php $this->cf->show_rules($options['rules'], false) ?>
 <?php } ?>
