@@ -495,12 +495,11 @@ class Ethinc
             if ($debug)
             {
                 echo 'result_array: <br>';
-                if ($debug)
-                {
+
 
                     TMDB::var_dump_table($result_array);
 
-                }
+
                 echo '<br>';
             }
 
@@ -534,13 +533,17 @@ class Ethinc
 
         }
 
+        if ($debug)
+        {
+            echo '<br>' . PHP_EOL;
+        }
 
-        echo '<br>' . PHP_EOL;
         arsort($array_notfound);
 
 
         if ($debug && $array_notfound)
         {
+
             echo 'not found';
             TMDB::var_dump_table($array_notfound);
         }

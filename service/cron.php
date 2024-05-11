@@ -26,7 +26,7 @@ $array_jobs = array(
 'check_tmdb_data'=>15,///update country and poster from tmdb
 
 'zr_woke'=>30,///empty woke
-
+'actor_slug'=>30, ///update actor slug
 
 'add_providers'=>30,
 'update_imdb_data'=>30,//update movies
