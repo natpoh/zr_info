@@ -516,7 +516,7 @@ class Ethinc
                 }
                 else
                 {
-                    $sql = "UPDATE `data_actors_ethnic` SET  last_update_verdict	=? WHERE `data_actors_ethnic`.`id` ={$id} ";
+                    $sql = "UPDATE `data_actors_ethnic` SET  last_update_verdict  =? WHERE `data_actors_ethnic`.`id` ={$id} ";
                     Pdo_an::db_results_array($sql, array(time()));
                 }
 

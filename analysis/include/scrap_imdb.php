@@ -1748,13 +1748,23 @@ function check_last_actors($aid ='')
     }
 
 
-
+    $i=0;
     ////check actor ethnic
+    !class_exists('Ethinc') ? include ABSPATH . "analysis/include/ethnic.php" : '';
+
+    $q ="SELECT `actor_id`  FROM `data_actors_ethnic` WHERE `actor_id`> 0 and`verdict` is NULL and last_update_verdict < ".(time()-86400*7)." and (`Ethnicity` IS NOT NULL OR `Tags` IS NOT NULL) limit 100";
+    $r = Pdo_an::db_results_array($q);
+    foreach ($r as $row)
+    {
+        $actor_id  = $row['actor_id'];
+        Ethinc::set_actors_ethnic($actor_id,0,0);
+    }
 
 
+    $i=0;
 
     $sql = "SELECT data_actors_ethnic.*  FROM `data_actors_ethnic` LEFT JOIN data_actors_meta ON data_actors_ethnic.actor_id=data_actors_meta.actor_id
-        WHERE data_actors_meta.n_ethnic =0 and data_actors_ethnic.verdict !='' limit 300";
+        WHERE data_actors_meta.n_ethnic =0 and (data_actors_ethnic.verdict !='' and data_actors_ethnic.verdict IS NOT NULL )  limit 100";
     $result= Pdo_an::db_results_array($sql);
     foreach ($result as $r) {
 
