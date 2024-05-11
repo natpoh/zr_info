@@ -1388,7 +1388,7 @@ function addto_db_actors($actor_id, $imdb_id,$array_result, $update = 0,$debug)
 
     if ($t) {
 
-        if (!$t['slug'] )
+        if (!$t['slug'] ||  $t['name']!=$name )
         {
             $slug =  TMDB::getslug($name);
         }
