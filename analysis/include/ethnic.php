@@ -310,12 +310,12 @@ class Ethinc
 
     public static function set_actors_ethnic($aid='',$force =0,$debug=0)
     {
-        if ($force)
-        {
-            $sql = "UPDATE `data_actors_ethnic` SET `verdict` ='' ";
-           Pdo_an::db_results_array($sql);
-
-        }
+//        if ($force)
+//        {
+//            $sql = "UPDATE `data_actors_ethnic` SET `verdict` ='' ";
+//           Pdo_an::db_results_array($sql);
+//
+//        }
 
         global $array_compare;
         if (!$array_compare) {
@@ -332,7 +332,6 @@ class Ethinc
             $where = '';
         }
         else{
-
             $where = " where verdict is NULL and actor_id > 0 and last_update_verdict < ".(time()-86400*7)." limit 100";
         }
 
