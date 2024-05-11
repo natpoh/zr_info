@@ -91,7 +91,7 @@ class Ethinc
                 Pdo_an::db_query($sql1);
 
                 !class_exists('ActorWeight') ? include ABSPATH . "analysis/include/actors_weight.php" : '';
-                ActorWeight:: update_actors_verdict($actor_id );
+                ActorWeight:: update_actors_verdict($actor_id,1 ,1);
             }
             else
             {
