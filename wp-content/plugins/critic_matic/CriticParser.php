@@ -3646,7 +3646,7 @@ class CPParsing {
                             // Update author
                             $exist_author = $this->cm->get_post_author($pid);
                             if ($author && $exist_author->name != $author) {
-                                $this->cm->remove_post_author($exist_author->id);
+                                $this->cm->remove_post_author($pid);
                                 $author_type = 1;
                                 $author_status = 0;
                                 $aid = $this->cm->get_or_create_author_by_name($author, $author_type, $author_status);
