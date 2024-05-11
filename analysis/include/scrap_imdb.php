@@ -1750,15 +1750,7 @@ function check_last_actors($aid ='')
 
 
     ////check actor ethnic
-	!class_exists('Ethinc') ? include ABSPATH . "analysis/include/ethnic.php" : '';
 
-	$q ="SELECT `actor_id`  FROM `data_actors_ethnic` WHERE `actor_id`> 0 and`verdict` is NULL and (`Ethnicity` IS NOT NULL OR `Tags` IS NOT NULL) limit 100";
-	$r = Pdo_an::db_results_array($q);
-	foreach ($r as $row)
-	{
-		$actor_id  = $row['actor_id'];
-		Ethinc::set_actors_ethnic($actor_id,0,$debug);
-	}
 
 
     $sql = "SELECT data_actors_ethnic.*  FROM `data_actors_ethnic` LEFT JOIN data_actors_meta ON data_actors_ethnic.actor_id=data_actors_meta.actor_id
@@ -2275,7 +2267,7 @@ function update_pgrating($imdb_id='')
 
 function set_actors_ethnic($id)
 {
-
+    !class_exists('Ethinc') ? include ABSPATH . "analysis/include/ethnic.php" : '';
 
 global $debug;
 
@@ -2283,7 +2275,7 @@ global $debug;
         if (isset($_GET['debug']))$debug =1;
 
         if (isset($_GET['force']))$force =1;
-	!class_exists('Ethinc') ? include ABSPATH . "analysis/include/ethnic.php" : '';
+
         Ethinc::set_actors_ethnic($id,$force,$debug);
 
 

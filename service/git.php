@@ -51,6 +51,6 @@ if (in_array($cmd, $commands)) {
     $data = array(
         'cmd' => $cmd,
     );
-    $host = SYNC_HOST;    
+    $host = SYNC_HOST;
     print curl_post($data, $host);
 }
