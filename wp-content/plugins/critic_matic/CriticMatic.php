@@ -1008,6 +1008,13 @@ class CriticMatic extends AbstractDB {
         return $id;
     }
 
+    
+    public function get_all_feed_urls($cid) {
+        $query = sprintf("SELECT p.link FROM {$this->db['posts']} p INNER JOIN {$this->db['feed_meta']} m ON p.id = m.pid WHERE m.cid=%d", $cid);    
+        $result = $this->db_results($query);
+        return $result;
+    }
+    
     public function clear_utf8($text) {
         return preg_replace('/[\x{10000}-\x{10FFFF}]/u', "", $text);
     }

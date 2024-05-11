@@ -782,7 +782,7 @@ class CriticFeeds extends AbstractDBWp {
         $result = $this->db_get_var($query);
         return $result;
     }
-
+    
     public function get_next_update($last_update = 0, $interval = 0) {
         $nextUpdate = $last_update + $interval * 60;
 
