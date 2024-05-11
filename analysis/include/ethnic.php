@@ -513,6 +513,9 @@ class Ethinc
                     self::addverdict($id,$result_array,$debug);
 
                    self::update_verdict_meta($aid);
+
+                    !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
+                    ACTIONLOG::update_actor_log('add_actors_ethnic','data_actors_meta',$aid );
                 }
                 else
                 {

@@ -1758,40 +1758,12 @@ function check_last_actors($aid ='')
     {
         $actor_id  = $row['actor_id'];
         Ethinc::set_actors_ethnic($actor_id,0,0);
-    }
 
-
-    $i=0;
-
-    $sql = "SELECT data_actors_ethnic.*  FROM `data_actors_ethnic` LEFT JOIN data_actors_meta ON data_actors_ethnic.actor_id=data_actors_meta.actor_id
-        WHERE data_actors_meta.n_ethnic =0 and (data_actors_ethnic.verdict !='' and data_actors_ethnic.verdict IS NOT NULL )  limit 100";
-    $result= Pdo_an::db_results_array($sql);
-    foreach ($result as $r) {
-
-
-        $actor_id=  $r['actor_id'];
-        $verdict=  $r['verdict'];
-        if ($verdict)
+        if (check_cron_time())
         {
-            $verdict_result = $array_min[$verdict];
-
+        break;
         }
-
-        if ($verdict_result)
-        {
-            //echo $verdict.'=>'.$verdict_result.' '.PHP_EOL;
-
-            $sql1 = "UPDATE `data_actors_meta` SET  n_ethnic ='".intconvert($verdict_result) ."'  WHERE `data_actors_meta`.`actor_id` = '" . $actor_id . "'";
-            Pdo_an::db_query($sql1);
-            $i++;
-
-            update_actors_verdict($actor_id,1,0);
-            ACTIONLOG::update_actor_log('add_actors_ethnic','data_actors_meta',$actor_id );
-            $commit_actors[$actor_id]=1;
-        }
-
     }
-
 
 
     if ($debug)
@@ -1805,6 +1777,51 @@ function check_last_actors($aid ='')
         commit_actors($commit_actors);
         return;
     }
+
+//    $i=0;
+//
+//    $sql = "SELECT data_actors_ethnic.*  FROM `data_actors_ethnic` LEFT JOIN data_actors_meta ON data_actors_ethnic.actor_id=data_actors_meta.actor_id
+//        WHERE data_actors_meta.n_ethnic =0 and (data_actors_ethnic.verdict !='' and data_actors_ethnic.verdict IS NOT NULL )  limit 100";
+//    $result= Pdo_an::db_results_array($sql);
+//    foreach ($result as $r) {
+//
+//
+//        $actor_id=  $r['actor_id'];
+//        $verdict=  $r['verdict'];
+//        if ($verdict)
+//        {
+//            $verdict_result = $array_min[$verdict];
+//
+//        }
+//
+//        if ($verdict_result)
+//        {
+//            //echo $verdict.'=>'.$verdict_result.' '.PHP_EOL;
+//
+//            $sql1 = "UPDATE `data_actors_meta` SET  n_ethnic ='".intconvert($verdict_result) ."'  WHERE `data_actors_meta`.`actor_id` = '" . $actor_id . "'";
+//            Pdo_an::db_query($sql1);
+//            $i++;
+//
+//            update_actors_verdict($actor_id,1,0);
+//            ACTIONLOG::update_actor_log('add_actors_ethnic','data_actors_meta',$actor_id );
+//            $commit_actors[$actor_id]=1;
+//        }
+//
+//    }
+//
+//
+//
+//    if ($debug)
+//    {
+//        $timeleft = check_cron_time(1);
+//        echo $timeleft.' check actor ethnic (' . $i . ') <br>'.PHP_EOL;
+//
+//    }
+//    if (check_cron_time())
+//    {
+//        commit_actors($commit_actors);
+//        return;
+//    }
 
 
 
