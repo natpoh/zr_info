@@ -19,6 +19,63 @@ if (!defined('ABSPATH'))
 
 !class_exists('ACTIONLOG') ? include ABSPATH . "analysis/include/action_log.php" : '';
 
+
+function actor_slug()
+{
+
+        global $debug;
+
+        check_load(50,60);
+
+        !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+        $actor_id=intval($_GET['add_actors_slug']);
+        if ($actor_id)
+        {
+            $q="SELECT * FROM `data_actors_imdb` WHERE id =".$actor_id." ";
+        }
+        else
+        {
+            $q="SELECT * FROM `data_actors_imdb` WHERE `slug` is NULL and `name`!='' order by id asc limit 100000";
+        }
+
+        $r = Pdo_an::db_results_array($q);
+
+        if ($r)
+        {
+            $count =0;
+            foreach ($r as $row)
+            {
+                $count+=1;
+                $name = $row['name'];
+                // echo $name.'<br>';
+                $slug =  TMDB::getslug($name);
+                if ($slug)
+                {
+
+                    $q2 ="UPDATE `data_actors_imdb` SET `slug`=?  WHERE `id` =?";
+                    Pdo_an::db_results_array($q2,[$slug,$row['id']]);
+
+
+
+                    Import::create_commit('', 'update', 'data_actors_imdb', array('id' => $row['id']), 'actor_slug',20);
+                    ACTIONLOG::update_actor_log('actor_slug','data_actors_imdb',$row['id']);
+
+
+                    if (check_cron_time())
+                    {
+
+                        echo 'total: '.$count;
+                        break;
+
+
+                    }
+                }
+
+            }
+        }
+}
+
+
 function update_actor_directors($movie_id)
 {
          global $force;
@@ -26,7 +83,6 @@ function update_actor_directors($movie_id)
         ////update movie
         $array_movie =  TMDB::get_content_imdb($movie_id,0,1,1);
         $add =  TMDB::addto_db_imdb($movie_id, $array_movie,'','','update_actor_directors_new');
-
         echo $movie_id.' updated<br>';
         return 1;
 
@@ -3830,49 +3886,7 @@ if (isset($_GET['check_image_on_server'])) {
 
 if (isset($_GET['add_actors_slug'])) {
 
-    global $debug;
-
-    check_load(50,60);
-
-    $actor_id=intval($_GET['add_actors_slug']);
-    if ($actor_id)
-    {
-        $q="SELECT * FROM `data_actors_imdb` WHERE id =".$actor_id." ";
-    }
-    else
-    {
-        $q="SELECT * FROM `data_actors_imdb` WHERE `slug` is NULL and `name`!='' order by id asc limit 100000";
-    }
-
-    $r = Pdo_an::db_results_array($q);
-
-    if ($r)
-    {
-        $count =0;
-        foreach ($r as $row)
-        {
-            $count+=1;
-           $name = $row['name'];
-           // echo $name.'<br>';
-           $slug =  TMDB::getslug($name);
-           if ($slug)
-           {
-
-               $q2 ="UPDATE `data_actors_imdb` SET `slug`=?  WHERE `id` =?";
-               Pdo_an::db_results_array($q2,[$slug,$row['id']]);
-
-               if (check_cron_time())
-               {
-
-                   echo 'total: '.$count;
-                   break;
-
-
-               }
-           }
-
-        }
-    }
+    actor_slug();
     return;
 }
 
