@@ -1288,9 +1288,9 @@ class CriticFront extends SearchFacets {
 
         if ($content || $title || $theme_rating) {
 
-            if ($avatars == 'staff') {
+            /*if ($avatars == 'staff') {
                 return '<div class="vote_main">' . $theme_rating . '</div>' . $content . '</div>';
-            }
+            }*/
 
             if ($fullsize) {
                 if ($title) {
@@ -1319,10 +1319,11 @@ class CriticFront extends SearchFacets {
             $actorsdata = $author_admin_img;
         } else if ($avatars) {
             $array_avatars = $avatars[intval($stars_data)];
-
+            
             if (is_array($array_avatars)) {
-                $rand_keys = array_rand($array_avatars, 1);
-                $avatar_user = $array_avatars[$rand_keys];
+                $avatar_user = $cav->get_avatar_rand_key($array_avatars,$critic->id);
+                //$rand_keys = array_rand($array_avatars, 1);
+                //$avatar_user = $array_avatars[$rand_keys];
             }
             if ($avatar_user) {
                 $actorsdata = '<div class="a_img_container_audience" style="background: url(' . WP_SITEURL . '/wp-content/uploads/avatars/custom/' . $avatar_user . '); background-size: cover;"></div>';
@@ -1364,7 +1365,7 @@ class CriticFront extends SearchFacets {
         }
         return $actorsresult;
     }
-
+    
     public function find_staff_rating($content) {
         // DEPRECATED UNUSED
         // Get rating code    

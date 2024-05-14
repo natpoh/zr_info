@@ -30,6 +30,7 @@ class CriticAvatars extends AbstractDB {
         $this->db = array(
             'user_avatars' => 'data_user_avatars',
             'authors' => $table_prefix . 'critic_matic_authors',
+            'meta_guest_avatar' => 'meta_guest_avatar',
         );
     }
 
@@ -273,19 +274,19 @@ class CriticAvatars extends AbstractDB {
     public function run_cron($cron_type = 1, $force = false, $debug = false, $count = 10) {
         // Get change size
         $this->change_img_size($force, $debug, $count);
-     
-/*
-        // UNUSED need refactor
-        if ($cron_type == 1) {
-            // Parse avatar
-            $this->parse_avatar($force, $debug);
-        } else if ($cron_type == 2) {
-            // Get sketch
-            $this->get_sketch($force, $debug);
-        } else if ($cron_type == 3) {
-            // Get tomatoe
-            $this->get_tomato($force, $debug, $count);
-        }*/
+
+        /*
+          // UNUSED need refactor
+          if ($cron_type == 1) {
+          // Parse avatar
+          $this->parse_avatar($force, $debug);
+          } else if ($cron_type == 2) {
+          // Get sketch
+          $this->get_sketch($force, $debug);
+          } else if ($cron_type == 3) {
+          // Get tomatoe
+          $this->get_tomato($force, $debug, $count);
+          } */
     }
 
     public function change_img_size($force = false, $debug = false, $count = 10) {
@@ -344,7 +345,7 @@ class CriticAvatars extends AbstractDB {
                         print "File not found: {$tomato_path}\n";
                     }
                 }
-                
+
                 // Sketch
                 $sketch_dir = WP_CONTENT_DIR . '/uploads/' . $this->cketch_dir;
                 $sketch_path = $sketch_dir . "/" . $item->date . ".png";
@@ -1188,5 +1189,30 @@ class CriticAvatars extends AbstractDB {
         );
         $code = $mp->get_code_by_current_driver($url, $headers, $mp_settings, $service_urls);
         return $code;
+    }
+
+    public function get_avatar_rand_key($array_avatars = array(), $cid = 0) {
+        $sql = sprintf("SELECT id, avid FROM {$this->db['meta_guest_avatar']} WHERE cid=%d", $cid);
+        $item = $this->db_fetch_row($sql);
+
+        if ($item && isset($array_avatars[$item->avid])) {
+            // Meta exists and valid
+            $avatar_user = $array_avatars[$item->avid];
+        } else {
+            $rand_key = array_rand($array_avatars, 1);
+            $avatar_user = $array_avatars[$rand_key];
+            $data = array(
+                'avid' => $rand_key
+            );
+            if ($item) {
+                // Update                
+                $this->db_update($data, $this->db['meta_guest_avatar'], $$item->id);
+            } else {
+                // Insert
+                $data['cid'] = $cid;
+                $this->db_insert($data, $this->db['meta_guest_avatar']);
+            }
+        }
+        return $avatar_user;
     }
 }
