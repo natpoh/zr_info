@@ -5516,17 +5516,20 @@ body.error404 .page-header  {
     text-transform: none;
 }
 
-span.rating-cherry {
-    color: #c52155;
+
+
+.rating-review.woke-color-1 {
+    color: #00bc00;
 }
 
-span.rating-bechdeltest {
-    color: #6cb623;
+.rating-review.woke-color-2 {
+    color: orange;
 }
 
-span.rating-worthit {
-    color: #c99400;
+.rating-review.woke-color-3 {
+    color: red;
 }
+
 /**
  * 11.5 - Sidebar
  */
@@ -17027,16 +17030,12 @@ p.big_b_i {
 
     /* bandaid solution to make woke verdicts look neat n symmetrical  n aesthetic */
 
-    .a_msg .rating-cherry,
-    .a_msg .rating-bechdeltest,
-    .a_msg .rating-worthit {
+    .a_msg .rating-review {
         position: relative;
         float: right;
     }
 
-    .full_review .rating-cherry,
-    .full_review .rating-bechdeltest,
-    .full_review .rating-worthit{
+    .full_review .rating-review {
         margin-left:2em;
     }
 

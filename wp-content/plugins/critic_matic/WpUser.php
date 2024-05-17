@@ -130,6 +130,19 @@ class WpUser extends AbstractDBWp {
         }
     }
 
+    public function get_user_by_slug($slug) {
+        $sql = sprintf("SELECT * FROM {$this->db['users']} WHERE user_nicename='%s'", $slug);
+        $result = $this->db_fetch_row($sql);
+        return $result;
+    }
+
+    
+    public function get_user_by_id($id) {
+        $sql = sprintf("SELECT * FROM {$this->db['users']} WHERE ID='%d'", $id);
+        $result = $this->db_fetch_row($sql);
+        return $result;
+    }
+    
     public function get_user_by_login($user_login) {
         $sql = sprintf("SELECT * FROM {$this->db['users']} WHERE user_login='%s'", $user_login);
         $result = $this->db_fetch_row($sql);

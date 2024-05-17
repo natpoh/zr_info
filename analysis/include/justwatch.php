@@ -578,16 +578,25 @@ __typename
         $r = Pdo_an::db_results_array($sql);
         foreach ($r as $row) {
 
+
+            $glue = $row['glue'];
             $url = $row['search_query'];
             $category = $row['category'];
             $namecat = $pay_cat[$category];
 
             $include_year = $row['include_year'];
             if ($include_year) {
-                $movie_title_encoded = urlencode($movie_title . ' ' . $year);
-            } else {
-                $movie_title_encoded = urlencode($movie_title);
+                $movie_title =$movie_title . ' ' . $year;
             }
+
+            if ($glue)
+            {
+                $movie_title = str_replace(' ', $glue, $movie_title);
+
+            }
+
+
+            $movie_title_encoded = urlencode($movie_title);
 
             $url = str_replace('$', $movie_title_encoded, $url);
 

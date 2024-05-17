@@ -4,21 +4,14 @@ wp_enqueue_style('movie_single', get_template_directory_uri() . '/css/movie_sing
 wp_enqueue_style('colums_template', get_template_directory_uri() . '/css/colums_template.css', array(), LASTVERSION);
 wp_enqueue_script('section_home', get_template_directory_uri() . '/js/section_home.js', array('jquery'), LASTVERSION);
 
-
 $curauth = (isset($_GET['author_name'])) ? get_user_by('slug', $author_name) : get_userdata(intval($author));
 if (!class_exists('UserCp')) {
     return;
 }
 $usercp = new UserCp($curauth);
 $userCpData = $usercp->user_data;
-
-
 $widgets = $usercp->widgets;
-
-
 $widget_page = $usercp->is_widget_page();
-
-
 
 if ($widget_page) {
     $can_show = $usercp->can_show_page($widget_page);
@@ -43,43 +36,26 @@ $current_page = get_query_var('usercp');
                 <?php
             }
 
-
-                $usercp->render_top_widgets();
-                //Страница виджета
-
-
-
-
-
+            $usercp->render_top_widgets();
+            //Страница виджета
             ?>   
         </article>
         <?php
-
         global $cfront;
         $author = $cfront->cm->get_author_by_wp_uid($curauth->ID, true);
-
         $data = $usercp->get_menu();
 
-
-
         if ($current_page != 'settings') {
-?>
-
-        <nav>
-            <?php echo $data ?>
-        </nav>
-
-        <?php
-
+            ?>
+            <nav>
+                <?php echo $data ?>
+            </nav>
+            <?php
         }
 
         if (!$widget_page) {
-
-         $usercp->render_widgets();
+            $usercp->render_widgets();
         }
-
-
-
 
         if ($widget_page) {
             $page = new UserCpPage($widget_page, $usercp->user_data);

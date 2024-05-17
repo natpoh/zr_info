@@ -797,8 +797,17 @@ class CriticFront extends SearchFacets {
                     $ma = $this->get_ma();
 
                     $erating = $ma->get_movie_erating($critic->top_movie);
+                    
                     if ($erating->thecherrypicks_rating) {
-                        $rating_text = ' <span class="rating-cherry">' . $erating->thecherrypicks_rating . '%</span>';
+                        $woke_rating = $erating->thecherrypicks_rating;
+                        $woke_color = 1;
+                        if ($woke_rating>30){
+                            $woke_color = 2;
+                        } 
+                        if ($woke_rating >60){
+                             $woke_color = 3;
+                        }
+                        $rating_text = ' <span class="rating-review woke-color-'.$woke_color.'">' . $woke_rating . '%</span>';
                     }
                 } else if ($critic->link_id == 178) {
                     // Bechdeltest
@@ -807,15 +816,17 @@ class CriticFront extends SearchFacets {
                     $woke = $ma->get_movie_woke($critic->top_movie);
                     if ($woke->bechdeltest > 0) {
                         $woke_text = '';
+                        $woke_color=1;
                         $filters = $this->cs->search_filters['bechdeltest'];
                         foreach ($filters as $filter) {
                             if ($woke->bechdeltest == $filter['key']) {
                                 $woke_text = $filter['title'];
+                                $woke_color = $filter['color'];
                                 break;
                             }
                         }
                         if ($woke_text) {
-                            $rating_text = ' <span class="rating-bechdeltest">' . $woke_text . '</span>';
+                            $rating_text = ' <span class="rating-review woke-color-'.$woke_color.'">' . $woke_text . '</span>';
                         }
                     }
                 } else if ($critic->link_id == 176) {
@@ -823,17 +834,31 @@ class CriticFront extends SearchFacets {
                     $ma = $this->get_ma();
                     $woke = $ma->get_movie_woke($critic->top_movie);
                     $woke_text = 'Not woke';
+                    $woke_color=1;
                     if ($woke->worthit > 0) {
                         $filters = $this->cs->search_filters['worthit'];
                         foreach ($filters as $filter) {
                             if ($woke->worthit == $filter['key']) {
                                 $woke_text = $filter['title'];
+                                $woke_color = $filter['color'];
                                 break;
                             }
                         }
                     }
 
-                    $rating_text = ' <span class="rating-worthit">' . $woke_text . '</span>';
+                    $rating_text = ' <span class="rating-review woke-color-'.$woke_color.'">' . $woke_text . '</span>';
+                }else if ($critic->link_id == 166) {
+                    // mediaversity
+                    $ma = $this->get_ma();
+
+                    $erating = $ma->get_movie_erating($critic->top_movie);
+                    if ($erating->mediaversity_grade) {
+                        $clear_rating = strtolower(preg_replace('#[^a-zA-Z]+#', '', $erating->mediaversity_grade));
+                        $filters = $this->cs->search_filters['mediaversity'];                        
+                        $woke_color = $filters[$clear_rating]?$filters[$clear_rating]['color']:1;                 
+                        $rating_text = ' <span class="rating-review woke-color-'.$woke_color.'">' . $erating->mediaversity_grade . '</span>';
+                    }
+
                 }
             } catch (Exception $exc) {
                 
@@ -1288,9 +1313,9 @@ class CriticFront extends SearchFacets {
 
         if ($content || $title || $theme_rating) {
 
-            if ($avatars == 'staff') {
+            /*if ($avatars == 'staff') {
                 return '<div class="vote_main">' . $theme_rating . '</div>' . $content . '</div>';
-            }
+            }*/
 
             if ($fullsize) {
                 if ($title) {
@@ -1319,10 +1344,11 @@ class CriticFront extends SearchFacets {
             $actorsdata = $author_admin_img;
         } else if ($avatars) {
             $array_avatars = $avatars[intval($stars_data)];
-
+            
             if (is_array($array_avatars)) {
-                $rand_keys = array_rand($array_avatars, 1);
-                $avatar_user = $array_avatars[$rand_keys];
+                $avatar_user = $cav->get_avatar_rand_key($array_avatars,$critic->id);
+                //$rand_keys = array_rand($array_avatars, 1);
+                //$avatar_user = $array_avatars[$rand_keys];
             }
             if ($avatar_user) {
                 $actorsdata = '<div class="a_img_container_audience" style="background: url(' . WP_SITEURL . '/wp-content/uploads/avatars/custom/' . $avatar_user . '); background-size: cover;"></div>';
@@ -1364,7 +1390,7 @@ class CriticFront extends SearchFacets {
         }
         return $actorsresult;
     }
-
+    
     public function find_staff_rating($content) {
         // DEPRECATED UNUSED
         // Get rating code    
@@ -3689,12 +3715,13 @@ class CriticFront extends SearchFacets {
 
         $publish = $item->publish;
 
+        $pub_icon='';
         if ($publish == 0) {
-            $pub_icon = '<i class="icon-eye-off"></i> ';
+            $pub_icon = '<i class="icon-eye-off"></i> Private';
         }
 
         // Link to full post
-        $link = $uf->get_filter_link($item->id);
+        $link = $uf->get_filter_link($item->id, $wp_user->url);
 
         // img
         $img = $item->img;
@@ -3723,7 +3750,6 @@ class CriticFront extends SearchFacets {
             $filter_content = '
                     <div class="sfilter-item">' . $img_str
                     . '<h3 class="sfilter-title"><a href="' . $link . '">' . $title . '</a></h3>' . $content
-                    . '<div class="sfliter-link">Link: ' . $pub_icon . '<a href="' . $link . '">' . $link . '</a></div>'
                     . '<div>' . $fdata['tags'] . "</div></div>";
         }
 
@@ -3742,7 +3768,7 @@ class CriticFront extends SearchFacets {
 
         $actorsdata_link = '<a href="' . $author_link . '">' . $actorsdata . '</a>';
 
-        $review_bottom = '<div class="review_bottom"><div class="r_type"></div><div class="r_right"><div class="r_date">' . $critic_addtime . '</div>' . $country_img . '</div></div>';
+        $review_bottom = '<div class="review_bottom"><div class="r_type">' . $pub_icon . '</div><div class="r_right"><div class="r_date">' . $critic_addtime . '</div>' . $country_img . '</div></div>';
 
         $reaction_data = $this->get_user_reactions($item->id, 1, false);
 
@@ -3865,11 +3891,12 @@ class CriticFront extends SearchFacets {
         $publish = $item->publish;
 
         if ($publish == 0) {
-            $pub_icon = '<i class="icon-eye-off"></i> ';
+            $pub_icon = '<i class="icon-eye-off"></i> Private. ';
         }
 
+        
         // Link to full post
-        $link = "/search/wl_" . $item->id;
+        $link = $wl->get_list_link($item->id,$wp_user->url);
 
         // img
         $img_str = $wl->get_list_collage($item->id);

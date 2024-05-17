@@ -2987,12 +2987,12 @@ function update_just_watch()
 
 
 
-function add_providers()
+function add_providers($force=0)
 {
 
  !class_exists('JustWatch') ? include ABSPATH . "analysis/include/justwatch.php" : '';
 
- JustWatch::get_providers();
+ JustWatch::get_providers($force);
 
 return;
 
@@ -3345,7 +3345,15 @@ return;
 
 /////////add providers
 if (isset($_GET['add_providers'])) {
-    add_providers();
+
+    global $force;
+    $force=0;
+    if (isset($_GET['force']))
+    {
+        $force=1;
+    }
+    add_providers($force);
+
 }
 else if (isset($_GET['add_pgrating'])) {
     add_pgrating($_GET['add_pgrating']);

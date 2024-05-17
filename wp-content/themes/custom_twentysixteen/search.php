@@ -28,17 +28,13 @@ if (isset($_POST['filters'])) {
     $is_actor = isset($filters['actor']);
 
     $post_type_slug = '';
-    if ($is_actor)
-    {
+    if ($is_actor) {
         global $post_name;
         $post_name = $filters['actor'];
 
         include 'actor.php';
         return;
-   }
-
-
-    else if ($is_movie || $is_tv || $is_game || $is_podcastseries) {
+    } else if ($is_movie || $is_tv || $is_game || $is_podcastseries) {
         if ($is_movie) {
             $post_name = $filters['movies'];
             $post_type = 'Movie';
@@ -91,17 +87,15 @@ if (isset($_POST['filters'])) {
         return;
     }
 
-
-
-    // Single critic post
+    $sfilter = '';
+    $swatchilst='';
 
     if (isset($filters['sfilter'])) {
         // Load custom search filter
         $uf = $cfront->cm->get_uf();
-        $req = $_SERVER['REQUEST_URI'];
         global $sfilter;
-        $sfilter = $uf->load_filter_by_url($req);
-        
+        $sfilter = $uf->load_filter_by_filter($filters['sfilter']);
+
         /* p_r($sfilter);
           exit;
          * stdClass Object
@@ -119,6 +113,7 @@ if (isset($_POST['filters'])) {
             if (in_array($sfilter->tab, $uf->an_tabs)) {
                 // Analytics
                 $filters['analytics'] = 1;
+                unset($filters['search']);
                 $_SERVER['REQUEST_URI'] = $sfilter->link;
             } else {
                 // Search
@@ -126,6 +121,44 @@ if (isset($_POST['filters'])) {
                 $_SERVER['REQUEST_URI'] = $sfilter->link;
                 $cfront = new CriticFront();
             }
+        } else {
+            // Redirect to 404
+            global $wp_query;
+            $wp_query->set_404();
+            status_header(404);
+            get_template_part(404);
+            exit();
+        }
+    } else if (isset($filters['swatchlist'])) {
+
+        // Load custom watchlist
+        $wl = $cfront->cm->get_wl();
+        global $swatchilst;
+        $swatchilst = $wl->load_list_by_filter($filters['swatchlist']);
+        
+    /*
+          stdClass Object
+          (
+          [id] => 3
+          [date] => 1715773065
+          [last_upd] => 1715773067
+          [wp_uid] => 42
+          [aid] => 1374
+          [publish] => 1
+          [top_mid] => 0
+          [rating] => 0
+          [items] => 1
+          [title] => test list
+          [content] => test custom desc
+          [type] => 0
+          )
+         */
+        if ($swatchilst) {
+            $watchilst_link = '/search/wl_' . $swatchilst->id;
+            // Search
+            $filters['search'] = 1;
+            $_SERVER['REQUEST_URI'] = $watchilst_link;
+            $cfront = new CriticFront();
         } else {
             // Redirect to 404
             global $wp_query;
@@ -172,14 +205,16 @@ if (isset($_POST['filters'])) {
             $search_title = 'Search results:';
             $search_text = 'Search Results for: ' . $keywords . '. ' . $blog_title;
         }
-        if ($sfilter){
+        if ($sfilter) {
             $search_title = $sfilter->title;
+        }else if ($swatchilst){
+            $search_title = $swatchilst->title;
         }
 
         $tab_key = $cfront->get_tab_key();
         // Create url
         $search_url = $cfront->get_current_search_url();
-        
+
         $user_filter_id = $cfront->get_user_search_filter($uid, $search_url);
 
         $fiters = $cfront->search_filters($tab_key, $uid);
@@ -239,7 +274,7 @@ if (isset($_POST['filters'])) {
 
         // Create url
         $search_url = $search_front->get_current_search_url();
-        
+
         $user_filter_id = $search_front->get_user_search_filter($uid, $search_url);
 
         $fiters = $search_front->search_filters($tab_key, $uid);

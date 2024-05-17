@@ -95,6 +95,10 @@ watchlist.edit_watchlist_click = function (list = null) {
 
     $('#wl_title').val(data_json.title);
     $('#wl_content').val(data_json.content);
+    console.log(data_json);
+    if (data_json.type!=='0'){
+        $('#wl_title').attr('disabled','disabled');
+    }
 
     if (data_json.publish === '1') {
         $('#wl_publish').prop('checked', 'checked');

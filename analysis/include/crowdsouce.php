@@ -1323,7 +1323,7 @@ if (Number(min_width)>Number(width)){
             afterInsertRow : function( row_id, rowdata, rawdata) {
 
                 var data_type = '<?php echo  $datatype; ?>';
-                console.log(data_type);
+
 
                 if (data_type =='option_sheme') {
                     if (rowdata.id) {
@@ -1573,15 +1573,78 @@ if (Number(min_width)>Number(width)){
 
         });
 
+        <?php
+        $request = $_GET;
 
-
-        <?php if (isset($_GET['status']))
+        if ($request['page'])
         {
-        echo "jQuery('select[id=\"gs_status\"]').val('".$_GET['status']."').change();";
+            unset($request['page']);
+        }
+       if ($request)
+        {
+            $request = json_encode($request);
+        }
 
-        } ?>
+        ?>
+        let request_string = '<?php echo $request;?>';
+        if (request_string)
+        {
+            request_string = JSON.parse(request_string);
+        }
+        $.each(request_string, function(key, value) {
+
+            var inputSelector = 'input[id="gs_' + key + '"]';
+            var selectSelector = 'select[id="gs_' + key + '"]';
 
 
+            var element = $(inputSelector);
+
+            if (element.length === 0) {
+                element = $(selectSelector);
+            }
+
+            if (element.length > 0) {
+                element.val(value).change();
+                if (element.is('input')) {
+                    console.log('ellement with id "' + key + '" is input');
+
+                    setTimeout(function () {
+                        element.val(value).change();
+                        $('#gs_SEARCHFIELDID').val('value').trigger("change");
+                        jQuery('#<?php echo $tab_name;?>')[0].triggerToolbar();
+                    },1000);
+                }
+            } else {
+                console.log('Element with id "' + key + '" not found.');
+            }
+        });
+
+
+
+        $('div[id="gview_<?php echo $tab_name;?>"] .ui-search-toolbar input').on('keyup', function(e){
+
+            var $this = $(this);
+            var delay = 1000;
+
+            if (e.keyCode==13)
+            {
+                delay = 1;
+
+            }
+
+            clearTimeout($this.data('timer'));
+            $this.data('timer', setTimeout(function () {
+                $this.removeData('timer');
+                $(this).change();
+                $('#gs_SEARCHFIELDID').val('value').trigger("change");
+                jQuery('#<?php echo $tab_name;?>')[0].triggerToolbar();
+
+
+            }, delay));
+
+
+
+        });
     });
 
 

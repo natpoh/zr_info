@@ -18,51 +18,44 @@ add_filter('body_class', function ($classes) {
     return $classes;
 });
 
+if (!function_exists('custom_search_title')) {
+
+    function custom_search_title() {
+        global $title, $search_text, $sfilter, $swatchilst;
+        $ret = $title;
+        if ($search_text) {
+            $ret = trim(strip_tags($search_text));
+        }
+        if ($sfilter) {
+            $ret = $sfilter->title;
+        } else if ($swatchilst) {
+            $ret = $swatchilst->title;
+        }
+        return $ret;
+    }
+
+}
+
 add_filter('pre_get_document_title', function () {
-    global $title, $search_text, $sfilter;
-    $ret = $title;
-    if ($search_text) {
-        $ret = trim(strip_tags($search_text));
-    }
-    if ($sfilter) {
-        $ret = $sfilter->title;
-    }
-    return $ret;
+    return custom_search_title();
 });
-
 add_filter('wpseo_opengraph_title', function () {
-    global $title, $search_text, $sfilter;
-    $ret = $title;
-    if ($search_text) {
-        $ret = trim(strip_tags($search_text));
-    }
-    if ($sfilter) {
-        $ret = $sfilter->title;
-    }
-    return $ret;
+    return custom_search_title();
 });
-
 add_filter('fb_og_title', function () {
-    global $title, $search_text, $sfilter;
-    $ret = $title;
-    if ($search_text) {
-        $ret = trim(strip_tags($search_text));
-    }
-    if ($sfilter) {
-        $ret = $sfilter->title;
-    }
-    return $ret;
+    return custom_search_title();
 });
 
 add_filter('fb_og_desc', function () {
-    global $sfilter;
+    global $sfilter, $swatchilst;
     $ret = '';
     if ($sfilter) {
         $ret = strip_tags($sfilter->content);
+    } else if ($swatchilst) {
+        $ret = $swatchilst->content;
     }
     return $ret;
 });
-
 
 if ($sfilter) {
     if ($sfilter->img) {

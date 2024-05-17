@@ -1193,8 +1193,20 @@ function critic_matic_plugin_activation() {
     $sql = "CREATE TABLE IF NOT EXISTS  `data_movie_erating`(
 				`id` int(11) unsigned NOT NULL auto_increment,
                                 `movie_id` int(11) NOT NULL DEFAULT '0', 
+                                `title` varchar(255) NOT NULL default '',
                                 `date` int(11) NOT NULL DEFAULT '0',  
                                 `last_upd` int(11) NOT NULL DEFAULT '0', 
+                                `audience_rating_five` float(5) NOT NULL DEFAULT '0',
+                                `audience_affirmative` float(5) NOT NULL DEFAULT '0',
+                                `audience_god` float(5) NOT NULL DEFAULT '0',
+                                `audience_hollywood` float(5) NOT NULL DEFAULT '0' ,
+                                `audience_lgbtq` float(5) NOT NULL DEFAULT '0',
+                                `audience_misandry` float(5) NOT NULL DEFAULT '0' ,
+                                `audience_patriotism` float(5) NOT NULL DEFAULT '0',
+                                `audience_vote` int(11) NOT NULL DEFAULT '0',
+                                `audience_rating` int(11) NOT NULL DEFAULT '0',
+                                `audience_count` int(11) NOT NULL DEFAULT '0',
+                                `audience_date` int(11) NOT NULL DEFAULT '0',
                                 `kinop_rating` int(11) NOT NULL DEFAULT '0',                             
                                 `kinop_count` int(11) NOT NULL DEFAULT '0',
                                 `kinop_date` int(11) NOT NULL DEFAULT '0',                                 
@@ -1222,98 +1234,29 @@ function critic_matic_plugin_activation() {
                                 `rt_date` int(11) NOT NULL DEFAULT '0',
                                 `total_count` int(11) NOT NULL DEFAULT '0',
                                 `total_rating` int(11) NOT NULL DEFAULT '0',
+                                `metacritic_rating` int(11) NOT NULL DEFAULT '0',
+                                `metacritic_count` int(11) NOT NULL DEFAULT '0',
+                                `metacritic_date` int(11) NOT NULL DEFAULT '0',
+                                `metacritic_userscore` int(11) NOT NULL DEFAULT '0',
+                                `eiga_rating` int(11) NOT NULL DEFAULT '0',
+                                `eiga_count` int(11) NOT NULL DEFAULT '0',
+                                `eiga_date` int(11) NOT NULL DEFAULT '0',
+                                `moviemeter_rating` int(11) NOT NULL DEFAULT '0',
+                                `moviemeter_count` int(11) NOT NULL DEFAULT '0',
+                                `moviemeter_date` int(11) NOT NULL DEFAULT '0',
+                                `mediaversity_rating` int(11) NOT NULL DEFAULT '0',
+                                `mediaversity_grade` varchar(255) NOT NULL default '',
+                                `mediaversity_date` int(11) NOT NULL DEFAULT '0',
+                                `thecherrypicks_rating` int(11) NOT NULL DEFAULT '0',
+                                `thecherrypicks_date` int(11) NOT NULL DEFAULT '0',
+                                `ofdb_rating` int(11) NOT NULL DEFAULT '0',
+                                `ofdb_count` int(11) NOT NULL DEFAULT '0',
+                                `ofdb_date` int(11) NOT NULL DEFAULT '0',
+                                `opencritic_rating` int(11) NOT NULL DEFAULT '0',
+                                `opencritic_count` int(11) NOT NULL DEFAULT '0',
+                                `opencritic_date` int(11) NOT NULL DEFAULT '0',
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
-
-    // metacritic
-    $sql = "ALTER TABLE `data_movie_erating` ADD `metacritic_rating` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-    $sql = "ALTER TABLE `data_movie_erating` ADD `metacritic_count` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-    $sql = "ALTER TABLE `data_movie_erating` ADD `metacritic_date` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-    $sql = "ALTER TABLE `data_movie_erating` ADD `metacritic_userscore` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-
-    // eiga
-    $sql = "ALTER TABLE `data_movie_erating` ADD `eiga_rating` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-    $sql = "ALTER TABLE `data_movie_erating` ADD `eiga_count` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-    $sql = "ALTER TABLE `data_movie_erating` ADD `eiga_date` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-
-    // moviemeter
-    $sql = "ALTER TABLE `data_movie_erating` ADD `moviemeter_rating` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-    $sql = "ALTER TABLE `data_movie_erating` ADD `moviemeter_count` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-    $sql = "ALTER TABLE `data_movie_erating` ADD `moviemeter_date` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-
-    // Audience rating
-    $sql = "ALTER TABLE `data_movie_erating` ADD `audience_rating` int(11) NOT NULL DEFAULT '0' AFTER last_upd";
-    Pdo_an::db_query($sql);
-    $sql = "ALTER TABLE `data_movie_erating` ADD `audience_date` int(11) NOT NULL DEFAULT '0' AFTER audience_rating";
-    Pdo_an::db_query($sql);
-    $sql = "ALTER TABLE `data_movie_erating` ADD `title` varchar(255) NOT NULL default '' AFTER movie_id";
-    Pdo_an::db_query($sql);
-    $sql = "ALTER TABLE `data_movie_erating` ADD `audience_count` int(11) NOT NULL DEFAULT '0' AFTER audience_rating";
-    Pdo_an::db_query($sql);
-
-    $sql = "ALTER TABLE `data_movie_erating` ADD `audience_vote` int(11) NOT NULL DEFAULT '0' AFTER last_upd";
-    Pdo_an::db_query($sql);
-
-    $sql = "ALTER TABLE `data_movie_erating` ADD `audience_rating_five` float(5) NOT NULL DEFAULT '0' AFTER last_upd";
-    Pdo_an::db_query($sql);
-
-    $sql = "ALTER TABLE `data_movie_erating` ADD `audience_affirmative` float(5) NOT NULL DEFAULT '0' AFTER last_upd";
-    Pdo_an::db_query($sql);
-
-    $sql = "ALTER TABLE `data_movie_erating` ADD `audience_god` float(5) NOT NULL DEFAULT '0' AFTER last_upd";
-    Pdo_an::db_query($sql);
-
-    $sql = "ALTER TABLE `data_movie_erating` ADD `audience_hollywood` float(5) NOT NULL DEFAULT '0' AFTER last_upd";
-    Pdo_an::db_query($sql);
-
-    $sql = "ALTER TABLE `data_movie_erating` ADD `audience_lgbtq` float(5) NOT NULL DEFAULT '0' AFTER last_upd";
-    Pdo_an::db_query($sql);
-
-    $sql = "ALTER TABLE `data_movie_erating` ADD `audience_misandry` float(5) NOT NULL DEFAULT '0' AFTER last_upd";
-    Pdo_an::db_query($sql);
-
-    $sql = "ALTER TABLE `data_movie_erating` ADD `audience_patriotism` float(5) NOT NULL DEFAULT '0' AFTER last_upd";
-    Pdo_an::db_query($sql);
-
-    // mediaversity
-    $sql = "ALTER TABLE `data_movie_erating` ADD `mediaversity_rating` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-    $sql = "ALTER TABLE `data_movie_erating` ADD `mediaversity_grade` varchar(255) NOT NULL default ''";
-    Pdo_an::db_query($sql);
-    $sql = "ALTER TABLE `data_movie_erating` ADD `mediaversity_date` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-
-    // thecherrypicks
-    $sql = "ALTER TABLE `data_movie_erating` ADD `thecherrypicks_rating` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-    $sql = "ALTER TABLE `data_movie_erating` ADD `thecherrypicks_date` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-
-    // ofdb
-    $sql = "ALTER TABLE `data_movie_erating` ADD `ofdb_rating` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-    $sql = "ALTER TABLE `data_movie_erating` ADD `ofdb_count` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-    $sql = "ALTER TABLE `data_movie_erating` ADD `ofdb_date` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-
-    // opencritic
-    $sql = "ALTER TABLE `data_movie_erating` ADD `opencritic_rating` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-    $sql = "ALTER TABLE `data_movie_erating` ADD `opencritic_count` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
-    $sql = "ALTER TABLE `data_movie_erating` ADD `opencritic_date` int(11) NOT NULL DEFAULT '0'";
-    Pdo_an::db_query($sql);
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('movie_id', 'date', 'last_upd', 'total_rating'), "data_movie_erating");
@@ -1533,6 +1476,13 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
 
     /*
+     * Woke or not
+     */
+    $sql = "ALTER TABLE `data_woke` ADD `wokeornot` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
+    
+    
+    /*
      * Simpson
      */
     $sql = "ALTER TABLE `data_woke` ADD `simpson_all` int(11) NOT NULL DEFAULT '0'";
@@ -1737,6 +1687,19 @@ function critic_matic_plugin_activation() {
     critic_matic_create_index_an(array('date', 'lid', 'mid'), "watch_item");
 
     /*
+     * Guest avatar id
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `meta_guest_avatar`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                
+                                `cid` int(11) NOT NULL DEFAULT '0',
+                                `avid` int(11) NOT NULL DEFAULT '0',
+				PRIMARY KEY  (`id`)
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('cid', 'avid'), "meta_guest_avatar");
+
+    /*
      * Critic crowd last update
      */
     $sql = "ALTER TABLE `data_critic_crowd` ADD `last_update` int(11) NOT NULL DEFAULT '0'";
@@ -1760,7 +1723,32 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('aid', 'star_date', 'main_date', 'crowd_weight','star_ver', 'main_ver'), "meta_actor_weight");
+    critic_matic_create_index_an(array('aid', 'star_date', 'main_date', 'crowd_weight', 'star_ver', 'main_ver'), "meta_actor_weight");
+
+    /*
+     * Critic erating
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_critic_erating`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `cid` int(11) NOT NULL DEFAULT '0',                                 
+                                `date` int(11) NOT NULL DEFAULT '0',  
+                                `last_upd` int(11) NOT NULL DEFAULT '0',
+                                `mediaversity_rating` int(11) NOT NULL DEFAULT '0',
+                                `mediaversity_grade` varchar(255) NOT NULL default '',
+                                `mediaversity_date` int(11) NOT NULL DEFAULT '0',
+                                `thecherrypicks_rating` int(11) NOT NULL DEFAULT '0',
+                                `thecherrypicks_date` int(11) NOT NULL DEFAULT '0',
+                                `bechdeltest_date` int(11) NOT NULL DEFAULT '0',
+                                `bechdeltest_rating` int(11) NOT NULL DEFAULT '0',
+                                `worthit_date` int(11) NOT NULL DEFAULT '0',
+                                `worthit_rating` int(11) NOT NULL DEFAULT '0',
+                                `wokeornot_date` int(11) NOT NULL DEFAULT '0',
+                                `wokeornot_rating` int(11) NOT NULL DEFAULT '0',
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    //Pdo_an::db_query($sql);
+    //critic_matic_create_index_an(array('cid', 'date', 'last_upd'), "data_critic_erating");
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {

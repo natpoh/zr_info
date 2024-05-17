@@ -116,20 +116,21 @@ class CustomRating
         $data = json_decode($data, 1);
         //var_dump($data);
         !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-        OptionData::set_option('',serialize($data),'woke_rating_weight',1);
+        OptionData::set_option('',json_encode($data,JSON_PRETTY_PRINT),'woke_rating_weight',1);
         echo 'ok';
 
         return;
     }
 
-        echo '<h1>Woke Rating</h1>';
+        echo '<h1>Woke Rating</h1><a href="/wp-admin/admin.php?page=light_movies_custom_fields&type=woke_rating_weight">setup</a>';
 
         !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
         $value  =OptionData::get_options('','woke_rating_weight');
 
         if ($value) {
-         $array = unserialize($value);
+         $array = json_decode($value,1);
         }
+        ///echo json_encode($array,JSON_PRETTY_PRINT);
 
         if (!$array)
         {
@@ -149,7 +150,7 @@ class CustomRating
                 ,'country'=>['diversity_country_list'=>'United States,Canada,France,United Kingdom']];
 
             !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
-            OptionData::set_option('',serialize($array),'woke_rating_weight',1);
+            OptionData::set_option('',json_encode($array,JSON_PRETTY_PRINT),'woke_rating_weight',1);
         }
         if (!$array['other_weight']['rating_max'])
         {

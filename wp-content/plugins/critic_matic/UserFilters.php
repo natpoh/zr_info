@@ -49,9 +49,9 @@ class UserFilters extends AbstractDB {
         $source_dir = WP_CONTENT_DIR . '/uploads/' . $this->filters_img_dir;
 
         if (!$title) {
-           $title = 'Filter ' . $this->curr_date();
+            $title = 'Filter ' . $this->curr_date();
         }
-        
+
         $user = $this->cm->get_current_user();
         $wp_uid = isset($user->ID) ? (int) $user->ID : 0;
 
@@ -233,8 +233,9 @@ class UserFilters extends AbstractDB {
 
     public function link_form($link) {
 
-        if (preg_match('#/f/([0-9]+)#', $link, $match)) {
-            $filter = $this->load_filter_by_url($link);
+        if (preg_match('#^/search/([0-9A-Za-z_-]+)/filters/([0-9]+)#', $link, $match)) {
+            $filters = array('user' => $match[1], 'filter' => $match[2]);
+            $filter = $this->load_filter_by_filter($filters);
             $link = $filter->link;
         }
 
@@ -286,9 +287,9 @@ class UserFilters extends AbstractDB {
             <div class="row">
                 <div class="col_title">
                     <?php
-                    $user_profile = '/author/'.$user->user_nicename.'/';
+                    $user_profile = '/author/' . $user->user_nicename . '/';
                     $logged_in_as = '<p class="logged-in-as">' .
-                            sprintf('You are logged in as <a href="%1$s">%2$s</a>.', $user_profile, $user_identity). '</p>';   
+                            sprintf('You are logged in as <a href="%1$s">%2$s</a>.', $user_profile, $user_identity) . '</p>';
                     print $logged_in_as;
                     ?>               
                 </div>
@@ -303,10 +304,10 @@ class UserFilters extends AbstractDB {
                     <div class="col_input">  
                         <button id="upl_filter_image" class="btn-small">Upload image</button>                     
                         <button id="remove_filter_image" class="btn-small btn-second<?php
-                            if (!$img) {
-                                print " ishide";
-                            }
-                            ?>">Remove image</button>
+                        if (!$img) {
+                            print " ishide";
+                        }
+                        ?>">Remove image</button>
                         <input type="file" id="upl_filter_file" style="display: none;" >                                        
                         <input type="hidden" id="upl_filter_thumb" >                    
                         <input type="hidden" id="remove_filter_thumb" val="0"> 
@@ -337,10 +338,10 @@ class UserFilters extends AbstractDB {
             <div class="row">                
                 <div class="col_title form-check">                     
                     <input type="checkbox" name="publish" value="1" id="publish" <?php
-            if ($publish) {
-                print "checked";
-            }
-            ?> >
+                    if ($publish) {
+                        print "checked";
+                    }
+                    ?> >
                     <label for="publish">
                         Publish to the public filter list.
                     </label>                    
@@ -425,8 +426,8 @@ class UserFilters extends AbstractDB {
         return $ret;
     }
 
-    public function get_filter_link($fid) {
-        $link = '/f/' . $fid;
+    public function get_filter_link($fid = 0, $user_nicename = '') {
+        $link = "/search/{$user_nicename}/filters/{$fid}";
         return $link;
     }
 
@@ -506,16 +507,21 @@ class UserFilters extends AbstractDB {
         return compact('comment_author', 'comment_author_pass');
     }
 
-    public function load_filter_by_url($url = '') {
-        $fid = 0;
-        if (preg_match('#/f/([0-9]+)#', $url, $match)) {
-            $fid = $match[1];
+    public function load_filter_by_filter($filter = array()) {
+        //$filter = Array ( [user] => sergemel [filter] => 3 )
+        $ret = array();
+        try {
+            $wpu = $this->cm->get_wpu();
+            $user = $wpu->get_user_by_slug($filter['user']);
+
+            if ($user) {
+                $ret = $this->get_user_filter_by_id($filter['filter'], $user->ID);
+            }
+        } catch (Exception $exc) {
+            
         }
-        $filter = array();
-        if ($fid) {
-            $filter = $this->get_user_filter_by_id($fid);
-        }
-        return $filter;
+
+        return $ret;
     }
 
     public function get_post_wp_author($id = 0) {
@@ -545,11 +551,15 @@ class UserFilters extends AbstractDB {
         }
     }
 
-    public function get_user_filter_by_id($id = 0) {
+    public function get_user_filter_by_id($id = 0, $wp_uid = 0) {
+        $wp_uid_and = '';
+        if ($wp_uid > 0) {
+            $wp_uid_and = ' AND f.wp_uid=' . (int) $wp_uid;
+        }
         $sql = sprintf("SELECT f.id, f.title, f.content, f.aid, f.wp_uid, f.img, l.link, l.tab "
                 . "FROM {$this->db['user_filters']} f "
                 . "INNER JOIN {$this->db['link_filters']} l ON l.id=f.fid "
-                . "WHERE f.id=%d", $id);
+                . "WHERE f.id=%d" . $wp_uid_and, $id);
 
         $result = $this->db_fetch_row($sql);
         return $result;
@@ -599,7 +609,9 @@ class UserFilters extends AbstractDB {
         return $src_type;
     }
 
-    public function get_filters_page_by_wpuid($wp_uid = 0, $owner = 0, $url, $perpage = 10, $page = 1) {
+    public function get_filters_page_by_wpuid($wp_uid = 0, $user_nicename = '', $owner = 0, $url, $perpage = 10, $page = 1) {
+
+        // USED BY USERCP
         $posts = $this->get_filters_by_wpuser($wp_uid, $owner, $perpage, $page);
         $content = '';
         if ($posts) {
@@ -607,32 +619,30 @@ class UserFilters extends AbstractDB {
             ?>
             <div class="simple">
                 <div class="items<?php
-            if ($owner) {
-                print " owner";
-            }
-            ?>" data-id="0">
-                     <?php
+                if ($owner) {
+                    print " owner";
+                }
+                ?>" data-id="0">
+                         <?php
                          foreach ($posts as $post) {
 
                              // Link to filter
-                             $link = $this->get_filter_link($post->id);
+                             $link = $this->get_filter_link($post->id, $user_nicename);
 
                              // Time
                              $ptime = $post->date;
                              $addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
 
                              // Title
-                             $title = strip_tags($post->title);
+                             $title = stripslashes($post->title);
+                             $desc = stripslashes($post->content);
 
                              $publish = $post->publish;
                              $pub_icon = '';
-                             if ($owner) {
-                                 if ($publish == 0) {
-                                     $pub_icon = '<i class="icon-eye-off"></i>';
-                                 } else {
-                                     $pub_icon = '<i class="icon-eye"></i>';
-                                 }
+                             if ($owner && $publish == 0) {
+                                 $pub_icon = '<i class="icon-eye-off"></i> Private. ';
                              }
+
                              $img = '';
                              if ($post->img) {
                                  $img = $this->get_img_path($post->img);
@@ -646,6 +656,7 @@ class UserFilters extends AbstractDB {
                                 <div class="desc">
                                     <h5><?php print $title ?></h5>
                                     <p><?php print $addtime ?>.<?php print $pub_icon ?></p>
+                                    <p><?php print $desc ?></p>
                                 </div>
                             </a>                                       
                             <?php if ($owner): ?>                                            
@@ -676,7 +687,7 @@ class UserFilters extends AbstractDB {
         return $content;
     }
 
-    public function get_filters_widget_by_wpuid($wp_uid = 0, $owner = 0, $perpage = 10) {
+    public function get_filters_widget_by_wpuid($wp_uid = 0, $user_nicename = '', $owner = 0, $perpage = 10) {
         $posts = $this->get_filters_by_wpuser($wp_uid, $owner, $perpage);
 
         $content = '';
@@ -689,23 +700,20 @@ class UserFilters extends AbstractDB {
                     foreach ($posts as $post) {
 
                         // Link to filter
-                        $link = $this->get_filter_link($post->id);
+                        $link = $this->get_filter_link($post->id, $user_nicename);
 
                         // Time
                         $ptime = $post->date;
                         $addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
 
                         // Title
-                        $title = strip_tags($post->title);
+                        $title = stripslashes($post->title);
+                        $desc = stripslashes($post->content);
 
                         $publish = $post->publish;
                         $pub_icon = '';
-                        if ($owner) {
-                            if ($publish == 0) {
-                                $pub_icon = '<i class="icon-eye-off"></i>';
-                            } else {
-                                $pub_icon = '<i class="icon-eye"></i>';
-                            }
+                        if ($owner && $publish == 0) {
+                            $pub_icon = '<i class="icon-eye-off"></i> Private. ';
                         }
                         $img = '';
                         if ($post->img) {
@@ -719,7 +727,8 @@ class UserFilters extends AbstractDB {
                                 <?php endif ?>
                                 <div class="desc">
                                     <h5><?php print $title ?></h5>
-                                    <p><?php print $addtime ?></p>
+                                    <p><?php print $addtime ?>.<?php print $pub_icon ?></p>
+                                    <p><?php print $desc ?></p>
                                 </div>
                             </a>
                         </div>
@@ -732,5 +741,4 @@ class UserFilters extends AbstractDB {
         }
         return $content;
     }
-
 }

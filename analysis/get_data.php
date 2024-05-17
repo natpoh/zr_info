@@ -151,7 +151,7 @@ function single_movie($curent_user='')
             !class_exists('WOKE') ? include ABSPATH . "analysis/include/woke.php" : '';
             $woke = new WOKE;
 
-            $woke->zr_woke_calc($mid,1);
+            $woke->zr_woke_calc($mid,1,0,0);
 
 
             return;

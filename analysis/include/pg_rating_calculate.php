@@ -1839,6 +1839,10 @@ class PgRatingCalculate {
                 Import::create_commit('', 'update', 'data_pg_rating', array('rwt_id' => $id), 'pg_rating', 9, ['skip' => ['id']]);
             }
 
+            ///update woke rating
+            !class_exists('WOKE') ? include ABSPATH . "analysis/include/woke.php" : '';
+            $woke = new WOKE;
+            $woke->zr_woke_calc($id,0,1,1);
 
         }
 
