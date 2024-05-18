@@ -2330,7 +2330,7 @@ function update_all_pg_rating()
     $count = count($rows);
 
 
-    if (!$current_data['is_run'] || $current_data['last_update']<time()-60*3) {
+    if (!$current_data['is_run'] || $current_data['last_update']<time()-360) {
         $i = 0;
         $current_data['is_run'] = 1;
         $current_data['last_update'] = time();
