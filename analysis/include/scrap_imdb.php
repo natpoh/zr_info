@@ -2300,7 +2300,7 @@ function get_actor_result($data)
 
 function update_all_pg_rating()
 {
-    start_cron_time(300);
+    start_cron_time(40);
 
     !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
     $current_data  = OptionData::get_options('','pg_last_update');
@@ -2330,7 +2330,7 @@ function update_all_pg_rating()
     $count = count($rows);
 
 
-    if (!$current_data['is_run'] || $current_data['last_update']<time()-360) {
+    if (!$current_data['is_run'] || $current_data['last_update']<time()-60) {
         $i = 0;
         $current_data['is_run'] = 1;
         $current_data['last_update'] = time();
