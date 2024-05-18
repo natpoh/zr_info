@@ -2314,6 +2314,13 @@ function update_all_pg_rating()
     }
     $startpos = $current_data['position'];
 
+
+    if ($current_data['last_update']<time()-86400)
+    {
+        $startpos=0;
+    }
+
+
     global $debug;
     !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
 
