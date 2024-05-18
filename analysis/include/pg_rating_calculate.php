@@ -1125,7 +1125,7 @@ class PgRatingCalculate {
             $keys = array_keys($array_result);
 
             $str = implode(',', $array_result[$keys[0]][0]);
-            self::check_pg_limit($str, $array_result[$keys[0]][1], $keys[0], 1, $comment);
+            self::check_pg_limit($str, $array_result[$keys[0]][1], $keys[0], $debug, $comment);
 
             $total_lgbt_result = $keys[0];
             $lgbt_text_string_total = implode(',', $lgbt_text_total);

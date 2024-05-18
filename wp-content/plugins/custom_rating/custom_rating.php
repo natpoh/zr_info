@@ -456,7 +456,7 @@ class CustomRating
 
 
         echo '<p style="margin: 20px;"><input type="submit" name="submit" id="submit" class="button button-primary rating_save" value="Save Changes"><span style=" padding-left: 10px; padding-right: 10px;  font-style: italic;" class="rating_save_result"></span>
-<input type="button" class="button button-primary rating_update" value="Update all PG rating"></p>';
+<input type="button" class="button button-primary rating_update" value="Update all PG rating"></p><div class="rating_update_data"><div class="rating_update_status"></div></div>';
         echo '<h4>Rating table</h4>';
 
         echo '<table id="jqGrid"></table><div id="jqGridPager"></div>';
@@ -893,11 +893,29 @@ class CustomRating
 
             jQuery(document).ready(function () {
 
+                function updateProgress() {
+                    console.log('updateProgress');
+                    fetch('<?php echo REMOTE_DOMAIN; ?>/analysis/include/scrap_imdb.php?update_all_pg_rating')
+                        .then(response => response.json())
+                        .then(data => {
+                            let count = data.count;
+                            let total = data.total;
+                            let percentage = (count / total) * 100;
 
+                            let progressBar = document.querySelector('.rating_update_status');
+                            progressBar.style.width = percentage + '%';
+                            progressBar.textContent = Math.round(percentage) + '%';
+                        })
+                        .catch(error => console.error('Error:', error));
+                }
 
                 jQuery('.rating_update').click(function () {
 
-                    window.open(window.location.protocol+"/analysis/include/scrap_imdb.php?update_all_pg_rating");
+                    // Call updateProgress every 5 seconds
+                    setInterval(updateProgress, 5000);
+
+                    // Call it once immediately to start the process
+                    updateProgress();
 
                 });
                 jQuery('.rating_save').click(function () {
@@ -1204,6 +1222,25 @@ class CustomRating
     .subgrid-data   td {
         white-space: pre-wrap;
         word-wrap: anywhere;
+    }
+
+     .rating_update_data {
+         width: 100%;
+         background-color: #f3f3f3;
+         border: 1px solid #ccc;
+         border-radius: 5px;
+         overflow: hidden;
+         position: relative;
+     }
+
+    .rating_update_status {
+        width: 0;
+        height: 30px;
+        background-color: #4caf50;
+        text-align: center;
+        color: white;
+        line-height: 30px;
+        border-radius: 5px;
     }
 
 </style>

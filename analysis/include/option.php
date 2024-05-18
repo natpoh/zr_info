@@ -76,7 +76,7 @@ class OptionData {
         return $data;
     }
 
-    public static function get_options($id=null,$type=null,$cheach_enable=null)
+    public static function get_options($id=null,$type=null,$check_enable=null)
     {
         if ($id) {
 
@@ -90,7 +90,7 @@ class OptionData {
         }
 
         $rows = Pdo_an::db_fetch_row($sql);
-        if ($cheach_enable)
+        if ($check_enable)
         {
             if ($rows)
             {
