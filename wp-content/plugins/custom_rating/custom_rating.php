@@ -469,11 +469,11 @@ class CustomRating
         $array_rows = array(
             'id'=>array('w'=>5)
         );
-
+        self::rating_script();
         Crowdsource::Show_admin_table('pg_rating',$array_rows,1,'',1,1,0,0,0);
 
 
-        self::rating_script();
+
 
     }
 
@@ -843,20 +843,9 @@ class CustomRating
     {
 
         ?>
-<!--        <script type="text/ecmascript" src="--><?php //echo home_url(); ?><!--/analysis/jqgrid/js/i18n/grid.locale-en.js"></script>-->
 
-<!--        <script type="text/ecmascript" src="--><?php //echo home_url(); ?><!--/analysis/jqgrid/js/jquery.jqGrid.min.js"></script>-->
-<!--        <script>-->
-<!--            jQuery.jgrid.defaults.responsive = true;-->
-<!--            jQuery.jgrid.defaults.styleUI = 'Bootstrap';-->
-<!--        </script>-->
-<!--        <script src="https://code.highcharts.com/stock/highstock.js"></script>-->
-<!---->
-<!--        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">-->
-<!--        <link rel="stylesheet" type="text/css" media="screen" href="--><?php //echo home_url(); ?><!--/analysis/jqgrid/css/ui.jqgrid-bootstrap4.css" />-->
-<!--        <link rel="stylesheet" href="--><?php //echo home_url(); ?><!--/wp-content/themes/custom_twentysixteen/css/movie_single.css?--><?php //echo LASTVERSION; ?><!--">-->
-<!--        <link rel="stylesheet" href="--><?php //echo home_url(); ?><!--/wp-content/themes/custom_twentysixteen/css/colums_template.css?--><?php //echo LASTVERSION; ?><!--">-->
         <script type="text/javascript">
+
 
                 document.addEventListener("DOMContentLoaded", function () {
                 const addRowButtons = document.querySelectorAll(".addRow");
@@ -890,11 +879,9 @@ class CustomRating
             });
             });
             });
-
-            jQuery(document).ready(function () {
-
+                let intervalId;
                 function updateProgress() {
-                    console.log('updateProgress');
+
                     fetch('<?php echo REMOTE_DOMAIN; ?>/analysis/include/scrap_imdb.php?update_all_pg_rating')
                         .then(response => response.json())
                         .then(data => {
@@ -905,14 +892,24 @@ class CustomRating
                             let progressBar = document.querySelector('.rating_update_status');
                             progressBar.style.width = percentage + '%';
                             progressBar.textContent = Math.round(percentage) + '%';
+
+                            if (percentage >= 100) {
+                                clearInterval(intervalId);
+                            }
+
                         })
                         .catch(error => console.error('Error:', error));
                 }
 
-                jQuery('.rating_update').click(function () {
 
+            jQuery(document).ready(function () {
+
+
+
+                jQuery('body').on('click','.rating_update',function () {
+                    console.log('updateProgress');
                     // Call updateProgress every 5 seconds
-                    setInterval(updateProgress, 5000);
+                    intervalId = setInterval(updateProgress, 5000);
 
                     // Call it once immediately to start the process
                     updateProgress();

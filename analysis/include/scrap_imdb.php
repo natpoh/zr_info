@@ -3420,7 +3420,7 @@ else if (isset($_GET['update_all_pg_rating'])) {
     {
         $debug=1;
     }
-
+    header('Access-Control-Allow-Origin: *');
 
     update_all_pg_rating();
 
