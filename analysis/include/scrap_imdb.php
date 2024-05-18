@@ -2300,7 +2300,7 @@ function get_actor_result($data)
 
 function update_all_pg_rating()
 {
-    start_cron_time(55);
+    start_cron_time(300);
 
     !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
     $current_data  = OptionData::get_options('','pg_last_update');
@@ -2318,7 +2318,7 @@ function update_all_pg_rating()
     !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
 
 
-    set_time_limit(120);
+    set_time_limit(0);
     $sqlCount = "SELECT COUNT(*) as count FROM data_movie_imdb";
     $rowsCount = Pdo_an::db_results_array($sqlCount);
     $count_total = $rowsCount[0]['count'];
