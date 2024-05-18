@@ -891,7 +891,7 @@ class CustomRating
 
                             let progressBar = document.querySelector('.rating_update_status');
                             progressBar.style.width = percentage + '%';
-                            progressBar.textContent = Math.round(percentage) + '%';
+                            progressBar.textContent = count+' '+Math.round(percentage) + '%';
 
                             if (percentage >= 100) {
                                 clearInterval(intervalId);
@@ -909,7 +909,7 @@ class CustomRating
                 jQuery('body').on('click','.rating_update',function () {
                     console.log('updateProgress');
                     // Call updateProgress every 5 seconds
-                    intervalId = setInterval(updateProgress, 5000);
+                    intervalId = setInterval(updateProgress, 10000);
 
                     // Call it once immediately to start the process
                     updateProgress();

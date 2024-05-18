@@ -2363,7 +2363,13 @@ function update_all_pg_rating()
             }
             $count--;
 
-            if (check_cron_time()) break;
+            if (check_cron_time())
+            {
+                $current_data['is_run'] = 0;
+                OptionData::set_option('',  json_encode($current_data, JSON_PRETTY_PRINT),'pg_last_update');
+                break;
+            }
+
 
         }
 
