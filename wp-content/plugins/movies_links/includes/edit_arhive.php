@@ -228,7 +228,7 @@ if ($cid) {
             $valid_result = 'Invalid';
         }
         ?>
-        <p>Validaton reslult is <?php print $valid_result ?></p>
+        <p>Validaton reslult is <?php print $valid_result ?>. Body len: <?php print $preivew_data['body_len'] ?></p>
         <p>Header status is <?php print $preivew_data['headers_status']; ?></p>
         <h2>Headers</h2>
         <textarea style="width: 90%; height: 300px;"><?php print $preivew_data['headers'] ?></textarea>        

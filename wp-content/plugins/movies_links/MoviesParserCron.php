@@ -946,11 +946,12 @@ class MoviesParserCron extends MoviesAbstractDB {
 
         if ($code) {
             // Validate body
-            $valid_body_len = $this->mp->validate_body_len($code, $type_opt['body_len']);
+            $body_len = strlen($code);
+            $valid_body_len = $this->mp->validate_body_len($body_len, $type_opt['body_len']);
             if (!$valid_body_len) {
                 $status = 4;
                 $this->mp->change_url_state($item->id, $status, true);
-                $message = 'Error validate body length: ' . strlen($code);
+                $message = 'Error validate body length: ' . $body_len;
                 $this->mp->log_error($message, $item->cid, $item->id, 2);
                 return;
             }
