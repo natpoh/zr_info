@@ -1,8 +1,10 @@
 <h2><a href="<?php print $url ?>"><?php print __('Movies Links') ?></a>. <?php print __('Overview') ?></h2>
-<?php print $tabs;
+<?php
+print $tabs;
 if (isset($filters_tabs['filters'])) {
     print implode("\n", array_values($filters_tabs['filters']));
-} ?>
+}
+?>
 <?php
 if (sizeof($campaigns) > 0) {
     ?>
@@ -33,7 +35,7 @@ if (sizeof($campaigns) > 0) {
                 <th><?php print $mtitle = $this->option_names[$module]['title']; ?></th>
             <?php } ?>
             <?php /* ?><th><?php print __('Last log') ?></th> <?php */ ?>  
-        </thead>
+            </thead>
             <tbody>
                 <?php
                 foreach ($campaigns as $parser) {
@@ -59,42 +61,50 @@ if (sizeof($campaigns) > 0) {
                         <?php
                         foreach ($this->mp->campaign_modules as $module) {
                             ?><td class="nowrap"><?php
-                            $item = isset($options[$module]) ? $options[$module] : array();
-                            if (isset($item['status'])) {
-                                ?>
+                                $item = isset($options[$module]) ? $options[$module] : array();
+                                if (isset($item['status'])) {
+                                    ?>
                                     <i class="sticn st-<?php print $item['status'] ?>"></i><?php print $this->camp_state[$item['status']]['title']; ?>
                                     <?php
                                 } else {
                                     print '-';
                                 }
 
-                                if ($module == 'arhive' || $module == 'cron_urls') {
+
+                                if ($item['status'] != 0) {
                                     $interval = $this->update_interval[$item['interval']];
                                     if ($module == 'cron_urls') {
                                         $item = $options['service_urls'];
                                     }
-                                    // Get parser type
-                                    print '<br /> — ' . $this->parse_mode[$item['webdrivers']];
-                                    
-                                    if ($module == 'arhive') {
-                                        $count = $item['num'];
-                                        
-                                        print '<br /> — ' . $count . ' / ' . $interval;
-                                    } else {
+
+                                    if ($module == 'cron_urls') {
                                         print '<br /> — ' . $interval;
+                                    } else {
+                                        $count = $item['num'];
+                                        print '<br /> — ' . $count . ' / ' . $interval;
+                                    }
+                                    if ($module == 'arhive' || $module == 'cron_urls') {
+                                        // Get parser type
+                                        print '<br /> — ' . $this->parse_mode[$item['webdrivers']];
+                                    }
+                                    if ($module == 'arhive') {
+                                        $del_pea = $item['del_pea'];
+                                        if ($del_pea) {
+                                            print '<br /> — Garbage: ' . $this->remove_interval[$item['del_pea_int']];
+                                        }
                                     }
                                 }
                                 ?></td><?php
-                        }
-                        ?>
+                            }
+                            ?>
 
                         <?php /* ?><td><?php print $this->get_last_log(0, $parser->id) ?></td><?php */ ?>
-            
+
                     </tr> 
-                <?php } ?>
+    <?php } ?>
             </tbody>
         </table>    
-        <?php print $pager ?>
+    <?php print $pager ?>
         <?php
     } else {
         ?>
