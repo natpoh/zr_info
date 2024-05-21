@@ -1464,6 +1464,7 @@ public static function add_log($id='',$imdb_id='',$name='',$comment='',$log_stat
     {
         $imdb_id= self::get_imdb_id_from_id($id);
     }
+    if (!$imdb_id)$imdb_id=0;
 
 
     $sql = "INSERT INTO `movies_log`(`id`, `movie_id`, `rwt_id`, `name`, `comment`, `status`,  `type`, `last_update`) 

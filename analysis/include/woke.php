@@ -639,10 +639,10 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
         if ($update)
         {
 
+            if ($debug)echo 'try update<br>';
 
 
-
-         $q="SELECT `id` FROM `data_woke` where `mid`  = ".$mid;
+         $q="SELECT * FROM `data_woke` where `mid`  = ".$mid;
          $r =Pdo_an::db_results_array($q);
 
 
@@ -652,39 +652,35 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
             if (is_nan($result)) {$result=0;}
 
 
+            if (!$array['diversity'])$array['diversity']=0;
+            if (!$array['female'])$array['female']=0;
+            if (!$array['woke'])$array['woke']=0;
+            if (!$array['lgbt'])$array['lgbt']=0;
+            if (!$array['lgb'])$array['lgb']=0;
+            if (!$array['qtia'])$array['qtia']=0;
+
+
+
+            if (!$array['boycott'])$array['boycott']=0;
+            if (!$array['oweralbs'])$array['oweralbs']=0;
+            if (!$array['rtgap'])$array['rtgap']=0;
+            if (!$array['year'])$array['year']=0;
+            if (!$array['rtaudience'])$array['rtaudience']=0;
+            if (!$array['imdb'])$array['imdb']=0;
+            if (!$array['kino'])$array['kino']=0;
+            if (!$array['douban'])$array['douban']=0;
+            if (!$woke)$woke=0;
+            if (!$lgbt)$lgbt=0;
+
          if (!$r)
          {
 
 
 
-             if (!$total)
-             {
+
+                 if ($debug)echo 'insert data<br>';
 
 
-                 $q = "INSERT INTO `data_woke`(`id`, `mid`,`title`, `country`, `result`, `last_update`) 
-                VALUES (NULL,'" . $mid . "',?, ?  , '" . $result . "','" . time() . "')";
-             }
-             else {
-
-                 if (!$array['diversity'])$array['diversity']=0;
-                 if (!$array['female'])$array['female']=0;
-                 if (!$array['woke'])$array['woke']=0;
-                 if (!$array['lgbt'])$array['lgbt']=0;
-
-                 if (!$array['qtia'])$array['qtia']=0;
-
-
-
-                 if (!$array['boycott'])$array['boycott']=0;
-                 if (!$array['oweralbs'])$array['oweralbs']=0;
-                 if (!$array['rtgap'])$array['rtgap']=0;
-                 if (!$array['year'])$array['year']=0;
-                 if (!$array['rtaudience'])$array['rtaudience']=0;
-                 if (!$array['imdb'])$array['imdb']=0;
-                 if (!$array['kino'])$array['kino']=0;
-                 if (!$array['douban'])$array['douban']=0;
-                 if (!$woke)$woke=0;
-                 if (!$lgbt)$lgbt=0;
 
 
 
@@ -694,7 +690,7 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
                 '" . $array['boycott'] . "','" . $array['oweralbs'] . "','" . $array['rtgap'] . "','" . $array['year'] . "','" . $array['rtaudience'] . "','" . $array['imdb'] . "','" . $array['kino'] . "','" . $array['douban'] . "',
                 '" . $woke . "','" . $lgbt . "','" . $result . "','" . time() . "')";
 
-             }
+
              $rid  = Pdo_an::db_insert_sql($q,[$array['title'],$array['country']]);
 
              //echo ' inserted '.$q;
@@ -707,14 +703,14 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
 
              }
              !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
-             TMDB::add_log($mid,'','update rating','Add woke rating',1,'woke');
+             TMDB::add_log($mid,0,'update rating','Add woke rating',1,'woke');
 
          }
          else
          {
 
 
-
+             if ($debug)echo 'update data<br>';
 
                      $shouldUpdate = false;
 
@@ -723,10 +719,10 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
                          $woke, $lgbt, $result, time(), $mid];
 
                      ///check
-                     $query = "SELECT `title`, `country`, `diversity`, `female`, `woke`, `lgbt`, `lgb`, `qtia`, `audience`, `boycott`, `oweralbs`, `rtgap`, `year`, `rtaudience`, `imdb`, `kino`, `douban`, `woke_result`, `lgbt_result`, `result` FROM `data_woke` WHERE `mid` = ?";
-                     $currentData  = Pdo_an::db_results_array($query, [$mid]);
-                     foreach ($currentData as $key => $value) {
-                         if ($value != $array_data[$key]) {
+
+                     foreach ($r[0] as $key => $value) {
+                         if (array_key_exists($key, $array_data) && $value != $array_data[$key]) {
+                             if ($debug) echo 'break '.$key.' => '.$value . ' : ' . $array_data[$key].'<br>';
                              $shouldUpdate = true;
                              break;
                          }
@@ -736,6 +732,8 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
 
                          if ($shouldUpdate)
                          {
+                             if ($debug)echo 'updated<br>';
+
                              $q = "UPDATE `data_woke` SET `title` =?, `country`=?,
                        `diversity`=?,
                        `female`=?,`woke`=?,`lgbt`=?,`lgb`=?,`qtia`=?, `audience`=?,
@@ -746,13 +744,33 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
                              Pdo_an::db_results_array($q,$array_data );
 
 
+                             $query_formatted = preg_replace_callback('/\?/', function() {
+                                 static $i = 0;
+                                 return '%s';
+                             }, $q);
+
+
+                             $escaped_data = array_map(function($item) {
+                                 return is_numeric($item) ? $item : "'" . addslashes($item) . "'";
+                             }, $array_data);
+
+
+                             $query = vsprintf($query_formatted, $escaped_data);
+
+                             echo $query;
+
                              if ($sync)
                              {
+                                 if ($debug)echo 'synched<br>';
+
                                  !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
                                  Import::create_commit('', 'update', 'data_woke', array('mid' => $mid), 'woke_update',10,['skip'=>['id']]);
                              }
                              !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
-                             TMDB::add_log($mid,'','update rating','woke rating updated',1,'woke');
+                             TMDB::add_log($mid,0,'update rating','woke rating updated',1,'woke');
+                         }
+                         else{
+                                if ($debug)echo 'not need update<br>';
                          }
 
 
