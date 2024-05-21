@@ -186,7 +186,7 @@ class CustomRating
 
         echo '<p style="margin: 20px;"><input type="submit" name="submit" id="submit" class="button button-primary woke_rating_save" value="Save Changes">
 <span style=" padding-left: 10px; padding-right: 10px;  font-style: italic;" class="rating_save_result"></span>
-<input type="button" class="button button-primary woke_rating_update" value="Update all Woke rating"></p>';
+<input type="button" class="button button-primary woke_rating_update" value="Update all Woke rating"></p><div class="rating_update_data"><div class="rating_update_status"></div></div>';
         echo '<h4>Rating table</h4>';
 
        self::rwt_woke_scrtpt();
@@ -644,64 +644,44 @@ class CustomRating
 
         ?>
         <script type="text/javascript">
+            let intervalId;
+            function updateProgress(url) {
 
+                fetch('<?php echo REMOTE_DOMAIN; ?>/analysis/include/scrap_imdb.php?'+url)
+                    .then(response => response.json())
+                    .then(data => {
+                        let count = data.count;
+                        let total = data.total;
+                        let percentage = (count / total) * 100;
+
+                        let progressBar = document.querySelector('.rating_update_status');
+                        progressBar.style.width = percentage + '%';
+                        progressBar.textContent = count+' '+Math.round(percentage) + '%';
+
+                        if (percentage >= 100) {
+                            clearInterval(intervalId);
+                        }
+
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
             jQuery(document).ready(function () {
 
 
                 jQuery('.woke_rating_update').click(function () {
 
-                    window.open(window.location.protocol + "/analysis/include/scrap_imdb.php?zr_woke&force=1");
+
+                    intervalId = setInterval(function() {
+                        updateProgress('update_all_woke_rating');
+                    }, 10000);
+
+                    // Call it once immediately to start the process
+                    updateProgress('update_all_woke_rating');
+
+                    //window.open(window.location.protocol + "/analysis/include/scrap_imdb.php?zr_woke&force=1");
 
                 });
-/*
-                jQuery('.woke_rating_save').click(function () {
 
-                    var rating = new Object();
-
-                    jQuery('.rating_table_inputs').each(function (){
-
-                        var id = jQuery(this).attr('id');
-
-                        if (!rating[id]) {
-                            rating[id] = new Object();
-                        }
-                        jQuery(this).find('input').each(function () {
-                            var index = jQuery(this).attr('class');
-                            var val = jQuery(this).val();
-                            if (!val) {
-                                val = 0
-                            }
-                            rating[id][index] = val;
-                        });
-
-
-                    });
-
-
-
-
-                    if (rating) {
-                        var rating_string = JSON.stringify(rating);
-                    }
-
-                    jQuery('.rating_save_result').html('updating...');
-
-
-                    jQuery.ajax({
-                        type: 'post',
-                        url: '?page=custom_rating_woke_rating',
-                        data: ({'action': 'update_woke_rating', 'val': rating_string}),
-
-                        success: function (html) {
-
-                            jQuery('.rating_save_result').html('data saved');
-
-                        }
-                    });
-
-
-                });
-*/
 
                 document.querySelector('.woke_rating_save').addEventListener('click', async function() {
 
@@ -754,7 +734,28 @@ class CustomRating
         </script>
 
 
+        <style type="text/css">
 
+            .rating_update_data {
+                width: 100%;
+                background-color: #f3f3f3;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                overflow: hidden;
+                position: relative;
+            }
+
+            .rating_update_status {
+                width: 0;
+                height: 30px;
+                background-color: #4caf50;
+                text-align: center;
+                color: white;
+                line-height: 30px;
+                border-radius: 5px;
+            }
+
+        </style>
 
                 <?php
     }
@@ -880,9 +881,9 @@ class CustomRating
             });
             });
                 let intervalId;
-                function updateProgress() {
+                function updateProgress(url) {
 
-                    fetch('<?php echo REMOTE_DOMAIN; ?>/analysis/include/scrap_imdb.php?update_all_pg_rating')
+                    fetch('<?php echo REMOTE_DOMAIN; ?>/analysis/include/scrap_imdb.php?'+url)
                         .then(response => response.json())
                         .then(data => {
                             let count = data.count;
@@ -907,12 +908,14 @@ class CustomRating
 
 
                 jQuery('body').on('click','.rating_update',function () {
-                    console.log('updateProgress');
+                 //   console.log('updateProgress');
                     // Call updateProgress every 5 seconds
-                    intervalId = setInterval(updateProgress, 10000);
 
+                    intervalId = setInterval(function() {
+                        updateProgress('update_all_pg_rating');
+                    }, 10000);
                     // Call it once immediately to start the process
-                    updateProgress();
+                    updateProgress('update_all_pg_rating');
 
                 });
                 jQuery('.rating_save').click(function () {

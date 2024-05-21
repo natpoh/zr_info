@@ -586,17 +586,21 @@ __typename
 
             $include_year = $row['include_year'];
             if ($include_year) {
-                $movie_title =$movie_title . ' ' . $year;
+                $movie_title_link =$movie_title . ' ' . $year;
+            }
+            else
+            {
+                $movie_title_link = $movie_title;
             }
 
             if ($glue)
             {
-                $movie_title = str_replace(' ', $glue, $movie_title);
+                $movie_title_link = str_replace(' ', $glue, $movie_title_link);
 
             }
 
 
-            $movie_title_encoded = urlencode($movie_title);
+            $movie_title_encoded = urlencode($movie_title_link);
 
             $url = str_replace('$', $movie_title_encoded, $url);
 

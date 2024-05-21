@@ -2296,7 +2296,104 @@ function get_actor_result($data)
 
 }
 
+function update_all_woke_rating()
+{
+    start_cron_time(40);
 
+    !class_exists('OptionData') ? include ABSPATH . "analysis/include/option.php" : '';
+    $current_data  = OptionData::get_options('','woke_last_update');
+    if (!$current_data)
+    {
+        $current_data = ['position'=>0];
+    }
+    else{
+        $current_data = json_decode($current_data,1);
+
+    }
+    $startpos = $current_data['position'];
+
+
+    if ($current_data['last_update']<time()-86400)
+    {
+        $startpos=0;
+    }
+
+
+    global $debug;
+    !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
+
+
+    set_time_limit(0);
+    $sqlCount = "SELECT COUNT(*) as count FROM data_movie_imdb";
+    $rowsCount = Pdo_an::db_results_array($sqlCount);
+    $count_total = $rowsCount[0]['count'];
+
+
+
+    $sql ="SELECT * FROM `data_movie_imdb` where id > ".$startpos." ORDER BY `id`  ASC ";
+    $rows = Pdo_an::db_results_array($sql);
+    $count = count($rows);
+
+
+    if (!$current_data['is_run'] || $current_data['last_update']<time()-60) {
+        $i = 0;
+        $current_data['is_run'] = 1;
+        $current_data['last_update'] = time();
+
+        OptionData::set_option('',  json_encode($current_data, JSON_PRETTY_PRINT),'woke_last_update');
+        !class_exists('WOKE') ? include ABSPATH . "analysis/include/woke.php" : '';
+        $woke = new WOKE;
+        foreach ($rows as $r) {
+
+            $id = $r['id'];
+
+
+
+            $result = $woke->zr_woke_calc($id,$debug,1,1);
+            if ($debug) {
+                echo '<span style="display: inline-block; width: 120px">' . $i . ' of ' . $count . '</span><span style="display: inline-block; width: 80px">' . $movie_id . '</span><span style="display: inline-block; width: 400px">' . $title . '</span><span style="display: inline-block; width: 100px">' . $rating . '</span><br><hr>' . PHP_EOL;
+
+            }
+            $i++;
+            $current_data['position'] = $id;
+            $current_data['is_run'] = 1;
+            $current_data['count']=$count;
+            $current_data['last_update'] = time();
+            $current_data['last_update_human'] = date('Y-m-d H:i:s', time());
+
+            if ($i > 50) {
+                OptionData::set_option('',  json_encode($current_data, JSON_PRETTY_PRINT),'woke_last_update');
+                $i = 0;
+
+            }
+            $count--;
+
+            if (check_cron_time())
+            {
+                $current_data['is_run'] = 0;
+                OptionData::set_option('',  json_encode($current_data, JSON_PRETTY_PRINT),'woke_last_update');
+                break;
+            }
+
+
+        }
+
+        $current_data['is_run'] = 0;
+        OptionData::set_option('',  json_encode($current_data, JSON_PRETTY_PRINT),'woke_last_update');
+    }
+
+
+    header('Content-Type: application/json');
+
+    $response = array(
+        'count' => $count_total-$count,
+        'total' => $count_total,
+        'curent_data'=>$current_data
+    );
+
+    echo json_encode($response);
+
+}
 
 function update_all_pg_rating()
 {
@@ -3440,7 +3537,18 @@ else if (isset($_GET['update_all_pg_rating'])) {
     return;
 }
 
+else if (isset($_GET['update_all_woke_rating'])) {
+    global $debug;
+    if (isset($_GET['debug']))
+    {
+        $debug=1;
+    }
+    header('Access-Control-Allow-Origin: *');
 
+    update_all_woke_rating();
+
+    return;
+}
 
 
 if (isset($_GET['add_games_to_options'])) {

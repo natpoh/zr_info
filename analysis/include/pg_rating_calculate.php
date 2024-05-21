@@ -1832,7 +1832,7 @@ class PgRatingCalculate {
 
                 $comment=' updated';
                 !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
-                TMDB::add_log($id,$imdb_id,'update movies','CalculateRating  PG'.$comment,1,'admin');
+                TMDB::add_log($id,$imdb_id,'update movies','Calculate Rating  PG'.$comment,1,'pg rating');
 
 
                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';

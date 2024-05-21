@@ -1734,7 +1734,7 @@ function global_zeitgeist_content(data) {
                     let converted_rating = item.rating / (item.rateconvert);
                     let star_rating = create_rating_star(converted_rating, 'gl_' + item.ekey);
 
-                    let rating_converted = create_rating_star(rating, 'big_rating', item.multipler);
+                    let rating_converted = create_rating_star(rating, 'big_rating', item.ratmax);
 
                     let rdata = `<div class="gl_small_block rating_block" id="${item.ekey}"><div class="gl_rating_img">${flag}</div><div class="gl_rating_title">${item.name}</div><div class="gl_star_rating rwt_stars">${star_rating}</div></div>`;
 

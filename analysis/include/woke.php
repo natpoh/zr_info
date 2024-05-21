@@ -706,6 +706,8 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
                  Import::create_commit('', 'update', 'data_woke', array('mid' => $mid), 'woke_insert',10,['skip'=>['id']]);
 
              }
+             !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+             TMDB::add_log($mid,'','update rating','Add woke rating',1,'woke');
 
          }
          else
@@ -719,40 +721,50 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
                      Pdo_an::db_results_array($q, [$array['title'],$array['country'],time(), $mid]);
                  }
                  else {
+                     $shouldUpdate = false;
 
-                     $q = "UPDATE `data_woke` SET `title` =?, `country`=?,
+                     $array_data = [$array['title'],$array['country'],$array['diversity'], $array['female'], $array['woke'], $lgbt_words, $array['lgbt'], $array['qtia'], $array['audience'], $array['boycott'], $array['oweralbs'],
+                         $array['rtgap'], $array['year'], $array['rtaudience'], $array['imdb'], $array['kino'], $array['douban'],
+                         $woke, $lgbt, $result, time(), $mid];
+
+                     ///check
+                     $query = "SELECT `title`, `country`, `diversity`, `female`, `woke`, `lgbt`, `lgb`, `qtia`, `audience`, `boycott`, `oweralbs`, `rtgap`, `year`, `rtaudience`, `imdb`, `kino`, `douban`, `woke_result`, `lgbt_result`, `result` FROM `data_woke` WHERE `mid` = ?";
+                     $currentData  = Pdo_an::db_results_array($query, [$mid]);
+                     foreach ($currentData as $key => $value) {
+                         if ($value != $array_data[$key]) {
+                             $shouldUpdate = true;
+                             break;
+                         }
+
+                     }
+
+
+                         if ($shouldUpdate)
+                         {
+                             $q = "UPDATE `data_woke` SET `title` =?, `country`=?,
                        `diversity`=?,
                        `female`=?,`woke`=?,`lgbt`=?,`lgb`=?,`qtia`=?, `audience`=?,
                        `boycott`=?,`oweralbs`=?,`rtgap`=?,`year`=?,
                        `rtaudience`=?,`imdb`=?,`kino`=?,`douban`=?,
                        `woke_result`=?,`lgbt_result`=?,`result`=?,
                        `last_update`=? WHERE `mid`= ? ";
-                     Pdo_an::db_results_array($q, [$array['title'],$array['country'],$array['diversity'], $array['female'], $array['woke'], $lgbt_words, $array['lgbt'], $array['qtia'], $array['audience'], $array['boycott'], $array['oweralbs'],
-                         $array['rtgap'], $array['year'], $array['rtaudience'], $array['imdb'], $array['kino'], $array['douban'],
-                         $woke, $lgbt, $result, time(), $mid]);
+                             Pdo_an::db_results_array($q,$array_data );
+
+
+                             if ($sync)
+                             {
+                                 !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
+                                 Import::create_commit('', 'update', 'data_woke', array('mid' => $mid), 'woke_update',10,['skip'=>['id']]);
+                             }
+                             !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+                             TMDB::add_log($mid,'','update rating','woke rating updated',1,'woke');
+                         }
+
 
                  }
                  //echo ' updated ';
 
-             if ($update==2)
-             {
-                 if ( $array['woke_result']!=$woke || $array['lgbt_result']!=$lgbt || $array['result']!=$result )
-                 {
-                     if ($sync)
-                     {
-                         !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                         Import::create_commit('', 'update', 'data_woke', array('mid' => $mid), 'woke_update',10,['skip'=>['id']]);
-                     }
-                 }
-             }
-             else
-             {
-                 if ($sync)
-                 {
-                     !class_exists('Import') ? include ABSPATH . "analysis/export/import_db.php" : '';
-                     Import::create_commit('', 'update', 'data_woke', array('mid' => $mid), 'woke_update',10,['skip'=>['id']]);
-                 }
-             }
+
          }
 
         }
@@ -782,7 +794,7 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
 
 
     }
-    public function zr_woke($mid = 0,$debug=0)
+    public function zr_woke($mid = 0,$debug=0,$all='')
     {
 
         if ($mid) {
@@ -808,14 +820,6 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
         {
 
 
-
-            if (isset($_GET['force'])) {
-                $mid = $row['mid'];
-                $result = $this->calculate_rating($mid, $row, 2, 0);
-                echo $i.'/'.$count.' mid = ' . $mid.' result = '.$result.'%<br>' ;
-            }
-            else
-            {
                 $mid = $row['id'];
                 $result = $this->zr_woke_calc($mid,$debug,1,1);
                 echo $i.'/'.$count.' mid = ' . $mid.' result = '.$result.'%<br>' ;
@@ -829,7 +833,7 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
                     }
                 }
 
-            }
+
 
             $i++;
         }
