@@ -1881,11 +1881,13 @@ class MoviesParser extends MoviesAbstractDB {
         // Get posts (last is first)       
         $code = $this->get_code_by_current_driver($url, $headers, $settings, $type_opt);
 
-        $valid_body_len = $this->validate_body_len($code, $type_opt['body_len']);
+        $body_len = strlen($code);
+        $valid_body_len = $this->validate_body_len($body_len, $type_opt['body_len']);
         $ret['content'] = $code;
         $ret['headers'] = $headers;
         $ret['headers_status'] = $this->get_header_status($headers);
         $ret['valid_body'] = $valid_body_len;
+        $ret['body_len'] = $body_len;
         return $ret;
     }
 
@@ -1921,8 +1923,7 @@ class MoviesParser extends MoviesAbstractDB {
         return $code;
     }
 
-    public function validate_body_len($code = '', $valid_len = 500) {
-        $body_len = strlen($code);
+    public function validate_body_len($body_len = 0, $valid_len = 500) {       
         if ($body_len > $valid_len) {
             return true;
         }
@@ -4091,7 +4092,8 @@ class MoviesParser extends MoviesAbstractDB {
                 $options = $this->get_options($campaign);
                 $type_name = 'arhive';
                 $type_opt = $options[$type_name];
-                $valid = $this->validate_body_len($content, $type_opt['body_len']);
+                $body_len = strlen($content);
+                $valid = $this->validate_body_len($body_len, $type_opt['body_len']);
             }
         }
         if (!$valid) {
