@@ -1374,8 +1374,15 @@ function critic_matic_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('mid', 'last_update'), "data_movie_tmdb");
 
+    $sql = "ALTER TABLE `data_movie_tmdb` ADD `poster_path` varchar(255) NOT NULL default ''";
+    Pdo_an::db_query($sql);
+    
+    $sql = "ALTER TABLE `data_movie_tmdb` ADD `poster_id` varchar(255) NOT NULL default ''";
+    Pdo_an::db_query($sql);
+    
+    critic_matic_create_index_an(array('mid', 'last_update', 'tmdb', 'poster_id'), "data_movie_tmdb");
+    
     $sql = "CREATE TABLE IF NOT EXISTS  `data_language_code`(
 				`id` int(11) unsigned NOT NULL auto_increment,                                
                                 `code` varchar(255) NOT NULL default '',
@@ -1686,8 +1693,8 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'lid', 'mid'), "watch_item");
 
-     /*
-      * Guest avatar id
+    /*
+     * Guest avatar id
      */
     $sql = "CREATE TABLE IF NOT EXISTS  `meta_guest_avatar`(
 				`id` int(11) unsigned NOT NULL auto_increment,                                
@@ -1698,7 +1705,7 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('cid', 'avid'), "meta_guest_avatar");
-    
+
     /*
      * Guest avatar id
      */

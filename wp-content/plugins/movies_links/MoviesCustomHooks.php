@@ -16,8 +16,8 @@ class MoviesCustomHooks {
 
     public function add_post($campaign = array(), $post = array(), $debug = false) {
 
-        $debug = $_GET['debug']?true:$debug;
-        
+        $debug = $_GET['debug'] ? true : $debug;
+
         $options = unserialize($post->options);
 
         if ($post->top_movie > 0) {
@@ -32,9 +32,6 @@ class MoviesCustomHooks {
 
             // Woke
             $this->update_woke($post, $options, $campaign, $debug);
-
-            // Update tmdb
-            $this->update_tmdb($post, $options, $campaign, $debug);
         }
 
         // Dove.org
@@ -48,6 +45,9 @@ class MoviesCustomHooks {
             //  DEV 52 
             //  PROD 56
             $this->update_boxofficemojo($post, $options, $campaign, $debug);
+        } else if ($campaign->id == 63 || $campaign->id == 9 || $campaign->id == 10) {
+            //  TMDB id by IMDB            
+            $this->update_tmdb($post, $options, $campaign, $debug);
         }
 
         $url_data = $this->mp->get_url($post->uid);
@@ -67,8 +67,8 @@ class MoviesCustomHooks {
         }
         $url_data = $this->mp->get_url($post->uid);
         if ($debug) {
-                print_r(array("run custom hook ml_add_post", $url_data));
-            }
+            print_r(array("run custom hook ml_add_post", $url_data));
+        }
         CustomHooks::do_action('ml_add_post', ['campaign' => $campaign, 'post' => $post, 'url' => $url_data]);
     }
 
@@ -657,44 +657,65 @@ class MoviesCustomHooks {
     }
 
     private function update_tmdb($post, $options, $campaign, $debug = false) {
-        if ($campaign->id == 9 || $campaign->id == 10) {
-            // Tmdb
 
-            $upd_opt = array(
-                'tmdb' => 'tmdb',
-                'original_language' => 'original_language',
+        $uid = $post->uid;
+        $url_data = $this->mp->get_url($uid);
+        //$link = $url_data->link;
+        // $arhive = $this->mp->get_arhive_by_url_id($uid);
+        // $link_hash = $arhive->arhive_hash;
+        $top_movie = (int) $url_data->pid;
+
+        // Tmdb
+
+        $upd_opt = array(
+            'tmdb' => 'tmdb',
+            'original_language' => 'original_language',
+            'poster_path' => 'poster_path',
+        );
+
+        $to_update = array();
+        foreach ($upd_opt as $post_key => $db_key) {
+            $field_value = '';
+            if (isset($options[$post_key])) {
+                $field_value = base64_decode($options[$post_key]);
+            }
+            $to_update[$db_key] = $field_value;
+        }
+        if ($to_update) {
+            $ma = $this->ml->get_ma();
+            $code = isset($to_update['original_language']) ? $to_update['original_language'] : '';
+            $code_int = 0;
+            // Language code
+            if ($code) {                
+                if ($code == 'nb') {
+                    $code = 'no';
+                } else if ($code == 'cn') {
+                    $code = 'zh';
+                }
+                $code_int = $ma->get_or_create_language_by_name($code);
+            }
+            // Poster
+            $poster_path = isset($to_update['poster_path']) ? $to_update['poster_path'] : '';
+            $poster_id='';
+            if ($poster_path){
+                $poster_id = preg_replace('#^/([^\.]+)\..*$#', "$1", $poster_path);
+            }
+            
+            # Update tmdb
+            $tmdb_data = array(
+                'tmdb' => (int) $to_update['tmdb'],
+                'original_language' => $code,
+                'original_language_int' => $code_int,
+                'poster_path'=>$poster_path,
+                'poster_id'=>$poster_id,
             );
-
-            $to_update = array();
-            foreach ($upd_opt as $post_key => $db_key) {
-                $field_value = '';
-                if (isset($options[$post_key])) {
-                    $field_value = base64_decode($options[$post_key]);
-                }
-                $to_update[$db_key] = $field_value;
+            if ($debug){
+                print_r($tmdb_data);
             }
-            if ($to_update) {
-                $code = $to_update['original_language'];
-                if ($code) {
-
-                    if ($code == 'nb') {
-                        $code = 'no';
-                    } else if ($code == 'cn') {
-                        $code = 'zh';
-                    }
-
-                    $ma = $this->ml->get_ma();
-                    $code_int = $ma->get_or_create_language_by_name($code);
-
-                    # Update tmdb
-                    $tmdb_data = array(
-                        'tmdb' => (int) $to_update['tmdb'],
-                        'original_language' => $code,
-                        'original_language_int' => $code_int,
-                    );
-                    $ma->update_tmdb($post->top_movie, $tmdb_data);
-                }
-            }
+            $ma->update_tmdb($top_movie, $tmdb_data);
+            
+            // Update tmdbid
+            $ma->append_tmdbid($top_movie, (int) $to_update['tmdb']);
         }
     }
 
@@ -706,7 +727,7 @@ class MoviesCustomHooks {
         if ($debug) {
             p_r(array('update_boxofficemojo', $post));
         }
-     
+
         $cid = $campaign->id;
         $uid = $post->uid;
         $url_data = $this->mp->get_url($uid);
@@ -727,7 +748,7 @@ class MoviesCustomHooks {
             $results = array();
 
             if (preg_match_all('#<tr>.*</tr>#Uis', $code, $match)) {
-                
+
                 foreach ($match[0] as $row) {
                     if (preg_match('#<td[^>]*><a[^<]+href="/release/[^<]+>([^<]+)</a></td><td[^>]*>[^<]+</td><td[^>]*>.*</td><td[^>]*>(.*)</td>#Uis', $row, $match2)) {
 
@@ -738,7 +759,7 @@ class MoviesCustomHooks {
                             // Filter title
 
                             $title = preg_replace('#^(.*)(?:\/|\().*$#is', "$1", $title);
-                            $title = $ma->create_slug($title,' ',false);
+                            $title = $ma->create_slug($title, ' ', false);
                         }
                         $total = trim(strip_tags($match2[2]));
                         $total = (int) preg_replace('/[^0-9]+/', '', $total);
