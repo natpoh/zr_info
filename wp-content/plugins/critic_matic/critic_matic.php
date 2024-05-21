@@ -1707,6 +1707,19 @@ function critic_matic_plugin_activation() {
     critic_matic_create_index_an(array('cid', 'avid'), "meta_guest_avatar");
 
     /*
+     * Guest avatar id
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `meta_guest_avatar`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                
+                                `cid` int(11) NOT NULL DEFAULT '0',
+                                `avid` int(11) NOT NULL DEFAULT '0',
+				PRIMARY KEY  (`id`)
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('cid', 'avid'), "meta_guest_avatar");
+
+    /*
      * Critic crowd last update
      */
     $sql = "ALTER TABLE `data_critic_crowd` ADD `last_update` int(11) NOT NULL DEFAULT '0'";
