@@ -795,6 +795,20 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         return $id;
     }
 
+    public function append_tmdbid($mid = 0, $tmdb = 0) {
+        if ($mid && $tmdb) {
+            $sql = sprintf("SELECT tmdb_id FROM {$this->db['movie_imdb']} WHERE id = %d", $mid);
+            $exist_tmdb = $this->db_get_var($sql);
+            if (!$exist_tmdb) {
+                // Append tmdb
+                $data = array(
+                    'tmdb_id'=>$tmdb
+                );
+                $this->sync_update_data($data, $mid, $this->db['movie_imdb']);                
+            }
+        }
+    }
+
     /*
      * Country
      */

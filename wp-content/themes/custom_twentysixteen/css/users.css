@@ -319,7 +319,7 @@ article.main {
     padding: 5px 20px;
     line-height: 1.75rem;
     font-weight: normal;
-    margin: 0 -15px 1rem -15px;
+    margin: 25px -15px 1rem -15px;
     font-size: 25px;
 }
 
@@ -433,7 +433,6 @@ body.theme_dark .uw-title {
 .chartholder {    
     min-height: 300px;
     overflow: hidden;
-    margin-bottom: 30px;
 }
 
 .activ-date .new {

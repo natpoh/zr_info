@@ -715,12 +715,7 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
 
 
 
-                 if (!$total) {
 
-                     $q = "UPDATE `data_woke` SET `title` =?, `country`=?, `last_update`=? WHERE `mid`= ? ";
-                     Pdo_an::db_results_array($q, [$array['title'],$array['country'],time(), $mid]);
-                 }
-                 else {
                      $shouldUpdate = false;
 
                      $array_data = [$array['title'],$array['country'],$array['diversity'], $array['female'], $array['woke'], $lgbt_words, $array['lgbt'], $array['qtia'], $array['audience'], $array['boycott'], $array['oweralbs'],
@@ -761,7 +756,7 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
                          }
 
 
-                 }
+
                  //echo ' updated ';
 
 

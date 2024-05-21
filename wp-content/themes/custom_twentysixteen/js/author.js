@@ -119,29 +119,33 @@ function carmaTrend() {
     if (typeof Highcharts === 'undefined' || typeof carma_rows === 'undefined') {
         return false;
     }
-
+    console.log(carma_rows);
     Highcharts.chart('carma-trend', {
         chart: {
             zoomType: 'xy',
-            height: 500,
+            height: 280,
+            type: 'column'
         },
         title: {
-            text: 'Interaction score trend'
+            text: 'Rating'
         },
 
         xAxis: {
-            type: 'category',
-            title: {
-                text: 'Date'
-            },
+            categories:categories_data,
+            labels: {
+                enabled: false
+            }
         },
         yAxis: {
             title: {
                 text: 'Score',
             },
+            labels: {
+                enabled: false
+            }
         },
         legend: {
-            maxHeight: 70,
+            enabled: false
         },
         tooltip: {
             pointFormat: 'Score: <b>{point.y}</b>',
