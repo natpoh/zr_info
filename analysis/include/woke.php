@@ -642,7 +642,8 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
             if ($debug)echo 'try update<br>';
 
 
-         $q="SELECT * FROM `data_woke` where `mid`  = ".$mid;
+         $q="SELECT `id`, `mid`,`title`, `country`, `diversity`, `female`, `woke`, `lgbt`,`lgb`,`qtia`, `audience`, `boycott`, `oweralbs`, `rtgap`, `year`, `rtaudience`, `imdb`, `kino`, `douban`,
+                      `woke_result`, `lgbt_result` ,`result`  FROM `data_woke` where `mid`  = ".$mid;
          $r =Pdo_an::db_results_array($q);
 
 
@@ -719,17 +720,24 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
                          $woke, $lgbt, $result, time(), $mid];
 
                      ///check
-
+                     $i=0;
                      foreach ($r[0] as $key => $value) {
-                         if (array_key_exists($key, $array_data) && $value != $array_data[$key]) {
-                             if ($debug) echo 'break '.$key.' => '.$value . ' : ' . $array_data[$key].'<br>';
-                             $shouldUpdate = true;
-                             break;
+                         if ($key!='id' && $key!='mid'){
+
+                             if ( array_key_exists($key, $array_data) && $value != $array_data[$i] ) {
+                                 if ($debug) echo 'break '.$key.' => '.$value . ' : ' . $array_data[$i].'<br>';
+                                 $shouldUpdate = true;
+                                 break;
+                             }
+                             else
+                             {
+                                 if ($debug)  echo 'continue '.$key.' => '.$value . ' : ' . $array_data[$i].'<br>';
+                             }
+                             $i++;
+
                          }
-                         else
-                         {
-                             if ($debug)  echo 'continue '.$key.' => '.$value . ' : ' . $array_data[$key].'<br>';
-                         }
+
+
 
                      }
 
