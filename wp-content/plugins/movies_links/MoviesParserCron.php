@@ -926,8 +926,8 @@ class MoviesParserCron extends MoviesAbstractDB {
             $this->mp->log_error($message, $item->cid, $item->id, 2);
             return;
         } else if ($header_status == 404) {
-            // Status - 404
-            $status = 4;
+            // Status - 404 - Trash
+            $status = 2;
             $this->mp->change_url_state($item->id, $status, true);
             $message = 'Error 404 Not found';
             $this->mp->log_error($message, $item->cid, $item->id, 2);
