@@ -87,10 +87,19 @@ if (sizeof($campaigns) > 0) {
                                         // Get parser type
                                         print '<br /> — ' . $this->parse_mode[$item['webdrivers']];
                                     }
-                                    if ($module == 'arhive') {
-                                        $del_pea = $item['del_pea'];
-                                        if ($del_pea) {
-                                            print '<br /> — Garbage: ' . $this->remove_interval[$item['del_pea_int']];
+                                    
+                                    //'cron_urls', 'gen_urls' service_urls
+                                if ($module == 'arhive'||$module == 'cron_urls'||$module == 'gen_urls') {
+                                        if ($module == 'arhive'){
+                                            $del_pea = $item['del_pea'];
+                                            $deltext = $this->remove_interval[$item['del_pea_int']];
+                                         } else {
+                                            $del_pea = $options['service_urls']['del_pea']; 
+                                            $deltext = $options['service_urls']['del_pea_cnt'];
+                                         }
+                                        
+                                        if ($del_pea) {                                           
+                                            print '<br /> — Garbage: ' . $deltext;
                                         }
                                     }
                                 }
