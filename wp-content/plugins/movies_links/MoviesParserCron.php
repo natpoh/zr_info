@@ -981,12 +981,12 @@ class MoviesParserCron extends MoviesAbstractDB {
         // Add arhive db object
         if ($arhive_exist) {
             $this->mp->update_arhive($item);
-            $message = 'Update expired arhive';
+            $message = 'Update expired arhive. Len:'. strlen($code);
             $this->mp->log_info($message, $item->cid, $item->id, 2);
             // Update expire state
             $data['exp_status'] = 2;
         } else {
-            $message = 'Add arhive';
+            $message = 'Add arhive. Len:'. strlen($code);
             $this->mp->add_arhive($item);
             $this->mp->log_info($message, $item->cid, $item->id, 2);
         }
