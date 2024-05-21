@@ -65,6 +65,7 @@ if ($uid) {
         ?>
         <h2>Arhive</h2>
         <p>Date: <?php print $this->mp->curr_date($arhive->date) ?></p>
+        <p>Len: <?php print strlen($content) ?></p>
         <textarea style="width: 90%; height: 300px;"><?php print htmlspecialchars($content) ?></textarea>      
         <?php
     }
