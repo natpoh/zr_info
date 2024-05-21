@@ -726,6 +726,10 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
                              $shouldUpdate = true;
                              break;
                          }
+                         else
+                         {
+                             if ($debug)  echo 'continue '.$key.' => '.$value . ' : ' . $array_data[$key].'<br>';
+                         }
 
                      }
 
