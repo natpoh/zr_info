@@ -724,7 +724,7 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
                      foreach ($r[0] as $key => $value) {
                          if ($key!='id' && $key!='mid'){
 
-                             if ( array_key_exists($key, $array_data) && $value != $array_data[$i] ) {
+                             if ( array_key_exists($i, $array_data) && $value != $array_data[$i] ) {
                                  if ($debug) echo 'break '.$key.' => '.$value . ' : ' . $array_data[$i].'<br>';
                                  $shouldUpdate = true;
                                  break;
