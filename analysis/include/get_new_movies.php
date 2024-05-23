@@ -216,7 +216,7 @@ class GETNEWMOVIES{
                 else
                 {
                     if ($debug)  echo  $coincide.' already adedded <br>'.PHP_EOL;
-                    $status = 1;
+                    $status = 2;
                 }
             }
             else
