@@ -2435,7 +2435,7 @@ public static function  get_data_actor($actor,$debug=0)
 
 }
 
-public static  function get_data($key,$type,$debug=0)
+public static function get_data($key,$type,$debug=0)
     {
 
         $result_data=[];

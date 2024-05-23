@@ -781,7 +781,7 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
                              !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
                              TMDB::add_log($mid,0,'update rating','woke rating updated',1,'woke');
                          }
-                         else{
+                         else  {
                                 if ($debug)echo 'not need update<br>';
                          }
 

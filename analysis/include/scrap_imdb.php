@@ -2295,6 +2295,11 @@ function get_actor_result($data)
 
 
 }
+function import_movies_from_list()
+{
+    !class_exists('GETNEWMOVIES') ? include ABSPATH . "analysis/include/get_new_movies.php" : '';
+    GETNEWMOVIES::import_movies_from_list();
+}
 
 function update_all_woke_rating()
 {
@@ -3536,6 +3541,16 @@ else if (isset($_GET['update_all_pg_rating'])) {
 
     return;
 }
+
+else if (isset($_GET['import_movies_from_list'])) {
+    global $debug;
+    if (isset($_GET['debug'])) {
+        $debug = 1;
+    }
+    import_movies_from_list();
+}
+
+
 
 else if (isset($_GET['update_all_woke_rating'])) {
     global $debug;

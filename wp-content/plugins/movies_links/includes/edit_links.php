@@ -7,7 +7,6 @@
 
 print $tabs;
 
-
 if ($cid) {
     $options = $this->mp->get_options($campaign);
     if ($campaign->parsing_mode == 1) {
@@ -66,6 +65,50 @@ if ($cid) {
                     <span class="checkbox-title"><?php print __('Parser is active') ?></span>
                 </label>
 
+                <h3>Error links collector</h3>
+
+
+                <label class="inline-edit-status">                
+                    <?php
+                    $checked = '';
+                    if ($o['parse_movie'] == 1) {
+                        $checked = 'checked="checked"';
+                    }
+                    ?>
+                    <input type="checkbox" name="parse_movie" value="1" <?php print $checked ?> >
+                    <span class="checkbox-title"><?php print __('Try to parse a not found movie from IMDB') ?></span>
+                </label>
+
+                <label class="inline-edit-status">                
+                    <?php
+                    $checked = '';
+                    if ($o['del_pea'] == 1) {
+                        $checked = 'checked="checked"';
+                    }
+                    ?>
+                    <input type="checkbox" name="del_pea" value="1" <?php print $checked ?> >
+                    <span class="checkbox-title"><?php print __('Relinking "Error" links') ?></span>
+                </label>
+
+               
+                <label class="inline-edit-interval">
+                    <select name="del_pea_int" class="interval">
+                        <?php
+                        $inetrval = $o['del_pea_int'];
+                        foreach ($this->remove_interval as $key => $name) {
+                            $selected = ($key == $inetrval) ? 'selected' : '';
+                            ?>
+                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                            <?php
+                        }
+                        ?>                          
+                    </select> 
+                    <span class="inline-edit"><?php print __('Change "Error" links status to "New" after timeout') ?></span>                    
+                </label>
+                <br />
+
+
+                <h2>Links matches</h2>
                 <label>
                     <span class="title"><?php print __('Min match') ?></span>
                     <span class="input-text-wrap"><input type="match" name="match" class="match" value="<?php print $o['match'] ?>"></span>

@@ -170,6 +170,78 @@ class GETNEWMOVIES{
         return $array_int;
     }
 
+
+    public static function import_movies_from_list()
+    {
+        $array_update = [];
+        global $debug;
+        $q="SELECT * FROM `meta_movies_queue` WHERE (`status` = 0 OR ( `status` = 3 and `last_upd` < ".(time()-86400*7).") )   ORDER BY `last_upd` ASC LIMIT 10";
+
+        $rows = Pdo_an::db_results_array($q);
+        foreach ($rows as $r)
+        {
+
+
+            $id = $r['id'];
+            $movie_name = $r['title'];
+            $year = $r['year'];
+            $status = $r['status'];
+
+            if ($debug) {
+                echo 'try add movie ' . $movie_name . ' <br>'. PHP_EOL;
+            }
+            $array_movie_id =TMDB::get_data($movie_name,'ft');
+
+            $coincide = self::check_movie_coincidence($array_movie_id,$movie_name,$year);
+
+            if ($coincide)
+            {
+
+                $addeded = TMDB::check_imdb_id($coincide);
+                if (!$addeded)
+                {
+                    ////add movie to database
+                    $array_movie =  TMDB::get_content_imdb($coincide);
+
+                        $add =  TMDB::addto_db_imdb($coincide, $array_movie,'','','from_list');
+                        $status = 1;
+
+                        if ($debug) {
+                            echo $coincide . ' adedded <br>' . PHP_EOL;
+
+
+                        }
+
+                }
+                else
+                {
+                    if ($debug)  echo  $coincide.' already adedded <br>'.PHP_EOL;
+                    $status = 1;
+                }
+            }
+            else
+            {
+                if ($debug)  {
+                    !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+                    TMDB::var_dump_table(['find results',$array_movie_id]);
+                    echo  $coincide.' not found <br>'.PHP_EOL;
+                }
+                $status = 3;
+            }
+
+            $array_update[$id]=$status;
+        }
+        foreach ($array_update as $id=>$status)
+        {
+            $q ="UPDATE `meta_movies_queue` SET `last_upd`=?,`status`=? WHERE `id`=?";
+            $r = Pdo_an::db_results_array($q,[time(),$status,$id]);
+        }
+
+
+
+    }
+
+
     public static function get_new_movies()
     {
         global $debug;
