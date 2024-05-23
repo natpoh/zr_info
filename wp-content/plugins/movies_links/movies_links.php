@@ -517,8 +517,10 @@ function movies_links_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
    
     Pdo_an::db_query($sql);
+    $sql = "ALTER TABLE `meta_movies_queue` ADD `status` INT NOT NULL DEFAULT '0';";
+    Pdo_an::db_query($sql);
     #print_r(Pdo_an::last_error());
-    movies_links_create_index_an(array('last_upd','title','year'), 'meta_movies_queue');
+    movies_links_create_index_an(array('last_upd','title','year','status'), 'meta_movies_queue');
 
 
    
