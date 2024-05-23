@@ -499,10 +499,29 @@ function movies_links_plugin_activation() {
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
     
-   $sql = "ALTER TABLE `meta_movie_boxint` ADD `total_mojo` int(11) NOT NULL DEFAULT '0'";
+    $sql = "ALTER TABLE `meta_movie_boxint` ADD `total_mojo` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
     
     movies_links_create_index_an(array('mid', 'country'), 'meta_movie_boxint');
+    
+    
+    /*
+     * New movies queue
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS `meta_movies_queue`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `last_upd` int(11) NOT NULL DEFAULT '0',
+                                `title` varchar(400) NOT NULL DEFAULT '',
+                                `year` int(11) NOT NULL DEFAULT '0',   
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+   
+    Pdo_an::db_query($sql);
+    #print_r(Pdo_an::last_error());
+    movies_links_create_index_an(array('last_upd','title','year'), 'meta_movies_queue');
+
+
+   
 }
 
 function movies_links_create_index_an($names = array(), $table_name = '') {

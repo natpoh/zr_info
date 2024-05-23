@@ -697,8 +697,9 @@ class MoviesParserCron extends MoviesAbstractDB {
             print_r(array('last_posts', $last_posts));
         }
         $o = $options['links'];
+        $ma = '';
         if ($last_posts) {
-            
+
             $items = $this->mp->find_posts_links($last_posts, $o, $campaign->type);
 
             if ($debug) {
@@ -807,6 +808,20 @@ class MoviesParserCron extends MoviesAbstractDB {
                         print_r($message);
                     }
                     $this->mp->log_error($message, $cid, $post->uid, 4);
+
+                    // Try to parse movie from IMDB
+                    $parse_movie = $o['parse_movie'];
+                    if ($parse_movie == 1) {
+                        if (!$ma) {
+                            $ma = $this->ml->get_ma();
+                        }
+                        $ma->add_movie_queue($post->title, $post->year);
+                        $message = "Add movie to queue: " . $post->title . "(" . $post->year . ")";
+                        if ($debug) {
+                            print_r($message);
+                        }
+                        $this->mp->log_info($message, $cid, $post->uid, 4);
+                    }
                 }
                 $count += 1;
             }
@@ -825,7 +840,7 @@ class MoviesParserCron extends MoviesAbstractDB {
 
         // Change error links
         $del_pea = $o['del_pea'];
-        if ($del_pea == 1) {     
+        if ($del_pea == 1) {
             $interval_min = $o['del_pea_int'];
             $posts = $this->mp->get_posts_expired_error_links($cid, $interval_min);
 
@@ -833,9 +848,9 @@ class MoviesParserCron extends MoviesAbstractDB {
                 print_r(array('Expired links posts', $posts));
             }
             if ($posts) {
-                $new_status = 0;                
-                $posts = $this->mp->update_posts_status($posts,$new_status);
-                $message = 'Change error links to new: '.count($posts);
+                $new_status = 0;
+                $posts = $this->mp->update_posts_status($posts, $new_status);
+                $message = 'Change error links to new: ' . count($posts);
                 $this->mp->log_info($message, $campaign->id, 0, 4);
             }
         }

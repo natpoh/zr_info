@@ -38,6 +38,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             'language_code' => 'data_language_code',
             'meta_movie_boxint' => 'meta_movie_boxint',
             'meta_actor_weight' => 'meta_actor_weight',
+            'meta_movies_queue'=>'meta_movies_queue',
         );
     }
 
@@ -909,6 +910,27 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         return $id;
     }
 
+    
+    public function add_movie_queue($title = '', $year = 0) {
+        // Validate values
+        if ($title) {
+            //Get meta
+            $sql = sprintf("SELECT id FROM {$this->db['meta_movies_queue']} WHERE title='%s' AND year=%d",  $title, (int) $year);
+            $meta_exist_id = $this->db_get_var($sql);
+            if (!$meta_exist_id) {
+                //Meta not exist
+                $data = array(
+                    'last_upd'=>$this->curr_time(),
+                    'title' => $title,
+                    'year' => (int)$year,
+                );
+                $this->db_insert($data, $this->db['meta_movies_queue'],);                
+            }
+            return true;
+        }
+        return false;
+    }
+    
     public function create_slug($string, $glue = '-', $str_lower = true) {
         $string = str_replace('&', ' and ', $string);
         $string = preg_replace("/('|`)/", "", $string);
