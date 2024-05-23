@@ -40,7 +40,7 @@ class MoviesParser extends MoviesAbstractDB {
                     'random' => 1,
                     'progress' => 0,
                     'del_pea' => 0,
-                    'del_pea_int' => 1440,
+                    'del_pea_int' => 10080,
                     'tor_h' => 20,
                     'tor_d' => 100,
                     'tor_mode' => 0,
@@ -112,6 +112,9 @@ class MoviesParser extends MoviesAbstractDB {
                     'custom_last_run_id' => 0,
                     'camp' => 0,
                     'weight' => 10,
+                    'del_pea' => 1,
+                    'del_pea_int' => 10080,
+                    'parse_movie'=>0,
                 ),
                 'critics' => array(
                     'last_update' => 0,
@@ -3882,6 +3885,17 @@ class MoviesParser extends MoviesAbstractDB {
 
         $this->db_query($sql);
     }
+    
+    public function update_posts_status($ids=[], $status_links) {
+        $date = $this->curr_time();
+
+        $sql = sprintf("UPDATE {$this->db['posts']} SET    
+                last_upd=%d,               
+                status_links=%d                                              
+                WHERE id IN(". implode(',', $ids).")", (int) $date, (int) $status_links);
+
+        $this->db_query($sql);
+    }
 
     public function update_post_top_movie($uid, $status_links, $top_movie, $rating) {
         $date = $this->curr_time();
@@ -3924,6 +3938,21 @@ class MoviesParser extends MoviesAbstractDB {
         $sql = sprintf("SELECT COUNT(p.id) FROM {$this->db['posts']} p INNER JOIN {$this->db['url']} u ON u.id=p.uid WHERE u.cid=%d", $cid);
         $result = $this->db_get_var($sql);
         return $result;
+    }
+    
+    
+    public function get_posts_expired_error_links($cid, $interval_min=0) {
+        $time = $this->curr_time();
+        $expired = $time-($interval_min*60);
+        $sql = sprintf("SELECT p.id FROM {$this->db['posts']} p INNER JOIN {$this->db['url']} u ON u.id=p.uid WHERE u.cid=%d AND p.status_links=2 AND p.last_upd<%d", $cid,$expired);
+        $result = $this->db_results($sql);
+        $ids = array();
+        if ($result){
+            foreach ($result as $post) {
+                $ids[]=$post->id;
+            }
+        }
+        return $ids;
     }
 
     public function save_all_posts($cid) {

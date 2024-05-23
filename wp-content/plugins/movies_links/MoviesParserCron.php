@@ -696,10 +696,9 @@ class MoviesParserCron extends MoviesAbstractDB {
         if ($debug) {
             print_r(array('last_posts', $last_posts));
         }
-
+        $o = $options['links'];
         if ($last_posts) {
-
-            $o = $options['links'];
+            
             $items = $this->mp->find_posts_links($last_posts, $o, $campaign->type);
 
             if ($debug) {
@@ -823,6 +822,24 @@ class MoviesParserCron extends MoviesAbstractDB {
             }
             $this->mp->log_info($message, $campaign->id, 0, 4);
         }
+
+        // Change error links
+        $del_pea = $o['del_pea'];
+        if ($del_pea == 1) {     
+            $interval_min = $o['del_pea_int'];
+            $posts = $this->mp->get_posts_expired_error_links($cid, $interval_min);
+
+            if ($debug) {
+                print_r(array('Expired links posts', $posts));
+            }
+            if ($posts) {
+                $new_status = 0;                
+                $posts = $this->mp->update_posts_status($posts,$new_status);
+                $message = 'Change error links to new: '.count($posts);
+                $this->mp->log_info($message, $campaign->id, 0, 4);
+            }
+        }
+
         return $count;
     }
 
@@ -981,12 +998,12 @@ class MoviesParserCron extends MoviesAbstractDB {
         // Add arhive db object
         if ($arhive_exist) {
             $this->mp->update_arhive($item);
-            $message = 'Update expired arhive. Len:'. strlen($code);
+            $message = 'Update expired arhive. Len:' . strlen($code);
             $this->mp->log_info($message, $item->cid, $item->id, 2);
             // Update expire state
             $data['exp_status'] = 2;
         } else {
-            $message = 'Add arhive. Len:'. strlen($code);
+            $message = 'Add arhive. Len:' . strlen($code);
             $this->mp->add_arhive($item);
             $this->mp->log_info($message, $item->cid, $item->id, 2);
         }

@@ -1034,7 +1034,10 @@ class MoviesParserAdmin extends ItemAdmin {
                     $parsing[$field] = $form_state[$field];
                 }
             }
-            $parsing['status'] = isset($form_state['status']) ? $form_state['status'] : 0;
+            
+            $parsing['del_pea'] = isset($form_state['del_pea']) ? $form_state['del_pea'] : 0;
+            $parsing['parse_movie'] = isset($form_state['parse_movie']) ? $form_state['parse_movie'] : 0;
+            $parsing['del_pea_int'] = isset($form_state['del_pea_int']) ? $form_state['del_pea_int'] : $opt_prev['links']['del_pea_int'];            
 
             // Link to movies
             $parsing['rules'] = $this->links_rules_form($form_state);

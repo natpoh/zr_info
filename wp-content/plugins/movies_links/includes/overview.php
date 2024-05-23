@@ -89,8 +89,8 @@ if (sizeof($campaigns) > 0) {
                                     }
                                     
                                     //'cron_urls', 'gen_urls' service_urls
-                                if ($module == 'arhive'||$module == 'cron_urls'||$module == 'gen_urls') {
-                                        if ($module == 'arhive'){
+                                if ($module == 'arhive'||$module == 'links'||$module == 'cron_urls'||$module == 'gen_urls') {
+                                        if ($module == 'arhive'||$module == 'links'){
                                             $del_pea = $item['del_pea'];
                                             $deltext = $this->remove_interval[$item['del_pea_int']];
                                          } else {
@@ -100,6 +100,12 @@ if (sizeof($campaigns) > 0) {
                                         
                                         if ($del_pea) {                                           
                                             print '<br /> — Garbage: ' . $deltext;
+                                        }
+                                        if ($module == 'links'){
+                                            $parse_movie = $item['parse_movie'];
+                                             if ($parse_movie) {                                           
+                                            print '<br /> — Parse movie';
+                                        }
                                         }
                                     }
                                 }
