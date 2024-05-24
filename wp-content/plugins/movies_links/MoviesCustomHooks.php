@@ -452,6 +452,34 @@ class MoviesCustomHooks {
                 );
                 $ma->update_woke($post->top_movie, $woke_data);
             }
+        } else if ($campaign->id == 61 || $campaign->id == 62) {
+            // https://wokernot.com/
+            $upd_opt = array(
+                'Wokeness' => 'Wokeness',
+            );
+
+            $to_update = array();
+            foreach ($upd_opt as $post_key => $db_key) {
+                $field_value = '';
+                if (isset($options[$post_key])) {
+                    $field_value = base64_decode($options[$post_key]);
+                }
+                $to_update[$db_key] = $field_value;
+            }
+            if ($to_update) {
+                $wokeness = $to_update['Wokeness'];
+                if (strstr($wokeness, '%')) {
+                    $wokeness_int = (int) trim(str_replace("%", '', $wokeness));
+                    if ($wokeness_int > 0) {
+                        $ma = $this->ml->get_ma();
+                        # Update woke
+                        $woke_data = array(
+                            'wokeornot' => $rating,
+                        );
+                        $ma->update_woke($post->top_movie, $woke_data);
+                    }
+                }
+            }
         }
     }
 
@@ -686,7 +714,7 @@ class MoviesCustomHooks {
             $code = isset($to_update['original_language']) ? $to_update['original_language'] : '';
             $code_int = 0;
             // Language code
-            if ($code) {                
+            if ($code) {
                 if ($code == 'nb') {
                     $code = 'no';
                 } else if ($code == 'cn') {
@@ -696,24 +724,24 @@ class MoviesCustomHooks {
             }
             // Poster
             $poster_path = isset($to_update['poster_path']) ? $to_update['poster_path'] : '';
-            $poster_id='';
-            if ($poster_path){
+            $poster_id = '';
+            if ($poster_path) {
                 $poster_id = preg_replace('#^/([^\.]+)\..*$#', "$1", $poster_path);
             }
-            
+
             # Update tmdb
             $tmdb_data = array(
                 'tmdb' => (int) $to_update['tmdb'],
                 'original_language' => $code,
                 'original_language_int' => (int) $code_int,
-                'poster_path'=>$poster_path,
-                'poster_id'=>$poster_id,
+                'poster_path' => $poster_path,
+                'poster_id' => $poster_id,
             );
-            if ($debug){
-                print_r(array($top_movie,$tmdb_data));
+            if ($debug) {
+                print_r(array($top_movie, $tmdb_data));
             }
             $ma->update_tmdb($top_movie, $tmdb_data, $debug);
-            
+
             // Update tmdbid
             $ma->append_tmdbid($top_movie, (int) $to_update['tmdb']);
         }
