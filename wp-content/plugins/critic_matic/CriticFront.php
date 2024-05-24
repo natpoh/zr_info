@@ -3484,7 +3484,7 @@ class CriticFront extends SearchFacets {
         $this->cs->facet_limit = 10000;
         $this->cs->facet_max_limit = 10000;
 
-        $this->cs->filter_custom_and[$filter] = " AND ANY(mkw) IN(" . implode(',', $mkw_arr) . ")";
+        $this->cs->filter_custom_and[$filter] = "ANY(mkw) IN(" . implode(',', $mkw_arr) . ")";
         $result = $this->cs->front_search_movies_multi($this->keywords, $facets, 0, array(), $filters, $facets, true, true, false);
         $this->cs->facet_limit = $last_limit;
         $this->cs->facet_max_limit = $last_max_limit;

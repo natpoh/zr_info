@@ -705,14 +705,14 @@ class MoviesCustomHooks {
             $tmdb_data = array(
                 'tmdb' => (int) $to_update['tmdb'],
                 'original_language' => $code,
-                'original_language_int' => $code_int,
+                'original_language_int' => (int) $code_int,
                 'poster_path'=>$poster_path,
                 'poster_id'=>$poster_id,
             );
             if ($debug){
-                print_r($tmdb_data);
+                print_r(array($top_movie,$tmdb_data));
             }
-            $ma->update_tmdb($top_movie, $tmdb_data);
+            $ma->update_tmdb($top_movie, $tmdb_data, $debug);
             
             // Update tmdbid
             $ma->append_tmdbid($top_movie, (int) $to_update['tmdb']);

@@ -764,7 +764,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
      * Woke
      */
 
-    public function update_tmdb($mid = 0, $data = array()) {
+    public function update_tmdb($mid = 0, $data = array(), $debug=false) {
         // Get data 
         $sql = sprintf("SELECT * FROM {$this->db['tmdb']} WHERE mid = %d", (int) $mid);
         $exist = $this->db_fetch_row($sql);
@@ -772,6 +772,9 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         if ($exist) {
             // Update post            
             $this->sync_update_data($data, $exist->id, $this->db['tmdb'], true, 10);
+            if ($debug){
+                print_r(Pdo_an::last_error());
+            }
             CustomHooks::do_action('update_tmdb', ['mid' => $mid, 'data' => $data]);
         } else {
             // Add post            
