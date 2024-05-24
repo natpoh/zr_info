@@ -773,13 +773,16 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             // Update post            
             $this->sync_update_data($data, $exist->id, $this->db['tmdb'], true, 10);
             if ($debug){
-                print_r(Pdo_an::last_error());
+                print_r(array('update',$data, $exist->id,Pdo_an::last_error()));
             }
             CustomHooks::do_action('update_tmdb', ['mid' => $mid, 'data' => $data]);
         } else {
             // Add post            
             $data['mid'] = $mid;
             $this->sync_insert_data($data, $this->db['tmdb'], false, true, 10);
+            if ($debug){
+                print_r(array('insert',$data, $exist->id,Pdo_an::last_error()));
+            }
             CustomHooks::do_action('add_tmdb', ['mid' => $mid, 'data' => $data]);
         }
     }
