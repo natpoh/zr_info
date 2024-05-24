@@ -467,7 +467,7 @@ class MoviesCustomHooks {
                 $to_update[$db_key] = $field_value;
             }
             if ($to_update) {
-                $wokeness = $to_update['Wokeness'];
+                $wokeness = strip_tags($to_update['Wokeness']);
                 if (strstr($wokeness, '%')) {
                     $wokeness_int = (int) trim(str_replace("%", '', $wokeness));
                     if ($wokeness_int > 0) {
