@@ -454,7 +454,7 @@ class CriticSearch extends AbstractDB {
             'hide' => 1,
             'weight' => 65,
             'childs' => array(
-                'zrwoke' => array('title' => 'ZR Woke Meter', 'facet' => 'rating', 'eid' => 'ezrwoke', 'titlesm' => 'ZR Woke', 'max_count' => 100, 'multipler' => 10, 'group' => 'woke', 'icon' => 'zr_woke', 'sorted' => 1, 'minus' => 1,  'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1, 'sort_w' => 10),
+                'zrwoke' => array('title' => 'ZR Woke Meter', 'facet' => 'rating', 'eid' => 'ezrwoke', 'titlesm' => 'ZR Woke', 'max_count' => 100, 'multipler' => 10, 'group' => 'woke', 'icon' => 'zr_woke', 'sorted' => 1, 'minus' => 1, 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1, 'sort_w' => 10),
                 'rating' => array('title' => 'Family Friendly Score', 'facet' => 'rating', 'eid' => 'erating', 'titlesm' => 'FFS', 'max_count' => 50, 'multipler' => 10, 'group' => 'woke', 'icon' => 'zr_family', 'sorted' => 1, 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1, 'sort_w' => 10,),
                 // Filetrs
                 'woketitle' => array('title' => 'Forced Diversity<span data-value="tooltip_zr_forced_diversity" class="nte_info"></span>', 'is_title' => 1, 'group' => 'woke', 'no_data' => 1, 'tabs' => array('movies', 'games', 'international', 'ethnicity'), 'sort_w' => 20,),
@@ -479,9 +479,9 @@ class CriticSearch extends AbstractDB {
                 'reviewwoketitle' => array('title' => 'Review Sites<span data-value="tooltip_zr_woke_search" class="nte_info"></span>', 'is_title' => 1, 'group' => 'woke', 'tabs' => array('movies', 'international', 'ethnicity'), 'sort_w' => 40,),
                 'bechdeltest' => array('title' => 'BechdelTest', 'facet' => 'select', 'eid' => 'ebechdeltest', 'titlesm' => 'BechdelTest', 'max_count' => 5, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'sorted' => 1, 'minus' => 1, 'sort_w' => 40, 'max' => 1,),
                 'rcherry' => array('title' => 'CherryPicks', 'icon' => 'CherryPicks', 'facet' => 'rating', 'eid' => 'echerry', 'titlesm' => 'CherryPicks', 'max_count' => 100, 'multipler' => 1, 'group' => 'woke', 'sorted' => 1, 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1, 'sort_w' => 40,),
-                'rmedia' => array('title' => 'MediaVersity', 'icon' => 'MediaVersity', 'facet' => 'rating', 'eid' => 'emedia', 'titlesm' => 'MediaVersity', 'max_count' => 50, 'multipler' => 10, 'group' => 'woke', 'sorted' => 1,  'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1, 'sort_w' => 40,),
-                'mediaversity' => array('title' => 'MediaVersity A-F', 'eid' => 'emedia', 'facet' => 'select', 'titlesm' => 'MediaVersity', 'max_count' => 20, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'minus' => 1,  'sort_w' => 40,),
-                'worthit' => array('title' => 'WorthItOrWoke', 'eid' => 'eworthit', 'facet' => 'select', 'titlesm' => 'WorthIt', 'max_count' => 5, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'sorted' => 1, 'minus' => 1,  'sort_w' => 40,),
+                'rmedia' => array('title' => 'MediaVersity', 'icon' => 'MediaVersity', 'facet' => 'rating', 'eid' => 'emedia', 'titlesm' => 'MediaVersity', 'max_count' => 50, 'multipler' => 10, 'group' => 'woke', 'sorted' => 1, 'hide' => 1, 'minus' => 1, 'zero' => 1, 'max' => 1, 'sort_w' => 40,),
+                'mediaversity' => array('title' => 'MediaVersity A-F', 'eid' => 'emedia', 'facet' => 'select', 'titlesm' => 'MediaVersity', 'max_count' => 20, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'minus' => 1, 'sort_w' => 40,),
+                'worthit' => array('title' => 'WorthItOrWoke', 'eid' => 'eworthit', 'facet' => 'select', 'titlesm' => 'WorthIt', 'max_count' => 5, 'multipler' => 1, 'group' => 'woke', 'hide' => 1, 'sorted' => 1, 'minus' => 1, 'sort_w' => 40,),
                 // Audience  
                 'auratingtitle' => array('title' => 'Audience Warnings<span data-value="tooltip_zr_audience_warnings" class="nte_info"></span>', 'is_title' => 1, 'group' => 'woke', 'sort_w' => 50,),
                 'auvote' => array('title' => 'SUGGESTION', 'eid' => 'eauvote', 'facet' => 'select', 'titlesm' => 'SUGGESTION', 'max_count' => 5, 'multipler' => 1, 'icon' => 'vote', 'hide' => 1, 'group' => 'woke', 'minus' => 1, 'sort_w' => 50, 'sort_zero' => 1, 'max' => 1,),
@@ -734,30 +734,30 @@ class CriticSearch extends AbstractDB {
             'indidist' => array('key' => 'bigdist', 'title' => 'Independent Studios (USA)'),
         ),
         'mediaversity' => array(
-            'a' => array('key' => 1, 'title' => 'A', 'color'=>3),
-            'b' => array('key' => 2, 'title' => 'B', 'color'=>3),
-            'c' => array('key' => 3, 'title' => 'C', 'color'=>2),
-            'd' => array('key' => 4, 'title' => 'D', 'color'=>2),
-            'e' => array('key' => 5, 'title' => 'E', 'color'=>2),
-            'f' => array('key' => 6, 'title' => 'F', 'color'=>1),
+            'a' => array('key' => 1, 'title' => 'A', 'color' => 3),
+            'b' => array('key' => 2, 'title' => 'B', 'color' => 3),
+            'c' => array('key' => 3, 'title' => 'C', 'color' => 2),
+            'd' => array('key' => 4, 'title' => 'D', 'color' => 2),
+            'e' => array('key' => 5, 'title' => 'E', 'color' => 2),
+            'f' => array('key' => 6, 'title' => 'F', 'color' => 1),
         ),
         'worthit' => array(
-            'worthit' => array('key' => 1, 'title' => 'Worth it', 'color'=>2),
-            'nonwoke' => array('key' => 2, 'title' => 'Non-Woke', 'color'=>1),
-            'wokeish' => array('key' => 3, 'title' => 'Woke-ish', 'color'=>2),
-            'woke' => array('key' => 4, 'title' => 'Woke', 'color'=>3),
+            'worthit' => array('key' => 1, 'title' => 'Worth it', 'color' => 2),
+            'nonwoke' => array('key' => 2, 'title' => 'Non-Woke', 'color' => 1),
+            'wokeish' => array('key' => 3, 'title' => 'Woke-ish', 'color' => 2),
+            'woke' => array('key' => 4, 'title' => 'Woke', 'color' => 3),
         ),
         'bechdeltest' => array(
-            'nowomen' => array('key' => 1, 'title' => 'No 2 women', 'color'=>1),
-            'notalk' => array('key' => 2, 'title' => 'No women talking', 'color'=>2),
-            'talk' => array('key' => 3, 'title' => 'Talk about a man', 'color'=>2),
-            'pass' => array('key' => 4, 'title' => 'Passed!', 'color'=>3),
+            'nowomen' => array('key' => 1, 'title' => 'No 2 women', 'color' => 1),
+            'notalk' => array('key' => 2, 'title' => 'No women talking', 'color' => 2),
+            'talk' => array('key' => 3, 'title' => 'Talk about a man', 'color' => 2),
+            'pass' => array('key' => 4, 'title' => 'Passed!', 'color' => 3),
         ),
         'kmwoke' => array(
-            'woke' => array('key' => 'ewoke', 'title' => 'Possibly Woke', 'color'=>3),
-            'lgbt' => array('key' => 'elgbt', 'title' => 'LGBTQ', 'color'=>3),
-            'lgb' => array('key' => 'elgb', 'title' => 'LGB', 'color'=>3),
-            'qtia' => array('key' => 'eqtia', 'title' => 'QTIA+', 'color'=>3),
+            'woke' => array('key' => 'ewoke', 'title' => 'Possibly Woke', 'color' => 3),
+            'lgbt' => array('key' => 'elgbt', 'title' => 'LGBTQ', 'color' => 3),
+            'lgb' => array('key' => 'elgb', 'title' => 'LGB', 'color' => 3),
+            'qtia' => array('key' => 'eqtia', 'title' => 'QTIA+', 'color' => 3),
         ),
     );
     // Actors cache
@@ -2498,7 +2498,6 @@ class CriticSearch extends AbstractDB {
         // Filters logic
         $filters_and = '';
 
-
         $facets_and = '';
         if ($facets) {
             if (in_array('author_type', $facets)) {
@@ -2684,16 +2683,16 @@ class CriticSearch extends AbstractDB {
             $ret = $this->movie_results($sql, $match, $search_query);
 
             /*
-              print_r($filters_and);
-              print_r(array($match, $search_query));
-              print_r($sql);
-              print_r($ret);
+            print_r($filters_and);
+            print_r(array($match, $search_query));
+            print_r($sql);
+            print_r($ret);
 
-              $meta = $this->sps->query("SHOW META")->fetchAll();
-              print_r($meta);
-              exit;
+            $meta = $this->sps->query("SHOW META")->fetchAll();
+            print_r($meta);
+            exit;
 */
-   
+
             gmi('main sql');
             // Simple result
             if (!$show_meta) {
@@ -2997,7 +2996,6 @@ class CriticSearch extends AbstractDB {
 
         $this->connect();
 
-
         // Main logic
         // Filters logic
         $filters_and = $this->get_filters_query($filters);
@@ -3009,7 +3007,7 @@ class CriticSearch extends AbstractDB {
         }
 
         $max_option = '';
-        $stlimit = $start+$limit;
+        $stlimit = $start + $limit;
         if ($stlimit > 1000) {
             $max_option = ' OPTION max_matches=' . $stlimit;
         }
@@ -3018,17 +3016,17 @@ class CriticSearch extends AbstractDB {
                 . " GROUP BY " . $group_field . " ORDER BY cnt DESC, aid DESC LIMIT {$start}, {$limit}" . $max_option;
 
         $ret = $this->movie_results($sql, $match, $search_query);
-/*
-        print_r($filters_and);
-        print_r(array($match, $search_query));
-        print_r($sql);
-        print_r($ret);
+        /*
+          print_r($filters_and);
+          print_r(array($match, $search_query));
+          print_r($sql);
+          print_r($ret);
 
-        $meta = $this->sps->query("SHOW META")->fetchAll();
-        print_r($meta);
-        exit;
-*/
-  
+          $meta = $this->sps->query("SHOW META")->fetchAll();
+          print_r($meta);
+          exit;
+         */
+
 
         return $ret;
     }
@@ -3087,6 +3085,12 @@ class CriticSearch extends AbstractDB {
             if (isset($this->facet_data[$facet]['no_data'])) {
                 continue;
             }
+
+            $curr_facet = isset($this->facets_data[$facet]) ? $this->facets_data[$facet] : array();
+            if (isset($curr_facet['no_data'])) {
+                continue;
+            }
+
             if ($facet == 'release') {
                 $filters_and = $this->get_filters_query($filters, $facet, $query_type);
                 $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1 AND year_int>0" . $filters_and['filter'] . $match
@@ -3134,8 +3138,8 @@ class CriticSearch extends AbstractDB {
                     continue;
                 }
                 $max_count = isset($active_facet['max_count']) ? $active_facet['max_count'] : 6;
-                $filter = $facet;
-                $exclude_keys = array($facet, 'if_woke');                                   
+
+                $exclude_keys = array($facet, 'if_woke');
                 $filters_and = $this->get_filters_query($filters, $exclude_keys, $query_type);
 
                 if ($facet == 'rrtg') {
@@ -3273,12 +3277,11 @@ class CriticSearch extends AbstractDB {
 
                 if ($show_facet) {
                     $max_count = isset($curr_facet['max_count']) ? $curr_facet['max_count'] : 6;
-                    
-                    
+
                     $exclude_keys = array($facet);
-                     if (isset($this->facet_data['wokedata']['childs'][$facet])) {
-                        $exclude_keys[]= 'if_woke';
-                     }
+                    if (isset($this->facet_data['wokedata']['childs'][$facet])) {
+                        $exclude_keys[] = 'if_woke';
+                    }
                     $filters_and = $this->get_filters_query($filters, $exclude_keys);
 
                     if (isset($this->facet_data['findata']['childs'][$facet])) {
@@ -3375,7 +3378,7 @@ class CriticSearch extends AbstractDB {
                 $exclude_keys = array('if_woke');
                 if ($facet == 'kmwoke') {
                     // Keywords match woke
-                    
+
                     foreach ($this->search_filters['kmwoke'] as $kkey => $kvalue) {
                         $exclude_keys[] = $kvalue['key'];
                         $exclude_keys[] = $kvalue[$kkey];
@@ -3396,17 +3399,17 @@ class CriticSearch extends AbstractDB {
                             $filters_and = $this->get_filters_query($child, $exclude_keys);
                             $sql_arr[$child] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
                                     . " GROUP BY " . $child . " ORDER BY " . $child . " ASC LIMIT 0," . $max_count;
-                        }                        
-                    }            
+                        }
+                    }
                 } else {
                     // Other facets
                     $max_count = isset($curr_facet['max_count']) ? $curr_facet['max_count'] : 10;
-                    $exclude_keys[]=$facet;
+                    $exclude_keys[] = $facet;
                     $filters_and = $this->get_filters_query($filters, $exclude_keys);
 
                     $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
                             . " GROUP BY " . $facet . " ORDER BY " . $facet . " ASC LIMIT 0," . $max_count;
-                }            
+                }
             } else if ($facet == 'isfranchise' || $facet == 'reboot' || $facet == 'remake' || $facet == 'sequel' || $facet == 'prequel') {
                 $filters_and = $this->get_filters_query($filters, 'indie');
                 $sql_arr[$facet] = "SELECT 1 as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM movie_an WHERE id>0" . $filters_and['filter'] . $match
@@ -4023,11 +4026,11 @@ class CriticSearch extends AbstractDB {
         $select_and = array();
 
         if ($query_type == 'filters') {
-            $select_and['upub']= "IF(publish OR aid={$aid},1,0) as upub";
-            $filters_and['upub']= "upub=1";
+            $select_and['upub'] = "IF(publish OR aid={$aid},1,0) as upub";
+            $filters_and['upub'] = "upub=1";
         } else if ($query_type == 'watchlists') {
-            $select_and['upub']= "IF((publish AND items>0) OR aid={$aid},1,0) as upub";
-            $filters_and['upub']= "upub=1";
+            $select_and['upub'] = "IF((publish AND items>0) OR aid={$aid},1,0) as upub";
+            $filters_and['upub'] = "upub=1";
         } else {
             if (!isset($filters['release'])) {
                 $filters['release'] = $this->get_default_release();
@@ -4048,16 +4051,16 @@ class CriticSearch extends AbstractDB {
                 }
 
                 if (is_array($filters['state'])) {
-                    $filters_and['state']= $this->filter_multi_value('state', $filters['state'], true);
+                    $filters_and['state'] = $this->filter_multi_value('state', $filters['state'], true);
                 } else {
-                    $filters_and['state']= $this->filter_multi_value('state', $filters['state'], true);
+                    $filters_and['state'] = $this->filter_multi_value('state', $filters['state'], true);
                 }
             }
-            $filters_and['top_movie']= $top_movie_sql;
+            $filters_and['top_movie'] = $top_movie_sql;
         }
 
         if ($query_type == 'movies' || $query_type == 'games') {
-            $filters_and['title']= "title!=''";
+            $filters_and['title'] = "title!=''";
         }
 
         if (sizeof($filters)) {
@@ -4089,32 +4092,32 @@ class CriticSearch extends AbstractDB {
                     // Filters
                     if ($key == 'ftab') {
                         // Ftab
-                        $filters_and[$key]= $this->filter_multi_value($key, $value);
+                        $filters_and[$key] = $this->filter_multi_value($key, $value);
                     } else if ($key == 'from') {
                         // From author
-                        $filters_and[$key]= $this->filter_multi_value('aid', $value, true);
+                        $filters_and[$key] = $this->filter_multi_value('aid', $value, true);
                     }
                     continue;
                 } else if ($query_type == 'critics') {
 
                     if ($key == 'author') {
                         // Author
-                        $filters_and[$key]= $this->filter_multi_value('author_type', $value);
+                        $filters_and[$key] = $this->filter_multi_value('author_type', $value);
                     } else if ($key == 'from') {
                         // From author
-                        $filters_and[$key]= $this->filter_multi_value('aid', $value, true);
+                        $filters_and[$key] = $this->filter_multi_value('aid', $value, true);
                     } else if ($key == 'site') {
                         // From author
-                        $filters_and[$key]= $this->filter_multi_value($key, $value, true);
+                        $filters_and[$key] = $this->filter_multi_value($key, $value, true);
                     } else if ($key == 'tags') {
                         // Tags                       
-                        $filters_and[$key]= $this->filter_multi_value($key, $value, true);
+                        $filters_and[$key] = $this->filter_multi_value($key, $value, true);
                     } else if ($key == 'state') {
                         // Type
                         // $filters_and[]= $this->filter_multi_value('state', $value);
                     } else if ($key == 'movie') {
                         // Movie                 
-                        $filters_and[$key]= $this->filter_multi_value('movies', $value, true);
+                        $filters_and[$key] = $this->filter_multi_value('movies', $value, true);
                     }
                 } else {
                     // Movies, Games, Analytics
@@ -4126,7 +4129,7 @@ class CriticSearch extends AbstractDB {
                         $wp_uid = isset($filters['wp_uid']) ? $filters['wp_uid'] : 0;
                         $ids = $wl->get_list_movies($wp_uid, $value_int);
                         if ($ids) {
-                            $filters_and[$key]= "id IN(" . implode(',', $ids) . ")";
+                            $filters_and[$key] = "id IN(" . implode(',', $ids) . ")";
                         }
                     }
                 }
@@ -4142,79 +4145,86 @@ class CriticSearch extends AbstractDB {
 
                     if ($from == $to) {
                         if ($from == $budget_min) {
-                            $filters_and[$key]= sprintf("{$key} > 0 AND {$key}<=%d", $from);
+                            $filters_and[$key] = sprintf("{$key} > 0 AND {$key}<=%d", $from);
                         } else if ($from == $budget_max) {
-                            $filters_and[$key]= sprintf("{$key}>=%d", $to);
+                            $filters_and[$key] = sprintf("{$key}>=%d", $to);
                         } else {
-                            $filters_and[$key]= sprintf("{$key}=%d", $from);
+                            $filters_and[$key] = sprintf("{$key}=%d", $from);
                         }
                     } else {
                         if ($from == $budget_min && $to == $budget_max) {
-                            $filters_and[$key]= "{$key} > 0";
+                            $filters_and[$key] = "{$key} > 0";
                         } else if ($from == $budget_min) {
-                            $filters_and[$key]= sprintf("{$key} > 0 AND {$key} < %d", $to);
+                            $filters_and[$key] = sprintf("{$key} > 0 AND {$key} < %d", $to);
                         } else if ($to == $budget_max) {
-                            $filters_and[$key]= sprintf("{$key} >= %d", $from);
+                            $filters_and[$key] = sprintf("{$key} >= %d", $from);
                         } else {
-                            $filters_and[$key]= sprintf("{$key} >=%d AND {$key} < %d", $from, $to);
+                            $filters_and[$key] = sprintf("{$key} >=%d AND {$key} < %d", $from, $to);
                         }
                     }
                 } else if (isset($curr_facet['facet']) && $curr_facet['facet'] == 'rating') {
                     if ($value == 'use' || $value == 'minus') {
                         $parent_key = $curr_facet['eid'];
                         if ($value == 'use') {
-                            $filters_and[$key]= $parent_key . "=1";
+                            $filters_and[$key] = $parent_key . "=1";
                         } else {
-                            $filters_and[$key]=  $parent_key . "=0";
+                            $filters_and[$key] = $parent_key . "=0";
                         }
                     } else {
                         $dates = explode('-', $value);
                         $from = (int) $dates[0];
                         $to = (int) $dates[1];
 
-                        if (!$minus) {    
-                            $local_filter = '';
-                            $local_select = '';
-                            if ($from == $to) {
-                                $local_filter = sprintf($key . "=%d", $from);
-                            } else {
-
-                                if ($from != 0) {
-                                    $local_filter= "{$key} >= {$from} AND {$key} <= {$to}";                                    
+                        if (isset($this->facet_data['wokedata']['childs'][$key])) {
+                            // Woke ratings
+                            if (!$minus) {
+                                if ($from == $to) {
+                                    $filters_and['if_woke'][] = "{$key} = {$from}";
                                 } else {
-                                    $key_filter = $key . '_filter';
-                                    $local_select = "IF({$key}<={$to},1,0) AS {$key_filter} ";
-                                    $local_filter = "{$key_filter}=1";
-                                }
-                            }
-                            if (isset($this->facet_data['wokedata']['childs'][$key])) {                                
-                                $filters_and['if_woke'][]= $local_filter;
-                                if ($local_select){
-                                    $select_and['if_woke'][]= $local_select;
+                                    if ($from != 0) {
+                                        $filters_and['if_woke'][] = "{$key} >= {$from} AND {$key} <= {$to}";
+                                    } else {
+                                        $filters_and['if_woke'][] = "{$key}<={$to}";
+                                    }
                                 }
                             } else {
-                                 $select_and[$key]=$local_filter;
-                                 if ($local_select){
-                                    $select_and[]= $local_select;
+                                if ($from == $to) {
+                                    $filters_and['if_woke'][] = "{$key}!={$from}";
+                                } else {
+                                    $filters_and['if_woke'][] = "{$key}<{$from} OR {$key}>{$to}";
                                 }
                             }
                         } else {
-                            if ($from == $to) {
-                                $key_filter = $key . '_filter';
-                                $select_and[$key]= "IF({$key}!={$from},1,0) AS {$key_filter} ";
-                                $filters_and[$key]= "{$key_filter}=1";
-                                // $filters_and[$key]= sprintf("" . $key . "!=%d", $from);
+                            // Other ratings
+                            if (!$minus) {
+                                if ($from == $to) {
+                                    $filters_and[] = sprintf($key . "=%d", $from);
+                                } else {
+                                    if ($from != 0) {
+                                        $filters_and[$key] = "{$key} >= {$from} AND {$key} <= {$to}";
+                                    } else {
+                                        $key_filter = $key . '_filter';
+                                        $select_and[$key] = "IF({$key}<={$to},1,0) AS {$key_filter} ";
+                                        $filters_and[$key] = "{$key_filter}=1";
+                                    }
+                                }
                             } else {
-                                $key_filter = $key . '_filter';
-                                $select_and[$key]= "IF({$key}<{$from} OR {$key}>{$to},1,0) AS {$key_filter} ";
-                                $filters_and[$key]= "{$key_filter}=1";
+                                if ($from == $to) {
+                                    $key_filter = $key . '_filter';
+                                    $select_and[$key] = "IF({$key}!={$from},1,0) AS {$key_filter} ";
+                                    $filters_and[$key] = "{$key_filter}=1";
+                                } else {
+                                    $key_filter = $key . '_filter';
+                                    $select_and[$key] = "IF({$key}<{$from} OR {$key}>{$to},1,0) AS {$key_filter} ";
+                                    $filters_and[$key] = "{$key_filter}=1";
+                                }
                             }
-                        }
-                        if ($key == 'rrtg') {
-                            $filters_and[$key]= "rrta>0 AND rrt>0";
-                        }
-                        if ($facet == 'rmg') {
-                            $filters_and[$key]= "rmu>0 AND rmc>0";
+                            if ($key == 'rrtg') {
+                                $filters_and[$key] = "rrta>0 AND rrt>0";
+                            }
+                            if ($facet == 'rmg') {
+                                $filters_and[$key] = "rmu>0 AND rmc>0";
+                            }
                         }
                     }
                 } else if ($key == 'genre') {
@@ -4222,22 +4232,22 @@ class CriticSearch extends AbstractDB {
                     // Genre
                     if ($and) {
                         if ($minus) {
-                            $filters_and[$key]= $this->filter_multi_value($key, $value, true, $minus, true, false, true, true);
+                            $filters_and[$key] = $this->filter_multi_value($key, $value, true, $minus, true, false, true, true);
                         } else {
-                            $filters_and[$key]= $this->filter_multi_value($key, $value, true, $minus, true, false, true, true);
+                            $filters_and[$key] = $this->filter_multi_value($key, $value, true, $minus, true, false, true, true);
                         }
                     } else {
-                        $filters_and[$key]= $this->filter_multi_value($key, $value, true, $minus);
+                        $filters_and[$key] = $this->filter_multi_value($key, $value, true, $minus);
                     }
                 } else if ($key == 'platform') {
                     // Platform                        
-                    $filters_and[$key]= $this->filter_multi_value($key, $value, true, $minus);
+                    $filters_and[$key] = $this->filter_multi_value($key, $value, true, $minus);
                 } else if ($key == 'type') {
                     // Type
-                    $filters_and[$key]= $this->filter_multi_value('type', $value);
+                    $filters_and[$key] = $this->filter_multi_value('type', $value);
                 } else if ($key == 'id') {
                     // id
-                    $filters_and[$key]= sprintf("id>%d", $value);
+                    $filters_and[$key] = sprintf("id>%d", $value);
                 } else if ($key == 'release') {
                     // Release
                     $dates = explode('-', $value);
@@ -4247,9 +4257,9 @@ class CriticSearch extends AbstractDB {
                     }
                     $release_to = (int) $dates[1];
                     if ($release_from == $release_to) {
-                        $filters_and[$key]= sprintf("year_int=%d", $release_from);
+                        $filters_and[$key] = sprintf("year_int=%d", $release_from);
                     } else {
-                        $filters_and[$key]= sprintf("year_int >=%d AND year_int < %d", $release_from, $release_to);
+                        $filters_and[$key] = sprintf("year_int >=%d AND year_int < %d", $release_from, $release_to);
                     }
                 } else if (isset($this->facet_data['wokedata']['childs'][$key])) {
                     if ($key == 'kmwoke') {
@@ -4266,19 +4276,19 @@ class CriticSearch extends AbstractDB {
                             }
 
                             if ($minus) {
-                                $filters_and[$key]=  $kfilter . "=0";
+                                $filters_and[$key] = $kfilter . "=0";
                             } else {
-                                $filters_and['if_woke'][]=  $kfilter . "=1";
+                                $filters_and['if_woke'][] = $kfilter . "=1";
                             }
                         }
                     } else {
                         if (!$minus) {
                             $filter_items = $value;
-                            if (!is_array($value)){
-                                $filter_items=[$value];
+                            if (!is_array($value)) {
+                                $filter_items = [$value];
                             }
                             foreach ($filter_items as $filter_item) {
-                                $filters_and['if_woke'][]= $this->filter_multi_value($key, $filter_item, false);
+                                $filters_and['if_woke'][] = $this->filter_multi_value($key, $filter_item, false);
                             }
                         } else {
                             $filters_and[$key] = $this->filter_multi_value($key, $value, true, $minus);
@@ -4286,45 +4296,45 @@ class CriticSearch extends AbstractDB {
                     }
                 } else if ($key == 'provider') {
                     // Provider
-                    $filters_and[$key]= $this->filter_multi_value($key, $value, true);
+                    $filters_and[$key] = $this->filter_multi_value($key, $value, true);
                 } else if ($key == 'price') {
                     // Provider price
                     $ma = $this->get_ma();
                     $pay_type = 1;
                     $list = $ma->get_providers_by_type($pay_type);
-                    $filters_and[$key]= $this->filter_multi_value('provider', $list, true);
+                    $filters_and[$key] = $this->filter_multi_value('provider', $list, true);
                 } else if ($key == 'country') {
                     // Country
-                    $filters_and[$key]= $this->filter_multi_value($key, $value, true, $minus);
+                    $filters_and[$key] = $this->filter_multi_value($key, $value, true, $minus);
                 } else if ($key == 'lang') {
                     // lang
-                    $filters_and[$key]= $this->filter_multi_value($key, $value, true, $minus);
+                    $filters_and[$key] = $this->filter_multi_value($key, $value, true, $minus);
                 } else if (isset($this->facet_data['dirsdata']['childs'][$key])) {
                     if ($key == 'dirall' || $key == 'dir' || $key == 'dirwrite' || $key == 'dircast' || $key == 'dirprod') {
                         // Director  
                         $actor_filter = $this->facet_data['dirsdata']['childs'][$key]['filter'];
-                        $filters_and[$key]= $this->filter_multi_value($actor_filter, $value, true, $minus);
+                        $filters_and[$key] = $this->filter_multi_value($actor_filter, $value, true, $minus);
                     } else {
                         // Race directors
                         // Gender dirs
-                        $filters_and[$key]= $this->filter_multi_value($key, $value, true, $minus);
+                        $filters_and[$key] = $this->filter_multi_value($key, $value, true, $minus);
                     }
                 } else if ($key == 'indie') {
                     $value = is_array($value) ? $value : array($value);
                     foreach ($value as $slug) {
                         if ($this->search_filters[$key][$slug]) {
-                            $filters_and[$key]= $this->filter_multi_value($slug, 1, false, $minus, true, true, false);
+                            $filters_and[$key] = $this->filter_multi_value($slug, 1, false, $minus, true, true, false);
                         }
                     }
                 } else if ($key == 'mkw') {
                     // Movie Keywords
-                    $filters_and[$key]= $this->filter_multi_value($key, $value, true, $minus);
+                    $filters_and[$key] = $this->filter_multi_value($key, $value, true, $minus);
                 } else if ($key == 'franchise') {
                     // Franchise
-                    $filters_and[$key]= $this->filter_multi_value($key, $value, true, $minus);
+                    $filters_and[$key] = $this->filter_multi_value($key, $value, true, $minus);
                 } else if ($key == 'distributor' || $key == 'production') {
                     // Distributor
-                    $filters_and[$key]= $this->filter_multi_value($key, $value, true, $minus);
+                    $filters_and[$key] = $this->filter_multi_value($key, $value, true, $minus);
                 } else {
 
                     $curr_parent = $this->get_last_parent($key);
@@ -4359,11 +4369,11 @@ class CriticSearch extends AbstractDB {
 
                                     if (is_array($value)) {
                                         if (in_array($racekey, $value)) {
-                                            $filters_and[$key]= $this->filter_multi_value($rkey, 1, false, $minus);
+                                            $filters_and[$key] = $this->filter_multi_value($rkey, 1, false, $minus);
                                         }
                                     } else {
                                         if ($racekey == $value) {
-                                            $filters_and[$key]= $this->filter_multi_value($rkey, 1, false, $minus);
+                                            $filters_and[$key] = $this->filter_multi_value($rkey, 1, false, $minus);
                                         }
                                     }
                                 }
@@ -4385,11 +4395,11 @@ class CriticSearch extends AbstractDB {
                                             }
                                             if (is_array($value)) {
                                                 if (in_array($gkey, $value)) {
-                                                    $filters_and[$key]= $this->filter_multi_value($rkey, 1, false, $minus);
+                                                    $filters_and[$key] = $this->filter_multi_value($rkey, 1, false, $minus);
                                                 }
                                             } else {
                                                 if ($gkey == $value) {
-                                                    $filters_and[$key]= $this->filter_multi_value($rkey, 1, false, $minus);
+                                                    $filters_and[$key] = $this->filter_multi_value($rkey, 1, false, $minus);
                                                 }
                                             }
                                         }
@@ -4400,73 +4410,72 @@ class CriticSearch extends AbstractDB {
                             if ($key == 'sphoto' || $key == 'mphoto' || $key == 'aphoto') {
                                 // sphoto    
                                 // $filters_and[$key]= $this->filter_multi_value($key, $value, true, $minus, false, true, false);
-                                $filters_and[$key]= $this->filter_multi_value($key, $value, false, $minus);
+                                $filters_and[$key] = $this->filter_multi_value($key, $value, false, $minus);
                             } else {
                                 // other
                                 $custom_filter = isset($curr_facet['filter']) ? $curr_facet['filter'] : $key;
-                                $filters_and[$key]= $this->filter_multi_value($custom_filter, $value, true, $minus);
+                                $filters_and[$key] = $this->filter_multi_value($custom_filter, $value, true, $minus);
                             }
                         }
                     }
                 }
             }
         }
-        
+
 
         if ($curr_filter && isset($this->filter_custom_and[$curr_filter])) {
-            $filters_and[$curr_filter]= $this->filter_custom_and[$curr_filter];
+            $filters_and[$curr_filter] = $this->filter_custom_and[$curr_filter];
         }
-        
+
         // Woke logic
-        
-        if ($filters_and['if_woke']){
-            if ($this->in_exclude('if_woke', $exlude)){
+
+        if ($filters_and['if_woke']) {
+            if ($this->in_exclude('if_woke', $exlude)) {
                 unset($filters_and['if_woke']);
             } else {
-            $select_and['if_woke'] = $this->woke_recursion($filters_and['if_woke']). " AS if_woke";
-            $filters_and['if_woke'] = "if_woke=1";
+                $select_and['if_woke'] = $this->woke_recursion($filters_and['if_woke']) . " AS if_woke";
+                $filters_and['if_woke'] = "if_woke=1";
             }
         }
-        
-        /*
-        foreach ($filters_and as $key => $value) {
-            if(is_array($value)){
-                $str_select = "IF(". implode(' OR ', $value).",1,0) as {$key}";
-                $str_filter = "{$key}=1";
-                $filters_and[$key]=$str_filter;
-                $select_and[$key]=$str_select;
-            }
-        }*/
-        
-      
-       
-        $select_str = implode(', ', array_values($select_and));
-        if ($select_str){
-            $select_str=','.$select_str;
-        }
-        
 
-        
+        /*
+          foreach ($filters_and as $key => $value) {
+          if(is_array($value)){
+          $str_select = "IF(". implode(' OR ', $value).",1,0) as {$key}";
+          $str_filter = "{$key}=1";
+          $filters_and[$key]=$str_filter;
+          $select_and[$key]=$str_select;
+          }
+          } */
+
+
+
+        $select_str = implode(', ', array_values($select_and));
+        if ($select_str) {
+            $select_str = ',' . $select_str;
+        }
+
+
+
         $filters_str = implode(' AND ', array_values($filters_and));
-        if ($filters_str){
-            $filters_str = ' AND '.$filters_str;
+        if ($filters_str) {
+            $filters_str = ' AND ' . $filters_str;
         }
         return array(
             'filter' => $filters_str,
             'select' => $select_str,
         );
     }
-    
-    private function woke_recursion($filters=array()){
+
+    private function woke_recursion($filters = array()) {
         $filter = array_pop($filters);
-        if ($filter){
-            return "IF(".$filter.",1,".$this->woke_recursion($filters).")";
+        if ($filter) {
+            return "IF(" . $filter . ",1," . $this->woke_recursion($filters) . ")";
         } else {
             return "0";
         }
     }
 
-    
     public function filter_multi_value($key, $value, $multi = false, $not = false, $any = true, $not_all = true, $not_and = false, $split_all = false) {
         $filters_and = '';
         $and = 'ANY';
@@ -5023,11 +5032,11 @@ class CriticSearch extends AbstractDB {
         $filters_and = [];
 
         if ($a_type != -1) {
-            $filters_and[]= sprintf('author_type = %d', $a_type);
+            $filters_and[] = sprintf('author_type = %d', $a_type);
         }
 
         if ($movie_id > 0) {
-            $filters_and[]= $this->filter_multi_value('movies', $movie_id, true);
+            $filters_and[] = $this->filter_multi_value('movies', $movie_id, true);
         }
 
         if ($min_rating) {
@@ -5035,16 +5044,16 @@ class CriticSearch extends AbstractDB {
         }
 
         if ($min_au) {
-            $filters_and[]= sprintf("aurating>%d", $min_au);
+            $filters_and[] = sprintf("aurating>%d", $min_au);
         }
 
         if ($max_au) {
-            $filters_and[]= sprintf("aurating<=%d", $max_au);
+            $filters_and[] = sprintf("aurating<=%d", $max_au);
         }
 
         if ($meta_type) {
             // TODO meta type
-            $filters_and[]= "ANY(state) IN (" . implode(',', $meta_type) . ")";
+            $filters_and[] = "ANY(state) IN (" . implode(',', $meta_type) . ")";
         }
 
         // Odrer by rating desc
@@ -5055,12 +5064,12 @@ class CriticSearch extends AbstractDB {
 
         // Tag logic
         if ($tags) {
-            $filters_and[]= $this->filter_multi_value('tags', $tags, true);
+            $filters_and[] = $this->filter_multi_value('tags', $tags, true);
         }
 
         // Vote logic
         if ($vote > 0) {
-            $filters_and[]= sprintf("auvote=%d", $vote);
+            $filters_and[] = sprintf("auvote=%d", $vote);
         }
 
         // Vote type:
@@ -5073,7 +5082,7 @@ class CriticSearch extends AbstractDB {
                  *  IF(r.rating>=3.5 AND r.vote IN (1,3),1,IF(r.rating>=3 AND r.vote=1,1,0))
                  */
                 $and_select = ", IF(aurating>=3.8 AND auvote !=2,1,IF(aurating>=3 AND auvote=1,1,0)) AS filter ";
-                $filters_and[]= "filter=1";
+                $filters_and[] = "filter=1";
             } if ($vote_type == 2) {
                 /*
                   Negative
@@ -5082,23 +5091,23 @@ class CriticSearch extends AbstractDB {
                 // $and_select = ", IF(aurating=0 OR aurating=1 OR aurating=2,1,0) AS filter ";
                 // $and_select = ", IF(aurating < 3,1,0) AS filter ";
                 // $filters_and[]= " AND filter=1";
-                $filters_and[]= "aurating>0 AND aurating<2.3";
+                $filters_and[] = "aurating>0 AND aurating<2.3";
             }
         }
 
         // Hide home author
 
         if ($movie_id == 0) {
-            $filters_and[]= 'author_show_type!=1';
+            $filters_and[] = 'author_show_type!=1';
         }
 
         $filters_str = implode(' AND ', $filters_and);
-        if ($filters_str){
-            $filters_str = ' AND '.$filters_str;
+        if ($filters_str) {
+            $filters_str = ' AND ' . $filters_str;
         }
 
-        
-        
+
+
         $sql = sprintf("SELECT id, date_add, top_movie, aid, author_name, aurating" . $and_select . " FROM critic WHERE status=1 AND top_movie>0" . $filters_str . $order . " LIMIT %d,%d", $start, $limit);
         $results = $this->sdb_results($sql);
         /* $meta = $this->sdb_results("SHOW META");

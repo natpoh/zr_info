@@ -322,7 +322,15 @@ class MoviesParserAdmin extends ItemAdmin {
                         print '<textarea style="width:90%; height:500px">' . $json . '</textarea>';
 
                         exit;
-                    } else if ($_GET['export_critic_rules']) {
+                    } else if ($_GET['export_poster_rules']) {
+                        $options = $this->mp->get_options($campaign);
+                        $parser_rules = $options['links']['poster_rules'];
+                        $json = json_encode($parser_rules);
+                        print '<h2>Export campaign links poster rules</h2>';
+                        print '<textarea style="width:90%; height:500px">' . $json . '</textarea>';
+
+                        exit;
+                    }else if ($_GET['export_critic_rules']) {
                         $options = $this->mp->get_options($campaign);
                         $parser_rules = $options['critics']['rules'];
                         $json = json_encode($parser_rules);
@@ -1034,11 +1042,22 @@ class MoviesParserAdmin extends ItemAdmin {
                     $parsing[$field] = $form_state[$field];
                 }
             }
-            
+
             $parsing['del_pea'] = isset($form_state['del_pea']) ? $form_state['del_pea'] : 0;
             $parsing['parse_movie'] = isset($form_state['parse_movie']) ? $form_state['parse_movie'] : 0;
-            $parsing['del_pea_int'] = isset($form_state['del_pea_int']) ? $form_state['del_pea_int'] : $opt_prev['links']['del_pea_int'];            
+            $parsing['del_pea_int'] = isset($form_state['del_pea_int']) ? $form_state['del_pea_int'] : $opt_prev['links']['del_pea_int'];
 
+            //  Link poster
+            $parsing['link_poster'] = isset($form_state['link_poster']) ? $form_state['link_poster'] : 0;
+            $parsing['poster_rules'] = $this->links_poster_rules_form($form_state);
+          
+            if ($form_state['import_poster_rules_json']) {
+                $poster_rules = json_decode(trim(stripslashes($form_state['import_poster_rules_json'])), true);
+                if (sizeof($poster_rules)) {
+                    $parsing['poster_rules'] = $poster_rules;
+                }
+            }
+            
             // Link to movies
             $parsing['rules'] = $this->links_rules_form($form_state);
 
@@ -1617,7 +1636,6 @@ class MoviesParserAdmin extends ItemAdmin {
                             if ($campaign_type == 1) {
                                 $m = $ma->get_actor_by_id($url->pid);
                                 $movie_title = $m->firstname . ' ' . $m->lastname;
-                               
                             } else {
                                 $m = $ma->get_movie_by_id($url->pid);
                                 $movie_title = $m->title . ' [' . $m->year . ']';
@@ -1739,9 +1757,10 @@ class MoviesParserAdmin extends ItemAdmin {
             <h3>Find links result:</h3>
             <?php
             foreach ($preivew_data as $id => $item) {
-
+               
                 $post = $item['post'];
                 $fields = $item['fields'];
+                if ($post)
                 $results = $item['results'];
                 $post_title = $post->title . ' [' . $post->id . ']';
                 ?>
@@ -1795,7 +1814,7 @@ class MoviesParserAdmin extends ItemAdmin {
                                 <td><?php print $data['total']['rating'] ?></td>
                                 <td><?php print $data['total']['valid'] ?></td>
                                 <td><?php print $data['total']['top'] ?></td>
-                            </tr>
+                            </tr>                            
                         <?php } ?>
                     </tbody>        
                 </table>
@@ -2096,6 +2115,94 @@ class MoviesParserAdmin extends ItemAdmin {
         ksort($rule_exists);
 
         return $rule_exists;
+    }
+
+    /*
+     * Poster rules     
+     */
+
+    public function show_poster_rules($rules, $edit = true, $check = array()) {
+
+        if (!$rules) {
+            $rules = $this->mp->def_poster_rules;
+        }
+
+        $disabled = '';
+        if (!$edit) {
+            $disabled = ' disabled ';
+            $title = __('Link rules');
+            ?>
+            <h2><?php print $title ?></h2>            
+        <?php } ?>
+        <table id="poster_rules" class="wp-list-table widefat striped table-view-list">
+            <thead>
+                <tr>
+                    <th><?php print __('Type') ?></th>
+                    <th><?php print __('Min match') ?></th>
+                    <th><?php print __('Rating') ?></th>
+                    <th><?php print __('Active') ?></th>
+                    <?php if ($check): ?>
+                        <th><?php print __('Check') ?></th> 
+                    <?php endif ?>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if ($rules) { ?>
+                    <?php foreach ($rules as $rid => $rule) {
+                        ?>
+                        <tr>
+                            <td>
+                                <?php print $this->mp->poster_titles[$rid] ?>
+                            </td>
+                            <td>
+                                <input type="text" name="rule_poster_match_<?php print $rid ?>" class="rule_m" value="<?php print $rule['match'] ?>"<?php print $disabled ?>>
+                            </td>
+
+                            <td>
+                                <input type="text" name="rule_poster_rating_<?php print $rid ?>" class="rule_m" value="<?php print $rule['rating'] ?>"<?php print $disabled ?>>
+                            </td>
+
+                            <td>
+                                <?php
+                                $checked = '';
+                                $active = isset($rule['active']) ? $rule['active'] : '';
+                                if ($active) {
+                                    $checked = 'checked="checked"';
+                                }
+                                ?>
+                                <input type="checkbox" name="rule_poster_active_<?php print $rid ?>" value="1" <?php print $checked ?> <?php print $disabled ?>>                                    
+                            </td>
+
+                            <?php if ($check): ?>
+                                <td>
+                                    <?php
+                                    if (isset($check[$rid])) {
+                                        print 'Match';
+                                    }
+                                    ?>
+                                </td>
+                            <?php endif ?>
+                        </tr> 
+                    <?php } ?>
+                    <?php
+                    ?>
+                </tbody>
+            </table> 
+            <?php
+        }
+    }
+
+    private function links_poster_rules_form($form_state) {        
+        $def_rules = $this->mp->def_poster_rules;
+        $new_rules = $def_rules;
+        foreach ($def_rules as $key => $rules) {
+            foreach ($rules as $rule_key => $def_val) {
+                $form_name="rule_poster_{$rule_key}_{$key}";
+                $form_value = isset($form_state[$form_name]) ? $form_state[$form_name] :0;
+                $new_rules[$key][$rule_key]=$form_value;
+            }           
+        }
+        return $new_rules;
     }
 
     /*

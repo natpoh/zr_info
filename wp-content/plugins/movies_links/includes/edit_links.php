@@ -90,7 +90,7 @@ if ($cid) {
                     <span class="checkbox-title"><?php print __('Relinking "Error" links') ?></span>
                 </label>
 
-               
+
                 <label class="inline-edit-interval">
                     <select name="del_pea_int" class="interval">
                         <?php
@@ -157,6 +157,52 @@ if ($cid) {
                 <div class="desc">Warning: adding new rules will replace all previous rules.</div>
                 <br />
 
+
+                <h2>Links posters</h2>
+                <label class="inline-edit-status">                
+                    <?php
+                    $checked = '';
+                    if ($o['link_poster'] == 1) {
+                        $checked = 'checked="checked"';
+                    }
+                    ?>
+                    <input type="checkbox" name="link_poster" value="1" <?php print $checked ?> >
+                    <span class="checkbox-title"><?php print __('Attempt to link using poster images') ?></span>
+                </label>
+
+                <?php if ($o['link_poster'] == 1): ?>
+
+                    <label class="inline-edit-interval">
+                        <span class="title"><?php print __('Poster field') ?></span>
+                        <select name="poster_field">
+                            <?php
+                            // Movies
+                            foreach ($data_fields as $key => $value) {
+                                $selected = ($key == $o['poster_field']) ? 'selected' : '';
+                                ?>
+                                <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $value ?></option>                                
+                                <?php
+                            }
+                            ?>                          
+                        </select>
+                    </label>
+                    <?php
+                    $rules = $o['poster_rules'];
+                    $this->show_poster_rules($rules);
+                    ?>
+                    <p><b>Export</b> Rules to <a target="_blank" href="<?php print $url ?>&cid=<?php print $cid ?>&export_poster_rules=1">JSON array</a>.</p>
+                    <p><b>Import</b> Rules from JSON array:</p>
+                    <div class="inline-edit-row">
+                        <fieldset>              
+                            <textarea name="import_poster_rules_json" style="width:100%" rows="3"></textarea>           
+                        </fieldset>
+                    </div>
+                    <div class="desc">Warning: adding new rules will replace all previous rules.</div>
+                    <br />
+
+                <?php endif ?>
+
+                <br />
                 <label class="inline-edit-status">                
                     <input type="checkbox" name="preview" value="1" checked="checked">
                     <span class="checkbox-title"><?php print __('Preview') ?></span>

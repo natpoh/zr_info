@@ -114,7 +114,10 @@ class MoviesParser extends MoviesAbstractDB {
                     'weight' => 10,
                     'del_pea' => 1,
                     'del_pea_int' => 10080,
-                    'parse_movie'=>0,
+                    'parse_movie' => 0,
+                    'link_poster' => 0,
+                    'poster_field' => '',
+                    'poster_rules' => '',
                 ),
                 'critics' => array(
                     'last_update' => 0,
@@ -137,6 +140,40 @@ class MoviesParser extends MoviesAbstractDB {
         );
     }
 
+    public $poster_titles = array(
+        'hist_correl' => 'Color Correlation',
+        'hist_intersect' => 'Color Inersection',
+        'hist_bhatt' => 'Color Battacharya',
+        'orb' => 'ORB',
+        'sift' => 'SIFT',
+    );
+    public $def_poster_rules = array(
+        'hist_correl' => array(
+            'match' => 90,
+            'rating' => 1,
+            'active' => 1,
+        ),
+        'hist_intersect' => array(
+            'match' => 60,
+            'rating' => 3,
+            'active' => 1,
+        ),
+        'hist_bhatt' => array(
+            'match' => 60,
+            'rating' => 3,
+            'active' => 1,
+        ),
+        'orb' => array(
+            'match' => 60,
+            'rating' => 3,
+            'active' => 1,
+        ),
+        'sift' => array(
+            'match' => 25,
+            'rating' => 20,
+            'active' => 1,
+        ),
+    );
     public $campaign_modules = array('cron_urls', 'gen_urls', 'arhive', 'parsing', 'links', 'update');
     public $log_modules = array(
         'cron_urls' => 1,
@@ -1926,7 +1963,7 @@ class MoviesParser extends MoviesAbstractDB {
         return $code;
     }
 
-    public function validate_body_len($body_len = 0, $valid_len = 500) {       
+    public function validate_body_len($body_len = 0, $valid_len = 500) {
         if ($body_len > $valid_len) {
             return true;
         }
@@ -2726,7 +2763,6 @@ class MoviesParser extends MoviesAbstractDB {
 
     public function check_link_post($o, $post, $movie_id = 0) {
         $rules = $o['rules'];
-
         $min_match = $o['match'];
         $min_rating = $o['rating'];
         $movie_type = $this->movie_type[$o['type']];
@@ -3360,6 +3396,51 @@ class MoviesParser extends MoviesAbstractDB {
             if (is_array($search_fields['genres'])) {
                 $search_fields['genres'] = implode('; ', $search_fields['genres']);
             }
+
+            $link_poster = $o['link_poster'];
+            // Poster
+            if ($link_poster) {
+                $poster_field = array('d' => $o['poster_field']);
+                $dst_url = $this->get_post_field($poster_field, $post);
+                $movies_ids = array();
+                foreach ($movies as $movie) {
+                    $movies_ids[] = $movie->id;
+                }
+
+                if ($dst_url) {
+                    $verdict = $this->pycv2_verdict($dst_url, $movies_ids);
+                    if ($verdict) {  
+                        if ($verdict->error_msg) {
+                            // TODO error log    
+                        } else {
+                            $verdict->results;
+                            $poster_rules = $o['poster_rules'];
+                            foreach ($movies as $movie) {
+                                foreach ($poster_rules as $rule_name => $rule_opt) {
+                                    if ($rule_opt['active']) {
+                                        $movie_id = $movie->id;
+                                        
+                                        $rule_val = (int) isset($verdict->results->$rule_name->$movie_id) ? $verdict->results->$rule_name->$movie_id : -1;
+                                        $rule_title = $this->poster_titles[$rule_name];
+                                        $search_fields[$rule_title]=$rule_opt['match'];
+                                        $results[$movie->id][$rule_title]['data'] = $rule_val;                                        
+                                        if ($rule_val>=$rule_opt['match']) {
+                                            $results[$movie->id][$rule_title]['match'] = 1;
+                                            $results[$movie->id][$rule_title]['rating'] = $rule_opt['rating'];
+
+                                            $results[$movie->id]['total']['match'] += 1;
+                                            $results[$movie->id]['total']['rating'] += $rule_opt['rating'];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        // TODO error log
+                    }
+                    
+                }
+            }
         }
 
         $max_rating = 0;
@@ -3605,11 +3686,11 @@ class MoviesParser extends MoviesAbstractDB {
 
                         $post_full_name_valid = false;
                         $actor_slug = $ma->create_slug($actor->name, ' ');
-                        $name_slug = $ma->create_slug($post_full_name, ' '); 
+                        $name_slug = $ma->create_slug($post_full_name, ' ');
                         if ($full_rule['e'] == 'e') {
-                            
-                                   
-                            if ($actor_slug== $name_slug) {
+
+
+                            if ($actor_slug == $name_slug) {
                                 $post_full_name_valid = true;
                             }
                         } else if ($full_rule['e'] == 'm') {
@@ -3885,14 +3966,14 @@ class MoviesParser extends MoviesAbstractDB {
 
         $this->db_query($sql);
     }
-    
-    public function update_posts_status($ids=[], $status_links) {
+
+    public function update_posts_status($ids = [], $status_links) {
         $date = $this->curr_time();
 
         $sql = sprintf("UPDATE {$this->db['posts']} SET    
                 last_upd=%d,               
                 status_links=%d                                              
-                WHERE id IN(". implode(',', $ids).")", (int) $date, (int) $status_links);
+                WHERE id IN(" . implode(',', $ids) . ")", (int) $date, (int) $status_links);
 
         $this->db_query($sql);
     }
@@ -3939,17 +4020,16 @@ class MoviesParser extends MoviesAbstractDB {
         $result = $this->db_get_var($sql);
         return $result;
     }
-    
-    
-    public function get_posts_expired_error_links($cid, $interval_min=0) {
+
+    public function get_posts_expired_error_links($cid, $interval_min = 0) {
         $time = $this->curr_time();
-        $expired = $time-($interval_min*60);
-        $sql = sprintf("SELECT p.id FROM {$this->db['posts']} p INNER JOIN {$this->db['url']} u ON u.id=p.uid WHERE u.cid=%d AND p.status_links=2 AND p.last_upd<%d", $cid,$expired);
+        $expired = $time - ($interval_min * 60);
+        $sql = sprintf("SELECT p.id FROM {$this->db['posts']} p INNER JOIN {$this->db['url']} u ON u.id=p.uid WHERE u.cid=%d AND p.status_links=2 AND p.last_upd<%d", $cid, $expired);
         $result = $this->db_results($sql);
         $ids = array();
-        if ($result){
+        if ($result) {
             foreach ($result as $post) {
-                $ids[]=$post->id;
+                $ids[] = $post->id;
             }
         }
         return $ids;
@@ -4341,6 +4421,17 @@ class MoviesParser extends MoviesAbstractDB {
     /*
      * Other functions
      */
+
+    public function pycv2_verdict($url = '', $ids = array()) {
+        $content = array();
+        try {
+            $url = PY_CV2_URL . "?p=" . PY_CV2_PASS . "&ids=" . implode(',', $ids) . "&url=" . $url;
+            $content = json_decode(file_get_contents($url));
+        } catch (Exception $exc) {
+            
+        }
+        return $content;
+    }
 
     public function get_header_status($headers) {
         $status = 200;
