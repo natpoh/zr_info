@@ -474,7 +474,7 @@ class MoviesCustomHooks {
                         $ma = $this->ml->get_ma();
                         # Update woke
                         $woke_data = array(
-                            'wokeornot' => $rating,
+                            'wokeornot' => $wokeness_int,
                         );
                         $ma->update_woke($post->top_movie, $woke_data);
                     }

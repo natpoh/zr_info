@@ -847,7 +847,7 @@ class CriticFront extends SearchFacets {
                     }
 
                     $rating_text = ' <span class="rating-review woke-color-'.$woke_color.'">' . $woke_text . '</span>';
-                }else if ($critic->link_id == 166) {
+                } else if ($critic->link_id == 166) {
                     // mediaversity
                     $ma = $this->get_ma();
 
@@ -858,8 +858,24 @@ class CriticFront extends SearchFacets {
                         $woke_color = $filters[$clear_rating]?$filters[$clear_rating]['color']:1;                 
                         $rating_text = ' <span class="rating-review woke-color-'.$woke_color.'">' . $erating->mediaversity_grade . '</span>';
                     }
+                } else if ($critic->link_id == 179) {
+                    // Wokernot
+                    $ma = $this->get_ma();
 
-                }
+                    $woke = $ma->get_movie_woke($critic->top_movie);
+                    
+                    if ($woke->wokeornot > 0) {
+                        $woke_rating = $woke->wokeornot ;
+                        $woke_color = 1;
+                        if ($woke_rating>30){
+                            $woke_color = 2;
+                        } 
+                        if ($woke_rating >60){
+                             $woke_color = 3;
+                        }
+                        $rating_text = ' <span class="rating-review woke-color-'.$woke_color.'">' . $woke_rating . '%</span>';
+                    }
+                } 
             } catch (Exception $exc) {
                 
             }
