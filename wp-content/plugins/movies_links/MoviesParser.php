@@ -1089,30 +1089,32 @@ class MoviesParser extends MoviesAbstractDB {
 
         // Parser type filter
         $parser_type_and = '';
-        $parser_join = '';
-        if ($parser_type != -1) {
-
-            $parser_join = " LEFT JOIN {$this->db['posts']} p ON u.id = p.uid";
+        $parser_join = '';        
+        if ($parser_type != -1 || $link_type != -1) {
+            $parser_join = " LEFT JOIN {$this->db['posts']} p ON u.id = p.uid";            
+        }     
+        
+        if ($parser_type != -1){
             if ($parser_type == 1) {
                 $parser_type_and = " AND p.id !=0 AND p.status=1 AND p.multi=0";
             } else if ($parser_type == 2) {
                 $parser_type_and = " AND p.id !=0 AND p.status=0 AND p.multi=0";
             } else {
                 $parser_type_and = " AND p.id is NULL";
-            }
+            }            
         }
-
         $link_type_and = '';
         if ($link_type != -1) {
-            $link_type_and = sprintf(" AND p.status_links=%d", $link_type);
-        }
-
+                $link_type_and = sprintf(" AND p.status_links=%d", $link_type);
+            }
+            
         $query = "SELECT COUNT(u.id) FROM {$this->db['url']} u"
                 . $arhive_join . $parser_join
                 . " WHERE u.id>0"
                 . $status_query . $arhive_type_and . $parser_type_and . $link_type_and . $cid_and;
 
         $result = $this->db_get_var($query);
+   
         return $result;
     }
 
@@ -3404,15 +3406,15 @@ class MoviesParser extends MoviesAbstractDB {
                 $dst_url = $this->get_post_field($poster_field, $post);
                 $movies_ids = array();
                 // TODO check movie img exists
-                
+
                 foreach ($movies as $movie) {
                     $movies_ids[] = $movie->id;
                 }
 
                 if ($dst_url) {
-                    $post->poster=$dst_url;
+                    $post->poster = $dst_url;
                     $verdict = $this->pycv2_verdict($dst_url, $movies_ids);
-                    if ($verdict) {  
+                    if ($verdict) {
                         if ($verdict->error_msg) {
                             // TODO error log    
                         } else {
@@ -3422,12 +3424,12 @@ class MoviesParser extends MoviesAbstractDB {
                                 foreach ($poster_rules as $rule_name => $rule_opt) {
                                     if ($rule_opt['active']) {
                                         $movie_id = $movie->id;
-                                        
+
                                         $rule_val = (int) isset($verdict->results->$rule_name->$movie_id) ? $verdict->results->$rule_name->$movie_id : -1;
                                         $rule_title = $this->poster_titles[$rule_name];
-                                        $search_fields[$rule_title]=$rule_opt['match'];
-                                        $results[$movie->id][$rule_title]['data'] = $rule_val;                                        
-                                        if ($rule_val>=$rule_opt['match']) {
+                                        $search_fields[$rule_title] = $rule_opt['match'];
+                                        $results[$movie->id][$rule_title]['data'] = $rule_val;
+                                        if ($rule_val >= $rule_opt['match']) {
                                             $results[$movie->id][$rule_title]['match'] = 1;
                                             $results[$movie->id][$rule_title]['rating'] = $rule_opt['rating'];
 
@@ -3441,7 +3443,6 @@ class MoviesParser extends MoviesAbstractDB {
                     } else {
                         // TODO error log
                     }
-                    
                 }
             }
         }
