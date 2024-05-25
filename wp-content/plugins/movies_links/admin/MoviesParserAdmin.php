@@ -330,7 +330,7 @@ class MoviesParserAdmin extends ItemAdmin {
                         print '<textarea style="width:90%; height:500px">' . $json . '</textarea>';
 
                         exit;
-                    }else if ($_GET['export_critic_rules']) {
+                    } else if ($_GET['export_critic_rules']) {
                         $options = $this->mp->get_options($campaign);
                         $parser_rules = $options['critics']['rules'];
                         $json = json_encode($parser_rules);
@@ -1050,14 +1050,14 @@ class MoviesParserAdmin extends ItemAdmin {
             //  Link poster
             $parsing['link_poster'] = isset($form_state['link_poster']) ? $form_state['link_poster'] : 0;
             $parsing['poster_rules'] = $this->links_poster_rules_form($form_state);
-          
+
             if ($form_state['import_poster_rules_json']) {
                 $poster_rules = json_decode(trim(stripslashes($form_state['import_poster_rules_json'])), true);
                 if (sizeof($poster_rules)) {
                     $parsing['poster_rules'] = $poster_rules;
                 }
             }
-            
+
             // Link to movies
             $parsing['rules'] = $this->links_rules_form($form_state);
 
@@ -1757,11 +1757,11 @@ class MoviesParserAdmin extends ItemAdmin {
             <h3>Find links result:</h3>
             <?php
             foreach ($preivew_data as $id => $item) {
-               
+
                 $post = $item['post'];
                 $fields = $item['fields'];
                 if ($post)
-                $results = $item['results'];
+                    $results = $item['results'];
                 $post_title = $post->title . ' [' . $post->id . ']';
                 ?>
                 <h3><?php print $this->mla->theme_parser_url_link($post->uid, $post_title); ?></h3>
@@ -1775,7 +1775,10 @@ class MoviesParserAdmin extends ItemAdmin {
                 <table class="wp-list-table widefat striped table-view-list">
                     <thead>
                         <tr>
-                            <th></th>             
+                            <?php if ($post->poster): ?>
+                                <th>Poster</th>
+                            <?php endif ?>
+                            <th>id</th>
                             <?php foreach ($fields as $key => $value) { ?>
                                 <th><?php print $key ?></th>             
                             <?php } ?>  
@@ -1788,6 +1791,9 @@ class MoviesParserAdmin extends ItemAdmin {
                     </thead>
                     <tbody>
                         <tr>
+                            <?php if ($post->poster): ?>
+                                <td><img src="<?php print $post->poster ?>" style="width: 30px; height: auto"></td>
+                            <?php endif ?>
                             <td><?php print __('Input') ?></td>             
                             <?php foreach ($fields as $key => $value) { ?>
                                 <td><?php print $value ?></td>             
@@ -1799,6 +1805,9 @@ class MoviesParserAdmin extends ItemAdmin {
                         </tr> 
                         <?php foreach ($results as $mid => $data) { ?>
                             <tr>
+                                <?php if ($post->poster): ?>
+                                    <td><img src="https://img2.zeitgeistreviews.com/poster_thumb/220x330/<?php print $mid ?>.webp" style="width: 30px; height: auto"></td>
+                                    <?php endif ?>
                                 <td><?php print $mid ?></td>             
                                 <?php foreach ($fields as $key => $value) { ?>
                                     <td><?php
@@ -2192,15 +2201,15 @@ class MoviesParserAdmin extends ItemAdmin {
         }
     }
 
-    private function links_poster_rules_form($form_state) {        
+    private function links_poster_rules_form($form_state) {
         $def_rules = $this->mp->def_poster_rules;
         $new_rules = $def_rules;
         foreach ($def_rules as $key => $rules) {
             foreach ($rules as $rule_key => $def_val) {
-                $form_name="rule_poster_{$rule_key}_{$key}";
-                $form_value = isset($form_state[$form_name]) ? $form_state[$form_name] :0;
-                $new_rules[$key][$rule_key]=$form_value;
-            }           
+                $form_name = "rule_poster_{$rule_key}_{$key}";
+                $form_value = isset($form_state[$form_name]) ? $form_state[$form_name] : 0;
+                $new_rules[$key][$rule_key] = $form_value;
+            }
         }
         return $new_rules;
     }

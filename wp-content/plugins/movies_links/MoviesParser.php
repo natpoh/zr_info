@@ -3403,11 +3403,14 @@ class MoviesParser extends MoviesAbstractDB {
                 $poster_field = array('d' => $o['poster_field']);
                 $dst_url = $this->get_post_field($poster_field, $post);
                 $movies_ids = array();
+                // TODO check movie img exists
+                
                 foreach ($movies as $movie) {
                     $movies_ids[] = $movie->id;
                 }
 
                 if ($dst_url) {
+                    $post->poster=$dst_url;
                     $verdict = $this->pycv2_verdict($dst_url, $movies_ids);
                     if ($verdict) {  
                         if ($verdict->error_msg) {
