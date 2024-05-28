@@ -118,8 +118,8 @@ class MoviesParserAdmin extends ItemAdmin {
         2 => 'Arhive',
         3 => 'Parsing',
         4 => 'Links',
-        5 => 'Update',
-        6 => 'Critics',
+        5 => 'Critics',
+        6 => 'Update',
     );
     public $option_names = array(
         'arhive' => array('log' => 2, 'title' => 'Arhive'),
