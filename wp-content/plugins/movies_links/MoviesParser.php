@@ -2159,7 +2159,7 @@ class MoviesParser extends MoviesAbstractDB {
                 foreach ($items as $item) {
                     $arhive_hash = $item->arhive_hash;
                     $code = $this->get_arhive_file($cid, $arhive_hash);
-
+                    $log_message='';
                     if ($code) {
                         if ($debug) {
                             print "File arhive exist: $arhive_hash\n";
@@ -2282,12 +2282,13 @@ class MoviesParser extends MoviesAbstractDB {
                                     $cm->add_post_meta($top_movie, $type, $state, $pid, 0, false);
                                 }
                             } else {
-                                $message = 'Error URL filters';
+                                $add_post = false;
+                                $log_message = 'Error URL filters';
                                 if (!$title) {
-                                    $message .= '. No Title';
+                                    $log_message .= '. No Title';
                                 }
                                 if (!$content) {
-                                    $message .= '. No Content';
+                                    $log_message .= '. No Content';
                                 }
                             }
 
