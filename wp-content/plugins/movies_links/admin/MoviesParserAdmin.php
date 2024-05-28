@@ -1083,6 +1083,7 @@ class MoviesParserAdmin extends ItemAdmin {
         $result = 0;
 
         if ($form_state['id']) {
+            
             $id = $form_state['id'];
             $campaign = $this->mp->get_campaign($id);
             $opt_prev = $this->mp->get_options($campaign);
@@ -1110,9 +1111,10 @@ class MoviesParserAdmin extends ItemAdmin {
                     }
                 }
             }
-
-            $add_result['status'] = isset($form_state['status']) ? $form_state['status'] : 0;
-
+            
+            if ($form_state['edit_critics_options']){
+                $add_result['status'] = isset($form_state['status']) ? $form_state['status'] : 0;
+            }
             $opt_upd = array();
             $opt_upd['critics'] = $add_result;
 
