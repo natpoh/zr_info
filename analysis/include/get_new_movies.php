@@ -175,9 +175,10 @@ class GETNEWMOVIES{
     {
         $array_update = [];
         global $debug;
-        $q="SELECT * FROM `meta_movies_queue` WHERE (`status` = 0 OR ( `status` = 3 and `last_upd` < ".(time()-86400*7).") )   ORDER BY `last_upd` ASC LIMIT 10";
+        $q="SELECT * FROM `meta_movies_queue` WHERE (`status` = 0 OR ( `status` = 3 and `last_upd` < ".(time()-86400*30).") )   ORDER BY `last_upd` ASC LIMIT 30";
 
         $rows = Pdo_an::db_results_array($q);
+
         foreach ($rows as $r)
         {
 
@@ -230,7 +231,17 @@ class GETNEWMOVIES{
             }
 
             $array_update[$id]=$status;
+
+            sleep(1);
+
+            if (check_cron_time())
+            {
+                break;
+            }
+
         }
+
+
         foreach ($array_update as $id=>$status)
         {
             $q ="UPDATE `meta_movies_queue` SET `last_upd`=?,`status`=? WHERE `id`=?";

@@ -1,6 +1,7 @@
 <?php
 
 if (empty($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) != 'xmlhttprequest') {
+    echo json_encode(['error'=>'error request']);
     exit();
 }
 
@@ -35,6 +36,10 @@ if ($cfront) {
         } else if ($_POST['request'] == 'set_emtns') {
             $ce->get_ajax();
         }
+    }
+    else
+    {
+        echo json_encode(['error'=>'error, bad request']);
     }
 }
 

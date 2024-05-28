@@ -1274,10 +1274,10 @@ class CriticAudience extends AbstractDb {
                             if (isset($vote_data[$value])) {
                                 $selected = '';
                                 if ($rating_val == $value) {
-                                    $selected = ' selected';
+                                    $selected = ' selected ';
                                 }
                                 ?>
-                                <option class="s<?php print $value ?><?php print $selected ?>" value="<?php print $value ?>"><?php print $vote_data[$value]['title'] ?></option>
+                                <option class="s<?php print $value ?><?php print $selected ?>" <?php print $selected ?> value="<?php print $value ?>"><?php print $vote_data[$value]['title'] ?></option>
                                 <?php
                             }
                         }
@@ -1294,7 +1294,9 @@ class CriticAudience extends AbstractDb {
 
         // width: 60%; background-size: 33.3333%;
         $span_style = 'width: 0;';
+        $selected='';
         if ($value) {
+            $selected = ' selected ';
             $width = $value * 20;
             $sizes = array(0, 100, 50, 33.3333, 25, 20);
 
@@ -1318,10 +1320,10 @@ class CriticAudience extends AbstractDb {
             </td>
             <td class="<?php print $vote_data['class'] ?> rating_input">
 
-                <div class="rating_container"><span class="rating_result <?php echo $key ?>">
+                <div class="rating_container"><span class="rating_result <?php echo $key .$selected; ?>">
                         <span style="<?php print $span_style ?>" class="rating_result_total" ></span>
                     </span><span class="rating_number rating_num<?php echo $key ?>"><span class="rating_number_rate number_rate_<?php print $value ?>"><?php print $value ?></span></span>
-                    <input style="display:none;" type="hidden" class="wpcr3_frating" id="id_wpcr3_f<?php print $key ?>" name="wpcr3_frating_<?php print $key ?>" />
+                    <input style="display:none;"  value="<?php print $value ?>"  type="hidden" class="wpcr3_frating" id="id_wpcr3_f<?php print $key ?>" name="wpcr3_frating_<?php print $key ?>" />
                 </div></td>
         </tr>
         <?php

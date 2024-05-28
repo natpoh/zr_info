@@ -56,7 +56,7 @@ class Search_api{
 
         $order = count($content_result['result']);
 
-        if ($release > $time) {
+        if ($time== 0  ||  $release > $time) {
             $content_result['result'][$rows->id] = array(
                 'link' => '/' . $slug . '/' . $post_name,
                 'title' => $title,

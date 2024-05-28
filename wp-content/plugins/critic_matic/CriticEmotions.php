@@ -218,6 +218,7 @@ class CriticEmotions extends AbstractDB {
 
     public function get_ajax() {
 
+        $debug =1;
         $update_vote = true;
 
         // Get wp user
@@ -251,13 +252,18 @@ class CriticEmotions extends AbstractDB {
                 $this->remove_vote($post_id, $post_type, $aid, $wp_uid);
             } else {
                 // Add or update vote
-                $this->add_or_update_vote($post_id, $post_type, $aid, $wp_uid, $vote_num);
+              $upd_data =   $this->add_or_update_vote($post_id, $post_type, $aid, $wp_uid, $vote_num);
             }
         }
 
         if ($this->top_results) {
             $top_reaction = $this->get_top_reaction($post_id, $post_type);
+            $top_reaction['debug']=['uv'=>$update_vote,'aid'=>$aid,'vt'=>$vote_type,'vn'=>$vote_num,'pt'=>$post_type,'upd'=>$upd_data];
             print json_encode($top_reaction);
+        }
+        else
+        {
+            echo json_encode(['error'=>'error, top_results']);
         }
     }
 
@@ -357,7 +363,7 @@ class CriticEmotions extends AbstractDB {
                 'vote' => $vote_num,
                 'type' => $post_type,
             );
-            $this->db_insert($data, $this->db['emotions']);
+            $insert_id = $this->db_insert($data, $this->db['emotions']);
 
             $update_vote = true;
 
@@ -411,6 +417,7 @@ class CriticEmotions extends AbstractDB {
                 $wl->update_list($data, $post_id);
             }
         }
+        return ['ins_id'=>$insert_id,'data'=>$data];
     }
 
     private function remove_vote($post_id = 0, $post_type = 0, $aid = 0, $wp_uid = 0) {

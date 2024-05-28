@@ -544,9 +544,10 @@ function create_BoxChart(data, containerElement) {
     }
     let numDataPoints = Object.keys(dataArray).length;
 
-    if (!numDataPoints)return;
+    if (!numDataPoints)
+        return;
 
-    numDataPoints = Math.max(numDataPoints*25, 100)
+    numDataPoints = Math.max(numDataPoints * 25, 100)
 
     const chartData = {
         chart: {
@@ -566,7 +567,7 @@ function create_BoxChart(data, containerElement) {
                     return `<span class="iflagsmall"><img src="/wp-content/themes/custom_twentysixteen/images/flags/4x3/${item.flag.toLowerCase()}.svg" /> </span>`;
                 } else {
 
-                   let categoryLabel = item.country.substring(0,3);
+                    let categoryLabel = item.country.substring(0, 3);
                     // If flag is not available, return just the country name
                     return `<span class="iflagsmall">${categoryLabel}</span>`;
                 }
@@ -597,22 +598,20 @@ function create_BoxChart(data, containerElement) {
             enabled: false
         },
         tooltip: {
-            formatter: function() {
+            formatter: function () {
 
                 const dataIndex = chartData.xAxis.categories.indexOf(this.key);
 
-                    return `${dataArray[dataIndex].country}: $${formatNumber(this.y)}`;
+                return `${dataArray[dataIndex].country}: $${formatNumber(this.y)}`;
 
             }
         },
 
-
-
         series: [{
-            name: 'Box office',
-            data: Object.values(dataArray).map(item => parseFloat(item.data)),
-            color: 'rgb(77,114,187)'
-        }]
+                name: 'Box office',
+                data: Object.values(dataArray).map(item => parseFloat(item.data)),
+                color: 'rgb(77,114,187)'
+            }]
     };
     if (typeof Highcharts !== 'undefined') {
         Highcharts.chart(containerElement, chartData);
@@ -625,37 +624,37 @@ function observeChartContainers() {
 
 
 
-const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            const container = entry.target;
-            const dataElement = container.querySelector('.data');
-            if (dataElement) {
-                const data = JSON.parse(dataElement.textContent);
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const container = entry.target;
+                const dataElement = container.querySelector('.data');
+                if (dataElement) {
+                    const data = JSON.parse(dataElement.textContent);
 
-                if (data ) {
-                    if (typeof Highcharts == 'undefined') {
-                        var third_scripts = {
-                            hrts: 'https://code.highcharts.com/highcharts.js'
-                        };
-                        use_ext_js_data(create_BoxChart, third_scripts, [data, container]);
+                    if (data) {
+                        if (typeof Highcharts == 'undefined') {
+                            var third_scripts = {
+                                hrts: 'https://code.highcharts.com/highcharts.js'
+                            };
+                            use_ext_js_data(create_BoxChart, third_scripts, [data, container]);
 
-                    } else {
-                        //load_main_graph();
-                        create_BoxChart(data, container);
+                        } else {
+                            //load_main_graph();
+                            create_BoxChart(data, container);
+                        }
                     }
+
+                    container.classList.remove('not_loaded');
+                    container.classList.add('loaded');
                 }
-
-                container.classList.remove('not_loaded');
-                container.classList.add('loaded');
             }
-        }
-    });
-}, { rootMargin: '0px 0px 200px 0px' });
+        });
+    }, {rootMargin: '0px 0px 200px 0px'});
 
-containers.forEach(container => {
-    observer.observe(container);
-});
+    containers.forEach(container => {
+        observer.observe(container);
+    });
 }
 
 
@@ -695,15 +694,14 @@ function create_rating_content(object, m_id, search_block = 0) {
 
             if (object['indie']['c_box'])
             {
-                if (Object.keys(object['indie']['c_box']).length>0)
+                if (Object.keys(object['indie']['c_box']).length > 0)
                 {
                     if (object['indie']['c_box']['mojo'])
                     {
-                        data +='<p class="row_text_head">Box office International:</p><span class="box_chart not_loaded"><span class="data" style="display: none">'+JSON.stringify(object['indie']['c_box']['mojo'])+'</span></span><p class="row_text ">Source: <a class="exlink" id="boxmojo">Box Office Mojo</a></p>';
-                    }
-                    else  if (object['indie']['c_box']['numbers'])
+                        data += '<p class="row_text_head">Box office International:</p><span class="box_chart not_loaded"><span class="data" style="display: none">' + JSON.stringify(object['indie']['c_box']['mojo']) + '</span></span><p class="row_text ">Source: <a class="exlink" id="boxmojo">Box Office Mojo</a></p>';
+                    } else if (object['indie']['c_box']['numbers'])
                     {
-                        if (Object.keys(object['indie']['c_box']['numbers']).length>0) {
+                        if (Object.keys(object['indie']['c_box']['numbers']).length > 0) {
                             data += '<p class="row_text_head">Box office International:</p><span class="box_chart not_loaded"><span class="data" style="display: none">' + JSON.stringify(object['indie']['c_box']['numbers']) + '</span></span><p class="row_text ">Source: <a class="exlink" id="thenumbers">The Numbers</a></p>';
                         }
 
@@ -823,7 +821,8 @@ function create_rating_content(object, m_id, search_block = 0) {
             rating_color = '';
             if (object.total_rating.rt_rating > 0 && object.total_rating.rt_aurating > 0) {
                 total_gap = Number(total_gap);
-                if (!total_gap)total_gap=0;
+                if (!total_gap)
+                    total_gap = 0;
 
                 if (total_gap > 0 || total_gap < 0) {
 
@@ -836,9 +835,9 @@ function create_rating_content(object, m_id, search_block = 0) {
                     }
                 }
                 total_gap_str = total_gap + '%';
-            }else
+            } else
             {
-                total_gap_str =  'N/A';
+                total_gap_str = 'N/A';
             }
 
             total_tomatoes_content = create_total_rating(object.total_rating, 1, total_gap);
@@ -1055,15 +1054,15 @@ function create_rating_content(object, m_id, search_block = 0) {
     }
 
 
-    let wort_array={'1':'Worth it','2':'Non-Woke','3':'Woke-ish','4':'Woke'};
-    let woke_worthit_text ='';
-    if (object['woke_worthit'] >0) {
+    let wort_array = {'1': 'Worth it', '2': 'Non-Woke', '3': 'Woke-ish', '4': 'Woke'};
+    let woke_worthit_text = '';
+    if (object['woke_worthit'] > 0) {
         woke_worthit_text = '<span class="pp_row  row_main"><span class="pp_rl exlink " id="WorthItOrWoke">WorthItOrWoke</span><span class="pp_rr">' + wort_array[object['woke_worthit']] + '</span></span>';
     }
 
-    let bechdeltest_array={'1':'No 2 women','2':'No women talking','3':'Talk about a man','4':'Passed!'};
-    let bechdeltest_text ='';
-    if (object['woke_bechdeltest'] >0) {
+    let bechdeltest_array = {'1': 'No 2 women', '2': 'No women talking', '3': 'Talk about a man', '4': 'Passed!'};
+    let bechdeltest_text = '';
+    if (object['woke_bechdeltest'] > 0) {
         bechdeltest_text = '<span class="pp_row  row_main"><span class="pp_rl exlink"  id="bechdeltest">Bechdeltest</span><span class="pp_rr">' + bechdeltest_array[object['woke_bechdeltest']] + '</span></span>';
     }
 
@@ -1088,7 +1087,7 @@ function create_rating_content(object, m_id, search_block = 0) {
     let rating_link = popup_cusomize('row_link', '<a href="#" class="read_more_rating">CONTENT BREAKDOWN</a>');
     rating_link += popup_cusomize('row_link', '<a href="#" class="how_calculate_rating">Methodology</a>')
 
-    content += add_rating_block(block_class + ' ' + lgbt_class + woke_class + rating_color, value, lgbt_warning_text + woke_warning_text +woke_worthit_text+bechdeltest_text+ family_data_result + scorecontent + rating_link, 1, true);
+    content += add_rating_block(block_class + ' ' + lgbt_class + woke_class + rating_color, value, lgbt_warning_text + woke_warning_text + woke_worthit_text + bechdeltest_text + family_data_result + scorecontent + rating_link, 1, true);
 
 
     if (object.total_rating && object.total_rating.total_rating > 0) {
@@ -1166,8 +1165,7 @@ function set_video_scroll(data, block_id, append = '') {
                     // let title = head.html();
                     // head.html('<div class="i_head">'+title+data['html']+'</div>')
                 }
-            }
-            else {
+            } else {
                 for (var i = 1; i <= Number(data['count']); i++) {
                     content += tmpl.replace('{id}', i);
                 }
@@ -1194,10 +1192,7 @@ function set_video_scroll(data, block_id, append = '') {
                     });
                     if (block_id == 'video_scroll') {
                         array_movie.sort((a, b) => a.release < b.release ? 1 : -1);
-                    }
-
-
-                    else if (block_id.indexOf('custom_search') == 0 || block_id.indexOf('compilation_scroll') == 0 ) {
+                    } else if (block_id.indexOf('custom_search') == 0 || block_id.indexOf('compilation_scroll') == 0) {
                         array_movie.sort((a, b) => {
                             if (a.order === undefined && b.order === undefined) {
                                 return 0;
@@ -1318,8 +1313,8 @@ function set_video_scroll(data, block_id, append = '') {
 
 
                     if (data['watchlist'] !== 'undefined') {
-                        if (typeof watch_lists_data === 'undefined'){
-                            watch_lists_data=[];
+                        if (typeof watch_lists_data === 'undefined') {
+                            watch_lists_data = [];
                         }
                         for (var key in data['watchlist']) {
 
@@ -1358,8 +1353,7 @@ function set_video_scroll(data, block_id, append = '') {
 
             }
 
-        }
-        else {
+        } else {
 
 
             if (block_id == 'review_scroll') {
@@ -1396,8 +1390,7 @@ function set_video_scroll(data, block_id, append = '') {
                         //  jQuery('.actor_details>div').html('  Sorry. No actor data available yet. Stay tuned.').addClass('dmg_content');
                     }
 
-                }
-                else
+                } else
                 {
                     jQuery('div[id="' + block_id + '"]').html('<p class="no_result">No results found</p>');
                 }
@@ -1408,8 +1401,7 @@ function set_video_scroll(data, block_id, append = '') {
         }
 
 
-    }
-    else {
+    } else {
 
 
         if (!append) {
@@ -2233,8 +2225,7 @@ function load_ajax_block(block_id = '', request_id = '') {
                         }
                     }
                 }
-            }
-            else if (block_id == 'twitter_scroll') {
+            } else if (block_id == 'twitter_scroll') {
                 if (data) {
                     //  jQuery('div.column_header_main').prepend(data);
                     jQuery('div[id="' + block_id + '"]').html('<div class="column_content flex scroller">' + data + '</div>');
@@ -2251,8 +2242,7 @@ function load_ajax_block(block_id = '', request_id = '') {
                     initializeScroller(1, 'div[id="' + block_id + '"]');
 
                 }
-            }
-            else if (block_id == 'chan_scroll') {
+            } else if (block_id == 'chan_scroll') {
                 if (data) {
                     try {
                         var Object_data = JSON.parse(data);
@@ -2271,8 +2261,7 @@ function load_ajax_block(block_id = '', request_id = '') {
 
                 }
 
-            }
-            else if (block_id == 'google_search' || block_id == 'google_search_review' || block_id == 'google_global_zeitgeist' || block_id == 'google_global_games' || block_id == 'google_characters') {
+            } else if (block_id == 'google_search' || block_id == 'google_search_review' || block_id == 'google_global_zeitgeist' || block_id == 'google_global_games' || block_id == 'google_characters') {
                 if (data) {
                     prepare_search_data(block_id, data);
                 }
@@ -2325,8 +2314,7 @@ function load_ajax_block(block_id = '', request_id = '') {
 
 
                 }
-            }
-            else if (block_id == 'movie_rating') {
+            } else if (block_id == 'movie_rating') {
                 add_movie_rating(block_id, data);
             } else if (block_id == 'last_donations') {
                 jQuery('div[id="' + block_id + '"]').html(data);
@@ -2358,8 +2346,7 @@ function load_ajax_block(block_id = '', request_id = '') {
                 jQuery('body').on('click', '.r_row  .ethnycity_select', function () {
                     load_actor_representation(parent_id);
                 });
-            }
-            else if (block_id == 'audience_form') {
+            } else if (block_id == 'audience_form') {
                 jQuery('div[id="' + block_id + '"]').html(data);
                 //check load script
 
@@ -2382,7 +2369,7 @@ function load_ajax_block(block_id = '', request_id = '') {
 
 
                     var d = document, s = d.createElement('script');
-                    s.src = window.location.protocol + '//' + window.location.host + '/wp-content/plugins/critic_matic/js/reviews.js?v=1.8';
+                    s.src = window.location.protocol + '//' + window.location.host + '/wp-content/plugins/critic_matic/js/reviews.js?v=1.9';
                     (d.head || d.body).appendChild(s);
                     s.onload = function () {
                         wpcr3a.init();
@@ -2393,8 +2380,7 @@ function load_ajax_block(block_id = '', request_id = '') {
 
 
 
-            }
-            else if (block_id == 'search_ajax') {
+            } else if (block_id == 'search_ajax') {
                 if (data) {
                     try {
                         var Object_data = JSON.parse(data);
@@ -2421,11 +2407,11 @@ function load_ajax_block(block_id = '', request_id = '') {
                     }
 
                 }
-              
+
 
                 if (Object_data['watchlist'] !== 'undefined') {
-                    if (typeof watch_lists_data === 'undefined'){
-                        watch_lists_data=[];
+                    if (typeof watch_lists_data === 'undefined') {
+                        watch_lists_data = [];
                     }
                     for (var key in Object_data['watchlist']) {
 
@@ -2439,8 +2425,7 @@ function load_ajax_block(block_id = '', request_id = '') {
                 // Check watchlists
                 check_watchlists();
 
-            }
-            else {
+            } else {
 
 
                 if (block_id.indexOf("&cid") !== -1) {
@@ -3392,6 +3377,7 @@ jQuery(document).ready(function () {
 
     jQuery(document).on('click', '.user-reactions-box>span.user-reaction', function (e) {
 
+        let debug =1;
         e.preventDefault();
 
         var t = jQuery(this), $class = t.attr('class'), main = t.parent().parent().parent();
@@ -3439,14 +3425,21 @@ jQuery(document).ready(function () {
         jQuery('.card  .user-reactions-button.reaction-show').addClass('linked');
 
         var pid = main.data('post');
-        //  console.log(pid);
+        if (debug) console.log({
+            nonce: main.data('nonce'),
+            type: data_type[2],
+            post: main.data('post'),
+            vote_type: vote_type,
+            ptype: ptype,
+            request: 'set_emtns',
+            pid:pid
+        });
 
         $.ajax({
 
             url: site_url + template_path + "get_emotions.php",
             type: 'POST',
             data: {
-
                 nonce: main.data('nonce'),
                 type: data_type[2],
                 post: main.data('post'),
@@ -3454,54 +3447,68 @@ jQuery(document).ready(function () {
                 ptype: ptype,
                 request: 'set_emtns'
             },
-            success: function ($data) {
+            success: function (result_data) {
+
+                if (debug) console.log({'result':result_data});
+
                 window.setTimeout(function () {
 
-                    jQuery('.card .user-reactions').remove();
-                    var emotions = jQuery('.review_comment_data[data-id="' + pid + '"]>a.emotions');
+                jQuery('.card .user-reactions').remove();
+                var emotions = jQuery('.review_comment_data[data-id="' + pid + '"]>a.emotions');
+                emotions.attr('class', 'emotions');
+
+                if (typeof result_data !== "undefined") {
+                    //Top results api
+                    var data = JSON.parse(result_data);
+
+                    var key = data.key;
+                    var count = data.count;
+                    if (count > 0) {
+                        emotions.addClass('emotions_custom');
+                        emotions.addClass('user-reaction-' + key);
+                        emotions.find('.emotions_count').html(count);
+                    } else {
+                        emotions.find('.emotions_count').html('');
+                    }
+
+                    var msg = 'Уour vote has been accepted';
+                    if (key == '') {
+                        msg = 'Your vote has been canceled';
+                    }
+                    jGrowl(msg);
+
+                } else {
+
+                    var count = Number(emotions.find('.emotions_count').html());
+
                     emotions.attr('class', 'emotions');
+                    // console.log(vote_type,voted_before);
+                    if (vote_type == 'vote') {
+                        emotions.addClass('emotions_custom');
+                        emotions.addClass('user-reaction-' + type[2]);
 
-                    if (typeof $data !== "undefined") {
-                        //Top results api
-                        var data = JSON.parse($data);
-
-                        var key = data.key;
-                        var count = data.count;
-                        if (count > 0) {
-                            emotions.addClass('emotions_custom');
-                            emotions.addClass('user-reaction-' + key);
+                        if (!voted_before) {
+                            count++;
                             emotions.find('.emotions_count').html(count);
-                        } else {
-                            emotions.find('.emotions_count').html('');
                         }
 
                     } else {
+                        count--;
+                        if (count == 0)
+                            count = '';
 
-                        var count = Number(emotions.find('.emotions_count').html());
+                        emotions.find('.emotions_count').html(count);
 
-                        emotions.attr('class', 'emotions');
-                        // console.log(vote_type,voted_before);
-                        if (vote_type == 'vote') {
-                            emotions.addClass('emotions_custom');
-                            emotions.addClass('user-reaction-' + type[2]);
-
-                            if (!voted_before) {
-                                count++;
-                                emotions.find('.emotions_count').html(count);
-                            }
-
-                        } else {
-                            count--;
-                            if (count == 0)
-                                count = '';
-
-                            emotions.find('.emotions_count').html(count);
-
-                        }
-                        ///  console.log(count);
                     }
+                    ///  console.log(count);
+                }
                 }, 700);
 
+            },error: function (xhr, status, error) {
+                console.log('Error:', error);
+                console.log('Status:', status);
+                console.log('XHR:', xhr);
+                console.log('Data:', xhr.responseText);
             }
         });
         return false;
@@ -3953,15 +3960,13 @@ jQuery(document).ready(function () {
 
             }
         }
-        if (closep==2) {
+        if (closep == 2) {
             var type = jQuery(this).attr('id');
             var id = prnt.attr('data-value');
-        }
-        else if (closep==1) {
+        } else if (closep == 1) {
             var type = jQuery(this).attr('id');
             var id = prnt.attr('id');
-        }
-        else {
+        } else {
             var link = prnt.prev('a.actor_crowdsource');
             var id = link.attr('data-value');
             var type = link.attr('class');
@@ -4074,11 +4079,9 @@ jQuery(document).ready(function () {
 
                 } else {
                     let msg = '<p class="user_message_info">Thank you for your help, we\'ll check it soon.</p>';
-                    if (closep==2) {
+                    if (closep == 2) {
                         prnt.find('.nte_cnt').html(msg + '<div class="submit_data"><button class="button close" >Close</button></div>');
-                    }
-
-                    else if (closep==1) {
+                    } else if (closep == 1) {
                         prnt.html(msg + '<div class="submit_data"><button class="button close" >Close</button></div>');
                     } else {
                         prnt.html('<div class="open_rating_container note_show">' + msg + '<div class="submit_data"><button class="button close" >Close</button></div></div>');
@@ -4116,8 +4119,7 @@ jQuery(document).ready(function () {
             jQuery('.popup-close').click();
 
             return false;
-        }
-        else
+        } else
         {
 
         }
@@ -5201,14 +5203,14 @@ function loadScript($url, success = '') {
         }
     });
 }
-function use_ext_js_data(f, third_scripts,data=[]) {
+function use_ext_js_data(f, third_scripts, data = []) {
     for (var n in third_scripts) {
         if (jQuery('body').hasClass(n)) {
             continue;
         } else {
             jQuery('body').addClass(n);
             var success = function () {
-                use_ext_js_data(f, third_scripts,data);
+                use_ext_js_data(f, third_scripts, data);
             }
             loadScript(third_scripts[n], success);
             return;
@@ -5216,7 +5218,7 @@ function use_ext_js_data(f, third_scripts,data=[]) {
     }
     if (typeof f === 'function') {
         f(...data);
-    }
+}
 
 }
 
@@ -5284,7 +5286,7 @@ jQuery.fn.upScrollButton = function (options) {
 
 }
 
-function jGrowl(msg, theme) {
+function jGrowl(msg, theme = 'status') {
     var $ = jQuery;
     if ($('body').hasClass('jg_init')) {
         $.jGrowl(msg, {
@@ -5304,7 +5306,7 @@ function jGrowl(msg, theme) {
                 });
             }
         });
-    }
+}
 }
 
 

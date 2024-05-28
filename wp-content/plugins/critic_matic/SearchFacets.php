@@ -4982,7 +4982,7 @@ class SearchFacets extends AbstractDB {
                 $this->cs->facet_limit = 10000;
                 $this->cs->facet_max_limit = 10000;
 
-                $this->cs->filter_custom_and[$filter] = " AND ANY(mkw) IN(" . implode(',', $keys) . ")";
+                $this->cs->filter_custom_and[$filter] = "ANY(mkw) IN(" . implode(',', $keys) . ")";
                 if ($tab_key == 'games') {
                     $result = $this->cs->front_search_games_multi($this->keywords, $facets, 0, array(), $filters, $facets, true, true, false);
                 } else {
@@ -5041,7 +5041,7 @@ class SearchFacets extends AbstractDB {
                 $this->cs->facet_limit = 10000;
                 $this->cs->facet_max_limit = 10000;
 
-                $this->cs->filter_custom_and[$filter] = " AND ANY(" . $filter . ") IN(" . implode(',', $keys) . ")";
+                $this->cs->filter_custom_and[$filter] = "ANY(" . $filter . ") IN(" . implode(',', $keys) . ")";
                 $result = $this->cs->front_search_movies_multi($this->keywords, $facets, 0, array(), $filters, $facets, true, true, false);
 
                 $this->cs->facet_limit = $last_limit;
@@ -5102,7 +5102,7 @@ class SearchFacets extends AbstractDB {
                 $this->cs->facet_limit = 10000;
                 $this->cs->facet_max_limit = 10000;
 
-                $this->cs->filter_custom_and[$filter] = " AND " . $filter . " IN(" . implode(',', $keys) . ")";
+                $this->cs->filter_custom_and[$filter] = $filter . " IN(" . implode(',', $keys) . ")";
                 $result = $this->cs->front_search_movies_multi($this->keywords, $facets, 0, array(), $filters, $facets, true, true, false);
 
                 $this->cs->facet_limit = $last_limit;

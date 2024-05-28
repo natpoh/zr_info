@@ -354,7 +354,6 @@ function check_cron_time($last_time_result=0)
             $last_time = $cron->check_time();
             $result =$last_time['result'];
 
-
         }
     }
     if ($last_time_result)
@@ -3547,6 +3546,7 @@ else if (isset($_GET['import_movies_from_list'])) {
     if (isset($_GET['debug'])) {
         $debug = 1;
     }
+    check_load(50,0);
     import_movies_from_list();
 }
 
