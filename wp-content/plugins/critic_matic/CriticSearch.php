@@ -4478,7 +4478,7 @@ class CriticSearch extends AbstractDB {
     }
 
     public function filter_multi_value($key, $value, $multi = false, $not = false, $any = true, $not_all = true, $not_and = false, $split_all = false) {
-        $filters_and = '';
+        $filters_and = [];
         $and = 'ANY';
         if (!$any) {
             $and = 'ALL';
@@ -4506,14 +4506,14 @@ class CriticSearch extends AbstractDB {
                     if ($multi) {
                         if ($split_all) {
                             foreach ($provider_valid_arr as $provider) {
-                                $filters_and .= sprintf("$and(%s)=%s", $key, $provider);
+                                $filters_and[]= sprintf("$and(%s)=%s", $key, $provider);
                             }
                         } else {
                             // https://sphinxsearch.com/bugs/view.php?id=2627
-                            $filters_and .= sprintf("$and(%s) IN (%s)", $key, implode(',', $provider_valid_arr));
+                            $filters_and[] = sprintf("$and(%s) IN (%s)", $key, implode(',', $provider_valid_arr));
                         }
                     } else {
-                        $filters_and .= sprintf("%s IN (%s)", $key, implode(',', $provider_valid_arr));
+                        $filters_and[] = sprintf("%s IN (%s)", $key, implode(',', $provider_valid_arr));
                     }
                 } else {
                     // Filter not
@@ -4524,17 +4524,17 @@ class CriticSearch extends AbstractDB {
                     if ($multi) {
                         if ($split_all) {
                             foreach ($provider_valid_arr as $provider) {
-                                $filters_and .= sprintf("$and_not(%s)!=%s", $key, $provider);
+                                $filters_and[] = sprintf("$and_not(%s)!=%s", $key, $provider);
                             }
-                            $filters_and .= $and_any;
+                            $filters_and[] = $and_any;
                         } else {
                             foreach ($provider_valid_arr as $filter) {
-                                $filters_and .= sprintf("$and_not(%s)!=%s" . $and_any, $key, $filter);
+                                $filters_and[] = sprintf("$and_not(%s)!=%s" . $and_any, $key, $filter);
                             }
                         }
                     } else {
                         foreach ($provider_valid_arr as $filter) {
-                            $filters_and .= sprintf("%s!=%s" . $and_any, $key, $filter);
+                            $filters_and[] = sprintf("%s!=%s" . $and_any, $key, $filter);
                         }
                     }
                 }
@@ -4544,9 +4544,9 @@ class CriticSearch extends AbstractDB {
             if ($filter !== '') {
                 if (!$not) {
                     if ($multi) {
-                        $filters_and .= sprintf("$and(%s)=%s", $key, $filter);
+                        $filters_and[] = sprintf("$and(%s)=%s", $key, $filter);
                     } else {
-                        $filters_and .= sprintf("%s=%s", $key, $filter);
+                        $filters_and[]= sprintf("%s=%s", $key, $filter);
                     }
                 } else {
                     // Filter not
@@ -4555,14 +4555,19 @@ class CriticSearch extends AbstractDB {
                         $and_any = sprintf("ANY(%s)>0", $key);
                     }
                     if ($multi) {
-                        $filters_and .= sprintf("ALL(%s)!=%s" . $and_any, $key, $filter);
+                        $filters_and[]= sprintf("ALL(%s)!=%s" . $and_any, $key, $filter);
                     } else {
-                        $filters_and .= sprintf("%s!=%s" . $and_any, $key, $filter);
+                        $filters_and[]= sprintf("%s!=%s" . $and_any, $key, $filter);
                     }
                 }
             }
         }
-        return $filters_and;
+        $ret = '';
+     
+        if ($filters_and){
+            $ret = implode(' AND ', $filters_and);
+        }
+        return $ret;
     }
 
     private function get_search_filter($key, $value) {

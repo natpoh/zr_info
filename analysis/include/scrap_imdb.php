@@ -1034,6 +1034,8 @@ function get_coins_data()
 
 }
 
+
+
 function get_weight_list($table,$last_update='last_update',$table_mid="mid",$limit=100,$rating_update='',$dop_request='')
 {
 
@@ -2355,7 +2357,7 @@ function update_all_woke_rating()
 
             $result = $woke->zr_woke_calc($id,$debug,1,1);
             if ($debug) {
-                echo '<span style="display: inline-block; width: 120px">' . $i . ' of ' . $count . '</span><span style="display: inline-block; width: 80px">' . $movie_id . '</span><span style="display: inline-block; width: 400px">' . $title . '</span><span style="display: inline-block; width: 100px">' . $rating . '</span><br><hr>' . PHP_EOL;
+                echo '<span style="display: inline-block; width: 120px">' . $i . ' of ' . $count . '</span><span style="display: inline-block; width: 80px">' . $id . '</span><span style="display: inline-block; width: 400px">' . $r['title'] . '</span><span style="display: inline-block; width: 100px">' . $result . '</span><br><hr>' . PHP_EOL;
 
             }
             $i++;
@@ -2576,10 +2578,13 @@ function add_pg_rating_for_new_movies($limit=100)
     if (isset($_GET['debug']))$debug=1;
     !class_exists('PgRating') ? include ABSPATH . "analysis/include/pg_rating.php" : '';
 
-    $rating_update = array( 50=> 86400*7, 40 =>86400*14, 30=> 86400*30 , 20=> 86400*60, 10=> 86400*120, 0=>86400*200);
-    $rows =get_weight_list('data_pg_rating','last_update',"rwt_id",$limit,$rating_update);
 
-       if ($rows)
+
+    $q = "SELECT * FROM `data_pg_rating` WHERE  `next_update` < ".time()." limit 50";
+    $rows = Pdo_an::db_results_array($q);
+
+
+    if ($rows)
        {
 
            foreach ($rows as $r)
@@ -2597,9 +2602,10 @@ function add_pg_rating_for_new_movies($limit=100)
 
 function add_pgrating($id='')
 {
+    check_load(50,300);
     global $debug;
     !class_exists('PgRating') ? include ABSPATH . "analysis/include/pg_rating.php" : '';
-if (isset($_GET['debug']))$debug=1;
+    if (isset($_GET['debug']))$debug=1;
 
     PgRating::add_pgrating($id,$debug);
 

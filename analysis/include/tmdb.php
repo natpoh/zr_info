@@ -22,7 +22,18 @@ class TMDB
 {
     public static $api_key = '1dd8ba78a36b846c34c76f04480b5ff0';
 
+    public static function get_next_update($mid,$rating_update=  array( 50=> 86400*7, 40 =>86400*14, 30=> 86400*30 , 20=> 86400*60, 10=> 86400*120, 0=>86400*200))
+    {
 
+        $q= "SEECT `weight` FROM data_movie_imdb where id = ".intval($mid);
+        $r = Pdo_an::db_results_array($q);
+        $weight = $r[0]['weight'];
+        $result_time =   $rating_update[$weight];
+        if (!$result_time)$result_time = 86400*360;
+        $next_update  = time() + $result_time;
+        return($next_update);
+
+    }
     public static function var_dump_table($data,$row='',$return ='') {
         $table = "<table class='styled-table' border='1' cellpadding='5px' cellspacing='0'>";
         $table .= "<tr><th>Field</th><th>Value</th></tr>";

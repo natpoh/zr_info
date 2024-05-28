@@ -29,16 +29,22 @@ class PgRating
         $PgRatingCalculate = new PgRatingCalculate();
 
 
-
+        $rating_update = array( 50=> 86400*30, 40 =>86400*60, 30=> 86400*120 , 20=> 86400*240, 10=> 86400*360, 0=>86400*500);
 
         if ($id) {
+
             $sql = "SELECT *  FROM `data_movie_imdb` where id='{$id}'";
             $rows = Pdo_an::db_results_array($sql);
-        } else {
+
+        }
+        else {
 
 
-            $rating_update = array( 50=> 86400*30, 40 =>86400*60, 30=> 86400*120 , 20=> 86400*240, 10=> 86400*360, 0=>86400*500);
-            $rows =get_weight_list('data_pg_rating','cms_date',"rwt_id",20,$rating_update);
+
+
+            $q = "SELECT * FROM `data_pg_rating` WHERE  `cms_next_update` < ".time()." limit 30";
+            $rows = Pdo_an::db_results_array($q);
+
 
         }
 
@@ -74,6 +80,9 @@ class PgRating
             }
             self::check_enable_pg('','',$mid);
 
+            !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+             $next_update = TMDB::get_next_update($mid,$rating_update);
+
             if ($commonsense_link) {
 
                 if ($array_family['cms_link'] != $commonsense_link || $array_family['cms_rating'] != $commonsense_data || $array_family['cms_rating_desk'] != $commonsense_comment)
@@ -83,9 +92,10 @@ class PgRating
                     $sql = "UPDATE `data_pg_rating` SET `cms_date` = '" . time() . "',
         `cms_link`=?,
         `cms_rating`=?,
-        `cms_rating_desk`=? 
+        `cms_rating_desk`=? ,
+        `cms_next_update` =?
           WHERE `data_pg_rating`.`rwt_id` = " . $mid;
-                    Pdo_an::db_results_array($sql, array($commonsense_link, $commonsense_data, $commonsense_comment));
+                    Pdo_an::db_results_array($sql, array($commonsense_link, $commonsense_data, $commonsense_comment,$next_update));
 
                     $array_result_data[] = $mid;
                     if ($debug) echo 'update cms ' . $mid . '<br>' . PHP_EOL;
@@ -99,7 +109,7 @@ class PgRating
 
 
             else {
-                $sql = "UPDATE `data_pg_rating` SET `cms_date` = '" . time() . "'  WHERE `data_pg_rating`.`rwt_id` = " . $mid;
+                $sql = "UPDATE `data_pg_rating` SET `cms_date` = '" . time() . "', `cms_next_update` = '" . $next_update. "'   WHERE `data_pg_rating`.`rwt_id` = " . $mid;
                 Pdo_an::db_query($sql);
                 if ($debug)echo 'not new data cms '.$mid.'<br>'.PHP_EOL;
 
@@ -110,6 +120,10 @@ class PgRating
 
 
             $i++;
+            if (function_exists('check_cron_time'))
+            {
+                if (check_cron_time())break;
+            }
         }
 
         return $array_result_data;
@@ -125,13 +139,13 @@ class PgRating
     public static function update_pg_rating_imdb($mid = '',$debug='')
     {
         $array_result_data=[];
-
-
-
+        $rating_update = array( 50=> 86400*20, 40 =>86400*40, 30=> 86400*90 , 20=> 86400*180, 10=> 86400*240, 0=>86400*360);
         if (!$mid) {
 
-            $rating_update = array( 50=> 86400*20, 40 =>86400*40, 30=> 86400*90 , 20=> 86400*180, 10=> 86400*240, 0=>86400*360);
-            $rows =get_weight_list('data_pg_rating','imdb_date',"rwt_id",20,$rating_update);
+
+
+            $q = "SELECT * FROM `data_pg_rating` WHERE  `imdb_next_update` < ".time()." limit 30";
+            $rows = Pdo_an::db_results_array($q);
 
             foreach ($rows as $r) {
                 $data =   self::get_movie_data($r['id']);
@@ -204,10 +218,13 @@ class PgRating
                 TMDB::var_dump_table(array($contentrating, $mpaa, time(), $cert_contries, $imdb_data, $imdb_comment));
             }
 
+            !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+            $next_update = TMDB::get_next_update($id,$rating_update);
+
             $pid = self::check_enable_pg($imdb_id,$debug,$id);
             if ($pid) {
                 ///////update
-                $array_insert = array($contentrating, $mpaa, time(), $cert_contries, $imdb_data, $imdb_comment,time());
+                $array_insert = array($contentrating, $mpaa, time(), $cert_contries, $imdb_data, $imdb_comment,time(),$next_update);
 
                 ////check before update
                 ///
@@ -222,6 +239,10 @@ class PgRating
                     $comment ='skip';
                     if ($debug)echo 'skip<br>';
                     ///skip
+                    ////update data
+                    $sql = "UPDATE `data_pg_rating` set `last_update`=?, `imdb_next_update`=?  where id = {$pid}";
+                    Pdo_an::db_results_array($sql, [time(),$next_update]);
+
                 }
                 else
                 {
@@ -233,7 +254,8 @@ class PgRating
                             `certification_countries`=?, 
                             `imdb_rating`=?,
                             `imdb_rating_desc`=?,
-                            `last_update`=?
+                            `last_update`=?,
+                            `imdb_next_update`=?
                             where id = {$pid}";
                     Pdo_an::db_results_array($sql, $array_insert);
 
@@ -245,15 +267,22 @@ class PgRating
                     if ($debug)echo 'updated<br>';
 
                     $comment ='updated '.json_encode([$contentrating, $mpaa,  $cert_contries, $imdb_data]);
+                    $array_result_data[]=$id;
                 }
 
-                 $array_result_data[]=$id;
+
 
                  }
 
 
             !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
             TMDB::add_log($id,$imdb_id,'update movies','update pg_rating imdb '.$comment,1,'update_pg_rating_imdb');
+
+            if (function_exists('check_cron_time'))
+            {
+                if (check_cron_time())break;
+            }
+
 
         }
         foreach ($array_pg_commit as $mid=>$enable)
@@ -290,7 +319,7 @@ class PgRating
                 $sql = "INSERT INTO `data_pg_rating` (`id`, `movie_id`, `rwt_id`,`movie_title`) VALUES (NULL, ?, ?, ?)";
                 Pdo_an::db_results_array($sql, array($movie_id, $mid, $title));
 
-                $sql = "SELECT id  FROM `data_pg_rating` WHERE `movie_id` = {$movie_id} limit 1";
+                $sql = "SELECT id  FROM `data_pg_rating` WHERE `rwt_id` = {$mid} limit 1";
                 $row = Pdo_an::db_fetch_row($sql);
                 if ($row->id) {
                     return $row->id;
@@ -318,12 +347,9 @@ class PgRating
     {
 
        $array_result = self::update_pg_rating_imdb($mid, $debug);
+       $array_result2 = self::update_pg_rating_cms($mid, $debug);
 
-        $array_result2 = self::update_pg_rating_cms($mid, $debug);
-
-
-
-        $result = array_merge($array_result, $array_result2);
+       $result = array_merge($array_result, $array_result2);
 
         foreach ($result as $mid)
         {

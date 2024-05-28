@@ -1755,7 +1755,7 @@ class PgRatingCalculate {
 
         if ($update) {
             if ($array_family['lgbt_warning']!=$lgbt_enable || $array_family['lgbt_text']!= $lgbt_text_string) {
-                $sql = "UPDATE `data_pg_rating` SET  `lgbt_warning` = '" . $lgbt_enable . "', `lgbt_text` = ?  WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
+                $sql = "UPDATE `data_pg_rating` SET  `lgbt_warning` = '" . $lgbt_enable . "', `lgbt_text` = ?  WHERE `data_pg_rating`.`rwt_id` = " . $id;
                 Pdo_an::db_results_array($sql, array($lgbt_text_string));
             }
 
@@ -1771,7 +1771,7 @@ class PgRatingCalculate {
 
         if ($update) {
             if ($array_family['qtia_warning']!=$lgbt_enable || $array_family['qtia_text']!= $lgbt_text_string) {
-                $sql = "UPDATE `data_pg_rating` SET  `qtia_warning` = '" . $lgbt_enable . "', `qtia_text` = ?  WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
+                $sql = "UPDATE `data_pg_rating` SET  `qtia_warning` = '" . $lgbt_enable . "', `qtia_text` = ?  WHERE `data_pg_rating`.`rwt_id` = " . $id;
                 Pdo_an::db_results_array($sql, array($lgbt_text_string));
             }
 
@@ -1785,7 +1785,7 @@ class PgRatingCalculate {
         if ($update) {
 
             if ($array_family['woke']!=$lgbt_enable || $array_family['woke_text']!= $lgbt_text_string) {
-                $sql = "UPDATE `data_pg_rating` SET  `woke` = '" . $lgbt_enable . "', `woke_text` = ?  WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
+                $sql = "UPDATE `data_pg_rating` SET  `woke` = '" . $lgbt_enable . "', `woke_text` = ?  WHERE `data_pg_rating`.`rwt_id` = " . $id;
                 Pdo_an::db_results_array($sql, array($lgbt_text_string));
             }
 
@@ -1797,25 +1797,19 @@ class PgRatingCalculate {
 
 
             if ($array_family['rwt_pg_result']!=$total) {
-                $sql = "UPDATE `data_pg_rating` SET  `rwt_pg_result` = '" . $total . "' WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
+                $sql = "UPDATE `data_pg_rating` SET  `rwt_pg_result` = '" . $total . "' WHERE `data_pg_rating`.`rwt_id` = " . $id;
                 Pdo_an::db_query($sql);
             }
 
             ////update rwt pg cache
         }
-
+        !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+        $next_update= TMDB::get_next_update($id);
         if ($update) {
 
-            $sql = "UPDATE `data_pg_rating` SET  `last_update` = '" . time() . "' WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
+            $sql = "UPDATE `data_pg_rating` SET  `last_update` = '" . time() . "', `next_update` = '" . $next_update . " WHERE `data_pg_rating`.`rwt_id` = " . $id;
 
             Pdo_an::db_query($sql);
-
-
-            if ($id !=$array_family['rwt_id'] )
-            {
-                $sql = "UPDATE `data_pg_rating` SET  `rwt_id` = '" . $id . "' WHERE `data_pg_rating`.`movie_id` = " . $imdb_id;
-                Pdo_an::db_query($sql);
-            }
 
 
 
