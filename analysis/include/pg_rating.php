@@ -39,9 +39,6 @@ class PgRating
         }
         else {
 
-
-
-
             $q = "SELECT * FROM `data_pg_rating` WHERE  `cms_next_update` < ".time()." limit 30";
             $rows = Pdo_an::db_results_array($q);
 
@@ -55,7 +52,7 @@ class PgRating
         $i = 0;
         foreach ($rows as $r) {
 
-            $mid =$r['id'];
+            $mid =$r['rwt_id'];
             $rows_data =   self::get_movie_data($mid);
             $movie_id = $rows_data['movie_id'];
             $title = $rows_data['title'];
@@ -143,12 +140,11 @@ class PgRating
         if (!$mid) {
 
 
-
-            $q = "SELECT * FROM `data_pg_rating` WHERE  `imdb_next_update` < ".time()." limit 30";
+            $q = "SELECT `rwt_id` FROM `data_pg_rating` WHERE  `imdb_next_update` < ".time()." limit 30";
             $rows = Pdo_an::db_results_array($q);
 
             foreach ($rows as $r) {
-                $data =   self::get_movie_data($r['id']);
+                $data =   self::get_movie_data($r['rwt_id']);
 
                 $array_id[ $data['id']] = $data['movie_title'];
             }
