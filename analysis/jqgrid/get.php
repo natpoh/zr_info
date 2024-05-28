@@ -640,6 +640,10 @@ AND table_schema='".DB_NAME_AN."'";
             if ($row['last_upd']){$row['last_upd'] = date('H:i:s d:m:Y',$row['last_upd']);}
             if ($row['date'] && is_numeric($row['date'])){$row['date'] = date('H:i:s d:m:Y',$row['date']);}
 
+            if ($row['imdb_next_update']){$row['imdb_next_update'] = date('H:i:s d:m:Y',$row['imdb_next_update']);}
+            if ($row['cms_next_update']){$row['cms_next_update'] = date('H:i:s d:m:Y',$row['cms_next_update']);}
+            if ($row['next_update']){$row['next_update'] = date('H:i:s d:m:Y',$row['next_update']);}
+
 
             if ($table_data=='data_movie_erating')
             {
