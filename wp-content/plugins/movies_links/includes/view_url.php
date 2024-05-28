@@ -217,6 +217,13 @@ if ($uid) {
                     </thead>
                     <tbody> 
                         <?php foreach ($critics as $row => $value) {
+                            if ($row=='critic_id'){
+                                $value =  '<a href="/wp-admin/admin.php?page=critic_matic&pid='.$value.'">'.$value.'</a>';
+                            } else if ($row=='date'||$row=='last_upd'){
+                                $value =   $this->mp->curr_date($value);
+                            } else if ($row=='uid'){
+                                continue;
+                            }
                             ?>
                             <tr>
                                 <td><?php print $row ?></td>
