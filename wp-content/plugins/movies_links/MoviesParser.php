@@ -180,7 +180,7 @@ class MoviesParser extends MoviesAbstractDB {
         'gen_urls' => 1,
         'arhive' => 2,
         'parsing' => 3,
-        'links' => 4,        
+        'links' => 4,
         'critics' => 5,
         'update' => 6,
     );
@@ -1061,7 +1061,7 @@ class MoviesParser extends MoviesAbstractDB {
         return $result;
     }
 
-    public function get_urls_count($status = -1, $cid = 0, $arhive_type = -1, $parser_type = -1, $link_type = -1) {
+    public function get_urls_count($status = -1, $cid = 0, $arhive_type = -1, $parser_type = -1, $link_type = -1, $critic_type = -1) {
 
         // Custom status
         $status_trash = 2;
@@ -1090,32 +1090,38 @@ class MoviesParser extends MoviesAbstractDB {
 
         // Parser type filter
         $parser_type_and = '';
-        $parser_join = '';        
+        $parser_join = '';
         if ($parser_type != -1 || $link_type != -1) {
-            $parser_join = " LEFT JOIN {$this->db['posts']} p ON u.id = p.uid";            
-        }     
-        
-        if ($parser_type != -1){
+            $parser_join = " LEFT JOIN {$this->db['posts']} p ON u.id = p.uid";
+        }
+
+        if ($parser_type != -1) {
             if ($parser_type == 1) {
                 $parser_type_and = " AND p.id !=0 AND p.status=1 AND p.multi=0";
             } else if ($parser_type == 2) {
                 $parser_type_and = " AND p.id !=0 AND p.status=0 AND p.multi=0";
             } else {
                 $parser_type_and = " AND p.id is NULL";
-            }            
+            }
         }
         $link_type_and = '';
         if ($link_type != -1) {
-                $link_type_and = sprintf(" AND p.status_links=%d", $link_type);
-            }
-            
+            $link_type_and = sprintf(" AND p.status_links=%d", $link_type);
+        }
+
+        $critics_join='';
+        $critic_type_and = '';
+        if ($critic_type != -1) {
+            $critics_join = " LEFT JOIN {$this->db['critics']} c ON c.uid = u.id";
+            $critic_type_and = sprintf(" AND c.status=%d", $critic_type);
+        }
         $query = "SELECT COUNT(u.id) FROM {$this->db['url']} u"
-                . $arhive_join . $parser_join
+                . $arhive_join . $parser_join .$critics_join
                 . " WHERE u.id>0"
-                . $status_query . $arhive_type_and . $parser_type_and . $link_type_and . $cid_and;
+                . $status_query . $arhive_type_and . $parser_type_and . $link_type_and . $cid_and. $critic_type_and;
 
         $result = $this->db_get_var($query);
-   
+
         return $result;
     }
 
@@ -2159,7 +2165,7 @@ class MoviesParser extends MoviesAbstractDB {
                 foreach ($items as $item) {
                     $arhive_hash = $item->arhive_hash;
                     $code = $this->get_arhive_file($cid, $arhive_hash);
-                    $log_message='';
+                    $log_message = '';
                     if ($code) {
                         if ($debug) {
                             print "File arhive exist: $arhive_hash\n";
