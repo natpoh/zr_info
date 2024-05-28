@@ -174,7 +174,7 @@ class MoviesParser extends MoviesAbstractDB {
             'active' => 1,
         ),
     );
-    public $campaign_modules = array('cron_urls', 'gen_urls', 'arhive', 'parsing', 'links', 'update');
+    public $campaign_modules = array('cron_urls', 'gen_urls', 'arhive', 'parsing', 'links', 'update','critics');
     public $log_modules = array(
         'cron_urls' => 1,
         'gen_urls' => 1,
@@ -182,6 +182,7 @@ class MoviesParser extends MoviesAbstractDB {
         'parsing' => 3,
         'links' => 4,
         'update' => 5,
+        'critics' => 6,
     );
     private $def_reg_rule = array(
         'f' => '',
@@ -2331,9 +2332,9 @@ class MoviesParser extends MoviesAbstractDB {
                             }
 
                             if ($add_post) {
-                                $this->log_info($log_message, $cid, $id, 3);
+                                $this->log_info($log_message, $cid, $id, 6);
                             } else {
-                                $this->log_error($log_message, $cid, $id, 3);
+                                $this->log_error($log_message, $cid, $id, 6);
                             }
                         }
                     } else {
