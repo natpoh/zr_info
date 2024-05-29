@@ -7,6 +7,21 @@
         <fieldset> 
             <input type="hidden" name="posts" value="1">
             <h3>Critic reviews settings</h3>
+            
+            
+            <label class="inline-edit-status">                
+                <?php
+                $checked = '';
+                $type_name = 'critics_unique';
+                $type = isset($ss[$type_name]) ? $ss[$type_name] : 0;
+                if ($type == 1) {
+                    $checked = 'checked="checked"';
+                }
+                ?>
+                <input type="checkbox" name="<?php print $type_name ?>" value="1" <?php print $checked ?> >
+                <span class="checkbox-title">Latest front critics: unique authors.</span>
+            </label>
+            <br />
             <b>Show posts</b>
 
             <?php

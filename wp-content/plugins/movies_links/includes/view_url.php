@@ -198,9 +198,49 @@ if ($uid) {
         $o = $options['links'];
         $preivew_data = $this->mp->find_posts_links(array($post), $o, $campaign->type);
         $this->preview_links_search($preivew_data);
-        ?>
 
-    <?php } ?>
+        if ($campaign->type != 1) {
+            ?>
+
+
+            <h2>Post critic</h2>  
+            <?php
+            $critics = $this->mp->get_post_critics($uid);
+            if ($critics):
+                ?>
+                <table class="wp-list-table widefat striped table-view-list">
+                    <thead>
+                        <tr>
+                            <th><?php print __('Name') ?></th>                
+                            <th><?php print __('Value') ?></th>    
+                        </tr>
+                    </thead>
+                    <tbody> 
+                        <?php foreach ($critics as $row => $value) {
+                            if ($row=='critic_id'){
+                                $value =  '<a href="/wp-admin/admin.php?page=critic_matic&pid='.$value.'">'.$value.'</a>';
+                            } else if ($row=='date'||$row=='last_upd'){
+                                $value =   $this->mp->curr_date($value);
+                            } else if ($row=='uid'){
+                                continue;
+                            }
+                            ?>
+                            <tr>
+                                <td><?php print $row ?></td>
+                                <td><?php print $value ?></td>
+                            </tr>              
+                            <?php
+                        }
+                        ?>
+                    </tbody>        
+                </table>
+            <?php else: ?>
+                <p>No critics found.</p>
+            <?php endif; ?>
+            <?php
+        }
+    }
+    ?>
 
     <?php
     $multi = $this->mp->get_multi_posts_by_uid($uid);

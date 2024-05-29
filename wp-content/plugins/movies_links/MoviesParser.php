@@ -4307,6 +4307,15 @@ class MoviesParser extends MoviesAbstractDB {
         $result = $this->db_results($query);
         return $result;
     }
+    
+    /*
+     * Critics
+     */
+        public function get_post_critics($uid = 0) {
+        $sql = sprintf("SELECT * FROM {$this->db['critics']} WHERE uid=%d", $uid);
+        $result = $this->db_fetch_row($sql);
+        return $result;
+    }
 
     /*
      * Log

@@ -344,26 +344,29 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
 
             if ($debug) $this->debug_table('LGBTQ data',$lgbt_word_weight ,'red');
             if ($debug) $this->debug_table('LGBTQ words', $array['lgb_text'].','.$array['qtia_text']);
-            $lgb_input = $array['lgb']+$array['qtia'];
-            if ($lgb_input>5)
+
+            $lgb_input = $array['lgb'];
+            $qtia_input = $array['qtia'];
+            $lgbt_input =  $lgb_input+$qtia_input;
+            if ($lgbt_input>5)
             {
-                $lgb=100;
+                $lgbt=100;
 
                 if ($debug) $this->debug_table('LGBTQ', 'word count > 5; lgbt = 100% ');
             }
-            else if ($lgb_input)
+            else if ($lgbt_input)
             {
-                $lgb =  $lgbt_word_weight[$lgb_input.' word'];
-                if ($debug) $this->debug_table('LGBTQ', 'word count = '.$lgb_input.'; lgbtq = '.$lgb.'% ' );
+                $lgbt =  $lgbt_word_weight[$lgbt_input.' word'];
+                if ($debug) $this->debug_table('LGBTQ', 'word count = '.$lgbt_input.'; lgbtq = '.$lgbt.'% ' );
             }
 
-            $lgbt = $lgb;
+
         }
         else if ($array['lgb']) {
             $lgbt_word_weight = $weihgt_total['lgbt_word_weight'];
 
             if ($debug) $this->debug_table('LGB data',$lgbt_word_weight ,'red');
-            if ($debug) $this->debug_table('LGB words', $array['lgbt_text']);
+            if ($debug) $this->debug_table('LGB words', $array['lgb_text']);
             $lgb_input = $array['lgb'];
             if ($lgb_input>5)
             {
@@ -400,7 +403,7 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
 
             $lgbt = $qtia;
         }
-
+        $lgbt_input =  $lgb_input+$qtia_input;
         if ($lgbt>100)$lgbt = 100;
 
 
@@ -600,7 +603,7 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
         ///check limits
 
 
-         $lgbt_input =  $lgb_input+$qtia_input;
+
 
 
         if ($lgbt_input && $woke_input)
@@ -631,9 +634,12 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
 
         $lgbt_words=0;
 
-        if ($array['qtia'] || $array['lgbt'])
+        if (!$array['lgb'])$array['lgb']=0;
+        if (!$array['qtia'])$array['qtia']=0;
+
+        if ($array['qtia'] || $array['lgb'])
         {
-            $lgbt_words = $array['qtia'] + $array['lgbt'];
+            $lgbt_words = $array['qtia'] + $array['lgb'];
         }
 
         if ($update)
@@ -657,8 +663,7 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
             if (!$array['female'])$array['female']=0;
             if (!$array['woke'])$array['woke']=0;
             if (!$array['lgbt'])$array['lgbt']=0;
-            if (!$array['lgb'])$array['lgb']=0;
-            if (!$array['qtia'])$array['qtia']=0;
+
 
 
 
@@ -687,7 +692,7 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
 
                  $q = "INSERT INTO `data_woke`(`id`, `mid`,`title`, `country`, `diversity`, `female`, `woke`, `lgbt`,`lgb`,`qtia`, `audience`, `boycott`, `oweralbs`, `rtgap`, `year`, `rtaudience`, `imdb`, `kino`, `douban`,
                       `woke_result`, `lgbt_result` ,`result`, `last_update`) 
-                VALUES (NULL,'" . $mid . "',?, ?, '" . $array['diversity'] . "','" . $array['female'] . "','" . $array['woke'] . "',$lgbt_words, '" . $array['lgbt'] . "', '" . $array['qtia'] . "', '" . $array['audience'] . "',
+                VALUES (NULL,'" . $mid . "',?, ?, '" . $array['diversity'] . "','" . $array['female'] . "','" . $array['woke'] . "',$lgbt_words, '" . $array['lgb'] . "', '" . $array['qtia'] . "', '" . $array['audience'] . "',
                 '" . $array['boycott'] . "','" . $array['oweralbs'] . "','" . $array['rtgap'] . "','" . $array['year'] . "','" . $array['rtaudience'] . "','" . $array['imdb'] . "','" . $array['kino'] . "','" . $array['douban'] . "',
                 '" . $woke . "','" . $lgbt . "','" . $result . "','" . time() . "')";
 
@@ -715,7 +720,7 @@ Release date  (2015)  1 / ( 2023 - 2010 ) = 0.07692
 
                      $shouldUpdate = false;
 
-                     $array_data = [$array['title'],$array['country'],$array['diversity'], $array['female'], $array['woke'], $lgbt_words, $array['lgbt'], $array['qtia'], $array['audience'], $array['boycott'], $array['oweralbs'],
+                     $array_data = [$array['title'],$array['country'],$array['diversity'], $array['female'], $array['woke'], $lgbt_words, $array['lgb'], $array['qtia'], $array['audience'], $array['boycott'], $array['oweralbs'],
                          $array['rtgap'], $array['year'], $array['rtaudience'], $array['imdb'], $array['kino'], $array['douban'],
                          $woke, $lgbt, $result, time(), $mid];
 
