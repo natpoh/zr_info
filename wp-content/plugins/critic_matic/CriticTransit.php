@@ -72,6 +72,8 @@ class CriticTransit extends AbstractDB {
             'indie' => 'data_movie_indie',
             'meta_movie_keywords' => 'meta_movie_keywords',
             'actors_normalize' => 'data_actors_normalize',
+            'tmdb' => 'data_movie_tmdb',
+            'cache_tmdb_sinc' => 'cache_tmdb_sinc',
         );
     }
 
@@ -100,6 +102,83 @@ class CriticTransit extends AbstractDB {
             $this->ml = new MoviesLinks();
         }
         return $this->ml;
+    }
+
+    public function transit_tmdb_poster($count = 100, $debug = false, $force = false) {
+        $option_name = 'transit_tmdb_poster_last_id';
+        $last_id = $this->get_option($option_name, 0);
+        if ($force) {
+            $last_id = 0;
+        }
+
+        if ($debug) {
+            p_r(array('last_update', $last_id));
+        }
+
+        // 1. Get posters
+        $sql = sprintf("SELECT rwt_id, data, last_update FROM `cache_tmdb_sinc` WHERE `type` = 2 AND `last_update`>=%d ORDER BY `last_update` ASC limit %d", $last_id, $count);
+
+        if ($debug) {
+            print_r($sql);
+        }
+        $results = $this->db_results($sql);
+        if ($debug) {
+            print_r($results);
+        }
+
+        if ($results) {
+            $last = end($results);
+            if ($debug) {
+                print 'last_updatee: ' . $last->last_update . "\n";
+            }
+            if ($last) {
+                $this->update_option($option_name, $last->last_update);
+            }
+
+            foreach ($results as $item) {
+                $poster_path = $item->data;
+                $mid = $item->rwt_id;
+                if ($poster_path) {
+                    // Update poster db
+                    $poster_id = '';
+                    if ($poster_path) {
+                        $poster_id = preg_replace('#^/([^\.]+)\..*$#', "$1", $poster_path);
+                    }
+                    
+                    // Get tmdb
+                    $sql = sprintf("SELECT tmdb_id FROM {$this->db['movie_imdb']} WHERE id = %d", (int) $mid);
+                    $tmdb_id = $this->db_get_var($sql);
+                    
+                    # Update tmdb
+                    $data = array(
+                        'tmdb' => (int) $tmdb_id,
+                        'poster_path' => $poster_path,
+                        'poster_id' => $poster_id,
+                    );
+
+                    // Get data 
+                    $sql = sprintf("SELECT * FROM {$this->db['tmdb']} WHERE mid = %d", (int) $mid);
+                    $exist = $this->db_fetch_row($sql);
+                    $data['last_update'] = $this->curr_time();
+                    if ($exist) {
+                        // Update post            
+                        $this->sync_update_data($data, $exist->id, $this->db['tmdb'], true, 10);
+                        if ($debug) {
+                            print_r(array('update', $data, $exist->id, Pdo_an::last_error()));
+                        }
+                        CustomHooks::do_action('update_tmdb', ['mid' => $mid, 'data' => $data]);
+                    } else {
+                        // Add post            
+                        $data['mid'] = $mid;
+                        $this->sync_insert_data($data, $this->db['tmdb'], false, true, 10);
+                        if ($debug) {
+                            print_r(array('insert', $data, $exist->id, Pdo_an::last_error()));
+                        }
+                        CustomHooks::do_action('add_tmdb', ['mid' => $mid, 'data' => $data]);
+                    }
+                }
+            }
+        }
     }
 
     public function remove_old_animelist($count = 10, $debug = false) {
