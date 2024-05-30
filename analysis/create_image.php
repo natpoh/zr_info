@@ -42,6 +42,47 @@ if (strstr($id, 'm_')) {
     //Curl
     !class_exists('GETCURL') ? include ABSPATH . "analysis/include/get_curl.php" : '';
 
+
+    function isImage($temp_file) {
+        $image_info = @getimagesizefromstring($temp_file);
+        if ($image_info === false) {
+            return '';
+        }
+
+        $src_w = $image_info[0];
+        $src_h = $image_info[1];
+        $src_type = image_type_to_mime_type($image_info[2]);
+
+        if (empty($src_w) || empty($src_h) || empty($src_type)) {
+            return '';
+        }
+
+        return $src_type;
+    }
+    function  get_curl_image($link)
+    {
+$result ='';
+        if ($link) {
+            $result = GETCURL::getCurlCookie($link);
+
+            if ($result == 'Not Found') {
+                ///try get imdb images
+                if (isset($_GET['debug']))
+                    echo 'result ' . $result;
+                $result = '';
+            }
+            else
+            {
+                $result_found=  isImage($result);
+                if (isset($_GET['debug']))echo 'result_found='.$result_found;
+                if (!$result_found || !strstr($result_found,'image')){
+                    $result = '';
+                }
+            }
+        }
+    return $result;
+    }
+
     function get_tmb_img_from_db($id) {
         $image = '';
 
@@ -86,21 +127,20 @@ if (strstr($id, 'm_')) {
     if (isset($_GET['debug']))
         echo 'tmdb ' . $link;
 
-    if (!$link) {
-        $link = get_img_from_db($id);
+    if ($link)
+    {
+        $result =get_curl_image($link);
     }
 
-    if (isset($_GET['debug']))
-        echo 'imdb ' . $link;
 
-    if ($link) {
-        $result = GETCURL::getCurlCookie($link);
+    if (!$result) {
+        $link = get_img_from_db($id);
 
-        if ($result == 'Not Found') {
-            ///try get imdb images
-            if (isset($_GET['debug']))
-                echo 'result ' . $result;
-            $result = '';
+        if (isset($_GET['debug']))
+            echo 'imdb ' . $link;
+
+        if ($link) {
+            $result = get_curl_image($link);
         }
     }
 

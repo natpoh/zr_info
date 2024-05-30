@@ -258,7 +258,7 @@ class CriticEmotions extends AbstractDB {
 
         if ($this->top_results) {
             $top_reaction = $this->get_top_reaction($post_id, $post_type);
-            $top_reaction['debug']=['uv'=>$update_vote,'aid'=>$aid,'vt'=>$vote_type,'vn'=>$vote_num,'pt'=>$post_type,'upd'=>$upd_data];
+            $top_reaction['debug']=['ui'=>$unic_id,'pn'=>$_POST['nonce'],'uv'=>$update_vote,'aid'=>$aid,'vt'=>$vote_type,'vn'=>$vote_num,'pt'=>$post_type,'upd'=>$upd_data];
             print json_encode($top_reaction);
         }
         else

@@ -743,7 +743,7 @@ class CriticSearch extends AbstractDB {
             'f' => array('key' => 6, 'title' => 'F', 'color' => 1),
         ),
         'worthit' => array(
-            'worthit' => array('key' => 1, 'title' => 'Worth it', 'color' => 2),
+            'worthit' => array('key' => 1, 'title' => 'Worth it', 'color' => 1),
             'nonwoke' => array('key' => 2, 'title' => 'Non-Woke', 'color' => 1),
             'wokeish' => array('key' => 3, 'title' => 'Woke-ish', 'color' => 2),
             'woke' => array('key' => 4, 'title' => 'Woke', 'color' => 3),
@@ -2684,15 +2684,15 @@ class CriticSearch extends AbstractDB {
             $ret = $this->movie_results($sql, $match, $search_query);
 
             /*
-            print_r($filters_and);
-            print_r(array($match, $search_query));
-            print_r($sql);
-            print_r($ret);
+              print_r($filters_and);
+              print_r(array($match, $search_query));
+              print_r($sql);
+              print_r($ret);
 
-            $meta = $this->sps->query("SHOW META")->fetchAll();
-            print_r($meta);
-            exit;
-*/
+              $meta = $this->sps->query("SHOW META")->fetchAll();
+              print_r($meta);
+              exit;
+             */
 
             gmi('main sql');
             // Simple result
@@ -3134,23 +3134,49 @@ class CriticSearch extends AbstractDB {
             } else if (isset($woke_facets[$facet])) {
 
                 $active_facet = $woke_facets[$facet];
-
                 if (isset($active_facet['no_data'])) {
                     continue;
                 }
                 $max_count = isset($active_facet['max_count']) ? $active_facet['max_count'] : 6;
-
                 $exclude_keys = array($facet, 'if_woke');
-                $filters_and = $this->get_filters_query($filters, $exclude_keys, $query_type);
+                if ($facet == 'kmwoke') {
+                    // Keywords match woke
 
-                if ($facet == 'rrtg') {
-                    $filters_and['filter'] .= " AND rrta>0 AND rrt>0";
+                    foreach ($this->search_filters['kmwoke'] as $kkey => $kvalue) {
+                        $exclude_keys[] = $kvalue['key'];
+                        $exclude_keys[] = $kvalue[$kkey];
+                    }
+
+                    foreach ($this->search_filters['kmwoke'] as $kkey => $kvalue) {
+                        $ikey = $kvalue['key'];
+                        $filters_and = $this->get_filters_query($filters, $exclude_keys);
+                        $sql_arr[$ikey] = "SELECT COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1" . $filters_and['filter'] . $match
+                                . " AND " . $ikey . ">0";
+
+                        // Childs
+                        $child = $kkey;
+                        $local_facet = isset($this->facets_data[$child]) ? $this->facets_data[$child] : array();
+                        $max_count = isset($local_facet['max_count']) ? $local_facet['max_count'] : 20;
+                        $item_collapsed = $this->is_hide_facet($child, $filters);
+                        if (!$item_collapsed) {
+                            $filters_and = $this->get_filters_query($child, $exclude_keys);
+                            $sql_arr[$child] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1" . $filters_and['filter'] . $match
+                                    . " GROUP BY " . $child . " ORDER BY " . $child . " ASC LIMIT 0," . $max_count;
+                        }
+                    }
+                } else {
+
+                    $filters_and = $this->get_filters_query($filters, $exclude_keys, $query_type);
+
+                    if ($facet == 'rrtg') {
+                        $filters_and['filter'] .= " AND rrta>0 AND rrt>0";
+                    }
+                    if ($facet == 'rmg') {
+                        $filters_and['filter'] .= " AND rmu>0 AND rmc>0";
+                    }
+                    $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1" . $filters_and['filter'] . $match
+                            . " GROUP BY " . $facet . " ORDER BY " . $facet . " ASC LIMIT 0," . $max_count;
                 }
-                if ($facet == 'rmg') {
-                    $filters_and['filter'] .= " AND rmu>0 AND rmc>0";
-                }
-                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1" . $filters_and['filter'] . $match
-                        . " GROUP BY " . $facet . " ORDER BY " . $facet . " ASC LIMIT 0," . $max_count;
             } else if ($facet == 'movie') {
                 $filters_and = $this->get_filters_query($filters, $facet, $query_type);
                 $sql_arr[$facet] = "SELECT GROUPBY() AS id, COUNT(*) as cnt" . $filters_and['select'] . ", mtitle AS title, year_int as year FROM critic"
@@ -4284,10 +4310,9 @@ class CriticSearch extends AbstractDB {
                             }
                         }
                         if ($minus) {
-                                                            if ($for_filter){
-                                    $filters_and[$key] = implode(' AND ', $for_filter);
-                                }
-                            
+                            if ($for_filter) {
+                                $filters_and[$key] = implode(' AND ', $for_filter);
+                            }
                         }
                     } else {
                         if (!$minus) {
@@ -4335,9 +4360,9 @@ class CriticSearch extends AbstractDB {
                             $for_filter[] = $this->filter_multi_value($slug, 1, false, $minus, true, true, false);
                         }
                     }
-                                if ($for_filter){
-                                    $filters_and[$key] = implode(' AND ', $for_filter);
-                                }
+                    if ($for_filter) {
+                        $filters_and[$key] = implode(' AND ', $for_filter);
+                    }
                 } else if ($key == 'mkw') {
                     // Movie Keywords
                     $filters_and[$key] = $this->filter_multi_value($key, $value, true, $minus);
@@ -4390,7 +4415,7 @@ class CriticSearch extends AbstractDB {
                                         }
                                     }
                                 }
-                                if ($for_filter){
+                                if ($for_filter) {
                                     $filters_and[$key] = implode(' AND ', $for_filter);
                                 }
                             }
@@ -4422,7 +4447,7 @@ class CriticSearch extends AbstractDB {
                                         }
                                     }
                                 }
-                                if ($for_filter){
+                                if ($for_filter) {
                                     $filters_and[$key] = implode(' AND ', $for_filter);
                                 }
                             }
