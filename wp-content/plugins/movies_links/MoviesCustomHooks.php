@@ -208,7 +208,7 @@ class MoviesCustomHooks {
                 $data['total_count'] = $data[$curr_camp . '_count'];
                 $data['total_rating'] = (int) $total_rating;
 
-                if ($data['total_count'] > 0 || $data['total_rating'] > 0) {
+                if ($data['total_rating'] > 0) {
                     $update_rating = true;
                 }
             } else if ($curr_camp == 'rt') {
@@ -236,7 +236,7 @@ class MoviesCustomHooks {
                     $data['total_rating'] = $data['rt_aurating'];
                 }
 
-                if ($data['total_count'] > 0 || $data['total_rating'] > 0) {
+                if ($data['total_rating'] > 0) {
                     $update_rating = true;
                 }
             } else if ($curr_camp == 'metacritic') {

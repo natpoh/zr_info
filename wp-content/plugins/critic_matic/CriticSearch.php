@@ -2692,7 +2692,8 @@ class CriticSearch extends AbstractDB {
               $meta = $this->sps->query("SHOW META")->fetchAll();
               print_r($meta);
               exit;
-             */
+*/
+          
 
             gmi('main sql');
             // Simple result
@@ -4247,10 +4248,10 @@ class CriticSearch extends AbstractDB {
                                 }
                             }
                             if ($key == 'rrtg') {
-                                $filters_and[$key] = "rrta>0 AND rrt>0";
+                                $filters_and[$key] .= " AND rrta>0 AND rrt>0";
                             }
                             if ($facet == 'rmg') {
-                                $filters_and[$key] = "rmu>0 AND rmc>0";
+                                $filters_and[$key] .= " AND rmu>0 AND rmc>0";
                             }
                         }
                     }
