@@ -75,7 +75,7 @@ class MoviesLinksEratingBackup extends MoviesAbstractDBAn {
         }
 
         // 1. Get backup data
-        $sql = sprintf("SELECT id, movie_id, rt_rating, rt_aurating, rt_gap FROM {$this->db['erating_backup']} WHERE id>=%d AND (rt_rating >0 OR rt_aurating>0) ORDER BY id ASC limit %d", $last_id, $count);
+        $sql = sprintf("SELECT id, movie_id, rt_rating, rt_aurating, rt_gap, rt_count, rt_aucount FROM {$this->db['erating_backup']} WHERE id>=%d AND (rt_rating >0 OR rt_aurating>0) ORDER BY id ASC limit %d", $last_id, $count);
 
         if ($debug) {
             print_r($sql);
@@ -114,12 +114,14 @@ class MoviesLinksEratingBackup extends MoviesAbstractDBAn {
                 );
 
                 if ($result->rt_rating == 0 && $item->rt_rating > 0) {
-                    $update = true;
+                    $update = true;                    
                     $data['rt_rating'] = $item->rt_rating;
+                    $data['rt_count'] = $item->rt_count;
                 }
                 if ($result->rt_aurating == 0 && $item->rt_aurating > 0) {
                     $update = true;
                     $data['rt_aurating'] = $item->rt_aurating;
+                    $data['rt_aucount'] = $item->rt_aucount;
                 }
 
                 if ($update) {
