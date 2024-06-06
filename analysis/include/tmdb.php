@@ -2329,9 +2329,9 @@ private static function search_data_to_object($data,$debug)
     $pos = strpos($data,'<script id="__NEXT_DATA__" type="application/json">');
     if ($pos) {
         $data = substr($data, $pos);
-        $pos2 = strpos($data, ',"nextCursor"');
+        $pos2 = strpos($data, '</script>');
         $data = substr($data, 51, $pos2 - 51);
-        $data = $data . '}}}}';
+
         $data = mb_convert_encoding($data, 'utf-8', mb_detect_encoding($data));
         $object = json_decode($data, 1);
 
@@ -2455,11 +2455,13 @@ public static function get_data($key,$type,$debug=0)
         $result_data=[];
         $key = urlencode($key);
         $url ='https://www.imdb.com/find?q='.$key.'&s=tt&ttype='.$type;
+
         $data = GETCURL::getCurlCookie($url);
        //$data=file_get_contents(ABSPATH.'wp-content/uploads/test.html');
         if ($debug)
         {
-           // print_r($data);
+            echo $url;
+         // print_r($data);
         }
 
         $object = self::search_data_to_object($data,$debug);
@@ -2468,7 +2470,10 @@ public static function get_data($key,$type,$debug=0)
         {
             $results = $object["props"]["pageProps"]["titleResults"]["results"];
 
-
+            if ($debug)
+            {
+                self::var_dump_table($results);
+            }
 
             foreach ($results as $val)
             {

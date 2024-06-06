@@ -171,11 +171,20 @@ class GETNEWMOVIES{
     }
 
 
-    public static function import_movies_from_list()
+    public static function import_movies_from_list($id='')
     {
         $array_update = [];
         global $debug;
-        $q="SELECT * FROM `meta_movies_queue` WHERE (`status` = 0 OR ( `status` = 3 and `last_upd` < ".(time()-86400*30).") )   ORDER BY `last_upd` ASC LIMIT 30";
+        if ($id)
+        {
+            $q="SELECT * FROM `meta_movies_queue` WHERE `id` = $id";
+
+        }
+        else
+        {
+            $q="SELECT * FROM `meta_movies_queue` WHERE (`status` = 0 OR ( `status` = 3 and `last_upd` < ".(time()-86400*30).") )   ORDER BY `last_upd` ASC LIMIT 30";
+        }
+
 
         $rows = Pdo_an::db_results_array($q);
 
@@ -191,7 +200,7 @@ class GETNEWMOVIES{
             if ($debug) {
                 echo 'try add movie ' . $movie_name . ' <br>'. PHP_EOL;
             }
-            $array_movie_id =TMDB::get_data($movie_name,'ft');
+            $array_movie_id =TMDB::get_data($movie_name,'ft',$debug);
 
             $coincide = self::check_movie_coincidence($array_movie_id,$movie_name,$year);
 

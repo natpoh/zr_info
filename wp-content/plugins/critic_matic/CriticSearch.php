@@ -2692,7 +2692,8 @@ class CriticSearch extends AbstractDB {
               $meta = $this->sps->query("SHOW META")->fetchAll();
               print_r($meta);
               exit;
-             */
+*/
+          
 
             gmi('main sql');
             // Simple result
@@ -4247,10 +4248,10 @@ class CriticSearch extends AbstractDB {
                                 }
                             }
                             if ($key == 'rrtg') {
-                                $filters_and[$key] = "rrta>0 AND rrt>0";
+                                $filters_and[$key] .= " AND rrta>0 AND rrt>0";
                             }
                             if ($facet == 'rmg') {
-                                $filters_and[$key] = "rmu>0 AND rmc>0";
+                                $filters_and[$key] .= " AND rmu>0 AND rmc>0";
                             }
                         }
                     }
@@ -5106,11 +5107,11 @@ class CriticSearch extends AbstractDB {
             $filters_and[] = "ANY(state) IN (" . implode(',', $meta_type) . ")";
         }
 
-        // Odrer by rating desc
+
         $order = " ORDER BY post_date DESC";
-        if ($movie_id > 0) {
+        /*if ($movie_id > 0) {
             $order = " ORDER BY post_date DESC";
-        }
+        }*/
 
         // Tag logic
         if ($tags) {
@@ -5164,7 +5165,7 @@ class CriticSearch extends AbstractDB {
         if ($unique_authors) {
             $sql = sprintf("SELECT GROUPBY() as aid, COUNT(*) as cnt" . $and_select . " FROM critic WHERE status=1 AND top_movie>0" . $filters_str . " GROUP BY aid" . $order . " LIMIT %d,%d", $start, $limit);
         } else {
-            $sql = sprintf("SELECT id, date_add, top_movie, aid, author_name, aurating" . $and_select . " FROM critic WHERE status=1 AND top_movie>0" . $filters_str . $order . " LIMIT %d,%d", $start, $limit);
+            $sql = sprintf("SELECT id, post_date as date, date_add, top_movie, aid, author_name, aurating" . $and_select . " FROM critic WHERE status=1 AND top_movie>0" . $filters_str . $order . " LIMIT %d,%d", $start, $limit);
         }
         $results = $this->sdb_results($sql);
         /* if ($unique_authors){

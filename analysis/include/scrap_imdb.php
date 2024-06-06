@@ -2296,10 +2296,10 @@ function get_actor_result($data)
 
 
 }
-function import_movies_from_list()
+function import_movies_from_list($id='')
 {
     !class_exists('GETNEWMOVIES') ? include ABSPATH . "analysis/include/get_new_movies.php" : '';
-    GETNEWMOVIES::import_movies_from_list();
+    GETNEWMOVIES::import_movies_from_list($id);
 }
 
 function update_all_woke_rating()
@@ -3553,7 +3553,7 @@ else if (isset($_GET['import_movies_from_list'])) {
         $debug = 1;
     }
     check_load(50,0);
-    import_movies_from_list();
+    import_movies_from_list($_GET['import_movies_from_list']);
 }
 
 

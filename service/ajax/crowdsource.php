@@ -87,9 +87,9 @@ function critic_crowd_validation($link, $row = []) {
 
 
             $youtube = false;
-            $reg_v = '#youtu(\.)*be(\.com)*\/(watch\?v\=)*([a-zA-Z0-9_-]+)#';
+            $reg_v = '#youtu(\.)*be(\.com)*\/(watch\?v\=)*([a-zA-Z0-9_-]+\/)*([a-zA-Z0-9_-]+)';
             if (preg_match($reg_v, $link, $match)) {
-                $link = 'https://www.youtube.com/watch?v=' . $match[4];
+                $link = 'https://www.youtube.com/watch?v=' . $match[5];
                 $youtube = true;
             }
 

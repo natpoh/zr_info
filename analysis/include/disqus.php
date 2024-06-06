@@ -124,7 +124,7 @@ class DISQUS_DATA
         if (!function_exists('pccf_filter')) {
             include(ABSPATH . 'wp-content/themes/custom_twentysixteen/template/include/pccf_filter.php');
         }
-        $reg_v = '#youtu(\.)*be(\.com)*\/(watch\?v\=)*([a-zA-Z0-9_-]+)#';
+
         $regv_2 = '#\<a href.+(m\.)*youtu(\.)*be(\.com)*\/(watch\?v\=)*([a-zA-Z0-9_-]{11}+).+\<\/a\>#Uis';
         if (preg_match_all($regv_2, $message, $match)) {
 

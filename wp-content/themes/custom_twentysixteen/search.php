@@ -22,6 +22,7 @@ if (isset($_POST['filters'])) {
 
     // Get the video from an db. Video logic after 25.08.2021. 
     $is_movie = isset($filters['movies']);
+    $is_unknown= isset($filters['title']);
     $is_tv = isset($filters['tvseries']);
     $is_game = isset($filters['videogame']);
     $is_podcastseries = isset($filters['podcastseries']);
@@ -34,7 +35,14 @@ if (isset($_POST['filters'])) {
 
         include 'actor.php';
         return;
-    } else if ($is_movie || $is_tv || $is_game || $is_podcastseries) {
+    } else if ($is_movie || $is_tv || $is_game || $is_podcastseries || $is_unknown) {
+
+
+        if ($is_unknown) {
+            $post_name = $filters['title'];
+            $post_type = '';
+            $post_type_slug = 'title';
+        }
         if ($is_movie) {
             $post_name = $filters['movies'];
             $post_type = 'Movie';

@@ -23,8 +23,42 @@ if (!function_exists('format_movie_runtime')) {
 
 }
 
-class MovieSingle {
+class MovieSingle
 
+{
+
+    private static function get_genre_name($gids)
+    {
+        $q= "SELECT * FROM `data_movie_genre` WHERE (".$gids.")";
+        $r = Pdo_an::db_results_array($q);
+        foreach ($r as $row)
+        {
+            $arraynames[] = $row['name'] ;
+        }
+    return $arraynames;
+    }
+    public static function get_genres($mid)
+    {
+        $and = '';
+        $array =[];
+        $arraynames=[];
+        $q ="SELECT * FROM `meta_movie_genre` WHERE `mid` = ".$mid;
+        $r = Pdo_an::db_results_array($q);
+        foreach ($r as $row)
+        {
+            $and.= " or `id` = ".$row['gid'];
+            $array[]=$row['gid'];
+        }
+        if ($and)
+        {
+            $and = substr($and, 3);
+            $arraynames = self::get_genre_name($and);
+        }
+
+
+        return $arraynames;
+
+    }
     public static function get_franchise($mid) {
         $data = [];
         $q = "SELECT `franchise` FROM `data_movie_indie` WHERE `movie_id`= " . $mid . " and `franchise`>0";
@@ -223,10 +257,21 @@ if (!function_exists('template_single_movie')) {
             }
             $movie_attr = 'data-attr="' . implode("__", $string_attrs) . '"';
         }
+        ///get genre
+        $genres = MovieSingle::get_genres($id);
+        if ($genres)
+        {
+            $movie_meta['genres'] = $genres;
+        }
+        else
+        {
+            $movie_meta['genres'] = $post_an->genre;
+        }
+
 
         $movie_meta['release_date'] = $post_an->release;
         $movie_meta['overview'] = $post_an->description;
-        $movie_meta['genres'] = $post_an->genre;
+
         $movie_meta['tmdb_id'] = $post_an->tmdb_id;
         $movie_meta['imdb_id'] = $post_an->movie_id;
         $movie_meta['country'] = $post_an->country;
@@ -279,6 +324,14 @@ if (!function_exists('template_single_movie')) {
                 $tmd = 'Game';
                 $tmd_s = 'game';
             }
+            else {
+                $movie_t ='title';
+                $movie_link_desc = 'class="card_movie_type ctype_other" title="Title"';
+                $movie_details = 'Details & Credits';
+
+                $tmd = 'Other';
+                $tmd_s = 'title';
+            }
 
             if ($name) {
                 $link_before = '<a href="/' . $movie_t . '/' . $name . '/">';
@@ -322,8 +375,16 @@ if (!function_exists('template_single_movie')) {
 
         if ($_wpmoly_movie_genres) {
 
+            if (is_string($_wpmoly_movie_genres))
 
-            $genre_array = explode(',', $_wpmoly_movie_genres);
+            {
+                $genre_array = explode(',', $_wpmoly_movie_genres);
+            }
+            else
+            {
+                $genre_array = $_wpmoly_movie_genres;
+            }
+
             $array_genre = [];
 
             if (count($genre_array) == 1) {
