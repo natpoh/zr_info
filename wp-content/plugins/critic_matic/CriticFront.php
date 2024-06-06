@@ -1009,7 +1009,7 @@ class CriticFront extends SearchFacets {
          */
         $add_class = ' u_state';
         $title = 'Movie review binding info';
-        if ($meta_state == 2) {
+        if ($meta_state == 2 || $meta_state == 3) {
             $add_class = ' a_state';
             $title = 'This review was attached automatically by our robot';
         }

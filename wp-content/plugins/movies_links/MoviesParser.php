@@ -2282,10 +2282,10 @@ class MoviesParser extends MoviesAbstractDB {
                                     // Add top movie meta                                                        
                                     // Type: 1 => 'Proper Review',
                                     $type = 1;
-                                    // State: 1 => 'Approved',
-                                    $state = 1;
-                                    // Add meta                                    
-                                    $cm->add_post_meta($top_movie, $type, $state, $pid, 0, false);
+                                    // State: 3 => Auto (ML),
+                                    $state = 3;
+                                    // Update meta                                    
+                                    $cm->update_post_meta($top_movie, $type, $state, $pid, 0);
                                 }
                             } else {
                                 $add_post = false;
