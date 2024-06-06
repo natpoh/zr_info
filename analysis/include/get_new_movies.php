@@ -200,7 +200,7 @@ class GETNEWMOVIES{
             if ($debug) {
                 echo 'try add movie ' . $movie_name . ' <br>'. PHP_EOL;
             }
-            $array_movie_id =TMDB::get_data($movie_name,'ft',$debug);
+            $array_movie_id =TMDB::get_data($movie_name,'ft',$debug,1);
 
             $coincide = self::check_movie_coincidence($array_movie_id,$movie_name,$year);
 
@@ -401,6 +401,12 @@ class GETNEWMOVIES{
 
     public static function check_movie_coincidence($array_movie_id,$movie_name,$movie_date='')
     {
+
+        if (strstr($movie_name,$movie_date))
+        {
+            $movie_name = str_replace($movie_date,'',$movie_name);
+        }
+
         $maxcount =5;
         $name =  self::replace_movie_text($movie_name);
         $i=0;

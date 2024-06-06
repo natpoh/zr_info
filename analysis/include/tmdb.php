@@ -2449,14 +2449,34 @@ public static function  get_data_actor($actor,$debug=0)
 
 }
 
-public static function get_data($key,$type,$debug=0)
+public static function get_data($key,$type,$debug=0,$proxy ='')
     {
+        $proxy_text=0;
+        if ($proxy)
+        {
+            if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
+                define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
+            }
+
+            if (!class_exists('CriticFront')) {
+                require_once(CRITIC_MATIC_PLUGIN_DIR . 'critic_matic_ajax_inc.php');
+            }
+
+            $cm = new CriticMatic();
+
+            $proxy = $cm->get_parser_proxy(true);
+            $proxy_text = '';
+            if ($proxy) {
+                $proxy_num = array_rand($proxy);
+                $proxy_text =  $proxy[$proxy_num];
+            }
+        }
 
         $result_data=[];
         $key = urlencode($key);
         $url ='https://www.imdb.com/find?q='.$key.'&s=tt&ttype='.$type;
 
-        $data = GETCURL::getCurlCookie($url);
+        $data = GETCURL::getCurlCookie($url,$proxy_text);
        //$data=file_get_contents(ABSPATH.'wp-content/uploads/test.html');
         if ($debug)
         {
