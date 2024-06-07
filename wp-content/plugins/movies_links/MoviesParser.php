@@ -2054,9 +2054,13 @@ class MoviesParser extends MoviesAbstractDB {
         if ($version > 0) {
             $and_version = sprintf(' OR c.version!=%d', $version);
         }
-
+       
         // Critic posts
         $cp_and = ' AND (c.uid is NULL' . $and_version . ')';
+
+        if (!$no_posts) {
+            $cp_and = '';
+        }
 
         if ($custom_url > 0) {
 
