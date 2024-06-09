@@ -5534,6 +5534,11 @@ body.error404 .page-header  {
  * 11.5 - Sidebar
  */
 
+
+.facets.collapsed .nte_info{
+    display: none;
+}
+
 .flex-page {
     display: flex;    
 }

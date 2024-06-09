@@ -2473,9 +2473,9 @@ public static function get_data($key,$type,$debug=0,$proxy ='')
         }
 
         $result_data=[];
-        $key = urlencode($key);
+        $key = urlencode(trim($key));
         $url ='https://www.imdb.com/find?q='.$key.'&s=tt&ttype='.$type;
-
+        //$proxy_text=0;
         $data = GETCURL::getCurlCookie($url,$proxy_text);
        //$data=file_get_contents(ABSPATH.'wp-content/uploads/test.html');
         if ($debug)
