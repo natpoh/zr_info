@@ -194,6 +194,7 @@ class GETNEWMOVIES{
 
             $id = $r['id'];
             $movie_name = $r['title'];
+            $movie_name = html_entity_decode($movie_name, ENT_QUOTES, 'UTF-8');
             $year = $r['year'];
             $status = $r['status'];
 
