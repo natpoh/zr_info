@@ -2473,6 +2473,7 @@ public static function get_data($key,$type,$debug=0,$proxy ='')
         }
 
         $result_data=[];
+        $key = html_entity_decode($key, ENT_QUOTES, 'UTF-8');
         $key = urlencode(trim($key));
         $url ='https://www.imdb.com/find?q='.$key.'&s=tt&ttype='.$type;
         //$proxy_text=0;
