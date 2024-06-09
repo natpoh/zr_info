@@ -64,7 +64,7 @@ class MoviesParserAdmin extends ItemAdmin {
         'parse' => '3. Parsing',
         'links' => '4. Linking',
         'critics' => '5. Critics',
-        'log' => 'Log',        
+        'log' => 'Log',
         'edit' => 'Edit',
         'clone' => 'Clone',
         'trash' => 'Trash',
@@ -218,6 +218,14 @@ class MoviesParserAdmin extends ItemAdmin {
     );
     public $rwt_actor_link = array(
         'a' => 'All normalized actors',
+    );
+    
+    /* Critic */
+    public $critic_meta_status = array(
+        0 => 'None',
+        1 => 'Valid',
+        2 => 'Error',
+        3 => 'Invalid rating',
     );
 
     public function __construct($mla = '') {
@@ -782,6 +790,10 @@ class MoviesParserAdmin extends ItemAdmin {
             'links_type' => $this->post_link_status,
             'exp_status' => $this->exp_status,
         );
+        
+        if ($campaign->type!=1){
+            $filters['critic_meta_status']=$this->critic_meta_status;
+        }
 
         $filters_tabs = $this->get_links_filters_tabs($filters, $page_url, $query_adb);
         $query_adb = $filters_tabs['query_adb'];
@@ -1085,7 +1097,7 @@ class MoviesParserAdmin extends ItemAdmin {
         $result = 0;
 
         if ($form_state['id']) {
-            
+
             $id = $form_state['id'];
             $campaign = $this->mp->get_campaign($id);
             $opt_prev = $this->mp->get_options($campaign);
@@ -1104,6 +1116,7 @@ class MoviesParserAdmin extends ItemAdmin {
                 if ($cm) {
                     $cp = $cm->get_cp();
                     $cprules = $cp->get_cprules();
+                    $add_result['valid_rules'] = $cprules->rules_form($form_state);
                     $add_result['rules'] = $cprules->parser_rules_form($form_state);
                     if ($form_state['import_critic_rules_json']) {
                         $rules = json_decode(trim(stripslashes($form_state['import_critic_rules_json'])), true);
@@ -1112,10 +1125,13 @@ class MoviesParserAdmin extends ItemAdmin {
                         }
                     }
                 }
+                $add_result['valid_status'] = isset($form_state['valid_status']) ? $form_state['valid_status'] : 0;
+                $add_result['update_exists'] = isset($form_state['update_exists']) ? $form_state['update_exists'] : 0;
             }
-            
-            if ($form_state['edit_critics_options']){
+
+            if ($form_state['edit_critics_options']) {
                 $add_result['status'] = isset($form_state['status']) ? $form_state['status'] : 0;
+                $add_result['post_status'] = isset($form_state['post_status']) ? $form_state['post_status'] : 0;
             }
             $opt_upd = array();
             $opt_upd['critics'] = $add_result;
@@ -2222,13 +2238,14 @@ class MoviesParserAdmin extends ItemAdmin {
      * Critics
      */
 
-    public function preview_critics($campaign) {
+    public function preview_critics($campaign, $custom_url = 0, $debug = false) {
         $options = $this->mp->get_options($campaign);
         $o = $options['critics'];
         $count = $o['pr_num'];
         $version = $o['version'];
         $cid = $campaign->id;
-        $last_posts = $this->mp->get_last_arhives_no_critics($count, $cid, $version, false);
+
+        $last_posts = $this->mp->get_last_arhives_no_critics($count, $cid, $version, false, $debug, $custom_url);
 
         if ($last_posts) {
             $preivew_data = $this->mp->parse_critics($last_posts, $campaign, true);
@@ -2237,6 +2254,97 @@ class MoviesParserAdmin extends ItemAdmin {
         }
 
         return $preivew_data;
+    }
+
+    public function theme_preview_critics($preivew_data = array(), $o=array()) {
+        if (!$preivew_data) {
+            return;
+        }
+        $cm = $this->ml->get_cm();
+        $cp = $cm->get_cp();
+
+        $cprules = $cp->get_cprules();
+
+        foreach ($preivew_data as $id => $items) {
+            $rows = array($items);
+            foreach ($rows as $item) {
+                ?>
+                <table class="wp-list-table widefat striped table-view-list">
+                    <thead>
+                        <tr>
+                            <th><?php print __('Name') ?></th>                
+                            <th><?php print __('Value') ?></th>    
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Uid</td>
+                            <td><?php print $this->mla->theme_parser_url_link($id, $id); ?></td>
+                        </tr> 
+                        <tr>
+                            <td>Validation</td>
+                            <td>
+                                <?php
+                                if ($o['valid_status'] == 1) {
+                                    if ($cprules) {
+                                        $check = $item['check_content'];
+
+                                        if ($check) {
+                                            if ($check['data']) {
+                                                foreach ($check['data'] as $key => $value) {
+                                                    $result = $cprules->rules_actions[$value];
+                                                    print 'Rule id: ' . $key . '. Result: <b>' . $result . '</b>. <br />';
+                                                }
+                                            }
+                                        } else {
+
+                                            print "<b>Validation disabled</b>.";
+                                        }
+
+                                        if ($check['invalid_rating'] == 1) {
+                                            print "<p>Invalid rating.</p>";
+                                        }
+
+                                        print "<p>Result post status: <b>" . $cm->post_status[$item['post_status']] . "</b></p>";
+                                    }
+                                } else {
+                                    print "<b>Validation disabled</b>.";
+                                }
+                                ?>
+                            </td>
+                        </tr> 
+                        <?php
+                        foreach ($item as $name => $value) {
+                            if ($name == 'check_content' || $name == 'post_status') {
+                                continue;
+                            }
+                            $show_name = $name;
+                            ?>
+                            <tr>
+                                <td><?php print $show_name ?></td>
+                                <td><?php
+                    if (is_array($value)) {
+                        foreach ($value as $k => $v) {
+                            print "[$k] $v<br />";
+                        }
+                    } else {
+                        if ($name == 'content' || $name == 'raw') {
+                            print '<textarea name="import_critic_rules_json" style="width:100%" rows="3">' . htmlspecialchars($value) . '</textarea>';
+                        } else {
+                            print $value;
+                        }
+                    }
+                            ?>
+                                </td>
+                            </tr> 
+
+                        <?php } ?>
+                    </tbody>        
+                </table>
+                <br />
+            <?php } ?>
+            <?php
+        }
     }
 
     /*

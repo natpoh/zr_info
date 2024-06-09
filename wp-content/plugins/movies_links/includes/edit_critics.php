@@ -56,7 +56,7 @@ if ($cid) {
                             <option value="0">None</option>                                
                             <?php
                             $authors = $cm->get_all_authors(1);
-                            if (sizeof($authors)) {                                
+                            if (sizeof($authors)) {
                                 foreach ($authors as $author) {
                                     $selected = ($author->id == $o['author']) ? 'selected' : '';
                                     ?>
@@ -68,7 +68,7 @@ if ($cid) {
                         </select>
                         <span class="inline-edit">Select or <a href="/wp-admin/admin.php?page=critic_matic_authors&tab=add">add</a> critic author.</span>
                     </label>
-                
+
                 <?php endif ?>  
                 <label class="inline-edit-interval"> 
                     <span class="title"><?php print __('Version') ?></span>         
@@ -84,7 +84,27 @@ if ($cid) {
                     </select>                     
                     <span class="inline-edit"><?php print __('The version of the current parsing rules. If you\'ve changed the rules and need to update posts, just change the version.') ?></span> 
                 </label>
+                <?php if ($cm): ?>
+                    <label class="inline-edit-interval">
+                        <span class="title"><?php print __('Post status') ?></span>               
+                        <?php
+                        $post_status = $o['post_status'];
+                        $post_statuses = $cm->post_status;
+                        ?>
 
+                        <select name="post_status" class="interval">
+                            <?php
+                            foreach ($post_statuses as $key => $name) {
+                                $selected = ($key == $post_status) ? 'selected' : '';
+                                ?>
+                                <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                                <?php
+                            }
+                            ?>                          
+                        </select>                     
+                        <span class="inline-edit"><?php print __('Default status for all new posts') ?></span> 
+                    </label>
+                <?php endif ?>                
                 <label class="inline-edit-status">                
                     <?php
                     $checked = '';
@@ -108,14 +128,53 @@ if ($cid) {
             <fieldset>
                 <input type="hidden" name="edit_parsing_data" value="1">
                 <input type="hidden" name="id" class="id" value="<?php print $campaign->id ?>">
+
+                <br />
+                <h2>Rules filter</h2>
+
+                <label class="inline-edit-status">                
+                    <?php
+                    $checked = '';
+                    if ($o['valid_status'] == 1) {
+                        $checked = 'checked="checked"';
+                    }
+                    ?>
+                    <input type="checkbox" name="valid_status" value="1" <?php print $checked ?> >
+                    <span class="checkbox-title"><?php print __('Use validation rules filter') ?></span>
+                </label>
+              
+                <label class="inline-edit-status">                
+                    <?php
+                    $checked = '';
+                    if ($o['update_exists'] == 1) {
+                        $checked = 'checked="checked"';
+                    }
+                    ?>
+                    <input type="checkbox" name="update_exists" value="1" <?php print $checked ?> >
+                    <span class="checkbox-title"><?php print __('Update status for exists posts') ?></span>
+                </label>
+                
+                <p><?php print __('Rules that determine whether to public review or not.') ?></p>
+                <?php
+                if ($cm) {
+                    $cp = $cm->get_cp();
+                    $rules = $o['valid_rules'];
+                    $cprules = $cp->get_cprules();
+                    $cprules->show_rules($rules, true, array(), $campaign->type);
+                } else {
+                    print "<p>Need install Critic Matic pluggin.</p>";
+                }
+                ?> 
+                <br />
+
                 <h2>Parser rules</h2>
                 <?php
                 $parser_rules = $o['rules'];
 
                 // Get critic matic parser rules
 
-                if ($cm) {
-                    $cp = $cm->get_cp();
+                if ($cprules) {
+
                     $cprules = $cp->get_cprules();
                     $cprules->show_parser_rules($parser_rules, true, $campaign->type, $campaign->parsing_mode);
                 } else {
@@ -162,49 +221,7 @@ if ($cid) {
         if ($preivew_data == -1) {
             print '<p>No arhives found</p>';
         } else if ($preivew_data) {
-            foreach ($preivew_data as $id => $items) {
-                $rows = array($items);
-                foreach ($rows as $item) {
-                    ?>
-                    <table class="wp-list-table widefat striped table-view-list">
-                        <thead>
-                            <tr>
-                                <th><?php print __('Name') ?></th>                
-                                <th><?php print __('Value') ?></th>    
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Uid</td>
-                                <td><?php print $this->mla->theme_parser_url_link($id, $id); ?></td>
-                            </tr> 
-                            <?php
-                            foreach ($item as $name => $value) {
-                                $show_name = $name;
-                                ?>
-                                <tr>
-                                    <td><?php print $show_name ?></td>
-                                    <td><?php
-                                        if (is_array($value)) {
-                                            foreach ($value as $k => $v) {
-                                                print "[$k] $v<br />";
-                                            }
-                                        } else {
-                                            if ($name == 'content' || $name == 'raw') {
-                                                print '<textarea name="import_critic_rules_json" style="width:100%" rows="3">' . htmlspecialchars($value) . '</textarea>';
-                                            } else {
-                                                print $value;
-                                            }
-                                        }
-                                        ?></td>
-                                </tr> 
-                            <?php } ?>
-                        </tbody>        
-                    </table>
-                    <br />
-                <?php } ?>
-                <?php
-            }
+            $this->theme_preview_critics($preivew_data,$o);
         } else {
             ?>
             <h3>Parsing error</h3>

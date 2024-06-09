@@ -118,6 +118,7 @@ class MoviesParser extends MoviesAbstractDB {
                     'link_poster' => 0,
                     'poster_field' => '',
                     'poster_rules' => '',
+                    'update_exists' => 0,
                 ),
                 'critics' => array(
                     'last_update' => 0,
@@ -128,6 +129,9 @@ class MoviesParser extends MoviesAbstractDB {
                     'rules' => '',
                     'version' => 0,
                     'author' => 0,
+                    'valid_status' => 0,
+                    'valid_rules' => '',
+                    'post_status' => 1,
                 ),
                 'update' => array(
                     'status' => 0,
@@ -823,6 +827,7 @@ class MoviesParser extends MoviesAbstractDB {
             'pid' => -1,
             'ids' => array(),
             'date' => 0,
+            'critic_meta_status'=>-1,
         );
 
         $q = array();
@@ -877,6 +882,14 @@ class MoviesParser extends MoviesAbstractDB {
             $exp_status_and = sprintf(" AND u.exp_status=%d", $q['exp_status']);
         }
 
+        // Critic status filter
+        $critic_meta_status_and = '';
+        $critic_meta_status_join='';
+        if ($q['critic_meta_status'] != -1) {
+            $critic_meta_status_join= " LEFT JOIN {$this->db['critics']} c ON u.id = c.uid";
+            $critic_meta_status_and = sprintf(" AND c.status=%d", $q['critic_meta_status']);
+        }
+        
         // Links pid filter
         $links_pid_and = '';
         if ($q['pid'] != -1) {
@@ -929,8 +942,8 @@ class MoviesParser extends MoviesAbstractDB {
         $query = "SELECT " . $select
                 . " FROM {$this->db['url']} u"
                 . " LEFT JOIN {$this->db['arhive']} a ON u.id = a.uid"
-                . " LEFT JOIN {$this->db['posts']} p ON u.id = p.uid"
-                . $status_query . $ids_and . $cid_and . $links_pid_and . $exp_status_and . $arhive_type_and . $parser_type_and . $links_type_and . $and_date . $and_orderby . $limit;
+                . " LEFT JOIN {$this->db['posts']} p ON u.id = p.uid" . $critic_meta_status_join
+                . $status_query . $ids_and . $cid_and . $links_pid_and . $exp_status_and . $arhive_type_and . $parser_type_and . $links_type_and .$critic_meta_status_and. $and_date . $and_orderby . $limit;
 
         if (!$count) {
             $result = $this->db_results($query);
@@ -1109,16 +1122,16 @@ class MoviesParser extends MoviesAbstractDB {
             $link_type_and = sprintf(" AND p.status_links=%d", $link_type);
         }
 
-        $critics_join='';
+        $critics_join = '';
         $critic_type_and = '';
         if ($critic_type != -1) {
             $critics_join = " LEFT JOIN {$this->db['critics']} c ON c.uid = u.id";
             $critic_type_and = sprintf(" AND c.status=%d", $critic_type);
         }
         $query = "SELECT COUNT(u.id) FROM {$this->db['url']} u"
-                . $arhive_join . $parser_join .$critics_join
+                . $arhive_join . $parser_join . $critics_join
                 . " WHERE u.id>0"
-                . $status_query . $arhive_type_and . $parser_type_and . $link_type_and . $cid_and. $critic_type_and;
+                . $status_query . $arhive_type_and . $parser_type_and . $link_type_and . $cid_and . $critic_type_and;
 
         $result = $this->db_get_var($query);
 
@@ -2041,9 +2054,13 @@ class MoviesParser extends MoviesAbstractDB {
         if ($version > 0) {
             $and_version = sprintf(' OR c.version!=%d', $version);
         }
-
+       
         // Critic posts
         $cp_and = ' AND (c.uid is NULL' . $and_version . ')';
+
+        if (!$no_posts) {
+            $cp_and = '';
+        }
 
         if ($custom_url > 0) {
 
@@ -2166,6 +2183,10 @@ class MoviesParser extends MoviesAbstractDB {
                     $arhive_hash = $item->arhive_hash;
                     $code = $this->get_arhive_file($cid, $arhive_hash);
                     $log_message = '';
+
+                    // Post status
+                    $post_status = $o['post_status'];
+
                     if ($code) {
                         if ($debug) {
                             print "File arhive exist: $arhive_hash\n";
@@ -2185,6 +2206,7 @@ class MoviesParser extends MoviesAbstractDB {
                         $title = isset($items['t']) ? $items['t'] : '';
                         $author = isset($items['a']) ? $items['a'] : '';
                         $date_raw = isset($items['y']) ? $items['y'] : '';
+                        $rating = isset($items['r']) ? $items['r'] : '';
 
                         if ($content) {
                             $content = $cp->force_balance_tags($content);
@@ -2201,10 +2223,62 @@ class MoviesParser extends MoviesAbstractDB {
                             $date = $cp->curr_time();
                         }
 
+                        // Validate campaign rules
+                        $invalid_rating = 0;
+                        if ($o['valid_status']) {
+                            $test_post = array(
+                                'a' => $author,
+                                'd' => $content,
+                                't' => $title,
+                                'u' => $item->link,
+                                'r' => $rating,
+                            );
+                            $check = $cprules->check_post_rules($o['valid_rules'], $post_status, $test_post, true);
+
+                            if ($check && $check['data']) {
+                                $rules_w = $cprules->sort_rules_by_weight($o['valid_rules']);
+                                foreach ($check['data'] as $rule_id => $rule_result) {
+                                    $rules_names = $rules_w[$rule_id]['f'];
+                                    if (in_array('r', $rules_names)) {
+                                        $invalid_rating = 1;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            $check['invalid_rating'] = $invalid_rating;
+
+                            $ret[$id]['check_content'] = $check;
+
+                            /*
+                              $rules_actions = array(
+                              0 => 'Ignore URL and Trash post',
+                              1 => 'Publish post',
+                              2 => 'Draft post',
+                              3 => 'Trash post',
+                              );
+                             */                            
+                            $check_status = $check['status'];
+                            if ($check_status==2){
+                                // Draft
+                                $new_status=0;
+                            } else if ($check_status==1){
+                                // Publish
+                                $new_status=1;
+                            } else {
+                                $new_status=2;
+                            }
+
+                            $post_status = $new_status;
+                        }
+
+
+                        $ret[$id]['post_status'] = $post_status;
                         $ret[$id]['title'] = $title;
                         $ret[$id]['date'] = $date;
                         $ret[$id]['date_raw'] = $date_raw;
                         $ret[$id]['author'] = $author;
+                        $ret[$id]['rating'] = $rating;
                         $ret[$id]['content'] = $content;
                         $add_post = true;
 
@@ -2231,8 +2305,7 @@ class MoviesParser extends MoviesAbstractDB {
 
                                 // MoviesLinks
                                 $post_type = 5;
-                                // Post status publish
-                                $post_status = 1;
+
                                 $top_movie = (int) $item->top_movie;
                                 $pid = 0;
 
@@ -2240,6 +2313,15 @@ class MoviesParser extends MoviesAbstractDB {
                                     // Update post
                                     $log_message = 'Update post';
                                     $pid = $post_exist->id;
+
+                                    if ($o['update_exists'] != 1) {
+                                        // Default post status for exists posts
+                                        $post_status = $o['post_status'];
+                                    }
+                                    if ($post_status != $post_exist->status) {
+                                        $log_message .= '. Change post status: ' . $post_status;
+                                    }
+
                                     $data = array(
                                         'status' => $post_status,
                                         'type' => $post_type,
@@ -2282,10 +2364,10 @@ class MoviesParser extends MoviesAbstractDB {
                                     // Add top movie meta                                                        
                                     // Type: 1 => 'Proper Review',
                                     $type = 1;
-                                    // State: 1 => 'Approved',
-                                    $state = 1;
-                                    // Add meta                                    
-                                    $cm->add_post_meta($top_movie, $type, $state, $pid, 0, false);
+                                    // State: 3 => Auto (ML),
+                                    $state = 3;
+                                    // Update meta                                    
+                                    $cm->update_post_meta($top_movie, $type, $state, $pid, 0);
                                 }
                             } else {
                                 $add_post = false;
@@ -2304,6 +2386,11 @@ class MoviesParser extends MoviesAbstractDB {
                             if (!$add_post) {
                                 // Error status
                                 $meta_status = 2;
+                            }
+
+                            if ($invalid_rating) {
+                                // Invalid rating status
+                                $meta_status = 3;
                             }
 
                             // Add meta
@@ -4307,11 +4394,12 @@ class MoviesParser extends MoviesAbstractDB {
         $result = $this->db_results($query);
         return $result;
     }
-    
+
     /*
      * Critics
      */
-        public function get_post_critics($uid = 0) {
+
+    public function get_post_critics($uid = 0) {
         $sql = sprintf("SELECT * FROM {$this->db['critics']} WHERE uid=%d", $uid);
         $result = $this->db_fetch_row($sql);
         return $result;

@@ -2,6 +2,7 @@
 
 <h3><?php print __('URL') ?>: [<?php print $uid ?>] <?php print $url_data->link ?></h3>
 <?php
+$debug = $_GET['debug'];
 if ($uid) {
     ?>
     <br />
@@ -216,13 +217,16 @@ if ($uid) {
                         </tr>
                     </thead>
                     <tbody> 
-                        <?php foreach ($critics as $row => $value) {
-                            if ($row=='critic_id'){
-                                $value =  '<a href="/wp-admin/admin.php?page=critic_matic&pid='.$value.'">'.$value.'</a>';
-                            } else if ($row=='date'||$row=='last_upd'){
-                                $value =   $this->mp->curr_date($value);
-                            } else if ($row=='uid'){
+                        <?php
+                        foreach ($critics as $row => $value) {
+                            if ($row == 'critic_id') {
+                                $value = '<a href="/wp-admin/admin.php?page=critic_matic&pid=' . $value . '">' . $value . '</a>';
+                            } else if ($row == 'date' || $row == 'last_upd') {
+                                $value = $this->mp->curr_date($value);
+                            } else if ($row == 'uid') {
                                 continue;
+                            } else if ($row=='status'){
+                                $value =  $this->critic_meta_status[$value]." [".$value."]";
                             }
                             ?>
                             <tr>
@@ -237,7 +241,13 @@ if ($uid) {
             <?php else: ?>
                 <p>No critics found.</p>
             <?php endif; ?>
+
+            <h3>Parsing result:</h3>    
             <?php
+            $oc = $options['critics'];
+            // Show parser rules
+            $preivew_data = $this->preview_critics($campaign, $uid, $debug);
+            $this->theme_preview_critics($preivew_data, $oc);
         }
     }
     ?>

@@ -880,7 +880,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         }
 
         if ($last_posts) {
-            $this->parse_items($last_posts, $campaign, $type_opt, false, $force, $debug);
+            //$this->parse_items($last_posts, $campaign, $type_opt, false, $force, $debug);
             $this->mp->parse_critics($last_posts, $campaign, false, $debug);
         } else {
             // TODO update expired critc posts            
