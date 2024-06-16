@@ -144,7 +144,7 @@ class CriticAvatars extends AbstractDB {
     public function get_upload_user_avatar( $size = 64, $filename = '') {        
         $img_path = $this->img_service . 'wp-content/uploads/' . $this->pro_source_dir . '/' . $filename;
         $img_thumb = $img_path;
-        if ($size < 150) {
+        if ($size < 800) {
             $img_thumb = $this->get_avatar_thumb($img_path, $size);
         }
         $avatar = '<img class="neuro avatar upload" srcset="' . $img_thumb . '" width="' . $size . '" height="' . $size . '" data-orig="' . $img_path . '" />';
