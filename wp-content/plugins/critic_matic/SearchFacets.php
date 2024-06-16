@@ -1519,7 +1519,7 @@ class SearchFacets extends AbstractDB {
             <div class="customsearch_container cm_api">
                 <div class="customsearch_component__inner">
                     <input type="search" class="customsearch_input" name="s"  placeholder="Search Movies, TV,  Reviews" autocomplete="off">  
-                    <a class="customsearch_container__advanced-search-button search-filters-btn" href="/search" title="Advanced Search"></a>
+<!--                    <a class="customsearch_container__advanced-search-button search-filters-btn" href="/search" title="Advanced Search"></a>-->
                     <button class="customsearch_component__button" type="submit" title="Search"></button>   
                     <div class="advanced_search_ajaxload"></div>
 

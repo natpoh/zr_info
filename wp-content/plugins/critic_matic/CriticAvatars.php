@@ -92,7 +92,7 @@ class CriticAvatars extends AbstractDB {
 
             if ($author->avatar_type == 1 && $author->avatar_name) {
                 // Get upload avatar
-                $avatar = $this->get_upload_user_avatar($author->id, $size, $author->avatar_name);
+                $avatar = $this->get_upload_user_avatar($size, $author->avatar_name);
             } else {
                 // Get avatar by code     
                 $avatar = $this->get_or_create_user_avatar($user_id, 0, $size);
@@ -136,24 +136,25 @@ class CriticAvatars extends AbstractDB {
             $img_path = $this->get_avatar_thumb($img_path, $size);
         }
 
-
+       
         $avatar = '<img class="neuro avatar' . $tomato_class . '" srcset="' . $img_path . '" width="' . $size . '" height="' . $size . '" />';
         return $avatar;
     }
-
-    public function get_upload_user_avatar($aid = 0, $size = 64, $filename = '') {
+       
+    public function get_upload_user_avatar( $size = 64, $filename = '') {        
         $img_path = $this->img_service . 'wp-content/uploads/' . $this->pro_source_dir . '/' . $filename;
-        if ($size < 200) {
-            $img_path = $this->get_avatar_thumb($img_path, $size);
+        $img_thumb = $img_path;
+        if ($size < 150) {
+            $img_thumb = $this->get_avatar_thumb($img_path, $size);
         }
-        $avatar = '<img class="neuro avatar upload" srcset="' . $img_path . '" width="' . $size . '" height="' . $size . '" />';
+        $avatar = '<img class="neuro avatar upload" srcset="' . $img_thumb . '" width="' . $size . '" height="' . $size . '" data-orig="' . $img_path . '" />';
         return $avatar;
     }
 
     public function get_author_avatar($author, $av_size = 200) {
         // User   
         if ($author->avatar_type == 1 && $author->avatar_name) {
-            $image = $this->get_upload_user_avatar($author->id, $av_size, $author->avatar_name);
+            $image = $this->get_upload_user_avatar( $av_size, $author->avatar_name);
         } else {
             $wp_uid = $author->wp_uid;
             if ($wp_uid) {
@@ -949,12 +950,11 @@ class CriticAvatars extends AbstractDB {
         }
 
         if (isset($_POST['change_type'])) {
+            // UNUSED
             $av_type = (int) $_POST['av_type'];
             $av_size = (int) $_POST['av_size'];
             return $this->change_author_type($author_id, $av_type, $av_size = 200);
         }
-
-
 
         list($type, $croped_image) = explode(';', $croped_image);
         list(, $croped_image) = explode(',', $croped_image);
@@ -1001,6 +1001,7 @@ class CriticAvatars extends AbstractDB {
         fclose($fp);
 
         $ret['filename'] = $filename;
+        $ret['avatar'] = $this->get_upload_user_avatar($av_size, $filename);
 
         if ($no_upd) {
             // No update. Only return filename.
@@ -1019,6 +1020,34 @@ class CriticAvatars extends AbstractDB {
         return json_encode($ret);
     }
 
+    public function ajax_remove_img() {
+        $author_id = (int) $_POST['author_id'];
+        $av_size = (int) $_POST['av_size'];
+        $ret = array();
+
+        // Remove old avatar
+        $this->remove_old_pro_avatar($author_id);
+
+        // Add avatar to db
+        $data = array(
+            'avatar' => 0,
+            'avatar_type' => 0,
+            'avatar_name' => '',
+            'last_upd' => $this->curr_time(),
+        );
+
+        $this->sync_update_data($data, $author_id, $this->db['authors']);
+
+        // Check avatar type
+        $author = $this->cm->get_author($author_id);
+
+        // Get avatar by code     
+        $avatar = $this->get_or_create_user_avatar($author->wp_uid, 0, $av_size);
+                     
+        $ret['image'] = $avatar;
+        return json_encode($ret);
+    }
+
     private function update_author_file($author_id, $filename) {
         // Add avatar to db
         $data = array(
@@ -1030,7 +1059,7 @@ class CriticAvatars extends AbstractDB {
 
         $this->sync_update_data($data, $author_id, $this->db['authors']);
         $ret = array(
-            'success' => 1,
+            'success' => 1,            
         );
 
         return json_encode($ret);
@@ -1050,7 +1079,7 @@ class CriticAvatars extends AbstractDB {
 
         if ($author->avatar_type == 1 && $author->avatar_name) {
             // Get upload avatar
-            $avatar = $this->get_upload_user_avatar($author->id, $size, $author->avatar_name);
+            $avatar = $this->get_upload_user_avatar( $size, $author->avatar_name);
         } else {
             // Get avatar by code     
             $avatar = $this->get_or_create_user_avatar($author->wp_uid, 0, $size);

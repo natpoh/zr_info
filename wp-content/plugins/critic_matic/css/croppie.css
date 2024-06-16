@@ -4,6 +4,7 @@
 
 .upload-holder {
     width: 300px;
+    margin: 0 auto;
 }
 
 .pro_avatar img {
@@ -17,7 +18,7 @@
 }
 
 .croppie-container .cr-image {
-    z-index: -1;
+    z-index: 1000001;
     position: absolute;
     top: 0;
     left: 0;
@@ -30,7 +31,7 @@
     position: relative;
     overflow: hidden;
     margin: 0 auto;
-    z-index: 1;
+    z-index: 1000002;
     width: 100%;
     height: 100%;
 }
@@ -44,7 +45,7 @@
     right: 0;
     left: 0;
     box-shadow: 0 0 2000px 2000px rgba(0, 0, 0, 0.5);
-    z-index: 0;
+    z-index: 1000001;
 }
 
 .croppie-container .cr-original-image {
@@ -56,7 +57,7 @@
 }
 
 .croppie-container .cr-overlay {
-    z-index: 1;
+    z-index: 1000002;
     position: absolute;
     cursor: move;
 }
@@ -101,6 +102,10 @@
     padding-top: 8px;
     padding-bottom: 8px;
     background-color: transparent;
+}
+
+#upload-image .cr-slider-wrap input.cr-slider {
+    border: 1px solid white;
 }
 
 .cr-slider::-webkit-slider-runnable-track {
@@ -193,7 +198,7 @@ background: #ccc;
 	position: absolute;
 	bottom: 5px;
 	left: 5px;
-	z-index: 1;
+	z-index: 1000002;
 }
 .cr-rotate-controls button {
 	border: 0;

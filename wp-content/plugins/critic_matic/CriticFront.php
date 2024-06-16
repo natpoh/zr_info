@@ -104,7 +104,7 @@ class CriticFront extends SearchFacets {
             $posts = array();
             if ($search) {
                 if ($a_type == 2) {
-                    
+
                     $unique_limit = 100;
                     $posts = $this->cs->get_last_critics($a_type, $unique_limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au, $vote_type);
                     if ($posts) {
@@ -3375,7 +3375,34 @@ class CriticFront extends SearchFacets {
      * User avatars
      */
 
+    public function change_user_avatar($wp_id = 0, $user_rating = 0, $settings_page=0) {
+        $ss = $this->cm->get_settings();
+        $score_avatar = $ss['score_avatar'];
+        //$cav = $this->cm->get_cav();
+
+        if ($user_rating >= $score_avatar) {
+            // Enable to upload avatar
+            // Check avatar type
+            $author = $this->cm->get_author_by_wp_uid($wp_id, true);
+            $with_avfile='';
+            if ($author->avatar_name){
+                $with_avfile=' avfile';
+            }
+            ?>
+            <div id="author_id" data-id="<?php print $author->id ?>"></div>
+            <div class="av_upload<?php print $with_avfile ?>">                
+                <button id="upl_avatar" title="Upload avatar"><i class="icon-pencil"></i><?php if ($settings_page) { ?><span>Upload</span><?php } ?></button> 
+                <?php if ($settings_page) { ?>
+                <button id="trash_avatar" class="btn-second" title="Remove avatar"><i class="icon-trash"></i></button>
+                <?php } ?>
+                <input type="file" id="avatar_file">
+            </div>
+            <?php
+        }
+    }
+
     public function select_user_avatar($wp_id = 0, $user_rating = 0) {
+        // DEPRECATED UNUSED
         $ss = $this->cm->get_settings();
         $score_avatar = $ss['score_avatar'];
         $cav = $this->cm->get_cav();
@@ -3425,17 +3452,12 @@ class CriticFront extends SearchFacets {
     }
 
     private function user_upload_avatar() {
+        // DEPRECATED UNUSED
         ?>
-        <div class="upload-holder">
-            <div id="upload-image"></div>
-        </div>
+
         <div>    
             <button id="upl_avatar" class="btn-small">Upload avatar</button><br />
-            <input type="file" id="avatar_file">
-            <div class="cropped_images">
-                <button id="cropped_image" class="button-primary">Submit Image</button> 
-                <button id="cropped_cancel" class="button-secondary">Cancel</button>
-            </div>
+            <input type="file" id="avatar_file">            
         </div>
         <?php
     }

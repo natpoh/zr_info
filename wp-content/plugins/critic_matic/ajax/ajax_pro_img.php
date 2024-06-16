@@ -20,4 +20,9 @@ if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
 
 $cm = new CriticMatic();
 $cav = $cm->get_cav();
-print $cav->ajax_pro_img();
+if ($_POST['remove']){
+    print $cav->ajax_remove_img();    
+} else {
+    print $cav->ajax_pro_img();    
+}
+

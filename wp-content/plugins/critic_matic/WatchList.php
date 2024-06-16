@@ -390,6 +390,10 @@ class WatchList extends AbstractDB {
         $sql = sprintf("SELECT COUNT(*) FROM {$this->db['list']} WHERE wp_uid=%d" . $and_publish, $wp_uid);
         $ret = $this->db_get_var($sql);
 
+        if ($owner && $ret==0){
+            $this->create_def_lists($wp_uid);
+            return get_user_lists_count($wp_uid) ;
+        }
         return $ret;
     }
 
