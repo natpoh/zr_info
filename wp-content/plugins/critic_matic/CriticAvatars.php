@@ -945,6 +945,8 @@ class CriticAvatars extends AbstractDB {
         $author_id = (int) $_POST['author_id'];
         $no_upd = isset($_POST['no_upd']) ? true : false;
         $filename = isset($_POST['filename']) ? $_POST['filename'] : '';
+        $av_size = (int) $_POST['av_size'];
+        
         if ($filename) {
             return $this->update_author_file($author_id, $filename);
         }
@@ -952,7 +954,6 @@ class CriticAvatars extends AbstractDB {
         if (isset($_POST['change_type'])) {
             // UNUSED
             $av_type = (int) $_POST['av_type'];
-            $av_size = (int) $_POST['av_size'];
             return $this->change_author_type($author_id, $av_type, $av_size = 200);
         }
 
