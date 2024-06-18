@@ -940,16 +940,18 @@ class CriticAvatars extends AbstractDB {
         return $ret;
     }
 
-    public function ajax_pro_img() {
-        $croped_image = isset($_POST['image']) ? $_POST['image'] : '';
+    public function ajax_update_file() {
         $author_id = (int) $_POST['author_id'];
-        $no_upd = isset($_POST['no_upd']) ? true : false;
         $filename = isset($_POST['filename']) ? $_POST['filename'] : '';
-        $av_size = isset($_POST['av_size']) ? (int) $_POST['av_size'] : 150;
-
         if ($filename) {
             return $this->update_author_file($author_id, $filename);
         }
+    }
+
+    public function ajax_pro_img() {
+        $croped_image = isset($_POST['image']) ? $_POST['image'] : '';
+        $author_id = (int) $_POST['author_id'];
+        $av_size = isset($_POST['av_size']) ? (int) $_POST['av_size'] : 150;
 
         if (isset($_POST['change_type'])) {
             // UNUSED
@@ -1003,22 +1005,10 @@ class CriticAvatars extends AbstractDB {
 
         $ret['filename'] = $filename;
         $ret['avatar'] = $this->get_upload_user_avatar($av_size, $filename);
-
-        if ($no_upd) {
-            // No update. Only return filename.
-            return json_encode($ret);
-        }
-        // Add avatar to db
-        $data = array(
-            'avatar' => 1,
-            'avatar_type' => 1,
-            'avatar_name' => $filename,
-            'last_upd' => $this->curr_time(),
-        );
-
-        $this->sync_update_data($data, $author_id, $this->db['authors']);
-
+         
+        // No update. Only return filename.
         return json_encode($ret);
+
     }
 
     public function ajax_remove_img() {
@@ -1099,7 +1089,6 @@ class CriticAvatars extends AbstractDB {
         if (!$wp_user) {
             return;
         }
-
 
         $wp_uid = $wp_user->ID;
         $author = $this->cm->get_author_by_wp_uid($wp_uid);

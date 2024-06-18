@@ -25,7 +25,8 @@ if ($_POST['remove']) {
     print $cav->ajax_remove_img();
 } else if ($_POST['upload_file']) {
     print $cav->ajax_upload_img();
-} else {
+} else if ($_POST['update_file']) {
+    print $cav->ajax_update_file();
+}  else if ($_POST['get_filename']) {
     print $cav->ajax_pro_img();
 }
-
