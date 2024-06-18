@@ -3383,11 +3383,12 @@ class CriticFront extends SearchFacets {
         if ($user_rating >= $score_avatar) {
             // Enable to upload avatar
             // Check avatar type
-            $author = $this->cm->get_author_by_wp_uid($wp_id, true);
+            $author = $this->cm->get_author_by_wp_uid($wp_id);
             $with_avfile='';
             if ($author->avatar_name){
                 $with_avfile=' avfile';
             }
+            if ($author->id ){
             ?>
             <div id="author_id" data-id="<?php print $author->id ?>"></div>
             <div class="av_upload<?php print $with_avfile ?>">                
@@ -3398,6 +3399,7 @@ class CriticFront extends SearchFacets {
                 <input type="file" accept=".png, .jpg, .jpeg, .gif" id="avatar_file">
             </div>
             <?php
+            }
         }
     }
     

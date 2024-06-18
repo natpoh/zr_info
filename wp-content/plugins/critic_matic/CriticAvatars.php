@@ -1005,10 +1005,9 @@ class CriticAvatars extends AbstractDB {
 
         $ret['filename'] = $filename;
         $ret['avatar'] = $this->get_upload_user_avatar($av_size, $filename);
-         
+
         // No update. Only return filename.
         return json_encode($ret);
-
     }
 
     public function ajax_remove_img() {
@@ -1118,17 +1117,14 @@ class CriticAvatars extends AbstractDB {
 
                 $time = $this->curr_time();
 
-                // Get remote aid for a new author                
-                $author_status = 1;
-                $unic_id = $this->cm->unic_id();
-                $options = array('audience' => $unic_id);
-                $author_type = 2;
-                $author_name = $wp_user->display_name;
-                $author_id = $this->cm->create_author_by_name($author_name, $author_type, $author_status, $options, $wp_uid);
+                // Get remote aid for a new author   
+                $author_id = $this->create_author($wp_user);
+                
                 if ($author_id) {
                     // Upload file to info server
                     $ret['aid'] = $author_id;
                     $filename = $author_id . '-' . $time . $this->allowed_mime_types[$src_type];
+
 
                     // Post avatar content to info server
                     $post_data = array(
@@ -1162,6 +1158,17 @@ class CriticAvatars extends AbstractDB {
         }
 
         return $ret;
+    }
+
+    public function create_author($wp_user) {
+        // Get remote aid for a new author                
+        $author_status = 1;
+        $unic_id = $this->cm->unic_id();
+        $options = array('audience' => $unic_id);
+        $author_type = 2;
+        $author_name = $wp_user->display_name;
+        $author_id = $this->cm->create_author_by_name($author_name, $author_type, $author_status, $options, $wp_user->ID);
+        return $author_id;
     }
 
     private function update_author_file($author_id, $filename) {
