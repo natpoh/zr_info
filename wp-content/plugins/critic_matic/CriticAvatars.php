@@ -1084,18 +1084,15 @@ class CriticAvatars extends AbstractDB {
         $img_path = $source_dir . "/" . $filename;
 
         if (file_exists($img_path)) {
-            unlink($img_path);
+            //unlink($img_path);
         }
 
-        // Remove old avatar
-        $this->remove_old_pro_avatar($author_id);
-
-        // Save file
+/*        // Save file
         $fp = fopen($img_path, "w");
         fwrite($fp, $file_content);
         fclose($fp);
-
-        return $ret;
+*/
+         return json_encode($ret);
     }
 
     public function add_new_author_avatar($wp_user, $croped_image = '') {
