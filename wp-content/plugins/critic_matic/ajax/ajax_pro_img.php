@@ -23,9 +23,12 @@ $cm = new CriticMatic();
 $cav = $cm->get_cav();
 if ($_POST['remove']) {
     print $cav->ajax_remove_img();
-} else if ($_POST['upload_file']) {
-    print $cav->ajax_upload_img();
 } else {
     print $cav->ajax_pro_img();
 }
 
+/*
+ *  else if ($_POST['upload_file']) {
+    print $cav->ajax_upload_img();
+} 
+ */

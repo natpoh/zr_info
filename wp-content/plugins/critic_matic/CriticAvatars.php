@@ -1186,7 +1186,6 @@ class CriticAvatars extends AbstractDB {
         $this->sync_update_data($data, $author_id, $this->db['authors']);
         $ret = array(
             'success' => 1,
-            'author'=>$data,
         );
 
         return json_encode($ret);
