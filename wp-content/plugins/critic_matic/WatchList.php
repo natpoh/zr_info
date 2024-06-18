@@ -153,7 +153,7 @@ class WatchList extends AbstractDB {
                 $title = 'Watch list ' . $this->curr_date();
             }
 
-            $aid = $this->get_aid($wp_uid);
+            $aid = $this->cm->get_aid($wp_uid);
             $data = array(
                 'wp_uid' => (int) $wp_uid,
                 'aid' => (int) $aid,
@@ -392,7 +392,7 @@ class WatchList extends AbstractDB {
 
         if ($owner && $ret==0){
             $this->create_def_lists($wp_uid);
-            return get_user_lists_count($wp_uid) ;
+            return $this->get_user_lists_count($wp_uid) ;
         }
         return $ret;
     }
@@ -422,7 +422,7 @@ class WatchList extends AbstractDB {
             }
             $exist = $this->get_user_list_by_type($wp_uid, $type);
             if (!$exist) {
-                $aid = $this->get_aid($wp_uid);
+                $aid = $this->cm->get_aid($wp_uid);
                 $data = array(
                     'wp_uid' => (int) $wp_uid,
                     'aid' => (int) $aid,
@@ -927,24 +927,6 @@ class WatchList extends AbstractDB {
     public function get_current_user_id() {
         $user = $this->cm->get_current_user();
         return $user->ID;
-    }
-
-    private function get_aid($wp_uid) {
-        $author = $this->cm->get_author_by_wp_uid($wp_uid, true);
-        $aid = 0;
-        if ($author) {
-            $aid = $author->id;
-        } else {
-            // Get remote aid for a new author                
-            $author_status = 1;
-            $unic_id = $this->cm->unic_id();
-            $options = array('audience' => $unic_id);
-            $author_type = 2;
-            $user = $this->get_current_user();
-            $author_name = $user->display_name;
-            $aid = $this->cm->create_author_by_name($author_name, $author_type, $author_status, $options, $wp_uid);
-        }
-        return $aid;
     }
 
     public function watchlists_delta() {

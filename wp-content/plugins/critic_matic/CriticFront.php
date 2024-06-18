@@ -3395,7 +3395,25 @@ class CriticFront extends SearchFacets {
                 <?php if ($settings_page) { ?>
                 <button id="trash_avatar" class="btn-second" title="Remove avatar"><i class="icon-trash"></i></button>
                 <?php } ?>
-                <input type="file" id="avatar_file">
+                <input type="file" accept=".png, .jpg, .jpeg, .gif" id="avatar_file">
+            </div>
+            <?php
+        }
+    }
+    
+    public function upload_new_user_avatar() {
+        $ss = $this->cm->get_settings();
+        $score_avatar = $ss['score_avatar'];
+        //$cav = $this->cm->get_cav();
+
+        if ($score_avatar==0) {
+            // Enable to upload avatar                
+            ?>
+           <br /> 
+            <div id="author_id" data-id="0"></div>
+            <div class="av_upload">                
+                <button id="upl_avatar" title="Upload avatar" class="button"><i class="icon-user-circle-o"></i> Upload avatar</button>
+                <input type="file" accept=".png, .jpg, .jpeg, .gif" id="avatar_file">
             </div>
             <?php
         }

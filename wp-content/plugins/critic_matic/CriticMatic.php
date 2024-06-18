@@ -2466,6 +2466,24 @@ class CriticMatic extends AbstractDB {
         $result = $this->db_get_var($sql);
         return $result;
     }
+    
+    public function get_aid($wp_uid) {
+        $author = $this->get_author_by_wp_uid($wp_uid);
+        $aid = 0;
+        if ($author) {
+            $aid = $author->id;
+        } else {
+            // Get remote aid for a new author                
+            $author_status = 1;
+            $unic_id = $this->unic_id();
+            $options = array('audience' => $unic_id);
+            $author_type = 2;
+            $user = $this->get_current_user();
+            $author_name = $user->display_name;
+            $aid = $this->create_author_by_name($author_name, $author_type, $author_status, $options, $wp_uid);
+        }
+        return $aid;
+    }
 
     /*
      * Tags get
@@ -4472,19 +4490,25 @@ class CriticMatic extends AbstractDB {
         return $domain;
     }
 
-    public function post($data = array(), $host = '') {
-
+    public function post($data = array(), $host = '', $timeout = 1) {
+        $ss = $this->get_settings();
+        $curl_user_agent = $ss['parser_user_agent'];
         $fields_string = http_build_query($data);
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $host);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 1);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);       
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+        if ($curl_user_agent){
+            curl_setopt($ch, CURLOPT_USERAGENT, $curl_user_agent);
+        }
+        
         $result = curl_exec($ch);
 
         return $result;
