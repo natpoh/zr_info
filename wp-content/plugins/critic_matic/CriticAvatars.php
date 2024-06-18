@@ -946,9 +946,7 @@ class CriticAvatars extends AbstractDB {
         $no_upd = isset($_POST['no_upd']) ? true : false;
         $filename = isset($_POST['filename']) ? $_POST['filename'] : '';
         $av_size = isset($_POST['av_size']) ? (int) $_POST['av_size'] : 150;
-        if (!$croped_image){
-            return;
-        }
+
         if ($filename) {
             return $this->update_author_file($author_id, $filename);
         }
