@@ -1084,14 +1084,14 @@ class CriticAvatars extends AbstractDB {
         $img_path = $source_dir . "/" . $filename;
 
         if (file_exists($img_path)) {
-            //unlink($img_path);
+            unlink($img_path);
         }
 
-        /*        // Save file
-          $fp = fopen($img_path, "w");
-          fwrite($fp, $file_content);
-          fclose($fp);
-         */
+        // Save file
+        $fp = fopen($img_path, "w");
+        fwrite($fp, $file_content);
+        fclose($fp);
+
         return json_encode($ret);
     }
 
@@ -1149,10 +1149,10 @@ class CriticAvatars extends AbstractDB {
                         'image' => $image,
                     );
 
-                    $url = $this->img_service . 'wp-content/plugins/critic_matic/ajax/ajax_pro_img.php';                   
+                    $url = $this->img_service . 'wp-content/plugins/critic_matic/ajax/ajax_pro_img.php';
                     $ret_post = $this->cm->post($post_data, $url, 15);
                     $ret_post_data = json_decode($ret_post);
-                    
+
                     if ($ret_post_data->error == 0) {
                         $ret['error'] = 0;
 
