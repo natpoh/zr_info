@@ -1087,15 +1087,15 @@ class CriticAvatars extends AbstractDB {
             //unlink($img_path);
         }
 
-/*        // Save file
-        $fp = fopen($img_path, "w");
-        fwrite($fp, $file_content);
-        fclose($fp);
-*/
-         return json_encode($ret);
+        /*        // Save file
+          $fp = fopen($img_path, "w");
+          fwrite($fp, $file_content);
+          fclose($fp);
+         */
+        return json_encode($ret);
     }
 
-    public function add_new_author_avatar($wp_user, $croped_image = '') {
+    public function add_new_author_avatar($wp_user, $image = '') {
         if (!$wp_user) {
             return;
         }
@@ -1104,11 +1104,11 @@ class CriticAvatars extends AbstractDB {
         $wp_uid = $wp_user->ID;
         $author = $this->cm->get_author_by_wp_uid($wp_uid);
 
-        $ret = array('aid' => 0, 'error' => 0);
+        $ret = array('aid' => 0, 'error' => 1);
 
         if (!$author) {
             try {
-
+                $croped_image = $image;
                 list($type, $croped_image) = explode(';', $croped_image);
                 list(, $croped_image) = explode(',', $croped_image);
                 $file_content = base64_decode($croped_image);
@@ -1141,27 +1141,31 @@ class CriticAvatars extends AbstractDB {
                     $ret['aid'] = $author_id;
                     $filename = $author_id . '-' . $time . $this->allowed_mime_types[$src_type];
 
-                    // Add avatar to db
-                    $data = array(
-                        'avatar' => 1,
-                        'avatar_type' => 1,
-                        'avatar_name' => $filename,
-                        'last_upd' => $this->curr_time(),
-                    );
-
-                    $this->sync_update_data($data, $author_id, $this->db['authors']);
-
                     // Post avatar content to info server
                     $post_data = array(
                         'author_id' => $author_id,
                         'upload_file' => 1,
                         'filename' => $filename,
-                        'image' => $croped_image,
+                        'image' => $image,
                     );
 
-                    $url = $this->img_service.'wp-content/plugins/critic_matic/ajax/ajax_pro_img.php';
-                    //$url = '/wp-content/plugins/critic_matic/ajax/ajax_pro_img.php';
-                    $ret['post'] = $this->cm->post($post_data, $url, 10);
+                    $url = $this->img_service . 'wp-content/plugins/critic_matic/ajax/ajax_pro_img.php';                   
+                    $ret_post = $this->cm->post($post_data, $url, 15);
+                    $ret_post_data = json_decode($ret_post);
+                    
+                    if ($ret_post_data->error == 0) {
+                        $ret['error'] = 0;
+
+                        // Add avatar to db
+                        $data = array(
+                            'avatar' => 1,
+                            'avatar_type' => 1,
+                            'avatar_name' => $filename,
+                            'last_upd' => $this->curr_time(),
+                        );
+
+                        $this->sync_update_data($data, $author_id, $this->db['authors']);
+                    }
                 }
             } catch (Exception $exc) {
                 $ret['error'] = $exc->getTraceAsString();
