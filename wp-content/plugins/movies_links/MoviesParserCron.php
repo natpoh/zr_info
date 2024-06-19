@@ -698,6 +698,7 @@ class MoviesParserCron extends MoviesAbstractDB {
         }
         $o = $options['links'];
         $ma = '';
+        $del_pea = $o['del_pea'];
         if ($last_posts) {
 
             $items = $this->mp->find_posts_links($last_posts, $o, $campaign->type);
@@ -828,18 +829,20 @@ class MoviesParserCron extends MoviesAbstractDB {
         } else {
             // Campaign done
             // Status auto-stop
-            $options_upd = array();
-            $options_upd[$type_name]['status'] = 3;
-            $this->mp->update_campaign_options($campaign->id, $options_upd);
-            $message = 'All posts linked to movies';
-            if ($debug) {
-                print_r($message);
+            if ($del_pea != 1) {
+                // Stop if not active delete error links cron
+                $options_upd = array();
+                $options_upd[$type_name]['status'] = 3;
+                $this->mp->update_campaign_options($campaign->id, $options_upd);
+                $message = 'All posts linked to movies';
+                if ($debug) {
+                    print_r($message);
+                }
+                $this->mp->log_info($message, $campaign->id, 0, 4);
             }
-            $this->mp->log_info($message, $campaign->id, 0, 4);
         }
 
         // Change error links
-        $del_pea = $o['del_pea'];
         if ($del_pea == 1) {
             $interval_min = $o['del_pea_int'];
             $posts = $this->mp->get_posts_expired_error_links($cid, $interval_min);
