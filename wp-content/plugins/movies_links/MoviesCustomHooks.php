@@ -290,10 +290,7 @@ class MoviesCustomHooks {
                 // Total
                 $data['total_rating'] = $total_rating;
 
-                if ($emedia > 0) {
-                    
-                    $data['emedia']=$emedia;
-                    
+                if ($emedia > 0) {                    
                     $update_rating = true;
 
                     // Add woke grade
@@ -305,6 +302,7 @@ class MoviesCustomHooks {
                         $grade_num_valid = $grade_num + 1;
                         $grade_data = array(
                             'mediaversity' => (int) $grade_num_valid,
+                            'emedia'=>$emedia,
                         );
                         $ma->update_woke($post->top_movie, $grade_data);
                     }
