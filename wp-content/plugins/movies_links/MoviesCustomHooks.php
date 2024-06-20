@@ -300,16 +300,22 @@ class MoviesCustomHooks {
                 }
             } else if ($curr_camp == 'thecherrypicks') {
 
-                $rating = (int) $to_update['rating'];
+                $rating = $to_update['rating'];
+                $echerry = 0;
+                if (preg_match('/[0-9]+/', $rating)) {
+                    $rating = (int) $rating;
+                    $echerry = 1;
+                }
 
                 // thecherrypicks
                 $data[$curr_camp . '_rating'] = $rating;
                 $data[$curr_camp . '_date'] = $this->mp->curr_time();
-
+                
                 // Total
                 $data['total_rating'] = $rating;
-
-                if ($data['total_rating'] > 0) {
+                
+                if ($echerry) {
+                    $data['echerry'] = $echerry;
                     $update_rating = true;
                 }
             } else if ($curr_camp == 'opencritic') {
