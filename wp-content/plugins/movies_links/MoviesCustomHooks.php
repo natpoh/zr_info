@@ -265,10 +265,18 @@ class MoviesCustomHooks {
                 }
             } else if ($curr_camp == 'mediaversity') {
 
-                $rating = (int) (10 * ((float) str_replace('/5', '', $to_update['rating'])));
-                if ($rating > 50) {
-                    $rating = 50;
+                $emedia = 0;
+                $rating = 0;
+
+                $str_rating = str_replace('/5', '', $to_update['rating']);
+                if (preg_match('/[0-9]+/', $str_rating)) {
+                    $rating = (int) (10 * ((float) $str_rating));
+                    if ($rating > 50) {
+                        $rating = 50;
+                    }
+                    $emedia = 1;
                 }
+
                 $grade = $to_update['grade'];
 
                 // mediaversity
@@ -282,7 +290,10 @@ class MoviesCustomHooks {
                 // Total
                 $data['total_rating'] = $total_rating;
 
-                if ($data['total_rating'] > 0) {
+                if ($emedia > 0) {
+                    
+                    $data['emedia']=$emedia;
+                    
                     $update_rating = true;
 
                     // Add woke grade
@@ -310,11 +321,11 @@ class MoviesCustomHooks {
                 // thecherrypicks
                 $data[$curr_camp . '_rating'] = $rating;
                 $data[$curr_camp . '_date'] = $this->mp->curr_time();
-                
+
                 // Total
                 $data['total_rating'] = $rating;
-                
-                if ($echerry) {
+
+                if ($echerry>0) {
                     $data['echerry'] = $echerry;
                     $update_rating = true;
                 }
