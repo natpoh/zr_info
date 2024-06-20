@@ -1261,6 +1261,91 @@ function critic_matic_plugin_activation() {
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('movie_id', 'date', 'last_upd', 'total_rating'), "data_movie_erating");
 
+    /*
+     * Exists ratings
+     */
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `erwt` int(11) NOT NULL DEFAULT '0' AFTER total_rating";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `eimdb` int(11) NOT NULL DEFAULT '0' AFTER imdb_date";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `ert` int(11) NOT NULL DEFAULT '0' AFTER rt_date";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `erta` int(11) NOT NULL DEFAULT '0' AFTER rt_date";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `ertg` int(11) NOT NULL DEFAULT '0' AFTER rt_date";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `ekp` int(11) NOT NULL DEFAULT '0' AFTER kinop_date";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `eofdb` int(11) NOT NULL DEFAULT '0' AFTER ofdb_date";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `eeiga` int(11) NOT NULL DEFAULT '0' AFTER eiga_date";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `eopencritic` int(11) NOT NULL DEFAULT '0' AFTER opencritic_date";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `emm` int(11) NOT NULL DEFAULT '0' AFTER moviemeter_date";
+    Pdo_an::db_query($sql);
+      
+    
+    $sql = "ALTER TABLE `data_movie_erating` ADD `emc` int(11) NOT NULL DEFAULT '0' AFTER metacritic_date";
+    Pdo_an::db_query($sql);
+    
+    $sql = "ALTER TABLE `data_movie_erating` ADD `emu` int(11) NOT NULL DEFAULT '0' AFTER metacritic_date";
+    Pdo_an::db_query($sql);
+    
+    $sql = "ALTER TABLE `data_movie_erating` ADD `emg` int(11) NOT NULL DEFAULT '0' AFTER metacritic_date";
+    Pdo_an::db_query($sql); 
+    
+    $sql = "ALTER TABLE `data_movie_erating` ADD `eaurating` int(11) NOT NULL DEFAULT '0' AFTER audience_date";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `eauvote` int(11) NOT NULL DEFAULT '0' AFTER audience_date";
+    Pdo_an::db_query($sql);
+    
+    $sql = "ALTER TABLE `data_movie_erating` ADD `eauaffirmative` int(11) NOT NULL DEFAULT '0' AFTER audience_date";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `eaugod` int(11) NOT NULL DEFAULT '0' AFTER audience_date";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `eauhollywood` int(11) NOT NULL DEFAULT '0' AFTER audience_date";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `eaulgbtq` int(11) NOT NULL DEFAULT '0' AFTER audience_date";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `eaumisandry` int(11) NOT NULL DEFAULT '0' AFTER audience_date";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `eauneo` int(11) NOT NULL DEFAULT '0' AFTER audience_date";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `eanl` int(11) NOT NULL DEFAULT '0' AFTER animelist_date";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `echerry` int(11) NOT NULL DEFAULT '0' AFTER thecherrypicks_date";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `erev` int(11) NOT NULL DEFAULT '0' AFTER reviews_date";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_movie_erating` ADD `efn` int(11) NOT NULL DEFAULT '0' AFTER fchan_date";
+    Pdo_an::db_query($sql);
+    
+    $sql = "ALTER TABLE `data_movie_erating` ADD `edb` int(11) NOT NULL DEFAULT '0' AFTER douban_date";
+    Pdo_an::db_query($sql);
+    
+    
+
     /* Distributor
      * mid - movie id
      * name - name
@@ -1377,12 +1462,12 @@ function critic_matic_plugin_activation() {
 
     $sql = "ALTER TABLE `data_movie_tmdb` ADD `poster_path` varchar(255) NOT NULL default ''";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_movie_tmdb` ADD `poster_id` varchar(255) NOT NULL default ''";
     Pdo_an::db_query($sql);
-    
+
     critic_matic_create_index_an(array('mid', 'last_update', 'tmdb', 'poster_id'), "data_movie_tmdb");
-    
+
     $sql = "CREATE TABLE IF NOT EXISTS  `data_language_code`(
 				`id` int(11) unsigned NOT NULL auto_increment,                                
                                 `code` varchar(255) NOT NULL default '',
@@ -1487,8 +1572,7 @@ function critic_matic_plugin_activation() {
      */
     $sql = "ALTER TABLE `data_woke` ADD `wokeornot` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
-    
-    
+
     /*
      * Simpson
      */
@@ -1537,6 +1621,52 @@ function critic_matic_plugin_activation() {
     $sql = "ALTER TABLE `data_woke` ADD `bechdeltest` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
 
+    /*
+     * Woke exists
+     */
+    $sql = "ALTER TABLE `data_woke` ADD `ebechdeltest` int(11) NOT NULL DEFAULT '0' AFTER bechdeltest";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_woke` ADD `emedia` int(11) NOT NULL DEFAULT '0' AFTER mediaversity";
+    Pdo_an::db_query($sql);
+    
+    $sql = "ALTER TABLE `data_woke` ADD `ewokeornot` int(11) NOT NULL DEFAULT '0' AFTER wokeornot";
+    Pdo_an::db_query($sql);
+    
+    $sql = "ALTER TABLE `data_woke` ADD `eworthit` int(11) NOT NULL DEFAULT '0' AFTER worthit";
+    Pdo_an::db_query($sql);
+
+    $sql = "ALTER TABLE `data_woke` ADD `elgbt` int(11) NOT NULL DEFAULT '0' AFTER lgbt";
+    Pdo_an::db_query($sql);
+    
+    $sql = "ALTER TABLE `data_woke` ADD `elgb` int(11) NOT NULL DEFAULT '0' AFTER lgb";
+    Pdo_an::db_query($sql);
+    
+    $sql = "ALTER TABLE `data_woke` ADD `eqtia` int(11) NOT NULL DEFAULT '0' AFTER qtia";
+    Pdo_an::db_query($sql);
+        
+    $sql = "ALTER TABLE `data_woke` ADD `ewoke` int(11) NOT NULL DEFAULT '0' AFTER woke";
+    Pdo_an::db_query($sql);
+    
+    $sql = "ALTER TABLE `data_woke` ADD `ezrwoke` int(11) NOT NULL DEFAULT '0' AFTER result";
+    Pdo_an::db_query($sql);
+    
+    
+   /*
+    * TODO add exists for fields:
+      sql_attr_uint       = erating
+
+      sql_attr_uint       = eboxusa
+      sql_attr_uint       = eboxworld
+      sql_attr_uint       = ebudget
+      sql_attr_uint       = eboxint
+
+      sql_attr_uint       = ediversity
+      sql_attr_uint       = efemale
+     */
+
+    
+    
     /*
      * Actor data movie upd
      */
@@ -1692,19 +1822,6 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('date', 'lid', 'mid'), "watch_item");
-
-    /*
-     * Guest avatar id
-     */
-    $sql = "CREATE TABLE IF NOT EXISTS  `meta_guest_avatar`(
-				`id` int(11) unsigned NOT NULL auto_increment,                                
-                                `cid` int(11) NOT NULL DEFAULT '0',
-                                `avid` int(11) NOT NULL DEFAULT '0',
-				PRIMARY KEY  (`id`)
-				) DEFAULT COLLATE utf8mb4_general_ci;";
-
-    Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('cid', 'avid'), "meta_guest_avatar");
 
     /*
      * Guest avatar id

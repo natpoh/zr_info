@@ -2628,7 +2628,7 @@ class CriticSearch extends AbstractDB {
         if ($facets) {
             $facets_arr = $this->critic_facets($filters, $match, $search_query, $query_type, $facets);
         }
-        $ret['facets'] = $facets_arr;
+        $ret['facets'] = $facets_arr;     
         return $ret;
     }
 
@@ -2685,7 +2685,7 @@ class CriticSearch extends AbstractDB {
 
             $ret = $this->movie_results($sql, $match, $search_query);
 
-            /*
+      /*
               print_r($filters_and);
               print_r(array($match, $search_query));
               print_r($sql);
@@ -2694,8 +2694,7 @@ class CriticSearch extends AbstractDB {
               $meta = $this->sps->query("SHOW META")->fetchAll();
               print_r($meta);
               exit;
-*/
-          
+  */
 
             gmi('main sql');
             // Simple result
@@ -4218,10 +4217,19 @@ class CriticSearch extends AbstractDB {
                                     }
                                 }
                             } else {
-                                if ($from == $to) {
+                                /*if ($from == $to) {
                                     $filters_and['if_woke'][] = "{$key}!={$from}";
                                 } else {
                                     $filters_and['if_woke'][] = "{$key}<{$from} OR {$key}>{$to}";
+                                }*/
+                                if ($from == $to) {
+                                    $key_filter = $key . '_filter';
+                                    $select_and[$key] = "IF({$key}!={$from},1,0) AS {$key_filter} ";
+                                    $filters_and[$key] = "{$key_filter}=1";
+                                } else {
+                                    $key_filter = $key . '_filter';
+                                    $select_and[$key] = "IF({$key}<{$from} OR {$key}>{$to},1,0) AS {$key_filter} ";
+                                    $filters_and[$key] = "{$key_filter}=1";
                                 }
                             }
                         } else {
