@@ -424,6 +424,7 @@ class MoviesCustomHooks {
                     # Update woke
                     $woke_data = array(
                         'worthit' => (int) $tag_key,
+                        'eworthit' => 1,
                     );
                     $ma->update_woke($post->top_movie, $woke_data);
                 }
@@ -449,6 +450,7 @@ class MoviesCustomHooks {
                 # Update woke
                 $woke_data = array(
                     'bechdeltest' => $rating,
+                    'ebechdeltest' => 1,
                 );
                 $ma->update_woke($post->top_movie, $woke_data);
             }
@@ -470,14 +472,14 @@ class MoviesCustomHooks {
                 $wokeness = strip_tags($to_update['Wokeness']);
                 if (strstr($wokeness, '%')) {
                     $wokeness_int = (int) trim(str_replace("%", '', $wokeness));
-                    if ($wokeness_int > 0) {
-                        $ma = $this->ml->get_ma();
-                        # Update woke
-                        $woke_data = array(
-                            'wokeornot' => $wokeness_int,
-                        );
-                        $ma->update_woke($post->top_movie, $woke_data);
-                    }
+
+                    $ma = $this->ml->get_ma();
+                    # Update woke
+                    $woke_data = array(
+                        'wokeornot' => $wokeness_int,
+                        'ewokeornot' => 1,
+                    );
+                    $ma->update_woke($post->top_movie, $woke_data);
                 }
             }
         }
