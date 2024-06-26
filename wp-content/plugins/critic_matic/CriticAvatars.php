@@ -106,7 +106,7 @@ class CriticAvatars extends AbstractDB {
     }
 
     public function get_or_create_user_avatar($user_id = 0, $aid = 0, $size = 64, $type = 'anon') {
-        $img_path = '/wp-content/themes/custom_twentysixteen/images/anon.jpeg';
+        $img_path = '/wp-content/themes/custom_twentysixteen/images/anon.jpg';
         $tomato_class = ' anon';
 
         if ($type != 'anon') {
