@@ -96,8 +96,8 @@ class CriticAvatars extends AbstractDB {
             } else {
                 // Get avatar by code     
                 $av_type = 'anon';
-                if ($author->avatar_type == 2){
-                    $av_type='tomato';    
+                if ($author->avatar_type == 2) {
+                    $av_type = 'tomato';
                 }
                 $avatar = $this->get_or_create_user_avatar($user_id, 0, $size, $av_type);
             }
@@ -105,12 +105,12 @@ class CriticAvatars extends AbstractDB {
         return $avatar;
     }
 
-    public function get_or_create_user_avatar($user_id = 0, $aid = 0, $size = 64, $type = 'tomato') {
+    public function get_or_create_user_avatar($user_id = 0, $aid = 0, $size = 64, $type = 'anon') {
         $img_path = '/wp-content/themes/custom_twentysixteen/images/anon.jpeg';
         $tomato_class = ' anon';
 
-        if ($type != 'anon') {            
-        
+        if ($type != 'anon') {
+
             // Tomato avatar
             if ($user_id) {
                 $avatar_data = $this->get_avatar_by_uid($user_id);
@@ -164,11 +164,12 @@ class CriticAvatars extends AbstractDB {
             $image = $this->get_upload_user_avatar($av_size, $author->avatar_name);
         } else {
             $wp_uid = $author->wp_uid;
-            if ($wp_uid) {
-                $image = $this->get_or_create_user_avatar($wp_uid, 0, $av_size);
-            } else {
-                $image = $this->get_or_create_user_avatar(0, $author->id, $av_size);
+            $aid = $author->id;
+            $av_type = 'anon';
+            if ($author->avatar_type == 2) {
+                $av_type = 'tomato';
             }
+            $image = $this->get_or_create_user_avatar($wp_uid, $aid, $av_size, $av_type);
         }
 
         return $image;
