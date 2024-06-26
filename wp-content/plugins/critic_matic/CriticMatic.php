@@ -123,6 +123,7 @@ class CriticMatic extends AbstractDB {
     public $author_av_types = array(
         0 => 'Tomato',
         1 => 'Upload',
+        2 => 'Tomato',
     );
     /*
      * Tags

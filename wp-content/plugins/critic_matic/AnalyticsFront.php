@@ -109,7 +109,7 @@ class AnalyticsFront extends SearchFacets {
         'actors' => array('name' => 'actors', 'title' => 'Actors count', 'atitle' => 'Actors', 'races' => 1),
         'rrwt' => array('name' => 'rrwt', 'title' => 'Rating ZR', 'atitle' => 'Rating ZR', 'min' => -1),
         'rating' => array('name' => 'rating', 'title' => 'Rating Family Friendly Score', 'atitle' => 'Rating FFS', 'min' => -1),
-        'aurating' => array('name' => 'aurating', 'title' => 'ZR Audience Score', 'atitle' => 'Rating WORTHWHILE', 'min' => -1),
+        'aurating' => array('name' => 'aurating', 'title' => 'ZR User Score', 'atitle' => 'Rating WORTHWHILE', 'min' => -1),
         'rimdb' => array('name' => 'rimdb', 'title' => 'Rating IMDB', 'atitle' => 'Rating IMDB', 'min' => -1),
         'rrt' => array('name' => 'rrt', 'title' => 'Rating Rotten Tomatoes', 'atitle' => 'Rating RT', 'min' => -1),
         'rrta' => array('name' => 'rrta', 'title' => 'Rating Rotten Tomatoes Audience', 'atitle' => 'Rating RTA', 'min' => -1),
@@ -188,7 +188,7 @@ class AnalyticsFront extends SearchFacets {
         // Ratings
         'rrwt' => array('title' => 'Rating ZR', 'color' => '#2b908f'),
         'rating' => array('title' => 'Rating Family Friendly Score', 'color' => '#2b908f'),
-        'aurating' => array('title' => 'ZR Audience Score', 'color' => '#2b908f'),
+        'aurating' => array('title' => 'ZR User Score', 'color' => '#2b908f'),
         'rimdb' => array('title' => 'Rating IMDB', 'color' => '#2b908f'),
         'rrt' => array('title' => 'Rating Rotten Tomatoes', 'color' => '#2b908f'),
         'rrta' => array('title' => 'Rating Rotten Tomatoes Audience', 'color' => '#2b908f'),

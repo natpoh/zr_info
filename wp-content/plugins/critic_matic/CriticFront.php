@@ -3392,7 +3392,7 @@ class CriticFront extends SearchFacets {
             ?>
             <div id="author_id" data-id="<?php print $author->id ?>"></div>
             <div class="av_upload<?php print $with_avfile ?>">                
-                <button id="upl_avatar" title="Upload avatar"><i class="icon-pencil"></i><?php if ($settings_page) { ?><span>Upload</span><?php } ?></button> 
+                <button id="upl_avatar" title="Upload avatar"><i class="icon-upload"></i></button>
                 <?php if ($settings_page) { ?>
                 <button id="trash_avatar" class="btn-second" title="Remove avatar"><i class="icon-trash"></i></button>
                 <?php } ?>

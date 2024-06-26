@@ -95,48 +95,55 @@ class CriticAvatars extends AbstractDB {
                 $avatar = $this->get_upload_user_avatar($size, $author->avatar_name);
             } else {
                 // Get avatar by code     
-                $avatar = $this->get_or_create_user_avatar($user_id, 0, $size);
+                $av_type = 'anon';
+                if ($author->avatar_type == 2){
+                    $av_type='tomato';    
+                }
+                $avatar = $this->get_or_create_user_avatar($user_id, 0, $size, $av_type);
             }
         }
         return $avatar;
     }
 
     public function get_or_create_user_avatar($user_id = 0, $aid = 0, $size = 64, $type = 'tomato') {
-        $img_path = '/wp-content/themes/custom_twentysixteen/images/antomface-150.jpg';
+        $img_path = '/wp-content/themes/custom_twentysixteen/images/anon.jpeg';
+        $tomato_class = ' anon';
 
-        if ($user_id) {
-            $avatar_data = $this->get_avatar_by_uid($user_id);
-        } else {
-            $avatar_data = $this->get_avatar_by_aid($aid);
-        }
-
-        // Tomato avatars
-        $tomato = 1;
-
-        if (!$avatar_data) {
-            // Create avatar link
-            $avatar_data = $this->set_avatar_by_uid($user_id, $aid, $tomato);
-        }
-
-        if ($avatar_data) {
-            $av_dir = $this->cketch_dir;
-            $tomato_class = ' sketch';
-            $img = $avatar_data->date . '.png';
-
-            if ($type == 'tomato') {
-                $av_dir = $this->tomato_dir;
-                $tomato_class = ' tomato';
-            } else if ($type == 'photo') {
-                $av_dir = $this->source_dir;
-                $tomato_class = ' photo';
-                $img = $avatar_data->date . '.jpg';
+        if ($type != 'anon') {            
+        
+            // Tomato avatar
+            if ($user_id) {
+                $avatar_data = $this->get_avatar_by_uid($user_id);
+            } else {
+                $avatar_data = $this->get_avatar_by_aid($aid);
             }
 
-            $img_path = $this->img_service . 'wp-content/uploads/' . $av_dir . '/' . $img;
-            $img_path = $this->get_avatar_thumb($img_path, $size);
+            // Tomato avatars
+            $tomato = 1;
+
+            if (!$avatar_data) {
+                // Create avatar link
+                $avatar_data = $this->set_avatar_by_uid($user_id, $aid, $tomato);
+            }
+
+            if ($avatar_data) {
+                $av_dir = $this->cketch_dir;
+                $tomato_class = ' sketch';
+                $img = $avatar_data->date . '.png';
+
+                if ($type == 'tomato') {
+                    $av_dir = $this->tomato_dir;
+                    $tomato_class = ' tomato';
+                } else if ($type == 'photo') {
+                    $av_dir = $this->source_dir;
+                    $tomato_class = ' photo';
+                    $img = $avatar_data->date . '.jpg';
+                }
+
+                $img_path = $this->img_service . 'wp-content/uploads/' . $av_dir . '/' . $img;
+                $img_path = $this->get_avatar_thumb($img_path, $size);
+            }
         }
-
-
         $avatar = '<img class="neuro avatar' . $tomato_class . '" srcset="' . $img_path . '" width="' . $size . '" height="' . $size . '" />';
         return $avatar;
     }
@@ -1119,12 +1126,11 @@ class CriticAvatars extends AbstractDB {
 
                 // Get remote aid for a new author   
                 $author_id = $this->create_author($wp_user);
-                
+
                 if ($author_id) {
                     // Upload file to info server
                     $ret['aid'] = $author_id;
                     $filename = $author_id . '-' . $time . $this->allowed_mime_types[$src_type];
-
 
                     // Post avatar content to info server
                     $post_data = array(
@@ -1204,6 +1210,7 @@ class CriticAvatars extends AbstractDB {
             // Get upload avatar
             $avatar = $this->get_upload_user_avatar($size, $author->avatar_name);
         } else {
+            // TODO add anon avatar
             // Get avatar by code     
             $avatar = $this->get_or_create_user_avatar($author->wp_uid, 0, $size);
         }

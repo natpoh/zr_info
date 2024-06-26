@@ -2196,3 +2196,8 @@ WHERE
     m.id > s.id AND 
     m.movie_id = s.movie_id;
  */
+
+/*
+ * Anon avatars
+ * UPDATE `wp_bcw98b_critic_matic_authors` SET avatar_type=2 WHERE type=2 AND avatar_type=0;
+ */
