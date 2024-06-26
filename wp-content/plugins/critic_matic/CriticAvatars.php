@@ -1040,7 +1040,8 @@ class CriticAvatars extends AbstractDB {
         $author = $this->cm->get_author($author_id);
 
         // Get avatar by code     
-        $avatar = $this->get_or_create_user_avatar($author->wp_uid, 0, $av_size);
+        $av_type = 'anon';
+        $avatar = $this->get_or_create_user_avatar($author->wp_uid, 0, $av_size, $av_type);
 
         $ret['image'] = $avatar;
         return json_encode($ret);
@@ -1211,9 +1212,13 @@ class CriticAvatars extends AbstractDB {
             // Get upload avatar
             $avatar = $this->get_upload_user_avatar($size, $author->avatar_name);
         } else {
-            // TODO add anon avatar
             // Get avatar by code     
-            $avatar = $this->get_or_create_user_avatar($author->wp_uid, 0, $size);
+            $av_type = 'anon';
+            if ($author->avatar_type == 2) {
+                $av_type = 'tomato';
+            }
+            // Get avatar by code     
+            $avatar = $this->get_or_create_user_avatar($author->wp_uid, 0, $size, $av_type);
         }
 
         return $avatar;
