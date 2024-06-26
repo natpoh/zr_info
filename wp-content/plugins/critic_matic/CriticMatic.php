@@ -121,7 +121,7 @@ class CriticMatic extends AbstractDB {
         'trash' => array('title' => 'Trash', 'sync_view' => 0),
     );
     public $author_av_types = array(
-        0 => 'Tomato',
+        0 => 'Anon',
         1 => 'Upload',
         2 => 'Tomato',
     );
