@@ -575,7 +575,7 @@ class CriticSearch extends AbstractDB {
         ),
         'from' => array(
             'title' => 'From author',
-            'tabs' => array('critics', 'filters', 'watchlists'),
+            'tabs' => array('critics', 'filters', 'watchlists','comments'),
             'weight' => 70,
         ),
         'site' => array(
@@ -583,13 +583,24 @@ class CriticSearch extends AbstractDB {
             'tabs' => array('critics'),
             'weight' => 80,
         ),
-        // id, aid, fid, publish,date,  last_upd, rating, title, content, tab, link,
+        
         // Filters
         'ftab' => array(
             'title' => 'Category',
             'tabs' => array('filters'),
             'sorted' => 1,
             'weight' => 10,
+        ),
+        'ctype' => array(
+            'title' => 'Type',
+            'tabs' => array('comments'),
+            'weight' => 70,
+        ),
+        'cstatus' => array(
+            'admin'=>1,
+            'title' => 'Status',
+            'tabs' => array('comments'),
+            'weight' => 70,
         ),
     );
     // Facets
@@ -660,6 +671,12 @@ class CriticSearch extends AbstractDB {
         ),
         'watchlists' => array(
             'title' => array('title' => 'Title', 'def' => 'asc', 'main' => 1, 'group' => 'def'),
+            'date' => array('title' => 'Date', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
+            'random' => array('title' => 'Random', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
+            'frating' => array('title' => 'Rating', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
+            'rel' => array('title' => 'Relevance', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
+        ),        
+        'comments' => array(          
             'date' => array('title' => 'Date', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
             'random' => array('title' => 'Random', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
             'frating' => array('title' => 'Rating', 'def' => 'desc', 'main' => 1, 'group' => 'def'),
@@ -761,7 +778,20 @@ class CriticSearch extends AbstractDB {
             'lgb' => array('key' => 'elgb', 'title' => 'LGB', 'color' => 3),
             'qtia' => array('key' => 'eqtia', 'title' => 'QTIA+', 'color' => 3),
         ),
+        'ctype' => array(
+            'critic' => array('key' => 0, 'title' => 'Reviews'),
+            'page' => array('key' => 1, 'title' => 'Pages'),
+            'movies' => array('key' => 2, 'title' => 'Movies/TV'),
+            'games' => array('key' => 3, 'title' => 'Video Games'),
+        ),
+        'cstatus' => array(
+            'pending' => array('key' => '0', 'title' => 'Pending'),
+            'approve' => array('key' => '1', 'title' => 'Approve'),
+            'spam' => array('key' => 'spam', 'title' => 'Spam'),
+            'trash' => array('key' => 'trash', 'title' => 'Trash'),            
+        ),
     );
+
     // Actors cache
 
     public $actorscache = array();
@@ -2617,7 +2647,7 @@ class CriticSearch extends AbstractDB {
             $ret = $this->movie_results($sql, $match, $search_query);
         }
 
-                    /*
+              /*
               print_r($filters_and);
               print_r(array($match, $search_query));
               print_r($sql);
@@ -2626,7 +2656,7 @@ class CriticSearch extends AbstractDB {
               $meta = $this->sps->query("SHOW META")->fetchAll();
               print_r($meta);
               exit;
-             */
+           */
         
         // Simple result
         if (!$show_meta) {
@@ -2902,6 +2932,76 @@ class CriticSearch extends AbstractDB {
         return $ret;
     }
 
+    public function front_search_comments_multi($aid = 0, $keyword = '', $limit = 20, $start = 0, $sort = array(), $filters = array(), $facets = false, $show_meta = true, $widlcard = true, $show_main = true, $fields = array()) {
+
+        // Keywords logic
+        $match = '';
+        if ($keyword) {
+            $keyword = str_replace("'", "\'", $keyword);
+            $search_keywords = $this->wildcards_maybe_query($keyword, $widlcard, ' ');
+            $search_query = sprintf("'@(comment_content) (%s)'", $search_keywords);
+            $match = " AND MATCH(:match)";
+        }
+
+        $ret = array('list' => array(), 'count' => 0);
+        $this->connect();
+        gmi('search connect');
+        $query_type = 'comments';
+
+        // Main logic
+        if ($show_main) {
+
+            //Sort logic
+            $order = $this->get_order_query_filters($sort);
+
+            // Filters logic            
+            $filters_and = $this->get_filters_query($filters, array(), $query_type, '', $aid);
+
+            // Custom fields
+            $custom_fields = '';
+            if ($fields) {
+                $custom_fields = ', ' . implode(', ', $fields) . ' ';
+            }
+
+            // Main sql
+            $sql = sprintf("SELECT id, comment_ID, comment_post_ID, comment_author, comment_author_email, comment_author_url,comment_author_IP,
+                    comment_date, comment_date_gmt, comment_content, cstatus as comment_approved, comment_type, comment_parent, user_id, ctype as post_type, 
+                    aid,comment_childs,comment_hide,last_upd, frating, weight() w" . $custom_fields . $order['select'] . $filters_and['select']
+                    . " FROM comments WHERE id>0" . $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
+
+            $ret = $this->movie_results($sql, $match, $search_query);
+
+         /*
+              print_r($filters_and);
+              print_r(array($match, $search_query));
+              print_r($sql);
+              print_r($ret);
+
+              $meta = $this->sps->query("SHOW META")->fetchAll();
+              print_r($meta);
+              exit;
+          */
+            
+            gmi('main sql');
+            // Simple result
+            if (!$show_meta) {
+                return $ret['list'];
+            }
+        }
+
+        // Facets logic
+        $facets_arr = array();
+        if ($facets) {
+            $facets_arr = $this->movies_facets($filters, $match, $search_query, $facets, $query_type, $aid);
+        }
+        gmi('get facets');
+
+        $ret['facets'] = $facets_arr;
+        return $ret;
+    }
+
+    
+    
     public function get_search_query($keyword = '', $filters = array(), $widlcard = true, $exclude = array()) {
         $search_query = '';
 
@@ -3264,7 +3364,9 @@ class CriticSearch extends AbstractDB {
             $sql_arr = $this->filters_facets_sql($facet_list, $filters, $match, $aid);
         } else if ($tab == 'watchlists') {
             $sql_arr = $this->watchlists_facets_sql($facet_list, $filters, $match, $aid);
-        } else {
+        } else if ($tab == 'comments') {
+            $sql_arr = $this->comments_facets_sql($facet_list, $filters, $match, $aid);
+        }else {
             $sql_arr = $this->movies_facets_sql($facet_list, $filters, $match);
         }
         $facets_arr = $this->movies_facets_get($sql_arr, $match, $search_query);
@@ -3659,7 +3761,46 @@ class CriticSearch extends AbstractDB {
 
         return $sql_arr;
     }
+    
+    public function comments_facets_sql($facet_list, $filters, $match, $aid = 0) {
+        $sql_arr = array();
+        $expand = isset($filters['expand']) ? $filters['expand'] : '';
 
+        foreach ($facet_list as $facet) {
+            if (isset($this->facet_data[$facet]['is_parent'])) {
+                continue;
+            }
+
+            if (isset($this->facet_data[$facet]['no_data'])) {
+                continue;
+            }
+
+            if (isset($this->facet_titles[$facet])) {
+                continue;
+            }
+
+            if ($facet == 'from') {
+                $limit = $expand == 'from' ? $this->facet_max_limit : $this->facet_limit;
+                $filters_and = $this->get_filters_query($filters, $facet, 'comments', '', $aid);
+                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM comments WHERE id>0" . $filters_and['filter'] . $match
+                        . " GROUP BY aid ORDER BY cnt DESC LIMIT 0," . $limit;
+            } else if ($facet == 'ctype') {
+                $limit = $expand == 'ctype' ? $this->facet_max_limit : $this->facet_limit;
+                $filters_and = $this->get_filters_query($filters, $facet, 'comments', '', $aid);
+                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM comments WHERE id>0" . $filters_and['filter'] . $match
+                        . " GROUP BY {$facet} ORDER BY cnt DESC LIMIT 0," . $limit;
+            } else if ($facet == 'cstatus') {
+                $limit = $expand == 'cstatus' ? $this->facet_max_limit : $this->facet_limit;
+                $filters_and = $this->get_filters_query($filters, $facet, 'comments', '', $aid);
+                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM comments WHERE id>0" . $filters_and['filter'] . $match
+                        . " GROUP BY {$facet} LIMIT 0," . $limit;
+            }
+                      
+        }
+        
+        return $sql_arr;
+    }
+    
     public function movies_facets_get($sql_dict, $match, $search_query) {
         $facets_arr = array();
         $sql_arr = array();
@@ -4079,13 +4220,25 @@ class CriticSearch extends AbstractDB {
         // Filters logic
         $filters_and = array();
         $select_and = array();
-
+  
         if ($query_type == 'filters') {
             $select_and['upub'] = "IF(publish OR aid={$aid},1,0) as upub";
             $filters_and['upub'] = "upub=1";
         } else if ($query_type == 'watchlists') {
             $select_and['upub'] = "IF((publish AND items>0) OR aid={$aid},1,0) as upub";
             $filters_and['upub'] = "upub=1";
+        } else if ($query_type == 'comments') {                        
+            if (!$this->cm->is_admin()){
+                // Show only publish posts for all users
+                $select_and['upub'] = "IF(cstatus='1' OR IF(cstatus='0' AND aid={$aid},1,0),1,0) as upub";
+                $filters_and['upub'] = "upub=1";
+            } else {
+                // Admin default view
+                if (!$filters['cstatus']){
+                    $filters['cstatus']=array('approve','pending');
+                }                
+            }     
+            
         } else {
             if (!isset($filters['release'])) {
                 $filters['release'] = $this->get_default_release();
@@ -4151,6 +4304,22 @@ class CriticSearch extends AbstractDB {
                     } else if ($key == 'from') {
                         // From author
                         $filters_and[$key] = $this->filter_multi_value('aid', $value, true);
+                    }
+                    continue;
+                } else if ($query_type == 'comments') {
+                    
+                    if ($key == 'from') {
+                        // From author
+                        $filters_and[$key] = $this->filter_multi_value('aid', $value, true);
+                    }if ($key == 'ctype') {
+                        // Comment type
+                        $filters_and[$key] = $this->filter_multi_value('ctype', $value);
+                    }if ($key == 'cstatus') {
+                        // Comment status
+                        if ($this->cm->is_admin()){
+                            $force_string=true;
+                            $filters_and[$key] = $this->filter_multi_value('cstatus', $value, false, false, true,  true,  false,  false, $force_string);
+                        }
                     }
                     continue;
                 } else if ($query_type == 'critics') {
@@ -4558,7 +4727,7 @@ class CriticSearch extends AbstractDB {
         }
     }
 
-    public function filter_multi_value($key, $value, $multi = false, $not = false, $any = true, $not_all = true, $not_and = false, $split_all = false) {
+    public function filter_multi_value($key, $value, $multi = false, $not = false, $any = true, $not_all = true, $not_and = false, $split_all = false, $force_string=false) {
         $filters_and = [];
         $and = 'ANY';
         if (!$any) {
@@ -4577,7 +4746,7 @@ class CriticSearch extends AbstractDB {
         if (is_array($value)) {
             $provider_valid_arr = array();
             foreach ($value as $item) {
-                $filter = $this->get_search_filter($key, $item);
+                $filter = $this->get_search_filter($key, $item, $force_string);
                 if ($filter !== '') {
                     $provider_valid_arr[] = $filter;
                 }
@@ -4621,7 +4790,7 @@ class CriticSearch extends AbstractDB {
                 }
             }
         } else {
-            $filter = $this->get_search_filter($key, $value);
+            $filter = $this->get_search_filter($key, $value, $force_string);
             if ($filter !== '') {
                 if (!$not) {
                     if ($multi) {
@@ -4651,7 +4820,7 @@ class CriticSearch extends AbstractDB {
         return $ret;
     }
 
-    private function get_search_filter($key, $value) {
+    private function get_search_filter($key, $value, $force_string=false) {
         $filter = '';
 
         $curr_facet = isset($this->facets_data[$key]) ? $this->facets_data[$key] : array();
@@ -4661,12 +4830,12 @@ class CriticSearch extends AbstractDB {
 
         if (isset($this->search_filters[$key][$value])) {
             $filter = $this->search_filters[$key][$value]['key'];
-            if (!$this->is_int($filter)) {
+            if (!$this->is_int($filter)||$force_string) {
                 $filter = "'" . $filter . "'";
             }
         } else {
-            $filter = $value;
-            if (!$this->is_int($value)) {
+            $filter = $value;            
+            if (!$this->is_int($value)||$force_string) {
                 $filter = "'" . $value . "'";
             }
         }

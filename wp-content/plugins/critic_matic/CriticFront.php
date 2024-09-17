@@ -506,9 +506,8 @@ class CriticFront extends SearchFacets {
 
             global $slug;
             // Post name
-            $post_name = $this->get_or_create_ma_post_name($top_movie, $top_movie, $title, $movie->type);
             $slug = $ma->get_post_slug($movie->type);
-            $url = '/' . $slug . '/' . $post_name;
+            $url = $ma->get_movie_link($movie);
         }
         // $content = '';
         /*
@@ -1571,20 +1570,7 @@ class CriticFront extends SearchFacets {
     }
 
     public function get_avatars() {
-        $avatars = [];
-        $dir = $_SERVER['DOCUMENT_ROOT'] . '/wp-content/uploads/avatars/custom/';
-
-        $files = scandir($dir);
-
-        foreach ($files as $val) {
-            if ($val != '.' && $val != '..') {
-                $regv = '#(\d+)\-(\d+)-128\.[jpgn]+#';
-                if (preg_match($regv, $val, $mach)) {
-                    $avatars[$mach[2]][$mach[1]] = $val;
-                }
-            }
-        }
-        return $avatars;
+        return $this->cm->get_avatars();        
     }
 
     /*
@@ -1606,11 +1592,10 @@ class CriticFront extends SearchFacets {
         $title = $movie->title;
 
         // Post name
-        $post_name = $this->get_or_create_ma_post_name($id, $movie->rwt_id, $title, $movie->type);
+
         $ma = $this->get_ma();
         $slug = $ma->get_post_slug($movie->type);
-
-        $url = '/' . $slug . '/' . $post_name;
+        $url = $ma->get_movie_link($movie);
 
         // release
         $release = $movie->release;
@@ -1647,6 +1632,7 @@ class CriticFront extends SearchFacets {
      */
 
     public function get_or_create_ma_post_name($id = 0, $rwt_id = 0, $title = '', $type = '') {
+        // UNUSED
         $ma = $this->get_ma();
         $post_name = $ma->get_post_name($id);
 
@@ -1687,13 +1673,8 @@ class CriticFront extends SearchFacets {
         if (!$item_type)
             $item_type = ucfirst($slug);
 
-        $post_name = $item->post_name;
-        if (!$post_name) {
-            $post_name = $this->get_or_create_ma_post_name($id, $rwt_id, $title, $type);
-        }
 
-        // todo get post name
-        $url = '/' . $slug . '/' . $post_name;
+        $url = $ma->get_movie_link($item);
 
         $date = $item->year;
 
@@ -2881,7 +2862,7 @@ class CriticFront extends SearchFacets {
                                     <div class="nte_show dwn">
                                         <div class="nte_in">
                                             <div class="nte_cnt">
-                                                <ul class="sort-wrapper more listmenu">                                                                                                               
+                                                <ul class="list-menu">                                                                                                               
                                                     <li class="nav-tab" data-act="editrev" data-id="<?php print $top_movie ?>" data-cid="<?php print $critic->id ?>">Edit Review</li>
 
                                                 </ul>

@@ -136,10 +136,12 @@ class CriticMaticAdmin {
 
         wp_enqueue_script('croppie', CRITIC_MATIC_PLUGIN_URL . 'js/croppie.js', false, CRITIC_MATIC_VERSION);
         wp_enqueue_script('critic_matic_admin', CRITIC_MATIC_PLUGIN_URL . 'js/admin.js', false, CRITIC_MATIC_VERSION);
+        wp_enqueue_script('critic_matic_tags', CRITIC_MATIC_PLUGIN_URL . 'js/tags.js', false, CRITIC_MATIC_VERSION);
 
         add_action("wp_ajax_cm_autocomplite", array($this, "cm_autocomplite"));
         add_action("wp_ajax_cm_author_autocomplite", array($this, "cm_author_autocomplite"));
         add_action("wp_ajax_cm_find_yt_channel", array($this, "cm_find_yt_channel"));
+        add_action("wp_ajax_cm_add_tag", array($this, "cm_add_tag"));
 
         if (function_exists('user_can')) {
             $this->user_can = $this->user_can();
@@ -204,6 +206,7 @@ class CriticMaticAdmin {
     public function print_admin_styles() {
         wp_enqueue_style('critic_matic_admin', CRITIC_MATIC_PLUGIN_URL . 'css/style.css', false, CRITIC_MATIC_VERSION);
         wp_enqueue_style('critic_matic_croppie', CRITIC_MATIC_PLUGIN_URL . 'css/croppie.css', false, CRITIC_MATIC_VERSION);
+        wp_enqueue_style('critic_matic_tags', CRITIC_MATIC_PLUGIN_URL . 'css/tags.css', false, CRITIC_MATIC_VERSION);
     }
 
     public function get_ma() {
@@ -418,6 +421,55 @@ class CriticMaticAdmin {
 
         $ret = array('err' => $err, 'total' => $total, 'channel' => $channel, 'valid' => $valid, 'title' => $title);
 
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            print json_encode($ret);
+        } else {
+            header("Location: " . $_SERVER["HTTP_REFERER"]);
+        }
+        die();
+    }
+
+    public function cm_add_tag() {
+        $tags = isset($_GET['tags']) ? $_GET['tags'] : [];
+        $camp_id = isset($_GET['camp_id']) ?(int) $_GET['camp_id'] : 0;
+        $post_type = isset($_GET['post_type']) ?(int) $_GET['post_type'] : 0;
+        
+        // 1. Get or create tags 
+        $tag_ids = array();
+        if ($tags){
+            foreach ($tags as $name) {
+                $slug = $this->cm->create_slug($name);
+                $tag_id = $this->cm->get_or_create_camp_tag_id($name, $slug);
+                $tag_ids[]=$tag_id;
+            }
+        }
+        // 2. Get old meta
+        $old_meta_ids = $this->cm->get_camp_tag_meta($camp_id, $post_type);
+        
+        // 3. Add new meta        
+        if ($tag_ids) {
+            foreach ($tag_ids as $tag_id) {
+                if (!in_array($tag_id, $old_meta_ids)){
+                    // Add meta
+                    $this->cm->add_camp_tag_meta($camp_id, $post_type, $tag_id);
+                }
+            }
+        }
+        
+        // 4. Remove old meta
+        if ($old_meta_ids){
+            foreach ($old_meta_ids as $tag_id) {
+                if (!in_array($tag_id, $tag_ids)){
+                    // Remove unused meta
+                    $this->cm->remove_camp_tag_meta($camp_id, $post_type, $tag_id);
+                }
+            }
+        }
+        
+        $err='';
+        
+        $ret = array('err' => $err);
+        
         if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
             print json_encode($ret);
         } else {
@@ -1758,7 +1810,7 @@ class CriticMaticAdmin {
                     $urls = $this->cm->get_all_feed_urls($cid);
                     print '<h2>Export campaign URLs</h2>';
                     if ($urls) {
-                        print '<p> Found links: '. sizeof($urls).'</p>';
+                        print '<p> Found links: ' . sizeof($urls) . '</p>';
                         $items = array();
                         foreach ($urls as $url) {
                             $items[] = $url->link;

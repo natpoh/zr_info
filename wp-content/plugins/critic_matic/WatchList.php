@@ -688,7 +688,7 @@ class WatchList extends AbstractDB {
                                     <div class="nte_show dwn">
                                         <div class="nte_in">
                                             <div class="nte_cnt">
-                                                <ul class="sort-wrapper more listmenu">                      
+                                                <ul class="list-menu">                      
                                                     <li class="nav-tab" data-act="show" data-href="<?php print $search_link ?>">Show in Search</li>
                                                     <li class="nav-tab" data-act="show" data-href="/analytics/tab_ethnicity/wl_<?php print $post->id ?>">Show in Analytics</li>
                                                     <li class="nav-tab" data-act="editwl" data-json="<?php print htmlspecialchars($str_json) ?>">Edit List</li>
@@ -824,7 +824,7 @@ class WatchList extends AbstractDB {
                                                 <div class="nte_show dwn">
                                                     <div class="nte_in">
                                                         <div class="nte_cnt">
-                                                            <ul class="sort-wrapper more listmenu">                                                                                                                                
+                                                            <ul class="list-menu">                                                                                                                                
                                                                 <li class="nav-tab" data-act="delitem">Remove from Wachlist</li>                                                                
                                                             </ul>
                                                         </div>                                                          

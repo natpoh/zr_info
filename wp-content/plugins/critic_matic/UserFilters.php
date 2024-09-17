@@ -667,7 +667,7 @@ class UserFilters extends AbstractDB {
                                     <div class="nte_show dwn">
                                         <div class="nte_in">
                                             <div class="nte_cnt">
-                                                <ul class="sort-wrapper more listmenu">                                                                                                               
+                                                <ul class="list-menu">                                                                                                               
                                                     <li class="nav-tab" data-act="editfilter" data-link="<?php print $link ?>">Edit Filter</li>
                                                     <li class="nav-tab" data-act="delfilter">Delete Filter</li>                                                                
                                                 </ul>

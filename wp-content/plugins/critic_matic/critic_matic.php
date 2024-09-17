@@ -1294,23 +1294,22 @@ function critic_matic_plugin_activation() {
 
     $sql = "ALTER TABLE `data_movie_erating` ADD `emm` int(11) NOT NULL DEFAULT '0' AFTER moviemeter_date";
     Pdo_an::db_query($sql);
-      
-    
+
     $sql = "ALTER TABLE `data_movie_erating` ADD `emc` int(11) NOT NULL DEFAULT '0' AFTER metacritic_date";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_movie_erating` ADD `emu` int(11) NOT NULL DEFAULT '0' AFTER metacritic_date";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_movie_erating` ADD `emg` int(11) NOT NULL DEFAULT '0' AFTER metacritic_date";
-    Pdo_an::db_query($sql); 
-    
+    Pdo_an::db_query($sql);
+
     $sql = "ALTER TABLE `data_movie_erating` ADD `eaurating` int(11) NOT NULL DEFAULT '0' AFTER audience_date";
     Pdo_an::db_query($sql);
 
     $sql = "ALTER TABLE `data_movie_erating` ADD `eauvote` int(11) NOT NULL DEFAULT '0' AFTER audience_date";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_movie_erating` ADD `eauaffirmative` int(11) NOT NULL DEFAULT '0' AFTER audience_date";
     Pdo_an::db_query($sql);
 
@@ -1340,11 +1339,9 @@ function critic_matic_plugin_activation() {
 
     $sql = "ALTER TABLE `data_movie_erating` ADD `efn` int(11) NOT NULL DEFAULT '0' AFTER fchan_date";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_movie_erating` ADD `edb` int(11) NOT NULL DEFAULT '0' AFTER douban_date";
     Pdo_an::db_query($sql);
-    
-    
 
     /* Distributor
      * mid - movie id
@@ -1629,31 +1626,30 @@ function critic_matic_plugin_activation() {
 
     $sql = "ALTER TABLE `data_woke` ADD `emedia` int(11) NOT NULL DEFAULT '0' AFTER mediaversity";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_woke` ADD `ewokeornot` int(11) NOT NULL DEFAULT '0' AFTER wokeornot";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_woke` ADD `eworthit` int(11) NOT NULL DEFAULT '0' AFTER worthit";
     Pdo_an::db_query($sql);
 
     $sql = "ALTER TABLE `data_woke` ADD `elgbt` int(11) NOT NULL DEFAULT '0' AFTER lgbt";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_woke` ADD `elgb` int(11) NOT NULL DEFAULT '0' AFTER lgb";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_woke` ADD `eqtia` int(11) NOT NULL DEFAULT '0' AFTER qtia";
     Pdo_an::db_query($sql);
-        
+
     $sql = "ALTER TABLE `data_woke` ADD `ewoke` int(11) NOT NULL DEFAULT '0' AFTER woke";
     Pdo_an::db_query($sql);
-    
+
     $sql = "ALTER TABLE `data_woke` ADD `ezrwoke` int(11) NOT NULL DEFAULT '0' AFTER result";
     Pdo_an::db_query($sql);
-    
-    
-   /*
-    * TODO add exists for fields:
+
+    /*
+     * TODO add exists for fields:
       sql_attr_uint       = erating
 
       sql_attr_uint       = eboxusa
@@ -1665,8 +1661,8 @@ function critic_matic_plugin_activation() {
       sql_attr_uint       = efemale
      */
 
-    
-    
+
+
     /*
      * Actor data movie upd
      */
@@ -1835,7 +1831,19 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('cid', 'avid'), "meta_guest_avatar");
+    
+    // Comments avatar
+    $sql = "CREATE TABLE IF NOT EXISTS  `meta_guest_comments_avatar`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                
+                                `cid` int(11) NOT NULL DEFAULT '0',
+                                `avid` int(11) NOT NULL DEFAULT '0',
+                                `type` int(11) NOT NULL DEFAULT '0',
+				PRIMARY KEY  (`id`)
+				) DEFAULT COLLATE utf8mb4_general_ci;";
 
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('cid', 'avid', 'type'), "meta_guest_comments_avatar");
+    
     /*
      * Critic crowd last update
      */
@@ -1886,6 +1894,117 @@ function critic_matic_plugin_activation() {
 
     //Pdo_an::db_query($sql);
     //critic_matic_create_index_an(array('cid', 'date', 'last_upd'), "data_critic_erating");
+
+
+    /*
+     * Comments
+     * post_type - type of the comment post: review, post, filter, movie, watchlist, etc.
+     * last_upd - last update
+     */
+
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_comments` (
+				`comment_ID` bigint(20) unsigned NOT NULL auto_increment,
+                                `comment_post_ID` bigint(20) NOT NULL DEFAULT '0',                                 
+                                `comment_author` text DEFAULT NULL,  
+                                `comment_author_email` varchar(200) NOT NULL default '',  
+                                `comment_author_url` varchar(200) NOT NULL default '',  
+                                `comment_author_IP` varchar(100) NOT NULL default '',                                
+                                `comment_date` datetime DEFAULT NULL,
+                                `comment_date_gmt` datetime DEFAULT NULL,
+                                `comment_content` text DEFAULT NULL,
+                                `comment_karma` int(11) NOT NULL DEFAULT '0',
+                                `comment_approved` varchar(20) NOT NULL default '',  
+                                `comment_agent` varchar(255) NOT NULL default '',  
+                                `comment_type` varchar(20) NOT NULL default '',
+                                `comment_parent` bigint(20) unsigned NOT NULL DEFAULT '0', 
+                                `user_id` bigint(20) unsigned NOT NULL DEFAULT '0', 
+                                `post_type` int(11) NOT NULL DEFAULT '0',           
+                                `aid` bigint(20) unsigned NOT NULL DEFAULT '0', 
+                                `comment_childs` int(11) unsigned NOT NULL DEFAULT '0', 
+                                `comment_hide` int(11) unsigned NOT NULL DEFAULT '0', 
+                                `last_upd` int(11) NOT NULL DEFAULT '0',
+                                `user_sjs` bigint(20) NOT NULL DEFAULT '0',
+				PRIMARY KEY  (`comment_ID`)
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    
+    Pdo_an::db_query($sql);
+    /*print_r(Pdo_an::last_error());
+    exit;*/
+    critic_matic_create_index_an(array('comment_post_ID', 'comment_author_email','comment_date','comment_date_gmt','comment_approved','comment_parent','comment_childs','user_id','aid','post_type','user_sjs','last_upd'), "data_comments");
+    
+    
+    
+    $sql = "CREATE TABLE IF NOT EXISTS  `meta_comments_num`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `last_upd` int(11) NOT NULL DEFAULT '0',
+                                `comment_post_ID` int(11) NOT NULL DEFAULT '0',
+                                `post_type` int(11) NOT NULL DEFAULT '0',
+                                `comments_count` int(11) NOT NULL DEFAULT '0',
+				PRIMARY KEY  (`id`)
+                                ) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('comment_post_ID', 'post_type'), "meta_comments_num");
+    
+    
+    /*
+     * Votes
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_comment_votes_log`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `date` int(11) NOT NULL DEFAULT '0',
+                                `cid` int(11) NOT NULL DEFAULT '0',
+                                `wp_uid` int(11) NOT NULL DEFAULT '0',
+                                `user_sjs` bigint(20) NOT NULL DEFAULT '0',
+                                `unic_emoid` int(11) NOT NULL DEFAULT '0',
+                                `user_vote` int(11) NOT NULL DEFAULT '0',  
+                                `user_ip` varchar(100) NOT NULL default '',                               
+				PRIMARY KEY  (`id`)
+                                ) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('cid','date','wp_uid','sjs','user_ip'), "data_comment_votes_log");
+    
+    $sql = "CREATE TABLE IF NOT EXISTS  `data_comment_votes`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `last_upd` int(11) NOT NULL DEFAULT '0',
+                                `cid` int(11) NOT NULL DEFAULT '0',                                
+                                `plus` int(11) NOT NULL DEFAULT '0',
+                                `minus` int(11) NOT NULL DEFAULT '0',
+                                `vote_result` int(11) NOT NULL DEFAULT '0',
+				PRIMARY KEY  (`id`)
+                                ) DEFAULT COLLATE utf8mb4_general_ci;";
+
+    Pdo_an::db_query($sql);
+    
+    critic_matic_create_index_an(array('cid'), "data_comment_votes");
+
+    
+    
+    // Campaign Tags
+    $sql = "CREATE TABLE IF NOT EXISTS  `cm_camp_tags`(
+				`id` int(11) unsigned NOT NULL auto_increment,                                
+                                `name` varchar(255) NOT NULL default '',    
+                                `slug` varchar(255) NOT NULL default '',  
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('name', 'slug'), "cm_camp_tags");
+
+    /*
+     * Tid - tag id
+     * Cid - campaign id
+     * Type - campating type
+     */
+    $sql = "CREATE TABLE IF NOT EXISTS  `cm_camp_tag_meta`(
+				`id` int(11) unsigned NOT NULL auto_increment,
+                                `tid` int(11) NOT NULL DEFAULT '0', 
+                                `cid` int(11) NOT NULL DEFAULT '0', 
+                                `type` int(11) NOT NULL DEFAULT '0',
+				PRIMARY KEY  (`id`)				
+				) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('cid','tid', 'type'), "cm_camp_tag_meta");
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {

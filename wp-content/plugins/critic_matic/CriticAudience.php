@@ -18,7 +18,7 @@
  * 
  * Get all votes for movie by staff or audience
  */
-class CriticAudience extends AbstractDb {
+class CriticAudience extends AbstractDB {
 
     public $prefix = 'wpcr3';
     private $cm = '';
@@ -241,8 +241,6 @@ class CriticAudience extends AbstractDb {
                 $posted->fname = $user->data->display_name;
                 $posted->femail = $user->data->user_email;
             }
-
-
 
             if (!$posted->ftext) {
                 $rtn->err[] = 'Review Text is required.';
@@ -1012,7 +1010,7 @@ class CriticAudience extends AbstractDb {
                 'name' => $unic_id
             );
 
-            $id = $this->cm->sync_insert_data($data, $this->db['author_key'], $this->cm->sync_client, $this->cm->sync_data);
+            $this->db_insert($data, $this->db['author_key']);            
         }
     }
 
@@ -1252,7 +1250,7 @@ class CriticAudience extends AbstractDb {
                 </table>
             </div>
         </div>  
-        <div class="wpcr3_dotline"></div>
+
         <?php
     }
 

@@ -1,5 +1,4 @@
 <?php
-
 /*
  * Critic matic class. 
  * Used for manage critic posts
@@ -14,6 +13,7 @@ class CriticMatic extends AbstractDB {
     private $af;
     private $cav;
     private $cc;
+    private $ce;
     private $cf;
     private $cp;
     private $cs;
@@ -29,6 +29,8 @@ class CriticMatic extends AbstractDB {
     private $wl;
     private $mdirs;
     private $wpu;
+    private $comments;
+    private $comment_votes;
 
     /*
      * Posts
@@ -227,6 +229,9 @@ class CriticMatic extends AbstractDB {
             'transcriptions' => $table_prefix . 'critic_transcritpions',
             'reviews_rating' => 'meta_reviews_rating',
             'critic_crowd' => 'data_critic_crowd',
+            // Tags
+            'cm_camp_tags' => 'cm_camp_tags',
+            'cm_camp_tag_meta' => 'cm_camp_tag_meta',
         );
         $this->timer_start();
 
@@ -262,7 +267,7 @@ class CriticMatic extends AbstractDB {
             'sync_status' => 1,
             'an_weightid' => 0,
             'an_verdict_type' => 'p',
-            'audience_unique' => 0,            
+            'audience_unique' => 0,
             'audience_top_unique' => 0,
             'score_avatar' => 50,
             'score_filter_image' => 0,
@@ -281,6 +286,30 @@ class CriticMatic extends AbstractDB {
         if ($this->sync_client) {
             unset($this->author_tabs['edit']);
         }
+    }
+
+    public function get_comments() {
+        // Get comments class
+        if (!$this->comments) {
+            if (!class_exists('CriticComments')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticComments.php' );
+            }
+
+            $this->comments = new CriticComments($this);
+        }
+        return $this->comments;
+    }
+
+    public function get_comment_votes() {
+        // Get comments class
+        if (!$this->comment_votes) {
+            if (!class_exists('CriticCommentVotes')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticCommentVotes.php' );
+            }
+
+            $this->comment_votes = new CriticCommentVotes($this);
+        }
+        return $this->comment_votes;
     }
 
     public function get_ac() {
@@ -493,7 +522,7 @@ class CriticMatic extends AbstractDB {
             if (!class_exists('WatchList')) {
                 require_once( CRITIC_MATIC_PLUGIN_DIR . 'WatchList.php' );
             }
-            $this->wl = new WatchList($this->cm);
+            $this->wl = new WatchList($this);
         }
         return $this->wl;
     }
@@ -506,9 +535,19 @@ class CriticMatic extends AbstractDB {
             if (!class_exists('WpUser')) {
                 require_once( CRITIC_MATIC_PLUGIN_DIR . 'WpUser.php' );
             }
-            $this->wpu = new WpUser($this->cm);
+            $this->wpu = new WpUser($this);
         }
         return $this->wpu;
+    }
+
+    public function get_ce() {
+        if (!$this->ce) {
+            if (!class_exists('CriticEmotions')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticEmotions.php' );
+            }
+            $this->ce = new CriticEmotions($this);
+        }
+        return $this->ce;
     }
 
     public function get_current_user($cache = true) {
@@ -541,6 +580,16 @@ class CriticMatic extends AbstractDB {
             $dict[$id] = $user;
         }
         return $user;
+    }
+
+    public function wp_create_nonce($action = -1) {
+        $wpu = $this->get_wpu();
+        return $wpu->wp_create_nonce($action);
+    }
+
+    public function wp_verify_nonce($nonce, $action = -1) {
+        $wpu = $this->get_wpu();
+        return $wpu->wp_verify_nonce($nonce, $action);
     }
 
     /*
@@ -1010,13 +1059,12 @@ class CriticMatic extends AbstractDB {
         return $id;
     }
 
-    
     public function get_all_feed_urls($cid) {
-        $query = sprintf("SELECT p.link FROM {$this->db['posts']} p INNER JOIN {$this->db['feed_meta']} m ON p.id = m.pid WHERE m.cid=%d", $cid);    
+        $query = sprintf("SELECT p.link FROM {$this->db['posts']} p INNER JOIN {$this->db['feed_meta']} m ON p.id = m.pid WHERE m.cid=%d", $cid);
         $result = $this->db_results($query);
         return $result;
     }
-    
+
     public function clear_utf8($text) {
         return preg_replace('/[\x{10000}-\x{10FFFF}]/u', "", $text);
     }
@@ -2467,7 +2515,7 @@ class CriticMatic extends AbstractDB {
         $result = $this->db_get_var($sql);
         return $result;
     }
-    
+
     public function get_aid($wp_uid) {
         $author = $this->get_author_by_wp_uid($wp_uid);
         $aid = 0;
@@ -2577,7 +2625,7 @@ class CriticMatic extends AbstractDB {
 
         $sql = sprintf("SELECT t.id, t.name, t.slug FROM {$this->db['tag_meta']} m "
                 . "INNER JOIN {$this->db['tags']} t ON m.tid = t.id"
-                . " WHERE cid=%d" . $status_query, (int) $aid);
+                . " WHERE m.cid=%d" . $status_query, (int) $aid);
         $result = $this->db_results($sql);
 
         $dict[$aid] = $result;
@@ -2786,6 +2834,178 @@ class CriticMatic extends AbstractDB {
     }
 
     /*
+     * Campaigns tags
+     */
+
+    public function get_or_create_camp_tag_id($name = '', $slug = '') {
+        //Get from cache
+        static $dict;
+        if (is_null($dict)) {
+            $dict = array();
+        }
+
+        if (isset($dict[$name])) {
+            return $dict[$name];
+        }
+
+        //Get tag id
+        $sql = sprintf("SELECT id FROM {$this->db['cm_camp_tags']} WHERE name='%s'", $this->escape($name));
+        $id = $this->db_get_var($sql);
+
+        if (!$id) {
+            $data = array(
+                'name' => $name,
+                'slug' => $slug
+            );
+
+            $id = $this->sync_insert_data($data, $this->db['cm_camp_tags'], $this->sync_client, $this->sync_data);
+        }
+        // Add to cache
+        $dict[$name] = $id;
+
+        return $id;
+    }
+
+    public function get_camp_tags($cid = 0, $type = 0) {
+        $sql = sprintf("SELECT t.id, t.name, t.slug FROM {$this->db['cm_camp_tag_meta']} m"
+                . " INNER JOIN {$this->db['cm_camp_tags']} t ON m.tid = t.id"
+                . " WHERE m.cid=%d AND m.type=%d", (int) $cid, (int) $type);
+        $result = $this->db_results($sql);
+        return $result;
+    }
+
+    public function get_all_tag_names() {
+        $sql = "SELECT id, name, slug FROM {$this->db['cm_camp_tags']}";
+        $results = $this->db_results($sql);
+        $ret = array();
+        if ($results) {
+            foreach ($results as $result) {
+                $ret[$result->id] = $result->name;
+            }
+        }
+        return $ret;
+    }
+
+    public function get_popular_tags($count = 20) {
+        if ($count <= 0) {
+            $count = 100;
+        }
+        //SELECT actor_id, count(*) FROM `data_actors_meta` GROUP by actor_id having count(*) > 1;
+        $sql = "SELECT tid FROM {$this->db['cm_camp_tag_meta']} GROUP BY tid ORDER BY count(*) DESC LIMIT " . $count;
+        $results = $this->db_results($sql);
+        $ret = array();
+        if ($results) {
+            foreach ($results as $result) {
+                $ret[] = $result->tid;
+            }
+        }
+        return $ret;
+    }
+
+    public function get_camp_tag_meta($cid = 0, $type = 0) {
+        $sql = sprintf("SELECT tid FROM {$this->db['cm_camp_tag_meta']} WHERE type='%d' and cid='%d'", $type, $cid);
+        $results = $this->db_results($sql);
+        $ret = array();
+        if ($results) {
+            foreach ($results as $result) {
+                $ret[] = $result->tid;
+            }
+        }
+        return $ret;
+    }
+
+    public function add_camp_tag_meta($cid = 0, $type = 0, $tag_id = 0) {
+
+        // Validate values
+        if ($cid > 0 && $tag_id > 0) {
+            //Get tag meta
+            $sql = sprintf("SELECT tid FROM {$this->db['cm_camp_tag_meta']} WHERE cid=%d AND type=%d AND tid=%d", $cid, $type, $tag_id);
+            $meta_exist = $this->db_get_var($sql);
+
+            if (!$meta_exist) {
+                // Meta not exist
+                $data = array(
+                    'cid' => $cid,
+                    'tid' => $tag_id,
+                    'type' => $type,
+                );
+
+                $this->sync_insert_data($data, $this->db['cm_camp_tag_meta'], $this->sync_client, $this->sync_data);
+            } else {
+                return false;
+            }
+
+            return true;
+        }
+        return false;
+    }
+
+    public function remove_camp_tag_meta($cid = 0, $type = 0, $tag_id = 0) {
+
+        $data = array(
+            'type' => $type,
+            'cid' => $cid,
+            'tid' => $tag_id,
+        );
+        $this->sync_delete_multi($data, $this->db['cm_camp_tag_meta'], $sync_data = $this->sync_data, 5);
+    }
+
+    public function theme_camp_tags($campaign_id, $post_type) {
+        ?>
+        <h3>Tags</h3>
+        <?php
+        $tag_string = '';
+        $all_tags = $this->get_all_tag_names();
+        if ($all_tags) {
+            $tag_values = array_values($all_tags);
+            $tag_string = '"' . implode('","', $tag_values) . '"';
+        }
+        ?>
+        <script>
+            const all_tags = [<?php print $tag_string ?>];
+        </script>
+        <div id="tag-container">
+            <input type="text" id="tag-input" placeholder="Enter a tag name" />
+            <button id="add-tag-button" class="wp-core-ui button-primary">Add</button>                    
+        </div>
+        <ul id="suggestions"></ul>
+
+        <div class="flex-row">
+            <p>Selected tags:</p>
+            <ul id="tag-list">
+                <?php
+                $camp_tags = $this->get_camp_tags($campaign_id, $post_type);
+                if ($camp_tags) {
+                    foreach ($camp_tags as $tag) {
+                        ?>
+                        <li><?php print $tag->name ?></li>
+                        <?php
+                    }
+                }
+                ?>
+
+            </ul>
+        </div>
+
+        <div class="flex-row">
+            <p>Popular tags:</p>
+            <ul id="popular-tags">
+                <?php
+                $pop_tags = $this->get_popular_tags();
+                if ($pop_tags) {
+                    foreach ($pop_tags as $pop_id) {
+                        ?>
+                        <li><?php print $all_tags[$pop_id] ?></li>
+                        <?php
+                    }
+                }
+                ?>
+            </ul>
+        </div>
+    <?php
+    }
+
+    /*
      * Thumbs
      */
 
@@ -2984,6 +3204,12 @@ class CriticMatic extends AbstractDB {
         $author_name = str_replace(' ', '_', preg_replace($reg, '', $post->author_name));
         $post_title = str_replace(' ', '_', $this->crop_text(preg_replace($reg, '', $post->title), 50, false));
         return $post->id . '-' . $author_type . '-' . $author_name . '-' . $post_title;
+    }
+
+    public function get_critic_url($post) {
+        $slug = $this->get_critic_slug($post);
+        $link = '/critics/' . $slug . '/';
+        return $link;
     }
 
     /*
@@ -3749,7 +3975,7 @@ class CriticMatic extends AbstractDB {
             $ss['posts_type_1'] = $form['posts_type_1'] ? 1 : 0;
             $ss['posts_type_2'] = $form['posts_type_2'] ? 1 : 0;
             $ss['posts_type_3'] = $form['posts_type_3'] ? 1 : 0;
-            $ss['audience_unique'] = $form['audience_unique'] ? 1 : 0;            
+            $ss['audience_unique'] = $form['audience_unique'] ? 1 : 0;
             $ss['audience_top_unique'] = $form['audience_top_unique'] ? 1 : 0;
         }
 
@@ -3792,11 +4018,11 @@ class CriticMatic extends AbstractDB {
                     }
                     $maw = new MoviesActorWeight($this);
                     if ($form['stars_reset']) {
-                       $opt = new MoviesActorStarOptions();
-                       $opt->reset();
+                        $opt = new MoviesActorStarOptions();
+                        $opt->reset();
                     } else {
-                       $opt = new MoviesActorMainOptions(); 
-                       $opt->reset();
+                        $opt = new MoviesActorMainOptions();
+                        $opt->reset();
                     }
                 } catch (Exception $exc) {
                     
@@ -4040,7 +4266,7 @@ class CriticMatic extends AbstractDB {
      * ip адреса проверяются начиная с приоритетного, для определения возможного использования прокси
      * @return ip-адрес
      */
-    function get_remote_ip() {
+    public function get_remote_ip() {
         $ip = false;
         if (isset($_SERVER['HTTP_CF_CONNECTING_IP']))
             $ipa[] = trim($_SERVER['HTTP_CF_CONNECTING_IP']);
@@ -4503,13 +4729,13 @@ class CriticMatic extends AbstractDB {
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);       
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
-        if ($curl_user_agent){
+        if ($curl_user_agent) {
             curl_setopt($ch, CURLOPT_USERAGENT, $curl_user_agent);
         }
-        
+
         $result = curl_exec($ch);
 
         return $result;
@@ -4541,5 +4767,75 @@ class CriticMatic extends AbstractDB {
             $ret .= "Data not found.";
         }
         return $ret;
+    }
+
+    public function is_admin($cache = true) {
+        static $cached = null;
+
+        if ($cache) {
+            if ($cached !== null) {
+                return $cached;
+            }
+        } else {
+            $cached = null;
+        }
+
+        $is_admin = false;
+
+        // TODO: get admin role without wp core
+        if (function_exists('current_user_can')) {
+            $is_admin = current_user_can("editor") || current_user_can("administrator");
+        }
+
+        if ($cache) {
+            $cached = $is_admin;
+        }
+
+        return $is_admin;
+    }
+
+    public function get_avatars() {
+        $avatars = [];
+        $dir = ABSPATH . 'wp-content/uploads/avatars/custom/';
+
+        $files = scandir($dir);
+
+        foreach ($files as $val) {
+            if ($val != '.' && $val != '..') {
+                $regv = '#(\d+)\-(\d+)-128\.[jpgn]+#';
+                if (preg_match($regv, $val, $mach)) {
+                    $avatars[$mach[2]][$mach[1]] = $val;
+                }
+            }
+        }
+        return $avatars;
+    }
+
+    public function create_slug($string, $glue = '-') {
+        $string = str_replace('&', ' and ', $string);
+        $string = preg_replace("/('|`)/", "", $string);
+
+        $table = array(
+            'Š' => 'S', 'š' => 's', 'Đ' => 'Dj', 'đ' => 'dj', 'Ž' => 'Z', 'ž' => 'z', 'Č' => 'C', 'č' => 'c', 'Ć' => 'C', 'ć' => 'c',
+            'À' => 'A', 'Á' => 'A', 'Â' => 'A', 'Ã' => 'A', 'Ä' => 'A', 'Å' => 'A', 'Æ' => 'A', 'Ç' => 'C', 'È' => 'E', 'É' => 'E',
+            'Ê' => 'E', 'Ë' => 'E', 'Ì' => 'I', 'Í' => 'I', 'Î' => 'I', 'Ï' => 'I', 'Ñ' => 'N', 'Ò' => 'O', 'Ó' => 'O', 'Ô' => 'O',
+            'Õ' => 'O', 'Ö' => 'O', 'Ø' => 'O', 'Ù' => 'U', 'Ú' => 'U', 'Û' => 'U', 'Ü' => 'U', 'Ý' => 'Y', 'Þ' => 'B', 'ß' => 'Ss',
+            'à' => 'a', 'á' => 'a', 'â' => 'a', 'ã' => 'a', 'ä' => 'a', 'å' => 'a', 'æ' => 'a', 'ç' => 'c', 'è' => 'e', 'é' => 'e',
+            'ê' => 'e', 'ë' => 'e', 'ì' => 'i', 'í' => 'i', 'î' => 'i', 'ï' => 'i', 'ð' => 'o', 'ñ' => 'n', 'ò' => 'o', 'ó' => 'o',
+            'ô' => 'o', 'õ' => 'o', 'ö' => 'o', 'ø' => 'o', 'ù' => 'u', 'ü' => 'u', 'ú' => 'u', 'û' => 'u', 'ý' => 'y', 'ý' => 'y', 'þ' => 'b',
+            'ÿ' => 'y', 'Ŕ' => 'R', 'ŕ' => 'r', '/' => '-', ' ' => '-'
+        );
+
+        // -- Remove duplicated spaces
+        $stripped = preg_replace(array('/\s{2,}/', '/[\t\n]/'), ' ', trim($string));
+
+        // -- Returns the slug
+        $slug = strtolower(strtr($stripped, $table));
+        $slug = preg_replace('~[^\pL\d]+~u', $glue, $slug);
+
+        $slug = preg_replace('/^-/', '', $slug);
+        $slug = preg_replace('/-$/', '', $slug);
+
+        return $slug;
     }
 }

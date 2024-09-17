@@ -15,7 +15,6 @@ class MoviesAn extends AbstractDBAn {
      */
     public $movies_weight_upd_interval = 1;
     public $perpage = 30;
-
     public $movie_rating = array(
         0 => 'Zero rating',
         1 => 'Non zero rating',
@@ -127,7 +126,7 @@ class MoviesAn extends AbstractDBAn {
             'meta_keywords' => 'meta_keywords',
             'language_code' => 'data_language_code',
             'meta_movie_boxint' => 'meta_movie_boxint',
-            'woke'=>'data_woke',
+            'woke' => 'data_woke',
         );
         $this->timer_start();
         $this->get_perpage();
@@ -290,6 +289,24 @@ class MoviesAn extends AbstractDBAn {
         $this->add_post_name($id, $new_post_name);
 
         return $new_post_name;
+    }
+
+    public function get_movie_link($post) {
+        $id = $post->id;
+        $title = $post->title;
+        $type = $post->type;
+        $post_name = $this->get_post_name($id);
+
+        if (!$post_name) {
+            // Type: Movie, TVseries
+            $year = $post->year;
+            $post_name = $this->create_post_name($id, $title, $type, $year);
+        }
+
+        $slug = $this->get_post_slug($post->type);
+
+        $url = '/' . $slug . '/' . $post_name;
+        return $url;
     }
 
     /*
@@ -971,7 +988,7 @@ class MoviesAn extends AbstractDBAn {
     }
 
     public function get_all_countries($cache = true) {
-        $id=1;
+        $id = 1;
         if ($cache) {
             static $dict;
             if (is_null($dict)) {
@@ -1320,6 +1337,13 @@ class MoviesAn extends AbstractDBAn {
         return $results;
     }
 
+    public function get_actor_by_id($aid = 0) {
+        $sql = sprintf("SELECT * FROM {$this->db['actors_imdb']} WHERE id=%d", $aid);
+        $results = $this->db_fetch_row($sql);
+
+        return $results;
+    }
+    
     public function get_movies_no_actors_meta($count) {
         $sql = sprintf("SELECT p.id, p.actors FROM {$this->db['movie_imdb']} p "
                 . "LEFT JOIN {$this->db['meta_actor']} m ON p.id = m.mid "
@@ -1424,31 +1448,8 @@ class MoviesAn extends AbstractDBAn {
     }
 
     public function create_slug($string, $glue = '-') {
-        $string = str_replace('&', ' and ', $string);
-        $string = preg_replace("/('|`)/", "", $string);
-
-        $table = array(
-            'Š' => 'S', 'š' => 's', 'Đ' => 'Dj', 'đ' => 'dj', 'Ž' => 'Z', 'ž' => 'z', 'Č' => 'C', 'č' => 'c', 'Ć' => 'C', 'ć' => 'c',
-            'À' => 'A', 'Á' => 'A', 'Â' => 'A', 'Ã' => 'A', 'Ä' => 'A', 'Å' => 'A', 'Æ' => 'A', 'Ç' => 'C', 'È' => 'E', 'É' => 'E',
-            'Ê' => 'E', 'Ë' => 'E', 'Ì' => 'I', 'Í' => 'I', 'Î' => 'I', 'Ï' => 'I', 'Ñ' => 'N', 'Ò' => 'O', 'Ó' => 'O', 'Ô' => 'O',
-            'Õ' => 'O', 'Ö' => 'O', 'Ø' => 'O', 'Ù' => 'U', 'Ú' => 'U', 'Û' => 'U', 'Ü' => 'U', 'Ý' => 'Y', 'Þ' => 'B', 'ß' => 'Ss',
-            'à' => 'a', 'á' => 'a', 'â' => 'a', 'ã' => 'a', 'ä' => 'a', 'å' => 'a', 'æ' => 'a', 'ç' => 'c', 'è' => 'e', 'é' => 'e',
-            'ê' => 'e', 'ë' => 'e', 'ì' => 'i', 'í' => 'i', 'î' => 'i', 'ï' => 'i', 'ð' => 'o', 'ñ' => 'n', 'ò' => 'o', 'ó' => 'o',
-            'ô' => 'o', 'õ' => 'o', 'ö' => 'o', 'ø' => 'o', 'ù' => 'u', 'ü' => 'u', 'ú' => 'u', 'û' => 'u', 'ý' => 'y', 'ý' => 'y', 'þ' => 'b',
-            'ÿ' => 'y', 'Ŕ' => 'R', 'ŕ' => 'r', '/' => '-', ' ' => '-'
-        );
-
-        // -- Remove duplicated spaces
-        $stripped = preg_replace(array('/\s{2,}/', '/[\t\n]/'), ' ', trim($string));
-
-        // -- Returns the slug
-        $slug = strtolower(strtr($stripped, $table));
-        $slug = preg_replace('~[^\pL\d]+~u', $glue, $slug);
-
-        $slug = preg_replace('/^-/', '', $slug);
-        $slug = preg_replace('/-$/', '', $slug);
-
-        return $slug;
+        // TODO REFACTOR
+        return $this->cm->create_slug($string, $glue);       
     }
 
     /*
@@ -1990,8 +1991,8 @@ class MoviesAn extends AbstractDBAn {
         $results = $this->db_fetch_row($sql);
         return $results;
     }
-    
-     /*
+
+    /*
      * Woke
      */
 
@@ -2355,13 +2356,13 @@ class MoviesAn extends AbstractDBAn {
         $sql = sprintf("SELECT * FROM {$this->db['meta_movie_boxint']} WHERE mid=%d", (int) $mid);
         $result = $this->db_results($sql);
         $ret = array();
-        if ($result){
+        if ($result) {
             $countryes = $this->get_all_countries();
             foreach ($result as $item) {
-                $country = isset($countryes[$item->country])?$countryes[$item->country]:$item->country;
-                $item->country=$country->name;
-                $item->country_slug=$country->slug;
-                $ret[$item->id]=$item;
+                $country = isset($countryes[$item->country]) ? $countryes[$item->country] : $item->country;
+                $item->country = $country->name;
+                $item->country_slug = $country->slug;
+                $ret[$item->id] = $item;
             }
         }
         return $ret;

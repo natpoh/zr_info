@@ -23,6 +23,7 @@ class CriticAvatars extends AbstractDB {
         'image/gif' => '.gif',
         'image/png' => '.png',
     ];
+    private $avatars;
 
     public function __construct($cm = '') {
         $this->cm = $cm ? $cm : new CriticMatic();
@@ -31,6 +32,7 @@ class CriticAvatars extends AbstractDB {
             'user_avatars' => 'data_user_avatars',
             'authors' => $table_prefix . 'critic_matic_authors',
             'meta_guest_avatar' => 'meta_guest_avatar',
+            'meta_guest_comments_avatar' => 'meta_guest_comments_avatar',
         );
     }
 
@@ -63,7 +65,7 @@ class CriticAvatars extends AbstractDB {
     }
 
     function get_avatar($avatar, $user, $size, $default) {
-
+        // UNUSED
         $email = '';
         $user_id = 0;
         if ($default == "neuro") {
@@ -156,6 +158,12 @@ class CriticAvatars extends AbstractDB {
         }
         $avatar = '<img class="neuro avatar upload" srcset="' . $img_thumb . '" width="' . $size . '" height="' . $size . '" data-orig="' . $img_path . '" />';
         return $avatar;
+    }
+
+    public function get_user_avatar($wp_uid = 0, $av_size = 200) {
+        // wp user
+        $author = $this->cm->get_author_by_wp_uid($wp_uid, true);
+        return $this->get_author_avatar($author, $av_size);
     }
 
     public function get_author_avatar($author, $av_size = 200) {
@@ -1371,7 +1379,7 @@ class CriticAvatars extends AbstractDB {
             );
             if ($item) {
                 // Update                
-                $this->db_update($data, $this->db['meta_guest_avatar'], $$item->id);
+                $this->db_update($data, $this->db['meta_guest_avatar'], $item->id);
             } else {
                 // Insert
                 $data['cid'] = $cid;
@@ -1379,5 +1387,92 @@ class CriticAvatars extends AbstractDB {
             }
         }
         return $avatar_user;
+    }
+
+    public function get_anon_avatar($comment, $avSize = 64) {
+        // Get anon avatar for comment
+        $cid = $comment->comment_ID;
+        $sql = sprintf("SELECT id, avid, type FROM {$this->db['meta_guest_comments_avatar']} WHERE cid=%d", $cid);
+        $item = $this->db_fetch_row($sql);
+        $avatars = $this->get_avatars();
+        if ($item) {
+            $array_avatars = isset($avatars[intval($item->type)]) ? $avatars[intval($item->type)] : array();
+            if ($array_avatars && isset($array_avatars[$item->avid])) {
+                // Meta exists and valid
+                $avatar_user = $array_avatars[$item->avid];
+                $avcode = $this->theme_anon_avatar($avatar_user, $avSize);
+                return $avcode;
+            }
+        }
+
+        // Generate new valid field
+        $stars_data = (int) rand(0, 5);
+        
+        if (defined("PY_REVIEWS_URL")) {
+            try {
+                $comment_content = $this->cleanAndEncodeContent($comment->comment_content, 3000);
+              
+                $clear_content = urlencode($comment_content);
+                $url = PY_REVIEWS_URL . "&reviews=" . $clear_content;
+                $cp = $this->cm->get_cp();
+                $result_json = $cp->get_proxy($url);
+                $result = json_decode($result_json);   
+                $percent = (float) $result->data->percent[0];             
+                $stars_data_float = $percent*5;
+                $stars_data = (int) $stars_data_float;           
+            } catch (Exception $exc) {
+                
+            }
+        }
+
+
+        $array_avatars = isset($avatars[intval($stars_data)]) ? $avatars[intval($stars_data)] : array();
+        if (!$array_avatars) {
+            return '';
+        }
+
+        $rand_key = array_rand($array_avatars, 1);
+        $avatar_user = $array_avatars[$rand_key];
+        $data = array(
+            'avid' => $rand_key,
+            'type' => $stars_data,
+        );
+        if ($item) {
+            // Update                
+            $this->db_update($data, $this->db['meta_guest_comments_avatar'], $item->id);
+        } else {
+            // Insert
+            $data['cid'] = $cid;
+            $this->db_insert($data, $this->db['meta_guest_comments_avatar']);
+        }
+
+        //comments_avatar
+        $avcode = $this->theme_anon_avatar($avatar_user, $avSize);
+        return $avcode;
+    }
+
+    public function cleanAndEncodeContent($content, $len = 3000) {
+        $content = strip_tags($content);
+
+        // Удаляем все, кроме английских букв, цифр и знаков препинания       
+        $cleaned = preg_replace("/[^a-zA-Z' ]/us", ' ', $content);
+        $cleaned = preg_replace("/  /s", " ", $cleaned);
+
+        // Обрезаем до 200 символов
+        $truncated = mb_substr($cleaned, 0, $len);
+
+        return $truncated;
+    }
+
+    public function theme_anon_avatar($avatar_user, $avSize=64) {
+        $avcode = '<div class="a_img_container_audience" style="background: url(' . WP_SITEURL . '/wp-content/uploads/avatars/custom/' . $avatar_user . '); background-size: cover;"></div>';
+        return $avcode;
+    }
+
+    public function get_avatars() {
+        if (!$this->avatars) {
+            $this->avatars = $this->cm->get_avatars();
+        }
+        return $this->avatars;
     }
 }

@@ -309,15 +309,15 @@ class CriticEmotions extends AbstractDB {
         return $reaction;
     }
 
-    private function get_or_create_author_by_name($name = '') {
-        //Get author id
+    public function get_or_create_author_by_name($name = '') {
+        // Get author id
         $id = $this->get_author_by_name($name);
 
         if (!$id) {
             // Create the author
             $sql = sprintf("INSERT INTO {$this->db['emotions_authors']} (name) VALUES ('%s')", $this->escape($name));
             $this->db_query($sql);
-            //Get the id
+            // Get the id
             $id = $this->getInsertId('id', $this->db['emotions_authors']);
         }
 

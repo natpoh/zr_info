@@ -28,16 +28,14 @@ class AbstractFunctions {
         return $ret;
     }
 
-    public function sync_insert_data($data, $db, $sync_client = true, $sync_data = true, $priority = 5,$request='') {
+    public function sync_insert_data($data, $db, $sync_client = true, $sync_data = true, $priority = 5, $request = '') {
         $update = false;
         $id = 0;
-
-
 
         if ($sync_client) {
             // Client mode
             // Get id
-            $id = $this->get_remote_id($db,$request);
+            $id = $this->get_remote_id($db, $request);
             if (!$id) {
                 $ex_msg = 'Can not get id from the Server. Table:' . $db;
                 throw new Exception($ex_msg);
@@ -73,8 +71,8 @@ class AbstractFunctions {
 
         global $debug;
         if ($debug) {
-          //  !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
-          //  TMDB::var_dump_table(['sync_update_data', $data, $id, $db, $sync_data, $priority]);
+            //  !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
+            //  TMDB::var_dump_table(['sync_update_data', $data, $id, $db, $sync_data, $priority]);
         }
 
         $this->db_update($data, $db, $id);
@@ -114,16 +112,15 @@ class AbstractFunctions {
     }
 
     // Sync
-    public function get_remote_id($db = '',$request='') {
+    public function get_remote_id($db = '', $request = '') {
 
         if (!class_exists('Import')) {
             include ABSPATH . "analysis/export/import_db.php";
         }
 
-        $array = array('table' => $db, 'column' => 'id','request'=>$request);
+        $array = array('table' => $db, 'column' => 'id', 'request' => $request);
         $id_array = Import::get_remote_id($array);
         $rid = $id_array['id'];
-
 
         return $rid;
     }
@@ -381,6 +378,81 @@ class AbstractFunctions {
         }
         $date = gmdate('Y-m-d H:i:s', $time);
         return $date;
+    }
+
+    public function humanDate($current_time, $time) {
+
+        $d = $current_time - $time;
+        if ($d > 0) {
+            if ($d < 3600) {
+                //минут назад
+                switch (floor($d / 60)) {
+                    case 0:
+                    case 1:
+                        return "just now";
+                        break;
+                    case 2:
+                        return "just now";
+                        break;
+                    case 3:
+                        return "three minutes ago";
+                        break;
+                    case 4:
+                        return "four minutes ago";
+                        break;
+                    case 5:
+                        return "five minutes ago";
+                        break;
+                    default:
+                        return "" . floor($d / 60) . ' minutes ago';
+                        break;
+                }
+            } elseif ($d < 18000) {
+                //часов назад
+                switch (floor($d / 3600)) {
+                    case 1:
+                        return "an hour ago";
+                        break;
+                    case 2:
+                        return "two hours ago";
+                        break;
+                    case 3:
+                        return "three hours ago";
+                        break;
+                    case 4:
+                        return "four hours ago";
+                        break;
+                }
+            } elseif ($d < 172800) {
+                $day = date('d', $time);
+                $curr_day = date('d', $current_time);
+                if ($day == $curr_day) {
+                    return "today at " . date('H:i', $time);
+                }
+                if (($day - 1) == $curr_day) {
+                    return "yesterday at " . date('H:i', $time);
+                }
+                if (($day - 2) == $curr_day) {
+                    return "the day before yesterday at " . date('H:i', $time);
+                }
+            }
+        }
+
+
+        $ret = date('j', $time);
+
+        $mounts = array(' ', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November ', 'December');
+        $mount = $mounts[(int) date('m', $time)];
+
+        $ret .= " $mount";
+        $y = date('Y', $time);
+
+        if ($y != date('Y', $current_time)) {
+            $ret .= " $y";
+        }
+
+        $ret .= ' ' . date('G:i', $time);
+        return $ret;
     }
 
     function timer_start() { // if called like timer_stop(1), will echo $timetotal

@@ -7,6 +7,8 @@
 
 print $tabs;
 
+// Parser post type
+$post_type=3;
 
 if ($cid) {
     $options = $this->cp->get_options($campaign);
@@ -18,7 +20,7 @@ if ($cid) {
             <fieldset>
 
                 <input type="hidden" name="edit_parser" value="1">
-                <input type="hidden" name="id" class="id" value="<?php print $campaign->id ?>">
+                <input id="camp_id" data-type="<?php print $post_type ?>" type="hidden" name="id" class="id" value="<?php print $campaign->id ?>">   
 
                 <label>
                     <span class="title"><?php print __('Title') ?></span>
@@ -180,6 +182,10 @@ if ($cid) {
                 </label>
                 
                 <br />
+                
+                <?php print $this->cm->theme_camp_tags($campaign->id, $post_type) ?>
+                
+                
                 <?php
                 if ($campaign->type == 1) {
                     $yt_urls = $options['yt_urls'];

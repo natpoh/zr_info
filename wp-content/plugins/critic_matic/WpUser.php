@@ -27,13 +27,17 @@ class WpUser extends AbstractDBWp {
             $siteurl = $this->get_option('siteurl', '', false, false);
         }
 
-        if ($siteurl) {
-            define('COOKIEHASH', md5($siteurl));
-        } else {
-            define('COOKIEHASH', '');
+        if (!defined('COOKIEHASH')) {
+            if ($siteurl) {
+                define('COOKIEHASH', md5($siteurl));
+            } else {
+                define('COOKIEHASH', '');
+            }
         }
-        define('LOGGED_IN_COOKIE', 'wordpress_logged_in_' . COOKIEHASH);
 
+        if (!defined('LOGGED_IN_COOKIE')) {
+            define('LOGGED_IN_COOKIE', 'wordpress_logged_in_' . COOKIEHASH);
+        }
         $cookie = $_COOKIE[LOGGED_IN_COOKIE];
         $scheme = 'logged_in';
 
@@ -136,13 +140,12 @@ class WpUser extends AbstractDBWp {
         return $result;
     }
 
-    
     public function get_user_by_id($id) {
         $sql = sprintf("SELECT * FROM {$this->db['users']} WHERE ID='%d'", $id);
         $result = $this->db_fetch_row($sql);
         return $result;
     }
-    
+
     public function get_user_by_login($user_login) {
         $sql = sprintf("SELECT * FROM {$this->db['users']} WHERE user_login='%s'", $user_login);
         $result = $this->db_fetch_row($sql);
@@ -403,4 +406,207 @@ class WpUser extends AbstractDBWp {
 
         return $hmac;
     }
+
+    /**
+     * Creates a cryptographic token tied to a specific action, user, user session,
+     * and window of time.
+     *
+     * @since 2.0.3
+     * @since 4.0.0 Session tokens were integrated with nonce creation.
+     *
+     * @param string|int $action Scalar value to add context to the nonce.
+     * @return string The token.
+     */
+    function wp_create_nonce($action = -1) {
+        $user = $this->get_current_user();
+        $uid = (int) $user->ID;
+
+        $token = $this->wp_get_session_token();
+        $i = $this->wp_nonce_tick($action);
+
+        return substr($this->wp_hash($i . '|' . $action . '|' . $uid . '|' . $token, 'nonce'), -12, 10);
+    }
+
+    /**
+     * Retrieves the current session token from the logged_in cookie.
+     *
+     * @since 4.0.0
+     *
+     * @return string Token.
+     */
+    function wp_get_session_token() {
+        $cookie = $this->wp_parse_auth_cookie('', 'logged_in');
+        return !empty($cookie['token']) ? $cookie['token'] : '';
+    }
+
+    /**
+     * Parses a cookie into its components.
+     *
+     * @since 2.7.0
+     * @since 4.0.0 The `$token` element was added to the return value.
+     *
+     * @param string $cookie Authentication cookie.
+     * @param string $scheme Optional. The cookie scheme to use: 'auth', 'secure_auth', or 'logged_in'.
+     * @return string[]|false {
+     *     Authentication cookie components. None of the components should be assumed
+     *     to be valid as they come directly from a client-provided cookie value. If
+     *     the cookie value is malformed, false is returned.
+     *
+     *     @type string $username   User's username.
+     *     @type string $expiration The time the cookie expires as a UNIX timestamp.
+     *     @type string $token      User's session token used.
+     *     @type string $hmac       The security hash for the cookie.
+     *     @type string $scheme     The cookie scheme to use.
+     * }
+     */
+    function wp_parse_auth_cookie($cookie = '', $scheme = '') {
+
+        $config_keys = array(
+            'AUTH_KEY',
+            'SECURE_AUTH_KEY',
+            'LOGGED_IN_KEY',
+            'NONCE_KEY',
+            'AUTH_SALT',
+            'SECURE_AUTH_SALT',
+            'LOGGED_IN_SALT',
+            'NONCE_SALT',
+            'ADD_DOMAIN',
+            'MAIN_DOMAIN',
+        );
+
+        // Cookie
+        if (defined('WP_SITEURL')) {
+            $siteurl = WP_SITEURL;
+        } else {
+            $siteurl = $this->get_option('siteurl', '', false, false);
+        }
+
+        if (!defined('COOKIEHASH')) {
+            if ($siteurl) {
+                define('COOKIEHASH', md5($siteurl));
+            } else {
+                define('COOKIEHASH', '');
+            }
+        }
+
+        if (empty($cookie)) {
+            switch ($scheme) {
+                case 'auth':
+                    if (!defined('AUTH_COOKIE')) {
+                        define('AUTH_COOKIE', 'wordpress_' . COOKIEHASH);
+                    }
+                    $cookie_name = AUTH_COOKIE;
+                    break;
+                case 'secure_auth':
+                    if (!defined('SECURE_AUTH_COOKIE')) {
+                        define('SECURE_AUTH_COOKIE', 'wordpress_sec_' . COOKIEHASH);
+                    }
+                    $cookie_name = SECURE_AUTH_COOKIE;
+                    break;
+                case 'logged_in':
+                    if (!defined('LOGGED_IN_COOKIE')) {
+                        define('LOGGED_IN_COOKIE', 'wordpress_logged_in_' . COOKIEHASH);
+                    }
+                    $cookie_name = LOGGED_IN_COOKIE;
+                    break;
+                default:
+                    if (is_ssl()) {
+                        if (!defined('SECURE_AUTH_COOKIE')) {
+                            define('SECURE_AUTH_COOKIE', 'wordpress_sec_' . COOKIEHASH);
+                        }
+                        $cookie_name = SECURE_AUTH_COOKIE;
+                        $scheme = 'secure_auth';
+                    } else {
+                        if (!defined('AUTH_COOKIE')) {
+                            define('AUTH_COOKIE', 'wordpress_' . COOKIEHASH);
+                        }
+                        $cookie_name = AUTH_COOKIE;
+                        $scheme = 'auth';
+                    }
+            }
+
+            if (empty($_COOKIE[$cookie_name])) {
+                return false;
+            }
+            $cookie = $_COOKIE[$cookie_name];
+        }
+
+        $cookie_elements = explode('|', $cookie);
+        if (count($cookie_elements) !== 4) {
+            return false;
+        }
+
+        list( $username, $expiration, $token, $hmac ) = $cookie_elements;
+
+        return compact('username', 'expiration', 'token', 'hmac', 'scheme');
+    }
+
+    /**
+     * Returns the time-dependent variable for nonce creation.
+     *
+     * A nonce has a lifespan of two ticks. Nonces in their second tick may be
+     * updated, e.g. by autosave.
+     *
+     * @since 2.5.0
+     * @since 6.1.0 Added `$action` argument.
+     *
+     * @param string|int $action Optional. The nonce action. Default -1.
+     * @return float Float value rounded up to the next highest integer.
+     */
+    function wp_nonce_tick($action = -1) {
+        /**
+         * Filters the lifespan of nonces in seconds.
+         *
+         * @since 2.5.0
+         * @since 6.1.0 Added `$action` argument to allow for more targeted filters.
+         *
+         * @param int        $lifespan Lifespan of nonces in seconds. Default 86,400 seconds, or one day.
+         * @param string|int $action   The nonce action, or -1 if none was provided.
+         */
+        $nonce_life = 86400;
+
+        return ceil(time() / ( $nonce_life / 2 ));
+    }
+
+    /**
+     * Verifies that a correct security nonce was used with time limit.
+     *
+     * A nonce is valid for 24 hours (by default).
+     *
+     * @since 2.0.3
+     *
+     * @param string     $nonce  Nonce value that was used for verification, usually via a form field.
+     * @param string|int $action Should give context to what is taking place and be the same when nonce was created.
+     * @return int|false 1 if the nonce is valid and generated between 0-12 hours ago,
+     *                   2 if the nonce is valid and generated between 12-24 hours ago.
+     *                   False if the nonce is invalid.
+     */
+    function wp_verify_nonce($nonce, $action = -1) {
+        $nonce = (string) $nonce;
+        $user = $this->get_current_user();
+        $uid = (int) $user->ID;
+
+        if (empty($nonce)) {
+            return false;
+        }
+
+        $token = $this->wp_get_session_token();
+        $i = $this->wp_nonce_tick($action);
+
+        // Nonce generated 0-12 hours ago.
+        $expected = substr($this->wp_hash($i . '|' . $action . '|' . $uid . '|' . $token, 'nonce'), -12, 10);
+        if (hash_equals($expected, $nonce)) {
+            return 1;
+        }
+
+        // Nonce generated 12-24 hours ago.
+        $expected = substr(wp_hash(( $i - 1 ) . '|' . $action . '|' . $uid . '|' . $token, 'nonce'), -12, 10);
+        if (hash_equals($expected, $nonce)) {
+            return 2;
+        }
+
+        // Invalid nonce.
+        return false;
+    }
+
 }

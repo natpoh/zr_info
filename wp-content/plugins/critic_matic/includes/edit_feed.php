@@ -22,6 +22,7 @@ print $tabs;
  */
 if ($cid) {
     $options = unserialize($campaign->options);
+    $post_type = 1;
     ?>
     <form accept-charset="UTF-8" method="post" id="campaign">
 
@@ -29,7 +30,7 @@ if ($cid) {
             <fieldset>
 
                 <input type="hidden" name="edit_feed" value="1">
-                <input type="hidden" name="id" class="id" value="<?php print $campaign->id ?>">
+                <input id="camp_id" data-type="<?php print $post_type ?>" type="hidden" name="id" class="id" value="<?php print $campaign->id ?>">
 
                 <label>
                     <span class="title"><?php print __('Title') ?></span>
@@ -106,6 +107,9 @@ if ($cid) {
                     <span class="input-text-wrap"><input type="text" name="body_len" value="<?php print $body_len ?>"></span>
                     <span class="inline-edit"><?php print __('Minimal valid length of the body for non-video posts.') ?></span> 
                 </label>
+                
+                <?php print $this->cm->theme_camp_tags($campaign->id, $post_type) ?>
+
                 <br />
                 <label class="inline-edit-status">                
                     <?php
@@ -148,7 +152,7 @@ if ($cid) {
                 $rules = isset($options['rules']) ? $options['rules'] : $def_options['options']['rules'];
                 $this->cf->show_rules($rules, true);
                 ?> 
-                <?php wp_nonce_field('critic-feeds-options', 'critic-feeds-nonce'); ?>
+    <?php wp_nonce_field('critic-feeds-options', 'critic-feeds-nonce'); ?>
                 <br />
                 <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save') ?>" class="button-primary">  
                 <br /><br />

@@ -1,0 +1,92 @@
+#tag-container {
+    display: flex;
+    align-items: center;  /* Центровка по вертикали */
+
+}
+
+#tag-input {
+    flex-grow: 1;  /* Заставляем поле ввода занимать все оставшееся пространство */
+
+
+}
+
+#add-tag-button {
+
+    cursor: pointer;
+}
+
+
+#suggestions {
+    list-style: none;
+    padding: 0;
+    max-height: 150px;
+    background: #fff;
+
+}
+
+#suggestions li {
+    padding: 5px;
+    cursor: pointer;
+}
+
+#suggestions li:hover {
+    background-color: #2271b1;
+    color: #fff;
+}
+
+#tag-list {
+    list-style: none;
+    padding: 0;
+
+}
+
+#tag-list li {
+    display: inline-block;
+    padding: 5px;
+    background-color: #e0e0e0;
+    margin: 5px;
+    border-radius: 5px;
+}
+
+#popular-tags, #tag-list {
+    margin: 0;
+}
+
+#popular-tags li {
+    display: inline-block;
+    padding: 5px 10px;
+    background-color: #d3d3d3;
+    margin: 5px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+#popular-tags li:hover {
+    background-color: #b3b3b3;
+}
+
+#tag-list li {
+    display: inline-block;
+    padding: 5px 10px;
+    background-color: #2271b1;
+    margin: 5px;
+    border-radius: 5px;
+    position: relative;
+    padding-right: 25px;
+    color: #fff;
+    cursor: pointer;
+}
+
+#tag-list li:after{
+    content: "×";
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    color: #fff;
+    font-size: 16px;
+}
+
+.flex-row {
+    display: flex;
+    align-items: center;
+}
