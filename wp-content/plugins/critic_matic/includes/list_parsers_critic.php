@@ -29,6 +29,7 @@ if (sizeof($campaigns) > 0) {
             <?php $this->sorted_head('date', 'Date', $orderby, $order, $page_url) ?> 
             <?php $this->sorted_head('title', 'Title', $orderby, $order, $page_url) ?>
             <?php $this->sorted_head('author_name', 'Author', $orderby, $order, $page_url) ?>
+            <th><?php print __('Tags') ?></th>
             <?php $this->sorted_head('type', 'Type', $orderby, $order, $page_url) ?>
             <?php $this->sorted_head('status', 'State', $orderby, $order, $page_url) ?>            
             <th><?php print __('Find URLs') ?></th> 
@@ -96,7 +97,17 @@ if (sizeof($campaigns) > 0) {
                             print $action_links;
                             ?>
                         </td>
-                        <td><?php print $author_link ?></td>              
+                        <td><?php print $author_link ?></td>      
+                        <td><?php 
+                        $tags = $this->cm->get_camp_tags($parser->id,3);
+                        if ($tags){
+                            $tag_list=[];
+                            foreach ($tags as $tag) {
+                                $tag_list[]=$tag->name;
+                            }
+                            print implode(', ', $tag_list);
+                        }                        
+                        ?></td> 
                         <td><?php print $this->cp->parser_type[$parser->type] ?></td>
                         <td class="nowrap"><i class="sticn st-<?php print $parser_status_int ?>"></i><?php print $this->cp->camp_state[$parser->status] ?></td>
                         <td class="nowrap">

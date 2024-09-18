@@ -26,6 +26,7 @@ if (sizeof($feeds) > 0) {
             <?php $this->sorted_head('date', 'Date', $orderby, $order, $page_url) ?> 
             <?php $this->sorted_head('title', 'Title', $orderby, $order, $page_url) ?>
             <?php $this->sorted_head('author_name', 'Author', $orderby, $order, $page_url) ?>
+            <th><?php print __('Tags') ?></th>
             <?php $this->sorted_head('status', 'State', $orderby, $order, $page_url) ?>
             <?php $this->sorted_head('update_interval', 'Update interval', $orderby, $order, $page_url) ?>
             <?php $this->sorted_head('last_update', 'Last update', $orderby, $order, $page_url) ?>            
@@ -70,7 +71,17 @@ if (sizeof($feeds) > 0) {
                             print $action_links;
                             ?>
                         </td>
-                        <td><?php print $author_link ?></td>              
+                        <td><?php print $author_link ?></td>      
+                        <td><?php 
+                        $tags = $this->cm->get_camp_tags($feed->id,1);
+                        if ($tags){
+                            $tag_list=[];
+                            foreach ($tags as $tag) {
+                                $tag_list[]=$tag->name;
+                            }
+                            print implode(', ', $tag_list);
+                        }                        
+                        ?></td> 
                         <td class="nowrap"><i class="sticn st-<?php print $status_int ?>"></i><?php print $this->cf->feed_state[$feed->status] ?></td>
                         <td><?php print $this->cf->update_interval[$feed->update_interval] ?></td>
                         <td><?php print $this->cf->curr_date($feed->last_update) ?></td>
