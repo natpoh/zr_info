@@ -904,6 +904,15 @@ class SearchFacets extends AbstractDB {
                         $tags[] = array('name' => $tag->name, 'type' => $key, 'title' => $title, 'id' => $slug, 'parent' => $key, 'minus' => $minus);
                     }
                 }
+            } else if ($key == 'ctags') {
+                $value = is_array($value) ? $value : array($value);
+                foreach ($value as $slug) {
+                    $tag = $this->cm->get_camp_tag_by_slug($slug);
+                    if ($tag) {
+                        $this->cs->search_filters[$key][$slug]['key'] = $tag->id;
+                        $tags[] = array('name' => $tag->name, 'type' => $key, 'title' => $title, 'id' => $slug, 'parent' => $key, 'minus' => $minus);
+                    }
+                }
             } else if ($key == 'state') {
                 $value = is_array($value) ? $value : array($value);
                 foreach ($value as $slug) {
@@ -1802,7 +1811,9 @@ class SearchFacets extends AbstractDB {
                     $this->show_author_facet($data);
                 } else if ($key == 'tags') {
                     $this->show_tags_facet($data, $view_more);
-                } else if ($key == 'from') {
+                } else if ($key == 'ctags') {
+                    $this->show_ctags_facet($data, $view_more);
+                }else if ($key == 'from') {
                     $this->show_from_author_facet($data, $view_more);
                 } else if ($key == 'site') {
                     $this->show_from_site_facet($data, $view_more);
@@ -4397,6 +4408,39 @@ class SearchFacets extends AbstractDB {
 
         $filter = 'tags';
         $title = 'Tags';
+        $ftype = $filter;
+        $facet_data = array(
+            'filter' => $filter,
+            'data' => $dates,
+            'title' => $title,
+            'more' => $more,
+            'ftype' => $filter,
+        );
+        $this->theme_facet_multi($facet_data);
+    }
+    
+    public function show_ctags_facet($data, $more) {
+        $keys = array();
+        foreach ($data as $value) {
+            $keys[] = (int) $value->id;
+        }
+        $tags = $this->cm->get_camp_tags_by_ids($keys);
+
+        $dates = array();
+        foreach ($data as $value) {
+            $id = (int) $value->id;
+            $cnt = $value->cnt;
+            if (isset($tags[$id])) {
+                $slug = $tags[$id]->slug;
+                $title = $tags[$id]->name;
+                $dates[$slug] = array('title' => $title, 'count' => $cnt);
+            }
+        }
+
+        ksort($dates);
+
+        $filter = 'ctags';
+        $title = 'Campaing tags';
         $ftype = $filter;
         $facet_data = array(
             'filter' => $filter,

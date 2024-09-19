@@ -2865,6 +2865,33 @@ class CriticMatic extends AbstractDB {
 
         return $id;
     }
+    
+    public function get_camp_tags_by_ids($ids) {
+        $sql = sprintf("SELECT id, name, slug FROM {$this->db['cm_camp_tags']} WHERE id IN(%s)", implode(',', $ids));
+        $result = $this->db_results($sql);
+        $tags_arr = array();
+        if (sizeof($result)) {
+            foreach ($result as $tag) {
+                $tags_arr[$tag->id] = $tag;
+            }
+        }
+        return $tags_arr;
+    }
+    
+    public function get_camp_tag_by_slug($slug, $cache = true) {
+        //Get from cache
+        static $dict;
+        if (is_null($dict)) {
+            $dict = array();
+        }
+        if ($cache && isset($dict[$slug])) {
+            return $dict[$slug];
+        }
+        $sql = sprintf("SELECT id, name FROM {$this->db['cm_camp_tags']} WHERE slug='%s'", $this->escape($slug));
+        $result = $this->db_fetch_row($sql);
+        $dict[$slug] = $result;
+        return $result;
+    }
 
     public function get_camp_tags($cid = 0, $type = 0) {
         $sql = sprintf("SELECT t.id, t.name, t.slug FROM {$this->db['cm_camp_tag_meta']} m"

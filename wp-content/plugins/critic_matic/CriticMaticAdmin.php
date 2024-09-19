@@ -438,7 +438,7 @@ class CriticMaticAdmin {
         $tag_ids = array();
         if ($tags){
             foreach ($tags as $name) {
-                $slug = $this->cm->create_slug($name);
+                $slug = $this->cm->create_slug($name,'');
                 $tag_id = $this->cm->get_or_create_camp_tag_id($name, $slug);
                 $tag_ids[]=$tag_id;
             }

@@ -573,6 +573,11 @@ class CriticSearch extends AbstractDB {
             'tabs' => array('critics'),
             'weight' => 60,
         ),
+        'ctags' => array(
+            'title' => 'Campaign Tags',
+            'tabs' => array('critics'),
+            'weight' => 70,
+        ),
         'from' => array(
             'title' => 'From author',
             'tabs' => array('critics', 'filters', 'watchlists','comments'),
@@ -3217,7 +3222,12 @@ class CriticSearch extends AbstractDB {
                 $filters_and = $this->get_filters_query($filters, 'tags', $query_type);
                 $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1" . $filters_and['filter'] . $match
                         . " GROUP BY tags ORDER BY cnt DESC LIMIT 0,$limit";
-            } else if ($facet == 'from') {
+            } else if ($facet == 'ctags') {
+                $limit = $expand == $facet ? $this->facet_max_limit : $this->facet_limit;
+                $filters_and = $this->get_filters_query($filters, 'tags', $query_type);
+                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1" . $filters_and['filter'] . $match
+                        . " GROUP BY {$facet} ORDER BY cnt DESC LIMIT 0,$limit";
+            }else if ($facet == 'from') {
                 $limit = $expand == 'from' ? $this->facet_max_limit : $this->facet_limit;
                 $filters_and = $this->get_filters_query($filters, 'from', $query_type);
                 $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1 AND author_type!=2" . $filters_and['filter'] . $match
@@ -4177,6 +4187,13 @@ class CriticSearch extends AbstractDB {
                 $tag = $this->cm->get_tag_by_slug($slug, true);
                 $this->search_filters[$key][$slug] = array('key' => $tag->id, 'title' => $tag->name);
             }
+        } else if ($key == 'ctags') {
+            // Tags                       
+            $value = is_array($value) ? $value : array($value);
+            foreach ($value as $slug) {
+                $tag = $this->cm->get_camp_tag_by_slug($slug, true);
+                $this->search_filters[$key][$slug] = array('key' => $tag->id, 'title' => $tag->name);
+            }
         } else if ($key == 'movie') {
             // Movie                 
             $value = is_array($value) ? $value : array($value);
@@ -4334,6 +4351,9 @@ class CriticSearch extends AbstractDB {
                         // From author
                         $filters_and[$key] = $this->filter_multi_value($key, $value, true);
                     } else if ($key == 'tags') {
+                        // Tags                       
+                        $filters_and[$key] = $this->filter_multi_value($key, $value, true);
+                    }  else if ($key == 'ctags') {
                         // Tags                       
                         $filters_and[$key] = $this->filter_multi_value($key, $value, true);
                     } else if ($key == 'state') {
