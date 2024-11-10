@@ -12,7 +12,7 @@ use OpenApi\Annotations as OA;
  * @OA\Info(
  *     description="",
  *     version="1.0.0",
- *     title="FilmDemographics API",
+ *     title="ZR API",
  *     termsOfService="http://swagger.io/terms/",
  *     @OA\Contact(
  *         email="apiteam@swagger.io"
