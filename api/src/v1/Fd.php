@@ -35,12 +35,12 @@ use OpenApi\Annotations as OA;
  *     description="Get media by string request",
  * )
  * @OA\Server(
+ *     description="ZR API Mocking",
+ *     url="https://api.zgreviews.com/v1"
+ * )
+ * * @OA\Server(
  *     description="FilmDemographics API Mocking",
  *     url="https://api.filmdemographics.com/v1"
- * )
- * @OA\Server(
- *     description="Zgreviews API Mocking",
- *     url="https://api.zgreviews.com/v1"
  * )
  * #OA\Server(
  *     description="DEV FilmDemographics API Mocking",
