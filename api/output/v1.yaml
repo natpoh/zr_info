@@ -13,6 +13,9 @@ servers:
   -
     url: 'https://api.filmdemographics.com/v1'
     description: 'FilmDemographics API Mocking'
+  -
+    url: 'https://api.zgreviews.com/v1'
+    description: 'Zgreviews API Mocking'
 paths:
   '/media/{mediaId}':
     get:
