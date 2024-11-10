@@ -119,11 +119,276 @@ paths:
         -
           name: s
           in: query
-          description: 'Search string. Type to find media by title and release year'
+          description: 'Search string (e.g., ''Matrix''). Type to find media by title and release year'
           required: false
           schema:
             type: string
-          example: matrix
+        -
+          name: kmwoke
+          in: query
+          description: 'Filter items by specific keywords related to woke themes. Accepts args:''woke,lgbt,lgb,qtia''. Use a comma-separated list for multiple keywords (e.g., ''woke,lgbt'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-kmwoke
+          in: query
+          description: 'Exclude items by specific keywords related to woke themes. Accepts args:''woke,lgbt,lgb,qtia''. Use a comma-separated list for multiple keywords (e.g., ''woke,lgbt'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: woke
+          in: query
+          description: 'Woke rating filter. Accepts a range in the format ''min-max'' (e.g., ''1-20''), where both ''min'' and ''max'' can range from 1 to 20.'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-woke
+          in: query
+          description: 'Exclude items with a certain woke rating. Accepts a range in the format ''min-max'' (e.g., ''1-20''), where both ''min'' and ''max'' can range from 1 to 20.'
+          required: false
+          schema:
+            type: string
+        -
+          name: lgbt
+          in: query
+          description: 'LGBT rating filter. Accepts a range in the format ''min-max'' (e.g., ''1-20''), where both ''min'' and ''max'' can range from 1 to 20.'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-lgbt
+          in: query
+          description: 'Exclude items with a certain LGBT rating. Accepts a range in the format ''min-max'' (e.g., ''1-20''), where both ''min'' and ''max'' can range from 1 to 20.'
+          required: false
+          schema:
+            type: string
+        -
+          name: lgb
+          in: query
+          description: 'LGB rating filter. Accepts a range in the format ''min-max'' (e.g., ''1-20''), where both ''min'' and ''max'' can range from 1 to 20.'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-lgb
+          in: query
+          description: 'Exclude items with a certain LGB rating. Accepts a range in the format ''min-max'' (e.g., ''1-20''), where both ''min'' and ''max'' can range from 1 to 20.'
+          required: false
+          schema:
+            type: string
+        -
+          name: qtia
+          in: query
+          description: 'QTIA rating filter. Accepts a range in the format ''min-max'' (e.g., ''1-20''), where both ''min'' and ''max'' can range from 1 to 20.'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-qtia
+          in: query
+          description: 'Exclude items with a certain QTIA rating. Accepts a range in the format ''min-max'' (e.g., ''1-20''), where both ''min'' and ''max'' can range from 1 to 20.'
+          required: false
+          schema:
+            type: string
+        -
+          name: rating
+          in: query
+          description: 'Family Friendly Score filter. Rating on a scale from 0.0 to 5.0, multiplied by 10 for API. Enter integers in the range from 0 to 50 in ''min-max'' format (e.g. ''10-40'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-rating
+          in: query
+          description: 'Exclude items with a certain Family Friendly Score rating. Rating on a scale from 0.0 to 5.0, multiplied by 10 for API. Enter integers in the range from 0 to 50 in ''min-max'' format (e.g. ''10-40'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: rmedia
+          in: query
+          description: 'MediaVersity filter. Rating on a scale from 0.0 to 5.0, multiplied by 10 for API. Enter integers in the range from 0 to 50 in ''min-max'' format (e.g. ''10-40'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-rmedia
+          in: query
+          description: 'Exclude items with a certain MediaVersity rating. Rating on a scale from 0.0 to 5.0, multiplied by 10 for API. Enter integers in the range from 0 to 50 in ''min-max'' format (e.g. ''10-40'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: mediaversity
+          in: query
+          description: 'MediaVersity A-F filter. Accepts args:''a,b,c,d,f''. Use a comma-separated list for multiple keywords (e.g., ''a,b'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-mediaversity
+          in: query
+          description: 'Exclude items by specific keywords related to MediaVersity A-F themes. Accepts args:''a,b,c,d,f''. Use a comma-separated list for multiple keywords (e.g., ''a,b'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: rcherry
+          in: query
+          description: 'CherryPicks filter. Enter integers in the range from 0 to 100 in ''min-max'' format (e.g. ''0-40'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-rcherry
+          in: query
+          description: 'Exclude items with a certain CherryPicks rating. Enter integers in the range from 0 to 100 in ''min-max'' format (e.g. ''0-40'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: wokeornot
+          in: query
+          description: 'WokerNot filter. Enter integers in the range from 0 to 100 in ''min-max'' format (e.g. ''0-40'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-wokeornot
+          in: query
+          description: 'Exclude items with a certain WokerNot rating. Enter integers in the range from 0 to 100 in ''min-max'' format (e.g. ''0-40'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: bechdeltest
+          in: query
+          description: 'BechdelTest filter. Accepts args:''nowomen,notalk,talk,pass''. Use a comma-separated list for multiple keywords (e.g., ''talk,pass'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-bechdeltest
+          in: query
+          description: 'Exclude items by specific keywords related to BechdelTest themes. Accepts args:''nowomen,notalk,talk,pass''. Use a comma-separated list for multiple keywords (e.g., ''talk,pass'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: worthit
+          in: query
+          description: 'WorthItOrWoke filter. Accepts args:''worthit,nonwoke,wokeish,woke''. Use a comma-separated list for multiple keywords (e.g., ''wokeish,woke'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-worthit
+          in: query
+          description: 'Exclude items by specific keywords related to WorthItOrWoke themes. Accepts args:''worthit,nonwoke,wokeish,woke''. Use a comma-separated list for multiple keywords (e.g., ''wokeish,woke'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: auvote
+          in: query
+          description: 'Audience Warnings Suggestion filter. Accepts args:''pay,free,skip''. Use a comma-separated list for multiple keywords (e.g., ''pay,free'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-auvote
+          in: query
+          description: 'Exclude items by specific keywords related to Audience Warnings Suggestion themes. Accepts args:''pay,free,skip''. Use a comma-separated list for multiple keywords (e.g., ''pay,free'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: auneo
+          in: query
+          description: 'Audience Warnings NEO-MARXISM filter. Enter integers in the range from 0 to 5 in ''min-max'' format (e.g. ''0-5'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-auneo
+          in: query
+          description: 'Exclude items with a certain Audience NEO-MARXISM rating. Enter integers in the range from 0 to 5 in ''min-max'' format (e.g. ''0-5'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: auneo
+          in: query
+          description: 'Audience Warnings NEO-MARXISM filter. Enter integers in the range from 0 to 5 in ''min-max'' format (e.g. ''0-5'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-auneo
+          in: query
+          description: 'Exclude items with a certain Audience NEO-MARXISM rating. Enter integers in the range from 0 to 5 in ''min-max'' format (e.g. ''0-5'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: aumisandry
+          in: query
+          description: 'Audience Warnings FEMINISM filter. Enter integers in the range from 0 to 5 in ''min-max'' format (e.g. ''0-5'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-aumisandry
+          in: query
+          description: 'Exclude items with a certain Audience FEMINISM rating. Enter integers in the range from 0 to 5 in ''min-max'' format (e.g. ''0-5'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: auaffirmative
+          in: query
+          description: 'Audience Warnings AFFIRMATIVE ACTION filter. Enter integers in the range from 0 to 5 in ''min-max'' format (e.g. ''0-5'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-auaffirmative
+          in: query
+          description: 'Exclude items with a certain Audience AFFIRMATIVE ACTION rating. Enter integers in the range from 0 to 5 in ''min-max'' format (e.g. ''0-5'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: aulgbtq
+          in: query
+          description: 'Audience Warnings GAY STUFF filter. Enter integers in the range from 0 to 5 in ''min-max'' format (e.g. ''0-5'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-aulgbtq
+          in: query
+          description: 'Exclude items with a certain Audience GAY STUFF rating. Enter integers in the range from 0 to 5 in ''min-max'' format (e.g. ''0-5'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: augod
+          in: query
+          description: 'Audience Warnings FEDORA TIPPING filter. Enter integers in the range from 0 to 5 in ''min-max'' format (e.g. ''0-5'').'
+          required: false
+          schema:
+            type: string
+        -
+          name: minus-augod
+          in: query
+          description: 'Exclude items with a certain Audience FEDORA TIPPING rating. Enter integers in the range from 0 to 5 in ''min-max'' format (e.g. ''0-5'').'
+          required: false
+          schema:
+            type: string
         -
           name: p
           in: query

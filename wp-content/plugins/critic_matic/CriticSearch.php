@@ -574,7 +574,7 @@ class CriticSearch extends AbstractDB {
             'weight' => 60,
         ),
         'ctags' => array(
-            'title' => 'Campaign Tags',
+            'title' => 'Critic Tags',
             'tabs' => array('critics'),
             'weight' => 70,
         ),
@@ -704,6 +704,7 @@ class CriticSearch extends AbstractDB {
             'proper' => array('key' => 1, 'title' => 'Proper Review'),
             'contains' => array('key' => 2, 'title' => 'Contains Mention'),
             'related' => array('key' => 3, 'title' => 'Related Article'),
+            'none' => array('key' => 0, 'title' => 'None'),
         ),
         'price' => array(
             'free' => array('key' => 1, 'title' => 'Watch free'),
@@ -2652,7 +2653,7 @@ class CriticSearch extends AbstractDB {
             $ret = $this->movie_results($sql, $match, $search_query);
         }
 
-              /*
+          /*
               print_r($filters_and);
               print_r(array($match, $search_query));
               print_r($sql);
@@ -2661,7 +2662,7 @@ class CriticSearch extends AbstractDB {
               $meta = $this->sps->query("SHOW META")->fetchAll();
               print_r($meta);
               exit;
-           */
+   */
         
         // Simple result
         if (!$show_meta) {
@@ -3224,7 +3225,7 @@ class CriticSearch extends AbstractDB {
                         . " GROUP BY tags ORDER BY cnt DESC LIMIT 0,$limit";
             } else if ($facet == 'ctags') {
                 $limit = $expand == $facet ? $this->facet_max_limit : $this->facet_limit;
-                $filters_and = $this->get_filters_query($filters, 'tags', $query_type);
+                $filters_and = $this->get_filters_query($filters, ['tags','state'], $query_type);
                 $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1" . $filters_and['filter'] . $match
                         . " GROUP BY {$facet} ORDER BY cnt DESC LIMIT 0,$limit";
             }else if ($facet == 'from') {
@@ -3249,7 +3250,7 @@ class CriticSearch extends AbstractDB {
             } else if ($facet == 'state') {
                 $filters_facet = $filters;
                 unset($filters_facet['state']);
-                $filters_and = $this->get_filters_query($filters_facet, '', $query_type);
+                $filters_and = $this->get_filters_query($filters_facet, 'state', $query_type);
 
                 $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1" . $filters_and['filter'] . $match
                         . " GROUP BY state ORDER BY cnt DESC LIMIT 0,10";
@@ -4263,10 +4264,13 @@ class CriticSearch extends AbstractDB {
         }
 
         if ($query_type == 'critics') {
-            $top_movie_sql = "top_movie>0";
+            #$top_movie_sql = "top_movie>0";
 
             if (!isset($filters['state'])) {
                 $filters['state'] = array('related', 'contains', 'proper');
+            }
+            if ($this->in_exclude('state', $exlude)) {
+                unset($filters['state']);
             }
 
             if (isset($filters['state'])) {
@@ -4281,7 +4285,7 @@ class CriticSearch extends AbstractDB {
                     $filters_and['state'] = $this->filter_multi_value('state', $filters['state'], true);
                 }
             }
-            $filters_and['top_movie'] = $top_movie_sql;
+            #$filters_and['top_movie'] = $top_movie_sql;
         }
 
         if ($query_type == 'movies' || $query_type == 'games') {
@@ -4353,8 +4357,9 @@ class CriticSearch extends AbstractDB {
                     } else if ($key == 'tags') {
                         // Tags                       
                         $filters_and[$key] = $this->filter_multi_value($key, $value, true);
-                    }  else if ($key == 'ctags') {
-                        // Tags                       
+                    }  else if ($key == 'ctags') {                        
+                        // Tags                   
+                        unset($filters_and['state']);
                         $filters_and[$key] = $this->filter_multi_value($key, $value, true);
                     } else if ($key == 'state') {
                         // Type

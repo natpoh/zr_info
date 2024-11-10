@@ -13,7 +13,7 @@ header('Access-Control-Allow-Origin: *');
  * Php doc
  * https://zircote.github.io/swagger-php/reference/attributes.html
  *  
- * docker run --rm -v /var/www/inforwt/api:/app -it pathmotion/swagger-php openapi -e vendor --format yaml -o ./output/v1.yaml ./src/v1 --debug
+ * docker run --rm -v /var/www/inforwt/api:/app -it pathmotion/swagger-php openapi -e vendor --format yaml -o ./output/v1.yaml ./src/v1 --debug 
  * cd /var/www/inforwt/api && composer 
  *
  * TODO

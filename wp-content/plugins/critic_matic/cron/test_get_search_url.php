@@ -17,7 +17,9 @@ if ($_GET['p'] != $p) {
 
 $url = '/search/price_free/release_2004-2030/rrwt_37-48/minus-indie_isfranchise_bigdist_meddist/minus-rf_lgbt_woke';
 #$url = '/search/release_1878-1958/type_movies';
-
+if ($_GET['u']) {
+    $url = $_GET['u'];
+}
 
 // Init url
 $last_req = $_SERVER['REQUEST_URI'];

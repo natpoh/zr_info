@@ -52,6 +52,7 @@ class CriticComments extends AbstractDB {
 
     private $cm;
     private $db;
+    private $cc;
     // TODO set to 20
     public $comments_per_page = 20;
     public $max_num_comment_pages;
@@ -97,6 +98,13 @@ class CriticComments extends AbstractDB {
         );
     }
 
+    private function get_cc(){
+        if (!$this->cc){
+            $this->cc = $this->cm->get_cc();
+        }
+        return $this->cc;        
+    }
+    
     private function reset_user(){
         $this->curr_user = '';
     }
@@ -1258,6 +1266,10 @@ class CriticComments extends AbstractDB {
             // WP filters
             $comment_text = apply_filters('comment_text', $comment->comment_content, $comment);
         }
+        
+        $cc = $this->get_cc();        
+        $clear_data = $cc->validate_content($comment_text);
+        $comment_text = $clear_data['content'];
 
         $curr_time = $this->curr_time();
         $comment_time = $this->humanDate($curr_time, strtotime($comment->comment_date));
