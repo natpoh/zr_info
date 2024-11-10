@@ -10,10 +10,13 @@ class Bootstrap extends Controllers\Controller {
 
     public $doc_domains = array(
         "http://api.zr.4aoc.ru/",
+        "https://api.zgreviews.com",
         "https://api.filmdemographics.com/",
     );
     public $trust_domains = array(
         "https://filmdemographics.com/",
+        "https://zgreviews.com/",
+        "https://zeitgeistreviews.com/",
     );
     
     private $admin_api = 'LDKW_asd46-545f';
