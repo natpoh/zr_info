@@ -144,7 +144,7 @@ class Media extends Model {
      */
     public $cast_all;
 
-    public function __construct($arr = array(), $sf='') {
+    public function __construct($arr = array(), $sf = '') {
 
         $this->setIntVal($arr, 'id');
         $this->setVal($arr, 'type');
@@ -152,24 +152,21 @@ class Media extends Model {
         $this->setIntVal($arr, 'year');
         $this->setVal($arr, 'release');
 
-	    $this->setVal($arr, 'runtime');
+        $this->setVal($arr, 'runtime');
 
-	    $this->setVal($arr, 'boxusa');
-	    $this->setVal($arr, 'boxworld');
-	    $this->setVal($arr, 'budget');
-	    $this->setVal($arr, 'boxprofit');
-	    $this->setVal($arr, 'provider');
-	    $this->setVal($arr, 'data');
+        $this->setVal($arr, 'boxusa');
+        $this->setVal($arr, 'boxworld');
+        $this->setVal($arr, 'budget');
+        $this->setVal($arr, 'boxprofit');
+        $this->setVal($arr, 'provider');
+        $this->setVal($arr, 'data');
 
-	    $this->setVal($arr, 'rimdb');
-	    $this->setVal($arr, 'rrt');
-	    $this->setVal($arr, 'rrta');
+        $this->setVal($arr, 'rimdb');
+        $this->setVal($arr, 'rrt');
+        $this->setVal($arr, 'rrta');
 
-
-	    $this->setVal($arr, 'genre');
-	    $this->setVal($arr, 'country');
-
-
+        $this->setVal($arr, 'genre');
+        $this->setVal($arr, 'country');
 
         $this->get_imdb_id($arr);
 
@@ -200,16 +197,15 @@ class Media extends Model {
             //echo $exc->getTraceAsString();
         }
     }
-	public function format_movie_runtime($data, $format = null) {
-		if (is_numeric($data)) {
-			$format = 'G \h i \m\i\n';
-			$output = date($format, mktime(0, 0, $data));
 
-			return $output;
-		}
-	}
+    public function format_movie_runtime($data, $format = null) {
+        if (is_numeric($data)) {
+            $format = 'G \h i \m\i\n';
+            $output = date($format, mktime(0, 0, $data));
 
-
+            return $output;
+        }
+    }
 
     public function toArray() {
         $ret = array(
@@ -217,29 +213,23 @@ class Media extends Model {
             'type' => $this->type,
             'title' => $this->title,
             'year' => $this->year,
-
-            'genre' => $this->movie_genre($this->genre,'data_movie_genre'),
-            'country' => $this->movie_genre($this->country,'data_movie_country'),
+            'genre' => $this->movie_genre($this->genre, 'data_movie_genre'),
+            'country' => $this->movie_genre($this->country, 'data_movie_country'),
             'language' => $this->data->language,
-			'production'=> $this->data->production,
-			'description'=> $this->data->description,
+            'production' => $this->data->production,
+            'description' => $this->data->description,
             'runtime' => $this->format_movie_runtime($this->runtime),
-			'poster'=>$this->to_poster($this->id),
-			'rating'=>[
-            'imdb'=> $this->rimdb/10,
-            'rt'=> $this->rrt,
-            'rt_audience'=> $this->rrta,
-			],
-
-			'justwatch_provider'=>$this->to_array($this->provider),
-			'finances'=>['domestic_box' => $this->boxusa,
-			             'world_box' => $this->boxworld,
-			             'budget' => $this->budget,
-			             'profit' => $this->boxprofit,],
-
-
-
-
+            'poster' => $this->to_poster($this->id),
+            'rating' => [
+                'imdb' => $this->rimdb / 10,
+                'rt' => $this->rrt,
+                'rt_audience' => $this->rrta,
+            ],
+            'justwatch_provider' => $this->to_array($this->provider),
+            'finances' => ['domestic_box' => $this->boxusa,
+                'world_box' => $this->boxworld,
+                'budget' => $this->budget,
+                'profit' => $this->boxprofit,],
             'release' => $this->release,
             'imdb_id' => $this->imdb_id,
             'cast_stars' => $this->cast_stars,
@@ -250,84 +240,66 @@ class Media extends Model {
         return $ret;
     }
 
-	public function	to_array($data)
-{
-	if ($data)
-	{
-		if (strstr($data,','))
-		{
-			$data_array = explode(',',$data);
-		}
-		else
-		{
-			$data_array[]=$data;
-		}
+    public function to_array($data) {
+        if ($data) {
+            if (strstr($data, ',')) {
+                $data_array = explode(',', $data);
+            } else {
+                $data_array[] = $data;
+            }
 
-		if ($data_array)
-		{
-			return $data_array;
-		}
-	}
+            if ($data_array) {
+                return $data_array;
+            }
+        }
+    }
 
-}
-
-	public function movie_genre($genre,$db )
-	{
-		if (!$genre)return;
+    public function movie_genre($genre, $db) {
+        if (!$genre)
+            return;
 
 
-		if (strstr($genre,','))
-		{
-			$genre_array = explode(',',$genre);
-		}
-		else
-		{
-			$genre_array[]=$genre;
-		}
-		foreach ($genre_array as $gid)
-		{
-			$gid = trim($gid);
+        if (strstr($genre, ',')) {
+            $genre_array = explode(',', $genre);
+        } else {
+            $genre_array[] = $genre;
+        }
+        foreach ($genre_array as $gid) {
+            $gid = trim($gid);
 
-			$where.=" OR id='".$gid."' ";
-		}
-		if ($where)
-		{
-			$where = substr($where,3);
-		}
+            $where .= " OR id='" . $gid . "' ";
+        }
+        if ($where) {
+            $where = substr($where, 3);
+        }
 
-		$sql = "SELECT * FROM `".$db."` WHERE (".$where.") ";
+        $sql = "SELECT * FROM `" . $db . "` WHERE (" . $where . ") ";
 
-		$db = new Controller();
-		$data = $db->db_results($sql);
-		foreach ($data as $r)
-		{
-			$res_array[]=['id'=>$r->id,'name'=>$r->name];
-		}
-		if ($res_array)
-		{
-			return $res_array;
-		}
+        $db = new Controller();
+        $data = $db->db_results($sql);
+        foreach ($data as $r) {
+            $res_array[] = ['id' => $r->id, 'name' => $r->name];
+        }
+        if ($res_array) {
+            return $res_array;
+        }
+    }
 
-	}
+    public static function to_poster($id) {
 
-
-	public static function to_poster($id) {
-
-		return 'https://img.filmdemographics.com/poster/'.$id.'.jpg';
-
-	}
-
+        return 'https://img.filmdemographics.com/poster/' . $id . '.jpg';
+    }
 
     public static function getSearchFields() {
-        $fields=array(
-            'actor_all','actor_star','actor_main',            
-            'paaw','paaea','paah','paab','paai','paam','paamix','paajw','pama','pafa',
-            'psaw','psaea','psah','psab','psai','psam','psamix','psajw','psma','psfa',
-            'pmaw','pmaea','pmah','pmab','pmai','pmam','pmamix','pmajw','pmma','pmfa',            
+        $fields = array(
+            'actor_all', 'actor_star', 'actor_main',
+            'paaw', 'paaea', 'paah', 'paab', 'paai', 'paam', 'paamix', 'paajw', 'pama', 'pafa',
+            'psaw', 'psaea', 'psah', 'psab', 'psai', 'psam', 'psamix', 'psajw', 'psma', 'psfa',
+            'pmaw', 'pmaea', 'pmah', 'pmab', 'pmai', 'pmam', 'pmamix', 'pmajw', 'pmma', 'pmfa',
         );
         return $fields;
     }
-    
+
     public static function getGenderNames() {
         $names = array(
             'm' => array('key' => 2, 'title' => 'Male'),

@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: 'ZR API'
+  title: 'FilmDemographics API'
   description: ''
   termsOfService: 'http://swagger.io/terms/'
   contact:
@@ -10,9 +10,6 @@ info:
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
   version: 1.0.0
 servers:
-  -
-    url: 'https://api.zgreviews.com/v1'
-    description: 'ZR API Mocking'
   -
     url: 'https://api.filmdemographics.com/v1'
     description: 'FilmDemographics API Mocking'

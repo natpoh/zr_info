@@ -442,6 +442,7 @@ class SearchController extends Controller {
         if ($data) {
             $sf = $this->get_sf();
             foreach ($data as $item) {
+                print_r($item);
                 $media = new \OpenApi\Fd\Models\Media((array) $item, $sf);
                 $ret[] = $media->toArray();
             }
