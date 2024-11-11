@@ -290,24 +290,6 @@ class SearchController extends Controller {
      *             type="string",     
      *         )
      *     ),
-          *     @OA\Parameter(
-     *         name="auneo",
-     *         in="query",
-     *         description="Audience Warnings NEO-MARXISM filter. Enter integers in the range from 0 to 5 in 'min-max' format (e.g. '0-5').",
-     *         required=false,
-     *         @OA\Schema(
-     *             type="string",     
-     *         )
-     *     ),
-     *     @OA\Parameter(
-     *         name="minus-auneo",
-     *         in="query",
-     *         description="Exclude items with a certain Audience NEO-MARXISM rating. Enter integers in the range from 0 to 5 in 'min-max' format (e.g. '0-5').",
-     *         required=false,
-     *         @OA\Schema(
-     *             type="string",     
-     *         )
-     *     ),
      *     @OA\Parameter(
      *         name="aumisandry",
      *         in="query",
