@@ -2647,13 +2647,13 @@ class CriticSearch extends AbstractDB {
 
             // Main sql
             $sql = sprintf("SELECT id, date_add, weight() w, author_type" . $snippet . $custom_fields . $order['select'] . $filters_and['select']
-                    . " FROM critic WHERE status=1" . $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
+                    . " FROM critic WHERE id>0" . $filters_and['filter'] . $match . $order['order'] . " LIMIT %d,%d ", $start, $limit);
 
             //Get result
             $ret = $this->movie_results($sql, $match, $search_query);
         }
 
-          /*
+         /*
               print_r($filters_and);
               print_r(array($match, $search_query));
               print_r($sql);
@@ -3212,47 +3212,47 @@ class CriticSearch extends AbstractDB {
 
             if ($facet == 'release') {
                 $filters_and = $this->get_filters_query($filters, $facet, $query_type);
-                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1 AND year_int>0" . $filters_and['filter'] . $match
+                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE id>0 AND year_int>0" . $filters_and['filter'] . $match
                         . " GROUP BY year_int ORDER BY year_int ASC LIMIT 0,200";
             } else if ($facet == 'author') {
                 $filters_and = $this->get_filters_query($filters, 'author', $query_type);
-                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1" . $filters_and['filter'] . $match
+                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE id>0" . $filters_and['filter'] . $match
                         . " GROUP BY author_type ORDER BY cnt DESC LIMIT 0,10";
             } else if ($facet == 'tags') {
                 $limit = $expand == 'tags' ? $this->facet_max_limit : $this->facet_limit;
                 $filters_and = $this->get_filters_query($filters, 'tags', $query_type);
-                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1" . $filters_and['filter'] . $match
+                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE id>0" . $filters_and['filter'] . $match
                         . " GROUP BY tags ORDER BY cnt DESC LIMIT 0,$limit";
             } else if ($facet == 'ctags') {
                 $limit = $expand == $facet ? $this->facet_max_limit : $this->facet_limit;
-                $filters_and = $this->get_filters_query($filters, ['tags','state'], $query_type);
-                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1" . $filters_and['filter'] . $match
+                $filters_and = $this->get_filters_query($filters, ['tags','state','status'], $query_type);
+                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE id>0" . $filters_and['filter'] . $match
                         . " GROUP BY {$facet} ORDER BY cnt DESC LIMIT 0,$limit";
             }else if ($facet == 'from') {
                 $limit = $expand == 'from' ? $this->facet_max_limit : $this->facet_limit;
                 $filters_and = $this->get_filters_query($filters, 'from', $query_type);
-                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1 AND author_type!=2" . $filters_and['filter'] . $match
+                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE id>0 AND author_type!=2" . $filters_and['filter'] . $match
                         . " GROUP BY aid ORDER BY cnt DESC LIMIT 0,$limit";
             } else if ($facet == 'site') {
                 $limit = $expand == $facet ? $this->facet_max_limit : $this->facet_limit;
                 $filters_and = $this->get_filters_query($filters, $facet, $query_type);
-                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1 AND author_type!=2" . $filters_and['filter'] . $match
+                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE id>0 AND author_type!=2" . $filters_and['filter'] . $match
                         . " GROUP BY " . $facet . " ORDER BY cnt DESC LIMIT 0,$limit";
             } else if ($facet == 'genre') {
                 $limit = $expand == 'genre' ? $this->facet_max_limit : $this->facet_limit;
                 $filters_and = $this->get_filters_query($filters, 'genre', $query_type);
-                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1" . $filters_and['filter'] . $match
+                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE id>0" . $filters_and['filter'] . $match
                         . " GROUP BY genre ORDER BY cnt DESC LIMIT 0,$limit";
             } else if ($facet == 'type') {
                 $filters_and = $this->get_filters_query($filters, 'type', $query_type);
-                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1" . $filters_and['filter'] . $match
+                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE id>0" . $filters_and['filter'] . $match
                         . " GROUP BY type ORDER BY cnt DESC LIMIT 0,10";
             } else if ($facet == 'state') {
                 $filters_facet = $filters;
                 unset($filters_facet['state']);
                 $filters_and = $this->get_filters_query($filters_facet, 'state', $query_type);
 
-                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1" . $filters_and['filter'] . $match
+                $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE id>0" . $filters_and['filter'] . $match
                         . " GROUP BY state ORDER BY cnt DESC LIMIT 0,10";
             } else if (isset($woke_facets[$facet])) {
 
@@ -3273,7 +3273,7 @@ class CriticSearch extends AbstractDB {
                     foreach ($this->search_filters['kmwoke'] as $kkey => $kvalue) {
                         $ikey = $kvalue['key'];
                         $filters_and = $this->get_filters_query($filters, $exclude_keys);
-                        $sql_arr[$ikey] = "SELECT COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1" . $filters_and['filter'] . $match
+                        $sql_arr[$ikey] = "SELECT COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE id>0" . $filters_and['filter'] . $match
                                 . " AND " . $ikey . ">0";
 
                         // Childs
@@ -3283,7 +3283,7 @@ class CriticSearch extends AbstractDB {
                         $item_collapsed = $this->is_hide_facet($child, $filters);
                         if (!$item_collapsed) {
                             $filters_and = $this->get_filters_query($child, $exclude_keys);
-                            $sql_arr[$child] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1" . $filters_and['filter'] . $match
+                            $sql_arr[$child] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE id>0" . $filters_and['filter'] . $match
                                     . " GROUP BY " . $child . " ORDER BY " . $child . " ASC LIMIT 0," . $max_count;
                         }
                     }
@@ -3297,7 +3297,7 @@ class CriticSearch extends AbstractDB {
                     if ($facet == 'rmg') {
                         $filters_and['filter'] .= " AND rmu>0 AND rmc>0";
                     }
-                    $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1" . $filters_and['filter'] . $match
+                    $sql_arr[$facet] = "SELECT GROUPBY() as id, COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE id>0" . $filters_and['filter'] . $match
                             . " GROUP BY " . $facet . " ORDER BY " . $facet . " ASC LIMIT 0," . $max_count;
                 }
             } else if ($facet == 'movie') {
@@ -3308,7 +3308,7 @@ class CriticSearch extends AbstractDB {
             } else if (isset($this->facet_data['sortdata']['childs'][$facet])) {
                 // Sort data                
                 $filters_and = $this->get_filters_query($filters, $facet, $query_type);
-                $sql_arr[$facet] = "SELECT COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE status=1" . $filters_and['filter'] . $match
+                $sql_arr[$facet] = "SELECT COUNT(*) as cnt" . $filters_and['select'] . " FROM critic WHERE id>0" . $filters_and['filter'] . $match
                         . " AND " . $facet . ">0";
             }
         }
@@ -4269,8 +4269,19 @@ class CriticSearch extends AbstractDB {
             if (!isset($filters['state'])) {
                 $filters['state'] = array('related', 'contains', 'proper');
             }
+            
+            // Status
+            if (!isset($filters['status'])) {
+                $filters_and['status'] = $this->filter_multi_value('status', 1);
+            }           
+            
+            
             if ($this->in_exclude('state', $exlude)) {
                 unset($filters['state']);
+            }
+            
+            if ($this->in_exclude('status', $exlude)) {
+                $filters_and['status'] = $this->filter_multi_value('status', array(0,1));
             }
 
             if (isset($filters['state'])) {
@@ -4359,7 +4370,8 @@ class CriticSearch extends AbstractDB {
                         $filters_and[$key] = $this->filter_multi_value($key, $value, true);
                     }  else if ($key == 'ctags') {                        
                         // Tags                   
-                        unset($filters_and['state']);
+                        unset($filters_and['state']);                        
+                        $filters_and['status'] = $this->filter_multi_value('status', array(0,1));
                         $filters_and[$key] = $this->filter_multi_value($key, $value, true);
                     } else if ($key == 'state') {
                         // Type

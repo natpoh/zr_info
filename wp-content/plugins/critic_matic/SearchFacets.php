@@ -150,10 +150,13 @@ class SearchFacets extends AbstractDB {
         }
         foreach ($this->filters as $key => $value) {
             if (isset($search_data[$key])) {
+                
+                if ($key!='sort'){
                 if (strstr($search_data[$key], ',')){
                     $search_data[$key] = explode(',', $search_data[$key]);
                 } else if (strstr($search_data[$key], '-')){
                     $search_data[$key] = explode('-', $search_data[$key]);
+                }
                 }
                 if (is_array($search_data[$key])) {
                     $this->filters[$key] = array();

@@ -589,7 +589,8 @@ class CriticParser extends AbstractDB {
         );
 
         // Return id
-        $id = $this->cm->db_insert($data, $this->db['url']);
+        //$id = $this->cm->db_insert($data, $this->db['url']);
+        $id = $this->cm->sync_insert_data($data, $this->db['url']);
 
         return $id;
     }
@@ -602,7 +603,8 @@ class CriticParser extends AbstractDB {
                 'status' => $status,
                 'last_upd' => $this->curr_time(),
             );
-            $this->cm->db_update($data, $this->db['url'], $id);
+            //$this->cm->db_update($data, $this->db['url'], $id);
+            $this->cm->sync_update_data($data, $id, $this->db['url']);
             return true;
         }
         return false;
@@ -610,7 +612,8 @@ class CriticParser extends AbstractDB {
 
     public function change_url($id, $data = array()) {
         $data['last_upd'] = $this->curr_time();
-        $this->cm->db_update($data, $this->db['url'], $id);
+        //$this->cm->db_update($data, $this->db['url'], $id);
+        $this->cm->sync_update_data($data, $id, $this->db['url']);
         return true;
     }
 
@@ -618,7 +621,8 @@ class CriticParser extends AbstractDB {
 
         $data['last_upd'] = $this->curr_time();
 
-        $this->cm->db_update($data, $this->db['url'], $id);
+        // $this->cm->db_update($data, $this->db['url'], $id);
+        $this->cm->sync_update_data($data, $id, $this->db['url']);
     }
 
     public function update_url($item) {
@@ -640,7 +644,8 @@ class CriticParser extends AbstractDB {
         }
         $data['last_upd'] = $this->curr_time();
 
-        $this->cm->db_update($data, $this->db['url'], $item->id);
+        //$this->cm->db_update($data, $this->db['url'], $item->id);
+        $this->cm->sync_update_data($data, $item->id, $this->db['url']);
     }
 
     public function update_url_campaing($id, $cid) {
@@ -648,7 +653,8 @@ class CriticParser extends AbstractDB {
             'cid' => $cid,
             'last_upd' => $this->curr_time(),
         );
-        $this->cm->db_update($data, $this->db['url'], $id);
+        //$this->cm->db_update($data, $this->db['url'], $id);
+        $this->cm->sync_update_data($data, $id, $this->db['url']);
     }
 
     /*
@@ -708,7 +714,8 @@ class CriticParser extends AbstractDB {
                 'link_hash' => $link_hash,
                 'last_upd' => $this->curr_time(),
             );
-            $this->cm->db_update($data, $this->db['url'], $id);
+            //$this->cm->db_update($data, $this->db['url'], $id);
+            $this->cm->sync_update_data($data, $id, $this->db['url']);
 
             return $link_hash;
         }

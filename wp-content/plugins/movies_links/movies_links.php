@@ -237,10 +237,11 @@ function movies_links_plugin_activation() {
     $sql = "CREATE TABLE IF NOT EXISTS  `tor_user_agents`(
 				`id` int(11) unsigned NOT NULL auto_increment,                                                               
                                 `user_agent` varchar(255) NOT NULL default '',
+                                `type` int(11) NOT NULL DEFAULT '0',
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_ml::db_query($sql);
-    movies_links_create_index(array('user_agent'), 'tor_user_agents');
+    movies_links_create_index(array('user_agent','type'), 'tor_user_agents');
 
     $sql = "CREATE TABLE IF NOT EXISTS  `tor_ip_meta`(
 				`id` int(11) unsigned NOT NULL auto_increment,                                                                                               
