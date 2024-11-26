@@ -1255,7 +1255,7 @@ class TorParser extends MoviesAbstractDB {
     }
 
     public function curl($url, &$header = '', $curl_user_agent = '', $proxy = '', $is_post = false, $post_vars = array(), $header_array = array()) {
-        $ss = $settings ? $settings : array();
+        $ss = $this->ml->get_settings();
         if (!$curl_user_agent) {
             $curl_user_agent = isset($ss['parser_user_agent']) ? $ss['parser_user_agent'] : '';
         }
