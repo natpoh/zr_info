@@ -643,7 +643,7 @@ class MoviesParserCron extends MoviesAbstractDB {
                             }
                         } else {
                             //Force update post
-                            $this->mp->update_post($post_exist->id, $data);
+                            $this->mp->update_post($data, $post_exist->id);
                             $message = 'Update post: ';
                             if ($new_version) {
                                 $message = 'Update version [' . $version . ']: ';

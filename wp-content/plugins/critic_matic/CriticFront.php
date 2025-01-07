@@ -2864,7 +2864,7 @@ class CriticFront extends SearchFacets {
                                             <div class="nte_cnt">
                                                 <ul class="list-menu">                                                                                                               
                                                     <li class="nav-tab" data-act="editrev" data-id="<?php print $top_movie ?>" data-cid="<?php print $critic->id ?>">Edit Review</li>
-
+                                                    <li class="nav-tab" data-act="delrev" data-id="<?php print $top_movie ?>" data-cid="<?php print $critic->id ?>">Delete Review</li>
                                                 </ul>
                                             </div>                                                          
                                         </div>                                                    

@@ -704,7 +704,7 @@ class CriticMatic extends AbstractDB {
 
     public function get_post_and_author($id) {
         $sql = sprintf("SELECT p.id, p.date, p.date_add, p.status, p.type, p.link_hash, p.link, p.title, p.content, p.top_movie, p.blur, p.link_id, "
-                . "a.id AS aid, a.name AS author_name, a.type AS author_type, a.options AS author_options, a.last_upd AS author_last_upd, a.date_add AS author_date_add "
+                . "a.id AS aid, a.wp_uid AS wp_uid, a.name AS author_name, a.type AS author_type, a.options AS author_options, a.last_upd AS author_last_upd, a.date_add AS author_date_add "
                 . "FROM {$this->db['posts']} p "
                 . "INNER JOIN {$this->db['authors_meta']} am ON am.cid = p.id "
                 . "INNER JOIN {$this->db['authors']} a ON a.id = am.aid "

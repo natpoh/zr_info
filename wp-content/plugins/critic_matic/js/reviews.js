@@ -472,7 +472,7 @@ wpcr3a.init = function () {
                 wp_custom_editor.load('id_wpcr3_ftext');
             };
             var third_scripts = {
-                wpeditorjs: '/wp-content/themes/custom_twentysixteen/js/wp-editor.js?v=1.14'
+                wpeditorjs: '/wp-content/themes/custom_twentysixteen/js/wp-editor.js?v=1.16'
             };
             use_ext_js(success, third_scripts);
         }

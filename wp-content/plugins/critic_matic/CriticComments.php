@@ -98,17 +98,16 @@ class CriticComments extends AbstractDB {
         );
     }
 
-    private function get_cc(){
-        if (!$this->cc){
+    private function get_cc() {
+        if (!$this->cc) {
             $this->cc = $this->cm->get_cc();
         }
-        return $this->cc;        
-    }
-    
-    private function reset_user(){
-        $this->curr_user = '';
+        return $this->cc;
     }
 
+    private function reset_user() {
+        $this->curr_user = '';
+    }
 
     private function get_user() {
         if ($this->curr_user == '') {
@@ -263,13 +262,12 @@ class CriticComments extends AbstractDB {
         if ($comment_parent) {
             // Get post type from parent
             $parent = $this->get_comment($comment_parent);
-            if ($parent){
+            if ($parent) {
                 $comment_post_ID = $parent->comment_post_ID;
                 $post_type = $parent->post_type;
             } else {
                 $rtn->err[] = 'Parent comment not vaild';
             }
-            
         }
 
         if (!$comment_post_ID) {
@@ -277,7 +275,7 @@ class CriticComments extends AbstractDB {
         } else {
             // Check pulication exists
             $post_data = $this->get_comment_post_data($comment_post_ID, $post_type);
-            if (!$post_data->link){
+            if (!$post_data->link) {
                 $rtn->err[] = 'Parent publication not found';
             }
         }
@@ -324,13 +322,11 @@ class CriticComments extends AbstractDB {
 
         $ip = $this->cm->get_remote_ip();
 
-        if (function_exists('sanitize_text_field')) {
-            $comment_content = str_replace("<div", "\n<div", $comment_content);
+       
+        if (function_exists('sanitize_text_field')) {            
+            $comment_content = $this->add_newlines_tags($comment_content);
             $comment_content = _sanitize_text_fields($comment_content, true);
         }
-
-
-
 
         $data = array(
             'comment_post_ID' => $comment_post_ID,
@@ -368,7 +364,7 @@ class CriticComments extends AbstractDB {
             $rtn->theme = 'warning';
         }
 
-        $rtn->comment = $this->theme_one_comment($comment);       
+        $rtn->comment = $this->theme_one_comment($comment);
 
         $rtn->parent = $comment_parent;
         $rtn->cid = $cid;
@@ -774,9 +770,8 @@ class CriticComments extends AbstractDB {
         if (!$post_id) {
             return;
         }
-         
-        $form_id = "ch". time();
-      
+
+        $form_id = "ch" . time();
         ?>
         <div id="<?php print $form_id ?>" class="comments_holder" data-pid="<?php print $post_id ?>" data-type="<?php print $post_type ?>">                                   
             <?php
@@ -787,21 +782,21 @@ class CriticComments extends AbstractDB {
         <?php
         die();
     }
-    
+
     public function ajax_respond_form($form = array()) {
-            $cid = $form['cid'];
-            $comment = $this->get_comment($cid);
-            // Load form
-            print '<div>';
-            
-            if ($comment){
-                $this->commentForm($comment->comment_post_ID, $comment->post_type);            
-            }
-            if (function_exists('get_user_bar')){
-                get_user_bar();
-            }
-            print '</div>';
-            die();
+        $cid = $form['cid'];
+        $comment = $this->get_comment($cid);
+        // Load form
+        print '<div>';
+
+        if ($comment) {
+            $this->commentForm($comment->comment_post_ID, $comment->post_type);
+        }
+        if (function_exists('get_user_bar')) {
+            get_user_bar();
+        }
+        print '</div>';
+        die();
     }
 
     public function ajax_get_three($form = array()) {
@@ -894,10 +889,9 @@ class CriticComments extends AbstractDB {
      * pid - post id
      * type - post type
      */
-    
-    public function comments($pid=0, $type=-1){
-        $form_id = "ch". time();
-      
+
+    public function comments($pid = 0, $type = -1) {
+        $form_id = "ch" . time();
         ?>
         <div id="<?php print $form_id ?>" class="comments_holder" data-pid="<?php print $pid ?>" data-type="<?php print $type ?>">
             <?php
@@ -1266,8 +1260,8 @@ class CriticComments extends AbstractDB {
             // WP filters
             $comment_text = apply_filters('comment_text', $comment->comment_content, $comment);
         }
-        
-        $cc = $this->get_cc();        
+
+        $cc = $this->get_cc();
         $clear_data = $cc->validate_content($comment_text);
         $comment_text = $clear_data['content'];
 
@@ -1660,13 +1654,13 @@ class CriticComments extends AbstractDB {
             }
         }
     }
-    
-    public function comments_home(){
+
+    public function comments_home() {
         $this->comments_per_page = 10;
         $data = $this->get_post_comments_data(0, -1);
         $this->is_recent = true;
         $comments_count = 0;
-        if ($data){
+        if ($data) {
             $this->renderComments($data, $comments_count);
         }
     }
@@ -1703,7 +1697,7 @@ class CriticComments extends AbstractDB {
 
     function renderComments($data, $comments_count = 0) {
         if ($data) {
-            $form_id = "ch". time();
+            $form_id = "ch" . time();
             ?>
             <div id="<?php print $form_id ?>" class="comments_holder" data-pid="0" data-type="-1">       
                 <?php $this->commentForm(); ?>
@@ -1740,13 +1734,13 @@ class CriticComments extends AbstractDB {
             $movie = $ma->get_post($post_ID);
             $ret->title = $movie->title;
             $ret->link = $ma->get_movie_link($movie);
-        }else if ($post_type == 4) {
+        } else if ($post_type == 4) {
             // TODO Actors data
             $ma = $this->cm->get_ma();
-            $actor = $ma->get_actor_by_id($post_ID);           
-                       
+            $actor = $ma->get_actor_by_id($post_ID);
+
             $ret->title = $actor->name;
-            $ret->link = '/actor/'.$post_ID;
+            $ret->link = '/actor/' . $post_ID;
         }
 
         return $ret;
@@ -2457,4 +2451,57 @@ class CriticComments extends AbstractDB {
 
         return true;
     }
+
+
+/**
+ * Add newlines after significant HTML tags, supporting both \n and \r\n.
+ *
+ * This function ensures there is a newline after significant block-level HTML tags.
+ *
+ * @param string $content The content with HTML tags.
+ * @return string The content with newlines added after significant tags.
+ */
+function add_newlines_tags( $content ) {
+	// Список тегов, после которых нужно добавлять перевод строки.
+	$block_tags = [
+		'div',
+		'p',
+		'ul',
+		'ol',
+		'li',
+		'table',
+		'tr',
+		'td',
+		'th',
+		'blockquote',
+		'pre',
+		'hr',
+		'h1',
+		'h2',
+		'h3',
+		'h4',
+		'h5',
+		'h6',
+		'br',
+	];
+
+	// Создаём регулярное выражение для закрывающих и одиночных тегов.
+	$regex = '/<\/?(' . implode( '|', $block_tags ) . ')(?:\s[^>]*)?>/i';
+
+	// Добавляем перевод строки после найденного тега, если его нет.
+	$content = preg_replace_callback( $regex, function ( $matches ) {
+		$tag = $matches[0];
+		// Если после тега уже есть перевод строки (\r, \n, или \r\n), ничего не делаем.
+		if ( ! preg_match( "/(\r?\n)$/", $tag ) ) {
+			$tag .= "\r\n";
+		}
+		return $tag;
+	}, $content );
+
+        // Убираем лишние пустые строки.
+	$content = preg_replace( "/\n+/", "\n", $content );
+        
+	return $content;
+}
+
 }
