@@ -1833,8 +1833,9 @@ class CriticMaticAdmin {
                 $this->feeds_posts($tabs, $url, $cid);
             } else if ($curr_tab == 'update') {
                 // Update
-                $count = $this->cf->process_campaign($cid);
                 $campaign = $this->cf->get_campaign($cid);
+                $count = $this->cf->process_campaign($campaign);
+               
 
                 include(CRITIC_MATIC_PLUGIN_DIR . 'includes/feed_update.php');
             } else if ($curr_tab == 'log') {
