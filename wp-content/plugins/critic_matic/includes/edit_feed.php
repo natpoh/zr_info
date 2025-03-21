@@ -107,10 +107,37 @@ if ($cid) {
                     <span class="input-text-wrap"><input type="text" name="body_len" value="<?php print $body_len ?>"></span>
                     <span class="inline-edit"><?php print __('Minimal valid length of the body for non-video posts.') ?></span> 
                 </label>
-                
+                <hr />
                 <?php print $this->cm->theme_camp_tags($campaign->id, $post_type) ?>
 
+                <h3>Media</h3>
+                <label class="inline-edit-showtype">
+                    <span class="title"><?php print __('Show in') ?></span>               
+                    <?php
+                    $show_status = isset($options['show_status']) ? $options['show_status'] : $def_options['options']['show_status'];
+                    $show_statuses = $this->cm->post_show_in;
+                    ?>
+
+                    <select name="show_status">
+                        <?php
+                        foreach ($show_statuses as $key => $name) {
+                            $selected = ($key == $show_status) ? 'selected' : '';
+                            ?>
+                            <option value="<?php print $key ?>" <?php print $selected ?> ><?php print $name ?></option>                                
+                            <?php
+                        }
+                        ?>                          
+                    </select>                     
+                    <span class="inline-edit"><?php print __('Show post in search category') ?></span> 
+                </label>
                 <br />
+                <label class="">                
+                    <input type="checkbox" name="force_show_status" value="1">
+                    <span class="checkbox-title"><?php print __('Force update posts show status') ?></span>
+                </label>
+
+                <br />
+                <hr />
                 <label class="inline-edit-status">                
                     <?php
                     $checked = '';
@@ -152,7 +179,7 @@ if ($cid) {
                 $rules = isset($options['rules']) ? $options['rules'] : $def_options['options']['rules'];
                 $this->cf->show_rules($rules, true);
                 ?> 
-    <?php wp_nonce_field('critic-feeds-options', 'critic-feeds-nonce'); ?>
+                <?php wp_nonce_field('critic-feeds-options', 'critic-feeds-nonce'); ?>
                 <br />
                 <input type="submit" name="options" id="edit-submit" value="<?php echo __('Save') ?>" class="button-primary">  
                 <br /><br />

@@ -27,7 +27,7 @@ $last_req = $_SERVER['REQUEST_URI'];
 $_SERVER['REQUEST_URI'] = $url;
 $search_front = new CriticFront();
 $search_front->init_search_filters();
-$result = $search_front->find_results(0, array(),false, true);
+$result = $search_front->find_results(0, array(), false, true, true);
 
 // Deinit url
 $_SERVER['REQUEST_URI']=$last_req;

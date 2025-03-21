@@ -389,7 +389,7 @@ class AnalyticsFront extends SearchFacets {
         return $tags;
     }
 
-    public function find_results($uid = 0, $ids = array(), $show_facets = true, $only_curr_tab = false, $limit = -1, $page = -1, $show_main = true, $show_chart = true, $fields = array()) {
+    public function find_results($uid = 0, $ids = array(), $show_facets = true, $show_count = true, $only_curr_tab = false, $limit = -1, $page = -1, $show_main = true, $show_chart = true, $fields = array()) {
         $result = array();
         $start = 0;
         $page = $this->get_search_page();
@@ -632,11 +632,11 @@ class AnalyticsFront extends SearchFacets {
     }
 
     public function search_tabs($results = array()) {
-        $ret = '<ul id="search-tabs" class="tab-wrapper ajload">';
+        $ret = '<ul id="search-tabs" class="nav nav-pills ajload">';
         $tab = $this->get_search_tab();
         foreach ($this->search_tabs as $slug => $item) {
             $title = $item['title'];
-            $count = $results[$slug]['count'];
+                        $count = isset($results[$slug]['count'])?$results[$slug]['count']:'-';
             $data_tab = $slug;
             $tab_active = false;
             if ($slug == $this->def_tab) {
@@ -651,11 +651,12 @@ class AnalyticsFront extends SearchFacets {
                 }
                 $url = $this->get_current_search_url(array('tab' => $slug), array('p', 'sort'));
             }
-            $tab_class = 'nav-tab';
+            $tab_class = 'nav-link';
             if ($tab_active) {
                 $tab_class .= ' active';
             }
-            $ret .= '<li class="' . $tab_class . '"><a href="' . $url . '" data-id="' . $slug . '" data-tab="' . $data_tab . '">' . $title . '</a></li>';
+            $count_txt = $count!='-'?' <span class="count">(' . $count . ')</span>':'';
+            $ret .= '<li class="nav-item"><a class="' . $tab_class . '" href="' . $url . '" data-id="' . $slug . '" data-tab="' . $data_tab . '">' . $title .$count_txt. '</a></li>';
         }
         $ret .= '</ul>';
 
@@ -835,7 +836,7 @@ class AnalyticsFront extends SearchFacets {
                 <div class="flex-row">
                     <span class="t">Data Set Priority:</span>            
                     <div class="nte">
-                        <div class="btn">?</div>
+                        <div class="nbtn">?</div>
                         <div class="nte_show">
                             <div class="nte_in">
                                 <div class="nte_cnt">
@@ -4796,11 +4797,11 @@ class AnalyticsFront extends SearchFacets {
         return $user->ID;
     }
 
-    public function get_user_search_filter($uid = 0, $search_url = '') {
-        $ret = 0;
-        if ($uid > 0 && $search_url != '/search') {
-            $uf = $this->cm->get_uf();
-            $ret = $uf->get_user_filter($uid, $search_url);
+    public function get_user_search_filter($request_uri, $search_url = '') {
+        $ret = array();        
+        if ($search_url != '/analytics') {
+            $uf = $this->cm->get_uf();            
+            $ret = $uf->get_user_filter($request_uri, $search_url);            
         }
         return $ret;
     }

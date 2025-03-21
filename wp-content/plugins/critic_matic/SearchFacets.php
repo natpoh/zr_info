@@ -41,6 +41,7 @@ class SearchFacets extends AbstractDB {
     public $facet_filters = array();
     // Search filters    
     public $search_limit = 20;
+    public $per_page = -1; // defult $search_limit;
     public $max_matches = 1000;
     public $search_url = '/search';
     public $page = 1;
@@ -141,6 +142,7 @@ class SearchFacets extends AbstractDB {
             }
         }
     }
+
     public function api_init_search_get_fiters($search_data = '') {
         if (!$search_data) {
             $search_data = $_POST;
@@ -150,13 +152,13 @@ class SearchFacets extends AbstractDB {
         }
         foreach ($this->filters as $key => $value) {
             if (isset($search_data[$key])) {
-                
-                if ($key!='sort'){
-                if (strstr($search_data[$key], ',')){
-                    $search_data[$key] = explode(',', $search_data[$key]);
-                } else if (strstr($search_data[$key], '-')){
-                    $search_data[$key] = explode('-', $search_data[$key]);
-                }
+
+                if ($key != 'sort') {
+                    if (strstr($search_data[$key], ',')) {
+                        $search_data[$key] = explode(',', $search_data[$key]);
+                    } else if (strstr($search_data[$key], '-')) {
+                        $search_data[$key] = explode('-', $search_data[$key]);
+                    }
                 }
                 if (is_array($search_data[$key])) {
                     $this->filters[$key] = array();
@@ -193,14 +195,13 @@ class SearchFacets extends AbstractDB {
         }
         $active_filters = array();
         foreach ($this->filters as $key => $value) {
-            if ($value){
-                $active_filters[$key]=$value;
+            if ($value) {
+                $active_filters[$key] = $value;
             }
         }
         //print_r(array($search_data,$active_filters));
-        
     }
-    
+
     public function init_search_filters() {
         $url = $_SERVER['REQUEST_URI'];
         $url = preg_replace('/\?.*$/', '', $url);
@@ -255,7 +256,7 @@ class SearchFacets extends AbstractDB {
         $tab = $this->get_search_tab();
         if (!$tab) {
             // Default search tab
-            $tab = 'movies';
+            $tab = $this->def_tab;
         }
         return $tab;
     }
@@ -315,10 +316,10 @@ class SearchFacets extends AbstractDB {
         return $this->keywords;
     }
 
-    public function theme_search_url($search_url = '', $search_text = '', $inc = '', $user_filter_id = 0) {
+    public function theme_search_url($search_url = '', $search_text = '', $inc = '', $user_filter_id = 0, $user_filter_edit = 0) {
         if ($search_url) {
             ?>
-            <div id="search-url" data-id="<?php print $search_url ?>" data-title="<?php print $search_text ?>" data-inc="<?php print $inc ?>" data-uf="<?php print $user_filter_id ?>"></div>      
+            <div id="search-url" data-id="<?php print $search_url ?>" data-title="<?php print $search_text ?>" data-inc="<?php print $inc ?>" data-uf="<?php print $user_filter_id ?>" data-ufe="<?php print $user_filter_edit ?>"></div>      
             <?php
         }
     }
@@ -420,7 +421,7 @@ class SearchFacets extends AbstractDB {
         return $ret;
     }
 
-    public function find_results($uid = 0, $ids = array(), $show_facets = true, $only_curr_tab = false, $limit = -1, $page = -1, $show_main = true, $show_chart = true, $fields = array()) {
+    public function find_results($uid = 0, $ids = array(), $show_facets = true, $show_count = true, $only_curr_tab = false, $limit = -1, $page = -1, $show_main = true, $show_chart = true, $fields = array()) {
         gmi('find_results');
         $result = array();
         $start = 0;
@@ -428,8 +429,10 @@ class SearchFacets extends AbstractDB {
 
         $search_limit = ($limit != -1) ? $limit : $this->search_limit;
 
+        // Custom perpage from start
+        $per_page = ($this->per_page != -1) ? $this->per_page : $search_limit;
         if ($search_page > 1) {
-            $start = ($search_page - 1) * $search_limit;
+            $start = ($search_page - 1) * $per_page;
         }
 
         $tab_key = $this->get_tab_key();
@@ -453,12 +456,17 @@ class SearchFacets extends AbstractDB {
         } else if ($tab_key == 'comments') {
             $is_comment = true;
         }
-        $facets = false;
+        $show_any_count = false;
+        if ($show_count && !$only_curr_tab) {
+            $show_any_count = true;
+        }
+
         $movies_count = $critics_count = $games_count = $filters_count = $watchlists_count = $comments_count = 0;
 
-        if ($is_movie && $only_curr_tab || !$only_curr_tab) {
+        if ($is_movie || $show_any_count) {
             // Find movies in AN base
             $sort = $this->get_search_sort('movies');
+            $facets = false;
             if ($show_facets) {
                 $facets = $is_movie ? true : false;
             }
@@ -478,9 +486,10 @@ class SearchFacets extends AbstractDB {
             gmi('front_search_movies_multi');
         }
 
-        if ($is_game && $only_curr_tab || !$only_curr_tab) {
+        if ($is_game || $show_any_count) {
             // Find movies in AN base
             $sort = $this->get_search_sort('games');
+            $facets = false;
             if ($show_facets) {
                 $facets = $is_game ? true : false;
             }
@@ -500,9 +509,10 @@ class SearchFacets extends AbstractDB {
             gmi('front_search_games_multi');
         }
 
-        if ($is_critic && $only_curr_tab || !$only_curr_tab) {
+        if ($is_critic || $show_any_count) {
             //Critics
             $sort = $this->get_search_sort('critics');
+            $facets = false;
             if ($show_facets) {
                 $facets = $is_critic ? true : false;
             }
@@ -527,9 +537,10 @@ class SearchFacets extends AbstractDB {
             }
         }
 
-        if ($is_filter && $only_curr_tab || !$only_curr_tab) {
+        if ($is_filter || $show_any_count) {
             // Filters
             $sort = $this->get_search_sort('filters');
+            $facets = false;
             if ($show_facets) {
                 $facets = $is_filter ? true : false;
             }
@@ -556,9 +567,10 @@ class SearchFacets extends AbstractDB {
             gmi('front_search_filters_multi');
         }
 
-        if ($is_watchlist && $only_curr_tab || !$only_curr_tab) {
+        if ($is_watchlist || $show_any_count) {
             // Filters
             $sort = $this->get_search_sort('watchlists');
+            $facets = false;
             if ($show_facets) {
                 $facets = $is_watchlist ? true : false;
             }
@@ -585,9 +597,10 @@ class SearchFacets extends AbstractDB {
             gmi('front_search_watchlists_multi');
         }
 
-        if ($is_comment && $only_curr_tab || !$only_curr_tab) {
+        if ($is_comment || $show_any_count) {
             // Filters
             $sort = $this->get_search_sort('comments');
+            $facets = false;
             if ($show_facets) {
                 $facets = $is_comment ? true : false;
             }
@@ -733,7 +746,7 @@ class SearchFacets extends AbstractDB {
 
     public function search_filters($curr_tab = '', $uid = 0, $show = false) {
         if (!$curr_tab) {
-            $curr_tab = 'movies';
+            $curr_tab = $this->def_tab;
         }
 
         $this->get_fiters_available($curr_tab);
@@ -1017,6 +1030,20 @@ class SearchFacets extends AbstractDB {
                     $name = isset($this->cs->search_filters[$key][$slug]['title']) ? $this->cs->search_filters[$key][$slug]['title'] : $slug;
                     $tags[] = array('name' => $name, 'type' => $key, 'title' => $title, 'id' => $slug, 'parent' => $key, 'minus' => $minus);
                 }
+            } else if ($key == 'cip') {
+                // Filters
+                $value = is_array($value) ? $value : array($value);
+                foreach ($value as $slug) {
+                    $name = isset($this->cs->search_filters[$key][$slug]['title']) ? $this->cs->search_filters[$key][$slug]['title'] : $slug;
+                    $tags[] = array('name' => $name, 'type' => $key, 'title' => $title, 'id' => $slug, 'parent' => $key, 'minus' => $minus);
+                }
+            } else if ($key == 'cemail') {
+                // Filters
+                $value = is_array($value) ? $value : array($value);
+                foreach ($value as $slug) {
+                    $name = isset($this->cs->search_filters[$key][$slug]['title']) ? $this->cs->search_filters[$key][$slug]['title'] : $slug;
+                    $tags[] = array('name' => $name, 'type' => $key, 'title' => $title, 'id' => $slug, 'parent' => $key, 'minus' => $minus);
+                }
             } else {
                 // Find parents
                 $curr_parents = $this->cs->get_parents($key);
@@ -1222,7 +1249,11 @@ class SearchFacets extends AbstractDB {
                 $valid_tags[] = $tag;
             }
         }
-        $ret = '<div id="content-filters">';
+        if ($show) {
+            $ret = '<div>';
+        } else {
+            $ret = '<div id="content-filters">';
+        }
         if (sizeof($tags)) {
             $hide_class = '';
             if (sizeof($valid_tags) == 0) {
@@ -1456,7 +1487,7 @@ class SearchFacets extends AbstractDB {
 
     public function search_sort($curr_tab = '', $results = array()) {
         if (!$curr_tab) {
-            $curr_tab = 'movies';
+            $curr_tab = $this->def_tab;
         }
 
         $sort_tab = $this->get_search_sort($curr_tab);
@@ -1588,7 +1619,8 @@ class SearchFacets extends AbstractDB {
                     }
                     ksort($group_childs);
                     //print_r($group_childs);
-                    $more_sort_content = '<ul class="sort-wrapper more ' . $key . '">' . implode('', $group_childs) . '</ul>';
+                    $menu_sb_title = '<div class="title-sb">' . $title . '</div>';
+                    $more_sort_content = $menu_sb_title . '<ul class="sort-wrapper more ' . $key . '">' . implode('', $group_childs) . '</ul>';
                     $more_sort_type = isset($more_active[$key]) ? $more_active[$key] : '<span class="desc"></span>';
                     $more_active_class = isset($more_active[$key]) ? ' mact' : '';
                     $sort_title = $title . $more_sort_type;
@@ -1623,11 +1655,11 @@ class SearchFacets extends AbstractDB {
     }
 
     public function search_tabs($results = array()) {
-        $ret = '<ul id="search-tabs" class="tab-wrapper ajload">';
+        $ret = '<ul id="search-tabs" class="nav nav-pills ajload">';
         $tab = $this->get_search_tab();
         foreach ($this->search_tabs as $slug => $item) {
             $title = $item['title'];
-            $count = $results[$slug]['count'];
+            $count = isset($results[$slug]['count']) ? $results[$slug]['count'] : '-';
             $data_tab = $slug;
             $tab_active = false;
             if ($slug == $this->def_tab) {
@@ -1642,11 +1674,12 @@ class SearchFacets extends AbstractDB {
                 }
                 $url = $this->get_current_search_url(array('tab' => $slug), array('p', 'sort'));
             }
-            $tab_class = 'nav-tab';
+            $tab_class = 'nav-link';
             if ($tab_active) {
                 $tab_class .= ' active';
             }
-            $ret .= '<li class="' . $tab_class . '"><a href="' . $url . '" data-id="' . $slug . '" data-tab="' . $data_tab . '">' . $title . ' <span class="count">(' . $count . ')</span></a></li>';
+            $count_txt = $count != '-' ? ' <span class="count">(' . $count . ')</span>' : '';
+            $ret .= '<li class="nav-item"><a class="' . $tab_class . '" href="' . $url . '" data-id="' . $slug . '" data-tab="' . $data_tab . '">' . $title . $count_txt . '</a></li>';
         }
         $ret .= '</ul>';
 
@@ -1656,12 +1689,12 @@ class SearchFacets extends AbstractDB {
     public function search_form() {
         $keywords = $this->get_search_keywords();
         ?>
-        <form action="/search" method="post" >
-            <div id="spform" class="customsearch_container cm_api">
+        <form action="<?php print $this->search_url ?>" method="post" >
+            <div id="spform" class="customsearch_container cm_api" data-url="<?php print $this->search_url ?>">
                 <div class="sbar customsearch_component__inner">
                     <input id="sbar" type="search" class="customsearch_input" name="s"  placeholder="Search Movies, TV, Reviews" autocomplete="off" value="<?php print $keywords ?>">  
-                    <a class="clear<?php if ($keywords) print ' active' ?>" href="/search" title="Clear"></a> 
-                    <a id="filters-top-btn" class="customsearch_container__advanced-search-button search-filters-btn" href="/search#filters" title="Advanced Search"></a>
+                    <a class="clear<?php if ($keywords) print ' active' ?>" href="<?php print $this->search_url ?>" title="Clear"></a> 
+                    <a id="filters-top-btn" class="customsearch_container__advanced-search-button search-filters-btn" href="<?php print $this->search_url ?>#filters" title="Advanced Search"></a>
                     <button id="submit" class="customsearch_component__button" type="submit" title="Search"></button>   
                     <div class="advanced_search_ajaxload"></div>
                     <div class="advanced_search_menu advanced_search_hidden">
@@ -1692,57 +1725,57 @@ class SearchFacets extends AbstractDB {
                 $last = ceil($total_count / $per_page);
             }
 
-            $result .= '<ul class="pt-cv-pagination pagination">';
+            $result .= '<ul class="pt-cv-pagination pagination justify-content-center m-4">';
 
             if ($page > 1) {
                 $y = $page - 1;
                 $link = $this->get_current_search_url(array('p' => $y));
-                $result .= "<li class=\"cv-pageitem-prev\"><a id='previous' data-id='$y' title='Go to previous page' href=\"" . $link . "\"><</a></li> ";
+                $result .= "<li class='cv-pageitem-prev page-item'><a class='page-link' id='previous' data-id='$y' title='Go to previous page' href=\"" . $link . "\"><</a></li> ";
             }
 
             $y = 1;
 
             if ($first > 1) {
                 $link = $this->get_current_search_url(array('p' => $y));
-                $result .= "<li class='cv-pageitem-number'><a id='p_$y' data-id='$y' title='Go to page $y' href=\"" . $link . "\">1</a></li> ";
+                $result .= "<li class='cv-pageitem-number page-item'><a class='page-link' id='p_$y' data-id='$y' title='Go to page $y' href=\"" . $link . "\">1</a></li> ";
             }
             $y = $first - 1;
 
             if ($first > 6) {
-                $result .= "<li class=\"cv-pageitem-number\"><a>...</a></li> ";
+                $result .= "<li class='cv-pageitem-number page-item disabled'><a class='page-link'>...</a></li> ";
             } else {
                 for ($i = 2; $i < $first; $i++) {
                     $link = $this->get_current_search_url(array('p' => $i));
-                    $result .= "<li class='cv-pageitem-number'><a id='p_$i' data-id='$i' title='Go to page $i'  href=\"" . $link . "\">$i</a></li> ";
+                    $result .= "<li class='cv-pageitem-number page-item'><a class='page-link' id='p_$i' data-id='$i' title='Go to page $i'  href=\"" . $link . "\">$i</a></li> ";
                 }
             }
 
             for ($i = $first; $i < $last + 1; $i++) {
                 $link = $this->get_current_search_url(array('p' => $i));
                 if ($i == $page) {
-                    $result .= "<li class=\"cv-pageitem-number active\"><a id='p_$i' data-id='$i' title='Current page is $i' href=\"" . $link . "\">$i</a></li> ";
+                    $result .= "<li class='cv-pageitem-number page-item active'><a class='page-link' id='p_$i' data-id='$i' title='Current page is $i' href=\"" . $link . "\">$i</a></li> ";
                 } else {
-                    $result .= "<li class='cv-pageitem-number'><a id='p_$i' data-id='$i' title='Go to page $i' href=\"" . $link . "\">$i</a></li> ";
+                    $result .= "<li class='cv-pageitem-number page-item'><a class='page-link' id='p_$i' data-id='$i' title='Go to page $i' href=\"" . $link . "\">$i</a></li> ";
                 }
             }
 
             $y = $last + 1;
 
             if ($last < ceil($total_count / $per_page) && ceil($total_count / $per_page) - $last > 0) {
-                $result .= "<li class=\"cv-pageitem-number\"><a>...</a></li> ";
+                $result .= "<li class='cv-pageitem-number disabled page-item'><a class='page-link'>...</a></li> ";
             }
 
             $e = ceil($total_count / $per_page);
 
             if ($last < ceil($total_count / $per_page)) {
                 $link = $this->get_current_search_url(array('p' => $e));
-                $result .= "<li  title='Go to page $e' class='cv-pageitem-number'><a id='p_$e' data-id='$e' href=\"" . $link . "\">$e</a></li>";
+                $result .= "<li  title='Go to page $e' class='cv-pageitem-number page-item'><a class='page-link' id='p_$e' data-id='$e' href=\"" . $link . "\">$e</a></li>";
             }
 
             if ($page < $last) {
                 $y = $page + 1;
                 $link = $this->get_current_search_url(array('p' => $y));
-                $result .= "<li class=\"cv-pageitem-next\"><a id='nextpage'  data-id='$y' title='Go to next page' href=\"" . $link . "\">></a></li> ";
+                $result .= "<li class='cv-pageitem-next page-item'><a class='page-link' id='nextpage' data-id='$y' title='Go to next page' href=\"" . $link . "\">></a></li> ";
             }
 
             $result .= '</ul>';
@@ -1891,6 +1924,16 @@ class SearchFacets extends AbstractDB {
                     if ($this->cm->is_admin()) {
                         $this->show_comment_status_facet($data, $view_more);
                     }
+                } else if ($tab_key == 'comments' && $key == 'cip') {
+                    // Comment status    
+                    if ($this->cm->is_admin()) {
+                        $this->show_comment_ip_facet($data, $view_more);
+                    }
+                } else if ($tab_key == 'comments' && $key == 'cemail') {
+                    // Comment status    
+                    if ($this->cm->is_admin()) {
+                        $this->show_comment_email_facet($data, $view_more);
+                    }
                 } else {
                     $this->show_custom_facet($key, $data, $view_more, $count, $total, $facets_data);
                 }
@@ -1898,6 +1941,10 @@ class SearchFacets extends AbstractDB {
         } else {
             print '<p id="no-facets">No available filters found.</p>';
         }
+    }
+
+    public function show_ajax_facets($tab_key = '') {
+        print '<div class="need_ajax_load"></div>';
     }
 
     public function get_facet_weight($key) {
@@ -2101,8 +2148,8 @@ class SearchFacets extends AbstractDB {
 
                         <?php if ($minus): ?>
                             <div class="facet-btns include-btns">
-                                <span class="btn inc<?php print !$is_minus ? " active" : ""  ?>">Include</span> / 
-                                <span class="btn exc<?php print $is_minus ? " active" : ""  ?>">Exclude</span>
+                                <span class="fbtn inc<?php print !$is_minus ? " active" : ""  ?>">Include</span> / 
+                                <span class="fbtn exc<?php print $is_minus ? " active" : ""  ?>">Exclude</span>
                                 <?php if ($cnt): ?>
                                     <span class="cnt">(<?php print $cnt ?>)</span>
                                 <?php endif ?>
@@ -2327,7 +2374,7 @@ class SearchFacets extends AbstractDB {
                     ?>
                     <div class="facet-content">
 
-                        <div class="row flex-row with-img slider multi_pm" data-type="<?php print $type_title ?>">                                        
+                        <div class="flex-row with-img slider multi_pm" data-type="<?php print $type_title ?>">                                        
                             <?php if ($icon) { ?>
                                 <div class="facet-icon"><?php print $icon; ?></div>
                             <?php } ?> 
@@ -3342,6 +3389,55 @@ class SearchFacets extends AbstractDB {
         $this->theme_facet_multi($fiter_data);
     }
 
+    public function show_comment_ip_facet($data) {
+
+        //Get types
+        $dates = array();
+        $filter = 'cip';
+
+        foreach ($data as $value) {
+            $id = trim($value->id);
+            $cnt = $value->cnt;
+            $ip = $this->cm->get_or_create_ip($id);
+            $dates[$ip->id] = array('title' => $ip->ip, 'count' => $cnt);
+        }
+
+
+        $title = 'IP';
+        $fiter_data = array(
+            'filter' => $filter,
+            'data' => $dates,
+            'title' => $title,
+            'more' => 0,
+            'ftype' => $filter,
+        );
+        $this->theme_facet_multi($fiter_data);
+    }
+
+    public function show_comment_email_facet($data) {
+
+        //Get types
+        $dates = array();
+        $filter = 'cemail';
+
+        foreach ($data as $value) {
+            $id = trim($value->id);
+            $cnt = $value->cnt;
+            $email = $this->cm->get_or_create_email($id);
+            $dates[$email->id] = array('title' => $email->email, 'count' => $cnt);
+        }
+
+        $title = 'Email';
+        $fiter_data = array(
+            'filter' => $filter,
+            'data' => $dates,
+            'title' => $title,
+            'more' => 0,
+            'ftype' => $filter,
+        );
+        $this->theme_facet_multi($fiter_data);
+    }
+
     public function show_suggestion_facet($data, $count, $type, $ftype = 'all', $title = '', $name_pre = '', $filter_pre = '', $icon = '', $minus = true) {
 
         //Get types
@@ -4178,35 +4274,35 @@ class SearchFacets extends AbstractDB {
     private function facet_tabs($tabs = array(), $active_facet = '', $def_tab = '', $filter_name = '', $filter_type = 'facet', $inactive = array(), $column = false) {
         ob_start();
         ?>
-        <ul id="<?php print $filter_name ?>-tabs" class="tab-wrapper facet-tabs<?php
+        <ul id="<?php print $filter_name ?>-tabs" class="nav nav-pills facet-tabs<?php
         if ($column) {
-            print ' column';
+            print ' d-block';
         }
         ?>" data-filter="<?php print $filter_name ?>"><?php
-            foreach ($tabs as $slug => $item) {
-                $is_active = '';
-                $is_default = '';
+                foreach ($tabs as $slug => $item) {
+                    $is_active = '';
+                    $is_default = '';
 
-                if ($inactive && in_array($item[$filter_type], $inactive)) {
-                    continue;
-                }
+                    if ($inactive && in_array($item[$filter_type], $inactive)) {
+                        continue;
+                    }
 
-                if ($item[$filter_type] == $active_facet) {
-                    $is_active = ' active';
-                }
-                if ($def_tab == $item[$filter_type]) {
-                    $is_default = ' default';
-                    $include = array();
-                    $exclude = array($filter_name);
-                } else {
-                    $include = array($filter_name => $slug);
-                    $exclude = array();
-                }
+                    if ($item[$filter_type] == $active_facet) {
+                        $is_active = ' active';
+                    }
+                    if ($def_tab == $item[$filter_type]) {
+                        $is_default = ' default';
+                        $include = array();
+                        $exclude = array($filter_name);
+                    } else {
+                        $include = array($filter_name => $slug);
+                        $exclude = array();
+                    }
 
-                $url = $this->get_current_search_url($include, $exclude);
-                ?><li class="nav-tab<?php print $is_active . $is_default ?>" data-id="<?php print $slug ?>"><a href="<?php print $url ?>"><?php print $item['title'] ?></a></li><?php }
-            ?></ul>
-            <?php
+                    $url = $this->get_current_search_url($include, $exclude);
+                    ?><li class="nav-item" data-id="<?php print $slug ?>"><a  class="nav-link<?php print $is_active . $is_default ?>" href="<?php print $url ?>"><?php print $item['title'] ?></a></li><?php }
+                ?></ul>
+        <?php
         $content = ob_get_contents();
         ob_end_clean();
         return $content;
@@ -4215,35 +4311,35 @@ class SearchFacets extends AbstractDB {
     private function facet_tabs_new($tabs = array(), $active_facet = '', $def_tab = '', $filter_name = '', $column = false, $inactive = array()) {
         ob_start();
         ?>
-        <ul id="<?php print $filter_name ?>-tabs" class="tab-wrapper facet-tabs<?php
+        <ul id="<?php print $filter_name ?>-tabs" class="nav nav-pills facet-tabs<?php
         if ($column) {
-            print ' column';
+            print ' d-block';
         }
         ?>" data-filter="<?php print $filter_name ?>"><?php
-            foreach ($tabs as $slug => $item) {
-                $is_active = '';
-                $is_default = '';
+                foreach ($tabs as $slug => $item) {
+                    $is_active = '';
+                    $is_default = '';
 
-                if ($inactive && in_array($slug, $inactive)) {
-                    continue;
-                }
+                    if ($inactive && in_array($slug, $inactive)) {
+                        continue;
+                    }
 
-                if ($slug == $active_facet) {
-                    $is_active = ' active';
-                }
-                if ($def_tab == $slug) {
-                    $is_default = ' default';
-                    $include = array();
-                    $exclude = array($filter_name);
-                } else {
-                    $include = array($filter_name => $slug);
-                    $exclude = array();
-                }
+                    if ($slug == $active_facet) {
+                        $is_active = ' active';
+                    }
+                    if ($def_tab == $slug) {
+                        $is_default = ' default';
+                        $include = array();
+                        $exclude = array($filter_name);
+                    } else {
+                        $include = array($filter_name => $slug);
+                        $exclude = array();
+                    }
 
-                $url = $this->get_current_search_url($include, $exclude);
-                ?><li class="nav-tab<?php print $is_active . $is_default ?>" data-id="<?php print $slug ?>"><a href="<?php print $url ?>"><?php print $item['title'] ?></a></li><?php }
-            ?></ul>
-            <?php
+                    $url = $this->get_current_search_url($include, $exclude);
+                    ?><li class="nav-item" data-id="<?php print $slug ?>"><a  class="nav-link<?php print $is_default . $is_active ?>" href="<?php print $url ?>"><?php print $item['title'] ?></a></li><?php }
+                ?></ul>
+        <?php
         $content = ob_get_contents();
         ob_end_clean();
         return $content;
@@ -4358,7 +4454,7 @@ class SearchFacets extends AbstractDB {
             $key = $value->id;
             if (isset($providers[$key])) {
                 $item = $providers[$key];
-                $icon = '<img src="/wp-content/uploads/thumbs/providers_img/50x50/' . $item->pid . '.jpg" width="25" height="25">';
+                $icon = '<img src="/wp-content/uploads/thumbs/providers_img/50x50/' . $item->pid . '.jpg">';
 
                 $dates[$item->slug] = array(
                     'title' => $item->name,
@@ -4603,12 +4699,12 @@ class SearchFacets extends AbstractDB {
             //$other_cnt = isset($facets_data['related']['data'][0]->cnt) ? $facets_data['related']['data'][0]->cnt : 0;
 
             if ($data) {
-                 foreach ($this->cs->search_filters['state'] as $key => $item) {
+                foreach ($this->cs->search_filters['state'] as $key => $item) {
                     foreach ($data as $value) {
-                    $id = trim($value->id);
-                    $cnt = $value->cnt;
-                   
-                        if ($item['key'] == $id) {                            
+                        $id = trim($value->id);
+                        $cnt = $value->cnt;
+
+                        if ($item['key'] == $id) {
                             $dates[$key] = array('title' => $item['title'], 'count' => $cnt);
                         }
                     }
@@ -4735,7 +4831,7 @@ class SearchFacets extends AbstractDB {
         ?>
         <div id="facet-<?php print $filter ?>" class="facet ajload single-title" data-type="all">
             <div class="facet-title">
-        <?php if ($icon) { ?>
+                <?php if ($icon) { ?>
                     <div class="facet-icon"><?php print $icon; ?></div>
                 <?php } ?>
                 <h3 class="title"><?php print $title ?><?php print $this->get_tooltip($filter) ?></h3> 
@@ -4777,9 +4873,9 @@ class SearchFacets extends AbstractDB {
         $curr_parents_str = implode(';', $curr_parents);
         ?>
         <div id="facet-<?php print $filter ?>" class="facet ajload<?php print $this->cs->hide_facet_class($filter, $this->filters) ?>" data-type="<?php print $ftype ?>" data-parents="<?php print $curr_parents_str ?>">
-        <?php $head_toptip = $this->get_head_tooltip($filter) ?>
+            <?php $head_toptip = $this->get_head_tooltip($filter) ?>
             <div class="facet-title wacc<?php print $head_toptip['class'] ?>">
-            <?php if ($icon) { ?>
+                <?php if ($icon) { ?>
                     <div class="facet-icon"><?php print $icon; ?></div>
                 <?php } ?>
                 <h3 class="title"><?php print $title ?></h3>   
@@ -4788,29 +4884,29 @@ class SearchFacets extends AbstractDB {
                     <div class="chevronup icon-up-open"></div>
                 </div>
             </div>
-        <?php print $head_toptip['content'] ?>
+            <?php print $head_toptip['content'] ?>
             <?php if ($quick_find) { ?>
                 <div class="facet-quickfind">
                     <input type="search" class="autocomplite<?php
-                if ($keyword) {
-                    print ' active';
-                }
-                ?>" data-type="<?php print $filter ?>" data-count="<?php print $more ?>" value="<?php print $keyword ?>" placeholder="Quick find" ac-type="qf">
+                    if ($keyword) {
+                        print ' active';
+                    }
+                    ?>" data-type="<?php print $filter ?>" data-count="<?php print $more ?>" value="<?php print $keyword ?>" placeholder="Quick find" ac-type="qf">
                 </div>          
-                       <?php } ?>
+            <?php } ?>
             <div class="facet-ch<?php
             if ($keyword) {
                 print ' custom';
             }
             ?>"><?php
-            if ($collapsed):
-                $this->theme_block_loading();
-            else:
-                if ($tabs) {
-                    print $tabs;
-                }
-                $keys = array();
-                ?>
+                     if ($collapsed):
+                         $this->theme_block_loading();
+                     else:
+                         if ($tabs) {
+                             print $tabs;
+                         }
+                         $keys = array();
+                         ?>
                          <?php if (sizeof($data)): ?>
                              <?php
                              $andor_filter = '';
@@ -4836,12 +4932,12 @@ class SearchFacets extends AbstractDB {
                                  }
                                  ?>
                             <div id="andor-<?php print $filter ?>" class="facet-btns andor-btns" data-def="<?php print $andor ?>" data-select="<?php print $andor_select ?>">                     
-                                <span class="btn f_and<?php print $f_and ?>"><i class="icon-flow-branch"></i>And</span> / 
-                                <span class="btn f_or<?php print $f_or ?>"><i class="icon-flow-parallel"></i>Or</span>
+                                <span class="fbtn f_and<?php print $f_and ?>"><i class="icon-flow-branch"></i>And</span> / 
+                                <span class="fbtn f_or<?php print $f_or ?>"><i class="icon-flow-parallel"></i>Or</span>
                             </div>
-                <?php } ?>
+                        <?php } ?>
                         <ul class="facet-content">                   
-                        <?php foreach ($data as $key => $item): ?>
+                            <?php foreach ($data as $key => $item): ?>
                                 <?php
                                 $type_title = isset($item['type_title']) ? $item['type_title'] : $title;
 
@@ -4904,12 +5000,12 @@ class SearchFacets extends AbstractDB {
                                 }
                                 ?>
                                 <li class="checkbox<?php print $hide_class ?>"<?php print $row_dd ?>> 
-                                <?php
-                                $plus_tag = $this->theme_tag($local_filter, $type_title, $name, false);
-                                if ($minus):
-                                    $minus_tag = $this->theme_tag($local_filter, $type_title, $name, true);
-                                    ?>
-                                        <div id="filter-<?php print $key ?>" class="row multi_pm">
+                                    <?php
+                                    $plus_tag = $this->theme_tag($local_filter, $type_title, $name, false);
+                                    if ($minus):
+                                        $minus_tag = $this->theme_tag($local_filter, $type_title, $name, true);
+                                        ?>
+                                        <div id="filter-<?php print $key ?>" class="multi_pm">
                                             <label class="minus<?php print $checked_minus ? ' active' : ''  ?>">
                                                 <span class="label minus icon-minus-1">
                                                     <input type="checkbox" name="<?php print $minus_filter ?>[]" class="minus" data-name="<?php print $minus_filter ?>" data-fname="<?php print $minus_tag['name'] ?>" data-ftitle="<?php print $minus_tag['title'] ?>" value="<?php print $key ?>" <?php print $checked_minus ? 'checked' : ''  ?> <?php print $data_parents_str ?>>                          
@@ -4919,77 +5015,77 @@ class SearchFacets extends AbstractDB {
                                                 <span class="label plus icon-plus-1">                                                  
                                                     <input type="checkbox" name="<?php print $plus_filter ?>[]" class="plus" data-name="<?php print $plus_filter ?>" data-fname="<?php print $plus_tag['name'] ?>" data-ftitle="<?php print $plus_tag['title'] ?>" value="<?php print $key ?>" <?php print $checked ? 'checked' : ''  ?> <?php print $data_parents_str ?>>                                                      
                                                 </span>
-                        <?php if (isset($item['icon']) && $item['icon']) { ?>
+                                                <?php if (isset($item['icon']) && $item['icon']) { ?>
                                                     <div class="facet-icon"><?php print $item['icon']; ?></div>
                                                 <?php } ?>
                                                 <span class="t"><?php print $item['title'] ?>
-                                                <?php if ($show_count) { ?>
+                                                    <?php if ($show_count) { ?>
                                                         <span class="cnt">(<?php print $item['count'] ?>)</span>
                                                     <?php } ?>
                                                 </span>
                                             </label>
-                        <?php if ($dropdown): ?>
+                                            <?php if ($dropdown): ?>
                                                 <div class="row_dd acc">
                                                     <i class="up icon-up-dir"></i>
                                                     <i class="down icon-down-dir"></i>
                                                 </div>
-                        <?php endif; ?>
+                                            <?php endif; ?>
                                         </div>
-                                            <?php if ($item['child']) print $item['child'] ?>
+                                        <?php if ($item['child']) print $item['child'] ?>
                                         <?php
                                     else:
                                         ?>
                                         <div id="filter-<?php print $key ?>" class="multi_pm">
-                                            <label class="row flex-row<?php print $checked ? ' active' : ''  ?>">
+                                            <label class="flex-row<?php print $checked ? ' active' : ''  ?>">
                                                 <span class="label check icon-check">
                                                     <input type="checkbox" name="<?php print $plus_filter ?>[]" class="plus" data-name="<?php print $plus_filter ?>" data-fname="<?php print $plus_tag['name'] ?>" data-ftitle="<?php print $plus_tag['title'] ?>" value="<?php print $key ?>" <?php print $checked ? 'checked' : ''  ?> <?php print $data_parents_str ?>>                                                      
                                                 </span>
-                        <?php if (isset($item['icon']) && $item['icon']) { ?>
+                                                <?php if (isset($item['icon']) && $item['icon']) { ?>
                                                     <div class="facet-icon"><?php print $item['icon']; ?></div>
                                                 <?php } ?>
                                                 <span class="t"><?php print $item['title'] ?>
-                                                <?php if ($show_count) { ?>
+                                                    <?php if ($show_count) { ?>
                                                         <span class="cnt">(<?php print $item['count'] ?>)</span>
                                                     <?php } ?>                                                
                                                 </span>
-                                                    <?php if (isset($item['note'])) { ?>
+                                                <?php if (isset($item['note'])) { ?>
                                                     <div class="nte">
-                                                        <div class="btn">?</div>
+                                                        <div class="nbtn">?</div>
                                                         <div class="nte_show">
                                                             <div class="nte_in">
                                                                 <div class="nte_cnt">
-                            <?php print $item['note'] ?>
+                                                                    <?php print $item['note'] ?>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                        <?php } ?>
+                                                <?php } ?>
                                             </label>
                                         </div>                                   
-                    <?php endif ?>
+                                    <?php endif ?>
                                 </li>
-                                <?php endforeach; ?>   
+                            <?php endforeach; ?>   
                             <?php
                             if ($show_and) {
                                 $not_list = $this->get_facet_checked_not_in_list($filter, $keys);
                                 if (sizeof($not_list)) {
                                     ?>
                                     <li>And: <li>
-                                    <?php
-                                    foreach ($not_list as $k) {
-                                        $key = $k['key'];
-                                        $type = $k['type'];
-                                        $name = isset($this->cs->search_filters[$filter][$key]['title']) ? $this->cs->search_filters[$filter][$key]['title'] : $key;
+                                        <?php
+                                        foreach ($not_list as $k) {
+                                            $key = $k['key'];
+                                            $type = $k['type'];
+                                            $name = isset($this->cs->search_filters[$filter][$key]['title']) ? $this->cs->search_filters[$filter][$key]['title'] : $key;
 
-                                        $this->checkbox_list_item($key, $filter, $name, 0, true, $minus, $type, '', '', '', $data_parents_str);
+                                            $this->checkbox_list_item($key, $filter, $name, 0, true, $minus, $type, '', '', '', $data_parents_str);
+                                        }
                                     }
                                 }
-                            }
-                            ?>
+                                ?>
                         </ul>
 
-                <?php if ($expanded): ?>
-                            <div class="more active" title="Collapse" data-id="<?php print $filter ?>">Collapse</div>
+                        <?php if ($expanded): ?>
+                            <div class="more btn btn-secondary d-block active" title="Collapse" data-id="<?php print $filter ?>">Collapse</div>
                             <?php
                         elseif ($more):
                             $expand_text = 'Expand all: ' . $more;
@@ -5001,14 +5097,14 @@ class SearchFacets extends AbstractDB {
                                 print '<p>Total found: ' . $more . '</p>';
                             }
                             ?>
-                            <div class="more" title="Show <?php print $more ?> filters" data-id="<?php print $filter ?>"><?php print $expand_text ?></div>
+                            <div class="more btn btn-secondary d-block" title="Show <?php print $more ?> filters" data-id="<?php print $filter ?>"><?php print $expand_text ?></div>
                         <?php endif ?>
 
                     <?php else: ?>
                         <div class="facet-content">
                             <p>No data avaliable</p>
                         </div>
-            <?php endif; ?>
+                    <?php endif; ?>
                 <?php endif; ?>
             </div>
         </div>
@@ -5030,7 +5126,7 @@ class SearchFacets extends AbstractDB {
         $curr_parents_str = implode(';', $curr_parents);
         ?>
         <div id="facet-<?php print $filter ?>" class="facet ajload<?php print $this->cs->hide_facet_class($filter, $this->filters) ?>" data-type="<?php print $ftype ?>" data-parents="<?php print $curr_parents_str ?>">
-        <?php $head_toptip = $this->get_head_tooltip($filter) ?>
+            <?php $head_toptip = $this->get_head_tooltip($filter) ?>
             <div class="facet-title wacc<?php print $head_toptip['class'] ?>">
                 <h3 class="title"><?php print $title ?></h3>   
                 <div class="acc">
@@ -5038,41 +5134,41 @@ class SearchFacets extends AbstractDB {
                     <div class="chevronup icon-up-open"></div>
                 </div>
             </div>            
-        <?php print $head_toptip['content'] ?>
+            <?php print $head_toptip['content'] ?>
             <div class="facet-ch">
                 <div class="facet-ac">
                     <input type="search" class="autocomplite" data-type="<?php print $filter ?>" data-count="<?php print $more ?>" value="" placeholder="Search <?php print $filter_name ?>" ac-type="ac">
                     <div class="ac-holder" data-type="<?php print $ftype ?>"></div>
                 </div>
                 <ul class="facet-content">
-        <?php
-        if ($data) {
-            foreach ($data as $key => $item) {
-                $checked = false;
-                if ($this->facet_checked($filter, $key)) {
-                    $checked = true;
-                    $keys[] = $key;
-                }
+                    <?php
+                    if ($data) {
+                        foreach ($data as $key => $item) {
+                            $checked = false;
+                            if ($this->facet_checked($filter, $key)) {
+                                $checked = true;
+                                $keys[] = $key;
+                            }
 
-                $type_title = isset($item['type_title']) ? $item['type_title'] : $title;
-                $this->checkbox_list_item($key, $filter, $item['title'], $item['count'], $checked, false, 'p', '', $type_title);
-            }
-        }
-        $not_list = $this->get_facet_checked_not_in_list($filter, $keys);
-        if (sizeof($not_list)) {
-            ?>
-                        <li>And: <li>
-                        <?php
-                        foreach ($not_list as $k) {
-                            $key = $k['key'];
-                            $name = isset($this->cs->search_filters[$filter][$key]['title']) ? $this->cs->search_filters[$filter][$key]['title'] : $key;
-                            $this->checkbox_list_item($key, $filter, $name, 0, true);
+                            $type_title = isset($item['type_title']) ? $item['type_title'] : $title;
+                            $this->checkbox_list_item($key, $filter, $item['title'], $item['count'], $checked, false, 'p', '', $type_title);
                         }
                     }
-                    ?>
+                    $not_list = $this->get_facet_checked_not_in_list($filter, $keys);
+                    if (sizeof($not_list)) {
+                        ?>
+                        <li>And: <li>
+                            <?php
+                            foreach ($not_list as $k) {
+                                $key = $k['key'];
+                                $name = isset($this->cs->search_filters[$filter][$key]['title']) ? $this->cs->search_filters[$filter][$key]['title'] : $key;
+                                $this->checkbox_list_item($key, $filter, $name, 0, true);
+                            }
+                        }
+                        ?>
                 </ul>
-                        <?php if ($expanded): ?>
-                    <div class="more active" title="Collapse" data-id="<?php print $filter ?>">Collapse</div>
+                <?php if ($expanded): ?>
+                    <div class="more btn btn-secondary d-block active" title="Collapse" data-id="<?php print $filter ?>">Collapse</div>
                     <?php
                 elseif ($more):
                     $expand_text = 'Expand all: ' . $more;
@@ -5081,7 +5177,7 @@ class SearchFacets extends AbstractDB {
                         print '<p>Total found: ' . $more . '</p>';
                     }
                     ?>
-                    <div class="more" title="Show <?php print $more ?> filters" data-id="<?php print $filter ?>"><?php print $expand_text ?></div>
+                    <div class="more btn btn-secondary d-block" title="Show <?php print $more ?> filters" data-id="<?php print $filter ?>"><?php print $expand_text ?></div>
                 <?php endif ?>
             </div>
         </div>
@@ -5093,9 +5189,9 @@ class SearchFacets extends AbstractDB {
         $curr_parents_str = implode(';', $curr_parents);
         ?>
         <div id="facet-<?php print $filter ?>" class="facet ajload select-facet" data-type="<?php print $ftype ?>" data-parents="<?php print $curr_parents_str ?>">
-        <?php $head_toptip = $this->get_head_tooltip($filter) ?>
+            <?php $head_toptip = $this->get_head_tooltip($filter) ?>
             <div class="facet-title wacc<?php print $head_toptip['class'] ?>">
-            <?php if ($icon) { ?>
+                <?php if ($icon) { ?>
                     <div class="facet-icon"><?php print $icon; ?></div>
                 <?php } ?>
                 <h3 class="title"><?php print $title ?></h3>   
@@ -5104,16 +5200,16 @@ class SearchFacets extends AbstractDB {
                     <div class="chevronup icon-up-open"></div>
                 </div>
             </div>
-        <?php print $head_toptip['content'] ?>
+            <?php print $head_toptip['content'] ?>
             <div class="facet-ch">
-            <?php
-            if ($tabs) {
-                print $tabs;
-            }
-            ?>
+                <?php
+                if ($tabs) {
+                    print $tabs;
+                }
+                ?>
                 <?php if (sizeof($data)): ?>
                     <select autocomplete="off" class="facet-content facet-select" name="<?php print $filter ?>">
-                    <?php foreach ($data as $key => $item): ?>
+                        <?php foreach ($data as $key => $item): ?>
                             <?php
                             $checked = false;
                             if ($check_default) {
@@ -5129,11 +5225,11 @@ class SearchFacets extends AbstractDB {
                             <option value="<?php print $key ?>" data-fname="<?php print $select_tag['name'] ?>" data-ftitle="<?php print $select_tag['title'] ?>" <?php print $checked ? 'selected' : ''  ?>><?php print $item['title'] ?></option>
                         <?php endforeach; ?> 
                     </select>
-                    <?php else: ?>
+                <?php else: ?>
                     <div class="facet-content">
                         <p>No data avaliable</p>
                     </div>
-        <?php endif; ?>
+                <?php endif; ?>
                 <?php
                 if ($footer) {
                     print $footer;
@@ -5159,7 +5255,7 @@ class SearchFacets extends AbstractDB {
             }
             ?>
             <li class="checkbox"> 
-                <div id="filter-<?php print $key ?>" class="row multi_pm">
+                <div id="filter-<?php print $key ?>" class="multi_pm">
                     <label class="minus<?php print $checked_minus ? ' active' : ''  ?>">
                         <span class="label minus icon-minus-1">
                             <input type="checkbox" name="<?php print $minus_filter ?>[]"  class="minus" value="<?php print $key ?>" data-name="<?php print $minus_filter ?>"  data-fname="<?php print $minus_tag['name'] ?>" data-ftitle="<?php print $minus_tag['title'] ?>"  <?php print $checked_minus ? 'checked' : ''  ?> <?php print $data_parents_str ?>>                          
@@ -5170,7 +5266,7 @@ class SearchFacets extends AbstractDB {
                             <input type="checkbox" name="<?php print $filter ?>[]" class="plus" value="<?php print $key ?>" data-name="<?php print $filter ?>" data-fname="<?php print $plus_tag['name'] ?>" data-ftitle="<?php print $plus_tag['title'] ?>" <?php print $checked_plus ? 'checked' : ''  ?> <?php print $data_parents_str ?>>                                                      
                         </span>
                         <span class="t"><?php print $title ?>
-            <?php if ($count) { ?>
+                            <?php if ($count) { ?>
                                 <span class="cnt">(<?php print $count ?>)</span> 
                             <?php } ?>
                         </span>                        
@@ -5179,10 +5275,10 @@ class SearchFacets extends AbstractDB {
             </li>
         <?php else: ?>
             <li class="checkbox"> 
-                <label id="filter-<?php print $key ?>" class="row flex-row" data-type="<?php print $type_title ?>">
+                <label id="filter-<?php print $key ?>" class="flex-row" data-type="<?php print $type_title ?>">
                     <input type="checkbox" name="<?php print $filter ?>[]" value="<?php print $key ?>" data-name="<?php print $filter ?>" data-fname="<?php print $plus_tag['name'] ?>" data-ftitle="<?php print $plus_tag['title'] ?>" <?php print $checked ? ' checked' : ''  ?> <?php print $data_parents_str ?>>                          
                     <span class="t"><?php print $title ?>
-            <?php if ($count) { ?>
+                        <?php if ($count) { ?>
                             <span class="cnt">(<?php print $count ?>)</span>
                         <?php } ?>
                     </span>
@@ -5529,18 +5625,18 @@ class SearchFacets extends AbstractDB {
         if (sizeof($data)) {
             ?>
             <ul class="ac-result">
-            <?php
-            $curr_facet = isset($this->cs->facets_data[$filter]) ? $this->cs->facets_data[$filter] : array();
-            $title = isset($curr_facet['title']) ? $curr_facet['title'] : '';
-            $curr_parents = $this->cs->get_parents($filter);
-            $curr_parents_str = implode(';', $curr_parents);
-            foreach ($data as $key => $item) {
-                $item_title = $item['title'];
-                $data_title = $item['data_title'] ? $item['data_title'] : $item_title;
-                $filter_tag = $this->theme_tag($filter, $title, $data_title, false);
-                ?>
+                <?php
+                $curr_facet = isset($this->cs->facets_data[$filter]) ? $this->cs->facets_data[$filter] : array();
+                $title = isset($curr_facet['title']) ? $curr_facet['title'] : '';
+                $curr_parents = $this->cs->get_parents($filter);
+                $curr_parents_str = implode(';', $curr_parents);
+                foreach ($data as $key => $item) {
+                    $item_title = $item['title'];
+                    $data_title = $item['data_title'] ? $item['data_title'] : $item_title;
+                    $filter_tag = $this->theme_tag($filter, $title, $data_title, false);
+                    ?>
                     <li class="checkbox">
-                        <label class="row flex-row" data-type="<?php print $type_title ?>">
+                        <label class="flex-row" data-type="<?php print $type_title ?>">
 
                             <span class="t"><?php print $item_title ?>
                                 <span class="cnt">(<?php print $item['count'] ?>)</span>
@@ -5548,120 +5644,119 @@ class SearchFacets extends AbstractDB {
                             <input type="checkbox" name="<?php print $filter ?>[]" data-name="<?php print $filter ?>" data-fname="<?php print $filter_tag['name'] ?>" data-ftitle="<?php print $filter_tag['title'] ?>" value="<?php print $key ?>" <?php print $this->facet_checked($filter, $key) ? 'checked' : ''  ?> data-parents="<?php print $curr_parents_str ?>">                          
                         </label>
                     </li>
-            <?php } ?>
+                <?php } ?>
             </ul>
-                <?php
-            }
-        }
-
-        private function get_facet_checked_not_in_list($filter, $keys) {
-            $ret = array();
-            $aviable_filters = array(
-                'p' => $filter,
-                'm' => 'minus-' . $filter
-            );
-            foreach ($aviable_filters as $k => $f) {
-                if (isset($this->facet_filters[$f])) {
-                    $filters = $this->facet_filters[$f];
-                    if (!is_array($filters)) {
-                        $filters = array($filters);
-                    }
-                    foreach ($filters as $key) {
-                        if (!in_array($key, $keys)) {
-                            $ret[] = array('key' => $key, 'type' => $k);
-                        }
-                    }
-                }
-            }
-
-            return $ret;
-        }
-
-        private function facet_checked($filter, $key) {
-            if (isset($this->facet_filters[$filter])) {
-                if (is_array($this->facet_filters[$filter])) {
-                    if (in_array($key, $this->facet_filters[$filter])) {
-                        return true;
-                    }
-                } else {
-                    if ($this->facet_filters[$filter] == $key) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        public function get_nte($btn = '', $content = '', $down = false) {
-            $down_class = "";
-            if ($down) {
-                $down_class = " dwn";
-            }
-            return '<div class="nte"><div class="btn">' . $btn . '</div>'
-                    . '<div class="nte_show' . $down_class . '"><div class="nte_in"><div class="nte_cnt">' . $content . '</div></div></div>'
-                    . '</div>';
-        }
-
-        public function get_head_tooltip($filter = '') {
-            $head_toptip = $this->get_tooltip($filter);
-            $witch_toptip_class = '';
-            $witch_toptip_content = '';
-            if ($head_toptip) {
-                $witch_toptip_class = ' wtt';
-                $witch_toptip_content = '<div class="title-tt">' . $head_toptip . '</div>';
-            }
-            return array(
-                'class' => $witch_toptip_class,
-                'content' => $witch_toptip_content,
-            );
-        }
-
-        public function get_tooltip($filter = '') {
-            $ret = '';
-            $tooltips = $this->get_tooltips();
-            $filter_exist = false;
-
-            if (in_array($filter, $tooltips)) {
-                $filter_exist = true;
-            } else {
-
-                // Find parent filter for list facets
-                $active_facet = isset($this->cs->facets_data[$filter]) ? $this->cs->facets_data[$filter] : array();
-                $filter = isset($active_facet['parent']) ? $active_facet['parent'] : '';
-                if ($filter) {
-                    if (in_array($filter, $tooltips)) {
-                        $filter_exist = true;
-                    }
-                }
-            }
-
-            if ($filter_exist) {
-                $ret = ' <span data-value="tooltip_' . $filter . '" class="nte_info"></span>';
-            }
-            return $ret;
-        }
-
-        public function get_tooltips() {
-            if ($this->tool_tips != '') {
-                return $this->tool_tips;
-            }
-            $this->tool_tips = array();
-            $filters_active = $this->get_option('tooltips_filters');
-
-            $filters_active = str_replace("\n", ',', $filters_active);
-
-            $filters = array();
-            if (strstr($filters_active, ',')) {
-                $filters_active_arr = explode(',', $filters_active);
-                foreach ($filters_active_arr as $filter) {
-                    $filter = trim($filter);
-                    if ($filter) {
-                        $filters[] = $filter;
-                    }
-                }
-            }
-            $this->tool_tips = $filters;
-            return $this->tool_tips;
+            <?php
         }
     }
-    
+
+    private function get_facet_checked_not_in_list($filter, $keys) {
+        $ret = array();
+        $aviable_filters = array(
+            'p' => $filter,
+            'm' => 'minus-' . $filter
+        );
+        foreach ($aviable_filters as $k => $f) {
+            if (isset($this->facet_filters[$f])) {
+                $filters = $this->facet_filters[$f];
+                if (!is_array($filters)) {
+                    $filters = array($filters);
+                }
+                foreach ($filters as $key) {
+                    if (!in_array($key, $keys)) {
+                        $ret[] = array('key' => $key, 'type' => $k);
+                    }
+                }
+            }
+        }
+
+        return $ret;
+    }
+
+    private function facet_checked($filter, $key) {
+        if (isset($this->facet_filters[$filter])) {
+            if (is_array($this->facet_filters[$filter])) {
+                if (in_array($key, $this->facet_filters[$filter])) {
+                    return true;
+                }
+            } else {
+                if ($this->facet_filters[$filter] == $key) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public function get_nte($btn = '', $content = '', $down = false) {
+        $down_class = "";
+        if ($down) {
+            $down_class = " dwn";
+        }
+        return '<div class="nte"><div class="nbtn">' . $btn . '</div>'
+                . '<div class="nte_show' . $down_class . '"><div class="nte_in"><div class="nte_cnt">' . $content . '</div></div></div>'
+                . '</div>';
+    }
+
+    public function get_head_tooltip($filter = '') {
+        $head_toptip = $this->get_tooltip($filter);
+        $witch_toptip_class = '';
+        $witch_toptip_content = '';
+        if ($head_toptip) {
+            $witch_toptip_class = ' wtt';
+            $witch_toptip_content = '<div class="title-tt">' . $head_toptip . '</div>';
+        }
+        return array(
+            'class' => $witch_toptip_class,
+            'content' => $witch_toptip_content,
+        );
+    }
+
+    public function get_tooltip($filter = '') {
+        $ret = '';
+        $tooltips = $this->get_tooltips();
+        $filter_exist = false;
+
+        if (in_array($filter, $tooltips)) {
+            $filter_exist = true;
+        } else {
+
+            // Find parent filter for list facets
+            $active_facet = isset($this->cs->facets_data[$filter]) ? $this->cs->facets_data[$filter] : array();
+            $filter = isset($active_facet['parent']) ? $active_facet['parent'] : '';
+            if ($filter) {
+                if (in_array($filter, $tooltips)) {
+                    $filter_exist = true;
+                }
+            }
+        }
+
+        if ($filter_exist) {
+            $ret = ' <span data-value="tooltip_' . $filter . '" class="nte_info"></span>';
+        }
+        return $ret;
+    }
+
+    public function get_tooltips() {
+        if ($this->tool_tips != '') {
+            return $this->tool_tips;
+        }
+        $this->tool_tips = array();
+        $filters_active = $this->get_option('tooltips_filters');
+
+        $filters_active = str_replace("\n", ',', $filters_active);
+
+        $filters = array();
+        if (strstr($filters_active, ',')) {
+            $filters_active_arr = explode(',', $filters_active);
+            foreach ($filters_active_arr as $filter) {
+                $filter = trim($filter);
+                if ($filter) {
+                    $filters[] = $filter;
+                }
+            }
+        }
+        $this->tool_tips = $filters;
+        return $this->tool_tips;
+    }
+}

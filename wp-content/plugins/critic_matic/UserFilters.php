@@ -206,15 +206,8 @@ class UserFilters extends AbstractDB {
             }
         }
         $this->filters_delta();
-        ?>            
-        <form class="row-form">
-            <div class="row">
-                <div class="col_title <?php print $ret_class ?>"><?php print $msg ?></div>                    
-            </div>
-            <div class="submit_data">
-                <button class="button btn-second close">Close</button>
-            </div>
-        </form>
+        ?> 
+        <div class="<?php print $ret_class ?>"><?php print $msg ?></div>  
         <?php
     }
 
@@ -284,75 +277,66 @@ class UserFilters extends AbstractDB {
         $commenter = $this->wp_get_current_commenter();
         ?>
         <form class="row-form">
-            <div class="row">
-                <div class="col_title">
-                    <?php
-                    $user_profile = '/author/' . $user->user_nicename . '/';
-                    $logged_in_as = '<p class="logged-in-as">' .
-                            sprintf('You are logged in as <a href="%1$s">%2$s</a>.', $user_profile, $user_identity) . '</p>';
-                    print $logged_in_as;
-                    ?>               
-                </div>
+
+            <div class="mb-3">
+                <?php
+                $user_profile = '/author/' . $user->user_nicename . '/';
+                $logged_in_as = '<p class="logged-in-as">' .
+                        sprintf('You are logged in as <a href="%1$s">%2$s</a>.', $user_profile, $user_identity) . '</p>';
+                print $logged_in_as;
+                ?>               
             </div>
+
             <?php if ($this->score_filter_image($wp_uid)): ?>
-                <div class="row">
-                    <div class="col_input"> 
-                        <div id="filter_image"><?php if ($img) { ?>
-                                <img src="<?php print $this->get_img_path($img); ?>">
-                            <?php } ?></div>                
+
+                <div class="mb-3"> 
+                    <div id="filter_image"><?php if ($img) { ?>
+                            <img src="<?php print $this->get_img_path($img); ?>">
+                        <?php } ?>
                     </div>                
-                    <div class="col_input">  
-                        <button id="upl_filter_image" class="btn-small">Upload image</button>                     
-                        <button id="remove_filter_image" class="btn-small btn-second<?php
-                        if (!$img) {
-                            print " ishide";
-                        }
-                        ?>">Remove image</button>
-                        <input type="file" id="upl_filter_file" style="display: none;" >                                        
-                        <input type="hidden" id="upl_filter_thumb" >                    
-                        <input type="hidden" id="remove_filter_thumb" val="0"> 
-                    </div>                
-                </div>
+                </div>                
+                <div class="mb-3">  
+                    <button id="upl_filter_image" class="btn btn-primary">Upload image</button>                     
+                    <button id="remove_filter_image" class="btn btn-secondary<?php
+                    if (!$img) {
+                        print " ishide";
+                    }
+                    ?>">Remove image</button>
+                    <input type="file" id="upl_filter_file" style="display: none;" >                                        
+                    <input type="hidden" id="upl_filter_thumb" >                    
+                    <input type="hidden" id="remove_filter_thumb" val="0"> 
+                </div>                
+
             <?php endif ?>
-            <div class="row">
-                <div class="col_title">Filter link:</div>
-                <div class="col_input">                    
-                    <input name="link" class="link" value="<?php print $link ?>" disabled="disabled">
-                    <div class="col_content"></div>
-                </div>                
+            <div class="mb-3">
+                <label for="filter-link" class="col-form-label">Filter link:</label> 
+                <input name="link" class="form-control link" id="filter-link" value="<?php print $link ?>" disabled="disabled">
+                <div class="col_content"></div>
             </div>
-            <div class="row">
-                <div class="col_title">Title:</div>
-                <div class="col_input">
-                    <input name="title" class="title" value="<?php print stripslashes($title) ?>" placeholder="">
-                    <div class="col_content"></div>
-                </div>                
+            <div class="mb-3">
+                <label for="filter-title" class="col-form-label">Title:</label>
+                <input name="title" class="form-control title" id="filter-title" value="<?php print stripslashes($title) ?>" placeholder="">
+                <div class="col_content"></div>                               
             </div>
-            <div class="row">
-                <div class="col_title">Description:</div>
-                <div class="col_input">
-                    <textarea name="content" data-id="content" class="content"><?php print stripslashes($content) ?></textarea>
-                    <div class="col_content"></div>
-                </div>                
+            <div class="mb-3">
+                <label for="filter-content" class="col-form-label">Description:</label>                
+                <textarea name="content" data-id="content" id="filter-content" class="form-control content"><?php print stripslashes($content) ?></textarea>
+                <div class="col_content"></div>                
             </div>
-            <div class="row">                
-                <div class="col_title form-check">                     
-                    <input type="checkbox" name="publish" value="1" id="publish" <?php
+            <div class="mb-3">                
+                <div class="form-check">                     
+                    <input type="checkbox" name="publish" class="form-check-input" value="1" id="publish" <?php
                     if ($publish) {
                         print "checked";
                     }
                     ?> >
-                    <label for="publish">
+                    <label for="publish" class="form-check-label">
                         Publish to the public filter list.
                     </label>                    
                 </div>      
                 <?php if ($already_publish): ?>
                     <div class="desc col_title">Default: not published. Reason: the same filter has already been published by another user.</div>
                 <?php endif; ?>
-            </div>
-            <div class="submit_data">
-                <button id="submit-filter" class="button">Submit</button>
-                <button class="button btn-second close">Close</button>
             </div>
         </form>
         <?php
@@ -467,17 +451,34 @@ class UserFilters extends AbstractDB {
         return $ret;
     }
 
-    public function get_user_filter($wp_uid = 0, $link = '') {
-        $ret = 0;
+    public function get_user_filter($request_uri='', $link = '') {
+        $ret = array();
         if ($link) {
             $link_hash = $this->link_hash($link);
             $sql = sprintf("SELECT id FROM {$this->db['link_filters']} WHERE link_hash='%s'", $link_hash);
             $fid = $this->db_get_var($sql);
 
-            if ($fid) {
-                $ret = $this->get_filter_id_by_user_and_id($wp_uid, $fid);
+            try {
+                if (preg_match('#/([^/]+)/filters/#', $request_uri, $match)) {
+                    $wpu = $this->cm->get_wpu();
+                    $user = $wpu->get_user_by_slug($match[1]);
+                    $user_id = $user->ID;
+
+                    if ($fid && $user_id) {
+                        $ret = $this->get_filter_by_user_and_id($user_id, $fid);
+                        
+                    }
+                }
+            } catch (Exception $exc) {
+                //echo $exc->getTraceAsString();
             }
         }
+        return $ret;
+    }
+
+    public function get_filter_by_user_and_id($wp_uid = 0, $fid = '') {
+        $sql = sprintf("SELECT * FROM {$this->db['user_filters']} WHERE fid=%d AND wp_uid=%d", $fid, $wp_uid);
+        $ret = $this->db_fetch_row($sql);
         return $ret;
     }
 
@@ -556,7 +557,7 @@ class UserFilters extends AbstractDB {
         if ($wp_uid > 0) {
             $wp_uid_and = ' AND f.wp_uid=' . (int) $wp_uid;
         }
-        $sql = sprintf("SELECT f.id, f.title, f.content, f.aid, f.wp_uid, f.img, l.link, l.tab "
+        $sql = sprintf("SELECT f.id, f.title, f.date, f.content, f.publish, f.aid, f.wp_uid, f.img, l.link, l.tab "
                 . "FROM {$this->db['user_filters']} f "
                 . "INNER JOIN {$this->db['link_filters']} l ON l.id=f.fid "
                 . "WHERE f.id=%d" . $wp_uid_and, $id);
@@ -617,68 +618,65 @@ class UserFilters extends AbstractDB {
         if ($posts) {
             ob_start();
             ?>
-            <div class="simple">
-                <div class="items<?php
-                if ($owner) {
-                    print " owner";
-                }
-                ?>" data-id="0">
-                         <?php
-                         foreach ($posts as $post) {
+            <div class="simple list-group list-group-flush items<?php
+            if ($owner) {
+                print " owner";
+            }
+            ?>" data-id="0"> 
+                     <?php
+                     foreach ($posts as $post) {
 
-                             // Link to filter
-                             $link = $this->get_filter_link($post->id, $user_nicename);
+                         // Link to filter
+                         $link = $this->get_filter_link($post->id, $user_nicename);
 
-                             // Time
-                             $ptime = $post->date;
-                             $addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+                         // Time
+                         $ptime = $post->date;
+                         $addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
 
-                             // Title
-                             $title = stripslashes($post->title);
-                             $desc = stripslashes($post->content);
+                         // Title
+                         $title = stripslashes($post->title);
+                         $desc = stripslashes($post->content);
 
-                             $publish = $post->publish;
-                             $pub_icon = '';
-                             if ($owner && $publish == 0) {
-                                 $pub_icon = '<i class="icon-eye-off"></i> Private. ';
-                             }
+                         $publish = $post->publish;
+                         $pub_icon = '';
+                         if ($owner && $publish == 0) {
+                             $pub_icon = '<i class="icon-eye-off"></i> Private. ';
+                         }
 
-                             $img = '';
-                             if ($post->img) {
-                                 $img = $this->get_img_path($post->img);
-                             }
-                             ?>
-                        <div class="item" data-id="<?php print $post->id ?>">
-                            <a href="<?php print $link ?>" title="<?php print $title ?>" >   
-                                <?php if ($img): ?>
-                                    <img srcset="<?php print $img; ?>" alt="<?php print $title ?>">                                             
-                                <?php endif ?>
-                                <div class="desc">
-                                    <h5><?php print $title ?></h5>
-                                    <p><?php print $addtime ?>.<?php print $pub_icon ?></p>
-                                    <p><?php print $desc ?></p>
-                                </div>
-                            </a>                                       
-                            <?php if ($owner): ?>                                            
-                                <div class="menu nte">
-                                    <div class="btn">
-                                        <i class="icon icon-ellipsis-vert"></i>
-                                    </div>
-                                    <div class="nte_show dwn">
-                                        <div class="nte_in">
-                                            <div class="nte_cnt">
-                                                <ul class="list-menu">                                                                                                               
-                                                    <li class="nav-tab" data-act="editfilter" data-link="<?php print $link ?>">Edit Filter</li>
-                                                    <li class="nav-tab" data-act="delfilter">Delete Filter</li>                                                                
-                                                </ul>
-                                            </div>                                                          
-                                        </div>                                                    
-                                    </div>                                                
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    <?php } ?>
-                </div>
+                         $img = '';
+                         if ($post->img) {
+                             $img = $this->get_img_path($post->img);
+                         }
+                         ?>
+                    <div class="item d-flex justify-content-between list-group-item list-group-item-nopadding" data-id="<?php print $post->id ?>">
+                        <a href="<?php print $link ?>" title="<?php print $title ?>" class="d-flex list-group-item list-group-item-action list-group-item-noborder" >   
+                            <?php if ($img): ?>
+                                <img class="d-flex me-3" srcset="<?php print $img; ?>" alt="<?php print $title ?>">                                             
+                            <?php endif ?>
+                            <div class="desc d-flex flex-column">
+                                <h5><?php print $title ?></h5>                                
+                                <p><?php print $desc ?></p>
+                                <small class="text-body-secondary d-inline-block mt-auto">
+                                    <span class="me-3 text-nowrap"><?php print $addtime ?></span>
+                                    <span class="me-3 text-nowrap"><?php print $pub_icon ?></span>
+                                </small>
+                            </div>
+                        </a>                                       
+                        <?php if ($owner): ?>
+
+                            <div class="ellipsis-menu dropdown cnt-filters">
+                                <span class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="icon icon-ellipsis-vert" ></i></span>
+                                <ul class="dropdown-menu list-menu">    
+                                    <li class="nav-tab" data-act="editfilter" data-link="<?php print $link ?>">Edit Filter</li>
+                                    <li class="nav-tab" data-act="delfilter" data-id="<?php print $post->id ?>">Delete Filter</li>                            
+                                </ul>
+                            </div>
+
+
+                        <?php endif; ?>
+                    </div>
+                <?php } ?>
+
             </div>
             <?php
             $content = ob_get_contents();
@@ -694,46 +692,47 @@ class UserFilters extends AbstractDB {
         if ($posts) {
             ob_start();
             ?>
-            <div class="simple">
-                <div class="items">
-                    <?php
-                    foreach ($posts as $post) {
+            <div class="simple list-group list-group-flush items"> 
+                <?php
+                foreach ($posts as $post) {
 
-                        // Link to filter
-                        $link = $this->get_filter_link($post->id, $user_nicename);
+                    // Link to filter
+                    $link = $this->get_filter_link($post->id, $user_nicename);
 
-                        // Time
-                        $ptime = $post->date;
-                        $addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+                    // Time
+                    $ptime = $post->date;
+                    $addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
 
-                        // Title
-                        $title = stripslashes($post->title);
-                        $desc = stripslashes($post->content);
+                    // Title
+                    $title = stripslashes($post->title);
+                    $desc = stripslashes($post->content);
 
-                        $publish = $post->publish;
-                        $pub_icon = '';
-                        if ($owner && $publish == 0) {
-                            $pub_icon = '<i class="icon-eye-off"></i> Private. ';
-                        }
-                        $img = '';
-                        if ($post->img) {
-                            $img = $this->get_img_path($post->img);
-                        }
-                        ?>
-                        <div class="item">
-                            <a href="<?php print $link ?>" title="<?php print $title ?>" >    
-                                <?php if ($img): ?>
-                                    <img srcset="<?php print $img; ?>" alt="<?php print $title ?>">                                             
-                                <?php endif ?>
-                                <div class="desc">
-                                    <h5><?php print $title ?></h5>
-                                    <p><?php print $addtime ?>.<?php print $pub_icon ?></p>
-                                    <p><?php print $desc ?></p>
-                                </div>
-                            </a>
-                        </div>
-                    <?php } ?>
-                </div>
+                    $publish = $post->publish;
+                    $pub_icon = '';
+                    if ($owner && $publish == 0) {
+                        $pub_icon = '<i class="icon-eye-off"></i> Private. ';
+                    }
+                    $img = '';
+                    if ($post->img) {
+                        $img = $this->get_img_path($post->img);
+                    }
+                    ?>
+                    <div class="item d-flex justify-content-between list-group-item list-group-item-nopadding">
+                        <a href="<?php print $link ?>" title="<?php print $title ?>" class="d-flex list-group-item list-group-item-action list-group-item-noborder" >   
+                            <?php if ($img): ?>
+                                <img class="d-flex me-3" srcset="<?php print $img; ?>" alt="<?php print $title ?>">                                             
+                            <?php endif ?>
+                            <div class="desc d-flex flex-column">
+                                <h5><?php print $title ?></h5>                                
+                                <p><?php print $desc ?></p>
+                                <small class="text-body-secondary d-inline-block mt-auto">
+                                    <span class="me-3 text-nowrap"><?php print $addtime ?></span>
+                                    <span class="me-3 text-nowrap"><?php print $pub_icon ?></span>
+                                </small>
+                            </div>
+                        </a>                                       
+                    </div>
+                <?php } ?>
             </div>
             <?php
             $content = ob_get_contents();

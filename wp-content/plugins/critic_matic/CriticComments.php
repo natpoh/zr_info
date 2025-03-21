@@ -322,8 +322,7 @@ class CriticComments extends AbstractDB {
 
         $ip = $this->cm->get_remote_ip();
 
-       
-        if (function_exists('sanitize_text_field')) {            
+        if (function_exists('sanitize_text_field')) {
             $comment_content = $this->add_newlines_tags($comment_content);
             $comment_content = _sanitize_text_fields($comment_content, true);
         }
@@ -370,6 +369,8 @@ class CriticComments extends AbstractDB {
         $rtn->cid = $cid;
         $rtn->user_name = $author_name;
         $rtn->success = true;
+        $rtn->pid = $comment_post_ID;
+        $rtn->count = $this->get_comments_number($comment_post_ID, $post_type, false);
         die(json_encode($rtn));
     }
 
@@ -846,7 +847,7 @@ class CriticComments extends AbstractDB {
                 $top_number_childs = $this->get_comments_count(0, -1, $cid);
                 if ($top_number_childs > 1) {
                     ?>
-                    <li data-page="0" class="next_page cmt lvl-<?php print $level ?>"><a class="zrbtn" href="#all">Load all comments three</a></li>
+                    <li data-page="0" class="text-center next_page cmt lvl-<?php print $level ?>"><a class="btn btn-primary" href="#all">Load all comments three</a></li>
                 <?php } ?>
             </ul>
             <?php
@@ -856,7 +857,7 @@ class CriticComments extends AbstractDB {
             if ($top_number > 1) {
                 // Load more
                 ?>
-                <li data-page="0" class="next_page cmt lvl-1"><a class="zrbtn" href="#all">Load all comments</a></li>
+                <li data-page="0" class="text-center next_page cmt lvl-1"><a class="btn btn-primary" href="#all">Load all comments</a></li>
                 <?php
             }
         }
@@ -1152,21 +1153,21 @@ class CriticComments extends AbstractDB {
 
             $ret .= '<li id="comment-' . $comment->comment_ID . '" class="cmt lvl-' . $level . $post_a . $com_a . $hide_bl_class . $is_hidecm_class . $is_del_class . $ourbl_class . '" data-pid="' . $comment->comment_post_ID . '" data-type="' . $comment->post_type . '"  data-uid="' . $comment->user_id . '">';
             if (!$is_del && !$is_hidecm) {
-                $ret .= $this->theme_comment($comment, $level);
+                $ret .= $this->theme_comment($comment, $level, $is_editor);
             }
             $ret .= "</li>\n";
         }
 
         if ($next_page) {
-            $ret .= '<li data-page="' . $next_page . '" class="next_page cmt lvl-' . $level . '">';
-            $ret .= '<a class="zrbtn" href="#more">Load more comments</a>';
+            $ret .= '<li data-page="' . $next_page . '" class="text-center next_page cmt lvl-' . $level . '">';
+            $ret .= '<a class="btn btn-primary" href="#more">Load more comments</a>';
             $ret .= "</li>\n";
         }
 
         return $ret;
     }
 
-    public function theme_comment($comment, $level = 1) {
+    public function theme_comment($comment, $level = 1, $is_editor = false) {
 
         # Comment id
         $cid = (int) $comment->comment_ID;
@@ -1216,7 +1217,7 @@ class CriticComments extends AbstractDB {
         if ($country_data['path']) {
             $country_name = $country_data['name'];
             $country_img = '<div class="cntr nte cflag" title="' . $country_name . '">
-                                                    <div class="btn"><img src="' . $country_data['path'] . '" /></div> 
+                                                    <div class="nbtn"><img src="' . $country_data['path'] . '" /></div> 
                                                     <div class="nte_show">
                                                         <div class="nte_in">
                                                             <div class="nte_cnt">
@@ -1309,111 +1310,127 @@ class CriticComments extends AbstractDB {
                 <?php endif ?>
             </div>
         <?php } ?>
-        <div class="ch">
-            <div class="tp">                                                 
-                <?php print $editor_check ?>
-                <?php
-                // Flag
-                if ($country_img) {
-                    print $country_img;
-                }
-                // Author
-                ?> 
-                <span class="usrs">
-                    <?php if ($author_link): ?>
-                        <a class="athr" href="<?php print $author_link ?>"><?php print $comment->comment_author ?></a>
-                    <?php else: ?>
-                        <span class="athr"><?php print $comment->comment_author ?></span>
-                    <?php endif ?>
+        <div class="ch card">
+            <div class="card-body">
+                <div class="tp">                                                 
+                    <?php print $editor_check ?>
                     <?php
-                    // Parent
-                    if ($comment->comment_parent) {
-                        ?>
-                        <?php if ($is_recent || $is_search) { ?>
-                            &rarr; <a class="prnt ext" href="<?php print $parent_link ?>"><?php print $parent->comment_author ?> <i class="icon icon-link-ext"></i></a>
-                        <?php } else { ?>
-                            &rarr; <a class="prnt" href="<?php print $parent_link ?>"><?php print $parent->comment_author ?></a>
-                        <?php } ?>
-                    <?php } ?>
-                </span> <?php
-                // Date
-                ?>
-                <a class="dt" href="<?php print $author_comment_link ?>"><?php print $comment_time ?></a>
-                <?php if ($is_recent || $is_search) { ?>
-                    <span class="pl">to post <a href="<?php print $post_link ?>"><?php print $post_title ?></a></span> 
-                <?php } ?>
-                <?php
-                // Menu            
-                ?>
-
-                <div class="nte cmtm">                    
-                    <div class="btn"><i class="icon icon-ellipsis-vert"></i></div> 
-                    <div class="nte_show dwn">
-                        <div class="nte_in"><div class="nte_cnt"></div></div>
-                    </div>
-                </div>
-
-            </div>  
-            <?php if ($comment->comment_approved == '0') : ?>
-                <em class="noapprvd">
-                    <?php
-                    $mod_text = 'This comment is awaiting moderation.';
-                    if ($comment_author) {
-                        $mod_text = 'Thank you! Your comment has been sent for moderation.';
+                    // Flag
+                    if ($country_img) {
+                        print $country_img;
                     }
-                    print $mod_text;
-                    ?>                
-                </em> 
-            <?php elseif ($comment->comment_approved == 'spam') : ?>
-                <em class="spamcmt">This comment has been marked as spam.</em> 
-            <?php elseif ($comment->comment_approved == 'trash') : ?>
-                <em class="spamcmt">This comment is in the trash.</em> 
-            <?php endif; ?> 
-            <div class="t">
-                <?php print $comment_text; ?>
-            </div>             
-            <div class="bnm">                
-                <div class="vtb">
-                    <div class="vt">
-                        <div>
-                            <a class="up" href="#" title="Agree"><b class="upi icon-thumbs-up"></b><span class="cnt"><i><?php if ($votes_plus) print $votes_plus ?></i></span></a> 
-                            <a class="dw" href="#" title="Disagree"><b class="dwi icon-thumbs-down"></b><span class="cnt"><i><?php if ($votes_minus) print $votes_minus ?></i></span></a>
-                        </div>
-                        <div class="vc"></div>
+                    // Author
+                    ?> 
+                    <span class="usrs">
+                        <?php if ($author_link): ?>
+                            <a class="athr" href="<?php print $author_link ?>"><?php print $comment->comment_author ?></a>
+                        <?php else: ?>
+                            <span class="athr"><?php print $comment->comment_author ?></span>
+                        <?php endif ?>
+                        <?php
+                        // Parent
+                        if ($comment->comment_parent) {
+                            ?>
+                            <?php if ($is_recent || $is_search) { ?>
+                                &rarr; <a class="prnt ext" href="<?php print $parent_link ?>"><?php print $parent->comment_author ?> <i class="icon icon-link-ext"></i></a>
+                            <?php } else { ?>
+                                &rarr; <a class="prnt" href="<?php print $parent_link ?>"><?php print $parent->comment_author ?></a>
+                            <?php } ?>
+                        <?php } ?>
+                    </span> <?php
+                    // Date
+                    ?>
+                    <a class="dt" href="<?php print $author_comment_link ?>"><?php print $comment_time ?></a>
+                    <?php if ($is_recent || $is_search) { ?>
+                        <span class="pl">to post <a href="<?php print $post_link ?>"><?php print $post_title ?></a></span> 
+                    <?php } ?>
+                    <?php
+                    // Menu            
+                    ?>
+                    <div class="dropdown cmtm ellipsis-menu">
+                        <span class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="icon icon-ellipsis-vert" ></i></span>
+                        <ul class="dropdown-menu">                           
+                        </ul>
                     </div>
-                    <div class="ttl <?php print $score_class ?>"><?php
-                        if ($votes > 0) {
-                            /* if ($score > 0) {
-                              print "+";
-                              } */
-                            print $score;
+                </div>  
+                <?php if ($comment->comment_approved == '0') : ?>
+                    <em class="noapprvd">
+                        <?php
+                        $mod_text = 'This comment is awaiting moderation.';
+                        if ($comment_author) {
+                            $mod_text = 'Thank you! Your comment has been sent for moderation.';
                         }
+                        print $mod_text;
+                        ?>                
+                    </em> 
+                <?php elseif ($comment->comment_approved == 'spam') : ?>
+                    <em class="spamcmt">This comment has been marked as spam.</em> 
+                <?php elseif ($comment->comment_approved == 'trash') : ?>
+                    <em class="spamcmt">This comment is in the trash.</em> 
+                <?php endif; ?> 
+                <div class="t">
+                    <?php print $comment_text; ?>
+                </div>             
+                <div class="bnm">                
+                    <div class="vtb">
+                        <div class="vt">
+                            <div>
+                                <a class="up" href="#" title="Agree"><b class="upi icon-thumbs-up"></b><span class="cnt"><i><?php if ($votes_plus) print $votes_plus ?></i></span></a> 
+                                <a class="dw" href="#" title="Disagree"><b class="dwi icon-thumbs-down"></b><span class="cnt"><i><?php if ($votes_minus) print $votes_minus ?></i></span></a>
+                            </div>
+                            <div class="vc"></div>
+                        </div>
+                        <div class="ttl <?php print $score_class ?>"><?php
+                            if ($votes > 0) {
+                                /* if ($score > 0) {
+                                  print "+";
+                                  } */
+                                print $score;
+                            }
+                            ?>
+                        </div>
+                    </div>
+                    <div id="respond-<?php print $cid ?>" class="rsd">                    
+                        <?php /*
+                          if ($is_recent || $is_search) { ?>
+                          <?php if ($comment->comment_childs > 0) { ?>
+                          <?php print $comment->comment_childs ?> <a class="ext" href="<?php print $answer_link ?>">
+                          <?php print $answers ?> <i class="icon icon-link-ext"></i></a>
+                          <?php } else { ?>
+                          <a class="ext" href="<?php print $answer_link ?>">Reply <i class="icon icon-link-ext"></i></a>
+                          <?php } ?>
+                          <?php } else {
+                         */ ?>                    
+                        <a href="<?php print $answer_link ?>">Reply</a>
+                        <?php /* }
+                         */
                         ?>
                     </div>
                 </div>
-                <div id="respond-<?php print $cid ?>" class="rsd">                    
-                    <?php /*
-                      if ($is_recent || $is_search) { ?>
-                      <?php if ($comment->comment_childs > 0) { ?>
-                      <?php print $comment->comment_childs ?> <a class="ext" href="<?php print $answer_link ?>">
-                      <?php print $answers ?> <i class="icon icon-link-ext"></i></a>
-                      <?php } else { ?>
-                      <a class="ext" href="<?php print $answer_link ?>">Reply <i class="icon icon-link-ext"></i></a>
-                      <?php } ?>
-                      <?php } else {
-                     */ ?>                    
-                    <a href="<?php print $answer_link ?>">Reply</a>
-                    <?php /* }
-                     */
-                    ?>
-                </div>
-            </div>
-            <?php if ($comment->comment_childs > 0): ?>
-                <div class="bansw">
-                    <a href="#"><i class="icon-down-open"></i><i class="icon-up-open"></i> <?php print $answers ?></a>
-                </div>
-            <?php endif ?>
-        </div> 
+                <?php if ($comment->comment_childs > 0): ?>
+                    <div class="bansw">
+                        <a href="#"><i class="icon-down-open"></i><i class="icon-up-open"></i> <?php print $answers ?></a>
+                    </div>
+                <?php endif ?>
+                <?php
+                if ($is_editor) {
+                    //comment_author_IP
+                    //comment_author_email
+
+                    /* unset($comment->comment_content);
+                      print "<pre><small>";
+                      print_r($comment);
+                      print "</small></pre>"; */
+                    if ($comment->comment_author_IP) {
+                        print "<small>IP: {$comment->comment_author_IP}; </small>";
+                    }
+                    if ($comment->comment_author_email) {
+                        print "<small>Email: {$comment->comment_author_email}; </small>";
+                    }
+                }
+                ?>
+            </div>            
+        </div>
         <?php
         $content = ob_get_contents();
         ob_end_clean();
@@ -1556,6 +1573,18 @@ class CriticComments extends AbstractDB {
             $dict[$id] = $result;
         }
         return $result;
+    }
+
+    public function get_comments_number_all($post_ids = array(), $post_type = 0) {
+        $sql = sprintf("SELECT comment_post_ID AS id, comments_count FROM {$this->db['comments_num']} WHERE comment_post_ID IN(" . implode(',', $post_ids) . ") AND post_type=%d", $post_type);
+        $result = $this->db_results($sql);
+        $ret = array();
+        if ($result) {
+            foreach ($result as $item) {
+                $ret[$item->id] = $item->comments_count;
+            }
+        }
+        return $ret;
     }
 
     public function update_comment_count($comment_post_ID = 0, $post_type = 0) {
@@ -1741,6 +1770,37 @@ class CriticComments extends AbstractDB {
 
             $ret->title = $actor->name;
             $ret->link = '/actor/' . $post_ID;
+        } else if ($post_type == 10) {
+            // TODO Filter
+            // User filter
+            $uf = $this->cm->get_uf();
+            $fdata = $uf->get_user_filter_by_id($post_ID);
+
+            // User profile link
+            $uc = $this->cm->get_uc();
+            $wp_user = $uc->getUserById($fdata->wp_uid);
+
+            // Link to full post
+            $link = $uf->get_filter_link($post_ID, $wp_user->url);
+
+            $ret->title = $fdata->title;
+            $ret->link = $link;
+        } else if ($post_type == 11) {
+            // User watchlist
+             
+            $wl = $this->cm->get_wl();            
+            $post = $wl->get_list($post_ID);
+            
+            // User profile link
+            $uc = $this->cm->get_uc();
+            $wp_user = $uc->getUserById($post->wp_uid);    
+            
+            // Link to full post                
+            $link = $wl->get_list_link($post->id, $wp_user->url);
+       
+            
+            $ret->title = $post->title;
+            $ret->link = $link;
         }
 
         return $ret;
@@ -2452,56 +2512,54 @@ class CriticComments extends AbstractDB {
         return true;
     }
 
+    /**
+     * Add newlines after significant HTML tags, supporting both \n and \r\n.
+     *
+     * This function ensures there is a newline after significant block-level HTML tags.
+     *
+     * @param string $content The content with HTML tags.
+     * @return string The content with newlines added after significant tags.
+     */
+    function add_newlines_tags($content) {
+        // Список тегов, после которых нужно добавлять перевод строки.
+        $block_tags = [
+            'div',
+            'p',
+            'ul',
+            'ol',
+            'li',
+            'table',
+            'tr',
+            'td',
+            'th',
+            'blockquote',
+            'pre',
+            'hr',
+            'h1',
+            'h2',
+            'h3',
+            'h4',
+            'h5',
+            'h6',
+            'br',
+        ];
 
-/**
- * Add newlines after significant HTML tags, supporting both \n and \r\n.
- *
- * This function ensures there is a newline after significant block-level HTML tags.
- *
- * @param string $content The content with HTML tags.
- * @return string The content with newlines added after significant tags.
- */
-function add_newlines_tags( $content ) {
-	// Список тегов, после которых нужно добавлять перевод строки.
-	$block_tags = [
-		'div',
-		'p',
-		'ul',
-		'ol',
-		'li',
-		'table',
-		'tr',
-		'td',
-		'th',
-		'blockquote',
-		'pre',
-		'hr',
-		'h1',
-		'h2',
-		'h3',
-		'h4',
-		'h5',
-		'h6',
-		'br',
-	];
+        // Создаём регулярное выражение для закрывающих и одиночных тегов.
+        $regex = '/<\/?(' . implode('|', $block_tags) . ')(?:\s[^>]*)?>/i';
 
-	// Создаём регулярное выражение для закрывающих и одиночных тегов.
-	$regex = '/<\/?(' . implode( '|', $block_tags ) . ')(?:\s[^>]*)?>/i';
-
-	// Добавляем перевод строки после найденного тега, если его нет.
-	$content = preg_replace_callback( $regex, function ( $matches ) {
-		$tag = $matches[0];
-		// Если после тега уже есть перевод строки (\r, \n, или \r\n), ничего не делаем.
-		if ( ! preg_match( "/(\r?\n)$/", $tag ) ) {
-			$tag .= "\r\n";
-		}
-		return $tag;
-	}, $content );
+        // Добавляем перевод строки после найденного тега, если его нет.
+        $content = preg_replace_callback($regex, function ($matches) {
+            $tag = $matches[0];
+            // Если после тега уже есть перевод строки (\r, \n, или \r\n), ничего не делаем.
+            if (!preg_match("/(\r?\n)$/", $tag)) {
+                $tag .= "\r\n";
+            }
+            return $tag;
+        }, $content);
 
         // Убираем лишние пустые строки.
-	$content = preg_replace( "/\n+/", "\n", $content );
-        
-	return $content;
-}
+        $content = preg_replace("/\n+/", "\n", $content);
 
+        return $content;
+    }
 }

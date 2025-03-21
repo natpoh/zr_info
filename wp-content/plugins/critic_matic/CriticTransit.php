@@ -242,7 +242,7 @@ class CriticTransit extends AbstractDB {
         $search_front->filters['id'] = $last_id;
         $search_front->search_sort['movies']['id'] = true;
 
-        $result = $search_front->find_results(0, array(), false, true, $count, 1);
+        $result = $search_front->find_results(0, array(), false, true, true, $count, 1);
         if ($debug) {
             print_r($result);
         }

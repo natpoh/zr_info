@@ -1051,6 +1051,8 @@ class CriticAvatars extends AbstractDB {
         $av_type = 'anon';
         $avatar = $this->get_or_create_user_avatar($author->wp_uid, 0, $av_size, $av_type);
 
+        $this->cm->remove_author_cache($author_id);
+        
         $ret['image'] = $avatar;
         return json_encode($ret);
     }
@@ -1098,6 +1100,8 @@ class CriticAvatars extends AbstractDB {
         fwrite($fp, $file_content);
         fclose($fp);
 
+        $this->cm->remove_author_cache($author_id);
+        
         return json_encode($ret);
     }
 
@@ -1136,6 +1140,8 @@ class CriticAvatars extends AbstractDB {
 
                 // Get remote aid for a new author   
                 $author_id = $this->create_author($wp_user);
+                
+                 $this->cm->remove_author_cache($author_id);
 
                 if ($author_id) {
                     // Upload file to info server
@@ -1171,8 +1177,8 @@ class CriticAvatars extends AbstractDB {
             } catch (Exception $exc) {
                 $ret['error'] = $exc->getTraceAsString();
             }
-        }
-
+        }       
+        
         return $ret;
     }
 
@@ -1200,7 +1206,9 @@ class CriticAvatars extends AbstractDB {
         $ret = array(
             'success' => 1,
         );
-
+        
+        $this->cm->remove_author_cache($author_id);
+        
         return json_encode($ret);
     }
 
@@ -1229,10 +1237,13 @@ class CriticAvatars extends AbstractDB {
             $avatar = $this->get_or_create_user_avatar($author->wp_uid, 0, $size, $av_type);
         }
 
+        $this->cm->remove_author_cache($author_id);
+        
         return $avatar;
     }
 
     public function remove_old_pro_avatar($aid) {
+        $this->cm->remove_author_cache($aid);
         $author = $this->cm->get_author($aid);
         if ($author && $author->avatar_name) {
             $source_dir = WP_CONTENT_DIR . '/uploads/' . $this->pro_source_dir;
@@ -1241,7 +1252,7 @@ class CriticAvatars extends AbstractDB {
                 unlink($img_path);
                 return true;
             }
-        }
+        }        
         return false;
     }
 

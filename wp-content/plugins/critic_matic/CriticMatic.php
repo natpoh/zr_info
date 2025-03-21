@@ -67,6 +67,10 @@ class CriticMatic extends AbstractDB {
         2 => 'Odysee',
         3 => 'Bitchute'
     );
+    public $post_show_in = array(
+        0 => 'Critic',
+        1 => 'Media',        
+    );
     public $post_view_type_url = array(
         'www.youtube.com' => 1,
         'odysee.com' => 2,
@@ -223,6 +227,7 @@ class CriticMatic extends AbstractDB {
             'movies_meta' => $table_prefix . 'critic_movies_meta',
             'ip' => $table_prefix . 'critic_matic_ip',
             'thumbs' => $table_prefix . 'critic_matic_thumbs',
+            'email' => $table_prefix . 'critic_matic_email',
             // CF
             'feed_meta' => $table_prefix . 'critic_feed_meta',
             // TS
@@ -232,6 +237,8 @@ class CriticMatic extends AbstractDB {
             // Tags
             'cm_camp_tags' => 'cm_camp_tags',
             'cm_camp_tag_meta' => 'cm_camp_tag_meta',
+            // Meta links
+            'meta_compilation_links'=>'meta_compilation_links',
         );
         $this->timer_start();
 
@@ -657,6 +664,12 @@ class CriticMatic extends AbstractDB {
         $result = $this->db_fetch_row($sql);
         return $result;
     }
+    
+    public function get_posts_by_ids($ids=array()) {
+        $sql = "SELECT * FROM {$this->db['posts']} WHERE id IN(".implode(',',$ids).")";
+        $results = $this->db_results($sql);
+        return $results;
+    }
 
     public function get_post_name_by_id($id, $cache = true) {
         //Get from cache
@@ -1019,7 +1032,7 @@ class CriticMatic extends AbstractDB {
       2 => 'Manual'
      */
 
-    public function add_post($date = 0, $type = 0, $link = '', $title = '', $content = '', $top_movie = 0, $status = 1, $view_type = 0, $blur = 0, $sync = true) {
+    public function add_post($date = 0, $type = 0, $link = '', $title = '', $content = '', $top_movie = 0, $status = 1, $view_type = 0, $blur = 0, $sync = true, $show_in=0) {
         $link_hash = '';
         $link_id = 0;
         if ($link) {
@@ -1052,6 +1065,7 @@ class CriticMatic extends AbstractDB {
             'top_movie' => $top_movie,
             'view_type' => $view_type,
             'link_id' => $link_id,
+            'show_in'=>$show_in,
         );
 
         $id = $this->sync_insert_data($data, $this->db['posts'], $this->sync_client, $sync);
@@ -1801,6 +1815,24 @@ class CriticMatic extends AbstractDB {
         return $author;
     }
 
+    public function remove_author_cache($aid=0, $uid=0) {
+        if ($aid==0){
+            if ($uid>0){
+                $author = $this->get_author_by_wp_uid($uid);
+                $aid = $author->id;
+            }
+        }
+        if ($aid==0){
+            return false;
+        }
+
+        if (!class_exists('ThemeCache')) {
+            require_once( CRITIC_MATIC_PLUGIN_DIR . 'ThemeCache.php' );
+        }
+        $filename = "profile-{$aid}";
+        return ThemeCache::remove_cache('get_author_data_serialize', $filename, 'user', $aid);
+    }
+
     public function get_post_author($cid) {
         $sql = sprintf("SELECT a.* FROM {$this->db['authors']} a INNER JOIN {$this->db['authors_meta']} am ON am.aid = a.id  WHERE am.cid=%d LIMIT 1", $cid);
         $result = $this->db_fetch_row($sql);
@@ -2388,6 +2420,8 @@ class CriticMatic extends AbstractDB {
                 'show_type' => $show_type,
                 'last_upd' => $curr_time,
             );
+            
+            $this->remove_author_cache($id);
 
             $this->sync_update_data($data, $id, $this->db['authors'], $this->sync_data);
 
@@ -2458,6 +2492,7 @@ class CriticMatic extends AbstractDB {
             'options' => $opt_str,
             'last_upd' => $this->curr_time(),
         );
+        $this->remove_author_cache($author->id);
 
         $this->sync_update_data($data, $author->id, $this->db['authors'], $this->sync_data);
     }
@@ -2865,7 +2900,7 @@ class CriticMatic extends AbstractDB {
 
         return $id;
     }
-    
+
     public function get_camp_tags_by_ids($ids) {
         $sql = sprintf("SELECT id, name, slug FROM {$this->db['cm_camp_tags']} WHERE id IN(%s)", implode(',', $ids));
         $result = $this->db_results($sql);
@@ -2877,7 +2912,7 @@ class CriticMatic extends AbstractDB {
         }
         return $tags_arr;
     }
-    
+
     public function get_camp_tag_by_slug($slug, $cache = true) {
         //Get from cache
         static $dict;
@@ -3029,7 +3064,7 @@ class CriticMatic extends AbstractDB {
                 ?>
             </ul>
         </div>
-    <?php
+        <?php
     }
 
     /*
@@ -3249,7 +3284,19 @@ class CriticMatic extends AbstractDB {
         $ret = $this->get_rating_array($result);
         return $ret;
     }
-
+    
+    public function get_posts_rating($ids=array()) {
+        $sql = "SELECT * FROM {$this->db['rating']} WHERE cid IN(".implode(',',$ids).")";
+        $result = $this->db_results($sql);
+        $ret = array();
+        if ($result){
+            foreach ($result as $item) {
+                $ret[$item->cid] = $this->get_rating_array($item);
+            }            
+        }
+        return $ret;
+    }
+    
     public function get_post_rating_id($cid) {
         $sql = sprintf("SELECT id FROM {$this->db['rating']} WHERE cid = %d", (int) $cid);
         $result = $this->db_get_var($sql);
@@ -3824,6 +3871,42 @@ class CriticMatic extends AbstractDB {
                 'count' => $this->get_ip_count($key));
         }
         return $states;
+    }
+
+    /*
+     * Email
+     */
+
+    public function add_email($email, $type) {
+        $sql = sprintf("INSERT INTO {$this->db['email']} (type, email) VALUES ('%d', '%s')", (int) $type, $email);
+        $this->db_query($sql);
+    }
+
+    public function get_or_create_email($email = '', $type = 0) {
+        if (!$email) {
+            return 0;
+        }
+        $email_data = $this->get_email($email);
+        if ($email_data) {
+            return $email_data;
+        }
+
+        $this->add_email($email, $type);
+        $id = $this->getInsertId('id', $this->db['email']);
+        $email_data = $this->get_email($email);
+        return $email_data;
+    }
+
+    public function get_email_by_id($id) {
+        $sql = sprintf("SELECT id,type,email FROM {$this->db['email']} WHERE id = %d", (int) $id);
+        $result = $this->db_fetch_row($sql);
+        return $result;
+    }
+
+    public function get_email($email) {
+        $sql = sprintf("SELECT id,type,email FROM {$this->db['email']} WHERE email = '%s'", $this->escape($email));
+        $result = $this->db_fetch_row($sql);
+        return $result;
     }
 
     /* Review crowd */
@@ -4864,5 +4947,11 @@ class CriticMatic extends AbstractDB {
         $slug = preg_replace('/-$/', '', $slug);
 
         return $slug;
+    }
+    
+    public function get_meta_compilation_link($id){
+        $sql = sprintf("SELECT * FROM {$this->db[meta_compilation_links]} WHERE id=%d", (int) $id);
+        $result = $this->db_fetch_row($sql);
+        return $result;
     }
 }

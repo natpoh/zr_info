@@ -123,6 +123,7 @@ class CriticFeeds extends AbstractDBWp {
                 'use_global_rules' => $this->feed_settings['use_global_rules'],
                 'rt' => '',
                 'body_len' => $this->feed_settings['body_len'],
+                'show_status' => 0,
             ),
             'critic_feeds_max_feed_error' => $this->feed_settings['critic_feeds_max_feed_error'],
         );
@@ -204,6 +205,7 @@ class CriticFeeds extends AbstractDBWp {
 
         //Valid campaign feed
         $feed_invalid = isset($options['feed_invalid']) ? $options['feed_invalid'] : -1;
+        $show_in = isset($options['show_status']) ? $options['show_status'] : 0;
 
         //Wp error
         if (is_wp_error($simplepie)) {
@@ -376,7 +378,7 @@ class CriticFeeds extends AbstractDBWp {
             $top_movie = 0;
 
 
-            $cm_id = $this->cm->add_post($date, $type, $permalink, $title, $content, $top_movie, $status, $view_type);
+            $cm_id = $this->cm->add_post($date, $type, $permalink, $title, $content, $top_movie, $status, $view_type,0,true,$show_in);
 
             if ($cm_id == 0) {
                 //Item already exist
@@ -717,6 +719,13 @@ class CriticFeeds extends AbstractDBWp {
         $result = $this->cm->db_get_var($query);
         return $result;
     }
+    
+    public function get_pids_by_cid($cid) {
+        $query = sprintf("SELECT pid FROM {$this->db['feed_meta']} WHERE cid=%d", $cid);
+
+        $results = $this->cm->db_results($query);
+        return $results;
+    }
 
     /*
      * Pages
@@ -844,10 +853,13 @@ class CriticFeeds extends AbstractDBWp {
             $opt_prev = unserialize($campaign->options);
         }
 
+        $show_status = isset($form_state['show_status']) ? $form_state['show_status'] : $def_opt['show_status'];
+        
         $options = array(
             'rss_date' => isset($form_state['rss_date']) ? $form_state['rss_date'] : 0,
             'use_global_rules' => isset($form_state['use_global_rules']) ? $form_state['use_global_rules'] : 0,
             'post_status' => isset($form_state['post_status']) ? $form_state['post_status'] : $def_opt['post_status'],
+            'show_status' => $show_status,
             'body_len' => isset($form_state['body_len']) ? $form_state['body_len'] : 0,
         );
         $status = isset($form_state['status']) ? $form_state['status'] : 0;
@@ -887,6 +899,14 @@ class CriticFeeds extends AbstractDBWp {
 
             $this->db_query($sql);           
             $result = $id;
+            
+            
+            // Force update
+            if ($form_state['force_show_status']){
+                $updated = $this->force_updte_show_status_posts($id, $form_state['show_status']);
+                print "<div class=\"updated\"><p><strong>Updated show status posts: $updated</strong></p></div>";
+            }
+            
         } else {
             //ADD
             $this->db_query(sprintf("INSERT INTO {$this->db['campaign']} (
@@ -1617,6 +1637,35 @@ class CriticFeeds extends AbstractDBWp {
             }
         }
     }
+    
+    public function force_updte_show_status_posts($cid, $show_status=0){
+        $campaign = $this->get_campaign($cid);
+        $urls = $this->get_pids_by_cid($cid);
+         $updated = 0;
+        if (!$urls){
+            return $updated;
+        }
+        $ids = array();
+        foreach ($urls as $url) {
+            $ids[]=$url->pid;
+        }
+        
+        $posts = $this->cm->get_posts_by_ids($ids);
+       
+        if ($posts){
+            foreach ($posts as $post) {
+                if($post->show_in!=$show_status){
+                    $data = array(
+                      'show_in'=>$show_status
+                    );
+                    $this->cm->update_post_fields($post->id, $data);
+                    $updated+=1;
+                }
+            }
+        }
+        return $updated;
+    }
+    
 
     /*
      * Other
@@ -1639,5 +1688,5 @@ class CriticFeeds extends AbstractDBWp {
         }
         return $clean_url;
     }
-
+    
 }

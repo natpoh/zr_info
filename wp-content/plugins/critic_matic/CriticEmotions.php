@@ -29,7 +29,7 @@ class CriticEmotions extends AbstractDB {
 
     public function get_user_reactions($post_id, $post_type = 0, $allow_cmt = true) {
         $user_class = '';
-
+        return '';
         if ($allow_cmt) {
             $disquss_count_array = $this->get_comments_count([$post_id]);
             $disquss_count = $disquss_count_array[$post_id];
@@ -124,6 +124,7 @@ class CriticEmotions extends AbstractDB {
     }
 
     public function get_comments_count($post_ids) {
+        // DEPRECATED
         $result = [];
 
         foreach ($post_ids as $post_id) {

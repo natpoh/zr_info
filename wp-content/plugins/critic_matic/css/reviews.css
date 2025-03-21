@@ -38,32 +38,15 @@ div.wpcr3_review div.wpcr3_review_customs { margin-bottom:5px; }
 div.wpcr3_review div.wpcr3_review_custom { font-size:12px; float:left; margin-right:60px; }
 
 .wpcr3_respond_2 { position:relative; }
-.wpcr3_respond_2 label { display:inline-block!important;    position: relative; color: #939090;}
+
 .wpcr3_respond_2 .fconfirm2 { width:auto !important; }
 
-.wpcr3_respond_2 input { }
-.wpcr3_respond_2 input[type="text"]  { min-width:auto; }
-.wpcr3_respond_2 textarea { height:100px; }
+.from_code {
+    max-width: 700px;
+    margin: 0 auto;
+}
 .wpcr3_respond_2 small { padding:0 !important; margin:0 !important; }
-.wpcr3_respond_2 table, .wpcr3_respond_2 td { border:0 !important; border-style:none !important; }
 
-.wpcr3_respond_2 .wpcr3_check_confirm label { margin:-2px 0px 0px 5px; }
-
-.wpcr3_ad { background:#ffffff; }
-.wpcr3_ad label { font-weight:bold; }
-
-.wpcr3_respond_1, .wpcr3_respond_2 {
-	clear: both !important;
-	max-width: 900px;
-	margin: 0 auto 0 auto;
-	text-align: center;
-	overflow: hidden;
-}
-.wpcr3_respond_1 p, .wpcr3_respond_2 p {
-	clear: both !important;
-	max-width: 900px;
-	margin: 0 auto;
-}
 
 .wpcr3_respond_1 .wpcr3_rating, .wpcr3_respond_2 .wpcr3_rating {
     border:0 !important;
@@ -97,46 +80,11 @@ div.wpcr3_rating_style1_score div.wpcr3_rating_style1_score5 {width:100%; z-inde
 
 
 .wpcr3_div_2 { width:auto; }
-.wpcr3_table_2 { text-align:left; width:100%; }
 
 
-
-.wpcr3_table_2  td { text-align:left; }
 .wpcr3_check_confirm { margin-top:10px;font-size:13px;margin-bottom:4px; }
 
-.wpcr3_button_1 {
 
-	border-radius: 6px;
-	color: #fff;
-	cursor: pointer;
-	display: inline-block;
-	font-size: 18px;
-	line-height: 1;
-	outline: 0;
-	padding: .62em 1.62em;
-	text-align: center;
-	text-decoration: none;
-	white-space: nowrap;
-	float: none;
-	height: auto;
-	text-indent: 0;
-	margin-bottom: 15px;
-	position: relative;
-	z-index: 100000;
-	background-color: var(--buttons);
-	text-transform: uppercase;
-}
-
-.wpcr3_button_1:hover {
-	background: #007acc;
-    cursor:pointer;
-    font-weight: normal;
-}
-
-.wpcr3_button_1:active, .wpcr3_button_1:focus {
-    color:#1a1a1a;
-	background: #007acc;
-}
 
 .wpcr3_button_1.wpcr3_disabled {
 	opacity: 0.5;
@@ -214,20 +162,7 @@ div.wpcr3_rating_style1_score div.wpcr3_rating_style1_score5 {width:100%; z-inde
 body.theme_dark .succes_send {
 	background-color: #233623;
 }
-.wpcr3_respond_2 .wpcr3_div_2{
-	overflow: hidden;
-	height: 348px;
-}
-.wpcr3_respond_2  .wpc3_open{
-	height:auto;
-}
 
-.popup-content .wpcr3_div_2 {
-	text-align: left;
-	width: 100%;
-	height: auto;
-	overflow: visible;
-}
 
 /* author: Oleksiy */
 #suggestion:hover {
@@ -235,7 +170,7 @@ body.theme_dark .succes_send {
 }
 
 @media (max-width: 767px){
-	#suggestion td {
+	#suggestion {
 		float: none;
 		width: 100%;
 	}
@@ -309,8 +244,7 @@ input[type="radio"]:checked ~ span{
 .sug_buttons_wrapper .options {
 	display: flex;
 	position: relative;
-	margin: 0 auto;
-	padding: 0 0;
+	padding: 0;
 	list-style: none;
 	max-width: 380px;
 }
@@ -359,7 +293,6 @@ div.select ul.options li {
 .rating_input .rating_container {
 	display: flex;
 	max-width: 340px;
-	margin: 0 auto;
 }
 .rating_input .rating_number {
 	font-family: 'Encode Sans Condensed',Lato;
@@ -375,37 +308,16 @@ div.select ul.options li {
 
 
 }
-label.sub_red_b::before{
-	content:"*";
-	display: block;
-	position: absolute;
-	color: #ff0000;
-	left: -23px;
-	font-size: 30px;
-	line-height: 37px;
+.form_required{
+	display: inline-block;
+	color: var(--bs-red);
+        margin-left: 3px;
 }
-label.sub_red_b{
-	color: #000;
+
+.required_text{
+    color: var(--bs-red);    
 }
-.theme_dark label.sub_red_b{
-	color: #fff;
-}
-span.sub_red
-{
-	position: absolute;
-	right: 30px;
-	top: 24px;
-	color: #ff0000;
-	display: flex;
-	line-height: 20px;
-	align-items: center;
-	font-family: 'Encode Sans Condensed',Lato;
-}
-span.sub_red>span{
-	font-size: 30px;
-	position: relative;
-	top: 7px;
-}
+
 .number_rate_5{
 	color: #f44;
 }
@@ -455,28 +367,3 @@ span.sub_red>span{
 }
 
 
-@media screen and (max-width: 710px) {
-
-	.wpcr3_respond_2 .wpcr3_div_2 {
-		overflow: hidden;
-		height: 425px;
-	}
-	.wpcr3_respond_2  .wpc3_open{
-		height:auto;
-	}
-	.popup-content .wpcr3_respond_2 .wpcr3_div_2 {
-		overflow: visible;
-		height: auto;
-	}
-
-	.wpcr3_table_2 tr {
-		display: flex;
-		flex-wrap: wrap;
-
-	}
-	.wpcr3_table_2 tr td {
-		display: block;
-		width: 100%;
-		text-align: left;
-	}
-}

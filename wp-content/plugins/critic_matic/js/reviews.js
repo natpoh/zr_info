@@ -4,7 +4,7 @@
 function listen(box, e)
 {
     let cw = 0;
-    let rs=0;
+    let rs = 0;
 
     if (e.touches)
     {
@@ -23,7 +23,7 @@ function listen(box, e)
             let left = box.offsetLeft;
             cw = left + cw;
         }
-//console.log('cw',cw);
+
     }
     let wd = box.clientWidth;
     let rz = 0;
@@ -47,15 +47,18 @@ function listen(box, e)
 
     if (box.classList.contains('rating'))
     {
-        if (rs<0.2)rs=0;
-        if (rs>0 && rs<0.5)rs=0.5;
-        if (rs>4.5)rs=5;
+        if (rs < 0.2)
+            rs = 0;
+        if (rs > 0 && rs < 0.5)
+            rs = 0.5;
+        if (rs > 4.9)
+            rs = 5;
         rs = Number(rs.toFixed(1));
-    }
-    else
+    } else
     {
-        if (rs<0.2)rs=0;
-        rs =Math.ceil(Number(rs));
+        if (rs < 0.2)
+            rs = 0;
+        rs = Math.ceil(Number(rs));
     }
 
     let prnt = box.parentElement;
@@ -67,7 +70,7 @@ function listen(box, e)
     number_block.classList.add('number_rate_' + r_color);
 
 }
-function listen_click(box, e) {
+function listen_click(box, e, force = 0) {
     let  cw = 0;
 
     if (e.changedTouches)
@@ -100,13 +103,19 @@ function listen_click(box, e) {
     let rz = (cw / wd) * 5;
     if (box.classList.contains('rating'))
     {
-        if (rz>0 && rz<0.5)rz=0.5;
-        if (rz>4.5)rz=5;
+        if (rz > 0 && rz < 0.5)
+            rz = 0.5;
+        if (rz > 4.9)
+            rz = 5;
         rz = Number(rz.toFixed(1));
-    }
-    else
+    } else
     {
-        rz =Math.ceil(Number(rz));
+        rz = Math.ceil(Number(rz));
+    }
+
+    if (force)
+    {
+        rz = 5;
     }
 
     let r_color = Math.ceil(Number(rz));
@@ -221,6 +230,23 @@ function init_select() {
         });
 
     });
+
+
+    document.querySelectorAll('.rating_container .rating_number').forEach(ratingNumber => {
+        ratingNumber.addEventListener('click', function (e) {
+
+
+            const container = ratingNumber.closest('.rating_container');
+
+
+            const ratingResult = container.querySelector('.rating_result');
+
+
+            listen_click(ratingResult, e, 1);
+
+        });
+    });
+
 
     document.querySelectorAll(".rating_input .rating_result").forEach(box => {
         box.addEventListener("mousemove", function (e) {
@@ -386,12 +412,15 @@ wpcr3a.submit = function (e) {
         }
         wpcr3a.clearFields();
         min_ofsett = jQuery('.wpcr3_respond_1').offset().top;
-        jQuery("html:not(:animated)").animate({scrollTop: min_ofsett}, 200);
-        jQuery('.wpcr3_respond_1').html('<h3 class="column_header">Submit your review:</h3><div class="succes_send">Thank you! Your review has been received and will be posted immediately after it passes anti-troll inspection.</div>');
+        jQuery("html:not(:animated)").animate({scrollTop: min_ofsett}, 200);       
+        jQuery('.wpcr3_respond_1').html('<div class="succes_send">Thank you! Your review has been received and will be posted immediately after it passes anti-troll inspection.</div>');
         // user menu hook
-       if (typeof author_review_upd !== "undefined"){
-           author_review_upd();
-       }
+        if (typeof author_review_upd !== "undefined") {
+            author_review_upd();
+        }
+        if ($('#bs_modal .modal-footer .btn-primary').length) {
+            bs_modal.footer('','Close');            
+        }
     });
 };
 
@@ -429,9 +458,7 @@ wpcr3a.init = function () {
             $(document).unbind(evt_2);
         }
     });
-    $(".wpcr3_respond_2 .wpcr3_div_2:not(.wpc3_open) input, .wpcr3_respond_2 .wpcr3_div_2:not(.wpc3_open)").click(function (e) {
-        $(".wpcr3_respond_2 .wpcr3_div_2").addClass('wpc3_open');
-    });
+
     $(".wpcr3_respond_2 .wpcr3_rating_style1_score > div").click(function (e) {
         // debugger;
         var $tr_field = $(this).parent().parent().parent().parent().parent().parent();

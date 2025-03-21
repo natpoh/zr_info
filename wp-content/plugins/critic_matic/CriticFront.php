@@ -74,6 +74,7 @@ class CriticFront extends SearchFacets {
     }
 
     public function get_ce() {
+        // DEPRECATED
         if (!$this->ce) {
             if (!class_exists('CriticEmotions')) {
                 require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticEmotions.php' );
@@ -92,7 +93,8 @@ class CriticFront extends SearchFacets {
         if ($movie_id || $unique == 0) {
             // If vote = 0 - last post, show all posts
             if ($search && !$movie_id) {
-                $posts = $this->cs->get_last_critics($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au, $vote_type);
+                $posts_arr = $this->cs->get_last_critics($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au, $vote_type);
+                $posts = $posts_arr['list'] ? $posts_arr['list'] : [];
             } else {
                 $posts = $this->get_last_posts($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au, $vote_type);
             }
@@ -106,7 +108,8 @@ class CriticFront extends SearchFacets {
                 if ($a_type == 2) {
 
                     $unique_limit = 100;
-                    $posts = $this->cs->get_last_critics($a_type, $unique_limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au, $vote_type);
+                    $posts_arr = $this->cs->get_last_critics($a_type, $unique_limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au, $vote_type);
+                    $posts = $posts_arr['list'] ? $posts_arr['list'] : [];
                     if ($posts) {
                         $unique_authors = array();
                         foreach ($posts as $item) {
@@ -121,12 +124,14 @@ class CriticFront extends SearchFacets {
                     }
                 } else {
                     $unique_limit = 10;
-                    $authors = $this->cs->get_last_critics($a_type, $unique_limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au, $vote_type, $unique_authors);
+                    $posts_arr = $this->cs->get_last_critics($a_type, $unique_limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au, $vote_type, $unique_authors);
+                    $authors = $posts_arr['list'] ? $posts_arr['list'] : [];
 
                     if ($authors) {
                         $author_limit = 1;
                         foreach ($authors as $author) {
-                            $post = $this->cs->get_last_critics($a_type, $author_limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au, $vote_type, 0, $author->aid);
+                            $posts_arr = $this->cs->get_last_critics($a_type, $author_limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au, $vote_type, 0, $author->aid);
+                            $post = $posts_arr['list'] ? $posts_arr['list'] : [];
                             if ($post) {
                                 $posts[$post[0]->date] = $post[0];
                             }
@@ -736,7 +741,11 @@ class CriticFront extends SearchFacets {
         $critic_addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
 
         // Custom rating
-        $custom_rating = $this->get_custom_critic_rating($critic);
+        $custom_rating = $this->get_custom_critic_rating($critic, true);
+
+        if ($custom_rating) {
+            $custom_rating = '<span class="title-rating">' . $custom_rating . '</span>';
+        }
 
         // Title
         $title_str = '';
@@ -744,7 +753,7 @@ class CriticFront extends SearchFacets {
         $title = $this->pccf_filter($title);
 
         if ($title != $content && !$stuff) {
-            $title_str = '<strong class="review-title">' . $title . $custom_rating . '</strong>';
+            $title_str = '<strong class="review-title"><span class="title-name">' . $title . '</span>' . $custom_rating . '</strong>';
         }
 
 
@@ -821,7 +830,7 @@ class CriticFront extends SearchFacets {
         return $actorsresult;
     }
 
-    public function get_custom_critic_rating($critic) {
+    public function get_custom_critic_rating($critic, $full = false) {
 
         $rating_text = '';
         if ($critic->top_movie) {
@@ -841,7 +850,7 @@ class CriticFront extends SearchFacets {
                         if ($woke_rating > 60) {
                             $woke_color = 3;
                         }
-                        $rating_text = ' <span class="rating-review woke-color-' . $woke_color . '">' . $woke_rating . '%</span>';
+                        $rating_text = ' <span title="CherryPicks woke: ' . $woke_rating . '" class="rating-review woke-color-' . $woke_color . '">' . $woke_rating . '%</span>';
                     }
                 } else if ($critic->link_id == 178) {
                     // Bechdeltest
@@ -850,17 +859,22 @@ class CriticFront extends SearchFacets {
                     $woke = $ma->get_movie_woke($critic->top_movie);
                     if ($woke->bechdeltest > 0) {
                         $woke_text = '';
+                        $woke_small = '';
                         $woke_color = 1;
                         $filters = $this->cs->search_filters['bechdeltest'];
                         foreach ($filters as $filter) {
                             if ($woke->bechdeltest == $filter['key']) {
                                 $woke_text = $filter['title'];
+                                $woke_small = $filter['title-small'];
                                 $woke_color = $filter['color'];
                                 break;
                             }
                         }
                         if ($woke_text) {
-                            $rating_text = ' <span class="rating-review woke-color-' . $woke_color . '">' . $woke_text . '</span>';
+                            if ($full) {
+                                $woke_small = $woke_text;
+                            }
+                            $rating_text = ' <span title="Bechdeltest: ' . $woke_text . '" class="rating-review woke-color-' . $woke_color . '">' . $woke_small . '</span>';
                         }
                     }
                 } else if ($critic->link_id == 176) {
@@ -880,7 +894,7 @@ class CriticFront extends SearchFacets {
                         }
                     }
 
-                    $rating_text = ' <span class="rating-review woke-color-' . $woke_color . '">' . $woke_text . '</span>';
+                    $rating_text = ' <span title="WorthitOrWoke: ' . $woke_text . '" class="rating-review woke-color-' . $woke_color . '">' . $woke_text . '</span>';
                 } else if ($critic->link_id == 166) {
                     // mediaversity
                     $ma = $this->get_ma();
@@ -890,7 +904,7 @@ class CriticFront extends SearchFacets {
                         $clear_rating = strtolower(preg_replace('#[^a-zA-Z]+#', '', $erating->mediaversity_grade));
                         $filters = $this->cs->search_filters['mediaversity'];
                         $woke_color = $filters[$clear_rating] ? $filters[$clear_rating]['color'] : 1;
-                        $rating_text = ' <span class="rating-review woke-color-' . $woke_color . '">' . $erating->mediaversity_grade . '</span>';
+                        $rating_text = ' <span title="Mediaversity: ' . $erating->mediaversity_grade . '" class="rating-review woke-color-' . $woke_color . '">' . $erating->mediaversity_grade . '</span>';
                     }
                 } else if ($critic->link_id == 179) {
                     // Wokernot
@@ -907,7 +921,7 @@ class CriticFront extends SearchFacets {
                         if ($woke_rating > 60) {
                             $woke_color = 3;
                         }
-                        $rating_text = ' <span class="rating-review woke-color-' . $woke_color . '">' . $woke_rating . '%</span>';
+                        $rating_text = ' <span title="Woke r\' Not: ' . $woke_rating . '" class="rating-review woke-color-' . $woke_color . '">' . $woke_rating . '%</span>';
                     }
                 }
             } catch (Exception $exc) {
@@ -1033,7 +1047,7 @@ class CriticFront extends SearchFacets {
         return $ret;
     }
 
-    public function find_video_link($link, $cid = 0) {
+    public function find_video_link($link, $cid = 0, $only_get = false) {
         $ret = array();
         // https://www.bitchute.com/embed/kntoSwUiKY4T/
         if (preg_match('/bitchute\.com\/(?:embed|video)\/([a-zA-Z0-9\-_]+)/', $link, $match)) {
@@ -1041,7 +1055,7 @@ class CriticFront extends SearchFacets {
                 $code = $match[1];
                 $embed = 'https://www.bitchute.com/embed/' . $code;
                 $ret['video'] = $this->embed_video($embed);
-                $ret['img'] = $this->get_bitchute_img($code, $cid);
+                $ret['img'] = $this->get_bitchute_img($code, $cid, $only_get);
                 $ret['type'] = 'bitchute';
             }
         } else if ((strstr($link, 'youtube') || strstr($link, 'youtu.be'))) {
@@ -1060,11 +1074,12 @@ class CriticFront extends SearchFacets {
             // "https://odysee.com/$/embed/onlypands/957cb76fa7b324ba528effbe18412dd2c7b68712?r=7SxiDSy5WmXCoYKTUH3nDhJax2LtpNEq"
 
 
-            $ret_arr = $this->get_odysee($link, $cid);
+            $ret_arr = $this->get_odysee($link, $cid, $only_get);
+            $ret['img'] = '';
+            $ret['type'] = 'odysee';
             if ($ret_arr) {
                 $ret['video'] = $this->embed_video($ret_arr['embed']);
                 $ret['img'] = $ret_arr['img'];
-                $ret['type'] = 'odysee';
             }
         }
 
@@ -1076,7 +1091,7 @@ class CriticFront extends SearchFacets {
         return $ret;
     }
 
-    public function get_odysee($link, $cid) {
+    public function get_odysee($link, $cid, $only_get = false) {
         $ret = array();
         if ($cid > 0) {
             // Get from db
@@ -1085,7 +1100,7 @@ class CriticFront extends SearchFacets {
                 $ret = json_decode($db_data, true);
             }
         }
-        if (!$ret) {
+        if (!$ret && !$only_get) {
             // Parse data
             $cp = $this->cm->get_cp();
             //$proxy = '107.152.153.239:9942';
@@ -1126,7 +1141,7 @@ class CriticFront extends SearchFacets {
         return $ret;
     }
 
-    public function get_bitchute_img($code = '', $cid = 0) {
+    public function get_bitchute_img($code = '', $cid = 0, $only_get = false) {
 
         $img = '';
 
@@ -1135,7 +1150,7 @@ class CriticFront extends SearchFacets {
             $img = $this->cm->get_thumb($cid);
         }
 
-        if (!$img) {
+        if (!$img && !$only_get) {
             // Parse thumb
             $cp = $this->cm->get_cp();
             //$proxy = '107.152.153.239:9942';            
@@ -1271,23 +1286,18 @@ class CriticFront extends SearchFacets {
         $ip = isset($rating['ip']) ? $rating['ip'] : '';
 
         // Country
-        $country_img = '';
 
-        $country_data = $this->cm->get_geo_flag_by_ip($ip);
-        if ($country_data['path']) {
-            $country_name = $country_data['name'];
-            $country_img = '<div class="nte cflag" title="' . $country_name . '">
-                                                    <div class="btn"><img src="' . $country_data['path'] . '" /></div> 
-                                                    <div class="nte_show">
-                                                        <div class="nte_in">
-                                                            <div class="nte_cnt">
-                                                                This review was posted from ' . $country_name . ' or from a VPN in ' . $country_name . '.                                                                
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                             </div>';
-        }
-
+        $country_img = $this->theme_country_flag_by($ip);
+        /* $country_data = $this->cm->get_geo_flag_by_ip($ip);
+          if ($country_data['path']) {
+          $country_name = $country_data['name'];
+          $country_img = '<div class="nte cflag" title="' . $country_name . '">
+          <div class="nbtn"><img src="' . $country_data['path'] . '" /></div>
+          <div class="nte_show"><div class="nte_in"><div class="nte_cnt">
+          This review was posted from ' . $country_name . ' or from a VPN in ' . $country_name . '.
+          </div></div></div></div>';
+          }
+         */
         $short_codes_exist_class = '';
         $wp_core = '';
 
@@ -1570,12 +1580,238 @@ class CriticFront extends SearchFacets {
     }
 
     public function get_avatars() {
-        return $this->cm->get_avatars();        
+        return $this->cm->get_avatars();
     }
 
     /*
      * Movies
      */
+
+    public function ajax_load_movie($id = 0, $add_time = 0) {
+        if (!$id) {
+            return '';
+        }
+        $item = new stdClass();
+        $item->id = $id;
+        $item->add_time = $add_time;
+        $cache_item = $this->theme_movie_item($item);
+
+        print $cache_item;
+    }
+
+    public function ajax_load_movie_rating($ids = array()) {
+        if (!$ids) {
+            return '';
+        }
+        $ids_data = array();
+        foreach ($ids as $id) {
+            $ids_data[$id] = $id;
+        }
+        !class_exists('RWT_RATING') ? include ABSPATH . "wp-content/themes/custom_twentysixteen/template/include/movie_rating.php" : '';
+        $RWT_RATING = new RWT_RATING;
+        $rating_data = $RWT_RATING->get_rating_data($ids_data, 0);
+        // Watchlist
+        $wl = $this->cm->get_wl();
+        $watchlists = $wl->get_watch_blocks($ids);
+
+        $ret = array();
+        foreach ($ids as $id) {
+            $ret[$id] = array(
+                'rating' => isset($rating_data[$id]) ? $rating_data[$id] : array(),
+                'watchlist' => isset($watchlists[$id]) ? $watchlists[$id] : array(),
+            );
+        }
+
+        print json_encode($ret);
+    }
+
+    public function render_movies_list($data = array(), $echo = true) {
+        /*
+          stdClass Object
+          (
+          [id] => 14899
+          [rwt_id] => 39545
+          [title] => Terminator 2: Judgment Day
+          [release] => 1991-07-03
+          [type] => Movie
+          [year] => 1991
+          [add_time] => 1696122678
+          [post_name] => terminator-2-judgment-day
+          [w] => 1577
+          [rrt] => 93
+          [rrta] => 95
+          [rrtg] => 102
+          [movie_id] => 103064
+          )
+         */
+        $items = array();
+        foreach ($data as $item) {
+            //print_r($item);
+            // Get item from cache            
+            $cache_item = $this->theme_movie_item($item, true);
+
+            if ($cache_item) {
+                // Item exist on cache
+                if ($echo) {
+                    print $cache_item;
+                } else {
+                    $items[] = $cache_item;
+                }
+            } else {
+                // Default tempalate
+                $def_item = $this->default_movie_template($item);
+                if ($echo) {
+                    print $def_item;
+                } else {
+                    $items[] = $def_item;
+                }
+            }
+        }
+        return $items;
+    }
+
+    public function theme_movie_item($item, $only_get = false) {
+        if ($this->cache_results) {
+            $item_theme = $this->cache_theme_movie_item_get($item, $only_get);
+        } else {
+            if (!$only_get) {
+                $item_theme = $this->theme_movie_item_get($item);
+            }
+        }
+        return $item_theme;
+    }
+
+    public function cache_theme_movie_item_get($item, $only_get = false) {
+        $arg = (array) $item;
+        $filename = "m-{$item->id}-{$item->add_time}";
+        $str = ThemeCache::cache('theme_movie_item_get', false, $filename, 'movies', $this, $arg, $only_get);
+        return $str;
+    }
+
+    public function theme_movie_item_get($arg) {
+        // Theme single movie item for cache
+        ob_start();
+        global $post_an;
+
+        $movie = (object) $arg;
+        $ma = $this->get_ma();
+        $post_an = $ma->get_post($movie->id);
+        $id = $post_an->id;
+        $title = $post_an->title;
+        $name = $post_an->post_name;
+        $post_type = strtolower($post_an->type);
+
+        $user_blocks = array();
+        $movie_object = array();
+
+        if ($post_type == 'movie' || $post_type == 'tvseries' || $post_type == 'videogame') {
+            if (!function_exists('template_single_movie')) {
+                include(ABSPATH . "wp-content/themes/custom_twentysixteen/template/movie_single_template.php");
+            }
+            template_single_movie($id, $title, $name, '', $movie_object, $user_blocks);
+        }
+        $content = ob_get_contents();
+        ob_end_clean();
+        return $content;
+    }
+
+    public function default_movie_template($item) {
+        ob_start();
+        $id = $item->id;
+        $title = $item->title;
+        $year = $item->year;
+        $add_time = $item->add_time;
+        $post_name = $item->post_name;
+
+        $movie_t = strtolower($item->type);
+        if ($movie_t == 'movie') {
+            $movie_t = 'movies';
+        }
+        $tmd_s = $movie_t;
+        $movie_details = 'Movie Details & Credits';
+        if ($movie_t == 'movies') {
+            $movie_link_desc = 'class="card_movie_type ctype_movies" title="Movie"';
+            $tmd = 'Movie';
+            $tmd_s = 'movie';
+
+            $movie_details = 'Movie Details & Credits';
+        } else if ($movie_t == 'tvseries') {
+            $movie_link_desc = 'class="card_movie_type ctype_tvseries" title="TV Show"';
+            $movie_details = 'TV Series Details & Credits';
+
+            $tmd = 'TV Series';
+            $tmd_s = 'show';
+        } else if ($movie_t == 'videogame') {
+            $movie_link_desc = 'class="card_movie_type ctype_videogame" title="Game"';
+            $movie_details = 'Game Details & Credits';
+
+            $tmd = 'Game';
+            $tmd_s = 'game';
+        } else {
+            $movie_t = 'title';
+            $movie_link_desc = 'class="card_movie_type ctype_other" title="Title"';
+            $movie_details = 'Details & Credits';
+
+            $tmd = 'Other';
+            $tmd_s = 'title';
+        }
+
+        $link = $this->get_simple_movie_link($post_name, $item->type);
+        $link_before = '<a href="' . $link . '">';
+        $link_after = '</a>';
+
+        $thumbs = array([220, 330], [440, 660]);
+        $array_tsumb = array();
+
+        foreach ($thumbs as $thumb) {
+            $array_tsumb[] = $this->get_thumb_path_full($thumb[0], $thumb[1], $id, $add_time);
+        }
+        ?>
+        <div id="movie-<?php echo $id ?>" class="movie_container movie_block loadblock" data-id="<?php echo $id; ?>" data-func="movie_cache" data-replace=".movie_button_action,.movie_description" data-keys="<?php echo $add_time; ?>">
+            <div class="movie_poster">
+                <?php echo $link_before; ?>
+                <div class="image">
+                    <div class="wrapper">
+                        <span <?php echo $movie_link_desc; ?> ></span>
+                        <img loading="lazy" class="poster" src="<?php echo $array_tsumb[0]; ?>"
+                             <?php if ($array_tsumb[1]) { ?> srcset="<?php echo $array_tsumb[0]; ?> 1x, <?php echo $array_tsumb[1]; ?> 2x"<?php } ?> >
+                    </div>
+                </div>
+                <?php echo $link_after; ?>
+                <div class="movie_button_action"></div>
+            </div>
+            <div class="movie_watch" style="display: none"></div>
+            <div class="movie_description">
+                <div class="header_title">
+                    <h1 class="entry-title">
+                        <?php echo $link_before; ?>
+                        <?php echo $title . ' (' . $year . ')' ?>
+                        <?php echo $link_after; ?>
+                    </h1>
+                </div>
+
+                <div class="movie_description_container">
+                    <div class="movie_summary">
+                        <div class="user_blocks"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="rating_holder"></div>
+        </div>
+        <?php
+        $content = ob_get_contents();
+        ob_end_clean();
+        return $content;
+    }
+
+    public function get_simple_movie_link($post_name, $type) {
+        $movie_t = strtolower($type);
+        if ($movie_t == 'movie') {
+            $movie_t = 'movies';
+        }
+        $link = '/' . $movie_t . '/' . $post_name . '/';
+        return $link;
+    }
 
     public function get_small_movie_templ($movie, $external_link = '') {
         if (!$movie) {
@@ -1632,7 +1868,7 @@ class CriticFront extends SearchFacets {
      */
 
     public function get_or_create_ma_post_name($id = 0, $rwt_id = 0, $title = '', $type = '') {
-        // UNUSED
+
         $ma = $this->get_ma();
         $post_name = $ma->get_post_name($id);
 
@@ -2140,11 +2376,19 @@ class CriticFront extends SearchFacets {
         return RWTimages::get_simple_image_link('m_' . $id, 640, $time);
     }
 
-    public function get_thumb_path_full($w, $h, $id) {
+    public function get_last_movie_update($id) {
+        !class_exists('RWTimages') ? include ABSPATH . "analysis/include/rwt_images.php" : '';
+        $time = RWTimages::get_last_time($id);
+        return $time;
+    }
+
+    public function get_thumb_path_full($w, $h, $id, $time = 0) {
 
         !class_exists('RWTimages') ? include ABSPATH . "analysis/include/rwt_images.php" : '';
 
-        $time = RWTimages::get_last_time($id);
+        if (!$time) {
+            $time = RWTimages::get_last_time($id);
+        }
         return RWTimages::get_image_link('m_' . $id, $w . 'x' . $h, '', $time);
 
         /// return '/' . $this->get_thumb_path() . $w . 'x' . $h . '/' . $id . '.jpg';
@@ -2434,7 +2678,7 @@ class CriticFront extends SearchFacets {
 
             $content['count'] = count($content['result']);
             $content['tmpl'] = $video_template;
-            $ce = $this->get_ce();
+            $ce = $this->cm->get_ce();
             $content['reaction'] = $ce->get_emotions_counts_all($pids);
 
             // Print json
@@ -2522,7 +2766,7 @@ class CriticFront extends SearchFacets {
             $content['rating'] = $rating;
             $content['count'] = count($content['result']);
             $content['tmpl'] = $video_template;
-            $ce = $this->get_ce();
+            $ce = $this->cm->get_ce();
             $content['reaction'] = $ce->get_emotions_counts_all($pids);
 
             // Print json
@@ -2630,7 +2874,7 @@ class CriticFront extends SearchFacets {
             $content['rating'] = $rating;
             $content['count'] = count($content['result']);
             $content['tmpl'] = $video_template;
-            $ce = $this->get_ce();
+            $ce = $this->cm->get_ce();
             $content['reaction'] = $ce->get_emotions_counts_all($pids);
             $content['mids'] = array_keys($array_movies);
 
@@ -2701,75 +2945,77 @@ class CriticFront extends SearchFacets {
              */
             ob_start();
             ?>
-            <div class="simple">
-                <div class="items">
-                    <?php
-                    foreach ($posts as $post) {
+            <div class="simple list-group list-group-flush items">
+                <?php
+                foreach ($posts as $post) {
 
-                        $critic = $this->cm->get_post_and_author($post->id);
+                    $critic = $this->cm->get_post_and_author($post->id);
 
-                        $permalink = $critic->link;
-                        if (!$permalink) {
-                            // Create local permalink
-                            $permalink = $this->get_critic_url($critic);
-                        }
-                        $title = $critic->title;
-                        $top_movie = $critic->top_movie;
+                    $permalink = $critic->link;
+                    if (!$permalink) {
+                        // Create local permalink
+                        $permalink = $this->get_critic_url($critic);
+                    }
+                    $title = $critic->title;
+                    $top_movie = $critic->top_movie;
 
-                        if ($top_movie) {
-                            $meta_state = $this->cm->get_critic_meta_state($critic->id, $top_movie);
-                            $info_link = $this->get_info_link($critic->id, $top_movie, $meta_state->state);
-                            $meta_type = $this->cm->get_post_category_name($meta_state->type);
-                        }
+                    if ($top_movie) {
+                        $meta_state = $this->cm->get_critic_meta_state($critic->id, $top_movie);
+                        $info_link = $this->get_info_link($critic->id, $top_movie, $meta_state->state);
+                        $meta_type = $this->cm->get_post_category_name($meta_state->type);
+                    }
 
 
-                        // Link to full post
-                        $link = $this->get_critic_url($critic);
+                    // Link to full post
+                    $link = $this->get_critic_url($critic);
 
-                        // Time
-                        $ptime = $critic->date;
-                        $critic_addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+                    // Time
+                    $ptime = $critic->date;
+                    $critic_addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+
+                    // Title
+                    $title_str = '';
+                    $title = strip_tags($title);
+                    $title = $this->pccf_filter($title);
+
+                    // Movie
+                    $ma = $this->get_ma();
+                    if ($top_movie) {
+                        $movie = $ma->get_post($top_movie);
 
                         // Title
-                        $title_str = '';
-                        $title = strip_tags($title);
-                        $title = $this->pccf_filter($title);
+                        $mtitle = $movie->title;
 
-                        // Movie
-                        $ma = $this->get_ma();
-                        if ($top_movie) {
-                            $movie = $ma->get_post($top_movie);
-
-                            // Title
-                            $mtitle = $movie->title;
-
-                            // release
-                            $release = $movie->release;
-                            if ($release) {
-                                $release = strtotime($release);
-                                $release = date('Y', $release);
-                                if (strstr($mtitle, $release)) {
-                                    $release = '';
-                                } else {
-                                    $release = ' (' . $release . ')';
-                                }
+                        // release
+                        $release = $movie->release;
+                        if ($release) {
+                            $release = strtotime($release);
+                            $release = date('Y', $release);
+                            if (strstr($mtitle, $release)) {
+                                $release = '';
+                            } else {
+                                $release = ' (' . $release . ')';
                             }
-
-                            $poster_link_90 = $this->get_thumb_path_full(90, 120, $top_movie);
                         }
-                        ?>
-                        <div class="item">
-                            <a href="<?php print $link ?>" title="<?php print $title ?>" >
-                                <img srcset="<?php print $poster_link_90 ?>" alt="<?php print $mtitle ?>">
-                                <div class="desc">
-                                    <h5><?php print $mtitle . $release ?></h5>
-                                    <p><?php print $title ?></p>
-                                </div>
-                            </a>
-                        </div>
-                    <?php } ?>
-                </div>
+
+                        $poster_link_90 = $this->get_thumb_path_full(90, 120, $top_movie);
+                    }
+                    ?>
+                    <div class="item d-flex justify-content-between list-group-item list-group-item-nopadding">
+                        <a href="<?php print $link ?>" title="<?php print $title ?>" class="d-flex list-group-item list-group-item-action list-group-item-noborder" > 
+
+                            <img class="d-flex me-3" srcset="<?php print $poster_link_90 ?>" alt="<?php print $mtitle ?>">
+
+                            <div class="desc">
+                                <h5><?php print $mtitle . $release ?></h5>
+                                <p><?php print $title ?></p>
+                            </div>
+
+                        </a>                           
+                    </div>                    
+                <?php } ?>
             </div>
+
             <?php
             $content = ob_get_contents();
             ob_end_clean();
@@ -2786,95 +3032,89 @@ class CriticFront extends SearchFacets {
              */
             ob_start();
             ?>
-            <div class="simple">
-                <div class="items<?php
-                if ($owner) {
-                    print " owner";
-                }
-                ?>">
-                         <?php
-                         foreach ($posts as $post) {
+            <div class="simple list-group list-group-flush items<?php
+            if ($owner) {
+                print " owner";
+            }
+            ?>" data-id="0">         
+                     <?php
+                     foreach ($posts as $post) {
 
-                             $critic = $this->cm->get_post_and_author($post->id);
+                         $critic = $this->cm->get_post_and_author($post->id);
 
-                             $permalink = $critic->link;
-                             if (!$permalink) {
-                                 // Create local permalink
-                                 $permalink = $this->get_critic_url($critic);
-                             }
-                             $title = $critic->title;
-                             $top_movie = $critic->top_movie;
+                         $permalink = $critic->link;
+                         if (!$permalink) {
+                             // Create local permalink
+                             $permalink = $this->get_critic_url($critic);
+                         }
+                         $title = $critic->title;
+                         $top_movie = $critic->top_movie;
 
-                             if ($top_movie) {
-                                 $meta_state = $this->cm->get_critic_meta_state($critic->id, $top_movie);
-                                 $info_link = $this->get_info_link($critic->id, $top_movie, $meta_state->state);
-                                 $meta_type = $this->cm->get_post_category_name($meta_state->type);
-                             }
+                         if ($top_movie) {
+                             $meta_state = $this->cm->get_critic_meta_state($critic->id, $top_movie);
+                             $info_link = $this->get_info_link($critic->id, $top_movie, $meta_state->state);
+                             $meta_type = $this->cm->get_post_category_name($meta_state->type);
+                         }
 
-                             // Link to full post
-                             $link = $this->get_critic_url($critic);
+                         // Link to full post
+                         $link = $this->get_critic_url($critic);
 
-                             // Time
-                             $ptime = $critic->date;
-                             $critic_addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+                         // Time
+                         $ptime = $critic->date;
+                         $critic_addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+
+                         // Title
+                         $title_str = '';
+                         $title = strip_tags($title);
+                         $title = $this->pccf_filter($title);
+
+                         // Movie
+                         $ma = $this->get_ma();
+                         if ($top_movie) {
+                             $movie = $ma->get_post($top_movie);
 
                              // Title
-                             $title_str = '';
-                             $title = strip_tags($title);
-                             $title = $this->pccf_filter($title);
+                             $mtitle = $movie->title;
 
-                             // Movie
-                             $ma = $this->get_ma();
-                             if ($top_movie) {
-                                 $movie = $ma->get_post($top_movie);
-
-                                 // Title
-                                 $mtitle = $movie->title;
-
-                                 // release
-                                 $release = $movie->release;
-                                 if ($release) {
-                                     $release = strtotime($release);
-                                     $release = date('Y', $release);
-                                     if (strstr($mtitle, $release)) {
-                                         $release = '';
-                                     } else {
-                                         $release = ' (' . $release . ')';
-                                     }
+                             // release
+                             $release = $movie->release;
+                             if ($release) {
+                                 $release = strtotime($release);
+                                 $release = date('Y', $release);
+                                 if (strstr($mtitle, $release)) {
+                                     $release = '';
+                                 } else {
+                                     $release = ' (' . $release . ')';
                                  }
-
-                                 $poster_link_90 = $this->get_thumb_path_full(90, 120, $top_movie);
                              }
-                             ?>
-                        <div class="item" data-id="<?php print $critic->id ?>">
-                            <a href="<?php print $link ?>" title="<?php print $title ?>" >
-                                <img srcset="<?php print $poster_link_90 ?>" alt="<?php print $mtitle ?>">
-                                <div class="desc">
-                                    <h5><?php print $mtitle . $release ?></h5>
-                                    <p><?php print $title ?></p>
-                                </div>
-                            </a>
-                            <?php if ($owner): ?>                                            
-                                <div class="menu nte">
-                                    <div class="btn">
-                                        <i class="icon icon-ellipsis-vert"></i>
-                                    </div>
-                                    <div class="nte_show dwn">
-                                        <div class="nte_in">
-                                            <div class="nte_cnt">
-                                                <ul class="list-menu">                                                                                                               
-                                                    <li class="nav-tab" data-act="editrev" data-id="<?php print $top_movie ?>" data-cid="<?php print $critic->id ?>">Edit Review</li>
-                                                    <li class="nav-tab" data-act="delrev" data-id="<?php print $top_movie ?>" data-cid="<?php print $critic->id ?>">Delete Review</li>
-                                                </ul>
-                                            </div>                                                          
-                                        </div>                                                    
-                                    </div>                                                
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    <?php } ?>
-                </div>
+
+                             $poster_link_90 = $this->get_thumb_path_full(90, 120, $top_movie);
+                         }
+                         ?>
+                    <div class="item d-flex justify-content-between list-group-item list-group-item-nopadding" data-id="<?php print $critic->id ?>">
+                        <a href="<?php print $link ?>" title="<?php print $title ?>" class="d-flex list-group-item list-group-item-action list-group-item-noborder" > 
+
+                            <img class="d-flex me-3" srcset="<?php print $poster_link_90 ?>" alt="<?php print $mtitle ?>">
+
+                            <div class="desc">
+                                <h5><?php print $mtitle . $release ?></h5>
+                                <p><?php print $title ?></p>
+                            </div>
+
+                        </a>
+                        <?php if ($owner): ?>                                            
+                            <div class="ellipsis-menu dropdown cnt-reviews">
+                                <span class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="icon icon-ellipsis-vert" ></i></span>
+                                <ul class="dropdown-menu list-menu">    
+                                    <li class="nav-tab" data-act="editrev" data-id="<?php print $top_movie ?>" data-cid="<?php print $critic->id ?>">Edit Review</li>
+                                    <li class="nav-tab" data-act="delrev" data-id="<?php print $top_movie ?>" data-cid="<?php print $critic->id ?>">Delete Review</li>
+                                </ul>
+                            </div>                            
+                        <?php endif; ?>
+                    </div>
+                <?php } ?>
             </div>
+
             <?php
             $content = ob_get_contents();
             ob_end_clean();
@@ -3356,7 +3596,7 @@ class CriticFront extends SearchFacets {
      * User avatars
      */
 
-    public function change_user_avatar($wp_id = 0, $user_rating = 0, $settings_page=0) {
+    public function change_user_avatar($wp_id = 0, $user_rating = 0, $settings_page = 0) {
         $ss = $this->cm->get_settings();
         $score_avatar = $ss['score_avatar'];
         //$cav = $this->cm->get_cav();
@@ -3365,34 +3605,34 @@ class CriticFront extends SearchFacets {
             // Enable to upload avatar
             // Check avatar type
             $author = $this->cm->get_author_by_wp_uid($wp_id);
-            $with_avfile='';
-            if ($author->avatar_name){
-                $with_avfile=' avfile';
+            $with_avfile = '';
+            if ($author->avatar_name) {
+                $with_avfile = ' avfile';
             }
-            if ($author->id ){
-            ?>
-            <div id="author_id" data-id="<?php print $author->id ?>"></div>
-            <div class="av_upload<?php print $with_avfile ?>">                
-                <button id="upl_avatar" title="Upload avatar"><i class="icon-upload"></i></button>
-                <?php if ($settings_page) { ?>
-                <button id="trash_avatar" class="btn-second" title="Remove avatar"><i class="icon-trash"></i></button>
-                <?php } ?>
-                <input type="file" accept=".png, .jpg, .jpeg, .gif" id="avatar_file">
-            </div>
-            <?php
+            if ($author->id) {
+                ?>
+                <div id="author_id" data-id="<?php print $author->id ?>"></div>
+                <div class="av_upload<?php print $with_avfile ?>">                
+                    <button class="btn btn-primary" id="upl_avatar" title="Upload avatar"><i class="icon-upload"></i></button>
+                    <?php if ($settings_page) { ?>
+                        <button id="trash_avatar" class="btn btn-secondary" title="Remove avatar"><i class="icon-trash"></i></button>
+                    <?php } ?>
+                    <input type="file" accept=".png, .jpg, .jpeg, .gif" id="avatar_file">
+                </div>
+                <?php
             }
         }
     }
-    
+
     public function upload_new_user_avatar() {
         $ss = $this->cm->get_settings();
         $score_avatar = $ss['score_avatar'];
         //$cav = $this->cm->get_cav();
 
-        if ($score_avatar==0) {
+        if ($score_avatar == 0) {
             // Enable to upload avatar                
             ?>
-           <br /> 
+            <br /> 
             <div id="author_id" data-id="0"></div>
             <div class="av_upload">                
                 <button id="upl_avatar" title="Upload avatar" class="button"><i class="icon-user-circle-o"></i> Upload avatar</button>
@@ -3488,7 +3728,7 @@ class CriticFront extends SearchFacets {
 
     public function get_user_reactions($cid, $post_type = 0, $allow_cmt = true) {
         if ($this->enable_reactions) {
-            $ce = $this->get_ce();
+            $ce = $this->cm->get_ce();
             $reaction_data = $ce->get_user_reactions($cid, $post_type, $allow_cmt);
         } else {
             $reaction_data = '<div class="review_comment_data" data-ptype="' . $post_type . '"></div>';
@@ -3645,11 +3885,12 @@ class CriticFront extends SearchFacets {
         return $user->ID;
     }
 
-    public function get_user_search_filter($uid = 0, $search_url = '') {
-        $ret = 0;
-        if ($uid > 0 && $search_url != '/search') {
+    public function get_user_search_filter($request_uri, $search_url = '') {
+        // UNUSED
+        $ret = array();
+        if ($search_url != '/search') {
             $uf = $this->cm->get_uf();
-            $ret = $uf->get_user_filter($uid, $search_url);
+            $ret = $uf->get_user_filter($request_uri, $search_url);
         }
         return $ret;
     }
@@ -3657,7 +3898,7 @@ class CriticFront extends SearchFacets {
     public function edit_author_tags($wp_uid) {
         ?>
         <input type="hidden" name="post_category[]" value="0">
-        <ul class="cat-checklist category-checklist">
+        <div class="form-check">
             <?php
             $author = $this->cm->get_author_by_wp_uid($wp_uid);
             $tags = $this->cm->get_tags();
@@ -3676,24 +3917,224 @@ class CriticFront extends SearchFacets {
                         $checked = 'checked="checked"';
                     }
                     ?>
-                    <li id="category-<?php print $tag->id ?>">
-                        <label class="selectit"><input value="<?php print $tag->id ?>" <?php print $checked ?> type="checkbox" name="post_category[]" id="in-category-<?php print $tag->id ?>"> <?php print $tag->name ?></label>
-                    </li>
+                    <div id="category-<?php print $tag->id ?>">
+                        <input value="<?php print $tag->id ?>" class="form-check-input" <?php print $checked ?> type="checkbox" name="post_category[]" id="in-category-<?php print $tag->id ?>">
+                        <label class="form-check-label" for="in-category-<?php print $tag->id ?>">
+                            <?php print $tag->name ?>
+                        </label>
+                    </div>
                     <?php
                 }
             }
             ?>
-        </ul>
+        </div>
         <?php
     }
 
     /* Theme filters */
 
+    public function theme_filter_holder($post) {
+        if (is_array($post)) {
+            $post = (object) $post;
+        }
+        /*
+         * id, aid, wp_uid, fid, publish, date, last_upd, frating, title, content, img, ftab, link
+         */
+        $content = $post->content;
+        if (strstr($content, '[su_')) {
+            // Remove su spoilers
+            $regv = '#\[su_([^\]]+)\].+\[/su_[\w\d]+\]#Us';
+            if (preg_match_all($regv, $content, $mach)) {
+                // var_dump($mach);              
+                foreach ($mach[0] as $i => $val) {
+                    $rtitle = '';
+                    $reg2 = '#title="([^\"]+)#';
+                    if (preg_match($reg2, $mach[1][$i], $m2)) {
+                        $rtitle = $m2[1];
+                    }
+
+                    $content = str_replace($val, $rtitle, $content);
+                }
+            }
+            // Remove all custom tags
+            $regv = '#\[su_[^\]]+\]#Us';
+            $content = preg_replace($regv, '', $content);
+        }
+        $content = $this->format_content($content, 400);
+        $content = str_replace('<p>', '', $content);
+        $content = str_replace('</p>', '<br />', $content);
+        $ptime = $post->date;
+        $critic_addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+
+        // User filter
+        $uf = $this->cm->get_uf();
+        $fdata = $uf->get_filters_by_url($post->link, true);
+
+        $publish = $post->publish;
+
+        // User profile link
+        $uc = $this->cm->get_uc();
+        $wp_user = $uc->getUserById($post->wp_uid);
+
+        // Link to full post
+        $link = $uf->get_filter_link($post->id, $wp_user->url);
+
+        // Author name
+        $author = $this->cm->get_author($post->aid);
+        $author_title = $author->name;
+
+        // img
+        $img = $post->img;
+        $img_path = '';
+        if ($img) {
+            $img_path = $uf->get_img_path($img);
+        }
+
+        ob_start();
+        ?>
+        <div id="filter-<?php print $post->id ?>" class="card sitem card-filter" data-id="<?php print $post->id ?>">           
+            <div class="card-body">
+                <div class="card-top mb-4">
+                    <?php if ($img) { ?>
+                        <div class="card-image">                                                    
+                            <a href="<?php print $link ?>">
+                                <img loading="lazy" class="fimg" src="<?php print $img_path; ?>">                        
+                            </a>
+                        </div>    
+                    <?php } ?>                    
+                    <div class="card-info">                  
+                        <div class="mt-3">
+                            <?php $this->theme_card_author($author_title, $post->aid); ?>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <small class="text-body-secondary"><?php print $critic_addtime ?></small>                            
+                        </div>
+                    </div> 
+                </div>  
+                <div>   
+                    <a href="<?php print $link ?>">
+                        <h5 class="card-title mb-3 mt-0 break-line" title="<?php print $post->title ?>"><?php print $post->title ?></h5>                    
+                        <div class="card-text text-body text-limited two-clm mb-3"><?php print $content ?></div>
+                        <div class="card-fdata text-limited two-clm mb-3"><?php print $fdata['tags'] ?></div>  
+                    </a>
+                </div>
+                <div class="card-action">
+                    <div class="card-ratings">               
+                        <?php if ($publish == 0) { ?>
+                            <span class="r-item">
+                                <i title="Private" class="icon-eye-off"></i> 
+                            </span>
+                        <?php } ?>
+                        <span class="r-item c-link js-click">
+                            <i class="icon-comment-empty"></i> <span class="c-count"></span>
+                        </span>
+                        <span class="r-item e-link js-click">
+                            <i class="icon-thumbs-up"></i> <span class="e-count"></span>
+                        </span>              
+                    </div>
+                    <a class="btn btn-outline-secondary text-nowrap" href="<?php print $link ?>">Show <i class="icon-right-open"></i></a>
+                </div>
+            </div>
+
+        </div>
+        <?php
+        $content = ob_get_contents();
+        ob_end_clean();
+        return $content;
+    }
+
+    public function theme_user_filter($post) {
+        /* [id] => 20
+          [publish] => 1
+          [aid] => 1230
+          [wp_uid] => 81
+          [fid] => 20
+          [date] => 1703919218
+          [last_upd] => 1703953656
+          [rating] => 1
+          [title] => Best Rated & ≥82% White Cast (Made Between '85 - 2000)
+          [content] => The Stars "has photo" is for search result accuracy because missing photos means a high error rate for verdicts. 100% of the Stars must be White and at least 82% of the entire cast must be White too.
+          [img] => 1230-1703919218.jpg */
+        // img
+        if (is_array($post)) {
+            $post = (object) $post;
+        }
+        /*
+         * id, aid, wp_uid, fid, publish, date, last_upd, frating, title, content, img, ftab, link
+         */
+        $content = $post->content;
+        if (strstr($content, '[su_')) {
+            // Remove su spoilers
+            $regv = '#\[su_([^\]]+)\].+\[/su_[\w\d]+\]#Us';
+            if (preg_match_all($regv, $content, $mach)) {
+                // var_dump($mach);              
+                foreach ($mach[0] as $i => $val) {
+                    $rtitle = '';
+                    $reg2 = '#title="([^\"]+)#';
+                    if (preg_match($reg2, $mach[1][$i], $m2)) {
+                        $rtitle = $m2[1];
+                    }
+
+                    $content = str_replace($val, $rtitle, $content);
+                }
+            }
+            // Remove all custom tags
+            $regv = '#\[su_[^\]]+\]#Us';
+            $content = preg_replace($regv, '', $content);
+        }
+        $content = $this->format_content($content, 400);
+        $content = str_replace('<p>', '', $content);
+        $content = str_replace('</p>', '<br />', $content);
+        $ptime = $post->date;
+        $critic_addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+
+        // User filter
+        $uf = $this->cm->get_uf();
+
+        // Author name
+        $author = $this->cm->get_author($post->aid);
+        $author_title = $author->name;
+
+        // img
+        $img = $post->img;
+        $img_path = '';
+        if ($img) {
+            $img_path = $uf->get_img_path($img);
+        }
+
+        ob_start();
+        ?>
+
+        <div class="clearfix mb-4">     
+            <h1 class="mb-4"><?php print $post->title ?></h1>
+            <?php if ($img) { ?>
+                <div class="col-md-6 float-md-end mb-4 ms-md-3 text-center text-md-end">
+                    <img loading="lazy" src="<?php print $img_path; ?>">
+                </div>    
+            <?php } ?>            
+            <div>
+                <div class="mb-3">                  
+                    <div class="sitem">
+                        <?php $this->theme_card_author($author_title, $post->aid, false); ?>
+                    </div>                 
+                    <small class="text-body-secondary"><?php print $critic_addtime ?></small>                                                
+                </div> 
+                <div>                             
+                    <div class="card-text mb-3"><?php print $content ?></div>                     
+                </div>
+            </div>
+        </div>
+        <?php
+        $content = ob_get_contents();
+        ob_end_clean();
+        return $content;
+    }
+
     public function theme_filter_item($item) {
         if ($this->cache_results) {
             $item_theme = $this->cache_theme_filter_item_get($item);
         } else {
-            $item_theme = $this->theme_filter_item_get($item);
+            $item_theme = $this->theme_filter_holder($item);
         }
         return $item_theme;
     }
@@ -3701,13 +4142,15 @@ class CriticFront extends SearchFacets {
     public function cache_theme_filter_item_get($item) {
         $arg = (array) $item;
         $aid = $item->aid;
+
         $author = $this->cm->get_author($aid, true);
         $filename = "f-{$item->id}-{$item->last_upd}-{$author->last_upd}";
-        $str = ThemeCache::cache('theme_filter_item_get', false, $filename, 'filters', $this, $arg);
+        $str = ThemeCache::cache('theme_filter_holder', false, $filename, 'filters', $this, $arg);
         return $str;
     }
 
     public function theme_filter_item_get($item) {
+        // UNUSED
         if (is_array($item)) {
             $item = (object) $item;
         }
@@ -3878,65 +4321,800 @@ class CriticFront extends SearchFacets {
         $arg = (array) $item;
         $aid = $item->aid;
         $author = $this->cm->get_author($aid, true);
-        $filename = "f-{$item->id}-{$item->last_upd}-{$author->last_upd}";
+        $filename = "wl-{$item->id}-{$item->last_upd}-{$author->last_upd}";
         $str = ThemeCache::cache('theme_watchlist_item_get', false, $filename, 'watchlists', $this, $arg);
         return $str;
     }
 
-    public function theme_watchlist_item_get($item) {
-        if (is_array($item)) {
-            $item = (object) $item;
+    public function theme_watchlist_item_get($post) {
+        if (is_array($post)) {
+            $post = (object) $post;
         }
 
-        $title = stripslashes($item->title);
+        /*
+         *  [id] => 199
+          [aid] => 1374
+          [wp_uid] => 42
+          [top_mid] => 0
+          [publish] => 0
+          [date] => 1742046907
+          [last_upd] => 1742229383
+          [frating] => 0
+          [title] => yrdtest
+          [content] => dsf
+          [type] => 0
+          [items] => 4
+          [w] => 1
+          [upub] => 1
+         */
 
-        if (!$title) {
-            $title = ' ';
-        }
-        $content = stripslashes($item->content);
-        $aid = $item->aid;
-        $author = $this->cm->get_author($aid);
 
-        // Author name
-        $author_title = $author->name;
-        $author_title = $this->pccf_filter($author_title);
-        $wp_uid = $item->wp_uid;
+        $content = $post->content;
+        if (strstr($content, '[su_')) {
+            // Remove su spoilers
+            $regv = '#\[su_([^\]]+)\].+\[/su_[\w\d]+\]#Us';
+            if (preg_match_all($regv, $content, $mach)) {
+                // var_dump($mach);              
+                foreach ($mach[0] as $i => $val) {
+                    $rtitle = '';
+                    $reg2 = '#title="([^\"]+)#';
+                    if (preg_match($reg2, $mach[1][$i], $m2)) {
+                        $rtitle = $m2[1];
+                    }
 
-        // WP avatar
-        $cav = $this->cm->get_cav();
-        $wp_avatar = $cav->get_author_avatar($author, 64);
-
-        $author_admin_img = '';
-
-        if (!$wp_avatar) {
-            // Author image
-
-            $author_options = unserialize($author->options);
-            $author_img = $author_options['image'];
-
-            if ($author_img) {
-                try {
-                    $image = $this->get_local_thumb(100, 100, $author_img);
-                    $author_admin_img = '<div class="a_img_container" style="background: url(' . $image . '); background-size: cover;"></div>';
-                } catch (Exception $exc) {
-                    
+                    $content = str_replace($val, $rtitle, $content);
                 }
             }
+            // Remove all custom tags
+            $regv = '#\[su_[^\]]+\]#Us';
+            $content = preg_replace($regv, '', $content);
         }
+        $content = $this->format_content($content, 400);
+        $content = str_replace('<p>', '', $content);
+        $content = str_replace('</p>', '<br />', $content);
+        $ptime = $post->date;
+        $critic_addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
 
-        $umeta = '';
+        // Author name
+        $author = $this->cm->get_author($post->aid);
+        $author_title = $author->name;
 
         // User profile link
         $uc = $this->cm->get_uc();
-        $wp_user = $uc->getUserById($wp_uid);
+        $wp_user = $uc->getUserById($post->wp_uid);
 
-        $author_link = $uc->get_user_profile_link($wp_user->url);
-        $ucarma_class = ($wp_user->carma < 0) ? " minus" : " plus";
-        $umeta = '<div class="umeta' . $ucarma_class . '">
-                    <span class="urating" ><i class="icon-star"></i>' . (int) $wp_user->rating . '</span>                   
-                </div>';
+        // User watchlist
+        $wl = $this->cm->get_wl();
+        $publish = $post->publish;
 
-        $author_title_link = '<a href="' . $author_link . '">' . $author_title . '</a>';
+        // Link to full post                
+        $link = $wl->get_list_link($post->id, $wp_user->url);
+
+        // img
+        $img_str = $wl->get_list_collage($post->id);
+
+        ob_start();
+        ?>
+        <div id="wlist-<?php print $post->id ?>" class="card sitem card-wlist" data-id="<?php print $post->id ?>">           
+            <div class="card-body">
+                <div class="wlist-image mb-3">                                                    
+                    <a href="<?php print $link ?>">
+                        <?php print $img_str; ?>                      
+                    </a>
+                </div>   
+                <div class="card-top">
+                    <div class="card-info">                  
+                        <div class="mt-3">
+                            <?php $this->theme_card_author($author_title, $post->aid); ?>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <small class="text-body-secondary"><?php print $critic_addtime ?></small>                            
+                        </div>
+                    </div> 
+                </div> 
+                <div>         
+                    <a href="<?php print $link ?>">
+                        <h5 class="card-title mb-3 mt-0 break-line" title="<?php print $post->title ?>"><?php print $post->title ?></h5>                    
+                        <div class="card-text text-body text-limited two-clm mb-3"><?php print $content ?></div>                      
+                    </a>
+                </div>
+                <div class="card-action">
+                    <div class="card-ratings">               
+                        <?php if ($publish == 0) { ?>
+                            <span class="r-item">
+                                <i title="Private" class="icon-eye-off"></i> 
+                            </span>
+                        <?php } ?>
+                        <span class="r-item c-link js-click">
+                            <i class="icon-comment-empty"></i> <span class="c-count"></span>
+                        </span>
+                        <span class="r-item e-link js-click">
+                            <i class="icon-thumbs-up"></i> <span class="e-count"></span>
+                        </span>              
+                    </div>
+                    <a class="btn btn-outline-secondary text-nowrap" href="<?php print $link ?>">Show <i class="icon-right-open"></i></a>
+                </div>
+            </div>
+
+        </div>
+        <?php
+        $content = ob_get_contents();
+        ob_end_clean();
+        return $content;
+    }
+
+    public function theme_user_watchlist($post) {
+        /* [id] => 20
+          [publish] => 1
+          [aid] => 1230
+          [wp_uid] => 81
+          [fid] => 20
+          [date] => 1703919218
+          [last_upd] => 1703953656
+          [rating] => 1
+          [title] => Best Rated & ≥82% White Cast (Made Between '85 - 2000)
+          [content] => The Stars "has photo" is for search result accuracy because missing photos means a high error rate for verdicts. 100% of the Stars must be White and at least 82% of the entire cast must be White too.
+          [img] => 1230-1703919218.jpg */
+        // img
+        if (is_array($post)) {
+            $post = (object) $post;
+        }
+        /*
+         * id, aid, wp_uid, fid, publish, date, last_upd, frating, title, content, img, ftab, link
+         */
+        $content = $post->content;
+        if (strstr($content, '[su_')) {
+            // Remove su spoilers
+            $regv = '#\[su_([^\]]+)\].+\[/su_[\w\d]+\]#Us';
+            if (preg_match_all($regv, $content, $mach)) {
+                // var_dump($mach);              
+                foreach ($mach[0] as $i => $val) {
+                    $rtitle = '';
+                    $reg2 = '#title="([^\"]+)#';
+                    if (preg_match($reg2, $mach[1][$i], $m2)) {
+                        $rtitle = $m2[1];
+                    }
+
+                    $content = str_replace($val, $rtitle, $content);
+                }
+            }
+            // Remove all custom tags
+            $regv = '#\[su_[^\]]+\]#Us';
+            $content = preg_replace($regv, '', $content);
+        }
+        $content = $this->format_content($content, 400);
+        $content = str_replace('<p>', '', $content);
+        $content = str_replace('</p>', '<br />', $content);
+        $ptime = $post->date;
+        $critic_addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+
+        // Author name
+        $author = $this->cm->get_author($post->aid);
+        $author_title = $author->name;
+
+        ob_start();
+        ?>
+
+        <div class="clearfix mb-4">     
+            <h1 class="mb-4"><?php print $post->title ?></h1>                  
+            <div>
+                <div class="mb-3">                  
+                    <div class="sitem">
+                        <?php $this->theme_card_author($author_title, $post->aid, false); ?>
+                    </div>                 
+                    <small class="text-body-secondary"><?php print $critic_addtime ?></small>                                                
+                </div> 
+                <div>                             
+                    <div class="card-text mb-3"><?php print $content ?></div>                     
+                </div>
+            </div>
+        </div>
+        <?php
+        $content = ob_get_contents();
+        ob_end_clean();
+        return $content;
+    }
+
+    /*
+     * Bootstrap carousel
+     */
+
+    public function audience_carousel_ajax($movie_id = 0, $vote_type = 'a') {
+        ?>            
+        <div class="bs-carousel-load loadblock" data-func="audience_carousel" data-id="<?php print $movie_id ?>" data-keys="<?php print $vote_type ?>"></div>
+        <?php
+    }
+
+    public function custom_carousel_ajax($id = 0) {
+        ?>            
+        <div class="bs-carousel-load loadblock" data-func="custom_carousel" data-id="<?php print $id ?>"></div>
+        <?php
+    }
+
+    public function get_actors_carousel_ajax($movie_id = 0, $type = '') {
+        ob_start();
+        ?>            
+        <div class="bs-carousel-load loadblock" data-func="actor_carousel" data-id="<?php print $movie_id ?>" data-keys="<?php print $type ?>"></div>
+        <?php
+        $content = ob_get_contents();
+        ob_end_clean();
+        return $content;
+    }
+
+    public function get_custom_carousel_data($id = 0, $page = 0, $per_page = 1, $limit = 1) {
+        // Load custom block
+        $scoll_id = 'custom_carousel_id_' . $id;
+        $cdata = $this->cm->get_meta_compilation_link($id);
+        if (!$cdata->url) {
+            return;
+        }
+        return $this->search_carousel($cdata->url, $scoll_id, $page, $per_page, $limit, false, true);
+    }
+
+    public function get_custom_carousel($id = 0, $page = 0, $per_page = 3, $limit = 12, $only_data = false) {
+        $scoll_id = 'custom_carousel_id_' . $id;
+        $cdata = $this->cm->get_meta_compilation_link($id);
+        if (!$cdata->url) {
+            return;
+        }
+        return $this->search_carousel($cdata->url, $scoll_id, $page, $per_page, $limit, false, $only_data);
+    }
+
+    public function search_carousel($url = '', $scoll_id = '', $page = 0, $per_page = 3, $limit = 12, $html_req = true, $only_data = false) {
+
+        $array_data = array();
+        $tab_key = '';
+
+        try {
+
+            $last_req = $_SERVER['REQUEST_URI'];
+            $_SERVER['REQUEST_URI'] = $url;
+            $local_front = new CriticFront();
+            $local_front->init_search_filters();
+            $tab_key = $local_front->get_tab_key();
+            $uid = $local_front->get_uid();
+            $local_front->per_page = $per_page;
+            //$uid = 0, $ids = array(), $show_facets = true, $show_count = true, $only_curr_tab = false, $limit = -1, $page = -1, $show_main = true, $show_chart = true, $fields = array()
+            $array_data = $local_front->find_results($uid, array(), false, true, true, $limit, $page);
+            $_SERVER['REQUEST_URI'] = $last_req;
+        } catch (Exception $exc) {
+            
+        }
+        $posts_arr = array();
+        if ($array_data && $array_data[$tab_key]) {
+            $posts_arr = $array_data[$tab_key];
+        }
+        $movie_id = 0;
+        return $this->review_carousel($movie_id, $scoll_id, $tab_key, $posts_arr, $html_req, $only_data, $url);
+    }
+
+    public function audience_carousel($movie_id = 0, $vote_type = 'a', $html_req = true) {
+        $start = 0;
+        $limit = 12;
+        $scoll_id = 'audience_scroll_' . $vote_type;
+        $posts_arr = $this->get_audience_post_arr($movie_id, $vote_type, $limit, $start);
+
+        // Audience link
+        $ext_link = '/search/tab_critics/author_audience';
+        if ($vote_type == 'p') {
+            $ext_link = '/search/tab_critics/auvote_pay/author_audience';
+        } else if ($vote_type == 'n') {
+            $ext_link = '/search/tab_critics/auvote_skip/author_audience';
+        }
+
+        if ($movie_id) {
+            $ext_link .= '/movie_' . $movie_id;
+        }
+
+        return $this->review_carousel($movie_id, $scoll_id, 'critics', $posts_arr, $html_req, false, $ext_link);
+    }
+
+    public function pro_carousel($movie_id = 0, $html_req = true) {
+        $start = 0;
+        $limit = 12;
+        $scoll_id = 'pro_scroll';
+        $posts_arr = $this->get_pro_post_arr($movie_id, $limit, $start);
+
+        // Pro link        
+        $ext_link = '/search/tab_critics/author_critic';
+
+        if ($movie_id) {
+            $ext_link .= '/movie_' . $movie_id;
+        }
+
+        print $this->review_carousel($movie_id, $scoll_id, 'critics', $posts_arr, $html_req, false, $ext_link);
+    }
+
+    public function actors_carousel($movie_id = '', $type = '') {
+        $result = [];
+        $actor_type = [];
+
+        if ($type == 'stars') {
+            $actor_type[] = 'star';
+        } else if ($type == 'main') {
+            $actor_type[] = 'main';
+        } else if ($type == 'extra') {
+            $actor_type[] = 'extra';
+        } else if ($type == 'directors') {
+            $actor_type[] = 'director';
+            $actor_type[] = 'writer';
+            $actor_type[] = 'cast_director';
+            $actor_type[] = 'producer';
+        }
+        !class_exists('MOVIE_DATA') ? include ABSPATH . "analysis/movie_data.php" : '';
+
+        $content_array = MOVIE_DATA::get_actors_template($movie_id, $actor_type);
+
+        foreach ($content_array as $i => $data) {
+            $result[] = $data['content_data'];
+        }
+
+        if (!$result) {
+            return '';
+        }
+
+        $data = array();
+        $scoll_id = 'actor_carousel_' . $type;
+        $posts_arr = array(
+            'list' => $result,
+            'count' => count($result)
+        );
+        return $this->review_carousel($movie_id, $scoll_id, 'actors', $posts_arr, false);
+    }
+
+    public function review_carousel($movie_id, $scoll_id = '', $type = 'critics', $posts_arr = array(), $html_req = true, $only_data = false, $search_link = '') {
+
+
+        $total_count = $posts_arr['count'] ? $posts_arr['count'] : 0;
+        $count = $total_count;
+
+        if ($count >= 1000) {
+            $count = 999;
+        }
+
+        if ($count == 0) {
+            return '';
+        }
+
+        $width = 350;
+
+        $posts = $posts_arr['list'] ? $posts_arr['list'] : [];
+        $data = array();
+        $show_movie = true;
+        if ($movie_id) {
+            $show_movie = false;
+        }
+
+        if ($posts) {
+
+            if ($type == 'movies' || $type == 'games') {
+                $data = $this->render_movies_list($posts, false);
+                $width = 250;
+            } else if ($type == 'critics') {
+                foreach ($posts as $post) {
+                    $data[] = $this->theme_review_holder($post, $show_movie);
+                }
+            } else if ($type == 'filters') {
+                
+            } else if ($type == 'watchlists') {
+                
+            } else if ($type == 'comments') {
+                
+            } else if ($type == 'actors') {
+                $width = 280;
+                $data = $posts;
+            }
+        }
+
+        if ($only_data) {
+            // Return data ony for ajax
+            return $data;
+        }
+
+        ob_start();
+
+        if ($html_req) {
+            if ($data) {
+                $data = '"' . addslashes(json_encode($data)) . '"';
+            } else {
+                $data = 'null';
+            }
+            $scrpts = array();
+            $scrpts[] = '<script  type="text/javascript" >';
+            $scrpts[] = 'var ' . $scoll_id . '_data = ' . $data . '; ';
+            $scrpts[] = '</script>';
+            print (implode("\n", $scrpts));
+        }
+        ?>
+        <div id="carousel_<?php print $scoll_id ?>" class="bs-carousel mb-4" data-key="<?php print $scoll_id ?>" data-total="<?php print $count ?>" data-width="<?php print $width ?>"" data-movie="<?php print $movie_id ?>"></div>
+        <div class="mb-4 text-body-secondary text-center">Total found: <?php print $total_count ?><?php if ($search_link) {
+            ?>. <a href="<?php print $search_link ?>">Show in Search <small><i class="icon-right-open"></i></small></a><?php } ?>
+        </div>
+        <?php
+        $content = ob_get_contents();
+        ob_end_clean();
+
+        if ($html_req) {
+            // Return html carousel content
+            $ret = $content;
+        } else {
+            // Return carousel and data
+            $ret_ajax = array(
+                'content' => $content,
+                'data' => $data,
+            );
+            $ret = json_encode($ret_ajax);
+        }
+        return $ret;
+    }
+
+    public function get_audience_carousel_data($page = 0, $per_page = 1, $limit = 0, $movie_id = 0, $vote_type = 'a') {
+        $start = $page * $per_page;
+        $posts_arr = $this->get_audience_post_arr($movie_id, $vote_type, $limit, $start);
+        $posts = $posts_arr['list'] ? $posts_arr['list'] : [];
+        $data = array();
+        $show_movie = true;
+        if ($movie_id) {
+            $show_movie = false;
+        }
+        if ($posts) {
+            foreach ($posts as $post) {
+                $data[] = $this->theme_review_holder($post, $show_movie);
+            }
+        }
+        return $data;
+    }
+
+    public function get_pro_carousel_data($page = 0, $per_page = 1, $limit = 0, $movie_id = 0) {
+        $start = $page * $per_page;
+        $posts_arr = $this->get_pro_post_arr($movie_id, $limit, $start);
+        $posts = $posts_arr['list'] ? $posts_arr['list'] : [];
+        $data = array();
+        $show_movie = true;
+        if ($movie_id) {
+            $show_movie = false;
+        }
+        if ($posts) {
+            foreach ($posts as $post) {
+                $data[] = $this->theme_review_holder($post, $show_movie);
+            }
+        }
+        return $data;
+    }
+
+    private function get_audience_post_arr($movie_id = 0, $vote_type_str = 'a', $limit = 999, $start = 0) {
+        $a_type = 2;
+        $ss = $this->cm->get_settings();
+        $unique = $ss['audience_unique'];
+
+        $vote_type = 0;
+        if ($vote_type_str == 'p') {
+            $vote_type = 1;
+        } else if ($vote_type_str == 'n') {
+            $vote_type = 2;
+        }
+
+        if ($vote_type == 1 || $vote_type == 2) {
+            // $vote_type = 1; Positive
+            // $vote_type = 2; Negative
+            $unique = $ss['audience_top_unique'];
+        }
+
+        // TODO Unique logic
+        //$unique = 0;
+        // Vote to rating  
+
+        $tags = array();
+        $meta_type = array();
+        $min_rating = 0;
+        $min_au = 0;
+        $max_au = 0;
+        $vote = 0;
+
+        $posts_arr = $this->cs->get_last_critics($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au, $vote_type, $unique);
+        return $posts_arr;
+    }
+
+    private function get_pro_post_arr($movie_id = 0, $limit = 999, $start = 0) {
+        $a_type = 1;
+        // Get settings
+        $ss = $this->cm->get_settings();
+        $min_rating = $ss['posts_rating'];
+        $meta_type = array();
+        if ($ss['posts_type_1']) {
+            $meta_type[] = 1;
+        }
+        if ($ss['posts_type_2']) {
+            $meta_type[] = 2;
+        }
+        if ($ss['posts_type_3']) {
+            $meta_type[] = 3;
+        }
+
+        $unique = 0;
+        $tags = array();
+        $min_au = 0;
+        $max_au = 0;
+        $vote = 0;
+        $vote_type = 0;
+
+        $posts_arr = $this->cs->get_last_critics($a_type, $limit, $movie_id, $start, $tags, $meta_type, $min_rating, $vote, $min_au, $max_au, $vote_type, $unique);
+        return $posts_arr;
+    }
+
+    public function theme_review_holder($post = array(), $show_movie = true) {
+
+        /*
+          [id] => 293064
+          [date] => 1719392163
+          [date_add] => 1719392193
+          [top_movie] => 140384
+          [mtitle] => The Old Way
+          [myear] => 2023
+          [aid] => 2238
+          [author_name] => dfsafddsf
+          [aurating] => 2.6
+          [title] => dfdsf
+          [content] => sdfdsfsdf
+          [auvote] => 3
+         */
+
+        $keywords = $this->get_search_keywords();
+        if ($keywords) {
+            $title = $post->t;
+            $content = $post->c;
+        } else {
+            $title = $post->title;
+
+            $content = $post->content;
+            if (strstr($content, '[su_')) {
+                // Remove su spoilers
+                $regv = '#\[su_([^\]]+)\].+\[/su_[\w\d]+\]#Us';
+                if (preg_match_all($regv, $content, $mach)) {
+                    // var_dump($mach);              
+                    foreach ($mach[0] as $i => $val) {
+                        $rtitle = '';
+                        $reg2 = '#title="([^\"]+)#';
+                        if (preg_match($reg2, $mach[1][$i], $m2)) {
+                            $rtitle = $m2[1];
+                        }
+
+                        $content = str_replace($val, $rtitle, $content);
+                    }
+                }
+                // Remove all custom tags
+                $regv = '#\[su_[^\]]+\]#Us';
+                $content = preg_replace($regv, '', $content);
+            }
+            $content = $this->format_content($content, 400);
+            $content = str_replace('<p>', '', $content);
+            $content = str_replace('</p>', '<br />', $content);
+        }
+        $ptime = $post->date;
+        $critic_addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+
+        // Get link
+        $critic = new stdClass();
+        $critic->author_type = $post->author_type;
+        $critic->author_name = $post->author_name;
+        $critic->title = $post->title;
+        $critic->id = $post->id;
+
+        $slug = $this->get_critic_slug($critic);
+        $link = '/critics/' . $slug . '/';
+        $meta_block = '';
+
+        $show_robot_icon = false;
+
+        if ($show_robot_icon && $post->author_type != 2) {
+            if ($post->top_movie > 0) {
+                $meta_block = '<span class="r-item loadblock" data-func="post_meta_block" data-id="' . $post->id . '" data-keys="' . $post->top_movie . '"></span>';
+                //$info_link = $this->get_info_link($post->id, $post->top_movie, $post->pmstate);
+            }
+        }
+
+        // Find video link
+        /* view_type 
+          0 => 'Default',
+          1 => 'Youtube',
+          2 => 'Odysee',
+          3 => 'Bitchute'
+         */
+        $video_link = '';
+        if ($post->author_type == 1 && $post->viewtype != 0) {
+            // Only pro
+            $video_link = $this->find_video_link($post->link, $post->id, true);
+        }
+
+        ob_start();
+        ?>
+        <div id="review-<?php print $post->id ?>" class="card sitem card-review" data-id="<?php print $post->id ?>" data-atype="<?php print $post->author_type; ?>">           
+            <div class="card-body">
+                <div class="card-top mb-4">
+                    <?php if ($show_movie && $post->top_movie && $post->mtitle) { ?>
+                        <?php
+                        $thumbs = array([220, 330], [440, 660]);
+                        $array_tsumb = array();
+                        foreach ($thumbs as $thumb) {
+                            $array_tsumb[] = $this->get_thumb_path_full($thumb[0], $thumb[1], $post->top_movie, $post->madd);
+                        }
+                        $movie_link = $this->get_simple_movie_link($post->mpname, $post->type);
+                        ?>                    
+                        <div class="card-image">                                                    
+                            <a href="<?php print $movie_link ?>">
+                                <img loading="lazy" src="<?php echo $array_tsumb[0]; ?>"
+                                     <?php if ($array_tsumb[1]) { ?> srcset="<?php echo $array_tsumb[0]; ?> 1x, <?php echo $array_tsumb[1]; ?> 2x"<?php } ?> >                        
+                            </a>
+                        </div>    
+                    <?php } ?>                    
+                    <div class="card-info">
+                        <?php if ($show_movie) { ?>
+                            <p class="card-movie break-line mb-3">
+                                <?php if ($post->top_movie && $post->mtitle) { ?>
+                                    <b><a href="<?php print $movie_link ?>" title="<?php print $post->mtitle ?> (<?php print $post->myear ?>)"><?php print $post->mtitle ?> (<?php print $post->myear ?>)</a></b>
+                                <?php } ?>
+                            </p>
+                        <?php } else { ?>
+                            <div class="mb-3"></div>
+                        <?php } ?>                    
+                        <?php $this->theme_card_author($post->author_name, $post->aid, true); ?>
+                        <div class="d-flex align-items-center">    
+                            <span class="flag"></span>                        
+                            <small class="text-body-secondary"><?php print $critic_addtime ?></small>                            
+                        </div>
+                    </div> 
+                </div>  
+                <div>
+                    <?php if ($video_link) { ?>
+                        <?php
+                        /*
+                         * TODO bichude load block, click js
+                         */
+                        ?>                                      
+                        <a class="card-vi mb-3 icntn r-link js-click" href="<?php print $link ?>">
+                            <?php $this->theme_review_img($video_link, $post->id) ?>
+                            <div class="video"><i class="icon-play"></i></div>
+                            <h5 class="card-tvi break-line" title="<?php print strip_tags($post->title) ?>"><?php print $title ?></h5>    
+                        </a>
+
+                    <?php } else { ?>    
+                        <a class="r-link js-click" href="<?php print $link ?>">
+                            <h5 class="card-title mb-3 mt-0 break-line" title="<?php print strip_tags($post->title) ?>"><?php print $title ?></h5>                    
+                            <div class="card-text text-body text-limited mb-3"><?php print $content ?></div>
+                        </a>  
+                    <?php } ?>
+                </div>
+                <div class="card-action">
+                    <div class="card-ratings">
+                        <?php
+                        if ($post->author_type == 2) {
+                            // Audience only
+                            ?>
+                            <span class="r-item" title="Audience rating: <?php print $post->aurating ?>/5">
+                                <i class="icon-star"></i> <span><?php print $post->aurating ?></span>
+                            </span>
+                            <?php
+                        } else if ($post->author_type == 1) {
+                            ?>
+                            <span class="rating-pro"></span>
+                            <?php
+                        }
+                        ?>                    
+                        <span class="r-item c-link js-click">
+                            <i class="icon-comment-empty"></i> <span class="c-count"></span>
+                        </span>
+                        <span class="r-item e-link js-click">
+                            <i class="icon-thumbs-up"></i> <span class="e-count"></span>
+                        </span>
+                        <?php print $meta_block; ?>
+                    </div>
+                    <a class="btn btn-outline-secondary r-link js-click text-nowrap" href="<?php print $link ?>">More <i class="icon-right-open"></i></a>
+                </div>
+            </div>
+
+        </div>
+        <?php
+        $content = ob_get_contents();
+        ob_end_clean();
+        return $content;
+    }
+
+    public function theme_card_author($author_name = '', $aid = 0, $only_get = false, $show_tags = true) {
+        $author_icon = '<i class="icon-user-circle-o"></i>';
+
+        // Author data
+        $cache_actor = $this->cache_author_data($aid, $only_get);
+        if ($cache_actor) {
+            $author_icon = $cache_actor['avatar'];
+            $author_name = $cache_actor['name'];
+            if ($cache_actor['link']) {
+                $author_name = '<a href="' . $cache_actor['link'] . '">' . $author_name . '</a>';
+            }
+        }
+        ?>
+        <p class="card-author d-flex align-items-center<?php
+        if (!$cache_actor) {
+            print " loadblock";
+        }
+        ?>" data-func="theme_card_author" data-id="<?php print $aid ?>">
+            <span class="card-icon"><?php print $author_icon ?></span>
+            <span class="card-author-info d-flex flex-column">
+                <span class="card-author-name break-line"><?php print $author_name ?></span>
+                <?php if ($show_tags && $cache_actor['tags']) { ?>            
+                    <small class="card-author-tags break-line"><?php print $cache_actor['tags'] ?></small>
+                <?php } ?>
+            </span>
+
+        </p>
+        <?php
+    }
+
+    public function theme_post_meta_block($id = 0, $top_movie = 0) {
+        $meta_state = $this->cm->get_critic_meta_state($id, $top_movie);
+        $info_link = $this->get_info_link($id, $top_movie, $meta_state->state);
+        return $info_link;
+    }
+
+    public function cache_author_data($aid, $get_only = false) {
+        if ($this->cache_results) {
+            $filename = "profile-{$aid}";
+            $str = ThemeCache::cache('get_author_data_serialize', false, $filename, 'user', $this, $aid, $get_only);
+            if ($str) {
+                return unserialize($str);
+            }
+            return '';
+        } else {
+            return $this->get_author_data($aid);
+        }
+    }
+
+    public function get_author_data_serialize($aid) {
+        return serialize($this->get_author_data($aid));
+    }
+
+    public function get_author_data($aid) {
+        $thumb_size = 64;
+        $author = $this->cm->get_author($aid);
+        $author_link = '';
+
+        // Author name        
+        $author_name = $this->pccf_filter($author->name);
+
+        // WP avatar
+        $cav = $this->cm->get_cav();
+        $author_options = unserialize($author->options);
+        $avatar = '';
+        if ($author->type == 2) {
+            // Audience
+            $wp_avatar = $cav->get_author_avatar($author, $thumb_size);
+            $avatar = $wp_avatar;
+            if (!$wp_avatar) {
+                // Author image
+                $author_img = $author_options['image'];
+                if ($author_img) {
+                    try {
+                        $image = $this->get_local_thumb($thumb_size, $thumb_size, $author_img);
+                        $avatar = '<span class="a_img_container" style="background: url(' . $image . '); background-size: cover;"></span>';
+                    } catch (Exception $exc) {
+                        
+                    }
+                }
+            }
+        } else {
+            // pro avatar
+            $author_options = unserialize($author->options);
+            $author_img = $cav->get_pro_thumb($thumb_size, $thumb_size, $author->avatar_name);
+            if ($author_img) {
+                $avatar = '<span class="a_img_container" style="background: url(' . $author_img . '); background-size: cover;"></span>';
+            }
+            $author_link = '/search/tab_critics/from_' . $aid;
+        }
+
+        if (!$avatar) {
+            // Empty image
+            $avatar = '<span class="a_img_def"></span>';
+        }
+
 
         // Tags
         $catdata = '';
@@ -3947,102 +5125,323 @@ class CriticFront extends SearchFacets {
             foreach ($tags as $tag) {
                 $catdata .= $this->get_tag_link($tag->slug, $tag->name);
                 $tags_count += 1;
-                if ($tags_count > 3) {
+                if ($tags_count > $max_tags) {
                     break;
                 }
             }
         }
+        // User profile link        
 
-        if ($catdata) {
-            $catdata = '<div class="a_cat">' . $catdata . '</div>';
+        $wp_uid = $author->wp_uid;
+        if ($wp_uid) {
+            $uc = $this->cm->get_uc();
+            $wp_user = $uc->getUserById($wp_uid);
+            if ($wp_user->url) {
+                $author_link = $uc->get_user_profile_link($wp_user->url);
+            }
         }
+        $ret = array(
+            'wp_uid' => $wp_uid,
+            'avatar' => $avatar,
+            'link' => $author_link,
+            'name' => $author_name,
+            'tags' => $catdata,
+        );
+        return $ret;
+    }
 
-        // Time
-        $ptime = $item->date;
-        $critic_addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
-
-        // User watchlist
-        $wl = $this->cm->get_wl();
-
-        $publish = $item->publish;
-
-        if ($publish == 0) {
-            $pub_icon = '<i class="icon-eye-off"></i> Private. ';
-        }
-
-
-        // Link to full post
-        $link = $wl->get_list_link($item->id, $wp_user->url);
-
-        // img
-        $img_str = $wl->get_list_collage($item->id);
-        if ($img_str) {
-            $img_str = '<a href="' . $link . '">' . $img_str . '</a>';
-        }
+    public function ajax_review_ratings($ids_str, $ftype = 0) {
         /*
-          $img = $item->top_mid;
-          $img_str = '';
-          $img_bg = '';
-          if ($img) {
-          $img_path = $this->get_thumb_path_full(220, 330, $img);
-          $img_str = '<a href="' . $link . '"><img src="' . $img_path . '" /></a>';
-          $img_bg = ' style="background: url(\''.$img_path.'\'); background-size: cover;"';
-          $img_bg = '';
-          } */
+         * ftype
+         *  0 - critic
+         *  1 - filters
+         *  2 - lists
+         */
+        if (!$ids_str) {
+            return array();
+        }
 
+        $ids = array();
+        try {
+            foreach ($ids_str as $id_str) {
+                $ids_arr = explode('-', $id_str);
+                $id = $ids_arr[0];
+                $type = $ids_arr[1];
+                $ids[0][] = $id;
+                $ids[$type][] = $id;
+            }
+        } catch (Exception $exc) {
+            
+        }
+
+        if (!$ids) {
+            return array();
+        }
+
+        // Comments
+        $comments = $this->cm->get_comments();
+        $comments_numbers = $comments->get_comments_number_all($ids[0], $ftype);
+
+        // Emotions
+        $ce = $this->cm->get_ce();
+        $emotions = $ce->get_emotions_counts_all($ids[0], $ftype);
+
+        $ret = array(
+            'comments' => $comments_numbers,
+            'emotions' => $emotions,
+        );
+
+        if ($ftype == 0) {
+            // reviews only
+            $ratings = array();
+            if (isset($ids[2])) {
+                // Audience flags
+                $ratings = $this->cm->get_posts_rating($ids[2]);
+                $flags = array();
+                if ($ratings) {
+                    foreach ($ratings as $key => $value) {
+                        $ip = isset($value['ip']) ? $value['ip'] : '';
+                        if ($ip) {
+                            $country_img = $this->theme_country_flag_by($ip);
+                            if ($country_img) {
+                                $flags[$key] = $country_img;
+                            }
+                        }
+                    }
+                }
+            }
+
+            $rating_pro = array();
+            if (isset($ids[1])) {
+                // Pro rating
+                $posts = $this->cm->get_posts_by_ids($ids[1]);
+                if ($posts) {
+                    foreach ($posts as $post) {
+                        $custom_rating = $this->get_custom_critic_rating($post, false);
+                        if ($custom_rating) {
+                            $rating_pro[$post->id] = $custom_rating;
+                        }
+                    }
+                }
+            }
+        }
+
+        $ret['flags'] = $flags;
+        $ret['rating_pro'] = $rating_pro;
+
+        return $ret;
+    }
+
+    private function theme_country_flag_by($ip) {
         // Country
         $country_img = '';
 
-        $content = $this->pccf_filter($content);
-        if ($content) {
-            $content = '<div class="sfilter-content">' . $content . '</div>';
+        $country_data = $this->cm->get_geo_flag_by_ip($ip);
+        if ($country_data['path']) {
+            $country_name = $country_data['name'];
+
+            $country_img = '<div class="nte cflag" title="' . $country_name . '">
+          <div class="nbtn"><img src="' . $country_data['path'] . '" /></div>
+          <div class="nte_show">
+          <div class="nte_in">
+          <div class="nte_cnt">
+          This review was posted from ' . $country_name . ' or from a VPN in ' . $country_name . '.
+          </div>
+          </div>
+          </div>
+          </div>';
         }
-        $title = $this->pccf_filter($title);
+        return $country_img;
+    }
 
-        # Time
-        $ptime = $item->date;
-        $addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+    public function show_carousel_list($array_list = array(), $movie_id = 0) {
+        foreach ($array_list as $value) {
+            //'title' => 'Latest Audience Reviews:', 'id' => 'audience_scroll', 'class' => 'audience_review widthed ',
+            //'tabs' => array('p' => 'Positive', 'n' => 'Negative', 'a' => 'Latest')
+            extract($value);
+            ?>
+            <section class="<?php print $class ?> mb-5"> 
+                <h2 class="text-center mb-4"><?php print $title ?></h2>
+                <?php if ($tabs) { ?>
+                    <ul class="nav nav-pills justify-content-center mb-4">
+                        <?php
+                        // Tabs logic
+                        $i = 0;
+                        foreach ($tabs as $k => $v) {
+                            $id_key = $id . '_' . $k;
+                            $active = '';
+                            if ($i == 0) {
+                                $active = ' active';
+                            }
+                            ?>
+                            <li class="nav-item tab-<?php print $id_key; ?>">
+                                <a href="#tab-<?php print $id_key; ?>" class="nav-link<?php print $active; ?>" data-bs-toggle="tab" data-id="tab-<?php print $id_key; ?>"><?php print $v; ?></a>
+                            </li>
+                            <?php
+                            $i++;
+                        }
+                        ?>
+                    </ul>
+                    <div class="tab-content">
+                        <?php
+                        $i = 0;
+                        foreach ($tabs as $k => $v) {
+                            $id_key = $id . '_' . $k;
+                            $active = false;
+                            if ($i == 0) {
+                                $active = true;
+                            }
+                            gmi('before ' . $id_key);
+                            ?>
+                            <div class="tab-pane fade<?php
+                            if ($active) {
+                                print ' show active';
+                            }
+                            ?>" id="tab-<?php print $id_key; ?>">
+                                     <?php
+                                     if ($id == 'audience_scroll') {
+                                         if ($active) {
+                                             print $this->audience_carousel($movie_id, $k);
+                                         } else {
+                                             $this->audience_carousel_ajax($movie_id, $k);
+                                         }
+                                     }
+                                     ?>
+                            </div>
+                            <?php
+                            gmi('after ' . $id_key);
+                            $i++;
+                        }
+                        ?>
+                    </div>
+                    <?php
+                } else if ($dropdown) {
+                    /*
+                      [id] => 99
+                      [title] => Homogenous Cast, Minimal LGBT/Woke Keywords
+                      [type] => 5
+                      [url] => /search/sort_random-desc/show_actorsdata_sphoto_wokedata_lgbt_woke/type_movies/cast_main/sphoto_exist/minus-simmain_32-100/minus-simall_29-100/minus-woke_3-20/minus-lgbt_2-20
+                      [weight] =>
+                      [select_type] => 0
+                      [parents] => woke_movies
+                      [description] =>
+                      [enable] => 1
+                      [last_update] => 1724967403
+                      )
+                     */
 
-        $filter_content = '';
-        if ($content || $title) {
+                    $rand_key = random_int(0, count($dropdown) - 1);
+                    $first_item = $dropdown[$rand_key];
+                    ob_start();
+                    ?>
+                    <!-- Главный заголовок и dropdown -->
+                    <div class="dropdown-block mb-3">
+                        <div class="dropdown d-flex justify-content-center align-items-center mb-4">
+                            <h3 class="dropdown-title mb-0 me-2"><?php print $first_item['title'] ?></h3>         
+                            <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"></button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <?php
+                                foreach ($dropdown as $key => $item) {
+                                    $compilation_id = "clps-{$item['id']}";
+                                    ?>
+                                    <li><a class="dropdown-item multi<?php
+                                        if ($key == $rand_key) {
+                                            print ' active';
+                                        }
+                                        ?>" href="#" data-title="<?php print $item['title'] ?>" data-target="#<?php print $compilation_id ?>"><?php print $item['title'] ?></a>
+                                    </li>                               
+                                <?php } ?>                        
+                            </ul>
+                        </div>
+                        <div class="dropdown-text">
+                            <?php
+                            foreach ($dropdown as $key => $item) {
+                                $compilation_id = "clps-{$item['id']}";
+                                ?>
+                                <div class="collapse<?php
+                                if ($key == $rand_key) {
+                                    print ' show';
+                                }
+                                ?>" id="<?php print $compilation_id ?>">
+                                         <?php
+                                         $this->custom_carousel_ajax($item['id']);
+                                         ?>
+                                </div>                        
+                            <?php } ?>                        
+                        </div>
+                    </div>
+                    <?php
+                } else if ($random) {
+                    if (strstr($id, 'compilation_')) {
+                        $rand_keys = array_keys($random);
+                        shuffle($rand_keys);
+                        $rand_key = array_pop($rand_keys);
 
-            $filter_content = '
-                    <div class="sfilter-item">' . $img_str
-                    . '<h3 class="sfilter-title"><a href="' . $link . '">' . $title . '</a></h3>' . $content
-                    . '</div>';
+                        $rand_id = "compilation_scroll_id_" . $rand_key;
+                        ?>
+                        <div class="random-holder">
+                            <div class="random-header d-flex justify-content-center align-items-center mb-4">
+                                <h3 class="mb-0 me-2"><?php print $random[$rand_key]['title'] ?></h3>                            
+                                <div class="refresh_random"><div class="rr_image" data-id="<?php print $id ?>"></div></div>
+                            </div>
+                            <div class="desc"></div> 
+                            <script>var data_<?php print $id ?> = <?php print json_encode($random) ?></script>
+                            <div class="random-content">
+                                <?php
+                                gmi('before ' . $rand_id);
+                                $this->custom_carousel_ajax($rand_id);
+                                gmi('after ' . $rand_id);
+                                ?>
+                            </div>
+                        </div>
+                        <?php
+                    }
+                } else {
+                    ?>
+                    <div id="<?php print $id ?>">
+                        <?php
+                        gmi('before ' . $id);
+                        if ($id == 'review_scroll') {
+                            print $this->pro_carousel($movie_id);
+                        } else if (strstr($id, 'compilation_')) {
+                            $this->custom_carousel_ajax($id);
+                        }
+                        gmi('after ' . $id);
+                        ?>
+                    </div>
+                <?php } ?>
+            </section>
+            <?php
+            $tabs = '';
+            $dropdown = '';
+            $random = '';
+        }
+    }
+
+    public function get_reveiw_img($id) {
+        $post = $this->cm->get_post_cache($id);
+        // Only pro
+        $video_link = $this->find_video_link($post->link, $post->id, false);
+        $this->theme_review_img($video_link);
+    }
+
+    public function theme_review_img($video_link, $post_id = 0) {
+
+        if ($video_link['img']) {
+            $video_img = $video_link['img'];
         }
 
-
-        $actorsdata = '';
-
-        if ($wp_avatar) {
-            $actorsdata = $wp_avatar;
-        } else if ($author_admin_img) {
-            $actorsdata = $author_admin_img;
+        if ($video_img) {
+            //$video_img = 'https://img.filmdemographics.com/' . $video_img;
+            ?>
+            <img src="/wp-content/themes/custom_twentysixteen/images/placeholder.png" class="poster" loading="lazy" srcset="<?php print $video_img ?>">
+            <?php
+        } else {
+            if ($post_id) {
+                ?>
+                <img src="/wp-content/themes/custom_twentysixteen/images/placeholder.png" class="poster loadblock" data-func="review_img_block" data-id="<?php print $post_id ?>">
+                <?php
+            }
         }
-
-        if (!$actorsdata) {
-            $actorsdata = '<span></span>';
-        }
-
-        $actorsdata_link = '<a href="' . $author_link . '">' . $actorsdata . '</a>';
-
-        $review_bottom = '<div class="review_bottom"><div class="r_type">' . $pub_icon . ' Items: ' . $item->items . '</div><div class="r_right"><div class="r_date">' . $critic_addtime . '</div>' . $country_img . '</div></div>';
-
-        $reaction_data = $this->get_user_reactions($item->id, 2, false);
-
-        $actorsresult = '<div class="a_msg">
-    <div class="a_msg_i witch_bg"><div class="bg_holder">
-        ' . $filter_content . $review_bottom . '<div class="ugol"><div></div></div>
-    </div></div>
-        <div class="em_hold"></div>
-        <div class="amsg_aut">
-            ' . $actorsdata_link . '
-            <div class="review_autor_name">' . $author_title_link . $umeta . $catdata . '</div>
-            ' . $reaction_data . '
-        </div>
-</div>';
-
-        return $actorsresult;
     }
 }

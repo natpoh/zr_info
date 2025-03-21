@@ -390,9 +390,9 @@ class WatchList extends AbstractDB {
         $sql = sprintf("SELECT COUNT(*) FROM {$this->db['list']} WHERE wp_uid=%d" . $and_publish, $wp_uid);
         $ret = $this->db_get_var($sql);
 
-        if ($owner && $ret==0){
+        if ($owner && $ret == 0) {
             $this->create_def_lists($wp_uid);
-            return $this->get_user_lists_count($wp_uid) ;
+            return $this->get_user_lists_count($wp_uid);
         }
         return $ret;
     }
@@ -569,48 +569,52 @@ class WatchList extends AbstractDB {
         if ($posts) {
             ob_start();
             ?>
-            <div class="simple">
-                <div class="items">
-                    <?php
-                    foreach ($posts as $post) {
+            <div class="simple list-group list-group-flush items"> 
+                <?php
+                foreach ($posts as $post) {
 
-                        # Link to filter
-                        $link = $this->get_post_link($url, $post->id);
+                    # Link to filter
+                    $link = $this->get_post_link($url, $post->id);
 
-                        # Time
-                        $ptime = $post->date;
-                        $addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+                    # Time
+                    $ptime = $post->date;
+                    $addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
 
-                        # Title
-                        $title = stripslashes($post->title);
-                        $desc = stripslashes($post->content);
+                    # Title
+                    $title = stripslashes($post->title);
+                    $desc = stripslashes($post->content);
 
-                        $publish = $post->publish;
-                        $pub_icon = '';
-                        if ($owner && $publish == 0) {
-                            $pub_icon = '<i class="icon-' . $this->publish[$publish]['icon'] . '"></i> Private. ';
-                        }
+                    $publish = $post->publish;
+                    $pub_icon = '';
+                    if ($owner && $publish == 0) {
+                        $pub_icon = '<i class="icon-' . $this->publish[$publish]['icon'] . '"></i> Private. ';
+                    }
 
-                        $count = $post->items;
+                    $count = $post->items;
 
-                        $poster = $this->get_list_collage($post->id, false);
-                        ?>
-                        <div class="item">
-                            <a href="<?php print $link ?>" title="<?php print $title ?>" >                           
-                                <?php
-                                if ($poster) {
-                                    print $poster;
-                                }
-                                ?>
-                                <div class="desc">
-                                    <h5><?php print $title ?></h5>
-                                    <p><?php print $addtime ?>. <?php print $pub_icon ?>Items: <?php print $count ?></p>
-                                    <p><?php print $desc ?></p>
-                                </div>
-                            </a>
-                        </div>
-                    <?php } ?>
-                </div>
+                    $poster = $this->get_list_collage($post->id, false);
+                    ?>
+                    <div class="item d-flex justify-content-between list-group-item list-group-item-nopadding">
+                        <a href="<?php print $link ?>" title="<?php print $title ?>" class="d-flex list-group-item list-group-item-action list-group-item-noborder" >   
+                            <?php
+                            if ($poster) {
+                                print '<div class="d-flex me-3">' . $poster . '</div>';
+                            }
+                            ?>
+                            <div class="desc d-flex flex-column">
+                                <h5><?php print $title ?></h5>
+                                <p><?php print $desc ?></p>
+
+                                <small class="text-body-secondary d-inline-block mt-auto">
+                                    <span class="me-3 text-nowrap"><?php print $addtime ?></span>
+                                    <span class="me-3 text-nowrap"><?php print $pub_icon ?></span>
+                                    <span class="me-3 text-nowrap">Items: <?php print $count ?></span>
+                                </small>
+                            </div>
+                        </a> 
+                    </div>
+                <?php } ?>
+            </div>
             </div>
             <?php
             $content = ob_get_contents();
@@ -626,85 +630,83 @@ class WatchList extends AbstractDB {
         if ($posts) {
             ob_start();
             ?>
-            <div class="simple">
-                <div class="items<?php
-                if ($owner) {
-                    print " owner";
-                }
-                ?>" data-id="0">
-                         <?php
-                         foreach ($posts as $post) {
+            <div class="simple list-group list-group-flush items<?php
+            if ($owner) {
+                print " owner";
+            }
+            ?>" data-id="0"> 
+                     <?php
+                     foreach ($posts as $post) {
 
-                             # Link to filter
-                             $link = $this->get_post_link($url, $post->id);
+                         # Link to filter
+                         $link = $this->get_post_link($url, $post->id);
 
-                             # Time
-                             $ptime = $post->date;
-                             $addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
+                         # Time
+                         $ptime = $post->date;
+                         $addtime = date('M', $ptime) . ' ' . date('jS Y', $ptime);
 
-                             # Title
-                             $title = stripslashes($post->title);
-                             $desc = stripslashes($post->content);
+                         # Title
+                         $title = stripslashes($post->title);
+                         $desc = stripslashes($post->content);
 
-                             $publish = $post->publish;
-                             $pub_icon = '';
-                             if ($owner && $publish == 0) {
-                                 $pub_icon = '<i class="icon-' . $this->publish[$publish]['icon'] . '"></i> Private. ';
-                             }
-                             $count = $post->items;
+                         $publish = $post->publish;
+                         $pub_icon = '';
+                         if ($owner && $publish == 0) {
+                             $pub_icon = '<i class="icon-' . $this->publish[$publish]['icon'] . '"></i> Private. ';
+                         }
+                         $count = $post->items;
 
-                             $poster = $this->get_list_collage($post->id, false);
-                             ?>
-                        <div class="item" data-id="<?php print $post->id ?>">
-                            <a href="<?php print $link ?>" title="<?php print $title ?>" >   
-                                <?php
-                                if ($poster) {
-                                    print $poster;
-                                }
-                                ?>
-                                <div class="desc">
-                                    <h5><?php print $title ?></h5>
-                                    <p><?php print $addtime ?>.<?php print $pub_icon ?> Items: <?php print $count ?></p>
-                                    <p><?php print $desc ?></p>
-                                </div>
-                            </a>                                       
+                         $poster = $this->get_list_collage($post->id, false);
+                         ?>
+                    <div class="item d-flex justify-content-between list-group-item list-group-item-nopadding" data-id="<?php print $post->id ?>">
+
+                        <a href="<?php print $link ?>" title="<?php print $title ?>" class="d-flex list-group-item list-group-item-action list-group-item-noborder" >   
                             <?php
-                            if ($owner):
+                            if ($poster) {
+                                print '<div class="d-flex me-3">' . $poster . '</div>';
+                            }
+                            ?>
+                            <div class="desc d-flex flex-column">
+                                <h5><?php print $title ?></h5>
+                                <p><?php print $desc ?></p>
 
-                                $list_json = array(
-                                    'id' => $post->id,
-                                    'publish' => $post->publish,
-                                    'type' => $post->type,
-                                    'title' => stripslashes($post->title),
-                                    'content' => stripslashes($post->content),
-                                );
-                                $str_json = json_encode($list_json);
-                                $search_link = $this->get_list_link($post->id, $user_nicename);
-                                ?>                                            
-                                <div class="menu nte">
-                                    <div class="btn">
-                                        <i class="icon icon-ellipsis-vert"></i>
-                                    </div>
-                                    <div class="nte_show dwn">
-                                        <div class="nte_in">
-                                            <div class="nte_cnt">
-                                                <ul class="list-menu">                      
-                                                    <li class="nav-tab" data-act="show" data-href="<?php print $search_link ?>">Show in Search</li>
-                                                    <li class="nav-tab" data-act="show" data-href="/analytics/tab_ethnicity/wl_<?php print $post->id ?>">Show in Analytics</li>
-                                                    <li class="nav-tab" data-act="editwl" data-json="<?php print htmlspecialchars($str_json) ?>">Edit List</li>
-                                                    <?php if ($post->type == 0): ?>                                                        
-                                                        <li class="nav-tab" data-act="delwl">Delete List</li>
-                                                    <?php endif ?>
-                                                </ul>
-                                            </div>                                                          
-                                        </div>                                                    
-                                    </div>                                                
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    <?php } ?>
-                </div>
+                                <small class="text-body-secondary d-inline-block mt-auto">
+                                    <span class="me-3 text-nowrap"><?php print $addtime ?></span>
+                                    <span class="me-3 text-nowrap"><?php print $pub_icon ?></span>
+                                    <span class="me-3 text-nowrap">Items: <?php print $count ?></span>
+                                </small>
+                            </div>
+                        </a>                                       
+                        <?php
+                        if ($owner):
+
+                            $list_json = array(
+                                'id' => $post->id,
+                                'publish' => $post->publish,
+                                'type' => $post->type,
+                                'title' => stripslashes($post->title),
+                                'content' => stripslashes($post->content),
+                            );
+                            $str_json = json_encode($list_json);
+                            $search_link = $this->get_list_link($post->id, $user_nicename);
+                            ?>           
+                            <div class="ellipsis-menu dropdown cnt-lists">
+                                <span class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="icon icon-ellipsis-vert" ></i></span>
+                                <ul class="dropdown-menu list-menu">    
+                                    <li class="nav-tab" data-act="show" data-href="<?php print $search_link ?>">Show in Search</li>
+                                    <li class="nav-tab" data-act="show" data-href="/analytics/tab_ethnicity/wl_<?php print $post->id ?>">Show in Analytics</li>
+                                    <li class="nav-tab" data-act="editwl" data-json="<?php print htmlspecialchars($str_json) ?>">Edit List</li>
+                                    <?php if ($post->type == 0): ?>                                                        
+                                        <li class="nav-tab" data-act="delwl" data-id="<?php print $post->id ?>" >Delete List</li>
+                                    <?php endif ?>
+                                </ul>
+                            </div>    
+
+                        <?php endif; ?>
+                    </div>
+                <?php } ?>
             </div>
+
             <?php
             $content = ob_get_contents();
             ob_end_clean();
@@ -712,7 +714,7 @@ class WatchList extends AbstractDB {
         return $content;
     }
 
-    public function get_list_page($curr_list = 0, $user_nicename='', $list = array(), $owner = 0) {
+    public function get_list_page($curr_list = 0, $user_nicename = '', $list = array(), $owner = 0) {
         $content = '';
         if ($list) {
             $count = $list->items;
@@ -742,19 +744,29 @@ class WatchList extends AbstractDB {
                         );
                         $str_json = json_encode($list_json);
                         $search_link = $this->get_list_link($list->id, $user_nicename);
-                                
+
                         $poster = $this->get_list_collage($list->id);
                         if ($poster) {
-                            print $poster;
+                            print '<div class="mb-3">' . $poster . '</div>';
                         }
                         ?>
+
                         <?php if ($ptime) { ?>
-                            <div class="row">Updated: <?php print $updtime ?></div>
+                            <div class="row">
+                                <div class="col-5">Updated:</div>
+                                <div class="col-7"><?php print $updtime ?></div>
+                            </div>
                         <?php } ?>
                         <?php if ($owner) { ?>
-                            <div class="row">Access: <?php print $pub_icon . ' ' . $pub_title ?></div>
+                            <div class="row">
+                                <div class="col-5">Access:</div>
+                                <div class="col-7"><?php print $pub_icon . ' ' . $pub_title ?></div>                                 
+                            </div>
                         <?php } ?>
-                        <div class="row">Items: <?php print $count ?></div>
+                        <div class="row mb-3">
+                            <div class="col-5">Items:</div>
+                            <div class="col-7"><?php print $count ?></div>                     
+                        </div>
 
                         <?php
                         # Content
@@ -763,18 +775,17 @@ class WatchList extends AbstractDB {
                             ?>
                             <p><?php print $content ?><p>
                             <?php } ?>
-
-                        <div class="row"><a class="uw-btn" href="<?php print $search_link ?>">Show in Search</a></div>
-                        <div class="row"><a class="uw-btn" href="/analytics/tab_ethnicity/wl_<?php print $list->id ?>">Show in Analytics</a></div>
-
-
-                        <?php if ($owner) { ?>
-                            <br /><div class="row"><button id="user_edit_watchlist" class="btn-small" data-json="<?php print htmlspecialchars($str_json) ?>" data-id="<?php print $curr_list ?>" data-publish="<?php print $publish ?>" data-title="<?php print $list->title ?>" data-content="<?php print $list->content ?>">Edit list</button></div>
-                        <?php } ?>
+                        <div class="d-grid gap-2 mb-4">
+                            <a class="uw-btn btn btn-outline-secondary" href="<?php print $search_link ?>">Show in Search</a>        
+                            <a class="uw-btn btn btn-outline-secondary" href="/analytics/tab_ethnicity/wl_<?php print $list->id ?>">Show in Analytics</a>
+                            <?php if ($owner) { ?>
+                                <button id="user_edit_watchlist" class="btn btn-primary" data-json="<?php print htmlspecialchars($str_json) ?>" data-id="<?php print $curr_list ?>" data-publish="<?php print $publish ?>" data-title="<?php print $list->title ?>" data-content="<?php print $list->content ?>">Edit list</button>
+                            <?php } ?>
+                        </div>
 
                     </div>
-                    <div class="flexcol second simple">
-                        <div class="items<?php
+                    <div class="flexcol second">
+                        <div class="simple list-group list-group-flush <?php
                         if ($owner) {
                             print " owner";
                         }
@@ -808,29 +819,21 @@ class WatchList extends AbstractDB {
                                          }
                                          $poster_link_90 = $cfront->get_thumb_path_full(90, 120, $post->mid);
                                          ?>
-                                    <div class="item" data-id="<?php print $movie->id ?>">
-                                        <a href="<?php print $link ?>" title="<?php print $title ?>" >   
-                                            <img srcset="<?php print $poster_link_90 ?>" alt="<?php print $title ?>">
+                                    <div class="item d-flex justify-content-between list-group-item list-group-item-nopadding" data-id="<?php print $movie->id ?>">
+                                        <a href="<?php print $link ?>" title="<?php print $title ?>" class="d-flex list-group-item list-group-item-action list-group-item-noborder" >   
+                                            <img class="d-flex me-3" srcset="<?php print $poster_link_90 ?>" alt="<?php print $title ?>">
                                             <div class="desc">
                                                 <h5><?php print $title . $release ?></h5>
                                                 <p><?php print $addtime ?></p>
                                             </div>
                                         </a>
-                                        <?php if ($owner): ?>                                            
-                                            <div class="menu nte">
-                                                <div class="btn">
-                                                    <i class="icon icon-ellipsis-vert"></i>
-                                                </div>
-                                                <div class="nte_show dwn">
-                                                    <div class="nte_in">
-                                                        <div class="nte_cnt">
-                                                            <ul class="list-menu">                                                                                                                                
-                                                                <li class="nav-tab" data-act="delitem">Remove from Wachlist</li>                                                                
-                                                            </ul>
-                                                        </div>                                                          
-                                                    </div>                                                    
-                                                </div>                                                
-                                            </div>
+                                        <?php if ($owner): ?>         
+                                            <div class="ellipsis-menu dropdown cnt-lists">
+                                                <span class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="icon icon-ellipsis-vert" ></i></span>
+                                                <ul class="dropdown-menu list-menu">    
+                                                    <li class="nav-tab" data-act="delitem" data-id="<?php print $movie->id ?>" data-parent="<?php print $list->id ?>">Remove from Wachlist</li>                                                                
+                                                </ul>
+                                            </div>                                              
                                         <?php endif; ?>
                                     </div>
                                     <?php

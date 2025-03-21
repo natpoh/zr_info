@@ -18,7 +18,7 @@ if (!function_exists('add_action')) {
 define('CRITIC_MATIC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CRITIC_MATIC_PLUGIN_URL', plugin_dir_url(__FILE__));
 
-$version = '1.0.118';
+$version = '1.0.119';
 if (defined('LASTVERSION')) {
     define('CRITIC_MATIC_VERSION', $version . LASTVERSION);
 } else {
@@ -405,8 +405,12 @@ function critic_matic_plugin_activation() {
     // Add category
     $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_posts` ADD `link_id` int(11) NOT NULL DEFAULT '0'";
     Pdo_an::db_query($sql);
+    
+    // Add show_in
+    $sql = "ALTER TABLE `" . $table_prefix . "critic_matic_posts` ADD `show_in` int(11) NOT NULL DEFAULT '0'";
+    Pdo_an::db_query($sql);
 
-    critic_matic_create_index_an(array('date', 'date_add', 'status', 'type', 'link_hash', 'top_movie', 'top_rating', 'view_type', 'link_id'), $table_prefix . "critic_matic_posts");
+    critic_matic_create_index_an(array('date', 'date_add', 'status', 'type', 'link_hash', 'top_movie', 'top_rating', 'view_type', 'link_id', 'show_in'), $table_prefix . "critic_matic_posts");
     //
     // Add options
     //$sql = "ALTER TABLE `" . $table_prefix . "critic_parser_log` ADD `uid` int(11) NOT NULL DEFAULT '0'";
@@ -742,6 +746,14 @@ function critic_matic_plugin_activation() {
 
      */
 
+    $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_matic_email`(
+      `id` int(11) unsigned NOT NULL auto_increment,
+      `type` int(11) NOT NULL DEFAULT '0',
+      `email` varchar(255) NOT NULL default '',
+      PRIMARY KEY  (`id`)
+      ) DEFAULT COLLATE utf8mb4_general_ci;";
+    Pdo_an::db_query($sql);
+    critic_matic_create_index_an(array('type', 'email'), $table_prefix . "critic_matic_email");
 
     // Critic emotions
     $sql = "CREATE TABLE IF NOT EXISTS  `" . $table_prefix . "critic_emotions`(
@@ -1495,6 +1507,11 @@ function critic_matic_plugin_activation() {
 
     /*
      * Clear comments
+     *    
+     * ftype
+     *  0 - critic
+     *  1 - filters
+     *  2 - lists
      */
     $sql = "CREATE TABLE IF NOT EXISTS  `log_clear_comments`(
 				`id` int(11) unsigned NOT NULL auto_increment,                                
@@ -1831,7 +1848,7 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('cid', 'avid'), "meta_guest_avatar");
-    
+
     // Comments avatar
     $sql = "CREATE TABLE IF NOT EXISTS  `meta_guest_comments_avatar`(
 				`id` int(11) unsigned NOT NULL auto_increment,                                
@@ -1843,7 +1860,7 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('cid', 'avid', 'type'), "meta_guest_comments_avatar");
-    
+
     /*
      * Critic crowd last update
      */
@@ -1926,14 +1943,12 @@ function critic_matic_plugin_activation() {
                                 `user_sjs` bigint(20) NOT NULL DEFAULT '0',
 				PRIMARY KEY  (`comment_ID`)
 				) DEFAULT COLLATE utf8mb4_general_ci;";
-    
+
     Pdo_an::db_query($sql);
-    /*print_r(Pdo_an::last_error());
-    exit;*/
-    critic_matic_create_index_an(array('comment_post_ID', 'comment_author_email','comment_date','comment_date_gmt','comment_approved','comment_parent','comment_childs','user_id','aid','post_type','user_sjs','last_upd'), "data_comments");
-    
-    
-    
+    /* print_r(Pdo_an::last_error());
+      exit; */
+    critic_matic_create_index_an(array('comment_post_ID', 'comment_author_email', 'comment_date', 'comment_date_gmt', 'comment_approved', 'comment_parent', 'comment_childs', 'user_id', 'aid', 'post_type', 'user_sjs', 'last_upd'), "data_comments");
+
     $sql = "CREATE TABLE IF NOT EXISTS  `meta_comments_num`(
 				`id` int(11) unsigned NOT NULL auto_increment,
                                 `last_upd` int(11) NOT NULL DEFAULT '0',
@@ -1945,8 +1960,7 @@ function critic_matic_plugin_activation() {
 
     Pdo_an::db_query($sql);
     critic_matic_create_index_an(array('comment_post_ID', 'post_type'), "meta_comments_num");
-    
-    
+
     /*
      * Votes
      */
@@ -1963,8 +1977,8 @@ function critic_matic_plugin_activation() {
                                 ) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('cid','date','wp_uid','sjs','user_ip'), "data_comment_votes_log");
-    
+    critic_matic_create_index_an(array('cid', 'date', 'wp_uid', 'sjs', 'user_ip'), "data_comment_votes_log");
+
     $sql = "CREATE TABLE IF NOT EXISTS  `data_comment_votes`(
 				`id` int(11) unsigned NOT NULL auto_increment,
                                 `last_upd` int(11) NOT NULL DEFAULT '0',
@@ -1976,11 +1990,9 @@ function critic_matic_plugin_activation() {
                                 ) DEFAULT COLLATE utf8mb4_general_ci;";
 
     Pdo_an::db_query($sql);
-    
+
     critic_matic_create_index_an(array('cid'), "data_comment_votes");
 
-    
-    
     // Campaign Tags
     $sql = "CREATE TABLE IF NOT EXISTS  `cm_camp_tags`(
 				`id` int(11) unsigned NOT NULL auto_increment,                                
@@ -2004,7 +2016,7 @@ function critic_matic_plugin_activation() {
 				PRIMARY KEY  (`id`)				
 				) DEFAULT COLLATE utf8mb4_general_ci;";
     Pdo_an::db_query($sql);
-    critic_matic_create_index_an(array('cid','tid', 'type'), "cm_camp_tag_meta");
+    critic_matic_create_index_an(array('cid', 'tid', 'type'), "cm_camp_tag_meta");
 }
 
 function critic_matic_create_index($names = array(), $table_name = '') {

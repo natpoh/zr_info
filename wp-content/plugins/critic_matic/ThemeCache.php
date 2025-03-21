@@ -21,6 +21,12 @@ class ThemeCache {
                 'c-' => 129600, // 3 mounth   
             )
         ),
+        'movies' => array(
+            'folder' => 'movies',
+            'cache' => array(
+                'm-' => 129600, // 3 mounth   
+            )
+        ),
         'critic_posts' => array(
             'folder' => 'critic_posts',
             'cache' => array(
@@ -33,6 +39,12 @@ class ThemeCache {
                 'f-' => 129600, // 3 mounth     
             )
         ),
+        'watchlists' => array(
+            'folder' => 'watchlists',
+            'cache' => array(
+                'wl-' => 129600, // 3 mounth     
+            )
+        ),        
         'user' => array(
             'folder' => 'user',
             'cache' => array(
@@ -40,11 +52,12 @@ class ThemeCache {
                 'getCarmaPowerCache' => 1440,
                 'postCacheWidget' => 1440,
                 'activityCache' => 1440,
+                'profile'=>129600,
             )
         ),
     );
 
-    public static function cache($name = null, $echo = false, $filename = null, $path_tag = null, $class = null, $arg = null) {
+    public static function cache($name = null, $echo = false, $filename = null, $path_tag = null, $class = null, $arg = null, $only_get = false) {
         /* Кеш функций классов
          * name - имя функции
          * echo - функция использует echo или return
@@ -67,7 +80,7 @@ class ThemeCache {
 
         $path = self::$cache_path . $path_name;
 
-        //Имя функции для кеша
+        // Имя функции для кеша
         $fname = $name;
         if ($arg) {
             if (is_array($arg)) {
@@ -89,48 +102,92 @@ class ThemeCache {
         if (file_exists($file_name)) {
             $fbody = file_get_contents($file_name);
             return $fbody;
-        } else {// Если кеша нету, создаём
-            if (!$echo) {
-                if ($class) {
-                    if ($arg) {
-                        $string = $class->$name($arg);
-                    } else {
-                        $string = $class->$name();
-                    }
+        }
+        // Если кеша нету, создаём
+
+        if ($only_get) {
+            return '';
+        }
+
+        if (!$echo) {
+            if ($class) {
+                if ($arg) {
+                    $string = $class->$name($arg);
                 } else {
-                    if ($arg) {
-                        $string = $name($arg);
-                    } else {
-                        $string = $name();
-                    }
+                    $string = $class->$name();
                 }
             } else {
-                ob_start(); // начало буферизации
-                if ($class) {
-                    if ($arg) {
-                        $class->$name($arg);
-                    } else {
-                        $class->$name();
-                    }
+                if ($arg) {
+                    $string = $name($arg);
                 } else {
-                    if ($arg) {
-                        $name($arg);
-                    } else {
-                        $name();
-                    }
+                    $string = $name();
                 }
-                $string = ob_get_contents(); // буфер в переменную
-                ob_end_clean();
             }
-
-            //Пишем файл
-            $fp = fopen($file_name, "w");
-            fwrite($fp, $string);
-            fclose($fp);
-            chmod($file_name, 0777);
-
-            return $string;
+        } else {
+            ob_start(); // начало буферизации
+            if ($class) {
+                if ($arg) {
+                    $class->$name($arg);
+                } else {
+                    $class->$name();
+                }
+            } else {
+                if ($arg) {
+                    $name($arg);
+                } else {
+                    $name();
+                }
+            }
+            $string = ob_get_contents(); // буфер в переменную
+            ob_end_clean();
         }
+
+        //Пишем файл
+        $fp = fopen($file_name, "w");
+        fwrite($fp, $string);
+        fclose($fp);
+        chmod($file_name, 0777);
+
+        return $string;
+    }
+    
+    
+    public static function remove_cache($name = null, $filename = null, $path_tag = null, $arg = null) {
+
+        if (!$name) {
+            return;
+        }
+
+        $path_name = self::$path['def']['folder'];
+        if ($path_tag) {
+            if (isset(self::$path[$path_tag])) {
+                $path_name = self::$path[$path_tag]['folder'];
+            }
+        }
+
+        $path = self::$cache_path . $path_name;
+
+        // Имя функции для кеша
+        $fname = $name;
+        if ($arg) {
+            if (is_array($arg)) {
+                $fname = implode('-', $arg);
+            } else {
+                $fname = $arg;
+            }
+            $fname = $name . '-' . $fname;
+        }
+
+        $cachename = $filename != null ? $filename : $fname;
+
+
+        //Проверяем наличие файла 
+        $file_name = $path . '/' . $cachename . '.html';
+
+        if (file_exists($file_name)) {
+            return unlink($file_name);            
+        }
+        return true;
     }
 
     static function clearCacheAll($path_tag = '') {
@@ -156,9 +213,9 @@ class ThemeCache {
             closedir($d);
         }
     }
-    
-    static function clearCacheAllTypes($echo = true, $wait_def = 86400){
-        foreach (self::$path as $folder=>$data){
+
+    static function clearCacheAllTypes($echo = true, $wait_def = 86400) {
+        foreach (self::$path as $folder => $data) {
             self::clearCache($folder);
         }
     }
@@ -203,7 +260,6 @@ class ThemeCache {
                     $delcache = '';
 
                     $output .= "$ctime > $whait - removed. $delcache $file<br />";
-
 
                     unlink($dir . '/' . $file); //если больше требуемого времени удаляем				
                 } else {
@@ -333,5 +389,4 @@ class ThemeCache {
         }
         return $date;
     }
-
 }
