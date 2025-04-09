@@ -1646,7 +1646,7 @@ if($array_meta["countriesOfOrigin"]["countries"])
 
 
 
-        $array_result['title'] =$data_movies["originalTitleText"]["text"];/// $array["name"]; ///$data_movies["originalTitleText"]["text"];
+        $array_result['title'] =$data_movies["titleText"]["text"];/// $array["name"]; ///$data_movies["originalTitleText"]["text"];
 
         if (!$array_result['title'])
         {
