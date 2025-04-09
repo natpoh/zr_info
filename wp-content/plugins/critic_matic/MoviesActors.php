@@ -211,11 +211,11 @@ class MoviesActors extends AbstractDB {
             }
             if ($exist_id) {
                 // Update cache
-                $this->sync_update_data($data, $exist_id, $this->db['cache_actor'], $this->cm->sync_data, 10);
+                $this->sync_update_data($data, $exist_id, $this->db['cache_actor'], 10);
             } else {
                 // Insert new cache                
                 $data['mid'] = $mid;
-                $this->sync_insert_data($data, $this->db['cache_actor'], $this->cm->sync_client, $this->cm->sync_data, 10);
+                $this->sync_insert_data($data, $this->db['cache_actor'], 10);
             }
         }
     }

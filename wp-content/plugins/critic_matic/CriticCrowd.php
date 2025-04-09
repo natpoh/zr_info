@@ -438,7 +438,7 @@ class CriticCrowd extends AbstractDB {
 
     public function update_crowd($id = 0, $data) {
         $data['last_update'] = $this->curr_time();
-        $this->sync_update_data($data, $id, $this->db['critic_crowd'], $this->cm->sync_data, 3);
+        $this->sync_update_data($data, $id, $this->db['critic_crowd'], 3);
     }
 
     private function add_post($crowd_item, $log_status = 0, $debug = false) {
@@ -469,46 +469,6 @@ class CriticCrowd extends AbstractDB {
 
         $view_type = $this->cm->get_post_view_type($link);
 
-        $cp = $this->cm->get_cp();
-
-        if ($view_type > 0) {
-            // Is youtube
-            if ($view_type == 1) {
-                $cpyoutube = $cp->get_cpyoutube();
-                // Get youtube data
-                $result = $cpyoutube->yt_video_data($link);
-                if ($result) {
-                    $channelId = $result->channelId;
-                    if ($result->description) {
-                        // $date = strtotime($result->publishedAt);
-                        $content = str_replace("\n", '<br />', $result->description);
-                    }
-                }
-            } else {
-                // Bichude, odysee
-            }
-        } else {
-            ///get main data
-            #$service_url = 'http://37.27.53.197:8110/?p=ds1bfgFe_23_KJDS-F&clear=1&wait=3&url=';
-            #$full_url = $service_url .$link;
-            #$content = file_get_contents($full_url);
-            /*
-              $result = $cp->clear_read($link);
-              if ($result) {
-              $content = $result['content'];
-              } */
-            if (!$content) {
-                $msg = "Sorry, there was an error fetching data from the URL. Please try again or manually submit it.";
-                $this->log_error($msg, $id, $log_status);
-                if ($debug) {
-                    print $msg;
-                }
-                $data['status'] = 2;
-                $data['critic_status'] = 3;
-                return $data;
-            }
-        }
-
         $link_hash = $this->link_hash($link);
 
         // Type manual
@@ -536,7 +496,7 @@ class CriticCrowd extends AbstractDB {
             print_r($post_data);
         }
 
-        $post_id = $this->sync_insert_data($post_data, $this->db['posts'], $this->sync_client, $this->sync_data);
+        $post_id = $this->sync_insert_data($post_data, $this->db['posts']);
 
         if ($post_id > 0) {
             $ret = $post_id;
@@ -602,6 +562,49 @@ class CriticCrowd extends AbstractDB {
         }
 
         return $data;
+    }
+    
+    public function get_post_content($link,$view_type, $debug){
+        // UNUSED
+                $cp = $this->cm->get_cp();
+                if ($view_type > 0) {
+            // Is youtube
+            if ($view_type == 1) {
+                $cpyoutube = $cp->get_cpyoutube();
+                // Get youtube data
+                $result = $cpyoutube->yt_video_data($link);
+                if ($result) {
+                    $channelId = $result->channelId;
+                    if ($result->description) {
+                        // $date = strtotime($result->publishedAt);
+                        $content = str_replace("\n", '<br />', $result->description);
+                    }
+                }
+            } else {
+                // Bichude, odysee
+            }
+        } else {
+            ///get main data
+            #$service_url = 'http://37.27.53.197:8110/?p=ds1bfgFe_23_KJDS-F&clear=1&wait=3&url=';
+            #$full_url = $service_url .$link;
+            #$content = file_get_contents($full_url);
+            /*
+              $result = $cp->clear_read($link);
+              if ($result) {
+              $content = $result['content'];
+              } */
+            if (!$content) {
+                $msg = "Sorry, there was an error fetching data from the URL. Please try again or manually submit it.";
+                $this->log_error($msg, $id, $log_status);
+                if ($debug) {
+                    print $msg;
+                }
+                $data['status'] = 2;
+                $data['critic_status'] = 3;
+                //return $data;
+            }
+        }
+        return $content;
     }
 
     private function update_post($post_exist, $crowd_item, $log_status = 0, $debug = false) {
@@ -783,6 +786,7 @@ class CriticCrowd extends AbstractDB {
       0 => 'Other',
       1 => 'Find URLs',
       3 => 'Parsing',
+      4 => 'Submit URL',
      */
 
     public function log_info($message, $cid, $status) {

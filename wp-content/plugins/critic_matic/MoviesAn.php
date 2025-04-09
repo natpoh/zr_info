@@ -221,7 +221,7 @@ class MoviesAn extends AbstractDBAn {
                     $data = array(
                         'date' => (int) $date
                     );
-                    // $this->cm->sync_update_data($data, $meta_exist, $this->db['movies_meta'], false);
+                  
                     $this->db_update($data, $this->db['movies_meta'], $meta_exist->id);
                 }
             } else {
@@ -231,7 +231,6 @@ class MoviesAn extends AbstractDBAn {
                     'date' => (int) $date
                 );
 
-                //$this->cm->sync_insert_data($data, $this->db['movies_meta'], false);
                 $this->db_insert($data, $this->db['movies_meta']);
             }
             return true;
@@ -265,7 +264,7 @@ class MoviesAn extends AbstractDBAn {
             $data = array(
                 'post_name' => $post_name
             );
-            $this->cm->sync_update_data($data, $id, $this->db['movie_imdb'], $this->cm->sync_data);
+            $this->cm->sync_update_data($data, $id, $this->db['movie_imdb']);
         }
     }
 
@@ -444,11 +443,11 @@ class MoviesAn extends AbstractDBAn {
         if ($form_state['id']) {
             $id = (int) $form_state['id'];
             //EDIT           
-            $this->cm->sync_update_data($data, $id, $this->db['data_genre'], $this->cm->sync_data);
+            $this->cm->sync_update_data($data, $id, $this->db['data_genre']);
             $result_id = $id;
         } else {
             //ADD
-            $result_id = $this->cm->sync_insert_data($data, $this->db['data_genre'], $this->cm->sync_client, $this->cm->sync_data);
+            $result_id = $this->cm->sync_insert_data($data, $this->db['data_genre']);
         }
 
         return $result_id;
@@ -464,7 +463,7 @@ class MoviesAn extends AbstractDBAn {
             $data = array(
                 'status' => (int) $status,
             );
-            $this->cm->sync_update_data($data, $id, $this->db['data_genre'], $this->cm->sync_data);
+            $this->cm->sync_update_data($data, $id, $this->db['data_genre']);
             $result = $id;
         }
         return $result;
@@ -566,7 +565,7 @@ class MoviesAn extends AbstractDBAn {
                 'name' => $name,
                 'slug' => $slug,
             );
-            $id = $this->cm->sync_insert_data($data, $this->db['data_genre'], $this->cm->sync_client, $this->cm->sync_data);
+            $id = $this->cm->sync_insert_data($data, $this->db['data_genre']);
         }
         return $id;
     }
@@ -577,7 +576,7 @@ class MoviesAn extends AbstractDBAn {
             $data = array(
                 'slug' => (int) $slug,
             );
-            $this->cm->sync_update_data($data, $id, $this->db['data_genre'], $this->cm->sync_data);
+            $this->cm->sync_update_data($data, $id, $this->db['data_genre']);
         }
     }
 
@@ -601,7 +600,7 @@ class MoviesAn extends AbstractDBAn {
                     'mid' => $mid,
                     'gid' => $gid,
                 );
-                $id = $this->cm->sync_insert_data($data, $this->db['meta_genre'], $this->cm->sync_client, $this->cm->sync_data);
+                $id = $this->cm->sync_insert_data($data, $this->db['meta_genre']);
                 return true;
             } else {
                 return false;
@@ -622,7 +621,7 @@ class MoviesAn extends AbstractDBAn {
                 'mid' => $mid,
                 'gid' => $gid,
             );
-            $this->sync_delete_multi($data, $this->db['meta_genre'], true, 10);
+            $this->sync_delete_multi($data, $this->db['meta_genre'],10);
         }
     }
 
@@ -791,11 +790,11 @@ class MoviesAn extends AbstractDBAn {
         if ($form_state['id']) {
             $id = (int) $form_state['id'];
             //EDIT
-            $this->cm->sync_update_data($data, $id, $this->db['data_country'], $this->cm->sync_data);
+            $this->cm->sync_update_data($data, $id, $this->db['data_country']);
             $result_id = $id;
         } else {
             //ADD
-            $result_id = $this->cm->sync_insert_data($data, $this->db['data_country'], $this->cm->sync_client, $this->cm->sync_data);
+            $result_id = $this->cm->sync_insert_data($data, $this->db['data_country']);
         }
 
         return $result_id;
@@ -811,7 +810,7 @@ class MoviesAn extends AbstractDBAn {
             $data = array(
                 'status' => $status
             );
-            $this->cm->sync_update_data($data, $id, $this->db['data_country'], $this->cm->sync_data);
+            $this->cm->sync_update_data($data, $id, $this->db['data_country']);
             $result = $id;
         }
         return $result;
@@ -914,7 +913,7 @@ class MoviesAn extends AbstractDBAn {
                 'name' => $name,
                 'slug' => $slug,
             );
-            $id = $this->cm->sync_insert_data($data, $this->db['data_country'], $this->cm->sync_client, $this->cm->sync_data);
+            $id = $this->cm->sync_insert_data($data, $this->db['data_country']);
         }
         return $id;
     }
@@ -925,7 +924,7 @@ class MoviesAn extends AbstractDBAn {
             $data = array(
                 'slug' => $slug
             );
-            $this->cm->sync_update_data($data, $id, $this->db['data_country'], $this->cm->sync_data);
+            $this->cm->sync_update_data($data, $id, $this->db['data_country']);
         }
     }
 
@@ -950,7 +949,7 @@ class MoviesAn extends AbstractDBAn {
                     'mid' => $mid,
                     'cid' => $cid,
                 );
-                $id = $this->cm->sync_insert_data($data, $this->db['meta_country'], $this->cm->sync_client, $this->cm->sync_data);
+                $id = $this->cm->sync_insert_data($data, $this->db['meta_country']);
                 return true;
             } else {
                 return false;
@@ -1071,7 +1070,7 @@ class MoviesAn extends AbstractDBAn {
             $data = array(
                 'code' => $name,
             );
-            $id = $this->sync_insert_data($data, $this->db['language_code'], $this->cm->sync_client, $this->cm->sync_data);
+            $id = $this->sync_insert_data($data, $this->db['language_code']);
         }
         return $id;
     }
@@ -1081,7 +1080,7 @@ class MoviesAn extends AbstractDBAn {
             'original_language_int' => $original_language_int,
             'original_language' => $original_language,
         );
-        $this->cm->sync_update_data($data, $id, $this->db['movie_imdb'], $this->cm->sync_data);
+        $this->cm->sync_update_data($data, $id, $this->db['movie_imdb']);
     }
 
     public function getLangNames() {
@@ -1365,7 +1364,7 @@ class MoviesAn extends AbstractDBAn {
                     'aid' => $id,
                     'type' => $type,
                 );
-                $this->cm->sync_insert_data($data, $this->db['meta_actor'], $this->cm->sync_client, $this->cm->sync_data);
+                $this->cm->sync_insert_data($data, $this->db['meta_actor']);
             }
             return true;
         }
@@ -1399,7 +1398,7 @@ class MoviesAn extends AbstractDBAn {
             $data = array(
                 'slug' => $slug
             );
-            $this->cm->sync_update_data($data, $id, $this->db['actors'], $this->cm->sync_data);
+            $this->cm->sync_update_data($data, $id, $this->db['actors']);
         }
     }
 
@@ -1440,7 +1439,7 @@ class MoviesAn extends AbstractDBAn {
                     'aid' => $id,
                     'type' => $type,
                 );
-                $this->cm->sync_insert_data($data, $this->db['meta_director'], $this->cm->sync_client, $this->cm->sync_data);
+                $this->cm->sync_insert_data($data, $this->db['meta_director']);
             }
             return true;
         }
@@ -1638,11 +1637,11 @@ class MoviesAn extends AbstractDBAn {
         if ($form_state['id']) {
             $id = (int) $form_state['id'];
             //EDIT           
-            $this->cm->sync_update_data($data, $id, $this->db['data_provider'], $this->cm->sync_data);
+            $this->cm->sync_update_data($data, $id, $this->db['data_provider']);
             $result_id = $id;
         } else {
             //ADD
-            $result_id = $this->cm->sync_insert_data($data, $this->db['data_provider'], $this->cm->sync_client, $this->cm->sync_data);
+            $result_id = $this->cm->sync_insert_data($data, $this->db['data_provider']);
         }
 
         return $result_id;
@@ -1658,7 +1657,7 @@ class MoviesAn extends AbstractDBAn {
             $data = array(
                 'status' => $status,
             );
-            $this->cm->sync_update_data($data, $id, $this->db['data_provider'], $this->cm->sync_data);
+            $this->cm->sync_update_data($data, $id, $this->db['data_provider']);
             $result = $id;
         }
         return $result;
@@ -1730,7 +1729,7 @@ class MoviesAn extends AbstractDBAn {
                 'slug' => $slug,
                 'image' => $img,
             );
-            $id = $this->cm->sync_insert_data($data, $this->db['data_provider'], $this->cm->sync_client, $this->cm->sync_data);
+            $id = $this->cm->sync_insert_data($data, $this->db['data_provider']);
         }
         return $id;
     }
@@ -2003,7 +2002,7 @@ class MoviesAn extends AbstractDBAn {
     }
 
     public function update_erating($id, $data) {
-        $this->sync_update_data($data, $id, $this->db['erating'], true, 10);
+        $this->sync_update_data($data, $id, $this->db['erating'],  10);
     }
 
     /*
@@ -2020,7 +2019,7 @@ class MoviesAn extends AbstractDBAn {
                 'year' => $year,
                 'cpi' => $cpi,
             );
-            $id = $this->cm->sync_insert_data($data, $this->db['cpi'], $this->cm->sync_client, $this->cm->sync_data);
+            $id = $this->cm->sync_insert_data($data, $this->db['cpi']);
         }
     }
 
@@ -2078,7 +2077,7 @@ class MoviesAn extends AbstractDBAn {
         );
         $is_client = false;
         $sync = true;
-        $id = $this->sync_insert_data($data, $this->db['race_rule'], $is_client, $sync, 5);
+        $id = $this->sync_insert_data($data, $this->db['race_rule'], 5);
         return $id;
     }
 

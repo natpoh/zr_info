@@ -4626,16 +4626,16 @@ class AnalyticsFront extends SearchFacets {
     }
 
     public function get_image_link($id = '', $last_update = '', $resolution = 540) {
-        $current_site = 'https://zeitgeistreviews.com';
-        $cache_site = 'https://img.zeitgeistreviews.com';
+        $current_site = 'https://zgreviews.com';
+        $cache_site = 'https://img2.zeitgeistreviews.com';
 
         if (defined('LOCALCACHEIMAGES')) {
             if (LOCALCACHEIMAGES == 1) {
                 $cache_site = 'https://img.4aoc.ru';
-                $current_site = 'https://zeitgeistreviews.com';
+                $current_site = 'https://zgreviews.com';
             } else if (LOCALCACHEIMAGES == 2) {
                 $cache_site = 'https://img2.zeitgeistreviews.com';
-                $current_site = 'https://zeitgeistreviews.com';
+                $current_site = 'https://zgreviews.com';
             }
         }
 

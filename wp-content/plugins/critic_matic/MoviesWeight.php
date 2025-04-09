@@ -66,7 +66,7 @@ class MoviesWeight extends AbstractDB {
                 if ($debug) {
                     print_r($data);
                 }
-                $this->sync_update_data($data, $item->id, $this->db['movie_imdb'], true, 10);
+                $this->sync_update_data($data, $item->id, $this->db['movie_imdb'], 10);
             }
         }
     }

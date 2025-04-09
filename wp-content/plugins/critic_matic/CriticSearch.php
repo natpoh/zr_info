@@ -4325,7 +4325,10 @@ class CriticSearch extends AbstractDB {
                 $filters_and['status'] = $this->filter_multi_value('status', 1);
             }
 
-
+            if (!isset($filters['show_in'])) {
+                $filters_and['show_in'] = $this->filter_multi_value('show_in', 0);
+            }
+            
             if ($this->in_exclude('state', $exlude)) {
                 unset($filters['state']);
             }
@@ -4917,7 +4920,7 @@ class CriticSearch extends AbstractDB {
         }
 
         if (isset($this->search_filters[$key][$value])) {
-            $filter = $this->search_filters[$key][$value]['key'];
+            $filter = isset($this->search_filters[$key][$value]['key'])?$this->search_filters[$key][$value]['key']:$value;
             if (!$this->is_int($filter) || $force_string) {
                 $filter = "'" . $filter . "'";
             }

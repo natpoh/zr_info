@@ -18,6 +18,9 @@ $func = $_GET['func'];
 $keys = $_GET['keys'];
 
 $cfront = new CriticFront();
+if ($_GET['debug']&&$_GET['debug']==1){
+    $cfront->debug=true;
+}
 
 if ($func == 'theme_card_author') {
     $cfront->theme_card_author('', $id, false);
