@@ -184,7 +184,7 @@ class MoviesSimpson extends AbstractDB {
             if ($exist_id) {
                 // Update woke
 
-                $this->sync_update_data($data, $exist_id, $this->db['data_woke'], $this->cm->sync_data, 10);
+                $this->sync_update_data($data, $exist_id, $this->db['data_woke'], 10);
             } else {
                 // Insert new woke
                 $data['title'] = $title;
@@ -192,7 +192,7 @@ class MoviesSimpson extends AbstractDB {
                 $data['country'] = $country;
                 $data['year'] = (int) $year;
 
-                $this->sync_insert_data($data, $this->db['data_woke'], $this->cm->sync_client, $this->cm->sync_data, 10);
+                $this->sync_insert_data($data, $this->db['data_woke'], 10);
             }
         }
     }

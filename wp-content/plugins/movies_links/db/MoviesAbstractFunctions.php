@@ -11,6 +11,12 @@
  */
 class MoviesAbstractFunctions {
 
+    private $sync_data = false;
+    private $sync_client = false;
+    public function __construct() {
+        $this->sync_data = DB_SYNC_DATA == 1 ? true : false;     
+        $this->sync_client = DB_SYNC_MODE == 2 ? true : false;       
+    }
     public function link_hash($link) {
         $link = preg_replace('/^http(?:s|)\:\/\//', '', $link);
         return sha1($link);
@@ -28,14 +34,14 @@ class MoviesAbstractFunctions {
         return $ret;
     }
 
-    public function sync_insert_data($data, $db, $sync_client = true, $sync_data = true, $priority = 5) {
+    public function sync_insert_data($data, $db, $priority = 5, $request = '') {
         $update = false;
         $id = 0;
 
-        if ($sync_client) {
+        if ($this->sync_client) {
             // Client mode
             // Get id
-            $id = $this->get_remote_id($db);
+            $id = $this->get_remote_id($db, $request);
             if (!$id) {
                 $ex_msg = 'Can not get id from the Server. Table:' . $db;
                 throw new Exception($ex_msg);
@@ -59,44 +65,59 @@ class MoviesAbstractFunctions {
             }
         }
 
-        if ($id && $sync_data) {
+        if ($id && $this->sync_data) {
             $this->create_commit_update($id, $db, $priority);
         }
 
         return $id;
     }
 
-    public function sync_update_data($data, $id, $db, $sync_data = true, $priority = 5) {
+    public function sync_update_data($data, $id, $db, $priority = 10) {
 
         $this->db_update($data, $db, $id);
 
-        if ($sync_data) {
+        if ($this->sync_data) {
             $this->create_commit_update($id, $db, $priority);
         }
 
         return $id;
     }
 
-    public function sync_delete_data($id, $db, $sync_data = true, $priority = 5) {
+    public function sync_delete_multi($request, $db, $priority = 5) {
+        $fileds = array();
+        foreach ($request as $key => $value) {
+            $fileds[] = "$key=$value";
+        }
 
-        $sql = sprintf("DELETE FROM {$db} WHERE id = %d", (int) $id);
+        $sql = "DELETE FROM {$db} WHERE " . implode(' AND ', $fileds);
+
         $this->db_query($sql);
 
-        if ($sync_data) {
-            $this->create_commit_update($id, $db, $priority);
+        if ($this->sync_data) {
+            $this->create_commit_delete_multi($request, $db, $priority);
+        }
+    }
+
+    public function sync_delete_data($id, $db, $priority = 10, $table_row = 'id') {
+
+        $sql = sprintf("DELETE FROM {$db} WHERE `%s` = %d", $table_row, (int) $id);
+        $this->db_query($sql);
+
+        if ($this->sync_data) {
+            $this->create_commit_delete($id, $db, $priority, $table_row);
         }
 
         return $id;
     }
 
     // Sync
-    public function get_remote_id($db = '') {
+    public function get_remote_id($db = '', $request = '') {
 
         if (!class_exists('Import')) {
             include ABSPATH . "analysis/export/import_db.php";
         }
 
-        $array = array('table' => $db, 'column' => 'id');
+        $array = array('table' => $db, 'column' => 'id', 'request' => $request);
         $id_array = Import::get_remote_id($array);
         $rid = $id_array['id'];
 
@@ -108,20 +129,33 @@ class MoviesAbstractFunctions {
             include ABSPATH . "analysis/export/import_db.php";
         }
         $request = array('id' => $id);
-        $commit_id = Import::create_commit($commit_id, 'update', $db, $request, $db, $priority);
+        $commit_id = Import::create_commit('', 'update', $db, $request, $db, $priority);
         return $commit_id;
     }
 
-    public function create_commit_delete($id = 0, $db = '', $priority = 6) {
+    public function create_commit_delete($id = 0, $db = '', $priority = 10, $table_row = 'id') {
         if (!class_exists('Import')) {
             include ABSPATH . "analysis/export/import_db.php";
         }
-        $request = array('id' => $id);
-        $commit_id = Import::create_commit($commit_id, 'delete', $db, $request, $db, $priority);
+        $skip = '';
+        if ($table_row != 'id') {
+            $skip = ['skip' => ['id']];
+        }
+        $request = array($table_row => $id);
+        $commit_id = Import::create_commit('', 'delete', $db, $request, 'delete_' . $db, $priority, $skip);
         return $commit_id;
     }
 
-    public function get_option($option, $def = '', $cache = true) {
+    public function create_commit_delete_multi($request = array(), $db = '', $priority = 10) {
+        if (!class_exists('Import')) {
+            include ABSPATH . "analysis/export/import_db.php";
+        }
+        $skip = ['skip' => ['id']];
+        $commit_id = Import::create_commit('', 'delete', $db, $request, 'delete_' . $db, $priority, $skip);
+        return $commit_id;
+    }
+
+    public function get_option($option, $def = '', $cache = true, $db_an = true) {
         if ($cache) {
             static $dict;
             if (is_null($dict)) {
@@ -135,9 +169,11 @@ class MoviesAbstractFunctions {
 
         $data = '';
 
-        // New api 02.09.2022
-        $sql = sprintf("SELECT val FROM options WHERE type = '%s'", $option);
-        $data = Pdo_an::db_get_var($sql);
+        if ($db_an) {
+            // New api 02.09.2022
+            $sql = sprintf("SELECT val FROM options WHERE type = '%s'", $option);
+            $data = Pdo_an::db_get_var($sql);
+        }
         if ($data) {
             if ($this->is_serialized($data)) { // Don't attempt to unserialize data that wasn't serialized going in.
                 $data = unserialize(trim($data));
@@ -157,7 +193,7 @@ class MoviesAbstractFunctions {
                     }
                 }
             }
-            if ($data) {
+            if ($data && $db_an) {
                 // Add to new api
                 $this->update_option($option, $data);
             }
@@ -166,10 +202,10 @@ class MoviesAbstractFunctions {
         if ($cache && $data) {
             $dict[$option] = $data;
         }
-
         if (!$data) {
             $data = $def;
         }
+
         return $data;
     }
 
@@ -215,6 +251,18 @@ class MoviesAbstractFunctions {
                 }
             }
         }
+    }
+
+    public function get_user_meta($user_id = 0, $key = '', $single = false) {
+        // Front get option
+        $sql = sprintf("SELECT meta_value FROM " . DB_PREFIX_WP . "usermeta WHERE user_id=%d AND meta_key = '%s'", $user_id, $key);
+        $data = Pdo_wp::db_get_var($sql);
+        if ($data) {
+            if ($this->is_serialized($data)) { // Don't attempt to unserialize data that wasn't serialized going in.
+                $data = unserialize(trim($data));
+            }
+        }
+        return $data;
     }
 
     /**
@@ -331,6 +379,81 @@ class MoviesAbstractFunctions {
         return $date;
     }
 
+    public function humanDate($current_time, $time) {
+
+        $d = $current_time - $time;
+        if ($d > 0) {
+            if ($d < 3600) {
+                //минут назад
+                switch (floor($d / 60)) {
+                    case 0:
+                    case 1:
+                        return "just now";
+                        break;
+                    case 2:
+                        return "just now";
+                        break;
+                    case 3:
+                        return "three minutes ago";
+                        break;
+                    case 4:
+                        return "four minutes ago";
+                        break;
+                    case 5:
+                        return "five minutes ago";
+                        break;
+                    default:
+                        return "" . floor($d / 60) . ' minutes ago';
+                        break;
+                }
+            } elseif ($d < 18000) {
+                //часов назад
+                switch (floor($d / 3600)) {
+                    case 1:
+                        return "an hour ago";
+                        break;
+                    case 2:
+                        return "two hours ago";
+                        break;
+                    case 3:
+                        return "three hours ago";
+                        break;
+                    case 4:
+                        return "four hours ago";
+                        break;
+                }
+            } elseif ($d < 172800) {
+                $day = date('d', $time);
+                $curr_day = date('d', $current_time);
+                if ($day == $curr_day) {
+                    return "today at " . date('H:i', $time);
+                }
+                if (($day - 1) == $curr_day) {
+                    return "yesterday at " . date('H:i', $time);
+                }
+                if (($day - 2) == $curr_day) {
+                    return "the day before yesterday at " . date('H:i', $time);
+                }
+            }
+        }
+
+
+        $ret = date('j', $time);
+
+        $mounts = array(' ', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November ', 'December');
+        $mount = $mounts[(int) date('m', $time)];
+
+        $ret .= " $mount";
+        $y = date('Y', $time);
+
+        if ($y != date('Y', $current_time)) {
+            $ret .= " $y";
+        }
+
+        $ret .= ' ' . date('G:i', $time);
+        return $ret;
+    }
+
     function timer_start() { // if called like timer_stop(1), will echo $timetotal
         global $timestart;
         if (!$timestart) {
@@ -360,7 +483,6 @@ class MoviesAbstractFunctions {
         }
         return $string;
     }
-
 }
 
 class MoviesQueryADB {
@@ -369,7 +491,7 @@ class MoviesQueryADB {
 
     public function __construct() {
         $this->clear();
-    }        
+    }
 
     public function add_query($key, $value) {
         $this->query[$key] = $value;
@@ -382,5 +504,4 @@ class MoviesQueryADB {
     public function clear() {
         $this->query = array();
     }
-    
-    }
+}

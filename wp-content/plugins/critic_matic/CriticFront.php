@@ -9,6 +9,7 @@ class CriticFront extends SearchFacets {
     public $movies_an = true;
     public $cache_results = true;
     public $enable_reactions = true;
+    public $debug = false;
     // Critic matic
     public $cm;
     // Critic search
@@ -2278,7 +2279,7 @@ class CriticFront extends SearchFacets {
                 $theme_link = '';
 
                 if (preg_match('/\.(jpg|jpeg|png|gif|webp)$/i', $link)) {
-                    $theme_link = '<img src="https://zeitgeistreviews.com/wp-content/themes/custom_twentysixteen/images/placeholder.png" srcset="' . $valid_link . '" loading="lazy" />';
+                    $theme_link = '<img src="https://zgreviews.com/wp-content/themes/custom_twentysixteen/images/placeholder.png" srcset="' . $valid_link . '" loading="lazy" />';
                 } else if ($find_video) {
                     $video_link = $this->find_video_link($valid_link);
                     if ($video_link) {
@@ -4727,8 +4728,8 @@ class CriticFront extends SearchFacets {
         }
         ?>
         <div id="carousel_<?php print $scoll_id ?>" class="bs-carousel mb-4" data-key="<?php print $scoll_id ?>" data-total="<?php print $count ?>" data-width="<?php print $width ?>"" data-movie="<?php print $movie_id ?>"></div>
-        <div class="mb-4 text-body-secondary text-center">Total found: <?php print $total_count ?><?php if ($search_link) {
-            ?>. <a href="<?php print $search_link ?>">Show in Search <small><i class="icon-right-open"></i></small></a><?php } ?>
+        <div class="mb-4 text-body-secondary text-center">Total found: <?php print $this->formatNumber($total_count) ?><?php if ($search_link) {
+            ?> <a href="<?php print $search_link ?>">Show in Search <small><i class="icon-right-open"></i></small></a><?php } ?>
         </div>
         <?php
         $content = ob_get_contents();
@@ -5092,7 +5093,7 @@ class CriticFront extends SearchFacets {
                 // Author image
                 $author_img = $author_options['image'];
                 if ($author_img) {
-                    try {
+                    try {                  
                         $image = $this->get_local_thumb($thumb_size, $thumb_size, $author_img);
                         $avatar = '<span class="a_img_container" style="background: url(' . $image . '); background-size: cover;"></span>';
                     } catch (Exception $exc) {
@@ -5443,5 +5444,9 @@ class CriticFront extends SearchFacets {
                 <?php
             }
         }
+    }
+    
+    public function formatNumber($number) {
+        return number_format($number, 0, '.', ',');
     }
 }

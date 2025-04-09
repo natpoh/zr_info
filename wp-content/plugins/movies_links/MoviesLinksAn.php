@@ -241,7 +241,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
 
     public function update_pg_rating($data = array(), $movie_id = 0) {
         $pg_rating_id = $this->get_or_create_pg_rating($movie_id);
-        $this->sync_update_data($data, $pg_rating_id, $this->db['pg_rating'], true);
+        $this->sync_update_data($data, $pg_rating_id, $this->db['pg_rating']);
     }
 
     public function get_or_create_pg_rating($movie_id) {
@@ -256,7 +256,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         $data = array(
             'movie_id' => $pg_id
         );
-        $id = $this->sync_insert_data($data, $this->db['pg_rating'], false, false);
+        $id = $this->sync_insert_data($data, $this->db['pg_rating']);
 
         return $id;
     }
@@ -309,7 +309,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             }
 
             // Update post            
-            $this->sync_update_data($data, $exist->id, $this->db['erating'], true, 10);
+            $this->sync_update_data($data, $exist->id, $this->db['erating'], 10);
             CustomHooks::do_action('add_erating', ['mid' => $mid, 'data' => $data]);
         } else {
             // Add post            
@@ -320,7 +320,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             $title = $m_data->title;
             $data['title'] = $title;
 
-            $this->sync_insert_data($data, $this->db['erating'], false, true, 10);
+            $this->sync_insert_data($data, $this->db['erating'], 10);
             CustomHooks::do_action('add_erating', ['mid' => $mid, 'data' => $data]);
         }
         !class_exists('PgRatingCalculate') ? include ABSPATH . "analysis/include/pg_rating_calculate.php" : '';
@@ -486,7 +486,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
                     'gid' => $gid,
                 );
 
-                $this->sync_insert_data($data, $this->db['meta_genre'], false, true, 10);
+                $this->sync_insert_data($data, $this->db['meta_genre'], 10);
             }
             return true;
         }
@@ -525,7 +525,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
                 'name' => $name,
                 'slug' => $slug,
             );
-            $id = $this->sync_insert_data($data, $this->db['data_genre'], false, true);
+            $id = $this->sync_insert_data($data, $this->db['data_genre']);
         }
         return $id;
     }
@@ -543,7 +543,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
                     'gid' => $gid,
                 );
 
-                $this->sync_insert_data($data, $this->db['meta_platform'], false, true, 10);
+                $this->sync_insert_data($data, $this->db['meta_platform'], 10);
             }
             return true;
         }
@@ -586,7 +586,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
                 'name' => $name,
                 'slug' => $slug,
             );
-            $id = $this->sync_insert_data($data, $this->db['data_platform'], false, true);
+            $id = $this->sync_insert_data($data, $this->db['data_platform']);
         }
         return $id;
     }
@@ -635,7 +635,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
                     'link' => $this->validate_varchar($link),
                 );
 
-                $id = $this->sync_insert_data($data, $this->db['distributors'], false, true, 10);
+                $id = $this->sync_insert_data($data, $this->db['distributors'], 10);
             } else {
                 $id = $item_exist->id;
             }
@@ -654,7 +654,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
                 'type' => $type,
             );
 
-            $exist_id = $this->sync_insert_data($data, $this->db['distributors_meta'], false, true, 10);
+            $exist_id = $this->sync_insert_data($data, $this->db['distributors_meta'], 10);
         }
         return $exist_id;
     }
@@ -703,7 +703,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
                     'link' => $this->validate_varchar($link),
                 );
 
-                $id = $this->sync_insert_data($data, $this->db['franchises'], false, true, 10);
+                $id = $this->sync_insert_data($data, $this->db['franchises'], 10);
             } else {
                 $id = $item_exist->id;
             }
@@ -728,12 +728,12 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         $data['date'] = $this->curr_time();
         if ($exist) {
             // Update post            
-            $this->sync_update_data($data, $exist->id, $this->db['indie'], true, 10);
+            $this->sync_update_data($data, $exist->id, $this->db['indie'], 10);
             CustomHooks::do_action('update_indie', ['mid' => $mid, 'data' => $data]);
         } else {
             // Add post            
             $data['movie_id'] = $mid;
-            $this->sync_insert_data($data, $this->db['indie'], false, true, 10);
+            $this->sync_insert_data($data, $this->db['indie'], 10);
             CustomHooks::do_action('add_indie', ['mid' => $mid, 'data' => $data]);
         }
     }
@@ -750,12 +750,12 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         $data['last_update'] = $this->curr_time();
         if ($exist) {
             // Update post            
-            $this->sync_update_data($data, $exist->id, $this->db['woke'], true, 10);
+            $this->sync_update_data($data, $exist->id, $this->db['woke'], 10);
             CustomHooks::do_action('update_woke', ['mid' => $mid, 'data' => $data]);
         } else {
             // Add post            
             $data['mid'] = $mid;
-            $this->sync_insert_data($data, $this->db['woke'], false, true, 10);
+            $this->sync_insert_data($data, $this->db['woke'],  10);
             CustomHooks::do_action('add_woke', ['mid' => $mid, 'data' => $data]);
         }
     }
@@ -771,7 +771,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         $data['last_update'] = $this->curr_time();
         if ($exist) {
             // Update post            
-            $this->sync_update_data($data, $exist->id, $this->db['tmdb'], true, 10);
+            $this->sync_update_data($data, $exist->id, $this->db['tmdb'], 10);
             if ($debug){
                 print_r(array('update',$data, $exist->id,Pdo_an::last_error()));
             }
@@ -779,7 +779,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
         } else {
             // Add post            
             $data['mid'] = $mid;
-            $this->sync_insert_data($data, $this->db['tmdb'], false, true, 10);
+            $this->sync_insert_data($data, $this->db['tmdb'],10);
             if ($debug){
                 print_r(array('insert',$data, $exist->id,Pdo_an::last_error()));
             }
@@ -797,7 +797,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
             $data = array(
                 'code' => $name,
             );
-            $id = $this->sync_insert_data($data, $this->db['language_code'], false, true);
+            $id = $this->sync_insert_data($data, $this->db['language_code']);
         }
         return $id;
     }
@@ -830,7 +830,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
                 'name' => $name,
                 'slug' => $slug,
             );
-            $id = $this->sync_insert_data($data, $this->db['data_country'], false, true);
+            $id = $this->sync_insert_data($data, $this->db['data_country']);
         }
         return $id;
     }
@@ -875,14 +875,14 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
                 'country' => (int) $cid,
                 'total' => (int) $total,
             );
-            $id = $this->sync_insert_data($data, $this->db['meta_movie_boxint'], false, true);
+            $id = $this->sync_insert_data($data, $this->db['meta_movie_boxint']);
         } else {
             $id = $id_ob->id;
             if ($total != $id_ob->total) {
                 $data = array(
                     'total' => (int) $total,
                 );
-                $this->sync_update_data($data, $id, $this->db['meta_movie_boxint'], true);
+                $this->sync_update_data($data, $id, $this->db['meta_movie_boxint']);
             }
         }
         return $id;
@@ -898,7 +898,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
                 'country' => (int) $cid,
                 'total_mojo' => (int) $total_mojo,
             );
-            $id = $this->sync_insert_data($data, $this->db['meta_movie_boxint'], false, true);
+            $id = $this->sync_insert_data($data, $this->db['meta_movie_boxint']);
         } else {
             $id = $id_ob->id;
             $result = 'not change';
@@ -907,7 +907,7 @@ class MoviesLinksAn extends MoviesAbstractDBAn {
                 $data = array(
                     'total_mojo' => (int) $total_mojo,
                 );
-                $this->sync_update_data($data, $id, $this->db['meta_movie_boxint'], true);
+                $this->sync_update_data($data, $id, $this->db['meta_movie_boxint']);
             }
         }
         if ($debug) {

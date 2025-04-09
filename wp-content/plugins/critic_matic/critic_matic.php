@@ -84,7 +84,29 @@ function critic_matic_init() {
         $cfront->init_scripts();
     }
 }
+function disable_wp_search_query($sqlQuery) {
+    if (is_search() && !is_admin()) {
+        return ''; // Отключаем стандартный SQL-запрос WordPress
+    }
+    return $sqlQuery;
+}
+add_filter('posts_request', 'disable_wp_search_query');
 
+function disable_wp_search_results($posts) {
+    if (is_search() && !is_admin()) {
+        return []; // Возвращаем пустой массив записей
+    }
+    return $posts;
+}
+add_filter('posts_results', 'disable_wp_search_results');
+
+function disable_wp_found_posts($found_posts) {
+    if (is_search() && !is_admin()) {
+        return 0; // Указываем, что записей нет
+    }
+    return $found_posts;
+}
+add_filter('found_posts', 'disable_wp_found_posts');
 /**
  * Install table structure
  */

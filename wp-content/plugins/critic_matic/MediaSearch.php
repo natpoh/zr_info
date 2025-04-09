@@ -35,7 +35,7 @@ class MediaSearch extends CriticSearch {
         $ret = array('list' => array(), 'count' => 0);
         $this->connect();
         $query_type = 'critics';
-
+        
         if ($show_main) {
 
             // Filters logic
@@ -98,6 +98,10 @@ class MediaSearch extends CriticSearch {
             // Status
             if (!isset($filters['status'])) {
                 $filters_and['status'] = $this->filter_multi_value('status', 1);
+            }
+            
+            if (!isset($filters['show_in'])) {
+             //   $filters_and['show_in'] = $this->filter_multi_value('show_in', 1);
             }
 
             if ($this->in_exclude('state', $exlude)) {

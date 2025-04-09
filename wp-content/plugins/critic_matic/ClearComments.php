@@ -318,7 +318,7 @@ class ClearComments extends AbstractDB {
         }
         // Update post
         if ($update_post) {
-            $this->sync_update_data($update_post, $post->id, $this->db['posts'], $this->cm->sync_data);
+            $this->sync_update_data($update_post, $post->id, $this->db['posts']);
         }
     }
 

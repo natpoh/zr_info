@@ -3813,14 +3813,14 @@ class CPYoutube {
         return $video_id;
     }
 
-    public function yt_video_data($url) {
+    public function yt_video_data($url, $cache=true) {
 
         $video_id = $this->find_url_video_id($url);
 
         $ret = array();
 
         if ($video_id) {
-            $result = $this->find_youtube_data_api(array($video_id));
+            $result = $this->find_youtube_data_api(array($video_id), $cache);
             if (isset($result[$video_id])) {
                 $ret = $result[$video_id];
             }

@@ -95,7 +95,7 @@ if ($pid) {
             <?php endif; ?>
             <tr>
                 <td><?php print __('ZR URL') ?></td>
-                <td><a href="https://zeitgeistreviews.com/critics/<?php print $pid ?>">/critics/<?php print $pid ?></td>
+                <td><a href="https://zgreviews.com/critics/<?php print $pid ?>">/critics/<?php print $pid ?></td>
             </tr>  
             <tr>
                 <td><?php print __('Author') ?></td>

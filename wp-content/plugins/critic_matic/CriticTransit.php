@@ -162,7 +162,7 @@ class CriticTransit extends AbstractDB {
                     $data['last_update'] = $this->curr_time();
                     if ($exist) {
                         // Update post            
-                        $this->sync_update_data($data, $exist->id, $this->db['tmdb'], true, 10);
+                        $this->sync_update_data($data, $exist->id, $this->db['tmdb'], 10);
                         if ($debug) {
                             print_r(array('update', $data, $exist->id, Pdo_an::last_error()));
                         }
@@ -170,7 +170,7 @@ class CriticTransit extends AbstractDB {
                     } else {
                         // Add post            
                         $data['mid'] = $mid;
-                        $this->sync_insert_data($data, $this->db['tmdb'], false, true, 10);
+                        $this->sync_insert_data($data, $this->db['tmdb'], 10);
                         if ($debug) {
                             print_r(array('insert', $data, $exist->id, Pdo_an::last_error()));
                         }
@@ -341,12 +341,12 @@ class CriticTransit extends AbstractDB {
         $data['date'] = $this->curr_time();
         if ($exist) {
             // Update post            
-            $this->sync_update_data($data, $exist->id, $this->db['indie'], true, 10);
+            $this->sync_update_data($data, $exist->id, $this->db['indie'],  10);
             CustomHooks::do_action('update_indie', ['mid' => $mid, 'data' => $data]);
         } else {
             // Add post            
             $data['movie_id'] = $mid;
-            $this->sync_insert_data($data, $this->db['indie'], false, true, 10);
+            $this->sync_insert_data($data, $this->db['indie'], 10);
             CustomHooks::do_action('add_indie', ['mid' => $mid, 'data' => $data]);
         }
     }
@@ -631,7 +631,7 @@ class CriticTransit extends AbstractDB {
                         'last_update' => $this->curr_time(),
                         'n_verdict_weight' => $n_verdict
                     );
-                    $this->sync_update_data($data, $item->id, $this->db['actors_meta'], $sinch, 15);
+                    $this->sync_update_data($data, $item->id, $this->db['actors_meta'],  15);
                     $actors_upd[] = $item->actor_id;
                 } else {
                     if ($debug) {
@@ -771,7 +771,7 @@ class CriticTransit extends AbstractDB {
                             print_r(array('Continue', $result->post_name, $item->newslug));
                         }
                     }
-                    $this->sync_update_data($data, $mid, $this->db['movie_imdb'], true, 5);
+                    $this->sync_update_data($data, $mid, $this->db['movie_imdb'],  5);
                 }
             }
         }
@@ -819,7 +819,7 @@ class CriticTransit extends AbstractDB {
                             print_r(array('Continue', $result->post_name, $item->newslug));
                         }
                     }
-                    $this->sync_update_data($data, $mid, $this->db['movie_imdb'], true, 5);
+                    $this->sync_update_data($data, $mid, $this->db['movie_imdb'],  5);
                 }
             }
         }
@@ -906,7 +906,7 @@ class CriticTransit extends AbstractDB {
                         if ($debug) {
                             print "Insert\n";
                         }
-                        $this->cm->sync_insert_data($data, $this->db['title_slugs'], $this->cm->sync_client, $this->cm->sync_data, $priority);
+                        $this->cm->sync_insert_data($data, $this->db['title_slugs'], $priority);
                     } else {
                         if ($new_post_name == $in_db->newslug) {
                             // continue
@@ -918,7 +918,7 @@ class CriticTransit extends AbstractDB {
                             if ($debug) {
                                 print "Update\n";
                             }
-                            $this->cm->sync_update_data($data, $in_db->id, $this->db['title_slugs'], $this->cm->sync_client, $priority);
+                            $this->cm->sync_update_data($data, $in_db->id, $this->db['title_slugs'],  $priority);
                         }
                     }
                 }
@@ -1774,7 +1774,7 @@ class CriticTransit extends AbstractDB {
 
                       [post_grid_post_settings] => Array
                       (
-                      [0] => a:10:{s:9:"post_skin";s:4:"flat";s:19:"custom_thumb_source";s:101:"https://zeitgeistreviews.com/wp-content/plugins/post-grid/assets/frontend/css/images/placeholder.png";s:17:"font_awesome_icon";s:0:"";s:23:"font_awesome_icon_color";s:7:"#737272";s:22:"font_awesome_icon_size";s:4:"50px";s:17:"custom_youtube_id";s:0:"";s:15:"custom_vimeo_id";s:0:"";s:21:"custom_dailymotion_id";s:0:"";s:14:"custom_mp3_url";s:0:"";s:20:"custom_soundcloud_id";s:0:"";}
+                      [0] => a:10:{s:9:"post_skin";s:4:"flat";s:19:"custom_thumb_source";s:101:"https://zgreviews.com/wp-content/plugins/post-grid/assets/frontend/css/images/placeholder.png";s:17:"font_awesome_icon";s:0:"";s:23:"font_awesome_icon_color";s:7:"#737272";s:22:"font_awesome_icon_size";s:4:"50px";s:17:"custom_youtube_id";s:0:"";s:15:"custom_vimeo_id";s:0:"";s:21:"custom_dailymotion_id";s:0:"";s:14:"custom_mp3_url";s:0:"";s:20:"custom_soundcloud_id";s:0:"";}
                       )
 
                       [lazyload_thumbnail_quality] => Array
@@ -2267,11 +2267,11 @@ class CriticTransit extends AbstractDB {
                 $unames[$name] = $name;
             }
 
-            //http://zeitgeistreviews.com:8008/?names=ilya,katz&p=ds1bfgFe_23_KJDS-F
+            //http://zgreviews.com:8008/?names=ilya,katz&p=ds1bfgFe_23_KJDS-F
             $qnames = implode(',', $unames);
 
             $p = 'ds1bfgFe_23_KJDS-F';
-            //$domain = 'http://zeitgeistreviews.com:8008/';
+            //$domain = 'http://zgreviews.com:8008/';
             $domain = 'http://37.27.53.197:8008/';
             $url = $domain . '?p=' . $p . '&names=' . $qnames;
             if ($debug) {
@@ -2506,7 +2506,7 @@ class CriticTransit extends AbstractDB {
                             'last_upd' => $this->curr_time(),
                         );
 
-                        $this->sync_update_data($data, $author->id, $this->db['authors'], $this->sync_data);
+                        $this->sync_update_data($data, $author->id, $this->db['authors']);
                     }
                 }
             }

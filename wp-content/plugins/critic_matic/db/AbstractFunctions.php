@@ -11,6 +11,12 @@
  */
 class AbstractFunctions {
 
+    private $sync_data = false;
+    private $sync_client = false;
+    public function __construct() {
+        $this->sync_data = DB_SYNC_DATA == 1 ? true : false;     
+        $this->sync_client = DB_SYNC_MODE == 2 ? true : false;       
+    }
     public function link_hash($link) {
         $link = preg_replace('/^http(?:s|)\:\/\//', '', $link);
         return sha1($link);
@@ -28,11 +34,11 @@ class AbstractFunctions {
         return $ret;
     }
 
-    public function sync_insert_data($data, $db, $sync_client = true, $sync_data = true, $priority = 5, $request = '') {
+    public function sync_insert_data($data, $db, $priority = 5, $request = '') {
         $update = false;
         $id = 0;
 
-        if ($sync_client) {
+        if ($this->sync_client) {
             // Client mode
             // Get id
             $id = $this->get_remote_id($db, $request);
@@ -59,32 +65,32 @@ class AbstractFunctions {
             }
         }
 
-        if ($id && $sync_data) {
+        if ($id && $this->sync_data) {
             $this->create_commit_update($id, $db, $priority);
         }
 
         return $id;
     }
 
-    public function sync_update_data($data, $id, $db, $sync_data = true, $priority = 5) {
+    public function sync_update_data($data, $id, $db, $priority = 10) {
 
 
         global $debug;
         if ($debug) {
             //  !class_exists('TMDB') ? include ABSPATH . "analysis/include/tmdb.php" : '';
-            //  TMDB::var_dump_table(['sync_update_data', $data, $id, $db, $sync_data, $priority]);
+            //  TMDB::var_dump_table(['sync_update_data', $data, $id, $db, $priority]);
         }
 
         $this->db_update($data, $db, $id);
 
-        if ($sync_data) {
+        if ($this->sync_data) {
             $this->create_commit_update($id, $db, $priority);
         }
 
         return $id;
     }
 
-    public function sync_delete_multi($request, $db, $sync_data = true, $priority = 5) {
+    public function sync_delete_multi($request, $db, $priority = 5) {
         $fileds = array();
         foreach ($request as $key => $value) {
             $fileds[] = "$key=$value";
@@ -94,17 +100,17 @@ class AbstractFunctions {
 
         $this->db_query($sql);
 
-        if ($sync_data) {
+        if ($this->sync_data) {
             $this->create_commit_delete_multi($request, $db, $priority);
         }
     }
 
-    public function sync_delete_data($id, $db, $sync_data = true, $priority = 5, $table_row = 'id') {
+    public function sync_delete_data($id, $db, $priority = 10, $table_row = 'id') {
 
         $sql = sprintf("DELETE FROM {$db} WHERE `%s` = %d", $table_row, (int) $id);
         $this->db_query($sql);
 
-        if ($sync_data) {
+        if ($this->sync_data) {
             $this->create_commit_delete($id, $db, $priority, $table_row);
         }
 

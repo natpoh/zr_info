@@ -114,7 +114,7 @@ class ActorsCountry extends AbstractDB {
             $data[$field] = $country;
             $meta_exist->$field = $country;
             $data['result'] = $this->get_total_country($meta_exist, $country);
-            $this->sync_update_data($data, $meta_exist->id, $this->db['actors_country'], $this->cm->sync_data, 10);
+            $this->sync_update_data($data, $meta_exist->id, $this->db['actors_country'], 10);
         } else {
             # Add meta
             $data = array(
@@ -122,7 +122,7 @@ class ActorsCountry extends AbstractDB {
                 'result' => $country,
             );
             $data[$field] = $country;
-            $this->sync_insert_data($data, $this->db['actors_country'], $this->cm->sync_client, $this->cm->sync_data, 10);
+            $this->sync_insert_data($data, $this->db['actors_country'], 10);
         }
     }
 
@@ -184,10 +184,10 @@ class ActorsCountry extends AbstractDB {
             //print_r($actor_exist);
                     
             if ($actor_exist) {
-                $this->sync_update_data($to_update, $actor_exist->id, $this->db['actors_ethnic'], $this->cm->sync_data, 10);
+                $this->sync_update_data($to_update, $actor_exist->id, $this->db['actors_ethnic'], 10);
             } else {
                 $to_update['actor_id'] = $aid;
-                $this->sync_insert_data($to_update, $this->db['actors_ethnic'], $this->cm->sync_client, $this->cm->sync_data, 10);
+                $this->sync_insert_data($to_update, $this->db['actors_ethnic'], 10);
             }
             //print_r(Pdo_an::last_error());
         }

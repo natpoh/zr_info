@@ -14,8 +14,8 @@ class CriticAvatars extends AbstractDB {
     public $source_dir = "ca/source";
     public $cketch_dir = "ca/sketch";
     public $tomato_dir = "ca/tomato";
-    public $img_service = 'https://info.filmdemographics.com/';
-    public $thumb_service = 'https://img.zeitgeistreviews.com/';
+    public $img_service = 'https://zgreviews.com/';
+    public $thumb_service = 'https://img2.zeitgeistreviews.com/';
     // Pro critic
     public $pro_source_dir = "cp/source";
     public $allowed_mime_types = [
@@ -142,8 +142,11 @@ class CriticAvatars extends AbstractDB {
                     $img = $avatar_data->date . '.jpg';
                 }
 
-                $img_path = $this->img_service . 'wp-content/uploads/' . $av_dir . '/' . $img;
-                $img_path = $this->get_avatar_thumb($img_path, $size);
+                $img_folder = 'wp-content/uploads/' . $av_dir . '/' . $img;
+                if (file_exists(ABSPATH . $img_folder)) {
+                    $img_path = $this->img_service . $img_folder;
+                    $img_path = $this->get_avatar_thumb($img_path, $size);
+                }
             }
         }
         $avatar = '<img class="neuro avatar' . $tomato_class . '" srcset="' . $img_path . '" width="' . $size . '" height="' . $size . '" />';
@@ -151,12 +154,16 @@ class CriticAvatars extends AbstractDB {
     }
 
     public function get_upload_user_avatar($size = 64, $filename = '') {
-        $img_path = $this->img_service . 'wp-content/uploads/' . $this->pro_source_dir . '/' . $filename;
-        $img_thumb = $img_path;
-        if ($size < 800) {
-            $img_thumb = $this->get_avatar_thumb($img_path, $size);
+        $img_folder = 'wp-content/uploads/' . $this->pro_source_dir . '/' . $filename;
+        if (file_exists(ABSPATH . $img_folder)) {
+            $img_path = $this->img_service . $img_folder;
+            $img_thumb = $img_path;
+            if ($size < 800) {
+                $img_thumb = $this->get_avatar_thumb($img_path, $size);
+            }
+            $avatar = '<img class="neuro avatar upload" srcset="' . $img_thumb . '" width="' . $size . '" height="' . $size . '" data-orig="' . $img_path . '" />';
         }
-        $avatar = '<img class="neuro avatar upload" srcset="' . $img_thumb . '" width="' . $size . '" height="' . $size . '" data-orig="' . $img_path . '" />';
+
         return $avatar;
     }
 
@@ -257,7 +264,7 @@ class CriticAvatars extends AbstractDB {
                 if ($avatar_data) {
                     // Create avatar link
                     $data = array('uid' => $user_id);
-                    $this->sync_update_data($data, $avatar_data->id, $this->db['user_avatars'], true);
+                    $this->sync_update_data($data, $avatar_data->id, $this->db['user_avatars']);
                 }
 
                 // Clear last data
@@ -520,7 +527,7 @@ class CriticAvatars extends AbstractDB {
                     'img_hash' => $img_hash,
                 );
 
-                $id = $this->sync_insert_data($data, $this->db['user_avatars'], $this->cm->sync_client, true, 20);
+                $id = $this->sync_insert_data($data, $this->db['user_avatars'], 20);
                 if ($debug) {
                     p_r($data);
                     p_r($id);
@@ -586,7 +593,7 @@ class CriticAvatars extends AbstractDB {
                 $data = array(
                     'sketch' => $sketch_type
                 );
-                $this->sync_update_data($data, $item->id, $this->db['user_avatars'], true, 20);
+                $this->sync_update_data($data, $item->id, $this->db['user_avatars'], 20);
             }
         }
 
@@ -772,14 +779,14 @@ class CriticAvatars extends AbstractDB {
             } else {
                 $data['aid'] = $aid;
             }
-            $this->sync_update_data($data, $result->id, $this->db['user_avatars'], true);
+            $this->sync_update_data($data, $result->id, $this->db['user_avatars']);
         }
         return $result;
     }
 
     public function clear_avatar_uid($data_id = 0) {
         $data = array('uid' => 0);
-        $this->sync_update_data($data, $data_id, $this->db['user_avatars'], true);
+        $this->sync_update_data($data, $data_id, $this->db['user_avatars']);
     }
 
     public function get_avatars_by_sketch($sketch = 2, $count = 0) {
@@ -938,8 +945,11 @@ class CriticAvatars extends AbstractDB {
     public function get_pro_avatar($filename = '') {
         $img_path = '';
         if ($filename) {
-            $source_dir = $this->img_service . 'wp-content/uploads/' . $this->pro_source_dir;
-            $img_path = $source_dir . "/" . $filename;
+            $img_folder = 'wp-content/uploads/' . $this->pro_source_dir;
+            if (file_exists(ABSPATH . $img_folder)) {
+                $source_dir = $this->img_service . $img_folder;
+                $img_path = $source_dir . "/" . $filename;
+            }
         }
         return $img_path;
     }
@@ -948,10 +958,12 @@ class CriticAvatars extends AbstractDB {
         $ret = '';
 
         if ($filename) {
-            $source_dir = $this->img_service . 'wp-content/uploads/' . $this->pro_source_dir;
-            $img_path = $source_dir . "/" . $filename;
-            //$service = 'https://rwt.4aoc.ru';
-            $ret = $this->thumb_service . 'webp/' . $w . 'x' . $w . '/' . $img_path . '.webp';
+            $img_folder = 'wp-content/uploads/' . $this->pro_source_dir . "/" . $filename;
+            if (file_exists(ABSPATH . $img_folder)) {
+                $source_dir = $this->img_service . $img_folder;           
+                //$service = 'https://rwt.4aoc.ru';
+                $ret = $this->thumb_service . 'webp/' . $w . 'x' . $w . '/' . $source_dir . '.webp';
+            }
         }
         return $ret;
     }
@@ -1052,7 +1064,7 @@ class CriticAvatars extends AbstractDB {
         $avatar = $this->get_or_create_user_avatar($author->wp_uid, 0, $av_size, $av_type);
 
         $this->cm->remove_author_cache($author_id);
-        
+
         $ret['image'] = $avatar;
         return json_encode($ret);
     }
@@ -1101,7 +1113,7 @@ class CriticAvatars extends AbstractDB {
         fclose($fp);
 
         $this->cm->remove_author_cache($author_id);
-        
+
         return json_encode($ret);
     }
 
@@ -1140,8 +1152,8 @@ class CriticAvatars extends AbstractDB {
 
                 // Get remote aid for a new author   
                 $author_id = $this->create_author($wp_user);
-                
-                 $this->cm->remove_author_cache($author_id);
+
+                $this->cm->remove_author_cache($author_id);
 
                 if ($author_id) {
                     // Upload file to info server
@@ -1177,8 +1189,8 @@ class CriticAvatars extends AbstractDB {
             } catch (Exception $exc) {
                 $ret['error'] = $exc->getTraceAsString();
             }
-        }       
-        
+        }
+
         return $ret;
     }
 
@@ -1206,9 +1218,9 @@ class CriticAvatars extends AbstractDB {
         $ret = array(
             'success' => 1,
         );
-        
+
         $this->cm->remove_author_cache($author_id);
-        
+
         return json_encode($ret);
     }
 
@@ -1238,7 +1250,7 @@ class CriticAvatars extends AbstractDB {
         }
 
         $this->cm->remove_author_cache($author_id);
-        
+
         return $avatar;
     }
 
@@ -1252,7 +1264,7 @@ class CriticAvatars extends AbstractDB {
                 unlink($img_path);
                 return true;
             }
-        }        
+        }
         return false;
     }
 
@@ -1418,19 +1430,19 @@ class CriticAvatars extends AbstractDB {
 
         // Generate new valid field
         $stars_data = (int) rand(0, 5);
-        
+
         if (defined("PY_REVIEWS_URL")) {
             try {
                 $comment_content = $this->cleanAndEncodeContent($comment->comment_content, 3000);
-              
+
                 $clear_content = urlencode($comment_content);
                 $url = PY_REVIEWS_URL . "&reviews=" . $clear_content;
                 $cp = $this->cm->get_cp();
                 $result_json = $cp->get_proxy($url);
-                $result = json_decode($result_json);   
-                $percent = (float) $result->data->percent[0];             
-                $stars_data_float = $percent*5;
-                $stars_data = (int) $stars_data_float;           
+                $result = json_decode($result_json);
+                $percent = (float) $result->data->percent[0];
+                $stars_data_float = $percent * 5;
+                $stars_data = (int) $stars_data_float;
             } catch (Exception $exc) {
                 
             }
@@ -1475,7 +1487,7 @@ class CriticAvatars extends AbstractDB {
         return $truncated;
     }
 
-    public function theme_anon_avatar($avatar_user, $avSize=64) {
+    public function theme_anon_avatar($avatar_user, $avSize = 64) {
         $avcode = '<div class="a_img_container_audience" style="background: url(' . WP_SITEURL . '/wp-content/uploads/avatars/custom/' . $avatar_user . '); background-size: cover;"></div>';
         return $avcode;
     }

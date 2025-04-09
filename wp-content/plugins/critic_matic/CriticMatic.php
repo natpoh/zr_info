@@ -29,6 +29,7 @@ class CriticMatic extends AbstractDB {
     private $wl;
     private $mdirs;
     private $wpu;
+    private $ccrowd;
     private $comments;
     private $comment_votes;
 
@@ -258,13 +259,13 @@ class CriticMatic extends AbstractDB {
             'posts_type_3' => 0,
             'posts_rating' => 0,
             'audience_desc' => array(
-                'vote' => "<strong>「&quot;Boycott Or Support&quot;」</strong> lets people know if they should avoid watching the film even if it's free, if they should <a class=&quot;window_open&quot; href=&quot;#https://zeitgeistreviews.com/culture_warrior/&quot; target=&quot;_blank&quot; title=&quot;How to torrent films.&quot;>torrent</a> the film, or if they should spend money watching it to support the creators.",
+                'vote' => "<strong>「&quot;Boycott Or Support&quot;」</strong> lets people know if they should avoid watching the film even if it's free, if they should <a class=&quot;window_open&quot; href=&quot;#https://zgreviews.com/culture_warrior/&quot; target=&quot;_blank&quot; title=&quot;How to torrent films.&quot;>torrent</a> the film, or if they should spend money watching it to support the creators.",
                 'rating' => "<strong>「&quot;Worthwhile Content&quot;」</strong> rates the redeeming aspects of the film.",
                 'hollywood' => 'Overall Hollywood BS',
                 'patriotism' => "<strong>「&quot;Neo-Marxism&quot;」</strong>, (sometimes referred to as <a class=&quot;window_open&quot; href=&quot;#https://infogalactic.com/info/Cultural_Marxism&quot; title=&quot;Link to the Vox Day wikipedia alternative site explaining what cultural marxism is.&quot; target=&quot;_blank&quot;>&quot;Cultural Marxism&quot;</a>), rates&nbsp;the&nbsp;amount&nbsp;of fanatic egalitarianism in a film. Particularly in regard to criticism of<a title=&quot;30 second YouTube clip that shows the not-so-suble criticism of America in James Cameron's 'Avatar'&quot; class=&quot;window_open&quot; href=&quot;#https://www.youtube.com/watch?v=5d5WArztDgo&amp;amp;feature=youtu.be&amp;amp;t=4m49s&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;> nationalism</a> and<a title=&quot;IB Times article about a short Fox News clip criticizing 'The Lego Movie.'&quot; class=&quot;window_open&quot; href=&quot;#http://www.ibtimes.co.uk/fox-news-takes-aim-lego-movie-being-anti-capitalist-video-1435808&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;> capitalism</a>.",
                 'misandry' => "<strong>「&quot;Misandry&quot;」</strong>&nbsp;rates&nbsp;the&nbsp;amount&nbsp; of feminism in a film. Particularly when <a title=&quot;YouTube video of Gavin Mcinnes giving examples of 'cuck-mercials.'&quot; class=&quot;window_open&quot; href=&quot;#https://www.youtube.com/watch?v=5PaRn2-YfTI&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>manhood is disparaged</a>, rather than simply having strong female characters.",
                 'affirmative' => "<strong>「&quot;Affirmative Action&quot;」</strong>&nbsp;rates&nbsp;how much &quot;<a title=&quot;Steven Crowder article about how even the African American cast of 'Blackish' are getting sick and tired of the redundant questions about diversity they get all the time.&quot; class=&quot;window_open&quot; href=&quot;#http://www.louderwithcrowder.com/black-ish-creator-im-tired-of-talking-about-diversity/&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>diversity</a>&quot; is being pushed. ( Not true diversity, but the <a class=&quot;window_open&quot; href=&quot;#https://archive.li/DPrE1&quot; target=&quot;_blank&quot; title=&quot;Hella diverse cast of black panther.&quot; >anti-White</a> checklist kind.)",
-                'lgbtq' => "<strong>「&quot;LGBTQrstuvwxyz&quot;」</strong>&nbsp;rates&nbsp;the&nbsp;amount&nbsp;of <a title=&quot;Buzzfeed article celebrating the transgender character thrown into the 'Mr. Robot' script to complete their diversity bingo chart.&quot; class=&quot;window_open&quot; href=&quot;#http://www.buzzfeed.com/arianelange/mr-robot-diversity&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>non-tradional&nbsp;sexuality</a>&nbsp;depicted. Whether this is positive or negative is up to the user. For example, <a class=&quot;window_open&quot; href=&quot;#https://zeitgeistreviews.com/critics/1671/&quot; target=&quot;_blank&quot; title=&quot;Link to reviews by Armond, in our database.&quot;>Armond White</a> is an openly gay conservative critic filled throughout our database.",
+                'lgbtq' => "<strong>「&quot;LGBTQrstuvwxyz&quot;」</strong>&nbsp;rates&nbsp;the&nbsp;amount&nbsp;of <a title=&quot;Buzzfeed article celebrating the transgender character thrown into the 'Mr. Robot' script to complete their diversity bingo chart.&quot; class=&quot;window_open&quot; href=&quot;#http://www.buzzfeed.com/arianelange/mr-robot-diversity&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>non-tradional&nbsp;sexuality</a>&nbsp;depicted. Whether this is positive or negative is up to the user. For example, <a class=&quot;window_open&quot; href=&quot;#https://zgreviews.com/critics/1671/&quot; target=&quot;_blank&quot; title=&quot;Link to reviews by Armond, in our database.&quot;>Armond White</a> is an openly gay conservative critic filled throughout our database.",
                 'god' => "<strong>「&quot;Anti-God Themes&quot;」</strong>&nbsp;rates&nbsp;the&nbsp;amount&nbsp;of slander towards God and/or <a title=&quot;Hollywood Reporter article about Pat Boone explaining why he boycotts SNL, and thinks they're cowards for not criticizing Islam as they do with 'God's Not Dead 2.'&quot; class=&quot;window_open&quot; href=&quot;#http://www.hollywoodreporter.com/news/pat-boone-accuses-snl-anti-885253&quot; target=&quot;_blank&quot; rel=&quot;noopener noreferrer&quot;>Christian</a> ethics. As with all these ratings, whether this is positive or negative is up to the reviewer. If you're a Pagan Alt Righter or Atheist Anarcho Capitalist, this may be good in your eyes.",
                 'email' => "Create a password or enter an existing one.",
                 'name' => "Enter your name or leave the field blank."
@@ -533,6 +534,17 @@ class CriticMatic extends AbstractDB {
         }
         return $this->wl;
     }
+    
+    public function get_ccrowd() {
+        if (!$this->ccrowd) {
+            if (!class_exists('CriticCrowd')) {
+                require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticCrowd.php' );
+            }
+            $this->ccrowd = new CriticCrowd($this);
+        }
+        return $this->ccrowd;
+    }
+    
 
     public function get_wpu() {
         if (!$this->wpu) {
@@ -1068,7 +1080,7 @@ class CriticMatic extends AbstractDB {
             'show_in'=>$show_in,
         );
 
-        $id = $this->sync_insert_data($data, $this->db['posts'], $this->sync_client, $sync);
+        $id = $this->sync_insert_data($data, $this->db['posts']);
 
         return $id;
     }
@@ -1098,7 +1110,7 @@ class CriticMatic extends AbstractDB {
                     'rating' => $rating,
                 );
 
-                $id = $this->sync_insert_data($data, $this->db['meta'], $this->sync_client, $this->sync_data);
+                $id = $this->sync_insert_data($data, $this->db['meta']);
                 if ($update_top_movie) {
                     $this->update_critic_top_movie($cid);
                 }
@@ -1124,7 +1136,7 @@ class CriticMatic extends AbstractDB {
                         'state' => $state,
                         'rating' => $rating
                     );
-                    $this->sync_update_data($data, $db_meta->id, $this->db['meta'], $this->sync_data);
+                    $this->sync_update_data($data, $db_meta->id, $this->db['meta']);
                 }
 
                 $this->update_critic_top_movie($cid);
@@ -1188,7 +1200,7 @@ class CriticMatic extends AbstractDB {
                 'date_add' => $date_add,
                 'top_rating' => $top_rating,
             );
-            $this->sync_update_data($data, $cid, $this->db['posts'], $this->sync_data);
+            $this->sync_update_data($data, $cid, $this->db['posts']);
         }
     }
 
@@ -1220,7 +1232,7 @@ class CriticMatic extends AbstractDB {
             'top_movie' => $top_movie,
             'link_id' => $link_id,
         );
-        $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
+        $this->sync_update_data($data, $id, $this->db['posts']);
 
         $this->hook_update_post($id);
     }
@@ -1228,7 +1240,7 @@ class CriticMatic extends AbstractDB {
     public function update_post_fields($id, $data) {
         $date_add = $this->curr_time();
         $data['date_add'] = $date_add;
-        $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
+        $this->sync_update_data($data, $id, $this->db['posts']);
 
         $this->hook_update_post($id);
     }
@@ -1238,7 +1250,7 @@ class CriticMatic extends AbstractDB {
         $data = array(
             'date_add' => $date,
         );
-        $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
+        $this->sync_update_data($data, $id, $this->db['posts']);
     }
 
     public function update_post_content($id, $content) {
@@ -1247,7 +1259,7 @@ class CriticMatic extends AbstractDB {
             'date_add' => $date,
             'content' => $content,
         );
-        $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
+        $this->sync_update_data($data, $id, $this->db['posts']);
         $this->hook_update_post($id);
     }
 
@@ -1284,7 +1296,7 @@ class CriticMatic extends AbstractDB {
                 'content' => $content,
             );
 
-            $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
+            $this->sync_update_data($data, $id, $this->db['posts']);
 
             $result_id = $id;
 
@@ -1332,7 +1344,7 @@ class CriticMatic extends AbstractDB {
                             'state' => $state,
                             'rating' => $rating
                         );
-                        $this->sync_update_data($data, $db_meta->id, $this->db['meta'], $this->sync_data);
+                        $this->sync_update_data($data, $db_meta->id, $this->db['meta']);
                     }
                 }
                 $this->update_critic_top_movie($id);
@@ -1366,7 +1378,7 @@ class CriticMatic extends AbstractDB {
                 'top_movie' => $top_movie
             );
 
-            $id = $this->sync_insert_data($data, $this->db['posts'], $this->sync_client, $this->sync_data);
+            $id = $this->sync_insert_data($data, $this->db['posts']);
 
             //Add author meta
             if ($author) {
@@ -1456,7 +1468,7 @@ class CriticMatic extends AbstractDB {
             'date_add' => $this->curr_time(),
             'status' => 2
         );
-        $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
+        $this->sync_update_data($data, $id, $this->db['posts']);
         $this->hook_update_post($id);
         $this->critic_delta_cron();
 
@@ -1472,7 +1484,7 @@ class CriticMatic extends AbstractDB {
                 'date_add' => $this->curr_time(),
                 'status' => $status
             );
-            $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
+            $this->sync_update_data($data, $id, $this->db['posts']);
             $this->hook_update_post($id);
             $this->critic_delta_cron();
 
@@ -1646,7 +1658,7 @@ class CriticMatic extends AbstractDB {
         );
 
         foreach ($ids as $id) {
-            $this->sync_update_data($data, $id, $this->db['meta'], $this->sync_data);
+            $this->sync_update_data($data, $id, $this->db['meta']);
         }
 
         $this->update_critic_top_movie($mid);
@@ -1679,7 +1691,7 @@ class CriticMatic extends AbstractDB {
                 $data = array(
                     'link_id' => $link_id,
                 );
-                $this->sync_update_data($data, $item->id, $this->db['posts'], $this->sync_data, 10);
+                $this->sync_update_data($data, $item->id, $this->db['posts'], 10);
             }
         }
     }
@@ -1705,7 +1717,7 @@ class CriticMatic extends AbstractDB {
                 'site' => $name,
             );
 
-            $id = $this->sync_insert_data($data, $this->db['posts_links'], $this->sync_client, $this->sync_data);
+            $id = $this->sync_insert_data($data, $this->db['posts_links']);
         }
 
         // Add to cache
@@ -2008,7 +2020,7 @@ class CriticMatic extends AbstractDB {
         foreach ($ids as $cid) {
             $item = $this->get_post_author_meta($cid);
             if ($item) {
-                $this->sync_update_data($data, $item->id, $this->db['authors_meta'], $this->sync_data);
+                $this->sync_update_data($data, $item->id, $this->db['authors_meta']);
             }
         }
 
@@ -2359,7 +2371,7 @@ class CriticMatic extends AbstractDB {
             'last_upd' => $curr_time,
         );
 
-        $id = $this->sync_insert_data($data, $this->db['authors'], $this->sync_client, $this->sync_data);
+        $id = $this->sync_insert_data($data, $this->db['authors']);
 
         return $id;
     }
@@ -2374,7 +2386,7 @@ class CriticMatic extends AbstractDB {
                 'cid' => $pid,
             );
 
-            $id = $this->sync_insert_data($data, $this->db['authors_meta'], $this->sync_client, $this->sync_data);
+            $id = $this->sync_insert_data($data, $this->db['authors_meta']);
 
             return $id;
         }
@@ -2423,7 +2435,7 @@ class CriticMatic extends AbstractDB {
             
             $this->remove_author_cache($id);
 
-            $this->sync_update_data($data, $id, $this->db['authors'], $this->sync_data);
+            $this->sync_update_data($data, $id, $this->db['authors']);
 
             $result_id = $id;
 
@@ -2449,7 +2461,7 @@ class CriticMatic extends AbstractDB {
             );
 
             //Return id
-            $id = $this->sync_insert_data($data, $this->db['authors'], $this->sync_client, $this->sync_data);
+            $id = $this->sync_insert_data($data, $this->db['authors']);
 
             $result_id = $id;
         }
@@ -2494,7 +2506,7 @@ class CriticMatic extends AbstractDB {
         );
         $this->remove_author_cache($author->id);
 
-        $this->sync_update_data($data, $author->id, $this->db['authors'], $this->sync_data);
+        $this->sync_update_data($data, $author->id, $this->db['authors']);
     }
 
     public function update_author_status($aid, $status) {
@@ -2505,7 +2517,7 @@ class CriticMatic extends AbstractDB {
                 'last_upd' => $this->curr_time(),
                 'status' => $status,
             );
-            $this->sync_update_data($data, $aid, $this->db['authors'], $this->sync_data);
+            $this->sync_update_data($data, $aid, $this->db['authors']);
             return true;
         }
         return false;
@@ -2517,7 +2529,7 @@ class CriticMatic extends AbstractDB {
             'last_upd' => $this->curr_time(),
         );
 
-        $this->sync_update_data($data, $id, $this->db['authors'], $this->sync_data);
+        $this->sync_update_data($data, $id, $this->db['authors']);
     }
 
     public function trash_author($form_state) {
@@ -2531,7 +2543,7 @@ class CriticMatic extends AbstractDB {
                 'status' => $status,
                 'last_upd' => $this->curr_time(),
             );
-            $this->sync_update_data($data, $id, $this->db['authors'], $this->sync_data);
+            $this->sync_update_data($data, $id, $this->db['authors']);
             $result = $id;
         }
         return $result;
@@ -2762,7 +2774,7 @@ class CriticMatic extends AbstractDB {
                     'cid' => $aid
                 );
 
-                $this->sync_insert_data($data, $this->db['tag_meta'], $this->sync_client, $this->sync_data);
+                $this->sync_insert_data($data, $this->db['tag_meta']);
             }
 
             $dict[$name] = 1;
@@ -2778,7 +2790,7 @@ class CriticMatic extends AbstractDB {
             'tid' => $tid,
             'cid' => $aid,
         );
-        $this->sync_delete_multi($data, $this->db['tag_meta'], $sync_data = $this->sync_data, 10);
+        $this->sync_delete_multi($data, $this->db['tag_meta'],  10);
     }
 
     public function remove_author_tags($aid) {
@@ -2789,7 +2801,7 @@ class CriticMatic extends AbstractDB {
                     'tid' => $tag->id,
                     'aid' => $aid,
                 );
-                $this->sync_delete_multi($data, $this->db['tag_meta'], $sync_data = $this->sync_data, 10);
+                $this->sync_delete_multi($data, $this->db['tag_meta'],  10);
             }
         }
     }
@@ -2815,7 +2827,7 @@ class CriticMatic extends AbstractDB {
                 'slug' => $slug
             );
 
-            $id = $this->sync_insert_data($data, $this->db['tags'], $this->sync_client, $this->sync_data);
+            $id = $this->sync_insert_data($data, $this->db['tags']);
         }
         // Add to cache
         $dict[$name] = $id;
@@ -2838,12 +2850,12 @@ class CriticMatic extends AbstractDB {
         if ($form_state['id']) {
             $id = (int) $form_state['id'];
             //EDIT  
-            $this->sync_update_data($data, $id, $this->db['tags'], $this->sync_data);
+            $this->sync_update_data($data, $id, $this->db['tags']);
 
             $result_id = $id;
         } else {
             //ADD
-            $id = $this->sync_insert_data($data, $this->db['tags'], $this->sync_client, $this->sync_data);
+            $id = $this->sync_insert_data($data, $this->db['tags']);
             //Return id            
             $result_id = $id;
         }
@@ -2862,7 +2874,7 @@ class CriticMatic extends AbstractDB {
             $data = array(
                 'status' => $status
             );
-            $this->sync_update_data($data, $id, $this->db['tags'], $this->sync_data);
+            $this->sync_update_data($data, $id, $this->db['tags']);
             $result = $id;
         }
         return $result;
@@ -2893,7 +2905,7 @@ class CriticMatic extends AbstractDB {
                 'slug' => $slug
             );
 
-            $id = $this->sync_insert_data($data, $this->db['cm_camp_tags'], $this->sync_client, $this->sync_data);
+            $id = $this->sync_insert_data($data, $this->db['cm_camp_tags']);
         }
         // Add to cache
         $dict[$name] = $id;
@@ -2992,7 +3004,7 @@ class CriticMatic extends AbstractDB {
                     'type' => $type,
                 );
 
-                $this->sync_insert_data($data, $this->db['cm_camp_tag_meta'], $this->sync_client, $this->sync_data);
+                $this->sync_insert_data($data, $this->db['cm_camp_tag_meta']);
             } else {
                 return false;
             }
@@ -3009,7 +3021,7 @@ class CriticMatic extends AbstractDB {
             'cid' => $cid,
             'tid' => $tag_id,
         );
-        $this->sync_delete_multi($data, $this->db['cm_camp_tag_meta'], $sync_data = $this->sync_data, 5);
+        $this->sync_delete_multi($data, $this->db['cm_camp_tag_meta'], 5);
     }
 
     public function theme_camp_tags($campaign_id, $post_type) {
@@ -3419,7 +3431,7 @@ class CriticMatic extends AbstractDB {
         );
 
         try {
-            $id = $this->sync_insert_data($data, $this->db['rating'], false, $this->sync_data);
+            $id = $this->sync_insert_data($data, $this->db['rating']);
         } catch (Exception $exc) {
             $id = 0;
         }
@@ -3450,7 +3462,7 @@ class CriticMatic extends AbstractDB {
             );
 
             $rid = $this->get_post_rating_id($cid);
-            $this->sync_update_data($data, $rid, $this->db['rating'], $this->sync_data);
+            $this->sync_update_data($data, $rid, $this->db['rating']);
 
             return true;
         }
@@ -3599,7 +3611,7 @@ class CriticMatic extends AbstractDB {
                 'link_hash' => $link_hash,
             );
 
-            $this->sync_update_data($data, $id, $this->db['posts'], $this->sync_data);
+            $this->sync_update_data($data, $id, $this->db['posts']);
 
             return $link_hash;
         }
@@ -3645,7 +3657,7 @@ class CriticMatic extends AbstractDB {
                             'options' => $options
                         );
                         $id = $result->id;
-                        $this->sync_update_data($data, $id, $this->db['rating'], $this->sync_data);
+                        $this->sync_update_data($data, $id, $this->db['rating']);
                     }
                 }
             }
@@ -4950,7 +4962,7 @@ class CriticMatic extends AbstractDB {
     }
     
     public function get_meta_compilation_link($id){
-        $sql = sprintf("SELECT * FROM {$this->db[meta_compilation_links]} WHERE id=%d", (int) $id);
+        $sql = sprintf("SELECT * FROM {$this->db['meta_compilation_links']} WHERE id=%d", (int) $id);
         $result = $this->db_fetch_row($sql);
         return $result;
     }

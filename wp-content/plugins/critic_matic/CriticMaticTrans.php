@@ -254,7 +254,7 @@ class CriticMaticTrans extends AbstractDB {
             print_r($data);
         }
 
-        $this->cm->sync_insert_data($data, $this->db['transcriptions'], $this->cm->sync_client, $this->cm->sync_data, 10);
+        $this->cm->sync_insert_data($data, $this->db['transcriptions'], 10);
     }
 
     private function update_transcription($link, $tid, $count_err = 0, $debug = false) {
@@ -287,7 +287,7 @@ class CriticMaticTrans extends AbstractDB {
             p_r($data);
         }
 
-        $this->cm->sync_update_data($data, $tid, $this->db['transcriptions'], $this->cm->sync_data, 10);
+        $this->cm->sync_update_data($data, $tid, $this->db['transcriptions'], 10);
     }
 
     private function calc_inerval($count_err) {
@@ -356,7 +356,7 @@ class CriticMaticTrans extends AbstractDB {
         $data = array(
             'status' => $status,
         );
-        $this->cm->sync_update_data($data, $id, $this->db['transcriptions'], $this->cm->sync_data);
+        $this->cm->sync_update_data($data, $id, $this->db['transcriptions']);
     }
 
     public function get_code($headers) {

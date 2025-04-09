@@ -302,8 +302,8 @@ wpcr3a.captchaResponse = "";
 wpcr3a.ajaxPost = function (parent, data, cb) {
     //var host = window.location.host;
     var url = '/service/ajax/audience.php';
-    //if (host == "zeitgeistreviews.com") {
-    //    var url = 'https://service.zeitgeistreviews.com/ajax/audience.php';
+    //if (host == "zgreviews.com") {
+    //    var url = 'https://service.zgreviews.com/ajax/audience.php';
     //}
     return jQuery.ajax({
         type: "POST",
