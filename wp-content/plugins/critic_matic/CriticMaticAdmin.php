@@ -195,10 +195,10 @@ class CriticMaticAdmin {
         add_submenu_page($this->parrent_slug, __('Audience'), __('Audience') . $count_text, $this->access_level, $this->audience_url, array($this, 'audience'));
         add_submenu_page($this->parrent_slug, __('Clear comments'), __('Clear comments') . $count_text, $this->access_level, $this->clear_url, array($this, 'clear_comments'));
         add_submenu_page($this->parrent_slug, __('Transcriptions'), __('Transcriptions'), $this->access_level, $this->transcriptions_url, array($this, 'transcriptions'));
-        if (!$this->cm->sync_client) {
+    
             add_submenu_page($this->parrent_slug, __('Feeds'), __('Feeds'), $this->access_level, $this->feeds_url, array($this, 'feeds'));
             add_submenu_page($this->parrent_slug, __('Parser'), __('Parser'), $this->access_level, $this->parser_url, array($this, 'parser'));
-        }
+        
         add_submenu_page($this->parrent_slug, __('Settings'), __('Settings'), $this->access_level, $this->settings_url, array($this, 'settings'));
         add_submenu_page($this->parrent_slug, __('Sitemap'), __('Sitemap'), $this->access_level, $this->sitemap_url, array($this, 'sitemap'));
     }
