@@ -933,7 +933,7 @@ class Import
 
 	    if ($domain !=$remote_data)
 	    {
-		    return array('error'=>'false remote ip '.$remote_data.'!='.$remote);
+		    return array('error'=>'false remote ip '.$remote_data.'!='.$domain);
 	    }
 
     }
