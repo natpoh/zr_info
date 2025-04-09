@@ -931,10 +931,10 @@ class Import
         $remote = $_SERVER['REMOTE_ADDR'];
         $remote_data = $options_data['remote_ip'];
 
-        if ($remote_data!=$remote)
-        {
-            return array('error'=>'false remote ip '.$remote_data.'!='.$remote);
-        }
+	    if ($domain !=$remote_data)
+	    {
+		    return array('error'=>'false remote ip '.$remote_data.'!='.$remote);
+	    }
 
     }
 
