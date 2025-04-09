@@ -1488,7 +1488,7 @@ VALUES (NULL,?,?,?,?,?,?,?)";
 
 }
 
-public static function get_imdb_parse($content,$show_data='',$id,$array_result)
+public static function get_imdb_parse($content,$show_data='',$id,$array_result,$debug=0)
     {
 
 
@@ -1552,7 +1552,10 @@ public static function get_imdb_parse($content,$show_data='',$id,$array_result)
 
 
 
-
+        if ($debug)
+        {
+          //  self::var_dump_table($array2);
+        }
 
         $array_meta=[];
 
@@ -1643,7 +1646,7 @@ if($array_meta["countriesOfOrigin"]["countries"])
 
 
 
-        $array_result['title'] =$data_movies["titleText"]["text"];/// $array["name"]; ///$data_movies["originalTitleText"]["text"];
+        $array_result['title'] =$data_movies["originalTitleText"]["text"];/// $array["name"]; ///$data_movies["originalTitleText"]["text"];
 
         if (!$array_result['title'])
         {
@@ -1992,7 +1995,7 @@ public static function reload_from_imdb($id,$debug=0)
 
     $id = intval($id);
 
-    $array_movie =  self::get_content_imdb($id);
+    $array_movie =  self::get_content_imdb($id,'',1,0,$debug);
     if ($debug){
 
             self::var_dump_table($array_movie);
@@ -2055,7 +2058,7 @@ public static function get_proxy($url)
 }
 
 
-public static function get_content_imdb($id,$showdata='',$enable_actors=1,$from_archive=0)
+public static function get_content_imdb($id,$showdata='',$enable_actors=1,$from_archive=0,$debug=0)
 {
     $final_value = sprintf('%07d', $id);
 
@@ -2080,7 +2083,7 @@ public static function get_content_imdb($id,$showdata='',$enable_actors=1,$from_
             //echo $url;
 
             global $RWT_PROXY;
-            if ($RWT_PROXY)
+            if ($RWT_PROXY )
             {
 
                 $result = self::get_proxy($url);
@@ -2115,7 +2118,7 @@ public static function get_content_imdb($id,$showdata='',$enable_actors=1,$from_
 
 
         global $RWT_PROXY;
-        if ($RWT_PROXY)
+        if ($RWT_PROXY )
         {
 
             $result1 = self::get_proxy($url);
@@ -2140,7 +2143,7 @@ public static function get_content_imdb($id,$showdata='',$enable_actors=1,$from_
         }
     }
 
-    $array_result = self::get_imdb_parse($result1,$showdata,$id,$array_result);
+    $array_result = self::get_imdb_parse($result1,$showdata,$id,$array_result,$debug);
 
 
 
