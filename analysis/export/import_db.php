@@ -930,12 +930,11 @@ class Import
 
         $remote = $_SERVER['REMOTE_ADDR'];
         $remote_data = $options_data['remote_ip'];
-	    $domain = gethostbyaddr($remote);
-	    if ($domain !=$remote_data)
-	    {
-		    return array('error'=>'false remote ip '.$remote_data.'!='.$domain);
-	    }
 
+	    if (!strstr($remote,$remote_data))
+	    {
+		    return array('error'=>'false remote ip '.$remote_data.'!='.$remote);
+	    }
     }
 
     public static function sync_data($data)
