@@ -32,10 +32,8 @@ if ($mid) {
     Update actors <a target="_blank" href="/wp-content/plugins/critic_matic/cron/movie_actor_cache_cron.php?p=8ggD_23sdf_DSF&debug=1&mid=<?php print $mid ?>">cache</a>.
     <?php
     $cache_actors = $mac->get_cache_actors($mid);
-    if ($this->cm->sync_server) {
-        print $this->cm->theme_table($cache_actors);
-    }
-    ?>
+     print $this->cm->theme_table($cache_actors);
+     ?>
     <h3>Directors meta (meta_movie_director, data_actors_meta)</h3>
     <?php
     $mdirs = $this->cm->get_mdirs();
@@ -46,8 +44,8 @@ if ($mid) {
     Update directors <a target="_blank" href="/wp-content/plugins/critic_matic/cron/movie_actor_cache_cron.php?p=8ggD_23sdf_DSF&debug=1&mid=<?php print $mid ?>&type=1">cache</a>.
     <?php
     $cache_actors = $mdirs->get_cache_actors($mid);
-    if ($this->cm->sync_server) {
-        print $this->cm->theme_table($cache_actors);
-    }
+    
+    print $this->cm->theme_table($cache_actors);
+    
     ?> 
 <?php } ?>

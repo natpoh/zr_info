@@ -539,22 +539,12 @@ class CriticAvatars extends AbstractDB {
     public function get_file_content($url, $debug) {
         $ip_limit = array('h' => 20, 'd' => 200);
         $tor_mode = 2;
-        $file_content = '';
-        if ($this->cm->sync_server) {
 
-            $mp = $this->get_mp();
-            $tp = $mp->get_tp();
-            $max_errors = 10;
+        $mp = $this->get_mp();
+        $tp = $mp->get_tp();
+        $max_errors = 10;
 
-            $file_content = $tp->get_url_content($url, $headers, $ip_limit, true, $tor_mode, false, array(), array(), $max_errors, $debug);
-        } else {
-            // 2. Get cm parser
-            $cp = $this->cm->get_cp();
-            $file_content = $cp->get_proxy($url, '', $headers);
-            if ($debug) {
-                print "CM parser\n";
-            }
-        }
+        $file_content = $tp->get_url_content($url, $headers, $ip_limit, true, $tor_mode, false, array(), array(), $max_errors, $debug);
 
         if ($debug) {
             p_r($headers);
@@ -960,7 +950,7 @@ class CriticAvatars extends AbstractDB {
         if ($filename) {
             $img_folder = 'wp-content/uploads/' . $this->pro_source_dir . "/" . $filename;
             if (file_exists(ABSPATH . $img_folder)) {
-                $source_dir = $this->img_service . $img_folder;           
+                $source_dir = $this->img_service . $img_folder;
                 //$service = 'https://rwt.4aoc.ru';
                 $ret = $this->thumb_service . 'webp/' . $w . 'x' . $w . '/' . $source_dir . '.webp';
             }
