@@ -185,6 +185,12 @@ class TMDBIMPORT
 
 
         global $ma;
+
+        if (!$ma)
+        {
+            self::add_ma();
+        }
+
         $actors_imdb_array_modifed=[];
         foreach ($actors_imdb_array as $name=>$imdbid)
         {
@@ -420,6 +426,25 @@ class TMDBIMPORT
                 $sql= "UPDATE `data_movies_tmdb_actors` SET  `status`=4 WHERE `data_movies_tmdb_actors`.`rwt_id` = ? ";
                 Pdo_an::db_results_array($sql,[$id]);
             }
+        }
+    }
+
+    public static function add_ma()
+    {
+        global $ma;
+
+        if (!defined('CRITIC_MATIC_PLUGIN_DIR')) {
+            define('CRITIC_MATIC_PLUGIN_DIR', ABSPATH . 'wp-content/plugins/critic_matic/');
+        }
+
+        if (!class_exists('MoviesAn')) {
+            require_once( CRITIC_MATIC_PLUGIN_DIR . 'db/AbstractFunctions.php' );
+            require_once( CRITIC_MATIC_PLUGIN_DIR . 'db/AbstractDBAn.php' );
+            require_once( CRITIC_MATIC_PLUGIN_DIR . 'db/AbstractDB.php' );
+            require_once( CRITIC_MATIC_PLUGIN_DIR . 'CriticMatic.php' );
+            require_once( CRITIC_MATIC_PLUGIN_DIR . 'MoviesAn.php' );
+
+            $ma = new MoviesAn();
         }
     }
 
