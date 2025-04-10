@@ -22,16 +22,13 @@ $array_jobs = array(
 
     'movie_keywords' => 20,///upadate movies keywords
     'update_tmdb_actors' => 10, //update tmdb id and images
-
-    'check_tmdb_data' => 15,///update country and poster from tmdb
+    //'check_tmdb_data' => 15,///update country and poster from tmdb
 
     'zr_woke' => 30,///empty woke
     'actor_slug' => 30, ///update actor slug
 
     'add_providers' => 30,
     'update_imdb_data' => 30,//update movies
-//'disqus_comments'=>30, ///disquss count comments
-
     'set_verdict_weight' => 30,
     'update_just_watch' => 30,
     'check_last_actors' => 30,
@@ -68,7 +65,7 @@ $array_jobs = array(
 //'add_movie_production'=>15,///start 12.04.2023  start temp cron stop 12.06.2023
 
     'update_all_audience_and_staff' => (60 * 12),///recreate cache audience and staff
-    'get_coins_data' => 60 * 24,////get data donations
+  //  'get_coins_data' => 60 * 24,////get data donations
 
 
     'sync_tables' => 30, ///sync all remote tables
@@ -76,7 +73,7 @@ $array_jobs = array(
     'get_forebears' => 15, //forebears to actors meta
     'get_forebears_rank' => 15, //forebears rank to actors meta
 
-    'set_tmdb_actors_for_movies' => 30,////update tmdb actors from japan anime
+   /// 'set_tmdb_actors_for_movies' => 30,////update tmdb actors from japan anime
 
     'set_actors_ethnic' => 60, ///add ethnic verdict
 
