@@ -3794,31 +3794,6 @@ class CPYoutube {
                 $client = new Google_Client();
                 $client->setApplicationName($ss['parser_gapp']);
                 $client->setDeveloperKey($ss['parser_gdk']);
-
-                $proxy = $cm->get_parser_proxy(true);
-
-                $proxy_text = '';
-                if ($proxy) {
-                    $proxy_num = array_rand($proxy);
-                    $proxy_text = $proxy[$proxy_num];
-                }
-                if ($proxy_text) {
-                    // Настройка прокси
-                    $httpClient = new \GuzzleHttp\Client([
-                        'proxy' => [
-                            'http' => 'http://'.$proxy_text, // замените на ваш прокси
-                            'https' => 'http://'.$proxy_text, // замените на ваш прокси
-                        ],
-                        // Опционально: если прокси требует аутентификации
-                        // 'proxy' => 'http://username:password@proxy_address:port',
-                        // Отключение проверки SSL (используйте только если необходимо)
-                        'verify' => false,
-                        // Таймаут соединения
-                        'timeout' => 30,
-                    ]);
-
-                    $client->setHttpClient($httpClient);
-                }
                 $this->client = $client;
             } catch (Exception $e) {
                 print_r($e);
